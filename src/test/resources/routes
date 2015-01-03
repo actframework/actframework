@@ -3,164 +3,162 @@
 # ~~~~
 
 #Runtime
-GET /page/{pageId}/ RuntimeServer.loadPage
-* /campaign/{campaignId}/ RuntimeServer.loadCampaign
-GET /entry/{entryId} RuntimeServer.getEntry
-GET /votes RuntimeServer.votes
-GET /tandcdialog RuntimeServer.tAndCDialog
-* /fbapp/{appId}/ FacebookAppServer.load
-* /load/app/{appId}/ FacebookAppServer.load
-POST /campaign/{campaignId}/ RuntimeServer.post
-POST /campaign/{campaignId}/vote RuntimeServer.voteEntry
-POST /page/{pageId}/sendEmail RuntimeServer.sendEmail
-POST /upload RuntimeServer.handleFileUpload
+GET /yemian/{yemianId}/ CMYingyong.jiazaiYemian
+* /tuiguang/{tuiguangId}/ CMYingyong.jiazaiTuiguang
+GET /jilu/{jiluId} CMYingyong.jilu
+GET /toupiao CMYingyong.toupiao
+GET /tandcdialog CMYingyong.tAndCDialog
+* /weixinyingyong/{yingyongId}/ WeixinAppFuwuqi.jiazai
+* /zhuangzai/yingyong/{yingyongId}/ WeixinAppFuwuqi.jiazai
+POST /tuiguang/{tuiguangId}/ CMYingyong.tijiao
+POST /tuiguang/{tuiguangId}/vote CMYingyong.toupiaoJilu
+POST /yemian/{yemianId}/fasongyoujian CMYingyong.fasongyoujian
+POST /shangchuang CMYingyong.wenjianShangChuan
 
-GET /rsrc2/{id} Resources.get2
-GET /rsrc/{id} Resources.get
-GET /rsrc/{id}/{name} Resources.getWithName
-GET /dynacss Pages.dynaCss
+GET /ziyuan2/{id} Ziyuan.fangwen2
+GET /ziyuan/{id} Ziyuan.fangwen
+GET /ziyuan/{id}/{mingzi} Ziyuan.mingZiFangWen
+GET /dynacss Yemian2.dynaCss
 
-GET /instagram RuntimeServer.instagram
+GET /tutu123 CMYingyong.tutu123
 
-GET /uuploader RuntimeServer.uuploader
+GET /ushangchuanger CMYingyong.ushangchuanger
 
-GET /instagram/token RuntimeServer.instagramToken
+GET /tutu123/token CMYingyong.tutu123Token
 
-# Campaign Manager
-GET / campaign.Manager.index
-GET /cm campaign.Manager.index
-GET /cm/new campaign.Manager.createCampaign
-POST /cm/new campaign.Manager.createCampaign
-POST /cm/uploadicon campaign.Manager.uploadIcon
-POST /cm/editicon campaign.Manager.editIcon
+# Ziyuan Guanliyuan
+GET / ziyuan.Guanliqi.zhuye
+GET /cm ziyuan.Guanliqi.zhuye
+GET /dn/new ziyuan.Guanliqi.createZiyuan
+POST /dn/new ziyuan.Guanliqi.createZiyuan
+POST /dn/shangchuangicon ziyuan.Guanliqi.shangchuangIcon
+POST /dn/editicon ziyuan.Guanliqi.editIcon
 
-GET /cm/{campaignId}/ campaign.Manager.setting
-GET /cm/{campaignId}/entry/ campaign.Manager.entry
-GET /cm/{campaignId}/report/ campaign.Manager.report
-GET /cm/geticon/{fileName} campaign.Manager.getIcon
-POST /cm/{campaignId}/attribute campaign.Manager.setAttribute
+GET /dn/{tuiguangId}/ ziyuan.Guanliqi.shezhi
+GET /dn/{tuiguangId}/jilu/ ziyuan.Guanliqi.jilu
+GET /dn/{tuiguangId}/baobiao/ ziyuan.Guanliqi.baobiao
+GET /dn/fangwenicon/{fileMingzi} ziyuan.Guanliqi.fangwenIcon
+POST /dn/{tuiguangId}/attribute ziyuan.Guanliqi.setShuxin
 
-GET /gallery Campaign.Manager.gallery
-GET /gallery/{campaignId}/ campaign.Manager.showTemplate
+GET /tupianji Ziyuan.Guanliyuan.tupianji
+GET /tupianji/{tuiguangId}/ ziyuan.Guanliqi.xianshiMuban
 
-# Client Manager
-GET /profile/ client.Manager.profile
-POST /profile client.Manager.saveProfile
-GET /profile/subscription client.Manager.subscription
-GET /profile/user client.Manager.users
-GET /profile/billing client.Manager.billing
-GET /profile/me client.Manager.me
+# Kuhu Guanliyuan
+GET /ziliao/ yonghu.Guanliyuan.ziliao
+POST /ziliao yonghu.Guanliyuan.saveProfile
+GET /ziliao/fuwu yonghu.Guanliyuan.fuwu
+GET /ziliao/yonghu yonghu.Guanliyuan.yonghus
+GET /ziliao/fukuan yonghu.Guanliyuan.fukuan
+GET /ziliao/me yonghu.Guanliyuan.me
 
 
 # Payments
-GET /p/acr Payments.receiveAccessCodeResult
+GET /p/acr Payments.receiveAccessCodeReadmlt
 
-# Home page
-GET / ui.HomeUI.index
-GET /pendingApps ui.HomeUI.pendingAppAdminTasks
-GET /campaign ui.HomeUI.campaign
-GET /subscription ui.HomeUI.subscription
-GET /account ui.HomeUI.account
-GET /clients ui.HomeUI.clients
-GET /client/{id} ui.HomeUI.client
-#GET /campaigns/list Campaigns.list
-#GET /campaigns/{id} Campaigns.show
+# Zhuye
+GET / xui.ZhuyeUI.zhuye
+GET /pendingApps xui.ZhuyeUI.pendingAppAdminTasks
+GET /tuiguang xui.ZhuyeUI.tuiguang
+GET /fuwu xui.ZhuyeUI.fuwu
+GET /zhanghu xui.ZhuyeUI.zhanghu
+GET /yonghus xui.ZhuyeUI.yonghus
+GET /yonghu/{id} xui.ZhuyeUI.yonghu
+#GET /tuiguangs/liebiao Ziyuans.liebiao
+#GET /tuiguangs/{id} Ziyuans.xianshi
 
-GET /resetpass Clients.resetPasswordForm
+GET /resetpass Kuhus.resetPasswordForm
 
 # data
-GET /data/campaign/logo/{id} data.CampaignData.logo
-GET /data/campaign/icon/{id} data.CampaignData.icon
-GET /data/campaign/{id}/target/{target} data.CampaignData.loadTarget
-GET /data/campaign/{id}/targetTabs data.CampaignData.loadTargetTabs
-GET /data/campaign/{id} data.CampaignData.load
-GET /data/campaign/{id}/hasEntryData data.campaignData.hasEntryData
-GET /data/campaign/{id}/downloadEntries data.CampaignData.downloadEntries
-GET /data/page/{pageId}/attribute/{key} data.PageData.getAttribute
-GET /data/page/html/{pageId} data.PageData.getHtml
-GET /data/page/metatags/{pageId} data.PageData.getMetaTags
-GET /data/page/{pageId}/thumbnail data.PageData.thumbnail
-POST /data/campaign/setting data.CampaignData.setting
-POST /data/campaign/{id}/profile data.CampaignData.updateProfile
-POST /data/campaign/{id}/target/{<.{24}>target}/addPage data.CampaignData.addPage
-POST /data/campaign/{id}/target/{<.{24}>target}/page/{<[0-9]+>pageIndex}/remove data.CampaignData.removePage
-POST /data/campaign/{id}/delete data.CampaignData.delete
-POST /data/campaign/logo/{id} data.CampaignData.uploadLogo
-POST /data/campaign/icon/{id} data.CampaignData.uploadIcon
-POST /data/page/newComponent data.PageData.addNewComponent
-POST /data/page/removeComponent data.PageData.removeComponent
-POST /data/page/{id}/background data.PageData.setBackground
-POST /data/page/{id} data.PageData.update
-POST /data/page/{pageId}/component/{componentId} data.PageData.updateComponent
-POST /data/campaign/savetandc data.CampaignData.saveTAndC
+GET /shuju/tuiguang/logo/{id} shuju.TuiguangShuju.logo
+GET /shuju/tuiguang/icon/{id} shuju.TuiguangShuju.icon
+GET /shuju/tuiguang/{id}/mubiao/{mubiao} shuju.TuiguangShuju.jiazaiTarfangwen
+GET /shuju/tuiguang/{id}/mubiaoTabs shuju.TuiguangShuju.jiazaiTarfangwenTabs
+GET /shuju/tuiguang/{id} shuju.TuiguangShuju.jiazai
+GET /shuju/tuiguang/{id}/hasEntryShuju shuju.tuiguangShuju.hasEntryShuju
+GET /shuju/tuiguang/{id}/downloadEntries shuju.TuiguangShuju.downloadEntries
+GET /shuju/yemian/{yemianId}/attribute/{key} shuju.PageShuju.fangwenShuxin
+GET /shuju/yemian/html/{yemianId} shuju.PageShuju.fangwenHtml
+GET /shuju/yemian/metatags/{yemianId} shuju.PageShuju.fangwenMetaTags
+GET /shuju/yemian/{yemianId}/thumbnail shuju.PageShuju.thumbnail
+POST /shuju/tuiguang/shezhi shuju.TuiguangShuju.shezhi
+POST /shuju/tuiguang/{id}/ziliao shuju.TuiguangShuju.gengxinProfile
+POST /shuju/tuiguang/{id}/mubiao/{<.{24}>mubiao}/tianjiaPage shuju.TuiguangShuju.tianjiaPage
+POST /shuju/tuiguang/{id}/mubiao/{<.{24}>mubiao}/yemian/{<[0-9]+>yemianIndex}/remove shuju.TuiguangShuju.removePage
+POST /shuju/tuiguang/{id}/delete shuju.TuiguangShuju.delete
+POST /shuju/tuiguang/logo/{id} shuju.TuiguangShuju.shangchuangLogo
+POST /shuju/tuiguang/icon/{id} shuju.TuiguangShuju.shangchuangIcon
+POST /shuju/yemian/newComponent shuju.PageShuju.tianjiaXinComponent
+POST /shuju/yemian/removeComponent shuju.PageShuju.removeComponent
+POST /shuju/yemian/{id}/background shuju.PageShuju.setBackground
+POST /shuju/yemian/{id} shuju.PageShuju.gengxin
+POST /shuju/yemian/{yemianId}/component/{componentId} shuju.PageShuju.gengxinComponent
+POST /shuju/tuiguang/savetandc shuju.TuiguangShuju.saveTAndC
 
 #File Upload
-POST /data/upload/saveShareImage data.UploadServer.saveShareImage
-POST /data/upload/saveImage data.UploadServer.saveImage
-POST /data/upload/saveFile data.UploadServer.saveFile
-POST /data/upload/saveCsv data.UploadServer.saveCsv
-POST /data/upload/carousel data.UploadServer.saveCarouselImage
+POST /shuju/shangchuang/saveShareImage shuju.UploadFuwuqi.saveShareImage
+POST /shuju/shangchuang/saveImage shuju.UploadFuwuqi.saveImage
+POST /shuju/shangchuang/saveFile shuju.UploadFuwuqi.saveFile
+POST /shuju/shangchuang/saveCsv shuju.UploadFuwuqi.saveCsv
+POST /shuju/shangchuang/carousel shuju.UploadFuwuqi.saveCarouselImage
 
-GET /data/client/list data.ClientData.list
-GET /data/client/checkNewName data.ClientData.checkNewName
-GET /data/client/checkUpdateName data.ClientData.checkUpdateName
-GET /data/client/subscriptions data.ClientData.listSubscriptions
+GET /shuju/yonghu/liebiao shuju.KuhuShuju.liebiao
+GET /shuju/yonghu/jianchaXinMingzi shuju.KuhuShuju.jianchaXinMingzi
+GET /shuju/yonghu/jianchaUpdateMingzi shuju.KuhuShuju.jianchaUpdateMingzi
+GET /shuju/yonghu/fuwus shuju.KuhuShuju.liebiaoFuwu
 
-POST /data/client/new data.ClientData.addNew
-POST /data/client/profile/name data.ClientData.updateName
-POST /data/client/updateName data.ClientData.updateName
-POST /data/client/updateActive data.ClientData.updateActive
-POST /data/client/adminUser/remove data.ClientData.removeAdminUser
-POST /data/client/adminUser/add data.ClientData.addAdminUser
-POST /data/client/addNewUser data.ClientData.addNewUser
+POST /shuju/yonghu/new shuju.KuhuShuju.tianjiaXin
+POST /shuju/yonghu/ziliao/mingzi shuju.KuhuShuju.gengxinMingzi
+POST /shuju/yonghu/gengxinMingzi shuju.KuhuShuju.gengxinMingzi
+POST /shuju/yonghu/gengxinActive shuju.KuhuShuju.gengxinActive
+POST /shuju/yonghu/guanliYonghu/shanchu shuju.KuhuShuju.removeAdminUser
+POST /shuju/yonghu/guanliYonghu/tianjia shuju.KuhuShuju.tianjiaAdminUser
+POST /shuju/yonghu/tianjiaXinUser shuju.KuhuShuju.tianjiaXinUser
 
-POST /data/subscription/new data.SubscriptionData.addNew
-POST /data/subscription/fanpageId data.SubscriptionData.updateFanpageId
-POST /data/subscription/begin data.SubscriptionData.updateBegin
-POST /data/subscription/end data.SubscriptionData.updateEnd
+POST /shuju/fuwu/xin shuju.FuwuShuju.tianjiaXin
+POST /shuju/fuwu/fensiyeId shuju.FuwuShuju.gengxinFanyemianId
+POST /shuju/fuwu/kaishi shuju.FuwuShuju.gengxinBegin
+POST /shuju/fuwu/jiesu shuju.FuwuShuju.gengxinEnd
 
-GET /ui/client/{id} ui.ClientManagerUI.index
+GET /xui/yonghu/{id} xui.KuhuGuanliyuanUI.zhuye
 
-GET /ui/my/subscription/{id} ui.MyUI.subscription
+GET /xui/my/fuwu/{id} xui.MyUI.fuwu
 
-GET /report Application.viewReport
+GET /baobiao Yingyong.chaKanBaoBiao
 
 # notifiers
-POST /password/forgot/{username} notifiers.Mails.passwordForgot
+POST /password/forgot/{yonghuming} notifiers.Mails.passwordForgot
 
-# Autocomplete service
-GET /data/autocomplete/facebookPermissions AutoCompleteServer.facebookPermissions
+# ZiDongWanCheng service
+GET /shuju/zidongwancheng/weixinPermissions ZiDongWanChengFuwuqi.weixinPermissions
 
 # Ignore favicon requests
 GET     /favicon.ico                            404
 
-# Map static resources from the /app/public folder to the /public path
+# Map static resources from the /yingyong/public folder to the /public path
 GET /lib/ staticDir:public/lib
 GET /bs/ staticDir:public/lib/bootstrap
 GET /img/ staticDir:public/images
 GET /public/ staticDir:public
 GET /js/ staticDir:public/javascripts
 GET /css/ staticDir:public/stylesheets
-GET /plupload/ staticDir:public/lib/plupload
-GET /fonts/ staticDir:public/fonts
 
-# Superuser routes
-GET /su/login SuperUser.login
-GET /su/ SuperUser.index
-GET /su/client SuperUser.clientList
-GET /su/client/new SuperUser.addNewClient
-GET /su/client/{id}/ SuperUser.client
-GET /su/client/{clientId}/user SuperUser.clientUser
-GET /su/client/{clientId}/bill SuperUser.clientInvoice
-GET /su/client/{clientId}/subscription SuperUser.clientSubscription
-GET /su/campaign SuperUser.campaignList
-GET /su/campaign/{id}/ SuperUser.campaign
-GET /su/fbapp SuperUser.fbAppList
-GET /su/fbapp/new SuperUser.addFBApp
-GET /su/fbapp/{id}/ SuperUser.fbApp
+# chaojiyonghu luyou
+GET /adm/denglu ChaoJiYongHu.denglu
+GET /adm/ ChaoJiYongHu.zhuye
+GET /adm/yonghu ChaoJiYongHu.yonghuList
+GET /adm/yonghu/new ChaoJiYongHu.tianjiaXinKuhu
+GET /adm/yonghu/{id}/ ChaoJiYongHu.yonghu
+GET /adm/yonghu/{yonghuId}/yonghu ChaoJiYongHu.yonghuUser
+GET /adm/yonghu/{yonghuId}/bill ChaoJiYongHu.yonghuInvoice
+GET /adm/yonghu/{yonghuId}/fuwu ChaoJiYongHu.yonghuSubscription
+GET /adm/tuiguang ChaoJiYongHu.tuiguangList
+GET /adm/tuiguang/{id}/ ChaoJiYongHu.tuiguang
+GET /adm/weixinyingyong ChaoJiYongHu.weixinYingYongLieBiao
+GET /adm/weixinyingyong/new ChaoJiYongHu.tianjiaFBApp
+GET /adm/weixinyingyong/{id}/ ChaoJiYongHu.weixinYingYong
 
 
-* /test Application.test
-* /test2 Application.test2
-* /test3 Application.test3
+* /ceshi Yingyong.ceshi
+* /ceshi2 Yingyong.ceshi2
+* /ceshi3 Yingyong.ceshi3
 

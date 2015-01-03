@@ -1,11 +1,13 @@
 package org.osgl.mvc.server;
 
 import org.junit.Assert;
+import org.junit.Ignore;
 import org.junit.runner.JUnitCore;
 import org.osgl.util.S;
 
 import java.util.Arrays;
 
+@Ignore
 public class TestBase extends Assert {
 
     protected void same(Object a, Object b) {

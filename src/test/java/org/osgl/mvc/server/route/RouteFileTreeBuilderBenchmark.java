@@ -77,73 +77,78 @@ public class RouteFileTreeBuilderBenchmark extends BenchmarkBase {
 
     @Test
     public void osgl_InvokeBadUrl() {
-        runTest(true, GET, "/badUrl/whatever/%s/abc/136", S.random());
+        runTest(true, true, GET, "/badUrl/whatever/%s/abc/136", S.random());
     }
 
     @Test
     public void play_InvokeBadUrl() {
-        runTest(false, GET, "/badUrl/whatever/%s/abc/136", S.random());
+        runTest(false, true, GET, "/badUrl/whatever/%s/abc/136", S.random());
     }
 
     @Test
     public void osgl_HitAtBeginning() {
-        runTest(true, GET, "/page/%s/", S.random());
+        runTest(true, GET, "/yemian/%s/", S.random());
     }
 
     @Test
     public void play_HitAtBeginning() {
-        runTest(false, GET, "/page/%s/", S.random());
+        runTest(false, GET, "/yemian/%s/", S.random());
     }
 
     @Test
-    public void osgl_HitAtEndding() {
-        runTest(true, GET, "/su/fbapp/%s/", S.random());
+    public void osgl_HitAtEnding() {
+        runTest(true, GET, "/adm/weixinyingyong/%s/", S.random());
     }
 
     @Test
-    public void play_HitAtEndding() {
-        runTest(false, GET, "/su/fbapp/%s/", S.random());
+    public void play_HitAtEnding() {
+        runTest(false, GET, "/adm/weixinyingyong/%s/", S.random());
     }
 
     @Test
     public void osgl_longStaticUrl() {
-        runTest(true, POST, "/data/client/adminUser/remove");
+        runTest(true, POST, "/shuju/yonghu/guanliYonghu/shanchu");
     }
 
     @Test
     public void play_longStaticUrl() {
-        runTest(false, POST, "/data/client/adminUser/remove");
+        runTest(false, POST, "/shuju/yonghu/guanliYonghu/shanchu");
     }
 
     @Test
     public void osgl_longDynamicUrl() {
-        runTest(true, POST, "/data/campaign/%s/target/%s/page/%s/remove", S.random(24), S.random(24), N.randInt(20));
+        runTest(true, POST, "/shuju/tuiguang/%s/mubiao/%s/yemian/%s/remove", S.random(24), S.random(24), N.randInt(20));
     }
 
     @Test
     public void play_longDynamicUrl() {
-        runTest(false, POST, "/data/campaign/%s/target/%s/page/%s/remove", S.random(24), S.random(24), N.randInt(20));
+        runTest(false, POST, "/shuju/tuiguang/%s/mubiao/%s/yemian/%s/remove", S.random(24), S.random(24), N.randInt(20));
     }
 
 
     @Test
     public void osgl_badUrl2() {
-        runTest(true, POST, "/data/campaign/%s/target/%s/page/%s/remove", S.random(24), S.random(21), N.randInt(20));
+        runTest(true, true, POST, "/shuju/tuiguang/%s/mubiao/%s/yemian/%s/remove", S.random(24), S.random(21), N.randInt(20));
     }
 
     @Test
     public void play_badUrl2() {
-        runTest(false, POST, "/data/campaign/%s/target/%s/page/%s/remove", S.random(24), S.random(21), N.randInt(20));
+        runTest(false, true, POST, "/shuju/tuiguang/%s/mubiao/%s/yemian/%s/remove", S.random(24), S.random(21), N.randInt(20));
     }
 
     private void runTest(boolean osgl, H.Method method, String url, Object... fmtArgs) {
+        runTest(osgl, false, method, url, fmtArgs);
+    }
+
+    private void runTest(boolean osgl, boolean notFoundExpected, H.Method method, String url, Object... fmtArgs) {
         url = S.fmt(url, fmtArgs);
         if (osgl) {
             for (int i = 0; i < 1000 * 100; ++i) {
                 try {
                     osgl(method, url);
+                    E.unexpectedIf(notFoundExpected, "should raise NotFound here");
                 } catch (NotFound e) {
-                    // ignore
+                    E.unexpectedIf(!notFoundExpected, "should not raise NotFound here");
                 }
             }
         } else {
@@ -151,8 +156,9 @@ public class RouteFileTreeBuilderBenchmark extends BenchmarkBase {
             for (int i = 0; i < 1000 * 100; ++i) {
                 try {
                     play(sMethod, url);
+                    E.unexpectedIf(notFoundExpected, "should raise NotFound here");
                 } catch (NotFound e) {
-                    // ignore
+                    E.unexpectedIf(!notFoundExpected, "should not raise NotFound here");
                 }
             }
         }

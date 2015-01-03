@@ -120,6 +120,12 @@
 
         <dependency>
             <groupId>org.osgl</groupId>
+            <artifactId>osgl-tool</artifactId>
+            <version>0.3.1-SNAPSHOT</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.osgl</groupId>
             <artifactId>osgl-mvc</artifactId>
             <version>0.1-SNAPSHOT</version>
         </dependency>
@@ -141,7 +147,6 @@
             <artifactId>osgl-cache</artifactId>
             <version>0.2-SNAPSHOT</version>
         </dependency>
-
 
         <dependency>
             <groupId>org.osgl</groupId>
