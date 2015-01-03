@@ -26,13 +26,13 @@ import static org.osgl.http.H.Method.GET;
 import static org.osgl.http.H.Method.POST;
 
 @BenchmarkOptions(warmupRounds = 1, benchmarkRounds = 10)
-public class RouteFileTreeBuilderBenchmark extends BenchmarkBase {
+public class RouterBenchmark extends BenchmarkBase {
 
     private Tree tree;
     private RouteFileTreeBuilder builder;
     private AppContext ctx;
 
-    public RouteFileTreeBuilderBenchmark() {
+    public RouterBenchmark() {
         tree = new Tree();
         InputStream is = TestBase.class.getResourceAsStream("/routes");
         String fc = IO.readContentAsString(is);
