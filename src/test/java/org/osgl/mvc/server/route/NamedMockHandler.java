@@ -2,15 +2,15 @@ package org.osgl.mvc.server.route;
 
 
 import org.osgl.mvc.server.AppContext;
-import org.osgl.mvc.server.action.ActionInvokerBase;
+import org.osgl.mvc.server.action.ActionHandlerBase;
 
-public class MockInvoker extends ActionInvokerBase {
+public class NamedMockHandler extends ActionHandlerBase {
 
     private String name;
 
     private static final ThreadLocal<String> result = new ThreadLocal<String>();
 
-    public MockInvoker(CharSequence name) {
+    public NamedMockHandler(CharSequence name) {
         this.name = name.toString();
     }
 
@@ -19,7 +19,7 @@ public class MockInvoker extends ActionInvokerBase {
         result.set(this.name);
     }
 
-    public static String getResult() {
+    public static String getName() {
         return result.get();
     }
 }

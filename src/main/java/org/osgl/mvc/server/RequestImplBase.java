@@ -39,7 +39,7 @@ public abstract class RequestImplBase<T extends H.Request> extends H.Request<T> 
 
     protected final boolean hasContextPath() {
         String ctxPath = contextPath();
-        return S.notEmpty(ctxPath);
+        return S.notBlank(ctxPath);
     }
 
 
@@ -81,6 +81,12 @@ public abstract class RequestImplBase<T extends H.Request> extends H.Request<T> 
 
     private void parseUri() {
         FastStr fs = FastStr.unsafeOf(_uri());
+        if (fs.startsWith("http")) {
+            // the uri include the scheme, domain and port
+            fs = fs.afterFirst("://"); // strip the scheme
+            fs = fs.afterFirst('/'); // strip the domain name, port
+            fs = fs.prepend('/'); // attach the '/' to the path
+        }
         if (hasContextPath()) {
             fs = fs.after(contextPath());
         }

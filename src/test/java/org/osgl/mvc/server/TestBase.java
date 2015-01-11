@@ -3,8 +3,10 @@ package org.osgl.mvc.server;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.runner.JUnitCore;
+import org.osgl.util.E;
 import org.osgl.util.S;
 
+import java.lang.reflect.Field;
 import java.util.Arrays;
 
 @Ignore
@@ -54,5 +56,14 @@ public class TestBase extends Assert {
         System.out.println(String.format(tmpl, args));
     }
 
+    protected static <T> T fieldVal(Object entity, String field) {
+        try {
+            Field f = entity.getClass().getDeclaredField(field);
+            f.setAccessible(true);
+            return (T) f.get(entity);
+        } catch (Exception e) {
+            throw E.unexpected(e);
+        }
+    }
 
 }

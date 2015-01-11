@@ -1,4 +1,4 @@
-package org.osgl.mvc.server.netty;
+package org.osgl.mvc.server.netty4;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.Cookie;

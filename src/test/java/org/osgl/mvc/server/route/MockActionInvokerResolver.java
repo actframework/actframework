@@ -1,11 +1,11 @@
 package org.osgl.mvc.server.route;
 
-import org.osgl.mvc.server.action.ActionInvoker;
-import org.osgl.mvc.server.action.ActionInvokerResolverBase;
+import org.osgl.mvc.server.action.ActionHandler;
+import org.osgl.mvc.server.action.ActionHandlerResolverBase;
 
-public class MockActionInvokerResolver extends ActionInvokerResolverBase {
+public class MockActionInvokerResolver extends ActionHandlerResolverBase {
     @Override
-    public ActionInvoker resolve(CharSequence name) {
-        return new MockInvoker(name);
+    public ActionHandler resolve(CharSequence payload) {
+        return new NamedMockHandler(payload);
     }
 }
