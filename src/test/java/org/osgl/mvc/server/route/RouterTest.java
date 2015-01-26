@@ -5,9 +5,12 @@ import org.junit.Test;
 import org.mockito.Mockito;
 import org.osgl.http.H;
 import org.osgl.mvc.result.NotFound;
+import org.osgl.mvc.server.AppConfig;
 import org.osgl.mvc.server.ParamNames;
 import org.osgl.mvc.server.action.ActionHandler;
 import org.osgl.mvc.server.action.builtin.StaticFileGetter;
+
+import java.util.Properties;
 
 public class RouterTest extends RouterTestBase {
     private ActionHandler staticDirHandler;
@@ -24,7 +27,7 @@ public class RouterTest extends RouterTestBase {
 
     @Test
     public void searchRoot() {
-        router.addRouteMapping(H.Method.GET, "/", controller);
+        router.addMapping(H.Method.GET, "/", controller);
         router.getInvoker(H.Method.GET, "/", ctx).invoke(ctx);
         controllerInvoked();
     }
@@ -36,14 +39,14 @@ public class RouterTest extends RouterTestBase {
 
     @Test
     public void searchStaticUrl() {
-        router.addRouteMapping(H.Method.POST, "/foo/bar", controller);
+        router.addMapping(H.Method.POST, "/foo/bar", controller);
         router.getInvoker(H.Method.POST, "/foo/bar", ctx).invoke(ctx);
         controllerInvoked();
     }
 
     @Test
     public void searchDynamicUrl() {
-        router.addRouteMapping(H.Method.GET, "/svc/{<[0-9]{4}>id}", controller);
+        router.addMapping(H.Method.GET, "/svc/{<[0-9]{4}>id}", controller);
         router.getInvoker(H.Method.GET, "/svc/1234/", ctx).invoke(ctx);
         controllerInvoked();
         Mockito.verify(ctx).param("id", "1234");
@@ -51,7 +54,7 @@ public class RouterTest extends RouterTestBase {
 
     @Test
     public void searchPartialUrl() {
-        router.addRouteMapping(H.Method.GET, "/public", staticDirHandler);
+        router.addMapping(H.Method.GET, "/public", staticDirHandler);
         router.getInvoker(H.Method.GET, "/public/foo/bar.txt", ctx).invoke(ctx);
         Mockito.verify(staticDirHandler).invoke(ctx);
         Mockito.verify(ctx).param(ParamNames.PATH, "/foo/bar.txt");
@@ -59,11 +62,54 @@ public class RouterTest extends RouterTestBase {
 
     @Test
     public void routeWithStaticDir() {
-        router.addRouteMapping(H.Method.GET, "/public", "staticDir:/public");
+        router.addMapping(H.Method.GET, "/public", "staticDir:/public");
         ActionHandler handler = router.getInvoker(H.Method.GET, "/public/foo/bar.txt", ctx);
         yes(handler instanceof StaticFileGetter);
         yes(handler.supportPartialPath());
         eq("/public", fieldVal(handler, "base"));
+    }
+
+    @Test
+    public void overrideExistingRouting() {
+        routeWithStaticDir();
+        router.addMapping(H.Method.GET, "/public", "staticDir:/private");
+        ActionHandler handler = router.getInvoker(H.Method.GET, "/public/foo/bar.txt", ctx);
+        yes(handler instanceof StaticFileGetter);
+        yes(handler.supportPartialPath());
+        eq("/private", fieldVal(handler, "base"));
+    }
+
+    @Test
+    public void doNotOverrideExistingRouting() {
+        routeWithStaticDir();
+        router.addMappingIfNotMapped(H.Method.GET, "/public", "staticDir:/private");
+        ActionHandler handler = router.getInvoker(H.Method.GET, "/public/foo/bar.txt", ctx);
+        yes(handler instanceof StaticFileGetter);
+        yes(handler.supportPartialPath());
+        eq("/public", fieldVal(handler, "base"));
+    }
+
+    @Test
+    public void senseControllerMethodWithControllerPackage() {
+        Properties p = new Properties();
+        p.setProperty("controllerPackage", "foo.controller");
+        router = new Router(controllerLookup, new AppConfig(p));
+
+        router.addMapping(H.Method.GET, "/foo", "Controller.foo");
+        yes(router.isActionMethod("foo.controller.Controller", "foo"));
+
+        router.addMapping(H.Method.GET, "/bar", "com.newcontroller.Controller.bar");
+        yes(router.isActionMethod("com.newcontroller.Controller", "bar"));
+    }
+
+    @Test
+    public void senseControllerMethodWithoutControllerPackage() {
+        router.addMapping(H.Method.GET, "/foo", "Controller.foo");
+        no(router.isActionMethod("foo.controller.Controller", "foo"));
+        yes(router.isActionMethod("Controller", "foo"));
+
+        router.addMapping(H.Method.GET, "/bar", "com.newcontroller.Controller.bar");
+        yes(router.isActionMethod("com.newcontroller.Controller", "bar"));
     }
 
 }

@@ -82,6 +82,11 @@ public class MockRequest extends H.Request<MockRequest> {
     }
 
     @Override
+    public String[] allParam(String name) {
+        return new String[0];
+    }
+
+    @Override
     public Iterable<String> paramNames() {
         return null;
     }

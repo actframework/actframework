@@ -31,7 +31,7 @@ public class RouterBenchmark extends BenchmarkBase {
     private AppContext ctx;
 
     public RouterBenchmark() {
-        ActionHandlerResolver controllerLookup = new MockActionInvokerResolver();
+        ActionHandlerResolver controllerLookup = new MockActionHandlerResolver();
         router = new Router(controllerLookup);
         InputStream is = TestBase.class.getResourceAsStream("/routes");
         String fc = IO.readContentAsString(is);
@@ -82,7 +82,7 @@ public class RouterBenchmark extends BenchmarkBase {
         runTest(true, true, GET, "/badUrl/whatever/%s/abc/136", S.random());
     }
 
-    //@Test
+    @Test
     public void play_InvokeBadUrl() {
         runTest(false, true, GET, "/badUrl/whatever/%s/abc/136", S.random());
     }
@@ -92,7 +92,7 @@ public class RouterBenchmark extends BenchmarkBase {
         runTest(true, GET, "/yemian/%s/", S.random());
     }
 
-    //@Test
+    @Test
     public void play_HitAtBeginning() {
         runTest(false, GET, "/yemian/%s/", S.random());
     }
@@ -102,7 +102,7 @@ public class RouterBenchmark extends BenchmarkBase {
         runTest(true, GET, "/adm/weixinyingyong/%s/", S.random());
     }
 
-    //@Test
+    @Test
     public void play_HitAtEnding() {
         runTest(false, GET, "/adm/weixinyingyong/%s/", S.random());
     }
@@ -112,7 +112,7 @@ public class RouterBenchmark extends BenchmarkBase {
         runTest(true, POST, "/shuju/yonghu/guanliYonghu/shanchu");
     }
 
-    //@Test
+    @Test
     public void play_longStaticUrl() {
         runTest(false, POST, "/shuju/yonghu/guanliYonghu/shanchu");
     }
@@ -122,7 +122,7 @@ public class RouterBenchmark extends BenchmarkBase {
         runTest(true, POST, "/shuju/tuiguang/%s/mubiao/%s/yemian/%s/remove", S.random(24), S.random(24), N.randInt(20));
     }
 
-    //@Test
+    @Test
     public void play_longDynamicUrl() {
         runTest(false, POST, "/shuju/tuiguang/%s/mubiao/%s/yemian/%s/remove", S.random(24), S.random(24), N.randInt(20));
     }
@@ -133,7 +133,7 @@ public class RouterBenchmark extends BenchmarkBase {
         runTest(true, true, POST, "/shuju/tuiguang/%s/mubiao/%s/yemian/%s/remove", S.random(24), S.random(21), N.randInt(20));
     }
 
-    //@Test
+    @Test
     public void play_badUrl2() {
         runTest(false, true, POST, "/shuju/tuiguang/%s/mubiao/%s/yemian/%s/remove", S.random(24), S.random(21), N.randInt(20));
     }

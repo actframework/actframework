@@ -2,6 +2,7 @@ package org.osgl.mvc.server.route;
 
 import org.junit.Before;
 import org.mockito.Mockito;
+import org.osgl.mvc.server.AppConfig;
 import org.osgl.mvc.server.AppContext;
 import org.osgl.mvc.server.TestBase;
 import org.osgl.mvc.server.action.ActionHandler;
@@ -21,7 +22,7 @@ public abstract class RouterTestBase extends TestBase {
         controller = mock(NamedMockHandler.class);
         controllerLookup = mock(ActionHandlerResolver.class);
         provisionControllerLookup(controllerLookup);
-        router = new Router(controllerLookup);
+        router = new Router(controllerLookup, appConfig());
         buildRouteMapping(router);
         ctx = Mockito.mock(AppContext.class);
     }
@@ -31,6 +32,10 @@ public abstract class RouterTestBase extends TestBase {
     }
 
     protected abstract void buildRouteMapping(Router router);
+
+    protected AppConfig appConfig() {
+        return new AppConfig();
+    }
 
     protected void controllerInvoked() {
         verify(controller).invoke(ctx);

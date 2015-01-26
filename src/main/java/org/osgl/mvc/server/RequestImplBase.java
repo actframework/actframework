@@ -5,7 +5,7 @@ import org.osgl.util.FastStr;
 import org.osgl.util.S;
 
 public abstract class RequestImplBase<T extends H.Request> extends H.Request<T> {
-    private AppContext ctx;
+    private AppConfig cfg;
     private H.Method method;
     private String path;
     private String query;
@@ -19,22 +19,9 @@ public abstract class RequestImplBase<T extends H.Request> extends H.Request<T> 
         return (T) this;
     }
 
-    T ctx(AppContext ctx) {
-        this.ctx = ctx;
-        return me();
-    }
-
-    protected final AppContext ctx() {
-        return ctx;
-    }
-
-    protected final AppConfig cfg() {
-        return ctx.config();
-    }
-
     @Override
     public String contextPath() {
-        return cfg().urlContext();
+        return cfg.urlContext();
     }
 
     protected final boolean hasContextPath() {
@@ -70,7 +57,7 @@ public abstract class RequestImplBase<T extends H.Request> extends H.Request<T> 
     @Override
     public boolean secure() {
         if (null == secure) {
-            if ("https".equals(cfg().xForwardedProtocol())) {
+            if ("https".equals(cfg.xForwardedProtocol())) {
                 secure = true;
             } else {
                 secure = parseSecureXHeaders();

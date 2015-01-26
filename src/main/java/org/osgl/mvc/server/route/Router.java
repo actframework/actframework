@@ -4,22 +4,28 @@ import org.osgl._;
 import org.osgl.http.H;
 import org.osgl.http.util.Path;
 import org.osgl.mvc.result.NotFound;
+import org.osgl.mvc.server.AppConfig;
 import org.osgl.mvc.server.AppContext;
 import org.osgl.mvc.server.ParamNames;
 import org.osgl.mvc.server.action.ActionHandler;
 import org.osgl.mvc.server.action.ActionHandlerResolver;
+import org.osgl.mvc.server.action.ActionHandlerResolverBase;
+import org.osgl.mvc.server.action.builtin.ControllerProxy;
 import org.osgl.mvc.server.action.builtin.Echo;
 import org.osgl.mvc.server.action.builtin.Redirect;
 import org.osgl.mvc.server.action.builtin.StaticFileGetter;
+import org.osgl.mvc.server.plugin.ActionMethodInfoSource;
 import org.osgl.util.*;
 
+import javax.inject.Inject;
+import java.io.PrintStream;
 import java.io.Serializable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
-public class Router {
+public class Router implements ActionMethodInfoSource {
 
     private static final NotFound NOT_FOUND = new NotFound();
     private static final H.Method[] targetMethods = new H.Method[]{H.Method.GET, H.Method.POST, H.Method.PUT,
@@ -33,10 +39,34 @@ public class Router {
     private Map<String, ActionHandlerResolver> resolvers = C.newMap();
 
     private ActionHandlerResolver controllerLookup;
+    private C.Set<String> controllerActionNames = C.newSet();
+    private AppConfig appConfig;
 
-    Router(ActionHandlerResolver controllerLookup) {
-        E.NPE(controllerLookup);
-        this.controllerLookup = controllerLookup;
+    public Router() {
+        initControllerLookup(null);
+    }
+
+    private void initControllerLookup(ActionHandlerResolver lookup) {
+        if (null == lookup) {
+            lookup = new ActionHandlerResolverBase() {
+                @Override
+                public ActionHandler resolve(CharSequence payload) {
+                    return new ControllerProxy(payload.toString());
+                }
+            };
+        }
+        controllerLookup = lookup;
+    }
+
+    public Router(ActionHandlerResolver controllerLookup) {
+        initControllerLookup(controllerLookup);
+    }
+
+    @Inject
+    public Router(ActionHandlerResolver controllerLookup, AppConfig appConfig) {
+        E.NPE(appConfig);
+        initControllerLookup(controllerLookup);
+        this.appConfig = appConfig;
     }
 
     // --- routing ---
@@ -54,21 +84,48 @@ public class Router {
         if (null == node) {
             throw NOT_FOUND;
         }
-        ActionHandler invoker = node.invoker;
-        if (null == invoker) {
+        ActionHandler handler = node.handler;
+        if (null == handler) {
             throw NOT_FOUND;
         }
-        return invoker;
+        return handler;
     }
 
     // --- route building ---
-    public void addRouteMapping(H.Method method, CharSequence path, ActionHandler invoker) {
+    public boolean isMapped(H.Method method, CharSequence path) {
+        return null != _locate(method, path);
+    }
+
+    public void addMapping(H.Method method, CharSequence path, ActionHandler handler) {
+        Node node = _locate(method, path);
+        node.handler(handler);
+    }
+
+    public void addMapping(H.Method method, CharSequence path, CharSequence action) {
+        ActionHandler handler = resolveActionHandler(action);
+        addMapping(method, path, handler);
+    }
+
+    public void addMappingIfNotMapped(H.Method method, CharSequence path, ActionHandler handler) {
+        Node node = _locate(method, path);
+        if (null == node.handler) {
+            node.handler(handler);
+        }
+    }
+
+    public void addMappingIfNotMapped(H.Method method, CharSequence path, CharSequence action) {
+        Node node = _locate(method, path);
+        if (null == node.handler) {
+            node.handler(resolveActionHandler(action));
+        }
+    }
+
+    private Node _locate(H.Method method, CharSequence path) {
         Node node = root(method);
         assert node != null;
         E.unsupportedIf(null == node, "Method %s is not supported", method);
         if (path.length() == 1 && path.charAt(0) == '/') {
-            node.setInvoker(invoker);
-            return;
+            return node;
         }
         String sUrl = path.toString();
         List<CharSequence> paths = Path.tokenize(Unsafe.bufOf(sUrl));
@@ -76,19 +133,14 @@ public class Router {
         for (int i = 0; i < len - 1; ++i) {
             node = node.addChild((StrBase) paths.get(i));
         }
-        node = node.addChild((StrBase) paths.get(len - 1));
-        node.setInvoker(invoker);
-    }
-
-    public void addRouteMapping(H.Method method, CharSequence path, CharSequence action) {
-        ActionHandler handler = resolveActionHandler(action);
-        addRouteMapping(method, path, handler);
+        return node.addChild((StrBase) paths.get(len - 1));
     }
 
     // --- action handler resolving
 
     /**
      * Register 3rd party action handler resolver with specified directive
+     *
      * @param directive
      * @param resolver
      */
@@ -96,7 +148,29 @@ public class Router {
         resolvers.put(directive, resolver);
     }
 
-    static H.Method[] supportedHttpMethods() {
+    // -- action method sensor
+    public boolean isActionMethod(String className, String methodName) {
+        String action = new StringBuilder(className).append(".").append(methodName).toString();
+        String controllerPackage = appConfig.controllerPackage();
+        if (S.notEmpty(controllerPackage)) {
+            if (action.startsWith(controllerPackage)) {
+                String action2 = action.substring(controllerPackage.length() + 1);
+                if (controllerActionNames.contains(action2)) {
+                    return true;
+                }
+            }
+        }
+        return controllerActionNames.contains(action);
+    }
+
+    public void debug(PrintStream ps) {
+        for (H.Method method : supportedHttpMethods()) {
+            Node node = root(method);
+            node.debug(method, ps);
+        }
+    }
+
+    public static H.Method[] supportedHttpMethods() {
         return targetMethods;
     }
 
@@ -151,13 +225,14 @@ public class Router {
         if (S.notEmpty(directive)) {
             ActionHandlerResolver resolver = resolvers.get(action);
             ActionHandler handler = null == resolver ?
-                BuiltInHandlerResolver.tryResolve(directive, payload) :
-                resolver.resolve(payload);
+                    BuiltInHandlerResolver.tryResolve(directive, payload) :
+                    resolver.resolve(payload);
             E.unsupportedIf(null == handler, "cannot find action handler by directive: %s", directive);
             return handler;
         } else {
             ActionHandler handler = controllerLookup.resolve(payload);
             E.unsupportedIf(null == handler, "cannot find action handler: %s", action);
+            controllerActionNames.add(payload);
             return handler;
         }
     }
@@ -197,18 +272,20 @@ public class Router {
         private StrBase name;
         private Pattern pattern;
         private CharSequence varName;
+        private Node parent;
         private Node dynamicChild;
         private C.Map<CharSequence, Node> staticChildren = C.newMap();
-        private ActionHandler invoker;
+        private ActionHandler handler;
 
         private Node(int id) {
             this.id = id;
             name = FastStr.EMPTY_STR;
         }
 
-        Node(StrBase name) {
+        Node(StrBase name, Node parent) {
             E.NPE(name);
             this.name = name;
+            this.parent = parent;
             this.id = name.hashCode();
             parseDynaName(name);
         }
@@ -277,7 +354,7 @@ public class Router {
             if (null != child) {
                 return child;
             }
-            child = new Node(name);
+            child = new Node(name, this);
             if (child.isDynamic()) {
                 E.unexpectedIf(null != dynamicChild, "Cannot have more than one dynamic node in the route tree: %s", name);
                 dynamicChild = child;
@@ -287,13 +364,36 @@ public class Router {
             return child;
         }
 
-        void setInvoker(ActionHandler invoker) {
-            E.NPE(invoker);
-            this.invoker = invoker;
+        Node handler(ActionHandler handler) {
+            E.NPE(handler);
+            this.handler = handler;
+            return this;
+        }
+
+        ActionHandler handler() {
+            return this.handler;
         }
 
         boolean terminateRouteSearch() {
-            return null != invoker && invoker.supportPartialPath();
+            return null != handler && handler.supportPartialPath();
+        }
+
+        String path() {
+            if (null == parent) return "/";
+            String pPath = parent.path();
+            return new StringBuilder(pPath).append(pPath.endsWith("/") ? "" : "/").append(name).toString();
+        }
+
+        void debug(H.Method method, PrintStream ps) {
+            if (null != handler) {
+                ps.printf("%s %s %s\n", method, path(), handler);
+            }
+            for (Node node : staticChildren.values()) {
+                node.debug(method, ps);
+            }
+            if (null != dynamicChild) {
+                dynamicChild.debug(method, ps);
+            }
         }
 
         private void parseDynaName(StrBase name) {

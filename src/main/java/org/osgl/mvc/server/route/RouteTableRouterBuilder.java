@@ -125,11 +125,11 @@ public class RouteTableRouterBuilder implements RouterBuilder {
         }
         if ("*".contentEquals(method)) {
             for (H.Method m : Router.supportedHttpMethods()) {
-                router.addRouteMapping(m, path, action);
+                router.addMapping(m, path, action);
             }
         } else {
             H.Method m = H.Method.valueOfIgnoreCase(method.toString());
-            router.addRouteMapping(m, path, action);
+            router.addMapping(m, path, action);
         }
     }
 

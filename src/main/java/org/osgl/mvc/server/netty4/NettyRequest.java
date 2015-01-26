@@ -84,6 +84,11 @@ public class NettyRequest extends RequestImplBase<NettyRequest> {
     }
 
     @Override
+    public String[] allParam(String name) {
+        throw E.tbd();
+    }
+
+    @Override
     public Iterable<String> paramNames() {
         throw E.tbd();
     }
