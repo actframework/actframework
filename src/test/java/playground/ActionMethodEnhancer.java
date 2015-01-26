@@ -1,5 +1,6 @@
 package playground;
 
+import org.osgl.exception.InvalidStateException;
 import org.osgl.mvc.result.Result;
 import org.osgl.mvc.server.asm.Label;
 import org.osgl.mvc.server.asm.MethodVisitor;
@@ -43,7 +44,6 @@ public class ActionMethodEnhancer extends MethodVisitor implements Opcodes {
 
     private void transform(MethodNode mn) {
         new Transformer(mn, meta).doIt();
-        System.out.println(mn.instructions);
     }
 
     private static class Transformer {
@@ -176,10 +176,21 @@ public class ActionMethodEnhancer extends MethodVisitor implements Opcodes {
                 InsnList list = new InsnList();
                 int len = loadInsnInfoList.size();
                 int appCtxIdx = appCtxIndex();
+                if (appCtxIdx < 0) {
+                    MethodInsnNode getAppCtx = new MethodInsnNode(INVOKESTATIC, APP_CONTEXT, "get", "()Lorg/osgl/mvc/server/AppContext;", false);
+                    list.add(getAppCtx);
+                } else {
+                    LabelNode lbl = new LabelNode();
+                    VarInsnNode loadCtx = new VarInsnNode(ALOAD, appCtxIdx);
+                    list.add(lbl);
+                    list.add(loadCtx);
+                }
                 for (int i = 0; i < len; ++i) {
                     LoadInsnInfo info = loadInsnInfoList.get(i);
-                    info.appendTo(list, appCtxIdx, segment);
+                    info.appendTo(list, segment);
                 }
+                InsnNode pop = new InsnNode(POP);
+                list.add(pop);
                 segment.instructions.insertBefore(node, list);
             }
 
@@ -314,23 +325,21 @@ public class ActionMethodEnhancer extends MethodVisitor implements Opcodes {
                 this.index = index;
             }
 
-            private static final String APP_CONTEXT = "org/osgl/mvc/server/AppContext";
-            private static final String RENDER_NM = "renderArg";
-            private static final String RENDER_DESC = "(Ljava/lang/String;Ljava/lang/Object;)Lorg/osgl/mvc/server/AppContext;";
-            void appendTo(InsnList list, int appCtxIndex, Segment segment) {
+            void appendTo(InsnList list, Segment segment) {
                 LocalVariableMetaInfo var = var(segment);
                 if (null == var) return;
-                LabelNode lbl = new LabelNode();
-                VarInsnNode loadCtx = new VarInsnNode(ALOAD, appCtxIndex);
-                list.add(lbl);
-                list.add(loadCtx);
+                //LabelNode lbl = new LabelNode();
+                //VarInsnNode loadCtx = new VarInsnNode(ALOAD, appCtxIndex);
+                //list.add(lbl);
+                //list.add(loadCtx);
                 LdcInsnNode ldc = new LdcInsnNode(var.name());
+                if (var.name().equals("email")) {
+                    System.out.println("");
+                }
                 list.add(ldc);
                 insn.appendTo(list, index, var.type());
                 MethodInsnNode invokeRenderArg = new MethodInsnNode(INVOKEVIRTUAL, APP_CONTEXT, RENDER_NM, RENDER_DESC, false);
                 list.add(invokeRenderArg);
-                InsnNode pop = new InsnNode(POP);
-                list.add(pop);
             }
 
             LocalVariableMetaInfo var(Segment segment) {
@@ -357,6 +366,10 @@ public class ActionMethodEnhancer extends MethodVisitor implements Opcodes {
             }
         }
     }
+
+    private static final String APP_CONTEXT = "org/osgl/mvc/server/AppContext";
+    private static final String RENDER_NM = "renderArg";
+    private static final String RENDER_DESC = "(Ljava/lang/String;Ljava/lang/Object;)Lorg/osgl/mvc/server/AppContext;";
 
 
 }

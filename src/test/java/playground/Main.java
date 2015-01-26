@@ -70,7 +70,8 @@ public class Main extends ClassLoader {
         AppConfig cfg = mock(AppConfig.class);
         H.Request req = mock(H.Request.class);
         H.Response resp = mock(H.Response.class);
-        AppContext ctx = new AppContext(cfg, req, resp);
+        AppContext.init(cfg, req, resp);
+        AppContext ctx = AppContext.get();
         try {
             m.invoke(c.newInstance(), "id_0", "green@osgl.org", ctx);
             System.out.println("Render failed");

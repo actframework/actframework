@@ -1,6 +1,7 @@
 package org.osgl.mvc.server.bytecode;
 
 import org.osgl.mvc.result.Result;
+import org.osgl.mvc.server.AppContext;
 import org.osgl.mvc.server.asm.Label;
 import org.osgl.mvc.server.asm.Type;
 import org.osgl.util.C;
@@ -31,9 +32,13 @@ public class ActionMethodMetaInfo {
         /**
          * AppContext is not declared as method parameter,
          * the framework needs to store the AppContext
-         * into a ThreadLocal variable
+         * into ContextLocal storage
          */
-        THREAD_LOCAL
+        CONTEXT_LOCAL;
+
+        public boolean contextLocal() {
+            return CONTEXT_LOCAL == this;
+        }
     }
 
     /**
@@ -52,7 +57,7 @@ public class ActionMethodMetaInfo {
     public boolean hasReturnType;
 
     private String name;
-    private AppContextBy appContextBy;
+    private AppContextBy appContextBy = AppContextBy.CONTEXT_LOCAL;
     /**
      * The parameter index for AppContext if there is
      */
@@ -109,6 +114,9 @@ public class ActionMethodMetaInfo {
 
     public ActionMethodMetaInfo addParam(ParamMetaInfo param) {
         params.add(param);
+        if (APP_CONTEXT_TYPE.equals(param.type())) {
+            appContextBy(AppContextBy.PARAM);
+        }
         return this;
     }
 
@@ -166,4 +174,6 @@ public class ActionMethodMetaInfo {
         }
         return sb.toString();
     }
+
+    public static final Type APP_CONTEXT_TYPE = Type.getType(AppContext.class);
 }

@@ -73,11 +73,11 @@ public class AppContext {
         return _local.get();
     }
 
-    public static AppContext create(AppConfig config, RequestImplBase request, H.Response resp) {
+    public static AppContext create(AppConfig config, H.Request request, H.Response resp) {
         return new AppContext(config, request, resp);
     }
 
-    public static void init(AppConfig config, RequestImplBase request, H.Response resp) {
+    public static void init(AppConfig config, H.Request request, H.Response resp) {
         _local.set(new AppContext(config, request, resp));
     }
 }

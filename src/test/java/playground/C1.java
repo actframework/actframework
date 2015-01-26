@@ -7,6 +7,7 @@ import org.osgl.mvc.annotation.GetAction;
 import org.osgl.mvc.annotation.Param;
 import org.osgl.mvc.result.Ok;
 import org.osgl.mvc.result.Result;
+import org.osgl.mvc.server.AppConfig;
 import org.osgl.mvc.server.AppContext;
 
 public class C1 extends CBase {
@@ -16,7 +17,7 @@ public class C1 extends CBase {
 //    }
 //
 //    @Action(value = "/", methods = {})
-//    private void root(String id, String email, AppContext ctx) {
+//    public void root(String id, String email) {
 //        String name = "root";
 //        if (cond1()) {
 //            int i = 5;
@@ -26,15 +27,12 @@ public class C1 extends CBase {
 //        } else {
 //            if (cond1()) {
 //                int i = 0;
-//                ctx.renderArg("id", id);
-//                ctx.renderArg("i", i);
 //                throw renderStatic("abc.html", id, i);
 //            } else if (cond1()) {
 //                notFound("not found: %s", 404);
 //            } else {
 //                String reason = "abc";
 //                int code = 5, code2 = 3, code4 = 2;
-//                ctx.param("reason", reason);
 //                badRequest(reason, -1, code, code2, code4);
 //            }
 //        }
@@ -55,7 +53,7 @@ public class C1 extends CBase {
 
     @GetAction("/doIt")
     public static void doIt(String id, String email, AppContext ctx) {
-        int i = 0, j = 1; boolean b = false;
+        int i = 0, j = 1; Boolean b = false;
         renderStatic("", i, j, b, id, email);
     }
 //

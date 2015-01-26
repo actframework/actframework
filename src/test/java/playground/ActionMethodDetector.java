@@ -70,7 +70,7 @@ public class ActionMethodDetector extends MethodVisitor
         return b ? new ActionAnnotationInspector(av, this, c) : av;
     }
 
-    private static final Type APP_CONTEXT_TYPE = Type.getType(AppContext.class);
+
     @Override
     public void visitLocalVariable(String name, String desc, String signature, Label start, Label end, int index
     ) {
@@ -82,7 +82,7 @@ public class ActionMethodDetector extends MethodVisitor
             if (paramId < spec.paramCount()) {
                 ParamMetaInfo param = spec.param(paramId);
                 param.name(name);
-                if (APP_CONTEXT_TYPE.equals(param.type())) {
+                if (ActionMethodMetaInfo.APP_CONTEXT_TYPE.equals(param.type())) {
                     spec.appContextIndex(index);
                 }
             }
