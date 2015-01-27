@@ -11,9 +11,9 @@ import org.osgl.mvc.server.asm.ClassReader;
 import org.osgl.mvc.server.asm.ClassVisitor;
 import org.osgl.mvc.server.asm.ClassWriter;
 import org.osgl.mvc.server.asm.util.TraceClassVisitor;
+import org.osgl.util.IO;
 
-import java.io.InputStream;
-import java.io.PrintWriter;
+import java.io.*;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
@@ -29,7 +29,7 @@ public class Main extends ClassLoader {
     @Override
     protected synchronized Class<?> loadClass(final String name,
             final boolean resolve) throws ClassNotFoundException {
-        if (name.startsWith("java.") || name.startsWith("org.osgl.")) {
+        if (!name.equals("playground.C1")) {
             return super.loadClass(name, resolve);
         }
 
@@ -45,13 +45,15 @@ public class Main extends ClassLoader {
             ClassReader cr = new ClassReader(is);
             ClassWriter cw = new ClassWriter(0);
             ClassVisitor cv = new ControllerClassVisitor(cw);
-            ClassVisitor tv = new TraceClassVisitor(cv, new PrintWriter(System.out));
             cr.accept(cv, 0);
             b = cw.toByteArray();
+            OutputStream os1 = new FileOutputStream("t:\\tmp\\4.class");
+            IO.write(b, os1);
             System.out.println("------------ TRANSFORMED -----------");
             cr = new ClassReader(b);
             cw = new ClassWriter(0);
-            tv = new TraceClassVisitor(cw, new PrintWriter(System.out));
+            OutputStream os2 = new FileOutputStream("t:\\tmp\\4.java");
+            ClassVisitor tv = new TraceClassVisitor(cw, new PrintWriter(os2));
             cr.accept(tv, 0);
         } catch (Exception e) {
             throw new ClassNotFoundException(name, e);
@@ -66,14 +68,14 @@ public class Main extends ClassLoader {
         ClassLoader loader = new Main();
         String s = args.length == 0 ? "playground.C1" : args[0];
         Class<C1> c = (Class<C1>)loader.loadClass(s);
-        Method m = c.getMethod("doIt", String.class, String.class, AppContext.class);
+        Method m = c.getMethod("root", String.class, String.class, boolean.class/*, AppContext.class*/);
         AppConfig cfg = mock(AppConfig.class);
         H.Request req = mock(H.Request.class);
         H.Response resp = mock(H.Response.class);
         AppContext.init(cfg, req, resp);
         AppContext ctx = AppContext.get();
         try {
-            m.invoke(c.newInstance(), "id_0", "green@osgl.org", ctx);
+            m.invoke(c.newInstance(), "id_0", "green@osgl.org", false/*, ctx*/);
             System.out.println("Render failed");
         } catch (Result r) {
             System.out.println("Result rendered: ");

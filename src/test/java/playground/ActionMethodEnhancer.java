@@ -154,11 +154,14 @@ public class ActionMethodEnhancer extends MethodVisitor implements Opcodes {
                     boolean breakWhile = false;
                     switch (type) {
                         case LABEL:
+                        case FRAME:
+                            node = node.getNext();
                             breakWhile = true;
                             break;
                         case VAR_INSN:
                             VarInsnNode n = (VarInsnNode)node;
                             if (0 == n.var && !segment.meta.isStatic()) {
+                                // skip "this"
                                 break;
                             }
                             LoadInsn insn = LoadInsn.of(n.getOpcode());
@@ -175,6 +178,9 @@ public class ActionMethodEnhancer extends MethodVisitor implements Opcodes {
                 }
                 InsnList list = new InsnList();
                 int len = loadInsnInfoList.size();
+                if (len == 0) {
+                    return;
+                }
                 int appCtxIdx = appCtxIndex();
                 if (appCtxIdx < 0) {
                     MethodInsnNode getAppCtx = new MethodInsnNode(INVOKESTATIC, APP_CONTEXT, "get", "()Lorg/osgl/mvc/server/AppContext;", false);
@@ -215,6 +221,8 @@ public class ActionMethodEnhancer extends MethodVisitor implements Opcodes {
                                 break;
                             case LINE:
                                 curLine = ((LineNumberNode)next).line;
+                                next = next.getNext();
+                                break;
                             case JUMP_INSN:
                                 AbstractInsnNode tmp = next.getNext();
                                 instructions.remove(next);
@@ -226,6 +234,10 @@ public class ActionMethodEnhancer extends MethodVisitor implements Opcodes {
                                     tmp = next.getNext();
                                     instructions.remove(next);
                                     next = tmp;
+                                    tmp = next.getPrevious();
+                                    if (tmp.getType() == LINE) {
+                                        instructions.remove(tmp);
+                                    }
                                     break;
                                 }
                             case FRAME:
