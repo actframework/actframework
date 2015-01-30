@@ -1,16 +1,14 @@
 package playground;
 
-import junit.framework.Assert;
-import org.mockito.Mockito;
 import org.osgl.http.H;
 import org.osgl.mvc.result.Result;
-import org.osgl.mvc.server.App;
-import org.osgl.mvc.server.AppConfig;
-import org.osgl.mvc.server.AppContext;
-import org.osgl.mvc.server.asm.ClassReader;
-import org.osgl.mvc.server.asm.ClassVisitor;
-import org.osgl.mvc.server.asm.ClassWriter;
-import org.osgl.mvc.server.asm.util.TraceClassVisitor;
+import org.osgl.oms.AppConfig;
+import org.osgl.oms.AppContext;
+import org.osgl.oms.asm.ClassReader;
+import org.osgl.oms.asm.ClassVisitor;
+import org.osgl.oms.asm.ClassWriter;
+import org.osgl.oms.asm.util.TraceClassVisitor;
+import org.osgl.oms.be.ControllerClassEnhancer;
 import org.osgl.util.IO;
 
 import java.io.*;
@@ -44,7 +42,7 @@ public class Main extends ClassLoader {
         try {
             ClassReader cr = new ClassReader(is);
             ClassWriter cw = new ClassWriter(0);
-            ClassVisitor cv = new ControllerClassVisitor(cw);
+            ClassVisitor cv = new ControllerClassEnhancer(cw);
             cr.accept(cv, 0);
             b = cw.toByteArray();
             OutputStream os1 = new FileOutputStream("t:\\tmp\\4.class");
@@ -68,18 +66,15 @@ public class Main extends ClassLoader {
         ClassLoader loader = new Main();
         String s = args.length == 0 ? "playground.C1" : args[0];
         Class<C1> c = (Class<C1>)loader.loadClass(s);
-        Method m = c.getMethod("root", String.class, String.class, boolean.class/*, AppContext.class*/);
+        Method m = c.getMethod("doIt", String.class, AppContext.class, String.class, boolean.class);
         AppConfig cfg = mock(AppConfig.class);
         H.Request req = mock(H.Request.class);
         H.Response resp = mock(H.Response.class);
         AppContext.init(cfg, req, resp);
         AppContext ctx = AppContext.get();
         try {
-            m.invoke(c.newInstance(), "id_0", "green@osgl.org", false/*, ctx*/);
+            m.invoke(c.newInstance(), "id_0", ctx, "green@osgl.org", false);
             System.out.println("Render failed");
-        } catch (Result r) {
-            System.out.println("Result rendered: ");
-            System.out.println(r);
         } catch (InvocationTargetException e) {
             System.out.println(e);
             Throwable e0 = e.getTargetException();

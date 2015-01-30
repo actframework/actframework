@@ -1,11 +1,11 @@
 package playground;
 
-import org.osgl.mvc.server.asm.ClassWriter;
-import org.osgl.mvc.server.asm.MethodVisitor;
-import org.osgl.mvc.server.asm.Opcodes;
-import org.osgl.mvc.server.asm.Type;
-import org.osgl.mvc.server.asm.commons.GeneratorAdapter;
-import org.osgl.mvc.server.asm.commons.Method;
+import org.osgl.oms.asm.ClassWriter;
+import org.osgl.oms.asm.MethodVisitor;
+import org.osgl.oms.asm.Opcodes;
+import org.osgl.oms.asm.Type;
+import org.osgl.oms.asm.commons.GeneratorAdapter;
+import org.osgl.oms.asm.commons.Method;
 
 import java.io.FileOutputStream;
 import java.io.PrintStream;

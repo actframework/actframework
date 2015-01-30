@@ -1,7 +1,7 @@
 package playground;
 
 import org.osgl.mvc.result.Result;
-import org.osgl.mvc.server.AppContext;
+import org.osgl.oms.AppContext;
 
 public class C2 extends CBase {
 
@@ -24,6 +24,16 @@ public class C2 extends CBase {
 
     public Result bar() {
         return ok();
+    }
+
+    public void switchTest(String s) {
+        switch (s) {
+            case "abc":
+                System.out.printf("ABC");
+                break;
+            case "123":
+                System.out.println("NUM");
+        }
     }
 
     public static void main(String[] args) {

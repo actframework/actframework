@@ -1,7 +1,7 @@
 package playground;
 
-import org.osgl.mvc.server.asm.MethodVisitor;
-import org.osgl.mvc.server.asm.Opcodes;
+import org.osgl.oms.asm.MethodVisitor;
+import org.osgl.oms.asm.Opcodes;
 
 public class InstructionBuffer implements Opcodes {
     private MethodVisitor mv;
