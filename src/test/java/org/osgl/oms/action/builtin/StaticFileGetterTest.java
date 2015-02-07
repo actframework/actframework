@@ -2,13 +2,15 @@ package org.osgl.oms.action.builtin;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Mockito;
 import org.osgl.http.H;
 import org.osgl.mvc.result.NotFound;
-import org.osgl.mvc.server.*;
 import org.osgl.oms.*;
+import org.osgl.oms.app.App;
+import org.osgl.oms.conf.AppConfig;
 
 import java.io.ByteArrayOutputStream;
+
+import static org.mockito.Mockito.mock;
 
 public class StaticFileGetterTest extends TestBase {
     AppContext ctx;
@@ -19,9 +21,10 @@ public class StaticFileGetterTest extends TestBase {
     @Before
     public void prepare() {
         resp = new MockResponse();
-        AppConfig cfg = Mockito.mock(AppConfig.class);
-        RequestImplBase req = Mockito.mock(RequestImplBase.class);
-        ctx = new AppContext(cfg, req, resp);
+        AppConfig cfg = mock(AppConfig.class);
+        App app = mock(App.class);
+        RequestImplBase req = mock(RequestImplBase.class);
+        ctx = AppContext.create(app, req, resp);
         pathHandler = new StaticFileGetter("/public");
         fileHandler = new StaticFileGetter("/public/foo/bar.txt", true);
     }

@@ -3,6 +3,7 @@ package org.osgl.oms;
 import org.junit.Before;
 import org.junit.Test;
 import org.osgl.http.H;
+import org.osgl.oms.app.App;
 import org.osgl.util.C;
 
 import java.util.Arrays;
@@ -24,8 +25,7 @@ public class AppContextTest extends TestBase {
         when(req.paramVals("bar")).thenReturn(new String[]{"BAR", "bar"});
 
         H.Response resp = mock(H.Response.class);
-        AppConfig cfg = mock(AppConfig.class);
-        ctx = new AppContext(cfg, req, resp);
+        ctx = AppContext.create(mock(App.class), req, resp);
     }
 
     @Test

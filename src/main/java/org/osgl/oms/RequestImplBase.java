@@ -1,6 +1,7 @@
 package org.osgl.oms;
 
 import org.osgl.http.H;
+import org.osgl.oms.conf.AppConfig;
 import org.osgl.util.FastStr;
 import org.osgl.util.S;
 

@@ -5,11 +5,12 @@ import org.junit.Test;
 import org.mockito.Mockito;
 import org.osgl.http.H;
 import org.osgl.mvc.result.NotFound;
-import org.osgl.oms.AppConfig;
+import org.osgl.oms.conf.AppConfig;
 import org.osgl.oms.ParamNames;
 import org.osgl.oms.action.ActionHandler;
 import org.osgl.oms.action.builtin.StaticFileGetter;
 
+import java.util.Map;
 import java.util.Properties;
 
 public class RouterTest extends RouterTestBase {
@@ -93,7 +94,7 @@ public class RouterTest extends RouterTestBase {
     public void senseControllerMethodWithControllerPackage() {
         Properties p = new Properties();
         p.setProperty("controllerPackage", "foo.controller");
-        router = new Router(controllerLookup, new AppConfig(p));
+        router = new Router(controllerLookup, new AppConfig((Map)p));
 
         router.addMapping(H.Method.GET, "/foo", "Controller.foo");
         yes(router.isActionMethod("foo.controller.Controller", "foo"));

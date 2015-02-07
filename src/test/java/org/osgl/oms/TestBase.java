@@ -3,9 +3,12 @@ package org.osgl.oms;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.runner.JUnitCore;
+import org.osgl.oms.cls.BootstrapClassLoader;
 import org.osgl.util.E;
+import org.osgl.util.FastStr;
 import org.osgl.util.S;
 
+import java.io.File;
 import java.lang.reflect.Field;
 import java.util.Arrays;
 
@@ -64,6 +67,13 @@ public class TestBase extends Assert {
         } catch (Exception e) {
             throw E.unexpected(e);
         }
+    }
+
+    public static File root() {
+        FastStr fs = FastStr.of(TestBase.class.getClassLoader().getResource("routes").getPath());
+        FastStr classRoot = fs.beforeLast("/");
+        FastStr target = classRoot.beforeLast("/");
+        return new File(target.toString());
     }
 
 }

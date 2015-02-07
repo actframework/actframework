@@ -2,13 +2,14 @@ package playground;
 
 import org.osgl.http.H;
 import org.osgl.mvc.result.Result;
-import org.osgl.oms.AppConfig;
+import org.osgl.oms.app.App;
+import org.osgl.oms.conf.AppConfig;
 import org.osgl.oms.AppContext;
 import org.osgl.oms.asm.ClassReader;
 import org.osgl.oms.asm.ClassVisitor;
 import org.osgl.oms.asm.ClassWriter;
 import org.osgl.oms.asm.util.TraceClassVisitor;
-import org.osgl.oms.be.ControllerClassEnhancer;
+import org.osgl.oms.be.controller.ControllerClassEnhancer;
 import org.osgl.util.IO;
 
 import java.io.*;
@@ -68,9 +69,10 @@ public class Main extends ClassLoader {
         Class<C1> c = (Class<C1>)loader.loadClass(s);
         Method m = c.getMethod("doIt", String.class, AppContext.class, String.class, boolean.class);
         AppConfig cfg = mock(AppConfig.class);
+        App app = mock(App.class);
         H.Request req = mock(H.Request.class);
         H.Response resp = mock(H.Response.class);
-        AppContext.init(cfg, req, resp);
+        AppContext.init(app, req, resp);
         AppContext ctx = AppContext.get();
         try {
             m.invoke(c.newInstance(), "id_0", ctx, "green@osgl.org", false);

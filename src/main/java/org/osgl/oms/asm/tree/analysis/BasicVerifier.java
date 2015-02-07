@@ -29,12 +29,12 @@
  */
 package org.osgl.oms.asm.tree.analysis;
 
+import org.osgl.oms.asm.Opcodes;
 import org.osgl.oms.asm.Type;
 import org.osgl.oms.asm.tree.AbstractInsnNode;
 import org.osgl.oms.asm.tree.FieldInsnNode;
 import org.osgl.oms.asm.tree.InvokeDynamicInsnNode;
 import org.osgl.oms.asm.tree.MethodInsnNode;
-import org.osgl.oms.asm.Opcodes;
 
 import java.util.List;
 

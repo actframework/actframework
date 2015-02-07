@@ -4,6 +4,8 @@ import org.osgl.mvc.annotation.Bind;
 import org.osgl.mvc.annotation.GetAction;
 import org.osgl.mvc.annotation.Param;
 import org.osgl.oms.AppContext;
+import org.osgl.oms.app.ProjectLayoutProbe;
+import org.osgl.oms.plugin.Extends;
 
 public class C1 extends CBase {
 

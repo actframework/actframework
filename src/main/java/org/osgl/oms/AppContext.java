@@ -3,13 +3,19 @@ package org.osgl.oms;
 import org.osgl._;
 import org.osgl.concurrent.ContextLocal;
 import org.osgl.http.H;
+import org.osgl.oms.app.App;
+import org.osgl.oms.conf.AppConfig;
 import org.osgl.util.E;
 
 import java.util.*;
 
+/**
+ * {@code AppContext} encapsulate contextual properties needed by
+ * an application session
+ */
 public class AppContext {
 
-    private AppConfig config;
+    private App app;
     private H.Request request;
     private H.Response response;
     private Set<Map.Entry<String, String[]>> requestParamCache;
@@ -17,9 +23,9 @@ public class AppContext {
     private Map<String, Object> renderArgs;
     private Map<String, String[]> allParams;
 
-    public AppContext(AppConfig config, H.Request request, H.Response response) {
-        E.NPE(config, request, response);
-        this.config = config;
+    private AppContext(App app, H.Request request, H.Response response) {
+        E.NPE(app, request, response);
+        this.app = app;
         this.request = request;
         this.response = response;
         _init();
@@ -64,8 +70,12 @@ public class AppContext {
         return this;
     }
 
+    public App app() {
+        return app;
+    }
+
     public AppConfig config() {
-        return this.config;
+        return app.config();
     }
 
     private Set<Map.Entry<String, String[]>> requestParamCache() {
@@ -181,11 +191,18 @@ public class AppContext {
         return _local.get();
     }
 
-    public static AppContext create(AppConfig config, H.Request request, H.Response resp) {
-        return new AppContext(config, request, resp);
+    /**
+     * Create an new {@code AppContext} and return the new instance
+     */
+    public static AppContext create(App app, H.Request request, H.Response resp) {
+        return new AppContext(app, request, resp);
     }
 
-    public static void init(AppConfig config, H.Request request, H.Response resp) {
-        _local.set(new AppContext(config, request, resp));
+    /**
+     * Create an new {@code AppContext} and save the context instance into
+     * contextual local
+     */
+    public static void init(App app, H.Request request, H.Response resp) {
+        _local.set(new AppContext(app, request, resp));
     }
 }

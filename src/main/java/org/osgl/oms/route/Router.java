@@ -4,7 +4,6 @@ import org.osgl._;
 import org.osgl.http.H;
 import org.osgl.http.util.Path;
 import org.osgl.mvc.result.NotFound;
-import org.osgl.oms.AppConfig;
 import org.osgl.oms.AppContext;
 import org.osgl.oms.ParamNames;
 import org.osgl.oms.action.ActionHandler;
@@ -14,10 +13,9 @@ import org.osgl.oms.action.builtin.ControllerProxy;
 import org.osgl.oms.action.builtin.Echo;
 import org.osgl.oms.action.builtin.Redirect;
 import org.osgl.oms.action.builtin.StaticFileGetter;
-import org.osgl.oms.plugin.ActionMethodInfoSource;
+import org.osgl.oms.conf.AppConfig;
 import org.osgl.util.*;
 
-import javax.inject.Inject;
 import java.io.PrintStream;
 import java.io.Serializable;
 import java.util.Iterator;
@@ -25,7 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
-public class Router implements ActionMethodInfoSource {
+public class Router {
 
     private static final NotFound NOT_FOUND = new NotFound();
     private static final H.Method[] targetMethods = new H.Method[]{H.Method.GET, H.Method.POST, H.Method.PUT,
@@ -42,10 +40,6 @@ public class Router implements ActionMethodInfoSource {
     private C.Set<String> controllerActionNames = C.newSet();
     private AppConfig appConfig;
 
-    public Router() {
-        initControllerLookup(null);
-    }
-
     private void initControllerLookup(ActionHandlerResolver lookup) {
         if (null == lookup) {
             lookup = new ActionHandlerResolverBase() {
@@ -58,15 +52,14 @@ public class Router implements ActionMethodInfoSource {
         controllerLookup = lookup;
     }
 
-    public Router(ActionHandlerResolver controllerLookup) {
-        initControllerLookup(controllerLookup);
+    public Router(AppConfig config) {
+        this(null, config);
     }
 
-    @Inject
-    public Router(ActionHandlerResolver controllerLookup, AppConfig appConfig) {
-        E.NPE(appConfig);
+    public Router(ActionHandlerResolver controllerLookup, AppConfig config) {
+        E.NPE(config);
         initControllerLookup(controllerLookup);
-        this.appConfig = appConfig;
+        this.appConfig = config;
     }
 
     // --- routing ---

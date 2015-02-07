@@ -29,11 +29,11 @@
  */
 package org.osgl.oms.asm.util;
 
+import org.osgl.oms.asm.*;
 import org.osgl.oms.asm.tree.MethodNode;
 import org.osgl.oms.asm.tree.analysis.Analyzer;
 import org.osgl.oms.asm.tree.analysis.BasicValue;
 import org.osgl.oms.asm.tree.analysis.BasicVerifier;
-import org.osgl.oms.asm.*;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;

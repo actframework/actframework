@@ -3,9 +3,11 @@ package org.osgl.oms.route;
 import com.carrotsearch.junitbenchmarks.BenchmarkOptions;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mockito;
 import org.osgl.http.H;
 import org.osgl.mvc.result.NotFound;
-import org.osgl.oms.AppConfig;
+import org.osgl.oms.app.App;
+import org.osgl.oms.conf.AppConfig;
 import org.osgl.oms.AppContext;
 import org.osgl.oms.BenchmarkBase;
 import org.osgl.oms.TestBase;
@@ -33,7 +35,7 @@ public class RouterBenchmark extends BenchmarkBase {
 
     public RouterBenchmark() {
         ActionHandlerResolver controllerLookup = new MockActionHandlerResolver();
-        router = new Router(controllerLookup);
+        router = new Router(controllerLookup, Mockito.mock(AppConfig.class));
         InputStream is = TestBase.class.getResourceAsStream("/routes");
         String fc = IO.readContentAsString(is);
         builder = new RouteTableRouterBuilder(fc.split("[\r\n]+"));
@@ -47,7 +49,7 @@ public class RouterBenchmark extends BenchmarkBase {
 
     @Before
     public void prepare() {
-        ctx = new AppContext(mock(AppConfig.class), mock(H.Request.class), mock(H.Response.class));
+        ctx = AppContext.create(mock(App.class), mock(H.Request.class), mock(H.Response.class));
     }
 
     void osgl(H.Method method, String url, Object... args) {
