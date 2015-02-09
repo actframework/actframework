@@ -6,6 +6,8 @@ import org.osgl.util.IO;
 
 import java.io.File;
 
+import static org.osgl.oms.app.RuntimeDirs.*;
+
 /**
  * Build Application when OMS running in DEV mode.
  */
@@ -43,18 +45,16 @@ class AppBuilder {
     public void build() {
         prepareTargetDir();
         copyFiles();
-        E.tbd();
+        app.refresh();
     }
 
     private void prepareTargetDir() {
         File target = layout.target(appBase);
         verifyDir(target, "target", true);
-        verifyDir(new File(target, "asset"), "asset", true);
-        File webInf = verifyDir(new File(target, "WEB-INF"), "WEB-INF", true);
-        tgtClasses = verifyDir(new File(webInf, "classes"), "WEB-INF/classes", true);
-        tgtLib = verifyDir(new File(webInf, "lib"), "WEB-INF/lib", true);
-        tgtAsset = verifyDir(new File(webInf, "asset"), "WEB-INF/asset", true);
-        tgtConf = verifyDir(new File(webInf, "conf"), "WEB-INF/conf", true);
+        tgtClasses = verifyDir(new File(target, CLASSES), CLASSES, true);
+        tgtLib = verifyDir(new File(target, LIB), LIB, true);
+        tgtAsset = verifyDir(new File(target, ASSET), ASSET, true);
+        tgtConf = verifyDir(new File(target, CONF), CONF, true);
     }
 
     private void copyFiles() {
@@ -75,6 +75,11 @@ class AppBuilder {
             IO.copyDirectory(conf, tgtConf);
         } else {
             IO.copyDirectory(conf, new File(tgtConf, conf.getName()));
+        }
+
+        File routes = layout.routes(appBase);
+        if (routes.exists() && routes.canRead()) {
+            IO.copyDirectory(routes, RuntimeDirs.routes(app));
         }
     }
 

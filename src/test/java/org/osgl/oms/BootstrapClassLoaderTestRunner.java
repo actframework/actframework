@@ -2,7 +2,6 @@ package org.osgl.oms;
 
 import org.junit.runners.BlockJUnit4ClassRunner;
 import org.junit.runners.model.InitializationError;
-import org.osgl.oms.cls.BootstrapClassLoader;
 import org.osgl.util.E;
 import org.osgl.util.IO;
 import org.osgl.util.S;

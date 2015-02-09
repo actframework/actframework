@@ -3,11 +3,11 @@ package org.osgl.oms.app;
 import org.osgl._;
 import org.osgl.logging.L;
 import org.osgl.logging.Logger;
-import org.osgl.oms.cls.AppClassLoader;
 import org.osgl.oms.conf.AppConfLoader;
 import org.osgl.oms.conf.AppConfig;
 import org.osgl.oms.route.RouteTableRouterBuilder;
 import org.osgl.oms.route.Router;
+import org.osgl.util.E;
 import org.osgl.util.IO;
 
 import java.io.File;
@@ -20,7 +20,19 @@ public class App {
 
     private static Logger logger = L.get(App.class);
 
+    /**
+     * The base dir where an application sit within
+     */
     private File appBase;
+    /**
+     * The home dir of an application, referenced only
+     * at runtime.
+     * <p><b>Note</b> when app is running in dev mode, {@code appHome}
+     * shall be {@code appBase/target}, while app is deployed to
+     * OMS at other mode, {@code appHome} shall be the same as
+     * {@code appBase}</p>
+     */
+    private File appHome;
     private Router router;
     private AppConfig config;
     private AppClassLoader classLoader;
@@ -29,6 +41,7 @@ public class App {
     private App(File appBase, ProjectLayout layout) {
         this.appBase = appBase;
         this.layout = layout;
+        this.appHome = RuntimeDirs.home(this);
     }
 
     public AppConfig config() {
@@ -43,11 +56,18 @@ public class App {
         return appBase;
     }
 
+    public File home() {
+        return appHome;
+    }
+
     public ProjectLayout layout() {
         return layout;
     }
 
     public void refresh() {
+        loadConfig();
+        loadRoutes();
+        loadClasses();
     }
 
     @Override
@@ -72,15 +92,19 @@ public class App {
         return appBase.getName();
     }
 
-    private void loadConfig(File conf) {
+    private void loadConfig() {
+        File conf = RuntimeDirs.conf(this);
         logger.debug("loading app configuration: %s ...", appBase.getPath());
         config = new AppConfLoader().load(conf);
     }
 
-    private void loadRoutes(File routes) {
+    private void loadRoutes() {
         logger.debug("loading app routing table: %s ...", appBase.getPath());
+        File routes = RuntimeDirs.routes(this);
         router = new Router(config);
         if (!(routes.isFile() && routes.canRead())) {
+            logger.warn("Cannot find routes file: %s", appBase.getPath());
+            // guess the app is purely using annotation based routes
             return;
         }
         List<String> lines = IO.readLines(routes);
@@ -88,7 +112,7 @@ public class App {
     }
 
     private void loadClasses() {
-        classLoader = new AppClassLoader(appBase, config, layout);
+        classLoader = new AppClassLoader(this);
     }
 
     static App create(File appBase, ProjectLayout layout) {

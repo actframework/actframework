@@ -80,6 +80,8 @@ import java.util.List;
  */
 public class RouteTableRouterBuilder implements RouterBuilder {
 
+    public static final String ROUTES_FILE = "routes";
+
     private List<String> lines;
 
     public RouteTableRouterBuilder(List<String> lines) {

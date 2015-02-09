@@ -7,9 +7,9 @@ import org.osgl.logging.Logger;
 import org.osgl.mvc.annotation.*;
 import org.osgl.oms.app.AppManager;
 import org.osgl.oms.app.AppScanner;
-import org.osgl.oms.cls.BootstrapClassLoader;
 import org.osgl.oms.conf.OmsConfLoader;
 import org.osgl.oms.conf.OmsConfig;
+import org.osgl.oms.plugin.PluginScanner;
 import org.osgl.oms.util.Banner;
 import org.osgl.util.C;
 import org.osgl.util.E;
@@ -82,8 +82,8 @@ public final class OMS {
     public static void start() {
         Banner.print("0.0.1-SNAPSHOT");
         loadConfig();
-        loadPlugins();
         initExecuteService();
+        loadPlugins();
         initNetworkLayer();
         initApplicationManager();
         startNetworkLayer();
@@ -102,7 +102,7 @@ public final class OMS {
     }
 
     private static void loadPlugins() {
-        E.tbd("load plugins");
+        new PluginScanner().scan();
     }
 
     private static void initExecuteService() {
@@ -118,7 +118,6 @@ public final class OMS {
     }
 
     private static void startNetworkLayer() {
-
     }
 
     public static enum F {

@@ -1,5 +1,7 @@
 package org.osgl.oms.app;
 
+import org.osgl._;
+import org.osgl.oms.util.Names;
 import org.osgl.util.E;
 import org.osgl.util.FastStr;
 import org.osgl.util.IO;
@@ -46,7 +48,9 @@ public class Source {
     // The byte code
     private byte[] bytes;
 
-    private State state = State.LOADED;
+    private State state;
+
+    private long ts;
 
     private Source(File file, String className) {
         E.NPE(file, className);
@@ -72,7 +76,12 @@ public class Source {
 
     public void load() {
         code = IO.readContentAsString(file);
-        state = State.LOADED;
+        updateState(State.LOADED);
+    }
+
+    private void updateState(State state) {
+        this.state = state;
+        this.ts = _.ms();
     }
 
     public static Source ofFile(File sourceRoot, File file) {
@@ -90,16 +99,7 @@ public class Source {
     public static enum Util {
         ;
         public static String className(File sourceRoot, File file) {
-            E.NPE(file);
-            E.illegalArgumentIf(!file.exists() || !file.canRead(), "File not readable: %s", file);
-            E.illegalArgumentIf(!file.getName().endsWith(".java"), "Java source file required, found: %s", file.getName());
-            String rootPath = sourceRoot.getAbsolutePath();
-            String filePath = file.getAbsolutePath();
-            E.illegalArgumentIf(!filePath.startsWith(rootPath), "Java source file[%s] not in the source dir[%s]", filePath, rootPath);
-            FastStr s = FastStr.of(filePath);
-            s = s.substr(rootPath.length() + 1).beforeLast('.');
-            s = s.replace(File.separatorChar, '.');
-            return s.toString();
+            return Names.fileToClass(sourceRoot, file.getAbsolutePath());
         }
 
         public static File sourceFile(File sourceRoot, String className) {

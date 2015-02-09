@@ -1,4 +1,4 @@
-package org.osgl.oms.cls;
+package org.osgl.oms;
 
 import org.osgl.oms.asm.ClassReader;
 import org.osgl.oms.asm.ClassWriter;
@@ -7,7 +7,7 @@ import org.osgl.util.C;
 import org.osgl.util.E;
 
 import java.io.File;
-import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -24,10 +24,11 @@ public class BootstrapClassLoader extends ClassLoader {
 
     private Map<String, byte[]> libBC = C.newMap();
     private Map<String, byte[]> pluginBC = C.newMap();
+    private List<Class<?>> pluginClasses = C.newList();
 
     public BootstrapClassLoader(ClassLoader parent) {
         super(parent);
-        init();
+        preload();
     }
 
     public BootstrapClassLoader() {
@@ -42,7 +43,7 @@ public class BootstrapClassLoader extends ClassLoader {
         return cl;
     }
 
-    private void init() {
+    private void preload() {
         String omsHome = System.getProperty(OMS_HOME);
         if (null == omsHome) {
             omsHome = System.getenv(OMS_HOME);
@@ -84,7 +85,7 @@ public class BootstrapClassLoader extends ClassLoader {
         }
 
         if (!protectedClasses.contains(name)) {
-            c = loadOmsClass(name, resolve);
+            c = loadOmsClass(name, resolve, false);
         }
 
         if (null == c) {
@@ -94,40 +95,63 @@ public class BootstrapClassLoader extends ClassLoader {
         }
     }
 
-    public Iterator<byte[]> pluginBytecodes() {
-        return pluginBC.values().iterator();
+    public List<Class<?>> pluginClasses() {
+        for (String className: C.list(pluginBC.keySet())) {
+            Class<?> c = loadOmsClass(className, true, true);
+            assert null != c;
+            pluginClasses.add(c);
+        }
+        return C.list(pluginClasses);
     }
 
-    private Class<?> loadOmsClass(String name, boolean resolve) throws ClassNotFoundException {
-        byte[] ba = libBC.get(name);
+    private Class<?> loadOmsClass(String name, boolean resolve, boolean pluginOnly) {
+        boolean fromPlugin = false;
+        byte[] ba = pluginBC.remove(name);
         if (null == ba) {
-            ba = pluginBC.get(name);
+            if (!pluginOnly) {
+                ba = libBC.remove(name);
+            }
+        } else {
+            fromPlugin = true;
         }
 
         if (null == ba) {
+            if (pluginOnly) {
+                return findLoadedClass(name);
+            }
             return null;
         }
 
+        Class<?> c = null;
         if (name.startsWith(ASM_PKG)) {
             // skip bytecode enhancement for asm classes
-            return super.defineClass(name, ba, 0, ba.length, DOMAIN);
+            c = super.defineClass(name, ba, 0, ba.length, DOMAIN);
         }
 
-        ClassReader r;
-        r = new ClassReader(ba);
-        try {
-            ClassWriter w = new ClassWriter(0);
-            // TODO: inject class visitor here
-            r.accept(w, 0);
-            byte[] baNew = w.toByteArray();
-            return super.defineClass(name, baNew, 0, baNew.length, DOMAIN);
-        } catch (RuntimeException e) {
-            throw e;
-        } catch (Error e) {
-            throw e;
-        } catch (Exception e) {
-            throw E.unexpected("Error processing class " + name);
+        if (null == c) {
+            ClassReader r;
+            r = new ClassReader(ba);
+            try {
+                ClassWriter w = new ClassWriter(0);
+                // TODO: inject class visitor here
+                r.accept(w, 0);
+                byte[] baNew = w.toByteArray();
+                c = super.defineClass(name, baNew, 0, baNew.length, DOMAIN);
+            } catch (RuntimeException e) {
+                throw e;
+            } catch (Error e) {
+                throw e;
+            } catch (Exception e) {
+                throw E.unexpected("Error processing class " + name);
+            }
         }
+        if (resolve) {
+            super.resolveClass(c);
+        }
+        if (fromPlugin) {
+            pluginClasses.add(c);
+        }
+        return c;
     }
 
     public Class<?> createClass(String name, byte[] b) throws ClassFormatError {

@@ -3,18 +3,22 @@ package org.osgl.oms.conf;
 import org.osgl.logging.L;
 import org.osgl.logging.Logger;
 import org.osgl.oms.OMS;
+import org.osgl.oms.util.Props;
+import org.osgl.util.C;
 import org.osgl.util.IO;
+import org.osgl.util.S;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import static org.osgl.oms.conf.ConfigKey.KEY_COMMON_CONF_TAG;
+import static org.osgl.oms.conf.ConfigKey.KEY_CONF_TAG;
+
 /**
- * Loading configurations from file
+ * Loading configurations from conf file or conf dir
  */
 public abstract class ConfLoader<T extends Config> {
 
@@ -22,8 +26,8 @@ public abstract class ConfLoader<T extends Config> {
 
     public T load(File confFile) {
         // load conf from disk
-        Map<String, ?> rawConf = _loadConfFromDisk(confFile);
-        rawConf = _processConf(rawConf);
+        Map<String, ?> rawConf = loadConfFromDisk(confFile);
+        rawConf = processConf(rawConf);
 
         // load conf from System.properties
         Properties sysProps = System.getProperties();
@@ -36,7 +40,15 @@ public abstract class ConfLoader<T extends Config> {
     protected abstract T create(Map<String, ?> rawConf);
     protected abstract String confFileName();
 
-    private Map _loadConfFromDisk(File conf) {
+    private Map loadConfFromDisk(File conf) {
+        if (conf.isDirectory()) {
+            return loadConfFromDir(conf);
+        } else {
+            return loadConfFromFile(conf);
+        }
+    }
+
+    private Map loadConfFromFile(File conf) {
         InputStream is = null;
         boolean emptyConf = false;
         if (null == conf) {
@@ -65,8 +77,56 @@ public abstract class ConfLoader<T extends Config> {
         return new HashMap();
     }
 
+    private Map loadConfFromDir(File confDir) {
+        /*
+         * try to load conf from tagged conf dir, e.g. ${conf_root}/uat or
+         * ${conf_root}/dev etc
+         */
+        String confTag = Props.get(KEY_CONF_TAG);
+        if (S.blank(confTag)) {
+            confTag = OMS.mode().name();
+        }
+        Map map = C.newMap();
+        File taggedConfDir = new File(confDir, confTag);
+        if (taggedConfDir.isDirectory()) {
+            // try load properties from common tag first
+            String common = Props.get(KEY_COMMON_CONF_TAG);
+            if (S.blank(common)) {
+                common = "common";
+            }
+            File commonConfDir = new File(confDir, common);
+            if (commonConfDir.isDirectory()) {
+                map.putAll(loadConfFromDir_(commonConfDir));
+            }
+            map.putAll(loadConfFromDir_(taggedConfDir));
+            return map;
+        } else {
+            return loadConfFromDir_(confDir);
+        }
+    }
+
+    private Map loadConfFromDir_(File confDir) {
+        File[] confFiles = confDir.listFiles(new FilenameFilter() {
+            @Override
+            public boolean accept(File dir, String name) {
+                return name.endsWith(".properties") || name.endsWith(".conf");
+            }
+        });
+        if (null == confFiles) {
+            return C.map();
+        } else {
+            Map map = C.newMap();
+            int n = confFiles.length;
+            for (int i = 0; i < n; ++i) {
+                map.putAll(loadConfFromFile(confFiles[i]));
+            }
+            return map;
+        }
+    }
+
+
     // trim "oms." from conf keys
-    private static Map<String, Object> _processConf(Map<String, ?> conf) {
+    private static Map<String, Object> processConf(Map<String, ?> conf) {
         Map<String, Object> m = new HashMap<String, Object>(conf.size());
         for (String s : conf.keySet()) {
             Object o = conf.get(s);

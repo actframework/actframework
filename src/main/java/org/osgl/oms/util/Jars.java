@@ -29,8 +29,7 @@ public enum Jars {
             @Override
             public Void apply(JarFile jarFile, JarEntry entry) throws NotAppliedException, _.Break {
                 try {
-                    String className = entry.getName().replace('/', '.');
-                    className = S.beforeLast(className, ".");
+                    String className = Names.fileToClass(entry.getName());
                     idx.put(className, getBytes(jarFile, entry));
                 } catch (IOException e) {
                     throw E.ioException(e);

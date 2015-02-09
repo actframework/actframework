@@ -93,7 +93,7 @@ public class RouterTest extends RouterTestBase {
     @Test
     public void senseControllerMethodWithControllerPackage() {
         Properties p = new Properties();
-        p.setProperty("controllerPackage", "foo.controller");
+        p.setProperty("controller_package", "foo.controller");
         router = new Router(controllerLookup, new AppConfig((Map)p));
 
         router.addMapping(H.Method.GET, "/foo", "Controller.foo");

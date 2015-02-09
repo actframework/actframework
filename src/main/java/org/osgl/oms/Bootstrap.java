@@ -1,7 +1,5 @@
 package org.osgl.oms;
 
-import org.osgl.oms.cls.BootstrapClassLoader;
-
 import java.lang.reflect.Method;
 
 /**

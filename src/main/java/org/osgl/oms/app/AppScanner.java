@@ -42,7 +42,7 @@ public class AppScanner {
         return this;
     }
 
-    public int probeCnt() {
+    public int test_probeCnt() {
         return buildFileProbeMap.size() + projectLayoutProbes.size();
     }
 

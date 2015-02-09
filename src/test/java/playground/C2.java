@@ -26,16 +26,6 @@ public class C2 extends CBase {
         return ok();
     }
 
-    public void switchTest(String s) {
-        switch (s) {
-            case "abc":
-                System.out.printf("ABC");
-                break;
-            case "123":
-                System.out.println("NUM");
-        }
-    }
-
     public static void main(String[] args) {
         System.out.println(C2.class);
     }

@@ -3,7 +3,6 @@ package org.osgl.oms;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.runner.JUnitCore;
-import org.osgl.oms.cls.BootstrapClassLoader;
 import org.osgl.util.E;
 import org.osgl.util.FastStr;
 import org.osgl.util.S;
