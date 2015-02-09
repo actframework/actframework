@@ -17,27 +17,29 @@ import java.util.Set;
 public class Java6FsWatcher extends FsWatcher {
 
     private static _.Predicate<String> FILTER = S.F.endsWith(".java");
-    private final Map<String, Long> hashTable = C.newMap();
+    private final Map<String, Long> timestamps = C.newMap();
     private final int contextLen;
     private final String context;
-    private final _.Var<Long> lastMagicNumber = _.var(0L);
+    private final _.Var<Long> lastChecksum = _.var(0L);
 
     public Java6FsWatcher(File file) {
         super(file);
         context = file.getAbsolutePath();
         contextLen = context.length();
-        hashTable.putAll(walkThrough(file, lastMagicNumber));
+        timestamps.putAll(walkThrough(file, lastChecksum));
     }
 
     @Override
     public void run() {
         while (true) {
-            long sleep = 1000L;
-            _.Var<Long> magicNumber = _.var(0L);
-            Map<String, Long> newHashMap = walkThrough(base(), magicNumber);
-            if (!magicNumber.get().equals(lastMagicNumber.get())) {
-                check(newHashMap);
-                lastMagicNumber.set(magicNumber);
+            long sleep;
+            _.Var<Long> checksum = _.var(0L);
+            Map<String, Long> newTimestamps = walkThrough(base(), checksum);
+            if (!checksum.get().equals(lastChecksum.get())) {
+                check(newTimestamps);
+                timestamps.clear();
+                timestamps.putAll(newTimestamps);
+                lastChecksum.set(checksum);
                 sleep = 1000L;
             } else {
                 sleep = 2000L;
@@ -50,72 +52,70 @@ public class Java6FsWatcher extends FsWatcher {
         }
     }
 
-    private Map walkThrough(File file, _.Var<Long> magicNumber) {
+    private Map walkThrough(File file, _.Var<Long> checksum) {
         Map<String, Long> map = C.newMap();
-        walkThrough(file, map, magicNumber);
+        walkThrough(file, map, checksum);
         return map;
     }
 
-    private void check(Map<String, Long> newHashTable) {
-        C.Set<String> set0 = C.set(hashTable.keySet());
-        C.Set<String> set1 = C.set(newHashTable.keySet());
+    private void check(Map<String, Long> newTimestamps) {
+        C.Set<String> set0 = C.set(timestamps.keySet());
+        C.Set<String> set1 = C.set(newTimestamps.keySet());
         C.Set<String> added = set1.without(set0);
         handleAdded(added);
         C.Set<String> removed = set0.without(set1);
         handleRemoved(removed);
         C.Set<String> retained = set1.withIn(set0);
-        checkTimestamp(retained, newHashTable);
-        hashTable.clear();
-        hashTable.putAll(newHashTable);
+        checkTimestamp(retained, newTimestamps);
     }
 
     private void handleAdded(C.Set<String> added) {
         if (added.isEmpty()) return;
-        FsEvent e = new FsEvent(FsEvent.Kind.CREATE, added);
+        FsEvent e = new FsEvent(FsEvent.Kind.CREATE, prependContext(added));
         trigger(e);
     }
 
     private void handleRemoved(C.Set<String> removed) {
         if (removed.isEmpty()) return;
-        FsEvent e = new FsEvent(FsEvent.Kind.DELETE, removed);
+        FsEvent e = new FsEvent(FsEvent.Kind.DELETE, prependContext(removed));
         trigger(e);
     }
 
-    private void checkTimestamp(C.Set<String> retained, Map<String, Long> newHashTable) {
+    private void checkTimestamp(C.Set<String> retained, Map<String, Long> newChecksum) {
         C.Set<String> modified = C.newSet();
         for (String path : retained) {
-            long ts0 = hashTable.get(path);
-            long ts1 = newHashTable.get(path);
+            long ts0 = timestamps.get(path);
+            long ts1 = newChecksum.get(path);
             if (ts0 != ts1) {
                 modified.add(path);
             }
         }
         if (modified.isEmpty()) return;
-        FsEvent e = new FsEvent(FsEvent.Kind.MODIFY, modified);
+        FsEvent e = new FsEvent(FsEvent.Kind.MODIFY, prependContext(modified));
         trigger(e);
     }
 
     private Set<String> prependContext(C.Set<String> paths) {
-        return paths.map(new _.F1<String, String>() {
+        return C.set(paths.map(new _.F1<String, String>() {
             @Override
             public String apply(String s) throws NotAppliedException, _.Break {
-                return null;
+                return context + s;
             }
-        });
+        }));
     }
 
-    private void walkThrough(File file, Map<String, Long> hashTable, _.Var<Long> magicNumber) {
-        Files.filter(file, FILTER, visitor(hashTable, magicNumber));
+    private void walkThrough(File file, Map<String, Long> timestamps, _.Var<Long> checksum) {
+        Files.filter(file, FILTER, visitor(timestamps, checksum));
     }
 
-    private _.Visitor<File> visitor(final Map<String, Long> hashTable, final _.Var<Long> magicNumber) {
+    private _.Visitor<File> visitor(final Map<String, Long> timestamps, final _.Var<Long> checksum) {
         return new _.Visitor<File>() {
             @Override
             public void visit(File file) throws _.Break {
                 long ts = file.lastModified();
                 String path = file.getAbsolutePath().substring(contextLen);
-                magicNumber.set(magicNumber.get() + path.hashCode() + ts);
-                hashTable.put(file.getAbsolutePath().substring(contextLen), file.lastModified());
+                checksum.set(checksum.get() + path.hashCode() + ts);
+                timestamps.put(file.getAbsolutePath().substring(contextLen), file.lastModified());
             }
         };
     }
