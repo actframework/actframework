@@ -1,7 +1,7 @@
 package org.osgl.oms.be.controller;
 
 import org.osgl.mvc.result.Result;
-import org.osgl.oms.AppContext;
+import org.osgl.oms.app.AppContext;
 import org.osgl.oms.asm.Label;
 import org.osgl.oms.asm.MethodVisitor;
 import org.osgl.oms.asm.Opcodes;

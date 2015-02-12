@@ -1,6 +1,7 @@
 package org.osgl.oms.conf;
 
-import org.osgl.oms.app.ProjectLayout;
+import org.osgl._;
+import org.osgl.util.S;
 
 import java.util.Map;
 
@@ -61,12 +62,30 @@ public class AppConfig extends Config<AppConfigKey> {
         return port;
     }
 
-    private ProjectLayout projectLayout = null;
-    public ProjectLayout projectLayout() {
-        if (null == projectLayout) {
-            projectLayout = get(PROJECT_LAYOUT);
+    private String sourceVersion = null;
+    public String sourceVersion() {
+        if (null == sourceVersion) {
+            sourceVersion = get(SOURCE_VERSION);
         }
-        return projectLayout;
+        return sourceVersion;
     }
 
+    private _.Predicate<String> APP_CLASS_TESTER = null;
+    public boolean needEnhancement(String className) {
+        if (null == APP_CLASS_TESTER) {
+            String scanPackage = get(SCAN_PACKAGE);
+            if (S.isBlank(scanPackage)) {
+                APP_CLASS_TESTER = _.F.yes();
+            } else {
+                final String sp = scanPackage.trim();
+                APP_CLASS_TESTER = new _.Predicate<String>(){
+                    @Override
+                    public boolean test(String s) {
+                        return s.startsWith(sp);
+                    }
+                };
+            }
+        }
+        return APP_CLASS_TESTER.test(className);
+    }
 }

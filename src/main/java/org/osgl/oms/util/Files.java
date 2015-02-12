@@ -27,11 +27,19 @@ public enum Files {
         int n = files.length;
         for (int i = 0; i < n; ++i) {
             File file = files[i];
-            if (file.isDirectory() && !file.getName().startsWith(".")) {
+            if (isValidDir(file)) {
                 filter(file, filter, visitor);
-            } else if (filter.apply(file.getName())) {
+            } else if (null == filter || filter.apply(file.getName())) {
                 visitor.apply(file);
             }
         }
+    }
+
+    private static boolean isValidDir(File file) {
+        return file.isDirectory() && !isHiddenDir(file);
+    }
+
+    private static boolean isHiddenDir(File file) {
+        return file.getName().startsWith(".");
     }
 }

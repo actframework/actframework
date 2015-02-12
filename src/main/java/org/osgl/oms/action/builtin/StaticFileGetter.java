@@ -2,7 +2,7 @@ package org.osgl.oms.action.builtin;
 
 import org.osgl.http.H;
 import org.osgl.mvc.result.NotFound;
-import org.osgl.oms.AppContext;
+import org.osgl.oms.app.AppContext;
 import org.osgl.oms.ParamNames;
 import org.osgl.oms.action.ActionHandlerBase;
 import org.osgl.util.E;

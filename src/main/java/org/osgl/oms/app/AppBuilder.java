@@ -58,29 +58,55 @@ class AppBuilder {
     }
 
     private void copyFiles() {
-        File lib = layout.lib(appBase);
-        verifyDir(lib, "lib", false);
-        IO.copyDirectory(lib, tgtLib);
+        copyLibs();
+        copyAssets();
+        copyResources();
+        copyConf();
+        copyRoutes();
+    }
 
+    void copyAssets() {
         File asset = layout.asset(appBase);
         verifyDir(asset, "asset", false);
         IO.copyDirectory(asset, tgtAsset);
+    }
 
+    void copyResources() {
         File resource = layout.resource(appBase);
         verifyDir(resource, "resource", false);
         IO.copyDirectory(resource, tgtClasses);
+    }
 
+    void copyResources(File... files) {
+        File base = layout.resource(appBase);
+        int baseLen = base.getAbsolutePath().length();
+        for (File file : files) {
+            String path = file.getAbsolutePath().substring(baseLen);
+            File target = new File(tgtClasses, path);
+            IO.copyDirectory(file, target);
+        }
+    }
+
+    void copyRoutes() {
+        File routes = layout.routes(appBase);
+        if (routes.exists() && routes.canRead()) {
+            IO.copyDirectory(routes, RuntimeDirs.routes(app));
+        }
+    }
+
+    void copyConf() {
         File conf = layout.conf(appBase);
         if (conf.isDirectory()) {
             IO.copyDirectory(conf, tgtConf);
         } else {
             IO.copyDirectory(conf, new File(tgtConf, conf.getName()));
         }
+    }
 
-        File routes = layout.routes(appBase);
-        if (routes.exists() && routes.canRead()) {
-            IO.copyDirectory(routes, RuntimeDirs.routes(app));
-        }
+    void copyLibs() {
+        File lib = layout.lib(appBase);
+        verifyDir(lib, "lib", false);
+        IO.copyDirectory(lib, tgtLib);
     }
 
     private File verifyDir(File dir, String label, boolean create) {

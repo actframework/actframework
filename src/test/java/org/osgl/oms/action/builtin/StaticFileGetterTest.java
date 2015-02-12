@@ -6,6 +6,7 @@ import org.osgl.http.H;
 import org.osgl.mvc.result.NotFound;
 import org.osgl.oms.*;
 import org.osgl.oms.app.App;
+import org.osgl.oms.app.AppContext;
 import org.osgl.oms.conf.AppConfig;
 
 import java.io.ByteArrayOutputStream;

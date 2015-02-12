@@ -4,6 +4,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.osgl.http.H;
 import org.osgl.oms.app.App;
+import org.osgl.oms.app.AppContext;
 import org.osgl.util.C;
 
 import java.util.Arrays;

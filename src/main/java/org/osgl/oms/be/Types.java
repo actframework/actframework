@@ -3,7 +3,7 @@ package org.osgl.oms.be;
 import org.osgl.mvc.annotation.Bind;
 import org.osgl.mvc.annotation.Param;
 import org.osgl.mvc.result.Result;
-import org.osgl.oms.AppContext;
+import org.osgl.oms.app.AppContext;
 import org.osgl.oms.asm.Type;
 import org.osgl.util.S;
 

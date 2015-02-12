@@ -24,13 +24,19 @@ public enum Jars {
     private static Logger logger = L.get(Jars.class);
 
     public static Map<String, byte[]> buildClassNameIndex(File dir) {
+        return buildClassNameIndex(dir, _.F.FALSE);
+    }
+
+    public static Map<String, byte[]> buildClassNameIndex(File dir, final _.Func1<String, Boolean> ignoredClassNames) {
         final Map<String, byte[]> idx = C.newMap();
         _F.JarEntryVisitor visitor = new _F.JarEntryVisitor() {
             @Override
             public Void apply(JarFile jarFile, JarEntry entry) throws NotAppliedException, _.Break {
                 try {
                     String className = Names.fileToClass(entry.getName());
-                    idx.put(className, getBytes(jarFile, entry));
+                    if (!ignoredClassNames.apply(className)) {
+                        idx.put(className, getBytes(jarFile, entry));
+                    }
                 } catch (IOException e) {
                     throw E.ioException(e);
                 }

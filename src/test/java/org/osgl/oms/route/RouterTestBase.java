@@ -3,7 +3,7 @@ package org.osgl.oms.route;
 import org.junit.Before;
 import org.mockito.Mockito;
 import org.osgl.oms.conf.AppConfig;
-import org.osgl.oms.AppContext;
+import org.osgl.oms.app.AppContext;
 import org.osgl.oms.TestBase;
 import org.osgl.oms.action.ActionHandler;
 import org.osgl.oms.action.ActionHandlerResolver;

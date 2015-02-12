@@ -3,7 +3,7 @@ package org.osgl.oms.util;
 /**
  * provide utilties to access system properties
  */
-public enum Props {
+public enum SysProps {
     ;
     public static String get(String key) {
         String val = System.getProperty(key);

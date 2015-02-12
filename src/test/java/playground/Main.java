@@ -4,7 +4,7 @@ import org.osgl.http.H;
 import org.osgl.mvc.result.Result;
 import org.osgl.oms.app.App;
 import org.osgl.oms.conf.AppConfig;
-import org.osgl.oms.AppContext;
+import org.osgl.oms.app.AppContext;
 import org.osgl.oms.asm.ClassReader;
 import org.osgl.oms.asm.ClassVisitor;
 import org.osgl.oms.asm.ClassWriter;

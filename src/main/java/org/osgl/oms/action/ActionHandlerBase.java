@@ -2,7 +2,7 @@ package org.osgl.oms.action;
 
 import org.osgl._;
 import org.osgl.exception.NotAppliedException;
-import org.osgl.oms.AppContext;
+import org.osgl.oms.app.AppContext;
 
 public abstract class ActionHandlerBase extends _.F1<AppContext, Void>  implements ActionHandler {
 

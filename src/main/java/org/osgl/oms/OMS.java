@@ -5,8 +5,7 @@ import org.osgl.exception.NotAppliedException;
 import org.osgl.logging.L;
 import org.osgl.logging.Logger;
 import org.osgl.mvc.annotation.*;
-import org.osgl.oms.app.AppManager;
-import org.osgl.oms.app.AppScanner;
+import org.osgl.oms.app.*;
 import org.osgl.oms.conf.OmsConfLoader;
 import org.osgl.oms.conf.OmsConfig;
 import org.osgl.oms.plugin.PluginScanner;
@@ -28,6 +27,11 @@ public final class OMS {
             public AppScanner appScanner() {
                 return AppScanner.DEV_MODE_SCANNER;
             }
+
+            @Override
+            public AppClassLoader classLoader(App app) {
+                return new DevModeClassLoader(app);
+            }
         };
 
         private final String confPrefix = "%" + name().toLowerCase() + ".";
@@ -46,6 +50,10 @@ public final class OMS {
 
         public AppScanner appScanner() {
             return AppScanner.DEF_SCANNER;
+        }
+
+        public AppClassLoader classLoader(App app) {
+            return new AppClassLoader(app);
         }
 
         public static Mode valueOfIgnoreCase(String mode) {
@@ -87,6 +95,16 @@ public final class OMS {
         initNetworkLayer();
         initApplicationManager();
         startNetworkLayer();
+    }
+
+    public static RequestServerRestart requestRestart() {
+        E.illegalStateIf(!isDev());
+        throw new RequestServerRestart();
+    }
+
+    public static RequestRefreshClassLoader requestRefreshClassLoader() {
+        E.illegalStateIf(!isDev());
+        throw new RequestRefreshClassLoader();
     }
 
     private static void loadConfig() {

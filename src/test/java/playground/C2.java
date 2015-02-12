@@ -1,7 +1,7 @@
 package playground;
 
 import org.osgl.mvc.result.Result;
-import org.osgl.oms.AppContext;
+import org.osgl.oms.app.AppContext;
 
 public class C2 extends CBase {
 

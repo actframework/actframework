@@ -4,7 +4,7 @@ import org.osgl._;
 import org.osgl.http.H;
 import org.osgl.http.util.Path;
 import org.osgl.mvc.result.NotFound;
-import org.osgl.oms.AppContext;
+import org.osgl.oms.app.AppContext;
 import org.osgl.oms.ParamNames;
 import org.osgl.oms.action.ActionHandler;
 import org.osgl.oms.action.ActionHandlerResolver;

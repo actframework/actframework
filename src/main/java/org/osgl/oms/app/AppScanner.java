@@ -61,18 +61,14 @@ public class AppScanner {
     }
 
     private void scan(File appBase, _.Func1<App, ?> callback) {
+        App app = null;
         ProjectLayout layout = probe(appBase);
         if (null != layout) {
-            createApp(appBase, layout, callback);
+            app = App.create(appBase, layout);
+            callback.apply(app);
+        } else {
+            logger.warn("%s is not a valid app base", appBase.getPath());
         }
-        ProjectLayout[] predefined = ProjectLayout.PredefinedLayout.values();
-        for (int i = predefined.length - 1; i >= 0; --i) {
-            layout = predefined[i];
-            if (ProjectLayout.util.probeAppBase(appBase, layout)) {
-                createApp(appBase, layout, callback);
-            }
-        }
-        logger.warn("%s is not a valid app base", appBase.getPath());
     }
 
     private ProjectLayout probe(File appBase) {
@@ -80,11 +76,30 @@ public class AppScanner {
         if (null != layout) {
             return layout;
         }
-        Iterator<ProjectLayoutProbe> probes = probes();
+        layout = probeLayoutPlugin(appBase);
+        if (null != layout) {
+            return layout;
+        }
+        return probeDefaultLayouts(appBase);
+    }
+
+    private ProjectLayout probeLayoutPlugin(File appBase) {
+        Iterator<ProjectLayoutProbe> probes = pluginProbes();
         while (probes.hasNext()) {
             ProjectLayoutProbe probe = probes.next();
-            layout = probe.probe(appBase);
+            ProjectLayout layout = probe.probe(appBase);
             if (null != layout) {
+                return layout;
+            }
+        }
+        return null;
+    }
+
+    private ProjectLayout probeDefaultLayouts(File appBase) {
+        ProjectLayout[] predefined = ProjectLayout.PredefinedLayout.values();
+        for (int i = predefined.length - 1; i >= 0; --i) {
+            ProjectLayout layout = predefined[i];
+            if (ProjectLayout.util.probeAppBase(appBase, layout)) {
                 return layout;
             }
         }
@@ -109,12 +124,7 @@ public class AppScanner {
         }
     }
 
-    private void createApp(File appBase, ProjectLayout layout, _.Func1<App, ?> callback) {
-        App app = App.create(appBase, layout);
-        callback.apply(app);
-    }
-
-    private Iterator<ProjectLayoutProbe> probes() {
+    private Iterator<ProjectLayoutProbe> pluginProbes() {
         return Iterators.composite(buildFileProbeMap.values().iterator(), projectLayoutProbes.iterator());
     }
 }

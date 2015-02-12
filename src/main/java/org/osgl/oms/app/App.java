@@ -3,6 +3,7 @@ package org.osgl.oms.app;
 import org.osgl._;
 import org.osgl.logging.L;
 import org.osgl.logging.Logger;
+import org.osgl.oms.OMS;
 import org.osgl.oms.conf.AppConfLoader;
 import org.osgl.oms.conf.AppConfig;
 import org.osgl.oms.route.RouteTableRouterBuilder;
@@ -37,6 +38,7 @@ public class App {
     private AppConfig config;
     private AppClassLoader classLoader;
     private ProjectLayout layout;
+    private AppBuilder builder;
 
     private App(File appBase, ProjectLayout layout) {
         this.appBase = appBase;
@@ -60,6 +62,10 @@ public class App {
         return appHome;
     }
 
+    public AppClassLoader classLoader() {
+        return classLoader;
+    }
+
     public ProjectLayout layout() {
         return layout;
     }
@@ -68,6 +74,14 @@ public class App {
         loadConfig();
         loadRoutes();
         loadClasses();
+    }
+
+    public void build() {
+        builder = AppBuilder.build(this);
+    }
+
+    public AppBuilder builder() {
+        return builder;
     }
 
     @Override
@@ -112,7 +126,7 @@ public class App {
     }
 
     private void loadClasses() {
-        classLoader = new AppClassLoader(this);
+        classLoader = OMS.mode().classLoader(this);
     }
 
     static App create(File appBase, ProjectLayout layout) {

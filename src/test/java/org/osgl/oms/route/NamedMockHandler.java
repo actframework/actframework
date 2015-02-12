@@ -1,7 +1,7 @@
 package org.osgl.oms.route;
 
 
-import org.osgl.oms.AppContext;
+import org.osgl.oms.app.AppContext;
 import org.osgl.oms.action.ActionHandlerBase;
 
 public class NamedMockHandler extends ActionHandlerBase {

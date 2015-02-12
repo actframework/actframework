@@ -1,11 +1,11 @@
 package org.osgl.oms.action;
 
 import org.osgl._;
-import org.osgl.oms.AppContext;
+import org.osgl.oms.app.AppContext;
 
 /**
  * ActionInvoker is a thread-save function object that can be applied
- * to a {@link org.osgl.oms.AppContext} context
+ * to a {@link org.osgl.oms.app.AppContext} context
  */
 public interface ActionHandler extends _.Function<AppContext, Void> {
 

@@ -1,5 +1,6 @@
 package org.osgl.oms.conf;
 
+import org.osgl._;
 import org.osgl.logging.L;
 import org.osgl.logging.Logger;
 import org.osgl.oms.OMS;
@@ -27,6 +28,19 @@ import static org.osgl.oms.app.ProjectLayout.PredefinedLayout.MAVEN;
  * </ul>
  */
 public enum AppConfigKey implements ConfigKey {
+
+    /**
+     * {@code oms.source_version} specifies the java version
+     * of the source code. This configuration is used only
+     * in dev mode.
+     * <p>Default value: 1.7</p>
+     */
+    SOURCE_VERSION("source_version") {
+        @Override
+        protected Object getDefVal(Map<String, ?> configuration) {
+            return "1." + _.JAVA_VERSION;
+        }
+    },
 
     /**
      * {@code oms.url_context} specifies the context part
@@ -102,29 +116,14 @@ public enum AppConfigKey implements ConfigKey {
     CONTROLLER_PACKAGE("controller_package"),
 
     /**
-     * {@code oms.project_layout.impl} specifies the dev time {@link org.osgl.oms.app.ProjectLayout project layout}.
-     * <p>Options: {@code play}, {@code maven} or a customer defined implementation</p>
-     * <p>Default value: {@code maven}</p>
-     * @see org.osgl.oms.app.ProjectLayout
+     * Specify the app package in which all classes is subject
+     * to bytecode processing, e.g enhancement and injection.
+     * This setting should be specified when application loaded.
+     * Otherwise OMS will try to process all classes found in
+     * application's lib and classes folder, which might cause
+     * performance issue on loading
      */
-    PROJECT_LAYOUT("project_layout.impl", MAVEN) {
-        @Override
-        public <T> T val(Map<String, ?> configuration) {
-            Object v = configuration.get(key());
-            if (null == v) {
-                return (T)getDefVal(configuration);
-            }
-            if (v instanceof ProjectLayout) {
-                return (T)v;
-            }
-            ProjectLayout layout = ProjectLayout.PredefinedLayout.valueOfIgnoreCase(v.toString());
-            if (null != layout) {
-                return (T)layout;
-            }
-            return super.val(configuration);
-        }
-    },
-
+    SCAN_PACKAGE("scan_package"),
     ;
 
     private String key;

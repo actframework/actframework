@@ -17,7 +17,7 @@ public class AppManager {
     private Map<String, App> byContextPath = C.newMap();
 
     private AppManager() {
-        OMS.mode().appScanner().scan(F.loadApp(this));
+        OMS.mode().appScanner().scan(_F.loadApp(this));
     }
 
     public void deploy(App app) {
@@ -43,7 +43,7 @@ public class AppManager {
         } else {
             loadIntoPortMap(port, app);
         }
-        AppBuilder.build(app);
+        app.build();
     }
 
     private void loadIntoPortMap(int port, App app) {
@@ -94,9 +94,8 @@ public class AppManager {
         return new AppManager();
     }
 
-    private enum F {
+    private enum _F {
         ;
-
         static final _.F1<App, ?> loadApp(final AppManager mgr) {
             return new _.Visitor<App>() {
                 @Override

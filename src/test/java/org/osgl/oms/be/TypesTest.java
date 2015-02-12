@@ -1,7 +1,7 @@
 package org.osgl.oms.be;
 
 import org.junit.Test;
-import org.osgl.oms.AppContext;
+import org.osgl.oms.app.AppContext;
 import org.osgl.oms.TestBase;
 import org.osgl.oms.asm.Type;
 

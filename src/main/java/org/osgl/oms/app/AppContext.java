@@ -1,9 +1,8 @@
-package org.osgl.oms;
+package org.osgl.oms.app;
 
 import org.osgl._;
 import org.osgl.concurrent.ContextLocal;
 import org.osgl.http.H;
-import org.osgl.oms.app.App;
 import org.osgl.oms.conf.AppConfig;
 import org.osgl.util.E;
 

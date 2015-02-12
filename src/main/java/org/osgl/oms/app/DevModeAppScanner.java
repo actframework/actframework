@@ -21,4 +21,8 @@ class DevModeAppScanner extends AppScanner {
     public AppScanner register(ProjectLayoutProbe probe) {
         return this;
     }
+
+    public static void main(String[] args) {
+        System.out.println(currentDir());
+    }
 }

@@ -8,7 +8,7 @@ import org.osgl.http.H;
 import org.osgl.mvc.result.NotFound;
 import org.osgl.oms.app.App;
 import org.osgl.oms.conf.AppConfig;
-import org.osgl.oms.AppContext;
+import org.osgl.oms.app.AppContext;
 import org.osgl.oms.BenchmarkBase;
 import org.osgl.oms.TestBase;
 import org.osgl.oms.action.ActionHandlerResolver;
