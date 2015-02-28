@@ -72,7 +72,7 @@ public abstract class RequestImplBase<T extends H.Request> extends H.Request<T> 
         if (fs.startsWith("http")) {
             // the uri include the scheme, domain and port
             fs = fs.afterFirst("://"); // strip the scheme
-            fs = fs.afterFirst('/'); // strip the domain name, port
+            fs = fs.afterFirst('/'); // strip the domain className, port
             fs = fs.prepend('/'); // attach the '/' to the path
         }
         if (hasContextPath()) {

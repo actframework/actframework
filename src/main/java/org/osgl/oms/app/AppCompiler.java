@@ -25,7 +25,7 @@ import java.util.Map;
 import static org.eclipse.jdt.internal.compiler.impl.CompilerOptions.*;
 
 /**
- * Compile App source code in memory. Only used when OMS is running
+ * Compile App srccode code in memory. Only used when OMS is running
  * in DEV mode
  */
 class AppCompiler {
@@ -141,7 +141,7 @@ class AppCompiler {
 
         private NameEnvironmentAnswer findType(String type) {
             try {
-                byte[] bytes = classLoader.bytecode(type);
+                byte[] bytes = classLoader.enhancedBytecode(type);
                 if (bytes != null) {
                     ClassFileReader classFileReader = new ClassFileReader(bytes, type.toCharArray(), true);
                     return new NameEnvironmentAnswer(classFileReader, null);

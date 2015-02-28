@@ -3,15 +3,15 @@
  * Copyright (c) 2000-2011 INRIA, France Telecom
  * All rights reserved.
  *
- * Redistribution and use in source and binary forms, with or without
+ * Redistribution and use in srccode and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
- * 1. Redistributions of source code must retain the above copyright
+ * 1. Redistributions of srccode code must retain the above copyright
  *    notice, this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. Neither the name of the copyright holders nor the names of its
+ * 3. Neither the className of the copyright holders nor the names of its
  *    contributors may be used to endorse or promote products derived from
  *    this software without specific prior written permission.
  *
@@ -153,7 +153,7 @@ public abstract class Printer {
             final String[] interfaces);
 
     /**
-     * Class source. See {@link org.osgl.oms.asm.ClassVisitor#visitSource}.
+     * Class srccode. See {@link org.osgl.oms.asm.ClassVisitor#visitSource}.
      */
     public abstract void visitSource(final String file, final String debug);
 
@@ -187,7 +187,7 @@ public abstract class Printer {
     public abstract void visitClassAttribute(final Attribute attr);
 
     /**
-     * Class inner name. See
+     * Class inner className. See
      * {@link org.osgl.oms.asm.ClassVisitor#visitInnerClass}.
      */
     public abstract void visitInnerClass(final String name,

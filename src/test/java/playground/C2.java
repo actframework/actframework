@@ -1,9 +1,14 @@
 package playground;
 
+import org.osgl.mvc.annotation.Before;
 import org.osgl.mvc.result.Result;
 import org.osgl.oms.app.AppContext;
 
 public class C2 extends CBase {
+
+    @Before(priority =  5, except = "doAnn")
+    public void before() {
+    }
 
     private boolean cond1() {
         return true;

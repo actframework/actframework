@@ -6,7 +6,7 @@ import org.mockito.Mockito;
 import org.osgl.http.H;
 import org.osgl.mvc.result.NotFound;
 import org.osgl.oms.conf.AppConfig;
-import org.osgl.oms.ParamNames;
+import org.osgl.oms.controller.ParamNames;
 import org.osgl.oms.action.ActionHandler;
 import org.osgl.oms.action.builtin.StaticFileGetter;
 
@@ -24,6 +24,13 @@ public class RouterTest extends RouterTestBase {
     public void prepare() {
         staticDirHandler = Mockito.mock(StaticFileGetter.class);
         Mockito.when(staticDirHandler.supportPartialPath()).thenReturn(true);
+    }
+
+    @Test
+    public void testMappingAdded() {
+        no(router.isMapped(H.Method.GET, "/foo"));
+        router.addMapping(H.Method.GET, "/foo", "Foo.bar");
+        yes(router.isMapped(H.Method.GET, "/foo"));
     }
 
     @Test

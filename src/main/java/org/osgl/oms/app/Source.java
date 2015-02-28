@@ -2,7 +2,7 @@ package org.osgl.oms.app;
 
 import org.eclipse.jdt.internal.compiler.env.ICompilationUnit;
 import org.osgl._;
-import org.osgl.oms.util.Names;
+import org.osgl.oms.util.ClassNames;
 import org.osgl.util.E;
 import org.osgl.util.FastStr;
 import org.osgl.util.IO;
@@ -12,15 +12,15 @@ import java.io.File;
 import java.util.StringTokenizer;
 
 /**
- * Encapsulate java source unit data including source code, byte code etc.
- * A java source unit specifies a java class
+ * Encapsulate java srccode unit data including srccode code, byte code etc.
+ * A java srccode unit specifies a java class
  */
 public class Source {
     public static enum State {
         /**
-         * File deleted
+         * The Source instance has been created
          */
-        DELETED,
+        CREATED,
 
         /**
          * Source code loaded
@@ -28,7 +28,7 @@ public class Source {
         LOADED,
 
         /**
-         * Byte code compiled out of the source code
+         * Byte code compiled out of the srccode code
          */
         COMPILED,
 
@@ -38,27 +38,32 @@ public class Source {
         ERROR_COMPILE,
 
         /**
+         * File deleted
+         */
+        DELETED,
+
+        /**
          * Byte code enhanced by framework
          */
         ENHANCED
     }
 
-    // the source file
+    // the srccode file
     private File file;
 
-    // the class name. Can't be 1-1 map to file as
-    // embedded classes do not have separate source file
+    // the class className. Can't be 1-1 map to file as
+    // embedded classes do not have separate srccode file
     private String simpleName;
 
     private String packageName;
 
-    // The source code
+    // The srccode code
     private String code;
 
     // The byte code
     private byte[] bytes;
 
-    private State state;
+    private State state = State.CREATED;
 
     private long ts;
 
@@ -107,6 +112,11 @@ public class Source {
         updateState(State.COMPILED);
     }
 
+    void enhanced(byte[] bytecode) {
+        this.bytes = _.notNull(bytecode);
+        updateState(State.ENHANCED);
+    }
+
     public void refresh() {
         bytes = null;
         ts = 0L;
@@ -125,6 +135,11 @@ public class Source {
         } else {
             updateState(State.DELETED);
         }
+    }
+
+    public static Source ofFile(File sourceRoot, File file) {
+        String className = Util.className(sourceRoot, file);
+        return null == className ? null : new Source(file, className);
     }
 
     public static Source ofClass(File sourceRoot, String className) {
@@ -203,7 +218,7 @@ public class Source {
     public static enum Util {
         ;
         public static String className(File sourceRoot, File file) {
-            return Names.fileToClass(sourceRoot, file.getAbsolutePath());
+            return ClassNames.sourceFileNameToClassName(sourceRoot, file.getAbsolutePath());
         }
 
         public static File sourceFile(File sourceRoot, String className) {

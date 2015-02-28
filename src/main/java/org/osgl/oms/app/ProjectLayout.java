@@ -8,12 +8,12 @@ import java.util.Properties;
 /**
  * Defines the project file structure supported by OMS.
  * <p>Used ONLY at dev time for OMS to decide where to pick up
- * the application source files, configuration files etc</p>
+ * the application srccode files, configuration files etc</p>
  */
 public interface ProjectLayout {
 
     /**
-     * The name of the properties file sit directly in {@code appBase} dir that
+     * The className of the properties file sit directly in {@code appBase} dir that
      * specifies the project layout of the application.
      * <p>This properties file is only required if the app project uses a
      * customized project layout, i.e. not one of the
@@ -147,7 +147,7 @@ public interface ProjectLayout {
     }
 
     /**
-     * Returns Java source file root in relation to the
+     * Returns Java srccode file root in relation to the
      * {@code appBase} specified
      */
     File source(File appBase);
@@ -211,7 +211,7 @@ public interface ProjectLayout {
          * Build project layout from properties file. The file content shall match the
          * project layout interface structure, e.g:
          * <pre>
-         * source=src/main/java
+         * srccode=src/main/java
          * lib=lib
          * routes=src/main/resources/routes
          * conf=src/main/resources/conf

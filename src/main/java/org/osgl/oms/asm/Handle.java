@@ -3,15 +3,15 @@
  * Copyright (c) 2000-2011 INRIA, France Telecom
  * All rights reserved.
  *
- * Redistribution and use in source and binary forms, with or without
+ * Redistribution and use in srccode and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
- * 1. Redistributions of source code must retain the above copyright
+ * 1. Redistributions of srccode code must retain the above copyright
  *    notice, this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. Neither the name of the copyright holders nor the names of its
+ * 3. Neither the className of the copyright holders nor the names of its
  *    contributors may be used to endorse or promote products derived from
  *    this software without specific prior written permission.
  *
@@ -49,13 +49,13 @@ public final class Handle {
     final int tag;
 
     /**
-     * The internal name of the class that owns the field or method designated
+     * The internal className of the class that owns the field or method designated
      * by this handle.
      */
     final String owner;
 
     /**
-     * The name of the field or method designated by this handle.
+     * The className of the field or method designated by this handle.
      */
     final String name;
 
@@ -77,10 +77,10 @@ public final class Handle {
      *            {@link Opcodes#H_NEWINVOKESPECIAL} or
      *            {@link Opcodes#H_INVOKEINTERFACE}.
      * @param owner
-     *            the internal name of the class that owns the field or method
+     *            the internal className of the class that owns the field or method
      *            designated by this handle.
      * @param name
-     *            the name of the field or method designated by this handle.
+     *            the className of the field or method designated by this handle.
      * @param desc
      *            the descriptor of the field or method designated by this
      *            handle.
@@ -107,10 +107,10 @@ public final class Handle {
     }
 
     /**
-     * Returns the internal name of the class that owns the field or method
+     * Returns the internal className of the class that owns the field or method
      * designated by this handle.
      * 
-     * @return the internal name of the class that owns the field or method
+     * @return the internal className of the class that owns the field or method
      *         designated by this handle.
      */
     public String getOwner() {
@@ -118,9 +118,9 @@ public final class Handle {
     }
 
     /**
-     * Returns the name of the field or method designated by this handle.
+     * Returns the className of the field or method designated by this handle.
      * 
-     * @return the name of the field or method designated by this handle.
+     * @return the className of the field or method designated by this handle.
      */
     public String getName() {
         return name;
@@ -158,7 +158,7 @@ public final class Handle {
      * representation is:
      * 
      * <pre>
-     * owner '.' name desc ' ' '(' tag ')'
+     * owner '.' className desc ' ' '(' tag ')'
      * </pre>
      * 
      * . As this format is unambiguous, it can be parsed if necessary.

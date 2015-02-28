@@ -3,15 +3,15 @@
  * Copyright (c) 2004-2011, Eugene Kuleshov
  * All rights reserved.
  *
- * Redistribution and use in source and binary forms, with or without
+ * Redistribution and use in srccode and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
- * 1. Redistributions of source code must retain the above copyright
+ * 1. Redistributions of srccode code must retain the above copyright
  *    notice, this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. Neither the name of the copyright holders nor the names of its
+ * 3. Neither the className of the copyright holders nor the names of its
  *    contributors may be used to endorse or promote products derived from
  *    this software without specific prior written permission.
  *
@@ -57,7 +57,7 @@ public class ASMContentHandler extends DefaultHandler implements Opcodes {
     private final ArrayList<Object> stack = new ArrayList<Object>();
 
     /**
-     * Complete name of the current element.
+     * Complete className of the current element.
      */
     String match = "";
 
@@ -335,10 +335,10 @@ public class ASMContentHandler extends DefaultHandler implements Opcodes {
      *            Namespace URI or if Namespace processing is not being
      *            performed.
      * @param lName
-     *            - The local name (without prefix), or the empty string if
+     *            - The local className (without prefix), or the empty string if
      *            Namespace processing is not being performed.
      * @param qName
-     *            - The qualified name (with prefix), or the empty string if
+     *            - The qualified className (with prefix), or the empty string if
      *            qualified names are not available.
      * @param list
      *            - The attributes attached to the element. If there are no
@@ -349,7 +349,7 @@ public class ASMContentHandler extends DefaultHandler implements Opcodes {
     @Override
     public final void startElement(final String ns, final String lName,
             final String qName, final Attributes list) throws SAXException {
-        // the actual element name is either in lName or qName, depending
+        // the actual element className is either in lName or qName, depending
         // on whether the parser is namespace aware
         String name = lName == null || lName.length() == 0 ? qName : lName;
 
@@ -376,10 +376,10 @@ public class ASMContentHandler extends DefaultHandler implements Opcodes {
      *            Namespace URI or if Namespace processing is not being
      *            performed.
      * @param lName
-     *            - The local name (without prefix), or the empty string if
+     *            - The local className (without prefix), or the empty string if
      *            Namespace processing is not being performed.
      * @param qName
-     *            - The qualified XML 1.0 name (with prefix), or the empty
+     *            - The qualified XML 1.0 className (with prefix), or the empty
      *            string if qualified names are not available.
      * 
      * @exception org.xml.sax.SAXException
@@ -388,7 +388,7 @@ public class ASMContentHandler extends DefaultHandler implements Opcodes {
     @Override
     public final void endElement(final String ns, final String lName,
             final String qName) throws SAXException {
-        // the actual element name is either in lName or qName, depending
+        // the actual element className is either in lName or qName, depending
         // on whether the parser is namespace aware
         String name = lName == null || lName.length() == 0 ? qName : lName;
 

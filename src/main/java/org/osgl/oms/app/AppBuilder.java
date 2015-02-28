@@ -45,7 +45,6 @@ class AppBuilder {
     public void build() {
         prepareTargetDir();
         copyFiles();
-        app.refresh();
     }
 
     private void prepareTargetDir() {

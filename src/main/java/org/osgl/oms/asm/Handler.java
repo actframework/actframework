@@ -3,15 +3,15 @@
  * Copyright (c) 2000-2011 INRIA, France Telecom
  * All rights reserved.
  *
- * Redistribution and use in source and binary forms, with or without
+ * Redistribution and use in srccode and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
- * 1. Redistributions of source code must retain the above copyright
+ * 1. Redistributions of srccode code must retain the above copyright
  *    notice, this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. Neither the name of the copyright holders nor the names of its
+ * 3. Neither the className of the copyright holders nor the names of its
  *    contributors may be used to endorse or promote products derived from
  *    this software without specific prior written permission.
  *
@@ -52,13 +52,13 @@ class Handler {
     Label handler;
 
     /**
-     * Internal name of the type of exceptions handled by this handler, or
+     * Internal className of the type of exceptions handled by this handler, or
      * <tt>null</tt> to catch any exceptions.
      */
     String desc;
 
     /**
-     * Constant pool index of the internal name of the type of exceptions
+     * Constant pool index of the internal className of the type of exceptions
      * handled by this handler, or 0 to catch any exceptions.
      */
     int type;

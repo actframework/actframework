@@ -1,15 +1,19 @@
-package org.osgl.oms.be.controller;
+package org.osgl.oms.controller;
 
 import org.osgl.oms.asm.*;
-import org.osgl.oms.be.Types;
+import org.osgl.oms.conf.Config;
+import org.osgl.oms.util.AsmTypes;
+import org.osgl.oms.util.BytecodeVisitor;
 
-public class ControllerClassEnhancer extends ClassVisitor implements Opcodes {
+public class ControllerClassEnhancer extends BytecodeVisitor {
 
     protected String className;
     private boolean isAbstract;
 
+    public ControllerClassEnhancer() {}
+
     public ControllerClassEnhancer(ClassVisitor cv) {
-        super(ASM5, cv);
+        super(cv);
     }
 
     @Override
@@ -19,6 +23,11 @@ public class ControllerClassEnhancer extends ClassVisitor implements Opcodes {
         className = name;
         isAbstract = isAbstract(access);
         super.visit(version, access, name, signature, superName, interfaces);
+    }
+
+    @Override
+    public FieldVisitor visitField(int access, String name, String desc, String signature, Object value) {
+        return super.visitField(access, name, desc, signature, value);
     }
 
     @Override
@@ -33,16 +42,6 @@ public class ControllerClassEnhancer extends ClassVisitor implements Opcodes {
         } else {
             return null;
         }
-    }
-
-    @Override
-    public AnnotationVisitor visitAnnotation(String desc, boolean visible) {
-        return super.visitAnnotation(desc, visible);
-    }
-
-    @Override
-    public AnnotationVisitor visitTypeAnnotation(int typeRef, TypePath typePath, String desc, boolean visible) {
-        return super.visitTypeAnnotation(typeRef, typePath, desc, visible);
     }
 
     private static boolean isConstructor(String methodName) {
@@ -61,7 +60,7 @@ public class ControllerClassEnhancer extends ClassVisitor implements Opcodes {
         Type methodType = Type.getMethodType(desc);
         Type retType = methodType.getReturnType();
         boolean typeMatches = (Type.VOID_TYPE.equals(retType));
-        typeMatches = typeMatches || Types.RESULT_TYPE.equals(retType);
+        typeMatches = typeMatches || AsmTypes.RESULT_TYPE.equals(retType);
         return !typeMatches || isAbstract || !isPublic(access) || isConstructor(name);
     }
 }

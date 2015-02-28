@@ -1,12 +1,19 @@
 package org.osgl.oms.app;
 
 import org.osgl._;
+import org.osgl.exception.NotAppliedException;
+import org.osgl.logging.L;
+import org.osgl.logging.Logger;
 import org.osgl.oms.OMS;
 import org.osgl.oms.asm.ClassReader;
 import org.osgl.oms.asm.ClassWriter;
+import org.osgl.oms.conf.AppConfig;
+import org.osgl.oms.controller.bytecode.ControllerScanner;
+import org.osgl.oms.controller.meta.ControllerClassMetaInfoManager;
+import org.osgl.oms.util.BytecodeVisitor;
 import org.osgl.oms.util.Files;
 import org.osgl.oms.util.Jars;
-import org.osgl.oms.util.Names;
+import org.osgl.oms.util.ClassNames;
 import org.osgl.util.C;
 import org.osgl.util.E;
 import org.osgl.util.IO;
@@ -24,20 +31,35 @@ import static org.osgl._.notNull;
  * The top level class loader to load a specific application classes into JVM
  */
 public class AppClassLoader extends ClassLoader {
+    protected final static Logger logger = L.get(AppClassLoader.class);
     private App app;
     private Map<String, byte[]> libClsCache = C.newMap();
+    private ControllerClassMetaInfoManager ctrlInfo =
+            new ControllerClassMetaInfoManager(
+                    new _.Factory<ControllerScanner>() {
+                        @Override
+                        public ControllerScanner create() {
+                            return new ControllerScanner(app.router(), bytecodeLookup);
+                        }
+                    }
+            );
 
     public AppClassLoader(App app) {
         super(OMS.classLoader());
         this.app = notNull(app);
-        preload();
+        preloadBytecode();
+        scan();
+    }
+
+    protected App app() {
+        return app;
     }
 
     public void detectChanges() {
         // don't do anything when running in none-dev mode
     }
 
-    public boolean isAppClass(String className) {
+    public boolean isSourceClass(String className) {
         return false;
     }
 
@@ -57,11 +79,21 @@ public class AppClassLoader extends ClassLoader {
         }
     }
 
-    protected App app() {
-        return app;
+    protected void scan() {
+        scanForActionMethods();
     }
 
-    private void preload() {
+    protected void scanForActionMethods() {
+        AppConfig conf = app.config();
+        for (String className : libClsCache.keySet()) {
+            if (!conf.notControllerClass(className)) {
+                ctrlInfo.scanForControllerMetaInfo(className);
+            }
+        }
+        ctrlInfo.mergeActionMetaInfo();
+    }
+
+    protected void preloadBytecode() {
         preloadLib();
         preloadClasses();
     }
@@ -71,16 +103,18 @@ public class AppClassLoader extends ClassLoader {
     }
 
     private void preloadClasses() {
-        List<File> files = Files.filter(RuntimeDirs.classes(app), _F.SAFE_CLASS);
-        for (File file: files) {
-            preloadClassFile(file);
+        File base = RuntimeDirs.classes(app);
+        List<File> files = Files.filter(base, _F.SAFE_CLASS);
+        for (File file : files) {
+            preloadClassFile(base, file);
         }
     }
 
-    protected void preloadClassFile(File file) {
+    protected void preloadClassFile(File base, File file) {
         ByteArrayOutputStream baos = new ByteArrayOutputStream((int)file.length());
         IO.copy(IO.is(file), baos);
-        libClsCache.put(Names.fileToClass(file.getName()), baos.toByteArray());
+        byte[] bytes = baos.toByteArray();
+        libClsCache.put(ClassNames.sourceFileNameToClassName(base, file.getAbsolutePath()), bytes);
     }
 
     private Class<?> loadAppClass(String name, boolean resolve) {
@@ -93,15 +127,13 @@ public class AppClassLoader extends ClassLoader {
             }
             return c;
         }
-        Class<?> c;
-        ClassReader r;
-        r = new ClassReader(bytecode);
         try {
-            ClassWriter w = new ClassWriter(0);
-            // TODO: inject class visitor here
-            r.accept(w, 0);
-            byte[] baNew = w.toByteArray();
-            c = super.defineClass(name, baNew, 0, baNew.length, DOMAIN);
+            byte[] baNew = enhance(name, bytecode);
+            Class<?> c = super.defineClass(name, baNew, 0, baNew.length, DOMAIN);
+            if (resolve) {
+                super.resolveClass(c);
+            }
+            return c;
         } catch (RuntimeException e) {
             throw e;
         } catch (Error e) {
@@ -109,10 +141,23 @@ public class AppClassLoader extends ClassLoader {
         } catch (Exception e) {
             throw E.unexpected("Error processing class " + name);
         }
-        if (resolve) {
-            super.resolveClass(c);
+    }
+
+    protected byte[] enhance(String className, byte[] bytecode) {
+        return asmEnhance(className, bytecode);
+    }
+
+    private byte[] asmEnhance(String className, byte[] bytecode) {
+        _.Var<ClassWriter> cw = _.var(null);
+        BytecodeVisitor enhancer = OMS.enhancerManager().appAsmEnhancer(className, cw);
+        if (null == enhancer) {
+            return bytecode;
         }
-        return c;
+        cw.set(new ClassWriter(0));
+        enhancer.commitDownstream();
+        ClassReader r = new ClassReader(bytecode);
+        r.accept(enhancer, 0);
+        return cw.get().toByteArray();
     }
 
     protected byte[] appBytecode(String name) {
@@ -133,6 +178,18 @@ public class AppClassLoader extends ClassLoader {
         IO.copy(is, baos);
         return baos.toByteArray();
     }
+
+    byte[] enhancedBytecode(String name) {
+        byte[] bytecode = bytecode(name);
+        return null == bytecode ? null : enhance(name, bytecode);
+    }
+
+    private _.F1<String, byte[]> bytecodeLookup = new _.F1<String, byte[]>() {
+        @Override
+        public byte[] apply(String s) throws NotAppliedException, _.Break {
+            return libClsCache.get(s);
+        }
+    };
 
     private static java.security.ProtectionDomain DOMAIN;
 

@@ -8,6 +8,7 @@ import org.osgl.oms.*;
 import org.osgl.oms.app.App;
 import org.osgl.oms.app.AppContext;
 import org.osgl.oms.conf.AppConfig;
+import org.osgl.oms.controller.ParamNames;
 
 import java.io.ByteArrayOutputStream;
 

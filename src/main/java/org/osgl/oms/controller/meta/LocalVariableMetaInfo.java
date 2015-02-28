@@ -1,4 +1,4 @@
-package org.osgl.oms.be.controller;
+package org.osgl.oms.controller.meta;
 
 import org.osgl.oms.asm.Label;
 import org.osgl.util.E;
@@ -38,8 +38,8 @@ public class LocalVariableMetaInfo {
 
     @Override
     public String toString() {
-        // print out the local variable name as
-        // $index   $name   $start_label  $end_label
+        // print out the local variable className as
+        // $index   $className   $start_label  $end_label
         return S.fmt("%s\t%s\t%s\t%s", index, name, start, end);
     }
 }

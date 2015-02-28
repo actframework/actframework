@@ -1,9 +1,11 @@
-package org.osgl.oms.be.controller;
+package org.osgl.oms.controller;
 
 import org.osgl.mvc.result.Result;
 import org.osgl.oms.app.AppContext;
 import org.osgl.oms.asm.Label;
 import org.osgl.oms.asm.Type;
+import org.osgl.oms.controller.meta.LocalVariableMetaInfo;
+import org.osgl.oms.controller.meta.ParamMetaInfo;
 import org.osgl.util.C;
 import org.osgl.util.E;
 
@@ -68,6 +70,9 @@ public class ActionMethodMetaInfo {
 
     public ActionMethodMetaInfo name(String name) {
         this.name = name;
+        if (Void.class.equals(void.class)) {
+
+        };
         return this;
     }
 

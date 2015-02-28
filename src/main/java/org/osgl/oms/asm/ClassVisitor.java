@@ -3,15 +3,15 @@
  * Copyright (c) 2000-2011 INRIA, France Telecom
  * All rights reserved.
  *
- * Redistribution and use in source and binary forms, with or without
+ * Redistribution and use in srccode and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
- * 1. Redistributions of source code must retain the above copyright
+ * 1. Redistributions of srccode code must retain the above copyright
  *    notice, this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. Neither the name of the copyright holders nor the names of its
+ * 3. Neither the className of the copyright holders nor the names of its
  *    contributors may be used to endorse or promote products derived from
  *    this software without specific prior written permission.
  *
@@ -91,14 +91,14 @@ public abstract class ClassVisitor {
      *            the class's access flags (see {@link Opcodes}). This parameter
      *            also indicates if the class is deprecated.
      * @param name
-     *            the internal name of the class (see
+     *            the internal className of the class (see
      *            {@link Type#getInternalName() getInternalName}).
      * @param signature
      *            the signature of this class. May be <tt>null</tt> if the class
      *            is not a generic one, and does not extend or implement generic
      *            classes or interfaces.
      * @param superName
-     *            the internal of name of the super class (see
+     *            the internal of className of the super class (see
      *            {@link Type#getInternalName() getInternalName}). For
      *            interfaces, the super class is {@link Object}. May be
      *            <tt>null</tt>, but only for the {@link Object} class.
@@ -115,14 +115,14 @@ public abstract class ClassVisitor {
     }
 
     /**
-     * Visits the source of the class.
+     * Visits the srccode of the class.
      *
      * @param source
-     *            the name of the source file from which the class was compiled.
+     *            the className of the srccode file from which the class was compiled.
      *            May be <tt>null</tt>.
      * @param debug
      *            additional debug information to compute the correspondance
-     *            between source and compiled elements of the class. May be
+     *            between srccode and compiled elements of the class. May be
      *            <tt>null</tt>.
      */
     public void visitSource(String source, String debug) {
@@ -136,9 +136,9 @@ public abstract class ClassVisitor {
      * if the class has an enclosing class.
      *
      * @param owner
-     *            internal name of the enclosing class of the class.
+     *            internal className of the enclosing class of the class.
      * @param name
-     *            the name of the method that contains the class, or
+     *            the className of the method that contains the class, or
      *            <tt>null</tt> if the class is not enclosed in a method of its
      *            enclosing class.
      * @param desc
@@ -219,14 +219,14 @@ public abstract class ClassVisitor {
      * necessarily a member of the class being visited.
      *
      * @param name
-     *            the internal name of an inner class (see
+     *            the internal className of an inner class (see
      *            {@link Type#getInternalName() getInternalName}).
      * @param outerName
-     *            the internal name of the class to which the inner class
+     *            the internal className of the class to which the inner class
      *            belongs (see {@link Type#getInternalName() getInternalName}).
      *            May be <tt>null</tt> for not member classes.
      * @param innerName
-     *            the (simple) name of the inner class inside its enclosing
+     *            the (simple) className of the inner class inside its enclosing
      *            class. May be <tt>null</tt> for anonymous inner classes.
      * @param access
      *            the access flags of the inner class as originally declared in
@@ -246,7 +246,7 @@ public abstract class ClassVisitor {
      *            the field's access flags (see {@link Opcodes}). This parameter
      *            also indicates if the field is synthetic and/or deprecated.
      * @param name
-     *            the field's name.
+     *            the field's className.
      * @param desc
      *            the field's descriptor (see {@link Type Type}).
      * @param signature
@@ -284,7 +284,7 @@ public abstract class ClassVisitor {
      *            parameter also indicates if the method is synthetic and/or
      *            deprecated.
      * @param name
-     *            the method's name.
+     *            the method's className.
      * @param desc
      *            the method's descriptor (see {@link Type Type}).
      * @param signature

@@ -3,15 +3,15 @@
  * Copyright (c) 2000-2011 INRIA, France Telecom
  * All rights reserved.
  *
- * Redistribution and use in source and binary forms, with or without
+ * Redistribution and use in srccode and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
- * 1. Redistributions of source code must retain the above copyright
+ * 1. Redistributions of srccode code must retain the above copyright
  *    notice, this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. Neither the name of the copyright holders nor the names of its
+ * 3. Neither the className of the copyright holders nor the names of its
  *    contributors may be used to endorse or promote products derived from
  *    this software without specific prior written permission.
  *
@@ -48,14 +48,14 @@ public class AnnotationNode extends AnnotationVisitor {
     public String desc;
 
     /**
-     * The name value pairs of this annotation. Each name value pair is stored
-     * as two consecutive elements in the list. The name is a {@link String},
+     * The className value pairs of this annotation. Each className value pair is stored
+     * as two consecutive elements in the list. The className is a {@link String},
      * and the value may be a {@link Byte}, {@link Boolean}, {@link Character},
      * {@link Short}, {@link Integer}, {@link Long}, {@link Float},
      * {@link Double}, {@link String} or {@link org.osgl.oms.asm.Type}, or an
      * two elements String array (for enumeration values), a
      * {@link AnnotationNode}, or a {@link java.util.List} of values of one of the
-     * preceding types. The list may be <tt>null</tt> if there is no name value
+     * preceding types. The list may be <tt>null</tt> if there is no className value
      * pair.
      */
     public List<Object> values;
@@ -203,7 +203,7 @@ public class AnnotationNode extends AnnotationVisitor {
      * @param av
      *            an annotation visitor. Maybe <tt>null</tt>.
      * @param name
-     *            the value name.
+     *            the value className.
      * @param value
      *            the actual value.
      */

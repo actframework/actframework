@@ -3,15 +3,15 @@
  * Copyright (c) 2000-2011 INRIA, France Telecom
  * All rights reserved.
  *
- * Redistribution and use in source and binary forms, with or without
+ * Redistribution and use in srccode and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
- * 1. Redistributions of source code must retain the above copyright
+ * 1. Redistributions of srccode code must retain the above copyright
  *    notice, this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. Neither the name of the copyright holders nor the names of its
+ * 3. Neither the className of the copyright holders nor the names of its
  *    contributors may be used to endorse or promote products derived from
  *    this software without specific prior written permission.
  *
@@ -42,7 +42,7 @@ import java.util.Map;
 public class TypeInsnNode extends AbstractInsnNode {
 
     /**
-     * The operand of this instruction. This operand is an internal name (see
+     * The operand of this instruction. This operand is an internal className (see
      * {@link org.osgl.oms.asm.Type}).
      */
     public String desc;
@@ -55,7 +55,7 @@ public class TypeInsnNode extends AbstractInsnNode {
      *            opcode must be NEW, ANEWARRAY, CHECKCAST or INSTANCEOF.
      * @param desc
      *            the operand of the instruction to be constructed. This operand
-     *            is an internal name (see {@link org.osgl.oms.asm.Type}).
+     *            is an internal className (see {@link org.osgl.oms.asm.Type}).
      */
     public TypeInsnNode(final int opcode, final String desc) {
         super(opcode);

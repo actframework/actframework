@@ -7,5 +7,5 @@ import org.osgl.oms.util.ClassFilter;
  * Tag a class that could be plug into OMS stack
  */
 public interface Plugin {
-    void plugin();
+    void register();
 }

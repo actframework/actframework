@@ -3,15 +3,15 @@
  * Copyright (c) 2000-2011 INRIA, France Telecom
  * All rights reserved.
  *
- * Redistribution and use in source and binary forms, with or without
+ * Redistribution and use in srccode and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
- * 1. Redistributions of source code must retain the above copyright
+ * 1. Redistributions of srccode code must retain the above copyright
  *    notice, this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. Neither the name of the copyright holders nor the names of its
+ * 3. Neither the className of the copyright holders nor the names of its
  *    contributors may be used to endorse or promote products derived from
  *    this software without specific prior written permission.
  *
@@ -69,25 +69,25 @@ import java.util.Collection;
  *
  * The sequence of items in the stream is as follows:
  *
- * 1. The class name written using UTF encoding.
+ * 1. The class className written using UTF encoding.
  * 2. The class modifiers written as a 32-bit integer.
- * 3. The name of each interface sorted by name written using UTF encoding.
- * 4. For each field of the class sorted by field name (except private static
+ * 3. The className of each interface sorted by className written using UTF encoding.
+ * 4. For each field of the class sorted by field className (except private static
  * and private transient fields):
- * 1. The name of the field in UTF encoding.
+ * 1. The className of the field in UTF encoding.
  * 2. The modifiers of the field written as a 32-bit integer.
  * 3. The descriptor of the field in UTF encoding
  * 5. If a class initializer exists, write out the following:
- * 1. The name of the method, &lt;clinit&gt;, in UTF encoding.
+ * 1. The className of the method, &lt;clinit&gt;, in UTF encoding.
  * 2. The modifier of the method, java.lang.reflect.Modifier.STATIC,
  * written as a 32-bit integer.
  * 3. The descriptor of the method, ()V, in UTF encoding.
- * 6. For each non-private constructor sorted by method name and signature:
- * 1. The name of the method, &lt;init&gt;, in UTF encoding.
+ * 6. For each non-private constructor sorted by method className and signature:
+ * 1. The className of the method, &lt;init&gt;, in UTF encoding.
  * 2. The modifiers of the method written as a 32-bit integer.
  * 3. The descriptor of the method in UTF encoding.
- * 7. For each non-private method sorted by method name and signature:
- * 1. The name of the method in UTF encoding.
+ * 7. For each non-private method sorted by method className and signature:
+ * 1. The className of the method in UTF encoding.
  * 2. The modifiers of the method written as a 32-bit integer.
  * 3. The descriptor of the method in UTF encoding.
  * 8. The SHA-1 algorithm is executed on the stream of bytes produced by
@@ -128,7 +128,7 @@ public class SerialVersionUIDAdder extends ClassVisitor {
     private int access;
 
     /**
-     * Internal name of the class
+     * Internal className of the class
      */
     private String name;
 
@@ -198,7 +198,7 @@ public class SerialVersionUIDAdder extends ClassVisitor {
     // ------------------------------------------------------------------------
 
     /*
-     * Visit class header and get class name, access , and interfaces
+     * Visit class header and get class className, access , and interfaces
      * information (step 1,2, and 3) for SVUID computation.
      */
     @Override
@@ -361,7 +361,7 @@ public class SerialVersionUIDAdder extends ClassVisitor {
             dos = new DataOutputStream(bos);
 
             /*
-             * 1. The class name written using UTF encoding.
+             * 1. The class className written using UTF encoding.
              */
             dos.writeUTF(name.replace('/', '.'));
 
@@ -373,7 +373,7 @@ public class SerialVersionUIDAdder extends ClassVisitor {
                             | Opcodes.ACC_INTERFACE | Opcodes.ACC_ABSTRACT));
 
             /*
-             * 3. The name of each interface sorted by name written using UTF
+             * 3. The className of each interface sorted by className written using UTF
              * encoding.
              */
             Arrays.sort(interfaces);
@@ -382,10 +382,10 @@ public class SerialVersionUIDAdder extends ClassVisitor {
             }
 
             /*
-             * 4. For each field of the class sorted by field name (except
+             * 4. For each field of the class sorted by field className (except
              * private static and private transient fields):
              * 
-             * 1. The name of the field in UTF encoding. 2. The modifiers of the
+             * 1. The className of the field in UTF encoding. 2. The modifiers of the
              * field written as a 32-bit integer. 3. The descriptor of the field
              * in UTF encoding
              * 
@@ -396,7 +396,7 @@ public class SerialVersionUIDAdder extends ClassVisitor {
 
             /*
              * 5. If a class initializer exists, write out the following: 1. The
-             * name of the method, <clinit>, in UTF encoding. 2. The modifier of
+             * className of the method, <clinit>, in UTF encoding. 2. The modifier of
              * the method, java.lang.reflect.Modifier.STATIC, written as a
              * 32-bit integer. 3. The descriptor of the method, ()V, in UTF
              * encoding.
@@ -408,16 +408,16 @@ public class SerialVersionUIDAdder extends ClassVisitor {
             } // if..
 
             /*
-             * 6. For each non-private constructor sorted by method name and
-             * signature: 1. The name of the method, <init>, in UTF encoding. 2.
+             * 6. For each non-private constructor sorted by method className and
+             * signature: 1. The className of the method, <init>, in UTF encoding. 2.
              * The modifiers of the method written as a 32-bit integer. 3. The
              * descriptor of the method in UTF encoding.
              */
             writeItems(svuidConstructors, dos, true);
 
             /*
-             * 7. For each non-private method sorted by method name and
-             * signature: 1. The name of the method in UTF encoding. 2. The
+             * 7. For each non-private method sorted by method className and
+             * signature: 1. The className of the method in UTF encoding. 2. The
              * modifiers of the method written as a 32-bit integer. 3. The
              * descriptor of the method in UTF encoding.
              */

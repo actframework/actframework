@@ -3,15 +3,15 @@
  * Copyright (c) 2000-2011 INRIA, France Telecom
  * All rights reserved.
  *
- * Redistribution and use in source and binary forms, with or without
+ * Redistribution and use in srccode and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
- * 1. Redistributions of source code must retain the above copyright
+ * 1. Redistributions of srccode code must retain the above copyright
  *    notice, this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. Neither the name of the copyright holders nor the names of its
+ * 3. Neither the className of the copyright holders nor the names of its
  *    contributors may be used to endorse or promote products derived from
  *    this software without specific prior written permission.
  *
@@ -84,7 +84,7 @@ public abstract class AnnotationVisitor {
      * Visits a primitive value of the annotation.
      *
      * @param name
-     *            the value name.
+     *            the value className.
      * @param value
      *            the actual value, whose type must be {@link Byte},
      *            {@link Boolean}, {@link Character}, {@link Short},
@@ -105,7 +105,7 @@ public abstract class AnnotationVisitor {
      * Visits an enumeration value of the annotation.
      *
      * @param name
-     *            the value name.
+     *            the value className.
      * @param desc
      *            the class descriptor of the enumeration class.
      * @param value
@@ -121,7 +121,7 @@ public abstract class AnnotationVisitor {
      * Visits a nested annotation value of the annotation.
      *
      * @param name
-     *            the value name.
+     *            the value className.
      * @param desc
      *            the class descriptor of the nested annotation class.
      * @return a visitor to visit the actual nested annotation value, or
@@ -144,10 +144,10 @@ public abstract class AnnotationVisitor {
      * {@link ClassReader} does.
      * 
      * @param name
-     *            the value name.
+     *            the value className.
      * @return a visitor to visit the actual array value elements, or
      *         <tt>null</tt> if this visitor is not interested in visiting these
-     *         values. The 'name' parameters passed to the methods of this
+     *         values. The 'className' parameters passed to the methods of this
      *         visitor are ignored. <i>All the array values must be visited
      *         before calling other methods on this annotation visitor</i>.
      */

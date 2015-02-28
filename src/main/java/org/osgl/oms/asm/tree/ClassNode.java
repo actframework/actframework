@@ -3,15 +3,15 @@
  * Copyright (c) 2000-2011 INRIA, France Telecom
  * All rights reserved.
  *
- * Redistribution and use in source and binary forms, with or without
+ * Redistribution and use in srccode and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
- * 1. Redistributions of source code must retain the above copyright
+ * 1. Redistributions of srccode code must retain the above copyright
  *    notice, this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. Neither the name of the copyright holders nor the names of its
+ * 3. Neither the className of the copyright holders nor the names of its
  *    contributors may be used to endorse or promote products derived from
  *    this software without specific prior written permission.
  *
@@ -54,7 +54,7 @@ public class ClassNode extends ClassVisitor {
     public int access;
 
     /**
-     * The internal name of the class (see
+     * The internal className of the class (see
      * {@link org.osgl.oms.asm.Type#getInternalName() getInternalName}).
      */
     public String name;
@@ -65,7 +65,7 @@ public class ClassNode extends ClassVisitor {
     public String signature;
 
     /**
-     * The internal of name of the super class (see
+     * The internal of className of the super class (see
      * {@link org.osgl.oms.asm.Type#getInternalName() getInternalName}). For
      * interfaces, the super class is {@link Object}. May be <tt>null</tt>, but
      * only for the {@link Object} class.
@@ -80,25 +80,25 @@ public class ClassNode extends ClassVisitor {
     public List<String> interfaces;
 
     /**
-     * The name of the source file from which this class was compiled. May be
+     * The className of the srccode file from which this class was compiled. May be
      * <tt>null</tt>.
      */
     public String sourceFile;
 
     /**
-     * Debug information to compute the correspondence between source and
+     * Debug information to compute the correspondence between srccode and
      * compiled elements of the class. May be <tt>null</tt>.
      */
     public String sourceDebug;
 
     /**
-     * The internal name of the enclosing class of the class. May be
+     * The internal className of the enclosing class of the class. May be
      * <tt>null</tt>.
      */
     public String outerClass;
 
     /**
-     * The name of the method that contains the class, or <tt>null</tt> if the
+     * The className of the method that contains the class, or <tt>null</tt> if the
      * class is not enclosed in a method.
      */
     public String outerMethod;
@@ -356,7 +356,7 @@ public class ClassNode extends ClassVisitor {
         String[] interfaces = new String[this.interfaces.size()];
         this.interfaces.toArray(interfaces);
         cv.visit(version, access, name, signature, superName, interfaces);
-        // visits source
+        // visits srccode
         if (sourceFile != null || sourceDebug != null) {
             cv.visitSource(sourceFile, sourceDebug);
         }

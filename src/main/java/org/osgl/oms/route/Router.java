@@ -5,11 +5,11 @@ import org.osgl.http.H;
 import org.osgl.http.util.Path;
 import org.osgl.mvc.result.NotFound;
 import org.osgl.oms.app.AppContext;
-import org.osgl.oms.ParamNames;
+import org.osgl.oms.controller.ParamNames;
 import org.osgl.oms.action.ActionHandler;
 import org.osgl.oms.action.ActionHandlerResolver;
 import org.osgl.oms.action.ActionHandlerResolverBase;
-import org.osgl.oms.action.builtin.ControllerProxy;
+import org.osgl.oms.action.builtin.ActionProxy;
 import org.osgl.oms.action.builtin.Echo;
 import org.osgl.oms.action.builtin.Redirect;
 import org.osgl.oms.action.builtin.StaticFileGetter;
@@ -45,7 +45,7 @@ public class Router {
             lookup = new ActionHandlerResolverBase() {
                 @Override
                 public ActionHandler resolve(CharSequence payload) {
-                    return new ControllerProxy(payload.toString());
+                    return new ActionProxy(payload.toString(), appConfig);
                 }
             };
         }
@@ -86,7 +86,7 @@ public class Router {
 
     // --- route building ---
     public boolean isMapped(H.Method method, CharSequence path) {
-        return null != _locate(method, path);
+        return null != _search(method, path);
     }
 
     public void addMapping(H.Method method, CharSequence path, ActionHandler handler) {
@@ -111,6 +111,23 @@ public class Router {
         if (null == node.handler) {
             node.handler(resolveActionHandler(action));
         }
+    }
+
+    private Node _search(H.Method method, CharSequence path) {
+        Node node = root(method);
+        assert node != null;
+        E.unsupportedIf(null == node, "Method %s is not supported", method);
+        if (path.length() == 1 && path.charAt(0) == '/') {
+            return node;
+        }
+        String sUrl = path.toString();
+        List<CharSequence> paths = Path.tokenize(Unsafe.bufOf(sUrl));
+        int len = paths.size();
+        for (int i = 0; i < len - 1; ++i) {
+            node = node.findChild((StrBase) paths.get(i));
+            if (null == node) return null;
+        }
+        return node.findChild((StrBase) paths.get(len - 1));
     }
 
     private Node _locate(H.Method method, CharSequence path) {
@@ -339,6 +356,11 @@ public class Router {
                 }
             }
             return node;
+        }
+
+        Node findChild(StrBase<?> name) {
+            name = name.trim();
+            return childByMetaInfo(name);
         }
 
         Node addChild(StrBase<?> name) {

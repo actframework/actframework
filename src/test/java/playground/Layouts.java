@@ -32,4 +32,8 @@ public enum Layouts {
             return "mylines.layout";
         }
     }
+
+    public static void main(String[] args) {
+        AbstractClassTest.foo();
+    }
 }

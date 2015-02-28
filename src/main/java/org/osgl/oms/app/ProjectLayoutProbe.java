@@ -22,7 +22,7 @@ public abstract class ProjectLayoutProbe implements Plugin {
     public abstract ProjectLayout probe(File appBase);
 
     @Override
-    public void plugin() {
+    public void register() {
         OMS.mode().appScanner().register(this);
     }
 

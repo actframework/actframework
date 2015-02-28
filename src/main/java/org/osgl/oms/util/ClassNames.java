@@ -8,16 +8,31 @@ import java.io.File;
 /**
  * utilities to manipulate class names
  */
-public enum Names {
+public enum ClassNames {
     ;
-    public static String fileToClass(String fileName) {
+    public static String classFileNameToClassName(String fileName) {
         if (File.separatorChar != '/') {
             fileName = fileName.replace(File.separatorChar, '/');
+        }
+        if (fileName.startsWith("/")) {
+            fileName = fileName.substring(1);
         }
         return S.beforeLast(fileName.replace('/', '.'), ".");
     }
 
-    public static String fileToClass(File baseDir, String filePath) {
+    public static String classNameToClassFileName(String className) {
+        FastStr fs = FastStr.of(className);
+        if (className.contains("$")) {
+            fs = fs.beforeFirst('$');
+        }
+        fs = fs.replace('.', '/').append(".class").prepend('/');
+        return fs.toString();
+    }
+
+    public static String sourceFileNameToClassName(File baseDir, String filePath) {
+        if (!filePath.endsWith(".java")) {
+            return null;
+        }
         FastStr path0 = FastStr.of(baseDir.getAbsolutePath());
         FastStr path1 = FastStr.of(filePath);
         if (File.separatorChar != '/') {

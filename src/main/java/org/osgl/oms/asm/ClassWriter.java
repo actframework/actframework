@@ -3,15 +3,15 @@
  * Copyright (c) 2000-2011 INRIA, France Telecom
  * All rights reserved.
  *
- * Redistribution and use in source and binary forms, with or without
+ * Redistribution and use in srccode and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
- * 1. Redistributions of source code must retain the above copyright
+ * 1. Redistributions of srccode code must retain the above copyright
  *    notice, this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. Neither the name of the copyright holders nor the names of its
+ * 3. Neither the className of the copyright holders nor the names of its
  *    contributors may be used to endorse or promote products derived from
  *    this software without specific prior written permission.
  *
@@ -335,7 +335,7 @@ public class ClassWriter extends ClassVisitor {
      * the Item whose index is <tt>i</tt>. All Item objects stored in this array
      * are also stored in the {@link #items} hash table. These two arrays allow
      * to retrieve an Item from its index or, conversely, to get the index of an
-     * Item from its value. Each Item stores an internal name in its
+     * Item from its value. Each Item stores an internal className in its
      * {@link Item#strVal1} field.
      */
     Item[] typeTable;
@@ -351,12 +351,12 @@ public class ClassWriter extends ClassVisitor {
     private int access;
 
     /**
-     * The constant pool item that contains the internal name of this class.
+     * The constant pool item that contains the internal className of this class.
      */
     private int name;
 
     /**
-     * The internal name of this class.
+     * The internal className of this class.
      */
     String thisName;
 
@@ -366,7 +366,7 @@ public class ClassWriter extends ClassVisitor {
     private int signature;
 
     /**
-     * The constant pool item that contains the internal name of the super class
+     * The constant pool item that contains the internal className of the super class
      * of this class.
      */
     private int superName;
@@ -384,7 +384,7 @@ public class ClassWriter extends ClassVisitor {
     private int[] interfaces;
 
     /**
-     * The index of the constant pool item that contains the name of the source
+     * The index of the constant pool item that contains the className of the srccode
      * file from which this class was compiled.
      */
     private int sourceFile;
@@ -395,13 +395,13 @@ public class ClassWriter extends ClassVisitor {
     private ByteVector sourceDebug;
 
     /**
-     * The constant pool item that contains the name of the enclosing class of
+     * The constant pool item that contains the className of the enclosing class of
      * this class.
      */
     private int enclosingMethodOwner;
 
     /**
-     * The constant pool item that contains the name and descriptor of the
+     * The constant pool item that contains the className and descriptor of the
      * enclosing method of this class.
      */
     private int enclosingMethod;
@@ -1103,7 +1103,7 @@ public class ClassWriter extends ClassVisitor {
      * normally not needed by class generators or adapters.</i>
      *
      * @param value
-     *            the internal name of the class.
+     *            the internal className of the class.
      * @return a new or already existing class reference item.
      */
     Item newClassItem(final String value) {
@@ -1124,7 +1124,7 @@ public class ClassWriter extends ClassVisitor {
      * normally not needed by class generators or adapters.</i>
      *
      * @param value
-     *            the internal name of the class.
+     *            the internal className of the class.
      * @return the index of a new or already existing class reference item.
      */
     public int newClass(final String value) {
@@ -1182,9 +1182,9 @@ public class ClassWriter extends ClassVisitor {
      *            {@link Opcodes#H_NEWINVOKESPECIAL} or
      *            {@link Opcodes#H_INVOKEINTERFACE}.
      * @param owner
-     *            the internal name of the field or method owner class.
+     *            the internal className of the field or method owner class.
      * @param name
-     *            the name of the field or method.
+     *            the className of the field or method.
      * @param desc
      *            the descriptor of the field or method.
      * @return a new or an already existing method type reference item.
@@ -1223,9 +1223,9 @@ public class ClassWriter extends ClassVisitor {
      *            {@link Opcodes#H_NEWINVOKESPECIAL} or
      *            {@link Opcodes#H_INVOKEINTERFACE}.
      * @param owner
-     *            the internal name of the field or method owner class.
+     *            the internal className of the field or method owner class.
      * @param name
-     *            the name of the field or method.
+     *            the className of the field or method.
      * @param desc
      *            the descriptor of the field or method.
      * @return the index of a new or already existing method type reference
@@ -1243,7 +1243,7 @@ public class ClassWriter extends ClassVisitor {
      * normally not needed by class generators or adapters.</i>
      *
      * @param name
-     *            name of the invoked method.
+     *            className of the invoked method.
      * @param desc
      *            descriptor of the invoke method.
      * @param bsm
@@ -1327,7 +1327,7 @@ public class ClassWriter extends ClassVisitor {
      * normally not needed by class generators or adapters.</i>
      *
      * @param name
-     *            name of the invoked method.
+     *            className of the invoked method.
      * @param desc
      *            descriptor of the invoke method.
      * @param bsm
@@ -1348,9 +1348,9 @@ public class ClassWriter extends ClassVisitor {
      * Does nothing if the constant pool already contains a similar item.
      *
      * @param owner
-     *            the internal name of the field's owner class.
+     *            the internal className of the field's owner class.
      * @param name
-     *            the field's name.
+     *            the field's className.
      * @param desc
      *            the field's descriptor.
      * @return a new or already existing field reference item.
@@ -1373,9 +1373,9 @@ public class ClassWriter extends ClassVisitor {
      * normally not needed by class generators or adapters.</i>
      *
      * @param owner
-     *            the internal name of the field's owner class.
+     *            the internal className of the field's owner class.
      * @param name
-     *            the field's name.
+     *            the field's className.
      * @param desc
      *            the field's descriptor.
      * @return the index of a new or already existing field reference item.
@@ -1389,9 +1389,9 @@ public class ClassWriter extends ClassVisitor {
      * Does nothing if the constant pool already contains a similar item.
      *
      * @param owner
-     *            the internal name of the method's owner class.
+     *            the internal className of the method's owner class.
      * @param name
-     *            the method's name.
+     *            the method's className.
      * @param desc
      *            the method's descriptor.
      * @param itf
@@ -1418,9 +1418,9 @@ public class ClassWriter extends ClassVisitor {
      * normally not needed by class generators or adapters.</i>
      *
      * @param owner
-     *            the internal name of the method's owner class.
+     *            the internal className of the method's owner class.
      * @param name
-     *            the method's name.
+     *            the method's className.
      * @param desc
      *            the method's descriptor.
      * @param itf
@@ -1530,30 +1530,30 @@ public class ClassWriter extends ClassVisitor {
     }
 
     /**
-     * Adds a name and type to the constant pool of the class being build. Does
+     * Adds a className and type to the constant pool of the class being build. Does
      * nothing if the constant pool already contains a similar item. <i>This
      * method is intended for {@link Attribute} sub classes, and is normally not
      * needed by class generators or adapters.</i>
      *
      * @param name
-     *            a name.
+     *            a className.
      * @param desc
      *            a type descriptor.
-     * @return the index of a new or already existing name and type item.
+     * @return the index of a new or already existing className and type item.
      */
     public int newNameType(final String name, final String desc) {
         return newNameTypeItem(name, desc).index;
     }
 
     /**
-     * Adds a name and type to the constant pool of the class being build. Does
+     * Adds a className and type to the constant pool of the class being build. Does
      * nothing if the constant pool already contains a similar item.
      *
      * @param name
-     *            a name.
+     *            a className.
      * @param desc
      *            a type descriptor.
-     * @return a new or already existing name and type item.
+     * @return a new or already existing className and type item.
      */
     Item newNameTypeItem(final String name, final String desc) {
         key2.set(NAME_TYPE, name, desc, null);
@@ -1567,12 +1567,12 @@ public class ClassWriter extends ClassVisitor {
     }
 
     /**
-     * Adds the given internal name to {@link #typeTable} and returns its index.
-     * Does nothing if the type table already contains this internal name.
+     * Adds the given internal className to {@link #typeTable} and returns its index.
+     * Does nothing if the type table already contains this internal className.
      *
      * @param type
-     *            the internal name to be added to the type table.
-     * @return the index of this internal name in the type table.
+     *            the internal className to be added to the type table.
+     * @return the index of this internal className in the type table.
      */
     int addType(final String type) {
         key.set(TYPE_NORMAL, type, null, null);
@@ -1586,14 +1586,14 @@ public class ClassWriter extends ClassVisitor {
     /**
      * Adds the given "uninitialized" type to {@link #typeTable} and returns its
      * index. This method is used for UNINITIALIZED types, made of an internal
-     * name and a bytecode offset.
+     * className and a bytecode offset.
      *
      * @param type
-     *            the internal name to be added to the type table.
+     *            the internal className to be added to the type table.
      * @param offset
      *            the bytecode offset of the NEW instruction that created this
      *            UNINITIALIZED type value.
-     * @return the index of this internal name in the type table.
+     * @return the index of this internal className in the type table.
      */
     int addUninitializedType(final String type, final int offset) {
         key.type = TYPE_UNINIT;
@@ -1638,9 +1638,9 @@ public class ClassWriter extends ClassVisitor {
      * parameters.
      *
      * @param type1
-     *            index of an internal name in {@link #typeTable}.
+     *            index of an internal className in {@link #typeTable}.
      * @param type2
-     *            index of an internal name in {@link #typeTable}.
+     *            index of an internal className in {@link #typeTable}.
      * @return the index of the common super type of the two given types.
      */
     int getMergedType(final int type1, final int type2) {
@@ -1668,10 +1668,10 @@ public class ClassWriter extends ClassVisitor {
      * course not be loaded since it is under construction.
      *
      * @param type1
-     *            the internal name of a class.
+     *            the internal className of a class.
      * @param type2
-     *            the internal name of another class.
-     * @return the internal name of the common super class of the two given
+     *            the internal className of another class.
+     * @return the internal className of the common super class of the two given
      *         classes.
      */
     protected String getCommonSuperClass(final String type1, final String type2) {

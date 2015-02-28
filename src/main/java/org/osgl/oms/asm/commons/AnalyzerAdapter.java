@@ -3,15 +3,15 @@
  * Copyright (c) 2000-2011 INRIA, France Telecom
  * All rights reserved.
  *
- * Redistribution and use in source and binary forms, with or without
+ * Redistribution and use in srccode and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
- * 1. Redistributions of source code must retain the above copyright
+ * 1. Redistributions of srccode code must retain the above copyright
  *    notice, this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. Neither the name of the copyright holders nor the names of its
+ * 3. Neither the className of the copyright holders nor the names of its
  *    contributors may be used to endorse or promote products derived from
  *    this software without specific prior written permission.
  *
@@ -95,7 +95,7 @@ public class AnalyzerAdapter extends MethodVisitor {
      * Information about uninitialized types in the current execution frame.
      * This map associates internal names to Label objects. Each label
      * designates a NEW instruction that created the currently uninitialized
-     * types, and the associated internal name represents the NEW operand, i.e.
+     * types, and the associated internal className represents the NEW operand, i.e.
      * the final, initialized type value.
      */
     public Map<Object, Object> uninitializedTypes;
@@ -111,7 +111,7 @@ public class AnalyzerAdapter extends MethodVisitor {
     private int maxLocals;
 
     /**
-     * The owner's class name.
+     * The owner's class className.
      */
     private String owner;
 
@@ -122,11 +122,11 @@ public class AnalyzerAdapter extends MethodVisitor {
      * version.
      *
      * @param owner
-     *            the owner's class name.
+     *            the owner's class className.
      * @param access
      *            the method's access flags (see {@link org.osgl.oms.asm.Opcodes}).
      * @param name
-     *            the method's name.
+     *            the method's className.
      * @param desc
      *            the method's descriptor (see {@link org.osgl.oms.asm.Type Type}).
      * @param mv
@@ -150,11 +150,11 @@ public class AnalyzerAdapter extends MethodVisitor {
      *            the ASM API version implemented by this visitor. Must be one
      *            of {@link org.osgl.oms.asm.Opcodes#ASM4} or {@link org.osgl.oms.asm.Opcodes#ASM5}.
      * @param owner
-     *            the owner's class name.
+     *            the owner's class className.
      * @param access
      *            the method's access flags (see {@link org.osgl.oms.asm.Opcodes}).
      * @param name
-     *            the method's name.
+     *            the method's className.
      * @param desc
      *            the method's descriptor (see {@link org.osgl.oms.asm.Type Type}).
      * @param mv

@@ -1,12 +1,15 @@
-package org.osgl.oms.be.controller;
+package org.osgl.oms.controller;
 
 import org.osgl._;
-import org.osgl.oms.OMS;
 import org.osgl.oms.asm.*;
+import org.osgl.oms.controller.meta.LocalVariableMetaInfo;
+import org.osgl.oms.controller.meta.ParamMetaInfo;
 import org.osgl.util.E;
 
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
+
+import static org.osgl.oms.controller.meta.ControllerClassMetaInfo.isActionAnnotation;
 
 public class ActionMethodInspector extends MethodVisitor
         implements Opcodes {
@@ -60,10 +63,15 @@ public class ActionMethodInspector extends MethodVisitor
         Type type = Type.getType(desc);
         String className = type.getClassName();
         Class<? extends Annotation> c = _.classForName(className);
-        boolean b = OMS.isActionAnnotation(c);
+        boolean b = isActionAnnotation(c);
         return b ? new ActionAnnotationInspector(av, this, c) : av;
     }
 
+    @Override
+    public void visitParameter(String name, int access) {
+        System.out.printf(">>>> param: %s\n", name);
+        super.visitParameter(name, access);
+    }
 
     @Override
     public void visitLocalVariable(String name, String desc, String signature, Label start, Label end, int index

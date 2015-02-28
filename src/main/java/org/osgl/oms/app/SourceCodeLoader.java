@@ -2,7 +2,7 @@ package org.osgl.oms.app;
 
 /**
  * The {@code SourceCodeLoader} load byte code dynamically compiled
- * from source code into JVM
+ * from srccode code into JVM
  */
 public class SourceCodeLoader extends ClassLoader {
     @Override

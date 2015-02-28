@@ -44,7 +44,7 @@ public class BootstrapClassLoaderTestRunner extends BlockJUnit4ClassRunner {
         packageOmsJarInto(lib);
         packageTestJarInto(lib);
         packagePluginJarInto(plugin);
-        System.setProperty(BootstrapClassLoader.OMS_HOME, omsHome.getAbsolutePath());
+        System.setProperty(Constants.OMS_HOME, omsHome.getAbsolutePath());
     }
 
     private static File ensureDir(File root, String dir) {

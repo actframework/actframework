@@ -166,6 +166,12 @@
       <groupId>org.osgl</groupId>
       <artifactId>osgl-storage</artifactId>
       <version>0.3-SNAPSHOT</version>
+      <exclusions>
+        <exclusion>
+          <groupId>org.osgl</groupId>
+          <artifactId>osgl-tool</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
 
     <dependency>

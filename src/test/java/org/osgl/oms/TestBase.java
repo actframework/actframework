@@ -3,13 +3,23 @@ package org.osgl.oms;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.runner.JUnitCore;
+import org.osgl.oms.app.App;
+import org.osgl.oms.app.AppContext;
+import org.osgl.oms.conf.AppConfig;
+import org.osgl.oms.route.Router;
+import org.osgl.oms.util.ClassNames;
 import org.osgl.util.E;
 import org.osgl.util.FastStr;
+import org.osgl.util.IO;
 import org.osgl.util.S;
 
 import java.io.File;
+import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.util.Arrays;
+
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 @Ignore
 public class TestBase extends Assert {
@@ -73,6 +83,28 @@ public class TestBase extends Assert {
         FastStr classRoot = fs.beforeLast("/");
         FastStr target = classRoot.beforeLast("/");
         return new File(target.toString());
+    }
+
+    protected Router mockRouter;
+    protected AppContext mockAppContext;
+    protected AppConfig mockAppConfig;
+    protected App mockApp;
+
+    protected void setup() {
+        mockApp = mock(App.class);
+        mockAppConfig = mock(AppConfig.class);
+        mockAppContext = mock(AppContext.class);
+        when(mockAppContext.app()).thenReturn(mockApp);
+        when(mockAppContext.config()).thenReturn(mockAppConfig);
+        mockRouter = mock(Router.class);
+        when(mockApp.config()).thenReturn(mockAppConfig);
+        when(mockApp.router()).thenReturn(mockRouter);
+    }
+
+    protected byte[] loadBytecode(String className) {
+        String fileName = ClassNames.classNameToClassFileName(className);
+        InputStream is = getClass().getResourceAsStream(fileName);
+        return IO.readContent(is);
     }
 
 }

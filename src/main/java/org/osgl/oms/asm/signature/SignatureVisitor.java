@@ -3,15 +3,15 @@
  * Copyright (c) 2000-2011 INRIA, France Telecom
  * All rights reserved.
  *
- * Redistribution and use in source and binary forms, with or without
+ * Redistribution and use in srccode and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
- * 1. Redistributions of source code must retain the above copyright
+ * 1. Redistributions of srccode code must retain the above copyright
  *    notice, this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. Neither the name of the copyright holders nor the names of its
+ * 3. Neither the className of the copyright holders nor the names of its
  *    contributors may be used to endorse or promote products derived from
  *    this software without specific prior written permission.
  *
@@ -95,7 +95,7 @@ public abstract class SignatureVisitor {
      * Visits a formal type parameter.
      * 
      * @param name
-     *            the name of the formal parameter.
+     *            the className of the formal parameter.
      */
     public void visitFormalTypeParameter(String name) {
     }
@@ -178,7 +178,7 @@ public abstract class SignatureVisitor {
      * Visits a signature corresponding to a type variable.
      * 
      * @param name
-     *            the name of the type variable.
+     *            the className of the type variable.
      */
     public void visitTypeVariable(String name) {
     }
@@ -198,7 +198,7 @@ public abstract class SignatureVisitor {
      * type.
      * 
      * @param name
-     *            the internal name of the class or interface.
+     *            the internal className of the class or interface.
      */
     public void visitClassType(String name) {
     }
@@ -207,7 +207,7 @@ public abstract class SignatureVisitor {
      * Visits an inner class.
      * 
      * @param name
-     *            the local name of the inner class in its enclosing class.
+     *            the local className of the inner class in its enclosing class.
      */
     public void visitInnerClassType(String name) {
     }

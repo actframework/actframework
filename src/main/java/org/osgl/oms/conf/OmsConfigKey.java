@@ -20,7 +20,7 @@ import java.util.Map;
  * <code>built_in.transformer.disabled</code></li>
  * <p/>
  * <li>When a key is ended with <code>.impl</code>, then you can either put an instance into
- * the configuration map or a string of the class name</li>
+ * the configuration map or a string of the class className</li>
  * </ul>
  */
 public enum  OmsConfigKey implements ConfigKey {
@@ -42,7 +42,7 @@ public enum  OmsConfigKey implements ConfigKey {
      * {@code oms.mode} specifies the OMS running mode. Options:
      * <ul>
      *     <li>{@code dev} - run OMS during development, loading and refreshing class
-     *     directly from source code enabled in this mode</li>
+     *     directly from srccode code enabled in this mode</li>
      *     <li>{@code sit} - run OMS during system test</li>
      *     <li>{@code uat} - run OMS during UAT test</li>
      *     <li>{@code prod} - run OMS when system is live</li>

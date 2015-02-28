@@ -2,9 +2,9 @@ package org.osgl.oms.app;
 
 import org.osgl._;
 import org.osgl.oms.OMS;
-import org.osgl.oms.util.FsChangeDetector;
-import org.osgl.oms.util.FsEvent;
-import org.osgl.oms.util.FsEventListener;
+import org.osgl.oms.conf.AppConfig;
+import org.osgl.oms.route.Router;
+import org.osgl.oms.util.*;
 import org.osgl.util.C;
 import org.osgl.util.E;
 import org.osgl.util.S;
@@ -15,7 +15,7 @@ import java.util.Map;
 
 /**
  * Dev mode application class loader, which is able to
- * load classes directly from app source folder
+ * load classes directly from app srccode folder
  */
 public class DevModeClassLoader extends AppClassLoader {
 
@@ -33,17 +33,39 @@ public class DevModeClassLoader extends AppClassLoader {
     public DevModeClassLoader(App app) {
         super(app);
         compiler = new AppCompiler(this);
-        setupFsChangeMonitors();
+        setupFsChangeDetectors();
     }
 
     @Override
     public void detectChanges() {
-        super.detectChanges();
+        confChangeDetector.detectChanges();
+        libChangeDetector.detectChanges();
+        resourceChangeDetector.detectChanges();
+        sourceChangeDetector.detectChanges();
     }
 
     @Override
-    public boolean isAppClass(String className) {
+    public boolean isSourceClass(String className) {
         return sources.containsKey(className);
+    }
+
+    @Override
+    protected void preloadBytecode() {
+        super.preloadBytecode();
+        preloadSources();
+    }
+
+    @Override
+    protected void scanForActionMethods() {
+        AppConfig conf = app().config();
+        SourceCodeActionScanner scanner = new SourceCodeActionScanner();
+        Router router = app().router();
+        for (String className : sources.keySet()) {
+            if (conf.notControllerClass(className)) {
+                scanner.scan(className, sources.get(className).code(), router);
+            }
+        }
+        super.scan();
     }
 
     @Override
@@ -55,6 +77,20 @@ public class DevModeClassLoader extends AppClassLoader {
     Source source(String name) {
         return sources.get(name);
     }
+
+    private void preloadSources() {
+        final File sourceRoot = app().layout().source(app().base());
+        Files.filter(sourceRoot, JAVA_SOURCE, new _.Visitor<File>(){
+            @Override
+            public void visit(File file) throws _.Break {
+                Source source = Source.ofFile(sourceRoot, file);
+                if (null != source) {
+                    sources.put(source.className(), source);
+                }
+            }
+        });
+    }
+
 
     private byte[] bytecodeFromSource(String name) {
         Source source = sources.get(name);
@@ -80,17 +116,8 @@ public class DevModeClassLoader extends AppClassLoader {
         @Override
         public void on(FsEvent... events) {
             int len = events.length;
-            for (int i = 0; i < len; ++i) {
-                FsEvent e = events[i];
-                if (e.kind() == FsEvent.Kind.CREATE) {
-                    for (String s : e.paths()) {
-                        File file = new File(s);
-                        preloadClassFile(file);
-                    }
-                } else {
-                    OMS.requestRefreshClassLoader();
-                }
-            }
+            if (len < 0) return;
+            OMS.requestRefreshClassLoader();
         }
     };
 
@@ -122,7 +149,7 @@ public class DevModeClassLoader extends AppClassLoader {
         }
     };
 
-    private void setupFsChangeMonitors() {
+    private void setupFsChangeDetectors() {
         ProjectLayout layout = app().layout();
         File appBase = app().base();
         sourceChangeDetector = new FsChangeDetector(layout.source(appBase), JAVA_SOURCE, sourceChangeListener);

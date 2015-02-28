@@ -1,9 +1,7 @@
 package org.osgl.oms.app;
 
-import org.osgl._;
 import org.osgl.oms.OMS;
 import org.osgl.oms.OmsException;
-import org.osgl.util.E;
 
 /**
  * Application error
@@ -40,7 +38,7 @@ public abstract class OmsAppException extends OmsException {
         }
         AppClassLoader classLoader = app.classLoader();
         for (StackTraceElement stackTraceElement : cause.getStackTrace()) {
-            if (stackTraceElement.getLineNumber() > 0 && classLoader.isAppClass(stackTraceElement.getClassName())) {
+            if (stackTraceElement.getLineNumber() > 0 && classLoader.isSourceClass(stackTraceElement.getClassName())) {
                 return stackTraceElement;
             }
         }

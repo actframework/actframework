@@ -3,15 +3,15 @@
  * Copyright (c) 2000-2011 INRIA, France Telecom
  * All rights reserved.
  *
- * Redistribution and use in source and binary forms, with or without
+ * Redistribution and use in srccode and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
- * 1. Redistributions of source code must retain the above copyright
+ * 1. Redistributions of srccode code must retain the above copyright
  *    notice, this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. Neither the name of the copyright holders nor the names of its
+ * 3. Neither the className of the copyright holders nor the names of its
  *    contributors may be used to endorse or promote products derived from
  *    this software without specific prior written permission.
  *
@@ -417,7 +417,7 @@ public class CheckMethodAdapter extends MethodVisitor {
      * @param access
      *            the method's access flags.
      * @param name
-     *            the method's name.
+     *            the method's className.
      * @param desc
      *            the method's descriptor (see {@link org.osgl.oms.asm.Type Type}).
      * @param cmv
@@ -1175,7 +1175,7 @@ public class CheckMethodAdapter extends MethodVisitor {
     }
 
     /**
-     * Checks that the given string is a valid unqualified name.
+     * Checks that the given string is a valid unqualified className.
      * 
      * @param version
      *            the class version.
@@ -1219,7 +1219,7 @@ public class CheckMethodAdapter extends MethodVisitor {
      *            index of the first character of the identifier (inclusive).
      * @param end
      *            index of the last character of the identifier (exclusive). -1
-     *            is equivalent to <tt>name.length()</tt> if name is not
+     *            is equivalent to <tt>className.length()</tt> if className is not
      *            <tt>null</tt>.
      * @param msg
      *            a message to be used in case of error.
@@ -1287,7 +1287,7 @@ public class CheckMethodAdapter extends MethodVisitor {
     }
 
     /**
-     * Checks that the given string is a valid internal class name.
+     * Checks that the given string is a valid internal class className.
      * 
      * @param name
      *            the string to be checked.
@@ -1307,7 +1307,7 @@ public class CheckMethodAdapter extends MethodVisitor {
     }
 
     /**
-     * Checks that the given substring is a valid internal class name.
+     * Checks that the given substring is a valid internal class className.
      * 
      * @param name
      *            the string to be checked.
@@ -1315,7 +1315,7 @@ public class CheckMethodAdapter extends MethodVisitor {
      *            index of the first character of the identifier (inclusive).
      * @param end
      *            index of the last character of the identifier (exclusive). -1
-     *            is equivalent to <tt>name.length()</tt> if name is not
+     *            is equivalent to <tt>className.length()</tt> if className is not
      *            <tt>null</tt>.
      * @param msg
      *            a message to be used in case of error.
@@ -1511,11 +1511,11 @@ public class CheckMethodAdapter extends MethodVisitor {
     }
 
     /**
-     * Returns the field of the Label class whose name is given.
+     * Returns the field of the Label class whose className is given.
      * 
      * @param name
-     *            a field name.
-     * @return the field of the Label class whose name is given, or null.
+     *            a field className.
+     * @return the field of the Label class whose className is given, or null.
      */
     private static Field getLabelField(final String name) {
         try {

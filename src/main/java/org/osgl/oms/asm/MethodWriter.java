@@ -3,15 +3,15 @@
  * Copyright (c) 2000-2011 INRIA, France Telecom
  * All rights reserved.
  *
- * Redistribution and use in source and binary forms, with or without
+ * Redistribution and use in srccode and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
- * 1. Redistributions of source code must retain the above copyright
+ * 1. Redistributions of srccode code must retain the above copyright
  *    notice, this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. Neither the name of the copyright holders nor the names of its
+ * 3. Neither the className of the copyright holders nor the names of its
  *    contributors may be used to endorse or promote products derived from
  *    this software without specific prior written permission.
  *
@@ -127,7 +127,7 @@ class MethodWriter extends MethodVisitor {
     private int access;
 
     /**
-     * The index of the constant pool item that contains the name of this
+     * The index of the constant pool item that contains the className of this
      * method.
      */
     private final int name;
@@ -434,7 +434,7 @@ class MethodWriter extends MethodVisitor {
      * @param access
      *            the method's access flags (see {@link Opcodes}).
      * @param name
-     *            the method's name.
+     *            the method's className.
      * @param desc
      *            the method's descriptor (see {@link Type}).
      * @param signature
@@ -2383,7 +2383,7 @@ class MethodWriter extends MethodVisitor {
          * Parse the code to find the jump instructions whose offset will need
          * more than 2 bytes to be stored (the future offset is computed from
          * the current offset and from the number of bytes that will be inserted
-         * or removed between the source and target instructions). For each such
+         * or removed between the srccode and target instructions). For each such
          * instruction, adds an entry in (a copy of) the indexes and sizes
          * arrays (if this has not already been done in a previous iteration!).
          *
@@ -2863,7 +2863,7 @@ class MethodWriter extends MethodVisitor {
      *            (the instruction size <i>must not</i> become negative or
      *            null).
      * @param begin
-     *            index of the first byte of the source instruction.
+     *            index of the first byte of the srccode instruction.
      * @param end
      *            index of the first byte of the target instruction.
      * @return the future value of the given bytecode offset.

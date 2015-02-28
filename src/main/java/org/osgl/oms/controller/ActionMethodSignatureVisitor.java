@@ -1,4 +1,4 @@
-package org.osgl.oms.be.controller;
+package org.osgl.oms.controller;
 
 import org.osgl.oms.asm.Opcodes;
 import org.osgl.oms.asm.signature.SignatureVisitor;

@@ -26,7 +26,7 @@ public class PluginScanner {
             Class<?> c = pluginClasses.get(i);
             if (Plugin.class.isAssignableFrom(c)) {
                 Plugin p = (Plugin)_.newInstance(c);
-                p.plugin();
+                p.register();
             }
         }
     }

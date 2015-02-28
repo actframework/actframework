@@ -7,7 +7,6 @@ import org.osgl.logging.Logger;
 import org.osgl.util.C;
 import org.osgl.util.E;
 import org.osgl.util.IO;
-import org.osgl.util.S;
 
 import java.io.*;
 import java.util.Enumeration;
@@ -33,7 +32,7 @@ public enum Jars {
             @Override
             public Void apply(JarFile jarFile, JarEntry entry) throws NotAppliedException, _.Break {
                 try {
-                    String className = Names.fileToClass(entry.getName());
+                    String className = ClassNames.classFileNameToClassName(entry.getName());
                     if (!ignoredClassNames.apply(className)) {
                         idx.put(className, getBytes(jarFile, entry));
                     }

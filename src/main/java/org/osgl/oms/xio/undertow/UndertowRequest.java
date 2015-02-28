@@ -46,8 +46,8 @@ public abstract class UndertowRequest extends RequestImplBase<UndertowRequest> {
         }
         InetAddress address = sourceAddress.getAddress();
         if(address == null) {
-            //this is unresolved, so we just return the host name
-            //not exactly spec, but if the name should be resolved then a PeerNameResolvingHandler should be used
+            //this is unresolved, so we just return the host className
+            //not exactly spec, but if the className should be resolved then a PeerNameResolvingHandler should be used
             //and this is probably better than just returning null
             return sourceAddress.getHostString();
         }

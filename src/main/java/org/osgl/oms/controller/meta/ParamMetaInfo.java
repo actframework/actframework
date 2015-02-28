@@ -1,5 +1,6 @@
-package org.osgl.oms.be.controller;
+package org.osgl.oms.controller.meta;
 
+import org.osgl._;
 import org.osgl.oms.asm.Type;
 import org.osgl.util.S;
 
@@ -26,7 +27,12 @@ public class ParamMetaInfo {
     }
 
     @Override
+    public int hashCode() {
+        return _.hc(name, type);
+    }
+
+    @Override
     public String toString() {
-        return S.fmt("%s[%s]", name, type);
+        return S.fmt("%s %s", type.getClassName(), name);
     }
 }

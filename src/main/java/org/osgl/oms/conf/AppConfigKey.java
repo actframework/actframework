@@ -24,14 +24,14 @@ import static org.osgl.oms.app.ProjectLayout.PredefinedLayout.MAVEN;
  * <code>built_in.transformer.disabled</code></li>
  * <p/>
  * <li>When a key is ended with <code>.impl</code>, then you can either put an instance into
- * the configuration map or a string of the class name</li>
+ * the configuration map or a string of the class className</li>
  * </ul>
  */
 public enum AppConfigKey implements ConfigKey {
 
     /**
      * {@code oms.source_version} specifies the java version
-     * of the source code. This configuration is used only
+     * of the srccode code. This configuration is used only
      * in dev mode.
      * <p>Default value: 1.7</p>
      */
@@ -124,6 +124,11 @@ public enum AppConfigKey implements ConfigKey {
      * performance issue on loading
      */
     SCAN_PACKAGE("scan_package"),
+
+    /**
+     * Specify {@link org.osgl.cache.CacheService Cache service} implementation
+     */
+    CACHE_IMPL("cache.impl"),
     ;
 
     private String key;

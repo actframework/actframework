@@ -3,15 +3,15 @@
  * Copyright (c) 2000-2011 INRIA, France Telecom
  * All rights reserved.
  *
- * Redistribution and use in source and binary forms, with or without
+ * Redistribution and use in srccode and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
- * 1. Redistributions of source code must retain the above copyright
+ * 1. Redistributions of srccode code must retain the above copyright
  *    notice, this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. Neither the name of the copyright holders nor the names of its
+ * 3. Neither the className of the copyright holders nor the names of its
  *    contributors may be used to endorse or promote products derived from
  *    this software without specific prior written permission.
  *
@@ -165,13 +165,13 @@ public class Type {
     private final int sort;
 
     /**
-     * A buffer containing the internal name of this Java type. This field is
+     * A buffer containing the internal className of this Java type. This field is
      * only used for reference types.
      */
     private final char[] buf;
 
     /**
-     * The offset of the internal name of this Java type in {@link #buf buf} or,
+     * The offset of the internal className of this Java type in {@link #buf buf} or,
      * for primitive types, the size, descriptor and getOpcode offsets for this
      * type (byte 0 contains the size, byte 1 the descriptor, byte 2 the offset
      * for IALOAD or IASTORE, byte 3 the offset for all other instructions).
@@ -179,7 +179,7 @@ public class Type {
     private final int off;
 
     /**
-     * The length of the internal name of this Java type.
+     * The length of the internal className of this Java type.
      */
     private final int len;
 
@@ -218,11 +218,11 @@ public class Type {
     }
 
     /**
-     * Returns the Java type corresponding to the given internal name.
+     * Returns the Java type corresponding to the given internal className.
      * 
      * @param internalName
-     *            an internal name.
-     * @return the Java type corresponding to the given internal name.
+     *            an internal className.
+     * @return the Java type corresponding to the given internal className.
      */
     public static Type getObjectType(final String internalName) {
         char[] buf = internalName.toCharArray();
@@ -530,10 +530,10 @@ public class Type {
     }
 
     /**
-     * Returns the binary name of the class corresponding to this type. This
+     * Returns the binary className of the class corresponding to this type. This
      * method must not be used on method types.
      * 
-     * @return the binary name of the class corresponding to this type.
+     * @return the binary className of the class corresponding to this type.
      */
     public String getClassName() {
         switch (sort) {
@@ -569,12 +569,12 @@ public class Type {
     }
 
     /**
-     * Returns the internal name of the class corresponding to this object or
-     * array type. The internal name of a class is its fully qualified name (as
+     * Returns the internal className of the class corresponding to this object or
+     * array type. The internal className of a class is its fully qualified className (as
      * returned by Class.getName(), where '.' are replaced by '/'. This method
      * should only be used for an object or array type.
      * 
-     * @return the internal name of the class corresponding to this object type.
+     * @return the internal className of the class corresponding to this object type.
      */
     public String getInternalName() {
         return new String(buf, off, len);
@@ -680,13 +680,13 @@ public class Type {
     // ------------------------------------------------------------------------
 
     /**
-     * Returns the internal name of the given class. The internal name of a
-     * class is its fully qualified name, as returned by Class.getName(), where
+     * Returns the internal className of the given class. The internal className of a
+     * class is its fully qualified className, as returned by Class.getName(), where
      * '.' are replaced by '/'.
      * 
      * @param c
      *            an object or array class.
-     * @return the internal name of the given class.
+     * @return the internal className of the given class.
      */
     public static String getInternalName(final Class<?> c) {
         return c.getName().replace('.', '/');

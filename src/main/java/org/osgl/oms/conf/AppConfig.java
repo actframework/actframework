@@ -1,6 +1,10 @@
 package org.osgl.oms.conf;
 
 import org.osgl._;
+import org.osgl.cache.CacheService;
+import org.osgl.cache.CacheServiceProvider;
+import org.osgl.oms.Constants;
+import org.osgl.util.E;
 import org.osgl.util.S;
 
 import java.util.Map;
@@ -71,21 +75,56 @@ public class AppConfig extends Config<AppConfigKey> {
     }
 
     private _.Predicate<String> APP_CLASS_TESTER = null;
-    public boolean needEnhancement(String className) {
+    private _.Predicate<String> appClassTester() {
         if (null == APP_CLASS_TESTER) {
             String scanPackage = get(SCAN_PACKAGE);
             if (S.isBlank(scanPackage)) {
                 APP_CLASS_TESTER = _.F.yes();
             } else {
-                final String sp = scanPackage.trim();
-                APP_CLASS_TESTER = new _.Predicate<String>(){
-                    @Override
-                    public boolean test(String s) {
-                        return s.startsWith(sp);
-                    }
-                };
+                final String[] sp = scanPackage.trim().split(Constants.LIST_SEPARATOR);
+                final int len = sp.length;
+                if (1 == len) {
+                    APP_CLASS_TESTER = S.F.startsWith(sp[0]);
+                } else {
+                    APP_CLASS_TESTER = new _.Predicate<String>() {
+                        @Override
+                        public boolean test(String className) {
+                            for (int i = 0; i < len; ++i) {
+                                if (className.startsWith(sp[i])) {
+                                    return true;
+                                }
+                            }
+                            return false;
+                        }
+                    };
+                }
             }
         }
-        return APP_CLASS_TESTER.test(className);
+        return APP_CLASS_TESTER;
+    }
+    public boolean needEnhancement(String className) {
+        return appClassTester().test(className) || controllerNameTester().test(className);
+    }
+
+    private _.Predicate<String> CONTROLLER_CLASS_TESTER = null;
+    private _.Predicate<String> controllerNameTester() {
+        if (null == CONTROLLER_CLASS_TESTER) {
+            String controllerPackage = get(CONTROLLER_PACKAGE);
+            if (S.isBlank(controllerPackage)) {
+                CONTROLLER_CLASS_TESTER = _.F.yes();
+            } else {
+                final String cp = controllerPackage.trim();
+                return S.F.startsWith(cp);
+            }
+        }
+        return CONTROLLER_CLASS_TESTER;
+    }
+    public boolean notControllerClass(String className) {
+        return !controllerNameTester().test(className);
+    }
+
+    private CacheServiceProvider csp = null;
+    public CacheService cacheService(String name) {
+        throw E.tbd();
     }
 }

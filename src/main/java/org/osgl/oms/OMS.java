@@ -4,17 +4,12 @@ import org.osgl._;
 import org.osgl.exception.NotAppliedException;
 import org.osgl.logging.L;
 import org.osgl.logging.Logger;
-import org.osgl.mvc.annotation.*;
 import org.osgl.oms.app.*;
 import org.osgl.oms.conf.OmsConfLoader;
 import org.osgl.oms.conf.OmsConfig;
 import org.osgl.oms.plugin.PluginScanner;
 import org.osgl.oms.util.Banner;
-import org.osgl.util.C;
 import org.osgl.util.E;
-
-import java.lang.annotation.Annotation;
-import java.util.List;
 
 /**
  * The OSGL MVC Server object
@@ -38,7 +33,7 @@ public final class OMS {
 
         /**
          * DEV mode is special as OMS might load classes
-         * directly from source code when running in this mode
+         * directly from srccode code when running in this mode
          */
         public boolean isDev() {
             return DEV == this;
@@ -65,9 +60,7 @@ public final class OMS {
     private static Logger logger = L.get(OMS.class);
     private static Mode mode = Mode.PROD;
     private static AppManager appManager;
-    private static List<Class<? extends Annotation>> actionAnnotationTypes = C.list(
-            Action.class, GetAction.class, PostAction.class,
-            PutAction.class, DeleteAction.class);
+    private static BytecodeEnhancerManager enhancerManager;
 
 
     public static BootstrapClassLoader classLoader() {
@@ -82,15 +75,15 @@ public final class OMS {
     public static OmsConfig conf() {
         return conf;
     }
-
-    public static boolean isActionAnnotation(Class<?> type) {
-        return actionAnnotationTypes.contains(type);
+    public static BytecodeEnhancerManager enhancerManager() {
+        return enhancerManager;
     }
 
     public static void start() {
         Banner.print("0.0.1-SNAPSHOT");
         loadConfig();
         initExecuteService();
+        initEnhancerManager();
         loadPlugins();
         initNetworkLayer();
         initApplicationManager();
@@ -127,12 +120,16 @@ public final class OMS {
         E.tbd("init execute service");
     }
 
+    private static void initEnhancerManager() {
+        enhancerManager = new BytecodeEnhancerManager();
+    }
+
     private static void initNetworkLayer() {
         E.tbd("init network server");
     }
 
     private static void initApplicationManager() {
-        appManager = AppManager.scan();
+        appManager = AppManager.create();
     }
 
     private static void startNetworkLayer() {

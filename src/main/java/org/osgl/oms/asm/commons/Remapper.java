@@ -3,15 +3,15 @@
  * Copyright (c) 2000-2011 INRIA, France Telecom
  * All rights reserved.
  *
- * Redistribution and use in source and binary forms, with or without
+ * Redistribution and use in srccode and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
- * 1. Redistributions of source code must retain the above copyright
+ * 1. Redistributions of srccode code must retain the above copyright
  *    notice, this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. Neither the name of the copyright holders nor the names of its
+ * 3. Neither the className of the copyright holders nor the names of its
  *    contributors may be used to endorse or promote products derived from
  *    this software without specific prior written permission.
  *
@@ -42,8 +42,8 @@ import org.osgl.oms.asm.signature.SignatureWriter;
  * 
  * <ul>
  * <li>{@link #map(String)} - map type</li>
- * <li>{@link #mapFieldName(String, String, String)} - map field name</li>
- * <li>{@link #mapMethodName(String, String, String)} - map method name</li>
+ * <li>{@link #mapFieldName(String, String, String)} - map field className</li>
+ * <li>{@link #mapMethodName(String, String, String)} - map method className</li>
  * </ul>
  * 
  * @author Eugene Kuleshov
@@ -172,50 +172,50 @@ public abstract class Remapper {
     }
 
     /**
-     * Map method name to the new name. Subclasses can override.
+     * Map method className to the new className. Subclasses can override.
      * 
      * @param owner
      *            owner of the method.
      * @param name
-     *            name of the method.
+     *            className of the method.
      * @param desc
      *            descriptor of the method.
-     * @return new name of the method
+     * @return new className of the method
      */
     public String mapMethodName(String owner, String name, String desc) {
         return name;
     }
 
     /**
-     * Map invokedynamic method name to the new name. Subclasses can override.
+     * Map invokedynamic method className to the new className. Subclasses can override.
      * 
      * @param name
-     *            name of the invokedynamic.
+     *            className of the invokedynamic.
      * @param desc
      *            descriptor of the invokedynamic.
-     * @return new invokdynamic name.
+     * @return new invokdynamic className.
      */
     public String mapInvokeDynamicMethodName(String name, String desc) {
         return name;
     }
 
     /**
-     * Map field name to the new name. Subclasses can override.
+     * Map field className to the new className. Subclasses can override.
      * 
      * @param owner
      *            owner of the field.
      * @param name
-     *            name of the field
+     *            className of the field
      * @param desc
      *            descriptor of the field
-     * @return new name of the field.
+     * @return new className of the field.
      */
     public String mapFieldName(String owner, String name, String desc) {
         return name;
     }
 
     /**
-     * Map type name to the new name. Subclasses can override.
+     * Map type className to the new className. Subclasses can override.
      */
     public String map(String typeName) {
         return typeName;

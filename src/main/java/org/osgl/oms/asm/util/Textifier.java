@@ -3,15 +3,15 @@
  * Copyright (c) 2000-2011 INRIA, France Telecom
  * All rights reserved.
  *
- * Redistribution and use in source and binary forms, with or without
+ * Redistribution and use in srccode and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
- * 1. Redistributions of source code must retain the above copyright
+ * 1. Redistributions of srccode code must retain the above copyright
  *    notice, this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. Neither the name of the copyright holders nor the names of its
+ * 3. Neither the className of the copyright holders nor the names of its
  *    contributors may be used to endorse or promote products derived from
  *    this software without specific prior written permission.
  *
@@ -166,7 +166,7 @@ public class Textifier extends Printer {
     /**
      * Prints a disassembled view of the given class to the standard output.
      * <p>
-     * Usage: Textifier [-debug] &lt;binary class name or class file name &gt;
+     * Usage: Textifier [-debug] &lt;binary class className or class file className &gt;
      *
      * @param args
      *            the command line arguments.
@@ -1170,14 +1170,14 @@ public class Textifier extends Printer {
     }
 
     /**
-     * Appends an internal name, a type descriptor or a type signature to
+     * Appends an internal className, a type descriptor or a type signature to
      * {@link #buf buf}.
      *
      * @param type
-     *            indicates if desc is an internal name, a field descriptor, a
+     *            indicates if desc is an internal className, a field descriptor, a
      *            method descriptor, a class signature, ...
      * @param desc
-     *            an internal name, type descriptor, or type signature. May be
+     *            an internal className, type descriptor, or type signature. May be
      *            <tt>null</tt>.
      */
     protected void appendDescriptor(final int type, final String desc) {
@@ -1192,8 +1192,8 @@ public class Textifier extends Printer {
     }
 
     /**
-     * Appends the name of the given label to {@link #buf buf}. Creates a new
-     * label name if the given label does not yet have one.
+     * Appends the className of the given label to {@link #buf buf}. Creates a new
+     * label className if the given label does not yet have one.
      *
      * @param l
      *            a label.

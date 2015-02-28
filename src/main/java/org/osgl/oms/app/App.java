@@ -72,8 +72,9 @@ public class App {
 
     public void refresh() {
         loadConfig();
-        loadRoutes();
+        initRouter();
         loadClasses();
+        loadRoutes();
     }
 
     public void build() {
@@ -112,10 +113,13 @@ public class App {
         config = new AppConfLoader().load(conf);
     }
 
+    private void initRouter() {
+        router = new Router(config);
+    }
+
     private void loadRoutes() {
         logger.debug("loading app routing table: %s ...", appBase.getPath());
         File routes = RuntimeDirs.routes(this);
-        router = new Router(config);
         if (!(routes.isFile() && routes.canRead())) {
             logger.warn("Cannot find routes file: %s", appBase.getPath());
             // guess the app is purely using annotation based routes

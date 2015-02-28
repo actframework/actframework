@@ -3,15 +3,15 @@
  * Copyright (c) 2000-2011 INRIA, France Telecom
  * All rights reserved.
  *
- * Redistribution and use in source and binary forms, with or without
+ * Redistribution and use in srccode and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
- * 1. Redistributions of source code must retain the above copyright
+ * 1. Redistributions of srccode code must retain the above copyright
  *    notice, this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. Neither the name of the copyright holders nor the names of its
+ * 3. Neither the className of the copyright holders nor the names of its
  *    contributors may be used to endorse or promote products derived from
  *    this software without specific prior written permission.
  *
@@ -44,7 +44,7 @@ import java.util.Map;
 public class Method {
 
     /**
-     * The method name.
+     * The method className.
      */
     private final String name;
 
@@ -75,7 +75,7 @@ public class Method {
      * Creates a new {@link Method}.
      * 
      * @param name
-     *            the method's name.
+     *            the method's className.
      * @param desc
      *            the method's descriptor.
      */
@@ -88,7 +88,7 @@ public class Method {
      * Creates a new {@link Method}.
      * 
      * @param name
-     *            the method's name.
+     *            the method's className.
      * @param returnType
      *            the method's return type.
      * @param argumentTypes
@@ -129,10 +129,10 @@ public class Method {
      * 
      * @param method
      *            a Java method declaration, without argument names, of the form
-     *            "returnType name (argumentType1, ... argumentTypeN)", where
+     *            "returnType className (argumentType1, ... argumentTypeN)", where
      *            the types are in plain Java (e.g. "int", "float",
      *            "java.util.List", ...). Classes of the java.lang package can
-     *            be specified by their unqualified name; all other classes
+     *            be specified by their unqualified className; all other classes
      *            names must be fully qualified.
      * @return a {@link Method} corresponding to the given Java method
      *         declaration.
@@ -150,10 +150,10 @@ public class Method {
      * 
      * @param method
      *            a Java method declaration, without argument names, of the form
-     *            "returnType name (argumentType1, ... argumentTypeN)", where
+     *            "returnType className (argumentType1, ... argumentTypeN)", where
      *            the types are in plain Java (e.g. "int", "float",
      *            "java.util.List", ...). Classes of the java.lang package may
-     *            be specified by their unqualified name, depending on the
+     *            be specified by their unqualified className, depending on the
      *            defaultPackage argument; all other classes names must be fully
      *            qualified.
      * @param defaultPackage
@@ -226,9 +226,9 @@ public class Method {
     }
 
     /**
-     * Returns the name of the method described by this object.
+     * Returns the className of the method described by this object.
      * 
-     * @return the name of the method described by this object.
+     * @return the className of the method described by this object.
      */
     public String getName() {
         return name;

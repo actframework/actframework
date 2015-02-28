@@ -3,15 +3,15 @@
  * Copyright (c) 2000-2011 INRIA, France Telecom
  * All rights reserved.
  *
- * Redistribution and use in source and binary forms, with or without
+ * Redistribution and use in srccode and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
- * 1. Redistributions of source code must retain the above copyright
+ * 1. Redistributions of srccode code must retain the above copyright
  *    notice, this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. Neither the name of the copyright holders nor the names of its
+ * 3. Neither the className of the copyright holders nor the names of its
  *    contributors may be used to endorse or promote products derived from
  *    this software without specific prior written permission.
  *
@@ -32,13 +32,13 @@ package org.osgl.oms.asm.tree;
 import org.osgl.oms.asm.MethodVisitor;
 
 /**
- * A node that represents a parameter access and name.
+ * A node that represents a parameter access and className.
  * 
  * @author Remi Forax
  */
 public class ParameterNode {
     /**
-     * The parameter's name.
+     * The parameter's className.
      */
     public String name;
 
@@ -57,7 +57,7 @@ public class ParameterNode {
      *            <tt>ACC_FINAL</tt>, <tt>ACC_SYNTHETIC</tt> or/and
      *            <tt>ACC_MANDATED</tt> (see {@link org.osgl.oms.asm.Opcodes}).
      * @param name
-     *            the parameter's name.
+     *            the parameter's className.
      */
     public ParameterNode(final String name, final int access) {
         this.name = name;

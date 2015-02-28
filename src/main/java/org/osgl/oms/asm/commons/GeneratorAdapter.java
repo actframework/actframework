@@ -3,15 +3,15 @@
  * Copyright (c) 2000-2011 INRIA, France Telecom
  * All rights reserved.
  *
- * Redistribution and use in source and binary forms, with or without
+ * Redistribution and use in srccode and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
- * 1. Redistributions of source code must retain the above copyright
+ * 1. Redistributions of srccode code must retain the above copyright
  *    notice, this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. Neither the name of the copyright holders nor the names of its
+ * 3. Neither the className of the copyright holders nor the names of its
  *    contributors may be used to endorse or promote products derived from
  *    this software without specific prior written permission.
  *
@@ -247,7 +247,7 @@ public class GeneratorAdapter extends LocalVariablesSorter {
      * @param access
      *            the method's access flags (see {@link org.osgl.oms.asm.Opcodes}).
      * @param name
-     *            the method's name.
+     *            the method's className.
      * @param desc
      *            the method's descriptor (see {@link org.osgl.oms.asm.Type Type}).
      * @throws IllegalStateException
@@ -272,7 +272,7 @@ public class GeneratorAdapter extends LocalVariablesSorter {
      * @param access
      *            the method's access flags (see {@link org.osgl.oms.asm.Opcodes}).
      * @param name
-     *            the method's name.
+     *            the method's className.
      * @param desc
      *            the method's descriptor (see {@link org.osgl.oms.asm.Type Type}).
      */
@@ -1287,7 +1287,7 @@ public class GeneratorAdapter extends LocalVariablesSorter {
      * @param ownerType
      *            the class in which the field is defined.
      * @param name
-     *            the name of the field.
+     *            the className of the field.
      * @param fieldType
      *            the type of the field.
      */
@@ -1304,7 +1304,7 @@ public class GeneratorAdapter extends LocalVariablesSorter {
      * @param owner
      *            the class in which the field is defined.
      * @param name
-     *            the name of the field.
+     *            the className of the field.
      * @param type
      *            the type of the field.
      */
@@ -1318,7 +1318,7 @@ public class GeneratorAdapter extends LocalVariablesSorter {
      * @param owner
      *            the class in which the field is defined.
      * @param name
-     *            the name of the field.
+     *            the className of the field.
      * @param type
      *            the type of the field.
      */
@@ -1333,7 +1333,7 @@ public class GeneratorAdapter extends LocalVariablesSorter {
      * @param owner
      *            the class in which the field is defined.
      * @param name
-     *            the name of the field.
+     *            the className of the field.
      * @param type
      *            the type of the field.
      */
@@ -1348,7 +1348,7 @@ public class GeneratorAdapter extends LocalVariablesSorter {
      * @param owner
      *            the class in which the field is defined.
      * @param name
-     *            the name of the field.
+     *            the className of the field.
      * @param type
      *            the type of the field.
      */
@@ -1430,7 +1430,7 @@ public class GeneratorAdapter extends LocalVariablesSorter {
      * Generates an invokedynamic instruction.
      *
      * @param name
-     *            the method's name.
+     *            the method's className.
      * @param desc
      *            the method's descriptor (see {@link org.osgl.oms.asm.Type Type}).
      * @param bsm
@@ -1608,7 +1608,7 @@ public class GeneratorAdapter extends LocalVariablesSorter {
      * @param end
      *            end of the exception handler's scope (exclusive).
      * @param exception
-     *            internal name of the type of exceptions handled by the
+     *            internal className of the type of exceptions handled by the
      *            handler.
      */
     public void catchException(final Label start, final Label end,

@@ -3,15 +3,15 @@
  * Copyright (c) 2000-2011 INRIA, France Telecom
  * All rights reserved.
  *
- * Redistribution and use in source and binary forms, with or without
+ * Redistribution and use in srccode and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
- * 1. Redistributions of source code must retain the above copyright
+ * 1. Redistributions of srccode code must retain the above copyright
  *    notice, this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. Neither the name of the copyright holders nor the names of its
+ * 3. Neither the className of the copyright holders nor the names of its
  *    contributors may be used to endorse or promote products derived from
  *    this software without specific prior written permission.
  *
@@ -39,20 +39,20 @@ import org.osgl.oms.asm.ClassVisitor;
 public class InnerClassNode {
 
     /**
-     * The internal name of an inner class (see
+     * The internal className of an inner class (see
      * {@link org.osgl.oms.asm.Type#getInternalName() getInternalName}).
      */
     public String name;
 
     /**
-     * The internal name of the class to which the inner class belongs (see
+     * The internal className of the class to which the inner class belongs (see
      * {@link org.osgl.oms.asm.Type#getInternalName() getInternalName}). May be
      * <tt>null</tt>.
      */
     public String outerName;
 
     /**
-     * The (simple) name of the inner class inside its enclosing class. May be
+     * The (simple) className of the inner class inside its enclosing class. May be
      * <tt>null</tt> for anonymous inner classes.
      */
     public String innerName;
@@ -67,15 +67,15 @@ public class InnerClassNode {
      * Constructs a new {@link InnerClassNode}.
      * 
      * @param name
-     *            the internal name of an inner class (see
+     *            the internal className of an inner class (see
      *            {@link org.osgl.oms.asm.Type#getInternalName()
      *            getInternalName}).
      * @param outerName
-     *            the internal name of the class to which the inner class
+     *            the internal className of the class to which the inner class
      *            belongs (see {@link org.osgl.oms.asm.Type#getInternalName()
      *            getInternalName}). May be <tt>null</tt>.
      * @param innerName
-     *            the (simple) name of the inner class inside its enclosing
+     *            the (simple) className of the inner class inside its enclosing
      *            class. May be <tt>null</tt> for anonymous inner classes.
      * @param access
      *            the access flags of the inner class as originally declared in

@@ -17,10 +17,13 @@ public class AppContext {
     private App app;
     private H.Request request;
     private H.Response response;
+    private H.Session session;
+    private H.Flash flash;
     private Set<Map.Entry<String, String[]>> requestParamCache;
     private Map<String, String> extraParams;
     private Map<String, Object> renderArgs;
     private Map<String, String[]> allParams;
+    private Map<String, Object> attributes;
 
     private AppContext(App app, H.Request request, H.Response response) {
         E.NPE(app, request, response);
@@ -30,8 +33,32 @@ public class AppContext {
         _init();
     }
 
+    public H.Request req() {
+        return request;
+    }
+
     public H.Response resp() {
         return response;
+    }
+
+    public H.Session session() {
+        return session;
+    }
+
+    public H.Flash flash() {
+        return flash;
+    }
+
+    public H.Format format() {
+        return req().format();
+    }
+
+    public boolean isJSON() {
+        return format() == H.Format.json;
+    }
+
+    public boolean isAjax() {
+        return req().isAjax();
     }
 
     public AppContext param(String name, String value) {
@@ -64,6 +91,22 @@ public class AppContext {
         return (T) renderArgs.get(name);
     }
 
+    /**
+     * Associate a user attribute to the context. Could be used by third party
+     * libraries or user application
+     * @param name the className used to reference the attribute
+     * @param attr the attribute object
+     * @return this context
+     */
+    public AppContext attribute(String name, Object attr) {
+        attributes.put(name, attr);
+        return this;
+    }
+
+    public <T> T attribute(String name) {
+        return _.cast(attributes.get(name));
+    }
+
     public AppContext renderArg(String name, Object val) {
         renderArgs.put(name, val);
         return this;
@@ -75,6 +118,10 @@ public class AppContext {
 
     public AppConfig config() {
         return app.config();
+    }
+
+    public void saveLocal() {
+        _local.set(this);
     }
 
     private Set<Map.Entry<String, String[]>> requestParamCache() {
@@ -110,6 +157,7 @@ public class AppContext {
     private void _init() {
         extraParams = new HashMap<String, String>();
         renderArgs = new HashMap<String, Object>();
+        attributes = new HashMap<String, Object>();
         final Set<Map.Entry<String, String[]>> paramEntrySet = new AbstractSet<Map.Entry<String, String[]>>() {
             @Override
             public Iterator<Map.Entry<String, String[]>> iterator() {
@@ -195,13 +243,5 @@ public class AppContext {
      */
     public static AppContext create(App app, H.Request request, H.Response resp) {
         return new AppContext(app, request, resp);
-    }
-
-    /**
-     * Create an new {@code AppContext} and save the context instance into
-     * contextual local
-     */
-    public static void init(App app, H.Request request, H.Response resp) {
-        _local.set(new AppContext(app, request, resp));
     }
 }

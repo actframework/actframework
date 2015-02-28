@@ -3,15 +3,15 @@
  * Copyright (c) 2000-2011 INRIA, France Telecom
  * All rights reserved.
  *
- * Redistribution and use in source and binary forms, with or without
+ * Redistribution and use in srccode and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
- * 1. Redistributions of source code must retain the above copyright
+ * 1. Redistributions of srccode code must retain the above copyright
  *    notice, this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. Neither the name of the copyright holders nor the names of its
+ * 3. Neither the className of the copyright holders nor the names of its
  *    contributors may be used to endorse or promote products derived from
  *    this software without specific prior written permission.
  *
@@ -103,7 +103,7 @@ public abstract class MethodVisitor {
      * Visits a parameter of this method.
      *
      * @param name
-     *            parameter name or null if none is provided.
+     *            parameter className or null if none is provided.
      * @param access
      *            the parameter's access flags, only <tt>ACC_FINAL</tt>,
      *            <tt>ACC_SYNTHETIC</tt> or/and <tt>ACC_MANDATED</tt> are
@@ -123,7 +123,7 @@ public abstract class MethodVisitor {
      *
      * @return a visitor to the visit the actual default value of this
      *         annotation interface method, or <tt>null</tt> if this visitor is
-     *         not interested in visiting this default value. The 'name'
+     *         not interested in visiting this default value. The 'className'
      *         parameters passed to the methods of this annotation visitor are
      *         ignored. Moreover, exacly one visit method must be called on this
      *         annotation visitor, followed by visitEnd.
@@ -385,14 +385,14 @@ public abstract class MethodVisitor {
 
     /**
      * Visits a type instruction. A type instruction is an instruction that
-     * takes the internal name of a class as parameter.
+     * takes the internal className of a class as parameter.
      *
      * @param opcode
      *            the opcode of the type instruction to be visited. This opcode
      *            is either NEW, ANEWARRAY, CHECKCAST or INSTANCEOF.
      * @param type
      *            the operand of the instruction to be visited. This operand
-     *            must be the internal name of an object or array class (see
+     *            must be the internal className of an object or array class (see
      *            {@link Type#getInternalName() getInternalName}).
      */
     public void visitTypeInsn(int opcode, String type) {
@@ -409,10 +409,10 @@ public abstract class MethodVisitor {
      *            the opcode of the type instruction to be visited. This opcode
      *            is either GETSTATIC, PUTSTATIC, GETFIELD or PUTFIELD.
      * @param owner
-     *            the internal name of the field's owner class (see
+     *            the internal className of the field's owner class (see
      *            {@link Type#getInternalName() getInternalName}).
      * @param name
-     *            the field's name.
+     *            the field's className.
      * @param desc
      *            the field's descriptor (see {@link Type Type}).
      */
@@ -432,10 +432,10 @@ public abstract class MethodVisitor {
      *            is either INVOKEVIRTUAL, INVOKESPECIAL, INVOKESTATIC or
      *            INVOKEINTERFACE.
      * @param owner
-     *            the internal name of the method's owner class (see
+     *            the internal className of the method's owner class (see
      *            {@link Type#getInternalName() getInternalName}).
      * @param name
-     *            the method's name.
+     *            the method's className.
      * @param desc
      *            the method's descriptor (see {@link Type Type}).
      */
@@ -461,10 +461,10 @@ public abstract class MethodVisitor {
      *            is either INVOKEVIRTUAL, INVOKESPECIAL, INVOKESTATIC or
      *            INVOKEINTERFACE.
      * @param owner
-     *            the internal name of the method's owner class (see
+     *            the internal className of the method's owner class (see
      *            {@link Type#getInternalName() getInternalName}).
      * @param name
-     *            the method's name.
+     *            the method's className.
      * @param desc
      *            the method's descriptor (see {@link Type Type}).
      * @param itf
@@ -489,7 +489,7 @@ public abstract class MethodVisitor {
      * Visits an invokedynamic instruction.
      *
      * @param name
-     *            the method's name.
+     *            the method's className.
      * @param desc
      *            the method's descriptor (see {@link Type Type}).
      * @param bsm
@@ -716,7 +716,7 @@ public abstract class MethodVisitor {
      * @param handler
      *            beginning of the exception handler's code.
      * @param type
-     *            internal name of the type of exceptions handled by the
+     *            internal className of the type of exceptions handled by the
      *            handler, or <tt>null</tt> to catch any exceptions (for
      *            "finally" blocks).
      * @throws IllegalArgumentException
@@ -766,7 +766,7 @@ public abstract class MethodVisitor {
      * Visits a local variable declaration.
      * 
      * @param name
-     *            the name of a local variable.
+     *            the className of a local variable.
      * @param desc
      *            the type descriptor of this local variable.
      * @param signature
@@ -838,7 +838,7 @@ public abstract class MethodVisitor {
      * Visits a line number declaration.
      * 
      * @param line
-     *            a line number. This number refers to the source file from
+     *            a line number. This number refers to the srccode file from
      *            which the class was compiled.
      * @param start
      *            the first instruction corresponding to this line number.

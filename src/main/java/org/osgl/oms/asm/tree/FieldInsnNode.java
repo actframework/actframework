@@ -3,15 +3,15 @@
  * Copyright (c) 2000-2011 INRIA, France Telecom
  * All rights reserved.
  *
- * Redistribution and use in source and binary forms, with or without
+ * Redistribution and use in srccode and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
- * 1. Redistributions of source code must retain the above copyright
+ * 1. Redistributions of srccode code must retain the above copyright
  *    notice, this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. Neither the name of the copyright holders nor the names of its
+ * 3. Neither the className of the copyright holders nor the names of its
  *    contributors may be used to endorse or promote products derived from
  *    this software without specific prior written permission.
  *
@@ -42,13 +42,13 @@ import java.util.Map;
 public class FieldInsnNode extends AbstractInsnNode {
 
     /**
-     * The internal name of the field's owner class (see
+     * The internal className of the field's owner class (see
      * {@link org.osgl.oms.asm.Type#getInternalName() getInternalName}).
      */
     public String owner;
 
     /**
-     * The field's name.
+     * The field's className.
      */
     public String name;
 
@@ -64,11 +64,11 @@ public class FieldInsnNode extends AbstractInsnNode {
      *            the opcode of the type instruction to be constructed. This
      *            opcode must be GETSTATIC, PUTSTATIC, GETFIELD or PUTFIELD.
      * @param owner
-     *            the internal name of the field's owner class (see
+     *            the internal className of the field's owner class (see
      *            {@link org.osgl.oms.asm.Type#getInternalName()
      *            getInternalName}).
      * @param name
-     *            the field's name.
+     *            the field's className.
      * @param desc
      *            the field's descriptor (see {@link org.osgl.oms.asm.Type}).
      */

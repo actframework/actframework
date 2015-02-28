@@ -3,7 +3,7 @@ package org.osgl.oms.app;
 import java.util.List;
 
 /**
- * Implemented by exceptions with source attachment
+ * Implemented by exceptions with srccode attachment
  */
 public interface SourceInfo {
     String fileName();

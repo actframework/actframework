@@ -3,15 +3,15 @@
  * Copyright (c) 2000-2011 INRIA, France Telecom
  * All rights reserved.
  *
- * Redistribution and use in source and binary forms, with or without
+ * Redistribution and use in srccode and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
- * 1. Redistributions of source code must retain the above copyright
+ * 1. Redistributions of srccode code must retain the above copyright
  *    notice, this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. Neither the name of the copyright holders nor the names of its
+ * 3. Neither the className of the copyright holders nor the names of its
  *    contributors may be used to endorse or promote products derived from
  *    this software without specific prior written permission.
  *
@@ -44,7 +44,7 @@ import java.util.Map;
 public class ASMifier extends Printer {
 
     /**
-     * The name of the visitor variable in the produced code.
+     * The className of the visitor variable in the produced code.
      */
     protected final String name;
 
@@ -96,7 +96,7 @@ public class ASMifier extends Printer {
      *            the ASM API version implemented by this class. Must be one of
      *            {@link org.osgl.oms.asm.Opcodes#ASM4} or {@link org.osgl.oms.asm.Opcodes#ASM5}.
      * @param name
-     *            the name of the visitor variable in the produced code.
+     *            the className of the visitor variable in the produced code.
      * @param id
      *            identifier of the annotation visitor variable in the produced
      *            code.
@@ -108,10 +108,10 @@ public class ASMifier extends Printer {
     }
 
     /**
-     * Prints the ASM source code to generate the given class to the standard
+     * Prints the ASM srccode code to generate the given class to the standard
      * output.
      * <p>
-     * Usage: ASMifier [-debug] &lt;binary class name or class file name&gt;
+     * Usage: ASMifier [-debug] &lt;binary class className or class file className&gt;
      *
      * @param args
      *            the command line arguments.
@@ -1265,8 +1265,8 @@ public class ASMifier extends Printer {
     }
 
     /**
-     * Appends the name of the given label to {@link #buf buf}. The given label
-     * <i>must</i> already have a name. One way to ensure this is to always call
+     * Appends the className of the given label to {@link #buf buf}. The given label
+     * <i>must</i> already have a className. One way to ensure this is to always call
      * {@link #declareLabel declared} before calling this method.
      * 
      * @param l

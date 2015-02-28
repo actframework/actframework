@@ -3,15 +3,15 @@
  * Copyright (c) 2000-2011 INRIA, France Telecom
  * All rights reserved.
  *
- * Redistribution and use in source and binary forms, with or without
+ * Redistribution and use in srccode and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
- * 1. Redistributions of source code must retain the above copyright
+ * 1. Redistributions of srccode code must retain the above copyright
  *    notice, this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. Neither the name of the copyright holders nor the names of its
+ * 3. Neither the className of the copyright holders nor the names of its
  *    contributors may be used to endorse or promote products derived from
  *    this software without specific prior written permission.
  *
@@ -134,7 +134,7 @@ public class ClassReader {
     private final int maxStringLength;
 
     /**
-     * Start index of the class header information (access, name...) in
+     * Start index of the class header information (access, className...) in
      * {@link #b b}.
      */
     public final int header;
@@ -230,10 +230,10 @@ public class ClassReader {
     }
 
     /**
-     * Returns the internal name of the class (see
+     * Returns the internal className of the class (see
      * {@link Type#getInternalName() getInternalName}).
      *
-     * @return the internal class name
+     * @return the internal class className
      *
      * @see ClassVisitor#visit(int, int, String, String, String, String[])
      */
@@ -242,11 +242,11 @@ public class ClassReader {
     }
 
     /**
-     * Returns the internal of name of the super class (see
+     * Returns the internal of className of the super class (see
      * {@link Type#getInternalName() getInternalName}). For interfaces, the
      * super class is {@link Object}.
      *
-     * @return the internal name of super class, or <tt>null</tt> for
+     * @return the internal className of super class, or <tt>null</tt> for
      *         {@link Object} class.
      *
      * @see ClassVisitor#visit(int, int, String, String, String, String[])
@@ -428,7 +428,7 @@ public class ClassReader {
      * Constructs a new {@link ClassReader} object.
      *
      * @param name
-     *            the binary qualified name of the class to be read.
+     *            the binary qualified className of the class to be read.
      * @throws java.io.IOException
      *             if an exception occurs during reading.
      */
@@ -622,7 +622,7 @@ public class ClassReader {
         classVisitor.visit(readInt(items[1] - 7), access, name, signature,
                 superClass, interfaces);
 
-        // visits the source and debug info
+        // visits the srccode and debug info
         if ((flags & SKIP_DEBUG) == 0
                 && (sourceFile != null || sourceDebug != null)) {
             classVisitor.visitSource(sourceFile, sourceDebug);
@@ -921,7 +921,7 @@ public class ClassReader {
          * (mw.cw.cr == this), and the signature and exceptions of the method
          * have not been changed, then it is possible to skip all visit events
          * and just copy the original code of the method to the writer (the
-         * access, name and descriptor can have been changed, this is not
+         * access, className and descriptor can have been changed, this is not
          * important since they are not copied as is from the reader).
          */
         if (WRITER && mv instanceof MethodWriter) {
@@ -1639,7 +1639,7 @@ public class ClassReader {
      * target_path (the result is stored in the given context), and returns the
      * start offset of the rest of the type_annotation structure (i.e. the
      * offset to the type_index field, which is followed by
-     * num_element_value_pairs and then the name,value pairs).
+     * num_element_value_pairs and then the className,value pairs).
      *
      * @param context
      *            information about the class being parsed. This is where the
@@ -1728,7 +1728,7 @@ public class ClassReader {
         int n = b[v++] & 0xFF;
         // workaround for a bug in javac (javac compiler generates a parameter
         // annotation array whose size is equal to the number of parameters in
-        // the Java source file, while it should generate an array whose size is
+        // the Java srccode file, while it should generate an array whose size is
         // equal to the number of parameters in the method descriptor - which
         // includes the synthetic parameters added by the compiler). This work-
         // around supposes that the synthetic parameters are the first ones.
@@ -1793,13 +1793,13 @@ public class ClassReader {
      *
      * @param v
      *            the start offset in {@link #b b} of the value to be read
-     *            (<i>not including the value name constant pool index</i>).
+     *            (<i>not including the value className constant pool index</i>).
      * @param buf
      *            buffer to be used to call {@link #readUTF8 readUTF8},
      *            {@link #readClass(int,char[]) readClass} or {@link #readConst
      *            readConst}.
      * @param name
-     *            the name of the value to be read.
+     *            the className of the value to be read.
      * @param av
      *            the visitor that must visit the value.
      * @return the end offset of the annotation value.

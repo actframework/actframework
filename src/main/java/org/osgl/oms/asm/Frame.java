@@ -3,15 +3,15 @@
  * Copyright (c) 2000-2011 INRIA, France Telecom
  * All rights reserved.
  *
- * Redistribution and use in source and binary forms, with or without
+ * Redistribution and use in srccode and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
- * 1. Redistributions of source code must retain the above copyright
+ * 1. Redistributions of srccode code must retain the above copyright
  *    notice, this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
- * 3. Neither the name of the copyright holders nor the names of its
+ * 3. Neither the className of the copyright holders nor the names of its
  *    contributors may be used to endorse or promote products derived from
  *    this software without specific prior written permission.
  *
@@ -152,7 +152,7 @@ final class Frame {
     /**
      * Base kind of the uninitialized base types. The BASE_VALUE of such types
      * in an index into the type table (the Item at that index contains both an
-     * instruction offset and an internal class name).
+     * instruction offset and an internal class className).
      */
     static final int UNINITIALIZED = BASE | 0x800000;
 
@@ -640,7 +640,7 @@ final class Frame {
         case 'D':
             return DOUBLE;
         case 'L':
-            // stores the internal name, not the descriptor!
+            // stores the internal className, not the descriptor!
             t = desc.substring(index + 1, desc.length() - 1);
             return OBJECT | cw.addType(t);
             // case '[':
@@ -678,7 +678,7 @@ final class Frame {
                 break;
             // case 'L':
             default:
-                // stores the internal name, not the descriptor
+                // stores the internal className, not the descriptor
                 t = desc.substring(dims + 1, desc.length() - 1);
                 data = OBJECT | cw.addType(t);
             }

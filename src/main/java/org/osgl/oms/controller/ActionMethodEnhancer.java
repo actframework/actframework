@@ -1,4 +1,4 @@
-package org.osgl.oms.be.controller;
+package org.osgl.oms.controller;
 
 import org.osgl.mvc.result.Result;
 import org.osgl.oms.app.AppContext;
@@ -8,7 +8,8 @@ import org.osgl.oms.asm.Opcodes;
 import org.osgl.oms.asm.Type;
 import org.osgl.oms.asm.tree.*;
 import org.osgl.oms.asm.util.Printer;
-import org.osgl.oms.be.Types;
+import org.osgl.oms.controller.meta.LocalVariableMetaInfo;
+import org.osgl.oms.util.AsmTypes;
 import org.osgl.util.C;
 import org.osgl.util.E;
 import org.osgl.util.S;
@@ -178,7 +179,7 @@ public class ActionMethodEnhancer extends MethodVisitor implements Opcodes {
                 }
                 int appCtxIdx = appCtxIndex();
                 if (appCtxIdx < 0) {
-                    MethodInsnNode getAppCtx = new MethodInsnNode(INVOKESTATIC, Types.APP_CONTEXT_INTERNAL_NAME, "get", GET_APP_CTX_DESC, false);
+                    MethodInsnNode getAppCtx = new MethodInsnNode(INVOKESTATIC, AsmTypes.APP_CONTEXT_INTERNAL_NAME, "get", GET_APP_CTX_DESC, false);
                     list.add(getAppCtx);
                 } else {
                     LabelNode lbl = new LabelNode();
@@ -340,12 +341,9 @@ public class ActionMethodEnhancer extends MethodVisitor implements Opcodes {
                 //list.add(lbl);
                 //list.add(loadCtx);
                 LdcInsnNode ldc = new LdcInsnNode(var.name());
-                if (var.name().equals("email")) {
-                    System.out.println("");
-                }
                 list.add(ldc);
                 insn.appendTo(list, index, var.type());
-                MethodInsnNode invokeRenderArg = new MethodInsnNode(INVOKEVIRTUAL, Types.APP_CONTEXT_INTERNAL_NAME, RENDER_NM, RENDER_DESC, false);
+                MethodInsnNode invokeRenderArg = new MethodInsnNode(INVOKEVIRTUAL, AsmTypes.APP_CONTEXT_INTERNAL_NAME, RENDER_NM, RENDER_DESC, false);
                 list.add(invokeRenderArg);
             }
 
@@ -374,9 +372,9 @@ public class ActionMethodEnhancer extends MethodVisitor implements Opcodes {
         }
     }
 
-    private static final String GET_APP_CTX_DESC = "()" + Types.APP_CONTEXT_DESC;
+    private static final String GET_APP_CTX_DESC = "()" + AsmTypes.APP_CONTEXT_DESC;
     private static final String RENDER_NM = "renderArg";
     private static final String RENDER_DESC1 = "(Ljava/lang/String;Ljava/lang/Object;)Lorg/osgl/mvc/server/AppContext;";
-    private static final String RENDER_DESC = Types.methodDesc(AppContext.class, String.class, Object.class);
+    private static final String RENDER_DESC = AsmTypes.methodDesc(AppContext.class, String.class, Object.class);
 
 }

@@ -30,7 +30,7 @@ public class BuildFileProbe extends ProjectLayoutProbe {
         }
 
         @Override
-        public void plugin() {
+        public void register() {
             OMS.mode().appScanner().register(new BuildFileProbe(this));
         }
 
@@ -48,7 +48,7 @@ public class BuildFileProbe extends ProjectLayoutProbe {
         }
 
         @Override
-        public void plugin() {
+        public void register() {
             OMS.mode().appScanner().register(new BuildFileProbe(this));
         }
 
@@ -65,7 +65,7 @@ public class BuildFileProbe extends ProjectLayoutProbe {
         }
 
         @Override
-        public void plugin() {
+        public void register() {
             OMS.mode().appScanner().register(new BuildFileProbe(this));
         }
 

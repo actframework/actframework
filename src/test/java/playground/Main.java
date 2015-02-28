@@ -9,7 +9,7 @@ import org.osgl.oms.asm.ClassReader;
 import org.osgl.oms.asm.ClassVisitor;
 import org.osgl.oms.asm.ClassWriter;
 import org.osgl.oms.asm.util.TraceClassVisitor;
-import org.osgl.oms.be.controller.ControllerClassEnhancer;
+import org.osgl.oms.controller.ControllerClassEnhancer;
 import org.osgl.util.IO;
 
 import java.io.*;
@@ -72,8 +72,8 @@ public class Main extends ClassLoader {
         App app = mock(App.class);
         H.Request req = mock(H.Request.class);
         H.Response resp = mock(H.Response.class);
-        AppContext.init(app, req, resp);
-        AppContext ctx = AppContext.get();
+        AppContext ctx = AppContext.create(app, req, resp);
+        ctx.saveLocal();
         try {
             m.invoke(c.newInstance(), "id_0", ctx, "green@osgl.org", false);
             System.out.println("Render failed");

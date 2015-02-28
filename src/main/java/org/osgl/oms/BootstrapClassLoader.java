@@ -1,7 +1,10 @@
 package org.osgl.oms;
 
+import org.osgl._;
 import org.osgl.oms.asm.ClassReader;
+import org.osgl.oms.asm.ClassVisitor;
 import org.osgl.oms.asm.ClassWriter;
+import org.osgl.oms.util.BytecodeVisitor;
 import org.osgl.oms.util.Jars;
 import org.osgl.util.C;
 import org.osgl.util.E;
@@ -11,13 +14,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import static org.osgl.oms.Constants.ASM_PKG;
+import static org.osgl.oms.Constants.OMS_HOME;
+import static org.osgl.oms.Constants.OMS_PKG;
+
 /**
  * This class loader is responsible for loading OMS classes
  */
 public class BootstrapClassLoader extends ClassLoader {
-
-    public static final String OMS_HOME = "OMS_HOME";
-    private static final String ASM_PKG = "org.osgl.oms.asm.";
 
     private File lib;
     private File plugin;
@@ -123,26 +127,33 @@ public class BootstrapClassLoader extends ClassLoader {
         }
 
         Class<?> c = null;
-        if (name.startsWith(ASM_PKG)) {
-            // skip bytecode enhancement for asm classes
+        if (!name.startsWith(OMS_PKG) || name.startsWith(ASM_PKG)) {
+            // skip bytecode enhancement for asm classes or non oms classes
             c = super.defineClass(name, ba, 0, ba.length, DOMAIN);
         }
 
         if (null == c) {
-            ClassReader r;
-            r = new ClassReader(ba);
-            try {
+            _.Var<ClassWriter> cw = _.val(null);
+            BytecodeVisitor enhancer = OMS.enhancerManager().generalAsmEnhancer(name, cw);
+            if (null == enhancer) {
+                c = super.defineClass(name, ba, 0, ba.length, DOMAIN);
+            } else {
                 ClassWriter w = new ClassWriter(0);
-                // TODO: inject class visitor here
-                r.accept(w, 0);
-                byte[] baNew = w.toByteArray();
-                c = super.defineClass(name, baNew, 0, baNew.length, DOMAIN);
-            } catch (RuntimeException e) {
-                throw e;
-            } catch (Error e) {
-                throw e;
-            } catch (Exception e) {
-                throw E.unexpected("Error processing class " + name);
+                cw.set(w);
+                enhancer.commitDownstream();
+                ClassReader r;
+                r = new ClassReader(ba);
+                try {
+                    r.accept(enhancer, 0);
+                    byte[] baNew = w.toByteArray();
+                    c = super.defineClass(name, baNew, 0, baNew.length, DOMAIN);
+                } catch (RuntimeException e) {
+                    throw e;
+                } catch (Error e) {
+                    throw e;
+                } catch (Exception e) {
+                    throw E.unexpected("Error processing class " + name);
+                }
             }
         }
         if (resolve) {
