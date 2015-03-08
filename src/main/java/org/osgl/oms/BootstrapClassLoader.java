@@ -2,7 +2,6 @@ package org.osgl.oms;
 
 import org.osgl._;
 import org.osgl.oms.asm.ClassReader;
-import org.osgl.oms.asm.ClassVisitor;
 import org.osgl.oms.asm.ClassWriter;
 import org.osgl.oms.util.BytecodeVisitor;
 import org.osgl.oms.util.Jars;
@@ -134,7 +133,7 @@ public class BootstrapClassLoader extends ClassLoader {
 
         if (null == c) {
             _.Var<ClassWriter> cw = _.val(null);
-            BytecodeVisitor enhancer = OMS.enhancerManager().generalAsmEnhancer(name, cw);
+            BytecodeVisitor enhancer = OMS.enhancerManager().generalEnhancer(name, cw);
             if (null == enhancer) {
                 c = super.defineClass(name, ba, 0, ba.length, DOMAIN);
             } else {

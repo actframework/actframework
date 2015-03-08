@@ -9,6 +9,8 @@ import org.osgl.oms.asm.ClassReader;
 import org.osgl.oms.asm.ClassWriter;
 import org.osgl.oms.conf.AppConfig;
 import org.osgl.oms.controller.bytecode.ControllerScanner;
+import org.osgl.oms.controller.meta.ControllerClassMetaInfoHolder;
+import org.osgl.oms.controller.meta.ControllerClassMetaInfo;
 import org.osgl.oms.controller.meta.ControllerClassMetaInfoManager;
 import org.osgl.oms.util.BytecodeVisitor;
 import org.osgl.oms.util.Files;
@@ -30,7 +32,7 @@ import static org.osgl._.notNull;
 /**
  * The top level class loader to load a specific application classes into JVM
  */
-public class AppClassLoader extends ClassLoader {
+public class AppClassLoader extends ClassLoader implements ControllerClassMetaInfoHolder {
     protected final static Logger logger = L.get(AppClassLoader.class);
     private App app;
     private Map<String, byte[]> libClsCache = C.newMap();
@@ -61,6 +63,10 @@ public class AppClassLoader extends ClassLoader {
 
     public boolean isSourceClass(String className) {
         return false;
+    }
+
+    public ControllerClassMetaInfo controllerClassMetaInfo(String controllerClassName) {
+        return ctrlInfo.controllerMetaInfo(controllerClassName);
     }
 
     @Override
@@ -149,7 +155,7 @@ public class AppClassLoader extends ClassLoader {
 
     private byte[] asmEnhance(String className, byte[] bytecode) {
         _.Var<ClassWriter> cw = _.var(null);
-        BytecodeVisitor enhancer = OMS.enhancerManager().appAsmEnhancer(className, cw);
+        BytecodeVisitor enhancer = OMS.enhancerManager().appEnhancer(app, className, cw);
         if (null == enhancer) {
             return bytecode;
         }

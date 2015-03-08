@@ -1,6 +1,7 @@
 package org.osgl.oms.conf;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.osgl._;
 import org.osgl.exception.NotAppliedException;
@@ -80,11 +81,13 @@ public class ConfigKeyHelperTest extends TestBase {
     }
 
     @Test
+    @Ignore
     public void fetchImpl() {
         E.tbd("fetchImpl");
     }
 
     @Test
+    @Ignore
     public void fetchDir() {
         E.tbd();
     }

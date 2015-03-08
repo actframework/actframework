@@ -5,16 +5,17 @@ import org.junit.Test;
 import org.mockito.Mockito;
 import org.osgl.http.H;
 import org.osgl.mvc.result.NotFound;
+import org.osgl.oms.app.App;
 import org.osgl.oms.conf.AppConfig;
 import org.osgl.oms.controller.ParamNames;
-import org.osgl.oms.action.ActionHandler;
-import org.osgl.oms.action.builtin.StaticFileGetter;
+import org.osgl.oms.handler.RequestHandler;
+import org.osgl.oms.handler.builtin.StaticFileGetter;
 
 import java.util.Map;
 import java.util.Properties;
 
 public class RouterTest extends RouterTestBase {
-    private ActionHandler staticDirHandler;
+    private RequestHandler staticDirHandler;
 
     @Override
     protected void buildRouteMapping(Router router) {
@@ -36,7 +37,7 @@ public class RouterTest extends RouterTestBase {
     @Test
     public void searchRoot() {
         router.addMapping(H.Method.GET, "/", controller);
-        router.getInvoker(H.Method.GET, "/", ctx).invoke(ctx);
+        router.getInvoker(H.Method.GET, "/", ctx).handle(ctx);
         controllerInvoked();
     }
 
@@ -48,14 +49,14 @@ public class RouterTest extends RouterTestBase {
     @Test
     public void searchStaticUrl() {
         router.addMapping(H.Method.POST, "/foo/bar", controller);
-        router.getInvoker(H.Method.POST, "/foo/bar", ctx).invoke(ctx);
+        router.getInvoker(H.Method.POST, "/foo/bar", ctx).handle(ctx);
         controllerInvoked();
     }
 
     @Test
     public void searchDynamicUrl() {
         router.addMapping(H.Method.GET, "/svc/{<[0-9]{4}>id}", controller);
-        router.getInvoker(H.Method.GET, "/svc/1234/", ctx).invoke(ctx);
+        router.getInvoker(H.Method.GET, "/svc/1234/", ctx).handle(ctx);
         controllerInvoked();
         Mockito.verify(ctx).param("id", "1234");
     }
@@ -63,15 +64,15 @@ public class RouterTest extends RouterTestBase {
     @Test
     public void searchPartialUrl() {
         router.addMapping(H.Method.GET, "/public", staticDirHandler);
-        router.getInvoker(H.Method.GET, "/public/foo/bar.txt", ctx).invoke(ctx);
-        Mockito.verify(staticDirHandler).invoke(ctx);
+        router.getInvoker(H.Method.GET, "/public/foo/bar.txt", ctx).handle(ctx);
+        Mockito.verify(staticDirHandler).handle(ctx);
         Mockito.verify(ctx).param(ParamNames.PATH, "/foo/bar.txt");
     }
 
     @Test
     public void routeWithStaticDir() {
         router.addMapping(H.Method.GET, "/public", "staticDir:/public");
-        ActionHandler handler = router.getInvoker(H.Method.GET, "/public/foo/bar.txt", ctx);
+        RequestHandler handler = router.getInvoker(H.Method.GET, "/public/foo/bar.txt", ctx);
         yes(handler instanceof StaticFileGetter);
         yes(handler.supportPartialPath());
         eq("/public", fieldVal(handler, "base"));
@@ -81,7 +82,7 @@ public class RouterTest extends RouterTestBase {
     public void overrideExistingRouting() {
         routeWithStaticDir();
         router.addMapping(H.Method.GET, "/public", "staticDir:/private");
-        ActionHandler handler = router.getInvoker(H.Method.GET, "/public/foo/bar.txt", ctx);
+        RequestHandler handler = router.getInvoker(H.Method.GET, "/public/foo/bar.txt", ctx);
         yes(handler instanceof StaticFileGetter);
         yes(handler.supportPartialPath());
         eq("/private", fieldVal(handler, "base"));
@@ -91,7 +92,7 @@ public class RouterTest extends RouterTestBase {
     public void doNotOverrideExistingRouting() {
         routeWithStaticDir();
         router.addMappingIfNotMapped(H.Method.GET, "/public", "staticDir:/private");
-        ActionHandler handler = router.getInvoker(H.Method.GET, "/public/foo/bar.txt", ctx);
+        RequestHandler handler = router.getInvoker(H.Method.GET, "/public/foo/bar.txt", ctx);
         yes(handler instanceof StaticFileGetter);
         yes(handler.supportPartialPath());
         eq("/public", fieldVal(handler, "base"));
@@ -101,7 +102,10 @@ public class RouterTest extends RouterTestBase {
     public void senseControllerMethodWithControllerPackage() {
         Properties p = new Properties();
         p.setProperty("controller_package", "foo.controller");
-        router = new Router(controllerLookup, new AppConfig((Map)p));
+        AppConfig appConfig = new AppConfig((Map) p);
+        App app = Mockito.mock(App.class);
+        Mockito.when(app.config()).thenReturn(appConfig);
+        router = new Router(controllerLookup, app);
 
         router.addMapping(H.Method.GET, "/foo", "Controller.foo");
         yes(router.isActionMethod("foo.controller.Controller", "foo"));

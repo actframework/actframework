@@ -8,9 +8,6 @@ import org.osgl.util.S;
 
 import java.io.File;
 
-/**
- * Created by luog on 7/02/2015.
- */
 public class BootstrapClassLoaderTestRunner extends BlockJUnit4ClassRunner {
     public BootstrapClassLoaderTestRunner(Class<?> clazz) throws InitializationError {
         super(getFromTestClassloader(clazz));
@@ -19,6 +16,7 @@ public class BootstrapClassLoaderTestRunner extends BlockJUnit4ClassRunner {
 
     private static Class<?> getFromTestClassloader(Class<?> clazz) throws InitializationError {
         try {
+            OMS.initEnhancerManager();
             return classLoader().loadClass(clazz.getName());
         } catch (ClassNotFoundException e) {
             throw new InitializationError(e);

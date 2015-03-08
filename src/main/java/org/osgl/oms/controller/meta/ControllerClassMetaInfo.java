@@ -9,11 +9,12 @@ import org.osgl.util.C;
 import org.osgl.util.S;
 
 import java.lang.annotation.Annotation;
+import java.util.List;
 
 /**
  * Stores all class level information to support generating of
- * {@link org.osgl.oms.controller.RequestDispatcher request dispatcher}
- * and {@link org.osgl.oms.controller.Interceptor interceptors}
+ * {@link org.osgl.oms.handler.builtin.controller.ControllerAction request dispatcher}
+ * and {@link org.osgl.oms.handler.builtin.controller.Handler interceptors}
  */
 public final class ControllerClassMetaInfo {
 
@@ -22,10 +23,16 @@ public final class ControllerClassMetaInfo {
     private Type type;
     private boolean isAbstract = false;
     private String ctxField = null;
+    private boolean ctxFieldIsPrivate = true;
     private C.Set<String> withList = C.newSet();
     private C.List<ActionMethodMetaInfo> actions = C.newList();
+    // actionLookup index action method by method name
     private C.Map<String, ActionMethodMetaInfo> actionLookup = null;
+    // handlerLookup index handler method by method name
+    // handler could by action or any kind of interceptors
+    private C.Map<String, HandlerMethodMetaInfo> handlerLookup = null;
     private GroupInterceptorMetaInfo interceptors = new GroupInterceptorMetaInfo();
+    private ControllerClassMetaInfo parent;
 
     public ControllerClassMetaInfo className(String name) {
         this.type = Type.getObjectType(name);
@@ -49,17 +56,40 @@ public final class ControllerClassMetaInfo {
         return isAbstract;
     }
 
-    public ControllerClassMetaInfo ctxField(String fieldName) {
-        ctxField = fieldName;
+    public ControllerClassMetaInfo parent(ControllerClassMetaInfo parentInfo) {
+        parent = parentInfo;
         return this;
     }
 
+    public ControllerClassMetaInfo ctxField(String fieldName, boolean isPrivate) {
+        ctxField = fieldName;
+        ctxFieldIsPrivate = isPrivate;
+        return this;
+    }
+
+    public String nonPrivateCtxField() {
+        if (null != ctxField) {
+            return ctxFieldIsPrivate ? null : ctxField;
+        }
+        return parent.nonPrivateCtxField();
+    }
+
     public String ctxField() {
-        return ctxField;
+        if (null != ctxField) {
+            return ctxField;
+        }
+        if (null != parent) {
+            return parent.nonPrivateCtxField();
+        }
+        return null;
     }
 
     public boolean hasCtxField() {
         return null != ctxField;
+    }
+
+    public boolean ctxFieldIsPrivate() {
+        return ctxFieldIsPrivate;
     }
 
     public ControllerClassMetaInfo addWith(String... classes) {
@@ -114,6 +144,34 @@ public final class ControllerClassMetaInfo {
         return actionLookup.get(name);
     }
 
+    public HandlerMethodMetaInfo handler(String name) {
+        HandlerMethodMetaInfo info;
+        if (null == handlerLookup) {
+            info = action(name);
+            if (null != info) {
+                return info;
+            }
+            return interceptors.find(name, className());
+        }
+        return handlerLookup.get(className() + "." + name);
+    }
+
+    public List<InterceptorMethodMetaInfo> beforeInterceptors() {
+        return interceptors.beforeList();
+    }
+
+    public List<InterceptorMethodMetaInfo> afterInterceptors() {
+        return interceptors.afterList();
+    }
+
+    public List<CatchMethodMetaInfo> exceptionInterceptors() {
+        return interceptors.catchList();
+    }
+
+    public List<InterceptorMethodMetaInfo> finallyInterceptors() {
+        return interceptors.finallyList();
+    }
+
     /**
      * Merge group interceptor list info from with classes into this class and
      * then merge interceptor list into action's interceptors
@@ -122,6 +180,7 @@ public final class ControllerClassMetaInfo {
         mergeFromWithList(infoBase);
         mergeIntoActionList();
         buildActionLookup();
+        buildHandlerLookup();
         return this;
     }
 
@@ -132,7 +191,7 @@ public final class ControllerClassMetaInfo {
     private void mergeFromWithList(ControllerClassMetaInfoManager infoBase) {
         C.Set<String> withClasses = withList;
         for (String withClass : withClasses) {
-            ControllerClassMetaInfo withClassInfo = infoBase.getControllerMetaInfo(withClass);
+            ControllerClassMetaInfo withClassInfo = infoBase.controllerMetaInfo(withClass);
             if (null == withClassInfo) {
                 withClass = Type.getType(withClass).getClassName();
                 withClassInfo = infoBase.scanForControllerMetaInfo(withClass);
@@ -158,6 +217,24 @@ public final class ControllerClassMetaInfo {
             lookup.put(act.name(), act);
         }
         actionLookup = lookup;
+    }
+
+    private void buildHandlerLookup() {
+        C.Map<String, HandlerMethodMetaInfo> lookup = C.newMap();
+        lookup.putAll(actionLookup);
+        for (InterceptorMethodMetaInfo info : beforeInterceptors()) {
+            lookup.put(info.fullName(), info);
+        }
+        for (InterceptorMethodMetaInfo info : afterInterceptors()) {
+            lookup.put(info.fullName(), info);
+        }
+        for (InterceptorMethodMetaInfo info : exceptionInterceptors()) {
+            lookup.put(info.fullName(), info);
+        }
+        for (InterceptorMethodMetaInfo info : finallyInterceptors()) {
+            lookup.put(info.fullName(), info);
+        }
+        handlerLookup = lookup;
     }
 
     private static final C.Set<Class<? extends Annotation>> ACTION_ANNOTATION_TYPES = C.set(

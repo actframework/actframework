@@ -2,32 +2,36 @@ package org.osgl.oms.route;
 
 import org.junit.Before;
 import org.mockito.Mockito;
+import org.osgl.oms.app.App;
 import org.osgl.oms.conf.AppConfig;
 import org.osgl.oms.app.AppContext;
 import org.osgl.oms.TestBase;
-import org.osgl.oms.action.ActionHandler;
-import org.osgl.oms.action.ActionHandlerResolver;
+import org.osgl.oms.handler.RequestHandler;
+import org.osgl.oms.handler.RequestHandlerResolver;
 
 import static org.mockito.Mockito.*;
 
 public abstract class RouterTestBase extends TestBase {
 
     protected Router router;
-    protected ActionHandler controller;
-    protected ActionHandlerResolver controllerLookup;
+    protected RequestHandler controller;
+    protected RequestHandlerResolver controllerLookup;
     protected AppContext ctx;
 
     @Before
     public void _prepare() {
         controller = mock(NamedMockHandler.class);
-        controllerLookup = mock(ActionHandlerResolver.class);
+        controllerLookup = mock(RequestHandlerResolver.class);
         provisionControllerLookup(controllerLookup);
-        router = new Router(controllerLookup, appConfig());
+        AppConfig config = appConfig();
+        App app = Mockito.mock(App.class);
+        Mockito.when(app.config()).thenReturn(config);
+        router = new Router(controllerLookup, app);
         buildRouteMapping(router);
         ctx = Mockito.mock(AppContext.class);
     }
 
-    protected void provisionControllerLookup(ActionHandlerResolver controllerLookup) {
+    protected void provisionControllerLookup(RequestHandlerResolver controllerLookup) {
         when(controllerLookup.resolve(anyString())).thenReturn(controller);
     }
 
@@ -38,7 +42,7 @@ public abstract class RouterTestBase extends TestBase {
     }
 
     protected void controllerInvoked() {
-        verify(controller).invoke(ctx);
+        verify(controller).handle(ctx);
     }
 
 }

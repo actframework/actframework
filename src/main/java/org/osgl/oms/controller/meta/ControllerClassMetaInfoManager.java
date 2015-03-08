@@ -11,11 +11,11 @@ import java.util.Map;
 public class ControllerClassMetaInfoManager {
 
     private Map<String, ControllerClassMetaInfo> controllers = C.newMap();
-    private _.Func0<ControllerScanner> actionScannerFactory;
+    private _.Factory<ControllerScanner> actionScannerFactory;
 
     public ControllerClassMetaInfoManager(_.Func0<ControllerScanner> actionScannerFactory) {
         E.NPE(actionScannerFactory);
-        this.actionScannerFactory = actionScannerFactory;
+        this.actionScannerFactory = _.factory(actionScannerFactory);
     }
 
     public void registerControllerMetaInfo(ControllerClassMetaInfo metaInfo) {
@@ -23,13 +23,13 @@ public class ControllerClassMetaInfoManager {
         controllers.put(className, metaInfo);
     }
 
-    public ControllerClassMetaInfo getControllerMetaInfo(String className) {
+    public ControllerClassMetaInfo controllerMetaInfo(String className) {
         return controllers.get(className);
     }
 
     public ControllerClassMetaInfo scanForControllerMetaInfo(String className) {
-        ControllerScanner scanner = actionScannerFactory.apply();
-        ControllerClassMetaInfo info = scanner.scan(className);
+        ControllerScanner scanner = actionScannerFactory.create();
+        ControllerClassMetaInfo info = scanner.manager(this).scan(className);
         registerControllerMetaInfo(info);
         return info;
     }
@@ -39,5 +39,6 @@ public class ControllerClassMetaInfoManager {
             info.merge(this);
         }
     }
+
 
 }

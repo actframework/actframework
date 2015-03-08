@@ -4,15 +4,16 @@ import org.osgl._;
 import org.osgl.http.H;
 import org.osgl.http.util.Path;
 import org.osgl.mvc.result.NotFound;
+import org.osgl.oms.app.App;
 import org.osgl.oms.app.AppContext;
 import org.osgl.oms.controller.ParamNames;
-import org.osgl.oms.action.ActionHandler;
-import org.osgl.oms.action.ActionHandlerResolver;
-import org.osgl.oms.action.ActionHandlerResolverBase;
-import org.osgl.oms.action.builtin.ActionProxy;
-import org.osgl.oms.action.builtin.Echo;
-import org.osgl.oms.action.builtin.Redirect;
-import org.osgl.oms.action.builtin.StaticFileGetter;
+import org.osgl.oms.handler.RequestHandler;
+import org.osgl.oms.handler.RequestHandlerResolver;
+import org.osgl.oms.handler.RequestHandlerResolverBase;
+import org.osgl.oms.handler.builtin.controller.RequestHandlerProxy;
+import org.osgl.oms.handler.builtin.Echo;
+import org.osgl.oms.handler.builtin.Redirect;
+import org.osgl.oms.handler.builtin.StaticFileGetter;
 import org.osgl.oms.conf.AppConfig;
 import org.osgl.util.*;
 
@@ -34,50 +35,52 @@ public class Router {
     private Node _POST = Node.newRoot();
     private Node _DEL = Node.newRoot();
 
-    private Map<String, ActionHandlerResolver> resolvers = C.newMap();
+    private Map<String, RequestHandlerResolver> resolvers = C.newMap();
 
-    private ActionHandlerResolver controllerLookup;
-    private C.Set<String> controllerActionNames = C.newSet();
+    private RequestHandlerResolver handlerLookup;
+    private C.Set<String> actionNames = C.newSet();
     private AppConfig appConfig;
+    private App app;
 
-    private void initControllerLookup(ActionHandlerResolver lookup) {
+    private void initControllerLookup(RequestHandlerResolver lookup) {
         if (null == lookup) {
-            lookup = new ActionHandlerResolverBase() {
+            lookup = new RequestHandlerResolverBase() {
                 @Override
-                public ActionHandler resolve(CharSequence payload) {
-                    return new ActionProxy(payload.toString(), appConfig);
+                public RequestHandler resolve(CharSequence payload) {
+                    return new RequestHandlerProxy(payload.toString(), app);
                 }
             };
         }
-        controllerLookup = lookup;
+        handlerLookup = lookup;
     }
 
-    public Router(AppConfig config) {
-        this(null, config);
+    public Router(App app) {
+        this(null, app);
     }
 
-    public Router(ActionHandlerResolver controllerLookup, AppConfig config) {
-        E.NPE(config);
-        initControllerLookup(controllerLookup);
-        this.appConfig = config;
+    public Router(RequestHandlerResolver handlerLookup, App app) {
+        E.NPE(app);
+        initControllerLookup(handlerLookup);
+        this.appConfig = app.config();
+        this.app = app;
     }
 
     // --- routing ---
-    public ActionHandler getInvoker(H.Method method, CharSequence path, AppContext context) {
+    public RequestHandler getInvoker(H.Method method, CharSequence path, AppContext context) {
         Node node = search(method, Path.tokenizer(Unsafe.bufOf(path)), context);
         return getInvokerFrom(node);
     }
 
-    public ActionHandler getInvoker(H.Method method, List<CharSequence> path, AppContext context) {
+    public RequestHandler getInvoker(H.Method method, List<CharSequence> path, AppContext context) {
         Node node = search(method, path, context);
         return getInvokerFrom(node);
     }
 
-    private ActionHandler getInvokerFrom(Node node) {
+    private RequestHandler getInvokerFrom(Node node) {
         if (null == node) {
             throw NOT_FOUND;
         }
-        ActionHandler handler = node.handler;
+        RequestHandler handler = node.handler;
         if (null == handler) {
             throw NOT_FOUND;
         }
@@ -89,17 +92,17 @@ public class Router {
         return null != _search(method, path);
     }
 
-    public void addMapping(H.Method method, CharSequence path, ActionHandler handler) {
+    public void addMapping(H.Method method, CharSequence path, RequestHandler handler) {
         Node node = _locate(method, path);
         node.handler(handler);
     }
 
     public void addMapping(H.Method method, CharSequence path, CharSequence action) {
-        ActionHandler handler = resolveActionHandler(action);
+        RequestHandler handler = resolveActionHandler(action);
         addMapping(method, path, handler);
     }
 
-    public void addMappingIfNotMapped(H.Method method, CharSequence path, ActionHandler handler) {
+    public void addMappingIfNotMapped(H.Method method, CharSequence path, RequestHandler handler) {
         Node node = _locate(method, path);
         if (null == node.handler) {
             node.handler(handler);
@@ -154,7 +157,7 @@ public class Router {
      * @param directive
      * @param resolver
      */
-    public void registerActionHandlerResolver(String directive, ActionHandlerResolver resolver) {
+    public void registerRequestHandlerResolver(String directive, RequestHandlerResolver resolver) {
         resolvers.put(directive, resolver);
     }
 
@@ -165,12 +168,12 @@ public class Router {
         if (S.notEmpty(controllerPackage)) {
             if (action.startsWith(controllerPackage)) {
                 String action2 = action.substring(controllerPackage.length() + 1);
-                if (controllerActionNames.contains(action2)) {
+                if (actionNames.contains(action2)) {
                     return true;
                 }
             }
         }
-        return controllerActionNames.contains(action);
+        return actionNames.contains(action);
     }
 
     public void debug(PrintStream ps) {
@@ -228,21 +231,21 @@ public class Router {
         return node;
     }
 
-    private ActionHandler resolveActionHandler(CharSequence action) {
+    private RequestHandler resolveActionHandler(CharSequence action) {
         _.T2<String, String> t2 = splitActionStr(action);
         String directive = t2._1, payload = t2._2;
 
         if (S.notEmpty(directive)) {
-            ActionHandlerResolver resolver = resolvers.get(action);
-            ActionHandler handler = null == resolver ?
+            RequestHandlerResolver resolver = resolvers.get(action);
+            RequestHandler handler = null == resolver ?
                     BuiltInHandlerResolver.tryResolve(directive, payload) :
                     resolver.resolve(payload);
             E.unsupportedIf(null == handler, "cannot find action handler by directive: %s", directive);
             return handler;
         } else {
-            ActionHandler handler = controllerLookup.resolve(payload);
+            RequestHandler handler = handlerLookup.resolve(payload);
             E.unsupportedIf(null == handler, "cannot find action handler: %s", action);
-            controllerActionNames.add(payload);
+            actionNames.add(payload);
             return handler;
         }
     }
@@ -285,7 +288,7 @@ public class Router {
         private Node parent;
         private Node dynamicChild;
         private C.Map<CharSequence, Node> staticChildren = C.newMap();
-        private ActionHandler handler;
+        private RequestHandler handler;
 
         private Node(int id) {
             this.id = id;
@@ -379,13 +382,13 @@ public class Router {
             return child;
         }
 
-        Node handler(ActionHandler handler) {
+        Node handler(RequestHandler handler) {
             E.NPE(handler);
             this.handler = handler;
             return this;
         }
 
-        ActionHandler handler() {
+        RequestHandler handler() {
             return this.handler;
         }
 
@@ -436,33 +439,33 @@ public class Router {
         }
     }
 
-    private static enum BuiltInHandlerResolver implements ActionHandlerResolver {
+    private static enum BuiltInHandlerResolver implements RequestHandlerResolver {
         echo() {
             @Override
-            public ActionHandler resolve(CharSequence msg) {
+            public RequestHandler resolve(CharSequence msg) {
                 return new Echo(msg.toString());
             }
         },
         redirect() {
             @Override
-            public ActionHandler resolve(CharSequence payload) {
+            public RequestHandler resolve(CharSequence payload) {
                 return new Redirect(payload.toString());
             }
         },
         staticdir() {
             @Override
-            public ActionHandler resolve(CharSequence base) {
+            public RequestHandler resolve(CharSequence base) {
                 return new StaticFileGetter(base.toString());
             }
         },
         staticfile() {
             @Override
-            public ActionHandler resolve(CharSequence base) {
+            public RequestHandler resolve(CharSequence base) {
                 return new StaticFileGetter(base.toString(), true);
             }
         };
 
-        private static ActionHandler tryResolve(CharSequence directive, CharSequence payload) {
+        private static RequestHandler tryResolve(CharSequence directive, CharSequence payload) {
             String s = directive.toString().toLowerCase();
             try {
                 return valueOf(s).resolve(payload);

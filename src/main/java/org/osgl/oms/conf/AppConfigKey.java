@@ -79,7 +79,7 @@ public enum AppConfigKey implements ConfigKey {
      * package where controller classes are aggregated.
      *
      * <p>Once controller_package is specified then the application developer could
-     * write short action handler in the routing table. For example, if an original
+     * write short request handler in the routing table. For example, if an original
      * routing table is specified as</p>
      *
      * <table>

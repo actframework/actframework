@@ -20,10 +20,6 @@ public class ReturnTypeInfo {
         return type != Type.VOID_TYPE;
     }
 
-    public static ReturnTypeInfo noReturn() {
-        return new ReturnTypeInfo();
-    }
-
     public static ReturnTypeInfo of(Type type) {
         return new ReturnTypeInfo(type);
     }

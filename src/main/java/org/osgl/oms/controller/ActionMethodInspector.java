@@ -21,12 +21,12 @@ public class ActionMethodInspector extends MethodVisitor
     String desc;
     String signature;
     String[] exceptions;
-    ActionMethodMetaInfo spec = new ActionMethodMetaInfo();
+    ActionMethodMetaInfoL spec = new ActionMethodMetaInfoL();
 
     public ActionMethodInspector(MethodVisitor mv, int access, String name, String desc, String signature, String[] exceptions, ControllerClassEnhancer classVisitor) {
         super(ASM5, mv);
         boolean isStatic = (ACC_STATIC & access) > 0;
-        spec.name(name).invokeType(isStatic ? ActionMethodMetaInfo.InvokeType.STATIC : ActionMethodMetaInfo.InvokeType.VIRTUAL);
+        spec.name(name).invokeType(isStatic ? ActionMethodMetaInfoL.InvokeType.STATIC : ActionMethodMetaInfoL.InvokeType.VIRTUAL);
         this.access = access;
         this.method = name;
         this.classVisitor = classVisitor;
@@ -84,7 +84,7 @@ public class ActionMethodInspector extends MethodVisitor
             if (paramId < spec.paramCount()) {
                 ParamMetaInfo param = spec.param(paramId);
                 param.name(name);
-                if (ActionMethodMetaInfo.APP_CONTEXT_TYPE.equals(param.type())) {
+                if (ActionMethodMetaInfoL.APP_CONTEXT_TYPE.equals(param.type())) {
                     spec.appContextIndex(index);
                 }
             }

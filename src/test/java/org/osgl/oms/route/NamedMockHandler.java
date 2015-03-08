@@ -2,9 +2,9 @@ package org.osgl.oms.route;
 
 
 import org.osgl.oms.app.AppContext;
-import org.osgl.oms.action.ActionHandlerBase;
+import org.osgl.oms.handler.RequestHandlerBase;
 
-public class NamedMockHandler extends ActionHandlerBase {
+public class NamedMockHandler extends RequestHandlerBase {
 
     private String name;
 
@@ -15,7 +15,7 @@ public class NamedMockHandler extends ActionHandlerBase {
     }
 
     @Override
-    public void invoke(AppContext context) {
+    public void handle(AppContext context) {
         result.set(this.name);
     }
 

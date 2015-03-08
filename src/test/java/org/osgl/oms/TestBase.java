@@ -3,6 +3,7 @@ package org.osgl.oms;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.runner.JUnitCore;
+import org.osgl.http.H;
 import org.osgl.oms.app.App;
 import org.osgl.oms.app.AppContext;
 import org.osgl.oms.conf.AppConfig;
@@ -89,8 +90,10 @@ public class TestBase extends Assert {
     protected AppContext mockAppContext;
     protected AppConfig mockAppConfig;
     protected App mockApp;
+    protected H.Request mockReq;
+    protected H.Response mockResp;
 
-    protected void setup() {
+    protected void setup() throws Exception {
         mockApp = mock(App.class);
         mockAppConfig = mock(AppConfig.class);
         mockAppContext = mock(AppContext.class);
@@ -99,6 +102,8 @@ public class TestBase extends Assert {
         mockRouter = mock(Router.class);
         when(mockApp.config()).thenReturn(mockAppConfig);
         when(mockApp.router()).thenReturn(mockRouter);
+        mockReq = mock(H.Request.class);
+        mockResp = mock(H.Response.class);
     }
 
     protected byte[] loadBytecode(String className) {

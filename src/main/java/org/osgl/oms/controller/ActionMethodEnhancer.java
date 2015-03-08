@@ -23,10 +23,10 @@ public class ActionMethodEnhancer extends MethodVisitor implements Opcodes {
     private static final String RESULT_CLASS = Result.class.getName();
 
     String name;
-    ActionMethodMetaInfo meta;
+    ActionMethodMetaInfoL meta;
     MethodVisitor next;
 
-    public ActionMethodEnhancer(final MethodVisitor mv, ActionMethodMetaInfo meta, final int access, final String name, final String desc, final String signature, final String[] exceptions) {
+    public ActionMethodEnhancer(final MethodVisitor mv, ActionMethodMetaInfoL meta, final int access, final String name, final String desc, final String signature, final String[] exceptions) {
         super(ASM5, new MethodNode(access, name, desc, signature, exceptions));
         this.meta = meta;
         this.name = name;
@@ -47,10 +47,10 @@ public class ActionMethodEnhancer extends MethodVisitor implements Opcodes {
     private static class Transformer {
         MethodNode mn;
         InsnList instructions;
-        private ActionMethodMetaInfo meta;
+        private ActionMethodMetaInfoL meta;
         List<Label> lblList = C.newSizedList(20);
 
-        Transformer(MethodNode mn, ActionMethodMetaInfo meta) {
+        Transformer(MethodNode mn, ActionMethodMetaInfoL meta) {
             this.mn = mn;
             this.meta = meta;
             this.instructions = mn.instructions;
@@ -84,14 +84,14 @@ public class ActionMethodEnhancer extends MethodVisitor implements Opcodes {
         private static class Segment {
             Label startLabel;
             InsnList instructions;
-            ActionMethodMetaInfo meta;
+            ActionMethodMetaInfoL meta;
             ListIterator<AbstractInsnNode> itr;
             Transformer trans;
             private Map<Integer, InstructionHandler> handlers = C.map(
                     AbstractInsnNode.METHOD_INSN, new InvocationHandler(this)
             );
 
-            Segment(Label start, ActionMethodMetaInfo meta, InsnList instructions, ListIterator<AbstractInsnNode> itr, Transformer trans) {
+            Segment(Label start, ActionMethodMetaInfoL meta, InsnList instructions, ListIterator<AbstractInsnNode> itr, Transformer trans) {
                 this.startLabel = start;
                 this.meta = meta;
                 this.instructions = instructions;

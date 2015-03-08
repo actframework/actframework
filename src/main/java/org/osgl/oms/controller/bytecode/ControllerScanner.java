@@ -22,8 +22,9 @@ import static org.osgl.oms.controller.meta.ControllerClassMetaInfo.isActionAnnot
 import static org.osgl.oms.controller.meta.ControllerClassMetaInfo.isInterceptorAnnotation;
 
 /**
- * Controller action method scanner. Used to build router from
- * annotations associated with controller action methods
+ * Scan a possible controller/interceptor class bytecode:
+ * - build the {@link org.osgl.oms.controller.meta.ControllerClassMetaInfo}
+ * - add annotated action method to router
  */
 public final class ControllerScanner extends BytecodeVisitor {
 
@@ -32,6 +33,7 @@ public final class ControllerScanner extends BytecodeVisitor {
     private Router router;
     private _.Func1<String, byte[]> bytecodeLookup;
     private ControllerClassMetaInfo classInfo;
+    private ControllerClassMetaInfoManager mgr;
 
     public ControllerScanner(Router router, _.Func1<String, byte[]> bytecodeLookup) {
         super(null);
@@ -40,12 +42,21 @@ public final class ControllerScanner extends BytecodeVisitor {
         this.bytecodeLookup = bytecodeLookup;
     }
 
+    public ControllerScanner manager(ControllerClassMetaInfoManager manager) {
+        mgr = manager;
+        return this;
+    }
+
     private static boolean isConstructor(String methodName) {
         return methodName.contains("<init>");
     }
 
     private static boolean isPublic(int access) {
         return (ACC_PUBLIC & access) > 0;
+    }
+
+    private static boolean isPrivate(int access) {
+        return (ACC_PRIVATE & access) > 0;
     }
 
     private static boolean isAbstract(int access) {
@@ -70,7 +81,16 @@ public final class ControllerScanner extends BytecodeVisitor {
 
     @Override
     public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
+        String superClassName = Type.getObjectType(superName).getClassName();
+        ControllerClassMetaInfo superInfo = null;
+        if (S.neq(superClassName, "java.lang.Object")) {
+             superInfo = mgr.controllerMetaInfo(superClassName);
+            if (null == superInfo) {
+                superInfo = mgr.scanForControllerMetaInfo(superClassName);
+            }
+        }
         classInfo = new ControllerClassMetaInfo().className(name);
+        classInfo.parent(superInfo);
         if (isAbstract(access)) {
             classInfo.setAbstract();
         }
@@ -78,9 +98,14 @@ public final class ControllerScanner extends BytecodeVisitor {
     }
 
     @Override
+    public void visitAttribute(Attribute attr) {
+        super.visitAttribute(attr);
+    }
+
+    @Override
     public FieldVisitor visitField(int access, String name, String desc, String signature, Object value) {
         if (!classInfo.isAbstract() && AsmTypes.APP_CONTEXT_DESC.equals(desc)) {
-            classInfo.ctxField(name);
+            classInfo.ctxField(name, isPrivate(access));
         }
         return super.visitField(access, name, desc, signature, value);
     }
@@ -159,7 +184,7 @@ public final class ControllerScanner extends BytecodeVisitor {
         private String[] exceptions;
         private boolean requireScan;
         private boolean isRoutedMethod;
-        private ActionMethodMetaInfoBase methodInfo;
+        private HandlerMethodMetaInfo methodInfo;
 
         ActionMethodVisitor(boolean isRoutedMethod, MethodVisitor mv, int access, String methodName, String desc, String signature, String[] exceptions) {
             super(ASM5, mv);
@@ -182,7 +207,7 @@ public final class ControllerScanner extends BytecodeVisitor {
             Class<? extends Annotation> c = _.classForName(className);
             if (isActionAnnotation(c)) {
                 markRequireScan();
-                ActionMethodMetaInfo tmp = new ActionMethodMetaInfo();
+                ActionMethodMetaInfo tmp = new ActionMethodMetaInfo(classInfo);
                 methodInfo = tmp;
                 classInfo.addAction(tmp);
                 return new ActionAnnotationVisitor(av);
@@ -202,11 +227,11 @@ public final class ControllerScanner extends BytecodeVisitor {
                 return;
             }
             if (null == methodInfo) {
-                ActionMethodMetaInfo action = new ActionMethodMetaInfo();
+                ActionMethodMetaInfo action = new ActionMethodMetaInfo(classInfo);
                 methodInfo = action;
                 classInfo.addAction(action);
             }
-            ActionMethodMetaInfoBase info = methodInfo;
+            HandlerMethodMetaInfo info = methodInfo;
             info.name(methodName);
             boolean isStatic = AsmTypes.isStatic(access);
             if (isStatic) {

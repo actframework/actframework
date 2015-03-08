@@ -6,10 +6,10 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.osgl.http.H;
 import org.osgl.mvc.result.NotFound;
-import org.osgl.oms.action.ActionHandler;
-import org.osgl.oms.action.ActionHandlerResolver;
-import org.osgl.oms.action.builtin.Echo;
-import org.osgl.oms.action.builtin.StaticFileGetter;
+import org.osgl.oms.handler.RequestHandler;
+import org.osgl.oms.handler.RequestHandlerResolver;
+import org.osgl.oms.handler.builtin.Echo;
+import org.osgl.oms.handler.builtin.StaticFileGetter;
 import org.osgl.oms.TestBase;
 
 import static org.mockito.Matchers.anyString;
@@ -22,10 +22,10 @@ public class RouteTableRouterBuilderTest extends RouterTestBase {
     private RouteTableRouterBuilder builder;
 
     @Override
-    protected void provisionControllerLookup(ActionHandlerResolver controllerLookup) {
-        when(controllerLookup.resolve(anyString())).thenAnswer(new Answer<ActionHandler>() {
+    protected void provisionControllerLookup(RequestHandlerResolver controllerLookup) {
+        when(controllerLookup.resolve(anyString())).thenAnswer(new Answer<RequestHandler>() {
             @Override
-            public ActionHandler answer(InvocationOnMock invocation) throws Throwable {
+            public RequestHandler answer(InvocationOnMock invocation) throws Throwable {
                 return new NamedMockHandler((String) invocation.getArguments()[0]);
             }
         });
@@ -66,7 +66,7 @@ public class RouteTableRouterBuilderTest extends RouterTestBase {
     @Test
     public void withBuiltInHandler() {
         addRouteMap("GET /public staticDir:/public");
-        ActionHandler h = router.getInvoker(GET, "/public/file1.txt", ctx);
+        RequestHandler h = router.getInvoker(GET, "/public/file1.txt", ctx);
         yes(h instanceof StaticFileGetter);
         eq("/public", TestBase.fieldVal(h, "base"));
     }
@@ -74,13 +74,13 @@ public class RouteTableRouterBuilderTest extends RouterTestBase {
     @Test
     public void payloadContainsBlank() {
         addRouteMap("GET /magic_words echo: Hello world!");
-        ActionHandler h = router.getInvoker(GET, "/magic_words", ctx);
+        RequestHandler h = router.getInvoker(GET, "/magic_words", ctx);
         yes(h instanceof Echo);
         eq("Hello world!", TestBase.fieldVal(h, "msg"));
     }
 
     private void verify(String expected, H.Method method, String url) {
-        router.getInvoker(method, url, ctx).invoke(ctx);
+        router.getInvoker(method, url, ctx).handle(ctx);
         controllerInvoked(expected);
     }
 

@@ -145,9 +145,15 @@
     </dependency>
 
     <dependency>
+      <groupId>com.esotericsoftware</groupId>
+      <artifactId>reflectasm</artifactId>
+      <version>1.10.0</version>
+    </dependency>
+
+    <dependency>
       <groupId>org.osgl</groupId>
       <artifactId>osgl-tool</artifactId>
-      <version>0.4-SNAPSHOT</version>
+      <version>0.4.3-SNAPSHOT</version>
     </dependency>
 
     <dependency>

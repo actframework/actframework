@@ -1,23 +1,32 @@
 package org.osgl.oms.util;
 
-import com.sun.org.apache.xpath.internal.compiler.OpCodes;
 import org.osgl._;
 import org.osgl.oms.OMS;
 import org.osgl.oms.asm.ClassVisitor;
 import org.osgl.oms.asm.Opcodes;
 import org.osgl.oms.plugin.Plugin;
-import org.osgl.oms.util.PredicatableBytecodeVisitor;
+import org.osgl.util.E;
 
 /**
  * Base class for all bytecode enhancer that using ASM lib
  */
-public abstract class AsmBytecodeEnhancer extends PredicatableBytecodeVisitor
-        implements Opcodes, Plugin {
+public abstract class AsmBytecodeEnhancer<T extends AsmBytecodeEnhancer> extends PredictableBytecodeVisitor
+        implements Opcodes, Plugin, Cloneable {
     private _.Predicate<String> targetClassPredicate;
+
+    protected abstract Class<T> subClass();
+
+    protected AsmBytecodeEnhancer(_.Predicate<String> targetClassPredicate) {
+        this.targetClassPredicate = targetClassPredicate;
+    }
 
     protected AsmBytecodeEnhancer(_.Predicate<String> targetClassPredicate, ClassVisitor cv) {
         super(cv);
         this.targetClassPredicate = targetClassPredicate;
+    }
+
+    public void predicate(_.Predicate<String> predicate) {
+        targetClassPredicate = predicate;
     }
 
     @Override
@@ -28,5 +37,13 @@ public abstract class AsmBytecodeEnhancer extends PredicatableBytecodeVisitor
     @Override
     public void register() {
         OMS.enhancerManager().register(this);
+    }
+
+    public T clone() {
+        try {
+            return (T) super.clone();
+        } catch (CloneNotSupportedException e) {
+            throw E.unexpected(e);
+        }
     }
 }

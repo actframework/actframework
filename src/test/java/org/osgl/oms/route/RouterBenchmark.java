@@ -7,11 +7,10 @@ import org.mockito.Mockito;
 import org.osgl.http.H;
 import org.osgl.mvc.result.NotFound;
 import org.osgl.oms.app.App;
-import org.osgl.oms.conf.AppConfig;
 import org.osgl.oms.app.AppContext;
 import org.osgl.oms.BenchmarkBase;
 import org.osgl.oms.TestBase;
-import org.osgl.oms.action.ActionHandlerResolver;
+import org.osgl.oms.handler.RequestHandlerResolver;
 import org.osgl.util.*;
 import play.Play;
 import play.plugins.PluginCollection;
@@ -34,8 +33,8 @@ public class RouterBenchmark extends BenchmarkBase {
     private AppContext ctx;
 
     public RouterBenchmark() {
-        ActionHandlerResolver controllerLookup = new MockActionHandlerResolver();
-        router = new Router(controllerLookup, Mockito.mock(AppConfig.class));
+        RequestHandlerResolver controllerLookup = new MockRequestHandlerResolver();
+        router = new Router(controllerLookup, Mockito.mock(App.class));
         InputStream is = TestBase.class.getResourceAsStream("/routes");
         String fc = IO.readContentAsString(is);
         builder = new RouteTableRouterBuilder(fc.split("[\r\n]+"));

@@ -1,12 +1,15 @@
 package org.osgl.oms.controller.meta;
 
-import org.osgl.util.C;
 import org.osgl.util.S;
 
 import java.util.List;
 
-public class ActionMethodMetaInfo extends ActionMethodMetaInfoBase<ActionMethodMetaInfo> {
+public class ActionMethodMetaInfo extends HandlerMethodMetaInfo<ActionMethodMetaInfo> {
     private GroupInterceptorMetaInfo interceptors = new GroupInterceptorMetaInfo();
+
+    public ActionMethodMetaInfo(ControllerClassMetaInfo classMetaInfo) {
+        super(classMetaInfo);
+    }
 
     public ActionMethodMetaInfo mergeFromClassInterceptors(GroupInterceptorMetaInfo info) {
         interceptors.mergeFrom(info, name());

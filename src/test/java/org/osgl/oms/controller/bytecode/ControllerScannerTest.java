@@ -20,12 +20,12 @@ import static org.osgl.http.H.Method.*;
 
 public class ControllerScannerTest extends TestBase {
 
-    private ControllerClassMetaInfoManager ctrlInfo;
+    private ControllerClassMetaInfoManager infoSrc;
 
     @Before
-    public void setup() {
+    public void setup() throws Exception {
         super.setup();
-        ctrlInfo = new ControllerClassMetaInfoManager(new _.Factory<ControllerScanner>(){
+        infoSrc = new ControllerClassMetaInfoManager(new _.Factory<ControllerScanner>(){
             @Override
             public ControllerScanner create() {
                 return new ControllerScanner(mockRouter, new _.F1<String, byte[]>() {
@@ -105,8 +105,8 @@ public class ControllerScannerTest extends TestBase {
     }
 
     private void scan(Class<?> c) {
-        ctrlInfo.scanForControllerMetaInfo(c.getName());
-        ctrlInfo.mergeActionMetaInfo();
+        infoSrc.scanForControllerMetaInfo(c.getName());
+        infoSrc.mergeActionMetaInfo();
     }
 
     private void verifyRouting(String url, String controller, String action, H.Method... methods) {
@@ -116,7 +116,7 @@ public class ControllerScannerTest extends TestBase {
     }
 
     private ControllerClassMetaInfo controller(String className) {
-        return ctrlInfo.getControllerMetaInfo("testapp.controller." + className);
+        return infoSrc.controllerMetaInfo("testapp.controller." + className);
     }
 
     private ActionMethodMetaInfo action(String controller, String action) {
@@ -148,21 +148,21 @@ public class ControllerScannerTest extends TestBase {
         return null;
     }
 
-    private void assertFieldAppCtxInject(ActionMethodMetaInfoBase action, String fieldName) {
+    private void assertFieldAppCtxInject(HandlerMethodMetaInfo action, String fieldName) {
         FieldAppContextInjection appContextInjection = _.cast(action.appContextInjection());
         eq(fieldName, appContextInjection.fieldName());
     }
 
-    private void assertParamAppCtxInject(ActionMethodMetaInfoBase action, int index) {
+    private void assertParamAppCtxInject(HandlerMethodMetaInfo action, int index) {
         AppContextInjection.ParamAppContextInjection appContextInjection = _.cast(action.appContextInjection());
         same(index, appContextInjection.paramIndex());
     }
 
-    private void assertLocalAppCtxInject(ActionMethodMetaInfoBase action) {
+    private void assertLocalAppCtxInject(HandlerMethodMetaInfo action) {
         same(AppContextInjection.InjectType.LOCAL, action.appContextInjection().injectVia());
     }
 
-    private void assertNoParam(ActionMethodMetaInfoBase action) {
+    private void assertNoParam(HandlerMethodMetaInfo action) {
         same(0, action.paramCount());
     }
 }

@@ -4,9 +4,14 @@ import org.osgl._;
 import org.osgl.exception.NotAppliedException;
 import org.osgl.logging.L;
 import org.osgl.logging.Logger;
+import org.osgl.oms.controller.meta.CatchMethodMetaInfo;
+import org.osgl.oms.handler.builtin.controller.*;
 import org.osgl.oms.app.*;
 import org.osgl.oms.conf.OmsConfLoader;
 import org.osgl.oms.conf.OmsConfig;
+import org.osgl.oms.controller.meta.ActionMethodMetaInfo;
+import org.osgl.oms.controller.meta.InterceptorMethodMetaInfo;
+import org.osgl.oms.handler.builtin.controller.impl.ReflectedHandlerInvoker;
 import org.osgl.oms.plugin.PluginScanner;
 import org.osgl.oms.util.Banner;
 import org.osgl.util.E;
@@ -49,6 +54,26 @@ public final class OMS {
 
         public AppClassLoader classLoader(App app) {
             return new AppClassLoader(app);
+        }
+
+        public ControllerAction createRequestHandler(ActionMethodMetaInfo action, App app) {
+            return ReflectedHandlerInvoker.createControllerAction(action, app);
+        }
+
+        public BeforeInterceptor createBeforeInterceptor(InterceptorMethodMetaInfo before, App app) {
+            return ReflectedHandlerInvoker.createBeforeInterceptor(before, app);
+        }
+
+        public AfterInterceptor createAfterInterceptor(InterceptorMethodMetaInfo after, App app) {
+            return ReflectedHandlerInvoker.createAfterInterceptor(after, app);
+        }
+
+        public ExceptionInterceptor createExceptionInterceptor(CatchMethodMetaInfo ex, App app) {
+            return ReflectedHandlerInvoker.createExceptionInterceptor(ex, app);
+        }
+
+        public FinallyInterceptor createFinallyInterceptor(InterceptorMethodMetaInfo fin, App app) {
+            return ReflectedHandlerInvoker.createFinannyInterceptor(fin, app);
         }
 
         public static Mode valueOfIgnoreCase(String mode) {
@@ -120,7 +145,7 @@ public final class OMS {
         E.tbd("init execute service");
     }
 
-    private static void initEnhancerManager() {
+    static void initEnhancerManager() {
         enhancerManager = new BytecodeEnhancerManager();
     }
 

@@ -114,7 +114,7 @@ public class App {
     }
 
     private void initRouter() {
-        router = new Router(config);
+        router = new Router(this);
     }
 
     private void loadRoutes() {

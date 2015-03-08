@@ -11,9 +11,9 @@ import java.util.Set;
 
 /**
  * Stores all method level information needed to generate
- * {@link org.osgl.oms.controller.Interceptor interceptors}
+ * {@link org.osgl.oms.handler.builtin.controller.Handler interceptors}
  */
-public class InterceptorMethodMetaInfo extends ActionMethodMetaInfoBase<InterceptorMethodMetaInfo>
+public class InterceptorMethodMetaInfo extends HandlerMethodMetaInfo<InterceptorMethodMetaInfo>
         implements Comparable<InterceptorMethodMetaInfo> {
 
     protected static final Logger logger = L.get(InterceptorMethodMetaInfo.class);
@@ -21,15 +21,9 @@ public class InterceptorMethodMetaInfo extends ActionMethodMetaInfoBase<Intercep
     private Set<String> whiteList = C.newSet();
     private Set<String> blackList = C.newSet();
     private int priority;
-    private ControllerClassMetaInfo clsInfo;
 
     public InterceptorMethodMetaInfo(ControllerClassMetaInfo clsInfo) {
-        this.clsInfo = clsInfo;
-    }
-
-    @Override
-    public String fullName() {
-        return S.builder(clsInfo.className()).append(".").append(name()).toString();
+        super(clsInfo);
     }
 
     public InterceptorMethodMetaInfo addOnly(String... only) {
@@ -63,10 +57,6 @@ public class InterceptorMethodMetaInfo extends ActionMethodMetaInfoBase<Intercep
 
     public List<String> blackList() {
         return C.list(blackList);
-    }
-
-    public ControllerClassMetaInfo classInfo() {
-        return clsInfo;
     }
 
     void mergeInto(C.List<InterceptorMethodMetaInfo> list, String targetName) {

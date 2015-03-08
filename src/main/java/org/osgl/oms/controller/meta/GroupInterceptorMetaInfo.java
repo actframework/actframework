@@ -1,23 +1,16 @@
 package org.osgl.oms.controller.meta;
 
 import org.osgl._;
-import org.osgl.mvc.annotation.After;
-import org.osgl.mvc.annotation.Before;
-import org.osgl.mvc.annotation.Catch;
-import org.osgl.mvc.annotation.Finally;
-import org.osgl.oms.controller.Interceptor;
 import org.osgl.util.C;
-import org.osgl.util.E;
 import org.osgl.util.S;
 
 import java.lang.annotation.Annotation;
 import java.util.List;
-import java.util.Map;
 
 /**
  * Aggregate interception meta info. This structure is used in
  * {@link org.osgl.oms.controller.meta.ControllerClassMetaInfo} and
- * {@link org.osgl.oms.controller.meta.ActionMethodMetaInfo}
+ * {@link ActionMethodMetaInfo}
  */
 public class GroupInterceptorMetaInfo {
 
@@ -46,21 +39,36 @@ public class GroupInterceptorMetaInfo {
         InterceptorType.of(interceptorType).addToGroup(info, this);
     }
 
-    public List<InterceptorMethodMetaInfo> beforeList() {
+    public C.List<InterceptorMethodMetaInfo> beforeList() {
         return C.list(beforeList);
     }
 
-    public List<InterceptorMethodMetaInfo> afterList() {
+    public C.List<InterceptorMethodMetaInfo> afterList() {
         return C.list(afterList);
     }
 
     @SuppressWarnings("unchecked")
-    public List<CatchMethodMetaInfo> catchList() {
+    public C.List<CatchMethodMetaInfo> catchList() {
         return C.list((List) catchList);
     }
 
-    public List<InterceptorMethodMetaInfo> finallyList() {
+    public C.List<InterceptorMethodMetaInfo> finallyList() {
         return C.list(finallyList);
+    }
+
+    private C.List<InterceptorMethodMetaInfo> allList() {
+        return beforeList().lazy().append(afterList()).append(catchList()).append(finallyList());
+    }
+
+    public InterceptorMethodMetaInfo find(String methodName, String className) {
+        for (InterceptorMethodMetaInfo info : allList()) {
+            String infoMethodName = info.name();
+            String infoClassName = info.classInfo().className();
+            if (S.eq(methodName, infoMethodName) && S.eq(className, infoClassName)) {
+                return info;
+            }
+        }
+        return null;
     }
 
     public void mergeFrom(GroupInterceptorMetaInfo info) {

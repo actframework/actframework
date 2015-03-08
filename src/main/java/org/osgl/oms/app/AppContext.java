@@ -238,6 +238,10 @@ public class AppContext {
         return _local.get();
     }
 
+    public static void clear() {
+        _local.remove();
+    }
+
     /**
      * Create an new {@code AppContext} and return the new instance
      */
