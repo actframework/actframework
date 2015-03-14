@@ -14,6 +14,8 @@ import org.osgl.oms.controller.meta.InterceptorMethodMetaInfo;
 import org.osgl.oms.handler.builtin.controller.impl.ReflectedHandlerInvoker;
 import org.osgl.oms.plugin.PluginScanner;
 import org.osgl.oms.util.Banner;
+import org.osgl.oms.xio.NetworkClient;
+import org.osgl.oms.xio.NetworkService;
 import org.osgl.util.E;
 
 /**
@@ -85,6 +87,7 @@ public final class OMS {
     private static Logger logger = L.get(OMS.class);
     private static Mode mode = Mode.PROD;
     private static AppManager appManager;
+    private static NetworkService network;
     private static BytecodeEnhancerManager enhancerManager;
 
 
@@ -125,6 +128,11 @@ public final class OMS {
         throw new RequestRefreshClassLoader();
     }
 
+    public static void hook(App app) {
+        int port = app.config().port();
+        network.register(port, new NetworkClient(app));
+    }
+
     private static void loadConfig() {
         logger.debug("loading configuration ...");
 
@@ -158,6 +166,7 @@ public final class OMS {
     }
 
     private static void startNetworkLayer() {
+        network.start();
     }
 
     public static enum F {

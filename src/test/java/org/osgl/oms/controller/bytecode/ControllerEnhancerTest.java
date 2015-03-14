@@ -52,7 +52,7 @@ public class ControllerEnhancerTest extends TestBase implements ControllerClassM
         infoSrc = new ControllerClassMetaInfoManager(new _.Factory<ControllerScanner>(){
             @Override
             public ControllerScanner create() {
-                return new ControllerScanner(mockRouter, new _.F1<String, byte[]>() {
+                return new ControllerScanner(mockAppConfig, mockRouter, new _.F1<String, byte[]>() {
                     @Override
                     public byte[] apply(String s) throws NotAppliedException, _.Break {
                         return loadBytecode(s);

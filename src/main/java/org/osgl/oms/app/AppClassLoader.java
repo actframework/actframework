@@ -41,7 +41,7 @@ public class AppClassLoader extends ClassLoader implements ControllerClassMetaIn
                     new _.Factory<ControllerScanner>() {
                         @Override
                         public ControllerScanner create() {
-                            return new ControllerScanner(app.router(), bytecodeLookup);
+                            return new ControllerScanner(app.config(), app.router(), bytecodeLookup);
                         }
                     }
             );

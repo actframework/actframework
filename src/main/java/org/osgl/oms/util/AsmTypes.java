@@ -11,10 +11,16 @@ import org.osgl.util.S;
 
 public enum AsmTypes implements Opcodes {
     ;
+    public static AsmType<Object> OBJECT = new AsmType<Object>(Object.class);
     public static AsmType<AppContext> APP_CONTEXT = new AsmType<AppContext>(AppContext.class);
     public static AsmType<Param> PARAM = new AsmType<Param>(Param.class);
     public static AsmType<Bind> BIND = new AsmType<Bind>(Bind.class);
     public static AsmType<Result> RESULT = new AsmType<Result>(Result.class);
+
+    public static final Type OBJECT_TYPE = OBJECT.asmType();
+    public static final String OBJECT_NAME = OBJECT.className();
+    public static final String OBJECT_INTERNAL_NAME = OBJECT.internalName();
+    public static final String OBJECT_DESC = OBJECT.desc();
 
     public static final Type APP_CONTEXT_TYPE = APP_CONTEXT.asmType();
     public static final String APP_CONTEXT_NAME = APP_CONTEXT.className();

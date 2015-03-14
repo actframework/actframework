@@ -1,5 +1,6 @@
 package org.osgl.oms.conf;
 
+import org.apache.commons.codec.Charsets;
 import org.osgl._;
 import org.osgl.logging.L;
 import org.osgl.logging.Logger;
@@ -9,6 +10,7 @@ import org.osgl.util.S;
 
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import static org.osgl.oms.app.ProjectLayout.PredefinedLayout.MAVEN;
@@ -30,17 +32,40 @@ import static org.osgl.oms.app.ProjectLayout.PredefinedLayout.MAVEN;
 public enum AppConfigKey implements ConfigKey {
 
     /**
+     * {@code oms.encoding} specifies application default encoding
+     * <p>Default value: utf-8</p>
+     */
+    ENCODING("encoding", Charsets.UTF_8.name().toLowerCase()),
+
+    /**
+     * {@code oms.locale} specifies the application default locale
+     * <p>Default value: {@link java.util.Locale#getDefault}</p>
+     */
+    LOCALE("locale", Locale.getDefault()) {
+        @Override
+        public <T> T val(Map<String, ?> configuration) {
+            Object o = super.val(configuration);
+            if (null == o) {
+                return null;
+            }
+            if (o instanceof String) {
+                return (T) Locale.forLanguageTag((String) o);
+            } else if (o instanceof Locale) {
+                return (T) o;
+            } else {
+                String s = o.toString();
+                return (T) Locale.forLanguageTag(s);
+            }
+        }
+    },
+
+    /**
      * {@code oms.source_version} specifies the java version
      * of the srccode code. This configuration is used only
      * in dev mode.
      * <p>Default value: 1.7</p>
      */
-    SOURCE_VERSION("source_version") {
-        @Override
-        protected Object getDefVal(Map<String, ?> configuration) {
-            return "1." + _.JAVA_VERSION;
-        }
-    },
+    SOURCE_VERSION("source_version", "1." + _.JAVA_VERSION),
 
     /**
      * {@code oms.url_context} specifies the context part

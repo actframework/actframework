@@ -43,7 +43,6 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo>
     private Class[] paramTypes;
     protected Method method; //
     protected  _.F2<AppContext, Object, ?> fieldAppCtxHandler;
-    protected  _.Visitor<AppContext> localAppCtxHandler;
 
     protected ReflectedHandlerInvoker(M handlerMetaInfo, App app) {
         this.cl = app.classLoader();
@@ -55,8 +54,6 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo>
         if (ctxInjection.injectVia().isField()) {
             AppContextInjection.FieldAppContextInjection faci = (AppContextInjection.FieldAppContextInjection) ctxInjection;
             fieldAppCtxHandler = storeAppCtxToCtrlrField(faci.fieldName(), controllerClass);
-        } else if (ctxInjection.injectVia().isLocal()) {
-            localAppCtxHandler = STORE_APPCTX_TO_THREAD_LOCAL;
         }
 
         paramTypes = paramTypes();
@@ -109,9 +106,8 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo>
     private void applyAppContext(AppContext appContext, Object controller) {
         if (null != fieldAppCtxHandler) {
             fieldAppCtxHandler.apply(appContext, controller);
-        } else if (null != localAppCtxHandler) {
-            localAppCtxHandler.apply(appContext);
         }
+        // ignore ContextLocal save as it's processed for one time when RequestHandlerProxy is invoked
     }
 
     private Result invoke(AppContext context, Object controller, Object[] params) {
@@ -269,8 +265,6 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo>
         protected _ExceptionHandlerInvoker(CatchMethodMetaInfo handlerMetaInfo, App app) {
             super(handlerMetaInfo, app);
         }
-
-
     }
 
 }

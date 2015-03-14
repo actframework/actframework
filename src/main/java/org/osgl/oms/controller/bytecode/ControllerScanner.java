@@ -6,6 +6,8 @@ import org.osgl.logging.L;
 import org.osgl.logging.Logger;
 import org.osgl.mvc.annotation.With;
 import org.osgl.oms.asm.*;
+import org.osgl.oms.conf.AppConfig;
+import org.osgl.oms.controller.Controller;
 import org.osgl.oms.controller.meta.*;
 import org.osgl.oms.route.Router;
 import org.osgl.oms.util.AsmTypes;
@@ -30,14 +32,16 @@ public final class ControllerScanner extends BytecodeVisitor {
 
     private final static Logger logger = L.get(ControllerScanner.class);
 
+    private AppConfig appConfig;
     private Router router;
     private _.Func1<String, byte[]> bytecodeLookup;
     private ControllerClassMetaInfo classInfo;
     private ControllerClassMetaInfoManager mgr;
 
-    public ControllerScanner(Router router, _.Func1<String, byte[]> bytecodeLookup) {
+    public ControllerScanner(AppConfig config, Router router, _.Func1<String, byte[]> bytecodeLookup) {
         super(null);
-        E.NPE(router, bytecodeLookup);
+        E.NPE(config, router, bytecodeLookup);
+        this.appConfig = config;
         this.router = router;
         this.bytecodeLookup = bytecodeLookup;
     }
@@ -66,6 +70,7 @@ public final class ControllerScanner extends BytecodeVisitor {
     public ControllerClassMetaInfo scan(String className) {
         byte[] bytecode = bytecodeLookup.apply(className);
         if (null != bytecode) {
+            classInfo = new ControllerClassMetaInfo().isController(!appConfig.notControllerClass(className));
             return scan(bytecode);
         } else {
             logger.warn("cannot find bytecode for class: %s", className);
@@ -73,7 +78,7 @@ public final class ControllerScanner extends BytecodeVisitor {
         }
     }
 
-    public ControllerClassMetaInfo scan(byte[] bytecode) {
+    private ControllerClassMetaInfo scan(byte[] bytecode) {
         ClassReader cr = new ClassReader(bytecode);
         cr.accept(this, 0);
         return classInfo;
@@ -81,16 +86,9 @@ public final class ControllerScanner extends BytecodeVisitor {
 
     @Override
     public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
-        String superClassName = Type.getObjectType(superName).getClassName();
-        ControllerClassMetaInfo superInfo = null;
-        if (S.neq(superClassName, "java.lang.Object")) {
-             superInfo = mgr.controllerMetaInfo(superClassName);
-            if (null == superInfo) {
-                superInfo = mgr.scanForControllerMetaInfo(superClassName);
-            }
-        }
-        classInfo = new ControllerClassMetaInfo().className(name);
-        classInfo.parent(superInfo);
+        classInfo.className(name);
+        Type superType = Type.getObjectType(superName);
+        classInfo.superType(superType);
         if (isAbstract(access)) {
             classInfo.setAbstract();
         }
@@ -98,13 +96,8 @@ public final class ControllerScanner extends BytecodeVisitor {
     }
 
     @Override
-    public void visitAttribute(Attribute attr) {
-        super.visitAttribute(attr);
-    }
-
-    @Override
     public FieldVisitor visitField(int access, String name, String desc, String signature, Object value) {
-        if (!classInfo.isAbstract() && AsmTypes.APP_CONTEXT_DESC.equals(desc)) {
+        if (classInfo.isController() && !classInfo.isAbstract() && AsmTypes.APP_CONTEXT_DESC.equals(desc)) {
             classInfo.ctxField(name, isPrivate(access));
         }
         return super.visitField(access, name, desc, signature, value);
@@ -113,6 +106,9 @@ public final class ControllerScanner extends BytecodeVisitor {
     @Override
     public AnnotationVisitor visitAnnotation(String desc, boolean visible) {
         AnnotationVisitor av = super.visitAnnotation(desc, visible);
+        if (Type.getType(Controller.class).getDescriptor().equals(desc)) {
+            classInfo.isController(true);
+        }
         if (Type.getType(With.class).getDescriptor().equals(desc)) {
             return new WithAnnotationVisitor(av);
         }
@@ -122,16 +118,12 @@ public final class ControllerScanner extends BytecodeVisitor {
     @Override
     public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
         MethodVisitor mv = super.visitMethod(access, name, desc, signature, exceptions);
-        if (isEligibleMethod(access, name, desc)) {
-            String className = classInfo.className();
-            boolean isRoutedMethod = router.isActionMethod(className, name);
-            return new ActionMethodVisitor(isRoutedMethod, mv, access, name, desc, signature, exceptions);
+        if (!classInfo.isController() || !isEligibleMethod(access, name, desc)) {
+            return mv;
         }
-        return mv;
-    }
-
-    private void markNotTargetClass() {
-        classInfo = null;
+        String className = classInfo.className();
+        boolean isRoutedMethod = router.isActionMethod(className, name);
+        return new ActionMethodVisitor(isRoutedMethod, mv, access, name, desc, signature, exceptions);
     }
 
     private boolean isEligibleMethod(int access, String name, String desc) {
@@ -217,7 +209,7 @@ public final class ControllerScanner extends BytecodeVisitor {
                 methodInfo = visitor.info;
                 return visitor;
             }
-            markNotTargetClass();
+            //markNotTargetClass();
             return av;
         }
 

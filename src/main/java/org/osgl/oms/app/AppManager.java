@@ -45,6 +45,7 @@ public class AppManager {
         }
         app.build();
         app.refresh();
+        app.hook();
     }
 
     private void loadIntoPortMap(int port, App app) {

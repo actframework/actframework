@@ -11,7 +11,12 @@ import org.osgl.oms.controller.meta.*;
 import org.osgl.oms.controller.meta.AppContextInjection.FieldAppContextInjection;
 import org.osgl.util.E;
 import org.osgl.util.S;
+import testapp.controller.ControllerWithInheritedInterceptor;
+import testapp.controller.FilterA;
+import testapp.controller.FilterB;
 import testapp.controller.WithAppContext;
+import testapp.model.ModelController;
+import testapp.model.ModelControllerWithAnnotation;
 
 import java.util.List;
 
@@ -28,7 +33,7 @@ public class ControllerScannerTest extends TestBase {
         infoSrc = new ControllerClassMetaInfoManager(new _.Factory<ControllerScanner>(){
             @Override
             public ControllerScanner create() {
-                return new ControllerScanner(mockRouter, new _.F1<String, byte[]>() {
+                return new ControllerScanner(mockAppConfig, mockRouter, new _.F1<String, byte[]>() {
                     @Override
                     public byte[] apply(String s) throws NotAppliedException, _.Break {
                         return loadBytecode(s);
@@ -54,6 +59,19 @@ public class ControllerScannerTest extends TestBase {
         assertNotNull(action);
     }
 
+    @Test
+    public void testControllerNotInControllerPackage() {
+        scan(ModelController.class);
+        ActionMethodMetaInfo action = action("ModelController", "handle");
+        assertNull(action);
+    }
+
+    @Test
+    public void testControllerNotInControllerPackageWithAnnotation() {
+        scan(ModelControllerWithAnnotation.class);
+        ActionMethodMetaInfo action = action(ModelControllerWithAnnotation.class, "handle");
+        assertNotNull(action);
+    }
 
     public void verifyWithAppContextNoReturnNoParam() {
         String url = "/no_ret_no_param";
@@ -104,9 +122,33 @@ public class ControllerScannerTest extends TestBase {
         verifyWithAppContextStaticNoReturnNoParam();
     }
 
+    @Test
+    public void testInheritedInterceptor() throws Exception {
+        scan(ControllerWithInheritedInterceptor.class);
+        assertNotNull(infoSrc.controllerMetaInfo(FilterA.class.getName()));
+        assertNotNull(infoSrc.controllerMetaInfo(FilterB.class.getName()));
+        ControllerClassMetaInfo info = infoSrc.controllerMetaInfo(ControllerWithInheritedInterceptor.class.getName());
+        assertHasInterceptor("FilterA", "afterP10", info.afterInterceptors());
+    }
+
     private void scan(Class<?> c) {
         infoSrc.scanForControllerMetaInfo(c.getName());
         infoSrc.mergeActionMetaInfo();
+    }
+
+    private void assertHasInterceptor(String className, String actionName, List<InterceptorMethodMetaInfo> list) {
+        if (!className.contains(".")) {
+            className = "testapp.controller." + className;
+        }
+        for (InterceptorMethodMetaInfo info : list) {
+            if (S.eq(info.name(), actionName)) {
+                ControllerClassMetaInfo cinfo = info.classInfo();
+                if (S.eq(cinfo.className(), className)) {
+                    return;
+                }
+            }
+        }
+        fail("The list does not contains the interceptor: %s.%s", className, actionName);
     }
 
     private void verifyRouting(String url, String controller, String action, H.Method... methods) {
@@ -119,8 +161,18 @@ public class ControllerScannerTest extends TestBase {
         return infoSrc.controllerMetaInfo("testapp.controller." + className);
     }
 
+    private ControllerClassMetaInfo controller(Class<?> c) {
+        return infoSrc.controllerMetaInfo(c.getName());
+    }
+
     private ActionMethodMetaInfo action(String controller, String action) {
-        return controller(controller).action(action);
+        ControllerClassMetaInfo cinfo = controller(controller);
+        return null == cinfo ? null : cinfo.action(action);
+    }
+
+    private ActionMethodMetaInfo action(Class<?> c, String action) {
+        ControllerClassMetaInfo cinfo = controller(c);
+        return null == cinfo ? null : cinfo.action(action);
     }
 
     private InterceptorMethodMetaInfo interceptor(ActionMethodMetaInfo action, InterceptorType interceptorType, String className, String methodName) {

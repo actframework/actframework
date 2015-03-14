@@ -4,7 +4,7 @@ import org.osgl.mvc.result.Result;
 import org.osgl.oms.app.AppContext;
 
 /**
- * Base class of Before/After interceptor
+ * Base class for Action Handler or Before/After interceptor
  */
 public abstract class ActionHandler<T extends ActionHandler> extends Handler<T> {
 

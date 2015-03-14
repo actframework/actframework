@@ -13,12 +13,14 @@ import org.osgl.util.E;
 import org.osgl.util.FastStr;
 import org.osgl.util.IO;
 import org.osgl.util.S;
+import org.osgl.util.NotStartsWith;
 
 import java.io.File;
 import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.util.Arrays;
 
+import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -96,6 +98,7 @@ public class TestBase extends Assert {
     protected void setup() throws Exception {
         mockApp = mock(App.class);
         mockAppConfig = mock(AppConfig.class);
+        when(mockAppConfig.notControllerClass(argThat(new NotStartsWith("testapp.controller.")))).thenReturn(true);
         mockAppContext = mock(AppContext.class);
         when(mockAppContext.app()).thenReturn(mockApp);
         when(mockAppContext.config()).thenReturn(mockAppConfig);

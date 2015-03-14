@@ -70,15 +70,19 @@ public class App {
         return layout;
     }
 
-    public void refresh() {
+    void refresh() {
         loadConfig();
         initRouter();
         loadClasses();
         loadRoutes();
     }
 
-    public void build() {
+    void build() {
         builder = AppBuilder.build(this);
+    }
+
+    void hook() {
+        OMS.hook(this);
     }
 
     public AppBuilder builder() {

@@ -3,9 +3,11 @@ package org.osgl.oms.controller.meta;
 import org.osgl._;
 import org.osgl.oms.asm.Type;
 import org.osgl.oms.controller.bytecode.ControllerScanner;
+import org.osgl.oms.util.AsmTypes;
 import org.osgl.util.C;
 import org.osgl.util.E;
 
+import java.util.List;
 import java.util.Map;
 
 public class ControllerClassMetaInfoManager {
@@ -28,16 +30,39 @@ public class ControllerClassMetaInfoManager {
     }
 
     public ControllerClassMetaInfo scanForControllerMetaInfo(String className) {
-        ControllerScanner scanner = actionScannerFactory.create();
-        ControllerClassMetaInfo info = scanner.manager(this).scan(className);
-        registerControllerMetaInfo(info);
-        return info;
+        return scanForControllerMetaInfo(className, true);
+    }
+
+    public ControllerClassMetaInfo scanForParentMetaInfo(String className) {
+        return scanForControllerMetaInfo(className, false);
     }
 
     public void mergeActionMetaInfo() {
         for (ControllerClassMetaInfo info: controllers.values()) {
             info.merge(this);
         }
+    }
+
+    private ControllerClassMetaInfo scanForControllerMetaInfo(String className, boolean verify) {
+        ControllerClassMetaInfo info = this.controllerMetaInfo(className);
+        if (null != info) return info;
+        ControllerScanner scanner = actionScannerFactory.create();
+        info = scanner.manager(this).scan(className);
+        if (!verify || info.isController()) {
+            Type superType = info.superType();
+            if (!AsmTypes.OBJECT_TYPE.equals(superType)) {
+                ControllerClassMetaInfo superInfo = scanForParentMetaInfo(superType.getClassName());
+                info.parent(superInfo);
+                registerControllerMetaInfo(superInfo);
+            }
+            List<String> withList = info.withList();
+            for (String withType : withList) {
+                ControllerClassMetaInfo withInfo = scanForParentMetaInfo(withType);
+                registerControllerMetaInfo(withInfo);
+            }
+            registerControllerMetaInfo(info);
+        }
+        return info;
     }
 
 

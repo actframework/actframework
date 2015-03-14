@@ -7,6 +7,7 @@ import org.osgl.oms.Constants;
 import org.osgl.util.E;
 import org.osgl.util.S;
 
+import java.util.Locale;
 import java.util.Map;
 
 import static org.osgl.oms.conf.AppConfigKey.*;
@@ -66,6 +67,22 @@ public class AppConfig extends Config<AppConfigKey> {
         return port;
     }
 
+    private String encoding = null;
+    public String encoding() {
+        if (null == encoding) {
+            encoding = get(ENCODING);
+        }
+        return encoding;
+    }
+
+    private Locale locale = null;
+    public Locale locale() {
+        if (null == locale) {
+            locale = get(LOCALE);
+        }
+        return locale;
+    }
+
     private String sourceVersion = null;
     public String sourceVersion() {
         if (null == sourceVersion) {
@@ -111,7 +128,7 @@ public class AppConfig extends Config<AppConfigKey> {
         if (null == CONTROLLER_CLASS_TESTER) {
             String controllerPackage = get(CONTROLLER_PACKAGE);
             if (S.isBlank(controllerPackage)) {
-                CONTROLLER_CLASS_TESTER = _.F.yes();
+                CONTROLLER_CLASS_TESTER = _.F.no();
             } else {
                 final String cp = controllerPackage.trim();
                 return S.F.startsWith(cp);
@@ -119,6 +136,7 @@ public class AppConfig extends Config<AppConfigKey> {
         }
         return CONTROLLER_CLASS_TESTER;
     }
+
     public boolean notControllerClass(String className) {
         return !controllerNameTester().test(className);
     }

@@ -68,6 +68,7 @@ public class RequestHandlerProxy extends RequestHandlerBase {
     private CacheStrategy cacheStrategy = CacheStrategy.NO_CACHE;
     private String controllerClassName;
     private String actionMethodName;
+    private Boolean requireContextLocal = null;
 
     private volatile ControllerAction actionHandler = null;
     private C.List<BeforeInterceptor> beforeInterceptors = C.newList();
@@ -108,6 +109,7 @@ public class RequestHandlerProxy extends RequestHandlerBase {
             return;
         }
         ensureAgentsReady();
+        ensureContextLocal(context);
         try {
             result = handleBefore(context);
             if (null == result) {
@@ -172,25 +174,46 @@ public class RequestHandlerProxy extends RequestHandlerBase {
         }
     }
 
+    private void ensureContextLocal(AppContext context) {
+        if (requireContextLocal) {
+            context.saveLocal();
+        }
+    }
+
     private void generateHandlers() {
         ControllerClassMetaInfo ctrlInfo = app.classLoader().controllerClassMetaInfo(controllerClassName);
         ActionMethodMetaInfo actionInfo = ctrlInfo.action(actionMethodName);
         OMS.Mode mode = OMS.mode();
         actionHandler = mode.createRequestHandler(actionInfo, app);
+        requireContextLocal = false;
+        if (actionInfo.appContextInjection().injectVia().isLocal()) {
+            requireContextLocal = true;
+        }
         App app = this.app;
         for (InterceptorMethodMetaInfo info : ctrlInfo.beforeInterceptors()) {
             beforeInterceptors.add(mode.createBeforeInterceptor(info, app));
+            if (info.appContextInjection().injectVia().isLocal()) {
+                requireContextLocal = true;
+            }
         }
         for (InterceptorMethodMetaInfo info : ctrlInfo.afterInterceptors()) {
             afterInterceptors.add(mode.createAfterInterceptor(info, app));
+            if (info.appContextInjection().injectVia().isLocal()) {
+                requireContextLocal = true;
+            }
         }
         for (CatchMethodMetaInfo info : ctrlInfo.exceptionInterceptors()) {
             exceptionInterceptors.add(mode.createExceptionInterceptor(info, app));
+            if (info.appContextInjection().injectVia().isLocal()) {
+                requireContextLocal = true;
+            }
         }
         for (InterceptorMethodMetaInfo info: ctrlInfo.finallyInterceptors()) {
             finallyInterceptors.add(mode.createFinallyInterceptor(info, app));
+            if (info.appContextInjection().injectVia().isLocal()) {
+                requireContextLocal = true;
+            }
         }
-        throw E.tbd();
     }
 
     private Result handleBefore(AppContext appContext) {

@@ -6,7 +6,7 @@ import org.osgl.mvc.result.Ok;
 import org.osgl.mvc.result.Result;
 import testapp.util.Trackable;
 
-public class Controller extends Trackable {
+public class ControllerBase extends Trackable {
 
     public static Result render(Object ... args) {
         return new FakeResult(args);

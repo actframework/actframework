@@ -10,6 +10,7 @@ import org.osgl.util.S;
 
 import java.lang.annotation.Annotation;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Stores all class level information to support generating of
@@ -21,6 +22,7 @@ public final class ControllerClassMetaInfo {
     private static final Logger logger = L.get(ControllerClassMetaInfo.class);
 
     private Type type;
+    private Type superType;
     private boolean isAbstract = false;
     private String ctxField = null;
     private boolean ctxFieldIsPrivate = true;
@@ -33,6 +35,7 @@ public final class ControllerClassMetaInfo {
     private C.Map<String, HandlerMethodMetaInfo> handlerLookup = null;
     private GroupInterceptorMetaInfo interceptors = new GroupInterceptorMetaInfo();
     private ControllerClassMetaInfo parent;
+    private boolean isController;
 
     public ControllerClassMetaInfo className(String name) {
         this.type = Type.getObjectType(name);
@@ -47,6 +50,19 @@ public final class ControllerClassMetaInfo {
         return type.getInternalName();
     }
 
+    public ControllerClassMetaInfo superType(Type type) {
+        superType = type;
+        return this;
+    }
+
+    public Type superType() {
+        return superType;
+    }
+
+    public List<String> withList() {
+        return C.list(withList);
+    }
+
     public ControllerClassMetaInfo setAbstract() {
         isAbstract = true;
         return this;
@@ -54,6 +70,15 @@ public final class ControllerClassMetaInfo {
 
     public boolean isAbstract() {
         return isAbstract;
+    }
+
+    public boolean isController() {
+        return isController;
+    }
+
+    public ControllerClassMetaInfo isController(boolean b) {
+        isController = b;
+        return this;
     }
 
     public ControllerClassMetaInfo parent(ControllerClassMetaInfo parentInfo) {
@@ -71,7 +96,7 @@ public final class ControllerClassMetaInfo {
         if (null != ctxField) {
             return ctxFieldIsPrivate ? null : ctxField;
         }
-        return parent.nonPrivateCtxField();
+        return null == parent ? null : parent.nonPrivateCtxField();
     }
 
     public String ctxField() {
@@ -185,22 +210,34 @@ public final class ControllerClassMetaInfo {
     }
 
     private void _addWith(String clsName) {
-        withList.add(clsName);
+        withList.add(Type.getType(clsName).getClassName());
+    }
+
+    private void getAllWithList(Set<String> withList, ControllerClassMetaInfoManager infoBase) {
+        withList.addAll(this.withList);
+        if (null != superType) {
+            String superClass = superType.getClassName();
+            ControllerClassMetaInfo info = infoBase.controllerMetaInfo(superClass);
+            if (null != info) {
+                info.getAllWithList(withList, infoBase);
+                withList.add(superClass);
+            }
+        }
     }
 
     private void mergeFromWithList(ControllerClassMetaInfoManager infoBase) {
-        C.Set<String> withClasses = withList;
+        C.Set<String> withClasses = C.newSet();
+        getAllWithList(withClasses, infoBase);
         for (String withClass : withClasses) {
             ControllerClassMetaInfo withClassInfo = infoBase.controllerMetaInfo(withClass);
             if (null == withClassInfo) {
-                withClass = Type.getType(withClass).getClassName();
                 withClassInfo = infoBase.scanForControllerMetaInfo(withClass);
             }
             if (null != withClassInfo) {
                 withClassInfo.merge(infoBase);
                 interceptors.mergeFrom(withClassInfo.interceptors);
             } else {
-                logger.warn("Cannot find class info for with class: %s", withClass);
+                logger.warn("Cannot find class info for @With class: %s", withClass);
             }
         }
     }
