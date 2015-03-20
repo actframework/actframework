@@ -1,0 +1,23 @@
+package playground;
+
+import org.osgl._;
+
+/**
+ * Created by luog on 25/02/2015.
+ */
+public class MyDoclet {
+    public static void main(String[] args) {
+        Class c1 = _.classForName("org.osgl._$1");
+        Class c2 = _.classForName("org.osgl._$2");
+        Class c3 = _.classForName("org.osgl._$3");
+        Class c4 = _.classForName("org.osgl._$4");
+        Class c5 = _.classForName("org.osgl._$5");
+        Class c6 = _.classForName("org.osgl._$6");
+        Class c7 = _.classForName("org.osgl._$7");
+        Class c8 = _.classForName("org.osgl._$8");
+        Class c9 = _.classForName("org.osgl._$9");
+        Class d = _.classForName("org.osgl._$F1");
+        String[] sa = "-protected -splitindex @C:\\Users\\luog.IKARI\\AppData\\Local\\Temp\\javadoc3args.txt -classpath C:\\Users\\luog.IKARI\\.m2\\repository\\junit\\junit\\4.10\\junit-4.10.jar;C:\\Users\\luog.IKARI\\.m2\\repository\\org\\hamcrest\\hamcrest-core\\1.1\\hamcrest-core-1.1.jar;C:\\Users\\luog.IKARI\\.m2\\repository\\commons-codec\\commons-codec\\1.8\\commons-codec-1.8.jar;C:\\Users\\luog.IKARI\\.m2\\repository\\com\\carrotsearch\\junit-benchmarks\\0.7.2\\junit-benchmarks-0.7.2.jar;C:\\Users\\luog.IKARI\\.m2\\repository\\org\\osgl\\osgl-storage\\0.3-SNAPSHOT\\osgl-storage-0.3-20140601.115837-4.jar;C:\\Users\\luog.IKARI\\.m2\\repository\\org\\osgl\\osgl-tool\\0.3-SNAPSHOT\\osgl-tool-0.3-20141108.092919-40.jar;C:\\Users\\luog.IKARI\\.m2\\repository\\org\\osgl\\osgl-logging\\0.2\\osgl-logging-0.2.jar -d t:\\tmp\\javadoc".split(" ");
+        com.sun.tools.javadoc.Main.execute(sa);
+    }
+}
