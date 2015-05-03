@@ -14,16 +14,18 @@ import org.osgl.oms.controller.meta.InterceptorMethodMetaInfo;
 import org.osgl.oms.handler.builtin.controller.impl.ReflectedHandlerInvoker;
 import org.osgl.oms.plugin.PluginScanner;
 import org.osgl.oms.util.Banner;
+import org.osgl.oms.view.ViewManager;
 import org.osgl.oms.xio.NetworkClient;
 import org.osgl.oms.xio.NetworkService;
+import org.osgl.oms.xio.undertow.UndertowService;
 import org.osgl.util.E;
 
 /**
- * The OSGL MVC Server object
+ * The OSGL MVC Server
  */
 public final class OMS {
 
-    public static enum Mode {
+    public enum Mode {
         PROD, UAT, SIT, DEV () {
             @Override
             public AppScanner appScanner() {
@@ -83,10 +85,11 @@ public final class OMS {
         }
     }
 
-    private static OmsConfig conf;
     private static Logger logger = L.get(OMS.class);
+    private static OmsConfig conf;
     private static Mode mode = Mode.PROD;
     private static AppManager appManager;
+    private static ViewManager viewManager;
     private static NetworkService network;
     private static BytecodeEnhancerManager enhancerManager;
 
@@ -106,16 +109,20 @@ public final class OMS {
     public static BytecodeEnhancerManager enhancerManager() {
         return enhancerManager;
     }
+    public static ViewManager viewManager() {
+        return viewManager;
+    }
 
     public static void start() {
         Banner.print("0.0.1-SNAPSHOT");
         loadConfig();
-        initExecuteService();
+        //initExecuteService();
         initEnhancerManager();
         loadPlugins();
         initNetworkLayer();
         initApplicationManager();
         startNetworkLayer();
+
     }
 
     public static RequestServerRestart requestRestart() {
@@ -149,6 +156,10 @@ public final class OMS {
         new PluginScanner().scan();
     }
 
+    private static void initViewManager() {
+        viewManager = new ViewManager();
+    }
+
     private static void initExecuteService() {
         E.tbd("init execute service");
     }
@@ -158,10 +169,10 @@ public final class OMS {
     }
 
     private static void initNetworkLayer() {
-        E.tbd("init network server");
+        network = new UndertowService();
     }
 
-    private static void initApplicationManager() {
+    protected static void initApplicationManager() {
         appManager = AppManager.create();
     }
 

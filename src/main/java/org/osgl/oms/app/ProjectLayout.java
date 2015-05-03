@@ -134,7 +134,7 @@ public interface ProjectLayout {
         }
 
         @Override
-        public File routes(File appBase) {
+        public File routeTable(File appBase) {
             return new File(resource(appBase), "routes");
         }
 
@@ -182,7 +182,7 @@ public interface ProjectLayout {
      * Returns the routing table file in relation to the
      * {@code appBase} specified
      */
-    File routes(File appBase);
+    File routeTable(File appBase);
 
     /**
      * Returns the app configuration location in relation to the
@@ -204,7 +204,7 @@ public interface ProjectLayout {
          */
         public static boolean probeAppBase(File dir, ProjectLayout layout) {
             File conf = layout.conf(dir);
-            return conf.canRead() && conf.isFile();
+            return null != conf && conf.canRead() && conf.isFile();
         }
 
         /**
@@ -241,19 +241,19 @@ public interface ProjectLayout {
     public static class CustomizedProjectLayout implements ProjectLayout {
         private String source;
         private String lib;
-        private String routes;
+        private String routeTable;
         private String conf;
         private String target;
         private String asset;
         private String resource;
 
-        CustomizedProjectLayout(String src, String resource, String lib, String asset, String tgt, String routes, String conf) {
+        public CustomizedProjectLayout(String src, String resource, String lib, String asset, String tgt, String routeTable, String conf) {
             this.source = src;
             this.resource = resource;
             this.lib = lib;
             this.asset = asset;
             this.target = tgt;
-            this.routes = routes;
+            this.routeTable = routeTable;
             this.conf = conf;
         }
 
@@ -268,8 +268,8 @@ public interface ProjectLayout {
         }
 
         @Override
-        public File routes(File appBase) {
-            return new File(appBase, routes);
+        public File routeTable(File appBase) {
+            return new File(appBase, routeTable);
         }
 
         @Override

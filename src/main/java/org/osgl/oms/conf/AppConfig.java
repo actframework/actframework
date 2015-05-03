@@ -39,6 +39,9 @@ public class AppConfig extends Config<AppConfigKey> {
     public String urlContext() {
         if (urlContext == null) {
             urlContext = get(URL_CONTEXT);
+            if (null == urlContext) {
+                urlContext = "/";
+            }
         }
         return urlContext;
     }
@@ -57,6 +60,14 @@ public class AppConfig extends Config<AppConfigKey> {
             controllerPackage = get(CONTROLLER_PACKAGE);
         }
         return controllerPackage;
+    }
+
+    private String host = null;
+    public String host() {
+        if (null == host) {
+            host = get(HOST);
+        }
+        return host;
     }
 
     private int port = -1;

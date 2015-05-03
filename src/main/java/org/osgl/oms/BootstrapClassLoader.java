@@ -107,7 +107,11 @@ public class BootstrapClassLoader extends ClassLoader {
         return C.list(pluginClasses);
     }
 
-    private Class<?> loadOmsClass(String name, boolean resolve, boolean pluginOnly) {
+    protected byte[] tryLoadResource(String name) {
+        return null;
+    }
+
+    protected Class<?> loadOmsClass(String name, boolean resolve, boolean pluginOnly) {
         boolean fromPlugin = false;
         byte[] ba = pluginBC.remove(name);
         if (null == ba) {
@@ -116,6 +120,10 @@ public class BootstrapClassLoader extends ClassLoader {
             }
         } else {
             fromPlugin = true;
+        }
+
+        if (null == ba) {
+            ba = tryLoadResource(name);
         }
 
         if (null == ba) {

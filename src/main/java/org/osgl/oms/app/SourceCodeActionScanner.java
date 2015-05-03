@@ -13,23 +13,33 @@ import java.util.regex.Pattern;
 import static org.osgl.oms.controller.meta.ControllerClassMetaInfo.ACTION_METHODS;
 
 /**
- * Scan srccode code for action method and build route table
+ * Scan source code for action method and build route table
  */
 class SourceCodeActionScanner {
 
     private static final Logger logger = L.get(SourceCodeActionScanner.class);
 
-    private static final Pattern PTN_ANN = Pattern.compile(
-            "^\\s*@(Action|GetAction|PostAction|DeleteAction|PutAction).*");
+    private static final Pattern PTN_CONTROLLER_ANN = Pattern.compile("(^|\\s+)@Controller\\((.*)\\).*");
+    private static final Pattern PTN_CONTROLLER_ANN_VAL = Pattern.compile("\\s*(\"(.*)\"|value\\s*=\\s*\"(.*)\")\\s*");
+    private static final Pattern PTN_ACTION_ANN = Pattern.compile(
+            "(^|.*\\s+)@(Action|GetAction|PostAction|DeleteAction|PutAction).*");
+
+
+    private String controllerContext = "/";
 
     void scan(String className, String code, Router router) {
         String[] lines = code.split("[\\n\\r]+");
         int n = lines.length;
         for (int i = 0; i < n; ++i) {
             String line = lines[i];
-            Matcher matcher = PTN_ANN.matcher(line);
+            Matcher matcher = PTN_CONTROLLER_ANN.matcher(line);
             if (matcher.matches()) {
-                RouteInfo ri = parseAnnotationLine(line, matcher.group(1));
+                String s = matcher.group(2);
+                controllerContext = parseControllerContext(s);
+            }
+            matcher = PTN_ACTION_ANN.matcher(line);
+            if (matcher.matches()) {
+                RouteInfo ri = parseAnnotationLine(className, line, matcher.group(2));
                 if (!ri.hasAction()) {
                     while (i < n - 1) {
                         line = lines[++i];
@@ -38,20 +48,35 @@ class SourceCodeActionScanner {
                             if (null != action) {
                                 StringBuilder sb = S.builder(className).append(".").append(action);
                                 ri.action = sb.toString();
-                                ri.addToRouter(router);
+                                ri.addToRouter(router, controllerContext);
                             }
                             break;
                         }
                     }
+                } else {
+                    ri.addToRouter(router, controllerContext);
                 }
             }
+        }
+    }
+
+    private static String parseControllerContext(String s) {
+        Matcher matcher = PTN_CONTROLLER_ANN_VAL.matcher(s);
+        if (matcher.matches()) {
+            String ctx = matcher.group(2);
+            if (null == ctx) {
+                ctx = matcher.group(3);
+            }
+            return ctx;
+        } else {
+            return "/";
         }
     }
 
     private static final Pattern PTN_ANN_PARAM = Pattern.compile(
             "value\\s*=\\s*\"(.*)\"(\\s*,\\s*(methods\\s*=\\s*\\{(.*)\\})){0,1}");
 
-    private static RouteInfo parseAnnotationLine(String line, String action) {
+    private static RouteInfo parseAnnotationLine(String className, String line, String action) {
         FastStr fsLine = FastStr.of(line);
         H.Method[] methods = null;
         String path;
@@ -97,6 +122,10 @@ class SourceCodeActionScanner {
             return new RouteInfo(path, methods);
         }
         action = parseMethodSignature(s.toString());
+        if (null != action) {
+            StringBuilder sb = S.builder(className).append(".").append(action);
+            action = sb.toString();
+        }
         return null == action ? null : new RouteInfo(path, action, methods);
     }
 
@@ -133,8 +162,27 @@ class SourceCodeActionScanner {
             return null != action;
         }
 
-        void addToRouter(Router router) {
+        void addToRouter(Router router, String context) {
             int n = methods.length;
+            String path = this.path;
+            if (S.notBlank(context) || !"/".equals(context)) {
+                StringBuilder sb = S.builder();
+                if (!context.startsWith("/")) {
+                    sb.append("/");
+                }
+                if (context.endsWith("/")) {
+                    context = context.substring(0, context.length() - 1);
+                }
+                sb.append(context);
+                if (!"/".equals(path)) {
+                    if (!path.startsWith("/")) {
+                        sb.append("/");
+                    } else {
+                        sb.append(path);
+                    }
+                }
+                path = sb.toString();
+            }
             for (int i = 0; i < n; ++i) {
                 router.addMappingIfNotMapped(methods[i], path, action);
             }

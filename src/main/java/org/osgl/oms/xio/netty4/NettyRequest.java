@@ -9,6 +9,7 @@ import io.netty.handler.codec.http.multipart.HttpDataFactory;
 import io.netty.handler.codec.http.multipart.HttpPostRequestDecoder;
 import org.osgl.http.H;
 import org.osgl.oms.RequestImplBase;
+import org.osgl.oms.conf.AppConfig;
 import org.osgl.util.E;
 
 import java.io.InputStream;
@@ -22,7 +23,8 @@ public class NettyRequest extends RequestImplBase<NettyRequest> {
     private HttpPostRequestDecoder postDecoder;
     private final HttpDataFactory fact = new DefaultHttpDataFactory(DefaultHttpDataFactory.MINSIZE);
 
-    public NettyRequest(FullHttpRequest nettyRequest, ChannelHandlerContext nettyContext) {
+    public NettyRequest(FullHttpRequest nettyRequest, ChannelHandlerContext nettyContext, AppConfig config) {
+        super(config);
         E.NPE(nettyRequest, nettyContext);
         nr = nettyRequest;
         nc = nettyContext;
@@ -67,13 +69,7 @@ public class NettyRequest extends RequestImplBase<NettyRequest> {
     }
 
     @Override
-    public InputStream inputStream() throws IllegalStateException {
-        E.illegalStateIf(!H.Method.POST.equals(method()), "inputStream not supported on %s request", method());
-        throw E.tbd();
-    }
-
-    @Override
-    public Reader reader() throws IllegalStateException {
+    public InputStream createInputStream() throws IllegalStateException {
         E.illegalStateIf(!H.Method.POST.equals(method()), "inputStream not supported on %s request", method());
         throw E.tbd();
     }

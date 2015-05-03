@@ -18,6 +18,10 @@ public class NetworkClient extends _.F1<AppContext, Void>{
         this.app = app;
     }
 
+    public App app() {
+        return app;
+    }
+
     public void handle(AppContext ctx) {
         H.Request req = ctx.req();
         String url = req.url();

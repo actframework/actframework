@@ -2,6 +2,7 @@ package org.osgl.oms.route;
 
 import com.carrotsearch.junitbenchmarks.BenchmarkOptions;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.osgl.http.H;
@@ -26,6 +27,7 @@ import static org.osgl.http.H.Method.GET;
 import static org.osgl.http.H.Method.POST;
 
 @BenchmarkOptions(warmupRounds = 1, benchmarkRounds = 10)
+@Ignore
 public class RouterBenchmark extends BenchmarkBase {
 
     private Router router;

@@ -46,7 +46,7 @@ public class MyProjectLayoutProbe extends BuildFileProbe.FileParser implements P
             }
 
             @Override
-            public File routes(File appBase) {
+            public File routeTable(File appBase) {
                 return null;
             }
 

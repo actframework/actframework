@@ -17,7 +17,11 @@ public class AppManager {
     private Map<String, App> byContextPath = C.newMap();
 
     private AppManager() {
+    }
+
+    public AppManager scan() {
         OMS.mode().appScanner().scan(_F.loadApp(this));
+        return this;
     }
 
     public void deploy(App app) {
@@ -36,7 +40,7 @@ public class AppManager {
         E.tbd();
     }
 
-    private void load(App app) {
+    public void load(App app) {
         int port = app.config().port();
         if (port < 0) {
             loadIntoContextMap(app.config().urlContext(), app);

@@ -9,6 +9,7 @@ import org.osgl.util.S;
 import java.io.File;
 
 public class BootstrapClassLoaderTestRunner extends BlockJUnit4ClassRunner {
+
     public BootstrapClassLoaderTestRunner(Class<?> clazz) throws InitializationError {
         super(getFromTestClassloader(clazz));
         Thread.currentThread().setContextClassLoader(classLoader);
@@ -32,7 +33,7 @@ public class BootstrapClassLoaderTestRunner extends BlockJUnit4ClassRunner {
 
     private static void initClassLoader() {
         prepareOmsHome();
-        classLoader = new BootstrapClassLoader(TestBase.class.getClassLoader());
+        classLoader = new TestBootstrapClassLoader(TestBase.class.getClassLoader());
     }
 
     private static void prepareOmsHome() {

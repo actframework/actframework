@@ -2,6 +2,8 @@ package org.osgl.oms.xio.undertow;
 
 import io.undertow.io.BlockingSenderImpl;
 import io.undertow.io.Sender;
+import io.undertow.io.UndertowInputStream;
+import io.undertow.io.UndertowOutputStream;
 import io.undertow.server.BlockingHttpExchange;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.servlet.core.BlockingWriterSenderImpl;
@@ -16,11 +18,14 @@ import javax.servlet.ServletResponse;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.PrintWriter;
 
 public class OmsBlockingExchange implements BlockingHttpExchange {
 
     public static final AttachmentKey<AppContext> KEY_APP_CTX = AttachmentKey.create(AppContext.class);
 
+    private InputStream inputStream;
+    private OutputStream outputStream;
     private final HttpServerExchange exchange;
 
     public OmsBlockingExchange(final HttpServerExchange exchange) {
@@ -29,21 +34,25 @@ public class OmsBlockingExchange implements BlockingHttpExchange {
 
     @Override
     public InputStream getInputStream() {
-        H.Request request = ctx().req();
-        return request.inputStream();
+        if (inputStream == null) {
+            inputStream = new UndertowInputStream(exchange);
+        }
+        return inputStream;
     }
 
     @Override
     public OutputStream getOutputStream() {
-        H.Response response = ctx().resp();
-        return response.outputStream();
+        if (outputStream == null) {
+            outputStream = new UndertowOutputStream(exchange);
+        }
+        return outputStream;
     }
 
     @Override
     public Sender getSender() {
         H.Response response = ctx().resp();
         if (response.writerCreated()) {
-            return new BlockingWriterSenderImpl(exchange, response.writer(), response.characterEncoding());
+            return new BlockingWriterSenderImpl(exchange, response.printWriter(), response.characterEncoding());
         } else {
             return new BlockingSenderImpl(exchange, response.outputStream());
         }
@@ -54,19 +63,19 @@ public class OmsBlockingExchange implements BlockingHttpExchange {
         AppContext ctx = ctx();
         if (!exchange.isComplete()) {
             try {
-                HttpServletRequestImpl request = servletRequestContext.getOriginalRequest();
-                request.closeAndDrainRequest();
+                UndertowRequest req = (UndertowRequest) ctx.req();
+                req.closeAndDrainRequest();
             } finally {
-                HttpServletResponseImpl response = servletRequestContext.getOriginalResponse();
-                response.closeStreamAndWriter();
+                UndertowResponse resp = (UndertowResponse) ctx.resp();
+                resp.closeStreamAndWriter();
             }
         } else {
             try {
-                HttpServletRequestImpl request = servletRequestContext.getOriginalRequest();
-                request.freeResources();
+                UndertowRequest req = (UndertowRequest) ctx.req();
+                req.freeResources();
             } finally {
-                HttpServletResponseImpl response = servletRequestContext.getOriginalResponse();
-                response.freeResources();
+                UndertowResponse resp = (UndertowResponse) ctx.resp();
+                resp.freeResources();
             }
         }
     }

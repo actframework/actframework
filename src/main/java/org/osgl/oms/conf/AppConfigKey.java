@@ -79,17 +79,25 @@ public enum AppConfigKey implements ConfigKey {
     URL_CONTEXT("url_context"),
 
     /**
+     * {@code oms.host} specifies the host the application
+     * reside on.
+     *
+     * <p>Default value: {@code localhost}</p>
+     */
+    HOST("host", "localhost"),
+
+    /**
      * {@code oms.port} specifies the port the application
      * listen to. This is preferred way to dispatch the
      * request to the application.
      *
-     * <p>Default value: {@code 8080}</p>
+     * <p>Default value: {@code 5460}</p>
      */
-    PORT("port", 8080) {
+    PORT("port", 5460) {
         @Override
         public <T> T val(Map<String, ?> configuration) {
             Object v = configuration.get(key());
-            if (null == v) return (T)(Number)8080;
+            if (null == v) return (T)(Number)5460;
             if (v instanceof Number) {
                 return (T)v;
             }

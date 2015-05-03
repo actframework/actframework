@@ -67,12 +67,7 @@ public class MockRequest extends H.Request<MockRequest> {
     }
 
     @Override
-    public InputStream inputStream() throws IllegalStateException {
-        return null;
-    }
-
-    @Override
-    public Reader reader() throws IllegalStateException {
+    public InputStream createInputStream() throws IllegalStateException {
         return null;
     }
 

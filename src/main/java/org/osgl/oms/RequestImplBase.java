@@ -2,6 +2,7 @@ package org.osgl.oms;
 
 import org.osgl.http.H;
 import org.osgl.oms.conf.AppConfig;
+import org.osgl.util.E;
 import org.osgl.util.FastStr;
 import org.osgl.util.S;
 
@@ -11,6 +12,11 @@ public abstract class RequestImplBase<T extends H.Request> extends H.Request<T> 
     private String path;
     private String query;
     private Boolean secure;
+
+    protected RequestImplBase(AppConfig config) {
+        E.NPE(config);
+        cfg = config;
+    }
 
     protected abstract String _uri();
 
@@ -27,7 +33,7 @@ public abstract class RequestImplBase<T extends H.Request> extends H.Request<T> 
 
     protected final boolean hasContextPath() {
         String ctxPath = contextPath();
-        return S.notBlank(ctxPath);
+        return S.notBlank(ctxPath) && !"/".equals(ctxPath);
     }
 
 
@@ -67,7 +73,7 @@ public abstract class RequestImplBase<T extends H.Request> extends H.Request<T> 
         return secure;
     }
 
-    private void parseUri() {
+    protected void parseUri() {
         FastStr fs = FastStr.unsafeOf(_uri());
         if (fs.startsWith("http")) {
             // the uri include the scheme, domain and port
@@ -78,8 +84,12 @@ public abstract class RequestImplBase<T extends H.Request> extends H.Request<T> 
         if (hasContextPath()) {
             fs = fs.after(contextPath());
         }
-        path = fs.beforeFirst('?').toString();
-        query = fs.afterFirst('?').toString();
+        if (fs.contains('?')) {
+            path = fs.beforeFirst('?').toString();
+            query = fs.afterFirst('?').toString();
+        } else {
+            path = fs.toString();
+        }
     }
 
     private boolean parseSecureXHeaders() {

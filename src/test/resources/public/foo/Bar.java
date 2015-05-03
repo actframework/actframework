@@ -7,8 +7,10 @@ import org.osgl.mvc.annotation.GetAction;
 import org.osgl.mvc.annotation.Param;
 import org.osgl.mvc.result.Result;
 import org.osgl.oms.app.AppContext;
+import org.osgl.oms.controller.Controller;
 
-public class C1 extends CBase {
+@Controller( "/bar" )
+public class Bar extends CBase {
 
     private static boolean cond1() {
         return _.random(true, false);
@@ -35,8 +37,7 @@ public class C1 extends CBase {
         }
     }
 
-    @GetAction("/do_anno")
-    public void doAnno(@Param("svc_id") String svcId, int age, @Param("map") String map) {
+    @GetAction("/do_anno") public void doAnno(@Param("svc_id") String svcId, int age, @Param("map") String map) {
         ok();
     }
 

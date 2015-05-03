@@ -66,12 +66,18 @@ class AppBuilder {
 
     void copyAssets() {
         File asset = layout.asset(appBase);
+        if (null == asset) {
+            return;
+        }
         verifyDir(asset, "asset", false);
         IO.copyDirectory(asset, tgtAsset);
     }
 
     void copyResources() {
         File resource = layout.resource(appBase);
+        if (null == resource) {
+            return;
+        }
         verifyDir(resource, "resource", false);
         IO.copyDirectory(resource, tgtClasses);
     }
@@ -87,7 +93,8 @@ class AppBuilder {
     }
 
     void copyRoutes() {
-        File routes = layout.routes(appBase);
+        File routes = layout.routeTable(appBase);
+        if (null == routes) return;
         if (routes.exists() && routes.canRead()) {
             IO.copyDirectory(routes, RuntimeDirs.routes(app));
         }
@@ -95,6 +102,7 @@ class AppBuilder {
 
     void copyConf() {
         File conf = layout.conf(appBase);
+        if (null == conf) return;
         if (conf.isDirectory()) {
             IO.copyDirectory(conf, tgtConf);
         } else {
@@ -104,6 +112,9 @@ class AppBuilder {
 
     void copyLibs() {
         File lib = layout.lib(appBase);
+        if (null == lib) {
+            return;
+        }
         verifyDir(lib, "lib", false);
         IO.copyDirectory(lib, tgtLib);
     }

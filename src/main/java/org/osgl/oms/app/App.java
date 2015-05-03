@@ -21,18 +21,7 @@ public class App {
 
     private static Logger logger = L.get(App.class);
 
-    /**
-     * The base dir where an application sit within
-     */
     private File appBase;
-    /**
-     * The home dir of an application, referenced only
-     * at runtime.
-     * <p><b>Note</b> when app is running in dev mode, {@code appHome}
-     * shall be {@code appBase/target}, while app is deployed to
-     * OMS at other mode, {@code appHome} shall be the same as
-     * {@code appBase}</p>
-     */
     private File appHome;
     private Router router;
     private AppConfig config;
@@ -40,7 +29,9 @@ public class App {
     private ProjectLayout layout;
     private AppBuilder builder;
 
-    private App(File appBase, ProjectLayout layout) {
+    protected App() {}
+
+    protected App(File appBase, ProjectLayout layout) {
         this.appBase = appBase;
         this.layout = layout;
         this.appHome = RuntimeDirs.home(this);
@@ -54,10 +45,21 @@ public class App {
         return router;
     }
 
+    /**
+     * The base dir where an application sit within
+     */
     public File base() {
         return appBase;
     }
 
+    /**
+     * The home dir of an application, referenced only
+     * at runtime.
+     * <p><b>Note</b> when app is running in dev mode, {@code appHome}
+     * shall be {@code appBase/target}, while app is deployed to
+     * OMS at other mode, {@code appHome} shall be the same as
+     * {@code appBase}</p>
+     */
     public File home() {
         return appHome;
     }
@@ -125,7 +127,7 @@ public class App {
         logger.debug("loading app routing table: %s ...", appBase.getPath());
         File routes = RuntimeDirs.routes(this);
         if (!(routes.isFile() && routes.canRead())) {
-            logger.warn("Cannot find routes file: %s", appBase.getPath());
+            logger.warn("Cannot find routeTable file: %s", appBase.getPath());
             // guess the app is purely using annotation based routes
             return;
         }

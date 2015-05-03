@@ -36,6 +36,7 @@ public final class ControllerClassMetaInfo {
     private GroupInterceptorMetaInfo interceptors = new GroupInterceptorMetaInfo();
     private ControllerClassMetaInfo parent;
     private boolean isController;
+    private String contextPath;
 
     public ControllerClassMetaInfo className(String name) {
         this.type = Type.getObjectType(name);
@@ -206,6 +207,19 @@ public final class ControllerClassMetaInfo {
         mergeIntoActionList();
         buildActionLookup();
         buildHandlerLookup();
+        return this;
+    }
+
+    public String contextPath() {
+        return contextPath;
+    }
+
+    public ControllerClassMetaInfo contextPath(String path) {
+        if (S.blank(path)) {
+            contextPath = "/";
+        } else {
+            contextPath = path;
+        }
         return this;
     }
 

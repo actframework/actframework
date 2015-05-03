@@ -8,12 +8,11 @@ import org.osgl.http.H;
 import org.osgl.http.Http;
 import org.osgl.oms.ResponseImplBase;
 import org.osgl.oms.app.AppContext;
+import org.osgl.oms.conf.AppConfig;
 import org.osgl.util.E;
+import org.osgl.util.IO;
 
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
-import java.io.Writer;
+import java.io.*;
 import java.util.Locale;
 
 public class UndertowResponse extends ResponseImplBase<UndertowResponse> {
@@ -29,8 +28,8 @@ public class UndertowResponse extends ResponseImplBase<UndertowResponse> {
     private volatile Writer w;
 
 
-    public UndertowResponse(HttpServerExchange exchange, AppContext ctx) {
-        super(ctx);
+    public UndertowResponse(HttpServerExchange exchange, AppConfig config) {
+        super(config);
         E.NPE(exchange);
         hse = exchange;
     }
@@ -117,6 +116,23 @@ public class UndertowResponse extends ResponseImplBase<UndertowResponse> {
     public UndertowResponse addHeader(String name, String value) {
         return null;
     }
+
+    public void closeStreamAndWriter() {
+        if (writer != null) {
+            IO.close(writer);
+        } else {
+            IO.close(outputStream());
+        }
+    }
+
+    public void freeResources() {
+        if (writer != null) {
+            IO.close(writer);
+        } else if (outputStream != null) {
+            IO.close(outputStream);
+        }
+    }
+
 
     private boolean responseStarted() {
         return hse.isResponseStarted();

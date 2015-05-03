@@ -38,10 +38,16 @@ public class DevModeClassLoader extends AppClassLoader {
 
     @Override
     public void detectChanges() {
-        confChangeDetector.detectChanges();
-        libChangeDetector.detectChanges();
-        resourceChangeDetector.detectChanges();
-        sourceChangeDetector.detectChanges();
+        detectChanges(confChangeDetector);
+        detectChanges(libChangeDetector);
+        detectChanges(resourceChangeDetector);
+        detectChanges(sourceChangeDetector);
+    }
+
+    private void detectChanges(FsChangeDetector detector) {
+        if (null != detector) {
+            detector.detectChanges();
+        }
     }
 
     @Override
@@ -152,9 +158,25 @@ public class DevModeClassLoader extends AppClassLoader {
     private void setupFsChangeDetectors() {
         ProjectLayout layout = app().layout();
         File appBase = app().base();
-        sourceChangeDetector = new FsChangeDetector(layout.source(appBase), JAVA_SOURCE, sourceChangeListener);
-        libChangeDetector = new FsChangeDetector(layout.lib(appBase), JAR_FILE, libChangeListener);
-        confChangeDetector = new FsChangeDetector(layout.conf(appBase), CONF_FILE, confChangeListener);
-        resourceChangeDetector = new FsChangeDetector(layout.resource(appBase), null, resourceChangeListener);
+
+        File src = layout.source(appBase);
+        if (null != src) {
+            sourceChangeDetector = new FsChangeDetector(src, JAVA_SOURCE, sourceChangeListener);
+        }
+
+        File lib = layout.lib(appBase);
+        if (null != lib) {
+            libChangeDetector = new FsChangeDetector(lib, JAR_FILE, libChangeListener);
+        }
+
+        File conf = layout.conf(appBase);
+        if (null != conf) {
+            confChangeDetector = new FsChangeDetector(conf, CONF_FILE, confChangeListener);
+        }
+
+        File rsrc = layout.resource(appBase);
+        if (null != rsrc) {
+            resourceChangeDetector = new FsChangeDetector(rsrc, null, resourceChangeListener);
+        }
     }
 }

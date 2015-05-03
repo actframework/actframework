@@ -18,7 +18,7 @@ public class MockResponse extends H.Response<MockResponse> {
     private Writer writer;
     private OutputStream os;
 
-    private int len;
+    private long len;
 
     @Override
     protected Class<MockResponse> _impl() {
@@ -26,16 +26,7 @@ public class MockResponse extends H.Response<MockResponse> {
     }
 
     @Override
-    public Writer writer() throws IllegalStateException, UnexpectedIOException {
-        E.illegalStateIf(null != os);
-        if (null == writer) {
-            writer = new StringWriter();
-        }
-        return writer;
-    }
-
-    @Override
-    public OutputStream outputStream() throws IllegalStateException, UnexpectedIOException {
+    public OutputStream createOutputStream() throws IllegalStateException, UnexpectedIOException {
         E.illegalStateIf(null != writer);
         if (null == os) {
             os = new ByteArrayOutputStream();
@@ -55,9 +46,14 @@ public class MockResponse extends H.Response<MockResponse> {
     }
 
     @Override
-    public MockResponse contentLength(int len) {
+    public MockResponse contentLength(long len) {
         this.len = len;
         return this;
+    }
+
+    @Override
+    public void commit() {
+
     }
 
     @Override

@@ -28,15 +28,15 @@ public class SourceCodeControllerScannerTest extends TestBase {
     @Test
     public void testScan() {
         scanner.scan("foo.Bar", code, mockRouter);
-        verify("GET /do_anno doAnno");
-        verify("GET / root");
-        verify("POST / root");
-        verify("PUT / root");
-        verify("DELETE / root");
-        verifyNo("GET /foo bar"); // bar() is a private method
-        verifyNo("GET /foo/bar bar"); // GET method is not supported on this action
-        verify("POST /foo/bar bar");
-        verify("PUT /foo/bar bar");
+        verify("GET /bar root");
+        verify("POST /bar root");
+        verify("PUT /bar root");
+        verify("DELETE /bar root");
+        verify("GET /bar/do_anno doAnno");
+        verifyNo("GET /bar/foo bar"); // bar() is a private method
+        verifyNo("GET /bar/foo/bar bar"); // GET method is not supported on this action
+        verify("POST /bar/foo/bar bar");
+        verify("PUT /bar/foo/bar bar");
     }
 
     private void verify(String route) {

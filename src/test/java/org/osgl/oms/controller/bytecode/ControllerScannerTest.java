@@ -11,10 +11,7 @@ import org.osgl.oms.controller.meta.*;
 import org.osgl.oms.controller.meta.AppContextInjection.FieldAppContextInjection;
 import org.osgl.util.E;
 import org.osgl.util.S;
-import testapp.controller.ControllerWithInheritedInterceptor;
-import testapp.controller.FilterA;
-import testapp.controller.FilterB;
-import testapp.controller.WithAppContext;
+import testapp.controller.*;
 import testapp.model.ModelController;
 import testapp.model.ModelControllerWithAnnotation;
 
@@ -71,6 +68,12 @@ public class ControllerScannerTest extends TestBase {
         scan(ModelControllerWithAnnotation.class);
         ActionMethodMetaInfo action = action(ModelControllerWithAnnotation.class, "handle");
         assertNotNull(action);
+    }
+
+    @Test
+    public void controllerContextPathShallBeAppendToActionPath() {
+        scan(WithContextPath.class);
+        verify(mockRouter).addMappingIfNotMapped(GET, "/foo/bar", "testapp.controller.WithContextPath.bar");
     }
 
     public void verifyWithAppContextNoReturnNoParam() {

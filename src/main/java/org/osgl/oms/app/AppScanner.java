@@ -61,7 +61,7 @@ public class AppScanner {
     }
 
     private void scan(File appBase, _.Func1<App, ?> callback) {
-        App app = null;
+        App app;
         ProjectLayout layout = probe(appBase);
         if (null != layout) {
             app = App.create(appBase, layout);

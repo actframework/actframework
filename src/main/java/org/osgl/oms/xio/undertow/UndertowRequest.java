@@ -2,12 +2,16 @@ package org.osgl.oms.xio.undertow;
 
 import io.undertow.server.HttpServerExchange;
 import io.undertow.server.handlers.Cookie;
+import io.undertow.servlet.spec.ServletInputStreamImpl;
 import io.undertow.util.HttpString;
 import org.apache.commons.codec.Charsets;
 import org.osgl.http.H;
 import org.osgl.oms.RequestImplBase;
+import org.osgl.oms.conf.AppConfig;
 import org.osgl.util.E;
+import org.osgl.util.IO;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
@@ -26,14 +30,16 @@ public class UndertowRequest extends RequestImplBase<UndertowRequest> {
     private HttpServerExchange hse;
     private Map<String, Deque<String>> queryParams;
 
-    public UndertowRequest(HttpServerExchange exchange) {
+    public UndertowRequest(HttpServerExchange exchange, AppConfig config) {
+        super(config);
         E.NPE(exchange);
         hse = exchange;
     }
 
+
     @Override
     protected String _uri() {
-        return hse.getRequestPath();
+        return hse.getRequestURI();
     }
 
     @Override
@@ -52,15 +58,8 @@ public class UndertowRequest extends RequestImplBase<UndertowRequest> {
     }
 
     @Override
-    public InputStream inputStream() throws IllegalStateException {
+    public InputStream createInputStream() throws IllegalStateException {
         return hse.getInputStream();
-    }
-
-    @Override
-    public Reader reader() throws IllegalStateException {
-        String reqCharset = hse.getRequestCharset();
-        Charset cs = null == reqCharset ? Charsets.UTF_8 : Charset.forName(reqCharset);
-        return new InputStreamReader(inputStream(), cs);
     }
 
     @Override
@@ -89,6 +88,22 @@ public class UndertowRequest extends RequestImplBase<UndertowRequest> {
             queryParams = hse.getQueryParameters();
         }
         return queryParams.keySet();
+    }
+
+    public void closeAndDrainRequest() {
+        if (null != reader) {
+            IO.close(reader);
+        } else {
+            IO.close(inputStream());
+        }
+    }
+
+    public void freeResources() {
+        if (reader != null) {
+            IO.close(reader);
+        } else if (inputStream != null) {
+            IO.close(inputStream);
+        }
     }
 
     @Override

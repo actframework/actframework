@@ -21,8 +21,12 @@ public enum ClassNames {
     }
 
     public static String classNameToClassFileName(String className) {
+        return classNameToClassFileName(className, false);
+    }
+
+    public static String classNameToClassFileName(String className, boolean keepInnerClass) {
         FastStr fs = FastStr.of(className);
-        if (className.contains("$")) {
+        if (!keepInnerClass && className.contains("$")) {
             fs = fs.beforeFirst('$');
         }
         fs = fs.replace('.', '/').append(".class").prepend('/');

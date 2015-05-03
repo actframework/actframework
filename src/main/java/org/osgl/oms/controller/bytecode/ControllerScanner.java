@@ -108,6 +108,7 @@ public final class ControllerScanner extends BytecodeVisitor {
         AnnotationVisitor av = super.visitAnnotation(desc, visible);
         if (Type.getType(Controller.class).getDescriptor().equals(desc)) {
             classInfo.isController(true);
+            return new ControllerAnnotationVisitor(av);
         }
         if (Type.getType(With.class).getDescriptor().equals(desc)) {
             return new WithAnnotationVisitor(av);
@@ -164,6 +165,19 @@ public final class ControllerScanner extends BytecodeVisitor {
                 };
             }
             return av;
+        }
+    }
+
+    private class ControllerAnnotationVisitor extends AnnotationVisitor {
+        ControllerAnnotationVisitor(AnnotationVisitor av) {
+            super(ASM5, av);
+        }
+
+        @Override
+        public void visit(String name, Object value) {
+            if ("value".equals(name)) {
+                classInfo.contextPath(value.toString());
+            }
         }
     }
 
@@ -379,8 +393,23 @@ public final class ControllerScanner extends BytecodeVisitor {
                 }
                 StringBuilder sb = S.builder(classInfo.className().replace('/', '.')).append(".").append(methodName);
                 String action = sb.toString();
+
+                String actionPath = path;
+                String ctxPath = classInfo.contextPath();
+                if (!(S.blank(ctxPath) || "/".equals(ctxPath))) {
+                    if (ctxPath.endsWith("/")) {
+                        ctxPath = ctxPath.substring(0, ctxPath.length() - 1);
+                    }
+                    sb = new StringBuilder(ctxPath);
+                    if (!actionPath.startsWith("/")) {
+                        sb.append("/");
+                    }
+                    sb.append(actionPath);
+                    actionPath = sb.toString();
+                }
+
                 for (H.Method m : httpMethods) {
-                    router.addMappingIfNotMapped(m, path, action);
+                    router.addMappingIfNotMapped(m, actionPath, action);
                 }
             }
         }
