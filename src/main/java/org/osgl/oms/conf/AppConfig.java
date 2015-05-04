@@ -4,6 +4,9 @@ import org.osgl._;
 import org.osgl.cache.CacheService;
 import org.osgl.cache.CacheServiceProvider;
 import org.osgl.oms.Constants;
+import org.osgl.oms.OMS;
+import org.osgl.oms.view.TemplatePathResolver;
+import org.osgl.oms.view.View;
 import org.osgl.util.E;
 import org.osgl.util.S;
 
@@ -27,7 +30,7 @@ public class AppConfig extends Config<AppConfigKey> {
     }
 
     public AppConfig() {
-        this((Map)System.getProperties());
+        this((Map) System.getProperties());
     }
 
     @Override
@@ -36,6 +39,7 @@ public class AppConfig extends Config<AppConfigKey> {
     }
 
     private String urlContext = null;
+
     public String urlContext() {
         if (urlContext == null) {
             urlContext = get(URL_CONTEXT);
@@ -47,6 +51,7 @@ public class AppConfig extends Config<AppConfigKey> {
     }
 
     private String xForwardedProtocol = null;
+
     public String xForwardedProtocol() {
         if (null == xForwardedProtocol) {
             xForwardedProtocol = get(X_FORWARD_PROTOCOL);
@@ -55,6 +60,7 @@ public class AppConfig extends Config<AppConfigKey> {
     }
 
     private String controllerPackage = null;
+
     public String controllerPackage() {
         if (null == controllerPackage) {
             controllerPackage = get(CONTROLLER_PACKAGE);
@@ -63,6 +69,7 @@ public class AppConfig extends Config<AppConfigKey> {
     }
 
     private String host = null;
+
     public String host() {
         if (null == host) {
             host = get(HOST);
@@ -71,6 +78,7 @@ public class AppConfig extends Config<AppConfigKey> {
     }
 
     private int port = -1;
+
     public int port() {
         if (-1 == port) {
             port = get(PORT);
@@ -79,6 +87,7 @@ public class AppConfig extends Config<AppConfigKey> {
     }
 
     private String encoding = null;
+
     public String encoding() {
         if (null == encoding) {
             encoding = get(ENCODING);
@@ -87,6 +96,7 @@ public class AppConfig extends Config<AppConfigKey> {
     }
 
     private Locale locale = null;
+
     public Locale locale() {
         if (null == locale) {
             locale = get(LOCALE);
@@ -95,6 +105,7 @@ public class AppConfig extends Config<AppConfigKey> {
     }
 
     private String sourceVersion = null;
+
     public String sourceVersion() {
         if (null == sourceVersion) {
             sourceVersion = get(SOURCE_VERSION);
@@ -103,6 +114,7 @@ public class AppConfig extends Config<AppConfigKey> {
     }
 
     private _.Predicate<String> APP_CLASS_TESTER = null;
+
     private _.Predicate<String> appClassTester() {
         if (null == APP_CLASS_TESTER) {
             String scanPackage = get(SCAN_PACKAGE);
@@ -130,11 +142,13 @@ public class AppConfig extends Config<AppConfigKey> {
         }
         return APP_CLASS_TESTER;
     }
+
     public boolean needEnhancement(String className) {
         return appClassTester().test(className) || controllerNameTester().test(className);
     }
 
     private _.Predicate<String> CONTROLLER_CLASS_TESTER = null;
+
     private _.Predicate<String> controllerNameTester() {
         if (null == CONTROLLER_CLASS_TESTER) {
             String controllerPackage = get(CONTROLLER_PACKAGE);
@@ -148,11 +162,44 @@ public class AppConfig extends Config<AppConfigKey> {
         return CONTROLLER_CLASS_TESTER;
     }
 
+    private TemplatePathResolver templatePathResolver = null;
+
+    public TemplatePathResolver templatePathResolver() {
+        if (null == templatePathResolver) {
+            templatePathResolver = get(TEMPLATE_PATH_RESOLVER);
+        }
+        return templatePathResolver;
+    }
+
+    private String templateHome = null;
+
+    public String templateHome() {
+        if (null == templateHome) {
+            templateHome = get(TEMPLATE_HOME);
+            if (S.blank(templateHome)) {
+                templateHome = "default";
+            }
+        }
+        return templateHome;
+    }
+
+    private String defViewName = null;
+    private View defView = null;
+
+    public View defaultView() {
+        if (null == defViewName) {
+            defViewName = get(VIEW_DEFAULT);
+            defView = OMS.viewManager().view(defViewName);
+        }
+        return defView;
+    }
+
     public boolean notControllerClass(String className) {
         return !controllerNameTester().test(className);
     }
 
     private CacheServiceProvider csp = null;
+
     public CacheService cacheService(String name) {
         throw E.tbd();
     }

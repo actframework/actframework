@@ -13,7 +13,6 @@ import org.osgl.oms.conf.AppConfig;
 import org.osgl.util.E;
 
 import java.io.InputStream;
-import java.io.Reader;
 import java.util.Set;
 
 public class NettyRequest extends RequestImplBase<NettyRequest> {

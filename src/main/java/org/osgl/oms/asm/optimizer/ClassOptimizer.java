@@ -1,20 +1,20 @@
-/***
+/**
  * ASM: a very small and fast Java bytecode manipulation framework
  * Copyright (c) 2000-2011 INRIA, France Telecom
  * All rights reserved.
- *
+ * <p/>
  * Redistribution and use in srccode and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
  * 1. Redistributions of srccode code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
+ * notice, this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
+ * notice, this list of conditions and the following disclaimer in the
+ * documentation and/or other materials provided with the distribution.
  * 3. Neither the className of the copyright holders nor the names of its
- *    contributors may be used to endorse or promote products derived from
- *    this software without specific prior written permission.
- *
+ * contributors may be used to endorse or promote products derived from
+ * this software without specific prior written permission.
+ * <p/>
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -57,7 +57,7 @@ public class ClassOptimizer extends RemappingClassAdapter {
     }
 
     FieldVisitor syntheticFieldVisitor(final int access, final String name,
-            final String desc) {
+                                       final String desc) {
         return super.visitField(access, name, desc, null, null);
     }
 
@@ -67,8 +67,8 @@ public class ClassOptimizer extends RemappingClassAdapter {
 
     @Override
     public void visit(final int version, final int access, final String name,
-            final String signature, final String superName,
-            final String[] interfaces) {
+                      final String signature, final String superName,
+                      final String[] interfaces) {
         super.visit(Opcodes.V1_2, access, name, null, superName, interfaces);
         int index = name.lastIndexOf('/');
         if (index > 0) {
@@ -87,20 +87,20 @@ public class ClassOptimizer extends RemappingClassAdapter {
 
     @Override
     public void visitOuterClass(final String owner, final String name,
-            final String desc) {
+                                final String desc) {
         // remove debug info
     }
 
     @Override
     public AnnotationVisitor visitAnnotation(final String desc,
-            final boolean visible) {
+                                             final boolean visible) {
         // remove annotations
         return null;
     }
 
     @Override
     public AnnotationVisitor visitTypeAnnotation(int typeRef,
-            TypePath typePath, String desc, boolean visible) {
+                                                 TypePath typePath, String desc, boolean visible) {
         // remove annotations
         return null;
     }
@@ -112,13 +112,13 @@ public class ClassOptimizer extends RemappingClassAdapter {
 
     @Override
     public void visitInnerClass(final String name, final String outerName,
-            final String innerName, final int access) {
+                                final String innerName, final int access) {
         // remove debug info
     }
 
     @Override
     public FieldVisitor visitField(final int access, final String name,
-            final String desc, final String signature, final Object value) {
+                                   final String desc, final String signature, final Object value) {
         String s = remapper.mapFieldName(className, name, desc);
         if ("-".equals(s)) {
             return null;
@@ -145,7 +145,7 @@ public class ClassOptimizer extends RemappingClassAdapter {
 
     @Override
     public MethodVisitor visitMethod(final int access, final String name,
-            final String desc, final String signature, final String[] exceptions) {
+                                     final String desc, final String signature, final String[] exceptions) {
         String s = remapper.mapMethodName(className, name, desc);
         if ("-".equals(s)) {
             return null;
@@ -183,7 +183,7 @@ public class ClassOptimizer extends RemappingClassAdapter {
 
     @Override
     protected MethodVisitor createRemappingMethodAdapter(int access,
-            String newDesc, MethodVisitor mv) {
+                                                         String newDesc, MethodVisitor mv) {
         return new MethodOptimizer(this, access, newDesc, mv, remapper);
     }
 
@@ -200,7 +200,7 @@ public class ClassOptimizer extends RemappingClassAdapter {
             }
         } else {
             MethodVisitor mv = cv.visitMethod(Opcodes.ACC_STATIC
-                    | Opcodes.ACC_SYNTHETIC, "class$",
+                            | Opcodes.ACC_SYNTHETIC, "class$",
                     "(Ljava/lang/String;)Ljava/lang/Class;", null, null);
             mv.visitCode();
             Label l0 = new Label();

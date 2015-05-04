@@ -6,15 +6,16 @@ import org.osgl.http.util.Path;
 import org.osgl.mvc.result.NotFound;
 import org.osgl.oms.app.App;
 import org.osgl.oms.app.AppContext;
+import org.osgl.oms.conf.AppConfig;
 import org.osgl.oms.controller.ParamNames;
 import org.osgl.oms.handler.RequestHandler;
 import org.osgl.oms.handler.RequestHandlerResolver;
 import org.osgl.oms.handler.RequestHandlerResolverBase;
-import org.osgl.oms.handler.builtin.controller.RequestHandlerProxy;
 import org.osgl.oms.handler.builtin.Echo;
+import org.osgl.oms.handler.builtin.ExternalFileGetter;
 import org.osgl.oms.handler.builtin.Redirect;
 import org.osgl.oms.handler.builtin.StaticFileGetter;
-import org.osgl.oms.conf.AppConfig;
+import org.osgl.oms.handler.builtin.controller.RequestHandlerProxy;
 import org.osgl.util.*;
 
 import java.io.PrintStream;
@@ -28,7 +29,7 @@ public class Router {
 
     private static final NotFound NOT_FOUND = new NotFound();
     private static final H.Method[] targetMethods = new H.Method[]{H.Method.GET, H.Method.POST, H.Method.PUT,
-                                                                   H.Method.DELETE};
+            H.Method.DELETE};
 
     private Node _GET = Node.newRoot();
     private Node _PUT = Node.newRoot();
@@ -463,7 +464,20 @@ public class Router {
             public RequestHandler resolve(CharSequence base) {
                 return new StaticFileGetter(base.toString(), true);
             }
-        };
+        },
+        externaldir() {
+            @Override
+            public RequestHandler resolve(CharSequence base) {
+                return new ExternalFileGetter(base.toString());
+            }
+        },
+        externalfile() {
+            @Override
+            public RequestHandler resolve(CharSequence base) {
+                return new ExternalFileGetter(base.toString(), true);
+            }
+        }
+        ;
 
         private static RequestHandler tryResolve(CharSequence directive, CharSequence payload) {
             String s = directive.toString().toLowerCase();

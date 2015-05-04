@@ -102,6 +102,7 @@ public class AppManager {
 
     private enum _F {
         ;
+
         static final _.F1<App, ?> loadApp(final AppManager mgr) {
             return new _.Visitor<App>() {
                 @Override

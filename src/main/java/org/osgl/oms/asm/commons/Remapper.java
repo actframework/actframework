@@ -1,20 +1,20 @@
-/***
+/**
  * ASM: a very small and fast Java bytecode manipulation framework
  * Copyright (c) 2000-2011 INRIA, France Telecom
  * All rights reserved.
- *
+ * <p/>
  * Redistribution and use in srccode and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
  * 1. Redistributions of srccode code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
+ * notice, this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
+ * notice, this list of conditions and the following disclaimer in the
+ * documentation and/or other materials provided with the distribution.
  * 3. Neither the className of the copyright holders nor the names of its
- *    contributors may be used to endorse or promote products derived from
- *    this software without specific prior written permission.
- *
+ * contributors may be used to endorse or promote products derived from
+ * this software without specific prior written permission.
+ * <p/>
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -39,13 +39,13 @@ import org.osgl.oms.asm.signature.SignatureWriter;
 /**
  * A class responsible for remapping types and names. Subclasses can override
  * the following methods:
- * 
+ *
  * <ul>
  * <li>{@link #map(String)} - map type</li>
  * <li>{@link #mapFieldName(String, String, String)} - map field className</li>
  * <li>{@link #mapMethodName(String, String, String)} - map method className</li>
  * </ul>
- * 
+ *
  * @author Eugene Kuleshov
  */
 public abstract class Remapper {
@@ -53,34 +53,34 @@ public abstract class Remapper {
     public String mapDesc(String desc) {
         Type t = Type.getType(desc);
         switch (t.getSort()) {
-        case Type.ARRAY:
-            String s = mapDesc(t.getElementType().getDescriptor());
-            for (int i = 0; i < t.getDimensions(); ++i) {
-                s = '[' + s;
-            }
-            return s;
-        case Type.OBJECT:
-            String newType = map(t.getInternalName());
-            if (newType != null) {
-                return 'L' + newType + ';';
-            }
+            case Type.ARRAY:
+                String s = mapDesc(t.getElementType().getDescriptor());
+                for (int i = 0; i < t.getDimensions(); ++i) {
+                    s = '[' + s;
+                }
+                return s;
+            case Type.OBJECT:
+                String newType = map(t.getInternalName());
+                if (newType != null) {
+                    return 'L' + newType + ';';
+                }
         }
         return desc;
     }
 
     private Type mapType(Type t) {
         switch (t.getSort()) {
-        case Type.ARRAY:
-            String s = mapDesc(t.getElementType().getDescriptor());
-            for (int i = 0; i < t.getDimensions(); ++i) {
-                s = '[' + s;
-            }
-            return Type.getType(s);
-        case Type.OBJECT:
-            s = map(t.getInternalName());
-            return s != null ? Type.getObjectType(s) : t;
-        case Type.METHOD:
-            return Type.getMethodType(mapMethodDesc(t.getDescriptor()));
+            case Type.ARRAY:
+                String s = mapDesc(t.getElementType().getDescriptor());
+                for (int i = 0; i < t.getDimensions(); ++i) {
+                    s = '[' + s;
+                }
+                return Type.getType(s);
+            case Type.OBJECT:
+                s = map(t.getInternalName());
+                return s != null ? Type.getObjectType(s) : t;
+            case Type.METHOD:
+                return Type.getMethodType(mapMethodDesc(t.getDescriptor()));
         }
         return t;
     }
@@ -145,7 +145,7 @@ public abstract class Remapper {
     }
 
     /**
-     * 
+     *
      * @param typeSignature
      *            true if signature is a FieldTypeSignature, such as the
      *            signature parameter of the ClassVisitor.visitField or
@@ -173,7 +173,7 @@ public abstract class Remapper {
 
     /**
      * Map method className to the new className. Subclasses can override.
-     * 
+     *
      * @param owner
      *            owner of the method.
      * @param name
@@ -188,7 +188,7 @@ public abstract class Remapper {
 
     /**
      * Map invokedynamic method className to the new className. Subclasses can override.
-     * 
+     *
      * @param name
      *            className of the invokedynamic.
      * @param desc
@@ -201,7 +201,7 @@ public abstract class Remapper {
 
     /**
      * Map field className to the new className. Subclasses can override.
-     * 
+     *
      * @param owner
      *            owner of the field.
      * @param name

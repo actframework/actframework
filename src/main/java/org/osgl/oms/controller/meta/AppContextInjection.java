@@ -1,7 +1,6 @@
 package org.osgl.oms.controller.meta;
 
 import org.osgl._;
-import org.osgl.oms.app.AppContext;
 import org.osgl.util.S;
 
 /**
@@ -19,8 +18,8 @@ public class AppContextInjection<T> {
          * Inject AppContext into controller instance field. This injection
          * is used when both of the following requirements are met
          * <ul>
-         *     <li>The controller has a field with type {@link org.osgl.oms.app.AppContext}</li>
-         *     <li>The action handler method is not {@code static}</li>
+         * <li>The controller has a field with type {@link org.osgl.oms.app.AppContext}</li>
+         * <li>The action handler method is not {@code static}</li>
          * </ul>
          * <p>Framework must instantiate an new instance of the
          * controller before calling the action handler method</p>

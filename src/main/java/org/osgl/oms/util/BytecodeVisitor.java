@@ -4,10 +4,8 @@ import org.osgl._;
 import org.osgl.oms.asm.ClassVisitor;
 import org.osgl.oms.asm.ClassWriter;
 import org.osgl.oms.asm.Opcodes;
-import org.osgl.util.C;
 import org.osgl.util.E;
 
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
@@ -59,7 +57,7 @@ public class BytecodeVisitor extends ClassVisitor implements Opcodes {
         return v;
     }
 
-    public static ClassVisitor chain(ClassWriter cw, BytecodeVisitor v0, BytecodeVisitor ... visitors) {
+    public static ClassVisitor chain(ClassWriter cw, BytecodeVisitor v0, BytecodeVisitor... visitors) {
         v0.setDownstream(cw);
         int len = visitors.length;
         if (0 == len) {

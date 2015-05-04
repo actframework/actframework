@@ -18,7 +18,6 @@ import org.osgl.oms.conf.AppConfig;
 import org.osgl.util.C;
 import org.osgl.util.E;
 
-import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
@@ -42,7 +41,8 @@ class AppCompiler {
         this.classLoader = classLoader;
         this.app = classLoader.app();
         this.conf = app.config();
-        configureCompilerOptions();;
+        configureCompilerOptions();
+        ;
     }
 
     private void configureCompilerOptions() {
@@ -167,7 +167,7 @@ class AppCompiler {
         public void acceptResult(CompilationResult result) {
             // If error
             if (result.hasErrors()) {
-                for (IProblem problem: result.getErrors()) {
+                for (IProblem problem : result.getErrors()) {
                     String className = new String(problem.getOriginatingFileName()).replace("/", ".");
                     className = className.substring(0, className.length() - 5);
                     String message = problem.getMessage();

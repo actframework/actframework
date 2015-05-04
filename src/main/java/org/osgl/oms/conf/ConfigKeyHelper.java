@@ -260,25 +260,25 @@ class ConfigKeyHelper {
 
     private static long toLong(Object v) {
         if (null == v) return 0l;
-        if (v instanceof Number) return ((Number)v).longValue();
+        if (v instanceof Number) return ((Number) v).longValue();
         return Long.parseLong(v.toString());
     }
 
     private static int toInt(Object v) {
         if (null == v) return 0;
-        if (v instanceof Number) return ((Number)v).intValue();
+        if (v instanceof Number) return ((Number) v).intValue();
         return Integer.parseInt(v.toString());
     }
 
     private static float toFloat(Object v) {
         if (null == v) return 0f;
-        if (v instanceof Number) return ((Number)v).floatValue();
+        if (v instanceof Number) return ((Number) v).floatValue();
         return Float.parseFloat(v.toString());
     }
 
     private static double toDouble(Object v) {
         if (null == v) return 0d;
-        if (v instanceof Number) return ((Number)v).doubleValue();
+        if (v instanceof Number) return ((Number) v).doubleValue();
         return Double.parseDouble(v.toString());
     }
 

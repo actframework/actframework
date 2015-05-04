@@ -1,20 +1,20 @@
-/***
+/**
  * ASM: a very small and fast Java bytecode manipulation framework
  * Copyright (c) 2000-2011 INRIA, France Telecom
  * All rights reserved.
- *
+ * <p/>
  * Redistribution and use in srccode and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
  * 1. Redistributions of srccode code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
+ * notice, this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
+ * notice, this list of conditions and the following disclaimer in the
+ * documentation and/or other materials provided with the distribution.
  * 3. Neither the className of the copyright holders nor the names of its
- *    contributors may be used to endorse or promote products derived from
- *    this software without specific prior written permission.
- *
+ * contributors may be used to endorse or promote products derived from
+ * this software without specific prior written permission.
+ * <p/>
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -37,7 +37,7 @@ import java.util.List;
  * An extended {@link BasicVerifier} that performs more precise verifications.
  * This verifier computes exact class types, instead of using a single "object
  * reference" type (as done in the {@link BasicVerifier}).
- * 
+ *
  * @author Eric Bruneton
  * @author Bing Ran
  */
@@ -78,7 +78,7 @@ public class SimpleVerifier extends BasicVerifier {
     /**
      * Constructs a new {@link SimpleVerifier} to verify a specific class. This
      * class will not be loaded into the JVM since it may be incorrect.
-     * 
+     *
      * @param currentClass
      *            the class that is verified.
      * @param currentSuperClass
@@ -87,14 +87,14 @@ public class SimpleVerifier extends BasicVerifier {
      *            if the class that is verified is an interface.
      */
     public SimpleVerifier(final Type currentClass,
-            final Type currentSuperClass, final boolean isInterface) {
+                          final Type currentSuperClass, final boolean isInterface) {
         this(currentClass, currentSuperClass, null, isInterface);
     }
 
     /**
      * Constructs a new {@link SimpleVerifier} to verify a specific class. This
      * class will not be loaded into the JVM since it may be incorrect.
-     * 
+     *
      * @param currentClass
      *            the class that is verified.
      * @param currentSuperClass
@@ -105,15 +105,15 @@ public class SimpleVerifier extends BasicVerifier {
      *            if the class that is verified is an interface.
      */
     public SimpleVerifier(final Type currentClass,
-            final Type currentSuperClass,
-            final List<Type> currentClassInterfaces, final boolean isInterface) {
+                          final Type currentSuperClass,
+                          final List<Type> currentClassInterfaces, final boolean isInterface) {
         this(ASM5, currentClass, currentSuperClass, currentClassInterfaces,
                 isInterface);
     }
 
     protected SimpleVerifier(final int api, final Type currentClass,
-            final Type currentSuperClass,
-            final List<Type> currentClassInterfaces, final boolean isInterface) {
+                             final Type currentSuperClass,
+                             final List<Type> currentClassInterfaces, final boolean isInterface) {
         super(api);
         this.currentClass = currentClass;
         this.currentSuperClass = currentSuperClass;
@@ -125,7 +125,7 @@ public class SimpleVerifier extends BasicVerifier {
      * Set the <code>ClassLoader</code> which will be used to load referenced
      * classes. This is useful if you are verifying multiple interdependent
      * classes.
-     * 
+     *
      * @param loader
      *            a <code>ClassLoader</code> to use
      */
@@ -142,11 +142,11 @@ public class SimpleVerifier extends BasicVerifier {
         boolean isArray = type.getSort() == Type.ARRAY;
         if (isArray) {
             switch (type.getElementType().getSort()) {
-            case Type.BOOLEAN:
-            case Type.CHAR:
-            case Type.BYTE:
-            case Type.SHORT:
-                return new BasicValue(type);
+                case Type.BOOLEAN:
+                case Type.CHAR:
+                case Type.BYTE:
+                case Type.SHORT:
+                    return new BasicValue(type);
             }
         }
 
@@ -190,27 +190,27 @@ public class SimpleVerifier extends BasicVerifier {
 
     @Override
     protected boolean isSubTypeOf(final BasicValue value,
-            final BasicValue expected) {
+                                  final BasicValue expected) {
         Type expectedType = expected.getType();
         Type type = value.getType();
         switch (expectedType.getSort()) {
-        case Type.INT:
-        case Type.FLOAT:
-        case Type.LONG:
-        case Type.DOUBLE:
-            return type.equals(expectedType);
-        case Type.ARRAY:
-        case Type.OBJECT:
-            if ("Lnull;".equals(type.getDescriptor())) {
-                return true;
-            } else if (type.getSort() == Type.OBJECT
-                    || type.getSort() == Type.ARRAY) {
-                return isAssignableFrom(expectedType, type);
-            } else {
-                return false;
-            }
-        default:
-            throw new Error("Internal error");
+            case Type.INT:
+            case Type.FLOAT:
+            case Type.LONG:
+            case Type.DOUBLE:
+                return type.equals(expectedType);
+            case Type.ARRAY:
+            case Type.OBJECT:
+                if ("Lnull;".equals(type.getDescriptor())) {
+                    return true;
+                } else if (type.getSort() == Type.OBJECT
+                        || type.getSort() == Type.ARRAY) {
+                    return isAssignableFrom(expectedType, type);
+                } else {
+                    return false;
+                }
+            default:
+                throw new Error("Internal error");
         }
     }
 

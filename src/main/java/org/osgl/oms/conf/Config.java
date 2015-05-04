@@ -27,7 +27,7 @@ public abstract class Config<E extends ConfigKey> {
     }
 
     public Config() {
-        this((Map)System.getProperties());
+        this((Map) System.getProperties());
     }
 
     /**
@@ -93,6 +93,10 @@ public abstract class Config<E extends ConfigKey> {
         } else {
             return (T) raw.get(key);
         }
+    }
+
+    public Map rawConfiguration() {
+        return raw;
     }
 
     protected abstract ConfigKey keyOf(String s);

@@ -3,16 +3,15 @@ package org.osgl.oms.xio.undertow;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.util.Headers;
 import io.undertow.util.HttpString;
-import org.osgl.exception.UnexpectedIOException;
 import org.osgl.http.H;
-import org.osgl.http.Http;
 import org.osgl.oms.ResponseImplBase;
 import org.osgl.oms.app.AppContext;
 import org.osgl.oms.conf.AppConfig;
 import org.osgl.util.E;
 import org.osgl.util.IO;
 
-import java.io.*;
+import java.io.OutputStream;
+import java.io.Writer;
 import java.util.Locale;
 
 public class UndertowResponse extends ResponseImplBase<UndertowResponse> {
@@ -109,7 +108,8 @@ public class UndertowResponse extends ResponseImplBase<UndertowResponse> {
 
     @Override
     public UndertowResponse status(int sc) {
-        return null;
+        hse.setResponseCode(sc);
+        return this;
     }
 
     @Override

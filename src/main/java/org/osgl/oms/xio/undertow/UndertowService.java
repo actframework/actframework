@@ -5,9 +5,7 @@ import io.undertow.server.HttpHandler;
 import io.undertow.server.protocol.http.HttpOpenListener;
 import org.osgl.logging.L;
 import org.osgl.logging.Logger;
-import org.osgl.oms.OmsException;
 import org.osgl.oms.app.App;
-import org.osgl.oms.app.OmsAppException;
 import org.osgl.oms.conf.AppConfig;
 import org.osgl.oms.xio.NetworkClient;
 import org.osgl.oms.xio.NetworkServiceBase;
@@ -97,9 +95,9 @@ public class UndertowService extends NetworkServiceBase {
         ioThreads = Math.max(Runtime.getRuntime().availableProcessors(), 2);
         int workerThreads = ioThreads * 8;
         return xnio.createWorker(OptionMap.builder().set(Options.WORKER_IO_THREADS, ioThreads)
-            .set(Options.WORKER_TASK_CORE_THREADS, workerThreads)
-            .set(Options.WORKER_TASK_MAX_THREADS, workerThreads)
-            .set(Options.TCP_NODELAY, true).getMap());
+                .set(Options.WORKER_TASK_CORE_THREADS, workerThreads)
+                .set(Options.WORKER_TASK_MAX_THREADS, workerThreads)
+                .set(Options.TCP_NODELAY, true).getMap());
     }
 
     private Pool<ByteBuffer> createBuffer() {

@@ -1,20 +1,20 @@
-/***
+/**
  * ASM: a very small and fast Java bytecode manipulation framework
  * Copyright (c) 2000-2011 INRIA, France Telecom
  * All rights reserved.
- *
+ * <p/>
  * Redistribution and use in srccode and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
  * 1. Redistributions of srccode code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
+ * notice, this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
+ * notice, this list of conditions and the following disclaimer in the
+ * documentation and/or other materials provided with the distribution.
  * 3. Neither the className of the copyright holders nor the names of its
- *    contributors may be used to endorse or promote products derived from
- *    this software without specific prior written permission.
- *
+ * contributors may be used to endorse or promote products derived from
+ * this software without specific prior written permission.
+ * <p/>
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -36,7 +36,7 @@ import org.osgl.oms.asm.commons.RemappingMethodAdapter;
 /**
  * A {@link org.osgl.oms.asm.MethodVisitor} that renames fields and methods, and removes debug
  * info.
- * 
+ *
  * @author Eugene Kuleshov
  */
 public class MethodOptimizer extends RemappingMethodAdapter implements Opcodes {
@@ -44,7 +44,7 @@ public class MethodOptimizer extends RemappingMethodAdapter implements Opcodes {
     private final ClassOptimizer classOptimizer;
 
     public MethodOptimizer(ClassOptimizer classOptimizer, int access,
-            String desc, MethodVisitor mv, Remapper remapper) {
+                           String desc, MethodVisitor mv, Remapper remapper) {
         super(Opcodes.ASM5, access, desc, mv, remapper);
         this.classOptimizer = classOptimizer;
     }
@@ -72,21 +72,21 @@ public class MethodOptimizer extends RemappingMethodAdapter implements Opcodes {
 
     @Override
     public AnnotationVisitor visitTypeAnnotation(int typeRef,
-            TypePath typePath, String desc, boolean visible) {
+                                                 TypePath typePath, String desc, boolean visible) {
         return null;
     }
 
     @Override
     public AnnotationVisitor visitParameterAnnotation(final int parameter,
-            final String desc, final boolean visible) {
+                                                      final String desc, final boolean visible) {
         // remove annotations
         return null;
     }
 
     @Override
     public void visitLocalVariable(final String name, final String desc,
-            final String signature, final Label start, final Label end,
-            final int index) {
+                                   final String signature, final Label start, final Label end,
+                                   final int index) {
         // remove debug info
     }
 
@@ -97,7 +97,7 @@ public class MethodOptimizer extends RemappingMethodAdapter implements Opcodes {
 
     @Override
     public void visitFrame(int type, int local, Object[] local2, int stack,
-            Object[] stack2) {
+                           Object[] stack2) {
         // remove frame info
     }
 

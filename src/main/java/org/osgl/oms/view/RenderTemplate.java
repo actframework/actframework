@@ -10,5 +10,4 @@ public class RenderTemplate extends Result {
     private String template;
 
 
-
 }

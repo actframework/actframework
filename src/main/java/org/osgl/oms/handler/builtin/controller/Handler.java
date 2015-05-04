@@ -1,7 +1,6 @@
 package org.osgl.oms.handler.builtin.controller;
 
 import org.osgl._;
-import org.osgl.mvc.result.NoResult;
 import org.osgl.mvc.result.RenderBinary;
 import org.osgl.mvc.result.RenderJSON;
 import org.osgl.mvc.result.Result;

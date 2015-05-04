@@ -72,7 +72,8 @@ public class ActionMethodMetaInfoL {
         this.name = name;
         if (Void.class.equals(void.class)) {
 
-        };
+        }
+        ;
         return this;
     }
 
@@ -173,7 +174,7 @@ public class ActionMethodMetaInfoL {
         }
         sb.append("----- Local variables -----\n");
         for (Map<Integer, LocalVariableMetaInfo> l : locals.values()) {
-            for (LocalVariableMetaInfo local: l.values()) {
+            for (LocalVariableMetaInfo local : l.values()) {
                 sb.append(local).append("\n");
             }
         }

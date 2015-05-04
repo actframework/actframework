@@ -8,13 +8,13 @@ import org.osgl.mvc.result.NoResult;
 import org.osgl.mvc.result.Result;
 import org.osgl.mvc.result.ServerError;
 import org.osgl.oms.OMS;
-import org.osgl.oms.controller.meta.CatchMethodMetaInfo;
-import org.osgl.oms.controller.meta.InterceptorMethodMetaInfo;
-import org.osgl.oms.handler.RequestHandlerBase;
 import org.osgl.oms.app.App;
 import org.osgl.oms.app.AppContext;
 import org.osgl.oms.controller.meta.ActionMethodMetaInfo;
+import org.osgl.oms.controller.meta.CatchMethodMetaInfo;
 import org.osgl.oms.controller.meta.ControllerClassMetaInfo;
+import org.osgl.oms.controller.meta.InterceptorMethodMetaInfo;
+import org.osgl.oms.handler.RequestHandlerBase;
 import org.osgl.util.C;
 import org.osgl.util.E;
 import org.osgl.util.S;
@@ -110,6 +110,7 @@ public class RequestHandlerProxy extends RequestHandlerBase {
         }
         ensureAgentsReady();
         ensureContextLocal(context);
+        saveActionPath(context);
         try {
             result = handleBefore(context);
             if (null == result) {
@@ -180,6 +181,13 @@ public class RequestHandlerProxy extends RequestHandlerBase {
         }
     }
 
+    // could be used by View to resolve default path to template
+    private void saveActionPath(AppContext context) {
+        StringBuilder sb = S.builder(controllerClassName).append(".").append(actionMethodName);
+        String path = sb.toString();
+        context.actionPath(path);
+    }
+
     private void generateHandlers() {
         ControllerClassMetaInfo ctrlInfo = app.classLoader().controllerClassMetaInfo(controllerClassName);
         ActionMethodMetaInfo actionInfo = ctrlInfo.action(actionMethodName);
@@ -208,7 +216,7 @@ public class RequestHandlerProxy extends RequestHandlerBase {
                 requireContextLocal = true;
             }
         }
-        for (InterceptorMethodMetaInfo info: ctrlInfo.finallyInterceptors()) {
+        for (InterceptorMethodMetaInfo info : ctrlInfo.finallyInterceptors()) {
             finallyInterceptors.add(mode.createFinallyInterceptor(info, app));
             if (info.appContextInjection().injectVia().isLocal()) {
                 requireContextLocal = true;
@@ -304,6 +312,7 @@ public class RequestHandlerProxy extends RequestHandlerBase {
 
     private static class GroupInterceptorWithResult extends _.F1<AppContext, Result> {
         C.List<? extends ActionHandler> interceptors;
+
         GroupInterceptorWithResult(C.List<? extends ActionHandler> interceptors) {
             this.interceptors = interceptors;
         }
@@ -343,6 +352,7 @@ public class RequestHandlerProxy extends RequestHandlerBase {
 
     private static class GroupFinallyInterceptor extends _.F1<AppContext, Void> {
         C.List<? extends FinallyInterceptor> interceptors;
+
         GroupFinallyInterceptor(C.List<FinallyInterceptor> interceptors) {
             this.interceptors = interceptors;
         }
@@ -359,6 +369,7 @@ public class RequestHandlerProxy extends RequestHandlerBase {
 
     private static class GroupExceptionInterceptor extends _.F2<Exception, AppContext, Result> {
         C.List<? extends ExceptionInterceptor> interceptors;
+
         GroupExceptionInterceptor(C.List<? extends ExceptionInterceptor> interceptors) {
             this.interceptors = interceptors;
         }

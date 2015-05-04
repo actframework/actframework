@@ -196,6 +196,12 @@
       <version>0.2-SNAPSHOT</version>
     </dependency>
 
+    <dependency>
+      <groupId>org.rythmengine</groupId>
+      <artifactId>rythm-engine</artifactId>
+      <version>1.1.1-SNAPSHOT</version>
+    </dependency>
+
   </dependencies>
 
   <profiles>

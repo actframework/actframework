@@ -1,20 +1,20 @@
-/***
+/**
  * ASM: a very small and fast Java bytecode manipulation framework
  * Copyright (c) 2000-2011 INRIA, France Telecom
  * All rights reserved.
- *
+ * <p/>
  * Redistribution and use in srccode and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
  * 1. Redistributions of srccode code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
+ * notice, this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
+ * notice, this list of conditions and the following disclaimer in the
+ * documentation and/or other materials provided with the distribution.
  * 3. Neither the className of the copyright holders nor the names of its
- *    contributors may be used to endorse or promote products derived from
- *    this software without specific prior written permission.
- *
+ * contributors may be used to endorse or promote products derived from
+ * this software without specific prior written permission.
+ * <p/>
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -50,7 +50,7 @@ import org.osgl.oms.asm.Opcodes;
  * <tt>visitInnerClassType</tt> <tt>visitTypeArgument</tt>* )* <tt>visitEnd</tt>
  * ) )</li>
  * </ul>
- * 
+ *
  * @author Thomas Hallgren
  * @author Eric Bruneton
  */
@@ -93,7 +93,7 @@ public abstract class SignatureVisitor {
 
     /**
      * Visits a formal type parameter.
-     * 
+     *
      * @param name
      *            the className of the formal parameter.
      */
@@ -102,7 +102,7 @@ public abstract class SignatureVisitor {
 
     /**
      * Visits the class bound of the last visited formal type parameter.
-     * 
+     *
      * @return a non null visitor to visit the signature of the class bound.
      */
     public SignatureVisitor visitClassBound() {
@@ -111,7 +111,7 @@ public abstract class SignatureVisitor {
 
     /**
      * Visits an interface bound of the last visited formal type parameter.
-     * 
+     *
      * @return a non null visitor to visit the signature of the interface bound.
      */
     public SignatureVisitor visitInterfaceBound() {
@@ -120,7 +120,7 @@ public abstract class SignatureVisitor {
 
     /**
      * Visits the type of the super class.
-     * 
+     *
      * @return a non null visitor to visit the signature of the super class
      *         type.
      */
@@ -130,7 +130,7 @@ public abstract class SignatureVisitor {
 
     /**
      * Visits the type of an interface implemented by the class.
-     * 
+     *
      * @return a non null visitor to visit the signature of the interface type.
      */
     public SignatureVisitor visitInterface() {
@@ -139,7 +139,7 @@ public abstract class SignatureVisitor {
 
     /**
      * Visits the type of a method parameter.
-     * 
+     *
      * @return a non null visitor to visit the signature of the parameter type.
      */
     public SignatureVisitor visitParameterType() {
@@ -148,7 +148,7 @@ public abstract class SignatureVisitor {
 
     /**
      * Visits the return type of the method.
-     * 
+     *
      * @return a non null visitor to visit the signature of the return type.
      */
     public SignatureVisitor visitReturnType() {
@@ -157,7 +157,7 @@ public abstract class SignatureVisitor {
 
     /**
      * Visits the type of a method exception.
-     * 
+     *
      * @return a non null visitor to visit the signature of the exception type.
      */
     public SignatureVisitor visitExceptionType() {
@@ -166,7 +166,7 @@ public abstract class SignatureVisitor {
 
     /**
      * Visits a signature corresponding to a primitive type.
-     * 
+     *
      * @param descriptor
      *            the descriptor of the primitive type, or 'V' for <tt>void</tt>
      *            .
@@ -176,7 +176,7 @@ public abstract class SignatureVisitor {
 
     /**
      * Visits a signature corresponding to a type variable.
-     * 
+     *
      * @param name
      *            the className of the type variable.
      */
@@ -185,7 +185,7 @@ public abstract class SignatureVisitor {
 
     /**
      * Visits a signature corresponding to an array type.
-     * 
+     *
      * @return a non null visitor to visit the signature of the array element
      *         type.
      */
@@ -196,7 +196,7 @@ public abstract class SignatureVisitor {
     /**
      * Starts the visit of a signature corresponding to a class or interface
      * type.
-     * 
+     *
      * @param name
      *            the internal className of the class or interface.
      */
@@ -205,7 +205,7 @@ public abstract class SignatureVisitor {
 
     /**
      * Visits an inner class.
-     * 
+     *
      * @param name
      *            the local className of the inner class in its enclosing class.
      */
@@ -221,7 +221,7 @@ public abstract class SignatureVisitor {
 
     /**
      * Visits a type argument of the last visited class or inner class type.
-     * 
+     *
      * @param wildcard
      *            '+', '-' or '='.
      * @return a non null visitor to visit the signature of the type argument.

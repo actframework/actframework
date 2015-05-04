@@ -293,11 +293,11 @@ public class ControllerEnhancerTest extends TestBase implements ControllerClassM
                 ControllerEnhancer enhancer = new ControllerEnhancer(cw, ControllerEnhancerTest.this);
                 cr.accept(enhancer, 0);
                 b = cw.toByteArray();
-                OutputStream os1 = new FileOutputStream("t:\\tmp\\" + S.afterLast(cn, "/") + ".class");
+                OutputStream os1 = new FileOutputStream("/tmp/" + S.afterLast(cn, "/") + ".class");
                 IO.write(b, os1);
                 cr = new ClassReader(b);
                 cw = new ClassWriter(0);
-                OutputStream os2 = new FileOutputStream("t:\\tmp\\" + S.afterLast(cn, "/") + ".java");
+                OutputStream os2 = new FileOutputStream("/tmp/" + S.afterLast(cn, "/") + ".java");
                 ClassVisitor tv = new TraceClassVisitor(cw, new PrintWriter(os2));
                 cr.accept(tv, 0);
             } catch (Exception e) {

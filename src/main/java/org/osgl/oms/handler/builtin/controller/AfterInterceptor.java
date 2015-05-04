@@ -19,8 +19,8 @@ public abstract class AfterInterceptor
      * Sub class should implement this method to do further processing on the
      * result and return the processed result, or return a completely new result
      *
-     * @param result the generated result by either {@link BeforeInterceptor} or
-     *               controller action handler method
+     * @param result     the generated result by either {@link BeforeInterceptor} or
+     *                   controller action handler method
      * @param appContext
      * @return the new result been processed
      */

@@ -10,6 +10,7 @@ import java.io.File;
  */
 public enum ClassNames {
     ;
+
     public static String classFileNameToClassName(String fileName) {
         if (File.separatorChar != '/') {
             fileName = fileName.replace(File.separatorChar, '/');

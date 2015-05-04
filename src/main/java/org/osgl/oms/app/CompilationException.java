@@ -1,6 +1,5 @@
 package org.osgl.oms.app;
 
-import org.osgl.oms.OmsException;
 import org.osgl.util.IO;
 import org.osgl.util.S;
 
@@ -48,8 +47,8 @@ public class CompilationException extends OmsAppException implements SourceInfo 
     @Override
     public List<String> lines() {
         String sourceCode = IO.readContentAsString(source);
-        if(start != -1 && end != -1) {
-            if(start.equals(end)) {
+        if (start != -1 && end != -1) {
+            if (start.equals(end)) {
                 sourceCode = sourceCode.substring(0, start + 1) + "↓" + sourceCode.substring(end + 1);
             } else {
                 sourceCode = sourceCode.substring(0, start) + "\000" + sourceCode.substring(start, end + 1) + "\001" + sourceCode.substring(end + 1);

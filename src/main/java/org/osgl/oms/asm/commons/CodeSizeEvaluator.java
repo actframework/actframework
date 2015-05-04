@@ -1,20 +1,20 @@
-/***
+/**
  * ASM: a very small and fast Java bytecode manipulation framework
  * Copyright (c) 2000-2011 INRIA, France Telecom
  * All rights reserved.
- *
+ * <p/>
  * Redistribution and use in srccode and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
  * 1. Redistributions of srccode code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
+ * notice, this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
+ * notice, this list of conditions and the following disclaimer in the
+ * documentation and/or other materials provided with the distribution.
  * 3. Neither the className of the copyright holders nor the names of its
- *    contributors may be used to endorse or promote products derived from
- *    this software without specific prior written permission.
- *
+ * contributors may be used to endorse or promote products derived from
+ * this software without specific prior written permission.
+ * <p/>
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -36,7 +36,7 @@ import org.osgl.oms.asm.Opcodes;
 
 /**
  * A {@link org.osgl.oms.asm.MethodVisitor} that can be used to approximate method size.
- * 
+ *
  * @author Eugene Kuleshov
  */
 public class CodeSizeEvaluator extends MethodVisitor implements Opcodes {
@@ -112,7 +112,7 @@ public class CodeSizeEvaluator extends MethodVisitor implements Opcodes {
 
     @Override
     public void visitFieldInsn(final int opcode, final String owner,
-            final String name, final String desc) {
+                               final String name, final String desc) {
         minSize += 3;
         maxSize += 3;
         if (mv != null) {
@@ -123,7 +123,7 @@ public class CodeSizeEvaluator extends MethodVisitor implements Opcodes {
     @Deprecated
     @Override
     public void visitMethodInsn(final int opcode, final String owner,
-            final String name, final String desc) {
+                                final String name, final String desc) {
         if (api >= Opcodes.ASM5) {
             super.visitMethodInsn(opcode, owner, name, desc);
             return;
@@ -134,7 +134,7 @@ public class CodeSizeEvaluator extends MethodVisitor implements Opcodes {
 
     @Override
     public void visitMethodInsn(final int opcode, final String owner,
-            final String name, final String desc, final boolean itf) {
+                                final String name, final String desc, final boolean itf) {
         if (api < Opcodes.ASM5) {
             super.visitMethodInsn(opcode, owner, name, desc, itf);
             return;
@@ -143,7 +143,7 @@ public class CodeSizeEvaluator extends MethodVisitor implements Opcodes {
     }
 
     private void doVisitMethodInsn(int opcode, final String owner,
-            final String name, final String desc, final boolean itf) {
+                                   final String name, final String desc, final boolean itf) {
         if (opcode == INVOKEINTERFACE) {
             minSize += 5;
             maxSize += 5;
@@ -158,7 +158,7 @@ public class CodeSizeEvaluator extends MethodVisitor implements Opcodes {
 
     @Override
     public void visitInvokeDynamicInsn(String name, String desc, Handle bsm,
-            Object... bsmArgs) {
+                                       Object... bsmArgs) {
         minSize += 5;
         maxSize += 5;
         if (mv != null) {
@@ -209,7 +209,7 @@ public class CodeSizeEvaluator extends MethodVisitor implements Opcodes {
 
     @Override
     public void visitTableSwitchInsn(final int min, final int max,
-            final Label dflt, final Label... labels) {
+                                     final Label dflt, final Label... labels) {
         minSize += 13 + labels.length * 4;
         maxSize += 16 + labels.length * 4;
         if (mv != null) {
@@ -219,7 +219,7 @@ public class CodeSizeEvaluator extends MethodVisitor implements Opcodes {
 
     @Override
     public void visitLookupSwitchInsn(final Label dflt, final int[] keys,
-            final Label[] labels) {
+                                      final Label[] labels) {
         minSize += 9 + keys.length * 8;
         maxSize += 12 + keys.length * 8;
         if (mv != null) {

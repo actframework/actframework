@@ -2,7 +2,6 @@ package org.osgl.oms.app;
 
 import org.osgl.oms.OMS;
 import org.osgl.oms.route.RouteTableRouterBuilder;
-import org.osgl.util.E;
 
 import java.io.File;
 

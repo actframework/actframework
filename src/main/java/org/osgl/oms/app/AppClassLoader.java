@@ -9,13 +9,13 @@ import org.osgl.oms.asm.ClassReader;
 import org.osgl.oms.asm.ClassWriter;
 import org.osgl.oms.conf.AppConfig;
 import org.osgl.oms.controller.bytecode.ControllerScanner;
-import org.osgl.oms.controller.meta.ControllerClassMetaInfoHolder;
 import org.osgl.oms.controller.meta.ControllerClassMetaInfo;
+import org.osgl.oms.controller.meta.ControllerClassMetaInfoHolder;
 import org.osgl.oms.controller.meta.ControllerClassMetaInfoManager;
 import org.osgl.oms.util.BytecodeVisitor;
+import org.osgl.oms.util.ClassNames;
 import org.osgl.oms.util.Files;
 import org.osgl.oms.util.Jars;
-import org.osgl.oms.util.ClassNames;
 import org.osgl.util.C;
 import org.osgl.util.E;
 import org.osgl.util.IO;
@@ -117,7 +117,7 @@ public class AppClassLoader extends ClassLoader implements ControllerClassMetaIn
     }
 
     protected void preloadClassFile(File base, File file) {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream((int)file.length());
+        ByteArrayOutputStream baos = new ByteArrayOutputStream((int) file.length());
         IO.copy(IO.is(file), baos);
         byte[] bytes = baos.toByteArray();
         libClsCache.put(ClassNames.sourceFileNameToClassName(base, file.getAbsolutePath()), bytes);
@@ -173,7 +173,7 @@ public class AppClassLoader extends ClassLoader implements ControllerClassMetaIn
     protected byte[] bytecode(String name) {
         byte[] bytes = appBytecode(name);
         if (null != bytes) {
-            return  bytes;
+            return bytes;
         }
         name = name.replace('.', '/') + ".class";
         InputStream is = getParent().getResourceAsStream(name);

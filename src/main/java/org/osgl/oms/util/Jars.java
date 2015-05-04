@@ -47,7 +47,6 @@ public enum Jars {
     }
 
     /**
-     *
      * @param file
      */
     public static void scanForBytecode(File file, final _.F1<byte[], ?> bytecodeHandler) {

@@ -24,7 +24,7 @@ public enum InterceptorType {
     }, CATCH() {
         @Override
         void addToGroup(InterceptorMethodMetaInfo info, GroupInterceptorMetaInfo group) {
-            group.addCatch((CatchMethodMetaInfo)info);
+            group.addCatch((CatchMethodMetaInfo) info);
         }
 
         @Override
@@ -37,13 +37,17 @@ public enum InterceptorType {
             group.addFinally(info);
         }
     };
+
     abstract void addToGroup(InterceptorMethodMetaInfo info, GroupInterceptorMetaInfo group);
+
     public InterceptorMethodMetaInfo createMetaInfo(ControllerClassMetaInfo clsInfo) {
         return new InterceptorMethodMetaInfo(clsInfo);
     }
+
     private static Map<Class<? extends Annotation>, InterceptorType> map = C.map(
             Before.class, BEFORE, After.class, AFTER,
             Catch.class, CATCH, Finally.class, FINALLY);
+
     public static InterceptorType of(Class<? extends Annotation> clz) {
         InterceptorType type = map.get(clz);
         E.illegalArgumentIf(null == type, "Not an interceptor annotation: %s", clz);

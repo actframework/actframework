@@ -1,20 +1,20 @@
-/***
+/**
  * ASM: a very small and fast Java bytecode manipulation framework
  * Copyright (c) 2000-2011 INRIA, France Telecom
  * All rights reserved.
- *
+ * <p/>
  * Redistribution and use in srccode and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
  * 1. Redistributions of srccode code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
+ * notice, this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
+ * notice, this list of conditions and the following disclaimer in the
+ * documentation and/or other materials provided with the distribution.
  * 3. Neither the className of the copyright holders nor the names of its
- *    contributors may be used to endorse or promote products derived from
- *    this software without specific prior written permission.
- *
+ * contributors may be used to endorse or promote products derived from
+ * this software without specific prior written permission.
+ * <p/>
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -193,7 +193,7 @@ public class CheckClassAdapter extends ClassVisitor {
      *            write where results going to be printed
      */
     public static void verify(final ClassReader cr, final ClassLoader loader,
-            final boolean dump, final PrintWriter pw) {
+                              final boolean dump, final PrintWriter pw) {
         ClassNode cn = new ClassNode();
         cr.accept(new CheckClassAdapter(cn, false), ClassReader.SKIP_DEBUG);
 
@@ -202,7 +202,7 @@ public class CheckClassAdapter extends ClassVisitor {
         List<MethodNode> methods = cn.methods;
 
         List<Type> interfaces = new ArrayList<Type>();
-        for (Iterator<String> i = cn.interfaces.iterator(); i.hasNext();) {
+        for (Iterator<String> i = cn.interfaces.iterator(); i.hasNext(); ) {
             interfaces.add(Type.getObjectType(i.next()));
         }
 
@@ -241,12 +241,12 @@ public class CheckClassAdapter extends ClassVisitor {
      *            write where results going to be printed
      */
     public static void verify(final ClassReader cr, final boolean dump,
-            final PrintWriter pw) {
+                              final PrintWriter pw) {
         verify(cr, null, dump, pw);
     }
 
     static void printAnalyzerResult(MethodNode method, Analyzer<BasicValue> a,
-            final PrintWriter pw) {
+                                    final PrintWriter pw) {
         Frame<BasicValue>[] frames = a.getFrames();
         Textifier t = new Textifier();
         TraceMethodVisitor mv = new TraceMethodVisitor(t);
@@ -341,7 +341,7 @@ public class CheckClassAdapter extends ClassVisitor {
      *            maxLocals and maxStack values.
      */
     protected CheckClassAdapter(final int api, final ClassVisitor cv,
-            final boolean checkDataFlow) {
+                                final boolean checkDataFlow) {
         super(api, cv);
         this.labels = new HashMap<Label, Integer>();
         this.checkDataFlow = checkDataFlow;
@@ -353,8 +353,8 @@ public class CheckClassAdapter extends ClassVisitor {
 
     @Override
     public void visit(final int version, final int access, final String name,
-            final String signature, final String superName,
-            final String[] interfaces) {
+                      final String signature, final String superName,
+                      final String[] interfaces) {
         if (start) {
             throw new IllegalStateException("visit must be called only once");
         }
@@ -408,7 +408,7 @@ public class CheckClassAdapter extends ClassVisitor {
 
     @Override
     public void visitOuterClass(final String owner, final String name,
-            final String desc) {
+                                final String desc) {
         checkState();
         if (outer) {
             throw new IllegalStateException(
@@ -426,7 +426,7 @@ public class CheckClassAdapter extends ClassVisitor {
 
     @Override
     public void visitInnerClass(final String name, final String outerName,
-            final String innerName, final int access) {
+                                final String innerName, final int access) {
         checkState();
         CheckMethodAdapter.checkInternalName(name, "class name");
         if (outerName != null) {
@@ -453,7 +453,7 @@ public class CheckClassAdapter extends ClassVisitor {
 
     @Override
     public FieldVisitor visitField(final int access, final String name,
-            final String desc, final String signature, final Object value) {
+                                   final String desc, final String signature, final Object value) {
         checkState();
         checkAccess(access, Opcodes.ACC_PUBLIC + Opcodes.ACC_PRIVATE
                 + Opcodes.ACC_PROTECTED + Opcodes.ACC_STATIC
@@ -475,7 +475,7 @@ public class CheckClassAdapter extends ClassVisitor {
 
     @Override
     public MethodVisitor visitMethod(final int access, final String name,
-            final String desc, final String signature, final String[] exceptions) {
+                                     final String desc, final String signature, final String[] exceptions) {
         checkState();
         checkAccess(access, Opcodes.ACC_PUBLIC + Opcodes.ACC_PRIVATE
                 + Opcodes.ACC_PROTECTED + Opcodes.ACC_STATIC
@@ -511,7 +511,7 @@ public class CheckClassAdapter extends ClassVisitor {
 
     @Override
     public AnnotationVisitor visitAnnotation(final String desc,
-            final boolean visible) {
+                                             final boolean visible) {
         checkState();
         CheckMethodAdapter.checkDesc(desc, false);
         return new CheckAnnotationAdapter(super.visitAnnotation(desc, visible));
@@ -519,7 +519,7 @@ public class CheckClassAdapter extends ClassVisitor {
 
     @Override
     public AnnotationVisitor visitTypeAnnotation(final int typeRef,
-            final TypePath typePath, final String desc, final boolean visible) {
+                                                 final TypePath typePath, final String desc, final boolean visible) {
         checkState();
         int sort = typeRef >>> 24;
         if (sort != TypeReference.CLASS_TYPE_PARAMETER
@@ -574,7 +574,7 @@ public class CheckClassAdapter extends ClassVisitor {
      * Checks that the given access flags do not contain invalid flags. This
      * method also checks that mutually incompatible flags are not set
      * simultaneously.
-     * 
+     *
      * @param access
      *            the access flags to be checked
      * @param possibleAccess
@@ -603,7 +603,7 @@ public class CheckClassAdapter extends ClassVisitor {
 
     /**
      * Checks a class signature.
-     * 
+     *
      * @param signature
      *            a string containing the signature that must be checked.
      */
@@ -627,7 +627,7 @@ public class CheckClassAdapter extends ClassVisitor {
 
     /**
      * Checks a method signature.
-     * 
+     *
      * @param signature
      *            a string containing the signature that must be checked.
      */
@@ -666,7 +666,7 @@ public class CheckClassAdapter extends ClassVisitor {
 
     /**
      * Checks a field signature.
-     * 
+     *
      * @param signature
      *            a string containing the signature that must be checked.
      */
@@ -680,7 +680,7 @@ public class CheckClassAdapter extends ClassVisitor {
 
     /**
      * Checks the reference to a type in a type annotation.
-     * 
+     *
      * @param typeRef
      *            a reference to an annotated type.
      * @param typePath
@@ -691,39 +691,39 @@ public class CheckClassAdapter extends ClassVisitor {
     static void checkTypeRefAndPath(int typeRef, TypePath typePath) {
         int mask = 0;
         switch (typeRef >>> 24) {
-        case TypeReference.CLASS_TYPE_PARAMETER:
-        case TypeReference.METHOD_TYPE_PARAMETER:
-        case TypeReference.METHOD_FORMAL_PARAMETER:
-            mask = 0xFFFF0000;
-            break;
-        case TypeReference.FIELD:
-        case TypeReference.METHOD_RETURN:
-        case TypeReference.METHOD_RECEIVER:
-        case TypeReference.LOCAL_VARIABLE:
-        case TypeReference.RESOURCE_VARIABLE:
-        case TypeReference.INSTANCEOF:
-        case TypeReference.NEW:
-        case TypeReference.CONSTRUCTOR_REFERENCE:
-        case TypeReference.METHOD_REFERENCE:
-            mask = 0xFF000000;
-            break;
-        case TypeReference.CLASS_EXTENDS:
-        case TypeReference.CLASS_TYPE_PARAMETER_BOUND:
-        case TypeReference.METHOD_TYPE_PARAMETER_BOUND:
-        case TypeReference.THROWS:
-        case TypeReference.EXCEPTION_PARAMETER:
-            mask = 0xFFFFFF00;
-            break;
-        case TypeReference.CAST:
-        case TypeReference.CONSTRUCTOR_INVOCATION_TYPE_ARGUMENT:
-        case TypeReference.METHOD_INVOCATION_TYPE_ARGUMENT:
-        case TypeReference.CONSTRUCTOR_REFERENCE_TYPE_ARGUMENT:
-        case TypeReference.METHOD_REFERENCE_TYPE_ARGUMENT:
-            mask = 0xFF0000FF;
-            break;
-        default:
-            throw new IllegalArgumentException("Invalid type reference sort 0x"
-                    + Integer.toHexString(typeRef >>> 24));
+            case TypeReference.CLASS_TYPE_PARAMETER:
+            case TypeReference.METHOD_TYPE_PARAMETER:
+            case TypeReference.METHOD_FORMAL_PARAMETER:
+                mask = 0xFFFF0000;
+                break;
+            case TypeReference.FIELD:
+            case TypeReference.METHOD_RETURN:
+            case TypeReference.METHOD_RECEIVER:
+            case TypeReference.LOCAL_VARIABLE:
+            case TypeReference.RESOURCE_VARIABLE:
+            case TypeReference.INSTANCEOF:
+            case TypeReference.NEW:
+            case TypeReference.CONSTRUCTOR_REFERENCE:
+            case TypeReference.METHOD_REFERENCE:
+                mask = 0xFF000000;
+                break;
+            case TypeReference.CLASS_EXTENDS:
+            case TypeReference.CLASS_TYPE_PARAMETER_BOUND:
+            case TypeReference.METHOD_TYPE_PARAMETER_BOUND:
+            case TypeReference.THROWS:
+            case TypeReference.EXCEPTION_PARAMETER:
+                mask = 0xFFFFFF00;
+                break;
+            case TypeReference.CAST:
+            case TypeReference.CONSTRUCTOR_INVOCATION_TYPE_ARGUMENT:
+            case TypeReference.METHOD_INVOCATION_TYPE_ARGUMENT:
+            case TypeReference.CONSTRUCTOR_REFERENCE_TYPE_ARGUMENT:
+            case TypeReference.METHOD_REFERENCE_TYPE_ARGUMENT:
+                mask = 0xFF0000FF;
+                break;
+            default:
+                throw new IllegalArgumentException("Invalid type reference sort 0x"
+                        + Integer.toHexString(typeRef >>> 24));
         }
         if ((typeRef & ~mask) != 0) {
             throw new IllegalArgumentException("Invalid type reference 0x"
@@ -751,7 +751,7 @@ public class CheckClassAdapter extends ClassVisitor {
 
     /**
      * Checks the formal type parameters of a class or method signature.
-     * 
+     *
      * @param signature
      *            a string containing the signature that must be checked.
      * @param pos
@@ -772,7 +772,7 @@ public class CheckClassAdapter extends ClassVisitor {
 
     /**
      * Checks a formal type parameter of a class or method signature.
-     * 
+     *
      * @param signature
      *            a string containing the signature that must be checked.
      * @param pos
@@ -796,7 +796,7 @@ public class CheckClassAdapter extends ClassVisitor {
 
     /**
      * Checks a field type signature.
-     * 
+     *
      * @param signature
      *            a string containing the signature that must be checked.
      * @param pos
@@ -811,18 +811,18 @@ public class CheckClassAdapter extends ClassVisitor {
         // [ TypeSignature
 
         switch (getChar(signature, pos)) {
-        case 'L':
-            return checkClassTypeSignature(signature, pos);
-        case '[':
-            return checkTypeSignature(signature, pos + 1);
-        default:
-            return checkTypeVariableSignature(signature, pos);
+            case 'L':
+                return checkClassTypeSignature(signature, pos);
+            case '[':
+                return checkTypeSignature(signature, pos + 1);
+            default:
+                return checkTypeVariableSignature(signature, pos);
         }
     }
 
     /**
      * Checks a class type signature.
-     * 
+     *
      * @param signature
      *            a string containing the signature that must be checked.
      * @param pos
@@ -853,7 +853,7 @@ public class CheckClassAdapter extends ClassVisitor {
 
     /**
      * Checks the type arguments in a class type signature.
-     * 
+     *
      * @param signature
      *            a string containing the signature that must be checked.
      * @param pos
@@ -874,7 +874,7 @@ public class CheckClassAdapter extends ClassVisitor {
 
     /**
      * Checks a type argument in a class type signature.
-     * 
+     *
      * @param signature
      *            a string containing the signature that must be checked.
      * @param pos
@@ -896,7 +896,7 @@ public class CheckClassAdapter extends ClassVisitor {
 
     /**
      * Checks a type variable signature.
-     * 
+     *
      * @param signature
      *            a string containing the signature that must be checked.
      * @param pos
@@ -904,7 +904,7 @@ public class CheckClassAdapter extends ClassVisitor {
      * @return the index of the first character after the checked part.
      */
     private static int checkTypeVariableSignature(final String signature,
-            int pos) {
+                                                  int pos) {
         // TypeVariableSignature:
         // T Identifier ;
 
@@ -915,7 +915,7 @@ public class CheckClassAdapter extends ClassVisitor {
 
     /**
      * Checks a type signature.
-     * 
+     *
      * @param signature
      *            a string containing the signature that must be checked.
      * @param pos
@@ -927,23 +927,23 @@ public class CheckClassAdapter extends ClassVisitor {
         // Z | C | B | S | I | F | J | D | FieldTypeSignature
 
         switch (getChar(signature, pos)) {
-        case 'Z':
-        case 'C':
-        case 'B':
-        case 'S':
-        case 'I':
-        case 'F':
-        case 'J':
-        case 'D':
-            return pos + 1;
-        default:
-            return checkFieldTypeSignature(signature, pos);
+            case 'Z':
+            case 'C':
+            case 'B':
+            case 'S':
+            case 'I':
+            case 'F':
+            case 'J':
+            case 'D':
+                return pos + 1;
+            default:
+                return checkFieldTypeSignature(signature, pos);
         }
     }
 
     /**
      * Checks an identifier.
-     * 
+     *
      * @param signature
      *            a string containing the signature that must be checked.
      * @param pos
@@ -964,7 +964,7 @@ public class CheckClassAdapter extends ClassVisitor {
 
     /**
      * Checks a single character.
-     * 
+     *
      * @param signature
      *            a string containing the signature that must be checked.
      * @param pos
@@ -981,7 +981,7 @@ public class CheckClassAdapter extends ClassVisitor {
 
     /**
      * Returns the signature car at the given index.
-     * 
+     *
      * @param signature
      *            a signature.
      * @param pos

@@ -8,7 +8,6 @@ import org.osgl.oms.conf.AppConfLoader;
 import org.osgl.oms.conf.AppConfig;
 import org.osgl.oms.route.RouteTableRouterBuilder;
 import org.osgl.oms.route.Router;
-import org.osgl.util.E;
 import org.osgl.util.IO;
 
 import java.io.File;
@@ -29,7 +28,8 @@ public class App {
     private ProjectLayout layout;
     private AppBuilder builder;
 
-    protected App() {}
+    protected App() {
+    }
 
     protected App(File appBase, ProjectLayout layout) {
         this.appBase = appBase;

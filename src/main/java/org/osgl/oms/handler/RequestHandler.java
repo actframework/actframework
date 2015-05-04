@@ -14,6 +14,7 @@ public interface RequestHandler extends _.Function<AppContext, Void> {
 
     /**
      * Invoke handler upon an application context
+     *
      * @param context
      */
     void handle(AppContext context);
@@ -24,17 +25,18 @@ public interface RequestHandler extends _.Function<AppContext, Void> {
      * certain request handler like {@link org.osgl.oms.handler.builtin.StaticFileGetter}
      * they need to support partial path lookup. Take the example of
      * the following route mapping:
-     *
+     * <p/>
      * <code>
      * GET /public staticDir: /public
      * </code>
-     *
+     * <p/>
      * which map url path {@code /public} to a {@code StaticFileGetter} with
      * base dir set to {@code /public}, it needs to support all path starts
      * with "/public", like "/public/js/jquery.js" etc.
      *
      * @return {@code true} if the request handler support partial path lookup
-     *      or {@code false} otherwise
+     * or {@code false} otherwise
      */
     boolean supportPartialPath();
+
 }

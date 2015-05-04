@@ -5,7 +5,6 @@ import org.osgl.util.C;
 import org.osgl.util.ListBuilder;
 
 import java.io.File;
-import java.io.FilenameFilter;
 import java.util.List;
 
 /**
@@ -13,6 +12,7 @@ import java.util.List;
  */
 public enum Files {
     ;
+
     public static List<File> filter(File baseDir, _.F1<String, Boolean> filter) {
         ListBuilder<File> list = ListBuilder.create(500);
         filter(baseDir, filter, C.F.addTo(list));

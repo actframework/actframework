@@ -13,9 +13,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import static org.osgl.oms.Constants.ASM_PKG;
-import static org.osgl.oms.Constants.OMS_HOME;
-import static org.osgl.oms.Constants.OMS_PKG;
+import static org.osgl.oms.Constants.*;
 
 /**
  * This class loader is responsible for loading OMS classes
@@ -46,7 +44,7 @@ public class BootstrapClassLoader extends ClassLoader {
         return cl;
     }
 
-    private void preload() {
+    protected void preload() {
         String omsHome = System.getProperty(OMS_HOME);
         if (null == omsHome) {
             omsHome = System.getenv(OMS_HOME);
@@ -99,7 +97,7 @@ public class BootstrapClassLoader extends ClassLoader {
     }
 
     public List<Class<?>> pluginClasses() {
-        for (String className: C.list(pluginBC.keySet())) {
+        for (String className : C.list(pluginBC.keySet())) {
             Class<?> c = loadOmsClass(className, true, true);
             assert null != c;
             pluginClasses.add(c);

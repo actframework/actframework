@@ -1,20 +1,20 @@
-/***
+/**
  * ASM: a very small and fast Java bytecode manipulation framework
  * Copyright (c) 2000-2011 INRIA, France Telecom
  * All rights reserved.
- *
+ * <p/>
  * Redistribution and use in srccode and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
  * 1. Redistributions of srccode code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
+ * notice, this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
+ * notice, this list of conditions and the following disclaimer in the
+ * documentation and/or other materials provided with the distribution.
  * 3. Neither the className of the copyright holders nor the names of its
- *    contributors may be used to endorse or promote products derived from
- *    this software without specific prior written permission.
- *
+ * contributors may be used to endorse or promote products derived from
+ * this software without specific prior written permission.
+ * <p/>
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -124,7 +124,7 @@ public final class TraceClassVisitor extends ClassVisitor {
      *            {@link Printer#getText()}, instead of printing it.
      */
     public TraceClassVisitor(final ClassVisitor cv, final Printer p,
-            final PrintWriter pw) {
+                             final PrintWriter pw) {
         super(Opcodes.ASM5, cv);
         this.pw = pw;
         this.p = p;
@@ -132,8 +132,8 @@ public final class TraceClassVisitor extends ClassVisitor {
 
     @Override
     public void visit(final int version, final int access, final String name,
-            final String signature, final String superName,
-            final String[] interfaces) {
+                      final String signature, final String superName,
+                      final String[] interfaces) {
         p.visit(version, access, name, signature, superName, interfaces);
         super.visit(version, access, name, signature, superName, interfaces);
     }
@@ -146,14 +146,14 @@ public final class TraceClassVisitor extends ClassVisitor {
 
     @Override
     public void visitOuterClass(final String owner, final String name,
-            final String desc) {
+                                final String desc) {
         p.visitOuterClass(owner, name, desc);
         super.visitOuterClass(owner, name, desc);
     }
 
     @Override
     public AnnotationVisitor visitAnnotation(final String desc,
-            final boolean visible) {
+                                             final boolean visible) {
         Printer p = this.p.visitClassAnnotation(desc, visible);
         AnnotationVisitor av = cv == null ? null : cv.visitAnnotation(desc,
                 visible);
@@ -162,7 +162,7 @@ public final class TraceClassVisitor extends ClassVisitor {
 
     @Override
     public AnnotationVisitor visitTypeAnnotation(int typeRef,
-            TypePath typePath, String desc, boolean visible) {
+                                                 TypePath typePath, String desc, boolean visible) {
         Printer p = this.p.visitClassTypeAnnotation(typeRef, typePath, desc,
                 visible);
         AnnotationVisitor av = cv == null ? null : cv.visitTypeAnnotation(
@@ -178,14 +178,14 @@ public final class TraceClassVisitor extends ClassVisitor {
 
     @Override
     public void visitInnerClass(final String name, final String outerName,
-            final String innerName, final int access) {
+                                final String innerName, final int access) {
         p.visitInnerClass(name, outerName, innerName, access);
         super.visitInnerClass(name, outerName, innerName, access);
     }
 
     @Override
     public FieldVisitor visitField(final int access, final String name,
-            final String desc, final String signature, final Object value) {
+                                   final String desc, final String signature, final Object value) {
         Printer p = this.p.visitField(access, name, desc, signature, value);
         FieldVisitor fv = cv == null ? null : cv.visitField(access, name, desc,
                 signature, value);
@@ -194,7 +194,7 @@ public final class TraceClassVisitor extends ClassVisitor {
 
     @Override
     public MethodVisitor visitMethod(final int access, final String name,
-            final String desc, final String signature, final String[] exceptions) {
+                                     final String desc, final String signature, final String[] exceptions) {
         Printer p = this.p.visitMethod(access, name, desc, signature,
                 exceptions);
         MethodVisitor mv = cv == null ? null : cv.visitMethod(access, name,

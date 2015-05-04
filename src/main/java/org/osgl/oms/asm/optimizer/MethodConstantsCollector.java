@@ -1,20 +1,20 @@
-/***
+/**
  * ASM: a very small and fast Java bytecode manipulation framework
  * Copyright (c) 2000-2011 INRIA, France Telecom
  * All rights reserved.
- *
+ * <p/>
  * Redistribution and use in srccode and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
  * 1. Redistributions of srccode code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
+ * notice, this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
+ * notice, this list of conditions and the following disclaimer in the
+ * documentation and/or other materials provided with the distribution.
  * 3. Neither the className of the copyright holders nor the names of its
- *    contributors may be used to endorse or promote products derived from
- *    this software without specific prior written permission.
- *
+ * contributors may be used to endorse or promote products derived from
+ * this software without specific prior written permission.
+ * <p/>
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -42,7 +42,7 @@ public class MethodConstantsCollector extends MethodVisitor {
     private final ConstantPool cp;
 
     public MethodConstantsCollector(final MethodVisitor mv,
-            final ConstantPool cp) {
+                                    final ConstantPool cp) {
         super(Opcodes.ASM5, mv);
         this.cp = cp;
     }
@@ -64,7 +64,7 @@ public class MethodConstantsCollector extends MethodVisitor {
 
     @Override
     public AnnotationVisitor visitAnnotation(final String desc,
-            final boolean visible) {
+                                             final boolean visible) {
         cp.newUTF8(desc);
         if (visible) {
             cp.newUTF8("RuntimeVisibleAnnotations");
@@ -77,7 +77,7 @@ public class MethodConstantsCollector extends MethodVisitor {
 
     @Override
     public AnnotationVisitor visitTypeAnnotation(int typeRef,
-            TypePath typePath, String desc, boolean visible) {
+                                                 TypePath typePath, String desc, boolean visible) {
         cp.newUTF8(desc);
         if (visible) {
             cp.newUTF8("RuntimeVisibleTypeAnnotations");
@@ -90,7 +90,7 @@ public class MethodConstantsCollector extends MethodVisitor {
 
     @Override
     public AnnotationVisitor visitParameterAnnotation(final int parameter,
-            final String desc, final boolean visible) {
+                                                      final String desc, final boolean visible) {
         cp.newUTF8(desc);
         if (visible) {
             cp.newUTF8("RuntimeVisibleParameterAnnotations");
@@ -109,21 +109,21 @@ public class MethodConstantsCollector extends MethodVisitor {
 
     @Override
     public void visitFieldInsn(final int opcode, final String owner,
-            final String name, final String desc) {
+                               final String name, final String desc) {
         cp.newField(owner, name, desc);
         mv.visitFieldInsn(opcode, owner, name, desc);
     }
 
     @Override
     public void visitMethodInsn(final int opcode, final String owner,
-            final String name, final String desc, final boolean itf) {
+                                final String name, final String desc, final boolean itf) {
         cp.newMethod(owner, name, desc, itf);
         mv.visitMethodInsn(opcode, owner, name, desc, itf);
     }
 
     @Override
     public void visitInvokeDynamicInsn(String name, String desc, Handle bsm,
-            Object... bsmArgs) {
+                                       Object... bsmArgs) {
         cp.newInvokeDynamic(name, desc, bsm, bsmArgs);
         mv.visitInvokeDynamicInsn(name, desc, bsm, bsmArgs);
     }
@@ -142,7 +142,7 @@ public class MethodConstantsCollector extends MethodVisitor {
 
     @Override
     public AnnotationVisitor visitInsnAnnotation(int typeRef,
-            TypePath typePath, String desc, boolean visible) {
+                                                 TypePath typePath, String desc, boolean visible) {
         cp.newUTF8(desc);
         if (visible) {
             cp.newUTF8("RuntimeVisibleTypeAnnotations");
@@ -155,7 +155,7 @@ public class MethodConstantsCollector extends MethodVisitor {
 
     @Override
     public void visitTryCatchBlock(final Label start, final Label end,
-            final Label handler, final String type) {
+                                   final Label handler, final String type) {
         if (type != null) {
             cp.newClass(type);
         }
@@ -164,7 +164,7 @@ public class MethodConstantsCollector extends MethodVisitor {
 
     @Override
     public AnnotationVisitor visitTryCatchAnnotation(int typeRef,
-            TypePath typePath, String desc, boolean visible) {
+                                                     TypePath typePath, String desc, boolean visible) {
         cp.newUTF8(desc);
         if (visible) {
             cp.newUTF8("RuntimeVisibleTypeAnnotations");
@@ -177,8 +177,8 @@ public class MethodConstantsCollector extends MethodVisitor {
 
     @Override
     public void visitLocalVariable(final String name, final String desc,
-            final String signature, final Label start, final Label end,
-            final int index) {
+                                   final String signature, final Label start, final Label end,
+                                   final int index) {
         if (signature != null) {
             cp.newUTF8("LocalVariableTypeTable");
             cp.newUTF8(name);
@@ -192,8 +192,8 @@ public class MethodConstantsCollector extends MethodVisitor {
 
     @Override
     public AnnotationVisitor visitLocalVariableAnnotation(int typeRef,
-            TypePath typePath, Label[] start, Label[] end, int[] index,
-            String desc, boolean visible) {
+                                                          TypePath typePath, Label[] start, Label[] end, int[] index,
+                                                          String desc, boolean visible) {
         cp.newUTF8(desc);
         if (visible) {
             cp.newUTF8("RuntimeVisibleTypeAnnotations");

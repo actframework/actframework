@@ -1,20 +1,20 @@
-/***
+/**
  * ASM XML Adapter
  * Copyright (c) 2004-2011, Eugene Kuleshov
  * All rights reserved.
- *
+ * <p/>
  * Redistribution and use in srccode and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
  * 1. Redistributions of srccode code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
+ * notice, this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
+ * notice, this list of conditions and the following disclaimer in the
+ * documentation and/or other materials provided with the distribution.
  * 3. Neither the className of the copyright holders nor the names of its
- *    contributors may be used to endorse or promote products derived from
- *    this software without specific prior written permission.
- *
+ * contributors may be used to endorse or promote products derived from
+ * this software without specific prior written permission.
+ * <p/>
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -43,7 +43,7 @@ import java.util.Map;
  * A {@link org.xml.sax.ContentHandler ContentHandler} that transforms XML
  * document into Java class file. This class can be feeded by any kind of SAX
  * 2.0 event producers, e.g. XML parser, XSLT or XPath engines, or custom code.
- * 
+ *
  * @see SAXClassAdapter
  * @see Processor
  *
@@ -75,6 +75,7 @@ public class ASMContentHandler extends DefaultHandler implements Opcodes {
     private static final String BASE = "class";
 
     private final RuleSet RULES = new RuleSet();
+
     {
         RULES.add(BASE, new ClassRule());
         RULES.add(BASE + "/interfaces/interface", new InterfaceRule());
@@ -146,6 +147,7 @@ public class ASMContentHandler extends DefaultHandler implements Opcodes {
      * Map of the opcode names to opcode and opcode group
      */
     static final HashMap<String, Opcode> OPCODES = new HashMap<String, Opcode>();
+
     static {
         addOpcode("NOP", NOP, OpcodeGroup.INSN);
         addOpcode("ACONST_NULL", ACONST_NULL, OpcodeGroup.INSN);
@@ -309,6 +311,7 @@ public class ASMContentHandler extends DefaultHandler implements Opcodes {
     }
 
     static final HashMap<String, Integer> TYPES = new HashMap<String, Integer>();
+
     static {
         String[] types = SAXCodeAdapter.TYPES;
         for (int i = 0; i < types.length; i++) {
@@ -318,7 +321,7 @@ public class ASMContentHandler extends DefaultHandler implements Opcodes {
 
     /**
      * Constructs a new {@link ASMContentHandler ASMContentHandler} object.
-     * 
+     *
      * @param cv
      *            class visitor that will be called to reconstruct the classfile
      *            using the XML stream.
@@ -329,7 +332,7 @@ public class ASMContentHandler extends DefaultHandler implements Opcodes {
 
     /**
      * Process notification of the start of an XML element being reached.
-     * 
+     *
      * @param ns
      *            - The Namespace URI, or the empty string if the element has no
      *            Namespace URI or if Namespace processing is not being
@@ -348,7 +351,7 @@ public class ASMContentHandler extends DefaultHandler implements Opcodes {
      */
     @Override
     public final void startElement(final String ns, final String lName,
-            final String qName, final Attributes list) throws SAXException {
+                                   final String qName, final Attributes list) throws SAXException {
         // the actual element className is either in lName or qName, depending
         // on whether the parser is namespace aware
         String name = lName == null || lName.length() == 0 ? qName : lName;
@@ -370,7 +373,7 @@ public class ASMContentHandler extends DefaultHandler implements Opcodes {
 
     /**
      * Process notification of the end of an XML element being reached.
-     * 
+     *
      * @param ns
      *            - The Namespace URI, or the empty string if the element has no
      *            Namespace URI or if Namespace processing is not being
@@ -381,13 +384,13 @@ public class ASMContentHandler extends DefaultHandler implements Opcodes {
      * @param qName
      *            - The qualified XML 1.0 className (with prefix), or the empty
      *            string if qualified names are not available.
-     * 
+     *
      * @exception org.xml.sax.SAXException
      *                if a parsing error is to be reported
      */
     @Override
     public final void endElement(final String ns, final String lName,
-            final String qName) throws SAXException {
+                                 final String qName) throws SAXException {
         // the actual element className is either in lName or qName, depending
         // on whether the parser is namespace aware
         String name = lName == null || lName.length() == 0 ? qName : lName;
@@ -410,7 +413,7 @@ public class ASMContentHandler extends DefaultHandler implements Opcodes {
     /**
      * Return the top object on the stack without removing it. If there are no
      * objects on the stack, return <code>null</code>.
-     * 
+     *
      * @return the top object on the stack without removing it.
      */
     final Object peek() {
@@ -421,7 +424,7 @@ public class ASMContentHandler extends DefaultHandler implements Opcodes {
     /**
      * Pop the top object off of the stack, and return it. If there are no
      * objects on the stack, return <code>null</code>.
-     * 
+     *
      * @return the top object off of the stack.
      */
     final Object pop() {
@@ -431,7 +434,7 @@ public class ASMContentHandler extends DefaultHandler implements Opcodes {
 
     /**
      * Push a new object onto the top of the object stack.
-     * 
+     *
      * @param object
      *            The new object
      */
@@ -465,14 +468,14 @@ public class ASMContentHandler extends DefaultHandler implements Opcodes {
             }
 
             int n = path.lastIndexOf('/');
-            for (Iterator<String> it = lpatterns.iterator(); it.hasNext();) {
+            for (Iterator<String> it = lpatterns.iterator(); it.hasNext(); ) {
                 String pattern = it.next();
                 if (path.substring(n).endsWith(pattern)) {
                     return rules.get(pattern);
                 }
             }
 
-            for (Iterator<String> it = rpatterns.iterator(); it.hasNext();) {
+            for (Iterator<String> it = rpatterns.iterator(); it.hasNext(); ) {
                 String pattern = it.next();
                 if (path.startsWith(pattern)) {
                     return rules.get(pattern);
@@ -1111,64 +1114,64 @@ public class ASMContentHandler extends DefaultHandler implements Opcodes {
             }
 
             switch (o.type) {
-            case OpcodeGroup.INSN:
-                getCodeVisitor().visitInsn(o.opcode);
-                break;
+                case OpcodeGroup.INSN:
+                    getCodeVisitor().visitInsn(o.opcode);
+                    break;
 
-            case OpcodeGroup.INSN_FIELD:
-                getCodeVisitor().visitFieldInsn(o.opcode,
-                        attrs.getValue("owner"), attrs.getValue("name"),
-                        attrs.getValue("desc"));
-                break;
+                case OpcodeGroup.INSN_FIELD:
+                    getCodeVisitor().visitFieldInsn(o.opcode,
+                            attrs.getValue("owner"), attrs.getValue("name"),
+                            attrs.getValue("desc"));
+                    break;
 
-            case OpcodeGroup.INSN_INT:
-                getCodeVisitor().visitIntInsn(o.opcode,
-                        Integer.parseInt(attrs.getValue("value")));
-                break;
+                case OpcodeGroup.INSN_INT:
+                    getCodeVisitor().visitIntInsn(o.opcode,
+                            Integer.parseInt(attrs.getValue("value")));
+                    break;
 
-            case OpcodeGroup.INSN_JUMP:
-                getCodeVisitor().visitJumpInsn(o.opcode,
-                        getLabel(attrs.getValue("label")));
-                break;
+                case OpcodeGroup.INSN_JUMP:
+                    getCodeVisitor().visitJumpInsn(o.opcode,
+                            getLabel(attrs.getValue("label")));
+                    break;
 
-            case OpcodeGroup.INSN_METHOD:
-                getCodeVisitor().visitMethodInsn(o.opcode,
-                        attrs.getValue("owner"), attrs.getValue("name"),
-                        attrs.getValue("desc"),
-                        attrs.getValue("itf").equals("true"));
-                break;
+                case OpcodeGroup.INSN_METHOD:
+                    getCodeVisitor().visitMethodInsn(o.opcode,
+                            attrs.getValue("owner"), attrs.getValue("name"),
+                            attrs.getValue("desc"),
+                            attrs.getValue("itf").equals("true"));
+                    break;
 
-            case OpcodeGroup.INSN_TYPE:
-                getCodeVisitor()
-                        .visitTypeInsn(o.opcode, attrs.getValue("desc"));
-                break;
+                case OpcodeGroup.INSN_TYPE:
+                    getCodeVisitor()
+                            .visitTypeInsn(o.opcode, attrs.getValue("desc"));
+                    break;
 
-            case OpcodeGroup.INSN_VAR:
-                getCodeVisitor().visitVarInsn(o.opcode,
-                        Integer.parseInt(attrs.getValue("var")));
-                break;
+                case OpcodeGroup.INSN_VAR:
+                    getCodeVisitor().visitVarInsn(o.opcode,
+                            Integer.parseInt(attrs.getValue("var")));
+                    break;
 
-            case OpcodeGroup.INSN_IINC:
-                getCodeVisitor().visitIincInsn(
-                        Integer.parseInt(attrs.getValue("var")),
-                        Integer.parseInt(attrs.getValue("inc")));
-                break;
+                case OpcodeGroup.INSN_IINC:
+                    getCodeVisitor().visitIincInsn(
+                            Integer.parseInt(attrs.getValue("var")),
+                            Integer.parseInt(attrs.getValue("inc")));
+                    break;
 
-            case OpcodeGroup.INSN_LDC:
-                getCodeVisitor()
-                        .visitLdcInsn(
-                                getValue(attrs.getValue("desc"),
-                                        attrs.getValue("cst")));
-                break;
+                case OpcodeGroup.INSN_LDC:
+                    getCodeVisitor()
+                            .visitLdcInsn(
+                                    getValue(attrs.getValue("desc"),
+                                            attrs.getValue("cst")));
+                    break;
 
-            case OpcodeGroup.INSN_MULTIANEWARRAY:
-                getCodeVisitor().visitMultiANewArrayInsn(
-                        attrs.getValue("desc"),
-                        Integer.parseInt(attrs.getValue("dims")));
-                break;
+                case OpcodeGroup.INSN_MULTIANEWARRAY:
+                    getCodeVisitor().visitMultiANewArrayInsn(
+                            attrs.getValue("desc"),
+                            Integer.parseInt(attrs.getValue("dims")));
+                    break;
 
-            default:
-                throw new Error("Internal error");
+                default:
+                    throw new Error("Internal error");
 
             }
         }

@@ -1,20 +1,20 @@
-/***
+/**
  * ASM: a very small and fast Java bytecode manipulation framework
  * Copyright (c) 2000-2011 INRIA, France Telecom
  * All rights reserved.
- *
+ * <p/>
  * Redistribution and use in srccode and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
  * 1. Redistributions of srccode code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
+ * notice, this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
+ * notice, this list of conditions and the following disclaimer in the
+ * documentation and/or other materials provided with the distribution.
  * 3. Neither the className of the copyright holders nor the names of its
- *    contributors may be used to endorse or promote products derived from
- *    this software without specific prior written permission.
- *
+ * contributors may be used to endorse or promote products derived from
+ * this software without specific prior written permission.
+ * <p/>
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -106,26 +106,26 @@ public class FrameNode extends AbstractInsnNode {
      *            types respectively - see {@link org.osgl.oms.asm.MethodVisitor}).
      */
     public FrameNode(final int type, final int nLocal, final Object[] local,
-            final int nStack, final Object[] stack) {
+                     final int nStack, final Object[] stack) {
         super(-1);
         this.type = type;
         switch (type) {
-        case Opcodes.F_NEW:
-        case Opcodes.F_FULL:
-            this.local = asList(nLocal, local);
-            this.stack = asList(nStack, stack);
-            break;
-        case Opcodes.F_APPEND:
-            this.local = asList(nLocal, local);
-            break;
-        case Opcodes.F_CHOP:
-            this.local = Arrays.asList(new Object[nLocal]);
-            break;
-        case Opcodes.F_SAME:
-            break;
-        case Opcodes.F_SAME1:
-            this.stack = asList(1, stack);
-            break;
+            case Opcodes.F_NEW:
+            case Opcodes.F_FULL:
+                this.local = asList(nLocal, local);
+                this.stack = asList(nStack, stack);
+                break;
+            case Opcodes.F_APPEND:
+                this.local = asList(nLocal, local);
+                break;
+            case Opcodes.F_CHOP:
+                this.local = Arrays.asList(new Object[nLocal]);
+                break;
+            case Opcodes.F_SAME:
+                break;
+            case Opcodes.F_SAME1:
+                this.stack = asList(1, stack);
+                break;
         }
     }
 
@@ -143,23 +143,23 @@ public class FrameNode extends AbstractInsnNode {
     @Override
     public void accept(final MethodVisitor mv) {
         switch (type) {
-        case Opcodes.F_NEW:
-        case Opcodes.F_FULL:
-            mv.visitFrame(type, local.size(), asArray(local), stack.size(),
-                    asArray(stack));
-            break;
-        case Opcodes.F_APPEND:
-            mv.visitFrame(type, local.size(), asArray(local), 0, null);
-            break;
-        case Opcodes.F_CHOP:
-            mv.visitFrame(type, local.size(), null, 0, null);
-            break;
-        case Opcodes.F_SAME:
-            mv.visitFrame(type, 0, null, 0, null);
-            break;
-        case Opcodes.F_SAME1:
-            mv.visitFrame(type, 0, null, 1, asArray(stack));
-            break;
+            case Opcodes.F_NEW:
+            case Opcodes.F_FULL:
+                mv.visitFrame(type, local.size(), asArray(local), stack.size(),
+                        asArray(stack));
+                break;
+            case Opcodes.F_APPEND:
+                mv.visitFrame(type, local.size(), asArray(local), 0, null);
+                break;
+            case Opcodes.F_CHOP:
+                mv.visitFrame(type, local.size(), null, 0, null);
+                break;
+            case Opcodes.F_SAME:
+                mv.visitFrame(type, 0, null, 0, null);
+                break;
+            case Opcodes.F_SAME1:
+                mv.visitFrame(type, 0, null, 1, asArray(stack));
+                break;
         }
     }
 

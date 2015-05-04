@@ -20,13 +20,13 @@ public interface ProjectLayout {
      * {@link ProjectLayout.PredefinedLayout predefined layouts}:
      * </p>
      * <ul>
-     *     <li>{@link ProjectLayout.PredefinedLayout#MAVEN maven} or</li>
-     *     <li>{@link ProjectLayout.PredefinedLayout#PLAY play}</li>
+     * <li>{@link ProjectLayout.PredefinedLayout#MAVEN maven} or</li>
+     * <li>{@link ProjectLayout.PredefinedLayout#PLAY play}</li>
      * </ul>
      */
     public static final String PROJ_LAYOUT_FILE = "proj.layout";
 
-    public static  enum PredefinedLayout implements ProjectLayout {
+    public static enum PredefinedLayout implements ProjectLayout {
         /**
          * The standard maven style project layout looks like:
          * <pre>
@@ -121,8 +121,7 @@ public interface ProjectLayout {
             public File target(File appBase) {
                 return new File(appBase, "tmp");
             }
-        },
-        ;
+        },;
 
         @Override
         public File conf(File appBase) {
@@ -155,6 +154,7 @@ public interface ProjectLayout {
     /**
      * Returns Resource files root in relation to the
      * {@code appBase} specified
+     *
      * @param appBase
      * @return
      */
@@ -198,7 +198,8 @@ public interface ProjectLayout {
 
         /**
          * check if a dir is application base as per given project layout
-         * @param dir the folder to be probed
+         *
+         * @param dir    the folder to be probed
          * @param layout the project layout used to probe the folder
          * @return {@code true if the folder is app base as per given project layout}
          */
@@ -217,6 +218,7 @@ public interface ProjectLayout {
          * conf=src/main/resources/conf
          * target=tmp
          * </pre>
+         *
          * @param p
          * @return a ProjectLayout instance
          */

@@ -10,7 +10,7 @@ import org.osgl.oms.handler.RequestHandler;
 import org.osgl.oms.route.Router;
 import org.osgl.util.E;
 
-public class NetworkClient extends _.F1<AppContext, Void>{
+public class NetworkClient extends _.F1<AppContext, Void> {
     private App app;
 
     public NetworkClient(App app) {

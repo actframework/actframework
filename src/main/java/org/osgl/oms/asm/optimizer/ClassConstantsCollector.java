@@ -1,20 +1,20 @@
-/***
+/**
  * ASM: a very small and fast Java bytecode manipulation framework
  * Copyright (c) 2000-2011 INRIA, France Telecom
  * All rights reserved.
- *
+ * <p/>
  * Redistribution and use in srccode and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
  * 1. Redistributions of srccode code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
+ * notice, this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
+ * notice, this list of conditions and the following disclaimer in the
+ * documentation and/or other materials provided with the distribution.
  * 3. Neither the className of the copyright holders nor the names of its
- *    contributors may be used to endorse or promote products derived from
- *    this software without specific prior written permission.
- *
+ * contributors may be used to endorse or promote products derived from
+ * this software without specific prior written permission.
+ * <p/>
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -48,8 +48,8 @@ public class ClassConstantsCollector extends ClassVisitor {
 
     @Override
     public void visit(final int version, final int access, final String name,
-            final String signature, final String superName,
-            final String[] interfaces) {
+                      final String signature, final String superName,
+                      final String[] interfaces) {
         if ((access & Opcodes.ACC_DEPRECATED) != 0) {
             cp.newUTF8("Deprecated");
         }
@@ -86,7 +86,7 @@ public class ClassConstantsCollector extends ClassVisitor {
 
     @Override
     public void visitOuterClass(final String owner, final String name,
-            final String desc) {
+                                final String desc) {
         cp.newUTF8("EnclosingMethod");
         cp.newClass(owner);
         if (name != null && desc != null) {
@@ -97,7 +97,7 @@ public class ClassConstantsCollector extends ClassVisitor {
 
     @Override
     public AnnotationVisitor visitAnnotation(final String desc,
-            final boolean visible) {
+                                             final boolean visible) {
         cp.newUTF8(desc);
         if (visible) {
             cp.newUTF8("RuntimeVisibleAnnotations");
@@ -110,7 +110,7 @@ public class ClassConstantsCollector extends ClassVisitor {
 
     @Override
     public AnnotationVisitor visitTypeAnnotation(int typeRef,
-            TypePath typePath, String desc, boolean visible) {
+                                                 TypePath typePath, String desc, boolean visible) {
         cp.newUTF8(desc);
         if (visible) {
             cp.newUTF8("RuntimeVisibleTypeAnnotations");
@@ -129,7 +129,7 @@ public class ClassConstantsCollector extends ClassVisitor {
 
     @Override
     public void visitInnerClass(final String name, final String outerName,
-            final String innerName, final int access) {
+                                final String innerName, final int access) {
         cp.newUTF8("InnerClasses");
         if (name != null) {
             cp.newClass(name);
@@ -145,7 +145,7 @@ public class ClassConstantsCollector extends ClassVisitor {
 
     @Override
     public FieldVisitor visitField(final int access, final String name,
-            final String desc, final String signature, final Object value) {
+                                   final String desc, final String signature, final Object value) {
         if ((access & Opcodes.ACC_SYNTHETIC) != 0) {
             cp.newUTF8("Synthetic");
         }
@@ -167,7 +167,7 @@ public class ClassConstantsCollector extends ClassVisitor {
 
     @Override
     public MethodVisitor visitMethod(final int access, final String name,
-            final String desc, final String signature, final String[] exceptions) {
+                                     final String desc, final String signature, final String[] exceptions) {
         if ((access & Opcodes.ACC_SYNTHETIC) != 0) {
             cp.newUTF8("Synthetic");
         }

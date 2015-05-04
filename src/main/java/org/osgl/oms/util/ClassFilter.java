@@ -12,6 +12,7 @@ public abstract class ClassFilter<T> {
      * Once a class has been found as per the requirements
      * of this class filter, OMS will load the class and call
      * this method on this filter instance
+     *
      * @param clazz the class instance been found
      */
     public abstract void found(Class<? extends T> clazz);

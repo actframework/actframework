@@ -187,7 +187,9 @@ public class Source {
                 ca[i] = tokens.nextToken().toCharArray();
             }
             return ca;
-        };
+        }
+
+        ;
 
         @Override
         public boolean ignoreOptionalProblems() {
@@ -217,6 +219,7 @@ public class Source {
 
     public static enum Util {
         ;
+
         public static String className(File sourceRoot, File file) {
             return ClassNames.sourceFileNameToClassName(sourceRoot, file.getAbsolutePath());
         }

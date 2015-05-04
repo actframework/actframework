@@ -1,20 +1,20 @@
-/***
+/**
  * ASM: a very small and fast Java bytecode manipulation framework
  * Copyright (c) 2000-2011 INRIA, France Telecom
  * All rights reserved.
- *
+ * <p/>
  * Redistribution and use in srccode and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
  * 1. Redistributions of srccode code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
+ * notice, this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
+ * notice, this list of conditions and the following disclaimer in the
+ * documentation and/or other materials provided with the distribution.
  * 3. Neither the className of the copyright holders nor the names of its
- *    contributors may be used to endorse or promote products derived from
- *    this software without specific prior written permission.
- *
+ * contributors may be used to endorse or promote products derived from
+ * this software without specific prior written permission.
+ * <p/>
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -32,7 +32,7 @@ package org.osgl.oms.asm.signature;
 /**
  * A type signature parser to make a signature visitor visit an existing
  * signature.
- * 
+ *
  * @author Thomas Hallgren
  * @author Eric Bruneton
  */
@@ -45,7 +45,7 @@ public class SignatureReader {
 
     /**
      * Constructs a {@link SignatureReader} for the given signature.
-     * 
+     *
      * @param signature
      *            A <i>ClassSignature</i>, <i>MethodTypeSignature</i>, or
      *            <i>FieldTypeSignature</i>.
@@ -65,7 +65,7 @@ public class SignatureReader {
      * <code>signature</code> parameter of the
      * {@link org.osgl.oms.asm.ClassVisitor#visitMethod
      * ClassVisitor.visitMethod} method).
-     * 
+     *
      * @param v
      *            the visitor that must visit this signature.
      */
@@ -142,87 +142,88 @@ public class SignatureReader {
      * @return the index of the first character after the parsed signature.
      */
     private static int parseType(final String signature, int pos,
-            final SignatureVisitor v) {
+                                 final SignatureVisitor v) {
         char c;
         int start, end;
         boolean visited, inner;
         String name;
 
         switch (c = signature.charAt(pos++)) {
-        case 'Z':
-        case 'C':
-        case 'B':
-        case 'S':
-        case 'I':
-        case 'F':
-        case 'J':
-        case 'D':
-        case 'V':
-            v.visitBaseType(c);
-            return pos;
+            case 'Z':
+            case 'C':
+            case 'B':
+            case 'S':
+            case 'I':
+            case 'F':
+            case 'J':
+            case 'D':
+            case 'V':
+                v.visitBaseType(c);
+                return pos;
 
-        case '[':
-            return parseType(signature, pos, v.visitArrayType());
+            case '[':
+                return parseType(signature, pos, v.visitArrayType());
 
-        case 'T':
-            end = signature.indexOf(';', pos);
-            v.visitTypeVariable(signature.substring(pos, end));
-            return end + 1;
+            case 'T':
+                end = signature.indexOf(';', pos);
+                v.visitTypeVariable(signature.substring(pos, end));
+                return end + 1;
 
-        default: // case 'L':
-            start = pos;
-            visited = false;
-            inner = false;
-            for (;;) {
-                switch (c = signature.charAt(pos++)) {
-                case '.':
-                case ';':
-                    if (!visited) {
-                        name = signature.substring(start, pos - 1);
-                        if (inner) {
-                            v.visitInnerClassType(name);
-                        } else {
-                            v.visitClassType(name);
-                        }
-                    }
-                    if (c == ';') {
-                        v.visitEnd();
-                        return pos;
-                    }
-                    start = pos;
-                    visited = false;
-                    inner = true;
-                    break;
-
-                case '<':
-                    name = signature.substring(start, pos - 1);
-                    if (inner) {
-                        v.visitInnerClassType(name);
-                    } else {
-                        v.visitClassType(name);
-                    }
-                    visited = true;
-                    top: for (;;) {
-                        switch (c = signature.charAt(pos)) {
-                        case '>':
-                            break top;
-                        case '*':
-                            ++pos;
-                            v.visitTypeArgument();
+            default: // case 'L':
+                start = pos;
+                visited = false;
+                inner = false;
+                for (; ; ) {
+                    switch (c = signature.charAt(pos++)) {
+                        case '.':
+                        case ';':
+                            if (!visited) {
+                                name = signature.substring(start, pos - 1);
+                                if (inner) {
+                                    v.visitInnerClassType(name);
+                                } else {
+                                    v.visitClassType(name);
+                                }
+                            }
+                            if (c == ';') {
+                                v.visitEnd();
+                                return pos;
+                            }
+                            start = pos;
+                            visited = false;
+                            inner = true;
                             break;
-                        case '+':
-                        case '-':
-                            pos = parseType(signature, pos + 1,
-                                    v.visitTypeArgument(c));
-                            break;
-                        default:
-                            pos = parseType(signature, pos,
-                                    v.visitTypeArgument('='));
-                            break;
-                        }
+
+                        case '<':
+                            name = signature.substring(start, pos - 1);
+                            if (inner) {
+                                v.visitInnerClassType(name);
+                            } else {
+                                v.visitClassType(name);
+                            }
+                            visited = true;
+                            top:
+                            for (; ; ) {
+                                switch (c = signature.charAt(pos)) {
+                                    case '>':
+                                        break top;
+                                    case '*':
+                                        ++pos;
+                                        v.visitTypeArgument();
+                                        break;
+                                    case '+':
+                                    case '-':
+                                        pos = parseType(signature, pos + 1,
+                                                v.visitTypeArgument(c));
+                                        break;
+                                    default:
+                                        pos = parseType(signature, pos,
+                                                v.visitTypeArgument('='));
+                                        break;
+                                }
+                            }
                     }
                 }
-            }
         }
     }
 }

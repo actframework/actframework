@@ -65,8 +65,7 @@ public class StaticFileGetter extends RequestHandlerBase {
         return H.Format.valueOfIgnoreCase(s.toString());
     }
 
-    private InputStream inputStream(String path) {
-        //TODO use resource manager
+    protected InputStream inputStream(String path) {
         return StaticFileGetter.class.getResourceAsStream(path);
     }
 
@@ -74,4 +73,5 @@ public class StaticFileGetter extends RequestHandlerBase {
     public boolean supportPartialPath() {
         return !baseIsFile;
     }
+
 }

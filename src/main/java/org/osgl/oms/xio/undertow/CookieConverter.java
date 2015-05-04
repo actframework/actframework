@@ -7,6 +7,7 @@ import java.util.Date;
 
 public enum CookieConverter {
     ;
+
     public static H.Cookie undertow2osgl(Cookie uc) {
         H.Cookie c = new H.Cookie(uc.getName(), uc.getValue());
         c.domain(uc.getDomain()).httpOnly(uc.isHttpOnly())

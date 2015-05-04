@@ -8,6 +8,7 @@ public class ReturnTypeInfo {
     private ReturnTypeInfo() {
         this(Type.VOID_TYPE);
     }
+
     private ReturnTypeInfo(Type type) {
         this.type = null == type ? Type.VOID_TYPE : type;
     }

@@ -147,6 +147,7 @@ class SourceCodeActionScanner {
         String path;
         String action;
         H.Method[] methods;
+
         RouteInfo(String path, String action, H.Method[] methods) {
             this.path = path;
             this.action = action;

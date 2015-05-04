@@ -42,7 +42,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo>
     private AppContextInjection ctxInjection;
     private Class[] paramTypes;
     protected Method method; //
-    protected  _.F2<AppContext, Object, ?> fieldAppCtxHandler;
+    protected _.F2<AppContext, Object, ?> fieldAppCtxHandler;
 
     protected ReflectedHandlerInvoker(M handlerMetaInfo, App app) {
         this.cl = app.classLoader();
@@ -211,6 +211,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo>
 
     private static class _Before extends BeforeInterceptor {
         private ActionHandlerInvoker invoker;
+
         _Before(ActionHandlerInvoker invoker) {
             super(invoker.priority());
             this.invoker = invoker;
@@ -224,6 +225,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo>
 
     private static class _After extends AfterInterceptor {
         private AfterInterceptorInvoker invoker;
+
         _After(AfterInterceptorInvoker invoker) {
             super(invoker.priority());
             this.invoker = invoker;
@@ -237,6 +239,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo>
 
     private static class _Exception extends ExceptionInterceptor {
         private ExceptionInterceptorInvoker invoker;
+
         _Exception(ExceptionInterceptorInvoker invoker) {
             super(invoker.priority());
             this.invoker = invoker;
@@ -250,6 +253,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo>
 
     private static class _Finally extends FinallyInterceptor {
         private ActionHandlerInvoker invoker;
+
         _Finally(ActionHandlerInvoker invoker) {
             super(invoker.priority());
             this.invoker = invoker;

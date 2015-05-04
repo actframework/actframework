@@ -7,7 +7,10 @@ import java.util.List;
  */
 public interface SourceInfo {
     String fileName();
+
     List<String> lines();
+
     Integer lineNumber();
+
     boolean isSourceAvailable();
 }

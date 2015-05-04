@@ -1,7 +1,9 @@
 package org.osgl.oms.controller;
 
-import org.osgl.oms.asm.*;
-import org.osgl.oms.conf.Config;
+import org.osgl.oms.asm.ClassVisitor;
+import org.osgl.oms.asm.FieldVisitor;
+import org.osgl.oms.asm.MethodVisitor;
+import org.osgl.oms.asm.Type;
 import org.osgl.oms.util.AsmTypes;
 import org.osgl.oms.util.BytecodeVisitor;
 
@@ -10,7 +12,8 @@ public class ControllerClassEnhancer extends BytecodeVisitor {
     protected String className;
     private boolean isAbstract;
 
-    public ControllerClassEnhancer() {}
+    public ControllerClassEnhancer() {
+    }
 
     public ControllerClassEnhancer(ClassVisitor cv) {
         super(cv);
@@ -18,8 +21,8 @@ public class ControllerClassEnhancer extends BytecodeVisitor {
 
     @Override
     public void visit(final int version, final int access, final String name,
-            final String signature, final String superName,
-            final String[] interfaces) {
+                      final String signature, final String superName,
+                      final String[] interfaces) {
         className = name;
         isAbstract = isAbstract(access);
         super.visit(version, access, name, signature, superName, interfaces);
@@ -32,7 +35,7 @@ public class ControllerClassEnhancer extends BytecodeVisitor {
 
     @Override
     public MethodVisitor visitMethod(int access, String name, String desc,
-                                     String signature, String[] exceptions ) {
+                                     String signature, String[] exceptions) {
         MethodVisitor mv = super.visitMethod(access, name, desc, signature, exceptions);
         if (shouldSkip(access, name, desc)) {
             return mv;

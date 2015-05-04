@@ -5,6 +5,8 @@ package org.osgl.oms.xio;
  */
 public interface NetworkService {
     void register(int port, NetworkClient client);
+
     void start();
+
     void shutdown();
 }

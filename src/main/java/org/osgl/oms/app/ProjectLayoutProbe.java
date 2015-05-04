@@ -15,9 +15,10 @@ public abstract class ProjectLayoutProbe implements Plugin {
 
     /**
      * Check if the given folder contains an application with certain layout
+     *
      * @param appBase the folder supposed to be an application's base
      * @return a {@link ProjectLayout} of the app base or
-     *      {@code null} if can't figure out the project layout
+     * {@code null} if can't figure out the project layout
      */
     public abstract ProjectLayout probe(File appBase);
 

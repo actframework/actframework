@@ -24,7 +24,7 @@ public class OmsConfig extends Config<OmsConfigKey> {
     }
 
     public OmsConfig() {
-        this((Map)System.getProperties());
+        this((Map) System.getProperties());
     }
 
     @Override
@@ -33,6 +33,7 @@ public class OmsConfig extends Config<OmsConfigKey> {
     }
 
     private File home = null;
+
     public File home() {
         if (null == home) {
             URI uri = get(HOME);
@@ -46,6 +47,7 @@ public class OmsConfig extends Config<OmsConfigKey> {
     }
 
     private File appBase = null;
+
     public File appBase() {
         if (null == appBase) {
             String s = get(APP_BASE);

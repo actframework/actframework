@@ -119,13 +119,14 @@ public class GroupInterceptorMetaInfo {
 
     private static enum _F {
         ;
+
         static _.Visitor<InterceptorMethodMetaInfo> mergeInto(final C.List<InterceptorMethodMetaInfo> toList, final String actionName) {
-          return new _.Visitor<InterceptorMethodMetaInfo>() {
-              @Override
-              public void visit(InterceptorMethodMetaInfo info) throws _.Break {
-                  info.mergeInto(toList, actionName);
-              }
-          };
+            return new _.Visitor<InterceptorMethodMetaInfo>() {
+                @Override
+                public void visit(InterceptorMethodMetaInfo info) throws _.Break {
+                    info.mergeInto(toList, actionName);
+                }
+            };
         }
     }
 }

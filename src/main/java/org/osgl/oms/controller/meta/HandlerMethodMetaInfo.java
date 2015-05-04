@@ -203,7 +203,7 @@ public abstract class HandlerMethodMetaInfo<T extends HandlerMethodMetaInfo> imp
     }
 
     private T me() {
-        return (T)this;
+        return (T) this;
     }
 
 }

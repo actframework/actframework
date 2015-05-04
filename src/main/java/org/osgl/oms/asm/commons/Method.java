@@ -1,20 +1,20 @@
-/***
+/**
  * ASM: a very small and fast Java bytecode manipulation framework
  * Copyright (c) 2000-2011 INRIA, France Telecom
  * All rights reserved.
- *
+ * <p/>
  * Redistribution and use in srccode and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
  * 1. Redistributions of srccode code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
+ * notice, this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
+ * notice, this list of conditions and the following disclaimer in the
+ * documentation and/or other materials provided with the distribution.
  * 3. Neither the className of the copyright holders nor the names of its
- *    contributors may be used to endorse or promote products derived from
- *    this software without specific prior written permission.
- *
+ * contributors may be used to endorse or promote products derived from
+ * this software without specific prior written permission.
+ * <p/>
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -36,7 +36,7 @@ import java.util.Map;
 
 /**
  * A named method descriptor.
- * 
+ *
  * @author Juozas Baliuka
  * @author Chris Nokleberg
  * @author Eric Bruneton
@@ -73,7 +73,7 @@ public class Method {
 
     /**
      * Creates a new {@link Method}.
-     * 
+     *
      * @param name
      *            the method's className.
      * @param desc
@@ -86,7 +86,7 @@ public class Method {
 
     /**
      * Creates a new {@link Method}.
-     * 
+     *
      * @param name
      *            the method's className.
      * @param returnType
@@ -95,13 +95,13 @@ public class Method {
      *            the method's argument types.
      */
     public Method(final String name, final Type returnType,
-            final Type[] argumentTypes) {
+                  final Type[] argumentTypes) {
         this(name, Type.getMethodDescriptor(returnType, argumentTypes));
     }
 
     /**
      * Creates a new {@link Method}.
-     * 
+     *
      * @param m
      *            a java.lang.reflect method descriptor
      * @return a {@link Method} corresponding to the given Java method
@@ -113,7 +113,7 @@ public class Method {
 
     /**
      * Creates a new {@link Method}.
-     * 
+     *
      * @param c
      *            a java.lang.reflect constructor descriptor
      * @return a {@link Method} corresponding to the given Java constructor
@@ -126,7 +126,7 @@ public class Method {
     /**
      * Returns a {@link Method} corresponding to the given Java method
      * declaration.
-     * 
+     *
      * @param method
      *            a Java method declaration, without argument names, of the form
      *            "returnType className (argumentType1, ... argumentTypeN)", where
@@ -147,7 +147,7 @@ public class Method {
     /**
      * Returns a {@link Method} corresponding to the given Java method
      * declaration.
-     * 
+     *
      * @param method
      *            a Java method declaration, without argument names, of the form
      *            "returnType className (argumentType1, ... argumentTypeN)", where
@@ -167,7 +167,7 @@ public class Method {
      *             if <code>method</code> could not get parsed.
      */
     public static Method getMethod(final String method,
-            final boolean defaultPackage) throws IllegalArgumentException {
+                                   final boolean defaultPackage) throws IllegalArgumentException {
         int space = method.indexOf(' ');
         int start = method.indexOf('(', space) + 1;
         int end = method.indexOf(')', start);
@@ -227,7 +227,7 @@ public class Method {
 
     /**
      * Returns the className of the method described by this object.
-     * 
+     *
      * @return the className of the method described by this object.
      */
     public String getName() {
@@ -236,7 +236,7 @@ public class Method {
 
     /**
      * Returns the descriptor of the method described by this object.
-     * 
+     *
      * @return the descriptor of the method described by this object.
      */
     public String getDescriptor() {
@@ -245,7 +245,7 @@ public class Method {
 
     /**
      * Returns the return type of the method described by this object.
-     * 
+     *
      * @return the return type of the method described by this object.
      */
     public Type getReturnType() {
@@ -254,7 +254,7 @@ public class Method {
 
     /**
      * Returns the argument types of the method described by this object.
-     * 
+     *
      * @return the argument types of the method described by this object.
      */
     public Type[] getArgumentTypes() {

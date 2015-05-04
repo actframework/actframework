@@ -6,15 +6,12 @@ import org.osgl.logging.L;
 import org.osgl.logging.Logger;
 import org.osgl.oms.OmsException;
 import org.osgl.util.C;
-import org.osgl.util.E;
 
 import java.io.File;
 import java.util.Map;
 import java.util.Set;
 
-import static org.osgl.oms.util.FsEvent.Kind.CREATE;
-import static org.osgl.oms.util.FsEvent.Kind.DELETE;
-import static org.osgl.oms.util.FsEvent.Kind.MODIFY;
+import static org.osgl.oms.util.FsEvent.Kind.*;
 
 /**
  * {@code FsChangeDetector} detects changes files in a folder and all sub folders.
@@ -41,7 +38,7 @@ public class FsChangeDetector {
     }
 
 
-    public FsChangeDetector(File file, _.Predicate<String> fileNameFilter, FsEventListener ... listeners) {
+    public FsChangeDetector(File file, _.Predicate<String> fileNameFilter, FsEventListener... listeners) {
         this(file, fileNameFilter);
         this.listeners.append(C.listOf(listeners));
     }

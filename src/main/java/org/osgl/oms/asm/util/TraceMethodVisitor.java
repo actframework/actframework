@@ -1,20 +1,20 @@
-/***
+/**
  * ASM: a very small and fast Java bytecode manipulation framework
  * Copyright (c) 2000-2011 INRIA, France Telecom
  * All rights reserved.
- *
+ * <p/>
  * Redistribution and use in srccode and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
  * 1. Redistributions of srccode code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
+ * notice, this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
+ * notice, this list of conditions and the following disclaimer in the
+ * documentation and/or other materials provided with the distribution.
  * 3. Neither the className of the copyright holders nor the names of its
- *    contributors may be used to endorse or promote products derived from
- *    this software without specific prior written permission.
- *
+ * contributors may be used to endorse or promote products derived from
+ * this software without specific prior written permission.
+ * <p/>
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -58,7 +58,7 @@ public final class TraceMethodVisitor extends MethodVisitor {
 
     @Override
     public AnnotationVisitor visitAnnotation(final String desc,
-            final boolean visible) {
+                                             final boolean visible) {
         Printer p = this.p.visitMethodAnnotation(desc, visible);
         AnnotationVisitor av = mv == null ? null : mv.visitAnnotation(desc,
                 visible);
@@ -67,7 +67,7 @@ public final class TraceMethodVisitor extends MethodVisitor {
 
     @Override
     public AnnotationVisitor visitTypeAnnotation(int typeRef,
-            TypePath typePath, String desc, boolean visible) {
+                                                 TypePath typePath, String desc, boolean visible) {
         Printer p = this.p.visitMethodTypeAnnotation(typeRef, typePath, desc,
                 visible);
         AnnotationVisitor av = mv == null ? null : mv.visitTypeAnnotation(
@@ -90,7 +90,7 @@ public final class TraceMethodVisitor extends MethodVisitor {
 
     @Override
     public AnnotationVisitor visitParameterAnnotation(final int parameter,
-            final String desc, final boolean visible) {
+                                                      final String desc, final boolean visible) {
         Printer p = this.p.visitParameterAnnotation(parameter, desc, visible);
         AnnotationVisitor av = mv == null ? null : mv.visitParameterAnnotation(
                 parameter, desc, visible);
@@ -105,7 +105,7 @@ public final class TraceMethodVisitor extends MethodVisitor {
 
     @Override
     public void visitFrame(final int type, final int nLocal,
-            final Object[] local, final int nStack, final Object[] stack) {
+                           final Object[] local, final int nStack, final Object[] stack) {
         p.visitFrame(type, nLocal, local, nStack, stack);
         super.visitFrame(type, nLocal, local, nStack, stack);
     }
@@ -136,7 +136,7 @@ public final class TraceMethodVisitor extends MethodVisitor {
 
     @Override
     public void visitFieldInsn(final int opcode, final String owner,
-            final String name, final String desc) {
+                               final String name, final String desc) {
         p.visitFieldInsn(opcode, owner, name, desc);
         super.visitFieldInsn(opcode, owner, name, desc);
     }
@@ -144,7 +144,7 @@ public final class TraceMethodVisitor extends MethodVisitor {
     @Deprecated
     @Override
     public void visitMethodInsn(int opcode, String owner, String name,
-            String desc) {
+                                String desc) {
         if (api >= Opcodes.ASM5) {
             super.visitMethodInsn(opcode, owner, name, desc);
             return;
@@ -157,7 +157,7 @@ public final class TraceMethodVisitor extends MethodVisitor {
 
     @Override
     public void visitMethodInsn(int opcode, String owner, String name,
-            String desc, boolean itf) {
+                                String desc, boolean itf) {
         if (api < Opcodes.ASM5) {
             super.visitMethodInsn(opcode, owner, name, desc, itf);
             return;
@@ -170,7 +170,7 @@ public final class TraceMethodVisitor extends MethodVisitor {
 
     @Override
     public void visitInvokeDynamicInsn(String name, String desc, Handle bsm,
-            Object... bsmArgs) {
+                                       Object... bsmArgs) {
         p.visitInvokeDynamicInsn(name, desc, bsm, bsmArgs);
         super.visitInvokeDynamicInsn(name, desc, bsm, bsmArgs);
     }
@@ -201,14 +201,14 @@ public final class TraceMethodVisitor extends MethodVisitor {
 
     @Override
     public void visitTableSwitchInsn(final int min, final int max,
-            final Label dflt, final Label... labels) {
+                                     final Label dflt, final Label... labels) {
         p.visitTableSwitchInsn(min, max, dflt, labels);
         super.visitTableSwitchInsn(min, max, dflt, labels);
     }
 
     @Override
     public void visitLookupSwitchInsn(final Label dflt, final int[] keys,
-            final Label[] labels) {
+                                      final Label[] labels) {
         p.visitLookupSwitchInsn(dflt, keys, labels);
         super.visitLookupSwitchInsn(dflt, keys, labels);
     }
@@ -221,7 +221,7 @@ public final class TraceMethodVisitor extends MethodVisitor {
 
     @Override
     public AnnotationVisitor visitInsnAnnotation(int typeRef,
-            TypePath typePath, String desc, boolean visible) {
+                                                 TypePath typePath, String desc, boolean visible) {
         Printer p = this.p
                 .visitInsnAnnotation(typeRef, typePath, desc, visible);
         AnnotationVisitor av = mv == null ? null : mv.visitInsnAnnotation(
@@ -231,14 +231,14 @@ public final class TraceMethodVisitor extends MethodVisitor {
 
     @Override
     public void visitTryCatchBlock(final Label start, final Label end,
-            final Label handler, final String type) {
+                                   final Label handler, final String type) {
         p.visitTryCatchBlock(start, end, handler, type);
         super.visitTryCatchBlock(start, end, handler, type);
     }
 
     @Override
     public AnnotationVisitor visitTryCatchAnnotation(int typeRef,
-            TypePath typePath, String desc, boolean visible) {
+                                                     TypePath typePath, String desc, boolean visible) {
         Printer p = this.p.visitTryCatchAnnotation(typeRef, typePath, desc,
                 visible);
         AnnotationVisitor av = mv == null ? null : mv.visitTryCatchAnnotation(
@@ -248,16 +248,16 @@ public final class TraceMethodVisitor extends MethodVisitor {
 
     @Override
     public void visitLocalVariable(final String name, final String desc,
-            final String signature, final Label start, final Label end,
-            final int index) {
+                                   final String signature, final Label start, final Label end,
+                                   final int index) {
         p.visitLocalVariable(name, desc, signature, start, end, index);
         super.visitLocalVariable(name, desc, signature, start, end, index);
     }
 
     @Override
     public AnnotationVisitor visitLocalVariableAnnotation(int typeRef,
-            TypePath typePath, Label[] start, Label[] end, int[] index,
-            String desc, boolean visible) {
+                                                          TypePath typePath, Label[] start, Label[] end, int[] index,
+                                                          String desc, boolean visible) {
         Printer p = this.p.visitLocalVariableAnnotation(typeRef, typePath,
                 start, end, index, desc, visible);
         AnnotationVisitor av = mv == null ? null : mv

@@ -48,7 +48,7 @@ public class BytecodeEnhancerManager {
     private List<AppBytecodeEnhancer> appFilter(App app, String className) {
         List<AppBytecodeEnhancer> l = C.newList();
         for (AppBytecodeEnhancer e : appEnhancers) {
-            AppBytecodeEnhancer e0 = (AppBytecodeEnhancer)e.clone();
+            AppBytecodeEnhancer e0 = (AppBytecodeEnhancer) e.clone();
             e0.app(app);
             if (e0.isTargetClass(className)) {
                 l.add(e0);

@@ -4,7 +4,10 @@ import org.osgl._;
 import org.osgl.oms.OMS;
 import org.osgl.oms.conf.AppConfig;
 import org.osgl.oms.route.Router;
-import org.osgl.oms.util.*;
+import org.osgl.oms.util.Files;
+import org.osgl.oms.util.FsChangeDetector;
+import org.osgl.oms.util.FsEvent;
+import org.osgl.oms.util.FsEventListener;
 import org.osgl.util.C;
 import org.osgl.util.E;
 import org.osgl.util.S;
@@ -86,7 +89,7 @@ public class DevModeClassLoader extends AppClassLoader {
 
     private void preloadSources() {
         final File sourceRoot = app().layout().source(app().base());
-        Files.filter(sourceRoot, JAVA_SOURCE, new _.Visitor<File>(){
+        Files.filter(sourceRoot, JAVA_SOURCE, new _.Visitor<File>() {
             @Override
             public void visit(File file) throws _.Break {
                 Source source = Source.ofFile(sourceRoot, file);

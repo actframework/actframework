@@ -1,7 +1,6 @@
 package org.osgl.oms.util;
 
 import org.osgl.oms.asm.ClassVisitor;
-import org.osgl.oms.asm.Type;
 
 public abstract class PredictableBytecodeVisitor extends BytecodeVisitor {
     protected PredictableBytecodeVisitor(ClassVisitor cv) {

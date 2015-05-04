@@ -8,6 +8,7 @@ import java.util.Date;
 
 public class UndertowCookieAdaptor implements Cookie {
     H.Cookie hc;
+
     public UndertowCookieAdaptor(H.Cookie cookie) {
         E.NPE(cookie);
         hc = cookie;

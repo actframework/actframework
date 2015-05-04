@@ -160,7 +160,7 @@ public final class ControllerClassMetaInfo {
 
     public ActionMethodMetaInfo action(String name) {
         if (null == actionLookup) {
-            for (ActionMethodMetaInfo act: actions) {
+            for (ActionMethodMetaInfo act : actions) {
                 if (S.eq(name, act.name())) {
                     return act;
                 }
@@ -257,7 +257,7 @@ public final class ControllerClassMetaInfo {
     }
 
     private void mergeIntoActionList() {
-        for (ActionMethodMetaInfo info: actions) {
+        for (ActionMethodMetaInfo info : actions) {
             info.mergeFromClassInterceptors(interceptors);
         }
     }

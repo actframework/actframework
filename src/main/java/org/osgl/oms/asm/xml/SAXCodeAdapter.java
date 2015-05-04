@@ -1,20 +1,20 @@
-/***
+/**
  * ASM XML Adapter
  * Copyright (c) 2004-2011, Eugene Kuleshov
  * All rights reserved.
- *
+ * <p/>
  * Redistribution and use in srccode and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
  * 1. Redistributions of srccode code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
+ * notice, this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
+ * notice, this list of conditions and the following disclaimer in the
+ * documentation and/or other materials provided with the distribution.
  * 3. Neither the className of the copyright holders nor the names of its
- *    contributors may be used to endorse or promote products derived from
- *    this software without specific prior written permission.
- *
+ * contributors may be used to endorse or promote products derived from
+ * this software without specific prior written permission.
+ * <p/>
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -47,8 +47,8 @@ import java.util.Map;
  */
 public final class SAXCodeAdapter extends MethodVisitor {
 
-    static final String[] TYPES = { "top", "int", "float", "double", "long",
-            "null", "uninitializedThis" };
+    static final String[] TYPES = {"top", "int", "float", "double", "long",
+            "null", "uninitializedThis"};
 
     SAXAdapter sa;
 
@@ -90,46 +90,46 @@ public final class SAXCodeAdapter extends MethodVisitor {
 
     @Override
     public void visitFrame(final int type, final int nLocal,
-            final Object[] local, final int nStack, final Object[] stack) {
+                           final Object[] local, final int nStack, final Object[] stack) {
         AttributesImpl attrs = new AttributesImpl();
         switch (type) {
-        case Opcodes.F_NEW:
-        case Opcodes.F_FULL:
-            if (type == Opcodes.F_NEW) {
-                attrs.addAttribute("", "type", "type", "", "NEW");
-            } else {
-                attrs.addAttribute("", "type", "type", "", "FULL");
-            }
-            sa.addStart("frame", attrs);
-            appendFrameTypes(true, nLocal, local);
-            appendFrameTypes(false, nStack, stack);
-            break;
-        case Opcodes.F_APPEND:
-            attrs.addAttribute("", "type", "type", "", "APPEND");
-            sa.addStart("frame", attrs);
-            appendFrameTypes(true, nLocal, local);
-            break;
-        case Opcodes.F_CHOP:
-            attrs.addAttribute("", "type", "type", "", "CHOP");
-            attrs.addAttribute("", "count", "count", "",
-                    Integer.toString(nLocal));
-            sa.addStart("frame", attrs);
-            break;
-        case Opcodes.F_SAME:
-            attrs.addAttribute("", "type", "type", "", "SAME");
-            sa.addStart("frame", attrs);
-            break;
-        case Opcodes.F_SAME1:
-            attrs.addAttribute("", "type", "type", "", "SAME1");
-            sa.addStart("frame", attrs);
-            appendFrameTypes(false, 1, stack);
-            break;
+            case Opcodes.F_NEW:
+            case Opcodes.F_FULL:
+                if (type == Opcodes.F_NEW) {
+                    attrs.addAttribute("", "type", "type", "", "NEW");
+                } else {
+                    attrs.addAttribute("", "type", "type", "", "FULL");
+                }
+                sa.addStart("frame", attrs);
+                appendFrameTypes(true, nLocal, local);
+                appendFrameTypes(false, nStack, stack);
+                break;
+            case Opcodes.F_APPEND:
+                attrs.addAttribute("", "type", "type", "", "APPEND");
+                sa.addStart("frame", attrs);
+                appendFrameTypes(true, nLocal, local);
+                break;
+            case Opcodes.F_CHOP:
+                attrs.addAttribute("", "type", "type", "", "CHOP");
+                attrs.addAttribute("", "count", "count", "",
+                        Integer.toString(nLocal));
+                sa.addStart("frame", attrs);
+                break;
+            case Opcodes.F_SAME:
+                attrs.addAttribute("", "type", "type", "", "SAME");
+                sa.addStart("frame", attrs);
+                break;
+            case Opcodes.F_SAME1:
+                attrs.addAttribute("", "type", "type", "", "SAME1");
+                sa.addStart("frame", attrs);
+                appendFrameTypes(false, 1, stack);
+                break;
         }
         sa.addEnd("frame");
     }
 
     private void appendFrameTypes(final boolean local, final int n,
-            final Object[] types) {
+                                  final Object[] types) {
         for (int i = 0; i < n; ++i) {
             Object type = types[i];
             AttributesImpl attrs = new AttributesImpl();
@@ -175,7 +175,7 @@ public final class SAXCodeAdapter extends MethodVisitor {
 
     @Override
     public final void visitFieldInsn(final int opcode, final String owner,
-            final String name, final String desc) {
+                                     final String name, final String desc) {
         AttributesImpl attrs = new AttributesImpl();
         attrs.addAttribute("", "owner", "owner", "", owner);
         attrs.addAttribute("", "name", "name", "", name);
@@ -185,7 +185,7 @@ public final class SAXCodeAdapter extends MethodVisitor {
 
     @Override
     public final void visitMethodInsn(final int opcode, final String owner,
-            final String name, final String desc, final boolean itf) {
+                                      final String name, final String desc, final boolean itf) {
         AttributesImpl attrs = new AttributesImpl();
         attrs.addAttribute("", "owner", "owner", "", owner);
         attrs.addAttribute("", "name", "name", "", name);
@@ -196,7 +196,7 @@ public final class SAXCodeAdapter extends MethodVisitor {
 
     @Override
     public void visitInvokeDynamicInsn(String name, String desc, Handle bsm,
-            Object... bsmArgs) {
+                                       Object... bsmArgs) {
         AttributesImpl attrs = new AttributesImpl();
         attrs.addAttribute("", "name", "name", "", name);
         attrs.addAttribute("", "desc", "desc", "", desc);
@@ -247,7 +247,7 @@ public final class SAXCodeAdapter extends MethodVisitor {
 
     @Override
     public final void visitTableSwitchInsn(final int min, final int max,
-            final Label dflt, final Label... labels) {
+                                           final Label dflt, final Label... labels) {
         AttributesImpl attrs = new AttributesImpl();
         attrs.addAttribute("", "min", "min", "", Integer.toString(min));
         attrs.addAttribute("", "max", "max", "", Integer.toString(max));
@@ -264,7 +264,7 @@ public final class SAXCodeAdapter extends MethodVisitor {
 
     @Override
     public final void visitLookupSwitchInsn(final Label dflt, final int[] keys,
-            final Label[] labels) {
+                                            final Label[] labels) {
         AttributesImpl att = new AttributesImpl();
         att.addAttribute("", "dflt", "dflt", "", getLabel(dflt));
         String o = Printer.OPCODES[Opcodes.LOOKUPSWITCH];
@@ -288,7 +288,7 @@ public final class SAXCodeAdapter extends MethodVisitor {
 
     @Override
     public final void visitTryCatchBlock(final Label start, final Label end,
-            final Label handler, final String type) {
+                                         final Label handler, final String type) {
         AttributesImpl attrs = new AttributesImpl();
         attrs.addAttribute("", "start", "start", "", getLabel(start));
         attrs.addAttribute("", "end", "end", "", getLabel(end));
@@ -313,8 +313,8 @@ public final class SAXCodeAdapter extends MethodVisitor {
 
     @Override
     public void visitLocalVariable(final String name, final String desc,
-            final String signature, final Label start, final Label end,
-            final int index) {
+                                   final String signature, final Label start, final Label end,
+                                   final int index) {
         AttributesImpl attrs = new AttributesImpl();
         attrs.addAttribute("", "name", "name", "", name);
         attrs.addAttribute("", "desc", "desc", "", desc);
@@ -343,43 +343,43 @@ public final class SAXCodeAdapter extends MethodVisitor {
 
     @Override
     public AnnotationVisitor visitAnnotation(final String desc,
-            final boolean visible) {
+                                             final boolean visible) {
         return new SAXAnnotationAdapter(sa, "annotation", visible ? 1 : -1,
                 null, desc);
     }
 
     @Override
     public AnnotationVisitor visitTypeAnnotation(int typeRef,
-            TypePath typePath, String desc, boolean visible) {
+                                                 TypePath typePath, String desc, boolean visible) {
         return new SAXAnnotationAdapter(sa, "typeAnnotation", visible ? 1 : -1,
                 null, desc, typeRef, typePath);
     }
 
     @Override
     public AnnotationVisitor visitParameterAnnotation(final int parameter,
-            final String desc, final boolean visible) {
+                                                      final String desc, final boolean visible) {
         return new SAXAnnotationAdapter(sa, "parameterAnnotation", visible ? 1
                 : -1, parameter, desc);
     }
 
     @Override
     public AnnotationVisitor visitInsnAnnotation(int typeRef,
-            TypePath typePath, String desc, boolean visible) {
+                                                 TypePath typePath, String desc, boolean visible) {
         return new SAXAnnotationAdapter(sa, "insnAnnotation", visible ? 1 : -1,
                 null, desc, typeRef, typePath);
     }
 
     @Override
     public AnnotationVisitor visitTryCatchAnnotation(int typeRef,
-            TypePath typePath, String desc, boolean visible) {
+                                                     TypePath typePath, String desc, boolean visible) {
         return new SAXAnnotationAdapter(sa, "tryCatchAnnotation", visible ? 1
                 : -1, null, desc, typeRef, typePath);
     }
 
     @Override
     public AnnotationVisitor visitLocalVariableAnnotation(int typeRef,
-            TypePath typePath, Label[] start, Label[] end, int[] index,
-            String desc, boolean visible) {
+                                                          TypePath typePath, Label[] start, Label[] end, int[] index,
+                                                          String desc, boolean visible) {
         String[] s = new String[start.length];
         String[] e = new String[end.length];
         for (int i = 0; i < s.length; ++i) {

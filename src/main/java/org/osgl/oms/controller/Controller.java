@@ -1,7 +1,7 @@
 package org.osgl.oms.controller;
 
-import org.omg.CORBA.PUBLIC_MEMBER;
 import org.osgl.http.H;
+import org.osgl.mvc.result.Forbidden;
 import org.osgl.mvc.result.NotFound;
 import org.osgl.mvc.result.Ok;
 import org.osgl.mvc.result.Result;
@@ -18,8 +18,8 @@ import java.util.Map;
 /**
  * Mark a class as Controller, which contains at least one of the following:
  * <ul>
- *     <li>Action handler method</li>
- *     <li>Any one of Before/After/Exception/Finally interceptor</li>
+ * <li>Action handler method</li>
+ * <li>Any one of Before/After/Exception/Finally interceptor</li>
  * </ul>
  * <p>The framework will scan all Classes under the {@link org.osgl.oms.conf.AppConfigKey#CONTROLLER_PACKAGE}
  * or any class outside of the package but with this annotation marked</p>
@@ -31,7 +31,7 @@ public @interface Controller {
     /**
      * Indicate the context path for all action methods declared
      * in this controller.
-     *
+     * <p/>
      * <p>Default value: "{@code /}"</p>
      *
      * @return the controller context path
@@ -60,11 +60,11 @@ public @interface Controller {
             throw NOT_FOUND;
         }
 
-        public static Result NotFound(String msg, Object ... args) {
+        public static Result NotFound(String msg, Object... args) {
             return new NotFound(msg, args);
         }
 
-        public static void notFound(String msg, Object ... args) {
+        public static void notFound(String msg, Object... args) {
             throw new NotFound(msg, args);
         }
 
@@ -74,7 +74,7 @@ public @interface Controller {
             }
         }
 
-        public static void notFoundIfNull(Object o, String msg, Object ... args) {
+        public static void notFoundIfNull(Object o, String msg, Object... args) {
             if (null == o) {
                 notFound(msg, args);
             }
@@ -86,7 +86,7 @@ public @interface Controller {
             }
         }
 
-        public static void notFoundIf(boolean test, String msg, Object ... args) {
+        public static void notFoundIf(boolean test, String msg, Object... args) {
             if (test) {
                 notFound(msg, args);
             }
@@ -98,13 +98,21 @@ public @interface Controller {
             }
         }
 
-        public static void notFoundIfNot(boolean test, String msg, Object ... args) {
+        public static void notFoundIfNot(boolean test, String msg, Object... args) {
             if (!test) {
                 notFound(msg, args);
             }
         }
 
-        public static void print(String msg, Object ... args) {
+        public static void forbidden() {
+            throw new Forbidden();
+        }
+
+        public static void forbidden(String msg) {
+            throw new Forbidden(msg);
+        }
+
+        public static void print(String msg, Object... args) {
             if (S.empty(msg)) ok();
             AppContext ctx = AppContext.get();
             H.Request req = ctx.req();
@@ -112,7 +120,7 @@ public @interface Controller {
             print(req, resp, msg, args);
         }
 
-        public static void print(H.Request req, H.Response resp, String msg, Object ... args) {
+        public static void print(H.Request req, H.Response resp, String msg, Object... args) {
             setDefaultContextType(req, resp);
             IO.writeContent(S.fmt(msg, args), resp.writer());
         }

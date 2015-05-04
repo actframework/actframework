@@ -1,6 +1,5 @@
 package org.osgl.oms.util;
 
-import com.sun.org.apache.xpath.internal.compiler.OpCodes;
 import org.osgl.mvc.annotation.Bind;
 import org.osgl.mvc.annotation.Param;
 import org.osgl.mvc.result.Result;

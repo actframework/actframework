@@ -4,6 +4,8 @@ import org.osgl._;
 import org.osgl.concurrent.ContextLocal;
 import org.osgl.http.H;
 import org.osgl.oms.conf.AppConfig;
+import org.osgl.oms.view.Template;
+import org.osgl.util.C;
 import org.osgl.util.E;
 
 import java.util.*;
@@ -23,7 +25,9 @@ public class AppContext {
     private Map<String, String> extraParams;
     private Map<String, Object> renderArgs;
     private Map<String, String[]> allParams;
+    private String actionPath; // e.g. com.mycorp.myapp.controller.AbcController.foo
     private Map<String, Object> attributes;
+    private Template template;
 
     private AppContext(App app, H.Request request, H.Response response) {
         E.NPE(app, request, response);
@@ -92,8 +96,16 @@ public class AppContext {
     }
 
     /**
+     * Returns all render arguments
+     */
+    public Map<String, Object> renderArgs() {
+        return C.newMap(renderArgs);
+    }
+
+    /**
      * Associate a user attribute to the context. Could be used by third party
      * libraries or user application
+     *
      * @param name the className used to reference the attribute
      * @param attr the attribute object
      * @return this context
@@ -118,6 +130,24 @@ public class AppContext {
 
     public AppConfig config() {
         return app.config();
+    }
+
+    public String actionPath() {
+        return actionPath;
+    }
+
+    public AppContext actionPath(String path) {
+        actionPath = path;
+        return this;
+    }
+
+    public Template cachedTemplate() {
+        return template;
+    }
+
+    public AppContext cacheTemplate(Template template) {
+        this.template = template;
+        return this;
     }
 
     public void saveLocal() {
@@ -163,6 +193,7 @@ public class AppContext {
             public Iterator<Map.Entry<String, String[]>> iterator() {
                 final Iterator<Map.Entry<String, String[]>> extraItr = new Iterator<Map.Entry<String, String[]>>() {
                     Iterator<Map.Entry<String, String>> parent = extraParams.entrySet().iterator();
+
                     @Override
                     public boolean hasNext() {
                         return parent.hasNext();

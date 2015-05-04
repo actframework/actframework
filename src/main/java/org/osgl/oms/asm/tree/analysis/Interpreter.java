@@ -1,20 +1,20 @@
-/***
+/**
  * ASM: a very small and fast Java bytecode manipulation framework
  * Copyright (c) 2000-2011 INRIA, France Telecom
  * All rights reserved.
- *
+ * <p/>
  * Redistribution and use in srccode and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
  * 1. Redistributions of srccode code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
+ * notice, this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
+ * notice, this list of conditions and the following disclaimer in the
+ * documentation and/or other materials provided with the distribution.
  * 3. Neither the className of the copyright holders nor the names of its
- *    contributors may be used to endorse or promote products derived from
- *    this software without specific prior written permission.
- *
+ * contributors may be used to endorse or promote products derived from
+ * this software without specific prior written permission.
+ * <p/>
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -41,10 +41,10 @@ import java.util.List;
  * This separation allows a generic bytecode {@link Analyzer} to work with
  * various semantic interpreters, without needing to duplicate the code to
  * simulate the transfer of values.
- * 
+ *
  * @param <V>
  *            type of the Value used for the analysis.
- * 
+ *
  * @author Eric Bruneton
  */
 public abstract class Interpreter<V extends Value> {
@@ -57,11 +57,11 @@ public abstract class Interpreter<V extends Value> {
 
     /**
      * Creates a new value that represents the given type.
-     * 
+     *
      * Called for method parameters (including <code>this</code>), exception
      * handler variable and with <code>null</code> type for variables reserved
      * by long and double types.
-     * 
+     *
      * @param type
      *            a primitive or reference type, or <tt>null</tt> to represent
      *            an uninitialized value.
@@ -73,11 +73,11 @@ public abstract class Interpreter<V extends Value> {
     /**
      * Interprets a bytecode instruction without arguments. This method is
      * called for the following opcodes:
-     * 
+     *
      * ACONST_NULL, ICONST_M1, ICONST_0, ICONST_1, ICONST_2, ICONST_3, ICONST_4,
      * ICONST_5, LCONST_0, LCONST_1, FCONST_0, FCONST_1, FCONST_2, DCONST_0,
      * DCONST_1, BIPUSH, SIPUSH, LDC, JSR, GETSTATIC, NEW
-     * 
+     *
      * @param insn
      *            the bytecode instruction to be interpreted.
      * @return the result of the interpretation of the given instruction.
@@ -170,7 +170,7 @@ public abstract class Interpreter<V extends Value> {
      *             if an error occured during the interpretation.
      */
     public abstract V ternaryOperation(AbstractInsnNode insn, V value1,
-            V value2, V value3) throws AnalyzerException;
+                                       V value2, V value3) throws AnalyzerException;
 
     /**
      * Interprets a bytecode instruction with a variable number of arguments.
@@ -188,7 +188,7 @@ public abstract class Interpreter<V extends Value> {
      *             if an error occured during the interpretation.
      */
     public abstract V naryOperation(AbstractInsnNode insn,
-            List<? extends V> values) throws AnalyzerException;
+                                    List<? extends V> values) throws AnalyzerException;
 
     /**
      * Interprets a bytecode return instruction. This method is called for the
@@ -206,7 +206,7 @@ public abstract class Interpreter<V extends Value> {
      *             if an error occured during the interpretation.
      */
     public abstract void returnOperation(AbstractInsnNode insn, V value,
-            V expected) throws AnalyzerException;
+                                         V expected) throws AnalyzerException;
 
     /**
      * Merges two values. The merge operation must return a value that
@@ -214,7 +214,7 @@ public abstract class Interpreter<V extends Value> {
      * the merged value must be a common super type of the two types. If the two
      * values are integer intervals, the merged value must be an interval that
      * contains the previous ones. Likewise for other types of values).
-     * 
+     *
      * @param v
      *            a value.
      * @param w

@@ -5,6 +5,7 @@ import org.osgl.oms.asm.signature.SignatureVisitor;
 
 public class ActionMethodSignatureVisitor extends SignatureVisitor implements Opcodes {
     ActionMethodInspector detector;
+
     public ActionMethodSignatureVisitor(ActionMethodInspector detector) {
         super(ASM5);
         this.detector = detector;

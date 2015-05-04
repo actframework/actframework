@@ -4,13 +4,13 @@ import org.osgl._;
 import org.osgl.exception.NotAppliedException;
 import org.osgl.logging.L;
 import org.osgl.logging.Logger;
-import org.osgl.oms.controller.meta.CatchMethodMetaInfo;
-import org.osgl.oms.handler.builtin.controller.*;
 import org.osgl.oms.app.*;
 import org.osgl.oms.conf.OmsConfLoader;
 import org.osgl.oms.conf.OmsConfig;
 import org.osgl.oms.controller.meta.ActionMethodMetaInfo;
+import org.osgl.oms.controller.meta.CatchMethodMetaInfo;
 import org.osgl.oms.controller.meta.InterceptorMethodMetaInfo;
+import org.osgl.oms.handler.builtin.controller.*;
 import org.osgl.oms.handler.builtin.controller.impl.ReflectedHandlerInvoker;
 import org.osgl.oms.plugin.PluginScanner;
 import org.osgl.oms.util.Banner;
@@ -26,7 +26,7 @@ import org.osgl.util.E;
 public final class OMS {
 
     public enum Mode {
-        PROD, UAT, SIT, DEV () {
+        PROD, UAT, SIT, DEV() {
             @Override
             public AppScanner appScanner() {
                 return AppScanner.DEV_MODE_SCANNER;
@@ -95,20 +95,25 @@ public final class OMS {
 
 
     public static BootstrapClassLoader classLoader() {
-        return (BootstrapClassLoader)OMS.class.getClassLoader();
+        return (BootstrapClassLoader) OMS.class.getClassLoader();
     }
+
     public static Mode mode() {
         return mode;
     }
+
     public static boolean isDev() {
         return mode.isDev();
     }
+
     public static OmsConfig conf() {
         return conf;
     }
+
     public static BytecodeEnhancerManager enhancerManager() {
         return enhancerManager;
     }
+
     public static ViewManager viewManager() {
         return viewManager;
     }
@@ -182,7 +187,7 @@ public final class OMS {
 
     public static enum F {
         ;
-        public static final _.F0<Mode> MODE_ACCESSOR = new  _.F0<Mode>() {
+        public static final _.F0<Mode> MODE_ACCESSOR = new _.F0<Mode>() {
             @Override
             public Mode apply() throws NotAppliedException, _.Break {
                 return mode;

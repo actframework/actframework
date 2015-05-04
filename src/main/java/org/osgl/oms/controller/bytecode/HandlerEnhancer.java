@@ -55,7 +55,7 @@ public class HandlerEnhancer extends MethodVisitor implements Opcodes {
 
     @Override
     public void visitEnd() {
-        MethodNode mn = (MethodNode)mv;
+        MethodNode mn = (MethodNode) mv;
         transform(mn);
         mn.accept(next);
     }
@@ -82,7 +82,7 @@ public class HandlerEnhancer extends MethodVisitor implements Opcodes {
             while (itr.hasNext()) {
                 AbstractInsnNode insn = itr.next();
                 if (insn.getType() == AbstractInsnNode.LABEL) {
-                    cur = new Segment(((LabelNode)insn).getLabel(), meta, instructions, itr, this);
+                    cur = new Segment(((LabelNode) insn).getLabel(), meta, instructions, itr, this);
                 } else if (null != cur) {
                     cur.handle(insn);
                 }
@@ -92,11 +92,14 @@ public class HandlerEnhancer extends MethodVisitor implements Opcodes {
         private static abstract class InstructionHandler {
             Segment segment;
             HandlerMethodMetaInfo meta;
+
             InstructionHandler(Segment segment, HandlerMethodMetaInfo meta) {
                 this.segment = segment;
                 this.meta = meta;
             }
+
             protected abstract void handle(AbstractInsnNode node);
+
             protected void refreshIteratorNext() {
                 segment.itr.previous();
                 segment.itr.next();
@@ -138,7 +141,7 @@ public class HandlerEnhancer extends MethodVisitor implements Opcodes {
 
             @Override
             protected void handle(AbstractInsnNode node) {
-                MethodInsnNode n = (MethodInsnNode)node;
+                MethodInsnNode n = (MethodInsnNode) node;
                 Type type = Type.getMethodType(n.desc);
                 Type retType = type.getReturnType();
                 //String method = n.name;
@@ -174,7 +177,7 @@ public class HandlerEnhancer extends MethodVisitor implements Opcodes {
                             breakWhile = true;
                             break;
                         case AbstractInsnNode.VAR_INSN:
-                            VarInsnNode n = (VarInsnNode)node;
+                            VarInsnNode n = (VarInsnNode) node;
                             if (0 == n.var && !segment.meta.isStatic()) {
                                 // skip "this"
                                 break;
@@ -243,7 +246,7 @@ public class HandlerEnhancer extends MethodVisitor implements Opcodes {
                                 next = next.getNext();
                                 break;
                             case AbstractInsnNode.LINE:
-                                curLine = ((LineNumberNode)next).line;
+                                curLine = ((LineNumberNode) next).line;
                                 next = next.getNext();
                                 break;
                             case AbstractInsnNode.JUMP_INSN:
@@ -317,16 +320,18 @@ public class HandlerEnhancer extends MethodVisitor implements Opcodes {
                     MethodInsnNode method = new MethodInsnNode(INVOKESTATIC, owner, "valueOf", desc, false);
                     list.add(method);
                 }
-            }, L(LLOAD), F(FLOAD), D(DLOAD), A(ALOAD), Store (-1) {
+            }, L(LLOAD), F(FLOAD), D(DLOAD), A(ALOAD), Store(-1) {
                 @Override
                 void appendTo(InsnList list, int varIndex, String type) {
                     throw E.unsupport();
                 }
             };
             private int opcode;
+
             LoadInsn(int opcode) {
                 this.opcode = opcode;
             }
+
             static LoadInsn of(int opcode) {
                 switch (opcode) {
                     case ILOAD:
@@ -343,9 +348,11 @@ public class HandlerEnhancer extends MethodVisitor implements Opcodes {
                         return Store;
                 }
             }
+
             boolean isStoreInsn() {
                 return this == Store;
             }
+
             void appendTo(InsnList list, int varIndex, String type) {
                 VarInsnNode load = new VarInsnNode(opcode, varIndex);
                 list.add(load);
@@ -355,6 +362,7 @@ public class HandlerEnhancer extends MethodVisitor implements Opcodes {
         private static class LoadInsnInfo {
             LoadInsn insn;
             int index;
+
             LoadInsnInfo(LoadInsn insn, int index) {
                 this.insn = insn;
                 this.index = index;

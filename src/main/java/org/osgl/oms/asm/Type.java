@@ -1,20 +1,20 @@
-/***
+/**
  * ASM: a very small and fast Java bytecode manipulation framework
  * Copyright (c) 2000-2011 INRIA, France Telecom
  * All rights reserved.
- *
+ * <p/>
  * Redistribution and use in srccode and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
  * 1. Redistributions of srccode code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
+ * notice, this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
+ * notice, this list of conditions and the following disclaimer in the
+ * documentation and/or other materials provided with the distribution.
  * 3. Neither the className of the copyright holders nor the names of its
- *    contributors may be used to endorse or promote products derived from
- *    this software without specific prior written permission.
- *
+ * contributors may be used to endorse or promote products derived from
+ * this software without specific prior written permission.
+ * <p/>
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -35,7 +35,7 @@ import java.lang.reflect.Method;
 /**
  * A Java field or method type. This class can be used to make it easier to
  * manipulate type and method descriptors.
- * 
+ *
  * @author Eric Bruneton
  * @author Chris Nokleberg
  */
@@ -189,7 +189,7 @@ public class Type {
 
     /**
      * Constructs a reference type.
-     * 
+     *
      * @param sort
      *            the sort of the reference type to be constructed.
      * @param buf
@@ -208,7 +208,7 @@ public class Type {
 
     /**
      * Returns the Java type corresponding to the given type descriptor.
-     * 
+     *
      * @param typeDescriptor
      *            a field or method type descriptor.
      * @return the Java type corresponding to the given type descriptor.
@@ -219,7 +219,7 @@ public class Type {
 
     /**
      * Returns the Java type corresponding to the given internal className.
-     * 
+     *
      * @param internalName
      *            an internal className.
      * @return the Java type corresponding to the given internal className.
@@ -232,7 +232,7 @@ public class Type {
     /**
      * Returns the Java type corresponding to the given method descriptor.
      * Equivalent to <code>Type.getType(methodDescriptor)</code>.
-     * 
+     *
      * @param methodDescriptor
      *            a method descriptor.
      * @return the Java type corresponding to the given method descriptor.
@@ -244,7 +244,7 @@ public class Type {
     /**
      * Returns the Java method type corresponding to the given argument and
      * return types.
-     * 
+     *
      * @param returnType
      *            the return type of the method.
      * @param argumentTypes
@@ -253,13 +253,13 @@ public class Type {
      *         types.
      */
     public static Type getMethodType(final Type returnType,
-            final Type... argumentTypes) {
+                                     final Type... argumentTypes) {
         return getType(getMethodDescriptor(returnType, argumentTypes));
     }
 
     /**
      * Returns the Java type corresponding to the given class.
-     * 
+     *
      * @param c
      *            a class.
      * @return the Java type corresponding to the given class.
@@ -282,7 +282,7 @@ public class Type {
                 return DOUBLE_TYPE;
             } else if (c == Float.TYPE) {
                 return FLOAT_TYPE;
-            } else /* if (c == Long.TYPE) */{
+            } else /* if (c == Long.TYPE) */ {
                 return LONG_TYPE;
             }
         } else {
@@ -292,7 +292,7 @@ public class Type {
 
     /**
      * Returns the Java method type corresponding to the given constructor.
-     * 
+     *
      * @param c
      *            a {@link java.lang.reflect.Constructor Constructor} object.
      * @return the Java method type corresponding to the given constructor.
@@ -303,7 +303,7 @@ public class Type {
 
     /**
      * Returns the Java method type corresponding to the given method.
-     * 
+     *
      * @param m
      *            a {@link java.lang.reflect.Method Method} object.
      * @return the Java method type corresponding to the given method.
@@ -315,7 +315,7 @@ public class Type {
     /**
      * Returns the Java types corresponding to the argument types of the given
      * method descriptor.
-     * 
+     *
      * @param methodDescriptor
      *            a method descriptor.
      * @return the Java types corresponding to the argument types of the given
@@ -351,7 +351,7 @@ public class Type {
     /**
      * Returns the Java types corresponding to the argument types of the given
      * method.
-     * 
+     *
      * @param method
      *            a method.
      * @return the Java types corresponding to the argument types of the given
@@ -369,7 +369,7 @@ public class Type {
     /**
      * Returns the Java type corresponding to the return type of the given
      * method descriptor.
-     * 
+     *
      * @param methodDescriptor
      *            a method descriptor.
      * @return the Java type corresponding to the return type of the given
@@ -383,7 +383,7 @@ public class Type {
     /**
      * Returns the Java type corresponding to the return type of the given
      * method.
-     * 
+     *
      * @param method
      *            a method.
      * @return the Java type corresponding to the return type of the given
@@ -395,7 +395,7 @@ public class Type {
 
     /**
      * Computes the size of the arguments and of the return value of a method.
-     * 
+     *
      * @param desc
      *            the descriptor of a method.
      * @return the size of the arguments of the method (plus one for the
@@ -436,7 +436,7 @@ public class Type {
      * Returns the Java type corresponding to the given type descriptor. For
      * method descriptors, buf is supposed to contain nothing more than the
      * descriptor itself.
-     * 
+     *
      * @param buf
      *            a buffer containing a type descriptor.
      * @param off
@@ -446,45 +446,45 @@ public class Type {
     private static Type getType(final char[] buf, final int off) {
         int len;
         switch (buf[off]) {
-        case 'V':
-            return VOID_TYPE;
-        case 'Z':
-            return BOOLEAN_TYPE;
-        case 'C':
-            return CHAR_TYPE;
-        case 'B':
-            return BYTE_TYPE;
-        case 'S':
-            return SHORT_TYPE;
-        case 'I':
-            return INT_TYPE;
-        case 'F':
-            return FLOAT_TYPE;
-        case 'J':
-            return LONG_TYPE;
-        case 'D':
-            return DOUBLE_TYPE;
-        case '[':
-            len = 1;
-            while (buf[off + len] == '[') {
-                ++len;
-            }
-            if (buf[off + len] == 'L') {
-                ++len;
+            case 'V':
+                return VOID_TYPE;
+            case 'Z':
+                return BOOLEAN_TYPE;
+            case 'C':
+                return CHAR_TYPE;
+            case 'B':
+                return BYTE_TYPE;
+            case 'S':
+                return SHORT_TYPE;
+            case 'I':
+                return INT_TYPE;
+            case 'F':
+                return FLOAT_TYPE;
+            case 'J':
+                return LONG_TYPE;
+            case 'D':
+                return DOUBLE_TYPE;
+            case '[':
+                len = 1;
+                while (buf[off + len] == '[') {
+                    ++len;
+                }
+                if (buf[off + len] == 'L') {
+                    ++len;
+                    while (buf[off + len] != ';') {
+                        ++len;
+                    }
+                }
+                return new Type(ARRAY, buf, off, len + 1);
+            case 'L':
+                len = 1;
                 while (buf[off + len] != ';') {
                     ++len;
                 }
-            }
-            return new Type(ARRAY, buf, off, len + 1);
-        case 'L':
-            len = 1;
-            while (buf[off + len] != ';') {
-                ++len;
-            }
-            return new Type(OBJECT, buf, off + 1, len - 1);
+                return new Type(OBJECT, buf, off + 1, len - 1);
             // case '(':
-        default:
-            return new Type(METHOD, buf, off, buf.length - off);
+            default:
+                return new Type(METHOD, buf, off, buf.length - off);
         }
     }
 
@@ -494,7 +494,7 @@ public class Type {
 
     /**
      * Returns the sort of this Java type.
-     * 
+     *
      * @return {@link #VOID VOID}, {@link #BOOLEAN BOOLEAN}, {@link #CHAR CHAR},
      *         {@link #BYTE BYTE}, {@link #SHORT SHORT}, {@link #INT INT},
      *         {@link #FLOAT FLOAT}, {@link #LONG LONG}, {@link #DOUBLE DOUBLE},
@@ -508,7 +508,7 @@ public class Type {
     /**
      * Returns the number of dimensions of this array type. This method should
      * only be used for an array type.
-     * 
+     *
      * @return the number of dimensions of this array type.
      */
     public int getDimensions() {
@@ -522,7 +522,7 @@ public class Type {
     /**
      * Returns the type of the elements of this array type. This method should
      * only be used for an array type.
-     * 
+     *
      * @return Returns the type of the elements of this array type.
      */
     public Type getElementType() {
@@ -532,39 +532,39 @@ public class Type {
     /**
      * Returns the binary className of the class corresponding to this type. This
      * method must not be used on method types.
-     * 
+     *
      * @return the binary className of the class corresponding to this type.
      */
     public String getClassName() {
         switch (sort) {
-        case VOID:
-            return "void";
-        case BOOLEAN:
-            return "boolean";
-        case CHAR:
-            return "char";
-        case BYTE:
-            return "byte";
-        case SHORT:
-            return "short";
-        case INT:
-            return "int";
-        case FLOAT:
-            return "float";
-        case LONG:
-            return "long";
-        case DOUBLE:
-            return "double";
-        case ARRAY:
-            StringBuilder sb = new StringBuilder(getElementType().getClassName());
-            for (int i = getDimensions(); i > 0; --i) {
-                sb.append("[]");
-            }
-            return sb.toString();
-        case OBJECT:
-            return new String(buf, off, len).replace('/', '.');
-        default:
-            return null;
+            case VOID:
+                return "void";
+            case BOOLEAN:
+                return "boolean";
+            case CHAR:
+                return "char";
+            case BYTE:
+                return "byte";
+            case SHORT:
+                return "short";
+            case INT:
+                return "int";
+            case FLOAT:
+                return "float";
+            case LONG:
+                return "long";
+            case DOUBLE:
+                return "double";
+            case ARRAY:
+                StringBuilder sb = new StringBuilder(getElementType().getClassName());
+                for (int i = getDimensions(); i > 0; --i) {
+                    sb.append("[]");
+                }
+                return sb.toString();
+            case OBJECT:
+                return new String(buf, off, len).replace('/', '.');
+            default:
+                return null;
         }
     }
 
@@ -573,7 +573,7 @@ public class Type {
      * array type. The internal className of a class is its fully qualified className (as
      * returned by Class.getName(), where '.' are replaced by '/'. This method
      * should only be used for an object or array type.
-     * 
+     *
      * @return the internal className of the class corresponding to this object type.
      */
     public String getInternalName() {
@@ -583,7 +583,7 @@ public class Type {
     /**
      * Returns the argument types of methods of this type. This method should
      * only be used for method types.
-     * 
+     *
      * @return the argument types of methods of this type.
      */
     public Type[] getArgumentTypes() {
@@ -593,7 +593,7 @@ public class Type {
     /**
      * Returns the return type of methods of this type. This method should only
      * be used for method types.
-     * 
+     *
      * @return the return type of methods of this type.
      */
     public Type getReturnType() {
@@ -603,7 +603,7 @@ public class Type {
     /**
      * Returns the size of the arguments and of the return value of methods of
      * this type. This method should only be used for method types.
-     * 
+     *
      * @return the size of the arguments (plus one for the implicit this
      *         argument), argSize, and the size of the return value, retSize,
      *         packed into a single
@@ -621,7 +621,7 @@ public class Type {
 
     /**
      * Returns the descriptor corresponding to this Java type.
-     * 
+     *
      * @return the descriptor corresponding to this Java type.
      */
     public String getDescriptor() {
@@ -633,7 +633,7 @@ public class Type {
     /**
      * Returns the descriptor corresponding to the given argument and return
      * types.
-     * 
+     *
      * @param returnType
      *            the return type of the method.
      * @param argumentTypes
@@ -642,7 +642,7 @@ public class Type {
      *         types.
      */
     public static String getMethodDescriptor(final Type returnType,
-            final Type... argumentTypes) {
+                                             final Type... argumentTypes) {
         StringBuffer buf = new StringBuffer();
         buf.append('(');
         for (int i = 0; i < argumentTypes.length; ++i) {
@@ -656,7 +656,7 @@ public class Type {
     /**
      * Appends the descriptor corresponding to this Java type to the given
      * string buffer.
-     * 
+     *
      * @param buf
      *            the string buffer to which the descriptor must be appended.
      */
@@ -683,7 +683,7 @@ public class Type {
      * Returns the internal className of the given class. The internal className of a
      * class is its fully qualified className, as returned by Class.getName(), where
      * '.' are replaced by '/'.
-     * 
+     *
      * @param c
      *            an object or array class.
      * @return the internal className of the given class.
@@ -694,7 +694,7 @@ public class Type {
 
     /**
      * Returns the descriptor corresponding to the given Java type.
-     * 
+     *
      * @param c
      *            an object class, a primitive class or an array class.
      * @return the descriptor corresponding to the given class.
@@ -707,7 +707,7 @@ public class Type {
 
     /**
      * Returns the descriptor corresponding to the given constructor.
-     * 
+     *
      * @param c
      *            a {@link java.lang.reflect.Constructor Constructor} object.
      * @return the descriptor of the given constructor.
@@ -724,7 +724,7 @@ public class Type {
 
     /**
      * Returns the descriptor corresponding to the given method.
-     * 
+     *
      * @param m
      *            a {@link java.lang.reflect.Method Method} object.
      * @return the descriptor of the given method.
@@ -743,7 +743,7 @@ public class Type {
 
     /**
      * Appends the descriptor of the given class to the given string buffer.
-     * 
+     *
      * @param buf
      *            the string buffer to which the descriptor must be appended.
      * @param c
@@ -770,7 +770,7 @@ public class Type {
                     car = 'D';
                 } else if (d == Float.TYPE) {
                     car = 'F';
-                } else /* if (d == Long.TYPE) */{
+                } else /* if (d == Long.TYPE) */ {
                     car = 'J';
                 }
                 buf.append(car);
@@ -799,7 +799,7 @@ public class Type {
     /**
      * Returns the size of values of this type. This method must not be used for
      * method types.
-     * 
+     *
      * @return the size of values of this type, i.e., 2 for <tt>long</tt> and
      *         <tt>double</tt>, 0 for <tt>void</tt> and 1 otherwise.
      */
@@ -811,7 +811,7 @@ public class Type {
     /**
      * Returns a JVM instruction opcode adapted to this Java type. This method
      * must not be used for method types.
-     * 
+     *
      * @param opcode
      *            a JVM instruction opcode. This opcode must be one of ILOAD,
      *            ISTORE, IALOAD, IASTORE, IADD, ISUB, IMUL, IDIV, IREM, INEG,
@@ -838,7 +838,7 @@ public class Type {
 
     /**
      * Tests if the given object is equal to this type.
-     * 
+     *
      * @param o
      *            the object to be compared to this type.
      * @return <tt>true</tt> if the given object is equal to this type.
@@ -870,7 +870,7 @@ public class Type {
 
     /**
      * Returns a hash code value for this type.
-     * 
+     *
      * @return a hash code value for this type.
      */
     @Override
@@ -886,7 +886,7 @@ public class Type {
 
     /**
      * Returns a string representation of this type.
-     * 
+     *
      * @return the descriptor of this type.
      */
     @Override

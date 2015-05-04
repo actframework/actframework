@@ -7,18 +7,13 @@ import io.undertow.io.UndertowOutputStream;
 import io.undertow.server.BlockingHttpExchange;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.servlet.core.BlockingWriterSenderImpl;
-import io.undertow.servlet.handlers.ServletRequestContext;
-import io.undertow.servlet.spec.HttpServletRequestImpl;
-import io.undertow.servlet.spec.HttpServletResponseImpl;
 import io.undertow.util.AttachmentKey;
 import org.osgl.http.H;
 import org.osgl.oms.app.AppContext;
 
-import javax.servlet.ServletResponse;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.PrintWriter;
 
 public class OmsBlockingExchange implements BlockingHttpExchange {
 

@@ -1,20 +1,20 @@
-/***
+/**
  * ASM: a very small and fast Java bytecode manipulation framework
  * Copyright (c) 2000-2011 INRIA, France Telecom
  * All rights reserved.
- *
+ * <p/>
  * Redistribution and use in srccode and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
  * 1. Redistributions of srccode code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
+ * notice, this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
+ * notice, this list of conditions and the following disclaimer in the
+ * documentation and/or other materials provided with the distribution.
  * 3. Neither the className of the copyright holders nor the names of its
- *    contributors may be used to endorse or promote products derived from
- *    this software without specific prior written permission.
- *
+ * contributors may be used to endorse or promote products derived from
+ * this software without specific prior written permission.
+ * <p/>
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -41,10 +41,10 @@ import java.util.Map;
 /**
  * A semantic bytecode analyzer. <i>This class does not fully check that JSR and
  * RET instructions are valid.</i>
- * 
+ *
  * @param <V>
  *            type of the Value used for the analysis.
- * 
+ *
  * @author Eric Bruneton
  */
 public class Analyzer<V extends Value> implements Opcodes {
@@ -293,7 +293,7 @@ public class Analyzer<V extends Value> implements Opcodes {
     }
 
     private void findSubroutine(int insn, final Subroutine sub,
-            final List<AbstractInsnNode> calls) throws AnalyzerException {
+                                final List<AbstractInsnNode> calls) throws AnalyzerException {
         while (true) {
             if (insn < 0 || insn >= n) {
                 throw new AnalyzerException(null,
@@ -341,18 +341,18 @@ public class Analyzer<V extends Value> implements Opcodes {
 
             // if insn does not falls through to the next instruction, return.
             switch (node.getOpcode()) {
-            case GOTO:
-            case RET:
-            case TABLESWITCH:
-            case LOOKUPSWITCH:
-            case IRETURN:
-            case LRETURN:
-            case FRETURN:
-            case DRETURN:
-            case ARETURN:
-            case RETURN:
-            case ATHROW:
-                return;
+                case GOTO:
+                case RET:
+                case TABLESWITCH:
+                case LOOKUPSWITCH:
+                case IRETURN:
+                case LRETURN:
+                case FRETURN:
+                case DRETURN:
+                case ARETURN:
+                case RETURN:
+                case ATHROW:
+                    return;
             }
             insn++;
         }
@@ -454,7 +454,7 @@ public class Analyzer<V extends Value> implements Opcodes {
      *         implementation of this method always returns true.
      */
     protected boolean newControlFlowExceptionEdge(final int insn,
-            final int successor) {
+                                                  final int successor) {
         return true;
     }
 
@@ -478,14 +478,14 @@ public class Analyzer<V extends Value> implements Opcodes {
      *         newControlFlowExceptionEdge(int, int)}.
      */
     protected boolean newControlFlowExceptionEdge(final int insn,
-            final TryCatchBlockNode tcb) {
+                                                  final TryCatchBlockNode tcb) {
         return newControlFlowExceptionEdge(insn, insns.indexOf(tcb.handler));
     }
 
     // -------------------------------------------------------------------------
 
     private void merge(final int insn, final Frame<V> frame,
-            final Subroutine subroutine) throws AnalyzerException {
+                       final Subroutine subroutine) throws AnalyzerException {
         Frame<V> oldFrame = frames[insn];
         Subroutine oldSubroutine = subroutines[insn];
         boolean changes;
@@ -514,8 +514,8 @@ public class Analyzer<V extends Value> implements Opcodes {
     }
 
     private void merge(final int insn, final Frame<V> beforeJSR,
-            final Frame<V> afterRET, final Subroutine subroutineBeforeJSR,
-            final boolean[] access) throws AnalyzerException {
+                       final Frame<V> afterRET, final Subroutine subroutineBeforeJSR,
+                       final boolean[] access) throws AnalyzerException {
         Frame<V> oldFrame = frames[insn];
         Subroutine oldSubroutine = subroutines[insn];
         boolean changes;

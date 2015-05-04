@@ -1,20 +1,20 @@
-/***
+/**
  * ASM: a very small and fast Java bytecode manipulation framework
  * Copyright (c) 2000-2013 INRIA, France Telecom
  * All rights reserved.
- *
+ * <p/>
  * Redistribution and use in srccode and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
  * 1. Redistributions of srccode code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
+ * notice, this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
+ * notice, this list of conditions and the following disclaimer in the
+ * documentation and/or other materials provided with the distribution.
  * 3. Neither the className of the copyright holders nor the names of its
- *    contributors may be used to endorse or promote products derived from
- *    this software without specific prior written permission.
- *
+ * contributors may be used to endorse or promote products derived from
+ * this software without specific prior written permission.
+ * <p/>
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -33,7 +33,7 @@ package org.osgl.oms.asm;
 /**
  * The path to a type argument, wildcard bound, array element type, or static
  * inner type within an enclosing type.
- * 
+ *
  * @author Eric Bruneton
  */
 public class TypePath {
@@ -74,7 +74,7 @@ public class TypePath {
 
     /**
      * Creates a new type path.
-     * 
+     *
      * @param b
      *            the byte array containing the type path in Java class file
      *            format.
@@ -88,7 +88,7 @@ public class TypePath {
 
     /**
      * Returns the length of this path.
-     * 
+     *
      * @return the length of this path.
      */
     public int getLength() {
@@ -97,7 +97,7 @@ public class TypePath {
 
     /**
      * Returns the value of the given step of this path.
-     * 
+     *
      * @param index
      *            an index between 0 and {@link #getLength()}, exclusive.
      * @return {@link #ARRAY_ELEMENT ARRAY_ELEMENT}, {@link #INNER_TYPE
@@ -112,7 +112,7 @@ public class TypePath {
      * Returns the index of the type argument that the given step is stepping
      * into. This method should only be used for steps whose value is
      * {@link #TYPE_ARGUMENT TYPE_ARGUMENT}.
-     * 
+     *
      * @param index
      *            an index between 0 and {@link #getLength()}, exclusive.
      * @return the index of the type argument that the given step is stepping
@@ -125,7 +125,7 @@ public class TypePath {
     /**
      * Converts a type path in string form, in the format used by
      * {@link #toString()}, into a TypePath object.
-     * 
+     *
      * @param typePath
      *            a type path in string form, in the format used by
      *            {@link #toString()}. May be null or empty.
@@ -138,7 +138,7 @@ public class TypePath {
         int n = typePath.length();
         ByteVector out = new ByteVector(n);
         out.putByte(0);
-        for (int i = 0; i < n;) {
+        for (int i = 0; i < n; ) {
             char c = typePath.charAt(i++);
             if (c == '[') {
                 out.put11(ARRAY_ELEMENT, 0);
@@ -172,20 +172,20 @@ public class TypePath {
         StringBuilder result = new StringBuilder(length * 2);
         for (int i = 0; i < length; ++i) {
             switch (getStep(i)) {
-            case ARRAY_ELEMENT:
-                result.append('[');
-                break;
-            case INNER_TYPE:
-                result.append('.');
-                break;
-            case WILDCARD_BOUND:
-                result.append('*');
-                break;
-            case TYPE_ARGUMENT:
-                result.append(getStepArgument(i));
-                break;
-            default:
-                result.append('_');
+                case ARRAY_ELEMENT:
+                    result.append('[');
+                    break;
+                case INNER_TYPE:
+                    result.append('.');
+                    break;
+                case WILDCARD_BOUND:
+                    result.append('*');
+                    break;
+                case TYPE_ARGUMENT:
+                    result.append(getStepArgument(i));
+                    break;
+                default:
+                    result.append('_');
             }
         }
         return result.toString();

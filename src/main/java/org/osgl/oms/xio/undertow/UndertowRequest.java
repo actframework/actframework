@@ -2,22 +2,16 @@ package org.osgl.oms.xio.undertow;
 
 import io.undertow.server.HttpServerExchange;
 import io.undertow.server.handlers.Cookie;
-import io.undertow.servlet.spec.ServletInputStreamImpl;
 import io.undertow.util.HttpString;
-import org.apache.commons.codec.Charsets;
 import org.osgl.http.H;
 import org.osgl.oms.RequestImplBase;
 import org.osgl.oms.conf.AppConfig;
 import org.osgl.util.E;
 import org.osgl.util.IO;
 
-import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.nio.charset.Charset;
 import java.util.Deque;
 import java.util.Map;
 
@@ -109,11 +103,11 @@ public class UndertowRequest extends RequestImplBase<UndertowRequest> {
     @Override
     protected String _remoteAddr() {
         InetSocketAddress sourceAddress = hse.getSourceAddress();
-        if(sourceAddress == null) {
+        if (sourceAddress == null) {
             return "";
         }
         InetAddress address = sourceAddress.getAddress();
-        if(address == null) {
+        if (address == null) {
             //this is unresolved, so we just return the host className
             //not exactly spec, but if the className should be resolved then a PeerNameResolvingHandler should be used
             //and this is probably better than just returning null

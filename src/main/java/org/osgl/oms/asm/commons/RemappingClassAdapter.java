@@ -1,20 +1,20 @@
-/***
+/**
  * ASM: a very small and fast Java bytecode manipulation framework
  * Copyright (c) 2000-2011 INRIA, France Telecom
  * All rights reserved.
- *
+ * <p/>
  * Redistribution and use in srccode and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
  * 1. Redistributions of srccode code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
+ * notice, this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
+ * notice, this list of conditions and the following disclaimer in the
+ * documentation and/or other materials provided with the distribution.
  * 3. Neither the className of the copyright holders nor the names of its
- *    contributors may be used to endorse or promote products derived from
- *    this software without specific prior written permission.
- *
+ * contributors may be used to endorse or promote products derived from
+ * this software without specific prior written permission.
+ * <p/>
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -48,17 +48,17 @@ public class RemappingClassAdapter extends ClassVisitor {
     }
 
     protected RemappingClassAdapter(final int api, final ClassVisitor cv,
-            final Remapper remapper) {
+                                    final Remapper remapper) {
         super(api, cv);
         this.remapper = remapper;
     }
 
     @Override
     public void visit(int version, int access, String name, String signature,
-            String superName, String[] interfaces) {
+                      String superName, String[] interfaces) {
         this.className = name;
         super.visit(version, access, remapper.mapType(name), remapper
-                .mapSignature(signature, false), remapper.mapType(superName),
+                        .mapSignature(signature, false), remapper.mapType(superName),
                 interfaces == null ? null : remapper.mapTypes(interfaces));
     }
 
@@ -71,7 +71,7 @@ public class RemappingClassAdapter extends ClassVisitor {
 
     @Override
     public AnnotationVisitor visitTypeAnnotation(int typeRef,
-            TypePath typePath, String desc, boolean visible) {
+                                                 TypePath typePath, String desc, boolean visible) {
         AnnotationVisitor av = super.visitTypeAnnotation(typeRef, typePath,
                 remapper.mapDesc(desc), visible);
         return av == null ? null : createRemappingAnnotationAdapter(av);
@@ -79,7 +79,7 @@ public class RemappingClassAdapter extends ClassVisitor {
 
     @Override
     public FieldVisitor visitField(int access, String name, String desc,
-            String signature, Object value) {
+                                   String signature, Object value) {
         FieldVisitor fv = super.visitField(access,
                 remapper.mapFieldName(className, name, desc),
                 remapper.mapDesc(desc), remapper.mapSignature(signature, true),
@@ -89,11 +89,11 @@ public class RemappingClassAdapter extends ClassVisitor {
 
     @Override
     public MethodVisitor visitMethod(int access, String name, String desc,
-            String signature, String[] exceptions) {
+                                     String signature, String[] exceptions) {
         String newDesc = remapper.mapMethodDesc(desc);
         MethodVisitor mv = super.visitMethod(access, remapper.mapMethodName(
-                className, name, desc), newDesc, remapper.mapSignature(
-                signature, false),
+                        className, name, desc), newDesc, remapper.mapSignature(
+                        signature, false),
                 exceptions == null ? null : remapper.mapTypes(exceptions));
         return mv == null ? null : createRemappingMethodAdapter(access,
                 newDesc, mv);
@@ -101,7 +101,7 @@ public class RemappingClassAdapter extends ClassVisitor {
 
     @Override
     public void visitInnerClass(String name, String outerName,
-            String innerName, int access) {
+                                String innerName, int access) {
         // TODO should innerName be changed?
         super.visitInnerClass(remapper.mapType(name), outerName == null ? null
                 : remapper.mapType(outerName), innerName, access);
@@ -110,7 +110,7 @@ public class RemappingClassAdapter extends ClassVisitor {
     @Override
     public void visitOuterClass(String owner, String name, String desc) {
         super.visitOuterClass(remapper.mapType(owner), name == null ? null
-                : remapper.mapMethodName(owner, name, desc),
+                        : remapper.mapMethodName(owner, name, desc),
                 desc == null ? null : remapper.mapMethodDesc(desc));
     }
 
@@ -119,7 +119,7 @@ public class RemappingClassAdapter extends ClassVisitor {
     }
 
     protected MethodVisitor createRemappingMethodAdapter(int access,
-            String newDesc, MethodVisitor mv) {
+                                                         String newDesc, MethodVisitor mv) {
         return new RemappingMethodAdapter(access, newDesc, mv, remapper);
     }
 

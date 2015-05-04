@@ -12,7 +12,9 @@ import org.osgl.util.E;
 public abstract class ClassDetector extends BytecodeVisitor {
 
     private String className;
+
     public abstract boolean found();
+
     public String className() {
         return className;
     }
@@ -82,7 +84,7 @@ public abstract class ClassDetector extends BytecodeVisitor {
             @Override
             public void visit(String name, Object value) {
                 super.visit(name, value);
-                found = found || "value".equals(name) && (value instanceof Type) && ((Type)value).getClassName().equals(expected);
+                found = found || "value".equals(name) && (value instanceof Type) && ((Type) value).getClassName().equals(expected);
             }
         }
     }
@@ -91,11 +93,11 @@ public abstract class ClassDetector extends BytecodeVisitor {
         return Extends.class.getName().equals(Type.getType(desc).getClassName());
     }
 
-    public static ClassDetector chain(ClassWriter cw, ClassFilter ... filters) {
-        return (ClassDetector)BytecodeVisitor.chain(cw, of(filters));
+    public static ClassDetector chain(ClassWriter cw, ClassFilter... filters) {
+        return (ClassDetector) BytecodeVisitor.chain(cw, of(filters));
     }
 
-    public static ClassDetector of(final ClassFilter ... filters) {
+    public static ClassDetector of(final ClassFilter... filters) {
         E.illegalArgumentIf(filters.length == 0);
         if (filters.length == 1) {
             return new FilteredClassDetector(filters[0]);

@@ -1,20 +1,20 @@
-/***
+/**
  * ASM: a very small and fast Java bytecode manipulation framework
  * Copyright (c) 2000-2011 INRIA, France Telecom
  * All rights reserved.
- *
+ * <p/>
  * Redistribution and use in srccode and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
  * 1. Redistributions of srccode code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
+ * notice, this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
+ * notice, this list of conditions and the following disclaimer in the
+ * documentation and/or other materials provided with the distribution.
  * 3. Neither the className of the copyright holders nor the names of its
- *    contributors may be used to endorse or promote products derived from
- *    this software without specific prior written permission.
- *
+ * contributors may be used to endorse or promote products derived from
+ * this software without specific prior written permission.
+ * <p/>
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -37,7 +37,7 @@ import java.util.HashMap;
 
 /**
  * A constant pool.
- * 
+ *
  * @author Eric Bruneton
  */
 public class ConstantPool extends HashMap<Constant, Constant> {
@@ -136,7 +136,7 @@ public class ConstantPool extends HashMap<Constant, Constant> {
     }
 
     public Constant newHandle(final int tag, final String owner,
-            final String name, final String desc) {
+                              final String name, final String desc) {
         key4.set((char) ('h' - 1 + tag), owner, name, desc);
         Constant result = get(key4);
         if (result == null) {
@@ -185,7 +185,7 @@ public class ConstantPool extends HashMap<Constant, Constant> {
     }
 
     public Constant newField(final String owner, final String name,
-            final String desc) {
+                             final String desc) {
         key3.set('G', owner, name, desc);
         Constant result = get(key3);
         if (result == null) {
@@ -198,7 +198,7 @@ public class ConstantPool extends HashMap<Constant, Constant> {
     }
 
     public Constant newMethod(final String owner, final String name,
-            final String desc, final boolean itf) {
+                              final String desc, final boolean itf) {
         key3.set(itf ? 'N' : 'M', owner, name, desc);
         Constant result = get(key3);
         if (result == null) {
@@ -211,7 +211,7 @@ public class ConstantPool extends HashMap<Constant, Constant> {
     }
 
     public Constant newInvokeDynamic(String name, String desc, Handle bsm,
-            Object... bsmArgs) {
+                                     Object... bsmArgs) {
         key5.set(name, desc, bsm, bsmArgs);
         Constant result = get(key5);
         if (result == null) {

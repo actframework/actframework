@@ -1,20 +1,20 @@
-/***
+/**
  * ASM: a very small and fast Java bytecode manipulation framework
  * Copyright (c) 2000-2011 INRIA, France Telecom
  * All rights reserved.
- *
+ * <p/>
  * Redistribution and use in srccode and binary forms, with or without
  * modification, are permitted provided that the following conditions
  * are met:
  * 1. Redistributions of srccode code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer.
+ * notice, this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright
- *    notice, this list of conditions and the following disclaimer in the
- *    documentation and/or other materials provided with the distribution.
+ * notice, this list of conditions and the following disclaimer in the
+ * documentation and/or other materials provided with the distribution.
  * 3. Neither the className of the copyright holders nor the names of its
- *    contributors may be used to endorse or promote products derived from
- *    this software without specific prior written permission.
- *
+ * contributors may be used to endorse or promote products derived from
+ * this software without specific prior written permission.
+ * <p/>
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
@@ -34,7 +34,7 @@ import org.osgl.oms.asm.signature.SignatureVisitor;
 
 /**
  * A {@link org.osgl.oms.asm.signature.SignatureVisitor} that checks that its methods are properly used.
- * 
+ *
  * @author Eric Bruneton
  */
 public class CheckSignatureAdapter extends SignatureVisitor {
@@ -103,7 +103,7 @@ public class CheckSignatureAdapter extends SignatureVisitor {
      * Creates a new {@link CheckSignatureAdapter} object. <i>Subclasses must
      * not use this constructor</i>. Instead, they must use the
      * {@link #CheckSignatureAdapter(int, int, org.osgl.oms.asm.signature.SignatureVisitor)} version.
-     * 
+     *
      * @param type
      *            the type of signature to be checked. See
      *            {@link #CLASS_SIGNATURE}, {@link #METHOD_SIGNATURE} and
@@ -118,7 +118,7 @@ public class CheckSignatureAdapter extends SignatureVisitor {
 
     /**
      * Creates a new {@link CheckSignatureAdapter} object.
-     * 
+     *
      * @param api
      *            the ASM API version implemented by this visitor. Must be one
      *            of {@link org.osgl.oms.asm.Opcodes#ASM4} or {@link org.osgl.oms.asm.Opcodes#ASM5}.
@@ -131,7 +131,7 @@ public class CheckSignatureAdapter extends SignatureVisitor {
      *            <tt>null</tt>.
      */
     protected CheckSignatureAdapter(final int api, final int type,
-            final SignatureVisitor sv) {
+                                    final SignatureVisitor sv) {
         super(api);
         this.type = type;
         this.state = EMPTY;

@@ -38,7 +38,7 @@ public class ControllerClassMetaInfoManager {
     }
 
     public void mergeActionMetaInfo() {
-        for (ControllerClassMetaInfo info: controllers.values()) {
+        for (ControllerClassMetaInfo info : controllers.values()) {
             info.merge(this);
         }
     }

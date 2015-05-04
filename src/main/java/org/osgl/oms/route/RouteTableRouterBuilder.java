@@ -13,11 +13,11 @@ import java.util.List;
 /**
  * {@code RouteTableRouterBuilder} take a list of route map definition line and
  * build the router. The line of a route map definition should look like:
- *
+ * <p/>
  * <pre>
  * [http-method] [url-path] [action-definition]
  * </pre>
- *
+ * <p/>
  * Where http-method could be one of the following:
  * <ul>
  * <li>GET</li>
@@ -25,10 +25,10 @@ import java.util.List;
  * <li>PUT</li>
  * <li>DELETE</li>
  * </ul>
- *
+ * <p/>
  * url-path defines the incoming URL path, and it could
  * be either static or dynamic. For example,
- *
+ * <p/>
  * <pre>
  * # home
  * /
@@ -42,14 +42,14 @@ import java.util.List;
  * # (dynamic) access to a user by ID with regex spec
  * /user/{&lt;[1-9]{5}&gt;id}
  * </pre>
- *
+ * <p/>
  * action-definition could be in either built-in action
  * or controller action method.
- *
+ * <p/>
  * <p>Built-in action definition should be in a format of
  * <code>[directive]: [payload]</code>, for example
  * </p>
- *
+ * <p/>
  * <ul>
  * <li>
  * Echo - write back a text message directly
@@ -76,7 +76,6 @@ import java.util.List;
  * </pre>
  * </li>
  * </ul>
- *
  */
 public class RouteTableRouterBuilder implements RouterBuilder {
 

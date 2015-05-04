@@ -9,6 +9,7 @@ import static org.osgl.oms.controller.Controller.Util.*;
 public class HelloWorld {
     public static void main(String[] args) {
         staticFileLocation("/public");
+        externalFileLocation("/tmp");
         get("/", echo("hello world"));
         get("/bye", new Handler() {
             @Override

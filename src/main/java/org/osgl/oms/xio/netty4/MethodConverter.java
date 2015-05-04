@@ -8,6 +8,7 @@ import static io.netty.handler.codec.http.HttpMethod.*;
 
 enum MethodConverter {
     ;
+
     static H.Method netty2osgl(HttpMethod nettyMethod) {
         if (eq(GET, nettyMethod)) {
             return H.Method.GET;
@@ -31,16 +32,24 @@ enum MethodConverter {
 
     static HttpMethod osgl2netty(H.Method osglMethod) {
         switch (osglMethod) {
-        case GET: return GET;
-        case POST: return POST;
-        case PUT: return PUT;
-        case DELETE: return DELETE;
-        case HEAD: return HEAD;
-        case CONNECT: return CONNECT;
-        case TRACE: return TRACE;
-        case OPTIONS: return OPTIONS;
-        default:
-            throw E.unexpected("Unknown OSGL Http Method: %s", osglMethod);
+            case GET:
+                return GET;
+            case POST:
+                return POST;
+            case PUT:
+                return PUT;
+            case DELETE:
+                return DELETE;
+            case HEAD:
+                return HEAD;
+            case CONNECT:
+                return CONNECT;
+            case TRACE:
+                return TRACE;
+            case OPTIONS:
+                return OPTIONS;
+            default:
+                throw E.unexpected("Unknown OSGL Http Method: %s", osglMethod);
         }
     }
 

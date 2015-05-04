@@ -1,8 +1,6 @@
 package org.osgl.oms.controller.bytecode;
 
 import org.osgl._;
-import org.osgl.oms.app.App;
-import org.osgl.oms.app.AppClassLoader;
 import org.osgl.oms.asm.ClassVisitor;
 import org.osgl.oms.asm.MethodVisitor;
 import org.osgl.oms.asm.Type;
@@ -77,13 +75,14 @@ public class ControllerEnhancer extends AppBytecodeEnhancer<ControllerEnhancer> 
 
     private static enum _F {
         ;
+
         private static final _.Predicate<String> isController(final ControllerClassMetaInfoHolder infoSrc) {
-          return new _.Predicate<String>() {
-              @Override
-              public boolean test(String s) {
-                  return infoSrc.controllerClassMetaInfo(s) != null;
-              }
-          };
+            return new _.Predicate<String>() {
+                @Override
+                public boolean test(String s) {
+                    return infoSrc.controllerClassMetaInfo(s) != null;
+                }
+            };
         }
     }
 }
