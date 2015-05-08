@@ -1,5 +1,6 @@
 package org.osgl.oms.app;
 
+import org.apache.commons.codec.Charsets;
 import org.osgl._;
 import org.osgl.logging.L;
 import org.osgl.logging.Logger;
@@ -8,6 +9,7 @@ import org.osgl.oms.conf.AppConfLoader;
 import org.osgl.oms.conf.AppConfig;
 import org.osgl.oms.route.RouteTableRouterBuilder;
 import org.osgl.oms.route.Router;
+import org.osgl.util.Crypto;
 import org.osgl.util.IO;
 
 import java.io.File;
@@ -89,6 +91,18 @@ public class App {
 
     public AppBuilder builder() {
         return builder;
+    }
+
+    public String sign(String message) {
+        return Crypto.sign(message, config.secret().getBytes(Charsets.UTF_8));
+    }
+
+    public String encrypt(String message) {
+        return Crypto.encryptAES(message, config.secret());
+    }
+
+    public String decrypt(String message) {
+        return Crypto.decryptAES(message, config.secret());
     }
 
     @Override

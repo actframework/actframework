@@ -30,10 +30,58 @@ import java.util.Map;
 public enum AppConfigKey implements ConfigKey {
 
     /**
+     * Specify {@link org.osgl.cache.CacheService Cache service} implementation
+     */
+    CACHE_IMPL("cache.impl"),
+
+    /**
+     * {@code oms.controller_package} specify the java
+     * package where controller classes are aggregated.
+     * <p>Once controller_package is specified then the application developer could
+     * write short request handler in the routing table. For example, suppose an original
+     * routing table is specified as</p>
+     * <table>
+     * <tr>
+     * <th>HTTP Method</th>
+     * <th>URL Path</th>
+     * <th>Action handler</th>
+     * </tr>
+     * <tr>
+     * <td>GET</td>
+     * <td>/users</td>
+     * <td>com.mycorp.myproj.controllers.UserController.list</td>
+     * </tr>
+     * </table>
+     * <p>If {@code oms.controller_package} is specified as {@code com.mycorp.myproj.controllers}
+     * then the routing table could be simplified as:</p>
+     * <table>
+     * <tr>
+     * <th>HTTP Method</th>
+     * <th>URL Path</th>
+     * <th>Action handler</th>
+     * </tr>
+     * <tr>
+     * <td>GET</td>
+     * <td>/users</td>
+     * <td>UserController.list</td>
+     * </tr>
+     * </table>
+     */
+    CONTROLLER_PACKAGE("controller_package"),
+
+    /**
      * {@code oms.encoding} specifies application default encoding
      * <p>Default value: utf-8</p>
      */
     ENCODING("encoding", Charsets.UTF_8.name().toLowerCase()),
+
+    /**
+     * {@code oms.host} specifies the host the application
+     * reside on.
+     * <p/>
+     * <p>Default value: {@code localhost}</p>
+     */
+    HOST("host", "localhost"),
 
     /**
      * {@code oms.locale} specifies the application default locale
@@ -58,33 +106,6 @@ public enum AppConfigKey implements ConfigKey {
     },
 
     /**
-     * {@code oms.source_version} specifies the java version
-     * of the srccode code. This configuration is used only
-     * in dev mode.
-     * <p>Default value: 1.7</p>
-     */
-    SOURCE_VERSION("source_version", "1." + _.JAVA_VERSION),
-
-    /**
-     * {@code oms.url_context} specifies the context part
-     * of the URL. This is used for OMS to dispatch the
-     * incoming request to the application. Usually
-     * the {@link #PORT port} configuration is preferred
-     * than this configuration
-     * <p/>
-     * <p>Default value is empty string</p>
-     */
-    URL_CONTEXT("url_context"),
-
-    /**
-     * {@code oms.host} specifies the host the application
-     * reside on.
-     * <p/>
-     * <p>Default value: {@code localhost}</p>
-     */
-    HOST("host", "localhost"),
-
-    /**
      * {@code oms.port} specifies the port the application
      * listen to. This is preferred way to dispatch the
      * request to the application.
@@ -103,47 +124,15 @@ public enum AppConfigKey implements ConfigKey {
         }
     },
 
-    X_FORWARD_PROTOCOL("x_forward_protocol", "http"),
-
     /**
-     * {@code oms.controller_package} specify the java
-     * package where controller classes are aggregated.
-     * <p/>
-     * <p>Once controller_package is specified then the application developer could
-     * write short request handler in the routing table. For example, if an original
-     * routing table is specified as</p>
-     * <p/>
-     * <table>
-     * <tr>
-     * <th>HTTP Method</th>
-     * <th>URL Path</th>
-     * <th>Action handler</th>
-     * </tr>
-     * <tr>
-     * <td>GET</td>
-     * <td>/users</td>
-     * <td>com.mycorp.myproj.controllers.UserController.list</td>
-     * </tr>
-     * </table>
-     * <p/>
-     * <p>If {@code oms.controller_package} is specified as {@code com.mycorp.myproj.controllers}
-     * then the routing table could be simplified as:</p>
-     * <p/>
-     * <p/>
-     * <table>
-     * <tr>
-     * <th>HTTP Method</th>
-     * <th>URL Path</th>
-     * <th>Action handler</th>
-     * </tr>
-     * <tr>
-     * <td>GET</td>
-     * <td>/users</td>
-     * <td>UserController.list</td>
-     * </tr>
-     * </table>
+     * {@code ping.path} specify the ping path.
+     * If this setting is specified, then when session resolving, system
+     * will check if the current URL matches the setting. If matched
+     * then session cookie expiration time will not be changed. Otherwise
+     * the expiration time will refresh
+     * <p>Default value: {@code null}</p>
      */
-    CONTROLLER_PACKAGE("controller_package"),
+    PING_PATH("ping.path"),
 
     /**
      * {@code scan_package}
@@ -157,6 +146,78 @@ public enum AppConfigKey implements ConfigKey {
     SCAN_PACKAGE("scan_package"),
 
     /**
+     * {@code secret}
+     * Specifies the secret key the application used to do general
+     * encrypt/decrypt/sign etc
+     * <p>Default value: {@code myawesomeapp}</p>
+     */
+    SECRET("secret", "myawesomeapp"),
+
+    /**
+     * {@code session.prefix} specifies the prefix to be prepended
+     * to the session cookie name. Let's say the default cookie name is
+     * {@code oms_session}, and user specifies the prefix {@code my_app}
+     * then the session cookie name will be {@code my_app_session}.
+     * <p>Note this setting also impact the {@link AppConfig#flashCookieName()}</p>
+     * <p>Default value: {@code OMS}</p>
+     */
+    SESSION_PREFIX("session.prefix", "oms"),
+
+    /**
+     * {@code session.ttl} specifies the session duration in seconds.
+     * If user failed to interact with server for amount of time that
+     * exceeds the setting then the session will be destroyed
+     *
+     * <p>Default value: {@code 60 * 30} i.e half an hour</p>
+     */
+    SESSION_TTL("session.ttl", 60 * 30),
+
+    /**
+     * {@code session.persistent.enabled} specify whether the system
+     * should treat session cookie as persistent cookie. If this setting
+     * is enabled, then the user's session will not be destroyed after
+     * browser closed.
+     *
+     * <p>Default value: {@code false}</p>
+     *
+     * See <a href="http://en.wikipedia.org/wiki/HTTP_cookie#Persistent_cookie">HTTP_cookie</a>
+     */
+    SESSION_PERSISTENT_ENABLED("session.persistent.enabled", false),
+
+    /**
+     * {@code session.encrypted.enabled} specify whether the system should
+     * encrypt the key/value pairs in the session cookie. Enable session
+     * encryption will greatly improve the security but with the cost
+     * of additional CPU usage and a little bit longer time on request
+     * processing.
+     *
+     * <p>Default value: {@code false}</p>
+     */
+    SESSION_ENCRYPT_ENABLED("session.encrypt.enabled", false),
+
+    /**
+     * {@code session.http_only.enabled} specifies whether the session cookie should
+     * be set as http-only. Enable http only session will cause session cookie only
+     * effective in https connection. Literally this will enforce the web site to run
+     * default by https.
+     *
+     * <p>Default value: {@code true}</p>
+     *
+     * <p><b>Note</b> when {@link OMS OMS server} is running in {@link org.osgl.oms.OMS.Mode#DEV mode}
+     * session http only will be disabled without regarding to the {@code session.http_only.enabled}
+     * setting</p>
+     */
+    SESSION_HTTP_ONLY_ENABLED("session.http_only.enabled", true),
+
+    /**
+     * {@code oms.source_version} specifies the java version
+     * of the srccode code. This configuration is used only
+     * in dev mode.
+     * <p>Default value: 1.7</p>
+     */
+    SOURCE_VERSION("source_version", "1." + _.JAVA_VERSION),
+
+    /**
      * {@code template.home} specifies where the view templates resides.
      * If not specified then will use the {@link View#name() view name
      * in lower case} as the template home if that view is used.
@@ -164,15 +225,6 @@ public enum AppConfigKey implements ConfigKey {
      * <p>Default value: {@code default}</p>
      */
     TEMPLATE_HOME("template.home"),
-
-    /**
-     * {@code view.default} specifies the default view solution. If there
-     * are multiple views registered and default view are available, then
-     * it will be used at priority to load the templates
-     * <p/>
-     * <p>Default value: {@code rythm}</p>
-     */
-    VIEW_DEFAULT("view.default"),
 
     /**
      * {@code template_path_resolver.impl} specifies the class that
@@ -186,10 +238,28 @@ public enum AppConfigKey implements ConfigKey {
     TEMPLATE_PATH_RESOLVER("template_path_resolver.impl"),
 
     /**
-     * Specify {@link org.osgl.cache.CacheService Cache service} implementation
+     * {@code oms.url_context} specifies the context part
+     * of the URL. This is used for OMS to dispatch the
+     * incoming request to the application. Usually
+     * the {@link #PORT port} configuration is preferred
+     * than this configuration
+     * <p/>
+     * <p>Default value is empty string</p>
      */
-    CACHE_IMPL("cache.impl"),;
+    URL_CONTEXT("url_context"),
 
+    /**
+     * {@code view.default} specifies the default view solution. If there
+     * are multiple views registered and default view are available, then
+     * it will be used at priority to load the templates
+     * <p/>
+     * <p>Default value: {@code rythm}</p>
+     */
+    VIEW_DEFAULT("view.default"),
+
+    X_FORWARD_PROTOCOL("x_forward_protocol", "http"),
+
+    ;
     private String key;
     private Object defVal;
     private static Logger logger = L.get(AppConfigKey.class);

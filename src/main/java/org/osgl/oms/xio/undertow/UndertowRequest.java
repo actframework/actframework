@@ -101,7 +101,7 @@ public class UndertowRequest extends RequestImplBase<UndertowRequest> {
     }
 
     @Override
-    protected String _remoteAddr() {
+    protected String _ip() {
         InetSocketAddress sourceAddress = hse.getSourceAddress();
         if (sourceAddress == null) {
             return "";

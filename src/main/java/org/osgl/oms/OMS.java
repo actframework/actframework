@@ -14,6 +14,7 @@ import org.osgl.oms.handler.builtin.controller.*;
 import org.osgl.oms.handler.builtin.controller.impl.ReflectedHandlerInvoker;
 import org.osgl.oms.plugin.PluginScanner;
 import org.osgl.oms.util.Banner;
+import org.osgl.oms.util.SessionManager;
 import org.osgl.oms.view.ViewManager;
 import org.osgl.oms.xio.NetworkClient;
 import org.osgl.oms.xio.NetworkService;
@@ -88,10 +89,12 @@ public final class OMS {
     private static Logger logger = L.get(OMS.class);
     private static OmsConfig conf;
     private static Mode mode = Mode.PROD;
+    private static boolean multiTenant = false;
     private static AppManager appManager;
     private static ViewManager viewManager;
     private static NetworkService network;
     private static BytecodeEnhancerManager enhancerManager;
+    private static SessionManager sessionManager;
 
 
     public static BootstrapClassLoader classLoader() {
@@ -110,6 +113,10 @@ public final class OMS {
         return conf;
     }
 
+    public static boolean multiTenant() {
+        return multiTenant;
+    }
+
     public static BytecodeEnhancerManager enhancerManager() {
         return enhancerManager;
     }
@@ -118,16 +125,21 @@ public final class OMS {
         return viewManager;
     }
 
+    public static SessionManager sessionManager() {
+        return sessionManager;
+    }
+
     public static void start() {
         Banner.print("0.0.1-SNAPSHOT");
         loadConfig();
         //initExecuteService();
         initEnhancerManager();
+        initViewManager();
+        initSessionManager();
         loadPlugins();
         initNetworkLayer();
         initApplicationManager();
         startNetworkLayer();
-
     }
 
     public static RequestServerRestart requestRestart() {
@@ -163,6 +175,10 @@ public final class OMS {
 
     private static void initViewManager() {
         viewManager = new ViewManager();
+    }
+
+    private static void initSessionManager() {
+        sessionManager = new SessionManager();
     }
 
     private static void initExecuteService() {

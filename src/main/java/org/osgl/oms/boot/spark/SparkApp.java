@@ -1,13 +1,12 @@
-package org.osgl.oms.boot;
+package org.osgl.oms.boot.spark;
 
-import org.osgl._;
-import org.osgl.exception.NotAppliedException;
 import org.osgl.http.H;
 import org.osgl.mvc.result.Forbidden;
 import org.osgl.mvc.result.Result;
 import org.osgl.oms.app.App;
 import org.osgl.oms.app.AppContext;
 import org.osgl.oms.app.ProjectLayout;
+import org.osgl.oms.boot.ProjectLayoutBuilder;
 import org.osgl.oms.conf.AppConfig;
 import org.osgl.oms.handler.DelegateRequestHandler;
 import org.osgl.oms.handler.RequestHandler;
@@ -27,7 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
-import static org.osgl.oms.boot.SparkApp.Filter.filter;
+import static org.osgl.oms.boot.spark.SparkApp.Filter.filter;
 
 /**
  * Support Spark framework style app
@@ -44,6 +43,8 @@ public class SparkApp extends App {
     private static Map<String, List<RequestHandler>> afterHandlers = C.newMap();
     private static List<Filter> patternMatchedBeforeHandlers = C.newList();
     private static List<Filter> patternMatchedAfterHandlers = C.newList();
+    private static C.List<Class<? extends Exception>> registeredExceptions = C.newList();
+    private static Map<Class<? extends Exception>, List<RequestHandler>> exceptionHandlers = C.newMap();
 
     private AppConfig config;
     private Router router;
@@ -152,6 +153,18 @@ public class SparkApp extends App {
         _start();
     }
 
+    public static void on(Class<? extends Exception> e, RequestHandler handler) {
+        E.illegalArgumentIf(Result.class.isAssignableFrom(e), "Result is handled by framework already...");
+        List<RequestHandler> l = exceptionHandlers.get(e);
+        if (null == l) {
+            l = C.newList(handler);
+            exceptionHandlers.put(e, l);
+            registeredExceptions = registeredExceptions.append(e).sort();
+        } else {
+            l.add(handler);
+        }
+    }
+
     public static void before(RequestHandler handler) {
         before(GLOBAL, handler);
     }
@@ -234,7 +247,7 @@ public class SparkApp extends App {
             handle(context.req(), context.resp());
         }
 
-        public abstract void handle(H.Request req, H.Response resp);
+        public void handle(H.Request req, H.Response resp) {}
     }
 
     private static class FilteredHandler extends DelegateRequestHandler {
@@ -249,9 +262,15 @@ public class SparkApp extends App {
         public void handle(AppContext ctx) {
             try {
                 ctx.saveLocal();
-                handleBefore(ctx);
-                super.handle(ctx);
-                handleAfter(ctx);
+                try {
+                    handleBefore(ctx);
+                    super.handle(ctx);
+                    handleAfter(ctx);
+                } catch (Result r) {
+                    throw r;
+                } catch (Exception e) {
+                    onException(e, ctx);
+                }
             } catch (Result result) {
                 onResult(result, ctx);
             } finally {
@@ -263,6 +282,17 @@ public class SparkApp extends App {
             H.Request req = context.req();
             H.Response resp = context.resp();
             result.apply(req, resp);
+        }
+
+        private void onException(Exception e, AppContext ctx) {
+            for (Class<? extends Exception> c: registeredExceptions) {
+                if (c.isInstance(e)) {
+                    List<RequestHandler> l = exceptionHandlers.get(c);
+                    for (RequestHandler r: l) {
+                        r.handle(ctx);
+                    }
+                }
+            }
         }
 
         private void handleBefore(AppContext ctx) {

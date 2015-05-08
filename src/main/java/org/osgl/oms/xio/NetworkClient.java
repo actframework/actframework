@@ -31,6 +31,8 @@ public class NetworkClient extends _.F1<AppContext, Void> {
             rh.handle(ctx);
         } catch (Result r) {
             r.apply(req, ctx.resp());
+        } finally {
+            ctx.clear();
         }
     }
 

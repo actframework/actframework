@@ -5,6 +5,7 @@ import org.osgl.mvc.result.NotFound;
 import org.osgl.oms.app.AppContext;
 import org.osgl.oms.controller.ParamNames;
 import org.osgl.oms.handler.RequestHandlerBase;
+import org.osgl.oms.handler.builtin.controller.FastRequestHandler;
 import org.osgl.util.E;
 import org.osgl.util.FastStr;
 import org.osgl.util.IO;
@@ -12,7 +13,7 @@ import org.osgl.util.S;
 
 import java.io.InputStream;
 
-public class StaticFileGetter extends RequestHandlerBase {
+public class StaticFileGetter extends FastRequestHandler {
     private String base;
     // by default base is folder
     private boolean baseIsFile;

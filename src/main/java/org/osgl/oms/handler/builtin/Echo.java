@@ -3,9 +3,10 @@ package org.osgl.oms.handler.builtin;
 import org.osgl.http.H;
 import org.osgl.oms.app.AppContext;
 import org.osgl.oms.handler.RequestHandlerBase;
+import org.osgl.oms.handler.builtin.controller.FastRequestHandler;
 import org.osgl.util.S;
 
-public class Echo extends RequestHandlerBase {
+public class Echo extends FastRequestHandler {
 
     private String msg;
     private String contentType;

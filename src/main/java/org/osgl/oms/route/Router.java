@@ -8,6 +8,7 @@ import org.osgl.oms.app.App;
 import org.osgl.oms.app.AppContext;
 import org.osgl.oms.conf.AppConfig;
 import org.osgl.oms.controller.ParamNames;
+import org.osgl.oms.handler.DelegateRequestHandler;
 import org.osgl.oms.handler.RequestHandler;
 import org.osgl.oms.handler.RequestHandlerResolver;
 import org.osgl.oms.handler.RequestHandlerResolverBase;
@@ -385,7 +386,7 @@ public class Router {
 
         Node handler(RequestHandler handler) {
             E.NPE(handler);
-            this.handler = handler;
+            this.handler = handler.requireResolveContext() ? new ContextualHandler(handler) : handler;
             return this;
         }
 
@@ -486,6 +487,18 @@ public class Router {
             } catch (IllegalArgumentException e) {
                 return null;
             }
+        }
+    }
+
+    private static class ContextualHandler extends DelegateRequestHandler {
+        protected ContextualHandler(RequestHandler next) {
+            super(next);
+        }
+
+        @Override
+        public void handle(AppContext context) {
+            context.resolve();
+            super.handle(context);
         }
     }
 

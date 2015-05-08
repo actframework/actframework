@@ -17,4 +17,8 @@ public abstract class RequestHandlerBase extends _.F1<AppContext, Void> implemen
         return false;
     }
 
+    @Override
+    public boolean requireResolveContext() {
+        return true;
+    }
 }

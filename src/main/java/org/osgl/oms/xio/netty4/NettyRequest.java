@@ -55,7 +55,7 @@ public class NettyRequest extends RequestImplBase<NettyRequest> {
     }
 
     @Override
-    protected String _remoteAddr() {
+    protected String _ip() {
         return nc.channel().remoteAddress().toString();
     }
 

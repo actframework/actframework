@@ -39,4 +39,12 @@ public interface RequestHandler extends _.Function<AppContext, Void> {
      */
     boolean supportPartialPath();
 
+    /**
+     * Returns if the handler require framework to resolve context. Usually it needs to
+     * resolve the context so that handler can access request params, session/flash etc.
+     * However some static handlers doesn't require framework to do those things, e.g.
+     * {@link org.osgl.oms.handler.builtin.StaticFileGetter}
+     */
+    boolean requireResolveContext();
+
 }

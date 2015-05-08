@@ -1,17 +1,16 @@
 package sparkapp;
 
-import org.osgl.oms.boot.SparkApp;
+import org.osgl.oms.boot.spark.SparkApp;
 
-import static org.osgl.oms.boot.SparkApp.*;
-import static org.osgl.oms.controller.Controller.Util.*;
+import static org.osgl.oms.boot.spark.SparkApp.*;
 
 /**
  * Demonstrate how to use the static and external file location API
  *
- * @see {@link org.osgl.oms.boot.SparkApp#staticFileLocation(String)}
- * @see {@link org.osgl.oms.boot.SparkApp#staticFileLocation(String, String)}
- * @see {@link org.osgl.oms.boot.SparkApp#externalFileLocation(String)}
- * @see {@link org.osgl.oms.boot.SparkApp#externalFileLocation(String, String)}
+ * @see {@link SparkApp#staticFileLocation(String)}
+ * @see {@link SparkApp#staticFileLocation(String, String)}
+ * @see {@link SparkApp#externalFileLocation(String)}
+ * @see {@link SparkApp#externalFileLocation(String, String)}
  */
 public class StaticFiles {
     public static void main(String[] args) {

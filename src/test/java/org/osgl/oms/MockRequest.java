@@ -57,7 +57,7 @@ public class MockRequest extends H.Request<MockRequest> {
     }
 
     @Override
-    protected String _remoteAddr() {
+    protected String _ip() {
         return null;
     }
 

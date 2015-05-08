@@ -3,6 +3,8 @@ package org.osgl.oms.app;
 import org.osgl._;
 import org.osgl.concurrent.ContextLocal;
 import org.osgl.http.H;
+import org.osgl.http.H.Cookie;
+import org.osgl.oms.OMS;
 import org.osgl.oms.conf.AppConfig;
 import org.osgl.oms.view.Template;
 import org.osgl.util.C;
@@ -34,7 +36,6 @@ public class AppContext {
         this.app = app;
         this.request = request;
         this.response = response;
-        _init();
     }
 
     public H.Request req() {
@@ -150,6 +151,44 @@ public class AppContext {
         return this;
     }
 
+    /**
+     * Initialize params/renderArgs/attributes and then
+     * resolve session and flash from cookies
+     */
+    public void resolve() {
+        _init();
+        resolveSession();
+        resolveFlash();
+    }
+
+    /**
+     * Dissolve session and flash into cookies.
+     * <p><b>Note</b> this method must be called
+     * before any content has been committed to
+     * response output stream/writer</p>
+     */
+    public void dissolve() {
+        dissolveFlash();
+        dissolveSession();
+    }
+
+    /**
+     * Clear all internal data store/cache and then
+     * remove this context from thread local
+     */
+    public void destroy() {
+        this.allParams.clear();
+        this.extraParams.clear();
+        this.requestParamCache.clear();
+        this.renderArgs.clear();
+        this.attributes.clear();
+        this.template = null;
+        this.app = null;
+        this.request = null;
+        this.response = null;
+        AppContext.clear();
+    }
+
     public void saveLocal() {
         _local.set(this);
     }
@@ -261,6 +300,28 @@ public class AppContext {
                 return paramEntrySet;
             }
         };
+    }
+
+    private void resolveSession() {
+        this.session = OMS.sessionManager().resolveSession(this);
+    }
+
+    private void resolveFlash() {
+        this.flash = OMS.sessionManager().resolveFlash(this);
+    }
+
+    private void dissolveSession() {
+        Cookie c = OMS.sessionManager().dissolveSession(this);
+        if (null != c) {
+            resp().addCookie(c);
+        }
+    }
+
+    private void dissolveFlash() {
+        Cookie c = OMS.sessionManager().dissolveFlash(this);
+        if (null != c) {
+            resp().addCookie(c);
+        }
     }
 
     private static ContextLocal<AppContext> _local = _.contextLocal();

@@ -7,7 +7,7 @@ import java.io.File;
 /**
  * Helper to build {@link org.osgl.oms.app.ProjectLayout}
  */
-class ProjectLayoutBuilder implements ProjectLayout {
+public class ProjectLayoutBuilder implements ProjectLayout {
 
     private String appBase;
 
