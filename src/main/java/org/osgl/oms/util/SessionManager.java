@@ -1,5 +1,6 @@
 package org.osgl.oms.util;
 
+import com.sun.org.apache.bcel.internal.classfile.Code;
 import org.apache.commons.codec.Charsets;
 import org.osgl._;
 import org.osgl.exception.NotAppliedException;
@@ -148,14 +149,7 @@ public class SessionManager {
             if (S.blank(val)) {
                 session = processExpiration(session, now, true, req);
             } else {
-                final Session sess = session;
-                resolveFromCookieContent(new _.F2<String, String, Void> () {
-                    @Override
-                    public Void apply(String s, String s2) throws NotAppliedException, _.Break {
-                        sess.put(s, s2);
-                        return null;
-                    }
-                }, val);
+                resolveFromCookieContent(session, val, true);
                 session = processExpiration(session, now, false, req);
             }
             return session;
@@ -167,11 +161,7 @@ public class SessionManager {
             final H.Cookie cookie = req.cookie(flashCookieName);
             H.Flash flash = new H.Flash();
             if (null != cookie) {
-                String s = Codec.decodeUrl(cookie.value(), Charsets.UTF_8);
-                Matcher matcher = COOKIE_PARSER.matcher(s);
-                while (matcher.find()) {
-                    flash.put(matcher.group(1), matcher.group(2));
-                }
+                resolveFromCookieContent(flash, cookie.value(), false);
             }
             return flash;
         }
@@ -194,47 +184,69 @@ public class SessionManager {
                     // session get cleared before
                     session.put(KEY_EXPIRATION, _.ms() + ttl);
                 }
-                StringBuilder sb = new StringBuilder();
-                for (String k : session.keySet()) {
-                    sb.append("\u0000");
-                    sb.append(k);
-                    sb.append(":");
-                    sb.append(session.get(k));
-                    sb.append("\u0000");
-                }
-                String data = sb.toString();
-                if (encryptSession) {
-                    data = app.encrypt(data);
-                }
-                data = Codec.encodeUrl(data, Charsets.UTF_8);
-                String sign = app.sign(data);
-                data = S.builder(sign).append('-').append(data).toString();
+                String data = dissolveIntoCookieContent(session, true);
                 cookie = createCookie(sessionCookieName, data);
             }
             return cookie;
         }
 
         H.Cookie dissolveFlash(AppContext context) {
-
-
+            H.Flash flash = context.flash();
+            if (null == flash || flash.isEmpty()) {
+                return null;
+            }
+            String data = dissolveIntoCookieContent(flash.out(), false);
+            H.Cookie cookie = createCookie(flashCookieName, data);
+            return cookie;
         }
 
-        private void resolveFromCookieContent(_.F2<String, String, ?> valueAcceptor, String content) {
-            int firstDashIndex = content.indexOf("-");
-            if(firstDashIndex > -1) {
-                String sign = content.substring(0, firstDashIndex);
-                String data = content.substring(firstDashIndex + 1);
-                if (sign.equals(app.sign(data))) {
-                    data = Codec.decodeUrl(data, Charsets.UTF_8);
-                    if (encryptSession) {
+        private void resolveFromCookieContent(H.KV<?> kv, String content, boolean isSession) {
+            String data = Codec.decodeUrl(content, Charsets.UTF_8);
+            if (isSession) {
+                if (encryptSession) {
+                    try {
                         data = app.decrypt(data);
+                    } catch (Exception e) {
+                        return;
                     }
-                    Matcher matcher = COOKIE_PARSER.matcher(data);
-                    while (matcher.find()) {
-                        valueAcceptor.apply(matcher.group(1), matcher.group(2));
+                } else {
+                    int firstDashIndex = content.indexOf("-");
+                    if (firstDashIndex < 0) {
+                        return;
+                    }
+                    String sign = content.substring(0, firstDashIndex);
+                    data = content.substring(firstDashIndex + 1);
+                    if (!sign.equals(app.sign(data))) {
+                        return;
                     }
                 }
             }
+            Matcher matcher = COOKIE_PARSER.matcher(data);
+            while (matcher.find()) {
+                kv.load(matcher.group(1), matcher.group(2));
+            }
+        }
+
+        private String dissolveIntoCookieContent(H.KV<?> kv, boolean isSession) {
+            StringBuilder sb = S.builder();
+            for (String k : kv.keySet()) {
+                sb.append("\u0000");
+                sb.append(k);
+                sb.append(":");
+                sb.append(kv.get(k));
+                sb.append("\u0000");
+            }
+            String data = sb.toString();
+            if (isSession) {
+                if (encryptSession) {
+                    data = app.encrypt(data);
+                } else {
+                    String sign = app.sign(data);
+                    data = S.builder(sign).append("-").append(data).toString();
+                }
+            }
+            data = Codec.encodeUrl(data, Charsets.UTF_8);
+            return data;
         }
 
         private Session processExpiration(Session session, long now, boolean freshSession, H.Request request) {
@@ -278,5 +290,5 @@ public class SessionManager {
             }
             return cookie;
         }
-
+    }
 }
