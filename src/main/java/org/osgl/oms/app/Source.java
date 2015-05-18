@@ -65,6 +65,10 @@ public class Source {
 
     private State state = State.CREATED;
 
+    private ICompilationUnit compilationUnit;
+
+    private boolean isController;
+
     private long ts;
 
     private Source(File file, String className) {
@@ -72,6 +76,7 @@ public class Source {
         this.file = file;
         this.simpleName = S.afterLast(className, ".");
         this.packageName = S.beforeLast(className, ".");
+        compilationUnit = _compilationUnit();
     }
 
     public String simpleName() {
@@ -105,6 +110,14 @@ public class Source {
     public void load() {
         code = IO.readContentAsString(file);
         updateState(State.LOADED);
+    }
+
+    public void markAsController() {
+        isController = true;
+    }
+
+    public boolean isController() {
+        return isController;
     }
 
     void compiled(byte[] bytecode) {
@@ -150,68 +163,70 @@ public class Source {
         return null;
     }
 
-    private ICompilationUnit compilationUnit = new ICompilationUnit() {
+    private ICompilationUnit _compilationUnit() {
+        return new ICompilationUnit() {
 
-        char[] mainTypeName = _mainTypeName();
-        char[][] packageName = _packageName();
-        char[] fileName = _fileName();
+            char[] mainTypeName = _mainTypeName();
+            char[][] packageName = _packageName();
+            char[] fileName = _fileName();
 
-        @Override
-        public char[] getContents() {
-            return code().toCharArray();
-        }
-
-        @Override
-        public char[] getMainTypeName() {
-            return mainTypeName;
-        }
-
-        private char[] _mainTypeName() {
-            String s = simpleName();
-            int pos = s.indexOf('$');
-            if (pos > -1) {
-                s = s.substring(0, pos);
+            @Override
+            public char[] getContents() {
+                return code().toCharArray();
             }
-            return s.toCharArray();
-        }
 
-        @Override
-        public char[][] getPackageName() {
-            return packageName;
-        }
-
-        char[][] _packageName() {
-            StringTokenizer tokens = new StringTokenizer(packageName(), ".");
-            char[][] ca = new char[tokens.countTokens() - 1][];
-            for (int i = 0; i < ca.length; i++) {
-                ca[i] = tokens.nextToken().toCharArray();
+            @Override
+            public char[] getMainTypeName() {
+                return mainTypeName;
             }
-            return ca;
-        }
 
-        ;
-
-        @Override
-        public boolean ignoreOptionalProblems() {
-            return false;
-        }
-
-        @Override
-        public char[] getFileName() {
-            return fileName;
-        }
-
-        char[] _fileName() {
-            String s = simpleName();
-            int pos = s.indexOf('$');
-            if (pos > -1) {
-                s = s.substring(0, pos);
+            private char[] _mainTypeName() {
+                String s = simpleName();
+                int pos = s.indexOf('$');
+                if (pos > -1) {
+                    s = s.substring(0, pos);
+                }
+                return s.toCharArray();
             }
-            s = s.replace('.', '/');
-            s = s + ".java";
-            return s.toCharArray();
-        }
-    };
+
+            @Override
+            public char[][] getPackageName() {
+                return packageName;
+            }
+
+            char[][] _packageName() {
+                StringTokenizer tokens = new StringTokenizer(packageName(), ".");
+                char[][] ca = new char[tokens.countTokens()][];
+                for (int i = 0; i < ca.length; i++) {
+                    ca[i] = tokens.nextToken().toCharArray();
+                }
+                return ca;
+            }
+
+            ;
+
+            @Override
+            public boolean ignoreOptionalProblems() {
+                return false;
+            }
+
+            @Override
+            public char[] getFileName() {
+                return fileName;
+            }
+
+            char[] _fileName() {
+                String s = simpleName();
+                int pos = s.indexOf('$');
+                if (pos > -1) {
+                    s = s.substring(0, pos);
+                }
+                s = s.replace('.', '/');
+                s = s + ".java";
+                return s.toCharArray();
+            }
+        };
+    }
 
     ICompilationUnit compilationUnit() {
         return compilationUnit;

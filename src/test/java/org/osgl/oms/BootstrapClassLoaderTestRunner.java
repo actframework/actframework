@@ -2,6 +2,7 @@ package org.osgl.oms;
 
 import org.junit.runners.BlockJUnit4ClassRunner;
 import org.junit.runners.model.InitializationError;
+import org.osgl.oms.boot.server.ServerBootstrapClassLoader;
 import org.osgl.util.E;
 import org.osgl.util.IO;
 import org.osgl.util.S;
@@ -24,7 +25,7 @@ public class BootstrapClassLoaderTestRunner extends BlockJUnit4ClassRunner {
         }
     }
 
-    private static BootstrapClassLoader classLoader() {
+    private static ServerBootstrapClassLoader classLoader() {
         if (null == classLoader) {
             initClassLoader();
         }
@@ -33,7 +34,7 @@ public class BootstrapClassLoaderTestRunner extends BlockJUnit4ClassRunner {
 
     private static void initClassLoader() {
         prepareOmsHome();
-        classLoader = new TestBootstrapClassLoader(TestBase.class.getClassLoader());
+        classLoader = new TestServerBootstrapClassLoader(TestBase.class.getClassLoader());
     }
 
     private static void prepareOmsHome() {
@@ -85,5 +86,5 @@ public class BootstrapClassLoaderTestRunner extends BlockJUnit4ClassRunner {
         }
     }
 
-    public static BootstrapClassLoader classLoader;
+    public static ServerBootstrapClassLoader classLoader;
 }

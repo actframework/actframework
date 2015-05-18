@@ -31,7 +31,7 @@ public class ExceptionHandlerDemo {
         get("/", echo("hello world"));
         get("/some/fragile/place", new Handler() {
             @Override
-            public void handle(H.Request req, H.Response resp) {
+            public Object handle(H.Request req, H.Response resp) {
                 int i = new Random().nextInt(3);
                 switch (i) {
                     case 2:

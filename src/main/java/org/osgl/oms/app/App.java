@@ -9,11 +9,18 @@ import org.osgl.oms.conf.AppConfLoader;
 import org.osgl.oms.conf.AppConfig;
 import org.osgl.oms.route.RouteTableRouterBuilder;
 import org.osgl.oms.route.Router;
+import org.osgl.oms.util.Files;
+import org.osgl.oms.util.FsChangeDetector;
+import org.osgl.oms.util.FsEvent;
+import org.osgl.oms.util.FsEventListener;
+import org.osgl.util.C;
 import org.osgl.util.Crypto;
 import org.osgl.util.IO;
+import org.osgl.util.S;
 
 import java.io.File;
 import java.util.List;
+import java.util.Map;
 
 /**
  * {@code App} represents an application that is deployed in a OMS container
@@ -21,6 +28,9 @@ import java.util.List;
 public class App {
 
     private static Logger logger = L.get(App.class);
+    public static _.Predicate<String> JAVA_SOURCE = S.F.endsWith(".java");
+    private static _.Predicate<String> JAR_FILE = S.F.endsWith(".jar");
+    private static _.Predicate<String> CONF_FILE = S.F.endsWith(".conf").or(S.F.endsWith(".properties"));
 
     private File appBase;
     private File appHome;
@@ -29,6 +39,11 @@ public class App {
     private AppClassLoader classLoader;
     private ProjectLayout layout;
     private AppBuilder builder;
+    private Map<String, Source> sources = C.newMap();
+    private FsChangeDetector confChangeDetector;
+    private FsChangeDetector libChangeDetector;
+    private FsChangeDetector resourceChangeDetector;
+    private FsChangeDetector sourceChangeDetector;
 
     protected App() {
     }
@@ -74,11 +89,28 @@ public class App {
         return layout;
     }
 
-    void refresh() {
+    public void detectChanges() {
+        if (!OMS.isDev()) return;
+        detectChanges(confChangeDetector);
+        detectChanges(libChangeDetector);
+        detectChanges(resourceChangeDetector);
+        detectChanges(sourceChangeDetector);
+    }
+
+    private void detectChanges(FsChangeDetector detector) {
+        if (null != detector) {
+            detector.detectChanges();
+        }
+    }
+
+    public void refresh() {
         loadConfig();
         initRouter();
         loadClasses();
         loadRoutes();
+        if (OMS.isDev()) {
+            setupFsChangeDetectors();
+        }
     }
 
     void build() {
@@ -103,6 +135,46 @@ public class App {
 
     public String decrypt(String message) {
         return Crypto.decryptAES(message, config.secret());
+    }
+
+    public boolean isSourceClass(String className) {
+        return sources.containsKey(className);
+    }
+
+    public Source source(String className) {
+        return sources.get(className);
+    }
+
+    public void preloadSources() {
+        final File sourceRoot = layout().source(base());
+        Files.filter(sourceRoot, JAVA_SOURCE, new _.Visitor<File>() {
+            @Override
+            public void visit(File file) throws _.Break {
+                Source source = Source.ofFile(sourceRoot, file);
+                if (null != source) {
+                    if (null == sources) {
+                        sources = C.newMap();
+                    }
+                    sources.put(source.className(), source);
+                }
+            }
+        });
+    }
+
+    public void scanForActionMethods() {
+        AppConfig conf = config();
+        SourceCodeActionScanner scanner = new SourceCodeActionScanner();
+        Router router = router();
+        for (String className : sources.keySet()) {
+            if (conf.possibleControllerClass(className)) {
+                Source source = sources.get(className);
+                boolean isController = scanner.scan(className, source.code(), router);
+                if (isController) {
+                    source.markAsController();
+                    classLoader().scanForActionMethods(className);
+                }
+            }
+        }
     }
 
     @Override
@@ -151,9 +223,79 @@ public class App {
 
     private void loadClasses() {
         classLoader = OMS.mode().classLoader(this);
+        classLoader.init();
+    }
+    private void setupFsChangeDetectors() {
+        ProjectLayout layout = layout();
+        File appBase = base();
+
+        File src = layout.source(appBase);
+        if (null != src) {
+            sourceChangeDetector = new FsChangeDetector(src, App.JAVA_SOURCE, sourceChangeListener);
+        }
+
+        File lib = layout.lib(appBase);
+        if (null != lib && lib.canRead()) {
+            libChangeDetector = new FsChangeDetector(lib, JAR_FILE, libChangeListener);
+        }
+
+        File conf = layout.conf(appBase);
+        if (null != conf && conf.canRead()) {
+            confChangeDetector = new FsChangeDetector(conf, CONF_FILE, confChangeListener);
+        }
+
+        File rsrc = layout.resource(appBase);
+        if (null != rsrc && rsrc.canRead()) {
+            resourceChangeDetector = new FsChangeDetector(rsrc, null, resourceChangeListener);
+        }
     }
 
     static App create(File appBase, ProjectLayout layout) {
         return new App(appBase, layout);
     }
+
+    private final FsEventListener sourceChangeListener = new FsEventListener() {
+        @Override
+        public void on(FsEvent... events) {
+            throw RequestRefreshClassLoader.INSTANCE;
+        }
+    };
+
+    private final FsEventListener libChangeListener = new FsEventListener() {
+        @Override
+        public void on(FsEvent... events) {
+            int len = events.length;
+            if (len < 0) return;
+            OMS.requestRefreshClassLoader();
+        }
+    };
+
+    private final FsEventListener confChangeListener = new FsEventListener() {
+        @Override
+        public void on(FsEvent... events) {
+            OMS.requestRestart();
+        }
+    };
+
+    private final FsEventListener resourceChangeListener = new FsEventListener() {
+        @Override
+        public void on(FsEvent... events) {
+            int len = events.length;
+            for (int i = 0; i < len; ++i) {
+                FsEvent e = events[i];
+                if (e.kind() == FsEvent.Kind.CREATE) {
+                    List<String> paths = e.paths();
+                    File[] files = new File[paths.size()];
+                    int idx = 0;
+                    for (String path : paths) {
+                        files[idx++] = new File(path);
+                    }
+                    builder().copyResources(files);
+                } else {
+                    OMS.requestRestart();
+                }
+            }
+        }
+    };
+
 }

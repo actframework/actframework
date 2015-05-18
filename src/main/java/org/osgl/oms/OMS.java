@@ -1,10 +1,13 @@
 package org.osgl.oms;
 
+import io.undertow.UndertowLogger;
+import io.undertow.UndertowMessages;
 import org.osgl._;
 import org.osgl.exception.NotAppliedException;
 import org.osgl.logging.L;
 import org.osgl.logging.Logger;
 import org.osgl.oms.app.*;
+import org.osgl.oms.boot.PluginClassProvider;
 import org.osgl.oms.conf.OmsConfLoader;
 import org.osgl.oms.conf.OmsConfig;
 import org.osgl.oms.controller.meta.ActionMethodMetaInfo;
@@ -19,7 +22,10 @@ import org.osgl.oms.view.ViewManager;
 import org.osgl.oms.xio.NetworkClient;
 import org.osgl.oms.xio.NetworkService;
 import org.osgl.oms.xio.undertow.UndertowService;
+import org.osgl.util.C;
 import org.osgl.util.E;
+
+import java.util.List;
 
 /**
  * The OSGL MVC Server
@@ -30,7 +36,7 @@ public final class OMS {
         PROD, UAT, SIT, DEV() {
             @Override
             public AppScanner appScanner() {
-                return AppScanner.DEV_MODE_SCANNER;
+                return AppScanner.SINGLE_APP_SCANNER;
             }
 
             @Override
@@ -96,9 +102,14 @@ public final class OMS {
     private static BytecodeEnhancerManager enhancerManager;
     private static SessionManager sessionManager;
 
-
-    public static BootstrapClassLoader classLoader() {
-        return (BootstrapClassLoader) OMS.class.getClassLoader();
+    public static List<Class<?>> pluginClasses() {
+        ClassLoader cl = OMS.class.getClassLoader();
+        if (cl instanceof PluginClassProvider) {
+            return ((PluginClassProvider) cl).pluginClasses();
+        } else {
+            logger.warn("Class loader of OMS is not a PluginClassProvider");
+            return C.list();
+        }
     }
 
     public static Mode mode() {
@@ -129,7 +140,20 @@ public final class OMS {
         return sessionManager;
     }
 
-    public static void start() {
+    public static AppManager applicationManager() {
+        return appManager;
+    }
+
+    public static void startServer() {
+        start(false);
+    }
+
+    public static void startApp() {
+        mode = Mode.DEV;
+        start(true);
+    }
+
+    private static void start(boolean singleAppServer) {
         Banner.print("0.0.1-SNAPSHOT");
         loadConfig();
         //initExecuteService();
@@ -139,7 +163,14 @@ public final class OMS {
         loadPlugins();
         initNetworkLayer();
         initApplicationManager();
+        if (singleAppServer) {
+            appManager.loadSingleApp();
+        } else {
+            appManager.scan();
+        }
         startNetworkLayer();
+
+        Thread.currentThread().setContextClassLoader(OMS.class.getClassLoader());
     }
 
     public static RequestServerRestart requestRestart() {
@@ -201,7 +232,7 @@ public final class OMS {
         network.start();
     }
 
-    public static enum F {
+    public enum F {
         ;
         public static final _.F0<Mode> MODE_ACCESSOR = new _.F0<Mode>() {
             @Override

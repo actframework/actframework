@@ -9,6 +9,7 @@ import org.osgl.oms.conf.AppConfig;
 import org.osgl.oms.view.Template;
 import org.osgl.util.C;
 import org.osgl.util.E;
+import org.osgl.util.S;
 
 import java.util.*;
 
@@ -30,12 +31,28 @@ public class AppContext {
     private String actionPath; // e.g. com.mycorp.myapp.controller.AbcController.foo
     private Map<String, Object> attributes;
     private Template template;
+    private String templatePath;
+    private State state;
 
     private AppContext(App app, H.Request request, H.Response response) {
         E.NPE(app, request, response);
         this.app = app;
         this.request = request;
         this.response = response;
+        this._init();
+        this.state = State.CREATED;
+    }
+
+    public State state() {
+        return state;
+    }
+
+    public boolean isSessionDissolved() {
+        return state == State.SESSION_DISSOLVED;
+    }
+
+    public boolean isSessionResolved() {
+        return state == State.SESSION_RESOLVED;
     }
 
     public H.Request req() {
@@ -56,6 +73,11 @@ public class AppContext {
 
     public H.Format format() {
         return req().format();
+    }
+
+    public AppContext format(H.Format fmt) {
+        req().format(fmt);
+        return this;
     }
 
     public boolean isJSON() {
@@ -104,6 +126,21 @@ public class AppContext {
     }
 
     /**
+     * Called by bytecode enhancer to set the name list of the render arguments that is update
+     * by the enhancer
+     * @param names the render argument names separated by ","
+     * @return this AppContext
+     */
+    public AppContext __appRenderArgNames(String names) {
+        renderArgs.put("__arg_names__", C.listOf(names.split(",")));
+        return this;
+    }
+
+    public List<String> __appRenderArgNames() {
+        return (List<String>)renderArgs.get("__arg_names__");
+    }
+
+    /**
      * Associate a user attribute to the context. Could be used by third party
      * libraries or user application
      *
@@ -142,6 +179,29 @@ public class AppContext {
         return this;
     }
 
+    /**
+     * Set path to template file
+     * @param path the path to template file
+     * @return this {@code AppContext}
+     */
+    public AppContext templatePath(String path) {
+        templatePath = path;
+        return this;
+    }
+
+    /**
+     * If {@link #templatePath(String) template path has been set before} then return
+     * the template path. Otherwise returns the {@link #actionPath()}
+     * @return either template path or action path if template path not set before
+     */
+    public String templatePath() {
+        if (S.notBlank(templatePath)) {
+            return templatePath;
+        } else {
+            return actionPath().replace('.', '/');
+        }
+    }
+
     public Template cachedTemplate() {
         return template;
     }
@@ -156,9 +216,10 @@ public class AppContext {
      * resolve session and flash from cookies
      */
     public void resolve() {
-        _init();
+        E.illegalStateIf(state != State.CREATED);
         resolveSession();
         resolveFlash();
+        state = State.SESSION_RESOLVED;
     }
 
     /**
@@ -168,8 +229,12 @@ public class AppContext {
      * response output stream/writer</p>
      */
     public void dissolve() {
+        if (state == State.SESSION_DISSOLVED) {
+            return;
+        }
         dissolveFlash();
         dissolveSession();
+        state = State.SESSION_DISSOLVED;
     }
 
     /**
@@ -339,5 +404,11 @@ public class AppContext {
      */
     public static AppContext create(App app, H.Request request, H.Response resp) {
         return new AppContext(app, request, resp);
+    }
+
+    public enum State {
+        CREATED,
+        SESSION_RESOLVED,
+        SESSION_DISSOLVED
     }
 }

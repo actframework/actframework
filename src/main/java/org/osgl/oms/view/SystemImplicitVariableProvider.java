@@ -23,35 +23,35 @@ public class SystemImplicitVariableProvider extends ImplicitVariableProvider {
                     return context;
                 }
             },
-
-            new VarDef("_req", H.Request.class) {
-                @Override
-                public Object evaluate(AppContext context) {
-                    return context.req();
-                }
-            },
-
-            new VarDef("_resp", H.Response.class) {
-                @Override
-                public Object evaluate(AppContext context) {
-                    return context.resp();
-                }
-            },
-
-            new VarDef("_session", H.Session.class) {
-                @Override
-                public Object evaluate(AppContext context) {
-                    return context.session();
-                }
-            },
-
-            new VarDef("_flash", H.Flash.class) {
-                @Override
-                public Object evaluate(AppContext context) {
-                    return context.flash();
-                }
-            },
-
+//
+//            new VarDef("_req", H.Request.class) {
+//                @Override
+//                public Object evaluate(AppContext context) {
+//                    return context.req();
+//                }
+//            },
+//
+//            new VarDef("_resp", H.Response.class) {
+//                @Override
+//                public Object evaluate(AppContext context) {
+//                    return context.resp();
+//                }
+//            },
+//
+//            new VarDef("_session", H.Session.class) {
+//                @Override
+//                public Object evaluate(AppContext context) {
+//                    return context.session();
+//                }
+//            },
+//
+//            new VarDef("_flash", H.Flash.class) {
+//                @Override
+//                public Object evaluate(AppContext context) {
+//                    return context.flash();
+//                }
+//            },
+//
             new VarDef("_params", Map.class) {
                 @Override
                 public Object evaluate(AppContext context) {

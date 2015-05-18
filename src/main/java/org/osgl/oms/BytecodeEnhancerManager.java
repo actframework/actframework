@@ -16,7 +16,6 @@ public class BytecodeEnhancerManager {
     private List<AsmBytecodeEnhancer> generalEnhancers = C.newList();
 
     public BytecodeEnhancerManager() {
-        registerBuiltInPlugins();
     }
 
     public void register(AsmBytecodeEnhancer enhancer) {
@@ -39,10 +38,6 @@ public class BytecodeEnhancerManager {
     public BytecodeVisitor generalEnhancer(String className, _.Var<ClassWriter> cw) {
         List<AsmBytecodeEnhancer> l = generalFilter(className);
         return l.isEmpty() ? null : BytecodeVisitor.chain(cw, l);
-    }
-
-    private void registerBuiltInPlugins() {
-        register(new ControllerEnhancer());
     }
 
     private List<AppBytecodeEnhancer> appFilter(App app, String className) {

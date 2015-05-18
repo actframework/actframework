@@ -24,6 +24,11 @@ public class AppManager {
         return this;
     }
 
+    public AppManager loadSingleApp() {
+        AppScanner.SINGLE_APP_SCANNER.scan(_F.loadApp(this));
+        return this;
+    }
+
     public void deploy(App app) {
         load(app);
         refresh(app);
@@ -41,14 +46,14 @@ public class AppManager {
     }
 
     public void load(App app) {
+        app.build();
+        app.refresh();
         int port = app.config().port();
         if (port < 0) {
             loadIntoContextMap(app.config().urlContext(), app);
         } else {
             loadIntoPortMap(port, app);
         }
-        app.build();
-        app.refresh();
         app.hook();
     }
 

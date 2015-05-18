@@ -13,6 +13,7 @@ import org.osgl.oms.handler.builtin.controller.*;
 import org.osgl.util.C;
 import org.osgl.util.E;
 import org.osgl.util.S;
+import static org.osgl.oms.controller.Controller.Util.*;
 
 import java.lang.reflect.Method;
 import java.util.Map;
@@ -113,15 +114,21 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo>
     private Result invoke(AppContext context, Object controller, Object[] params) {
         Object result;
         if (null != methodAccess) {
-            result = methodAccess.invoke(controller, handlerIndex, params);
+            try {
+                result = methodAccess.invoke(controller, handlerIndex, params);
+            } catch (Result r) {
+                return r;
+            }
         } else {
             try {
                 result = method.invoke(null, params);
+            } catch (Result r) {
+                return r;
             } catch (Exception e) {
                 throw E.unexpected(e);
             }
         }
-        return Handler.inferResult(result, context);
+        return inferResult(result, context);
     }
 
     private Object[] params(AppContext ctx, Result result, Exception exception) {

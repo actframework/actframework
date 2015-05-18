@@ -1,6 +1,7 @@
 package org.osgl.oms.controller.bytecode;
 
 import org.osgl._;
+import org.osgl.oms.app.App;
 import org.osgl.oms.asm.ClassVisitor;
 import org.osgl.oms.asm.MethodVisitor;
 import org.osgl.oms.asm.Type;
@@ -24,6 +25,12 @@ public class ControllerEnhancer extends AppBytecodeEnhancer<ControllerEnhancer> 
     public ControllerEnhancer(ClassVisitor cv, ControllerClassMetaInfoHolder infoHolder) {
         super(_F.isController(infoHolder), cv);
         this.classInfoHolder = infoHolder;
+    }
+
+    @Override
+    public AppBytecodeEnhancer app(App app) {
+        this.classInfoHolder = app.classLoader();
+        return super.app(app);
     }
 
     @Override

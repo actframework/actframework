@@ -9,17 +9,17 @@ import org.osgl.util.IO;
 import org.rythmengine.RythmEngine;
 import org.rythmengine.template.ITemplate;
 
-import java.io.File;
 import java.util.Map;
 
 public class RythmTemplate extends TemplateBase {
 
     private RythmEngine engine;
-    private File template;
+    private String path;
 
     public RythmTemplate(RythmEngine engine, String path, App app) {
         E.NPE(engine);
         this.engine = engine;
+        this.path = path;
     }
 
     @Override
@@ -36,6 +36,6 @@ public class RythmTemplate extends TemplateBase {
     }
 
     private org.rythmengine.template.ITemplate template(Map<String, Object> renderArgs) {
-        return engine.getTemplate(template, renderArgs);
+        return engine.getTemplate(path, renderArgs);
     }
 }

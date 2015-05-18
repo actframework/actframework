@@ -4,6 +4,8 @@ import org.osgl._;
 import org.osgl.cache.CacheService;
 import org.osgl.exception.NotAppliedException;
 import org.osgl.http.H;
+import org.osgl.logging.L;
+import org.osgl.logging.Logger;
 import org.osgl.mvc.result.NoResult;
 import org.osgl.mvc.result.Result;
 import org.osgl.mvc.result.ServerError;
@@ -15,13 +17,17 @@ import org.osgl.oms.controller.meta.CatchMethodMetaInfo;
 import org.osgl.oms.controller.meta.ControllerClassMetaInfo;
 import org.osgl.oms.controller.meta.InterceptorMethodMetaInfo;
 import org.osgl.oms.handler.RequestHandlerBase;
+import org.osgl.oms.view.RenderAny;
+import org.osgl.oms.view.RenderTemplate;
 import org.osgl.util.C;
 import org.osgl.util.E;
 import org.osgl.util.S;
 
 import java.util.ListIterator;
 
-public class RequestHandlerProxy extends RequestHandlerBase {
+public final class RequestHandlerProxy extends RequestHandlerBase {
+
+    private static Logger logger = L.get(RequestHandlerProxy.class);
 
     protected static enum CacheStrategy {
         NO_CACHE() {
@@ -104,14 +110,14 @@ public class RequestHandlerProxy extends RequestHandlerBase {
     @Override
     public void handle(AppContext context) {
         Result result = cacheStrategy.cached(context, cache);
-        if (null != result) {
-            onResult(result, context);
-            return;
-        }
-        ensureAgentsReady();
-        ensureContextLocal(context);
-        saveActionPath(context);
         try {
+            if (null != result) {
+                onResult(result, context);
+                return;
+            }
+            ensureAgentsReady();
+            ensureContextLocal(context);
+            saveActionPath(context);
             result = handleBefore(context);
             if (null == result) {
                 result = _handle(context);
@@ -127,9 +133,14 @@ public class RequestHandlerProxy extends RequestHandlerBase {
         } catch (Exception e) {
             result = handleException(e, context);
             if (null == result) {
-                result = new ServerError(e.getMessage());
+                result = new ServerError(e);
             }
-            onResult(result, context);
+            try {
+                onResult(result, context);
+            } catch (Exception e2) {
+                logger.error(e2, "error rendering exception handle  result");
+                onResult(new ServerError(), context);
+            }
         } finally {
             handleFinally(context);
         }
@@ -160,9 +171,15 @@ public class RequestHandlerProxy extends RequestHandlerBase {
     }
 
     private void onResult(Result result, AppContext context) {
-        H.Request req = context.req();
-        H.Response resp = context.resp();
-        result.apply(req, resp);
+        context.dissolve();
+        if (result instanceof RenderAny) {
+            RenderAny any = (RenderAny) result;
+            any.apply(context);
+        } else {
+            H.Request req = context.req();
+            H.Response resp = context.resp();
+            result.apply(req, resp);
+        }
     }
 
     private void ensureAgentsReady() {

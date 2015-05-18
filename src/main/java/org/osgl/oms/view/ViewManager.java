@@ -44,7 +44,7 @@ public class ViewManager {
     public Template load(AppContext context) {
         AppConfig config = context.config();
         View defView = config.defaultView();
-        Template template = null;
+        Template template;
         if (null != defView) {
             template = defView.load(context);
             if (null != template) {

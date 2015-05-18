@@ -1,6 +1,8 @@
 package org.osgl.oms.boot.spark;
 
 import org.osgl.http.H;
+import org.osgl.logging.L;
+import org.osgl.logging.Logger;
 import org.osgl.mvc.result.Forbidden;
 import org.osgl.mvc.result.Result;
 import org.osgl.oms.app.App;
@@ -8,6 +10,7 @@ import org.osgl.oms.app.AppContext;
 import org.osgl.oms.app.ProjectLayout;
 import org.osgl.oms.boot.ProjectLayoutBuilder;
 import org.osgl.oms.conf.AppConfig;
+import org.osgl.oms.controller.Controller;
 import org.osgl.oms.handler.DelegateRequestHandler;
 import org.osgl.oms.handler.RequestHandler;
 import org.osgl.oms.handler.RequestHandlerBase;
@@ -22,6 +25,7 @@ import org.osgl.oms.xio.undertow.UndertowService;
 import org.osgl.util.C;
 import org.osgl.util.E;
 
+import javax.naming.ldap.Control;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -31,7 +35,9 @@ import static org.osgl.oms.boot.spark.SparkApp.Filter.filter;
 /**
  * Support Spark framework style app
  */
-public class SparkApp extends App {
+public final class SparkApp extends App {
+
+    private static Logger logger = L.get(SparkApp.class);
 
     private static final String GLOBAL = "__G__";
 
@@ -244,10 +250,21 @@ public class SparkApp extends App {
     public abstract static class Handler extends RequestHandlerBase {
         @Override
         public void handle(AppContext context) {
-            handle(context.req(), context.resp());
+            Result result;
+            try {
+                Object obj = handle(context.req(), context.resp());
+                result = Controller.Util.inferResult(obj, context);
+            } catch (Result r) {
+                result = r;
+            } catch (RuntimeException e) {
+                logger.error(e, "Error handling request: %s", e.getMessage());
+                result = Controller.Util.serverError(e);
+            }
         }
 
-        public void handle(H.Request req, H.Response resp) {}
+        public Object handle(H.Request req, H.Response resp) {
+            return Controller.Util.ok();
+        }
     }
 
     private static class FilteredHandler extends DelegateRequestHandler {
@@ -266,8 +283,6 @@ public class SparkApp extends App {
                     handleBefore(ctx);
                     super.handle(ctx);
                     handleAfter(ctx);
-                } catch (Result r) {
-                    throw r;
                 } catch (Exception e) {
                     onException(e, ctx);
                 }
@@ -330,4 +345,6 @@ public class SparkApp extends App {
             }
         }
     }
+
+
 }

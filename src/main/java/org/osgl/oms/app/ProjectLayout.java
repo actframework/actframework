@@ -129,7 +129,7 @@ public interface ProjectLayout {
             if (file.exists()) {
                 return file;
             }
-            return new File(resource(appBase), "conf");
+            return new File(resource(appBase), "app.conf");
         }
 
         @Override
@@ -204,8 +204,17 @@ public interface ProjectLayout {
          * @return {@code true if the folder is app base as per given project layout}
          */
         public static boolean probeAppBase(File dir, ProjectLayout layout) {
+            // try conf file
             File conf = layout.conf(dir);
-            return null != conf && conf.canRead() && conf.isFile();
+            if (null != conf && conf.canRead() && conf.isFile()) {
+                return true;
+            }
+            // try source path
+            File src = layout.source(dir);
+            if (null != src && src.canRead() && src.isDirectory()) {
+                return true;
+            }
+            return false;
         }
 
         /**

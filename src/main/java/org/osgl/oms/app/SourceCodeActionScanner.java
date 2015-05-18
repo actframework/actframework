@@ -27,7 +27,8 @@ class SourceCodeActionScanner {
 
     private String controllerContext = "/";
 
-    void scan(String className, String code, Router router) {
+    boolean scan(String className, String code, Router router) {
+        //boolean isController = false;
         String[] lines = code.split("[\\n\\r]+");
         int n = lines.length;
         for (int i = 0; i < n; ++i) {
@@ -46,18 +47,22 @@ class SourceCodeActionScanner {
                         if (!isBlankOrCommentLine(line)) {
                             String action = parseMethodSignature(line);
                             if (null != action) {
-                                StringBuilder sb = S.builder(className).append(".").append(action);
-                                ri.action = sb.toString();
-                                ri.addToRouter(router, controllerContext);
+                                return true;
+//                                StringBuilder sb = S.builder(className).append(".").append(action);
+//                                ri.action = sb.toString();
+//                                ri.addToRouter(router, controllerContext);
+//                                isController = true;
                             }
                             break;
                         }
                     }
                 } else {
-                    ri.addToRouter(router, controllerContext);
+                    //ri.addToRouter(router, controllerContext);
+                    return true;
                 }
             }
         }
+        return false;
     }
 
     private static String parseControllerContext(String s) {

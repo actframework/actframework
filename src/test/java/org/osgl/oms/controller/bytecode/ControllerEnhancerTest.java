@@ -4,6 +4,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.osgl._;
 import org.osgl.exception.NotAppliedException;
+import org.osgl.mvc.result.NotFound;
 import org.osgl.mvc.result.Ok;
 import org.osgl.mvc.result.Result;
 import org.osgl.oms.TestBase;
@@ -31,6 +32,8 @@ import java.lang.reflect.Method;
 import static org.mockito.Mockito.mock;
 
 public class ControllerEnhancerTest extends TestBase implements ControllerClassMetaInfoHolder {
+
+    public static final String TMPL_PATH = "/path/to/template";
 
     protected String cn;
     protected Class<?> cc;
@@ -115,7 +118,7 @@ public class ControllerEnhancerTest extends TestBase implements ControllerClassM
     }
 
     @Test
-    public void voidOk() throws Exception {
+    public void voidOk() throws Throwable {
         prepare("VoidOk");
         m = method();
         try {
@@ -126,7 +129,23 @@ public class ControllerEnhancerTest extends TestBase implements ControllerClassM
                 // success
                 return;
             }
-            throw e;
+            throw e.getCause();
+        }
+    }
+
+    @Test
+    public void voidOkWithNotFound() throws Throwable {
+        prepare("VoidOkWithNotFound");
+        m = method(boolean.class);
+        try {
+            m.invoke(c, true);
+            fail("Result expected to be thrown out");
+        } catch (InvocationTargetException e) {
+            if (e.getCause() instanceof NotFound) {
+                // success
+                return;
+            }
+            throw e.getCause();
         }
     }
 
@@ -139,6 +158,18 @@ public class ControllerEnhancerTest extends TestBase implements ControllerClassM
         yes(r instanceof Result);
         eq(100, ctx.renderArg("foo"));
         eq("foo", ctx.renderArg("bar"));
+    }
+
+    @Test
+    public void returnResultWithParamAndTemplatePath() throws Exception {
+        prepare("ReturnResultWithParamAndTemplatePath");
+        m = method(int.class, String.class);
+        ctx.saveLocal();
+        Object r = m.invoke(c, 100, "foo");
+        yes(r instanceof Result);
+        eq(100, ctx.renderArg("foo"));
+        eq("foo", ctx.renderArg("bar"));
+        eq(TMPL_PATH, ctx.templatePath());
     }
 
     @Test

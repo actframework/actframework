@@ -44,6 +44,10 @@ public enum ClassNames {
             path0 = path0.replace(File.separatorChar, '/');
             path1 = path1.replace(File.separatorChar, '/');
         }
-        return path1.afterFirst(path0).replace('/', '.').beforeLast('.').toString();
+        FastStr ret = path1.afterFirst(path0);
+        if (ret.startsWith("/")) {
+            ret = ret.substr(1);
+        }
+        return ret.replace('/', '.').beforeLast('.').toString();
     }
 }

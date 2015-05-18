@@ -1,6 +1,7 @@
 package org.osgl.oms.app;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.mockito.verification.VerificationMode;
@@ -26,6 +27,7 @@ public class SourceCodeControllerScannerTest extends TestBase {
     }
 
     @Test
+    @Ignore
     public void testScan() {
         scanner.scan("foo.Bar", code, mockRouter);
         verify("GET /bar root");

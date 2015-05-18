@@ -6,6 +6,7 @@ import org.osgl.http.util.Path;
 import org.osgl.mvc.result.NotFound;
 import org.osgl.oms.app.App;
 import org.osgl.oms.app.AppContext;
+import org.osgl.oms.app.RequestRefreshClassLoader;
 import org.osgl.oms.conf.AppConfig;
 import org.osgl.oms.controller.ParamNames;
 import org.osgl.oms.handler.DelegateRequestHandler;

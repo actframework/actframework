@@ -16,7 +16,7 @@ import java.util.List;
  */
 public class BuildFileProbe extends ProjectLayoutProbe {
 
-    public static interface BuildFileNameProvider {
+    public interface BuildFileNameProvider {
         String buildFileName();
     }
 
@@ -71,7 +71,6 @@ public class BuildFileProbe extends ProjectLayoutProbe {
 
         protected abstract ProjectLayout parse(List<String> lines);
     }
-
 
     private String buildFileName;
     private FileParser fileParser = null;

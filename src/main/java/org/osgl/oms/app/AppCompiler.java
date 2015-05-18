@@ -66,7 +66,7 @@ class AppCompiler {
     }
 
     public void compile(String... classNames) {
-        ICompilationUnit[] compilationUnits = new CompilationUnit[classNames.length];
+        ICompilationUnit[] compilationUnits = new ICompilationUnit[classNames.length];
         for (int i = 0; i < classNames.length; i++) {
             compilationUnits[i] = classLoader.source(classNames[i]).compilationUnit();
         }
@@ -121,12 +121,12 @@ class AppCompiler {
             if (packagesCache.containsKey(name)) {
                 return packagesCache.get(name);
             }
-            // Check if there is a .java or .class for this resource
-            if (classLoader.bytecode(name) != null) {
+            if (classLoader.source(name) != null) {
                 packagesCache.put(name, false);
                 return false;
             }
-            if (classLoader.source(name) != null) {
+            // Check if there is a .java or .class for this resource
+            if (classLoader.bytecode(name) != null) {
                 packagesCache.put(name, false);
                 return false;
             }

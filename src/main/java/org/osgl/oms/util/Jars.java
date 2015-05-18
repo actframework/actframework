@@ -7,9 +7,12 @@ import org.osgl.logging.Logger;
 import org.osgl.util.C;
 import org.osgl.util.E;
 import org.osgl.util.IO;
+import org.osgl.util.S;
 
 import java.io.*;
+import java.net.URL;
 import java.util.Enumeration;
+import java.util.List;
 import java.util.Map;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
@@ -28,22 +31,36 @@ public enum Jars {
 
     public static Map<String, byte[]> buildClassNameIndex(File dir, final _.Func1<String, Boolean> ignoredClassNames) {
         final Map<String, byte[]> idx = C.newMap();
-        _F.JarEntryVisitor visitor = new _F.JarEntryVisitor() {
-            @Override
-            public Void apply(JarFile jarFile, JarEntry entry) throws NotAppliedException, _.Break {
-                try {
-                    String className = ClassNames.classFileNameToClassName(entry.getName());
-                    if (!ignoredClassNames.apply(className)) {
-                        idx.put(className, getBytes(jarFile, entry));
-                    }
-                } catch (IOException e) {
-                    throw E.ioException(e);
-                }
-                return null;
-            }
-        };
+        _F.JarEntryVisitor visitor = _F.classNameIndexBuilder(idx, ignoredClassNames);
         scanDir(dir, visitor);
         return idx;
+    }
+
+    public static Map<String, byte[]> buildClassNameIndex(List<File> jars) {
+        return buildClassNameIndex(jars, _.F.FALSE);
+    }
+
+    public static Map<String, byte[]> buildClassNameIndex(List<File> jars, final _.Func1<String, Boolean> ignoredClassNames) {
+        final Map<String, byte[]> idx = C.newMap();
+        _F.JarEntryVisitor visitor = _F.classNameIndexBuilder(idx, ignoredClassNames);
+        scanList(jars, visitor);
+        return idx;
+    }
+
+    /**
+     * If the class is loaded from a Jar file, then return that file. Otherwise
+     * return {@code null}
+     */
+    public static File probeJarFile(Class<?> clazz) {
+        String fileName = ClassNames.classNameToClassFileName(clazz.getName());
+        URL url = clazz.getClassLoader().getResource(fileName);
+        if (null != url && "jar".equals(url.getProtocol())) {
+            String path = url.getPath();
+            String file = S.str(path).afterFirst("file:").beforeFirst(".jar!").append(".jar").toString();
+            return new File(file);
+        } else {
+            return null;
+        }
     }
 
     /**
@@ -69,6 +86,17 @@ public enum Jars {
                 scanFile(file, visitor);
             } catch (IOException e) {
                 logger.warn(e, "Error scanning jar file: %s", file.getName());
+            }
+        }
+    }
+
+    private static void scanList(List<File> jars, _F.JarEntryVisitor visitor) {
+        for (int i = 0, j = jars.size(); i < j; ++i) {
+            File jar = jars.get(i);
+            try {
+                scanFile(jar, visitor);
+            } catch (IOException e) {
+                logger.warn(e, "Error scanning jar file: %s", jar.getName());
             }
         }
     }
@@ -115,10 +143,27 @@ public enum Jars {
         return baos.toByteArray();
     }
 
-    private static enum _F {
+    private enum _F {
         ;
 
         static abstract class JarEntryVisitor extends _.F2<JarFile, JarEntry, Void> {
+        }
+
+        static JarEntryVisitor classNameIndexBuilder(final Map<String, byte[]> map, final _.Function<String, Boolean> ignoredClassNames) {
+            return new _F.JarEntryVisitor() {
+                @Override
+                public Void apply(JarFile jarFile, JarEntry entry) throws NotAppliedException, _.Break {
+                    try {
+                        String className = ClassNames.classFileNameToClassName(entry.getName());
+                        if (!ignoredClassNames.apply(className)) {
+                            map.put(className, getBytes(jarFile, entry));
+                        }
+                    } catch (IOException e) {
+                        throw E.ioException(e);
+                    }
+                    return null;
+                }
+            };
         }
     }
 

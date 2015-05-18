@@ -25,7 +25,6 @@ import static org.osgl.http.H.Session.KEY_EXPIRE_INDICATOR;
 
 /**
  * Resolve/Persist session/flash
- * TODO: session/flash persist
  */
 public class SessionManager {
 
@@ -39,7 +38,7 @@ public class SessionManager {
 
     public Session resolveSession(AppContext context) {
         Session session = getResolver(context).resolveSession(context);
-        onSessionResolved(session, context);
+        sessionResolved(session, context);
         return session;
     }
 
@@ -48,6 +47,7 @@ public class SessionManager {
     }
 
     public H.Cookie dissolveSession(AppContext context) {
+        onSessionDissolve();
         return getResolver(context).dissolveSession(context);
     }
 
@@ -55,15 +55,15 @@ public class SessionManager {
         return getResolver(context).dissolveFlash(context);
     }
 
-    private void onSessionResolved(Session session, AppContext context) {
+    private void sessionResolved(Session session, AppContext context) {
         for (Listener l : registry) {
             l.sessionResolved(session, context);
         }
     }
 
-    private void onSessionCleanUp() {
+    private void onSessionDissolve() {
         for (Listener l : registry) {
-            l.sessionCleared();
+            l.onSessionDissolve();
         }
     }
 
@@ -103,12 +103,11 @@ public class SessionManager {
         public void sessionResolved(Session session, AppContext context) {}
 
         /**
-         * Called once a session has been written to a cookie in outgoing
-         * response.
+         * Called before a session is about to be written to a cookie
          * <p>Plugin use this hook to release resources associated with the
          * computational context</p>
          */
-        public void sessionCleared() {}
+        public void onSessionDissolve() {}
     }
 
     private static class CookieResolver {
@@ -187,6 +186,7 @@ public class SessionManager {
                 String data = dissolveIntoCookieContent(session, true);
                 cookie = createCookie(sessionCookieName, data);
             }
+            session.clear();
             return cookie;
         }
 
@@ -197,6 +197,7 @@ public class SessionManager {
             }
             String data = dissolveIntoCookieContent(flash.out(), false);
             H.Cookie cookie = createCookie(flashCookieName, data);
+            flash.clear();
             return cookie;
         }
 

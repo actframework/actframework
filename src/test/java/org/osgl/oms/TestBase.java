@@ -3,6 +3,7 @@ package org.osgl.oms;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.runner.JUnitCore;
+import org.mockito.internal.matchers.StartsWith;
 import org.osgl.http.H;
 import org.osgl.oms.app.App;
 import org.osgl.oms.app.AppContext;
@@ -98,7 +99,7 @@ public class TestBase extends Assert {
     protected void setup() throws Exception {
         mockApp = mock(App.class);
         mockAppConfig = mock(AppConfig.class);
-        when(mockAppConfig.notControllerClass(argThat(new NotStartsWith("testapp.controller.")))).thenReturn(true);
+        when(mockAppConfig.possibleControllerClass(argThat(new StartsWith("testapp.controller.")))).thenReturn(true);
         mockAppContext = mock(AppContext.class);
         when(mockAppContext.app()).thenReturn(mockApp);
         when(mockAppContext.config()).thenReturn(mockAppConfig);

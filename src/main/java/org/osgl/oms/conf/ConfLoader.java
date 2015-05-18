@@ -36,7 +36,7 @@ public abstract class ConfLoader<T extends Config> {
 
     public T load(File confFile) {
         // load conf from disk
-        Map<String, ?> rawConf = loadConfFromDisk(confFile);
+        Map<String, ?> rawConf = null == confFile ? C.newMap() : loadConfFromDisk(confFile);
 
         // load conf from System.properties
         Properties sysProps = System.getProperties();

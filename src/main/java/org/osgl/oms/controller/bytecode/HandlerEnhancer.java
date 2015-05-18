@@ -1,5 +1,7 @@
 package org.osgl.oms.controller.bytecode;
 
+import org.osgl.logging.L;
+import org.osgl.logging.Logger;
 import org.osgl.mvc.result.Result;
 import org.osgl.oms.app.AppContext;
 import org.osgl.oms.asm.Label;
@@ -21,6 +23,8 @@ import java.util.ListIterator;
 import java.util.Map;
 
 public class HandlerEnhancer extends MethodVisitor implements Opcodes {
+
+    private static final Logger logger = L.get(HandlerEnhancer.class);
 
     private static final String RESULT_CLASS = Result.class.getName();
 
@@ -167,6 +171,7 @@ public class HandlerEnhancer extends MethodVisitor implements Opcodes {
                 }
                 AbstractInsnNode node = invokeNode.getPrevious();
                 List<LoadInsnInfo> loadInsnInfoList = C.newList();
+                String templatePath = null;
                 while (null != node) {
                     int type = node.getType();
                     boolean breakWhile = false;
@@ -188,6 +193,18 @@ public class HandlerEnhancer extends MethodVisitor implements Opcodes {
                             }
                             LoadInsnInfo info = new LoadInsnInfo(insn, n.var);
                             loadInsnInfoList.add(info);
+                            break;
+                        case AbstractInsnNode.LDC_INSN:
+                            LdcInsnNode ldc = (LdcInsnNode) node;
+                            if (null != templatePath) {
+                                logger.warn("Cannot have more than one template path parameter in the render call. Template path[%s] ignored", templatePath);
+                            } else if (!(ldc.cst instanceof String)) {
+                                logger.warn("Template path must be strictly String type. Found: %s", ldc.cst);
+                            } else {
+                                templatePath = ldc.cst.toString();
+                            }
+                        default:
+                            //System.out.printf("type\n");
                     }
                     if (breakWhile) {
                         break;
@@ -200,6 +217,8 @@ public class HandlerEnhancer extends MethodVisitor implements Opcodes {
                     return;
                 }
                 int appCtxIdx = appCtxIndex();
+
+                // SetRenderArgs enhancement
                 if (appCtxIdx < 0) {
                     String appCtxFieldName = appCtxFieldName();
                     if (null == appCtxFieldName) {
@@ -217,12 +236,46 @@ public class HandlerEnhancer extends MethodVisitor implements Opcodes {
                     list.add(lbl);
                     list.add(loadCtx);
                 }
+                StringBuilder sb = S.builder();
                 for (int i = 0; i < len; ++i) {
                     LoadInsnInfo info = loadInsnInfoList.get(i);
-                    info.appendTo(list, segment);
+                    info.appendTo(list, segment, sb);
                 }
+                LdcInsnNode ldc = new LdcInsnNode(sb.toString());
+                list.add(ldc);
+                MethodInsnNode invokeRenderArg = new MethodInsnNode(INVOKEVIRTUAL, AsmTypes.APP_CONTEXT_INTERNAL_NAME, RENDER_ARG_NAMES_NM, RENDER_ARG_NAMES_DESC, false);
+                list.add(invokeRenderArg);
+
                 InsnNode pop = new InsnNode(POP);
                 list.add(pop);
+
+                // setTemplatePath enhancement
+                if (null != templatePath) {
+                    if (appCtxIdx < 0) {
+                        String appCtxFieldName = appCtxFieldName();
+                        if (null == appCtxFieldName) {
+                            MethodInsnNode getAppCtx = new MethodInsnNode(INVOKESTATIC, AsmTypes.APP_CONTEXT_INTERNAL_NAME, "get", GET_APP_CTX_DESC, false);
+                            list.add(getAppCtx);
+                        } else {
+                            VarInsnNode loadThis = new VarInsnNode(ALOAD, 0);
+                            FieldInsnNode getCtx = new FieldInsnNode(GETFIELD, segment.meta.classInfo().internalName(), appCtxFieldName, AsmTypes.APP_CONTEXT_DESC);
+                            list.add(loadThis);
+                            list.add(getCtx);
+                        }
+                    } else {
+                        LabelNode lbl = new LabelNode();
+                        VarInsnNode loadCtx = new VarInsnNode(ALOAD, appCtxIdx);
+                        list.add(lbl);
+                        list.add(loadCtx);
+                    }
+                    LdcInsnNode insnNode = new LdcInsnNode(templatePath);
+                    list.add(insnNode);
+                    MethodInsnNode invokeTemplatePath = new MethodInsnNode(INVOKEVIRTUAL, AsmTypes.APP_CONTEXT_INTERNAL_NAME, TEMPLATE_PATH_NM, TEMPLATE_PATH_DESC, false);
+                    list.add(invokeTemplatePath);
+                    pop = new InsnNode(POP);
+                    list.add(pop);
+                }
+
                 segment.instructions.insertBefore(node, list);
             }
 
@@ -368,7 +421,7 @@ public class HandlerEnhancer extends MethodVisitor implements Opcodes {
                 this.index = index;
             }
 
-            void appendTo(InsnList list, Segment segment) {
+            void appendTo(InsnList list, Segment segment, StringBuilder paramNames) {
                 LocalVariableMetaInfo var = var(segment);
                 if (null == var) return;
                 LdcInsnNode ldc = new LdcInsnNode(var.name());
@@ -376,6 +429,10 @@ public class HandlerEnhancer extends MethodVisitor implements Opcodes {
                 insn.appendTo(list, index, var.type());
                 MethodInsnNode invokeRenderArg = new MethodInsnNode(INVOKEVIRTUAL, AsmTypes.APP_CONTEXT_INTERNAL_NAME, RENDER_NM, RENDER_DESC, false);
                 list.add(invokeRenderArg);
+                if (paramNames.length() != 0) {
+                    paramNames.append(',');
+                }
+                paramNames.append(var.name());
             }
 
             LocalVariableMetaInfo var(Segment segment) {
@@ -406,6 +463,9 @@ public class HandlerEnhancer extends MethodVisitor implements Opcodes {
     private static final String GET_APP_CTX_DESC = "()" + AsmTypes.APP_CONTEXT_DESC;
     private static final String RENDER_NM = "renderArg";
     private static final String RENDER_DESC = AsmTypes.methodDesc(AppContext.class, String.class, Object.class);
-
+    private static final String TEMPLATE_PATH_NM = "templatePath";
+    private static final String TEMPLATE_PATH_DESC = AsmTypes.methodDesc(AppContext.class, String.class);
+    private static final String RENDER_ARG_NAMES_NM = "__appRenderArgNames";
+    private static final String RENDER_ARG_NAMES_DESC = AsmTypes.methodDesc(AppContext.class, String.class);
 
 }

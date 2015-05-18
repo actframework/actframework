@@ -70,7 +70,7 @@ public final class ControllerScanner extends BytecodeVisitor {
     public ControllerClassMetaInfo scan(String className) {
         byte[] bytecode = bytecodeLookup.apply(className);
         if (null != bytecode) {
-            classInfo = new ControllerClassMetaInfo().isController(!appConfig.notControllerClass(className));
+            classInfo = new ControllerClassMetaInfo().isController(appConfig.possibleControllerClass(className));
             return scan(bytecode);
         } else {
             logger.warn("cannot find bytecode for class: %s", className);

@@ -3,9 +3,12 @@ package org.osgl.oms.xio;
 import org.osgl._;
 import org.osgl.exception.NotAppliedException;
 import org.osgl.http.H;
+import org.osgl.mvc.result.NotFound;
 import org.osgl.mvc.result.Result;
 import org.osgl.oms.app.App;
 import org.osgl.oms.app.AppContext;
+import org.osgl.oms.app.RequestRefreshClassLoader;
+import org.osgl.oms.app.RequestServerRestart;
 import org.osgl.oms.handler.RequestHandler;
 import org.osgl.oms.route.Router;
 import org.osgl.util.E;
@@ -27,9 +30,16 @@ public class NetworkClient extends _.F1<AppContext, Void> {
         String url = req.url();
         H.Method method = req.method();
         try {
+            ctx.app().detectChanges();
+        } catch (RequestRefreshClassLoader refreshRequest) {
+            ctx.app().refresh();
+        } catch (RequestServerRestart requestServerRestart) {
+            ctx.app().refresh();
+        }
+        try {
             RequestHandler rh = router().getInvoker(method, url, ctx);
             rh.handle(ctx);
-        } catch (Result r) {
+        } catch (NotFound r) {
             r.apply(req, ctx.resp());
         } finally {
             ctx.clear();

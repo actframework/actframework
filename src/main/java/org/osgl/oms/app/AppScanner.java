@@ -25,7 +25,7 @@ public class AppScanner {
     private static Logger logger = L.get(AppScanner.class);
 
     public static AppScanner DEF_SCANNER = new AppScanner();
-    public static AppScanner DEV_MODE_SCANNER = new DevModeAppScanner();
+    public static AppScanner SINGLE_APP_SCANNER = new SingleAppScanner();
 
     private final Map<String, ProjectLayoutProbe> buildFileProbeMap = C.newMap();
     private final List<ProjectLayoutProbe> projectLayoutProbes = C.newList();

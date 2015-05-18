@@ -24,11 +24,12 @@ public abstract class RouterTestBase extends TestBase {
         controllerLookup = mock(RequestHandlerResolver.class);
         provisionControllerLookup(controllerLookup);
         AppConfig config = appConfig();
-        App app = Mockito.mock(App.class);
-        Mockito.when(app.config()).thenReturn(config);
+        App app = mock(App.class);
+        when(app.config()).thenReturn(config);
         router = new Router(controllerLookup, app);
         buildRouteMapping(router);
-        ctx = Mockito.mock(AppContext.class);
+        ctx = mock(AppContext.class);
+        when(ctx.app()).thenReturn(app);
     }
 
     protected void provisionControllerLookup(RequestHandlerResolver controllerLookup) {

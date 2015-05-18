@@ -36,7 +36,7 @@ public class AppClassLoader extends ClassLoader implements ControllerClassMetaIn
     protected final static Logger logger = L.get(AppClassLoader.class);
     private App app;
     private Map<String, byte[]> libClsCache = C.newMap();
-    private ControllerClassMetaInfoManager ctrlInfo =
+    protected ControllerClassMetaInfoManager ctrlInfo =
             new ControllerClassMetaInfoManager(
                     new _.Factory<ControllerScanner>() {
                         @Override
@@ -47,8 +47,11 @@ public class AppClassLoader extends ClassLoader implements ControllerClassMetaIn
             );
 
     public AppClassLoader(App app) {
-        super(OMS.classLoader());
+        super(OMS.class.getClassLoader());
         this.app = notNull(app);
+    }
+
+    protected void init() {
         preloadBytecode();
         scan();
     }
@@ -92,10 +95,15 @@ public class AppClassLoader extends ClassLoader implements ControllerClassMetaIn
     protected void scanForActionMethods() {
         AppConfig conf = app.config();
         for (String className : libClsCache.keySet()) {
-            if (!conf.notControllerClass(className)) {
+            if (conf.possibleControllerClass(className)) {
                 ctrlInfo.scanForControllerMetaInfo(className);
             }
         }
+        ctrlInfo.mergeActionMetaInfo();
+    }
+
+    protected void scanForActionMethods(String className) {
+        ctrlInfo.scanForControllerMetaInfo(className);
         ctrlInfo.mergeActionMetaInfo();
     }
 
@@ -193,9 +201,13 @@ public class AppClassLoader extends ClassLoader implements ControllerClassMetaIn
     private _.F1<String, byte[]> bytecodeLookup = new _.F1<String, byte[]>() {
         @Override
         public byte[] apply(String s) throws NotAppliedException, _.Break {
-            return libClsCache.get(s);
+            return lookupByte(s);
         }
     };
+
+    protected byte[] lookupByte(String className) {
+        return libClsCache.get(className);
+    }
 
     private static java.security.ProtectionDomain DOMAIN;
 

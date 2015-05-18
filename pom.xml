@@ -22,7 +22,7 @@
   <groupId>org.osgl</groupId>
   <artifactId>osgl-mvc-server</artifactId>
   <packaging>jar</packaging>
-  <version>0.1-SNAPSHOT</version>
+  <version>0.0.1-SNAPSHOT</version>
 
   <name>OSGL MVC Server</name>
   <description>MVC Server</description>
@@ -73,6 +73,8 @@
           <configuration>
             <source>1.6</source>
             <target>1.6</target>
+            <debug>true</debug>
+            <debuglevel>lines,vars,source</debuglevel>
           </configuration>
         </plugin>
         <plugin>
@@ -157,13 +159,13 @@
     <dependency>
       <groupId>org.osgl</groupId>
       <artifactId>osgl-tool</artifactId>
-      <version>0.4.3-SNAPSHOT</version>
+      <version>0.5.3a-SNAPSHOT</version>
     </dependency>
 
     <dependency>
       <groupId>org.osgl</groupId>
       <artifactId>osgl-mvc</artifactId>
-      <version>0.2-SNAPSHOT</version>
+      <version>0.2.2-SNAPSHOT</version>
     </dependency>
 
     <dependency>
@@ -193,7 +195,7 @@
     <dependency>
       <groupId>org.osgl</groupId>
       <artifactId>osgl-http</artifactId>
-      <version>0.2-SNAPSHOT</version>
+      <version>0.2.2-SNAPSHOT</version>
     </dependency>
 
     <dependency>

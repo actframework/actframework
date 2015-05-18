@@ -14,6 +14,7 @@ import org.rythmengine.RythmEngine;
 import org.rythmengine.extension.ISourceCodeEnhancer;
 import org.rythmengine.template.ITemplate;
 
+import java.io.File;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -76,12 +77,12 @@ public class RythmView extends View {
         if (S.blank(templateHome) || "default".equals(templateHome)) {
             templateHome = "/" + name();
         }
-        p.put(HOME_TEMPLATE.getKey(), templateHome);
+        p.put(HOME_TEMPLATE.getKey(), new File(app.layout().resource(app.base()), templateHome));
 
-        p.put(CODEGEN_SOURCE_CODE_ENHANCER, new ISourceCodeEnhancer() {
+        p.put(CODEGEN_SOURCE_CODE_ENHANCER.getKey(), new ISourceCodeEnhancer() {
             @Override
             public List<String> imports() {
-                return imports();
+                return C.list();
             }
 
             @Override

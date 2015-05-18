@@ -1,17 +1,17 @@
 package org.osgl.oms;
 
+import org.osgl.oms.boot.server.ServerBootstrapClassLoader;
 import org.osgl.oms.util.ClassNames;
 import org.osgl.util.E;
 import org.osgl.util.IO;
 
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 
-public class TestBootstrapClassLoader extends BootstrapClassLoader {
+public class TestServerBootstrapClassLoader extends ServerBootstrapClassLoader {
 
-    public TestBootstrapClassLoader(ClassLoader cl) {
+    public TestServerBootstrapClassLoader(ClassLoader cl) {
         super(cl);
     }
 

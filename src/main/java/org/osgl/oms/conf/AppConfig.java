@@ -171,6 +171,9 @@ public class AppConfig extends Config<AppConfigKey> {
     public TemplatePathResolver templatePathResolver() {
         if (null == templatePathResolver) {
             templatePathResolver = get(TEMPLATE_PATH_RESOLVER);
+            if (null == templatePathResolver) {
+                templatePathResolver = new TemplatePathResolver();
+            }
         }
         return templatePathResolver;
     }
@@ -271,13 +274,16 @@ public class AppConfig extends Config<AppConfigKey> {
         return secret;
     }
 
-    public boolean notControllerClass(String className) {
-        return !controllerNameTester().test(className);
+    public boolean possibleControllerClass(String className) {
+        return controllerNameTester().test(className);
     }
 
     private CacheServiceProvider csp = null;
 
     public CacheService cacheService(String name) {
-        throw E.tbd();
+        if (null == csp) {
+            csp = CacheServiceProvider.Impl.Simple;
+        }
+        return csp.get(name);
     }
 }

@@ -5,7 +5,7 @@ import java.io.File;
 /**
  * The current running directory is the app base
  */
-class DevModeAppScanner extends AppScanner {
+class SingleAppScanner extends AppScanner {
 
     @Override
     protected File[] appBases() {
@@ -22,7 +22,4 @@ class DevModeAppScanner extends AppScanner {
         return this;
     }
 
-    public static void main(String[] args) {
-        System.out.println(currentDir());
-    }
 }

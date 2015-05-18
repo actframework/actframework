@@ -1,8 +1,14 @@
-package org.osgl.oms;
+package org.osgl.oms.boot.server;
 
 import org.osgl._;
+import org.osgl.logging.L;
+import org.osgl.logging.Logger;
+import org.osgl.oms.OMS;
 import org.osgl.oms.asm.ClassReader;
 import org.osgl.oms.asm.ClassWriter;
+import org.osgl.oms.boot.PluginClassProvider;
+import org.osgl.oms.boot.app.FullStackAppBootstrapClassLoader;
+import org.osgl.oms.plugin.Plugin;
 import org.osgl.oms.util.BytecodeVisitor;
 import org.osgl.oms.util.Jars;
 import org.osgl.util.C;
@@ -18,7 +24,9 @@ import static org.osgl.oms.Constants.*;
 /**
  * This class loader is responsible for loading OMS classes
  */
-public class BootstrapClassLoader extends ClassLoader {
+public class ServerBootstrapClassLoader extends ClassLoader implements PluginClassProvider {
+
+    private static Logger logger = L.get(ServerBootstrapClassLoader.class);
 
     private File lib;
     private File plugin;
@@ -27,12 +35,12 @@ public class BootstrapClassLoader extends ClassLoader {
     private Map<String, byte[]> pluginBC = C.newMap();
     private List<Class<?>> pluginClasses = C.newList();
 
-    public BootstrapClassLoader(ClassLoader parent) {
+    public ServerBootstrapClassLoader(ClassLoader parent) {
         super(parent);
         preload();
     }
 
-    public BootstrapClassLoader() {
+    public ServerBootstrapClassLoader() {
         this(_getParent());
     }
 
@@ -76,6 +84,12 @@ public class BootstrapClassLoader extends ClassLoader {
     private void buildIndex() {
         libBC.putAll(Jars.buildClassNameIndex(lib));
         pluginBC.putAll(Jars.buildClassNameIndex(plugin));
+        File omsJar = Jars.probeJarFile(OMS.class);
+        if (null == omsJar) {
+            logger.warn("Cannot find jar file for OMS");
+        } else {
+            pluginBC.putAll(Jars.buildClassNameIndex(C.list(omsJar)));
+        }
     }
 
     @Override
@@ -97,10 +111,12 @@ public class BootstrapClassLoader extends ClassLoader {
     }
 
     public List<Class<?>> pluginClasses() {
-        for (String className : C.list(pluginBC.keySet())) {
-            Class<?> c = loadOmsClass(className, true, true);
-            assert null != c;
-            pluginClasses.add(c);
+        if (pluginClasses.isEmpty()) {
+            for (String className : C.list(pluginBC.keySet())) {
+                Class<?> c = loadOmsClass(className, true, true);
+                assert null != c;
+                pluginClasses.add(c);
+            }
         }
         return C.list(pluginClasses);
     }
@@ -181,13 +197,15 @@ public class BootstrapClassLoader extends ClassLoader {
                 java.security.AccessController.doPrivileged(
                         new java.security.PrivilegedAction() {
                             public Object run() {
-                                return BootstrapClassLoader.class.getProtectionDomain();
+                                return ServerBootstrapClassLoader.class.getProtectionDomain();
                             }
                         });
     }
 
     private static final Set<String> protectedClasses = C.set(
-            BootstrapClassLoader.class.getName()
+            ServerBootstrapClassLoader.class.getName(),
+            FullStackAppBootstrapClassLoader.class.getName(),
+            PluginClassProvider.class.getName()
             //Plugin.class.getName(),
             //ClassFilter.class.getName()
     );

@@ -35,22 +35,15 @@ public abstract class View implements Plugin {
         TemplatePathResolver resolver = config.templatePathResolver();
         String path = resolver.resolve(context);
 
-        String home = config.templateHome();
-        if ("default".equals(home)) {
-            home = name().toLowerCase();
-        }
-
         StringBuilder sb = S.builder();
-        if (!home.startsWith("/")) {
-            sb.append("/");
-        }
-        sb.append(home);
-        if (!home.endsWith("/")) {
+        if (!path.startsWith("/")) {
             sb.append("/");
         }
         sb.append(path);
 
-        return loadTemplate(sb.toString(), context);
+        Template template = loadTemplate(sb.toString(), context);
+        context.cacheTemplate(template);
+        return template;
     }
 
     /**
