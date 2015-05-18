@@ -159,7 +159,7 @@
     <dependency>
       <groupId>org.osgl</groupId>
       <artifactId>osgl-tool</artifactId>
-      <version>0.5.3a-SNAPSHOT</version>
+      <version>0.5.4-SNAPSHOT</version>
     </dependency>
 
     <dependency>
