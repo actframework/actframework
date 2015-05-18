@@ -149,11 +149,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo>
             } else {
                 String paramName = param.name();
                 String reqVal = ctx.param(paramName);
-                if (!S.isBlank(reqVal)) {
-                    oa[i] = StringValueResolver.predefined(paramType).apply(reqVal);
-                } else {
-                    oa[i] = null;
-                }
+                oa[i] = StringValueResolver.predefined(paramType).apply(reqVal);
             }
         }
         return oa;
