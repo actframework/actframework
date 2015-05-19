@@ -25,7 +25,7 @@ public abstract class VarDef {
         E.illegalArgumentIf(S.blank(name), "VarDef name cannot be empty");
         E.NPE(type);
         this.name = name;
-        this.type = type.getCanonicalName();
+        this.type = type.getCanonicalName().replace('$', '.');
     }
 
     public String name() {

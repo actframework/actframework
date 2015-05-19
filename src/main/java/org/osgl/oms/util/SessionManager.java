@@ -118,6 +118,7 @@ public class SessionManager {
         private boolean encryptSession;
         private boolean persistentSession;
         private boolean sessionHttpOnly;
+        private boolean sessionSecure;
         private long ttl;
         private boolean sessionWillExpire;
         private String sessionCookieName;
@@ -131,6 +132,7 @@ public class SessionManager {
             this.encryptSession = conf.encryptSession();
             this.persistentSession = conf.persistSession();
             this.sessionHttpOnly = conf.sessionHttpOnly();
+            this.sessionSecure = conf.sessionSecure();
             long ttl = conf.sessionTtl();
             this.ttl = ttl * 1000L;
             sessionWillExpire = ttl > 0;
@@ -179,6 +181,7 @@ public class SessionManager {
                 // session is empty, delete it from cookie
                 cookie = createCookie(sessionCookieName, "");
             } else {
+                session.id(); // ensure session ID is generated
                 if (sessionWillExpire && !session.contains(KEY_EXPIRATION)) {
                     // session get cleared before
                     session.put(KEY_EXPIRATION, _.ms() + ttl);
@@ -285,7 +288,8 @@ public class SessionManager {
         private H.Cookie createCookie(String name, String value) {
             H.Cookie cookie = new H.Cookie(name, value);
             cookie.path("/");
-            cookie.secure(sessionHttpOnly);
+            cookie.httpOnly(sessionHttpOnly);
+            cookie.secure(sessionSecure);
             if (sessionWillExpire && persistentSession) {
                 cookie.maxAge((int) (ttl / 1000));
             }

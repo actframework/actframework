@@ -254,13 +254,21 @@ public class AppConfig extends Config<AppConfigKey> {
 
     private Boolean sessionHttpOnly = null;
     public boolean sessionHttpOnly() {
-        if (OMS.isDev()) {
-            return false;
-        }
         if (null == sessionHttpOnly) {
             sessionHttpOnly = get(SESSION_HTTP_ONLY_ENABLED);
         }
         return sessionHttpOnly;
+    }
+
+    private Boolean sessionSecure = null;
+    public boolean sessionSecure() {
+        if (OMS.isDev()) {
+            return false;
+        }
+        if (null == sessionSecure) {
+            sessionSecure = get(SESSION_HTTP_ONLY_ENABLED);
+        }
+        return sessionSecure;
     }
 
     private String secret = null;

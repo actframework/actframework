@@ -38,7 +38,7 @@ public class RenderTemplate extends RenderAny {
         }
         ViewManager vm = OMS.viewManager();
         Template t = vm.load(context);
-        context.dissolve();
+        //context.dissolve();
         applyStatus(context.resp());
         t.merge(context);
     }

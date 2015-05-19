@@ -33,6 +33,7 @@ public class AppContext {
     private Template template;
     private String templatePath;
     private State state;
+    private Map<String, Object> controllerInstances;
 
     private AppContext(App app, H.Request request, H.Response response) {
         E.NPE(app, request, response);
@@ -138,6 +139,18 @@ public class AppContext {
 
     public List<String> __appRenderArgNames() {
         return (List<String>)renderArgs.get("__arg_names__");
+    }
+
+    public AppContext __controllerInstance(String className, Object instance) {
+        if (null == controllerInstances) {
+            controllerInstances = C.newMap();
+        }
+        controllerInstances.put(className, instance);
+        return this;
+    }
+
+    public Object __controllerInstance(String className) {
+        return null == controllerInstances ? null : controllerInstances.get(className);
     }
 
     /**
@@ -251,6 +264,11 @@ public class AppContext {
         this.app = null;
         this.request = null;
         this.response = null;
+        this.flash = null;
+        this.session = null;
+        this.template = null;
+        this.state = State.DESTROYED;
+        this.controllerInstances = null;
         AppContext.clear();
     }
 
@@ -409,6 +427,7 @@ public class AppContext {
     public enum State {
         CREATED,
         SESSION_RESOLVED,
-        SESSION_DISSOLVED
+        SESSION_DISSOLVED,
+        DESTROYED
     }
 }

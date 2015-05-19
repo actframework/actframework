@@ -198,16 +198,25 @@ public enum AppConfigKey implements ConfigKey {
     /**
      * {@code session.http_only.enabled} specifies whether the session cookie should
      * be set as http-only. Enable http only session will cause session cookie only
+     * not be accessible via JavaScript.
+     *
+     * <p>Default value: {@code true}</p>
+     */
+    SESSION_HTTP_ONLY_ENABLED("session.http_only.enabled", true),
+
+    /**
+     * {@code session.secure.enabled} specifies whether the session cookie should
+     * be set as secure. Enable secure session will cause session cookie only
      * effective in https connection. Literally this will enforce the web site to run
      * default by https.
      *
      * <p>Default value: {@code true}</p>
      *
      * <p><b>Note</b> when {@link OMS OMS server} is running in {@link org.osgl.oms.OMS.Mode#DEV mode}
-     * session http only will be disabled without regarding to the {@code session.http_only.enabled}
+     * session http only will be disabled without regarding to the {@code session.secure.enabled}
      * setting</p>
      */
-    SESSION_HTTP_ONLY_ENABLED("session.http_only.enabled", true),
+    SESSION_SECURE("session.secure.enabled", true),
 
     /**
      * {@code oms.source_version} specifies the java version

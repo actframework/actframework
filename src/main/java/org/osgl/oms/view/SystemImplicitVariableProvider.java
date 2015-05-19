@@ -38,20 +38,20 @@ public class SystemImplicitVariableProvider extends ImplicitVariableProvider {
 //                }
 //            },
 //
-//            new VarDef("_session", H.Session.class) {
-//                @Override
-//                public Object evaluate(AppContext context) {
-//                    return context.session();
-//                }
-//            },
-//
-//            new VarDef("_flash", H.Flash.class) {
-//                @Override
-//                public Object evaluate(AppContext context) {
-//                    return context.flash();
-//                }
-//            },
-//
+            new VarDef("_session", H.Session.class) {
+                @Override
+                public Object evaluate(AppContext context) {
+                    return context.session();
+                }
+            },
+
+            new VarDef("_flash", H.Flash.class) {
+                @Override
+                public Object evaluate(AppContext context) {
+                    return context.flash();
+                }
+            },
+
             new VarDef("_params", Map.class) {
                 @Override
                 public Object evaluate(AppContext context) {

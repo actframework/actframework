@@ -78,7 +78,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo>
     }
 
     public Result handle(AppContext appContext) {
-        Object ctrl = controllerInstance();
+        Object ctrl = controllerInstance(appContext);
         applyAppContext(appContext, ctrl);
         Object[] params = params(appContext, null, null);
         return invoke(appContext, ctrl, params);
@@ -86,7 +86,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo>
 
     @Override
     public Result handle(Result result, AppContext appContext) {
-        Object ctrl = controllerInstance();
+        Object ctrl = controllerInstance(appContext);
         applyAppContext(appContext, ctrl);
         Object[] params = params(appContext, result, null);
         return invoke(appContext, ctrl, params);
@@ -94,14 +94,23 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo>
 
     @Override
     public Result handle(Exception e, AppContext appContext) {
-        Object ctrl = controllerInstance();
+        Object ctrl = controllerInstance(appContext);
         applyAppContext(appContext, ctrl);
         Object[] params = params(appContext, null, e);
         return invoke(appContext, ctrl, params);
     }
 
-    private Object controllerInstance() {
-        return (null == constructorAccess) ? null : constructorAccess.newInstance();
+    private Object controllerInstance(AppContext context) {
+        if (null == constructorAccess) {
+            return null;
+        }
+        String controller = controllerClass.getName();
+        Object inst = context.__controllerInstance(controller);
+        if (null == inst) {
+            inst = constructorAccess.newInstance();
+            context.__controllerInstance(controller, inst);
+        }
+        return inst;
     }
 
     private void applyAppContext(AppContext appContext, Object controller) {

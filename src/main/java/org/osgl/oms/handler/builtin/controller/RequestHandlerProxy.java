@@ -171,14 +171,18 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
     }
 
     private void onResult(Result result, AppContext context) {
-        context.dissolve();
-        if (result instanceof RenderAny) {
-            RenderAny any = (RenderAny) result;
-            any.apply(context);
-        } else {
-            H.Request req = context.req();
-            H.Response resp = context.resp();
-            result.apply(req, resp);
+        try {
+            context.dissolve();
+            if (result instanceof RenderAny) {
+                RenderAny any = (RenderAny) result;
+                any.apply(context);
+            } else {
+                H.Request req = context.req();
+                H.Response resp = context.resp();
+                result.apply(req, resp);
+            }
+        } finally {
+            context.destroy();
         }
     }
 
