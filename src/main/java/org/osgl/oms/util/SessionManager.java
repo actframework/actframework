@@ -6,6 +6,8 @@ import org.osgl._;
 import org.osgl.exception.NotAppliedException;
 import org.osgl.http.H;
 import org.osgl.http.H.Session;
+import org.osgl.logging.L;
+import org.osgl.logging.Logger;
 import org.osgl.oms.OMS;
 import org.osgl.oms.app.App;
 import org.osgl.oms.app.AppContext;
@@ -16,6 +18,8 @@ import org.osgl.util.Codec;
 import org.osgl.util.E;
 import org.osgl.util.S;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -27,6 +31,8 @@ import static org.osgl.http.H.Session.KEY_EXPIRE_INDICATOR;
  * Resolve/Persist session/flash
  */
 public class SessionManager {
+
+    private static Logger logger = L.get(SessionManager.class);
 
     private C.List<Listener> registry = C.newList();
     private Map<App, CookieResolver> resolvers = C.newMap();
@@ -110,7 +116,7 @@ public class SessionManager {
         public void onSessionDissolve() {}
     }
 
-    private static class CookieResolver {
+    static class CookieResolver {
         static final Pattern COOKIE_PARSER = Pattern.compile("\u0000([^:]*):([^\u0000]*)\u0000");
 
         private App app;
@@ -204,7 +210,7 @@ public class SessionManager {
             return cookie;
         }
 
-        private void resolveFromCookieContent(H.KV<?> kv, String content, boolean isSession) {
+        void resolveFromCookieContent(H.KV<?> kv, String content, boolean isSession) {
             String data = Codec.decodeUrl(content, Charsets.UTF_8);
             if (isSession) {
                 if (encryptSession) {
@@ -219,26 +225,72 @@ public class SessionManager {
                         return;
                     }
                     String sign = content.substring(0, firstDashIndex);
-                    data = content.substring(firstDashIndex + 1);
-                    if (!sign.equals(app.sign(data))) {
+                    data = data.substring(firstDashIndex + 1);
+                    String sign1 = app.sign(data);
+                    if (!sign.equals(sign1)) {
                         return;
                     }
                 }
             }
-            Matcher matcher = COOKIE_PARSER.matcher(data);
-            while (matcher.find()) {
-                kv.load(matcher.group(1), matcher.group(2));
+            List<char[]> pairs = split(data.toCharArray(), '\u0000');
+            if (pairs.isEmpty()) return;
+            for (char[] pair: pairs) {
+                List<char[]> kAndV = split(pair, '\u0001');
+                int sz = kAndV.size();
+                if (sz != 2) {
+                    StringBuilder sb = new StringBuilder();
+                    for (int i = 0; i < sz; ++i) {
+                        if (i > 0) sb.append(":");
+                        sb.append(Arrays.toString(kAndV.get(i)));
+                    }
+                    logger.warn("unexpected KV string: %S", sb.toString());
+                } else {
+                    kv.put(new String(kAndV.get(0)), new String(kAndV.get(1)));
+                }
             }
         }
 
-        private String dissolveIntoCookieContent(H.KV<?> kv, boolean isSession) {
+        private List<char[]> split(char[] content, char separator) {
+            int len = content.length;
+            if (0 == len) {
+                return C.list();
+            }
+            List<char[]> l = C.newList();
+            int start = 0;
+            for (int i = 0; i < len; ++i) {
+                char c = content[i];
+                if (c == separator) {
+                    if (i == start) {
+                        start++;
+                        continue;
+                    }
+                    char[] ca = new char[i - start];
+                    System.arraycopy(content, start, ca, 0, i - start);
+                    l.add(ca);
+                    start = i + 1;
+                }
+            }
+            if (start == 0) {
+                l.add(content);
+            } else {
+                char[] ca = new char[len - start];
+                System.arraycopy(content, start, ca, 0, len - start);
+                l.add(ca);
+            }
+            return l;
+        }
+
+        String dissolveIntoCookieContent(H.KV<?> kv, boolean isSession) {
             StringBuilder sb = S.builder();
+            int i = 0;
             for (String k : kv.keySet()) {
-                sb.append("\u0000");
+                if (i > 0) {
+                    sb.append("\u0000");
+                }
                 sb.append(k);
-                sb.append(":");
+                sb.append("\u0001");
                 sb.append(kv.get(k));
-                sb.append("\u0000");
+                i++;
             }
             String data = sb.toString();
             if (isSession) {

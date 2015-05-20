@@ -126,15 +126,15 @@ public class App {
     }
 
     public String sign(String message) {
-        return Crypto.sign(message, config.secret().getBytes(Charsets.UTF_8));
+        return Crypto.sign(message, config().secret().getBytes(Charsets.UTF_8));
     }
 
     public String encrypt(String message) {
-        return Crypto.encryptAES(message, config.secret());
+        return Crypto.encryptAES(message, config().secret());
     }
 
     public String decrypt(String message) {
-        return Crypto.decryptAES(message, config.secret());
+        return Crypto.decryptAES(message, config().secret());
     }
 
     public boolean isSourceClass(String className) {

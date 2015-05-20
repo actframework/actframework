@@ -165,7 +165,7 @@
     <dependency>
       <groupId>org.osgl</groupId>
       <artifactId>osgl-mvc</artifactId>
-      <version>0.2.2-SNAPSHOT</version>
+      <version>0.2.4-SNAPSHOT</version>
     </dependency>
 
     <dependency>
@@ -190,12 +190,6 @@
       <groupId>org.osgl</groupId>
       <artifactId>osgl-cache</artifactId>
       <version>0.3-SNAPSHOT</version>
-    </dependency>
-
-    <dependency>
-      <groupId>org.osgl</groupId>
-      <artifactId>osgl-http</artifactId>
-      <version>0.2.2-SNAPSHOT</version>
     </dependency>
 
     <dependency>

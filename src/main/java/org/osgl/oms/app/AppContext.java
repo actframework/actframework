@@ -64,6 +64,10 @@ public class AppContext {
         return response;
     }
 
+    public H.Cookie cookie(String name) {
+        return req().cookie(name);
+    }
+
     public H.Session session() {
         return session;
     }
@@ -255,7 +259,7 @@ public class AppContext {
      * remove this context from thread local
      */
     public void destroy() {
-        this.allParams.clear();
+        this.allParams = null;
         this.extraParams.clear();
         this.requestParamCache.clear();
         this.renderArgs.clear();
