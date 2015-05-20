@@ -260,10 +260,10 @@ public class AppContext {
      */
     public void destroy() {
         this.allParams = null;
-        this.extraParams.clear();
-        this.requestParamCache.clear();
-        this.renderArgs.clear();
-        this.attributes.clear();
+        this.extraParams = null;
+        this.requestParamCache = null;
+        this.renderArgs = null;
+        this.attributes = null;
         this.template = null;
         this.app = null;
         this.request = null;
