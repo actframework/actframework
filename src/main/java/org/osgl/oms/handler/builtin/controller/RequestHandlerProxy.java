@@ -131,6 +131,7 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
             }
             onResult(result, context);
         } catch (Exception e) {
+            logger.error(e, "Error handling request");
             result = handleException(e, context);
             if (null == result) {
                 result = new ServerError(e);
