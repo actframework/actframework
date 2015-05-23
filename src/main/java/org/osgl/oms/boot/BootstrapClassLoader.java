@@ -4,20 +4,16 @@ import org.osgl._;
 import org.osgl.logging.L;
 import org.osgl.logging.Logger;
 import org.osgl.oms.BytecodeEnhancerManager;
-import org.osgl.oms.OMS;
 import org.osgl.oms.asm.ClassReader;
 import org.osgl.oms.asm.ClassWriter;
 import org.osgl.oms.boot.app.FullStackAppBootstrapClassLoader;
 import org.osgl.oms.boot.server.ServerBootstrapClassLoader;
-import org.osgl.oms.util.BytecodeVisitor;
+import org.osgl.oms.util.ByteCodeVisitor;
 import org.osgl.util.C;
 import org.osgl.util.E;
 
-import java.net.URL;
 import java.security.ProtectionDomain;
 import java.util.Set;
-import java.util.jar.Attributes;
-import java.util.jar.Manifest;
 
 /**
  * Base class for OMS class loaders
@@ -66,7 +62,7 @@ public abstract class BootstrapClassLoader extends ClassLoader implements Plugin
     protected Class<?> defineClass(String name, byte[] ba) {
         Class<?> c;
         _.Var<ClassWriter> cw = _.val(null);
-        BytecodeVisitor enhancer = enhancerManager.generalEnhancer(name, cw);
+        ByteCodeVisitor enhancer = enhancerManager.generalEnhancer(name, cw);
         if (null == enhancer) {
             c = defineClassX(name, ba, 0, ba.length, DOMAIN);
         } else {

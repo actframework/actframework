@@ -13,6 +13,7 @@ public class RunApp {
         String pkg = anyController.getPackage().getName();
         System.setProperty(AppConfigKey.CONTROLLER_PACKAGE.key(), pkg);
         FullStackAppBootstrapClassLoader classLoader = new FullStackAppBootstrapClassLoader(RunApp.class.getClassLoader());
+        Thread.currentThread().setContextClassLoader(classLoader);
         Class<?> omsClass = classLoader.loadClass("org.osgl.oms.OMS");
         Method m = omsClass.getDeclaredMethod("startApp");
         m.invoke(null);

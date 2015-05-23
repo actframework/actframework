@@ -3,6 +3,8 @@ package org.osgl.oms.route;
 import org.osgl._;
 import org.osgl.http.H;
 import org.osgl.http.util.Path;
+import org.osgl.logging.L;
+import org.osgl.logging.Logger;
 import org.osgl.mvc.result.NotFound;
 import org.osgl.oms.app.App;
 import org.osgl.oms.app.AppContext;
@@ -32,6 +34,7 @@ public class Router {
     private static final NotFound NOT_FOUND = new NotFound();
     private static final H.Method[] targetMethods = new H.Method[]{H.Method.GET, H.Method.POST, H.Method.PUT,
             H.Method.DELETE};
+    private static final Logger logger = L.get(Router.class);
 
     private Node _GET = Node.newRoot();
     private Node _PUT = Node.newRoot();
@@ -96,18 +99,27 @@ public class Router {
     }
 
     public void addMapping(H.Method method, CharSequence path, RequestHandler handler) {
+        addMapping(method, path, handler, true);
+    }
+
+    private void addMapping(H.Method method, CharSequence path, RequestHandler handler, boolean logInfo) {
+        if (logInfo) {
+            logger.info("Add mapping on %s %s to %s", method, path, handler.getClass());
+        }
         Node node = _locate(method, path);
         node.handler(handler);
     }
 
     public void addMapping(H.Method method, CharSequence path, CharSequence action) {
+        logger.info("[%s %s] -> [%s]", method, path, action);
         RequestHandler handler = resolveActionHandler(action);
-        addMapping(method, path, handler);
+        addMapping(method, path, handler, false);
     }
 
     public void addMappingIfNotMapped(H.Method method, CharSequence path, RequestHandler handler) {
         Node node = _locate(method, path);
         if (null == node.handler) {
+            logger.info("[%s %s] -> [%s]", method, path, handler.getClass().getName());
             node.handler(handler);
         }
     }
@@ -115,6 +127,7 @@ public class Router {
     public void addMappingIfNotMapped(H.Method method, CharSequence path, CharSequence action) {
         Node node = _locate(method, path);
         if (null == node.handler) {
+            logger.info("[%s %s] -> [%s]", method, path, action);
             node.handler(resolveActionHandler(action));
         }
     }

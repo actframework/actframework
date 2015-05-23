@@ -2,6 +2,8 @@ package org.osgl.oms.controller.bytecode;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.internal.verification.Times;
+import org.mockito.verification.VerificationMode;
 import org.osgl._;
 import org.osgl.exception.NotAppliedException;
 import org.osgl.http.H;
@@ -38,6 +40,14 @@ public class ControllerScannerTest extends TestBase {
                 });
             }
         });
+    }
+
+    @Test
+    public void specificHttpMethodAnnotationShallNotRegisterOtherHttpMethodsInRouteTable() {
+        scan(WithAppContext.class);
+        String url = "/static_no_ret_no_param";
+        verifyRouting(url, "WithAppContext", "staticReturnStringNoParam", GET);
+        verifyNoRouting(url, "WithAppContext", "staticReturnStringNoParam", PUT, POST, DELETE);
     }
 
     @Test
@@ -157,6 +167,12 @@ public class ControllerScannerTest extends TestBase {
     private void verifyRouting(String url, String controller, String action, H.Method... methods) {
         for (H.Method method : methods) {
             verify(mockRouter).addMappingIfNotMapped(method, url, "testapp.controller." + controller + "." + action);
+        }
+    }
+
+    private void verifyNoRouting(String url, String controller, String action, H.Method... methods) {
+        for (H.Method method : methods) {
+            verify(mockRouter, new Times(0)).addMappingIfNotMapped(method, url, "testapp.controller." + controller + "." + action);
         }
     }
 

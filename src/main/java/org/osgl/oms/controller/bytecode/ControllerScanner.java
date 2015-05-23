@@ -4,14 +4,14 @@ import org.osgl._;
 import org.osgl.http.H;
 import org.osgl.logging.L;
 import org.osgl.logging.Logger;
-import org.osgl.mvc.annotation.With;
+import org.osgl.mvc.annotation.*;
 import org.osgl.oms.asm.*;
 import org.osgl.oms.conf.AppConfig;
 import org.osgl.oms.controller.Controller;
 import org.osgl.oms.controller.meta.*;
 import org.osgl.oms.route.Router;
 import org.osgl.oms.util.AsmTypes;
-import org.osgl.oms.util.BytecodeVisitor;
+import org.osgl.oms.util.ByteCodeVisitor;
 import org.osgl.util.C;
 import org.osgl.util.E;
 import org.osgl.util.ListBuilder;
@@ -19,6 +19,7 @@ import org.osgl.util.S;
 
 import java.lang.annotation.Annotation;
 import java.util.List;
+import java.util.Map;
 
 import static org.osgl.oms.controller.meta.ControllerClassMetaInfo.isActionAnnotation;
 import static org.osgl.oms.controller.meta.ControllerClassMetaInfo.isInterceptorAnnotation;
@@ -28,15 +29,20 @@ import static org.osgl.oms.controller.meta.ControllerClassMetaInfo.isInterceptor
  * - build the {@link org.osgl.oms.controller.meta.ControllerClassMetaInfo}
  * - add annotated action method to router
  */
-public final class ControllerScanner extends BytecodeVisitor {
+public final class ControllerScanner extends ByteCodeVisitor {
 
     private final static Logger logger = L.get(ControllerScanner.class);
+
+    private final Map<Class<? extends Action>, H.Method> METHOD_LOOKUP = C.newMap(
+            GetAction.class, H.Method.GET,
+            PostAction.class, H.Method.POST,
+            PutAction.class, H.Method.PUT,
+            DeleteAction.class, H.Method.DELETE);
 
     private AppConfig appConfig;
     private Router router;
     private _.Func1<String, byte[]> bytecodeLookup;
     private ControllerClassMetaInfo classInfo;
-    private ControllerClassMetaInfoManager mgr;
 
     public ControllerScanner(AppConfig config, Router router, _.Func1<String, byte[]> bytecodeLookup) {
         super(null);
@@ -47,24 +53,7 @@ public final class ControllerScanner extends BytecodeVisitor {
     }
 
     public ControllerScanner manager(ControllerClassMetaInfoManager manager) {
-        mgr = manager;
         return this;
-    }
-
-    private static boolean isConstructor(String methodName) {
-        return methodName.contains("<init>");
-    }
-
-    private static boolean isPublic(int access) {
-        return (ACC_PUBLIC & access) > 0;
-    }
-
-    private static boolean isPrivate(int access) {
-        return (ACC_PRIVATE & access) > 0;
-    }
-
-    private static boolean isAbstract(int access) {
-        return (ACC_ABSTRACT & access) > 0;
     }
 
     public ControllerClassMetaInfo scan(String className) {
@@ -205,6 +194,7 @@ public final class ControllerScanner extends BytecodeVisitor {
             }
         }
 
+
         @Override
         public AnnotationVisitor visitAnnotation(String desc, boolean visible) {
             AnnotationVisitor av = super.visitAnnotation(desc, visible);
@@ -216,7 +206,7 @@ public final class ControllerScanner extends BytecodeVisitor {
                 ActionMethodMetaInfo tmp = new ActionMethodMetaInfo(classInfo);
                 methodInfo = tmp;
                 classInfo.addAction(tmp);
-                return new ActionAnnotationVisitor(av);
+                return new ActionAnnotationVisitor(av, METHOD_LOOKUP.get(c));
             } else if (isInterceptorAnnotation(c)) {
                 markRequireScan();
                 InterceptorAnnotationVisitor visitor = new InterceptorAnnotationVisitor(av, c);
@@ -362,8 +352,11 @@ public final class ControllerScanner extends BytecodeVisitor {
             List<H.Method> httpMethods = C.newList();
             String path;
 
-            public ActionAnnotationVisitor(AnnotationVisitor av) {
+            public ActionAnnotationVisitor(AnnotationVisitor av, H.Method method) {
                 super(ASM5, av);
+                if (null != method) {
+                    httpMethods.add(method);
+                }
             }
 
             @Override

@@ -210,6 +210,14 @@ public final class ControllerClassMetaInfo {
         return this;
     }
 
+    public ControllerClassMetaInfo merge(ControllerClassMetaInfoManager2 infoBase) {
+        mergeFromWithList(infoBase);
+        mergeIntoActionList();
+        buildActionLookup();
+        buildHandlerLookup();
+        return this;
+    }
+
     public String contextPath() {
         return contextPath;
     }
@@ -239,6 +247,18 @@ public final class ControllerClassMetaInfo {
         }
     }
 
+    private void getAllWithList(Set<String> withList, ControllerClassMetaInfoManager2 infoBase) {
+        withList.addAll(this.withList);
+        if (null != superType) {
+            String superClass = superType.getClassName();
+            ControllerClassMetaInfo info = infoBase.controllerMetaInfo(superClass);
+            if (null != info) {
+                info.getAllWithList(withList, infoBase);
+                withList.add(superClass);
+            }
+        }
+    }
+
     private void mergeFromWithList(ControllerClassMetaInfoManager infoBase) {
         C.Set<String> withClasses = C.newSet();
         getAllWithList(withClasses, infoBase);
@@ -247,6 +267,20 @@ public final class ControllerClassMetaInfo {
             if (null == withClassInfo) {
                 withClassInfo = infoBase.scanForControllerMetaInfo(withClass);
             }
+            if (null != withClassInfo) {
+                withClassInfo.merge(infoBase);
+                interceptors.mergeFrom(withClassInfo.interceptors);
+            } else {
+                logger.warn("Cannot find class info for @With class: %s", withClass);
+            }
+        }
+    }
+
+    private void mergeFromWithList(ControllerClassMetaInfoManager2 infoBase) {
+        C.Set<String> withClasses = C.newSet();
+        getAllWithList(withClasses, infoBase);
+        for (String withClass : withClasses) {
+            ControllerClassMetaInfo withClassInfo = infoBase.controllerMetaInfo(withClass);
             if (null != withClassInfo) {
                 withClassInfo.merge(infoBase);
                 interceptors.mergeFrom(withClassInfo.interceptors);

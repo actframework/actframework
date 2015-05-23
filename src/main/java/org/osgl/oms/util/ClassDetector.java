@@ -9,7 +9,7 @@ import org.osgl.oms.plugin.Extends;
 import org.osgl.util.C;
 import org.osgl.util.E;
 
-public abstract class ClassDetector extends BytecodeVisitor {
+public abstract class ClassDetector extends ByteCodeVisitor {
 
     private String className;
 
@@ -94,7 +94,7 @@ public abstract class ClassDetector extends BytecodeVisitor {
     }
 
     public static ClassDetector chain(ClassWriter cw, ClassFilter... filters) {
-        return (ClassDetector) BytecodeVisitor.chain(cw, of(filters));
+        return (ClassDetector) ByteCodeVisitor.chain(cw, of(filters));
     }
 
     public static ClassDetector of(final ClassFilter... filters) {

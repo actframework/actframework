@@ -62,6 +62,10 @@ public abstract class ConfLoader<T extends Config> {
     }
 
     private Map loadConfFromFile(File conf) {
+        if (!conf.canRead()) {
+            logger.warn("Cannot read conf file[%s]", conf.getAbsolutePath());
+            return C.newMap();
+        }
         InputStream is = null;
         if (null == conf) {
             ClassLoader cl = OMS.class.getClassLoader();
@@ -84,10 +88,14 @@ public abstract class ConfLoader<T extends Config> {
                 IO.close(is);
             }
         }
-        return new HashMap();
+        return C.newMap();
     }
 
     private Map loadConfFromDir(File confDir) {
+        if (!confDir.exists()) {
+            logger.warn("Cannot read conf dir[%s]", confDir.getAbsolutePath());
+            return C.newMap();
+        }
         /*
          * try to load conf from tagged conf dir, e.g. ${conf_root}/uat or
          * ${conf_root}/dev etc

@@ -12,7 +12,8 @@ import org.osgl.oms.controller.bytecode.ControllerScanner;
 import org.osgl.oms.controller.meta.ControllerClassMetaInfo;
 import org.osgl.oms.controller.meta.ControllerClassMetaInfoHolder;
 import org.osgl.oms.controller.meta.ControllerClassMetaInfoManager;
-import org.osgl.oms.util.BytecodeVisitor;
+import org.osgl.oms.controller.meta.ControllerClassMetaInfoManager2;
+import org.osgl.oms.util.ByteCodeVisitor;
 import org.osgl.oms.util.ClassNames;
 import org.osgl.oms.util.Files;
 import org.osgl.oms.util.Jars;
@@ -26,6 +27,7 @@ import java.io.File;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static org.osgl._.notNull;
 
@@ -36,7 +38,7 @@ public class AppClassLoader extends ClassLoader implements ControllerClassMetaIn
     protected final static Logger logger = L.get(AppClassLoader.class);
     private App app;
     private Map<String, byte[]> libClsCache = C.newMap();
-    protected ControllerClassMetaInfoManager ctrlInfo =
+    protected ControllerClassMetaInfoManager controllerInfo =
             new ControllerClassMetaInfoManager(
                     new _.Factory<ControllerScanner>() {
                         @Override
@@ -45,16 +47,18 @@ public class AppClassLoader extends ClassLoader implements ControllerClassMetaIn
                         }
                     }
             );
+    protected ControllerClassMetaInfoManager2 controllerInfo2 = new ControllerClassMetaInfoManager2();
 
     public AppClassLoader(App app) {
         super(OMS.class.getClassLoader());
         this.app = notNull(app);
     }
 
-    protected void init() {
-        preloadBytecode();
-        scan();
-    }
+//    protected void init() {
+//        preload();
+//        //scanByteCode();
+//        scan2();
+//    }
 
     protected App app() {
         return app;
@@ -64,18 +68,26 @@ public class AppClassLoader extends ClassLoader implements ControllerClassMetaIn
         // don't do anything when running in none-dev mode
     }
 
-    public boolean isSourceClass(String className) {
-        return false;
+    public ControllerClassMetaInfo controllerClassMetaInfo(String controllerClassName) {
+        return controllerInfo.controllerMetaInfo(controllerClassName);
     }
 
-    public ControllerClassMetaInfo controllerClassMetaInfo(String controllerClassName) {
-        return ctrlInfo.controllerMetaInfo(controllerClassName);
+    public ControllerClassMetaInfoManager controllerClassMetaInfoManager() {
+        return controllerInfo;
+    }
+
+    public boolean isSourceClass(String className) {
+        return false;
     }
 
     @Override
     protected Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
         Class<?> c = findLoadedClass(name);
         if (c != null) {
+            return c;
+        }
+        c = getParent().loadClass(name);
+        if (null != null) {
             return c;
         }
 
@@ -88,26 +100,106 @@ public class AppClassLoader extends ClassLoader implements ControllerClassMetaIn
         }
     }
 
+    @Deprecated
     protected void scan() {
         scanForActionMethods();
     }
 
+    protected void scan2() {
+        scanByteCode(libClsCache.keySet(), bytecodeLookup);
+    }
+
+    /**
+     * This method implement a event listener based scan process:
+     * <ol>
+     *     <li>First loop: through all cached bytecode. Chain all scanner's bytecode visitor</li>
+     *     <li>Rest loops: through dependencies. Thus if some bytecode missed by a certain scanner
+     *     due to the context is not established can be captured eventually</li>
+     * </ol>
+     */
+    protected void scanByteCode(Iterable<String> classes, _.Function<String, byte[]> bytecodeProvider) {
+        final AppCodeScannerManager scannerManager = app().scannerManager();
+        Map<String, List<AppByteCodeScanner>> dependencies = C.newMap();
+        for (String className : classes) {
+            dependencies.remove(className);
+            byte[] ba = bytecodeProvider.apply(className);
+            List<ByteCodeVisitor> visitors = C.newList();
+            List<AppByteCodeScanner> scanners = C.newList();
+            for (AppByteCodeScanner scanner : scannerManager.byteCodeScanners()) {
+                if (scanner.start(className)) {
+                    visitors.add(scanner.byteCodeVisitor());
+                    scanners.add(scanner);
+                }
+            }
+            if (visitors.isEmpty()) {
+                continue;
+            }
+            ByteCodeVisitor theVisitor = ByteCodeVisitor.chain(visitors);
+            ClassReader cr = new ClassReader(ba);
+            cr.accept(theVisitor, 0);
+            for (AppByteCodeScanner scanner : scanners) {
+                scanner.scanFinished(className);
+                Set<String> ss = scanner.dependencyClasses();
+                if (ss.isEmpty()) {
+                    continue;
+                }
+                for (String dependencyClass : ss) {
+                    List<AppByteCodeScanner> l = dependencies.get(dependencyClass);
+                    if (null == l) {
+                        l = C.newList();
+                        dependencies.put(dependencyClass, l);
+                    }
+                    if (!l.contains(scanner)) l.add(scanner);
+                }
+            }
+        }
+        // loop through dependencies until it's all processed
+        while (!dependencies.isEmpty()) {
+            String className = dependencies.keySet().iterator().next();
+            List<AppByteCodeScanner> scanners = dependencies.remove(className);
+            List<ByteCodeVisitor> visitors = C.newList();
+            for (AppByteCodeScanner scanner: scanners) {
+                scanner.start(className);
+                visitors.add(scanner.byteCodeVisitor());
+            }
+            ByteCodeVisitor theVisitor = ByteCodeVisitor.chain(visitors);
+            ClassReader cr = new ClassReader(libClsCache.get(className));
+            cr.accept(theVisitor, 0);
+            for (AppByteCodeScanner scanner : scanners) {
+                scanner.scanFinished(className);
+                Set<String> ss = scanner.dependencyClasses();
+                if (ss.isEmpty()) {
+                    continue;
+                }
+                for (String dependencyClass : ss) {
+                    List<AppByteCodeScanner> l = dependencies.get(dependencyClass);
+                    if (null == l) {
+                        l = C.newList();
+                        dependencies.put(dependencyClass, l);
+                    }
+                    if (!l.contains(scanner)) l.add(scanner);
+                }
+            }
+        }
+    }
+
+    @Deprecated
     protected void scanForActionMethods() {
         AppConfig conf = app.config();
         for (String className : libClsCache.keySet()) {
             if (conf.possibleControllerClass(className)) {
-                ctrlInfo.scanForControllerMetaInfo(className);
+                controllerInfo.scanForControllerMetaInfo(className);
             }
         }
-        ctrlInfo.mergeActionMetaInfo();
+        controllerInfo.mergeActionMetaInfo();
     }
 
     protected void scanForActionMethods(String className) {
-        ctrlInfo.scanForControllerMetaInfo(className);
-        ctrlInfo.mergeActionMetaInfo();
+        controllerInfo.scanForControllerMetaInfo(className);
+        controllerInfo.mergeActionMetaInfo();
     }
 
-    protected void preloadBytecode() {
+    protected void preload() {
         preloadLib();
         preloadClasses();
     }
@@ -163,7 +255,7 @@ public class AppClassLoader extends ClassLoader implements ControllerClassMetaIn
 
     private byte[] asmEnhance(String className, byte[] bytecode) {
         _.Var<ClassWriter> cw = _.var(null);
-        BytecodeVisitor enhancer = OMS.enhancerManager().appEnhancer(app, className, cw);
+        ByteCodeVisitor enhancer = OMS.enhancerManager().appEnhancer(app, className, cw);
         if (null == enhancer) {
             return bytecode;
         }
@@ -201,13 +293,9 @@ public class AppClassLoader extends ClassLoader implements ControllerClassMetaIn
     private _.F1<String, byte[]> bytecodeLookup = new _.F1<String, byte[]>() {
         @Override
         public byte[] apply(String s) throws NotAppliedException, _.Break {
-            return lookupByte(s);
+            return appBytecode(s);
         }
     };
-
-    protected byte[] lookupByte(String className) {
-        return libClsCache.get(className);
-    }
 
     private static java.security.ProtectionDomain DOMAIN;
 

@@ -5,9 +5,9 @@ import org.osgl.oms.asm.FieldVisitor;
 import org.osgl.oms.asm.MethodVisitor;
 import org.osgl.oms.asm.Type;
 import org.osgl.oms.util.AsmTypes;
-import org.osgl.oms.util.BytecodeVisitor;
+import org.osgl.oms.util.ByteCodeVisitor;
 
-public class ControllerClassEnhancer extends BytecodeVisitor {
+public class ControllerClassEnhancer extends ByteCodeVisitor {
 
     protected String className;
     private boolean isAbstract;
@@ -45,18 +45,6 @@ public class ControllerClassEnhancer extends BytecodeVisitor {
         } else {
             return null;
         }
-    }
-
-    private static boolean isConstructor(String methodName) {
-        return methodName.contains("<init>");
-    }
-
-    private static boolean isPublic(int access) {
-        return (ACC_PUBLIC & access) > 0;
-    }
-
-    private static boolean isAbstract(int access) {
-        return (ACC_ABSTRACT & access) > 0;
     }
 
     private boolean shouldSkip(int access, String name, String desc) {

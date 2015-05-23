@@ -7,20 +7,16 @@ import org.osgl.logging.Logger;
 import org.osgl.oms.OMS;
 import org.osgl.oms.conf.AppConfLoader;
 import org.osgl.oms.conf.AppConfig;
+import org.osgl.oms.controller.ControllerSourceCodeScanner;
+import org.osgl.oms.controller.bytecode.ControllerByteCodeScanner;
+import org.osgl.oms.di.DependencyInjector;
 import org.osgl.oms.route.RouteTableRouterBuilder;
 import org.osgl.oms.route.Router;
-import org.osgl.oms.util.Files;
-import org.osgl.oms.util.FsChangeDetector;
-import org.osgl.oms.util.FsEvent;
-import org.osgl.oms.util.FsEventListener;
-import org.osgl.util.C;
-import org.osgl.util.Crypto;
-import org.osgl.util.IO;
-import org.osgl.util.S;
+import org.osgl.oms.util.*;
+import org.osgl.util.*;
 
 import java.io.File;
 import java.util.List;
-import java.util.Map;
 
 /**
  * {@code App} represents an application that is deployed in a OMS container
@@ -28,9 +24,13 @@ import java.util.Map;
 public class App {
 
     private static Logger logger = L.get(App.class);
-    public static _.Predicate<String> JAVA_SOURCE = S.F.endsWith(".java");
-    private static _.Predicate<String> JAR_FILE = S.F.endsWith(".jar");
-    private static _.Predicate<String> CONF_FILE = S.F.endsWith(".conf").or(S.F.endsWith(".properties"));
+
+    public enum F {
+        ;
+        public static _.Predicate<String> JAVA_SOURCE = S.F.endsWith(".java");
+        public static _.Predicate<String> JAR_FILE = S.F.endsWith(".jar");
+        public static _.Predicate<String> CONF_FILE = S.F.endsWith(".conf").or(S.F.endsWith(".properties"));
+    }
 
     private File appBase;
     private File appHome;
@@ -39,11 +39,12 @@ public class App {
     private AppClassLoader classLoader;
     private ProjectLayout layout;
     private AppBuilder builder;
-    private Map<String, Source> sources = C.newMap();
+    private AppCodeScannerManager scannerManager;
     private FsChangeDetector confChangeDetector;
     private FsChangeDetector libChangeDetector;
     private FsChangeDetector resourceChangeDetector;
     private FsChangeDetector sourceChangeDetector;
+    private DependencyInjector<?> dependencyInjector;
 
     protected App() {
     }
@@ -106,11 +107,19 @@ public class App {
     public void refresh() {
         loadConfig();
         initRouter();
-        loadClasses();
+        initScannerManager();
+        loadOmsScanners();
+        loadBuiltInScanners();
+        initClassLoader();
+        scanAppCodes();
         loadRoutes();
         if (OMS.isDev()) {
             setupFsChangeDetectors();
         }
+    }
+
+    public AppBuilder builder() {
+        return builder;
     }
 
     void build() {
@@ -121,8 +130,19 @@ public class App {
         OMS.hook(this);
     }
 
-    public AppBuilder builder() {
-        return builder;
+    public AppCodeScannerManager scannerManager() {
+        return scannerManager;
+    }
+
+    public App injector(DependencyInjector<?> dependencyInjector) {
+        E.NPE(dependencyInjector);
+        E.illegalStateIf(null != this.dependencyInjector, "Dependency injection factory already set");
+        this.dependencyInjector = dependencyInjector;
+        return this;
+    }
+
+    public <T extends DependencyInjector<T>> T injector() {
+        return (T) dependencyInjector;
     }
 
     public String sign(String message) {
@@ -137,43 +157,11 @@ public class App {
         return Crypto.decryptAES(message, config().secret());
     }
 
-    public boolean isSourceClass(String className) {
-        return sources.containsKey(className);
-    }
-
-    public Source source(String className) {
-        return sources.get(className);
-    }
-
-    public void preloadSources() {
-        final File sourceRoot = layout().source(base());
-        Files.filter(sourceRoot, JAVA_SOURCE, new _.Visitor<File>() {
-            @Override
-            public void visit(File file) throws _.Break {
-                Source source = Source.ofFile(sourceRoot, file);
-                if (null != source) {
-                    if (null == sources) {
-                        sources = C.newMap();
-                    }
-                    sources.put(source.className(), source);
-                }
-            }
-        });
-    }
-
-    public void scanForActionMethods() {
-        AppConfig conf = config();
-        SourceCodeActionScanner scanner = new SourceCodeActionScanner();
-        Router router = router();
-        for (String className : sources.keySet()) {
-            if (conf.possibleControllerClass(className)) {
-                Source source = sources.get(className);
-                boolean isController = scanner.scan(className, source.code(), router);
-                if (isController) {
-                    source.markAsController();
-                    classLoader().scanForActionMethods(className);
-                }
-            }
+    public <T> T newInstance(Class<T> clz) {
+        if (null != dependencyInjector) {
+            return dependencyInjector.create(clz);
+        } else {
+            return _.newInstance(clz);
         }
     }
 
@@ -196,7 +184,7 @@ public class App {
 
     @Override
     public String toString() {
-        return appBase.getName();
+        return S.builder("app@[").append(appBase).append("]").toString();
     }
 
     private void loadConfig() {
@@ -207,6 +195,19 @@ public class App {
 
     private void initRouter() {
         router = new Router(this);
+    }
+
+    private void initScannerManager() {
+        scannerManager = new AppCodeScannerManager(this);
+    }
+
+    private void loadOmsScanners() {
+        OMS.scannerPluginManager().initApp(this);
+    }
+
+    private void loadBuiltInScanners() {
+        scannerManager.register(new ControllerSourceCodeScanner());
+        scannerManager.register(new ControllerByteCodeScanner());
     }
 
     private void loadRoutes() {
@@ -221,27 +222,36 @@ public class App {
         new RouteTableRouterBuilder(lines).build(router);
     }
 
-    private void loadClasses() {
+    private void initClassLoader() {
         classLoader = OMS.mode().classLoader(this);
-        classLoader.init();
+        classLoader.preload();
     }
+
+    private void loadPlugins() {
+        // TODO: load app level plugins
+    }
+
+    private void scanAppCodes() {
+        classLoader().scan2();
+    }
+
     private void setupFsChangeDetectors() {
         ProjectLayout layout = layout();
         File appBase = base();
 
         File src = layout.source(appBase);
         if (null != src) {
-            sourceChangeDetector = new FsChangeDetector(src, App.JAVA_SOURCE, sourceChangeListener);
+            sourceChangeDetector = new FsChangeDetector(src, F.JAVA_SOURCE, sourceChangeListener);
         }
 
         File lib = layout.lib(appBase);
         if (null != lib && lib.canRead()) {
-            libChangeDetector = new FsChangeDetector(lib, JAR_FILE, libChangeListener);
+            libChangeDetector = new FsChangeDetector(lib, F.JAR_FILE, libChangeListener);
         }
 
         File conf = layout.conf(appBase);
         if (null != conf && conf.canRead()) {
-            confChangeDetector = new FsChangeDetector(conf, CONF_FILE, confChangeListener);
+            confChangeDetector = new FsChangeDetector(conf, F.CONF_FILE, confChangeListener);
         }
 
         File rsrc = layout.resource(appBase);

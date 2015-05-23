@@ -1,0 +1,51 @@
+package org.osgl.oms.app;
+
+import org.osgl.logging.L;
+import org.osgl.logging.Logger;
+import org.osgl.util.C;
+
+import java.util.List;
+
+/**
+ * Manage {@link AppSourceCodeScanner} and {@link AppByteCodeScanner}
+ * for the application
+ */
+public class AppCodeScannerManager extends AppHolder {
+
+    private static final Logger logger = L.get(AppCodeScannerManager.class);
+
+    private C.List<AppSourceCodeScanner> sourceCodeScanners = C.newList();
+    private C.List<AppByteCodeScanner> byteCodeScanners = C.newList();
+
+    public AppCodeScannerManager(App app) {
+        super(app);
+    }
+
+    public C.List<AppSourceCodeScanner> sourceCodeScanners() {
+        return C.list(sourceCodeScanners);
+    }
+
+    public C.List<AppByteCodeScanner> byteCodeScanners() {
+        return C.list(byteCodeScanners);
+    }
+
+    public AppCodeScannerManager register(AppSourceCodeScanner sourceCodeScanner) {
+        _register(sourceCodeScanner, sourceCodeScanners);
+        return this;
+    }
+
+    public AppCodeScannerManager register(AppByteCodeScanner byteCodeScanner) {
+        _register(byteCodeScanner, byteCodeScanners);
+        return this;
+    }
+
+    private <T extends AppCodeScanner> void _register(T scanner, List<T> scanners) {
+        scanner.setApp(app());
+        if (scanners.contains(scanner)) {
+            logger.warn("%s has already been registered", scanner);
+            return;
+        }
+        scanners.add(scanner);
+    }
+
+}

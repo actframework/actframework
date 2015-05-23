@@ -3,47 +3,46 @@ package org.osgl.oms;
 import org.osgl._;
 import org.osgl.oms.app.App;
 import org.osgl.oms.asm.ClassWriter;
-import org.osgl.oms.controller.bytecode.ControllerEnhancer;
-import org.osgl.oms.util.AppBytecodeEnhancer;
-import org.osgl.oms.util.AsmBytecodeEnhancer;
-import org.osgl.oms.util.BytecodeVisitor;
+import org.osgl.oms.util.AppByteCodeEnhancer;
+import org.osgl.oms.util.AsmByteCodeEnhancer;
+import org.osgl.oms.util.ByteCodeVisitor;
 import org.osgl.util.C;
 
 import java.util.List;
 
 public class BytecodeEnhancerManager {
-    private List<AppBytecodeEnhancer> appEnhancers = C.newList();
-    private List<AsmBytecodeEnhancer> generalEnhancers = C.newList();
+    private List<AppByteCodeEnhancer> appEnhancers = C.newList();
+    private List<AsmByteCodeEnhancer> generalEnhancers = C.newList();
 
     public BytecodeEnhancerManager() {
     }
 
-    public void register(AsmBytecodeEnhancer enhancer) {
-        if (enhancer instanceof AppBytecodeEnhancer) {
-            appEnhancers.add((AppBytecodeEnhancer) enhancer);
+    public void register(AsmByteCodeEnhancer enhancer) {
+        if (enhancer instanceof AppByteCodeEnhancer) {
+            appEnhancers.add((AppByteCodeEnhancer) enhancer);
         } else {
             generalEnhancers.add(enhancer);
         }
     }
 
-    public void register(AppBytecodeEnhancer enhancer) {
+    public void register(AppByteCodeEnhancer enhancer) {
         appEnhancers.add(enhancer);
     }
 
-    public BytecodeVisitor appEnhancer(App app, String className, _.Var<ClassWriter> cw) {
-        List<AppBytecodeEnhancer> l = appFilter(app, className);
-        return l.isEmpty() ? null : BytecodeVisitor.chain(cw, l);
+    public ByteCodeVisitor appEnhancer(App app, String className, _.Var<ClassWriter> cw) {
+        List<AppByteCodeEnhancer> l = appFilter(app, className);
+        return l.isEmpty() ? null : ByteCodeVisitor.chain(cw, l);
     }
 
-    public BytecodeVisitor generalEnhancer(String className, _.Var<ClassWriter> cw) {
-        List<AsmBytecodeEnhancer> l = generalFilter(className);
-        return l.isEmpty() ? null : BytecodeVisitor.chain(cw, l);
+    public ByteCodeVisitor generalEnhancer(String className, _.Var<ClassWriter> cw) {
+        List<AsmByteCodeEnhancer> l = generalFilter(className);
+        return l.isEmpty() ? null : ByteCodeVisitor.chain(cw, l);
     }
 
-    private List<AppBytecodeEnhancer> appFilter(App app, String className) {
-        List<AppBytecodeEnhancer> l = C.newList();
-        for (AppBytecodeEnhancer e : appEnhancers) {
-            AppBytecodeEnhancer e0 = (AppBytecodeEnhancer) e.clone();
+    private List<AppByteCodeEnhancer> appFilter(App app, String className) {
+        List<AppByteCodeEnhancer> l = C.newList();
+        for (AppByteCodeEnhancer e : appEnhancers) {
+            AppByteCodeEnhancer e0 = (AppByteCodeEnhancer) e.clone();
             e0.app(app);
             if (e0.isTargetClass(className)) {
                 l.add(e0);
@@ -52,10 +51,10 @@ public class BytecodeEnhancerManager {
         return l;
     }
 
-    private List<AsmBytecodeEnhancer> generalFilter(String className) {
-        List<AsmBytecodeEnhancer> l = C.newList();
-        for (AsmBytecodeEnhancer e : generalEnhancers) {
-            AsmBytecodeEnhancer e0 = e.clone();
+    private List<AsmByteCodeEnhancer> generalFilter(String className) {
+        List<AsmByteCodeEnhancer> l = C.newList();
+        for (AsmByteCodeEnhancer e : generalEnhancers) {
+            AsmByteCodeEnhancer e0 = e.clone();
             if (e0.isTargetClass(className)) {
                 l.add(e0.clone());
             }

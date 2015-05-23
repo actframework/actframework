@@ -107,7 +107,8 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo>
         String controller = controllerClass.getName();
         Object inst = context.__controllerInstance(controller);
         if (null == inst) {
-            inst = constructorAccess.newInstance();
+            //inst = constructorAccess.newInstance();
+            inst = context.app().newInstance(controllerClass);
             context.__controllerInstance(controller, inst);
         }
         return inst;

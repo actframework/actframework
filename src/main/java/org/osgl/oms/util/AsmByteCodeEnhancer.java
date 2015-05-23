@@ -10,17 +10,17 @@ import org.osgl.util.E;
 /**
  * Base class for all bytecode enhancer that using ASM lib
  */
-public abstract class AsmBytecodeEnhancer<T extends AsmBytecodeEnhancer> extends PredictableBytecodeVisitor
+public abstract class AsmByteCodeEnhancer<T extends AsmByteCodeEnhancer> extends PredictableByteCodeVisitor
         implements Opcodes, Plugin, Cloneable {
     private _.Predicate<String> targetClassPredicate;
 
     protected abstract Class<T> subClass();
 
-    protected AsmBytecodeEnhancer(_.Predicate<String> targetClassPredicate) {
+    protected AsmByteCodeEnhancer(_.Predicate<String> targetClassPredicate) {
         this.targetClassPredicate = targetClassPredicate;
     }
 
-    protected AsmBytecodeEnhancer(_.Predicate<String> targetClassPredicate, ClassVisitor cv) {
+    protected AsmByteCodeEnhancer(_.Predicate<String> targetClassPredicate, ClassVisitor cv) {
         super(cv);
         this.targetClassPredicate = targetClassPredicate;
     }

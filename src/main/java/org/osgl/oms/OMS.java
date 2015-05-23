@@ -16,6 +16,7 @@ import org.osgl.oms.controller.meta.InterceptorMethodMetaInfo;
 import org.osgl.oms.handler.builtin.controller.*;
 import org.osgl.oms.handler.builtin.controller.impl.ReflectedHandlerInvoker;
 import org.osgl.oms.plugin.PluginScanner;
+import org.osgl.oms.util.AppCodeScannerPluginManager;
 import org.osgl.oms.util.Banner;
 import org.osgl.oms.util.SessionManager;
 import org.osgl.oms.view.ViewManager;
@@ -101,6 +102,7 @@ public final class OMS {
     private static NetworkService network;
     private static BytecodeEnhancerManager enhancerManager;
     private static SessionManager sessionManager;
+    private static AppCodeScannerPluginManager scannerPluginManager;
 
     public static List<Class<?>> pluginClasses() {
         ClassLoader cl = OMS.class.getClassLoader();
@@ -140,6 +142,10 @@ public final class OMS {
         return sessionManager;
     }
 
+    public static AppCodeScannerPluginManager scannerPluginManager() {
+        return scannerPluginManager;
+    }
+
     public static AppManager applicationManager() {
         return appManager;
     }
@@ -154,12 +160,14 @@ public final class OMS {
     }
 
     private static void start(boolean singleAppServer) {
+        long ts = _.ms();
         Banner.print("0.0.1-SNAPSHOT");
         loadConfig();
         //initExecuteService();
         initEnhancerManager();
         initViewManager();
         initSessionManager();
+        initAppCodeScannerPluginManager();
         loadPlugins();
         initNetworkLayer();
         initApplicationManager();
@@ -171,6 +179,7 @@ public final class OMS {
         startNetworkLayer();
 
         Thread.currentThread().setContextClassLoader(OMS.class.getClassLoader());
+        logger.info("It takes %sms to start OMS", _.ms() - ts);
     }
 
     public static RequestServerRestart requestRestart() {
@@ -210,6 +219,10 @@ public final class OMS {
 
     private static void initSessionManager() {
         sessionManager = new SessionManager();
+    }
+
+    private static void initAppCodeScannerPluginManager() {
+        scannerPluginManager = new AppCodeScannerPluginManager();
     }
 
     private static void initExecuteService() {

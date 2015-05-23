@@ -1,22 +1,14 @@
 package org.osgl.oms.boot.app;
 
 import org.osgl._;
-import org.osgl.oms.BytecodeEnhancerManager;
-import org.osgl.oms.OMS;
-import org.osgl.oms.asm.ClassReader;
-import org.osgl.oms.asm.ClassWriter;
 import org.osgl.oms.boot.BootstrapClassLoader;
-import org.osgl.oms.boot.PluginClassProvider;
-import org.osgl.oms.util.BytecodeVisitor;
 import org.osgl.oms.util.Jars;
 import org.osgl.util.C;
-import org.osgl.util.E;
 import org.osgl.util.S;
 
 import java.io.File;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import static org.osgl.oms.Constants.*;
 
@@ -104,10 +96,6 @@ public class FullStackAppBootstrapClassLoader extends BootstrapClassLoader {
     }
 
     protected Class<?> loadOmsClass(String name, boolean resolve) {
-
-        if ("io.undertow.UndertowLogger".equals(name)) {
-            System.out.println("about to load Undertow logger");
-        }
 
         byte[] ba = libBC.remove(name);
 

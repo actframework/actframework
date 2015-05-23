@@ -15,6 +15,7 @@ import static org.osgl.oms.controller.meta.ControllerClassMetaInfo.ACTION_METHOD
 /**
  * Scan source code for action method and build route table
  */
+@Deprecated
 class SourceCodeActionScanner {
 
     private static final Logger logger = L.get(SourceCodeActionScanner.class);

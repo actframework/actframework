@@ -1,7 +1,7 @@
 package org.osgl.oms.util;
 
 /**
- * provide utilties to access system properties
+ * provide utilities to access system properties
  */
 public enum SysProps {
     ;

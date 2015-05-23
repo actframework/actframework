@@ -8,13 +8,13 @@ import org.osgl.oms.asm.Type;
 import org.osgl.oms.controller.meta.ControllerClassMetaInfo;
 import org.osgl.oms.controller.meta.ControllerClassMetaInfoHolder;
 import org.osgl.oms.controller.meta.HandlerMethodMetaInfo;
-import org.osgl.oms.util.AppBytecodeEnhancer;
+import org.osgl.oms.util.AppByteCodeEnhancer;
 
 /**
  * Enhance controllers (classes with either request handler method or
  * interceptor methods)
  */
-public class ControllerEnhancer extends AppBytecodeEnhancer<ControllerEnhancer> {
+public class ControllerEnhancer extends AppByteCodeEnhancer<ControllerEnhancer> {
     private ControllerClassMetaInfoHolder classInfoHolder;
     private String className;
 
@@ -28,7 +28,7 @@ public class ControllerEnhancer extends AppBytecodeEnhancer<ControllerEnhancer> 
     }
 
     @Override
-    public AppBytecodeEnhancer app(App app) {
+    public AppByteCodeEnhancer app(App app) {
         this.classInfoHolder = app.classLoader();
         return super.app(app);
     }
