@@ -2,7 +2,7 @@
 <!--
   ~ Copyright 2013 The OSGL MVC Server Project
   ~
-  ~ The OSGL MVC Server Project licenses this file to you under the Apache License,
+  ~ The ACT framework Project licenses this file to you under the Apache License,
   ~ version 2.0 (the "License"); you may not use this file except in compliance
   ~ with the License. You may obtain a copy of the License at:
   ~
@@ -19,14 +19,14 @@
 
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>org.osgl</groupId>
-  <artifactId>osgl-mvc-server</artifactId>
+  <groupId>org.actframework</groupId>
+  <artifactId>act</artifactId>
   <packaging>jar</packaging>
   <version>0.0.1-SNAPSHOT</version>
 
-  <name>OSGL MVC Server</name>
-  <description>MVC Server</description>
-  <url>http://mvc-server.osgl.org/</url>
+  <name>ACT Framework</name>
+  <description>The ACT full stack MVC framework</description>
+  <url>http://actframework.org/</url>
 
   <parent>
     <groupId>org.sonatype.oss</groupId>

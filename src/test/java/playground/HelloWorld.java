@@ -1,11 +1,11 @@
 package playground;
 
-import org.osgl.oms.asm.ClassWriter;
-import org.osgl.oms.asm.MethodVisitor;
-import org.osgl.oms.asm.Opcodes;
-import org.osgl.oms.asm.Type;
-import org.osgl.oms.asm.commons.GeneratorAdapter;
-import org.osgl.oms.asm.commons.Method;
+import act.asm.ClassWriter;
+import act.asm.MethodVisitor;
+import act.asm.Opcodes;
+import act.asm.Type;
+import act.asm.commons.GeneratorAdapter;
+import act.asm.commons.Method;
 
 import java.io.FileOutputStream;
 import java.io.PrintStream;

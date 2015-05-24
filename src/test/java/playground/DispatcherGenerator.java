@@ -1,7 +1,7 @@
 package playground;
 
-import org.osgl.oms.asm.ClassWriter;
-import org.osgl.oms.handler.builtin.controller.ControllerAction;
+import act.asm.ClassWriter;
+import act.handler.builtin.controller.ControllerAction;
 
 public class DispatcherGenerator {
     public ControllerAction generate() {

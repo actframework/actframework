@@ -1,6 +1,6 @@
 package testapp.controller;
 
-import org.osgl.oms.app.AppContext;
+import act.app.AppContext;
 
 public class ContextController extends ControllerBase {
     protected AppContext ctx;

@@ -1,8 +1,6 @@
 package sparkapp;
 
-import org.osgl.oms.boot.spark.SparkApp;
-
-import static org.osgl.oms.boot.spark.SparkApp.*;
+import act.boot.spark.SparkApp;
 
 /**
  * Demonstrate how to use the static and external file location API

@@ -3,15 +3,11 @@ package sparkapp;
 import org.osgl.exception.UnexpectedException;
 import org.osgl.exception.UnexpectedIOException;
 import org.osgl.http.H;
-import org.osgl.oms.app.AppContext;
-import org.osgl.oms.boot.spark.SparkApp;
+import act.app.AppContext;
 import org.osgl.util.S;
 
 import java.io.IOException;
 import java.util.Random;
-
-import static org.osgl.oms.boot.spark.SparkApp.*;
-import static org.osgl.oms.controller.Controller.Util.*;
 
 /**
  * Demonstrate how to use Spark style exception handlers

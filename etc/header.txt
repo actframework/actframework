@@ -1,5 +1,5 @@
 /* 
- * Copyright (C) 2013 The OSGL MVC Server project
+ * Copyright (C) 2013 The ACT MVC Server project
  * Gelin Luo <greenlaw110(at)gmail.com>
  *
  * Licensed to the Apache Software Foundation (ASF) under one or more

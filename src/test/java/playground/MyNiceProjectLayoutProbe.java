@@ -1,8 +1,6 @@
 package playground;
 
-import org.osgl.oms.app.BuildFileProbe;
-import org.osgl.oms.plugin.Extends;
-import org.osgl.oms.plugin.Plugin;
+import act.plugin.Plugin;
 
 /**
  * Created by luog on 7/02/2015.

@@ -3,9 +3,8 @@ package testapp.controller;
 import org.osgl.mvc.annotation.*;
 import org.osgl.mvc.result.Ok;
 import org.osgl.mvc.result.Result;
-import org.osgl.oms.OmsException;
-import org.osgl.oms.app.AppContext;
-import org.osgl.oms.app.OmsAppException;
+import act.app.AppContext;
+import act.app.ActAppException;
 import testapp.util.Trackable;
 
 import static org.osgl.http.H.Method.*;
@@ -17,8 +16,8 @@ import static org.osgl.http.H.Method.*;
 public class WithAppContext extends Trackable {
     private AppContext ctx;
 
-    @Catch(OmsAppException.class)
-    public void handle(OmsAppException e, AppContext ctx) {
+    @Catch(ActAppException.class)
+    public void handle(ActAppException e, AppContext ctx) {
         track("handle");
     }
 

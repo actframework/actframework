@@ -6,8 +6,8 @@ import org.osgl.mvc.annotation.Bind;
 import org.osgl.mvc.annotation.GetAction;
 import org.osgl.mvc.annotation.Param;
 import org.osgl.mvc.result.Result;
-import org.osgl.oms.app.AppContext;
-import org.osgl.oms.controller.Controller;
+import act.app.AppContext;
+import act.controller.Controller;
 
 @Controller( "/bar" )
 public class Bar extends CBase {

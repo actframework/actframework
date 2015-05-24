@@ -1,11 +1,10 @@
 package testapp.controller;
 
+import act.controller.Controller;
 import org.osgl.mvc.annotation.GetAction;
 import org.osgl.mvc.result.Result;
-import org.osgl.oms.app.AppContext;
-import org.osgl.oms.controller.*;
 
-@org.osgl.oms.controller.Controller
+@Controller
 public class ReturnResultWithParamCtxField extends ContextController {
     protected String foo;
     @GetAction("/")

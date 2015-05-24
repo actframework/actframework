@@ -1,7 +1,7 @@
 package playground;
 
-import org.osgl.oms.asm.MethodVisitor;
-import org.osgl.oms.asm.Opcodes;
+import act.asm.MethodVisitor;
+import act.asm.Opcodes;
 
 public class InstructionBuffer implements Opcodes {
     private MethodVisitor mv;

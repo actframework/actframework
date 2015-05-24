@@ -1,11 +1,8 @@
 package sparkapp;
 
 import org.osgl.http.H;
-import org.osgl.oms.boot.spark.SparkApp;
+import act.boot.spark.SparkApp;
 import org.osgl.util.E;
-
-import static org.osgl.oms.boot.spark.SparkApp.*;
-import static org.osgl.oms.controller.Controller.Util.*;
 
 /**
  * Show how to use Spark style filters

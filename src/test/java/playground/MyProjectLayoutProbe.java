@@ -1,9 +1,8 @@
 package playground;
 
-import org.osgl.oms.app.BuildFileProbe;
-import org.osgl.oms.app.ProjectLayout;
-import org.osgl.oms.plugin.Extends;
-import org.osgl.oms.plugin.Plugin;
+import act.app.BuildFileProbe;
+import act.app.ProjectLayout;
+import act.plugin.Plugin;
 
 import java.io.File;
 

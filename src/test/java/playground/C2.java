@@ -2,7 +2,7 @@ package playground;
 
 import org.osgl.mvc.annotation.Before;
 import org.osgl.mvc.result.Result;
-import org.osgl.oms.app.AppContext;
+import act.app.AppContext;
 
 public class C2 extends CBase {
 

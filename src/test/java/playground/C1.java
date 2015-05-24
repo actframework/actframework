@@ -3,7 +3,7 @@ package playground;
 import org.osgl.http.H;
 import org.osgl.mvc.annotation.*;
 import org.osgl.mvc.result.Result;
-import org.osgl.oms.app.AppContext;
+import act.app.AppContext;
 import org.osgl.util.S;
 
 @With(C2.class)
