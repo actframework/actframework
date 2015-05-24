@@ -35,9 +35,9 @@
   </parent>
 
   <scm>
-    <connection>scm:git:git://github.com/greenlaw110/java-mvc-server.git</connection>
-    <developerConnection>scm:git:git@github.com:greenlaw110/java-mvc-server.git</developerConnection>
-    <url>git://github.com/greenlaw110/java-mvc-server.git</url>
+    <connection>scm:git:git@github.com:actframework/actframework.git</connection>
+    <developerConnection>scm:git:git@github.com:actframework/actframework.git</developerConnection>
+    <url>git@github.com:actframework/actframework.git</url>
   </scm>
 
   <properties>
