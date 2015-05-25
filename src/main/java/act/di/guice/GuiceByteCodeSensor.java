@@ -35,13 +35,11 @@ class GuiceByteCodeSensor extends AppByteCodeScannerBase {
                 logger.info("Guice injector added to app");
                 app().injector(injector);
             }
-            if (injector instanceof GuiceDependencyInjector) {
-                GuiceDependencyInjector guiceInjector = (GuiceDependencyInjector)injector;
-                Class<? extends AbstractModule> c = _.classForName(className, app().classLoader());
-                AbstractModule module = _.newInstance(c);
-                guiceInjector.addModule(module);
-                logger.info("guice module %s added to the injector", className);
-            }
+            GuiceDependencyInjector guiceInjector = (GuiceDependencyInjector)injector;
+            Class<? extends AbstractModule> c = _.classForName(className, app().classLoader());
+            AbstractModule module = _.newInstance(c);
+            guiceInjector.addModule(module);
+            logger.info("guice module %s added to the injector", className);
         }
     }
 

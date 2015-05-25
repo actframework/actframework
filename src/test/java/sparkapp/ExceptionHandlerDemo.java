@@ -9,6 +9,8 @@ import org.osgl.util.S;
 import java.io.IOException;
 import java.util.Random;
 
+import static act.boot.spark.SparkApp.*;
+
 /**
  * Demonstrate how to use Spark style exception handlers
  */

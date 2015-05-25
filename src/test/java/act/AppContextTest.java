@@ -33,7 +33,7 @@ public class AppContextTest extends TestBase {
     @Test
     public void addParamToContext() {
         ctx.param("zoo", "ZOO");
-        Matchers.same("ZOO", ctx.param("zoo"));
+        eq("ZOO", ctx.param("zoo"));
     }
 
     @Test
@@ -73,9 +73,9 @@ public class AppContextTest extends TestBase {
     @Test
     public void extraParamOverrideReqParam() {
         eq("FOO", ctx.param("foo"));
-        Matchers.same(2, ctx.paramVals("foo").length);
+        eq(2, ctx.paramVals("foo").length);
         ctx.param("foo", "BAR");
         eq("BAR", ctx.param("foo"));
-        Matchers.same(1, ctx.paramVals("foo").length);
+        eq(1, ctx.paramVals("foo").length);
     }
 }

@@ -15,4 +15,10 @@ public interface Model<MODEL_TYPE extends Model, ID_TYPE> {
     ID_TYPE _id();
 
 
+    /**
+     * Returns {@code true} if the entity has not been saved yet
+     * or {@code false} otherwise
+     */
+    boolean _isNew();
+
 }

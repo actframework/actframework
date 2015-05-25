@@ -28,11 +28,11 @@ public class AppCodeScannerPluginManager {
     public void initApp(App app) {
         AppCodeScannerManager manager = app.scannerManager();
         for (AppCodeScannerPluginBase plugin : registry.values()) {
-            AppSourceCodeScanner sourceCodeScanner = plugin.createAppSourceCodeScanner();
+            AppSourceCodeScanner sourceCodeScanner = plugin.createAppSourceCodeScanner(app);
             if (null != sourceCodeScanner) {
                 manager.register(sourceCodeScanner);
             }
-            AppByteCodeScanner byteCodeScanner = plugin.createAppByteCodeScanner();
+            AppByteCodeScanner byteCodeScanner = plugin.createAppByteCodeScanner(app);
             if (null != byteCodeScanner) {
                 manager.register(byteCodeScanner);
             }

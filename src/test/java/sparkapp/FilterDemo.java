@@ -1,8 +1,11 @@
 package sparkapp;
 
+import act.controller.Controller;
 import org.osgl.http.H;
-import act.boot.spark.SparkApp;
 import org.osgl.util.E;
+
+import static act.boot.spark.SparkApp.*;
+import static act.controller.Controller.Util.notFound;
 
 /**
  * Show how to use Spark style filters
@@ -24,7 +27,7 @@ public class FilterDemo {
             }
         });
 
-        before("/protected(/.*|/?)", SparkApp.forbidden());
+        before("/protected(/.*|/?)", forbidden());
     }
 
 }

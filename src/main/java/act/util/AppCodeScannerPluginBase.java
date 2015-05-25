@@ -1,6 +1,7 @@
 package act.util;
 
 import act.Act;
+import act.app.App;
 import act.app.AppByteCodeScanner;
 import org.osgl.logging.L;
 import org.osgl.logging.Logger;
@@ -21,9 +22,9 @@ public abstract class AppCodeScannerPluginBase implements Plugin {
         Act.scannerPluginManager().register(this);
     }
 
-    public abstract AppSourceCodeScanner createAppSourceCodeScanner();
+    public abstract AppSourceCodeScanner createAppSourceCodeScanner(App app);
 
-    public abstract AppByteCodeScanner createAppByteCodeScanner();
+    public abstract AppByteCodeScanner createAppByteCodeScanner(App app);
 
     public abstract boolean load();
 }

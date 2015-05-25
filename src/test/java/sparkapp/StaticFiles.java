@@ -1,6 +1,6 @@
 package sparkapp;
 
-import act.boot.spark.SparkApp;
+import static act.boot.spark.SparkApp.*;
 
 /**
  * Demonstrate how to use the static and external file location API
@@ -16,6 +16,6 @@ public class StaticFiles {
         staticFileLocation("/open", "/public");
         externalFileLocation("/tmp");
         externalFileLocation("/home", "/home/luog");
-        before("/home/\\.ssh/.*", SparkApp.forbidden());
+        before("/home/\\.ssh/.*", forbidden());
     }
 }
