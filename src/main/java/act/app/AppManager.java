@@ -42,7 +42,7 @@ public class AppManager {
     }
 
     public void refresh(App app) {
-        E.tbd();
+        app.refresh();
     }
 
     public void load(App app) {

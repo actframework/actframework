@@ -184,8 +184,8 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo>
         _.F2<AppContext, Object, ?> ctxHandler = fieldName_appCtxHandler_lookup.get(key);
         if (null == ctxHandler) {
             ctxHandler = new _.F2<AppContext, Object, Void>() {
-                private final FieldAccess fieldAccess = FieldAccess.get(controllerClass);
-                private final int fieldIdx = getFieldIndex(fieldName, fieldAccess);
+                private FieldAccess fieldAccess = FieldAccess.get(controllerClass);
+                private int fieldIdx = getFieldIndex(fieldName, fieldAccess);
 
                 @Override
                 public Void apply(AppContext appContext, Object controllerInstance) throws _.Break {

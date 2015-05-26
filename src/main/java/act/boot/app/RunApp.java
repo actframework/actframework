@@ -19,7 +19,7 @@ public class RunApp {
         System.setProperty(AppConfigKey.CONTROLLER_PACKAGE.key(), pkg);
         FullStackAppBootstrapClassLoader classLoader = new FullStackAppBootstrapClassLoader(RunApp.class.getClassLoader());
         Thread.currentThread().setContextClassLoader(classLoader);
-        Class<?> actClass = classLoader.loadClass("Act");
+        Class<?> actClass = classLoader.loadClass("act.Act");
         Method m = actClass.getDeclaredMethod("startApp");
         m.invoke(null);
     }

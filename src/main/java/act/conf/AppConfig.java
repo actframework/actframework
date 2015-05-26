@@ -39,7 +39,7 @@ public class AppConfig extends Config<AppConfigKey> {
         return AppConfigKey.valueOfIgnoreCase(s);
     }
 
-    private String urlContext = null;
+    protected String urlContext = null;
 
     public String urlContext() {
         if (urlContext == null) {

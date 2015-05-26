@@ -29,11 +29,11 @@ public class NetworkClient extends _.F1<AppContext, Void> {
         String url = req.url();
         H.Method method = req.method();
         try {
-            ctx.app().detectChanges();
+            app.detectChanges();
         } catch (RequestRefreshClassLoader refreshRequest) {
-            ctx.app().refresh();
+            app.refresh();
         } catch (RequestServerRestart requestServerRestart) {
-            ctx.app().refresh();
+            app.refresh();
         }
         try {
             RequestHandler rh = router().getInvoker(method, url, ctx);

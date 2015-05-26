@@ -57,6 +57,7 @@ public enum ActConfigKey implements ConfigKey {
      * {@code act.xio.impl} specifies the implementation for the network stack implementation
      */
     NETWORK_SERVER_IMPL("xio.impl");
+
     private static Logger logger = L.get(AppConfigKey.class);
     private static ConfigKeyHelper helper = new ConfigKeyHelper(Act.F.MODE_ACCESSOR);
 
