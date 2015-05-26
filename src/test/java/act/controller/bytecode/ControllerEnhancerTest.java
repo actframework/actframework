@@ -16,6 +16,7 @@ import act.app.AppContext;
 import act.asm.ClassReader;
 import act.asm.ClassWriter;
 import act.controller.meta.ControllerClassMetaInfo;
+import org.osgl.util.E;
 import org.osgl.util.IO;
 import org.osgl.util.S;
 import testapp.util.InvokeLog;
@@ -279,6 +280,26 @@ public class ControllerEnhancerTest extends TestBase implements ControllerClassM
         yes(r instanceof Result);
         eq(100, ctx.renderArg("foo"));
         eq("foo", ctx.renderArg("bar"));
+    }
+
+    /**
+     * GH issue #2
+     * @throws Exception
+     */
+    @Test
+    public void voidResultWithParamAppCtxFieldAndEmptyBody() throws Exception {
+        prepare("VoidResultWithParamCtxFieldEmptyBody");
+        m = method(String.class, int.class);
+        ctx.saveLocal();
+        try {
+            m.invoke(c, "foo", 100);
+            fail("It shall throw out a Result");
+        } catch (InvocationTargetException e) {
+            Throwable r = e.getCause();
+            yes(r instanceof Result, "r shall be of type Result, found: %s", E.stackTrace(r));
+            eq(100, ctx.renderArg("age"));
+            eq("foo", ctx.renderArg("who"));
+        }
     }
 
     private void prepare(String className) throws Exception {

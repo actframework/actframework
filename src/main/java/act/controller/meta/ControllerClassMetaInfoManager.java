@@ -10,6 +10,10 @@ import org.osgl.util.E;
 import java.util.List;
 import java.util.Map;
 
+@Deprecated
+/**
+ * @see ControllerClassMetaInfoManager2
+ */
 public class ControllerClassMetaInfoManager {
 
     private Map<String, ControllerClassMetaInfo> controllers = C.newMap();

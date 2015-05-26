@@ -158,7 +158,6 @@ public final class Act {
     }
 
     private static void start(boolean singleAppServer) {
-        long ts = _.ms();
         Banner.print("0.0.1-SNAPSHOT");
         loadConfig();
         //initExecuteService();
@@ -177,7 +176,6 @@ public final class Act {
         startNetworkLayer();
 
         Thread.currentThread().setContextClassLoader(Act.class.getClassLoader());
-        logger.info("It takes %sms to start Act", _.ms() - ts);
     }
 
     public static RequestServerRestart requestRestart() {

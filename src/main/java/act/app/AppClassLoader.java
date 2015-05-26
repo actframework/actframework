@@ -268,7 +268,7 @@ public class AppClassLoader extends ClassLoader implements ControllerClassMetaIn
         if (null == enhancer) {
             return bytecode;
         }
-        cw.set(new ClassWriter(0));
+        cw.set(new ClassWriter(ClassWriter.COMPUTE_MAXS));
         enhancer.commitDownstream();
         ClassReader r = new ClassReader(bytecode);
         r.accept(enhancer, 0);

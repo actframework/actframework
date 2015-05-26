@@ -9,7 +9,6 @@ public class ReturnResultWithParamCtxField extends ContextController {
     protected String foo;
     @GetAction("/")
     public Result handle(int foo, String bar) {
-        ctx.renderArg("foo", foo).renderArg("bar", bar);
         return render(foo, bar);
     }
 }

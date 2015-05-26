@@ -25,24 +25,25 @@ public class SourceCodeControllerScannerTest extends TestBase {
 
     @Test
     @Ignore
+    // SourceCodeScanner is obsolete now
     public void testScan() {
         scanner.scan("foo.Bar", code, mockRouter);
-        verify("GET /bar root");
-        verify("POST /bar root");
-        verify("PUT /bar root");
-        verify("DELETE /bar root");
-        verify("GET /bar/do_anno doAnno");
-        verifyNo("GET /bar/foo bar"); // bar() is a private method
-        verifyNo("GET /bar/foo/bar bar"); // GET method is not supported on this action
-        verify("POST /bar/foo/bar bar");
-        verify("PUT /bar/foo/bar bar");
+        mapped("GET /bar root");
+        mapped("POST /bar root");
+        mapped("PUT /bar root");
+        mapped("DELETE /bar root");
+        mapped("GET /bar/do_anno doAnno");
+        notMapped("GET /bar/foo bar"); // bar() is a private method
+        notMapped("GET /bar/foo/bar bar"); // GET method is not supported on this action
+        mapped("POST /bar/foo/bar bar");
+        mapped("PUT /bar/foo/bar bar");
     }
 
-    private void verify(String route) {
+    private void mapped(String route) {
         _verify(route, 1);
     }
 
-    private void verifyNo(String route) {
+    private void notMapped(String route) {
         _verify(route, 0);
     }
 

@@ -112,7 +112,6 @@ public class ActionMethodInspector extends MethodVisitor
 
     @Override
     public void visitEnd() {
-        System.out.println(spec);
         super.visitEnd();
     }
 }

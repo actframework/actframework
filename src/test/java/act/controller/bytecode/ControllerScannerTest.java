@@ -2,6 +2,7 @@ package act.controller.bytecode;
 
 import act.controller.meta.*;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.internal.verification.Times;
 import org.osgl._;
@@ -21,6 +22,8 @@ import java.util.List;
 import static org.mockito.Mockito.*;
 import static org.osgl.http.H.Method.*;
 
+@Ignore
+// ControllerClassMetaInfoManager is obsolete
 public class ControllerScannerTest extends TestBase {
 
     private ControllerClassMetaInfoManager infoSrc;
