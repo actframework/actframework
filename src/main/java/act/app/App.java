@@ -199,6 +199,7 @@ public class App {
         File conf = RuntimeDirs.conf(this);
         logger.debug("loading app configuration: %s ...", appBase.getPath());
         config = new AppConfLoader().load(conf);
+        config.app(this);
     }
 
     private void initRouter() {

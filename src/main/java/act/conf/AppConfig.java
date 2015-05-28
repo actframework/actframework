@@ -45,7 +45,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> {
         this((Map) System.getProperties());
     }
 
-    void app(App app) {
+    public void app(App app) {
         E.NPE(app);
         this.app = app;
     }
