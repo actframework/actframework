@@ -1,6 +1,7 @@
 package act.handler.builtin.controller;
 
 import act.Act;
+import act.app.AppInterceptorManager;
 import act.controller.meta.ActionMethodMetaInfo;
 import act.controller.meta.CatchMethodMetaInfo;
 import act.handler.RequestHandlerBase;
@@ -69,6 +70,7 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
     static final GroupExceptionInterceptor GLOBAL_EXCEPTION_INTERCEPTOR = new GroupExceptionInterceptor(globalExceptionInterceptors);
 
     private App app;
+    private AppInterceptorManager appInterceptor;
     private CacheService cache;
     private CacheStrategy cacheStrategy = CacheStrategy.NO_CACHE;
     private String controllerClassName;
@@ -96,6 +98,7 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
         E.illegalArgumentIf(S.isEmpty(this.actionMethodName), ERR, actionMethodName);
         cache = app.config().cacheService("action_proxy");
         this.app = app;
+        this.appInterceptor = app.interceptorManager();
     }
 
     public String controller() {
@@ -248,6 +251,9 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
     private Result handleBefore(AppContext appContext) {
         Result r = GLOBAL_BEFORE_INTERCEPTOR.apply(appContext);
         if (null == r) {
+            r = appInterceptor.handleBefore(appContext);
+        }
+        if (null == r) {
             r = BEFORE_INTERCEPTOR.apply(appContext);
         }
         return r;
@@ -263,17 +269,22 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
 
     private Result handleAfter(Result result, AppContext appContext) {
         result = AFTER_INTERCEPTOR.apply(result, appContext);
+        result = appInterceptor.handleAfter(result, appContext);
         result = GLOBAL_AFTER_INTERCEPTOR.apply(result, appContext);
         return result;
     }
 
     private void handleFinally(AppContext appContext) {
         FINALLY_INTERCEPTOR.apply(appContext);
+        appInterceptor.handleFinally(appContext);
         GLOBAL_FINALLY_INTERCEPTOR.apply(appContext);
     }
 
     private Result handleException(Exception ex, AppContext appContext) {
         Result r = EXCEPTION_INTERCEPTOR.apply(ex, appContext);
+        if (null == r) {
+            r = appInterceptor.handleException(ex, appContext);
+        }
         if (null == r) {
             r = GLOBAL_EXCEPTION_INTERCEPTOR.apply(ex, appContext);
         }
@@ -306,7 +317,7 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
         insertInterceptor(globalExceptionInterceptors, interceptor);
     }
 
-    private static <T extends Handler> void insertInterceptor(C.List<T> list, T i) {
+    public static <T extends Handler> void insertInterceptor(C.List<T> list, T i) {
         int sz = list.size();
         if (0 == sz) {
             list.add(i);
@@ -331,10 +342,10 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
         list.add(i);
     }
 
-    private static class GroupInterceptorWithResult extends _.F1<AppContext, Result> {
-        C.List<? extends ActionHandler> interceptors;
+    public static class GroupInterceptorWithResult extends _.F1<AppContext, Result> {
+        private C.List<? extends ActionHandler> interceptors;
 
-        GroupInterceptorWithResult(C.List<? extends ActionHandler> interceptors) {
+        public GroupInterceptorWithResult(C.List<? extends ActionHandler> interceptors) {
             this.interceptors = interceptors;
         }
 
@@ -355,10 +366,10 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
         }
     }
 
-    private static class GroupAfterInterceptor extends _.F2<Result, AppContext, Result> {
-        C.List<? extends AfterInterceptor> interceptors;
+    public static class GroupAfterInterceptor extends _.F2<Result, AppContext, Result> {
+        private C.List<? extends AfterInterceptor> interceptors;
 
-        GroupAfterInterceptor(C.List<? extends AfterInterceptor> interceptors) {
+        public GroupAfterInterceptor(C.List<? extends AfterInterceptor> interceptors) {
             this.interceptors = interceptors;
         }
 
@@ -371,10 +382,10 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
         }
     }
 
-    private static class GroupFinallyInterceptor extends _.F1<AppContext, Void> {
-        C.List<? extends FinallyInterceptor> interceptors;
+    public static class GroupFinallyInterceptor extends _.F1<AppContext, Void> {
+        private C.List<? extends FinallyInterceptor> interceptors;
 
-        GroupFinallyInterceptor(C.List<FinallyInterceptor> interceptors) {
+        public GroupFinallyInterceptor(C.List<FinallyInterceptor> interceptors) {
             this.interceptors = interceptors;
         }
 
@@ -388,10 +399,10 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
         }
     }
 
-    private static class GroupExceptionInterceptor extends _.F2<Exception, AppContext, Result> {
-        C.List<? extends ExceptionInterceptor> interceptors;
+    public static class GroupExceptionInterceptor extends _.F2<Exception, AppContext, Result> {
+        private C.List<? extends ExceptionInterceptor> interceptors;
 
-        GroupExceptionInterceptor(C.List<? extends ExceptionInterceptor> interceptors) {
+        public GroupExceptionInterceptor(C.List<? extends ExceptionInterceptor> interceptors) {
             this.interceptors = interceptors;
         }
 

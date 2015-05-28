@@ -1,13 +1,16 @@
 package act.controller.bytecode;
 
+import act.app.AppByteCodeScanner;
+import act.app.AppCodeScannerManager;
+import act.app.TestingAppClassLoader;
 import act.asm.ClassVisitor;
 import act.asm.util.TraceClassVisitor;
 import act.controller.meta.ControllerClassMetaInfoHolder;
 import act.controller.meta.ControllerClassMetaInfoManager;
+import act.util.Files;
 import org.junit.Before;
 import org.junit.Test;
 import org.osgl._;
-import org.osgl.exception.NotAppliedException;
 import org.osgl.mvc.result.NotFound;
 import org.osgl.mvc.result.Ok;
 import org.osgl.mvc.result.Result;
@@ -16,21 +19,22 @@ import act.app.AppContext;
 import act.asm.ClassReader;
 import act.asm.ClassWriter;
 import act.controller.meta.ControllerClassMetaInfo;
+import org.osgl.util.C;
 import org.osgl.util.E;
 import org.osgl.util.IO;
 import org.osgl.util.S;
 import testapp.util.InvokeLog;
 import testapp.util.InvokeLogFactory;
 
-import java.io.FileOutputStream;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.PrintWriter;
+import java.io.*;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.List;
 
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class ControllerEnhancerTest extends TestBase implements ControllerClassMetaInfoHolder {
 
@@ -40,10 +44,13 @@ public class ControllerEnhancerTest extends TestBase implements ControllerClassM
     protected Class<?> cc;
     protected Object c;
     protected Method m;
-    protected Field f;
     protected InvokeLog invokeLog;
     protected AppContext ctx;
+    private TestingAppClassLoader classLoader;
+    private AppCodeScannerManager scannerManager;
+    private AppByteCodeScanner scanner;
     protected ControllerClassMetaInfoManager infoSrc;
+    private File base;
 
     @Override
     public ControllerClassMetaInfo controllerClassMetaInfo(String className) {
@@ -53,21 +60,22 @@ public class ControllerEnhancerTest extends TestBase implements ControllerClassM
     @Before
     public void setup() throws Exception {
         super.setup();
-        infoSrc = new ControllerClassMetaInfoManager(new _.Factory<ControllerScanner>(){
-            @Override
-            public ControllerScanner create() {
-                return new ControllerScanner(mockAppConfig, mockRouter, new _.F1<String, byte[]>() {
-                    @Override
-                    public byte[] apply(String s) throws NotAppliedException, _.Break {
-                        return loadBytecode(s);
-                    }
-                });
-            }
-        });
         invokeLog = mock(InvokeLog.class);
+        scanner = new ControllerByteCodeScanner();
+        scanner.setApp(mockApp);
+        classLoader = new TestingAppClassLoader(mockApp);
+        infoSrc = classLoader.controllerClassMetaInfoManager2();
+        scannerManager = mock(AppCodeScannerManager.class);
+        when(mockApp.classLoader()).thenReturn(classLoader);
+        when(mockApp.scannerManager()).thenReturn(scannerManager);
+        when(mockAppConfig.possibleControllerClass(anyString())).thenReturn(true);
+        when(mockRouter.isActionMethod(anyString(), anyString())).thenReturn(false);
+        C.List<AppByteCodeScanner> scanners = C.list(scanner);
+        when(scannerManager.byteCodeScanners()).thenReturn(scanners);
         InvokeLogFactory.set(invokeLog);
         AppContext.clear();
         ctx = AppContext.create(mockApp, mockReq, mockResp);
+        base = new File("./target/test-classes");
     }
 
     @Test
@@ -320,7 +328,13 @@ public class ControllerEnhancerTest extends TestBase implements ControllerClassM
     }
 
     private void scan(String className) {
-        infoSrc.scanForControllerMetaInfo(className);
+        List<File> files = Files.filter(base, _F.SAFE_CLASS);
+        for (File file : files) {
+            classLoader.preloadClassFile(base, file);
+        }
+        //File file = new File(base, ClassNames.classNameToClassFileName(className));
+        //classLoader.preloadClassFile(base, file);
+        classLoader.scan2();
         infoSrc.mergeActionMetaInfo();
     }
 
@@ -360,5 +374,16 @@ public class ControllerEnhancerTest extends TestBase implements ControllerClassM
             return defineClass(name, b, 0, b.length);
         }
 
+    }
+
+    private static enum _F {
+        ;
+        static _.Predicate<String> SYS_CLASS_NAME = new _.Predicate<String>() {
+            @Override
+            public boolean test(String s) {
+                return s.startsWith("java") || s.startsWith("org.osgl.");
+            }
+        };
+        static _.Predicate<String> SAFE_CLASS = S.F.endsWith(".class").and(SYS_CLASS_NAME.negate());
     }
 }

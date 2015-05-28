@@ -42,6 +42,7 @@ public class App {
     private ProjectLayout layout;
     private AppBuilder builder;
     private AppCodeScannerManager scannerManager;
+    private AppInterceptorManager interceptorManager;
     private FsChangeDetector confChangeDetector;
     private FsChangeDetector libChangeDetector;
     private FsChangeDetector resourceChangeDetector;
@@ -107,6 +108,7 @@ public class App {
     }
 
     public void refresh() {
+        initInterceptorManager();
         loadConfig();
         initRouter();
         initScannerManager();
@@ -130,6 +132,10 @@ public class App {
 
     void hook() {
         Act.hook(this);
+    }
+
+    public AppInterceptorManager interceptorManager() {
+        return interceptorManager;
     }
 
     public AppCodeScannerManager scannerManager() {
@@ -197,6 +203,10 @@ public class App {
 
     private void initRouter() {
         router = new Router(this);
+    }
+
+    private void initInterceptorManager() {
+        interceptorManager = new AppInterceptorManager();
     }
 
     private void initScannerManager() {

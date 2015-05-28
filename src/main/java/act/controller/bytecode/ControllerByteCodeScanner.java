@@ -27,7 +27,7 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
     private final static Logger logger = L.get(ControllerByteCodeScanner.class);
     private Router router;
     private ControllerClassMetaInfo classInfo;
-    private ControllerClassMetaInfoManager2 classInfoBase;
+    private volatile ControllerClassMetaInfoManager classInfoBase;
 
     @Override
     protected boolean shouldScan(String className) {
@@ -56,9 +56,13 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
         classInfoBase().mergeActionMetaInfo();
     }
 
-    private ControllerClassMetaInfoManager2 classInfoBase() {
+    private ControllerClassMetaInfoManager classInfoBase() {
         if (null == classInfoBase) {
-            classInfoBase = app().classLoader().controllerClassMetaInfoManager2();
+            synchronized (this) {
+                if (null == classInfoBase) {
+                    classInfoBase = app().classLoader().controllerClassMetaInfoManager2();
+                }
+            }
         }
         return classInfoBase;
     }
@@ -66,6 +70,7 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
     private class _ByteCodeVisitor extends ByteCodeVisitor {
         @Override
         public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
+            logger.trace("Scanning %s", name);
             classInfo.className(name);
             Type superType = Type.getObjectType(superName);
             classInfo.superType(superType);

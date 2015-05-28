@@ -6,7 +6,7 @@ import org.osgl.mvc.result.Result;
 
 @Controller
 public class ReturnResultWithParamCtxField extends ContextController {
-    protected String foo;
+    //protected String foo;
     @GetAction("/")
     public Result handle(int foo, String bar) {
         return render(foo, bar);

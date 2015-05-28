@@ -3,12 +3,9 @@ package act.app;
 import act.Act;
 import act.asm.ClassReader;
 import act.asm.ClassWriter;
-import act.conf.AppConfig;
-import act.controller.bytecode.ControllerScanner;
 import act.controller.meta.ControllerClassMetaInfo;
 import act.controller.meta.ControllerClassMetaInfoHolder;
 import act.controller.meta.ControllerClassMetaInfoManager;
-import act.controller.meta.ControllerClassMetaInfoManager2;
 import act.util.ByteCodeVisitor;
 import act.util.ClassNames;
 import act.util.Files;
@@ -38,16 +35,7 @@ public class AppClassLoader extends ClassLoader implements ControllerClassMetaIn
     protected final static Logger logger = L.get(AppClassLoader.class);
     private App app;
     private Map<String, byte[]> libClsCache = C.newMap();
-    protected ControllerClassMetaInfoManager controllerInfo =
-            new ControllerClassMetaInfoManager(
-                    new _.Factory<ControllerScanner>() {
-                        @Override
-                        public ControllerScanner create() {
-                            return new ControllerScanner(app.config(), app.router(), bytecodeLookup);
-                        }
-                    }
-            );
-    protected ControllerClassMetaInfoManager2 controllerInfo2 = new ControllerClassMetaInfoManager2();
+    protected ControllerClassMetaInfoManager controllerInfo = new ControllerClassMetaInfoManager();
 
     public AppClassLoader(App app) {
         super(Act.class.getClassLoader());
@@ -69,15 +57,11 @@ public class AppClassLoader extends ClassLoader implements ControllerClassMetaIn
     }
 
     public ControllerClassMetaInfo controllerClassMetaInfo(String controllerClassName) {
-        return controllerInfo2.controllerMetaInfo(controllerClassName);
+        return controllerInfo.controllerMetaInfo(controllerClassName);
     }
 
-    public ControllerClassMetaInfoManager controllerClassMetaInfoManager() {
+    public ControllerClassMetaInfoManager controllerClassMetaInfoManager2() {
         return controllerInfo;
-    }
-
-    public ControllerClassMetaInfoManager2 controllerClassMetaInfoManager2() {
-        return controllerInfo2;
     }
 
     public boolean isSourceClass(String className) {
@@ -102,11 +86,6 @@ public class AppClassLoader extends ClassLoader implements ControllerClassMetaIn
         } else {
             return c;
         }
-    }
-
-    @Deprecated
-    protected void scan() {
-        scanForActionMethods();
     }
 
     protected void scan2() {
@@ -190,22 +169,6 @@ public class AppClassLoader extends ClassLoader implements ControllerClassMetaIn
                 }
             }
         }
-    }
-
-    @Deprecated
-    protected void scanForActionMethods() {
-        AppConfig conf = app.config();
-        for (String className : libClsCache.keySet()) {
-            if (conf.possibleControllerClass(className)) {
-                controllerInfo.scanForControllerMetaInfo(className);
-            }
-        }
-        controllerInfo.mergeActionMetaInfo();
-    }
-
-    protected void scanForActionMethods(String className) {
-        controllerInfo.scanForControllerMetaInfo(className);
-        controllerInfo.mergeActionMetaInfo();
     }
 
     protected void preload() {

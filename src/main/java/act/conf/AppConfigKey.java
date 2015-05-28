@@ -6,8 +6,10 @@ import act.view.TemplatePathResolver;
 import act.view.View;
 import org.apache.commons.codec.Charsets;
 import org.osgl._;
+import org.osgl.cache.CacheServiceProvider;
 import org.osgl.logging.L;
 import org.osgl.logging.Logger;
+import org.osgl.util.E;
 import org.osgl.util.S;
 
 import java.util.HashMap;
@@ -32,7 +34,19 @@ import java.util.Map;
 public enum AppConfigKey implements ConfigKey {
 
     /**
-     * Specify {@link org.osgl.cache.CacheService Cache service} implementation
+     * {@code act.config.impl}
+     * <p>Specifies the application configuration class which provides default configuration
+     * via source code. The settings provided by application configuration class might be
+     * overwritten by configuration file</p>
+     * <p>Default value: {@code null}</p>
+     */
+    CONFIG_IMPL("config.impl"),
+
+    /**
+     * {@code act.cache.impl}
+     * Specify {@link org.osgl.cache.CacheServiceProvider Cache service provider}
+     * <p>Default value: {@link org.osgl.cache.CacheServiceProvider.Impl#Simple the simple
+     * in memory map based cache service implementation}</p>
      */
     CACHE_IMPL("cache.impl"),
 
@@ -75,7 +89,7 @@ public enum AppConfigKey implements ConfigKey {
      * {@code act.encoding} specifies application default encoding
      * <p>Default value: utf-8</p>
      */
-    ENCODING("encoding", Charsets.UTF_8.name().toLowerCase()),
+    ENCODING("encoding"),
 
     /**
      * {@code act.host} specifies the host the application
@@ -83,13 +97,13 @@ public enum AppConfigKey implements ConfigKey {
      * <p/>
      * <p>Default value: {@code localhost}</p>
      */
-    HOST("host", "localhost"),
+    HOST("host"),
 
     /**
      * {@code act.locale} specifies the application default locale
      * <p>Default value: {@link java.util.Locale#getDefault}</p>
      */
-    LOCALE("locale", Locale.getDefault()) {
+    LOCALE("locale") {
         @Override
         public <T> T val(Map<String, ?> configuration) {
             Object o = super.val(configuration);
@@ -114,7 +128,7 @@ public enum AppConfigKey implements ConfigKey {
      * <p/>
      * <p>Default value: {@code 5460}</p>
      */
-    PORT("port", 5460) {
+    PORT("port") {
         @Override
         public <T> T val(Map<String, ?> configuration) {
             Object v = configuration.get(key());
@@ -153,7 +167,7 @@ public enum AppConfigKey implements ConfigKey {
      * encrypt/decrypt/sign etc
      * <p>Default value: {@code myawesomeapp}</p>
      */
-    SECRET("secret", "myawesomeapp"),
+    SECRET("secret"),
 
     /**
      * {@code session.prefix} specifies the prefix to be prepended
@@ -172,7 +186,7 @@ public enum AppConfigKey implements ConfigKey {
      *
      * <p>Default value: {@code 60 * 30} i.e half an hour</p>
      */
-    SESSION_TTL("session.ttl", 60 * 30),
+    SESSION_TTL("session.ttl"),
 
     /**
      * {@code session.persistent.enabled} specify whether the system
@@ -184,7 +198,7 @@ public enum AppConfigKey implements ConfigKey {
      *
      * See <a href="http://en.wikipedia.org/wiki/HTTP_cookie#Persistent_cookie">HTTP_cookie</a>
      */
-    SESSION_PERSISTENT_ENABLED("session.persistent.enabled", false),
+    SESSION_PERSISTENT_ENABLED("session.persistent.enabled"),
 
     /**
      * {@code session.encrypted.enabled} specify whether the system should
@@ -195,7 +209,7 @@ public enum AppConfigKey implements ConfigKey {
      *
      * <p>Default value: {@code false}</p>
      */
-    SESSION_ENCRYPT_ENABLED("session.encrypt.enabled", false),
+    SESSION_ENCRYPT_ENABLED("session.encrypt.enabled"),
 
     /**
      * {@code session.http_only.enabled} specifies whether the session cookie should
@@ -204,7 +218,7 @@ public enum AppConfigKey implements ConfigKey {
      *
      * <p>Default value: {@code true}</p>
      */
-    SESSION_HTTP_ONLY_ENABLED("session.http_only.enabled", true),
+    SESSION_HTTP_ONLY_ENABLED("session.http_only.enabled"),
 
     /**
      * {@code session.secure.enabled} specifies whether the session cookie should
@@ -218,7 +232,7 @@ public enum AppConfigKey implements ConfigKey {
      * session http only will be disabled without regarding to the {@code session.secure.enabled}
      * setting</p>
      */
-    SESSION_SECURE("session.secure.enabled", true),
+    SESSION_SECURE("session.secure.enabled"),
 
     /**
      * {@code act.source_version} specifies the java version
@@ -226,7 +240,15 @@ public enum AppConfigKey implements ConfigKey {
      * in dev mode.
      * <p>Default value: 1.7</p>
      */
-    SOURCE_VERSION("source_version", "1." + _.JAVA_VERSION),
+    SOURCE_VERSION("source_version"),
+
+    /**
+     * {@code act.source_version} specifies the java version
+     * of the compile target code. This configuration is used only
+     * in dev mode.
+     * <p>Default value: 1.7</p>
+     */
+    TARGET_VERSION("target_version"),
 
     /**
      * {@code template.home} specifies where the view templates resides.
@@ -235,7 +257,7 @@ public enum AppConfigKey implements ConfigKey {
      * <p/>
      * <p>Default value: {@code default}</p>
      */
-    TEMPLATE_HOME("template.home"),
+    TEMPLATE_HOME("template.home", "default"),
 
     /**
      * {@code template_path_resolver.impl} specifies the class that
@@ -268,7 +290,7 @@ public enum AppConfigKey implements ConfigKey {
      */
     VIEW_DEFAULT("view.default"),
 
-    X_FORWARD_PROTOCOL("x_forward_protocol", "http"),
+    X_FORWARD_PROTOCOL("x_forward_protocol"),
 
     ;
     private String key;
@@ -352,7 +374,7 @@ public enum AppConfigKey implements ConfigKey {
      * @return configuration key from the string
      */
     public static AppConfigKey valueOfIgnoreCase(String s) {
-        if (S.empty(s)) throw new IllegalArgumentException();
+        E.illegalArgumentIf(S.blank(s), "config key cannot be empty");
         return lookup.get(s.trim().toLowerCase());
     }
 

@@ -33,15 +33,7 @@ public class DevModeClassLoader extends AppClassLoader {
     }
 
     public ControllerClassMetaInfo controllerClassMetaInfo(String controllerClassName) {
-        ControllerClassMetaInfo info = super.controllerClassMetaInfo(controllerClassName);
-        if (null != info) {
-            return info;
-        }
-        Source source = source(controllerClassName);
-        if (null != source && source.isController()) {
-            return controllerInfo.scanForControllerMetaInfo(controllerClassName);
-        }
-        return null;
+        return super.controllerClassMetaInfo(controllerClassName);
     }
 
     @Override
@@ -54,35 +46,6 @@ public class DevModeClassLoader extends AppClassLoader {
     protected void scan2() {
         super.scan2();
         scanSources();
-    }
-
-    @Override
-    @Deprecated
-    protected void scan() {
-        preloadSources();
-        super.scan();
-    }
-
-    private void _scanForActionMethods() {
-        AppConfig conf = app().config();
-        SourceCodeActionScanner scanner = new SourceCodeActionScanner();
-        Router router = app().router();
-        for (String className : sources.keySet()) {
-            if (conf.possibleControllerClass(className)) {
-                Source source = sources.get(className);
-                boolean isController = scanner.scan(className, source.code(), router);
-                if (isController) {
-                    source.markAsController();
-                    scanForActionMethods(className);
-                }
-            }
-        }
-    }
-
-    @Override
-    protected void scanForActionMethods() {
-        _scanForActionMethods();
-        super.scanForActionMethods();
     }
 
     @Override

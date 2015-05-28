@@ -30,7 +30,7 @@ import static org.osgl.http.H.Method.PUT;
 
 public class ControllerByteCodeScannerTest extends TestBase {
 
-    private ControllerClassMetaInfoManager2 infoSrc;
+    private ControllerClassMetaInfoManager infoSrc;
     private TestingAppClassLoader classLoader;
     private AppCodeScannerManager scannerManager;
     private AppByteCodeScanner scanner;

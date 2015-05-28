@@ -287,6 +287,22 @@ public class Router {
         }
     }
 
+    public final class f {
+        public _.Predicate<String> IS_CONTROLLER = new _.Predicate<String>() {
+            @Override
+            public boolean test(String s) {
+                for (String action : actionNames) {
+                    if (action.startsWith(s)) {
+                        return true;
+                    }
+                }
+                return false;
+            }
+        };
+    }
+
+    public final f f = new f();
+
     /**
      * The data structure support decision tree for
      * fast URL routing
