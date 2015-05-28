@@ -1,19 +1,18 @@
 package act.controller.bytecode;
 
-import act.asm.tree.*;
-import act.controller.meta.ParamMetaInfo;
-import act.util.AsmTypes;
-import org.osgl.logging.L;
-import org.osgl.logging.Logger;
-import org.osgl.mvc.result.Result;
 import act.app.AppContext;
 import act.asm.Label;
 import act.asm.MethodVisitor;
 import act.asm.Opcodes;
 import act.asm.Type;
-import act.controller.ActionMethodMetaInfoL;
+import act.asm.tree.*;
 import act.controller.meta.HandlerMethodMetaInfo;
 import act.controller.meta.LocalVariableMetaInfo;
+import act.controller.meta.ParamMetaInfo;
+import act.util.AsmTypes;
+import org.osgl.logging.L;
+import org.osgl.logging.Logger;
+import org.osgl.mvc.result.Result;
 import org.osgl.util.C;
 import org.osgl.util.E;
 import org.osgl.util.S;
@@ -47,7 +46,7 @@ public class HandlerEnhancer extends MethodVisitor implements Opcodes {
             if (paramId < info.paramCount()) {
                 ParamMetaInfo param = info.param(paramId);
                 param.name(name);
-                if (ActionMethodMetaInfoL.APP_CONTEXT_TYPE.equals(param.type())) {
+                if (AsmTypes.APP_CONTEXT_TYPE.equals(param.type())) {
                     info.appCtxLocalVariableTableIndex(index);
                 }
             }
