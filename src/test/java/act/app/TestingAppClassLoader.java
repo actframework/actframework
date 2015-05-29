@@ -8,11 +8,6 @@ public class TestingAppClassLoader extends AppClassLoader {
     }
 
     @Override
-    public App app() {
-        return super.app();
-    }
-
-    @Override
     public void preloadClassFile(File base, File file) {
         super.preloadClassFile(base, file);
     }

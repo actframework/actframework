@@ -4,7 +4,6 @@ import act.Constants;
 import act.Act;
 import act.app.App;
 import act.app.AppConfigurator;
-import act.app.AppHolder;
 import act.util.JavaVersion;
 import act.view.TemplatePathResolver;
 import act.view.View;

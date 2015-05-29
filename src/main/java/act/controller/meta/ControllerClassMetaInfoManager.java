@@ -1,7 +1,11 @@
 package act.controller.meta;
 
+import act.Destroyable;
+import act.app.App;
+import act.app.AppServiceBase;
 import act.asm.Type;
 import act.util.AsmTypes;
+import act.util.DestroyableBase;
 import org.osgl.logging.L;
 import org.osgl.logging.Logger;
 import org.osgl.util.C;
@@ -9,7 +13,9 @@ import org.osgl.util.C;
 import java.util.List;
 import java.util.Map;
 
-public class ControllerClassMetaInfoManager {
+import static act.Destroyable.Util.destroyAll;
+
+public class ControllerClassMetaInfoManager extends DestroyableBase {
 
     private static final Logger logger = L.get(ControllerClassMetaInfoManager.class);
 
@@ -17,6 +23,17 @@ public class ControllerClassMetaInfoManager {
     private Map<Type, List<ControllerClassMetaInfo>> subTypeInfo = C.newMap();
 
     public ControllerClassMetaInfoManager() {
+    }
+
+    @Override
+    protected void releaseResources() {
+        destroyAll(controllers.values());
+        controllers.clear();
+        for (List<ControllerClassMetaInfo> l : subTypeInfo.values()) {
+            destroyAll(l);
+        }
+        subTypeInfo.clear();
+        super.releaseResources();
     }
 
     public void registerControllerMetaInfo(ControllerClassMetaInfo metaInfo) {

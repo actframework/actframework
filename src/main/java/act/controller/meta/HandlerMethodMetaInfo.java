@@ -5,6 +5,7 @@ import act.asm.Type;
 import act.handler.builtin.controller.ControllerAction;
 import act.handler.builtin.controller.Handler;
 import act.util.AsmTypes;
+import act.util.DestroyableBase;
 import act.util.Prioritised;
 import org.osgl._;
 import org.osgl.util.C;
@@ -17,7 +18,7 @@ import java.util.Map;
  * Common meta data storage for both {@link ControllerAction}
  * and {@link Handler}
  */
-public abstract class HandlerMethodMetaInfo<T extends HandlerMethodMetaInfo> implements Prioritised {
+public abstract class HandlerMethodMetaInfo<T extends HandlerMethodMetaInfo> extends DestroyableBase implements Prioritised {
     private String name;
     private InvokeType invokeType;
     private AppContextInjection appContextInjection;
@@ -29,6 +30,14 @@ public abstract class HandlerMethodMetaInfo<T extends HandlerMethodMetaInfo> imp
 
     public HandlerMethodMetaInfo(ControllerClassMetaInfo clsInfo) {
         this.clsInfo = clsInfo;
+    }
+
+    @Override
+    protected void releaseResources() {
+        clsInfo.destroy();
+        params.clear();
+        locals.clear();
+        super.releaseResources();
     }
 
     public ControllerClassMetaInfo classInfo() {

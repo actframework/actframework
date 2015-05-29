@@ -31,10 +31,11 @@ import static org.osgl._.notNull;
 /**
  * The top level class loader to load a specific application classes into JVM
  */
-public class AppClassLoader extends ClassLoader implements ControllerClassMetaInfoHolder {
+public class AppClassLoader extends ClassLoader implements ControllerClassMetaInfoHolder, AppService<AppClassLoader> {
     protected final static Logger logger = L.get(AppClassLoader.class);
     private App app;
     private Map<String, byte[]> libClsCache = C.newMap();
+    private boolean destroyed;
     protected ControllerClassMetaInfoManager controllerInfo = new ControllerClassMetaInfoManager();
 
     public AppClassLoader(App app) {
@@ -42,14 +43,30 @@ public class AppClassLoader extends ClassLoader implements ControllerClassMetaIn
         this.app = notNull(app);
     }
 
-//    protected void init() {
-//        preload();
-//        //scanByteCode();
-//        scan2();
-//    }
+    @Override
+    public final boolean isDestroyed() {
+        return destroyed;
+    }
 
-    protected App app() {
+    @Override
+    public AppClassLoader app(App app) {
+        throw E.unsupport();
+    }
+
+
+    public final App app() {
         return app;
+    }
+
+    @Override
+    public final void destroy() {
+        libClsCache.clear();
+        controllerInfo.destroy();
+        releaseResources();
+        destroyed = true;
+    }
+
+    protected void releaseResources() {
     }
 
     public void detectChanges() {

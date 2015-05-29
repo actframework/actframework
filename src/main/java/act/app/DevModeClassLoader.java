@@ -1,5 +1,9 @@
 package act.app;
 
+import act.Act;
+import act.util.FsChangeDetector;
+import act.util.FsEvent;
+import act.util.FsEventListener;
 import org.osgl._;
 import org.osgl.exception.NotAppliedException;
 import act.conf.AppConfig;
@@ -23,9 +27,21 @@ public class DevModeClassLoader extends AppClassLoader {
     private Map<String, Source> sources = C.newMap();
     private final AppCompiler compiler;
 
+    private FsChangeDetector confChangeDetector;
+    private FsChangeDetector libChangeDetector;
+    private FsChangeDetector resourceChangeDetector;
+    private FsChangeDetector sourceChangeDetector;
+
     public DevModeClassLoader(App app) {
         super(app);
         compiler = new AppCompiler(this);
+    }
+
+    @Override
+    protected void releaseResources() {
+        sources.clear();
+        compiler.destroy();
+        super.releaseResources();
     }
 
     public boolean isSourceClass(String className) {
@@ -40,6 +56,7 @@ public class DevModeClassLoader extends AppClassLoader {
     protected void preload() {
         preloadSources();
         super.preload();
+        setupFsChangeDetectors();
     }
 
     @Override
@@ -124,8 +141,6 @@ public class DevModeClassLoader extends AppClassLoader {
         });
     }
 
-
-
     private byte[] bytecodeFromSource(String name) {
         Source source = source(name);
         if (null == source) {
@@ -139,5 +154,87 @@ public class DevModeClassLoader extends AppClassLoader {
         return bytes;
     }
 
+    @Override
+    public void detectChanges() {
+        detectChanges(confChangeDetector);
+        detectChanges(libChangeDetector);
+        detectChanges(resourceChangeDetector);
+        detectChanges(sourceChangeDetector);
+        super.detectChanges();
+    }
 
+    private void detectChanges(FsChangeDetector detector) {
+        if (null != detector) {
+            detector.detectChanges();
+        }
+    }
+
+    private void setupFsChangeDetectors() {
+        ProjectLayout layout = app().layout();
+        File appBase = app().base();
+
+        File src = layout.source(appBase);
+        if (null != src) {
+            sourceChangeDetector = new FsChangeDetector(src, App.F.JAVA_SOURCE, sourceChangeListener);
+        }
+
+        File lib = layout.lib(appBase);
+        if (null != lib && lib.canRead()) {
+            libChangeDetector = new FsChangeDetector(lib, App.F.JAR_FILE, libChangeListener);
+        }
+
+        File conf = layout.conf(appBase);
+        if (null != conf && conf.canRead()) {
+            confChangeDetector = new FsChangeDetector(conf, App.F.CONF_FILE, confChangeListener);
+        }
+
+        File rsrc = layout.resource(appBase);
+        if (null != rsrc && rsrc.canRead()) {
+            resourceChangeDetector = new FsChangeDetector(rsrc, null, resourceChangeListener);
+        }
+    }
+
+    private final FsEventListener sourceChangeListener = new FsEventListener() {
+        @Override
+        public void on(FsEvent... events) {
+            throw RequestRefreshClassLoader.INSTANCE;
+        }
+    };
+
+    private final FsEventListener libChangeListener = new FsEventListener() {
+        @Override
+        public void on(FsEvent... events) {
+            int len = events.length;
+            if (len < 0) return;
+            Act.requestRefreshClassLoader();
+        }
+    };
+
+    private final FsEventListener confChangeListener = new FsEventListener() {
+        @Override
+        public void on(FsEvent... events) {
+            Act.requestRestart();
+        }
+    };
+
+    private final FsEventListener resourceChangeListener = new FsEventListener() {
+        @Override
+        public void on(FsEvent... events) {
+            int len = events.length;
+            for (int i = 0; i < len; ++i) {
+                FsEvent e = events[i];
+                if (e.kind() == FsEvent.Kind.CREATE) {
+                    List<String> paths = e.paths();
+                    File[] files = new File[paths.size()];
+                    int idx = 0;
+                    for (String path : paths) {
+                        files[idx++] = new File(path);
+                    }
+                    app().builder().copyResources(files);
+                } else {
+                    Act.requestRestart();
+                }
+            }
+        }
+    };
 }

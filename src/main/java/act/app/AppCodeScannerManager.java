@@ -10,7 +10,7 @@ import java.util.List;
  * Manage {@link AppSourceCodeScanner} and {@link AppByteCodeScanner}
  * for the application
  */
-public class AppCodeScannerManager extends AppHolder {
+public class AppCodeScannerManager extends AppServiceBase<AppCodeScannerManager> {
 
     private static final Logger logger = L.get(AppCodeScannerManager.class);
 
@@ -37,6 +37,12 @@ public class AppCodeScannerManager extends AppHolder {
     public AppCodeScannerManager register(AppByteCodeScanner byteCodeScanner) {
         _register(byteCodeScanner, byteCodeScanners);
         return this;
+    }
+
+    @Override
+    protected void releaseResources() {
+        sourceCodeScanners.clear();
+        byteCodeScanners.clear();
     }
 
     private <T extends AppCodeScanner> void _register(T scanner, List<T> scanners) {

@@ -19,6 +19,12 @@ public class CatchMethodMetaInfo extends InterceptorMethodMetaInfo {
         super(clsInfo);
     }
 
+    @Override
+    protected void releaseResources() {
+        targetExceptionClassNames.clear();
+        super.releaseResources();
+    }
+
     public CatchMethodMetaInfo exceptionClasses(List<String> list) {
         targetExceptionClassNames = C.list(list);
         return this;

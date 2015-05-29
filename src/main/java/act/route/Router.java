@@ -1,5 +1,6 @@
 package act.route;
 
+import act.app.AppServiceBase;
 import act.conf.AppConfig;
 import act.controller.ParamNames;
 import act.handler.DelegateRequestHandler;
@@ -28,7 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
-public class Router {
+public class Router extends AppServiceBase<Router> {
 
     private static final NotFound NOT_FOUND = new NotFound();
     private static final H.Method[] targetMethods = new H.Method[]{H.Method.GET, H.Method.POST, H.Method.PUT,
@@ -45,14 +46,13 @@ public class Router {
     private RequestHandlerResolver handlerLookup;
     private C.Set<String> actionNames = C.newSet();
     private AppConfig appConfig;
-    private App app;
 
     private void initControllerLookup(RequestHandlerResolver lookup) {
         if (null == lookup) {
             lookup = new RequestHandlerResolverBase() {
                 @Override
                 public RequestHandler resolve(CharSequence payload) {
-                    return new RequestHandlerProxy(payload.toString(), app);
+                    return new RequestHandlerProxy(payload.toString(), app());
                 }
             };
         }
@@ -64,10 +64,20 @@ public class Router {
     }
 
     public Router(RequestHandlerResolver handlerLookup, App app) {
-        E.NPE(app);
+        super(app);
         initControllerLookup(handlerLookup);
         this.appConfig = app.config();
-        this.app = app;
+    }
+
+    @Override
+    protected void releaseResources() {
+        _GET = null;
+        _DEL = null;
+        _POST = null;
+        _PUT = null;
+        handlerLookup = null;
+        actionNames.clear();
+        appConfig = null;
     }
 
     // --- routing ---

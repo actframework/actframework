@@ -1,6 +1,7 @@
 package act.app;
 
 import act.conf.AppConfig;
+import act.util.DestroyableBase;
 import org.eclipse.jdt.core.compiler.IProblem;
 import org.eclipse.jdt.internal.compiler.*;
 import org.eclipse.jdt.internal.compiler.Compiler;
@@ -26,7 +27,7 @@ import static org.eclipse.jdt.internal.compiler.impl.CompilerOptions.*;
  * Compile App srccode code in memory. Only used when Act is running
  * in DEV mode
  */
-class AppCompiler {
+class AppCompiler extends DestroyableBase {
 
     static final Logger logger = L.get(AppCompiler.class);
 
@@ -41,7 +42,12 @@ class AppCompiler {
         this.app = classLoader.app();
         this.conf = app.config();
         configureCompilerOptions();
-        ;
+    }
+
+    @Override
+    protected void releaseResources() {
+        packagesCache.clear();
+        super.releaseResources();
     }
 
     private void configureCompilerOptions() {

@@ -43,11 +43,10 @@ public class App {
     private AppBuilder builder;
     private AppCodeScannerManager scannerManager;
     private AppInterceptorManager interceptorManager;
-    private FsChangeDetector confChangeDetector;
-    private FsChangeDetector libChangeDetector;
-    private FsChangeDetector resourceChangeDetector;
-    private FsChangeDetector sourceChangeDetector;
+
+
     private DependencyInjector<?> dependencyInjector;
+    private ServiceResourceManager serviceResourceManager;
 
     protected App() {
     }
@@ -94,20 +93,12 @@ public class App {
     }
 
     public void detectChanges() {
-        if (!Act.isDev()) return;
-        detectChanges(confChangeDetector);
-        detectChanges(libChangeDetector);
-        detectChanges(resourceChangeDetector);
-        detectChanges(sourceChangeDetector);
+        classLoader.detectChanges();
     }
 
-    private void detectChanges(FsChangeDetector detector) {
-        if (null != detector) {
-            detector.detectChanges();
-        }
-    }
 
     public void refresh() {
+        initServiceResourceManager();
         initInterceptorManager();
         loadConfig();
         initRouter();
@@ -117,9 +108,6 @@ public class App {
         initClassLoader();
         scanAppCodes();
         loadRoutes();
-        if (Act.isDev()) {
-            setupFsChangeDetectors();
-        }
     }
 
     public AppBuilder builder() {
@@ -195,6 +183,11 @@ public class App {
         return S.builder("app@[").append(appBase).append("]").toString();
     }
 
+    App register(AppService service) {
+        serviceResourceManager.register(service);
+        return this;
+    }
+
     private void loadConfig() {
         File conf = RuntimeDirs.conf(this);
         logger.debug("loading app configuration: %s ...", appBase.getPath());
@@ -202,12 +195,20 @@ public class App {
         config.app(this);
     }
 
+    private void initServiceResourceManager() {
+        if (null != serviceResourceManager) {
+            serviceResourceManager.destroy();
+            dependencyInjector = null;
+        }
+        serviceResourceManager = new ServiceResourceManager();
+    }
+
     private void initRouter() {
         router = new Router(this);
     }
 
     private void initInterceptorManager() {
-        interceptorManager = new AppInterceptorManager();
+        interceptorManager = new AppInterceptorManager(this);
     }
 
     private void initScannerManager() {
@@ -249,77 +250,9 @@ public class App {
         //classLoader().scan();
     }
 
-    private void setupFsChangeDetectors() {
-        ProjectLayout layout = layout();
-        File appBase = base();
-
-        File src = layout.source(appBase);
-        if (null != src) {
-            sourceChangeDetector = new FsChangeDetector(src, F.JAVA_SOURCE, sourceChangeListener);
-        }
-
-        File lib = layout.lib(appBase);
-        if (null != lib && lib.canRead()) {
-            libChangeDetector = new FsChangeDetector(lib, F.JAR_FILE, libChangeListener);
-        }
-
-        File conf = layout.conf(appBase);
-        if (null != conf && conf.canRead()) {
-            confChangeDetector = new FsChangeDetector(conf, F.CONF_FILE, confChangeListener);
-        }
-
-        File rsrc = layout.resource(appBase);
-        if (null != rsrc && rsrc.canRead()) {
-            resourceChangeDetector = new FsChangeDetector(rsrc, null, resourceChangeListener);
-        }
-    }
-
     static App create(File appBase, ProjectLayout layout) {
         return new App(appBase, layout);
     }
 
-    private final FsEventListener sourceChangeListener = new FsEventListener() {
-        @Override
-        public void on(FsEvent... events) {
-            throw RequestRefreshClassLoader.INSTANCE;
-        }
-    };
-
-    private final FsEventListener libChangeListener = new FsEventListener() {
-        @Override
-        public void on(FsEvent... events) {
-            int len = events.length;
-            if (len < 0) return;
-            Act.requestRefreshClassLoader();
-        }
-    };
-
-    private final FsEventListener confChangeListener = new FsEventListener() {
-        @Override
-        public void on(FsEvent... events) {
-            Act.requestRestart();
-        }
-    };
-
-    private final FsEventListener resourceChangeListener = new FsEventListener() {
-        @Override
-        public void on(FsEvent... events) {
-            int len = events.length;
-            for (int i = 0; i < len; ++i) {
-                FsEvent e = events[i];
-                if (e.kind() == FsEvent.Kind.CREATE) {
-                    List<String> paths = e.paths();
-                    File[] files = new File[paths.size()];
-                    int idx = 0;
-                    for (String path : paths) {
-                        files[idx++] = new File(path);
-                    }
-                    builder().copyResources(files);
-                } else {
-                    Act.requestRestart();
-                }
-            }
-        }
-    };
 
 }

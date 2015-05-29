@@ -1,7 +1,9 @@
 package act.controller.meta;
 
+import act.Destroyable;
 import act.handler.builtin.controller.ControllerAction;
 import act.handler.builtin.controller.Handler;
+import act.util.DestroyableBase;
 import org.osgl.http.H;
 import org.osgl.logging.L;
 import org.osgl.logging.Logger;
@@ -14,12 +16,14 @@ import java.lang.annotation.Annotation;
 import java.util.List;
 import java.util.Set;
 
+import static act.Destroyable.Util.destroyAll;
+
 /**
  * Stores all class level information to support generating of
  * {@link ControllerAction request dispatcher}
  * and {@link Handler interceptors}
  */
-public final class ControllerClassMetaInfo {
+public final class ControllerClassMetaInfo extends DestroyableBase {
 
     private static final Logger logger = L.get(ControllerClassMetaInfo.class);
 
@@ -43,6 +47,20 @@ public final class ControllerClassMetaInfo {
     public ControllerClassMetaInfo className(String name) {
         this.type = Type.getObjectType(name);
         return this;
+    }
+
+    @Override
+    protected void releaseResources() {
+        withList.clear();
+        destroyAll(actions);
+        actions.clear();
+        destroyAll(actionLookup.values());
+        actionLookup.clear();
+        destroyAll(handlerLookup.values());
+        handlerLookup.clear();
+        interceptors.destroy();
+        parent.destroy();
+        super.releaseResources();
     }
 
     public String className() {

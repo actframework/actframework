@@ -1,5 +1,7 @@
 package act.controller.meta;
 
+import act.Destroyable;
+import act.util.DestroyableBase;
 import org.osgl._;
 import org.osgl.util.C;
 import org.osgl.util.S;
@@ -7,17 +9,32 @@ import org.osgl.util.S;
 import java.lang.annotation.Annotation;
 import java.util.List;
 
+import static act.Destroyable.Util.destroyAll;
+
 /**
  * Aggregate interception meta info. This structure is used in
  * {@link ControllerClassMetaInfo} and
  * {@link ActionMethodMetaInfo}
  */
-public class GroupInterceptorMetaInfo {
+public class GroupInterceptorMetaInfo extends DestroyableBase {
 
     private C.List<InterceptorMethodMetaInfo> beforeList = C.newList();
     private C.List<InterceptorMethodMetaInfo> afterList = C.newList();
     private C.List<InterceptorMethodMetaInfo> catchList = C.newList();
     private C.List<InterceptorMethodMetaInfo> finallyList = C.newList();
+
+    @Override
+    protected void releaseResources() {
+        destroyAll(beforeList);
+        destroyAll(afterList);
+        destroyAll(catchList);
+        destroyAll(finallyList);
+        beforeList.clear();
+        afterList.clear();
+        catchList.clear();
+        finallyList.clear();
+        super.releaseResources();
+    }
 
     public void addBefore(InterceptorMethodMetaInfo before) {
         beforeList.add(before);

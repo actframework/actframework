@@ -27,6 +27,13 @@ public class InterceptorMethodMetaInfo extends HandlerMethodMetaInfo<Interceptor
         super(clsInfo);
     }
 
+    @Override
+    protected void releaseResources() {
+        whiteList.clear();
+        blackList.clear();
+        super.releaseResources();
+    }
+
     public InterceptorMethodMetaInfo addOnly(String... only) {
         if (!blackList.isEmpty()) {
             logger.warn("Both [only] and [except] list are used for interceptor method[%s]. You should use only one", name());

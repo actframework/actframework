@@ -14,7 +14,7 @@ import static act.handler.builtin.controller.RequestHandlerProxy.insertIntercept
 /**
  * Manage interceptors at App level
  */
-public class AppInterceptorManager {
+public class AppInterceptorManager extends AppServiceBase<AppInterceptorManager> {
     private C.List<BeforeInterceptor> beforeInterceptors = C.newList();
     private C.List<AfterInterceptor> afterInterceptors = C.newList();
     private C.List<ExceptionInterceptor> exceptionInterceptors = C.newList();
@@ -24,6 +24,10 @@ public class AppInterceptorManager {
     final GroupAfterInterceptor AFTER_INTERCEPTOR = new GroupAfterInterceptor(afterInterceptors);
     final GroupFinallyInterceptor FINALLY_INTERCEPTOR = new GroupFinallyInterceptor(finallyInterceptors);
     final GroupExceptionInterceptor EXCEPTION_INTERCEPTOR = new GroupExceptionInterceptor(exceptionInterceptors);
+
+    AppInterceptorManager(App app) {
+        super(app);
+    }
 
     public Result handleBefore(AppContext appContext) {
         return BEFORE_INTERCEPTOR.apply(appContext);
@@ -58,4 +62,11 @@ public class AppInterceptorManager {
         insertInterceptor(exceptionInterceptors, interceptor);
     }
 
+    @Override
+    protected void releaseResources() {
+        beforeInterceptors.clear();
+        afterInterceptors.clear();
+        exceptionInterceptors.clear();
+        finallyInterceptors.clear();
+    }
 }

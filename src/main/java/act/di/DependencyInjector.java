@@ -1,6 +1,8 @@
 package act.di;
 
-public interface DependencyInjector<FT extends DependencyInjector> {
+import act.app.AppService;
+
+public interface DependencyInjector<FT extends DependencyInjector> extends AppService<FT> {
     /**
      * Create an instance of type T using the class of type T
      * @param clazz

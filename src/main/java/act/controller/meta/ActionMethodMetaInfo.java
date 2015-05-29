@@ -11,6 +11,12 @@ public class ActionMethodMetaInfo extends HandlerMethodMetaInfo<ActionMethodMeta
         super(classMetaInfo);
     }
 
+    @Override
+    protected void releaseResources() {
+        interceptors.destroy();
+        super.releaseResources();
+    }
+
     public ActionMethodMetaInfo mergeFromClassInterceptors(GroupInterceptorMetaInfo info) {
         interceptors.mergeFrom(info, name());
         return this;
