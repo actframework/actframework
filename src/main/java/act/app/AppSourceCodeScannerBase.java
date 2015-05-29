@@ -6,7 +6,7 @@ package act.app;
 public abstract class AppSourceCodeScannerBase extends AppCodeScannerBase implements AppSourceCodeScanner {
     private boolean scanByteCode = false;
 
-    protected final void reset0() {
+    protected final void reset() {
         scanByteCode = false;
     }
 

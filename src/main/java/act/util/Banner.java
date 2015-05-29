@@ -12,20 +12,24 @@ public class Banner {
     }
 
     private static String banner(String version) {
-        String s = "    _    ____ _____ \n" +
-                "   / \\  / ___|_   _|\n" +
-                "  / _ \\| |     | |  \n" +
+        String s = "    _     ____  ____ \n" +
+                "   / \\  / ____| ____|\n" +
+                "  / _ \\ | |     | |  \n" +
                 " / ___ \\| |___  | |  \n" +
-                "/_/   \\_\\____| |_|  \n";
+                "/_/   \\_\\ ____| |_|  \n";
         int n = version.length();
-        int spaceLeft = (29 - n - 1) / 2;
+        int spaceLeft = (20 - n - 1) / 2;
         StringBuilder sb = S.builder(s).append("\n");
         for (int i = 0; i < spaceLeft; ++i) {
             sb.append(" ");
         }
         sb.append("v").append(version);
         sb.append("\n");
-        sb.append("-----------------------------\n");
+        sb.append("-------------------\n");
         return sb.toString();
+    }
+
+    public static void main(String[] args) {
+        print("0.0.1");
     }
 }

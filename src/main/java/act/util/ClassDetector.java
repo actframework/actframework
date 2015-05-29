@@ -6,10 +6,14 @@ import org.osgl.exception.NotAppliedException;
 import act.asm.ClassWriter;
 import act.asm.Type;
 import act.plugin.Extends;
+import org.osgl.logging.L;
+import org.osgl.logging.Logger;
 import org.osgl.util.C;
 import org.osgl.util.E;
 
 public abstract class ClassDetector extends ByteCodeVisitor {
+
+    protected static final Logger logger = L.get(ClassDetector.class);
 
     private String className;
 

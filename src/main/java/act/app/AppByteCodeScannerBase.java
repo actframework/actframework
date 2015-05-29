@@ -11,7 +11,7 @@ public abstract class AppByteCodeScannerBase extends AppCodeScannerBase implemen
     
     private Set<String> dependencyClasses;
 
-    protected final void reset0() {
+    protected final void reset() {
         dependencyClasses = C.newSet();
     }
 

@@ -1,6 +1,7 @@
 package act.app;
 
 import act.conf.AppConfig;
+import act.plugin.Extends;
 import org.osgl._;
 import org.osgl.logging.L;
 import org.osgl.logging.Logger;
@@ -31,7 +32,7 @@ public abstract class AppCodeScannerBase implements AppCodeScanner {
         if (!shouldScan(className)) {
             return false;
         }
-        reset0();
+        reset();
         reset(className);
         return true;
     }
@@ -44,7 +45,7 @@ public abstract class AppCodeScannerBase implements AppCodeScanner {
         return app().config();
     }
 
-    protected abstract void reset0();
+    protected abstract void reset();
 
     protected void reset(String className) {}
 
