@@ -39,6 +39,23 @@ public abstract class ClassDetector extends ByteCodeVisitor {
         }
 
         @Override
+        public int hashCode() {
+            return _.hc(filter, FilteredClassDetector.class);
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == this) {
+                return true;
+            }
+            if (obj instanceof FilteredClassDetector) {
+                FilteredClassDetector that = (FilteredClassDetector)obj;
+                return _.eq(that.filter, this.filter);
+            }
+            return false;
+        }
+
+        @Override
         public boolean found() {
             return found;
         }
@@ -114,6 +131,16 @@ public abstract class ClassDetector extends ByteCodeVisitor {
                 }
             });
             private C.List<ClassDetector> matches = C.newList();
+
+            @Override
+            public int hashCode() {
+                return _.hc(detectors);
+            }
+
+            @Override
+            public boolean equals(Object obj) {
+                return obj == this;
+            }
 
             @Override
             public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {

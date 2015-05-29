@@ -74,10 +74,6 @@ public class AppClassLoader extends ClassLoader implements ControllerClassMetaIn
         if (c != null) {
             return c;
         }
-        c = getParent().loadClass(name);
-        if (null != null) {
-            return c;
-        }
 
         c = loadAppClass(name, resolve);
 

@@ -3,6 +3,7 @@ package act.util;
 import act.app.*;
 import org.osgl._;
 import org.osgl.util.E;
+import org.osgl.util.FastStr;
 import org.osgl.util.S;
 
 import java.util.regex.Pattern;
@@ -16,8 +17,8 @@ public abstract class SubTypeFinder extends AppCodeScannerPluginBase {
 
     protected SubTypeFinder(Class<?> superType, _.Func2<App, String, ?> foundHandler) {
         E.NPE(superType, foundHandler);
-        this.pkgName = superType.getPackage().getName();
         this.clsName = superType.getSimpleName();
+        this.pkgName = FastStr.of(superType.getName()).beforeLast('.').toString();
         this.superType = superType;
         this.foundHandler = foundHandler;
         logger.info("pkg: %s, cls: %s", pkgName, clsName);
@@ -73,10 +74,28 @@ public abstract class SubTypeFinder extends AppCodeScannerPluginBase {
         protected boolean shouldScan(String className) {
             return true;
         }
+
+        @Override
+        public int hashCode() {
+            return _.hc(PATTERN, SourceCodeSensor.class);
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == this) {
+                return true;
+            }
+            if (obj instanceof SourceCodeSensor) {
+                SourceCodeSensor that = (SourceCodeSensor)obj;
+                return _.eq(that.PATTERN, this.PATTERN);
+            }
+            return false;
+        }
     }
 
     private class ByteCodeSensor extends AppByteCodeScannerBase {
         private ClassDetector detector;
+        private _.Func2<App, String, ?> foundHandler = SubTypeFinder.this.foundHandler;
 
         @Override
         protected void reset(String className) {
@@ -112,6 +131,23 @@ public abstract class SubTypeFinder extends AppCodeScannerPluginBase {
         @Override
         protected boolean shouldScan(String className) {
             return true;
+        }
+
+        @Override
+        public int hashCode() {
+            return _.hc(detector, ByteCodeSensor.class);
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == this) {
+                return true;
+            }
+            if (obj instanceof ByteCodeSensor) {
+                ByteCodeSensor that = (ByteCodeSensor)obj;
+                return _.eq(that.detector, this.detector) && _.eq(that.foundHandler, this.foundHandler);
+            }
+            return false;
         }
     }
 

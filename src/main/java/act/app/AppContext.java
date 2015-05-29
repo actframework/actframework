@@ -34,6 +34,7 @@ public class AppContext {
     private String templatePath;
     private State state;
     private Map<String, Object> controllerInstances;
+    private boolean localSaved;
 
     private AppContext(App app, H.Request request, H.Response response) {
         E.NPE(app, request, response);
@@ -266,18 +267,19 @@ public class AppContext {
         this.attributes = null;
         this.template = null;
         this.app = null;
-        this.request = null;
-        this.response = null;
+        // xio impl might need this this.request = null;
+        // xio impl might need this this.response = null;
         this.flash = null;
         this.session = null;
         this.template = null;
         this.state = State.DESTROYED;
         this.controllerInstances = null;
-        AppContext.clear();
+        if (localSaved) AppContext.clear();
     }
 
     public void saveLocal() {
         _local.set(this);
+        localSaved = true;
     }
 
     private Set<Map.Entry<String, String[]>> requestParamCache() {
