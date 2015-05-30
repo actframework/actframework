@@ -252,11 +252,19 @@ public class AppClassLoader extends ClassLoader implements ControllerClassMetaIn
     }
 
     protected byte[] appBytecode(String name) {
+        return appBytecode(name, true);
+    }
+
+    protected byte[] appBytecode(String name, boolean loadFromSource) {
         return libClsCache.get(name);
     }
 
     protected byte[] bytecode(String name) {
-        byte[] bytes = appBytecode(name);
+        return bytecode(name, true);
+    }
+
+    protected byte[] bytecode(String name, boolean compileSource) {
+        byte[] bytes = appBytecode(name, compileSource);
         if (null != bytes) {
             return bytes;
         }
@@ -271,7 +279,7 @@ public class AppClassLoader extends ClassLoader implements ControllerClassMetaIn
     }
 
     byte[] enhancedBytecode(String name) {
-        byte[] bytecode = bytecode(name);
+        byte[] bytecode = bytecode(name, false);
         return null == bytecode ? null : enhance(name, bytecode);
     }
 

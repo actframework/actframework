@@ -66,9 +66,9 @@ public class DevModeClassLoader extends AppClassLoader {
     }
 
     @Override
-    protected byte[] appBytecode(String name) {
-        byte[] bytecode = super.appBytecode(name);
-        return null == bytecode ? bytecodeFromSource(name) : bytecode;
+    protected byte[] appBytecode(String name, boolean compileSource) {
+        byte[] bytecode = super.appBytecode(name, compileSource);
+        return null == bytecode && compileSource ? bytecodeFromSource(name, compileSource) : bytecode;
     }
 
     public Source source(String className) {
@@ -136,18 +136,18 @@ public class DevModeClassLoader extends AppClassLoader {
         scanByteCode(classesNeedByteCodeScan, new _.F1<String, byte[]>() {
             @Override
             public byte[] apply(String s) throws NotAppliedException, _.Break {
-                return bytecodeFromSource(s);
+                return bytecodeFromSource(s, true);
             }
         });
     }
 
-    private byte[] bytecodeFromSource(String name) {
+    private byte[] bytecodeFromSource(String name, boolean compile) {
         Source source = source(name);
         if (null == source) {
             return null;
         }
         byte[] bytes = source.bytes();
-        if (null == bytes) {
+        if (null == bytes && compile) {
             compiler.compile(name);
             bytes = source.bytes();
         }

@@ -6,6 +6,7 @@ import org.eclipse.jdt.core.compiler.IProblem;
 import org.eclipse.jdt.internal.compiler.*;
 import org.eclipse.jdt.internal.compiler.Compiler;
 import org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration;
+import org.eclipse.jdt.internal.compiler.batch.CompilationUnit;
 import org.eclipse.jdt.internal.compiler.classfmt.ClassFileReader;
 import org.eclipse.jdt.internal.compiler.classfmt.ClassFormatException;
 import org.eclipse.jdt.internal.compiler.env.ICompilationUnit;
@@ -20,6 +21,7 @@ import org.osgl.util.E;
 
 import java.util.Locale;
 import java.util.Map;
+import java.util.StringTokenizer;
 
 import static org.eclipse.jdt.internal.compiler.impl.CompilerOptions.*;
 
@@ -160,9 +162,9 @@ class AppCompiler extends DestroyableBase {
                 Source source = classLoader.source(type);
                 if (null == source) {
                     return null;
+                } else {
+                    return new NameEnvironmentAnswer(source.compilationUnit(), null);
                 }
-                bytes = source.bytes();
-                return null == bytes ? null : new NameEnvironmentAnswer(source.compilationUnit(), null);
             } catch (ClassFormatException e) {
                 throw E.unexpected(e);
             }
