@@ -32,6 +32,7 @@ public class App {
         public static _.Predicate<String> JAVA_SOURCE = S.F.endsWith(".java");
         public static _.Predicate<String> JAR_FILE = S.F.endsWith(".jar");
         public static _.Predicate<String> CONF_FILE = S.F.endsWith(".conf").or(S.F.endsWith(".properties"));
+        public static _.Predicate<String> ROUTES_FILE = _.F.eq(RouteTableRouterBuilder.ROUTES_FILE);
     }
 
     private File appBase;
@@ -96,6 +97,10 @@ public class App {
         classLoader.detectChanges();
     }
 
+    public void restart() {
+        build();
+        refresh();
+    }
 
     public void refresh() {
         initServiceResourceManager();

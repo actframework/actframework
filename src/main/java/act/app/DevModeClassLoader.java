@@ -185,7 +185,7 @@ public class DevModeClassLoader extends AppClassLoader {
 
         File conf = layout.conf(appBase);
         if (null != conf && conf.canRead()) {
-            confChangeDetector = new FsChangeDetector(conf, App.F.CONF_FILE, confChangeListener);
+            confChangeDetector = new FsChangeDetector(conf, App.F.CONF_FILE.or(App.F.ROUTES_FILE), confChangeListener);
         }
 
         File rsrc = layout.resource(appBase);
@@ -223,16 +223,22 @@ public class DevModeClassLoader extends AppClassLoader {
             int len = events.length;
             for (int i = 0; i < len; ++i) {
                 FsEvent e = events[i];
-                if (e.kind() == FsEvent.Kind.CREATE) {
-                    List<String> paths = e.paths();
-                    File[] files = new File[paths.size()];
-                    int idx = 0;
-                    for (String path : paths) {
-                        files[idx++] = new File(path);
-                    }
-                    app().builder().copyResources(files);
-                } else {
-                    Act.requestRestart();
+                List<String> paths = e.paths();
+                File[] files = new File[paths.size()];
+                int idx = 0;
+                for (String path : paths) {
+                    files[idx++] = new File(path);
+                }
+                switch (e.kind()) {
+                    case CREATE:
+                    case MODIFY:
+                        app().builder().copyResources(files);
+                        break;
+                    case DELETE:
+                        app().builder().removeResources(files);
+                        break;
+                    default:
+                        assert false;
                 }
             }
         }

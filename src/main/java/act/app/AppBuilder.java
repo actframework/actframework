@@ -91,6 +91,16 @@ class AppBuilder {
         }
     }
 
+    void removeResources(File ... files) {
+        File base = layout.resource(appBase);
+        int baseLen = base.getAbsolutePath().length();
+        for (File file : files) {
+            String path = file.getAbsolutePath().substring(baseLen);
+            File target = new File(tgtClasses, path);
+            target.delete();
+        }
+    }
+
     void copyRoutes() {
         File routes = layout.routeTable(appBase);
         if (null == routes || !routes.canRead()) return;
