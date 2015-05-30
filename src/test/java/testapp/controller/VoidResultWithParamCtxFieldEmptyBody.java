@@ -6,7 +6,6 @@ import act.controller.Controller;
 import org.osgl.http.H;
 import org.osgl.mvc.annotation.Before;
 import org.osgl.mvc.annotation.GetAction;
-import org.osgl.mvc.result.Result;
 
 import static act.controller.Controller.Util.render;
 import static act.controller.Controller.Util.text;
@@ -16,7 +15,7 @@ public class VoidResultWithParamCtxFieldEmptyBody  {
     @Before
     public void mockFormat(String fmt, AppContext context) {
         if ("json".equals(fmt)) {
-            context.format(H.Format.json);
+            context.accept(H.Format.json);
         }
         context.session().put("foo", "bar");
     }

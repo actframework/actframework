@@ -11,6 +11,7 @@ import org.apache.commons.codec.Charsets;
 import org.osgl._;
 import org.osgl.cache.CacheService;
 import org.osgl.cache.CacheServiceProvider;
+import org.osgl.exception.ConfigurationException;
 import org.osgl.logging.L;
 import org.osgl.logging.Logger;
 import org.osgl.util.E;
@@ -151,6 +152,31 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> {
     private void _mergeHost(AppConfig conf) {
         if (null == get(HOST)) {
             host = conf.host;
+        }
+    }
+
+    private int httpMaxParams = -1;
+    protected T httpMaxParams(int max) {
+        E.illegalArgumentIf(max < 0, "max params cannot be negative number: %s", max);
+        this.httpMaxParams = max;
+        return me();
+    }
+    public int httpMaxParams() {
+        if (-1 == httpMaxParams) {
+            Integer I = get(HTTP_MAX_PARAMS);
+            if (null == I) {
+                I = 1000;
+            }
+            if (I < 0) {
+                throw new ConfigurationException("http.params.max setting cannot be negative number. Found: %s", I);
+            }
+            httpMaxParams = I;
+        }
+        return httpMaxParams;
+    }
+    private void _mergeHttpMaxParams(AppConfig conf) {
+        if (null == get(HTTP_MAX_PARAMS)) {
+            httpMaxParams = conf.httpMaxParams;
         }
     }
 
@@ -610,6 +636,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> {
         _mergeXForwardedProtocol(conf);
         _mergeControllerPackage(conf);
         _mergeHost(conf);
+        _mergeHttpMaxParams(conf);
         _mergePort(conf);
         _mergeEncoding(conf);
         _mergeLocale(conf);

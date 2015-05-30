@@ -27,7 +27,7 @@ public class TemplatePathResolver extends _.Transformer<AppContext, String> {
         if (path.contains(".")) {
             return path;
         }
-        H.Format fmt = context.format();
+        H.Format fmt = context.accept();
         switch (fmt) {
             case html:
             case xml:
@@ -38,7 +38,7 @@ public class TemplatePathResolver extends _.Transformer<AppContext, String> {
             case unknown:
                 return S.builder(path).append(".html").toString();
             default:
-                throw E.unsupport("Request format not supported: %s", fmt);
+                throw E.unsupport("Request accept not supported: %s", fmt);
         }
     }
 }

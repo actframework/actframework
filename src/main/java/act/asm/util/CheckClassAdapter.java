@@ -75,7 +75,7 @@ import java.util.*;
  * <p>
  * If method bytecode has errors, assertion text will show the erroneous
  * instruction number and dump of the failed method with information about
- * locals and stack slot for each instruction. For example (format is -
+ * locals and stack slot for each instruction. For example (accept is -
  * insnNumber locals : stack):
  *
  * <pre>

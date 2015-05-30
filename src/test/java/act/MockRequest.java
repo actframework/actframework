@@ -26,8 +26,8 @@ public class MockRequest extends H.Request<MockRequest> {
     }
 
     @Override
-    public H.Format format() {
-        return super.format();
+    public H.Format accept() {
+        return super.accept();
     }
 
     @Override

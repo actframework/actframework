@@ -100,6 +100,13 @@ public enum AppConfigKey implements ConfigKey {
     HOST("host"),
 
     /**
+     * {@code act.http.params.max} specifies the maximum number of http parameters
+     * this is to prevent the hash collision DOS attack
+     * <p>Default value: {@code 1000}</p>
+     */
+    HTTP_MAX_PARAMS("http.params.max"),
+
+    /**
      * {@code act.locale} specifies the application default locale
      * <p>Default value: {@link java.util.Locale#getDefault}</p>
      */

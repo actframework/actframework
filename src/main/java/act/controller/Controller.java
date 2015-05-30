@@ -290,7 +290,7 @@ public @interface Controller {
         }
 
         private static void setDefaultContextType(H.Request req, H.Response resp) {
-            resp.contentType(req.contentType());
+            resp.contentType(req.contentType().toContentType());
         }
 
         public static Result inferResult(Result r, AppContext appContext) {
@@ -306,7 +306,7 @@ public @interface Controller {
                 }
                 return new RenderJSON(s);
             }
-            H.Format fmt = appContext.format();
+            H.Format fmt = appContext.accept();
             switch (fmt) {
                 case txt:
                 case csv:

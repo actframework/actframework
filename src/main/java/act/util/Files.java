@@ -1,5 +1,6 @@
 package act.util;
 
+import act.app.ProjectLayout;
 import org.osgl._;
 import org.osgl.util.C;
 import org.osgl.util.ListBuilder;
@@ -12,6 +13,10 @@ import java.util.List;
  */
 public enum Files {
     ;
+
+    public static File file(File parent, String path) {
+        return ProjectLayout.Utils.file(parent, path);
+    }
 
     public static List<File> filter(File baseDir, _.F1<String, Boolean> filter) {
         ListBuilder<File> list = ListBuilder.create(500);

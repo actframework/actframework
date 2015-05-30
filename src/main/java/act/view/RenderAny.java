@@ -35,7 +35,7 @@ public class RenderAny extends Result {
 
     // TODO: Allow plugin to support rendering pdf, xls or other binary types
     public void apply(AppContext context) {
-        H.Format fmt = context.format();
+        H.Format fmt = context.accept();
         switch (fmt) {
             case json:
                 List<String> varNames = context.__appRenderArgNames();

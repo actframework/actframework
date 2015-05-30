@@ -27,7 +27,7 @@ public class HelloWorldApp {
     @Before
     public void mockFormat(String fmt) {
         if ("json".equals(fmt)) {
-            context.format(H.Format.json);
+            context.accept(H.Format.json);
         }
         context.session().put("foo", "bar");
     }

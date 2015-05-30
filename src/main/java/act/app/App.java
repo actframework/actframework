@@ -11,10 +11,12 @@ import act.route.Router;
 import act.util.FsChangeDetector;
 import act.util.FsEvent;
 import act.util.FsEventListener;
+import act.util.UploadFileStorageService;
 import org.apache.commons.codec.Charsets;
 import org.osgl._;
 import org.osgl.logging.L;
 import org.osgl.logging.Logger;
+import org.osgl.storage.IStorageService;
 import org.osgl.util.*;
 
 import java.io.File;
@@ -44,9 +46,8 @@ public class App {
     private AppBuilder builder;
     private AppCodeScannerManager scannerManager;
     private AppInterceptorManager interceptorManager;
-
-
     private DependencyInjector<?> dependencyInjector;
+    private IStorageService uploadFileStorageService;
     private ServiceResourceManager serviceResourceManager;
 
     protected App() {
@@ -106,6 +107,7 @@ public class App {
         initServiceResourceManager();
         initInterceptorManager();
         loadConfig();
+        initUploadFileStorageService();
         initRouter();
         initScannerManager();
         loadActScanners();
@@ -127,6 +129,10 @@ public class App {
         Act.hook(this);
     }
 
+    public File tmpDir() {
+        return new File(this.layout().target(appBase), "tmp");
+    }
+
     public AppInterceptorManager interceptorManager() {
         return interceptorManager;
     }
@@ -144,6 +150,10 @@ public class App {
 
     public <T extends DependencyInjector<T>> T injector() {
         return (T) dependencyInjector;
+    }
+
+    public IStorageService uploadFileStorageService() {
+        return uploadFileStorageService;
     }
 
     public String sign(String message) {
@@ -206,6 +216,10 @@ public class App {
             dependencyInjector = null;
         }
         serviceResourceManager = new ServiceResourceManager();
+    }
+
+    private void initUploadFileStorageService() {
+        uploadFileStorageService = UploadFileStorageService.create(this);
     }
 
     private void initRouter() {

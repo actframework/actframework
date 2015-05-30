@@ -4,6 +4,7 @@ import act.Act;
 import org.osgl.util.E;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Properties;
 
 /**
@@ -54,27 +55,27 @@ public interface ProjectLayout {
         MAVEN() {
             @Override
             public File source(File appBase) {
-                return new File(appBase, "src/main/java");
+                return Utils.file(appBase, "src/main/java");
             }
 
             @Override
             public File resource(File appBase) {
-                return new File(appBase, "src/main/resources");
+                return Utils.file(appBase, "src/main/resources");
             }
 
             @Override
             public File lib(File appBase) {
-                return new File(appBase, "src/main/webapp/WEB-INF/lib");
+                return Utils.file(appBase, "src/main/webapp/WEB-INF/lib");
             }
 
             @Override
             public File asset(File appBase) {
-                return new File(appBase, "src/main/webapp/WEB-INF/asset");
+                return Utils.file(appBase, "src/main/webapp/WEB-INF/asset");
             }
 
             @Override
             public File target(File appBase) {
-                return new File(appBase, "target");
+                return Utils.file(appBase, "target");
             }
 
         },
@@ -100,42 +101,42 @@ public interface ProjectLayout {
         PLAY() {
             @Override
             public File source(File appBase) {
-                return new File(appBase, "app");
+                return Utils.file(appBase, "app");
             }
 
             @Override
             public File resource(File appBase) {
-                return new File(appBase, "conf");
+                return Utils.file(appBase, "conf");
             }
 
             @Override
             public File lib(File appBase) {
-                return new File(appBase, "lib");
+                return Utils.file(appBase, "lib");
             }
 
             @Override
             public File asset(File appBase) {
-                return new File(appBase, "public");
+                return Utils.file(appBase, "public");
             }
 
             @Override
             public File target(File appBase) {
-                return new File(appBase, "tmp");
+                return Utils.file(appBase, "tmp");
             }
         },;
 
         @Override
         public File conf(File appBase) {
-            File file = new File(resource(appBase), "app.conf");
+            File file = Utils.file(resource(appBase), "app.conf");
             if (file.exists()) {
                 return file;
             }
-            return new File(resource(appBase), "app.conf");
+            return Utils.file(resource(appBase), "app.conf");
         }
 
         @Override
         public File routeTable(File appBase) {
-            return new File(resource(appBase), "routes");
+            return Utils.file(resource(appBase), "routes");
         }
 
         public static ProjectLayout valueOfIgnoreCase(String s) {
@@ -271,37 +272,48 @@ public interface ProjectLayout {
 
         @Override
         public File source(File appBase) {
-            return new File(appBase, source);
+            return Utils.file(appBase, source);
         }
 
         @Override
         public File lib(File appBase) {
-            return new File(appBase, lib);
+            return Utils.file(appBase, lib);
         }
 
         @Override
         public File routeTable(File appBase) {
-            return new File(appBase, routeTable);
+            return Utils.file(appBase, routeTable);
         }
 
         @Override
         public File resource(File appBase) {
-            return new File(appBase, resource);
+            return Utils.file(appBase, resource);
         }
 
         @Override
         public File asset(File appBase) {
-            return new File(appBase, asset);
+            return Utils.file(appBase, asset);
         }
 
         @Override
         public File conf(File appBase) {
-            return new File(appBase, conf);
+            return Utils.file(appBase, conf);
         }
 
         @Override
         public File target(File appBase) {
-            return new File(appBase, target);
+            return Utils.file(appBase, target);
+        }
+    }
+
+    public enum Utils {
+        ;
+        public static File file(File parent, String path) {
+            try {
+                return new File(parent, path).getCanonicalFile();
+            } catch (IOException e) {
+                throw E.ioException(e);
+            }
         }
     }
 }

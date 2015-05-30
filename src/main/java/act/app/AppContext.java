@@ -2,11 +2,14 @@ package act.app;
 
 import act.Act;
 import act.conf.AppConfig;
+import act.http.MapUtil;
+import act.http.RequestBodyParser;
 import act.view.Template;
 import org.osgl._;
 import org.osgl.concurrent.ContextLocal;
 import org.osgl.http.H;
 import org.osgl.http.H.Cookie;
+import org.osgl.storage.ISObject;
 import org.osgl.util.C;
 import org.osgl.util.E;
 import org.osgl.util.S;
@@ -27,6 +30,7 @@ public class AppContext {
     private Set<Map.Entry<String, String[]>> requestParamCache;
     private Map<String, String> extraParams;
     private Map<String, Object> renderArgs;
+    private volatile Map<String, String[]> bodyParams;
     private Map<String, String[]> allParams;
     private String actionPath; // e.g. com.mycorp.myapp.controller.AbcController.foo
     private Map<String, Object> attributes;
@@ -34,6 +38,7 @@ public class AppContext {
     private String templatePath;
     private State state;
     private Map<String, Object> controllerInstances;
+    private List<ISObject> uploads;
     private boolean localSaved;
 
     private AppContext(App app, H.Request request, H.Response response) {
@@ -77,17 +82,17 @@ public class AppContext {
         return flash;
     }
 
-    public H.Format format() {
-        return req().format();
+    public H.Format accept() {
+        return req().accept();
     }
 
-    public AppContext format(H.Format fmt) {
-        req().format(fmt);
+    public AppContext accept(H.Format fmt) {
+        req().accept(fmt);
         return this;
     }
 
     public boolean isJSON() {
-        return format() == H.Format.json;
+        return accept() == H.Format.json;
     }
 
     public boolean isAjax() {
@@ -104,7 +109,14 @@ public class AppContext {
         if (null != val) {
             return val;
         }
-        return request.paramVal(name);
+        val = request.paramVal(name);
+        if (null == val) {
+            String[] sa = bodyParams().get(name);
+            if (null != sa && sa.length > 0) {
+                val = sa[0];
+            }
+        }
+        return val;
     }
 
     public String[] paramVals(String name) {
@@ -112,11 +124,41 @@ public class AppContext {
         if (null != val) {
             return new String[]{val};
         }
-        return request.paramVals(name);
+        String[] sa = request.paramVals(name);
+        if (null == sa) {
+            sa = bodyParams().get(name);
+        }
+        return sa;
+    }
+
+    private Map<String, String[]> bodyParams() {
+        if (null == bodyParams) {
+            synchronized (this) {
+                if (null == bodyParams) {
+                    Map<String, String[]> map = C.newMap();
+                    H.Method method = request.method();
+                    if (H.Method.POST == method || H.Method.PUT == method) {
+                        RequestBodyParser parser = RequestBodyParser.get(request);
+                        map = parser.parse(this);
+                    }
+                    bodyParams = map;
+                }
+            }
+        }
+        return bodyParams;
     }
 
     public Map<String, String[]> allParams() {
         return allParams;
+    }
+
+    public List<ISObject> uploads() {
+        return C.list(uploads);
+    }
+
+    public AppContext addUpload(ISObject sobj) {
+        uploads.add(sobj);
+        return this;
     }
 
     @SuppressWarnings("unchecked")
@@ -274,6 +316,7 @@ public class AppContext {
         this.template = null;
         this.state = State.DESTROYED;
         this.controllerInstances = null;
+        this.uploads.clear();
         if (localSaved) AppContext.clear();
     }
 
@@ -287,35 +330,31 @@ public class AppContext {
             return requestParamCache;
         }
         requestParamCache = new HashSet<Map.Entry<String, String[]>>();
+        Map<String, String[]> map = C.newMap();
+        // url queries
         Iterator<String> paramNames = request.paramNames().iterator();
         while (paramNames.hasNext()) {
             final String key = paramNames.next();
             final String[] val = request.paramVals(key);
-            Map.Entry<String, String[]> entry = new Map.Entry<String, String[]>() {
-                @Override
-                public String getKey() {
-                    return key;
-                }
-
-                @Override
-                public String[] getValue() {
-                    return val;
-                }
-
-                @Override
-                public String[] setValue(String[] value) {
-                    throw E.unsupport();
-                }
-            };
-            requestParamCache.add(entry);
+            MapUtil.mergeValueInMap(map, key, val);
         }
+        // post bodies
+        Map<String, String[]> map2 = bodyParams();
+        for (String key : map2.keySet()) {
+            String[] val = map2.get(key);
+            if (null != val) {
+                MapUtil.mergeValueInMap(map, key, val);
+            }
+        }
+        requestParamCache.addAll(map.entrySet());
         return requestParamCache;
     }
 
     private void _init() {
-        extraParams = new HashMap<String, String>();
-        renderArgs = new HashMap<String, Object>();
-        attributes = new HashMap<String, Object>();
+        uploads = C.newList();
+        extraParams = C.newMap();
+        renderArgs = C.newMap();
+        attributes = C.newMap();
         final Set<Map.Entry<String, String[]>> paramEntrySet = new AbstractSet<Map.Entry<String, String[]>>() {
             @Override
             public Iterator<Map.Entry<String, String[]>> iterator() {
