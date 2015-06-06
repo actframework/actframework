@@ -1,5 +1,6 @@
 package act.controller.bytecode;
 
+import act.TestBase;
 import act.app.AppByteCodeScanner;
 import act.app.AppCodeScannerManager;
 import act.app.TestingAppClassLoader;
@@ -7,31 +8,27 @@ import act.asm.Type;
 import act.controller.meta.*;
 import act.job.AppJobManager;
 import act.job.meta.JobByteCodeScanner;
+import act.util.Files;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.internal.verification.Times;
 import org.osgl._;
 import org.osgl.http.H;
-import act.TestBase;
-import act.util.Files;
 import org.osgl.util.C;
 import org.osgl.util.E;
 import org.osgl.util.S;
 import testapp.controller.*;
-import testapp.job.InvalidJobService;
 import testapp.model.ModelController;
 import testapp.model.ModelControllerWithAnnotation;
 
 import java.io.File;
 import java.util.List;
 
-import static org.mockito.Matchers.*;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.*;
 import static org.osgl.http.H.Method.*;
-import static org.osgl.http.H.Method.GET;
-import static org.osgl.http.H.Method.PUT;
 
-public class BuiltInByteCodeScannerTest extends TestBase {
+public class ControllerByteCodeScannerTest extends TestBase {
 
     private ControllerClassMetaInfoManager infoSrc;
     private TestingAppClassLoader classLoader;
@@ -104,11 +101,6 @@ public class BuiltInByteCodeScannerTest extends TestBase {
     public void controllerContextPathShallBeAppendToActionPath() {
         scan(WithContextPath.class);
         verify(mockRouter).addMappingIfNotMapped(GET, "/foo/bar", "testapp.controller.WithContextPath.bar");
-    }
-
-    @Test
-    public void methodWithParamShallNotBeRegisteredAsJobMethod() {
-        scan(InvalidJobService.class);
     }
 
     public void verifyWithAppContextNoReturnNoParam() {

@@ -52,7 +52,7 @@ public class AppJobManager extends AppServiceBase<AppJobManager> implements AppE
         executor().submit(runnable);
     }
 
-    _Job jobById(String id) {
+    public _Job jobById(String id) {
         _Job job = jobs.get(id);
         if (null == job) {
             logger.warn("cannot find job by id: %s", id);

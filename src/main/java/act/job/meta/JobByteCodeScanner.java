@@ -89,7 +89,7 @@ public class JobByteCodeScanner extends AppByteCodeScannerBase {
 
         private boolean isEligibleMethod(int access, String name, String desc) {
             // TODO: analyze parameters
-            return isPublic(access) && !isAbstract(access) && !isConstructor(name);
+            return isPublic(access) && !isAbstract(access) && !isConstructor(name) && (desc.startsWith("()"));
         }
 
         private class StringArrayVisitor extends AnnotationVisitor {
