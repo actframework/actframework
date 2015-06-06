@@ -29,6 +29,15 @@ public class AppCodeScannerManager extends AppServiceBase<AppCodeScannerManager>
         return C.list(byteCodeScanners);
     }
 
+    public AppByteCodeScanner byteCodeScannerByClass(Class<? extends AppByteCodeScanner> c) {
+        for (AppByteCodeScanner scanner : byteCodeScanners) {
+            if (scanner.getClass() == c) {
+                return scanner;
+            }
+        }
+        return null;
+    }
+
     public AppCodeScannerManager register(AppSourceCodeScanner sourceCodeScanner) {
         _register(sourceCodeScanner, sourceCodeScanners);
         return this;

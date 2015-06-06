@@ -49,7 +49,7 @@ class ConfigKeyHelper {
         if (key.endsWith(".long") || key.endsWith(".ttl")) {
             return (T) getX(configuration, key, suffixOf(key), defVal, F.TO_LONG);
         }
-        if (key.endsWith(".int") || key.endsWith(".count") || key.endsWith(".times")) {
+        if (key.endsWith(".int") || key.endsWith(".count") || key.endsWith(".times") || key.endsWith(".size")) {
             return (T) getX(configuration, key, suffixOf(key), defVal, F.TO_INT);
         }
         if (key.endsWith(".float")) {

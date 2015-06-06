@@ -1,9 +1,10 @@
 package act.conf;
 
-import act.Constants;
 import act.Act;
+import act.Constants;
 import act.app.App;
 import act.app.AppConfigurator;
+import act.app.AppHolder;
 import act.util.JavaVersion;
 import act.view.TemplatePathResolver;
 import act.view.View;
@@ -24,9 +25,9 @@ import java.util.Set;
 
 import static act.conf.AppConfigKey.*;
 
-public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> {
+public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> implements AppHolder<AppConfig<T>> {
 
-    private static Logger logger = L.get(AppConfig.class);
+    protected static Logger logger = L.get(AppConfig.class);
 
     public static final String CONF_FILE_NAME = "app.conf";
 
@@ -45,12 +46,13 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> {
         this((Map) System.getProperties());
     }
 
-    public void app(App app) {
+    public AppConfig<T> app(App app) {
         E.NPE(app);
         this.app = app;
+        return this;
     }
 
-    App app() {
+    public App app() {
         return app;
     }
 
@@ -177,6 +179,28 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> {
     private void _mergeHttpMaxParams(AppConfig conf) {
         if (null == get(HTTP_MAX_PARAMS)) {
             httpMaxParams = conf.httpMaxParams;
+        }
+    }
+
+    private int jobPoolSize = -1;
+    protected T jobPoolSize(int size) {
+        E.illegalArgumentIf(size < 1, "job pool size cannot be zero or negative number: %s", size);
+        this.jobPoolSize = jobPoolSize;
+        return me();
+    }
+    public int jobPoolSize() {
+        if (-1 == jobPoolSize) {
+            Integer I = get(JOB_POOL_SIZE);
+            if (null == I) {
+                I = 10;
+            }
+            jobPoolSize = I;
+        }
+        return jobPoolSize;
+    }
+    private void _mergeJobPoolSize(AppConfig conf) {
+        if (null == get(JOB_POOL_SIZE)) {
+            jobPoolSize = conf.jobPoolSize;
         }
     }
 
@@ -366,7 +390,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> {
     public String templateHome() {
         if (null == templateHome) {
             templateHome = get(AppConfigKey.TEMPLATE_HOME);
-            if (S.blank(templateHome)) {
+            if (null == templateHome) {
                 templateHome = "default";
             }
         }
@@ -637,6 +661,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> {
         _mergeControllerPackage(conf);
         _mergeHost(conf);
         _mergeHttpMaxParams(conf);
+        _mergeJobPoolSize(conf);
         _mergePort(conf);
         _mergeEncoding(conf);
         _mergeLocale(conf);
@@ -663,7 +688,14 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> {
         }
     }
 
+    @Override
+    protected void releaseResources() {
+        app = null;
+        super.releaseResources();
+    }
+
     protected T me() {
         return _.cast(this);
     }
+
 }

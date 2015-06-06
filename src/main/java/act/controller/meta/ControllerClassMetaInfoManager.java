@@ -17,8 +17,6 @@ import static act.Destroyable.Util.destroyAll;
 
 public class ControllerClassMetaInfoManager extends DestroyableBase {
 
-    private static final Logger logger = L.get(ControllerClassMetaInfoManager.class);
-
     private Map<String, ControllerClassMetaInfo> controllers = C.newMap();
     private Map<Type, List<ControllerClassMetaInfo>> subTypeInfo = C.newMap();
 

@@ -2,9 +2,13 @@ package act.app;
 
 import act.Destroyable;
 import act.util.DestroyableBase;
+import org.osgl.logging.L;
+import org.osgl.logging.Logger;
 import org.osgl.util.E;
 
 public abstract class AppHolderBase<T extends AppHolderBase> extends DestroyableBase implements AppHolder<T>, Destroyable {
+
+    protected static final Logger logger = L.get(App.class);
 
     private App app;
 

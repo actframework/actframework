@@ -57,6 +57,7 @@ public class ControllerEnhancer extends AppByteCodeEnhancer<ControllerEnhancer> 
         if (null == info) {
             return mv;
         }
+        logger.info(">>>About to enhance handler: %s", name);
         return new HandlerEnhancer(mv, info, access, name, desc, signature, exceptions);
     }
 

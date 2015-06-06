@@ -6,16 +6,18 @@ import org.osgl.util.E;
 import org.osgl.util.FastStr;
 import org.osgl.util.S;
 
+import java.util.Map;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 public abstract class SubTypeFinder extends AppCodeScannerPluginBase {
 
-    private _.Func2<App, String, ?> foundHandler;
+    private _.Func2<App, String, Map<Class<? extends AppByteCodeScanner>, Set<String>>> foundHandler;
     private String pkgName;
     private String clsName;
     private Class superType;
 
-    protected SubTypeFinder(Class<?> superType, _.Func2<App, String, ?> foundHandler) {
+    protected SubTypeFinder(Class<?> superType, _.Func2<App, String, Map<Class<? extends AppByteCodeScanner>, Set<String>>> foundHandler) {
         E.NPE(superType, foundHandler);
         this.clsName = superType.getSimpleName();
         this.pkgName = FastStr.of(superType.getName()).beforeLast('.').toString();
@@ -95,7 +97,7 @@ public abstract class SubTypeFinder extends AppCodeScannerPluginBase {
 
     private class ByteCodeSensor extends AppByteCodeScannerBase {
         private ClassDetector detector;
-        private _.Func2<App, String, ?> foundHandler = SubTypeFinder.this.foundHandler;
+        private _.Func2<App, String, Map<Class<? extends AppByteCodeScanner>, Set<String>>> foundHandler = SubTypeFinder.this.foundHandler;
 
         @Override
         protected void reset(String className) {
@@ -120,7 +122,12 @@ public abstract class SubTypeFinder extends AppCodeScannerPluginBase {
         @Override
         public void scanFinished(String className) {
             if (detector.found()) {
-                foundHandler.apply(app(), className);
+                Map<Class<? extends AppByteCodeScanner>, Set<String>> dependencies = foundHandler.apply(app(), className);
+                if (null != dependencies && !dependencies.isEmpty()) {
+                    for (Class<? extends AppByteCodeScanner> c : dependencies.keySet()) {
+                        addDependencyClassToScanner(c, dependencies.get(c));
+                    }
+                }
             }
         }
 

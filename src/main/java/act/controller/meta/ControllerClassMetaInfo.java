@@ -25,8 +25,6 @@ import static act.Destroyable.Util.destroyAll;
  */
 public final class ControllerClassMetaInfo extends DestroyableBase {
 
-    private static final Logger logger = L.get(ControllerClassMetaInfo.class);
-
     private Type type;
     private Type superType;
     private boolean isAbstract = false;

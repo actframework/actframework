@@ -1,16 +1,18 @@
 package act.app;
 
 import act.Act;
+import act.app.event.AppEvent;
+import act.app.event.AppEventManager;
 import act.conf.AppConfLoader;
 import act.conf.AppConfig;
 import act.controller.ControllerSourceCodeScanner;
 import act.controller.bytecode.ControllerByteCodeScanner;
 import act.di.DependencyInjector;
+import act.job.AppJobManager;
+import act.job.meta.JobByteCodeScanner;
+import act.job.meta.JobSourceCodeScanner;
 import act.route.RouteTableRouterBuilder;
 import act.route.Router;
-import act.util.FsChangeDetector;
-import act.util.FsEvent;
-import act.util.FsEventListener;
 import act.util.UploadFileStorageService;
 import org.apache.commons.codec.Charsets;
 import org.osgl._;
@@ -44,7 +46,9 @@ public class App {
     private AppClassLoader classLoader;
     private ProjectLayout layout;
     private AppBuilder builder;
+    private AppEventManager eventManager;
     private AppCodeScannerManager scannerManager;
+    private AppJobManager jobManager;
     private AppInterceptorManager interceptorManager;
     private DependencyInjector<?> dependencyInjector;
     private IStorageService uploadFileStorageService;
@@ -104,17 +108,21 @@ public class App {
     }
 
     public void refresh() {
+        Act.viewManager().reload(this);
         initServiceResourceManager();
+        initEventManager();
         initInterceptorManager();
         loadConfig();
         initUploadFileStorageService();
         initRouter();
+        initJobManager();
         initScannerManager();
         loadActScanners();
         loadBuiltInScanners();
         initClassLoader();
         scanAppCodes();
         loadRoutes();
+        eventManager().emitEvent(AppEvent.START);
     }
 
     public AppBuilder builder() {
@@ -139,6 +147,14 @@ public class App {
 
     public AppCodeScannerManager scannerManager() {
         return scannerManager;
+    }
+
+    public AppEventManager eventManager() {
+        return eventManager;
+    }
+
+    public AppJobManager jobManager() {
+        return jobManager;
     }
 
     public App injector(DependencyInjector<?> dependencyInjector) {
@@ -212,6 +228,7 @@ public class App {
 
     private void initServiceResourceManager() {
         if (null != serviceResourceManager) {
+            eventManager().emitEvent(AppEvent.STOP);
             serviceResourceManager.destroy();
             dependencyInjector = null;
         }
@@ -224,6 +241,14 @@ public class App {
 
     private void initRouter() {
         router = new Router(this);
+    }
+
+    private void initEventManager() {
+        eventManager = new AppEventManager(this);
+    }
+
+    private void initJobManager() {
+        jobManager = new AppJobManager(this);
     }
 
     private void initInterceptorManager() {
@@ -241,6 +266,8 @@ public class App {
     private void loadBuiltInScanners() {
         scannerManager.register(new ControllerSourceCodeScanner());
         scannerManager.register(new ControllerByteCodeScanner());
+        scannerManager.register(new JobSourceCodeScanner());
+        scannerManager.register(new JobByteCodeScanner());
     }
 
     private void loadRoutes() {

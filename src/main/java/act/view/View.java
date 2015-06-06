@@ -1,6 +1,7 @@
 package act.view;
 
 import act.Act;
+import act.app.App;
 import act.app.AppContext;
 import act.conf.AppConfig;
 import act.plugin.Plugin;
@@ -60,4 +61,6 @@ public abstract class View implements Plugin {
      */
     protected void init() {
     }
+
+    protected void reload(App app) {}
 }

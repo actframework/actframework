@@ -27,6 +27,7 @@ import java.io.Serializable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 public class Router extends AppServiceBase<Router> {
@@ -199,6 +200,27 @@ public class Router extends AppServiceBase<Router> {
             }
         }
         return actionNames.contains(action);
+    }
+
+    // TODO: build controllerNames set to accelerate the process
+    public boolean possibleController(String className) {
+        String controllerPackage = appConfig.controllerPackage();
+        if (S.notEmpty(controllerPackage)) {
+            if (className.startsWith(controllerPackage)) {
+                String class2 = className.substring(controllerPackage.length() + 1);
+                if (setContains(actionNames, class2)) {
+                    return true;
+                }
+            }
+        }
+        return setContains(actionNames, className);
+    }
+
+    private static boolean setContains(Set<String> set, String name) {
+        for (String s: set) {
+            if (s.contains(name)) return true;
+        }
+        return false;
     }
 
     public void debug(PrintStream ps) {

@@ -3,13 +3,13 @@ package act.app;
 import act.Act;
 import act.asm.ClassReader;
 import act.asm.ClassWriter;
+import act.boot.BootstrapClassLoader;
 import act.controller.meta.ControllerClassMetaInfo;
 import act.controller.meta.ControllerClassMetaInfoHolder;
 import act.controller.meta.ControllerClassMetaInfoManager;
-import act.util.ByteCodeVisitor;
-import act.util.ClassNames;
-import act.util.Files;
-import act.util.Jars;
+import act.job.meta.JobClassMetaInfo;
+import act.job.meta.JobClassMetaInfoManager;
+import act.util.*;
 import org.osgl._;
 import org.osgl.exception.NotAppliedException;
 import org.osgl.logging.L;
@@ -31,12 +31,13 @@ import static org.osgl._.notNull;
 /**
  * The top level class loader to load a specific application classes into JVM
  */
-public class AppClassLoader extends ClassLoader implements ControllerClassMetaInfoHolder, AppService<AppClassLoader> {
+public class AppClassLoader extends ClassLoader implements ControllerClassMetaInfoHolder, AppService<AppClassLoader>, ActClassLoader {
     protected final static Logger logger = L.get(AppClassLoader.class);
     private App app;
     private Map<String, byte[]> libClsCache = C.newMap();
     private boolean destroyed;
     protected ControllerClassMetaInfoManager controllerInfo = new ControllerClassMetaInfoManager();
+    protected JobClassMetaInfoManager jobInfo = new JobClassMetaInfoManager();
 
     public AppClassLoader(App app) {
         super(Act.class.getClassLoader());
@@ -62,6 +63,7 @@ public class AppClassLoader extends ClassLoader implements ControllerClassMetaIn
     public final void destroy() {
         libClsCache.clear();
         controllerInfo.destroy();
+        jobInfo.destroy();
         releaseResources();
         destroyed = true;
     }
@@ -77,12 +79,31 @@ public class AppClassLoader extends ClassLoader implements ControllerClassMetaIn
         return controllerInfo.controllerMetaInfo(controllerClassName);
     }
 
-    public ControllerClassMetaInfoManager controllerClassMetaInfoManager2() {
+    public ControllerClassMetaInfoManager controllerClassMetaInfoManager() {
         return controllerInfo;
+    }
+
+    public JobClassMetaInfo jobClassMetaInfo(String jobClassName) {
+        return jobInfo.jobMetaInfo(jobClassName);
+    }
+
+    public JobClassMetaInfoManager jobClassMetaInfoManager() {
+        return jobInfo;
     }
 
     public boolean isSourceClass(String className) {
         return false;
+    }
+
+    public Class<?> loadedClass(String name) {
+        Class<?> c = findLoadedClass(name);
+        if (null == c) {
+            ClassLoader p = getParent();
+            if (null != p && (p instanceof ActClassLoader || p instanceof BootstrapClassLoader)) {
+                return ((ActClassLoader)p).loadedClass(name);
+            }
+        }
+        return c;
     }
 
     @Override
@@ -138,19 +159,22 @@ public class AppClassLoader extends ClassLoader implements ControllerClassMetaIn
             cr.accept(theVisitor, 0);
             for (AppByteCodeScanner scanner : scanners) {
                 scanner.scanFinished(className);
-                Set<String> ss = scanner.dependencyClasses();
+                Map<Class<? extends AppByteCodeScanner>, Set<String>> ss = scanner.dependencyClasses();
                 if (ss.isEmpty()) {
                     logger.debug("no dependencies found for %s by scanner %s", className, scanner);
                     continue;
                 }
-                for (String dependencyClass : ss) {
-                    logger.debug("dependencies[%s] found for %s by scanner %s", dependencyClass, className, scanner);
-                    List<AppByteCodeScanner> l = dependencies.get(dependencyClass);
-                    if (null == l) {
-                        l = C.newList();
-                        dependencies.put(dependencyClass, l);
+                for (Class<? extends AppByteCodeScanner> scannerClass : ss.keySet()) {
+                    AppByteCodeScanner scannerA = scannerManager.byteCodeScannerByClass(scannerClass);
+                    for (String dependencyClass : ss.get(scannerClass)) {
+                        logger.debug("dependencies[%s] found for %s by scanner %s", dependencyClass, className, scannerA);
+                        List<AppByteCodeScanner> l = dependencies.get(dependencyClass);
+                        if (null == l) {
+                            l = C.newList();
+                            dependencies.put(dependencyClass, l);
+                        }
+                        if (!l.contains(scanner)) l.add(scannerA);
                     }
-                    if (!l.contains(scanner)) l.add(scanner);
                 }
             }
         }
@@ -164,21 +188,26 @@ public class AppClassLoader extends ClassLoader implements ControllerClassMetaIn
                 visitors.add(scanner.byteCodeVisitor());
             }
             ByteCodeVisitor theVisitor = ByteCodeVisitor.chain(visitors);
-            ClassReader cr = new ClassReader(libClsCache.get(className));
+            ClassReader cr = new ClassReader(bytecodeProvider.apply(className));
             cr.accept(theVisitor, 0);
             for (AppByteCodeScanner scanner : scanners) {
                 scanner.scanFinished(className);
-                Set<String> ss = scanner.dependencyClasses();
+                Map<Class<? extends AppByteCodeScanner>, Set<String>> ss = scanner.dependencyClasses();
                 if (ss.isEmpty()) {
+                    logger.debug("no dependencies found for %s by scanner %s", className, scanner);
                     continue;
                 }
-                for (String dependencyClass : ss) {
-                    List<AppByteCodeScanner> l = dependencies.get(dependencyClass);
-                    if (null == l) {
-                        l = C.newList();
-                        dependencies.put(dependencyClass, l);
+                for (Class<? extends AppByteCodeScanner> scannerClass : ss.keySet()) {
+                    AppByteCodeScanner scannerA = scannerManager.byteCodeScannerByClass(scannerClass);
+                    for (String dependencyClass : ss.get(scannerClass)) {
+                        logger.debug("dependencies[%s] found for %s by scanner %s", dependencyClass, className, scannerA);
+                        List<AppByteCodeScanner> l = dependencies.get(dependencyClass);
+                        if (null == l) {
+                            l = C.newList();
+                            dependencies.put(dependencyClass, l);
+                        }
+                        if (!l.contains(scanner)) l.add(scannerA);
                     }
-                    if (!l.contains(scanner)) l.add(scanner);
                 }
             }
         }
@@ -208,9 +237,24 @@ public class AppClassLoader extends ClassLoader implements ControllerClassMetaIn
         libClsCache.put(ClassNames.sourceFileNameToClassName(base, file.getAbsolutePath().replace(".class", ".java")), bytes);
     }
 
+    protected byte[] loadAppClassFromDisk(String name) {
+        File base = new File(app().layout().target(app().base()), "classes");
+        if (base.canRead() && base.isDirectory()) {
+            String path = ClassNames.classNameToClassFileName(name);
+            File classFile = new File(base, path);
+            if (classFile.canRead()) {
+                return IO.readContent(classFile);
+            }
+        }
+        return null;
+    }
+
     private Class<?> loadAppClass(String name, boolean resolve) {
         byte[] bytecode = appBytecode(name);
-        if (null == bytecode) return null;
+        if (null == bytecode) {
+            bytecode = loadAppClassFromDisk(name);
+            if (null == bytecode) return null;
+        }
         if (!app().config().needEnhancement(name)) {
             Class<?> c = super.defineClass(name, bytecode, 0, bytecode.length, DOMAIN);
             if (resolve) {
@@ -239,6 +283,7 @@ public class AppClassLoader extends ClassLoader implements ControllerClassMetaIn
     }
 
     private byte[] asmEnhance(String className, byte[] bytecode) {
+        if (!enhanceEligible(className)) return bytecode;
         _.Var<ClassWriter> cw = _.var(null);
         ByteCodeVisitor enhancer = Act.enhancerManager().appEnhancer(app, className, cw);
         if (null == enhancer) {
@@ -311,5 +356,10 @@ public class AppClassLoader extends ClassLoader implements ControllerClassMetaIn
             }
         };
         static _.Predicate<String> SAFE_CLASS = S.F.endsWith(".class").and(SYS_CLASS_NAME.negate());
+    }
+
+    protected static boolean enhanceEligible(String name) {
+        boolean sys = name.startsWith("java") || name.startsWith("com.google") || name.startsWith("org.apache") || name.startsWith("org.springframework");
+        return !sys;
     }
 }

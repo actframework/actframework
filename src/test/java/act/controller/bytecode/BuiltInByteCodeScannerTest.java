@@ -5,6 +5,8 @@ import act.app.AppCodeScannerManager;
 import act.app.TestingAppClassLoader;
 import act.asm.Type;
 import act.controller.meta.*;
+import act.job.AppJobManager;
+import act.job.meta.JobByteCodeScanner;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.internal.verification.Times;
@@ -16,6 +18,7 @@ import org.osgl.util.C;
 import org.osgl.util.E;
 import org.osgl.util.S;
 import testapp.controller.*;
+import testapp.job.InvalidJobService;
 import testapp.model.ModelController;
 import testapp.model.ModelControllerWithAnnotation;
 
@@ -28,28 +31,35 @@ import static org.osgl.http.H.Method.*;
 import static org.osgl.http.H.Method.GET;
 import static org.osgl.http.H.Method.PUT;
 
-public class ControllerByteCodeScannerTest extends TestBase {
+public class BuiltInByteCodeScannerTest extends TestBase {
 
     private ControllerClassMetaInfoManager infoSrc;
     private TestingAppClassLoader classLoader;
     private AppCodeScannerManager scannerManager;
-    private AppByteCodeScanner scanner;
+    private AppJobManager jobManager;
+    private ControllerByteCodeScanner controllerScanner;
+    private JobByteCodeScanner jobScanner;
     private File base;
 
     @Before
     public void setup() throws Exception {
         super.setup();
-        scanner = new ControllerByteCodeScanner();
+        controllerScanner = new ControllerByteCodeScanner();
+        jobScanner = new JobByteCodeScanner();
         scannerManager = mock(AppCodeScannerManager.class);
+        jobManager = mock(AppJobManager.class);
         classLoader = new TestingAppClassLoader(mockApp);
-        infoSrc = classLoader.controllerClassMetaInfoManager2();
+        infoSrc = classLoader.controllerClassMetaInfoManager();
         when(mockApp.classLoader()).thenReturn(classLoader);
         when(mockApp.scannerManager()).thenReturn(scannerManager);
+        when(mockApp.jobManager()).thenReturn(jobManager);
         when(mockAppConfig.possibleControllerClass(anyString())).thenReturn(true);
         when(mockRouter.isActionMethod(anyString(), anyString())).thenReturn(false);
-        C.List<AppByteCodeScanner> scanners = C.list(scanner);
+        C.List<AppByteCodeScanner> scanners = _.cast(C.listOf(controllerScanner, jobScanner));
+        //C.List<AppByteCodeScanner> scanners = C.list(controllerScanner);
         when(scannerManager.byteCodeScanners()).thenReturn(scanners);
-        scanner.setApp(mockApp);
+        controllerScanner.setApp(mockApp);
+        jobScanner.setApp(mockApp);
         base = new File("./target/test-classes");
     }
 
@@ -94,6 +104,11 @@ public class ControllerByteCodeScannerTest extends TestBase {
     public void controllerContextPathShallBeAppendToActionPath() {
         scan(WithContextPath.class);
         verify(mockRouter).addMappingIfNotMapped(GET, "/foo/bar", "testapp.controller.WithContextPath.bar");
+    }
+
+    @Test
+    public void methodWithParamShallNotBeRegisteredAsJobMethod() {
+        scan(InvalidJobService.class);
     }
 
     public void verifyWithAppContextNoReturnNoParam() {

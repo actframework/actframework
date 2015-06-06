@@ -163,6 +163,10 @@ public class Source {
         return null;
     }
 
+    public static Source ofInnerClass(File sourceFile, String innerClassName) {
+        return new Source(sourceFile, innerClassName);
+    }
+
     private ICompilationUnit _compilationUnit() {
         return new ICompilationUnit() {
 

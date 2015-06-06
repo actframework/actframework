@@ -64,7 +64,7 @@ public class ControllerEnhancerTest extends TestBase implements ControllerClassM
         scanner = new ControllerByteCodeScanner();
         scanner.setApp(mockApp);
         classLoader = new TestingAppClassLoader(mockApp);
-        infoSrc = classLoader.controllerClassMetaInfoManager2();
+        infoSrc = classLoader.controllerClassMetaInfoManager();
         scannerManager = mock(AppCodeScannerManager.class);
         when(mockApp.classLoader()).thenReturn(classLoader);
         when(mockApp.scannerManager()).thenReturn(scannerManager);

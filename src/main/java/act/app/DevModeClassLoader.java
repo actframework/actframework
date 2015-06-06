@@ -66,6 +66,13 @@ public class DevModeClassLoader extends AppClassLoader {
     }
 
     @Override
+    protected byte[] loadAppClassFromDisk(String name) {
+        File srcRoot = app().layout().source(app().base());
+        preloadSource(srcRoot, name);
+        return bytecodeFromSource(name, true);
+    }
+
+    @Override
     protected byte[] appBytecode(String name, boolean compileSource) {
         byte[] bytecode = super.appBytecode(name, compileSource);
         return null == bytecode && compileSource ? bytecodeFromSource(name, compileSource) : bytecode;
@@ -89,6 +96,22 @@ public class DevModeClassLoader extends AppClassLoader {
                 }
             }
         });
+    }
+
+    private void preloadSource(File sourceRoot, String className) {
+        if (null != sources) {
+            Source source = sources.get(className);
+            if (null != source) {
+                return;
+            }
+        }
+        Source source = Source.ofClass(sourceRoot, className);
+        if (null != source) {
+            if (null == sources) {
+                sources = C.newMap();
+            }
+            sources.put(source.className(), source);
+        }
     }
 
     private void scanSources() {

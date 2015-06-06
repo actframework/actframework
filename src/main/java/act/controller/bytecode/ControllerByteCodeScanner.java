@@ -60,7 +60,7 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
         if (null == classInfoBase) {
             synchronized (this) {
                 if (null == classInfoBase) {
-                    classInfoBase = app().classLoader().controllerClassMetaInfoManager2();
+                    classInfoBase = app().classLoader().controllerClassMetaInfoManager();
                 }
             }
         }
@@ -72,6 +72,10 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
         public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
             logger.trace("Scanning %s", name);
             classInfo.className(name);
+            String className = name.replace('/', '.');
+            if (router.possibleController(className)) {
+                classInfo.isController(true);
+            }
             Type superType = Type.getObjectType(superName);
             classInfo.superType(superType);
             if (isAbstract(access)) {
@@ -82,7 +86,7 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
 
         @Override
         public FieldVisitor visitField(int access, String name, String desc, String signature, Object value) {
-            if (classInfo.isController() && !classInfo.isAbstract() && AsmTypes.APP_CONTEXT_DESC.equals(desc)) {
+            if (classInfo.isController() && AsmTypes.APP_CONTEXT_DESC.equals(desc)) {
                 classInfo.ctxField(name, isPrivate(access));
             }
             return super.visitField(access, name, desc, signature, value);
@@ -215,6 +219,7 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
             @Override
             public void visitEnd() {
                 if (!requireScan()) {
+                    super.visitEnd();
                     return;
                 }
                 if (null == methodInfo) {
@@ -249,6 +254,7 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
                         info.appContextViaLocalStorage();
                     }
                 }
+                super.visitEnd();
             }
 
             private void markRequireScan() {

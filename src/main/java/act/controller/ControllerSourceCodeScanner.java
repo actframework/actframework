@@ -17,6 +17,10 @@ public class ControllerSourceCodeScanner extends AppSourceCodeScannerBase {
 
     @Override
     protected void _visit(int lineNumber, String line, String className) {
+//        if (app().router().possibleController(className)) {
+//            markScanByteCode();
+//            return;
+//        }
         if (S.blank(line)) return;
         if (PTN_ACTION_ANN.matcher(line).matches()) {
             markScanByteCode();

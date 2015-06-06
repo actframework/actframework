@@ -2,6 +2,7 @@ package act.boot.app;
 
 import act.Constants;
 import act.boot.BootstrapClassLoader;
+import act.util.ActClassLoader;
 import act.util.Jars;
 import org.osgl._;
 import org.osgl.util.C;
@@ -17,7 +18,7 @@ import java.util.Map;
 /**
  * This class loader is responsible for loading Act classes
  */
-public class FullStackAppBootstrapClassLoader extends BootstrapClassLoader {
+public class FullStackAppBootstrapClassLoader extends BootstrapClassLoader implements ActClassLoader {
 
     private static final String KEY_CLASSPATH = "java.class.path";
 

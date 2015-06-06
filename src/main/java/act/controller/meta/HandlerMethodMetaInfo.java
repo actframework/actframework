@@ -4,6 +4,8 @@ import act.asm.Label;
 import act.asm.Type;
 import act.handler.builtin.controller.ControllerAction;
 import act.handler.builtin.controller.Handler;
+import act.sys.meta.InvokeType;
+import act.sys.meta.ReturnTypeInfo;
 import act.util.AsmTypes;
 import act.util.DestroyableBase;
 import act.util.Prioritised;

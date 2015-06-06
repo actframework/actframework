@@ -129,6 +129,13 @@ public enum AppConfigKey implements ConfigKey {
     },
 
     /**
+     * {@code job.pool.size} specifies the maximum number of threads
+     * can exists in the application's job manager's thread pool
+     * <p>Default value: {@code 10}</p>
+     */
+    JOB_POOL_SIZE("job.pool.siz"),
+
+    /**
      * {@code act.port} specifies the port the application
      * listen to. This is preferred way to dispatch the
      * request to the application.
@@ -264,7 +271,7 @@ public enum AppConfigKey implements ConfigKey {
      * <p/>
      * <p>Default value: {@code default}</p>
      */
-    TEMPLATE_HOME("template.home", "default"),
+    TEMPLATE_HOME("template.home"),
 
     /**
      * {@code template_path_resolver.impl} specifies the class that

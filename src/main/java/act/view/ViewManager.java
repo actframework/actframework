@@ -1,5 +1,6 @@
 package act.view;
 
+import act.app.App;
 import org.osgl._;
 import org.osgl.exception.UnexpectedException;
 import act.app.AppContext;
@@ -33,6 +34,12 @@ public class ViewManager {
                 throw new UnexpectedException("Implicit variable[%s] has already been registered", var.name());
             }
             implicitVariables.add(var);
+        }
+    }
+
+    public void reload(App app) {
+        for (View view : viewList) {
+            view.reload(app);
         }
     }
 

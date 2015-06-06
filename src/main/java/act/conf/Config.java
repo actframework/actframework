@@ -1,5 +1,8 @@
 package act.conf;
 
+import act.Destroyable;
+import act.util.DestroyableBase;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -7,7 +10,7 @@ import java.util.Map;
 /**
  * Base class for XxConfig
  */
-public abstract class Config<E extends ConfigKey> {
+public abstract class Config<E extends ConfigKey> extends DestroyableBase {
 
     static final String PREFIX = "act.";
     static final int PREFIX_LEN = PREFIX.length();
@@ -28,6 +31,13 @@ public abstract class Config<E extends ConfigKey> {
 
     public Config() {
         this((Map) System.getProperties());
+    }
+
+    @Override
+    protected void releaseResources() {
+        raw.clear();
+        data.clear();
+        super.releaseResources();
     }
 
     /**

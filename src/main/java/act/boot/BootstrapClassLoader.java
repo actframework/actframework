@@ -1,6 +1,7 @@
 package act.boot;
 
 import act.boot.server.ServerBootstrapClassLoader;
+import act.util.ActClassLoader;
 import org.osgl._;
 import org.osgl.logging.L;
 import org.osgl.logging.Logger;
@@ -18,7 +19,7 @@ import java.util.Set;
 /**
  * Base class for Act class loaders
  */
-public abstract class BootstrapClassLoader extends ClassLoader implements PluginClassProvider {
+public abstract class BootstrapClassLoader extends ClassLoader implements PluginClassProvider, ActClassLoader {
 
     protected static final Logger logger = L.get(BootstrapClassLoader.class);
 
@@ -32,6 +33,16 @@ public abstract class BootstrapClassLoader extends ClassLoader implements Plugin
         super(_getParent());
     }
 
+    public Class<?> loadedClass(String name) {
+        Class<?> c = findLoadedClass(name);
+        if (null == c) {
+            ClassLoader p = getParent();
+            if (null != p && p instanceof ActClassLoader) {
+                return ((ActClassLoader)p).loadedClass(name);
+            }
+        }
+        return c;
+    }
 
     private static ClassLoader _getParent() {
         ClassLoader cl = Thread.currentThread().getContextClassLoader();
@@ -99,8 +110,10 @@ public abstract class BootstrapClassLoader extends ClassLoader implements Plugin
     }
 
     protected static final Set<String> protectedClasses = C.set(
+            BootstrapClassLoader.class.getName(),
             ServerBootstrapClassLoader.class.getName(),
             FullStackAppBootstrapClassLoader.class.getName(),
+            ActClassLoader.class.getName(),
             PluginClassProvider.class.getName()
             //Plugin.class.getName(),
             //ClassFilter.class.getName()

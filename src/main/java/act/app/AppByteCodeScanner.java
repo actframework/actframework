@@ -2,6 +2,7 @@ package act.app;
 
 import act.util.ByteCodeVisitor;
 
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -18,7 +19,7 @@ public interface AppByteCodeScanner extends AppCodeScanner {
      * to check if there are dependency class needs to be scanned
      * again
      */
-    Set<String> dependencyClasses();
+    Map<Class<? extends AppByteCodeScanner>, Set<String>> dependencyClasses();
 
     /**
      * Called when scanning for one class finished

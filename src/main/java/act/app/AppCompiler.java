@@ -18,6 +18,7 @@ import org.osgl.logging.L;
 import org.osgl.logging.Logger;
 import org.osgl.util.C;
 import org.osgl.util.E;
+import org.osgl.util.S;
 
 import java.util.Locale;
 import java.util.Map;
@@ -199,10 +200,17 @@ class AppCompiler extends DestroyableBase {
                     }
                     clazzName.append(compoundName[j]);
                 }
+                String name = clazzName.toString();
+                String innerName = name;
+                if (name.contains("$")) name = S.before(name, "$");
 
                 logger.trace("Compiled %s", clazzName);
 
-                classLoader.source(clazzName.toString()).compiled(clazzFile.getBytes());
+                Source source = classLoader.source(innerName);
+                if (null == source) {
+                    source = Source.ofInnerClass(classLoader.source(name).file(), innerName);
+                }
+                source.compiled(clazzFile.getBytes());
             }
         }
     };

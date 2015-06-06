@@ -108,4 +108,10 @@ public class RythmView extends View {
 
         return new RythmEngine(p);
     }
+
+    @Override
+    protected void reload(App app) {
+        engines.remove(app);
+        super.reload(app);
+    }
 }

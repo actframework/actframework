@@ -2,6 +2,8 @@ package act.app;
 
 import org.osgl.util.C;
 
+import java.util.Collection;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -9,19 +11,42 @@ import java.util.Set;
  */
 public abstract class AppByteCodeScannerBase extends AppCodeScannerBase implements AppByteCodeScanner {
     
-    private Set<String> dependencyClasses;
+    private Map<Class<? extends AppByteCodeScanner>, Set<String>> dependencyClasses;
 
     protected final void reset() {
-        dependencyClasses = C.newSet();
+        dependencyClasses = C.newMap();
     }
 
     protected final void addDependencyClass(String className) {
-        dependencyClasses.add(className);
+        Set<String> set = dependencyClasses.get(getClass());
+        if (null == set) {
+            set = C.newSet();
+            dependencyClasses.put(getClass(), set);
+        }
+        set.add(className);
+    }
+
+    protected final void addDependencyClassToScanner(Class<? extends AppByteCodeScanner> scannerClass, String className) {
+        Set<String> set = dependencyClasses.get(scannerClass);
+        if (null == set) {
+            set = C.newSet();
+            dependencyClasses.put(scannerClass, set);
+        }
+        set.add(className);
+    }
+
+    protected final void addDependencyClassToScanner(Class<? extends AppByteCodeScanner> scannerClass, Collection<String> classNames) {
+        Set<String> set = dependencyClasses.get(scannerClass);
+        if (null == set) {
+            set = C.newSet();
+            dependencyClasses.put(scannerClass, set);
+        }
+        set.addAll(classNames);
     }
 
     @Override
-    public final Set<String> dependencyClasses() {
-        return C.set(dependencyClasses);
+    public final Map<Class<? extends AppByteCodeScanner>, Set<String>> dependencyClasses() {
+        return C.map(dependencyClasses);
     }
 
 }
