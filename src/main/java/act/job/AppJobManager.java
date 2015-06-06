@@ -8,6 +8,8 @@ import act.app.event.AppEventListener;
 import org.osgl.util.C;
 
 import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadPoolExecutor;
 
@@ -48,8 +50,12 @@ public class AppJobManager extends AppServiceBase<AppJobManager> implements AppE
         }
     }
 
-    public void start(Runnable runnable) {
+    public void now(Runnable runnable) {
         executor().submit(runnable);
+    }
+
+    public <T> Future<T> now(Callable<T> callable) {
+        return executor().submit(callable);
     }
 
     public _Job jobById(String id) {

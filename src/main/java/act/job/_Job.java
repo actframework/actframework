@@ -103,7 +103,7 @@ class _Job extends DestroyableBase implements Runnable {
 
     private void invokeParallelJobs() {
         for (_Job alongWith : parallelJobs) {
-            manager.start(alongWith);
+            manager.now(alongWith);
         }
     }
 
