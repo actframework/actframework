@@ -150,8 +150,14 @@ abstract class JobTrigger {
         void schedule(AppJobManager manager, _Job job) {
             DateTime now = DateTime.now();
             ExecutionTime executionTime = ExecutionTime.forCron(cron);
-            Duration nextExecution = executionTime.timeToNextExecution(now);
-            manager.executor().schedule(job, nextExecution.getStandardSeconds(), TimeUnit.SECONDS);
+            Duration nextExecution = executionTime.timeToNextExecution(now.withDurationAdded(1, 1));
+            long seconds = nextExecution.getStandardSeconds();
+            int times = 1;
+            while (seconds == 0) {
+                nextExecution = executionTime.timeToNextExecution(now.withDurationAdded(1, times++));
+                seconds = nextExecution.getStandardSeconds();
+            }
+            manager.executor().schedule(job, seconds, TimeUnit.SECONDS);
         }
 
         @Override
