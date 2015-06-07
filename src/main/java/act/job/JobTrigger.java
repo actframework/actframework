@@ -142,6 +142,11 @@ abstract class JobTrigger {
         _Cron(String expression) {
             cron = parser.parse(expression);
         }
+
+        @Override
+        void schedule(AppJobManager manager, _Job job) {
+            cron.getCronDefinition().
+        }
     }
 
     private abstract static class _Periodical extends JobTrigger {

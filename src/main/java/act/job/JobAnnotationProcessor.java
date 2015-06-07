@@ -6,6 +6,7 @@ import act.job.meta.JobClassMetaInfo;
 import act.job.meta.JobMethodMetaInfo;
 import act.job.meta.ReflectedJobInvoker;
 import org.osgl.util.E;
+import org.osgl.util.S;
 
 import java.lang.annotation.Annotation;
 
@@ -24,13 +25,13 @@ public class JobAnnotationProcessor extends AppHolderBase<JobAnnotationProcessor
         }
         _Job job = createMethodJob(method);
         if (Cron.class.isAssignableFrom(anno)) {
-            registerCron(job, v.toString());
+            registerCron(job, evaluateExpression(v.toString(), anno));
         } else if (AlongWith.class.isAssignableFrom(anno)) {
             registerAlongWith(job, v.toString());
         } else if (Every.class.isAssignableFrom(anno)) {
-            registerEvery(job, v.toString());
+            registerEvery(job, evaluateExpression(v.toString(), anno));
         } else if (FixedDelay.class.isAssignableFrom(anno)) {
-            registerFixedDelay(job, v.toString());
+            registerFixedDelay(job, evaluateExpression(v.toString(), anno));
         } else if (InvokeAfter.class.isAssignableFrom(anno)) {
             registerInvokeAfter(job, v.toString());
         } else if (InvokeBefore.class.isAssignableFrom(anno)) {
@@ -44,6 +45,21 @@ public class JobAnnotationProcessor extends AppHolderBase<JobAnnotationProcessor
         } else {
             throw E.unsupport("Unknown job annotation class: %s", anno.getName());
         }
+    }
+
+    private String evaluateExpression(String expression, Class<? extends Annotation> annoClass) {
+        String prefix = annoClass.getSimpleName();
+        if (S.eq("FixedDelay", prefix)) {
+            prefix = "fixed-delay";
+        }
+        String ret = expression.trim();
+        if (ret.startsWith(prefix)) {
+            ret = (String) app().config().get(expression);
+            if (S.blank(expression)) {
+                throw E.invalidConfiguration("Expression configuration not found: %s", expression);
+            }
+        }
+        return ret;
     }
 
     private void registerCron(_Job job, String expression) {

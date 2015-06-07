@@ -1,5 +1,7 @@
 package act.route;
 
+import act.app.App;
+import act.app.AppContext;
 import act.app.AppServiceBase;
 import act.conf.AppConfig;
 import act.controller.ParamNames;
@@ -8,7 +10,7 @@ import act.handler.RequestHandler;
 import act.handler.RequestHandlerResolver;
 import act.handler.RequestHandlerResolverBase;
 import act.handler.builtin.Echo;
-import act.handler.builtin.ExternalFileGetter;
+import act.handler.builtin.Redirect;
 import act.handler.builtin.StaticFileGetter;
 import act.handler.builtin.controller.RequestHandlerProxy;
 import org.osgl._;
@@ -17,11 +19,9 @@ import org.osgl.http.util.Path;
 import org.osgl.logging.L;
 import org.osgl.logging.Logger;
 import org.osgl.mvc.result.NotFound;
-import act.app.App;
-import act.app.AppContext;
-import act.handler.builtin.Redirect;
 import org.osgl.util.*;
 
+import java.io.File;
 import java.io.PrintStream;
 import java.io.Serializable;
 import java.util.Iterator;
@@ -52,8 +52,8 @@ public class Router extends AppServiceBase<Router> {
         if (null == lookup) {
             lookup = new RequestHandlerResolverBase() {
                 @Override
-                public RequestHandler resolve(CharSequence payload) {
-                    return new RequestHandlerProxy(payload.toString(), app());
+                public RequestHandler resolve(CharSequence payload, App app) {
+                    return new RequestHandlerProxy(payload.toString(), app);
                 }
             };
         }
@@ -285,12 +285,12 @@ public class Router extends AppServiceBase<Router> {
         if (S.notEmpty(directive)) {
             RequestHandlerResolver resolver = resolvers.get(action);
             RequestHandler handler = null == resolver ?
-                    BuiltInHandlerResolver.tryResolve(directive, payload) :
-                    resolver.resolve(payload);
+                    BuiltInHandlerResolver.tryResolve(directive, payload, app()) :
+                    resolver.resolve(payload, app());
             E.unsupportedIf(null == handler, "cannot find action handler by directive: %s", directive);
             return handler;
         } else {
-            RequestHandler handler = handlerLookup.resolve(payload);
+            RequestHandler handler = handlerLookup.resolve(payload, app());
             E.unsupportedIf(null == handler, "cannot find action handler: %s", action);
             actionNames.add(payload);
             return handler;
@@ -340,7 +340,7 @@ public class Router extends AppServiceBase<Router> {
      * fast URL routing
      */
     private static class Node implements Serializable {
-        static final Node newRoot() {
+        static Node newRoot() {
             return new Node(-1);
         }
 
@@ -505,46 +505,38 @@ public class Router extends AppServiceBase<Router> {
     private static enum BuiltInHandlerResolver implements RequestHandlerResolver {
         echo() {
             @Override
-            public RequestHandler resolve(CharSequence msg) {
+            public RequestHandler resolve(CharSequence msg, App app) {
                 return new Echo(msg.toString());
             }
         },
         redirect() {
             @Override
-            public RequestHandler resolve(CharSequence payload) {
+            public RequestHandler resolve(CharSequence payload, App app) {
                 return new Redirect(payload.toString());
             }
         },
-        staticdir() {
+        file() {
             @Override
-            public RequestHandler resolve(CharSequence base) {
-                return new StaticFileGetter(base.toString());
-            }
-        },
-        staticfile() {
-            @Override
-            public RequestHandler resolve(CharSequence base) {
-                return new StaticFileGetter(base.toString(), true);
-            }
-        },
-        externaldir() {
-            @Override
-            public RequestHandler resolve(CharSequence base) {
-                return new ExternalFileGetter(base.toString());
+            public RequestHandler resolve(CharSequence base, App app) {
+                return new StaticFileGetter(app.file(base.toString()));
             }
         },
         externalfile() {
             @Override
-            public RequestHandler resolve(CharSequence base) {
-                return new ExternalFileGetter(base.toString(), true);
+            public RequestHandler resolve(CharSequence base, App app) {
+                File file = new File(base.toString());
+                if (!file.canRead()) {
+                    logger.warn("External file not found: %s", file.getPath());
+                }
+                return new StaticFileGetter(file);
             }
         }
         ;
 
-        private static RequestHandler tryResolve(CharSequence directive, CharSequence payload) {
+        private static RequestHandler tryResolve(CharSequence directive, CharSequence payload, App app) {
             String s = directive.toString().toLowerCase();
             try {
-                return valueOf(s).resolve(payload);
+                return valueOf(s).resolve(payload, app);
             } catch (IllegalArgumentException e) {
                 return null;
             }

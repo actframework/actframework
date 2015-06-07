@@ -8,6 +8,7 @@ import act.conf.AppConfig;
 import act.controller.ControllerSourceCodeScanner;
 import act.controller.bytecode.ControllerByteCodeScanner;
 import act.di.DependencyInjector;
+import act.handler.builtin.StaticFileGetter;
 import act.job.AppJobManager;
 import act.job.meta.JobByteCodeScanner;
 import act.job.meta.JobSourceCodeScanner;
@@ -16,6 +17,7 @@ import act.route.Router;
 import act.util.UploadFileStorageService;
 import org.apache.commons.codec.Charsets;
 import org.osgl._;
+import org.osgl.http.H;
 import org.osgl.logging.L;
 import org.osgl.logging.Logger;
 import org.osgl.storage.IStorageService;
@@ -139,6 +141,10 @@ public class App {
 
     public File tmpDir() {
         return new File(this.layout().target(appBase), "tmp");
+    }
+
+    public File file(String path) {
+        return new File(home(), path);
     }
 
     public AppInterceptorManager interceptorManager() {
@@ -271,6 +277,7 @@ public class App {
     }
 
     private void loadRoutes() {
+        loadBuiltInRoutes();
         logger.debug("loading app routing table: %s ...", appBase.getPath());
         File routes = RuntimeDirs.routes(this);
         if (!(routes.isFile() && routes.canRead())) {
@@ -280,6 +287,10 @@ public class App {
         }
         List<String> lines = IO.readLines(routes);
         new RouteTableRouterBuilder(lines).build(router);
+    }
+
+    private void loadBuiltInRoutes() {
+        router().addMapping(H.Method.GET, "/asset/", new StaticFileGetter(layout().asset(base())));
     }
 
     private void initClassLoader() {

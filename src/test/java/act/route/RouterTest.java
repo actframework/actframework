@@ -3,6 +3,7 @@ package act.route;
 import act.controller.ParamNames;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Matchers;
 import org.mockito.Mockito;
 import org.osgl.http.H;
 import org.osgl.mvc.result.NotFound;
@@ -11,6 +12,7 @@ import act.conf.AppConfig;
 import act.handler.RequestHandler;
 import act.handler.builtin.StaticFileGetter;
 
+import java.io.File;
 import java.util.Map;
 import java.util.Properties;
 
@@ -71,31 +73,31 @@ public class RouterTest extends RouterTestBase {
 
     @Test
     public void routeWithStaticDir() {
-        router.addMapping(H.Method.GET, "/public", "staticDir:/public");
+        router.addMapping(H.Method.GET, "/public", "file:/public");
         RequestHandler handler = router.getInvoker(H.Method.GET, "/public/foo/bar.txt", ctx);
         yes(handler instanceof StaticFileGetter);
         yes(handler.supportPartialPath());
-        eq("/public", fieldVal(handler, "base"));
+        eq(new File(BASE, "/public"), fieldVal(handler, "base"));
     }
 
     @Test
     public void overrideExistingRouting() {
         routeWithStaticDir();
-        router.addMapping(H.Method.GET, "/public", "staticDir:/private");
+        router.addMapping(H.Method.GET, "/public", "file:/private");
         RequestHandler handler = router.getInvoker(H.Method.GET, "/public/foo/bar.txt", ctx);
         yes(handler instanceof StaticFileGetter);
         yes(handler.supportPartialPath());
-        eq("/private", fieldVal(handler, "base"));
+        eq(new File(BASE, "/private"), fieldVal(handler, "base"));
     }
 
     @Test
     public void doNotOverrideExistingRouting() {
         routeWithStaticDir();
-        router.addMappingIfNotMapped(H.Method.GET, "/public", "staticDir:/private");
+        router.addMappingIfNotMapped(H.Method.GET, "/public", "file:/private");
         RequestHandler handler = router.getInvoker(H.Method.GET, "/public/foo/bar.txt", ctx);
         yes(handler instanceof StaticFileGetter);
         yes(handler.supportPartialPath());
-        eq("/public", fieldVal(handler, "base"));
+        eq(new File(BASE, "/public"), fieldVal(handler, "base"));
     }
 
     @Test

@@ -49,6 +49,7 @@ public @interface Controller {
         private static final Ok OK = Ok.INSTANCE;
         private static final NotFound NOT_FOUND = NotFound.INSTANCE;
         private static final Forbidden FORBIDDEN = Forbidden.INSTANCE;
+        private static final BadRequest BAD_REQUEST = BadRequest.INSTANCE;
 
         /**
          * Returns an {@link Ok} result
@@ -155,11 +156,21 @@ public @interface Controller {
             }
         }
 
+        public static BadRequest badRequest() {
+            return BAD_REQUEST;
+        }
+
         /**
          * Returns a {@link Forbidden} result
          */
         public static Forbidden forbidden() {
             return FORBIDDEN;
+        }
+
+        public static void forbiddenIf(boolean test) {
+            if (test) {
+                throw forbidden();
+            }
         }
 
         /**

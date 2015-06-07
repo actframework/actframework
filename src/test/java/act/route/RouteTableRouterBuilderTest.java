@@ -1,6 +1,8 @@
 package act.route;
 
+import act.app.App;
 import org.junit.Test;
+import org.mockito.Matchers;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
@@ -12,6 +14,9 @@ import act.handler.builtin.Echo;
 import act.handler.builtin.StaticFileGetter;
 import act.TestBase;
 
+import java.io.File;
+
+import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.when;
 import static org.osgl.http.H.Method.*;
@@ -23,7 +28,7 @@ public class RouteTableRouterBuilderTest extends RouterTestBase {
 
     @Override
     protected void provisionControllerLookup(RequestHandlerResolver controllerLookup) {
-        when(controllerLookup.resolve(anyString())).thenAnswer(new Answer<RequestHandler>() {
+        when(controllerLookup.resolve(anyString(), any(App.class))).thenAnswer(new Answer<RequestHandler>() {
             @Override
             public RequestHandler answer(InvocationOnMock invocation) throws Throwable {
                 return new NamedMockHandler((String) invocation.getArguments()[0]);
@@ -65,10 +70,10 @@ public class RouteTableRouterBuilderTest extends RouterTestBase {
 
     @Test
     public void withBuiltInHandler() {
-        addRouteMap("GET /public staticDir:/public");
+        addRouteMap("GET /public file:/public");
         RequestHandler h = router.getInvoker(GET, "/public/file1.txt", ctx);
         yes(h instanceof StaticFileGetter);
-        eq("/public", TestBase.fieldVal(h, "base"));
+        eq(new File("target/test-classes/public"), TestBase.fieldVal(h, "base"));
     }
 
     @Test

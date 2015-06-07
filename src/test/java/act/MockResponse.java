@@ -12,9 +12,10 @@ import java.util.Locale;
 public class MockResponse extends H.Response<MockResponse> {
 
     private String contentType;
-    private String encoding;
-    private Locale locale;
+    private String encoding = "utf-8";
+    private Locale locale = Locale.getDefault();
     private Writer writer;
+    public int status = -1;
     private OutputStream os;
 
     private long len;
@@ -102,7 +103,8 @@ public class MockResponse extends H.Response<MockResponse> {
 
     @Override
     public MockResponse status(int sc) {
-        return null;
+        this.status = sc;
+        return this;
     }
 
     @Override

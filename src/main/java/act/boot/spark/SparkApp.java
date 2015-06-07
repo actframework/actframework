@@ -9,7 +9,6 @@ import act.handler.DelegateRequestHandler;
 import act.handler.RequestHandler;
 import act.handler.RequestHandlerBase;
 import act.handler.builtin.Echo;
-import act.handler.builtin.ExternalFileGetter;
 import act.handler.builtin.Redirect;
 import act.handler.builtin.StaticFileGetter;
 import act.route.Router;
@@ -25,6 +24,7 @@ import act.app.App;
 import org.osgl.util.C;
 import org.osgl.util.E;
 
+import java.io.File;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
@@ -113,7 +113,7 @@ public final class SparkApp extends App {
     }
 
     public static void staticFileLocation(String path, String location) {
-        _router().addMapping(H.Method.GET, path,  filteredHandler(path, new StaticFileGetter(location, false)));
+        _router().addMapping(H.Method.GET, path,  filteredHandler(path, new StaticFileGetter(location, app)));
         _start();
     }
 
@@ -122,7 +122,7 @@ public final class SparkApp extends App {
     }
 
     public static void externalFileLocation(String path, String location) {
-        _router().addMapping(H.Method.GET, path, filteredHandler(path, new ExternalFileGetter(location, false)));
+        _router().addMapping(H.Method.GET, path, filteredHandler(path, new StaticFileGetter(new File(location))));
         _start();
     }
 
