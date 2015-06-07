@@ -5,7 +5,10 @@ import act.app.AppServiceBase;
 import act.app.AppThreadFactory;
 import act.app.event.AppEvent;
 import act.app.event.AppEventListener;
+import org.osgl._;
+import org.osgl.exception.NotAppliedException;
 import org.osgl.util.C;
+import org.osgl.util.S;
 
 import java.util.Map;
 import java.util.concurrent.Callable;
@@ -52,6 +55,36 @@ public class AppJobManager extends AppServiceBase<AppJobManager> implements AppE
 
     public void now(Runnable runnable) {
         executor().submit(runnable);
+    }
+
+    public void beforeAppStart(final Runnable runnable) {
+        jobById(JOB_APP_START).addPrecedenceJob(new _Job(S.uuid(), this, new _.F0() {
+            @Override
+            public Object apply() throws NotAppliedException, _.Break {
+                runnable.run();
+                return null;
+            }
+        }));
+    }
+
+    public void afterAppStart(final Runnable runnable) {
+        jobById(JOB_APP_START).addFollowingJob(new _Job(S.uuid(), this, new _.F0() {
+            @Override
+            public Object apply() throws NotAppliedException, _.Break {
+                runnable.run();
+                return null;
+            }
+        }));
+    }
+
+    public void beforeAppStop(final Runnable runnable) {
+        jobById(JOB_APP_SHUTDOWN).addFollowingJob(new _Job(S.uuid(), this, new _.F0() {
+            @Override
+            public Object apply() throws NotAppliedException, _.Break {
+                runnable.run();
+                return null;
+            }
+        }));
     }
 
     public <T> Future<T> now(Callable<T> callable) {

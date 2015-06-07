@@ -305,8 +305,8 @@ public class AppContext {
         this.allParams = null;
         this.extraParams = null;
         this.requestParamCache = null;
-        this.renderArgs = null;
-        this.attributes = null;
+        this.renderArgs.clear();
+        this.attributes.clear();
         this.template = null;
         this.app = null;
         // xio impl might need this this.request = null;

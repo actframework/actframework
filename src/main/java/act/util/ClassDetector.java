@@ -10,6 +10,9 @@ import org.osgl.logging.L;
 import org.osgl.logging.Logger;
 import org.osgl.util.C;
 import org.osgl.util.E;
+import org.osgl.util.S;
+
+import java.lang.annotation.Annotation;
 
 public abstract class ClassDetector extends ByteCodeVisitor {
 
@@ -63,8 +66,11 @@ public abstract class ClassDetector extends ByteCodeVisitor {
         @Override
         public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
             super.visit(version, access, name, signature, superName, interfaces);
-
-            final String expected = filter.superType().getName();
+            Class<?> superType = filter.superType();
+            if (null == superType) {
+                return; // we will check annotation type anyway
+            }
+            final String expected = superType.getName();
             if (checkName(expected, superName)) {
                 found = true;
                 return;
@@ -82,10 +88,25 @@ public abstract class ClassDetector extends ByteCodeVisitor {
         @Override
         public AnnotationVisitor visitAnnotation(String desc, boolean visible) {
             AnnotationVisitor av = super.visitAnnotation(desc, visible);
-            if (found || !isExtendsAnnotation(desc)) {
+            if (found) {
                 return av;
             }
-            return new ExtendsAnnotationVisitor(av, filter.superType().getName());
+            if (isExtendsAnnotation(desc)) {
+                Class<?> superType = filter.superType();
+                if (null != superType) {
+                    return new ExtendedAnnotationVisitor(av, superType.getName());
+                } else {
+                    return av;
+                }
+            }
+            Class<? extends Annotation> annoType = filter.annotationType();
+            if (null == annoType) {
+                return av;
+            }
+            if (isAnnotation(annoType, desc)) {
+                found = true;
+            }
+            return av;
         }
 
         private boolean checkName(String expected, String found) {
@@ -93,11 +114,11 @@ public abstract class ClassDetector extends ByteCodeVisitor {
             return type.getClassName().equals(expected);
         }
 
-        private final class ExtendsAnnotationVisitor extends AnnotationVisitor {
+        private final class ExtendedAnnotationVisitor extends AnnotationVisitor {
 
             private String expected;
 
-            public ExtendsAnnotationVisitor(AnnotationVisitor av, String expected) {
+            public ExtendedAnnotationVisitor(AnnotationVisitor av, String expected) {
                 super(ASM5, av);
                 this.expected = expected;
             }
@@ -111,7 +132,11 @@ public abstract class ClassDetector extends ByteCodeVisitor {
     }
 
     private static boolean isExtendsAnnotation(String desc) {
-        return Extends.class.getName().equals(Type.getType(desc).getClassName());
+        return isAnnotation(Extends.class, desc);
+    }
+
+    private static boolean isAnnotation(Class<? extends Annotation> annoType, String desc) {
+        return S.eq(annoType.getName(), Type.getType(desc).getClassName());
     }
 
     public static ClassDetector chain(ClassWriter cw, ClassFilter... filters) {

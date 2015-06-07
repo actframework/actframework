@@ -1,4 +1,4 @@
-package act.app;
+package act.app.conf;
 
 import act.conf.AppConfig;
 import act.route.Router;

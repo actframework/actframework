@@ -6,24 +6,24 @@ import org.osgl.util.E;
 import org.osgl.util.FastStr;
 import org.osgl.util.S;
 
+import java.lang.annotation.Annotation;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 
-public abstract class SubTypeFinder extends AppCodeScannerPluginBase {
+public abstract class AnnotatedTypeFinder extends AppCodeScannerPluginBase {
 
     private _.Func2<App, String, Map<Class<? extends AppByteCodeScanner>, Set<String>>> foundHandler;
-    private String pkgName;
     private String clsName;
-    private Class<?> superType;
+    private String pkgName;
+    private Class<? extends Annotation> annoType;
 
-    protected SubTypeFinder(Class<?> superType, _.Func2<App, String, Map<Class<? extends AppByteCodeScanner>, Set<String>>> foundHandler) {
-        E.NPE(superType, foundHandler);
-        this.clsName = superType.getSimpleName();
-        this.pkgName = FastStr.of(superType.getName()).beforeLast('.').toString();
-        this.superType = superType;
+    protected AnnotatedTypeFinder(Class<? extends Annotation> annoType, _.Func2<App, String, Map<Class<? extends AppByteCodeScanner>, Set<String>>> foundHandler) {
+        E.NPE(annoType, foundHandler);
+        this.clsName = annoType.getSimpleName();
+        this.pkgName = FastStr.of(annoType.getName()).beforeLast('.').toString();
+        this.annoType = annoType;
         this.foundHandler = foundHandler;
-        logger.info("pkg: %s, cls: %s", pkgName, clsName);
     }
 
     @Override
@@ -44,7 +44,6 @@ public abstract class SubTypeFinder extends AppCodeScannerPluginBase {
     private class SourceCodeSensor extends AppSourceCodeScannerBase {
 
         private boolean pkgFound;
-        private final Pattern PATTERN = Pattern.compile(".*@Extends\\(\\s*" + clsName + "\\.class\\s*\\).*");
 
         @Override
         protected void reset(String className) {
@@ -54,11 +53,6 @@ public abstract class SubTypeFinder extends AppCodeScannerPluginBase {
 
         @Override
         protected void _visit(int lineNumber, String line, String className) {
-            if (PATTERN.matcher(line).matches()) {
-                markScanByteCode();
-                logFound(className);
-                return;
-            }
             if (!pkgFound) {
                 if (line.contains(pkgName)) {
                     pkgFound = true;
@@ -74,7 +68,7 @@ public abstract class SubTypeFinder extends AppCodeScannerPluginBase {
         }
 
         protected void logFound(String className) {
-            logger.info("Subtype of %s detected: %s", S.builder(pkgName).append(".").append(clsName), className);
+            logger.info("[%s]annotated type detected: %s", S.builder(pkgName).append(".").append(clsName), className);
         }
 
         @Override
@@ -82,9 +76,13 @@ public abstract class SubTypeFinder extends AppCodeScannerPluginBase {
             return true;
         }
 
+        private String key() {
+            return pkgName + clsName;
+        }
+
         @Override
         public int hashCode() {
-            return _.hc(PATTERN, SourceCodeSensor.class);
+            return _.hc(pkgName, clsName, SourceCodeSensor.class);
         }
 
         @Override
@@ -94,7 +92,7 @@ public abstract class SubTypeFinder extends AppCodeScannerPluginBase {
             }
             if (obj instanceof SourceCodeSensor) {
                 SourceCodeSensor that = (SourceCodeSensor)obj;
-                return _.eq(that.PATTERN, this.PATTERN);
+                return _.eq(that.key(), this.key());
             }
             return false;
         }
@@ -102,12 +100,12 @@ public abstract class SubTypeFinder extends AppCodeScannerPluginBase {
 
     private class ByteCodeSensor extends AppByteCodeScannerBase {
         private ClassDetector detector;
-        private _.Func2<App, String, Map<Class<? extends AppByteCodeScanner>, Set<String>>> foundHandler = SubTypeFinder.this.foundHandler;
+        private _.Func2<App, String, Map<Class<? extends AppByteCodeScanner>, Set<String>>> foundHandler = AnnotatedTypeFinder.this.foundHandler;
 
         @Override
         protected void reset(String className) {
             super.reset(className);
-            detector = ClassDetector.of(new DescendantClassFilter(superType) {
+            detector = ClassDetector.of(new AnnotatedClassFilter(annoType) {
                 @Override
                 public void found(Class clazz) {
                 }

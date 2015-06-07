@@ -1,5 +1,8 @@
-package act.app;
+package act.app.conf;
 
+import act.app.App;
+import act.app.AppByteCodeScanner;
+import act.app.AppClassLoader;
 import act.controller.bytecode.ControllerByteCodeScanner;
 import act.util.SubTypeFinder;
 import org.osgl._;
@@ -19,7 +22,7 @@ public class AppConfigPlugin extends SubTypeFinder {
         super(AppConfigurator.class, new _.F2<App, String, Map<Class<? extends AppByteCodeScanner>, Set<String>>>() {
             @Override
             public Map<Class<? extends AppByteCodeScanner>, Set<String>> apply(App app, String className) throws NotAppliedException, _.Break {
-                AppConfiguratorClass cl = new AppConfiguratorClass(app.classLoader());
+                AppConfiguratorClassLoader cl = new AppConfiguratorClassLoader(app.classLoader());
                 Class<? extends AppConfigurator> c = _.classForName(className, cl);
                 AppConfigurator<?> conf = _.newInstance(c);
                 conf.app(app);
@@ -37,9 +40,9 @@ public class AppConfigPlugin extends SubTypeFinder {
         return true;
     }
 
-    private static class AppConfiguratorClass extends AppClassLoader {
+    private static class AppConfiguratorClassLoader extends AppClassLoader {
         AppClassLoader p;
-        protected AppConfiguratorClass(AppClassLoader parent) {
+        protected AppConfiguratorClassLoader(AppClassLoader parent) {
             super(parent.app());
             p = parent;
         }

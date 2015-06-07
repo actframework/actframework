@@ -2,6 +2,7 @@ package act.app;
 
 import act.Act;
 import act.util.ClassFilter;
+import act.util.DescendantClassFilter;
 import org.osgl._;
 import act.plugin.Plugin;
 
@@ -27,15 +28,10 @@ public abstract class ProjectLayoutProbe implements Plugin {
         Act.mode().appScanner().register(this);
     }
 
-    public static final ClassFilter<ProjectLayoutProbe> PLUGIN_FILTER = new ClassFilter<ProjectLayoutProbe>() {
+    public static final DescendantClassFilter<ProjectLayoutProbe> PLUGIN_FILTER = new DescendantClassFilter<ProjectLayoutProbe>(ProjectLayoutProbe.class) {
         @Override
         public void found(Class<? extends ProjectLayoutProbe> clazz) {
             Act.mode().appScanner().register(_.newInstance(clazz));
-        }
-
-        @Override
-        public Class<ProjectLayoutProbe> superType() {
-            return ProjectLayoutProbe.class;
         }
     };
 

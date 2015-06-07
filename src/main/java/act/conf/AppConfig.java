@@ -3,7 +3,7 @@ package act.conf;
 import act.Act;
 import act.Constants;
 import act.app.App;
-import act.app.AppConfigurator;
+import act.app.conf.AppConfigurator;
 import act.app.AppHolder;
 import act.util.JavaVersion;
 import act.view.TemplatePathResolver;
