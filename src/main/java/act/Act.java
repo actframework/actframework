@@ -158,7 +158,7 @@ public final class Act {
     }
 
     private static void start(boolean singleAppServer) {
-        Banner.print("0.0.1-SNAPSHOT");
+        Banner.print("0.0.2-SNAPSHOT");
         loadConfig();
         //initExecuteService();
         initEnhancerManager();

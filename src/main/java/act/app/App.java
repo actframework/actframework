@@ -17,6 +17,7 @@ import act.route.Router;
 import act.util.UploadFileStorageService;
 import org.apache.commons.codec.Charsets;
 import org.osgl._;
+import org.osgl.exception.UnexpectedException;
 import org.osgl.http.H;
 import org.osgl.logging.L;
 import org.osgl.logging.Logger;
@@ -24,6 +25,7 @@ import org.osgl.storage.IStorageService;
 import org.osgl.util.*;
 
 import java.io.File;
+import java.security.InvalidKeyException;
 import java.util.List;
 
 /**
@@ -183,11 +185,35 @@ public class App {
     }
 
     public String encrypt(String message) {
-        return Crypto.encryptAES(message, config().secret());
+        try {
+            return Crypto.encryptAES(message, config().secret());
+        } catch (UnexpectedException e) {
+            Throwable cause = e.getCause();
+            if (cause instanceof InvalidKeyException) {
+                logger.error("Cannot encrypt/decrypt! Please download Java Crypto Extension pack from Oracle: http://www.oracle.com/technetwork/java/javase/tech/index-jsp-136007.html");
+                if (Act.isDev()) {
+                    logger.warn("Application will keep running with no encrypt/decrypt facilities in Dev mode");
+                    return Codec.encodeBASE64(message);
+                }
+            }
+            throw e;
+        }
     }
 
     public String decrypt(String message) {
-        return Crypto.decryptAES(message, config().secret());
+        try {
+            return Crypto.decryptAES(message, config().secret());
+        } catch (UnexpectedException e) {
+            Throwable cause = e.getCause();
+            if (cause instanceof InvalidKeyException) {
+                logger.error("Cannot encrypt/decrypt! Please download Java Crypto Extension pack from Oracle: http://www.oracle.com/technetwork/java/javase/tech/index-jsp-136007.html");
+                if (Act.isDev()) {
+                    logger.warn("Application will keep running with no encrypt/decrypt facilities in Dev mode");
+                    return new String(Codec.decodeBASE64(message));
+                }
+            }
+            throw e;
+        }
     }
 
     public <T> T newInstance(Class<T> clz) {
