@@ -5,7 +5,10 @@ import act.conf.AppConfig;
 import com.cronutils.model.CronType;
 import com.cronutils.model.definition.CronDefinition;
 import com.cronutils.model.definition.CronDefinitionBuilder;
+import com.cronutils.model.time.ExecutionTime;
 import com.cronutils.parser.CronParser;
+import org.joda.time.DateTime;
+import org.joda.time.Duration;
 import org.osgl._;
 import org.osgl.exception.NotAppliedException;
 import org.osgl.logging.L;
@@ -145,7 +148,15 @@ abstract class JobTrigger {
 
         @Override
         void schedule(AppJobManager manager, _Job job) {
-            cron.getCronDefinition().
+            DateTime now = DateTime.now();
+            ExecutionTime executionTime = ExecutionTime.forCron(cron);
+            Duration nextExecution = executionTime.timeToNextExecution(now);
+            manager.executor().schedule(job, nextExecution.getStandardSeconds(), TimeUnit.SECONDS);
+        }
+
+        @Override
+        void scheduleFollowingCalls(AppJobManager manager, _Job job) {
+            schedule(manager, job);
         }
     }
 
