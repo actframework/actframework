@@ -212,7 +212,7 @@ public final class SparkApp extends App {
     }
 
     private static RequestHandler filteredHandler(String path, RequestHandler handler) {
-        return new FilteredHandler(path, handler);
+        return new FilteredHandler(path, (RequestHandlerBase)handler);
     }
 
     private static RequestHandler constant(final Result result) {
@@ -228,7 +228,7 @@ public final class SparkApp extends App {
         private Pattern ptn;
 
         Filter(Pattern ptn, RequestHandler realHandler) {
-            super(realHandler);
+            super((RequestHandlerBase)realHandler);
             E.NPE(ptn, realHandler);
             this.ptn = ptn;
         }
@@ -270,7 +270,7 @@ public final class SparkApp extends App {
         private String path;
 
         FilteredHandler(String path, RequestHandler realHandler) {
-            super(realHandler);
+            super((RequestHandlerBase)realHandler);
             this.path = path;
         }
 

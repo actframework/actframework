@@ -122,7 +122,7 @@ public class AppClassLoader extends ClassLoader implements ControllerClassMetaIn
         }
     }
 
-    protected void scan2() {
+    protected void scan() {
         scanByteCode(libClsCache.keySet(), bytecodeLookup);
     }
 

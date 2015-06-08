@@ -172,7 +172,7 @@ public class ControllerByteCodeScannerTest extends TestBase {
         for (File file : files) {
             classLoader.preloadClassFile(base, file);
         }
-        classLoader.scan2();
+        classLoader.scan();
         infoSrc.mergeActionMetaInfo();
     }
 

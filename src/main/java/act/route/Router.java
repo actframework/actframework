@@ -5,10 +5,7 @@ import act.app.AppContext;
 import act.app.AppServiceBase;
 import act.conf.AppConfig;
 import act.controller.ParamNames;
-import act.handler.DelegateRequestHandler;
-import act.handler.RequestHandler;
-import act.handler.RequestHandlerResolver;
-import act.handler.RequestHandlerResolverBase;
+import act.handler.*;
 import act.handler.builtin.Echo;
 import act.handler.builtin.Redirect;
 import act.handler.builtin.StaticFileGetter;
@@ -447,7 +444,7 @@ public class Router extends AppServiceBase<Router> {
 
         Node handler(RequestHandler handler) {
             E.NPE(handler);
-            this.handler = handler.requireResolveContext() ? new ContextualHandler(handler) : handler;
+            this.handler = handler.requireResolveContext() ? new ContextualHandler((RequestHandlerBase)handler) : handler;
             return this;
         }
 
@@ -544,12 +541,12 @@ public class Router extends AppServiceBase<Router> {
     }
 
     private static class ContextualHandler extends DelegateRequestHandler {
-        protected ContextualHandler(RequestHandler next) {
+        protected ContextualHandler(RequestHandlerBase next) {
             super(next);
         }
-
         @Override
         public void handle(AppContext context) {
+            context.attribute(AppContext.ATTR_HANDLER, realHandler());
             context.resolve();
             super.handle(context);
         }

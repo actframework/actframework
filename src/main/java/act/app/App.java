@@ -329,7 +329,7 @@ public class App {
     }
 
     private void scanAppCodes() {
-        classLoader().scan2();
+        classLoader().scan();
         //classLoader().scan();
     }
 

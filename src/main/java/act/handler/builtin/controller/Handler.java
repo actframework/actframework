@@ -36,4 +36,10 @@ public abstract class Handler<T extends Handler> implements Comparable<T> {
         return obj.getClass().equals(getClass());
     }
 
+    public void accept(Visitor visitor) {}
+
+    public interface Visitor {
+        ActionHandlerInvoker.Visitor invokerVisitor();
+    }
+
 }

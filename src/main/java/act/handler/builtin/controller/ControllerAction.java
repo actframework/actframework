@@ -19,4 +19,9 @@ public class ControllerAction extends ActionHandler<ControllerAction> {
     public Result handle(AppContext appContext) {
         return handlerInvoker.handle(appContext);
     }
+
+    @Override
+    public void accept(Visitor visitor) {
+        handlerInvoker.accept(visitor.invokerVisitor());
+    }
 }

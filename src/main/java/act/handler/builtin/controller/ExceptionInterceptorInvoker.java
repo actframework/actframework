@@ -6,4 +6,5 @@ import act.app.AppContext;
 
 public interface ExceptionInterceptorInvoker extends Prioritised {
     Result handle(Exception e, AppContext appContext);
+    void accept(ActionHandlerInvoker.Visitor visitor);
 }

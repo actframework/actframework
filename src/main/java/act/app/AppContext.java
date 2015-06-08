@@ -22,6 +22,8 @@ import java.util.*;
  */
 public class AppContext {
 
+    public static final String ATTR_HANDLER = "__act_handler__";
+
     private App app;
     private H.Request request;
     private H.Response response;

@@ -13,7 +13,7 @@ public class TestingAppClassLoader extends AppClassLoader {
     }
 
     @Override
-    public void scan2() {
-        super.scan2();
+    public void scan() {
+        super.scan();
     }
 }

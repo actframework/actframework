@@ -29,7 +29,7 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
 
     private static Logger logger = L.get(RequestHandlerProxy.class);
 
-    protected static enum CacheStrategy {
+    protected enum CacheStrategy {
         NO_CACHE() {
             @Override
             public Result cached(AppContext appContext, CacheService cache) {
@@ -245,6 +245,34 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
             if (info.appContextInjection().injectVia().isLocal()) {
                 requireContextLocal = true;
             }
+        }
+    }
+
+    public void accept(Handler.Visitor visitor) {
+        for (BeforeInterceptor i: globalBeforeInterceptors) {
+            i.accept(visitor);
+        }
+        for (BeforeInterceptor i: beforeInterceptors) {
+            i.accept(visitor);
+        }
+        actionHandler.accept(visitor);
+        for (AfterInterceptor i: afterInterceptors) {
+            i.accept(visitor);
+        }
+        for (AfterInterceptor i: globalAfterInterceptors) {
+            i.accept(visitor);
+        }
+        for (FinallyInterceptor i: finallyInterceptors) {
+            i.accept(visitor);
+        }
+        for (FinallyInterceptor i: globalFinallyInterceptors) {
+            i.accept(visitor);
+        }
+        for (ExceptionInterceptor i: exceptionInterceptors) {
+            i.accept(visitor);
+        }
+        for (ExceptionInterceptor i: globalExceptionInterceptors) {
+            i.accept(visitor);
         }
     }
 

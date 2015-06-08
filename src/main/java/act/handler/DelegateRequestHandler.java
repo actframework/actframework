@@ -7,8 +7,8 @@ import org.osgl.util.E;
  * Base class to implement handler delegation chain
  */
 public class DelegateRequestHandler extends RequestHandlerBase {
-    private RequestHandler handler_;
-    protected DelegateRequestHandler(RequestHandler handler) {
+    private RequestHandlerBase handler_;
+    protected DelegateRequestHandler(RequestHandlerBase handler) {
         E.NPE(handler);
         this.handler_ = handler;
     }
@@ -32,4 +32,8 @@ public class DelegateRequestHandler extends RequestHandlerBase {
         return handler_;
     }
 
+    @Override
+    public RequestHandlerBase realHandler() {
+        return handler_.realHandler();
+    }
 }

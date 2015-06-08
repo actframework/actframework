@@ -6,9 +6,7 @@ import act.util.FsEvent;
 import act.util.FsEventListener;
 import org.osgl._;
 import org.osgl.exception.NotAppliedException;
-import act.conf.AppConfig;
 import act.controller.meta.ControllerClassMetaInfo;
-import act.route.Router;
 import act.util.Files;
 import org.osgl.util.C;
 
@@ -60,8 +58,8 @@ public class DevModeClassLoader extends AppClassLoader {
     }
 
     @Override
-    protected void scan2() {
-        super.scan2();
+    protected void scan() {
+        super.scan();
         scanSources();
     }
 

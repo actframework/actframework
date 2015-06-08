@@ -1,0 +1,49 @@
+var emails = ['jillers21+00@gmail.com',
+'jillers21+01@gmail.com',
+'jillers21+02@gmail.com',
+'jillers21+03@gmail.com',
+'jillers21+04@gmail.com',
+'jillers21+05@gmail.com',
+'jillers21+06@gmail.com',
+'jillers21+07@gmail.com',
+'jillers21+08@gmail.com',
+'jillers21+09@gmail.com',
+'jillers21+010@gmail.com',
+'jillers21+011@gmail.com',
+'jillers21+012@gmail.com',
+'jillers21+013@gmail.com',
+'jillers21+014@gmail.com',
+'jillers21+015@gmail.com',
+'jillers21+016@gmail.com',
+'jillers21+017@gmail.com',
+'jillers21+018@gmail.com',
+'jillers21+019@gmail.com'];
+
+var tmpl = {
+           	"_id" : ObjectId("53f2a2b6e4b085a0f451910a"),
+           	"_class" : "com.pixolut.mrb.bi.models.User",
+           	"fn" : "Rominder",
+           	"ln" : "Dodd",
+           	"email" : "rominder.dodd@macquarie.com",
+           	"accids" : [ ],
+           	"perms" : {
+
+           	},
+           	"locks" : {
+
+           	},
+           	"priv" : "MRB_ADMIN",
+           	"lastlogin" : ISODate("2014-10-09T03:20:33.572Z"),
+           	"role" : "other",
+           	"active" : true,
+           	"version" : NumberLong(211),
+           	"_modified" : ISODate("2014-10-09T03:20:33.573Z")
+};
+for(var i = 0; i < emails.length; ++i) {
+  var email = emails[i];
+  tmpl._id = new ObjectId();
+  tmpl.email = email;
+  tmpl.fn = "testuser" + i;
+  tmpl.ln = "macquarie";
+  db.user.save(tmpl);
+}

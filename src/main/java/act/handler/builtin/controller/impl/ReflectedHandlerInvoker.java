@@ -58,16 +58,16 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo>
         }
 
         paramTypes = paramTypes();
+        try {
+            method = controllerClass.getMethod(handlerMetaInfo.name(), paramTypes);
+        } catch (NoSuchMethodException e) {
+            throw E.unexpected(e);
+        }
         if (!handlerMetaInfo.isStatic()) {
             constructorAccess = ConstructorAccess.get(controllerClass);
             methodAccess = MethodAccess.get(controllerClass);
             handlerIndex = methodAccess.getIndex(handlerMetaInfo.name(), paramTypes);
         } else {
-            try {
-                method = controllerClass.getMethod(handlerMetaInfo.name(), paramTypes);
-            } catch (NoSuchMethodException e) {
-                throw E.unexpected(e);
-            }
             method.setAccessible(true);
         }
     }
@@ -75,6 +75,14 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo>
     @Override
     public int priority() {
         return handler.priority();
+    }
+
+    public interface ReflectedHandlerInvokerVisitor extends Visitor, _.Func2<Class<?>, Method, Void> {}
+
+    @Override
+    public void accept(Visitor visitor) {
+        ReflectedHandlerInvokerVisitor rv = (ReflectedHandlerInvokerVisitor)visitor;
+        rv.apply(controllerClass, method);
     }
 
     public Result handle(AppContext appContext) {
@@ -234,6 +242,11 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo>
         public Result handle(AppContext appContext) {
             return invoker.handle(appContext);
         }
+
+        @Override
+        public void accept(Visitor visitor) {
+            invoker.accept(visitor.invokerVisitor());
+        }
     }
 
     private static class _After extends AfterInterceptor {
@@ -247,6 +260,16 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo>
         @Override
         public Result handle(Result result, AppContext appContext) {
             return invoker.handle(result, appContext);
+        }
+
+        @Override
+        public void accept(Visitor visitor) {
+            invoker.accept(visitor.invokerVisitor());
+        }
+
+        @Override
+        public void accept(ActionHandlerInvoker.Visitor visitor) {
+            invoker.accept(visitor);
         }
     }
 
@@ -262,6 +285,16 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo>
         public Result handle(Exception e, AppContext appContext) {
             return invoker.handle(e, appContext);
         }
+
+        @Override
+        public void accept(ActionHandlerInvoker.Visitor visitor) {
+            invoker.accept(visitor);
+        }
+
+        @Override
+        public void accept(Visitor visitor) {
+            invoker.accept(visitor.invokerVisitor());
+        }
     }
 
     private static class _Finally extends FinallyInterceptor {
@@ -275,6 +308,11 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo>
         @Override
         public void handle(AppContext appContext) {
             invoker.handle(appContext);
+        }
+
+        @Override
+        public void accept(Visitor visitor) {
+            invoker.accept(visitor.invokerVisitor());
         }
     }
 
