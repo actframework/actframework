@@ -10,6 +10,7 @@ import act.app.RequestRefreshClassLoader;
 import act.app.RequestServerRestart;
 import act.handler.RequestHandler;
 import act.route.Router;
+import org.osgl.mvc.result.Result;
 import org.osgl.util.E;
 
 public class NetworkClient extends _.F1<AppContext, Void> {
@@ -38,7 +39,7 @@ public class NetworkClient extends _.F1<AppContext, Void> {
         try {
             RequestHandler rh = router().getInvoker(method, url, ctx);
             rh.handle(ctx);
-        } catch (NotFound r) {
+        } catch (Result r) {
             r.apply(req, ctx.resp());
         } finally {
             ctx.clear();

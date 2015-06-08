@@ -282,6 +282,7 @@ public class AppContext {
         resolveSession();
         resolveFlash();
         state = State.SESSION_RESOLVED;
+        Act.sessionManager().fireSessionResolved(this);
     }
 
     /**

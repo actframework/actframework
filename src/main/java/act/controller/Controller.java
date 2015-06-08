@@ -205,6 +205,10 @@ public @interface Controller {
             return new ServerError(e, message, args);
         }
 
+        public static Redirect redirect(String url, Object ... args) {
+            return new Redirect(url, args);
+        }
+
         /**
          * Returns a {@link RenderText} result with specified message template
          * and args. The final message is rendered with the template and arguments using

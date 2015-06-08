@@ -1,6 +1,7 @@
 package act.util;
 
 import act.Act;
+import act.app.AppServiceBase;
 import org.apache.commons.codec.Charsets;
 import org.osgl._;
 import org.osgl.http.H;
@@ -35,6 +36,10 @@ public class SessionManager {
     private Map<App, CookieResolver> resolvers = C.newMap();
     private CookieResolver theResolver = null;
 
+    public SessionManager() {
+
+    }
+
     public void register(Listener listener) {
         if (!registry.contains(listener)) registry.add(listener);
     }
@@ -50,8 +55,11 @@ public class SessionManager {
 
     public Session resolveSession(AppContext context) {
         Session session = getResolver(context).resolveSession(context);
-        sessionResolved(session, context);
         return session;
+    }
+
+    public void fireSessionResolved(AppContext ctx) {
+        sessionResolved(ctx.session(), ctx);
     }
 
     public H.Flash resolveFlash(AppContext context) {

@@ -249,6 +249,7 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
     }
 
     public void accept(Handler.Visitor visitor) {
+        ensureAgentsReady();
         for (BeforeInterceptor i: globalBeforeInterceptors) {
             i.accept(visitor);
         }
