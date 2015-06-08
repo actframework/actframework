@@ -39,6 +39,15 @@ public class SessionManager {
         if (!registry.contains(listener)) registry.add(listener);
     }
 
+    public <T extends Listener> T findListener(Class<T> clz) {
+        for (Listener l: registry) {
+            if (clz.isAssignableFrom(l.getClass())) {
+                return (T)l;
+            }
+        }
+        return null;
+    }
+
     public Session resolveSession(AppContext context) {
         Session session = getResolver(context).resolveSession(context);
         sessionResolved(session, context);
