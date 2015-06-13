@@ -4,6 +4,7 @@ import act.app.AppByteCodeScannerBase;
 import act.asm.*;
 import act.controller.Controller;
 import act.controller.meta.*;
+import act.util.GenericAnnoInfo;
 import act.util.AsmTypes;
 import org.osgl._;
 import org.osgl.http.H;
@@ -12,12 +13,15 @@ import org.osgl.logging.Logger;
 import org.osgl.mvc.annotation.With;
 import act.route.Router;
 import act.util.ByteCodeVisitor;
+import org.osgl.mvc.util.Binder;
 import org.osgl.util.C;
+import org.osgl.util.E;
 import org.osgl.util.ListBuilder;
 import org.osgl.util.S;
 
 import java.lang.annotation.Annotation;
 import java.util.List;
+import java.util.Map;
 
 /**
  * New controller scanner implementation
@@ -180,6 +184,8 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
             private boolean requireScan;
             private boolean isRoutedMethod;
             private HandlerMethodMetaInfo methodInfo;
+            private Map<Integer, List<ParamAnnoInfoTrait>> paramAnnoInfoList = C.newMap();
+            private Map<Integer, List<GenericAnnoInfo>> genericParamAnnoInfoList = C.newMap();
 
             ActionMethodVisitor(boolean isRoutedMethod, MethodVisitor mv, int access, String methodName, String desc, String signature, String[] exceptions) {
                 super(ASM5, mv);
@@ -217,6 +223,27 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
             }
 
             @Override
+            public AnnotationVisitor visitParameterAnnotation(int parameter, String desc, boolean visible) {
+                AnnotationVisitor av = super.visitParameterAnnotation(parameter, desc, visible);
+                Type type = Type.getType(desc);
+                if (_.eq(type, AsmTypes.PARAM.asmType())) {
+                    return new ParamAnnotationVisitor(av, parameter);
+                } else if (_.eq(type, AsmTypes.BIND.asmType())) {
+                    return new BindAnnotationVisitor(av, parameter);
+                } else {
+                    //return av;
+                    GenericAnnoInfo info = new GenericAnnoInfo(type);
+                    List<GenericAnnoInfo> list = genericParamAnnoInfoList.get(parameter);
+                    if (null == list) {
+                        list = C.newList();
+                        genericParamAnnoInfoList.put(parameter, list);
+                    }
+                    list.add(info);
+                    return new GenericAnnoInfo.Visitor(av, info);
+                }
+            }
+
+            @Override
             public void visitEnd() {
                 if (!requireScan()) {
                     super.visitEnd();
@@ -245,6 +272,12 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
                         info.appContextViaParam(i);
                     }
                     ParamMetaInfo param = new ParamMetaInfo().type(type);
+                    List<ParamAnnoInfoTrait> paraAnnoList = paramAnnoInfoList.get(i);
+                    if (null != paraAnnoList) {
+                        for (ParamAnnoInfoTrait trait : paraAnnoList) {
+                            trait.attachTo(param);
+                        }
+                    }
                     info.addParam(param);
                 }
                 if (!ctxByParam) {
@@ -351,7 +384,7 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
             private class ActionAnnotationVisitor extends AnnotationVisitor implements Opcodes {
 
                 List<H.Method> httpMethods = C.newList();
-                String path;
+                List<String> paths = C.newList();
 
                 public ActionAnnotationVisitor(AnnotationVisitor av, H.Method method) {
                     super(ASM5, av);
@@ -361,22 +394,31 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
                 }
 
                 @Override
-                public void visit(String name, Object value) {
+                public AnnotationVisitor visitArray(String name) {
+                    AnnotationVisitor av = super.visitArray(name);
                     if ("value".equals(name)) {
-                        path = value.toString();
+                        return new AnnotationVisitor(ASM5, av) {
+                            @Override
+                            public void visit(String name, Object value) {
+                                super.visit(name, value);
+                                paths.add((String) value);
+                            }
+                        };
+                    } else if ("methods".equals(name)) {
+                        return new AnnotationVisitor(ASM5, av) {
+                            @Override
+                            public void visitEnum(String name, String desc, String value) {
+                                super.visitEnum(name, desc, value);
+                                String enumClass = Type.getType(desc).getClassName();
+                                if (H.Method.class.getName().equals(enumClass)) {
+                                    H.Method method = H.Method.valueOf(value);
+                                    httpMethods.add(method);
+                                }
+                            }
+                        };
+                    } else {
+                        return av;
                     }
-                }
-
-                @Override
-                public void visitEnum(String name, String desc, String value) {
-                    if (null == name) {
-                        name = Type.getType(desc).getClassName();
-                    }
-                    if (H.Method.class.getName().equals(name)) {
-                        H.Method method = H.Method.valueOf(value);
-                        httpMethods.add(method);
-                    }
-                    super.visitEnum(name, desc, value);
                 }
 
                 @Override
@@ -388,22 +430,115 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
                     StringBuilder sb = S.builder(classInfo.className().replace('/', '.')).append(".").append(methodName);
                     String action = sb.toString();
 
-                    String actionPath = path;
-                    String ctxPath = classInfo.contextPath();
-                    if (!(S.blank(ctxPath) || "/".equals(ctxPath))) {
-                        if (ctxPath.endsWith("/")) {
-                            ctxPath = ctxPath.substring(0, ctxPath.length() - 1);
+                    for (String actionPath: paths) {
+                        String ctxPath = classInfo.contextPath();
+                        if (!(S.blank(ctxPath) || "/".equals(ctxPath))) {
+                            if (ctxPath.endsWith("/")) {
+                                ctxPath = ctxPath.substring(0, ctxPath.length() - 1);
+                            }
+                            sb = new StringBuilder(ctxPath);
+                            if (!actionPath.startsWith("/")) {
+                                sb.append("/");
+                            }
+                            sb.append(actionPath);
+                            actionPath = sb.toString();
                         }
-                        sb = new StringBuilder(ctxPath);
-                        if (!actionPath.startsWith("/")) {
-                            sb.append("/");
+                        for (H.Method m : httpMethods) {
+                            router.addMappingIfNotMapped(m, actionPath, action);
                         }
-                        sb.append(actionPath);
-                        actionPath = sb.toString();
                     }
+                }
+            }
 
-                    for (H.Method m : httpMethods) {
-                        router.addMappingIfNotMapped(m, actionPath, action);
+            private abstract class ParamAnnotationVisitorBase<T extends ParamAnnoInfoTrait>
+                    extends AnnotationVisitor implements Opcodes {
+                protected int index;
+                protected T info;
+                public ParamAnnotationVisitorBase(AnnotationVisitor av, int index) {
+                    super(ASM5, av);
+                    this.index = index;
+                    this.info = createAnnotationInfo(index);
+                }
+
+                @Override
+                public void visitEnd() {
+                    List<ParamAnnoInfoTrait> traits = paramAnnoInfoList.get(index);
+                    if (null == traits) {
+                        traits = C.newList();
+                        paramAnnoInfoList.put(index, traits);
+                    } else {
+                        for (ParamAnnoInfoTrait trait : traits) {
+                            if (!info.compatibleWith(trait)) {
+                                throw E.unexpected(info.compatibilityErrorMessage(trait));
+                            }
+                        }
+                    }
+                    traits.add(info);
+                    super.visitEnd();
+                }
+
+                protected abstract T createAnnotationInfo(int index);
+            }
+
+            private class ParamAnnotationVisitor extends ParamAnnotationVisitorBase<ParamAnnoInfo> {
+                public ParamAnnotationVisitor(AnnotationVisitor av, int index) {
+                    super(av, index);
+                }
+
+                @Override
+                protected ParamAnnoInfo createAnnotationInfo(int index) {
+                    return new ParamAnnoInfo(index);
+                }
+
+                @Override
+                public void visit(String name, Object value) {
+                    if (S.eq("value", name)) {
+                        info.bindName((String)value);
+                    } else if (S.eq("resolveClass", name)) {
+                        info.resolver((Class) value);
+                    } else if (S.eq("defVal", name)) {
+                        info.defVal(String.class, value);
+                    } else if (S.eq("defIntVal", name)) {
+                        info.defVal(Integer.class, value);
+                    } else if (S.eq("defBooleanVal", name)) {
+                        info.defVal(Boolean.class, value);
+                    } else if (S.eq("defLongVal", name)) {
+                        info.defVal(Long.class, value);
+                    } else if (S.eq("defDoubleVal", name)) {
+                        info.defVal(Double.class, value);
+                    } else if (S.eq("defFloatVal", name)) {
+                        info.defVal(Float.class, value);
+                    } else if (S.eq("defCharVal", name)) {
+                        info.defVal(Character.class, value);
+                    } else if (S.eq("defByteVal", name)) {
+                        info.defVal(Byte.class, name);
+                    }
+                    super.visit(name, value);
+                }
+
+                private <T> T c(Object v) {
+                    return _.cast(v);
+                }
+            }
+
+            private class BindAnnotationVisitor extends ParamAnnotationVisitorBase<BindAnnoInfo> {
+                public BindAnnotationVisitor(AnnotationVisitor av, int index) {
+                    super(av, index);
+                }
+
+                @Override
+                protected BindAnnoInfo createAnnotationInfo(int index) {
+                    return new BindAnnoInfo(index);
+                }
+
+                @Override
+                public void visit(String name, Object value) {
+                    if ("model".endsWith(name)) {
+                        info.model((String)value);
+                    } else if ("value".endsWith(name)) {
+                        Type type = (Type)value;
+                        Class<? extends Binder> c = _.classForName(type.getClassName(), getClass().getClassLoader());
+                        info.binder(c);
                     }
                 }
             }

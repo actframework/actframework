@@ -1,6 +1,7 @@
 package act.app;
 
 import act.Act;
+import act.app.data.StringValueResolverManager;
 import act.app.event.AppEvent;
 import act.app.event.AppEventManager;
 import act.conf.AppConfLoader;
@@ -53,6 +54,7 @@ public class App {
     private AppEventManager eventManager;
     private AppCodeScannerManager scannerManager;
     private AppJobManager jobManager;
+    private StringValueResolverManager resolverManager;
     private AppInterceptorManager interceptorManager;
     private DependencyInjector<?> dependencyInjector;
     private IStorageService uploadFileStorageService;
@@ -116,6 +118,7 @@ public class App {
         initServiceResourceManager();
         initEventManager();
         initInterceptorManager();
+        initResolverManager();
         loadConfig();
         initUploadFileStorageService();
         initRouter();
@@ -155,6 +158,10 @@ public class App {
 
     public AppCodeScannerManager scannerManager() {
         return scannerManager;
+    }
+
+    public StringValueResolverManager resolverManager() {
+        return resolverManager;
     }
 
     public AppEventManager eventManager() {
@@ -217,6 +224,8 @@ public class App {
     }
 
     public <T> T newInstance(Class<T> clz) {
+        if (App.class == clz) return _.cast(this);
+        if (AppConfig.class == clz) return _.cast(config());
         if (null != dependencyInjector) {
             return dependencyInjector.create(clz);
         } else {
@@ -322,6 +331,10 @@ public class App {
     private void initClassLoader() {
         classLoader = Act.mode().classLoader(this);
         classLoader.preload();
+    }
+
+    private void initResolverManager() {
+        resolverManager = new StringValueResolverManager(this);
     }
 
     private void loadPlugins() {

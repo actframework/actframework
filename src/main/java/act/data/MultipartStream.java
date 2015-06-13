@@ -1,4 +1,4 @@
-package act.http;
+package act.data;
 
 import org.apache.commons.fileupload.FileItemStream;
 import org.apache.commons.fileupload.ProgressListener;

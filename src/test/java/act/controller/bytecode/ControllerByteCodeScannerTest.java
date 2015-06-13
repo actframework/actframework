@@ -17,6 +17,7 @@ import org.osgl.http.H;
 import org.osgl.util.C;
 import org.osgl.util.E;
 import org.osgl.util.S;
+import playground.EmailBinder;
 import testapp.controller.*;
 import testapp.model.ModelController;
 import testapp.model.ModelControllerWithAnnotation;
@@ -159,6 +160,31 @@ public class ControllerByteCodeScannerTest extends TestBase {
         assertNotNull(infoSrc.controllerMetaInfo(FilterB.class.getName()));
         ControllerClassMetaInfo info = infoSrc.controllerMetaInfo(ControllerWithInheritedInterceptor.class.getName());
         assertHasInterceptor("FilterA", "afterP10", info.afterInterceptors());
+    }
+
+    @Test
+    public void testParamAnnotations() {
+        scan(ParamWithAnnotationController.class);
+        ControllerClassMetaInfo info = infoSrc.controllerMetaInfo(ParamWithAnnotationController.class.getName());
+        assertNotNull(info);
+        ActionMethodMetaInfo bindNameChanged = info.action("bindNameChanged");
+        assertNotNull(bindNameChanged);
+        ParamMetaInfo param = bindNameChanged.param(0);
+        assertNotNull(param);
+        eq("bar", param.bindName());
+
+        ActionMethodMetaInfo defValPresented = info.action("defValPresented");
+        assertNotNull(defValPresented);
+        param = defValPresented.param(0);
+        assertNotNull(param);
+        eq(5, param.defVal(Integer.class));
+
+        ActionMethodMetaInfo binderRequired = info.action("binderRequired");
+        assertNotNull(binderRequired);
+        param = binderRequired.param(0);
+        assertNotNull(param);
+        assertNotNull(param.bindAnnoInfo());
+        eq(EmailBinder.class, param.bindAnnoInfo().binder(mockAppContext).getClass());
     }
 
     @Test

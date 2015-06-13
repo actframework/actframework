@@ -1,28 +1,37 @@
 package act.handler.builtin.controller.impl;
 
+import act.Act;
 import act.app.AppContext;
+import act.app.data.StringValueResolverManager;
+import act.controller.ActionMethodParamAnnotationHandler;
 import act.controller.Controller;
 import act.controller.meta.*;
 import act.handler.builtin.controller.*;
+import act.util.DestroyableBase;
+import act.util.GenericAnnoInfo;
 import com.esotericsoftware.reflectasm.ConstructorAccess;
 import com.esotericsoftware.reflectasm.FieldAccess;
 import com.esotericsoftware.reflectasm.MethodAccess;
 import org.osgl._;
 import org.osgl.mvc.result.Result;
+import org.osgl.mvc.util.Binder;
 import org.osgl.mvc.util.StringValueResolver;
 import act.app.App;
 import org.osgl.util.C;
 import org.osgl.util.E;
 import org.osgl.util.S;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Implement handler using
  * https://github.com/EsotericSoftware/reflectasm
  */
-public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo>
+public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends DestroyableBase
         implements ActionHandlerInvoker, AfterInterceptorInvoker, ExceptionInterceptorInvoker {
 
     private static _.Visitor<AppContext> STORE_APPCTX_TO_THREAD_LOCAL = new _.Visitor<AppContext>() {
@@ -33,6 +42,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo>
     };
 
     private static Map<String, _.F2<AppContext, Object, ?>> fieldName_appCtxHandler_lookup = C.newMap();
+    private App app;
     private ClassLoader cl;
     private ControllerClassMetaInfo controller;
     private Class<?> controllerClass;
@@ -42,10 +52,12 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo>
     protected int handlerIndex;
     private AppContextInjection ctxInjection;
     private Class[] paramTypes;
+    private Map<Integer, List<ActionMethodParamAnnotationHandler>> paramAnnoHandlers = null;
     protected Method method; //
     protected _.F2<AppContext, Object, ?> fieldAppCtxHandler;
 
     protected ReflectedHandlerInvoker(M handlerMetaInfo, App app) {
+        this.app = app;
         this.cl = app.classLoader();
         this.handler = handlerMetaInfo;
         this.controller = handlerMetaInfo.classInfo();
@@ -70,6 +82,45 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo>
         } else {
             method.setAccessible(true);
         }
+        paramAnnoHandlers = C.newMap();
+        if (paramTypes.length > 0) {
+            ClassLoader classLoader = cl;
+            List<ActionMethodParamAnnotationHandler> availableHandlers = Act.pluginManager().pluginList(ActionMethodParamAnnotationHandler.class);
+            for (ActionMethodParamAnnotationHandler annotationHandler: availableHandlers) {
+                Set<Class<? extends Annotation>> set = annotationHandler.listenTo();
+                for (int i = 0,j = paramTypes().length; i < j; ++i) {
+                    ParamMetaInfo paramMetaInfo = handlerMetaInfo.param(i);
+                    List<GenericAnnoInfo> annoInfoList = paramMetaInfo.genericAnnoInfoList();
+                    for (GenericAnnoInfo annoInfo : annoInfoList) {
+                        Class<? extends Annotation> annoClass = annoInfo.annotationClass(classLoader);
+                        if (set.contains(annoClass)) {
+                            List<ActionMethodParamAnnotationHandler> handlerList = paramAnnoHandlers.get(i);
+                            if (null == handlerList) {
+                                handlerList = C.newList();
+                                paramAnnoHandlers.put(i, handlerList);
+                            }
+                            handlerList.add(annotationHandler);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    @Override
+    protected void releaseResources() {
+        app = null;
+        cl = null;
+        controller = null;
+        controllerClass = null;
+        constructorAccess = null;
+        method = null;
+        methodAccess = null;
+        handler.destroy();
+        handler = null;
+        paramTypes = null;
+        fieldAppCtxHandler = null;
+        super.releaseResources();
     }
 
     @Override
@@ -116,7 +167,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo>
         Object inst = context.__controllerInstance(controller);
         if (null == inst) {
             //inst = constructorAccess.newInstance();
-            inst = context.app().newInstance(controllerClass);
+            inst = context.newInstance(controllerClass);
             context.__controllerInstance(controller, inst);
         }
         return inst;
@@ -155,6 +206,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo>
         if (0 == paramCount) {
             return oa;
         }
+        StringValueResolverManager resolverManager = app.resolverManager();
         for (int i = 0; i < paramCount; ++i) {
             ParamMetaInfo param = handler.param(i);
             Class<?> paramType = paramTypes[i];
@@ -165,12 +217,56 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo>
             } else if (Exception.class.isAssignableFrom(paramType)) {
                 oa[i] = exception;
             } else {
-                String paramName = param.name();
-                String reqVal = ctx.param(paramName);
-                oa[i] = StringValueResolver.predefined(paramType).apply(reqVal);
+                BindAnnoInfo bindInfo = param.bindAnnoInfo();
+                if (null != bindInfo) {
+                    Binder<?> binder = bindInfo.binder(ctx);
+                    if (null != binder) {
+                        String model = bindInfo.model();
+                        oa[i] = binder.resolve(model, ctx);
+                    }
+                } else {
+                    StringValueResolver resolver = null;
+                    if (param.resolverDefined()) {
+                        resolver = param.resolver(app);
+                    }
+                    String bindName = param.bindName();
+                    String reqVal = ctx.paramVal(bindName);
+                    if (null != reqVal) {
+                        if (null == resolver) {
+                            oa[i] = resolverManager.resolve(reqVal, paramType);
+                        } else {
+                            oa[i] = resolver.resolve(reqVal);
+                        }
+                    } else {
+                        oa[i] = param.defVal(paramType);
+                    }
+                    List<ActionMethodParamAnnotationHandler> annotationHandlers = paramAnnoHandlers.get(i);
+                    if (null != annotationHandlers) {
+                        String paraName = param.name();
+                        Object val = oa[i];
+                        for (ActionMethodParamAnnotationHandler annotationHandler : annotationHandlers) {
+                            for (Annotation annotation : paramAnnotationList(i)) {
+                                annotationHandler.handle(paraName, val, annotation, ctx);
+                            }
+                        }
+                    }
+                }
             }
         }
         return oa;
+    }
+
+    private List<Annotation> paramAnnotationList(int paramIndex) {
+        ParamMetaInfo paramMetaInfo = handler.param(paramIndex);
+        List<Annotation> retVal = C.newList();
+        List<GenericAnnoInfo> infoList = paramMetaInfo.genericAnnoInfoList();
+        if (null == infoList) {
+            return retVal;
+        }
+        for (GenericAnnoInfo annoInfo : infoList) {
+            retVal.add(annoInfo.toAnnotation());
+        }
+        return retVal;
     }
 
     private Class<?>[] paramTypes() {

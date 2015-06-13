@@ -1,4 +1,4 @@
-package act.http;
+package act.data;
 
 import act.app.AppContext;
 import org.osgl.http.H;
@@ -6,7 +6,6 @@ import org.osgl.logging.L;
 import org.osgl.logging.Logger;
 import org.osgl.util.C;
 
-import java.io.InputStream;
 import java.util.Map;
 
 // Disclaim, major logic of this component come from PlayFramework 1.3's DataParser

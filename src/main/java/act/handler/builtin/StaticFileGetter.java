@@ -1,11 +1,9 @@
 package act.handler.builtin;
 
 import act.app.App;
-import act.controller.Controller;
 import act.controller.ParamNames;
 import act.handler.builtin.controller.FastRequestHandler;
 import org.osgl.http.H;
-import org.osgl.mvc.result.NotFound;
 import act.app.AppContext;
 import org.osgl.util.E;
 import org.osgl.util.FastStr;
@@ -14,10 +12,7 @@ import org.osgl.util.S;
 
 import java.io.BufferedInputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.InputStream;
-
-import static act.controller.Controller.Util.*;
 
 public class StaticFileGetter extends FastRequestHandler {
     private File base;
@@ -41,7 +36,7 @@ public class StaticFileGetter extends FastRequestHandler {
         }
         H.Format fmt;
         if (base.isDirectory()) {
-            String path = context.param(ParamNames.PATH);
+            String path = context.paramVal(ParamNames.PATH);
             if (S.blank(path)) {
                 AlwaysBadRequest.INSTANCE.handle(context);
                 return;

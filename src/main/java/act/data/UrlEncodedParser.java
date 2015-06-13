@@ -1,4 +1,4 @@
-package act.http;
+package act.data;
 
 import act.app.AppContext;
 import org.apache.commons.codec.net.URLCodec;

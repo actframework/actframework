@@ -19,7 +19,7 @@ public class AsmTypesTest extends TestBase {
 
     @Test
     public void testMethodDescWithParamAndReturnType() throws Exception {
-        Method m = AppContext.class.getDeclaredMethod("param", String.class);
+        Method m = AppContext.class.getDeclaredMethod("paramVal", String.class);
         Type mt = Type.getType(m);
         eq(mt.getDescriptor(), AsmTypes.methodDesc(String.class, String.class));
     }

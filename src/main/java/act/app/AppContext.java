@@ -2,13 +2,14 @@ package act.app;
 
 import act.Act;
 import act.conf.AppConfig;
-import act.http.MapUtil;
-import act.http.RequestBodyParser;
+import act.data.MapUtil;
+import act.data.RequestBodyParser;
 import act.view.Template;
 import org.osgl._;
 import org.osgl.concurrent.ContextLocal;
 import org.osgl.http.H;
 import org.osgl.http.H.Cookie;
+import org.osgl.mvc.util.ParamValueProvider;
 import org.osgl.storage.ISObject;
 import org.osgl.util.C;
 import org.osgl.util.E;
@@ -20,7 +21,7 @@ import java.util.*;
  * {@code AppContext} encapsulate contextual properties needed by
  * an application session
  */
-public class AppContext {
+public class AppContext implements ParamValueProvider {
 
     public static final String ATTR_HANDLER = "__act_handler__";
 
@@ -106,7 +107,8 @@ public class AppContext {
         return this;
     }
 
-    public String param(String name) {
+    @Override
+    public String paramVal(String name) {
         String val = extraParams.get(name);
         if (null != val) {
             return val;
@@ -217,6 +219,11 @@ public class AppContext {
 
     public <T> T attribute(String name) {
         return _.cast(attributes.get(name));
+    }
+
+    public <T> T newInstance(Class<? extends T> clazz) {
+        if (clazz == AppContext.class) return _.cast(this);
+        return app().newInstance(clazz);
     }
 
     public AppContext renderArg(String name, Object val) {

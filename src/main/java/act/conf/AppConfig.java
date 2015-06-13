@@ -3,8 +3,8 @@ package act.conf;
 import act.Act;
 import act.Constants;
 import act.app.App;
-import act.app.conf.AppConfigurator;
 import act.app.AppHolder;
+import act.app.conf.AppConfigurator;
 import act.util.JavaVersion;
 import act.view.TemplatePathResolver;
 import act.view.View;
@@ -19,6 +19,8 @@ import org.osgl.util.E;
 import org.osgl.util.FastStr;
 import org.osgl.util.S;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
@@ -245,6 +247,72 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     private void _mergeEncoding(AppConfig conf) {
         if (null == get(ENCODING)) {
             encoding = conf.encoding;
+        }
+    }
+
+    private String dateFmt = null;
+    protected T dateFormat(String fmt) {
+        E.illegalArgumentIf(S.blank(fmt), "Date format cannot be empty");
+        this.dateFmt = fmt;
+        return me();
+    }
+    public String dateFormat() {
+        if (null == dateFmt) {
+            dateFmt = get(FORMAT_DATE);
+            if (null == dateFmt) {
+                DateFormat formatter = DateFormat.getDateInstance();
+                dateFmt  = ((SimpleDateFormat)formatter).toLocalizedPattern();
+            }
+        }
+        return dateFmt;
+    }
+    private void _mergeDateFmt(AppConfig conf) {
+        if (null == get(FORMAT_DATE)) {
+            dateFmt = conf.dateFmt;
+        }
+    }
+
+    private String timeFmt = null;
+    protected T timeFormat(String fmt) {
+        E.illegalArgumentIf(S.blank(fmt), "Time format cannot be empty");
+        this.timeFmt = fmt;
+        return me();
+    }
+    public String timeFormat() {
+        if (null == timeFmt) {
+            timeFmt = get(FORMAT_TIME);
+            if (null == timeFmt) {
+                DateFormat formatter = DateFormat.getTimeInstance();
+                timeFmt  = ((SimpleDateFormat)formatter).toLocalizedPattern();
+            }
+        }
+        return timeFmt;
+    }
+    private void _mergeTimeFmt(AppConfig conf) {
+        if (null == get(FORMAT_TIME)) {
+            timeFmt = conf.timeFmt;
+        }
+    }
+
+    private String dateDateTimeFmt = null;
+    protected T dateTimeFormat(String fmt) {
+        E.illegalArgumentIf(S.blank(fmt), "Date time format cannot be empty");
+        this.dateDateTimeFmt = fmt;
+        return me();
+    }
+    public String dateTimeFormat() {
+        if (null == dateDateTimeFmt) {
+            dateDateTimeFmt = get(FORMAT_TIME);
+            if (null == dateDateTimeFmt) {
+                DateFormat formatter = DateFormat.getDateInstance();
+                dateDateTimeFmt  = ((SimpleDateFormat)formatter).toLocalizedPattern();
+            }
+        }
+        return dateDateTimeFmt;
+    }
+    private void _mergeDateTimeFmt(AppConfig conf) {
+        if (null == get(FORMAT_TIME)) {
+            dateDateTimeFmt = conf.dateDateTimeFmt;
         }
     }
 
@@ -663,6 +731,9 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         _mergeHttpMaxParams(conf);
         _mergeJobPoolSize(conf);
         _mergePort(conf);
+        _mergeDateFmt(conf);
+        _mergeDateTimeFmt(conf);
+        _mergeTimeFmt(conf);
         _mergeEncoding(conf);
         _mergeLocale(conf);
         _mergeSourceVersion(conf);

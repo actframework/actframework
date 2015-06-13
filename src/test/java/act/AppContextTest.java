@@ -2,7 +2,6 @@ package act;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Matchers;
 import org.osgl.http.H;
 import act.app.App;
 import act.app.AppContext;
@@ -33,12 +32,12 @@ public class AppContextTest extends TestBase {
     @Test
     public void addParamToContext() {
         ctx.param("zoo", "ZOO");
-        eq("ZOO", ctx.param("zoo"));
+        eq("ZOO", ctx.paramVal("zoo"));
     }
 
     @Test
     public void fetchReqParamVal() {
-        eq("FOO", ctx.param("foo"));
+        eq("FOO", ctx.paramVal("foo"));
     }
 
     @Test
@@ -72,10 +71,10 @@ public class AppContextTest extends TestBase {
 
     @Test
     public void extraParamOverrideReqParam() {
-        eq("FOO", ctx.param("foo"));
+        eq("FOO", ctx.paramVal("foo"));
         eq(2, ctx.paramVals("foo").length);
         ctx.param("foo", "BAR");
-        eq("BAR", ctx.param("foo"));
+        eq("BAR", ctx.paramVal("foo"));
         eq(1, ctx.paramVals("foo").length);
     }
 }

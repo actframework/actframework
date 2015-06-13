@@ -6,6 +6,9 @@ import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.runner.JUnitCore;
 import org.mockito.internal.matchers.StartsWith;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
+import org.osgl._;
 import org.osgl.http.H;
 import act.app.App;
 import act.app.AppContext;
@@ -20,6 +23,7 @@ import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.util.Arrays;
 
+import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -32,7 +36,7 @@ public class TestBase extends Assert {
     }
 
     protected void eq(Object[] a1, Object[] a2) {
-        yes(Arrays.equals(a1, a2));
+        assertArrayEquals(a1, a2);
     }
 
     protected void eq(Object o1, Object o2) {
@@ -102,9 +106,23 @@ public class TestBase extends Assert {
         mockAppContext = mock(AppContext.class);
         when(mockAppContext.app()).thenReturn(mockApp);
         when(mockAppContext.config()).thenReturn(mockAppConfig);
+        when(mockAppContext.newInstance(any(Class.class))).thenAnswer(new Answer<Object>() {
+            @Override
+            public Object answer(InvocationOnMock invocation) throws Throwable {
+                Object[] args = invocation.getArguments();
+                return _.newInstance((Class)args[0]);
+            }
+        });
         mockRouter = mock(Router.class);
         when(mockApp.config()).thenReturn(mockAppConfig);
         when(mockApp.router()).thenReturn(mockRouter);
+        when(mockApp.newInstance(any(Class.class))).thenAnswer(new Answer<Object>() {
+            @Override
+            public Object answer(InvocationOnMock invocation) throws Throwable {
+                Object[] args = invocation.getArguments();
+                return _.newInstance((Class)args[0]);
+            }
+        });
         mockReq = mock(H.Request.class);
         mockResp = mock(H.Response.class);
     }

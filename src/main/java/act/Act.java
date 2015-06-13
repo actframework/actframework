@@ -2,6 +2,8 @@ package act;
 
 import act.app.*;
 import act.handler.builtin.controller.*;
+import act.plugin.GenericPluginManager;
+import act.plugin.Plugin;
 import org.osgl._;
 import org.osgl.exception.NotAppliedException;
 import org.osgl.logging.L;
@@ -101,6 +103,7 @@ public final class Act {
     private static BytecodeEnhancerManager enhancerManager;
     private static SessionManager sessionManager;
     private static AppCodeScannerPluginManager scannerPluginManager;
+    private static GenericPluginManager pluginManager;
 
     public static List<Class<?>> pluginClasses() {
         ClassLoader cl = Act.class.getClassLoader();
@@ -132,6 +135,10 @@ public final class Act {
         return enhancerManager;
     }
 
+    public static GenericPluginManager pluginManager() {
+        return pluginManager;
+    }
+
     public static ViewManager viewManager() {
         return viewManager;
     }
@@ -160,6 +167,7 @@ public final class Act {
     private static void start(boolean singleAppServer) {
         Banner.print("0.0.2-SNAPSHOT");
         loadConfig();
+        initPluginManager();
         //initExecuteService();
         initEnhancerManager();
         initViewManager();
@@ -211,6 +219,10 @@ public final class Act {
 
     private static void initViewManager() {
         viewManager = new ViewManager();
+    }
+
+    private static void initPluginManager() {
+        pluginManager = new GenericPluginManager();
     }
 
     private static void initSessionManager() {

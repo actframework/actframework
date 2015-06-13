@@ -5,6 +5,7 @@ import act.route.Router;
 import org.osgl._;
 import org.osgl.http.H;
 import org.osgl.logging.Logger;
+import org.osgl.mvc.util.StringValueResolver;
 import org.osgl.util.C;
 import org.osgl.util.E;
 import org.osgl.util.FastStr;
@@ -36,6 +37,11 @@ public abstract class AppConfigurator<T extends AppConfigurator> extends AppConf
         userProps.clear();
         releaseAppConfigResources();
         super.releaseResources();
+    }
+
+    protected T registerStringValueResolver(Class<T> targetType, StringValueResolver<T> resolver) {
+        app().resolverManager().register(targetType, resolver);
+        return me();
     }
 
     protected RouteBuilder route(String path) {
