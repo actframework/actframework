@@ -1,6 +1,7 @@
 package act.handler.builtin.controller;
 
 import act.Act;
+import act.Destroyable;
 import act.app.AppInterceptorManager;
 import act.controller.meta.ActionMethodMetaInfo;
 import act.controller.meta.CatchMethodMetaInfo;
@@ -23,6 +24,7 @@ import org.osgl.util.C;
 import org.osgl.util.E;
 import org.osgl.util.S;
 
+import java.util.Collection;
 import java.util.ListIterator;
 
 public final class RequestHandlerProxy extends RequestHandlerBase {
@@ -99,6 +101,29 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
         cache = app.config().cacheService("action_proxy");
         this.app = app;
         this.appInterceptor = app.interceptorManager();
+    }
+
+    @Override
+    protected void releaseResources() {
+        _releaseResourceCollections(afterInterceptors);
+        _releaseResourceCollections(beforeInterceptors);
+        _releaseResourceCollections(exceptionInterceptors);
+        _releaseResourceCollections(finallyInterceptors);
+        if (null != actionHandler) {
+            actionHandler.destroy();
+            actionHandler = null;
+        }
+    }
+
+    public static void releaseGlobalResources() {
+        _releaseResourceCollections(globalAfterInterceptors);
+        _releaseResourceCollections(globalBeforeInterceptors);
+        _releaseResourceCollections(globalExceptionInterceptors);
+        _releaseResourceCollections(globalFinallyInterceptors);
+    }
+
+    private static void _releaseResourceCollections(Collection<? extends Destroyable> col) {
+        Destroyable.Util.destroyAll(col);
     }
 
     public String controller() {

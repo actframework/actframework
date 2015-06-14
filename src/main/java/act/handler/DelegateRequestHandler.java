@@ -36,4 +36,9 @@ public class DelegateRequestHandler extends RequestHandlerBase {
     public RequestHandlerBase realHandler() {
         return handler_.realHandler();
     }
+
+    @Override
+    protected void releaseResources() {
+        handler_.destroy();
+    }
 }

@@ -1,5 +1,6 @@
 package act.handler;
 
+import act.Destroyable;
 import act.handler.builtin.StaticFileGetter;
 import org.osgl._;
 import act.app.AppContext;
@@ -11,7 +12,7 @@ import act.app.AppContext;
  * {@link org.osgl.http.H.Response} associated with the
  * context
  */
-public interface RequestHandler extends _.Function<AppContext, Void> {
+public interface RequestHandler extends _.Function<AppContext, Void>, Destroyable {
 
     /**
      * Invoke handler upon an application context

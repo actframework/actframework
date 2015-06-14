@@ -1,5 +1,6 @@
 package act.route;
 
+import act.Destroyable;
 import act.app.App;
 import act.app.AppContext;
 import act.app.AppServiceBase;
@@ -10,6 +11,7 @@ import act.handler.builtin.Echo;
 import act.handler.builtin.Redirect;
 import act.handler.builtin.StaticFileGetter;
 import act.handler.builtin.controller.RequestHandlerProxy;
+import act.util.DestroyableBase;
 import org.osgl._;
 import org.osgl.http.H;
 import org.osgl.http.util.Path;
@@ -69,11 +71,11 @@ public class Router extends AppServiceBase<Router> {
 
     @Override
     protected void releaseResources() {
-        _GET = null;
-        _DEL = null;
-        _POST = null;
-        _PUT = null;
-        handlerLookup = null;
+        _GET.destroy();
+        _DEL.destroy();
+        _POST.destroy();
+        _PUT.destroy();
+        handlerLookup.destroy();
         actionNames.clear();
         appConfig = null;
     }
@@ -336,7 +338,7 @@ public class Router extends AppServiceBase<Router> {
      * The data structure support decision tree for
      * fast URL routing
      */
-    private static class Node implements Serializable {
+    private static class Node extends DestroyableBase implements Serializable {
         static Node newRoot() {
             return new Node(-1);
         }
@@ -409,6 +411,19 @@ public class Router extends AppServiceBase<Router> {
                 }
             }
             return node;
+        }
+
+        @Override
+        protected void releaseResources() {
+            if (null != handler) {
+                handler.destroy();
+            }
+            if (null != dynamicChild) {
+                dynamicChild.destroy();
+                dynamicChild = null;
+            }
+            Destroyable.Util.destroyAll(staticChildren.values());
+            staticChildren.clear();
         }
 
         Node childByMetaInfo(StrBase s) {
@@ -530,6 +545,8 @@ public class Router extends AppServiceBase<Router> {
         }
         ;
 
+
+
         private static RequestHandler tryResolve(CharSequence directive, CharSequence payload, App app) {
             String s = directive.toString().toLowerCase();
             try {
@@ -537,6 +554,15 @@ public class Router extends AppServiceBase<Router> {
             } catch (IllegalArgumentException e) {
                 return null;
             }
+        }
+
+        @Override
+        public void destroy() {
+        }
+
+        @Override
+        public boolean isDestroyed() {
+            return true;
         }
     }
 

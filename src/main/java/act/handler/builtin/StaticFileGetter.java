@@ -28,6 +28,11 @@ public class StaticFileGetter extends FastRequestHandler {
     }
 
     @Override
+    protected void releaseResources() {
+        base = null;
+    }
+
+    @Override
     public void handle(AppContext context) {
         File file = base;
         if (!file.exists()) {

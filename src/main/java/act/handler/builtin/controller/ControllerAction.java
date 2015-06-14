@@ -24,4 +24,10 @@ public class ControllerAction extends ActionHandler<ControllerAction> {
     public void accept(Visitor visitor) {
         handlerInvoker.accept(visitor.invokerVisitor());
     }
+
+    @Override
+    protected void releaseResources() {
+        handlerInvoker.destroy();
+        handlerInvoker = null;
+    }
 }

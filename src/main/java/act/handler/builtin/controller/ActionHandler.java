@@ -13,4 +13,5 @@ public abstract class ActionHandler<T extends ActionHandler> extends Handler<T> 
     }
 
     public abstract Result handle(AppContext appContext);
+
 }

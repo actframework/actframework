@@ -120,6 +120,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         handler = null;
         paramTypes = null;
         fieldAppCtxHandler = null;
+        fieldName_appCtxHandler_lookup.clear();
         super.releaseResources();
     }
 
@@ -343,6 +344,12 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         public void accept(Visitor visitor) {
             invoker.accept(visitor.invokerVisitor());
         }
+
+        @Override
+        protected void releaseResources() {
+            invoker.destroy();
+            invoker = null;
+        }
     }
 
     private static class _After extends AfterInterceptor {
@@ -366,6 +373,12 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         @Override
         public void accept(ActionHandlerInvoker.Visitor visitor) {
             invoker.accept(visitor);
+        }
+
+        @Override
+        protected void releaseResources() {
+            invoker.destroy();
+            invoker = null;
         }
     }
 
@@ -391,6 +404,12 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         public void accept(Visitor visitor) {
             invoker.accept(visitor.invokerVisitor());
         }
+
+        @Override
+        protected void releaseResources() {
+            invoker.destroy();
+            invoker = null;
+        }
     }
 
     private static class _Finally extends FinallyInterceptor {
@@ -409,6 +428,12 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         @Override
         public void accept(Visitor visitor) {
             invoker.accept(visitor.invokerVisitor());
+        }
+
+        @Override
+        protected void releaseResources() {
+            invoker.destroy();
+            invoker = null;
         }
     }
 

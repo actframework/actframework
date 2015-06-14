@@ -16,8 +16,8 @@ public abstract class DestroyableBase implements Destroyable {
         if (destroyed) {
             return;
         }
-        releaseResources();
         destroyed = true;
+        releaseResources();
     }
 
     @Override

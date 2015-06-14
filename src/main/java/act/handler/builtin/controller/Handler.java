@@ -1,12 +1,13 @@
 package act.handler.builtin.controller;
 
+import act.util.DestroyableBase;
 import org.osgl._;
 
 /**
  * The base class of @Before, @After, @Exception, @Finally interceptor and
  * request dispatcher
  */
-public abstract class Handler<T extends Handler> implements Comparable<T> {
+public abstract class Handler<T extends Handler> extends DestroyableBase implements Comparable<T> {
 
     private int priority;
 
@@ -42,4 +43,7 @@ public abstract class Handler<T extends Handler> implements Comparable<T> {
         ActionHandlerInvoker.Visitor invokerVisitor();
     }
 
+    @Override
+    protected void releaseResources() {
+    }
 }

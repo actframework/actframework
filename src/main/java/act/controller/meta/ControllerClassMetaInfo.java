@@ -52,12 +52,16 @@ public final class ControllerClassMetaInfo extends DestroyableBase {
         withList.clear();
         destroyAll(actions);
         actions.clear();
-        destroyAll(actionLookup.values());
-        actionLookup.clear();
-        destroyAll(handlerLookup.values());
-        handlerLookup.clear();
+        if (null != actionLookup) {
+            destroyAll(actionLookup.values());
+            actionLookup.clear();
+        }
+        if (null != handlerLookup) {
+            destroyAll(handlerLookup.values());
+            handlerLookup.clear();
+        }
         interceptors.destroy();
-        parent.destroy();
+        if (null != parent) parent.destroy();
         super.releaseResources();
     }
 
