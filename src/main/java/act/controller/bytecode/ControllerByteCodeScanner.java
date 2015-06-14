@@ -278,6 +278,10 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
                             trait.attachTo(param);
                         }
                     }
+                    List<GenericAnnoInfo> list = genericParamAnnoInfoList.get(i);
+                    if (null != list) {
+                        param.addGenericAnnotations(list);
+                    }
                     info.addParam(param);
                 }
                 if (!ctxByParam) {

@@ -118,8 +118,8 @@ public class App {
         initServiceResourceManager();
         initEventManager();
         initInterceptorManager();
-        initResolverManager();
         loadConfig();
+        initResolverManager();
         initUploadFileStorageService();
         initRouter();
         initJobManager();

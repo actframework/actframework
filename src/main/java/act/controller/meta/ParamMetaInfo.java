@@ -79,8 +79,13 @@ public class ParamMetaInfo {
         return this;
     }
 
-    ParamMetaInfo addGenericAnnotation(GenericAnnoInfo anno) {
+    public ParamMetaInfo addGenericAnnotation(GenericAnnoInfo anno) {
         genericAnnoInfoList.add(anno);
+        return this;
+    }
+
+    public ParamMetaInfo addGenericAnnotations(List<GenericAnnoInfo> list) {
+        genericAnnoInfoList.addAll(list);
         return this;
     }
 

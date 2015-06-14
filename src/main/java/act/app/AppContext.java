@@ -1,6 +1,7 @@
 package act.app;
 
 import act.Act;
+import act.Destroyable;
 import act.conf.AppConfig;
 import act.data.MapUtil;
 import act.data.RequestBodyParser;
@@ -15,13 +16,14 @@ import org.osgl.util.C;
 import org.osgl.util.E;
 import org.osgl.util.S;
 
+import javax.validation.ConstraintViolation;
 import java.util.*;
 
 /**
  * {@code AppContext} encapsulate contextual properties needed by
  * an application session
  */
-public class AppContext implements ParamValueProvider {
+public class AppContext implements ParamValueProvider, Destroyable {
 
     public static final String ATTR_HANDLER = "__act_handler__";
 
@@ -43,6 +45,7 @@ public class AppContext implements ParamValueProvider {
     private Map<String, Object> controllerInstances;
     private List<ISObject> uploads;
     private boolean localSaved;
+    private Set<ConstraintViolation> violations;
 
     private AppContext(App app, H.Request request, H.Response response) {
         E.NPE(app, request, response);
@@ -231,6 +234,56 @@ public class AppContext implements ParamValueProvider {
         return this;
     }
 
+    public AppContext addViolations(Set<ConstraintViolation<?>> violations) {
+        this.violations.addAll(violations);
+        return this;
+    }
+
+    public AppContext addViolation(ConstraintViolation<?> violation) {
+        this.violations.add(violation);
+        return this;
+    }
+
+    public boolean hasViolation() {
+        return !violations.isEmpty();
+    }
+
+    public Set<ConstraintViolation> violations() {
+        return C.set(this.violations);
+    }
+
+    public StringBuilder buildViolationMessage(StringBuilder builder) {
+        return buildViolationMessage(builder, "\n");
+    }
+
+    public StringBuilder buildViolationMessage(StringBuilder builder, String separator) {
+        if (violations.isEmpty()) return builder;
+        for (ConstraintViolation violation : violations) {
+            builder.append(violation.getMessage()).append(separator);
+        }
+        int n = builder.length();
+        builder.delete(n - separator.length(), n);
+        return builder;
+    }
+
+    public String violationMessage(String separator) {
+        return buildViolationMessage(S.builder(), separator).toString();
+    }
+
+    public String violationMessage() {
+        return violationMessage("\n");
+    }
+
+    public AppContext flashViolationMessage() {
+        return flashViolationMessage("\n");
+    }
+
+    public AppContext flashViolationMessage(String separator) {
+        if (violations.isEmpty()) return this;
+        flash().error(violationMessage(separator));
+        return this;
+    }
+
     public App app() {
         return app;
     }
@@ -307,27 +360,44 @@ public class AppContext implements ParamValueProvider {
         state = State.SESSION_DISSOLVED;
     }
 
+    @Override
+    public boolean isDestroyed() {
+        return state == State.DESTROYED;
+    }
+
     /**
      * Clear all internal data store/cache and then
      * remove this context from thread local
      */
+    @Override
     public void destroy() {
-        this.allParams = null;
-        this.extraParams = null;
-        this.requestParamCache = null;
-        this.renderArgs.clear();
-        this.attributes.clear();
-        this.template = null;
-        this.app = null;
-        // xio impl might need this this.request = null;
-        // xio impl might need this this.response = null;
-        this.flash = null;
-        this.session = null;
-        this.template = null;
-        this.state = State.DESTROYED;
-        this.controllerInstances = null;
-        this.uploads.clear();
-        if (localSaved) AppContext.clear();
+        if (isDestroyed()) return;
+        try {
+            this.allParams = null;
+            this.extraParams = null;
+            this.requestParamCache = null;
+            this.renderArgs.clear();
+            this.attributes.clear();
+            this.template = null;
+            this.app = null;
+            // xio impl might need this this.request = null;
+            // xio impl might need this this.response = null;
+            this.flash = null;
+            this.session = null;
+            this.template = null;
+            this.controllerInstances = null;
+            this.violations.clear();
+            if (localSaved) AppContext.clear();
+            this.uploads.clear();
+            for (Object o : this.attributes.values()) {
+                if (o instanceof Destroyable) {
+                    ((Destroyable) o).destroy();
+                }
+            }
+            this.attributes.clear();
+        } finally {
+            this.state = State.DESTROYED;
+        }
     }
 
     public void saveLocal() {
@@ -364,6 +434,7 @@ public class AppContext implements ParamValueProvider {
         uploads = C.newList();
         extraParams = C.newMap();
         renderArgs = C.newMap();
+        violations = C.newSet();
         attributes = C.newMap();
         final Set<Map.Entry<String, String[]>> paramEntrySet = new AbstractSet<Map.Entry<String, String[]>>() {
             @Override

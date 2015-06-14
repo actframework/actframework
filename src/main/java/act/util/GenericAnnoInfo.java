@@ -167,21 +167,20 @@ public class GenericAnnoInfo {
         private final GenericAnnoInfo annoInfo;
         private final Class<T> annotationType;
         private final int hashCode;
+        private final Map<String, Object> values;
 
         AnnotationInvocationHandler(GenericAnnoInfo annoInfo, ClassLoader classLoader) {
             this.annotationType = _.classForName(annoInfo.type().getClassName(), classLoader);
             this.annoInfo = annoInfo;
             this.hashCode = annoInfo.hashCode();
+            this.values = retrieveAnnotationValues(annoInfo, annotationType);
         }
 
         @Override
         public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
             String key = method.getName();
-            Object retVal = annoInfo.getAttribute(key);
-            if (null != retVal) return retVal;
-            retVal = toArray(annoInfo.getListAttributes(key));
-            if (null != retVal) return retVal;
-            return method.invoke(this, args);
+            Object val = values.get(key);
+            return null == val ? method.invoke(this, args) : val;
         }
 
         private <T> Object toArray(List<Object> list) {
@@ -266,6 +265,24 @@ public class GenericAnnoInfo {
         @Override
         public String toString() {
             return annoInfo.toString();
+        }
+
+        private Map<String, Object> retrieveAnnotationValues(GenericAnnoInfo info, Class<T> type) {
+            Map<String, Object> bag = C.newMap();
+            for (String key : info.attributes.keySet()) {
+                bag.put(key, info.getAttribute(key));
+            }
+            for (String key : info.listAttributes.keySet()) {
+                bag.put(key, toArray(info.getListAttributes(key)));
+            }
+            Method[] ma = type.getDeclaredMethods();
+            for (Method m: ma) {
+                String mn = m.getName();
+                if (!bag.containsKey(mn)) {
+                    bag.put(mn, m.getDefaultValue());
+                }
+            }
+            return bag;
         }
 
 

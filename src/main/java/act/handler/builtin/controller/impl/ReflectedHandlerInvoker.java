@@ -87,13 +87,13 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
             ClassLoader classLoader = cl;
             List<ActionMethodParamAnnotationHandler> availableHandlers = Act.pluginManager().pluginList(ActionMethodParamAnnotationHandler.class);
             for (ActionMethodParamAnnotationHandler annotationHandler: availableHandlers) {
-                Set<Class<? extends Annotation>> set = annotationHandler.listenTo();
+                Set<Class<? extends Annotation>> listenTo = annotationHandler.listenTo();
                 for (int i = 0,j = paramTypes().length; i < j; ++i) {
                     ParamMetaInfo paramMetaInfo = handlerMetaInfo.param(i);
                     List<GenericAnnoInfo> annoInfoList = paramMetaInfo.genericAnnoInfoList();
                     for (GenericAnnoInfo annoInfo : annoInfoList) {
                         Class<? extends Annotation> annoClass = annoInfo.annotationClass(classLoader);
-                        if (set.contains(annoClass)) {
+                        if (listenTo.contains(annoClass)) {
                             List<ActionMethodParamAnnotationHandler> handlerList = paramAnnoHandlers.get(i);
                             if (null == handlerList) {
                                 handlerList = C.newList();
