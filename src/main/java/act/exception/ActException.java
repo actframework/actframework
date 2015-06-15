@@ -1,4 +1,4 @@
-package act;
+package act.exception;
 
 import org.osgl.exception.UnexpectedException;
 

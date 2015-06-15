@@ -1,7 +1,7 @@
 package act.app;
 
 import act.Act;
-import act.ActException;
+import act.exception.ActException;
 
 /**
  * Application error

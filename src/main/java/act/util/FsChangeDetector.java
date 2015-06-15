@@ -1,6 +1,6 @@
 package act.util;
 
-import act.ActException;
+import act.exception.ActException;
 import org.osgl._;
 import org.osgl.exception.NotAppliedException;
 import org.osgl.logging.L;

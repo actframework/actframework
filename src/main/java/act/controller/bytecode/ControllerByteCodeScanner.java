@@ -2,9 +2,11 @@ package act.controller.bytecode;
 
 import act.app.AppByteCodeScannerBase;
 import act.asm.*;
+import act.asm.signature.SignatureReader;
+import act.asm.signature.SignatureVisitor;
 import act.controller.Controller;
 import act.controller.meta.*;
-import act.util.GenericAnnoInfo;
+import act.util.GeneralAnnoInfo;
 import act.util.AsmTypes;
 import org.osgl._;
 import org.osgl.http.H;
@@ -185,7 +187,7 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
             private boolean isRoutedMethod;
             private HandlerMethodMetaInfo methodInfo;
             private Map<Integer, List<ParamAnnoInfoTrait>> paramAnnoInfoList = C.newMap();
-            private Map<Integer, List<GenericAnnoInfo>> genericParamAnnoInfoList = C.newMap();
+            private Map<Integer, List<GeneralAnnoInfo>> genericParamAnnoInfoList = C.newMap();
 
             ActionMethodVisitor(boolean isRoutedMethod, MethodVisitor mv, int access, String methodName, String desc, String signature, String[] exceptions) {
                 super(ASM5, mv);
@@ -232,14 +234,14 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
                     return new BindAnnotationVisitor(av, parameter);
                 } else {
                     //return av;
-                    GenericAnnoInfo info = new GenericAnnoInfo(type);
-                    List<GenericAnnoInfo> list = genericParamAnnoInfoList.get(parameter);
+                    GeneralAnnoInfo info = new GeneralAnnoInfo(type);
+                    List<GeneralAnnoInfo> list = genericParamAnnoInfoList.get(parameter);
                     if (null == list) {
                         list = C.newList();
                         genericParamAnnoInfoList.put(parameter, list);
                     }
                     list.add(info);
-                    return new GenericAnnoInfo.Visitor(av, info);
+                    return new GeneralAnnoInfo.Visitor(av, info);
                 }
             }
 
@@ -254,7 +256,7 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
                     methodInfo = action;
                     classInfo.addAction(action);
                 }
-                HandlerMethodMetaInfo info = methodInfo;
+                final HandlerMethodMetaInfo info = methodInfo;
                 info.name(methodName);
                 boolean isStatic = AsmTypes.isStatic(access);
                 if (isStatic) {
@@ -278,9 +280,9 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
                             trait.attachTo(param);
                         }
                     }
-                    List<GenericAnnoInfo> list = genericParamAnnoInfoList.get(i);
+                    List<GeneralAnnoInfo> list = genericParamAnnoInfoList.get(i);
                     if (null != list) {
-                        param.addGenericAnnotations(list);
+                        param.addGeneralAnnotations(list);
                     }
                     info.addParam(param);
                 }
@@ -290,6 +292,34 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
                     } else {
                         info.appContextViaLocalStorage();
                     }
+                }
+                if (null != signature) {
+                    SignatureReader sr = new SignatureReader(signature);
+                    final _.Var<Integer> id = new _.Var<>(-1);
+                    sr.accept(new SignatureVisitor(ASM5) {
+
+                        boolean startParsing;
+
+                        @Override
+                        public SignatureVisitor visitParameterType() {
+                            id.set(id.get() + 1);
+                            return this;
+                        }
+
+                        @Override
+                        public SignatureVisitor visitTypeArgument(char wildcard) {
+                            if (wildcard == '=') {
+                                startParsing = true;
+                            }
+                            return this;
+                        }
+
+                        @Override
+                        public void visitClassType(String name) {
+                            if (startParsing) info.param(id.get()).componentType(Type.getObjectType(name));
+                            startParsing = false;
+                        }
+                    });
                 }
                 super.visitEnd();
             }
@@ -434,7 +464,7 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
                     StringBuilder sb = S.builder(classInfo.className().replace('/', '.')).append(".").append(methodName);
                     String action = sb.toString();
 
-                    for (String actionPath: paths) {
+                    for (String actionPath : paths) {
                         String ctxPath = classInfo.contextPath();
                         if (!(S.blank(ctxPath) || "/".equals(ctxPath))) {
                             if (ctxPath.endsWith("/")) {
@@ -458,6 +488,7 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
                     extends AnnotationVisitor implements Opcodes {
                 protected int index;
                 protected T info;
+
                 public ParamAnnotationVisitorBase(AnnotationVisitor av, int index) {
                     super(ASM5, av);
                     this.index = index;
@@ -497,7 +528,7 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
                 @Override
                 public void visit(String name, Object value) {
                     if (S.eq("value", name)) {
-                        info.bindName((String)value);
+                        info.bindName((String) value);
                     } else if (S.eq("resolveClass", name)) {
                         info.resolver((Class) value);
                     } else if (S.eq("defVal", name)) {
@@ -538,9 +569,9 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
                 @Override
                 public void visit(String name, Object value) {
                     if ("model".endsWith(name)) {
-                        info.model((String)value);
+                        info.model((String) value);
                     } else if ("value".endsWith(name)) {
-                        Type type = (Type)value;
+                        Type type = (Type) value;
                         Class<? extends Binder> c = _.classForName(type.getClassName(), getClass().getClassLoader());
                         info.binder(c);
                     }

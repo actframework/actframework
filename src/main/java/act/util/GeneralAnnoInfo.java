@@ -17,7 +17,7 @@ import java.lang.reflect.Proxy;
 import java.util.List;
 import java.util.Map;
 
-public class GenericAnnoInfo {
+public class GeneralAnnoInfo {
 
     public static class EnumInfo {
         private Type type;
@@ -41,7 +41,7 @@ public class GenericAnnoInfo {
     private Map<String, Object> attributes = C.newMap();
     private Map<String, List<Object>> listAttributes = C.newMap();
 
-    public GenericAnnoInfo(Type type) {
+    public GeneralAnnoInfo(Type type) {
         E.NPE(type);
         this.type = type;
     }
@@ -62,8 +62,8 @@ public class GenericAnnoInfo {
         return C.map(listAttributes);
     }
 
-    public GenericAnnoInfo addAnnotation(String name, Type type) {
-        GenericAnnoInfo anno = new GenericAnnoInfo(type);
+    public GeneralAnnoInfo addAnnotation(String name, Type type) {
+        GeneralAnnoInfo anno = new GeneralAnnoInfo(type);
         attributes.put(name, anno);
         return anno;
     }
@@ -118,9 +118,9 @@ public class GenericAnnoInfo {
     }
 
     public static class Visitor extends AnnotationVisitor implements Opcodes {
-        private GenericAnnoInfo anno;
+        private GeneralAnnoInfo anno;
 
-        public Visitor(AnnotationVisitor av, GenericAnnoInfo anno) {
+        public Visitor(AnnotationVisitor av, GeneralAnnoInfo anno) {
             super(ASM5, av);
             E.NPE(anno);
             this.anno = anno;
@@ -129,7 +129,7 @@ public class GenericAnnoInfo {
         @Override
         public AnnotationVisitor visitAnnotation(String name, String desc) {
             AnnotationVisitor av = super.visitAnnotation(name, desc);
-            GenericAnnoInfo annoAnno = anno.addAnnotation(name, Type.getType(desc));
+            GeneralAnnoInfo annoAnno = anno.addAnnotation(name, Type.getType(desc));
             return av;
         }
 
@@ -164,12 +164,12 @@ public class GenericAnnoInfo {
 
     public static class AnnotationInvocationHandler<T extends Annotation> implements Annotation, InvocationHandler, Serializable {
         private static final long serialVersionUID = 8157022630814320170L;
-        private final GenericAnnoInfo annoInfo;
+        private final GeneralAnnoInfo annoInfo;
         private final Class<T> annotationType;
         private final int hashCode;
         private final Map<String, Object> values;
 
-        AnnotationInvocationHandler(GenericAnnoInfo annoInfo, ClassLoader classLoader) {
+        AnnotationInvocationHandler(GeneralAnnoInfo annoInfo, ClassLoader classLoader) {
             this.annotationType = _.classForName(annoInfo.type().getClassName(), classLoader);
             this.annoInfo = annoInfo;
             this.hashCode = annoInfo.hashCode();
@@ -267,7 +267,7 @@ public class GenericAnnoInfo {
             return annoInfo.toString();
         }
 
-        private Map<String, Object> retrieveAnnotationValues(GenericAnnoInfo info, Class<T> type) {
+        private Map<String, Object> retrieveAnnotationValues(GeneralAnnoInfo info, Class<T> type) {
             Map<String, Object> bag = C.newMap();
             for (String key : info.attributes.keySet()) {
                 bag.put(key, info.getAttribute(key));
@@ -295,12 +295,12 @@ public class GenericAnnoInfo {
             }
         }
 
-        public static <T extends Annotation> T proxy(GenericAnnoInfo info) {
+        public static <T extends Annotation> T proxy(GeneralAnnoInfo info) {
             ClassLoader cl = Thread.currentThread().getContextClassLoader();
             return proxy(info, cl);
         }
 
-        public static <T extends Annotation> T proxy(GenericAnnoInfo info, ClassLoader cl) {
+        public static <T extends Annotation> T proxy(GeneralAnnoInfo info, ClassLoader cl) {
             AnnotationInvocationHandler handler = new AnnotationInvocationHandler(info, cl);
             return (T) Proxy.newProxyInstance(cl, new Class[]{handler.annotationType()}, handler);
         }

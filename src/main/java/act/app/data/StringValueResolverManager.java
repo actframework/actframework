@@ -34,7 +34,13 @@ public class StringValueResolverManager extends AppServiceBase<StringValueResolv
 
     public Object resolve(String strVal, Class<?> targetType) {
         StringValueResolver r = resolvers.get(targetType);
-        return null == r ? null : r.resolve(strVal);
+        if (null != r) {
+            return r.resolve(strVal);
+        }
+        if (Enum.class.isAssignableFrom(targetType)) {
+            return Enum.valueOf(((Class<Enum>) targetType), strVal);
+        }
+        return null;
     }
 
     private void registerPredefinedResolvers() {

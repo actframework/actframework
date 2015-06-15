@@ -2,13 +2,16 @@ package act.handler.builtin.controller.impl;
 
 import act.Act;
 import act.app.AppContext;
+import act.app.data.BinderManager;
 import act.app.data.StringValueResolverManager;
+import act.asm.Type;
 import act.controller.ActionMethodParamAnnotationHandler;
 import act.controller.Controller;
 import act.controller.meta.*;
+import act.exception.BindException;
 import act.handler.builtin.controller.*;
 import act.util.DestroyableBase;
-import act.util.GenericAnnoInfo;
+import act.util.GeneralAnnoInfo;
 import com.esotericsoftware.reflectasm.ConstructorAccess;
 import com.esotericsoftware.reflectasm.FieldAccess;
 import com.esotericsoftware.reflectasm.MethodAccess;
@@ -90,8 +93,8 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
                 Set<Class<? extends Annotation>> listenTo = annotationHandler.listenTo();
                 for (int i = 0,j = paramTypes().length; i < j; ++i) {
                     ParamMetaInfo paramMetaInfo = handlerMetaInfo.param(i);
-                    List<GenericAnnoInfo> annoInfoList = paramMetaInfo.genericAnnoInfoList();
-                    for (GenericAnnoInfo annoInfo : annoInfoList) {
+                    List<GeneralAnnoInfo> annoInfoList = paramMetaInfo.generalAnnoInfoList();
+                    for (GeneralAnnoInfo annoInfo : annoInfoList) {
                         Class<? extends Annotation> annoClass = annoInfo.annotationClass(classLoader);
                         if (listenTo.contains(annoClass)) {
                             List<ActionMethodParamAnnotationHandler> handlerList = paramAnnoHandlers.get(i);
@@ -208,6 +211,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
             return oa;
         }
         StringValueResolverManager resolverManager = app.resolverManager();
+        BinderManager binderManager = app.binderManager();
         for (int i = 0; i < paramCount; ++i) {
             ParamMetaInfo param = handler.param(i);
             Class<?> paramType = paramTypes[i];
@@ -218,39 +222,52 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
             } else if (Exception.class.isAssignableFrom(paramType)) {
                 oa[i] = exception;
             } else {
-                BindAnnoInfo bindInfo = param.bindAnnoInfo();
-                if (null != bindInfo) {
-                    Binder<?> binder = bindInfo.binder(ctx);
-                    if (null != binder) {
-                        String model = bindInfo.model();
-                        oa[i] = binder.resolve(model, ctx);
-                    }
-                } else {
-                    StringValueResolver resolver = null;
-                    if (param.resolverDefined()) {
-                        resolver = param.resolver(app);
-                    }
+                try {
+                    BindAnnoInfo bindInfo = param.bindAnnoInfo();
+                    Binder<?> binder = null;
                     String bindName = param.bindName();
-                    String reqVal = ctx.paramVal(bindName);
-                    if (null != reqVal) {
-                        if (null == resolver) {
-                            oa[i] = resolverManager.resolve(reqVal, paramType);
-                        } else {
-                            oa[i] = resolver.resolve(reqVal);
-                        }
+                    if (null != bindInfo) {
+                        binder = bindInfo.binder(ctx);
+                        bindName = bindInfo.model();
                     } else {
-                        oa[i] = param.defVal(paramType);
-                    }
-                    List<ActionMethodParamAnnotationHandler> annotationHandlers = paramAnnoHandlers.get(i);
-                    if (null != annotationHandlers) {
-                        String paraName = param.name();
-                        Object val = oa[i];
-                        for (ActionMethodParamAnnotationHandler annotationHandler : annotationHandlers) {
-                            for (Annotation annotation : paramAnnotationList(i)) {
-                                annotationHandler.handle(paraName, val, annotation, ctx);
+                        Type componentType = param.componentType();
+                        if (null != componentType) {
+                            binder = binderManager.binder(paramType, _.classForName(componentType.getClassName(), cl), param);
+                            if (null == binder) {
+                                binder = binderManager.binder(param);
                             }
                         }
                     }
+                    if (null != binder) {
+                        oa[i] = binder.resolve(bindName, ctx);
+                    } else {
+                        StringValueResolver resolver = null;
+                        if (param.resolverDefined()) {
+                            resolver = param.resolver(app);
+                        }
+                        String reqVal = ctx.paramVal(bindName);
+                        if (null != reqVal) {
+                            if (null == resolver) {
+                                oa[i] = resolverManager.resolve(reqVal, paramType);
+                            } else {
+                                oa[i] = resolver.resolve(reqVal);
+                            }
+                        } else {
+                            oa[i] = param.defVal(paramType);
+                        }
+                        List<ActionMethodParamAnnotationHandler> annotationHandlers = paramAnnoHandlers.get(i);
+                        if (null != annotationHandlers) {
+                            String paraName = param.name();
+                            Object val = oa[i];
+                            for (ActionMethodParamAnnotationHandler annotationHandler : annotationHandlers) {
+                                for (Annotation annotation : paramAnnotationList(i)) {
+                                    annotationHandler.handle(paraName, val, annotation, ctx);
+                                }
+                            }
+                        }
+                    }
+                } catch (RuntimeException e) {
+                    throw new BindException(e);
                 }
             }
         }
@@ -260,11 +277,11 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
     private List<Annotation> paramAnnotationList(int paramIndex) {
         ParamMetaInfo paramMetaInfo = handler.param(paramIndex);
         List<Annotation> retVal = C.newList();
-        List<GenericAnnoInfo> infoList = paramMetaInfo.genericAnnoInfoList();
+        List<GeneralAnnoInfo> infoList = paramMetaInfo.generalAnnoInfoList();
         if (null == infoList) {
             return retVal;
         }
-        for (GenericAnnoInfo annoInfo : infoList) {
+        for (GeneralAnnoInfo annoInfo : infoList) {
             retVal.add(annoInfo.toAnnotation());
         }
         return retVal;

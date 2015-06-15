@@ -1,6 +1,6 @@
 package act.app;
 
-import act.ActException;
+import act.exception.ActException;
 
 public class RequestServerRestart extends ActException {
 

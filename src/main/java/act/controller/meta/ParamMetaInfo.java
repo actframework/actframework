@@ -1,7 +1,7 @@
 package act.controller.meta;
 
 import act.app.App;
-import act.util.GenericAnnoInfo;
+import act.util.GeneralAnnoInfo;
 import org.osgl._;
 import act.asm.Type;
 import org.osgl.mvc.util.StringValueResolver;
@@ -13,9 +13,10 @@ import java.util.List;
 public class ParamMetaInfo {
     private String name;
     private Type type;
+    private Type componentType;
     private ParamAnnoInfo paramAnno;
     private BindAnnoInfo bindAnno;
-    private List<GenericAnnoInfo> genericAnnoInfoList = C.newList();
+    private List<GeneralAnnoInfo> generalAnnoInfoList = C.newList();
 
     public ParamMetaInfo type(Type type) {
         this.type = type;
@@ -24,6 +25,15 @@ public class ParamMetaInfo {
 
     public Type type() {
         return type;
+    }
+
+    public ParamMetaInfo componentType(Type type) {
+        this.componentType = type;
+        return this;
+    }
+
+    public Type componentType() {
+        return this.componentType;
     }
 
     public ParamMetaInfo name(String newName) {
@@ -79,23 +89,35 @@ public class ParamMetaInfo {
         return this;
     }
 
-    public ParamMetaInfo addGenericAnnotation(GenericAnnoInfo anno) {
-        genericAnnoInfoList.add(anno);
+    public ParamMetaInfo addGeneralAnnotation(GeneralAnnoInfo anno) {
+        generalAnnoInfoList.add(anno);
         return this;
     }
 
-    public ParamMetaInfo addGenericAnnotations(List<GenericAnnoInfo> list) {
-        genericAnnoInfoList.addAll(list);
+    public ParamMetaInfo addGeneralAnnotations(List<GeneralAnnoInfo> list) {
+        generalAnnoInfoList.addAll(list);
         return this;
     }
 
-    public List<GenericAnnoInfo> genericAnnoInfoList() {
-        return C.list(genericAnnoInfoList);
+    public List<GeneralAnnoInfo> generalAnnoInfoList() {
+        return C.list(generalAnnoInfoList);
     }
 
     @Override
     public int hashCode() {
         return _.hc(name, type);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == this) {
+            return true;
+        }
+        if (obj instanceof ParamMetaInfo) {
+            ParamMetaInfo that = (ParamMetaInfo)obj;
+            return _.eq(that.name, this.name) && _.eq(that.type, this.type);
+        }
+        return false;
     }
 
     @Override

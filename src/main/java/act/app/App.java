@@ -1,6 +1,7 @@
 package act.app;
 
 import act.Act;
+import act.app.data.BinderManager;
 import act.app.data.StringValueResolverManager;
 import act.app.event.AppEvent;
 import act.app.event.AppEventManager;
@@ -55,6 +56,7 @@ public class App {
     private AppCodeScannerManager scannerManager;
     private AppJobManager jobManager;
     private StringValueResolverManager resolverManager;
+    private BinderManager binderManager;
     private AppInterceptorManager interceptorManager;
     private DependencyInjector<?> dependencyInjector;
     private IStorageService uploadFileStorageService;
@@ -120,6 +122,7 @@ public class App {
         initInterceptorManager();
         loadConfig();
         initResolverManager();
+        initBinderManager();
         initUploadFileStorageService();
         initRouter();
         initJobManager();
@@ -163,6 +166,8 @@ public class App {
     public StringValueResolverManager resolverManager() {
         return resolverManager;
     }
+
+    public BinderManager binderManager() {return binderManager;}
 
     public AppEventManager eventManager() {
         return eventManager;
@@ -335,6 +340,9 @@ public class App {
 
     private void initResolverManager() {
         resolverManager = new StringValueResolverManager(this);
+    }
+    private void initBinderManager() {
+        binderManager = new BinderManager(this);
     }
 
     private void loadPlugins() {
