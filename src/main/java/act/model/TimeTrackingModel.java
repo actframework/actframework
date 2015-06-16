@@ -2,11 +2,9 @@ package act.model;
 
 /**
  * The model with time tracking built-in
- * @param <MODEL_TYPE> the model type
- * @param <KEY_TYPE> the key type
  * @param <TIME_TYPE> the time type
  */
-public interface TimeTrackingModel<MODEL_TYPE extends Model, KEY_TYPE, TIME_TYPE> extends Model<MODEL_TYPE, KEY_TYPE> {
+public interface TimeTrackingModel<TIME_TYPE> {
     /**
      * Returns the first time this model is created and saved
      * @return the create time
@@ -24,5 +22,5 @@ public interface TimeTrackingModel<MODEL_TYPE extends Model, KEY_TYPE, TIME_TYPE
      * the model creation/updating events
      * @return the class of the time type
      */
-    Class<TIME_TYPE> timeType();
+    Class<TIME_TYPE> _timeType();
 }

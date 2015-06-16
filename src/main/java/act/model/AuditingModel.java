@@ -21,5 +21,11 @@ public interface AuditingModel<MODEL_TYPE extends Model, KEY_TYPE, TIME_TYPE, PR
      */
     PRINCIPAL_TYPE _lastModifier();
 
+    /**
+     * Return the class of principal used in this model
+     * @return
+     */
+    Class<PRINCIPAL_TYPE> _principalType();
+
 }
 
