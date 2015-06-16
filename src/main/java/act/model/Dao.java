@@ -1,11 +1,15 @@
 package act.model;
 
+import act.app.AppContextAware;
+import act.app.security.SecurityContextAware;
+
 /**
  * The Data Access Object interface
  * @param <ID_TYPE> the generic key type
  * @param <MODEL_TYPE> the generic model type
  */
-public interface Dao<ID_TYPE, MODEL_TYPE extends Model<MODEL_TYPE, ID_TYPE>> {
+public interface Dao<ID_TYPE, MODEL_TYPE extends Model<MODEL_TYPE, ID_TYPE>>
+        extends AppContextAware, SecurityContextAware {
 
     /**
      * Find an entity by id, the primary key
@@ -35,6 +39,17 @@ public interface Dao<ID_TYPE, MODEL_TYPE extends Model<MODEL_TYPE, ID_TYPE>> {
      * @throws IllegalArgumentException if fields number and value number doesn't match
      */
     Iterable<MODEL_TYPE> findBy(String fields, Object ... values) throws IllegalArgumentException;
+
+    /**
+     * Reload a model entity from persistent storage by it's {@link Model#_id()}. This method
+     * returns the model been reloaded. Depending on the implementation, it could be the model
+     * passed in as parameter if it's mutable object or a fresh new object instance with the
+     * same ID as the model been passed in.
+     *
+     * @param model the model to be reloaded
+     * @return a model been reloaded
+     */
+    MODEL_TYPE reload(MODEL_TYPE model);
 
     /**
      * Returns total number of entities of the model type of this {@code Dao} object.
@@ -77,4 +92,12 @@ public interface Dao<ID_TYPE, MODEL_TYPE extends Model<MODEL_TYPE, ID_TYPE>> {
      * @param entity the entity to be removed
      */
     void delete(MODEL_TYPE entity);
+
+    interface Query<ID_TYPE, MODEL_TYPE extends Model<MODEL_TYPE, ID_TYPE>> {
+        Query<ID_TYPE, MODEL_TYPE> offset(int pos);
+        Query<ID_TYPE, MODEL_TYPE> limit(int limit);
+        Query<ID_TYPE, MODEL_TYPE> orderBy(String ... fieldList);
+        MODEL_TYPE first();
+        Iterable<MODEL_TYPE> fetch();
+    }
 }

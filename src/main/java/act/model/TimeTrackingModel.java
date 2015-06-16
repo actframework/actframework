@@ -18,4 +18,11 @@ public interface TimeTrackingModel<MODEL_TYPE extends Model, KEY_TYPE, TIME_TYPE
      * @return the last modified time
      */
     TIME_TYPE _lastModified();
+
+    /**
+     * Returns the class represents the time type used to track
+     * the model creation/updating events
+     * @return the class of the time type
+     */
+    Class<TIME_TYPE> timeType();
 }
