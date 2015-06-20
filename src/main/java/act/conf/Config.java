@@ -2,6 +2,7 @@ package act.conf;
 
 import act.Destroyable;
 import act.util.DestroyableBase;
+import org.osgl.util.C;
 
 import java.util.HashMap;
 import java.util.List;
@@ -107,6 +108,23 @@ public abstract class Config<E extends ConfigKey> extends DestroyableBase {
 
     public Map rawConfiguration() {
         return raw;
+    }
+
+    public Map subSet(String prefix) {
+        String prefix2 = "act." + prefix;
+        Map<String, Object> subset = C.newMap();
+        for (String key : raw.keySet()) {
+            if (key.startsWith(prefix) || key.startsWith(prefix2)) {
+                Object o = data.get(key);
+                if (null == o) o = raw.get(key);
+                if (key.startsWith("act.")) {
+                    key = key.substring(4);
+                }
+                if (subset.containsKey(key)) continue;
+                subset.put(key, o);
+            }
+        }
+        return subset;
     }
 
     protected abstract ConfigKey keyOf(String s);

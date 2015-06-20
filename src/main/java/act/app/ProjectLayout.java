@@ -246,7 +246,7 @@ public interface ProjectLayout {
 
         private static String _get(String key, Properties p) {
             String s = p.getProperty(key);
-            E.invalidConfigurationIf(null == s, "cannot find '%s' setting in project layout properties", key);
+            E.invalidConfigurationIf(null == s, "cannot findBy '%s' setting in project layout properties", key);
             return s;
         }
     }

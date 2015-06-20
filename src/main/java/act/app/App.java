@@ -9,6 +9,7 @@ import act.conf.AppConfLoader;
 import act.conf.AppConfig;
 import act.controller.ControllerSourceCodeScanner;
 import act.controller.bytecode.ControllerByteCodeScanner;
+import act.db.DbService;
 import act.di.DependencyInjector;
 import act.handler.builtin.StaticFileGetter;
 import act.job.AppJobManager;
@@ -54,6 +55,7 @@ public class App {
     private AppBuilder builder;
     private AppEventManager eventManager;
     private AppCodeScannerManager scannerManager;
+    private DbServiceManager dbServiceManager;
     private AppJobManager jobManager;
     private StringValueResolverManager resolverManager;
     private BinderManager binderManager;
@@ -121,6 +123,7 @@ public class App {
         initEventManager();
         initInterceptorManager();
         loadConfig();
+        initDbServiceManager();
         initResolverManager();
         initBinderManager();
         initUploadFileStorageService();
@@ -238,6 +241,17 @@ public class App {
         }
     }
 
+    <T> T newInstance(Class<T> clz, AppContext context) {
+        if (App.class == clz) return _.cast(this);
+        if (AppConfig.class == clz) return _.cast(config());
+        if (AppContext.class == clz) return _.cast(context);
+        if (null != dependencyInjector) {
+            return dependencyInjector.createContextAwareInjector(context).create(clz);
+        } else {
+            return _.newInstance(clz);
+        }
+    }
+
     @Override
     public int hashCode() {
         return appBase.hashCode();
@@ -303,6 +317,10 @@ public class App {
 
     private void initScannerManager() {
         scannerManager = new AppCodeScannerManager(this);
+    }
+
+    private void initDbServiceManager() {
+        dbServiceManager = new DbServiceManager(this);
     }
 
     private void loadActScanners() {

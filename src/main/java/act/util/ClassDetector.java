@@ -66,6 +66,12 @@ public abstract class ClassDetector extends ByteCodeVisitor {
         @Override
         public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
             super.visit(version, access, name, signature, superName, interfaces);
+            if (filter.noAbstract() && (access & ACC_ABSTRACT) != 0) {
+                return;
+            }
+            if (filter.publicOnly() && (access & ACC_PUBLIC) != 1) {
+                return;
+            }
             Class<?> superType = filter.superType();
             if (null == superType) {
                 return; // we will check annotation type anyway

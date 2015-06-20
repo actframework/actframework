@@ -1,14 +1,10 @@
-package act.model;
+package act.db;
 
 /**
  * The model with time tracking and auditing built in
- * @param <MODEL_TYPE> the model type
- * @param <KEY_TYPE> the key type
- * @param <TIME_TYPE> the time type
  * @param <PRINCIPAL_TYPE> the principal type
  */
-public interface AuditingModel<MODEL_TYPE extends Model, KEY_TYPE, TIME_TYPE, PRINCIPAL_TYPE>
-        extends TimeTrackingModel<MODEL_TYPE, KEY_TYPE, TIME_TYPE> {
+public interface AuditingModel<PRINCIPAL_TYPE> {
     /**
      * Returns the principal who created and saved this model
      * @return the creator

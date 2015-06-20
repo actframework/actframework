@@ -1,6 +1,7 @@
 package act;
 
 import act.app.*;
+import act.db.DbManager;
 import act.handler.builtin.controller.*;
 import act.plugin.GenericPluginManager;
 import act.plugin.Plugin;
@@ -103,6 +104,7 @@ public final class Act {
     private static BytecodeEnhancerManager enhancerManager;
     private static SessionManager sessionManager;
     private static AppCodeScannerPluginManager scannerPluginManager;
+    private static DbManager dbManager;
     private static GenericPluginManager pluginManager;
 
     public static List<Class<?>> pluginClasses() {
@@ -139,6 +141,8 @@ public final class Act {
         return pluginManager;
     }
 
+    public static DbManager dbManager() {return dbManager;}
+
     public static ViewManager viewManager() {
         return viewManager;
     }
@@ -168,6 +172,7 @@ public final class Act {
         Banner.print("0.0.2-SNAPSHOT");
         loadConfig();
         initPluginManager();
+        initDbManager();
         //initExecuteService();
         initEnhancerManager();
         initViewManager();
@@ -227,6 +232,10 @@ public final class Act {
 
     private static void initSessionManager() {
         sessionManager = new SessionManager();
+    }
+
+    private static void initDbManager() {
+        dbManager = new DbManager();
     }
 
     private static void initAppCodeScannerPluginManager() {

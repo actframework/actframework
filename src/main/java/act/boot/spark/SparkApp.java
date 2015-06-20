@@ -288,7 +288,7 @@ public final class SparkApp extends App {
             } catch (Result result) {
                 onResult(result, ctx);
             } finally {
-                AppContext.clear();
+                ctx.clearLocal();
             }
         }
 

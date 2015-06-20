@@ -17,13 +17,21 @@ public abstract class AnnotatedTypeFinder extends AppCodeScannerPluginBase {
     private String clsName;
     private String pkgName;
     private Class<? extends Annotation> annoType;
+    private boolean noAbstract;
+    private boolean publicOnly;
 
-    protected AnnotatedTypeFinder(Class<? extends Annotation> annoType, _.Func2<App, String, Map<Class<? extends AppByteCodeScanner>, Set<String>>> foundHandler) {
+    protected AnnotatedTypeFinder(boolean publicOnly, boolean noAbstract, Class<? extends Annotation> annoType, _.Func2<App, String, Map<Class<? extends AppByteCodeScanner>, Set<String>>> foundHandler) {
         E.NPE(annoType, foundHandler);
         this.clsName = annoType.getSimpleName();
         this.pkgName = FastStr.of(annoType.getName()).beforeLast('.').toString();
         this.annoType = annoType;
         this.foundHandler = foundHandler;
+        this.noAbstract = noAbstract;
+        this.publicOnly = publicOnly;
+    }
+
+    protected AnnotatedTypeFinder(Class<? extends Annotation> annoType, _.Func2<App, String, Map<Class<? extends AppByteCodeScanner>, Set<String>>> foundHandler) {
+        this(true, true, annoType, foundHandler);
     }
 
     @Override
@@ -105,7 +113,7 @@ public abstract class AnnotatedTypeFinder extends AppCodeScannerPluginBase {
         @Override
         protected void reset(String className) {
             super.reset(className);
-            detector = ClassDetector.of(new AnnotatedClassFilter(annoType) {
+            detector = ClassDetector.of(new AnnotatedClassFilter(publicOnly, noAbstract, annoType) {
                 @Override
                 public void found(Class clazz) {
                 }

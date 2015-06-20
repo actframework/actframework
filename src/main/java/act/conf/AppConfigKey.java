@@ -271,8 +271,8 @@ public enum AppConfigKey implements ConfigKey {
     SESSION_SECURE("session.secure.enabled"),
 
     /**
-     * {@code act.source_version} specifies the java version
-     * of the srccode code. This configuration is used only
+     * {@code source_version} specifies the java version
+     * of the src code. This configuration is used only
      * in dev mode.
      * <p>Default value: 1.7</p>
      */
@@ -307,7 +307,7 @@ public enum AppConfigKey implements ConfigKey {
     TEMPLATE_PATH_RESOLVER("template_path_resolver.impl"),
 
     /**
-     * {@code act.url_context} specifies the context part
+     * {@code url_context} specifies the context part
      * of the URL. This is used for Act to dispatch the
      * incoming request to the application. Usually
      * the {@link #PORT port} configuration is preferred
@@ -318,7 +318,7 @@ public enum AppConfigKey implements ConfigKey {
     URL_CONTEXT("url_context"),
 
     /**
-     * {@code view.default} specifies the default view solution. If there
+     * {@code act.view.default} specifies the default view solution. If there
      * are multiple views registered and default view are available, then
      * it will be used at priority to load the templates
      * <p/>
@@ -331,7 +331,6 @@ public enum AppConfigKey implements ConfigKey {
     ;
     private String key;
     private Object defVal;
-    private static Logger logger = L.get(AppConfigKey.class);
     private static ConfigKeyHelper helper = new ConfigKeyHelper(Act.F.MODE_ACCESSOR);
 
     private AppConfigKey(String key) {

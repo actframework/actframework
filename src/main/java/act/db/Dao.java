@@ -1,5 +1,6 @@
-package act.model;
+package act.db;
 
+import act.Destroyable;
 import act.app.AppContextAware;
 import act.app.security.SecurityContextAware;
 
@@ -8,8 +9,8 @@ import act.app.security.SecurityContextAware;
  * @param <ID_TYPE> the generic key type
  * @param <MODEL_TYPE> the generic model type
  */
-public interface Dao<ID_TYPE, MODEL_TYPE extends Model<MODEL_TYPE, ID_TYPE>>
-        extends AppContextAware, SecurityContextAware {
+public interface Dao<ID_TYPE, MODEL_TYPE, QUERY_TYPE extends Dao.Query<MODEL_TYPE, QUERY_TYPE>>
+        extends AppContextAware, SecurityContextAware, Destroyable {
 
     /**
      * Find an entity by id, the primary key
@@ -38,10 +39,10 @@ public interface Dao<ID_TYPE, MODEL_TYPE extends Model<MODEL_TYPE, ID_TYPE>>
      * @return A collection of entities in {@link Iterable}
      * @throws IllegalArgumentException if fields number and value number doesn't match
      */
-    Iterable<MODEL_TYPE> findBy(String fields, Object ... values) throws IllegalArgumentException;
+    Iterable<MODEL_TYPE> findBy(String fields, Object... values) throws IllegalArgumentException;
 
     /**
-     * Reload a model entity from persistent storage by it's {@link Model#_id()}. This method
+     * Reload a model entity from persistent storage by it's {@link ModelBase#_id()}. This method
      * returns the model been reloaded. Depending on the implementation, it could be the model
      * passed in as parameter if it's mutable object or a fresh new object instance with the
      * same ID as the model been passed in.
@@ -77,7 +78,7 @@ public interface Dao<ID_TYPE, MODEL_TYPE extends Model<MODEL_TYPE, ID_TYPE>>
      * Update existing entity in persistent layer with specified fields and value. This allows
      * partial updates of the entity to save the bandwidth.
      * <p>Note the properties of the entity
-     * does not impact the update operation, however the {@link Model#_id()} will be used to
+     * does not impact the update operation, however the {@link ModelBase#_id()} will be used to
      * locate the record/document in the persistent layer corresponding to this entity.</p>
      * <p>For fields and value specification rule, please refer to {@link #findBy(String, Object...)}</p>
      * @param entity the
@@ -93,11 +94,17 @@ public interface Dao<ID_TYPE, MODEL_TYPE extends Model<MODEL_TYPE, ID_TYPE>>
      */
     void delete(MODEL_TYPE entity);
 
-    interface Query<ID_TYPE, MODEL_TYPE extends Model<MODEL_TYPE, ID_TYPE>> {
-        Query<ID_TYPE, MODEL_TYPE> offset(int pos);
-        Query<ID_TYPE, MODEL_TYPE> limit(int limit);
-        Query<ID_TYPE, MODEL_TYPE> orderBy(String ... fieldList);
+    /**
+     * Return a {@link act.db.Dao.Query} of bound to this {@code MODEL_TYPE}
+     */
+    QUERY_TYPE q();
+
+    interface Query<MODEL_TYPE, QUERY_TYPE extends Query<MODEL_TYPE, QUERY_TYPE>> {
+        QUERY_TYPE offset(int pos);
+        QUERY_TYPE limit(int limit);
+        QUERY_TYPE orderBy(String ... fieldList);
         MODEL_TYPE first();
         Iterable<MODEL_TYPE> fetch();
+        long count();
     }
 }

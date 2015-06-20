@@ -73,7 +73,7 @@ public class ControllerEnhancerTest extends TestBase implements ControllerClassM
         C.List<AppByteCodeScanner> scanners = C.list(scanner);
         when(scannerManager.byteCodeScanners()).thenReturn(scanners);
         InvokeLogFactory.set(invokeLog);
-        AppContext.clear();
+        AppContext.clearCurrent();
         ctx = AppContext.create(mockApp, mockReq, mockResp);
         base = new File("./target/test-classes");
     }

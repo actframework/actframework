@@ -16,14 +16,21 @@ public abstract class SubTypeFinder extends AppCodeScannerPluginBase {
     private String pkgName;
     private String clsName;
     private Class<?> superType;
+    private boolean publicOnly;
+    private boolean noAbstract;
 
-    protected SubTypeFinder(Class<?> superType, _.Func2<App, String, Map<Class<? extends AppByteCodeScanner>, Set<String>>> foundHandler) {
+    protected SubTypeFinder(boolean publicOnly, boolean noAbstract, Class<?> superType, _.Func2<App, String, Map<Class<? extends AppByteCodeScanner>, Set<String>>> foundHandler) {
         E.NPE(superType, foundHandler);
         this.clsName = superType.getSimpleName();
         this.pkgName = FastStr.of(superType.getName()).beforeLast('.').toString();
         this.superType = superType;
         this.foundHandler = foundHandler;
+        this.noAbstract = noAbstract;
+        this.publicOnly = publicOnly;
         logger.info("pkg: %s, cls: %s", pkgName, clsName);
+    }
+    protected SubTypeFinder(Class<?> superType, _.Func2<App, String, Map<Class<? extends AppByteCodeScanner>, Set<String>>> foundHandler) {
+        this(true, true, superType, foundHandler);
     }
 
     @Override
@@ -107,7 +114,7 @@ public abstract class SubTypeFinder extends AppCodeScannerPluginBase {
         @Override
         protected void reset(String className) {
             super.reset(className);
-            detector = ClassDetector.of(new DescendantClassFilter(superType) {
+            detector = ClassDetector.of(new DescendantClassFilter(publicOnly, noAbstract, superType) {
                 @Override
                 public void found(Class clazz) {
                 }

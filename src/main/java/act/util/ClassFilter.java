@@ -14,13 +14,20 @@ public abstract class ClassFilter<SUPER_TYPE, ANNOTATION_TYPE extends Annotation
 
     private Class<SUPER_TYPE> superType;
     private Class<ANNOTATION_TYPE> annotationType;
+    private boolean noAbstract;
+    private boolean publicOnly;
 
-    public ClassFilter() {}
 
     public ClassFilter(Class<SUPER_TYPE> superType, Class<ANNOTATION_TYPE> annotationType) {
+        this(false, false, superType, annotationType);
+    }
+
+    public ClassFilter(boolean publicOnly, boolean noAbstract, Class<SUPER_TYPE> superType, Class<ANNOTATION_TYPE> annotationType) {
         E.npeIf(superType == null && annotationType == null);
         this.superType = superType;
         this.annotationType = annotationType;
+        this.noAbstract = noAbstract;
+        this.publicOnly = publicOnly;
     }
 
     /**
@@ -45,6 +52,14 @@ public abstract class ClassFilter<SUPER_TYPE, ANNOTATION_TYPE extends Annotation
      */
     public Class<ANNOTATION_TYPE> annotationType() {
         return annotationType;
+    }
+
+    public boolean noAbstract() {
+        return noAbstract;
+    }
+
+    public boolean publicOnly() {
+        return publicOnly;
     }
 
 }

@@ -1,4 +1,4 @@
-package act.model;
+package act.db;
 
 /**
  * The model with time tracking built-in

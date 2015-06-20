@@ -19,7 +19,7 @@ import java.util.Set;
  */
 public class AppConfigPlugin extends SubTypeFinder {
     public AppConfigPlugin() {
-        super(AppConfigurator.class, new _.F2<App, String, Map<Class<? extends AppByteCodeScanner>, Set<String>>>() {
+        super(true, false, AppConfigurator.class, new _.F2<App, String, Map<Class<? extends AppByteCodeScanner>, Set<String>>>() {
             @Override
             public Map<Class<? extends AppByteCodeScanner>, Set<String>> apply(App app, String className) throws NotAppliedException, _.Break {
                 AppConfiguratorClassLoader cl = new AppConfiguratorClassLoader(app.classLoader());

@@ -28,7 +28,7 @@ public abstract class ProjectLayoutProbe implements Plugin {
         Act.mode().appScanner().register(this);
     }
 
-    public static final DescendantClassFilter<ProjectLayoutProbe> PLUGIN_FILTER = new DescendantClassFilter<ProjectLayoutProbe>(ProjectLayoutProbe.class) {
+    public static final DescendantClassFilter<ProjectLayoutProbe> PLUGIN_FILTER = new DescendantClassFilter<ProjectLayoutProbe>(true, true, ProjectLayoutProbe.class) {
         @Override
         public void found(Class<? extends ProjectLayoutProbe> clazz) {
             Act.mode().appScanner().register(_.newInstance(clazz));

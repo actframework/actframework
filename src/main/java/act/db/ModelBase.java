@@ -1,4 +1,4 @@
-package act.model;
+package act.db;
 
 import org.osgl.util.E;
 
@@ -7,7 +7,8 @@ import org.osgl.util.E;
  * @param <MODEL_TYPE> the generic type of Model class
  * @param <ID_TYPE> the generic type of the ID (Key)
  */
-public abstract class Model<MODEL_TYPE extends Model, ID_TYPE> {
+public abstract class ModelBase<ID_TYPE, MODEL_TYPE extends ModelBase<ID_TYPE, MODEL_TYPE>>
+implements Model<ID_TYPE, MODEL_TYPE> {
 
     private ID_TYPE id;
 
@@ -37,8 +38,8 @@ public abstract class Model<MODEL_TYPE extends Model, ID_TYPE> {
     }
 
     /**
-     * Returns {@code true} if the entity has not been saved yet
-     * or {@code false} otherwise
+     * Returns {@code true} if the entity is just created in memory or been
+     * loaded from data storage
      */
     public abstract boolean _isNew();
 
@@ -50,7 +51,11 @@ public abstract class Model<MODEL_TYPE extends Model, ID_TYPE> {
      *
      * @return the {@code Dao} object
      */
-    public static Dao _dao() {
+    public static <ID_TYPE,
+            MODEL_TYPE extends ModelBase<ID_TYPE, MODEL_TYPE>,
+            QUERY_TYPE extends Dao.Query<MODEL_TYPE, QUERY_TYPE>,
+            DAO_TYPE extends Dao<ID_TYPE, MODEL_TYPE, QUERY_TYPE>>
+    DAO_TYPE _dao() {
         throw E.unsupport("to be enhanced");
     }
 

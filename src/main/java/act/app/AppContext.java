@@ -44,7 +44,6 @@ public class AppContext implements ParamValueProvider, Destroyable {
     private State state;
     private Map<String, Object> controllerInstances;
     private List<ISObject> uploads;
-    private boolean localSaved;
     private Set<ConstraintViolation> violations;
 
     private AppContext(App app, H.Request request, H.Response response) {
@@ -226,7 +225,7 @@ public class AppContext implements ParamValueProvider, Destroyable {
 
     public <T> T newInstance(Class<? extends T> clazz) {
         if (clazz == AppContext.class) return _.cast(this);
-        return app().newInstance(clazz);
+        return app().newInstance(clazz, this);
     }
 
     public AppContext renderArg(String name, Object val) {
@@ -387,7 +386,7 @@ public class AppContext implements ParamValueProvider, Destroyable {
             this.template = null;
             this.controllerInstances = null;
             this.violations.clear();
-            if (localSaved) AppContext.clear();
+            this.clearLocal();
             this.uploads.clear();
             for (Object o : this.attributes.values()) {
                 if (o instanceof Destroyable) {
@@ -402,7 +401,10 @@ public class AppContext implements ParamValueProvider, Destroyable {
 
     public void saveLocal() {
         _local.set(this);
-        localSaved = true;
+    }
+
+    public static void clearLocal() {
+        _local.remove();
     }
 
     private Set<Map.Entry<String, String[]>> requestParamCache() {
@@ -535,11 +537,11 @@ public class AppContext implements ParamValueProvider, Destroyable {
 
     private static ContextLocal<AppContext> _local = _.contextLocal();
 
-    public static AppContext get() {
+    public static AppContext current() {
         return _local.get();
     }
 
-    public static void clear() {
+    public static void clearCurrent() {
         _local.remove();
     }
 

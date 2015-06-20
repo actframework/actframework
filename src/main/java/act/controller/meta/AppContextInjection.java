@@ -39,7 +39,7 @@ public class AppContextInjection<T> {
          * the {@link #FIELD} and {@link #PARAM} can be used to inject the
          * {@code AppContext}, then framework shall call {@link AppContext#saveLocal}
          * method to save the app context instance into thread local variable, such that the
-         * application developer could use {@link AppContext#get} method to
+         * application developer could use {@link AppContext#current} method to
          * access the current application context
          */
         LOCAL;

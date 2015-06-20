@@ -42,7 +42,9 @@ public class NetworkClient extends _.F1<AppContext, Void> {
         } catch (Result r) {
             r.apply(req, ctx.resp());
         } finally {
-            ctx.clear();
+            // we don't destroy ctx here in case it's been passed to
+            // another thread
+            AppContext.clearCurrent();
         }
     }
 
