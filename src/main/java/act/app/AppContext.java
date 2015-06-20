@@ -537,6 +537,8 @@ public class AppContext implements ParamValueProvider, Destroyable {
 
     private static ContextLocal<AppContext> _local = _.contextLocal();
 
+    public static final String METHOD_GET_CURRENT = "current";
+
     public static AppContext current() {
         return _local.get();
     }

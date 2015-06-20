@@ -221,7 +221,7 @@ public class HandlerEnhancer extends MethodVisitor implements Opcodes {
                 if (appCtxIdx < 0) {
                     String appCtxFieldName = appCtxFieldName();
                     if (null == appCtxFieldName) {
-                        MethodInsnNode getAppCtx = new MethodInsnNode(INVOKESTATIC, AsmTypes.APP_CONTEXT_INTERNAL_NAME, "get", GET_APP_CTX_DESC, false);
+                        MethodInsnNode getAppCtx = new MethodInsnNode(INVOKESTATIC, AsmTypes.APP_CONTEXT_INTERNAL_NAME, AppContext.METHOD_GET_CURRENT, GET_APP_CTX_DESC, false);
                         list.add(getAppCtx);
                     } else {
                         VarInsnNode loadThis = new VarInsnNode(ALOAD, 0);
@@ -253,7 +253,7 @@ public class HandlerEnhancer extends MethodVisitor implements Opcodes {
                     if (appCtxIdx < 0) {
                         String appCtxFieldName = appCtxFieldName();
                         if (null == appCtxFieldName) {
-                            MethodInsnNode getAppCtx = new MethodInsnNode(INVOKESTATIC, AsmTypes.APP_CONTEXT_INTERNAL_NAME, "get", GET_APP_CTX_DESC, false);
+                            MethodInsnNode getAppCtx = new MethodInsnNode(INVOKESTATIC, AsmTypes.APP_CONTEXT_INTERNAL_NAME, AppContext.METHOD_GET_CURRENT, GET_APP_CTX_DESC, false);
                             list.add(getAppCtx);
                         } else {
                             VarInsnNode loadThis = new VarInsnNode(ALOAD, 0);
