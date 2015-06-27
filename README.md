@@ -31,10 +31,6 @@ Controller sample code:
         String price = n + ".99";
         return render(catalog, prod, price);
     }
-
-    public static void main(String[] args) throws Exception {
-        RunApp.start(HelloWorldApp.class);
-    }
 ```
 
 There are a couple of ACT Demo applications could be found at https://github.com/actframework/act-demo-apps, these apps demonstrate the following features of ACT Framework:
