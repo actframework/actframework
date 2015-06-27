@@ -42,6 +42,16 @@ public interface Dao<ID_TYPE, MODEL_TYPE, QUERY_TYPE extends Dao.Query<MODEL_TYP
     Iterable<MODEL_TYPE> findBy(String fields, Object... values) throws IllegalArgumentException;
 
     /**
+     * Find one entity with fields and values specified.
+     * @param fields
+     * @param values
+     * @return the entity matches or {@code null} if not found
+     * @throws IllegalArgumentException
+     * @see #findBy(String, Object...)
+     */
+    MODEL_TYPE findOneBy(String fields, Object... values) throws IllegalArgumentException;
+
+    /**
      * Find all entities of the collection/table specified by {@code MODEL_TYPE}
      * @return all entities of the type bound to this Dao object
      */
