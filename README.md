@@ -1,6 +1,6 @@
 ##### ACT Framework
 
-The reason I create ACT Framework is because I was so in fond of PlayFramework1 V1.x and I want to continue along the road pointing by that great product. In essence I need an expressive, Java developer friendly MVC framework, and that comes with ACT Framework.
+The reason I create ACT Framework is because I was so in fond of PlayFramework1 V1.x and I want to continue along the road paved by the great product. In essence I need an expressive, Java developer friendly MVC framework, and that comes with ACT Framework.
 
 Controller sample code:
 
