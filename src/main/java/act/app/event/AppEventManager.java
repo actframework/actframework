@@ -39,7 +39,7 @@ public class AppEventManager extends AppServiceBase<AppEventManager> {
         return this;
     }
 
-    public AppEventManager listenTo(AppEvent event, EventChannelListener listener) {
+    public AppEventManager on(AppEvent event, EventChannelListener listener) {
         Channel ch = channelListeners.get(event);
         if (null == ch) {
             ch = new Channel();

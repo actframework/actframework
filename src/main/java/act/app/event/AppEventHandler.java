@@ -2,16 +2,16 @@ package act.app.event;
 
 import org.osgl.util.S;
 
-public abstract class EventChannelListenerBase implements EventChannelListener {
+public abstract class AppEventHandler implements EventChannelListener {
     private String id;
-    public EventChannelListenerBase(CharSequence id) {
+    public AppEventHandler(CharSequence id) {
         if (null == id) {
             id = S.uuid();
         }
         this.id = id.toString();
     }
 
-    public EventChannelListenerBase() {
+    public AppEventHandler() {
         this(S.uuid());
     }
 
