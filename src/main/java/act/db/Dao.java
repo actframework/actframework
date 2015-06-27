@@ -4,6 +4,8 @@ import act.Destroyable;
 import act.app.AppContextAware;
 import act.app.security.SecurityContextAware;
 
+import java.util.List;
+
 /**
  * The Data Access Object interface
  * @param <ID_TYPE> the generic key type
@@ -50,6 +52,15 @@ public interface Dao<ID_TYPE, MODEL_TYPE, QUERY_TYPE extends Dao.Query<MODEL_TYP
      * @see #findBy(String, Object...)
      */
     MODEL_TYPE findOneBy(String fields, Object... values) throws IllegalArgumentException;
+
+    /**
+     * Find all entities from a give list of IDs. If there are certain ID in the list does not have
+     * an entity associated with then that ID will be ignored. The order of the returned iterator
+     * is not defined and shall be implemented as per specific implementation
+     * @param idList the ID list specifies the entities shall be returned
+     * @return a collection of entities
+     */
+    Iterable<MODEL_TYPE> findByIdList(List<ID_TYPE> idList);
 
     /**
      * Find all entities of the collection/table specified by {@code MODEL_TYPE}
