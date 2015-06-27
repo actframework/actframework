@@ -46,6 +46,8 @@ There are a couple of ACT Demo applications could be found at https://github.com
 
 All the demo apps shall be able to run directly by `cd path/to/app` and `mvn clean compile exec:exec`. Then you can open your browser and navigate to `http://localhost:5460`. The demo apps are using default view based on [Rythm](http://rythmengine.org), which is my another open source contribution.
 
-At the moment ACT framework is still under development and not ready for product use. But you are welcome to give it a try and send me feedback by [raising issues](/actframework/actframework/issues) or send email to actframework@googlegroup.com. 中国朋友可以申请加入ＱＱ群：283919975.
+At the moment ACT framework is still under development and not ready for product use. But you are welcome to give it a try and send me feedback by [raising issues](/actframework/actframework/issues) or send email to actframework@googlegroup.com. 中国的朋友可以申请加入ＱＱ群：283919975.
+
+You can track ACT Framework development progress at https://trello.com/b/iMsldsST/actframework-0-1
 
 Happy coding!
