@@ -183,6 +183,7 @@ public class SessionManager {
             H.Flash flash = new H.Flash();
             if (null != cookie) {
                 resolveFromCookieContent(flash, cookie.value(), false);
+                flash.discard(); // prevent cookie content from been output to response again
             }
             return flash;
         }
@@ -209,7 +210,7 @@ public class SessionManager {
                 String data = dissolveIntoCookieContent(session, true);
                 cookie = createCookie(sessionCookieName, data);
             }
-            session.clear();
+            // I can't clear here b/c template might use it:: session.clear();
             return cookie;
         }
 
@@ -220,7 +221,7 @@ public class SessionManager {
             }
             String data = dissolveIntoCookieContent(flash.out(), false);
             H.Cookie cookie = createCookie(flashCookieName, data);
-            flash.clear();
+            // I can't clear here b/c template might use it:: flash.clear();
             return cookie;
         }
 

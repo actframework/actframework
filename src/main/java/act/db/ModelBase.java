@@ -54,7 +54,7 @@ implements Model<ID_TYPE, MODEL_TYPE> {
     public static <ID_TYPE,
             MODEL_TYPE extends ModelBase<ID_TYPE, MODEL_TYPE>,
             QUERY_TYPE extends Dao.Query<MODEL_TYPE, QUERY_TYPE>,
-            DAO_TYPE extends Dao<ID_TYPE, MODEL_TYPE, QUERY_TYPE>>
+            DAO_TYPE extends Dao<ID_TYPE, MODEL_TYPE, QUERY_TYPE, DAO_TYPE>>
     DAO_TYPE _dao() {
         throw E.unsupport("to be enhanced");
     }

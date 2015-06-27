@@ -16,4 +16,20 @@ public class DbManager extends DestroyableBase {
     public synchronized DbPlugin plugin(String type) {
         return plugins.get(type);
     }
+
+    public synchronized boolean hasPlugin() {
+        return !plugins.isEmpty();
+    }
+
+    /**
+     * Returns the plugin if there is only One plugin inside
+     * the register, otherwise return {@code null}
+     */
+    public synchronized DbPlugin theSolePlugin() {
+        if (plugins.size() == 1) {
+            return plugins.values().iterator().next();
+        } else {
+            return null;
+        }
+    }
 }

@@ -246,14 +246,17 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
                             resolver = param.resolver(app);
                         }
                         String reqVal = ctx.paramVal(bindName);
-                        if (null != reqVal) {
-                            if (null == resolver) {
-                                oa[i] = resolverManager.resolve(reqVal, paramType);
-                            } else {
-                                oa[i] = resolver.resolve(reqVal);
+                        if (null == reqVal) {
+                            Object o = param.defVal(paramType);
+                            if (null != o) {
+                                oa[i] = o;
+                                continue;
                             }
+                        }
+                        if (null == resolver) {
+                            oa[i] = resolverManager.resolve(reqVal, paramType);
                         } else {
-                            oa[i] = param.defVal(paramType);
+                            oa[i] = resolver.resolve(reqVal);
                         }
                         List<ActionMethodParamAnnotationHandler> annotationHandlers = paramAnnoHandlers.get(i);
                         if (null != annotationHandlers) {

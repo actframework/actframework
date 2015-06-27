@@ -26,7 +26,7 @@ public enum RuntimeDirs {
     }
 
     public static File conf(App app) {
-        return new File(app.home(), CONF);
+        return new File(Act.isDev() ? new File(app.base(), "src/main/webapp") : app.home(), CONF);
     }
 
     public static File routes(App app) {

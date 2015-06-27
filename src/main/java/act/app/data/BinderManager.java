@@ -169,16 +169,17 @@ public class BinderManager extends AppServiceBase<BinderManager> {
             if (metaInfo.resolverDefined()) {
                 resolver = metaInfo.resolver(app());
             }
-            if (null != reqVal) {
-                if (null == resolver) {
-                    return resolverManager.resolve(reqVal, componentType);
-                } else {
-                    return resolver.resolve(reqVal);
+            if (null == reqVal) {
+                Object ret = metaInfo.defVal(componentType);
+                if (null != ret) {
+                    return ret;
                 }
-            } else {
-                return metaInfo.defVal(componentType);
             }
-
+            if (null == resolver) {
+                return resolverManager.resolve(reqVal, componentType);
+            } else {
+                return resolver.resolve(reqVal);
+            }
         }
     }
 }

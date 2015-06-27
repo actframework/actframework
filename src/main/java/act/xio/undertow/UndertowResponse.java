@@ -103,7 +103,8 @@ public class UndertowResponse extends ResponseImplBase<UndertowResponse> {
 
     @Override
     public UndertowResponse header(String name, String value) {
-        return null;
+        hse.getResponseHeaders().put(new HttpString(name), value);
+        return this;
     }
 
     @Override

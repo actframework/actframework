@@ -29,6 +29,7 @@ public class HandlerEnhancer extends MethodVisitor implements Opcodes {
 
     private HandlerMethodMetaInfo info;
     private MethodVisitor next;
+    private int paramIdShift = 0;
 
     public HandlerEnhancer(final MethodVisitor mv, HandlerMethodMetaInfo meta, final int access, final String name, final String desc, final String signature, final String[] exceptions) {
         super(ASM5, new MethodNode(access, name, desc, signature, exceptions));
@@ -43,11 +44,15 @@ public class HandlerEnhancer extends MethodVisitor implements Opcodes {
             if (!info.isStatic()) {
                 paramId--;
             }
+            paramId -= paramIdShift;
             if (paramId < info.paramCount()) {
                 ParamMetaInfo param = info.param(paramId);
                 param.name(name);
                 if (AsmTypes.APP_CONTEXT_TYPE.equals(param.type())) {
                     info.appCtxLocalVariableTableIndex(index);
+                }
+                if (Type.getType(long.class).equals(param.type()) || Type.getType(double.class).equals(param.type())) {
+                    paramIdShift++;
                 }
             }
             LocalVariableMetaInfo local = new LocalVariableMetaInfo(index, name, desc, start, end);

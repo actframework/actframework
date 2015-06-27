@@ -32,6 +32,6 @@ public abstract class DbPlugin extends DestroyableBase implements Plugin {
         return getClass() == obj.getClass();
     }
 
-    public abstract DbService initDbService(App app, Map<String, Object> conf);
+    public abstract DbService initDbService(String id, App app, Map<String, Object> conf);
 
 }

@@ -9,7 +9,7 @@ import act.app.security.SecurityContextAware;
  * @param <ID_TYPE> the generic key type
  * @param <MODEL_TYPE> the generic model type
  */
-public interface Dao<ID_TYPE, MODEL_TYPE, QUERY_TYPE extends Dao.Query<MODEL_TYPE, QUERY_TYPE>>
+public interface Dao<ID_TYPE, MODEL_TYPE, QUERY_TYPE extends Dao.Query<MODEL_TYPE, QUERY_TYPE>, DAO_TYPE extends Dao<ID_TYPE, MODEL_TYPE, QUERY_TYPE, DAO_TYPE>>
         extends AppContextAware, SecurityContextAware, Destroyable {
 
     /**
@@ -40,6 +40,12 @@ public interface Dao<ID_TYPE, MODEL_TYPE, QUERY_TYPE extends Dao.Query<MODEL_TYP
      * @throws IllegalArgumentException if fields number and value number doesn't match
      */
     Iterable<MODEL_TYPE> findBy(String fields, Object... values) throws IllegalArgumentException;
+
+    /**
+     * Find all entities of the collection/table specified by {@code MODEL_TYPE}
+     * @return all entities of the type bound to this Dao object
+     */
+    Iterable<MODEL_TYPE> findAll();
 
     /**
      * Reload a model entity from persistent storage by it's {@link ModelBase#_id()}. This method
@@ -98,6 +104,15 @@ public interface Dao<ID_TYPE, MODEL_TYPE, QUERY_TYPE extends Dao.Query<MODEL_TYP
      * Return a {@link act.db.Dao.Query} of bound to this {@code MODEL_TYPE}
      */
     QUERY_TYPE q();
+
+    /**
+     * Returns a {@code Dao} on another database service. Note the database service must
+     * comply to the current Dao instance, otherwise @{code RuntimException} will be
+     * thrown out
+     * @param dbId
+     * @return A Dao instance on another db service
+     */
+    DAO_TYPE on(String dbId);
 
     interface Query<MODEL_TYPE, QUERY_TYPE extends Query<MODEL_TYPE, QUERY_TYPE>> {
         QUERY_TYPE offset(int pos);

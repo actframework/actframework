@@ -123,18 +123,27 @@ public class App {
         initEventManager();
         initInterceptorManager();
         loadConfig();
-        initDbServiceManager();
+        initJobManager();
         initResolverManager();
         initBinderManager();
         initUploadFileStorageService();
         initRouter();
-        initJobManager();
+        initDbServiceManager();
+        eventManager().emitEvent(AppEvent.DB_SVC_LOADED);
+        loadGlobalPlugin();
         initScannerManager();
         loadActScanners();
         loadBuiltInScanners();
+        eventManager().emitEvent(AppEvent.PRE_LOAD_CLASSES);
         initClassLoader();
         scanAppCodes();
         loadRoutes();
+        // setting context class loader here might lead to memory leaks
+        // and cause weird problems as class loader been set to thread
+        // could be switched to handling other app in ACT or still hold
+        // old app class loader instance after the app been refreshed
+        // - Thread.currentThread().setContextClassLoader(classLoader());
+        eventManager().emitEvent(AppEvent.PRE_START);
         eventManager().emitEvent(AppEvent.START);
     }
 
@@ -164,6 +173,10 @@ public class App {
 
     public AppCodeScannerManager scannerManager() {
         return scannerManager;
+    }
+
+    public DbServiceManager dbServiceManager() {
+        return dbServiceManager;
     }
 
     public StringValueResolverManager resolverManager() {
@@ -321,6 +334,10 @@ public class App {
 
     private void initDbServiceManager() {
         dbServiceManager = new DbServiceManager(this);
+    }
+
+    private void loadGlobalPlugin() {
+        Act.appServicePluginManager().applyTo(this);
     }
 
     private void loadActScanners() {

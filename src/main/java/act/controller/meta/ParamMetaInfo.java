@@ -56,8 +56,8 @@ public class ParamMetaInfo {
     }
 
     public Object defVal(Class<?> type) {
-        if (paramAnno == null) return null;
-        return paramAnno.defVal(type);
+        if (paramAnno != null) return paramAnno.defVal(type);
+        return null;
     }
 
     public boolean resolverDefined() {

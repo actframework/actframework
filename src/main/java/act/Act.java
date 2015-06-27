@@ -3,8 +3,7 @@ package act;
 import act.app.*;
 import act.db.DbManager;
 import act.handler.builtin.controller.*;
-import act.plugin.GenericPluginManager;
-import act.plugin.Plugin;
+import act.plugin.*;
 import org.osgl._;
 import org.osgl.exception.NotAppliedException;
 import org.osgl.logging.L;
@@ -16,7 +15,6 @@ import act.controller.meta.ActionMethodMetaInfo;
 import act.controller.meta.CatchMethodMetaInfo;
 import act.controller.meta.InterceptorMethodMetaInfo;
 import act.handler.builtin.controller.impl.ReflectedHandlerInvoker;
-import act.plugin.PluginScanner;
 import act.util.AppCodeScannerPluginManager;
 import act.util.Banner;
 import act.util.SessionManager;
@@ -106,6 +104,7 @@ public final class Act {
     private static AppCodeScannerPluginManager scannerPluginManager;
     private static DbManager dbManager;
     private static GenericPluginManager pluginManager;
+    private static AppServicePluginManager appPluginManager;
 
     public static List<Class<?>> pluginClasses() {
         ClassLoader cl = Act.class.getClassLoader();
@@ -155,6 +154,10 @@ public final class Act {
         return scannerPluginManager;
     }
 
+    public static AppServicePluginManager appServicePluginManager() {
+        return appPluginManager;
+    }
+
     public static AppManager applicationManager() {
         return appManager;
     }
@@ -172,6 +175,7 @@ public final class Act {
         Banner.print("0.0.2-SNAPSHOT");
         loadConfig();
         initPluginManager();
+        initAppServicePluginManager();
         initDbManager();
         //initExecuteService();
         initEnhancerManager();
@@ -228,6 +232,10 @@ public final class Act {
 
     private static void initPluginManager() {
         pluginManager = new GenericPluginManager();
+    }
+
+    private static void initAppServicePluginManager() {
+        appPluginManager = new AppServicePluginManager();
     }
 
     private static void initSessionManager() {
