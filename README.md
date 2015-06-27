@@ -1,6 +1,6 @@
 ##### ACT Framework
 
-The reason I create ACT Framework is because I was so in fond of PlayFramework1 V1.x and I want to continue along the road pointing by that great product. In summary I need an expressive, Java developer friendly MVC framework, and that comes with ACT Framework
+The reason I create ACT Framework is because I was so in fond of PlayFramework1 V1.x and I want to continue along the road pointing by that great product. In essence I need an expressive, Java developer friendly MVC framework, and that comes with ACT Framework.
 
 Controller sample code:
 
@@ -48,4 +48,8 @@ There are a couple of ACT Demo applications could be found at https://github.com
 * SQL DB with Ebean: https://github.com/actframework/act-demo-apps/tree/master/fullstack-app/todo-ebean
 * Transactional support with Ebean: https://github.com/actframework/act-demo-apps/tree/master/fullstack-app/transaction-ebean
 
-All the demo apps shall be able to run directly by `cd path/to/app` and `mvn clean compile exec:exec`. Then you can open your browser and navigate to `http://localhost:5460`
+All the demo apps shall be able to run directly by `cd path/to/app` and `mvn clean compile exec:exec`. Then you can open your browser and navigate to `http://localhost:5460`. The demo apps are using default view based on [Rythm](http://rythmengine.org), which is my another open source contribution.
+
+At the moment ACT framework is still under development and not ready for product use. But you are welcome to give it a try and send me feedback by [raising issues](/actframework/actframework/issues) or send email to actframework@googlegroup.com. 中国朋友可以申请加入ＱＱ群：283919975.
+
+Happy coding!
