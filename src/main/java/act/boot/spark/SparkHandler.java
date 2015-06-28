@@ -1,9 +1,9 @@
 package act.boot.spark;
 
+import act.app.AppContext;
 import act.controller.Controller;
 import org.osgl._;
 import org.osgl.exception.NotAppliedException;
-import act.app.AppContext;
 
 /**
  * App developer use this interface implement the controller or filter logic

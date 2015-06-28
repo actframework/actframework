@@ -1,9 +1,9 @@
 package act.handler;
 
 import act.Destroyable;
+import act.app.AppContext;
 import act.handler.builtin.StaticFileGetter;
 import org.osgl._;
-import act.app.AppContext;
 
 /**
  * Defines a thread-save function object that can be applied

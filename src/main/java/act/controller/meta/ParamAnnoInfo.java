@@ -4,7 +4,6 @@ import org.osgl._;
 import org.osgl.mvc.annotation.Param;
 import org.osgl.mvc.util.StringValueResolver;
 import org.osgl.util.C;
-import org.osgl.util.E;
 
 import java.util.Map;
 

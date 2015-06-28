@@ -1,9 +1,8 @@
 package act.handler;
 
-import act.Destroyable;
+import act.app.AppContext;
 import org.osgl._;
 import org.osgl.exception.NotAppliedException;
-import act.app.AppContext;
 
 public abstract class RequestHandlerBase extends _.F1<AppContext, Void> implements RequestHandler {
 

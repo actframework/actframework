@@ -4,7 +4,7 @@ import act.app.App;
 import act.app.AppServiceBase;
 import act.app.AppThreadFactory;
 import act.app.event.AppEvent;
-import act.app.event.AppEventListener;
+import act.app.event.AppEventHandlerBase;
 import org.osgl._;
 import org.osgl.exception.NotAppliedException;
 import org.osgl.util.C;
@@ -16,7 +16,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadPoolExecutor;
 
-public class AppJobManager extends AppServiceBase<AppJobManager> implements AppEventListener {
+public class AppJobManager extends AppServiceBase<AppJobManager> {
 
     public static final String JOB_APP_START = "__act_app_started";
     public static final String JOB_APP_SHUTDOWN = "__act_app_shutdown";
@@ -28,7 +28,17 @@ public class AppJobManager extends AppServiceBase<AppJobManager> implements AppE
         super(app);
         initExecutor(app);
         registerSysJobs();
-        app.eventManager().register(this);
+        app.eventManager().on(AppEvent.START, new AppEventHandlerBase("job-mgr-start") {
+            @Override
+            public void onEvent() {
+                jobs.get(JOB_APP_START).run();
+            }
+        }).on(AppEvent.STOP, new AppEventHandlerBase("job-mgr-stop") {
+            @Override
+            public void onEvent() {
+                jobs.get(JOB_APP_SHUTDOWN).run();
+            }
+        });
     }
 
     @Override
@@ -39,18 +49,6 @@ public class AppJobManager extends AppServiceBase<AppJobManager> implements AppE
         jobs.clear();
         executor.shutdown();
         executor.getQueue().clear();
-    }
-
-    @Override
-    public void handleAppEvent(AppEvent event) {
-        switch (event) {
-            case START:
-                jobs.get(JOB_APP_START).run();
-                break;
-            case STOP:
-                jobs.get(JOB_APP_SHUTDOWN).run();
-                break;
-        }
     }
 
     public void now(Runnable runnable) {

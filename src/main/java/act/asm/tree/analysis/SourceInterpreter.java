@@ -30,8 +30,8 @@
 package act.asm.tree.analysis;
 
 import act.asm.Opcodes;
-import act.asm.tree.*;
 import act.asm.Type;
+import act.asm.tree.*;
 
 import java.util.HashSet;
 import java.util.List;

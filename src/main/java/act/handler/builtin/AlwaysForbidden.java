@@ -3,7 +3,6 @@ package act.handler.builtin;
 import act.app.AppContext;
 import act.handler.builtin.controller.FastRequestHandler;
 import org.osgl.mvc.result.Forbidden;
-import org.osgl.mvc.result.NotFound;
 
 public class AlwaysForbidden extends FastRequestHandler {
 

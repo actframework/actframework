@@ -1,6 +1,5 @@
 package act.conf;
 
-import act.Destroyable;
 import act.util.DestroyableBase;
 import org.osgl.util.C;
 

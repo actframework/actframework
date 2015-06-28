@@ -31,8 +31,8 @@ package act.asm.tree;
 
 import act.asm.Handle;
 import act.asm.MethodVisitor;
-import act.asm.Type;
 import act.asm.Opcodes;
+import act.asm.Type;
 
 import java.util.Map;
 

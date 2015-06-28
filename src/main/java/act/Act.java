@@ -1,20 +1,18 @@
 package act;
 
 import act.app.*;
-import act.db.DbManager;
-import act.handler.builtin.controller.*;
-import act.plugin.*;
-import org.osgl._;
-import org.osgl.exception.NotAppliedException;
-import org.osgl.logging.L;
-import org.osgl.logging.Logger;
 import act.boot.PluginClassProvider;
 import act.conf.ActConfLoader;
 import act.conf.ActConfig;
 import act.controller.meta.ActionMethodMetaInfo;
 import act.controller.meta.CatchMethodMetaInfo;
 import act.controller.meta.InterceptorMethodMetaInfo;
+import act.db.DbManager;
+import act.handler.builtin.controller.*;
 import act.handler.builtin.controller.impl.ReflectedHandlerInvoker;
+import act.plugin.AppServicePluginManager;
+import act.plugin.GenericPluginManager;
+import act.plugin.PluginScanner;
 import act.util.AppCodeScannerPluginManager;
 import act.util.Banner;
 import act.util.SessionManager;
@@ -22,6 +20,10 @@ import act.view.ViewManager;
 import act.xio.NetworkClient;
 import act.xio.NetworkService;
 import act.xio.undertow.UndertowService;
+import org.osgl._;
+import org.osgl.exception.NotAppliedException;
+import org.osgl.logging.L;
+import org.osgl.logging.Logger;
 import org.osgl.util.C;
 import org.osgl.util.E;
 

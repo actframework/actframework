@@ -1,9 +1,9 @@
 package act.util;
 
 import act.asm.ClassVisitor;
+import act.asm.ClassWriter;
 import act.asm.Opcodes;
 import org.osgl._;
-import act.asm.ClassWriter;
 import org.osgl.util.E;
 
 import java.util.Iterator;

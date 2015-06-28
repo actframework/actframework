@@ -1,11 +1,11 @@
 package act;
 
-import act.util.AsmByteCodeEnhancer;
-import org.osgl._;
 import act.app.App;
 import act.asm.ClassWriter;
 import act.util.AppByteCodeEnhancer;
+import act.util.AsmByteCodeEnhancer;
 import act.util.ByteCodeVisitor;
+import org.osgl._;
 import org.osgl.util.C;
 
 import java.util.List;

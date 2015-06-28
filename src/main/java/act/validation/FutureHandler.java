@@ -5,7 +5,6 @@ import act.controller.ActionMethodParamAnnotationHandlerPlugin;
 import org.osgl._;
 import org.osgl.util.C;
 
-import javax.validation.constraints.AssertTrue;
 import javax.validation.constraints.Future;
 import java.lang.annotation.Annotation;
 import java.util.Date;

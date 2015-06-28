@@ -1,6 +1,7 @@
 package act.handler.builtin.controller.impl;
 
 import act.Act;
+import act.app.App;
 import act.app.AppContext;
 import act.app.data.BinderManager;
 import act.app.data.StringValueResolverManager;
@@ -19,7 +20,6 @@ import org.osgl._;
 import org.osgl.mvc.result.Result;
 import org.osgl.mvc.util.Binder;
 import org.osgl.mvc.util.StringValueResolver;
-import act.app.App;
 import org.osgl.util.C;
 import org.osgl.util.E;
 import org.osgl.util.S;

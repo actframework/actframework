@@ -3,10 +3,10 @@ package act.util;
 import act.Act;
 import act.app.App;
 import act.app.AppByteCodeScanner;
-import org.osgl.logging.L;
-import org.osgl.logging.Logger;
 import act.app.AppSourceCodeScanner;
 import act.plugin.Plugin;
+import org.osgl.logging.L;
+import org.osgl.logging.Logger;
 
 public abstract class AppCodeScannerPluginBase implements Plugin {
 

@@ -1,7 +1,6 @@
 package act.plugin;
 
 import act.app.App;
-import act.app.AppService;
 import org.osgl.util.C;
 
 import java.util.List;

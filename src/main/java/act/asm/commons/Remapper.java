@@ -30,11 +30,11 @@
 
 package act.asm.commons;
 
+import act.asm.Handle;
 import act.asm.Type;
 import act.asm.signature.SignatureReader;
-import act.asm.signature.SignatureWriter;
-import act.asm.Handle;
 import act.asm.signature.SignatureVisitor;
+import act.asm.signature.SignatureWriter;
 
 /**
  * A class responsible for remapping types and names. Subclasses can override

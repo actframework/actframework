@@ -1,7 +1,6 @@
 package act.app;
 
 import act.conf.AppConfig;
-import act.plugin.Extends;
 import org.osgl._;
 import org.osgl.logging.L;
 import org.osgl.logging.Logger;

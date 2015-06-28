@@ -1,8 +1,8 @@
 package act.util;
 
+import act.app.App;
 import act.asm.ClassVisitor;
 import org.osgl._;
-import act.app.App;
 import org.osgl.logging.L;
 import org.osgl.logging.Logger;
 import org.osgl.util.E;

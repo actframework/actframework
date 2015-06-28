@@ -5,7 +5,6 @@ import act.controller.ActionMethodParamAnnotationHandlerPlugin;
 import org.osgl.util.C;
 import org.osgl.util.E;
 
-import javax.validation.constraints.Min;
 import javax.validation.constraints.Pattern;
 import java.lang.annotation.Annotation;
 import java.util.Set;

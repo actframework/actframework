@@ -1,7 +1,7 @@
 package act.handler.builtin.controller;
 
-import org.osgl.mvc.result.Result;
 import act.app.AppContext;
+import org.osgl.mvc.result.Result;
 
 /**
  * Base class for Action Handler or Before/After interceptor

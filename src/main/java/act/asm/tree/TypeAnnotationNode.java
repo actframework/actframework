@@ -29,9 +29,9 @@
  */
 package act.asm.tree;
 
-import act.asm.TypeReference;
 import act.asm.Opcodes;
 import act.asm.TypePath;
+import act.asm.TypeReference;
 
 /**
  * A node that represents a type annotationn.

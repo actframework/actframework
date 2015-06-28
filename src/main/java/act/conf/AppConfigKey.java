@@ -4,11 +4,6 @@ import act.Act;
 import act.app.App;
 import act.view.TemplatePathResolver;
 import act.view.View;
-import org.apache.commons.codec.Charsets;
-import org.osgl._;
-import org.osgl.cache.CacheServiceProvider;
-import org.osgl.logging.L;
-import org.osgl.logging.Logger;
 import org.osgl.util.E;
 import org.osgl.util.S;
 

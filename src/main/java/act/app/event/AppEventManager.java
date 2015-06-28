@@ -6,15 +6,13 @@ import org.osgl.util.C;
 import org.osgl.util.E;
 
 import java.util.List;
-import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 public class AppEventManager extends AppServiceBase<AppEventManager> {
 
-    private List<AppEventListener> listeners = C.newList();
-    private List<AppEventListener> toBeAdded = C.newList();
-    private Map<AppEvent, Channel> channelListeners = C.newMap();
+    private ConcurrentMap<AppEvent, Channel> channelListeners = new ConcurrentHashMap<>();
 
-    private boolean listenerLock = false;
 
     public AppEventManager(App app) {
         super(app);
@@ -22,66 +20,41 @@ public class AppEventManager extends AppServiceBase<AppEventManager> {
 
     @Override
     protected void releaseResources() {
-        listeners.clear();
+        channelListeners.clear();
     }
 
-    public AppEventManager register(AppEventListener listener) {
-        E.NPE(listener);
-        synchronized (this) {
-            if (listenerLock) {
-                toBeAdded.add(listener);
-            } else {
-                if (!listeners.contains(listener)) {
-                    listeners.add(listener);
-                }
-            }
-        }
-        return this;
-    }
-
-    public AppEventManager on(AppEvent event, EventChannelListener listener) {
+    public AppEventManager on(AppEvent event, AppEventHandler listener) {
         Channel ch = channelListeners.get(event);
         if (null == ch) {
-            ch = new Channel();
-            channelListeners.put(event, ch);
+            Channel newCh = new Channel();
+            ch = channelListeners.putIfAbsent(event, newCh);
+            if (null == ch) {
+                ch = newCh;
+            }
         }
         ch.register(listener);
         return this;
     }
 
     public void emitEvent(AppEvent event) {
-        synchronized (this) {
-            listenerLock = true;
-            try {
-                Channel channel = channelListeners.get(event);
-                if (null != channel) {
-                    channel.broadcast();
-                }
-                for (AppEventListener listener : listeners) {
-                    listener.handleAppEvent(event);
-                }
-                for (AppEventListener listener : toBeAdded) {
-                    if (!listeners.contains(listener)) {
-                        listeners.add(listener);
-                    }
-                }
-                toBeAdded.clear();
-            } finally {
-                listenerLock = false;
+        synchronized (channelListeners) {
+            Channel channel = channelListeners.get(event);
+            if (null != channel) {
+                channel.broadcast();
             }
         }
     }
 
     private static class Channel {
-        List<EventChannelListener> listeners = C.newList();
-        void register(EventChannelListener listener) {
+        List<AppEventHandler> listeners = C.newList();
+        void register(AppEventHandler listener) {
             E.NPE(listener);
             if (!listeners.contains(listener)) {
                 listeners.add(listener);
             }
         }
         void broadcast() {
-            for (EventChannelListener l : listeners) {
+            for (AppEventHandler l : listeners) {
                 l.onEvent();
             }
         }

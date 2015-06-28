@@ -30,8 +30,8 @@
 package act.asm.tree;
 
 import act.asm.Label;
-import act.asm.Opcodes;
 import act.asm.MethodVisitor;
+import act.asm.Opcodes;
 
 import java.util.ArrayList;
 import java.util.Arrays;

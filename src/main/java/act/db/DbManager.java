@@ -2,7 +2,6 @@ package act.db;
 
 import act.util.DestroyableBase;
 import org.osgl.util.C;
-import org.osgl.util.E;
 
 import java.util.Map;
 

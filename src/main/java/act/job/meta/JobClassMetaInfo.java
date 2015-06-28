@@ -1,17 +1,12 @@
 package act.job.meta;
 
 import act.asm.Type;
-import act.controller.meta.*;
 import act.job.*;
 import act.util.DestroyableBase;
-import org.osgl.http.H;
-import org.osgl.mvc.annotation.*;
 import org.osgl.util.C;
 import org.osgl.util.S;
 
 import java.lang.annotation.Annotation;
-import java.util.List;
-import java.util.Set;
 
 import static act.Destroyable.Util.destroyAll;
 

@@ -1,6 +1,5 @@
 package act.controller.meta;
 
-import act.Destroyable;
 import act.util.DestroyableBase;
 import org.osgl._;
 import org.osgl.util.C;

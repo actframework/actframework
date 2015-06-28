@@ -1,10 +1,9 @@
 package act.app;
 
 import act.Act;
-import act.util.ClassFilter;
+import act.plugin.Plugin;
 import act.util.DescendantClassFilter;
 import org.osgl._;
-import act.plugin.Plugin;
 
 import java.io.File;
 

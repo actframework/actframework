@@ -30,11 +30,7 @@
 
 package act.asm.tree;
 
-import act.asm.Label;
-import act.asm.TypeReference;
-import act.asm.MethodVisitor;
-import act.asm.Opcodes;
-import act.asm.TypePath;
+import act.asm.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;

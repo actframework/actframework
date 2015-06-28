@@ -9,7 +9,6 @@ import org.osgl.util.S;
 import java.lang.annotation.Annotation;
 import java.util.Map;
 import java.util.Set;
-import java.util.regex.Pattern;
 
 public abstract class AnnotatedTypeFinder extends AppCodeScannerPluginBase {
 

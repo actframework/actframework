@@ -1,9 +1,9 @@
 package act.controller.meta;
 
 import act.app.App;
+import act.asm.Type;
 import act.util.GeneralAnnoInfo;
 import org.osgl._;
-import act.asm.Type;
 import org.osgl.mvc.util.StringValueResolver;
 import org.osgl.util.C;
 import org.osgl.util.S;

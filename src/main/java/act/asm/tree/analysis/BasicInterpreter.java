@@ -29,10 +29,10 @@
  */
 package act.asm.tree.analysis;
 
+import act.asm.Handle;
 import act.asm.Opcodes;
 import act.asm.Type;
 import act.asm.tree.*;
-import act.asm.Handle;
 
 import java.util.List;
 

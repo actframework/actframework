@@ -1,5 +1,6 @@
 package act.boot.spark;
 
+import act.app.App;
 import act.app.AppContext;
 import act.app.ProjectLayout;
 import act.boot.ProjectLayoutBuilder;
@@ -20,7 +21,6 @@ import org.osgl.logging.L;
 import org.osgl.logging.Logger;
 import org.osgl.mvc.result.Forbidden;
 import org.osgl.mvc.result.Result;
-import act.app.App;
 import org.osgl.util.C;
 import org.osgl.util.E;
 

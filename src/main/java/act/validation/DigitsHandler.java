@@ -4,7 +4,6 @@ import act.app.AppContext;
 import act.controller.ActionMethodParamAnnotationHandlerPlugin;
 import org.osgl.util.C;
 
-import javax.validation.constraints.AssertTrue;
 import javax.validation.constraints.Digits;
 import java.lang.annotation.Annotation;
 import java.math.BigDecimal;

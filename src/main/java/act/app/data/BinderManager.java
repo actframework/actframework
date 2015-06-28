@@ -5,7 +5,6 @@ import act.app.AppServiceBase;
 import act.conf.AppConfig;
 import act.controller.meta.ParamMetaInfo;
 import org.osgl._;
-import org.osgl.exception.NotAppliedException;
 import org.osgl.mvc.util.Binder;
 import org.osgl.mvc.util.ParamValueProvider;
 import org.osgl.mvc.util.StringValueResolver;

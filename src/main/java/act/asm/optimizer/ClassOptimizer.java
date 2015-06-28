@@ -30,8 +30,8 @@
 package act.asm.optimizer;
 
 import act.asm.*;
-import act.asm.commons.RemappingClassAdapter;
 import act.asm.commons.Remapper;
+import act.asm.commons.RemappingClassAdapter;
 
 import java.util.ArrayList;
 import java.util.List;

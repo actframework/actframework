@@ -29,11 +29,11 @@
  */
 package act.asm.commons;
 
-import act.asm.Type;
-import act.asm.tree.*;
 import act.asm.Label;
 import act.asm.MethodVisitor;
 import act.asm.Opcodes;
+import act.asm.Type;
+import act.asm.tree.*;
 
 import java.util.*;
 

@@ -31,9 +31,9 @@ package act.asm.util;
 
 import act.asm.*;
 import act.asm.tree.MethodNode;
+import act.asm.tree.analysis.Analyzer;
 import act.asm.tree.analysis.BasicValue;
 import act.asm.tree.analysis.BasicVerifier;
-import act.asm.tree.analysis.Analyzer;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;

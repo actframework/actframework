@@ -1,9 +1,9 @@
 package act.app;
 
 import act.Act;
+import act.plugin.Plugin;
 import org.osgl._;
 import org.osgl.exception.NotAppliedException;
-import act.plugin.Plugin;
 import org.osgl.util.IO;
 
 import java.io.File;

@@ -32,10 +32,10 @@ package act.asm.util;
 import act.asm.*;
 import act.asm.tree.ClassNode;
 import act.asm.tree.MethodNode;
+import act.asm.tree.analysis.Analyzer;
 import act.asm.tree.analysis.BasicValue;
 import act.asm.tree.analysis.Frame;
 import act.asm.tree.analysis.SimpleVerifier;
-import act.asm.tree.analysis.Analyzer;
 
 import java.io.FileInputStream;
 import java.io.PrintWriter;

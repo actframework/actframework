@@ -1,13 +1,13 @@
 package act.util;
 
 import act.app.App;
+import act.app.AppContext;
+import act.asm.Opcodes;
+import act.asm.Type;
 import act.conf.AppConfig;
 import org.osgl.mvc.annotation.Bind;
 import org.osgl.mvc.annotation.Param;
 import org.osgl.mvc.result.Result;
-import act.app.AppContext;
-import act.asm.Opcodes;
-import act.asm.Type;
 import org.osgl.util.S;
 
 public enum AsmTypes implements Opcodes {

@@ -3,8 +3,8 @@ package act.util;
 import act.Act;
 import act.asm.ClassVisitor;
 import act.asm.Opcodes;
-import org.osgl._;
 import act.plugin.Plugin;
+import org.osgl._;
 import org.osgl.util.E;
 
 /**

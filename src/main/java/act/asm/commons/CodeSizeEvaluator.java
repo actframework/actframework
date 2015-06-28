@@ -29,10 +29,10 @@
  */
 package act.asm.commons;
 
-import act.asm.Label;
-import act.asm.Opcodes;
 import act.asm.Handle;
+import act.asm.Label;
 import act.asm.MethodVisitor;
+import act.asm.Opcodes;
 
 /**
  * A {@link MethodVisitor} that can be used to approximate method size.

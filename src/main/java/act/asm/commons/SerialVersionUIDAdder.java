@@ -30,9 +30,9 @@
 package act.asm.commons;
 
 import act.asm.ClassVisitor;
-import act.asm.Opcodes;
 import act.asm.FieldVisitor;
 import act.asm.MethodVisitor;
+import act.asm.Opcodes;
 
 import java.io.ByteArrayOutputStream;
 import java.io.DataOutput;

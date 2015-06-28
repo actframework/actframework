@@ -1,8 +1,8 @@
 package act.app;
 
+import act.util.ClassNames;
 import org.eclipse.jdt.internal.compiler.env.ICompilationUnit;
 import org.osgl._;
-import act.util.ClassNames;
 import org.osgl.util.E;
 import org.osgl.util.FastStr;
 import org.osgl.util.IO;

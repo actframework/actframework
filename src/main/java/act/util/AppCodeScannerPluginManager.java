@@ -1,11 +1,11 @@
 package act.util;
 
-import act.app.AppCodeScannerManager;
-import org.osgl.logging.L;
-import org.osgl.logging.Logger;
 import act.app.App;
 import act.app.AppByteCodeScanner;
+import act.app.AppCodeScannerManager;
 import act.app.AppSourceCodeScanner;
+import org.osgl.logging.L;
+import org.osgl.logging.Logger;
 import org.osgl.util.C;
 
 import java.util.Map;

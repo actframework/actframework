@@ -29,8 +29,8 @@
  */
 package act.asm.tree.analysis;
 
-import act.asm.tree.LabelNode;
 import act.asm.tree.JumpInsnNode;
+import act.asm.tree.LabelNode;
 
 import java.util.ArrayList;
 import java.util.List;

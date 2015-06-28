@@ -37,7 +37,7 @@ public class StringValueResolverManager extends AppServiceBase<StringValueResolv
         if (null != r) {
             return r.resolve(strVal);
         }
-        if (Enum.class.isAssignableFrom(targetType)) {
+        if (null != strVal && Enum.class.isAssignableFrom(targetType)) {
             return Enum.valueOf(((Class<Enum>) targetType), strVal);
         }
         return null;

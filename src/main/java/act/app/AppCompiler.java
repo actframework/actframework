@@ -6,7 +6,6 @@ import org.eclipse.jdt.core.compiler.IProblem;
 import org.eclipse.jdt.internal.compiler.*;
 import org.eclipse.jdt.internal.compiler.Compiler;
 import org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration;
-import org.eclipse.jdt.internal.compiler.batch.CompilationUnit;
 import org.eclipse.jdt.internal.compiler.classfmt.ClassFileReader;
 import org.eclipse.jdt.internal.compiler.classfmt.ClassFormatException;
 import org.eclipse.jdt.internal.compiler.env.ICompilationUnit;
@@ -22,7 +21,6 @@ import org.osgl.util.S;
 
 import java.util.Locale;
 import java.util.Map;
-import java.util.StringTokenizer;
 
 import static org.eclipse.jdt.internal.compiler.impl.CompilerOptions.*;
 

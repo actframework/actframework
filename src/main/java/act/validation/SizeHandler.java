@@ -5,7 +5,6 @@ import act.controller.ActionMethodParamAnnotationHandlerPlugin;
 import org.osgl.util.C;
 import org.osgl.util.E;
 
-import javax.validation.constraints.Pattern;
 import javax.validation.constraints.Size;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Array;

@@ -1,8 +1,8 @@
 package act.handler.builtin;
 
-import org.osgl.http.H;
 import act.app.AppContext;
 import act.handler.builtin.controller.FastRequestHandler;
+import org.osgl.http.H;
 import org.osgl.util.S;
 
 public class Echo extends FastRequestHandler {

@@ -30,9 +30,9 @@
 
 package act.asm.commons;
 
-import act.asm.tree.MethodNode;
 import act.asm.MethodVisitor;
 import act.asm.Opcodes;
+import act.asm.tree.MethodNode;
 import act.asm.tree.TryCatchBlockNode;
 
 import java.util.Collections;

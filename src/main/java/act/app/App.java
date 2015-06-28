@@ -9,7 +9,6 @@ import act.conf.AppConfLoader;
 import act.conf.AppConfig;
 import act.controller.ControllerSourceCodeScanner;
 import act.controller.bytecode.ControllerByteCodeScanner;
-import act.db.DbService;
 import act.di.DependencyInjector;
 import act.handler.builtin.StaticFileGetter;
 import act.job.AppJobManager;

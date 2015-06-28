@@ -1,11 +1,11 @@
 package act.util;
 
 import act.asm.AnnotationVisitor;
-import org.osgl._;
-import org.osgl.exception.NotAppliedException;
 import act.asm.ClassWriter;
 import act.asm.Type;
 import act.plugin.Extends;
+import org.osgl._;
+import org.osgl.exception.NotAppliedException;
 import org.osgl.logging.L;
 import org.osgl.logging.Logger;
 import org.osgl.util.C;

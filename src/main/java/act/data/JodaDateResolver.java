@@ -8,11 +8,6 @@ import org.osgl.logging.L;
 import org.osgl.logging.Logger;
 import org.osgl.mvc.util.StringValueResolver;
 
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-
 public class JodaDateResolver extends StringValueResolver<DateTime> {
     static Logger logger = L.get(JodaDateResolver.class);
 

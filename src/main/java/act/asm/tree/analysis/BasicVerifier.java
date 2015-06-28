@@ -29,9 +29,9 @@
  */
 package act.asm.tree.analysis;
 
-import act.asm.tree.AbstractInsnNode;
 import act.asm.Opcodes;
 import act.asm.Type;
+import act.asm.tree.AbstractInsnNode;
 import act.asm.tree.FieldInsnNode;
 import act.asm.tree.InvokeDynamicInsnNode;
 import act.asm.tree.MethodInsnNode;
