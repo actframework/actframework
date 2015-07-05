@@ -3,6 +3,8 @@ package act.boot.app;
 import act.Constants;
 import act.boot.BootstrapClassLoader;
 import act.util.ActClassLoader;
+import act.util.ClassInfoRepository;
+import act.util.ClassNode;
 import act.util.Jars;
 import org.osgl._;
 import org.osgl.util.C;
@@ -14,6 +16,8 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.List;
 import java.util.Map;
+
+import static act.util.ClassInfoRepository.canonicalName;
 
 /**
  * This class loader is responsible for loading Act classes
@@ -39,7 +43,7 @@ public class FullStackAppBootstrapClassLoader extends BootstrapClassLoader imple
             for (String className : C.list(libBC.keySet())) {
                 try {
                     Class<?> c = loadClass(className, true);
-                    actClasses.add(c);
+                    cache(c);
                 } catch (ClassNotFoundException e) {
                     // ignore
                 } catch (NoClassDefFoundError e) {
@@ -88,6 +92,38 @@ public class FullStackAppBootstrapClassLoader extends BootstrapClassLoader imple
         });
     }
 
+    private synchronized ClassNode cache(Class<?> c) {
+        String cname = canonicalName(c);
+        if (null == cname) {
+            return null;
+        }
+        ClassInfoRepository repo = (ClassInfoRepository)classInfoRepository();
+        if (repo.has(cname)) {
+            return repo.node(cname);
+        }
+        actClasses.add(c);
+        ClassNode node = repo.node(cname);
+        node.modifiers(c.getModifiers());
+        Class[] ca = c.getInterfaces();
+        for (Class pc: ca) {
+            if (pc == Object.class) continue;
+            String pcname = canonicalName(pc);
+            if (null != pcname) {
+                cache(pc);
+                node.addInterface(pcname);
+            }
+        }
+        Class pc = c.getSuperclass();
+        if (null != pc && Object.class != pc) {
+            String pcname = canonicalName(pc);
+            if (null != pcname) {
+                cache(pc);
+                node.parent(pcname);
+            }
+        }
+        return node;
+    }
+
     private void buildIndex() {
         libBC.putAll(Jars.buildClassNameIndex(jars()));
     }
@@ -99,7 +135,7 @@ public class FullStackAppBootstrapClassLoader extends BootstrapClassLoader imple
             return c;
         }
 
-        if (name.startsWith("java") || name.startsWith("org.springframework") || name.startsWith("org.apache")) {
+        if (name.startsWith("java") || name.startsWith("org.springframework") || name.startsWith("org.apache") || name.startsWith("org.osgl")) {
             return super.loadClass(name, resolve);
         }
 

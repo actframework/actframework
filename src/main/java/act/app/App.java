@@ -3,8 +3,9 @@ package act.app;
 import act.Act;
 import act.app.data.BinderManager;
 import act.app.data.StringValueResolverManager;
-import act.app.event.AppEvent;
-import act.app.event.AppEventManager;
+import act.app.event.AppEventId;
+import act.event.AppEventManager;
+import act.event.EventBus;
 import act.conf.AppConfLoader;
 import act.conf.AppConfig;
 import act.controller.ControllerSourceCodeScanner;
@@ -16,6 +17,8 @@ import act.job.meta.JobByteCodeScanner;
 import act.job.meta.JobSourceCodeScanner;
 import act.route.RouteTableRouterBuilder;
 import act.route.Router;
+import act.util.ClassInfoByteCodeScanner;
+import act.util.ClassInfoSourceCodeScanner;
 import act.util.UploadFileStorageService;
 import org.apache.commons.codec.Charsets;
 import org.osgl._;
@@ -29,6 +32,8 @@ import org.osgl.util.*;
 import java.io.File;
 import java.security.InvalidKeyException;
 import java.util.List;
+
+import static act.app.event.AppEventId.*;
 
 /**
  * {@code App} represents an application that is deployed in a Act container
@@ -53,6 +58,7 @@ public class App {
     private ProjectLayout layout;
     private AppBuilder builder;
     private AppEventManager eventManager;
+    private EventBus eventBus;
     private AppCodeScannerManager scannerManager;
     private DbServiceManager dbServiceManager;
     private AppJobManager jobManager;
@@ -119,7 +125,7 @@ public class App {
     public void refresh() {
         Act.viewManager().reload(this);
         initServiceResourceManager();
-        initEventManager();
+        initEventBus();
         initInterceptorManager();
         loadConfig();
         initJobManager();
@@ -128,22 +134,27 @@ public class App {
         initUploadFileStorageService();
         initRouter();
         initDbServiceManager();
-        eventManager().emitEvent(AppEvent.DB_SVC_LOADED);
+        eventManager().emitEvent(DB_SVC_LOADED);
+        eventBus().emit(DB_SVC_LOADED);
         loadGlobalPlugin();
         initScannerManager();
         loadActScanners();
         loadBuiltInScanners();
-        eventManager().emitEvent(AppEvent.PRE_LOAD_CLASSES);
+        eventManager().emitEvent(PRE_LOAD_CLASSES);
+        eventBus().emit(PRE_LOAD_CLASSES);
         initClassLoader();
         scanAppCodes();
+        eventBus().emit(APP_CODE_SCANNED);
         loadRoutes();
         // setting context class loader here might lead to memory leaks
         // and cause weird problems as class loader been set to thread
         // could be switched to handling other app in ACT or still hold
         // old app class loader instance after the app been refreshed
         // - Thread.currentThread().setContextClassLoader(classLoader());
-        eventManager().emitEvent(AppEvent.PRE_START);
-        eventManager().emitEvent(AppEvent.START);
+        eventManager().emitEvent(PRE_START);
+        eventBus().emit(PRE_START);
+        eventManager().emitEvent(START);
+        eventBus().emit(START);
     }
 
     public AppBuilder builder() {
@@ -184,8 +195,13 @@ public class App {
 
     public BinderManager binderManager() {return binderManager;}
 
+    @Deprecated
     public AppEventManager eventManager() {
         return eventManager;
+    }
+
+    public EventBus eventBus() {
+        return eventBus;
     }
 
     public AppJobManager jobManager() {
@@ -300,7 +316,8 @@ public class App {
 
     private void initServiceResourceManager() {
         if (null != serviceResourceManager) {
-            eventManager().emitEvent(AppEvent.STOP);
+            eventManager().emitEvent(STOP);
+            eventBus().emit(STOP);
             serviceResourceManager.destroy();
             dependencyInjector = null;
         }
@@ -315,8 +332,9 @@ public class App {
         router = new Router(this);
     }
 
-    private void initEventManager() {
+    private void initEventBus() {
         eventManager = new AppEventManager(this);
+        eventBus = new EventBus(this);
     }
 
     private void initJobManager() {
@@ -344,6 +362,8 @@ public class App {
     }
 
     private void loadBuiltInScanners() {
+        scannerManager.register(new ClassInfoSourceCodeScanner());
+        scannerManager.register(new ClassInfoByteCodeScanner());
         scannerManager.register(new ControllerSourceCodeScanner());
         scannerManager.register(new ControllerByteCodeScanner());
         scannerManager.register(new JobSourceCodeScanner());
@@ -369,7 +389,9 @@ public class App {
 
     private void initClassLoader() {
         classLoader = Act.mode().classLoader(this);
+        eventBus().emit(AppEventId.CLASS_LOADER_INITIALIZED);
         classLoader.preload();
+        eventBus().emit(AppEventId.CLASS_LOADED);
     }
 
     private void initResolverManager() {

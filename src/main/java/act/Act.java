@@ -1,6 +1,7 @@
 package act;
 
 import act.app.*;
+import act.boot.BootstrapClassLoader;
 import act.boot.PluginClassProvider;
 import act.conf.ActConfLoader;
 import act.conf.ActConfig;
@@ -13,9 +14,7 @@ import act.handler.builtin.controller.impl.ReflectedHandlerInvoker;
 import act.plugin.AppServicePluginManager;
 import act.plugin.GenericPluginManager;
 import act.plugin.PluginScanner;
-import act.util.AppCodeScannerPluginManager;
-import act.util.Banner;
-import act.util.SessionManager;
+import act.util.*;
 import act.view.ViewManager;
 import act.xio.NetworkClient;
 import act.xio.NetworkService;
@@ -115,6 +114,16 @@ public final class Act {
         } else {
             logger.warn("Class loader [%s] of Act is not a PluginClassProvider", cl);
             return C.list();
+        }
+    }
+
+    public static ClassInfoRepository classInfoRepository() {
+        ClassLoader cl = Act.class.getClassLoader();
+        if (cl instanceof BootstrapClassLoader) {
+            return (ClassInfoRepository)((BootstrapClassLoader) cl).classInfoRepository();
+        } else {
+            logger.warn("Class loader [%s] of Act is not a ActClassLoader", cl);
+            return null;
         }
     }
 

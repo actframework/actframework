@@ -35,6 +35,7 @@ public class AppClassLoader extends ClassLoader implements ControllerClassMetaIn
     protected final static Logger logger = L.get(AppClassLoader.class);
     private App app;
     private Map<String, byte[]> libClsCache = C.newMap();
+    private ClassInfoRepository classInfoRepository;
     private boolean destroyed;
     protected ControllerClassMetaInfoManager controllerInfo = new ControllerClassMetaInfoManager();
     protected JobClassMetaInfoManager jobInfo = new JobClassMetaInfoManager();
@@ -42,6 +43,10 @@ public class AppClassLoader extends ClassLoader implements ControllerClassMetaIn
     public AppClassLoader(App app) {
         super(Act.class.getClassLoader());
         this.app = notNull(app);
+        ClassInfoRepository actClassInfoRepository = Act.classInfoRepository();
+        if (null != actClassInfoRepository) {
+            this.classInfoRepository = new AppClassInfoRepository(app, actClassInfoRepository);
+        }
     }
 
     @Override
@@ -68,7 +73,13 @@ public class AppClassLoader extends ClassLoader implements ControllerClassMetaIn
         destroyed = true;
     }
 
+    @Override
+    public ClassInfoRepository classInfoRepository() {
+        return classInfoRepository;
+    }
+
     protected void releaseResources() {
+        classInfoRepository.destroy();
     }
 
     public void detectChanges() {

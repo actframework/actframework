@@ -1,7 +1,8 @@
-package act.app.event;
+package act.event;
 
 import org.osgl.util.S;
 
+@Deprecated
 public abstract class AppEventHandlerBase implements AppEventHandler {
     private String id;
     public AppEventHandlerBase(CharSequence id) {

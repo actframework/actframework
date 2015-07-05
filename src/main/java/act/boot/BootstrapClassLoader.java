@@ -7,6 +7,8 @@ import act.boot.app.FullStackAppBootstrapClassLoader;
 import act.boot.server.ServerBootstrapClassLoader;
 import act.util.ActClassLoader;
 import act.util.ByteCodeVisitor;
+import act.util.ClassInfoRepository;
+import act.util.ClassNode;
 import org.osgl._;
 import org.osgl.logging.L;
 import org.osgl.logging.Logger;
@@ -24,6 +26,7 @@ public abstract class BootstrapClassLoader extends ClassLoader implements Plugin
     protected static final Logger logger = L.get(BootstrapClassLoader.class);
 
     private BytecodeEnhancerManager enhancerManager = new BytecodeEnhancerManager();
+    private ClassInfoRepository classInfoRepository = new ClassInfoRepository();
 
     protected BootstrapClassLoader(ClassLoader parent) {
         super(parent);
@@ -31,6 +34,11 @@ public abstract class BootstrapClassLoader extends ClassLoader implements Plugin
 
     protected BootstrapClassLoader() {
         super(_getParent());
+    }
+
+    @Override
+    public ClassInfoRepository classInfoRepository() {
+        return classInfoRepository;
     }
 
     public Class<?> loadedClass(String name) {
@@ -111,6 +119,8 @@ public abstract class BootstrapClassLoader extends ClassLoader implements Plugin
 
     protected static final Set<String> protectedClasses = C.set(
             BootstrapClassLoader.class.getName(),
+            ClassInfoRepository.class.getName(),
+            ClassNode.class.getName(),
             ServerBootstrapClassLoader.class.getName(),
             FullStackAppBootstrapClassLoader.class.getName(),
             ActClassLoader.class.getName(),

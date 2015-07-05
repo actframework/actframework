@@ -122,6 +122,7 @@ public class DevModeClassLoader extends AppClassLoader {
 
         Set<String> classesNeedByteCodeScan = C.newSet();
         for (String className : sources.keySet()) {
+            classesNeedByteCodeScan.add(className);
             logger.debug("scanning %s ...", className);
             List<AppSourceCodeScanner> l = C.newList();
             for (AppSourceCodeScanner scanner : scanners) {
@@ -141,13 +142,13 @@ public class DevModeClassLoader extends AppClassLoader {
                     scanner.visit(i, line, className);
                 }
             }
-            for (AppSourceCodeScanner scanner: l) {
-                if (scanner.triggerBytecodeScanning()) {
-                    logger.debug("bytecode scanning triggered on %s", className);
-                    classesNeedByteCodeScan.add(className);
-                    break;
-                }
-            }
+//            for (AppSourceCodeScanner scanner: l) {
+//                if (scanner.triggerBytecodeScanning()) {
+//                    logger.debug("bytecode scanning triggered on %s", className);
+//                    classesNeedByteCodeScan.add(className);
+//                    break;
+//                }
+//            }
         }
 
         if (classesNeedByteCodeScan.isEmpty()) {

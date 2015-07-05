@@ -3,8 +3,12 @@ package act.job;
 import act.app.App;
 import act.app.AppServiceBase;
 import act.app.AppThreadFactory;
-import act.app.event.AppEvent;
-import act.app.event.AppEventHandlerBase;
+import act.app.event.AppEventId;
+import act.app.event.AppStart;
+import act.app.event.AppStop;
+import act.event.ActEvent;
+import act.event.AppEventHandlerBase;
+import act.event.AppEventListenerBase;
 import org.osgl._;
 import org.osgl.exception.NotAppliedException;
 import org.osgl.util.C;
@@ -15,6 +19,9 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadPoolExecutor;
+
+import static act.app.event.AppEventId.START;
+import static act.app.event.AppEventId.STOP;
 
 public class AppJobManager extends AppServiceBase<AppJobManager> {
 
@@ -28,14 +35,14 @@ public class AppJobManager extends AppServiceBase<AppJobManager> {
         super(app);
         initExecutor(app);
         registerSysJobs();
-        app.eventManager().on(AppEvent.START, new AppEventHandlerBase("job-mgr-start") {
+        app.eventBus().bind(START, new AppEventListenerBase<AppStart>("job-mgr-start") {
             @Override
-            public void onEvent() {
+            public void on(AppStart event) {
                 jobs.get(JOB_APP_START).run();
             }
-        }).on(AppEvent.STOP, new AppEventHandlerBase("job-mgr-stop") {
+        }).bind(STOP, new AppEventListenerBase<AppStop>("job-mgr-stop") {
             @Override
-            public void onEvent() {
+            public void on(AppStop event) {
                 jobs.get(JOB_APP_SHUTDOWN).run();
             }
         });

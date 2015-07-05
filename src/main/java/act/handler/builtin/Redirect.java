@@ -16,6 +16,6 @@ public class Redirect extends FastRequestHandler {
     public void handle(AppContext context) {
         H.Response resp = context.resp();
         resp.status(H.Status.MOVED_PERMANENTLY);
-        resp.writeContent(url);
+        resp.header(H.Header.Names.LOCATION, url);
     }
 }
