@@ -47,6 +47,7 @@ public class ControllerByteCodeScannerTest extends TestBase {
         scannerManager = mock(AppCodeScannerManager.class);
         jobManager = mock(AppJobManager.class);
         classLoader = new TestingAppClassLoader(mockApp);
+        when(mockApp.classLoader()).thenReturn(classLoader);
         infoSrc = classLoader.controllerClassMetaInfoManager();
         when(mockApp.classLoader()).thenReturn(classLoader);
         when(mockApp.scannerManager()).thenReturn(scannerManager);

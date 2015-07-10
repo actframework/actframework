@@ -6,6 +6,7 @@ import act.job.JobAnnotationProcessor;
 import act.util.AsmTypes;
 import act.util.ByteCodeVisitor;
 import org.osgl._;
+import org.osgl.util.E;
 import org.osgl.util.ListBuilder;
 
 import java.lang.annotation.Annotation;
@@ -125,14 +126,18 @@ public class JobByteCodeScanner extends AppByteCodeScannerBase {
                 AnnotationVisitor av = super.visitAnnotation(desc, visible);
                 Type type = Type.getType(desc);
                 String className = type.getClassName();
-                Class<? extends Annotation> c = _.classForName(className);
-                if (JobClassMetaInfo.isActionAnnotation(c)) {
-                    markRequireScan();
-                    JobMethodMetaInfo tmp = new JobMethodMetaInfo(classInfo);
-                    methodInfo = tmp;
-                    classInfo.addAction(tmp);
-                    this.av = new ActionAnnotationVisitor(av, c, methodInfo);
-                    return this.av;
+                try {
+                    Class<? extends Annotation> c = (Class<? extends Annotation>)Class.forName(className);
+                    if (JobClassMetaInfo.isActionAnnotation(c)) {
+                        markRequireScan();
+                        JobMethodMetaInfo tmp = new JobMethodMetaInfo(classInfo);
+                        methodInfo = tmp;
+                        classInfo.addAction(tmp);
+                        this.av = new ActionAnnotationVisitor(av, c, methodInfo);
+                        return this.av;
+                    }
+                } catch (Exception e) {
+                    throw E.unexpected(e);
                 }
                 //markNotTargetClass();
                 return av;

@@ -96,6 +96,10 @@ public class AppContext implements ParamValueProvider, Destroyable {
         return this;
     }
 
+    public Locale locale() {
+        return config().localeResolver().resolve(this);
+    }
+
     public boolean isJSON() {
         return accept() == H.Format.json;
     }

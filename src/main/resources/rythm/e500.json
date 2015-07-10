@@ -1,0 +1,1 @@
+@extends(_base, code: 500, msg: "Internal Error")

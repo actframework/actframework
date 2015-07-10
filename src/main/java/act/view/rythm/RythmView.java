@@ -12,6 +12,7 @@ import org.osgl.util.S;
 import org.rythmengine.Rythm;
 import org.rythmengine.RythmEngine;
 import org.rythmengine.extension.ISourceCodeEnhancer;
+import org.rythmengine.resource.ClasspathResourceLoader;
 import org.rythmengine.template.ITemplate;
 
 import java.io.File;
@@ -38,7 +39,7 @@ public class RythmView extends View {
     @Override
     protected Template loadTemplate(String resourcePath, AppContext context) {
         RythmEngine engine = getEngine(context.app());
-        return new RythmTemplate(engine, resourcePath, context.app());
+        return RythmTemplate.find(engine, resourcePath, context.app());
     }
 
     private RythmEngine getEngine(App app) {
@@ -77,6 +78,7 @@ public class RythmView extends View {
         if (S.blank(templateHome) || "default".equals(templateHome)) {
             templateHome = "/" + name();
         }
+
         p.put(HOME_TEMPLATE.getKey(), new File(app.layout().resource(app.base()), templateHome));
 
         p.put(CODEGEN_SOURCE_CODE_ENHANCER.getKey(), new ISourceCodeEnhancer() {
@@ -106,7 +108,9 @@ public class RythmView extends View {
             }
         });
 
-        return new RythmEngine(p);
+        RythmEngine engine = new RythmEngine(p);
+        engine.resourceManager().addResourceLoader(new ClasspathResourceLoader(engine, "rythm"));
+        return engine;
     }
 
     @Override

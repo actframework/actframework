@@ -181,6 +181,32 @@ public enum AppConfigKey implements ConfigKey {
      */
     PING_PATH("ping.path"),
 
+
+    /**
+     * {@code act.locale.resolver} specifies the implementation of
+     * {@link act.util.LocaleResolver}
+     */
+    RESOLVER_LOCALE("resolver.locale.impl"),
+
+    /**
+     * {@code resolver.error_template_path.impl} specifies error page (template)
+     * path resolver implementation
+     * <p>Default value: {@code act.util.ErrorTemplatePathResolver.DefaultErrorTemplatePathResolver}</p>
+     */
+    RESOLVER_ERROR_TEMPLATE_PATH("resolver.error_template_path.impl"),
+
+
+    /**
+     * {@code resolver.template_path.impl} specifies the class that
+     * implements {@link TemplatePathResolver}. Application
+     * developer could use this configuration to add some flexibility to
+     * template path resolving logic, e.g. different home for different locale
+     * or different home for different device type etc.
+     * <p/>
+     * <p>Default value: {@link TemplatePathResolver}</p>
+     */
+    RESOLVER_TEMPLATE_PATH("resolver.template_path.impl"),
+
     /**
      * {@code scan_package}
      * Specify the app package in which all classes is subject
@@ -289,17 +315,6 @@ public enum AppConfigKey implements ConfigKey {
      * <p>Default value: {@code default}</p>
      */
     TEMPLATE_HOME("template.home"),
-
-    /**
-     * {@code template_path_resolver.impl} specifies the class that
-     * implements {@link TemplatePathResolver}. Application
-     * developer could use this configuration to add some flexibility to
-     * template path resolving logic, e.g. different home for different locale
-     * or different home for different device type etc.
-     * <p/>
-     * <p>Default value: {@link TemplatePathResolver}</p>
-     */
-    TEMPLATE_PATH_RESOLVER("template_path_resolver.impl"),
 
     /**
      * {@code url_context} specifies the context part

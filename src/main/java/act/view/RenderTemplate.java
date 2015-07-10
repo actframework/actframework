@@ -37,7 +37,6 @@ public class RenderTemplate extends RenderAny {
         }
         ViewManager vm = Act.viewManager();
         Template t = vm.load(context);
-        //context.dissolve();
         applyStatus(context.resp());
         t.merge(context);
     }

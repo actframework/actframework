@@ -2,6 +2,8 @@ package act.event;
 
 import act.util.DestroyableBase;
 
-public abstract class ActEventListenerBase<EVENT_TYPE extends ActEvent> extends DestroyableBase implements ActEventListener<EVENT_TYPE> {
+import java.util.EventObject;
+
+public abstract class ActEventListenerBase<EVENT_TYPE extends EventObject> extends DestroyableBase implements ActEventListener<EVENT_TYPE> {
 
 }

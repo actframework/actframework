@@ -33,6 +33,7 @@ public class ActHttpHandler implements HttpHandler {
         AppContext ctx = AppContext.create(app, req(exchange, config), resp(exchange, config));
         exchange.putAttachment(ActBlockingExchange.KEY_APP_CTX, ctx);
         exchange.startBlocking(new ActBlockingExchange(exchange));
+        ctx.saveLocal();
         return ctx;
     }
 

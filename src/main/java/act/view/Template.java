@@ -8,4 +8,6 @@ import act.app.AppContext;
  */
 public interface Template {
     void merge(AppContext context);
+
+    String render(AppContext context);
 }

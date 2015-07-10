@@ -1,0 +1,2 @@
+@args int code, String msg
+{"code": @code, "message": "@msg"}

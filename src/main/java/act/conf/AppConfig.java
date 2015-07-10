@@ -5,7 +5,10 @@ import act.Constants;
 import act.app.App;
 import act.app.AppHolder;
 import act.app.conf.AppConfigurator;
+import act.util.ActErrorPageRender;
+import act.util.ErrorTemplatePathResolver;
 import act.util.JavaVersion;
+import act.util.LocaleResolver;
 import act.view.TemplatePathResolver;
 import act.view.View;
 import org.apache.commons.codec.Charsets;
@@ -15,6 +18,7 @@ import org.osgl.cache.CacheServiceProvider;
 import org.osgl.exception.ConfigurationException;
 import org.osgl.logging.L;
 import org.osgl.logging.Logger;
+import org.osgl.mvc.MvcConfig;
 import org.osgl.util.E;
 import org.osgl.util.FastStr;
 import org.osgl.util.S;
@@ -34,6 +38,11 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     public static final String CONF_FILE_NAME = "app.conf";
 
     private App app;
+
+    static {
+        MvcConfig.errorPageRenderer(new ActErrorPageRender());
+    }
+
     /**
      * Construct a <code>AppConfig</code> with a map. The map is copied to
      * the original map of the configuration instance
@@ -133,6 +142,26 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     private void _mergeControllerPackage(AppConfig conf) {
         if (null == get(CONTROLLER_PACKAGE)) {
             controllerPackage = conf.controllerPackage;
+        }
+    }
+
+    private ErrorTemplatePathResolver errorTemplatePathResolver = null;
+    protected T errorTemplatePathResolver(ErrorTemplatePathResolver resolver) {
+        errorTemplatePathResolver = resolver;
+        return me();
+    }
+    public ErrorTemplatePathResolver errorTemplatePathResolver() {
+        if (null == errorTemplatePathResolver) {
+            errorTemplatePathResolver = get(RESOLVER_ERROR_TEMPLATE_PATH);
+            if (null == errorTemplatePathResolver) {
+                errorTemplatePathResolver = new ErrorTemplatePathResolver.DefaultErrorTemplatePathResolver();
+            }
+        }
+        return errorTemplatePathResolver;
+    }
+    private void _mergeErrorTemplatePathResolver(AppConfig conf) {
+        if (null == get(RESOLVER_ERROR_TEMPLATE_PATH)) {
+            errorTemplatePathResolver = conf.errorTemplatePathResolver;
         }
     }
 
@@ -337,6 +366,27 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         }
     }
 
+    private LocaleResolver localeResolver = null;
+    protected T localeResolver(LocaleResolver resolver) {
+        E.NPE(resolver);
+        this.localeResolver = resolver;
+        return me();
+    }
+    public LocaleResolver localeResolver() {
+        if (null == localeResolver) {
+            localeResolver = get(RESOLVER_LOCALE);
+            if (null == localeResolver) {
+                localeResolver = LocaleResolver.impl.DEFAULT;
+            }
+        }
+        return localeResolver;
+    }
+    private void _mergeLocaleResolver(AppConfig conf) {
+        if (null == get(RESOLVER_LOCALE)) {
+            localeResolver = conf.localeResolver;
+        }
+    }
+
     private String sourceVersion = null;
     protected T sourceVersion(JavaVersion version) {
         sourceVersion = FastStr.of(version.name()).substr(1).replace('_', '.').toString();
@@ -435,7 +485,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     }
     public TemplatePathResolver templatePathResolver() {
         if (null == templatePathResolver) {
-            templatePathResolver = get(AppConfigKey.TEMPLATE_PATH_RESOLVER);
+            templatePathResolver = get(AppConfigKey.RESOLVER_TEMPLATE_PATH);
             if (null == templatePathResolver) {
                 templatePathResolver = new TemplatePathResolver();
             }
@@ -443,7 +493,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         return templatePathResolver;
     }
     private void _mergeTemplatePathResolver(AppConfig conf) {
-        if (null == get(AppConfigKey.TEMPLATE_PATH_RESOLVER)) {
+        if (null == get(AppConfigKey.RESOLVER_TEMPLATE_PATH)) {
             templatePathResolver = conf.templatePathResolver;
         }
     }
@@ -731,11 +781,13 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         _mergeHttpMaxParams(conf);
         _mergeJobPoolSize(conf);
         _mergePort(conf);
+        _mergeErrorTemplatePathResolver(conf);
         _mergeDateFmt(conf);
         _mergeDateTimeFmt(conf);
         _mergeTimeFmt(conf);
         _mergeEncoding(conf);
         _mergeLocale(conf);
+        _mergeLocaleResolver(conf);
         _mergeSourceVersion(conf);
         _mergeTargetVersion(conf);
         _mergeTemplatePathResolver(conf);

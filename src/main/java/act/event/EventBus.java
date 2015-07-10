@@ -8,17 +8,20 @@ import act.app.event.AppEventId;
 import act.app.event.AppEventListener;
 import act.job.AppJobManager;
 import org.osgl.util.C;
+import org.osgl.util.E;
 
 import java.lang.annotation.Annotation;
+import java.util.EventObject;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
 
 public class EventBus extends AppServiceBase<EventBus> {
 
     private final List[] appEventListeners;
     private final List[] asyncAppEventListeners;
-    private final Map<Class<? extends ActEvent>, List<ActEventListener>> actEventListeners;
-    private final Map<Class<? extends ActEvent>, List<ActEventListener>> asyncActEventListeners;
+    private final Map<Class<? extends EventObject>, List<ActEventListener>> actEventListeners;
+    private final Map<Class<? extends EventObject>, List<ActEventListener>> asyncActEventListeners;
     private final Map<AppEventId, AppEvent> appEventLookup;
 
     public EventBus(App app) {
@@ -67,8 +70,8 @@ public class EventBus extends AppServiceBase<EventBus> {
         return false;
     }
 
-    public synchronized EventBus bind(Class<? extends ActEvent> c, ActEventListener l) {
-        Map<Class<? extends ActEvent>, List<ActEventListener>> listeners = isAsync(l.getClass()) ? asyncActEventListeners : actEventListeners;
+    public synchronized EventBus bind(Class<? extends EventObject> c, ActEventListener l) {
+        Map<Class<? extends EventObject>, List<ActEventListener>> listeners = isAsync(l.getClass()) ? asyncActEventListeners : actEventListeners;
         List<ActEventListener> list = listeners.get(c);
         if (null == list) {
             list = C.newList();
@@ -78,7 +81,7 @@ public class EventBus extends AppServiceBase<EventBus> {
         return this;
     }
 
-    public synchronized EventBus bindSync(Class<? extends ActEvent> c, ActEventListener l) {
+    public synchronized EventBus bindSync(Class<? extends EventObject> c, ActEventListener l) {
         List<ActEventListener> list = actEventListeners.get(c);
         if (null == list) {
             list = C.newList();
@@ -88,7 +91,7 @@ public class EventBus extends AppServiceBase<EventBus> {
         return this;
     }
 
-    public synchronized EventBus bindAsync(Class<? extends ActEvent> c, ActEventListener l) {
+    public synchronized EventBus bindAsync(Class<? extends EventObject> c, ActEventListener l) {
         List<ActEventListener> list = asyncActEventListeners.get(c);
         if (null == list) {
             list = C.newList();
@@ -106,17 +109,22 @@ public class EventBus extends AppServiceBase<EventBus> {
         List<AppEventListener> ll = asyncAppEventListeners[event.id()];
         final AppJobManager jobManager = app().jobManager();
         for (final AppEventListener l: ll) {
-            jobManager.now(new Runnable() {
+            jobManager.now(new Callable<Void>() {
                 @Override
-                public void run() {
+                public Void call() throws Exception{
                     l.on(event);
+                    return null;
                 }
             });
         }
 
         ll = appEventListeners[event.id()];
         for (AppEventListener l: ll) {
-            l.on(event);
+            try {
+                l.on(event);
+            } catch (Exception e) {
+                throw E.tbd("support handling exception in jobs");
+            }
         }
         return this;
     }
@@ -129,19 +137,21 @@ public class EventBus extends AppServiceBase<EventBus> {
         List<AppEventListener> ll = asyncAppEventListeners[event.id()];
         AppJobManager jobManager = app().jobManager();
         for (final AppEventListener l: ll) {
-            jobManager.now(new Runnable() {
+            jobManager.now(new Callable<Void>() {
                 @Override
-                public void run() {
+                public Void call() throws Exception {
                     l.on(event);
+                    return null;
                 }
             });
         }
         ll = appEventListeners[event.id()];
         for (final AppEventListener l: ll) {
-            jobManager.now(new Runnable() {
+            jobManager.now(new Callable<Void>() {
                 @Override
-                public void run() {
+                public Void call() throws Exception {
                     l.on(event);
+                    return null;
                 }
             });
         }
@@ -155,11 +165,19 @@ public class EventBus extends AppServiceBase<EventBus> {
     public synchronized EventBus emitSync(AppEvent event) {
         List<AppEventListener> ll = asyncAppEventListeners[event.id()];
         for (AppEventListener l: ll) {
-            l.on(event);
+            try {
+                l.on(event);
+            } catch (Exception e) {
+                throw E.tbd("Support exception in jobs");
+            }
         }
         ll = appEventListeners[event.id()];
         for (AppEventListener l: ll) {
-            l.on(event);
+            try {
+                l.on(event);
+            } catch (Exception e) {
+                throw E.tbd("Support exception in jobs");
+            }
         }
         return this;
     }
@@ -170,13 +188,21 @@ public class EventBus extends AppServiceBase<EventBus> {
         AppJobManager jobManager = app().jobManager();
         if (null != list) {
             for (final ActEventListener l : list) {
-                l.on(event);
+                try {
+                    l.on(event);
+                } catch (Exception e) {
+                    throw E.tbd("Support exception in jobs");
+                }
             }
         }
         list = actEventListeners.get(c);
         if (null != list) {
             for (ActEventListener l : list) {
-                l.on(event);
+                try {
+                    l.on(event);
+                } catch (Exception e) {
+                    throw E.tbd("Support exception in jobs");
+                }
             }
         }
         return this;
@@ -188,10 +214,11 @@ public class EventBus extends AppServiceBase<EventBus> {
         AppJobManager jobManager = app().jobManager();
         if (null != list) {
             for (final ActEventListener l : list) {
-                jobManager.now(new Runnable() {
+                jobManager.now(new Callable<Void>() {
                     @Override
-                    public void run() {
+                    public Void call() throws Exception {
                         l.on(event);
+                        return null;
                     }
                 });
             }
@@ -199,7 +226,11 @@ public class EventBus extends AppServiceBase<EventBus> {
         list = actEventListeners.get(c);
         if (null != list) {
             for (ActEventListener l : list) {
-                l.on(event);
+                try {
+                    l.on(event);
+                } catch (Exception e) {
+                    throw E.tbd("Support exception in jobs");
+                }
             }
         }
         return this;
@@ -211,10 +242,11 @@ public class EventBus extends AppServiceBase<EventBus> {
         AppJobManager jobManager = app().jobManager();
         if (null != list) {
             for (final ActEventListener l : list) {
-                jobManager.now(new Runnable() {
+                jobManager.now(new Callable<Void>() {
                     @Override
-                    public void run() {
+                    public Void call() throws Exception {
                         l.on(event);
+                        return null;
                     }
                 });
             }
@@ -222,10 +254,11 @@ public class EventBus extends AppServiceBase<EventBus> {
         list = actEventListeners.get(c);
         if (null != list) {
             for (final ActEventListener l : list) {
-                jobManager.now(new Runnable() {
+                jobManager.now(new Callable<Void>() {
                     @Override
-                    public void run() {
+                    public Void call() throws Exception {
                         l.on(event);
+                        return null;
                     }
                 });
             }
