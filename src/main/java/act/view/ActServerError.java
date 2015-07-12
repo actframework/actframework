@@ -2,12 +2,13 @@ package act.view;
 
 import act.Act;
 import act.app.*;
+import act.util.ActError;
 import org.osgl.mvc.result.ServerError;
 import org.osgl.util.C;
 
 import java.util.List;
 
-public class ActServerError extends ServerError {
+public class ActServerError extends ServerError implements ActError {
 
     private SourceInfo sourceInfo;
 

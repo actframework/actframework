@@ -1,4 +1,4 @@
-@extends(_base, header: "500 Internal Error")
+@extends(_base, header: "403 Forbidden")
 @returnIf(!isDev())
 
 @args act.util.ActError _error
@@ -61,7 +61,7 @@ List<String> stackTrace = _error.stackTrace();
   <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.6/languages/java.min.js"></script>
   }
 
-  <p>Error handling request <code>@req.method() @req.path()</code>:</p>
+  <p>Permission denied accessing <code>@req.method() @req.path()</code>:</p>
 
   <div class="tabs">
     <div id="tab-stacktrace" class="stacktrace tab active" onclick="showStacktrace()">Stack Trace</div>

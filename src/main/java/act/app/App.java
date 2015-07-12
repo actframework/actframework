@@ -43,6 +43,8 @@ public class App {
 
     private static Logger logger = L.get(App.class);
 
+    private static App INST;
+
     public enum F {
         ;
         public static _.Predicate<String> JAVA_SOURCE = S.F.endsWith(".java");
@@ -73,12 +75,18 @@ public class App {
     private CompilationException compilationException;
 
     protected App() {
+        INST = this;
     }
 
     protected App(File appBase, ProjectLayout layout) {
         this.appBase = appBase;
         this.layout = layout;
         this.appHome = RuntimeDirs.home(this);
+        INST = this;
+    }
+
+    public static App instance() {
+        return INST;
     }
 
     public AppConfig config() {
