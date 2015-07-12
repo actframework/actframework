@@ -13,6 +13,7 @@ import act.handler.builtin.Echo;
 import act.handler.builtin.Redirect;
 import act.handler.builtin.StaticFileGetter;
 import act.route.Router;
+import act.view.ActServerError;
 import act.xio.NetworkClient;
 import act.xio.NetworkService;
 import act.xio.undertow.UndertowService;
@@ -257,7 +258,7 @@ public final class SparkApp extends App {
                 result = r;
             } catch (RuntimeException e) {
                 logger.error(e, "Error handling request: %s", e.getMessage());
-                result = Controller.Util.serverError(e);
+                result = new ActServerError(e, app);
             }
         }
 

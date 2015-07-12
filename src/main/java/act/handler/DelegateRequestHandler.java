@@ -41,4 +41,9 @@ public class DelegateRequestHandler extends RequestHandlerBase {
     protected void releaseResources() {
         handler_.destroy();
     }
+
+    @Override
+    public String toString() {
+        return handler().toString();
+    }
 }

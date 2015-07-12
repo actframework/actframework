@@ -18,4 +18,9 @@ public class Redirect extends FastRequestHandler {
         resp.status(H.Status.MOVED_PERMANENTLY);
         resp.header(H.Header.Names.LOCATION, url);
     }
+
+    @Override
+    public String toString() {
+        return "redirect: " + url;
+    }
 }

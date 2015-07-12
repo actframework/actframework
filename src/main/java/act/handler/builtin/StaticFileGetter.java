@@ -86,4 +86,9 @@ public class StaticFileGetter extends FastRequestHandler {
     return base.isDirectory();
     }
 
+    @Override
+    public String toString() {
+        boolean dir = supportPartialPath();
+        return "file: " + (dir ? base().getPath() + "/**" : base().getPath());
+    }
 }

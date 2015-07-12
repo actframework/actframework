@@ -1,0 +1,56 @@
+@extends(_base, header: "404 Not Found")
+@returnIf(!isDev())
+
+@section(head){
+<style>
+  code, table {
+    font-family: "Envy Code R", "Consolas", "Lucida Console", "Droid Sans Mono", "Andale Mono", "Monaco", "Lucida Sans Typewriter", "monospace";
+    font-size: 9pt;
+  }
+  code {background-color: #efefef; padding: 0 4px; font-weight: bold;}
+  td.m, td.p, td.h, th.m, th.p, th.h  {
+    padding: 2px 20px;
+    text-align: left;
+    max-width: 40%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  tr.odd {
+    background-color: #efefef;
+  }
+  tbody tr:hover, tbody tr.even:hover {
+    background-color: #a3e0f3;
+    cursor: default;
+  }
+</style>
+}
+
+@import act.route.*
+@{
+  List<RouteInfo> routes = _ctx.router().debug();
+  act.route.RouteInfo req = RouteInfo.of(_ctx);
+}
+
+@def html(RouteInfo r, String parity) {
+  <tr class="route @parity">
+    <td class="m">@r.method()</td>
+    <td class="p" title="@r.path()">@r.path()</td>
+    <td class="h" title="@r.handler()">@r.handler()</td>
+  </tr>
+}
+
+<p>Cannot find handler for the current request <code>@req.method() @req.path()</code> in the router table:</p>
+
+<table class="route-table">
+  <thead>
+  <tr>
+    <th class="m">method</th>
+    <th class="p">path</th>
+    <th class="h">handler</th>
+  </tr>
+  </thead>
+  <tbody>
+  @for(RouteInfo r: routes) {@html(r, r_parity)}
+  </tbody>
+</table>

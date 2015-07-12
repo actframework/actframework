@@ -23,7 +23,7 @@ public interface ErrorTemplatePathResolver {
                 default:
                     suffix = H.Format.txt.name();
             }
-            return S.fmt("/e%s.%s", code, suffix);
+            return S.fmt("/error/e%s.%s", code, suffix);
         }
     }
 }

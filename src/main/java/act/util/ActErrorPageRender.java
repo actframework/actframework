@@ -9,6 +9,9 @@ import org.osgl.mvc.ErrorPageRenderer;
 import org.osgl.mvc.result.ErrorResult;
 
 public class ActErrorPageRender extends ErrorPageRenderer {
+
+    public static final String ARG_ERROR = "_error";
+
     @Override
     protected String renderTemplate(ErrorResult error, H.Format format) {
         AppContext context = AppContext.current();
@@ -16,7 +19,8 @@ public class ActErrorPageRender extends ErrorPageRenderer {
         context.templatePath(templatePath(error, context));
         ViewManager vm = Act.viewManager();
         Template t = vm.load(context);
-        return t.render(context);
+        context.renderArg(ARG_ERROR, error);
+        return null != t ? t.render(context) : null;
     }
 
     private String templatePath(ErrorResult result, AppContext context) {

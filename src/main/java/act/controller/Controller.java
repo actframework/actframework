@@ -2,6 +2,7 @@ package act.controller;
 
 import act.app.AppContext;
 import act.conf.AppConfigKey;
+import act.view.ActServerError;
 import act.view.RenderAny;
 import act.view.RenderTemplate;
 import org.osgl.http.H;
@@ -182,27 +183,6 @@ public @interface Controller {
          */
         public static Forbidden forbidden(String msg, Object... args) {
             return null == msg ? FORBIDDEN : new Forbidden(msg, args);
-        }
-
-        /**
-         * Returns a {@link ServerError} with caused exception
-         * @param e the exception caused the server error
-         */
-        public static ServerError serverError(Exception e) {
-            return new ServerError(e);
-        }
-
-        /**
-         * Returns a {@link ServerError} with caused exception and the
-         * customized error message template and arguments. The final message
-         * is rendered with the template and arguments using
-         * {@link String#format(String, Object...)}
-         * @param e
-         * @param message
-         * @param args
-         */
-        public static ServerError serverError(Exception e, String message, Object ... args) {
-            return new ServerError(e, message, args);
         }
 
         public static Redirect redirect(String url, Object ... args) {

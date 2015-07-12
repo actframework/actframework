@@ -12,4 +12,9 @@ public class AlwaysForbidden extends FastRequestHandler {
     public void handle(AppContext context) {
         Forbidden.INSTANCE.apply(context.req(), context.resp());
     }
+
+    @Override
+    public String toString() {
+        return "error: forbidden";
+    }
 }

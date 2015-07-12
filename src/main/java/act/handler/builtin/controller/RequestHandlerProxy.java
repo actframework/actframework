@@ -10,6 +10,7 @@ import act.controller.meta.CatchMethodMetaInfo;
 import act.controller.meta.ControllerClassMetaInfo;
 import act.controller.meta.InterceptorMethodMetaInfo;
 import act.handler.RequestHandlerBase;
+import act.view.ActServerError;
 import act.view.RenderAny;
 import org.osgl._;
 import org.osgl.cache.CacheService;
@@ -161,13 +162,13 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
             logger.error(e, "Error handling request");
             result = handleException(e, context);
             if (null == result) {
-                result = new ServerError(e);
+                result = new ActServerError(e, app);
             }
             try {
                 onResult(result, context);
             } catch (Exception e2) {
                 logger.error(e2, "error rendering exception handle  result");
-                onResult(new ServerError(), context);
+                onResult(new ActServerError(e2, app), context);
             }
         } finally {
             handleFinally(context);
@@ -301,6 +302,8 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
             i.accept(visitor);
         }
     }
+
+
 
     private Result handleBefore(AppContext appContext) {
         Result r = GLOBAL_BEFORE_INTERCEPTOR.apply(appContext);

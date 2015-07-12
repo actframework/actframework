@@ -2,6 +2,7 @@ package act.app;
 
 import act.conf.AppConfig;
 import act.util.DestroyableBase;
+import act.view.ActServerError;
 import org.eclipse.jdt.core.compiler.IProblem;
 import org.eclipse.jdt.internal.compiler.*;
 import org.eclipse.jdt.internal.compiler.Compiler;
@@ -176,7 +177,12 @@ class AppCompiler extends DestroyableBase {
             // If error
             if (result.hasErrors()) {
                 for (IProblem problem : result.getErrors()) {
-                    String className = new String(problem.getOriginatingFileName()).replace("/", ".");
+                    char[][] caa = result.packageName;
+                    StringBuilder sb = S.builder();
+                    for (char[] ca: caa) {
+                        sb.append(ca).append(".");
+                    }
+                    String className = sb.append(new String(problem.getOriginatingFileName())).toString();
                     className = className.substring(0, className.length() - 5);
                     String message = problem.getMessage();
                     if (problem.getID() == IProblem.CannotImportPackage) {

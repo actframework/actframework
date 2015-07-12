@@ -6,6 +6,7 @@ import act.app.RequestRefreshClassLoader;
 import act.app.RequestServerRestart;
 import act.handler.RequestHandler;
 import act.route.Router;
+import act.view.ActServerError;
 import org.osgl._;
 import org.osgl.exception.NotAppliedException;
 import org.osgl.http.H;
@@ -29,16 +30,20 @@ public class NetworkClient extends _.F1<AppContext, Void> {
         String url = req.url();
         H.Method method = req.method();
         try {
-            app.detectChanges();
-        } catch (RequestRefreshClassLoader refreshRequest) {
-            app.refresh();
-        } catch (RequestServerRestart requestServerRestart) {
-            app.refresh();
-        }
-        try {
+            try {
+                app.detectChanges();
+            } catch (RequestRefreshClassLoader refreshRequest) {
+                app.refresh();
+            } catch (RequestServerRestart requestServerRestart) {
+                app.refresh();
+            }
             RequestHandler rh = router().getInvoker(method, url, ctx);
+            ctx.handler(rh);
             rh.handle(ctx);
         } catch (Result r) {
+            r.apply(req, ctx.resp());
+        } catch (Throwable t) {
+            Result r = new ActServerError(t, app());
             r.apply(req, ctx.resp());
         } finally {
             // we don't destroy ctx here in case it's been passed to

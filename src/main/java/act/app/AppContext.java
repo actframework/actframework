@@ -5,6 +5,8 @@ import act.Destroyable;
 import act.conf.AppConfig;
 import act.data.MapUtil;
 import act.data.RequestBodyParser;
+import act.handler.RequestHandler;
+import act.route.Router;
 import act.view.Template;
 import org.osgl._;
 import org.osgl.concurrent.ContextLocal;
@@ -45,6 +47,8 @@ public class AppContext implements ParamValueProvider, Destroyable {
     private Map<String, Object> controllerInstances;
     private List<ISObject> uploads;
     private Set<ConstraintViolation> violations;
+    private Router router;
+    private RequestHandler handler;
 
     private AppContext(App app, H.Request request, H.Response response) {
         E.NPE(app, request, response);
@@ -85,6 +89,26 @@ public class AppContext implements ParamValueProvider, Destroyable {
 
     public H.Flash flash() {
         return flash;
+    }
+
+    public Router router() {
+        return router;
+    }
+
+    public AppContext router(Router router) {
+        E.NPE(router);
+        this.router = router;
+        return this;
+    }
+
+    public RequestHandler handler() {
+        return handler;
+    }
+
+    public AppContext handler(RequestHandler handler) {
+        E.NPE(handler);
+        this.handler = handler;
+        return this;
     }
 
     public H.Format accept() {
@@ -382,6 +406,8 @@ public class AppContext implements ParamValueProvider, Destroyable {
             this.renderArgs.clear();
             this.attributes.clear();
             this.template = null;
+            this.router = null;
+            this.handler = null;
             this.app = null;
             // xio impl might need this this.request = null;
             // xio impl might need this this.response = null;

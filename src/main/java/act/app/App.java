@@ -20,6 +20,7 @@ import act.route.Router;
 import act.util.ClassInfoByteCodeScanner;
 import act.util.ClassInfoSourceCodeScanner;
 import act.util.UploadFileStorageService;
+import act.view.ActServerError;
 import org.apache.commons.codec.Charsets;
 import org.osgl._;
 import org.osgl.exception.UnexpectedException;
@@ -68,6 +69,8 @@ public class App {
     private DependencyInjector<?> dependencyInjector;
     private IStorageService uploadFileStorageService;
     private ServiceResourceManager serviceResourceManager;
+    // used in dev mode only
+    private CompilationException compilationException;
 
     protected App() {
     }
@@ -115,6 +118,9 @@ public class App {
 
     public void detectChanges() {
         classLoader.detectChanges();
+        if (null != compilationException) {
+            throw new ActServerError(compilationException, this);
+        }
     }
 
     public void restart() {
@@ -143,7 +149,13 @@ public class App {
         eventManager().emitEvent(PRE_LOAD_CLASSES);
         eventBus().emit(PRE_LOAD_CLASSES);
         initClassLoader();
-        scanAppCodes();
+        try {
+            scanAppCodes();
+            compilationException = null;
+        } catch (CompilationException e) {
+            compilationException = e;
+            throw new ActServerError(e, this);
+        }
         eventBus().emit(APP_CODE_SCANNED);
         loadRoutes();
         // setting context class loader here might lead to memory leaks

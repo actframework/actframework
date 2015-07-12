@@ -12,4 +12,9 @@ public class AlwaysNotFound extends FastRequestHandler {
     public void handle(AppContext context) {
         NotFound.INSTANCE.apply(context.req(), context.resp());
     }
+
+    @Override
+    public String toString() {
+        return "error: not found";
+    }
 }

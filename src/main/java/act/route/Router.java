@@ -82,11 +82,13 @@ public class Router extends AppServiceBase<Router> {
 
     // --- routing ---
     public RequestHandler getInvoker(H.Method method, CharSequence path, AppContext context) {
+        context.router(this);
         Node node = search(method, Path.tokenizer(Unsafe.bufOf(path)), context);
         return getInvokerFrom(node);
     }
 
     public RequestHandler getInvoker(H.Method method, List<CharSequence> path, AppContext context) {
+        context.router(this);
         Node node = search(method, path, context);
         return getInvokerFrom(node);
     }
@@ -226,6 +228,19 @@ public class Router extends AppServiceBase<Router> {
         for (H.Method method : supportedHttpMethods()) {
             Node node = root(method);
             node.debug(method, ps);
+        }
+    }
+
+    public List<RouteInfo> debug() {
+        List<RouteInfo> info = C.newList();
+        debug(info);
+        return info;
+    }
+
+    public void debug(List<RouteInfo> routes) {
+        for (H.Method method : supportedHttpMethods()) {
+            Node node = root(method);
+            node.debug(method, routes);
         }
     }
 
@@ -486,6 +501,18 @@ public class Router extends AppServiceBase<Router> {
             }
             if (null != dynamicChild) {
                 dynamicChild.debug(method, ps);
+            }
+        }
+
+        void debug(H.Method method, List<RouteInfo> routes) {
+            if (null != handler) {
+                routes.add(new RouteInfo(method, path(), handler));
+            }
+            for (Node node : staticChildren.values()) {
+                node.debug(method, routes);
+            }
+            if (null != dynamicChild) {
+                dynamicChild.debug(method, routes);
             }
         }
 

@@ -27,4 +27,9 @@ public class Echo extends FastRequestHandler {
         }
         resp.writeContent(msg);
     }
+
+    @Override
+    public String toString() {
+        return "echo: " + msg;
+    }
 }
