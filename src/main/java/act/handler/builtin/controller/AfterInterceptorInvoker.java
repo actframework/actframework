@@ -1,11 +1,11 @@
 package act.handler.builtin.controller;
 
 import act.Destroyable;
-import act.app.AppContext;
+import act.app.ActionContext;
 import act.util.Prioritised;
 import org.osgl.mvc.result.Result;
 
 public interface AfterInterceptorInvoker extends Prioritised, Destroyable {
-    Result handle(Result result, AppContext appContext);
+    Result handle(Result result, ActionContext actionContext);
     void accept(ActionHandlerInvoker.Visitor visitor);
 }

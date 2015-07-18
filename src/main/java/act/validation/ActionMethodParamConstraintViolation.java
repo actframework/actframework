@@ -1,6 +1,6 @@
 package act.validation;
 
-import act.app.AppContext;
+import act.app.ActionContext;
 import act.controller.Controller;
 
 import javax.validation.ConstraintViolation;
@@ -12,9 +12,9 @@ public class ActionMethodParamConstraintViolation<T> implements ConstraintViolat
 
     private String msgTmpl;
     private ConstraintDescriptor constraint;
-    private AppContext context;
+    private ActionContext context;
 
-    public ActionMethodParamConstraintViolation(String messageTemplate, Annotation annotation, AppContext context) {
+    public ActionMethodParamConstraintViolation(String messageTemplate, Annotation annotation, ActionContext context) {
         this.msgTmpl = messageTemplate;
         this.constraint = new ActionMethodParamConstraintDescriptor(annotation);
         this.context = context;

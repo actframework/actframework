@@ -1,8 +1,8 @@
 package act.handler.builtin.controller.impl;
 
 import act.Act;
+import act.app.ActionContext;
 import act.app.App;
-import act.app.AppContext;
 import act.app.data.BinderManager;
 import act.app.data.StringValueResolverManager;
 import act.asm.Type;
@@ -37,14 +37,14 @@ import java.util.Set;
 public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends DestroyableBase
         implements ActionHandlerInvoker, AfterInterceptorInvoker, ExceptionInterceptorInvoker {
 
-    private static _.Visitor<AppContext> STORE_APPCTX_TO_THREAD_LOCAL = new _.Visitor<AppContext>() {
+    private static _.Visitor<ActionContext> STORE_APPCTX_TO_THREAD_LOCAL = new _.Visitor<ActionContext>() {
         @Override
-        public void visit(AppContext appContext) throws _.Break {
-            appContext.saveLocal();
+        public void visit(ActionContext actionContext) throws _.Break {
+            //actionContext.saveLocal();
         }
     };
 
-    private static Map<String, _.F2<AppContext, Object, ?>> fieldName_appCtxHandler_lookup = C.newMap();
+    private static Map<String, _.F2<ActionContext, Object, ?>> fieldName_appCtxHandler_lookup = C.newMap();
     private App app;
     private ClassLoader cl;
     private ControllerClassMetaInfo controller;
@@ -53,11 +53,11 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
     protected MethodAccess methodAccess;
     private M handler;
     protected int handlerIndex;
-    private AppContextInjection ctxInjection;
+    private ActContextInjection ctxInjection;
     private Class[] paramTypes;
     private Map<Integer, List<ActionMethodParamAnnotationHandler>> paramAnnoHandlers = null;
     protected Method method; //
-    protected _.F2<AppContext, Object, ?> fieldAppCtxHandler;
+    protected _.F2<ActionContext, Object, ?> fieldAppCtxHandler;
 
     protected ReflectedHandlerInvoker(M handlerMetaInfo, App app) {
         this.app = app;
@@ -68,7 +68,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
 
         this.ctxInjection = handlerMetaInfo.appContextInjection();
         if (ctxInjection.injectVia().isField()) {
-            AppContextInjection.FieldAppContextInjection faci = (AppContextInjection.FieldAppContextInjection) ctxInjection;
+            ActContextInjection.FieldActContextInjection faci = (ActContextInjection.FieldActContextInjection) ctxInjection;
             fieldAppCtxHandler = storeAppCtxToCtrlrField(faci.fieldName(), controllerClass);
         }
 
@@ -140,30 +140,30 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         rv.apply(controllerClass, method);
     }
 
-    public Result handle(AppContext appContext) {
-        Object ctrl = controllerInstance(appContext);
-        applyAppContext(appContext, ctrl);
-        Object[] params = params(appContext, null, null);
-        return invoke(appContext, ctrl, params);
+    public Result handle(ActionContext actionContext) {
+        Object ctrl = controllerInstance(actionContext);
+        applyAppContext(actionContext, ctrl);
+        Object[] params = params(actionContext, null, null);
+        return invoke(actionContext, ctrl, params);
     }
 
     @Override
-    public Result handle(Result result, AppContext appContext) {
-        Object ctrl = controllerInstance(appContext);
-        applyAppContext(appContext, ctrl);
-        Object[] params = params(appContext, result, null);
-        return invoke(appContext, ctrl, params);
+    public Result handle(Result result, ActionContext actionContext) {
+        Object ctrl = controllerInstance(actionContext);
+        applyAppContext(actionContext, ctrl);
+        Object[] params = params(actionContext, result, null);
+        return invoke(actionContext, ctrl, params);
     }
 
     @Override
-    public Result handle(Exception e, AppContext appContext) {
-        Object ctrl = controllerInstance(appContext);
-        applyAppContext(appContext, ctrl);
-        Object[] params = params(appContext, null, e);
-        return invoke(appContext, ctrl, params);
+    public Result handle(Exception e, ActionContext actionContext) {
+        Object ctrl = controllerInstance(actionContext);
+        applyAppContext(actionContext, ctrl);
+        Object[] params = params(actionContext, null, e);
+        return invoke(actionContext, ctrl, params);
     }
 
-    private Object controllerInstance(AppContext context) {
+    private Object controllerInstance(ActionContext context) {
         if (null == constructorAccess) {
             return null;
         }
@@ -177,14 +177,14 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         return inst;
     }
 
-    private void applyAppContext(AppContext appContext, Object controller) {
+    private void applyAppContext(ActionContext actionContext, Object controller) {
         if (null != fieldAppCtxHandler) {
-            fieldAppCtxHandler.apply(appContext, controller);
+            fieldAppCtxHandler.apply(actionContext, controller);
         }
         // ignore ContextLocal save as it's processed for one time when RequestHandlerProxy is invoked
     }
 
-    private Result invoke(AppContext context, Object controller, Object[] params) {
+    private Result invoke(ActionContext context, Object controller, Object[] params) {
         Object result;
         if (null != methodAccess) {
             try {
@@ -204,7 +204,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         return Controller.Util.inferResult(result, context);
     }
 
-    private Object[] params(AppContext ctx, Result result, Exception exception) {
+    private Object[] params(ActionContext ctx, Result result, Exception exception) {
         int paramCount = handler.paramCount();
         Object[] oa = new Object[paramCount];
         if (0 == paramCount) {
@@ -215,7 +215,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         for (int i = 0; i < paramCount; ++i) {
             ParamMetaInfo param = handler.param(i);
             Class<?> paramType = paramTypes[i];
-            if (AppContext.class.equals(paramType)) {
+            if (ActionContext.class.equals(paramType)) {
                 oa[i] = ctx;
             } else if (Result.class.isAssignableFrom(paramType)) {
                 oa[i] = result;
@@ -304,17 +304,17 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         return ca;
     }
 
-    private static _.F2<AppContext, Object, ?> storeAppCtxToCtrlrField(final String fieldName, final Class<?> controllerClass) {
+    private static _.F2<ActionContext, Object, ?> storeAppCtxToCtrlrField(final String fieldName, final Class<?> controllerClass) {
         String key = S.builder(controllerClass.getName()).append(".").append(fieldName).toString();
-        _.F2<AppContext, Object, ?> ctxHandler = fieldName_appCtxHandler_lookup.get(key);
+        _.F2<ActionContext, Object, ?> ctxHandler = fieldName_appCtxHandler_lookup.get(key);
         if (null == ctxHandler) {
-            ctxHandler = new _.F2<AppContext, Object, Void>() {
+            ctxHandler = new _.F2<ActionContext, Object, Void>() {
                 private FieldAccess fieldAccess = FieldAccess.get(controllerClass);
                 private int fieldIdx = getFieldIndex(fieldName, fieldAccess);
 
                 @Override
-                public Void apply(AppContext appContext, Object controllerInstance) throws _.Break {
-                    fieldAccess.set(controllerInstance, fieldIdx, appContext);
+                public Void apply(ActionContext actionContext, Object controllerInstance) throws _.Break {
+                    fieldAccess.set(controllerInstance, fieldIdx, actionContext);
                     return null;
                 }
 
@@ -356,8 +356,8 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         }
 
         @Override
-        public Result handle(AppContext appContext) {
-            return invoker.handle(appContext);
+        public Result handle(ActionContext actionContext) {
+            return invoker.handle(actionContext);
         }
 
         @Override
@@ -381,8 +381,8 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         }
 
         @Override
-        public Result handle(Result result, AppContext appContext) {
-            return invoker.handle(result, appContext);
+        public Result handle(Result result, ActionContext actionContext) {
+            return invoker.handle(result, actionContext);
         }
 
         @Override
@@ -411,8 +411,8 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         }
 
         @Override
-        public Result handle(Exception e, AppContext appContext) {
-            return invoker.handle(e, appContext);
+        public Result handle(Exception e, ActionContext actionContext) {
+            return invoker.handle(e, actionContext);
         }
 
         @Override
@@ -441,8 +441,8 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         }
 
         @Override
-        public void handle(AppContext appContext) {
-            invoker.handle(appContext);
+        public void handle(ActionContext actionContext) {
+            invoker.handle(actionContext);
         }
 
         @Override

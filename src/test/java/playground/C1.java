@@ -3,7 +3,7 @@ package playground;
 import org.osgl.http.H;
 import org.osgl.mvc.annotation.*;
 import org.osgl.mvc.result.Result;
-import act.app.AppContext;
+import act.app.ActionContext;
 import org.osgl.util.S;
 
 @With(C2.class)
@@ -59,7 +59,7 @@ public class C1 extends CBase {
 //    }
 
     @Action(value = "/doIt", methods = {H.Method.POST, H.Method.GET})
-    public static void doIt(@Param("acc_id") String id, AppContext ctx, @Bind(EmailBinder.class) String email,  boolean b) {
+    public static void doIt(@Param("acc_id") String id, ActionContext ctx, @Bind(EmailBinder.class) String email,  boolean b) {
         int i = 0, j = 1;
         if (b) {
             ok();
@@ -77,5 +77,5 @@ public class C1 extends CBase {
 //        System.out.println("C1 processed");
 //    }
 
-    private AppContext ctx;
+    private ActionContext ctx;
 }

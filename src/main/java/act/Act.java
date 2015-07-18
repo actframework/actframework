@@ -14,7 +14,10 @@ import act.handler.builtin.controller.impl.ReflectedHandlerInvoker;
 import act.plugin.AppServicePluginManager;
 import act.plugin.GenericPluginManager;
 import act.plugin.PluginScanner;
-import act.util.*;
+import act.util.AppCodeScannerPluginManager;
+import act.util.Banner;
+import act.util.ClassInfoRepository;
+import act.util.SessionManager;
 import act.view.ViewManager;
 import act.xio.NetworkClient;
 import act.xio.NetworkService;
@@ -183,7 +186,7 @@ public final class Act {
     }
 
     private static void start(boolean singleAppServer) {
-        Banner.print("0.0.2-SNAPSHOT");
+        Banner.print("0.0.3-SNAPSHOT");
         loadConfig();
         initPluginManager();
         initAppServicePluginManager();

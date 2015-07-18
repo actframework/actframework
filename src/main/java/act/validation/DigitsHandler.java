@@ -1,6 +1,6 @@
 package act.validation;
 
-import act.app.AppContext;
+import act.app.ActionContext;
 import act.controller.ActionMethodParamAnnotationHandlerPlugin;
 import org.osgl.util.C;
 
@@ -20,7 +20,7 @@ public class DigitsHandler extends ActionMethodParamAnnotationHandlerPlugin {
     }
 
     @Override
-    public void handle(String paramName, Object paramVal, Annotation annotation, AppContext context) {
+    public void handle(String paramName, Object paramVal, Annotation annotation, ActionContext context) {
         if (null == paramVal) return;
         Digits theAnno = (Digits) annotation;
         int integral = theAnno.integer();
@@ -38,7 +38,7 @@ public class DigitsHandler extends ActionMethodParamAnnotationHandlerPlugin {
         }
     }
 
-    private void validate(String val, int integer, int fraction, Digits theAnno, AppContext context) {
+    private void validate(String val, int integer, int fraction, Digits theAnno, ActionContext context) {
         boolean violated;
         if (fraction > 0) {
             if (val.contains(".")) {

@@ -1,25 +1,25 @@
 package act.handler;
 
 import act.Destroyable;
-import act.app.AppContext;
+import act.app.ActionContext;
 import act.handler.builtin.StaticFileGetter;
 import org.osgl._;
 
 /**
  * Defines a thread-save function object that can be applied
- * to a {@link AppContext} context to
+ * to a {@link ActionContext} context to
  * produce certain output which could be applied to the
  * {@link org.osgl.http.H.Response} associated with the
  * context
  */
-public interface RequestHandler extends _.Function<AppContext, Void>, Destroyable {
+public interface RequestHandler extends _.Function<ActionContext, Void>, Destroyable {
 
     /**
      * Invoke handler upon an application context
      *
      * @param context
      */
-    void handle(AppContext context);
+    void handle(ActionContext context);
 
     /**
      * Indicate if this request handler support partial path lookup.

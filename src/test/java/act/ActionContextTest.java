@@ -4,7 +4,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.osgl.http.H;
 import act.app.App;
-import act.app.AppContext;
+import act.app.ActionContext;
 import org.osgl.util.C;
 
 import java.util.Arrays;
@@ -12,9 +12,9 @@ import java.util.Map;
 
 import static org.mockito.Mockito.*;
 
-public class AppContextTest extends TestBase {
+public class ActionContextTest extends TestBase {
 
-    protected AppContext ctx;
+    protected ActionContext ctx;
 
     @Before
     public void prepare() {
@@ -26,7 +26,7 @@ public class AppContextTest extends TestBase {
         when(req.paramVals("bar")).thenReturn(new String[]{"BAR", "bar"});
 
         H.Response resp = mock(H.Response.class);
-        ctx = AppContext.create(mock(App.class), req, resp);
+        ctx = ActionContext.create(mock(App.class), req, resp);
     }
 
     @Test

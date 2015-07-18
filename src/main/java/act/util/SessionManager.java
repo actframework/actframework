@@ -1,8 +1,8 @@
 package act.util;
 
 import act.Act;
+import act.app.ActionContext;
 import act.app.App;
-import act.app.AppContext;
 import act.conf.AppConfig;
 import act.plugin.Plugin;
 import org.apache.commons.codec.Charsets;
@@ -52,29 +52,29 @@ public class SessionManager {
         return null;
     }
 
-    public Session resolveSession(AppContext context) {
+    public Session resolveSession(ActionContext context) {
         Session session = getResolver(context).resolveSession(context);
         return session;
     }
 
-    public void fireSessionResolved(AppContext ctx) {
+    public void fireSessionResolved(ActionContext ctx) {
         sessionResolved(ctx.session(), ctx);
     }
 
-    public H.Flash resolveFlash(AppContext context) {
+    public H.Flash resolveFlash(ActionContext context) {
         return getResolver(context).resolveFlash(context);
     }
 
-    public H.Cookie dissolveSession(AppContext context) {
+    public H.Cookie dissolveSession(ActionContext context) {
         onSessionDissolve();
         return getResolver(context).dissolveSession(context);
     }
 
-    public H.Cookie dissolveFlash(AppContext context) {
+    public H.Cookie dissolveFlash(ActionContext context) {
         return getResolver(context).dissolveFlash(context);
     }
 
-    private void sessionResolved(Session session, AppContext context) {
+    private void sessionResolved(Session session, ActionContext context) {
         for (Listener l : registry) {
             l.sessionResolved(session, context);
         }
@@ -86,7 +86,7 @@ public class SessionManager {
         }
     }
 
-    private CookieResolver getResolver(AppContext context) {
+    private CookieResolver getResolver(ActionContext context) {
         App app = context.app();
         if (Act.multiTenant()) {
             CookieResolver resolver = resolvers.get(app);
@@ -119,7 +119,7 @@ public class SessionManager {
          *
          * @param session the session object resolved from cookie
          */
-        public void sessionResolved(Session session, AppContext context) {}
+        public void sessionResolved(Session session, ActionContext context) {}
 
         /**
          * Called before a session is about to be written to a cookie
@@ -159,7 +159,7 @@ public class SessionManager {
             flashCookieName = conf.flashCookieName();
         }
 
-        Session resolveSession(AppContext context) {
+        Session resolveSession(ActionContext context) {
             H.Request req = context.req();
             H.Cookie cookie = req.cookie(sessionCookieName);
             String val = null == cookie ? null : cookie.value();
@@ -175,7 +175,7 @@ public class SessionManager {
             return session;
         }
 
-        H.Flash resolveFlash(AppContext context) {
+        H.Flash resolveFlash(ActionContext context) {
             H.Request req = context.req();
 
             final H.Cookie cookie = req.cookie(flashCookieName);
@@ -187,7 +187,7 @@ public class SessionManager {
             return flash;
         }
 
-        H.Cookie dissolveSession(AppContext context) {
+        H.Cookie dissolveSession(ActionContext context) {
             Session session = context.session();
             if (null == session) {
                 return null;
@@ -213,7 +213,7 @@ public class SessionManager {
             return cookie;
         }
 
-        H.Cookie dissolveFlash(AppContext context) {
+        H.Cookie dissolveFlash(ActionContext context) {
             H.Flash flash = context.flash();
             if (null == flash || flash.isEmpty()) {
                 return null;

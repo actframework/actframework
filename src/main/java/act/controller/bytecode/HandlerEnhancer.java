@@ -1,6 +1,6 @@
 package act.controller.bytecode;
 
-import act.app.AppContext;
+import act.app.ActionContext;
 import act.asm.Label;
 import act.asm.MethodVisitor;
 import act.asm.Opcodes;
@@ -9,6 +9,7 @@ import act.asm.tree.*;
 import act.controller.meta.HandlerMethodMetaInfo;
 import act.controller.meta.LocalVariableMetaInfo;
 import act.controller.meta.ParamMetaInfo;
+import act.util.ActContext;
 import act.util.AsmTypes;
 import org.osgl.logging.L;
 import org.osgl.logging.Logger;
@@ -48,7 +49,7 @@ public class HandlerEnhancer extends MethodVisitor implements Opcodes {
             if (paramId < info.paramCount()) {
                 ParamMetaInfo param = info.param(paramId);
                 param.name(name);
-                if (AsmTypes.APP_CONTEXT_TYPE.equals(param.type())) {
+                if (AsmTypes.ACTION_CONTEXT_TYPE.equals(param.type())) {
                     info.appCtxLocalVariableTableIndex(index);
                 }
                 if (Type.getType(long.class).equals(param.type()) || Type.getType(double.class).equals(param.type())) {
@@ -160,11 +161,11 @@ public class HandlerEnhancer extends MethodVisitor implements Opcodes {
                 }
             }
 
-            private String appCtxFieldName() {
+            private String ctxFieldName() {
                 return segment.meta.classInfo().ctxField();
             }
 
-            private int appCtxIndex() {
+            private int ctxIndex() {
                 return segment.meta.appCtxLocalVariableTableIndex();
             }
 
@@ -220,17 +221,17 @@ public class HandlerEnhancer extends MethodVisitor implements Opcodes {
                 if (len == 0) {
                     return;
                 }
-                int appCtxIdx = appCtxIndex();
+                int appCtxIdx = ctxIndex();
 
                 // SetRenderArgs enhancement
                 if (appCtxIdx < 0) {
-                    String appCtxFieldName = appCtxFieldName();
+                    String appCtxFieldName = ctxFieldName();
                     if (null == appCtxFieldName) {
-                        MethodInsnNode getAppCtx = new MethodInsnNode(INVOKESTATIC, AsmTypes.APP_CONTEXT_INTERNAL_NAME, AppContext.METHOD_GET_CURRENT, GET_APP_CTX_DESC, false);
+                        MethodInsnNode getAppCtx = new MethodInsnNode(INVOKESTATIC, AsmTypes.ACTION_CONTEXT_INTERNAL_NAME, ActionContext.METHOD_GET_CURRENT, GET_ACTION_CTX_DESC, false);
                         list.add(getAppCtx);
                     } else {
                         VarInsnNode loadThis = new VarInsnNode(ALOAD, 0);
-                        FieldInsnNode getCtx = new FieldInsnNode(GETFIELD, segment.meta.classInfo().internalName(), appCtxFieldName, AsmTypes.APP_CONTEXT_DESC);
+                        FieldInsnNode getCtx = new FieldInsnNode(GETFIELD, segment.meta.classInfo().internalName(), appCtxFieldName, AsmTypes.ACTION_CONTEXT_DESC);
                         list.add(loadThis);
                         list.add(getCtx);
                     }
@@ -247,7 +248,7 @@ public class HandlerEnhancer extends MethodVisitor implements Opcodes {
                 }
                 LdcInsnNode ldc = new LdcInsnNode(sb.toString());
                 list.add(ldc);
-                MethodInsnNode invokeRenderArg = new MethodInsnNode(INVOKEVIRTUAL, AsmTypes.APP_CONTEXT_INTERNAL_NAME, RENDER_ARG_NAMES_NM, RENDER_ARG_NAMES_DESC, false);
+                MethodInsnNode invokeRenderArg = new MethodInsnNode(INVOKEVIRTUAL, AsmTypes.ACTION_CONTEXT_INTERNAL_NAME, RENDER_ARG_NAMES_NM, RENDER_ARG_NAMES_DESC, false);
                 list.add(invokeRenderArg);
 
                 InsnNode pop = new InsnNode(POP);
@@ -256,13 +257,13 @@ public class HandlerEnhancer extends MethodVisitor implements Opcodes {
                 // setTemplatePath enhancement
                 if (null != templatePath) {
                     if (appCtxIdx < 0) {
-                        String appCtxFieldName = appCtxFieldName();
+                        String appCtxFieldName = ctxFieldName();
                         if (null == appCtxFieldName) {
-                            MethodInsnNode getAppCtx = new MethodInsnNode(INVOKESTATIC, AsmTypes.APP_CONTEXT_INTERNAL_NAME, AppContext.METHOD_GET_CURRENT, GET_APP_CTX_DESC, false);
+                            MethodInsnNode getAppCtx = new MethodInsnNode(INVOKESTATIC, AsmTypes.ACTION_CONTEXT_INTERNAL_NAME, ActionContext.METHOD_GET_CURRENT, GET_ACTION_CTX_DESC, false);
                             list.add(getAppCtx);
                         } else {
                             VarInsnNode loadThis = new VarInsnNode(ALOAD, 0);
-                            FieldInsnNode getCtx = new FieldInsnNode(GETFIELD, segment.meta.classInfo().internalName(), appCtxFieldName, AsmTypes.APP_CONTEXT_DESC);
+                            FieldInsnNode getCtx = new FieldInsnNode(GETFIELD, segment.meta.classInfo().internalName(), appCtxFieldName, AsmTypes.ACTION_CONTEXT_DESC);
                             list.add(loadThis);
                             list.add(getCtx);
                         }
@@ -274,7 +275,7 @@ public class HandlerEnhancer extends MethodVisitor implements Opcodes {
                     }
                     LdcInsnNode insnNode = new LdcInsnNode(templatePath);
                     list.add(insnNode);
-                    MethodInsnNode invokeTemplatePath = new MethodInsnNode(INVOKEVIRTUAL, AsmTypes.APP_CONTEXT_INTERNAL_NAME, TEMPLATE_PATH_NM, TEMPLATE_PATH_DESC, false);
+                    MethodInsnNode invokeTemplatePath = new MethodInsnNode(INVOKEVIRTUAL, AsmTypes.ACTION_CONTEXT_INTERNAL_NAME, TEMPLATE_PATH_NM, TEMPLATE_PATH_DESC, false);
                     list.add(invokeTemplatePath);
                     pop = new InsnNode(POP);
                     list.add(pop);
@@ -431,7 +432,7 @@ public class HandlerEnhancer extends MethodVisitor implements Opcodes {
                 LdcInsnNode ldc = new LdcInsnNode(var.name());
                 list.add(ldc);
                 insn.appendTo(list, index, var.type());
-                MethodInsnNode invokeRenderArg = new MethodInsnNode(INVOKEVIRTUAL, AsmTypes.APP_CONTEXT_INTERNAL_NAME, RENDER_NM, RENDER_DESC, false);
+                MethodInsnNode invokeRenderArg = new MethodInsnNode(INVOKEVIRTUAL, AsmTypes.ACTION_CONTEXT_INTERNAL_NAME, RENDER_NM, RENDER_DESC, false);
                 list.add(invokeRenderArg);
                 if (paramNames.length() != 0) {
                     paramNames.append(',');
@@ -464,12 +465,12 @@ public class HandlerEnhancer extends MethodVisitor implements Opcodes {
         }
     }
 
-    private static final String GET_APP_CTX_DESC = "()" + AsmTypes.APP_CONTEXT_DESC;
+    private static final String GET_ACTION_CTX_DESC = "()" + AsmTypes.ACTION_CONTEXT_DESC;
     private static final String RENDER_NM = "renderArg";
-    private static final String RENDER_DESC = AsmTypes.methodDesc(AppContext.class, String.class, Object.class);
+    private static final String RENDER_DESC = AsmTypes.methodDesc(ActionContext.class, String.class, Object.class);
     private static final String TEMPLATE_PATH_NM = "templatePath";
-    private static final String TEMPLATE_PATH_DESC = AsmTypes.methodDesc(AppContext.class, String.class);
+    private static final String TEMPLATE_PATH_DESC = AsmTypes.methodDesc(ActionContext.class, String.class);
     private static final String RENDER_ARG_NAMES_NM = "__appRenderArgNames";
-    private static final String RENDER_ARG_NAMES_DESC = AsmTypes.methodDesc(AppContext.class, String.class);
+    private static final String RENDER_ARG_NAMES_DESC = AsmTypes.methodDesc(ActionContext.class, String.class);
 
 }

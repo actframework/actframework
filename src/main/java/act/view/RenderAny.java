@@ -1,6 +1,6 @@
 package act.view;
 
-import act.app.AppContext;
+import act.app.ActionContext;
 import org.osgl.http.H;
 import org.osgl.mvc.result.RenderBinary;
 import org.osgl.mvc.result.RenderJSON;
@@ -17,7 +17,7 @@ import java.util.Map;
 
 /**
  * Render a template with template path and arguments provided
- * by {@link AppContext}
+ * by {@link ActionContext}
  */
 public class RenderAny extends Result {
 
@@ -34,7 +34,7 @@ public class RenderAny extends Result {
     }
 
     // TODO: Allow plugin to support rendering pdf, xls or other binary types
-    public void apply(AppContext context) {
+    public void apply(ActionContext context) {
         H.Format fmt = context.accept();
         switch (fmt) {
             case json:

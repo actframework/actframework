@@ -2,7 +2,7 @@ package act.route;
 
 
 import act.handler.RequestHandlerBase;
-import act.app.AppContext;
+import act.app.ActionContext;
 
 public class NamedMockHandler extends RequestHandlerBase {
 
@@ -15,7 +15,7 @@ public class NamedMockHandler extends RequestHandlerBase {
     }
 
     @Override
-    public void handle(AppContext context) {
+    public void handle(ActionContext context) {
         result.set(this.name);
     }
 

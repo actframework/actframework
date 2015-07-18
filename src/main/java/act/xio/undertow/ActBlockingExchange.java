@@ -1,6 +1,6 @@
 package act.xio.undertow;
 
-import act.app.AppContext;
+import act.app.ActionContext;
 import io.undertow.io.BlockingSenderImpl;
 import io.undertow.io.Sender;
 import io.undertow.io.UndertowInputStream;
@@ -17,7 +17,7 @@ import java.io.OutputStream;
 
 public class ActBlockingExchange implements BlockingHttpExchange {
 
-    public static final AttachmentKey<AppContext> KEY_APP_CTX = AttachmentKey.create(AppContext.class);
+    public static final AttachmentKey<ActionContext> KEY_APP_CTX = AttachmentKey.create(ActionContext.class);
 
     private InputStream inputStream;
     private OutputStream outputStream;
@@ -55,7 +55,7 @@ public class ActBlockingExchange implements BlockingHttpExchange {
 
     @Override
     public void close() throws IOException {
-        AppContext ctx = ctx();
+        ActionContext ctx = ctx();
         if (!exchange.isComplete()) {
             try {
                 UndertowRequest req = (UndertowRequest) ctx.req();
@@ -75,7 +75,7 @@ public class ActBlockingExchange implements BlockingHttpExchange {
         }
     }
 
-    private AppContext ctx() {
+    private ActionContext ctx() {
         return exchange.getAttachment(KEY_APP_CTX);
     }
 }

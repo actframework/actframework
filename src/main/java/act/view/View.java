@@ -2,9 +2,9 @@ package act.view;
 
 import act.Act;
 import act.app.App;
-import act.app.AppContext;
 import act.conf.AppConfig;
 import act.plugin.Plugin;
+import act.util.ActContext;
 import org.osgl.util.S;
 
 /**
@@ -25,7 +25,7 @@ public abstract class View implements Plugin {
         init();
     }
 
-    public Template load(AppContext context) {
+    public Template load(ActContext context) {
         Template cached = context.cachedTemplate();
         if (null != cached) {
             return cached;
@@ -51,10 +51,10 @@ public abstract class View implements Plugin {
      * Sub class must implement this method to load the template
      *
      * @param resourcePath the path to the template
-     * @param context      the application context
+     * @param context      the view context
      * @return the template instance or {@code null} if template not found
      */
-    protected abstract Template loadTemplate(String resourcePath, AppContext context);
+    protected abstract Template loadTemplate(String resourcePath, ActContext context);
 
     /**
      * Sub class could use this method initialize the implementation

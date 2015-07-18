@@ -1,6 +1,6 @@
 package act.handler.builtin.controller;
 
-import act.app.AppContext;
+import act.app.ActionContext;
 import org.osgl.mvc.result.Result;
 
 /**
@@ -12,6 +12,6 @@ public abstract class ActionHandler<T extends ActionHandler> extends Handler<T> 
         super(priority);
     }
 
-    public abstract Result handle(AppContext appContext);
+    public abstract Result handle(ActionContext actionContext);
 
 }

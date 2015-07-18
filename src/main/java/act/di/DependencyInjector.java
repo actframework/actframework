@@ -1,6 +1,6 @@
 package act.di;
 
-import act.app.AppContext;
+import act.app.ActionContext;
 import act.app.AppService;
 
 public interface DependencyInjector<DI extends DependencyInjector> extends AppService<DI> {
@@ -13,10 +13,10 @@ public interface DependencyInjector<DI extends DependencyInjector> extends AppSe
     <T> T create(Class<T> clazz);
 
     /**
-     * Create an injector that is able to inject {@link AppContext} instance if the type
+     * Create an injector that is able to inject {@link ActionContext} instance if the type
      * is required
      * @param context
      * @return a injector instance support injecting app context
      */
-    DependencyInjector<DI> createContextAwareInjector(AppContext context);
+    DependencyInjector<DI> createContextAwareInjector(ActionContext context);
 }

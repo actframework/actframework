@@ -4,17 +4,19 @@ import act.Act;
 import act.app.data.BinderManager;
 import act.app.data.StringValueResolverManager;
 import act.app.event.AppEventId;
-import act.event.AppEventManager;
-import act.event.EventBus;
 import act.conf.AppConfLoader;
 import act.conf.AppConfig;
 import act.controller.ControllerSourceCodeScanner;
 import act.controller.bytecode.ControllerByteCodeScanner;
 import act.di.DependencyInjector;
+import act.event.EventBus;
 import act.handler.builtin.StaticFileGetter;
 import act.job.AppJobManager;
 import act.job.meta.JobByteCodeScanner;
 import act.job.meta.JobSourceCodeScanner;
+import act.mail.MailerConfigManager;
+import act.mail.MailerSourceCodeScanner;
+import act.mail.bytecode.MailerByteCodeScanner;
 import act.route.RouteTableRouterBuilder;
 import act.route.Router;
 import act.util.ClassInfoByteCodeScanner;
@@ -60,11 +62,11 @@ public class App {
     private AppClassLoader classLoader;
     private ProjectLayout layout;
     private AppBuilder builder;
-    private AppEventManager eventManager;
     private EventBus eventBus;
     private AppCodeScannerManager scannerManager;
     private DbServiceManager dbServiceManager;
     private AppJobManager jobManager;
+    private MailerConfigManager mailerConfigManager;
     private StringValueResolverManager resolverManager;
     private BinderManager binderManager;
     private AppInterceptorManager interceptorManager;
@@ -143,18 +145,17 @@ public class App {
         initInterceptorManager();
         loadConfig();
         initJobManager();
+        initMailerConfigManager();
         initResolverManager();
         initBinderManager();
         initUploadFileStorageService();
         initRouter();
         initDbServiceManager();
-        eventManager().emitEvent(DB_SVC_LOADED);
         eventBus().emit(DB_SVC_LOADED);
         loadGlobalPlugin();
         initScannerManager();
         loadActScanners();
         loadBuiltInScanners();
-        eventManager().emitEvent(PRE_LOAD_CLASSES);
         eventBus().emit(PRE_LOAD_CLASSES);
         initClassLoader();
         try {
@@ -171,9 +172,7 @@ public class App {
         // could be switched to handling other app in ACT or still hold
         // old app class loader instance after the app been refreshed
         // - Thread.currentThread().setContextClassLoader(classLoader());
-        eventManager().emitEvent(PRE_START);
         eventBus().emit(PRE_START);
-        eventManager().emitEvent(START);
         eventBus().emit(START);
     }
 
@@ -215,9 +214,8 @@ public class App {
 
     public BinderManager binderManager() {return binderManager;}
 
-    @Deprecated
-    public AppEventManager eventManager() {
-        return eventManager;
+    public MailerConfigManager mailerConfigManager() {
+        return mailerConfigManager;
     }
 
     public EventBus eventBus() {
@@ -289,10 +287,10 @@ public class App {
         }
     }
 
-    <T> T newInstance(Class<T> clz, AppContext context) {
+    <T> T newInstance(Class<T> clz, ActionContext context) {
         if (App.class == clz) return _.cast(this);
         if (AppConfig.class == clz) return _.cast(config());
-        if (AppContext.class == clz) return _.cast(context);
+        if (ActionContext.class == clz) return _.cast(context);
         if (null != dependencyInjector) {
             return dependencyInjector.createContextAwareInjector(context).create(clz);
         } else {
@@ -336,7 +334,6 @@ public class App {
 
     private void initServiceResourceManager() {
         if (null != serviceResourceManager) {
-            eventManager().emitEvent(STOP);
             eventBus().emit(STOP);
             serviceResourceManager.destroy();
             dependencyInjector = null;
@@ -353,7 +350,6 @@ public class App {
     }
 
     private void initEventBus() {
-        eventManager = new AppEventManager(this);
         eventBus = new EventBus(this);
     }
 
@@ -373,6 +369,10 @@ public class App {
         dbServiceManager = new DbServiceManager(this);
     }
 
+    private void initMailerConfigManager() {
+        mailerConfigManager = new MailerConfigManager(this);
+    }
+
     private void loadGlobalPlugin() {
         Act.appServicePluginManager().applyTo(this);
     }
@@ -386,6 +386,8 @@ public class App {
         scannerManager.register(new ClassInfoByteCodeScanner());
         scannerManager.register(new ControllerSourceCodeScanner());
         scannerManager.register(new ControllerByteCodeScanner());
+        scannerManager.register(new MailerSourceCodeScanner());
+        scannerManager.register(new MailerByteCodeScanner());
         scannerManager.register(new JobSourceCodeScanner());
         scannerManager.register(new JobByteCodeScanner());
     }

@@ -1,9 +1,13 @@
 package act.view;
 
-import act.app.AppContext;
+import act.app.ActionContext;
+import act.mail.MailerContext;
+import act.view.rythm.ActionViewVarDef;
+import act.view.rythm.MailerViewVarDef;
 import org.osgl.http.H;
 import org.osgl.util.C;
 
+import javax.mail.internet.InternetAddress;
 import java.util.List;
 import java.util.Map;
 
@@ -12,50 +16,71 @@ import java.util.Map;
  */
 public class SystemImplicitVariableProvider extends ImplicitVariableProvider {
     @Override
-    public List<VarDef> implicitVariables() {
-        return varDefs;
+    public List<ActionViewVarDef> implicitActionViewVariables() {
+        return actionViewVarDefs;
     }
 
-    private List<VarDef> varDefs = C.listOf(
-            new VarDef("_ctx", AppContext.class) {
+    @Override
+    public List<MailerViewVarDef> implicitMailerViewVariables() {
+        return mailerViewVarDefs;
+    }
+
+    private List<ActionViewVarDef> actionViewVarDefs = C.listOf(
+            new ActionViewVarDef("_ctx", ActionContext.class) {
                 @Override
-                public Object evaluate(AppContext context) {
+                public Object eval(ActionContext context) {
                     return context;
                 }
             },
-//
-//            new VarDef("_req", H.Request.class) {
-//                @Override
-//                public Object evaluate(AppContext context) {
-//                    return context.req();
-//                }
-//            },
-//
-//            new VarDef("_resp", H.Response.class) {
-//                @Override
-//                public Object evaluate(AppContext context) {
-//                    return context.resp();
-//                }
-//            },
-//
-            new VarDef("_session", H.Session.class) {
+            new ActionViewVarDef("_session", H.Session.class) {
                 @Override
-                public Object evaluate(AppContext context) {
+                public Object eval(ActionContext context) {
                     return context.session();
                 }
             },
-
-            new VarDef("_flash", H.Flash.class) {
+            new ActionViewVarDef("_flash", H.Flash.class) {
                 @Override
-                public Object evaluate(AppContext context) {
+                public Object eval(ActionContext context) {
                     return context.flash();
                 }
             },
-
-            new VarDef("_params", Map.class) {
+            new ActionViewVarDef("_params", Map.class) {
                 @Override
-                public Object evaluate(AppContext context) {
+                public Object eval(ActionContext context) {
                     return context.allParams();
+                }
+            }
+    );
+
+    private List<MailerViewVarDef> mailerViewVarDefs = C.listOf(
+            new MailerViewVarDef("_ctx", MailerContext.class) {
+                @Override
+                public Object eval(MailerContext context) {
+                    return context;
+                }
+            },
+            new MailerViewVarDef("_from", InternetAddress.class) {
+                @Override
+                public Object eval(MailerContext context) {
+                    return context.from();
+                }
+            },
+            new MailerViewVarDef("_to", List.class) {
+                @Override
+                public Object eval(MailerContext context) {
+                    return context.to();
+                }
+            },
+            new MailerViewVarDef("_cc", List.class) {
+                @Override
+                public Object eval(MailerContext context) {
+                    return context.cc();
+                }
+            },
+            new MailerViewVarDef("_bcc", List.class) {
+                @Override
+                public Object eval(MailerContext context) {
+                    return context.bcc();
                 }
             }
     );

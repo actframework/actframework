@@ -1,12 +1,12 @@
 package act.controller;
 
-import act.app.AppContext;
+import act.app.ActionContext;
 import act.conf.AppConfigKey;
-import act.view.ActServerError;
 import act.view.RenderAny;
 import act.view.RenderTemplate;
 import org.osgl.http.H;
 import org.osgl.mvc.result.*;
+import org.osgl.storage.ISObject;
 import org.osgl.util.E;
 import org.osgl.util.IO;
 import org.osgl.util.S;
@@ -231,9 +231,46 @@ public @interface Controller {
             return new RenderJSON(data);
         }
 
+
+        /**
+         * Returns a {@link RenderBinary} result with an {@link ISObject} instance. The result will render
+         * the binary using "inline" content disposition
+         * @param sobj the {@link ISObject} instance
+         */
+        public static Result binary(ISObject sobj) {
+            return new RenderBinary(sobj.asInputStream(), sobj.getAttribute(ISObject.ATTR_FILE_NAME), sobj.getAttribute(ISObject.ATTR_CONTENT_TYPE), true);
+        }
+
+        /**
+         * Returns a {@link RenderBinary} result with an {@link ISObject} instance. The result will render
+         * the binary using "attachment" content disposition
+         * @param sobj the {@link ISObject} instance
+         */
+        public static Result download(ISObject sobj) {
+            return new RenderBinary(sobj.asInputStream(), sobj.getAttribute(ISObject.ATTR_FILE_NAME), sobj.getAttribute(ISObject.ATTR_CONTENT_TYPE), false);
+        }
+
+        /**
+         * Returns a {@link RenderBinary} result with a file. The result will render
+         * the binary using "inline" content disposition.
+         * @param file the file to be rendered
+         */
+        public static Result binary(File file) {
+            return new RenderBinary(file);
+        }
+
+        /**
+         * Returns a {@link RenderBinary} result with a file. The result will render
+         * the binary using "attachment" content disposition.
+         * @param file the file to be rendered
+         */
+        public static Result download(File file) {
+            return new RenderBinary(file, file.getName(), false);
+        }
+
         /**
          * Returns a {@link RenderTemplate} result with a render arguments map.
-         * Note the template path should be set via {@link AppContext#templatePath(String)}
+         * Note the template path should be set via {@link ActionContext#templatePath(String)}
          * method
          * @param args
          */
@@ -244,10 +281,10 @@ public @interface Controller {
         /**
          * The caller to this magic {@code render} method is subject to byte code enhancement. All
          * parameter passed into this method will be put into the application context via
-         * {@link AppContext#renderArg(String, Object)} using the variable name found in the
+         * {@link ActionContext#renderArg(String, Object)} using the variable name found in the
          * local variable table. If the first argument is of type String and there is no variable name
          * associated with that variable then it will be treated as template path and get set to the
-         * context via {@link AppContext#templatePath(String)} method.
+         * context via {@link ActionContext#templatePath(String)} method.
          * <p>This method returns different render results depends on the request format</p>
          * <table>
          *     <tr>
@@ -288,20 +325,20 @@ public @interface Controller {
             resp.contentType(req.contentType().toContentType());
         }
 
-        public static Result inferResult(Result r, AppContext appContext) {
+        public static Result inferResult(Result r, ActionContext actionContext) {
             return r;
         }
 
-        public static Result inferResult(String s, AppContext appContext) {
-            if (appContext.isJSON()) {
+        public static Result inferResult(String s, ActionContext actionContext) {
+            if (actionContext.isJSON()) {
                 s = s.trim();
                 if (!s.startsWith("[") && !s.startsWith("{")) {
-                    String action = appContext.actionPath();
+                    String action = actionContext.actionPath();
                     s = S.fmt("{\"%s\": \"%s\"}", S.str(action).afterLast('.'), s);
                 }
                 return new RenderJSON(s);
             }
-            H.Format fmt = appContext.accept();
+            H.Format fmt = actionContext.accept();
             switch (fmt) {
                 case txt:
                 case csv:
@@ -314,8 +351,8 @@ public @interface Controller {
             }
         }
 
-        public static Result inferResult(Map<String, ?> map, AppContext appContext) {
-            if (appContext.isJSON()) {
+        public static Result inferResult(Map<String, ?> map, ActionContext actionContext) {
+            if (actionContext.isJSON()) {
                 return new RenderJSON(map);
             }
             throw E.tbd("render template with render args in map");
@@ -324,11 +361,11 @@ public @interface Controller {
         /**
          *
          * @param array
-         * @param appContext
+         * @param actionContext
          * @return
          */
-        public static Result inferResult(Object[] array, AppContext appContext) {
-            if (appContext.isJSON()) {
+        public static Result inferResult(Object[] array, ActionContext actionContext) {
+            if (actionContext.isJSON()) {
                 return new RenderJSON(array);
             }
             throw E.tbd("render template with render args in array");
@@ -339,11 +376,11 @@ public @interface Controller {
          * {@code JSON} format then it will render a {@link RenderJSON JSON} result from the content of the
          * input stream. Otherwise, it will render a {@link RenderBinary binary} result from the inputstream
          * @param is the inputstream
-         * @param appContext
+         * @param actionContext
          * @return a Result inferred from the inputstream specified
          */
-        public static Result inferResult(InputStream is, AppContext appContext) {
-            if (appContext.isJSON()) {
+        public static Result inferResult(InputStream is, ActionContext actionContext) {
+            if (actionContext.isJSON()) {
                 return new RenderJSON(IO.readContentAsString(is));
             } else {
                 return new RenderBinary(is, null, true);
@@ -355,14 +392,22 @@ public @interface Controller {
          * {@code JSON} format then it will render a {@link RenderJSON JSON} result from the content of the
          * file. Otherwise, it will render a {@link RenderBinary binary} result from the file specified
          * @param file the file
-         * @param appContext
+         * @param actionContext
          * @return a Result inferred from the file specified
          */
-        public static Result inferResult(File file, AppContext appContext) {
-            if (appContext.isJSON()) {
+        public static Result inferResult(File file, ActionContext actionContext) {
+            if (actionContext.isJSON()) {
                 return new RenderJSON(IO.readContentAsString(file));
             } else {
                 return new RenderBinary(file);
+            }
+        }
+
+        public static Result inferResult(ISObject sobj, ActionContext context) {
+            if (context.isJSON()) {
+                return new RenderJSON(sobj.asString());
+            } else {
+                return binary(sobj);
             }
         }
 
@@ -371,41 +416,43 @@ public @interface Controller {
          * <ul>
          *     <li>If v is {@code null} then null returned</li>
          *     <li>If v is instance of {@code Result} then it is returned directly</li>
-         *     <li>If v is instance of {@code String} then {@link #inferResult(String, AppContext)} is used
+         *     <li>If v is instance of {@code String} then {@link #inferResult(String, ActionContext)} is used
          *     to infer the {@code Result}</li>
-         *     <li>If v is instance of {@code InputStream} then {@link #inferResult(InputStream, AppContext)} is used
+         *     <li>If v is instance of {@code InputStream} then {@link #inferResult(InputStream, ActionContext)} is used
          *     to infer the {@code Result}</li>
-         *     <li>If v is instance of {@code File} then {@link #inferResult(File, AppContext)} is used
+         *     <li>If v is instance of {@code File} then {@link #inferResult(File, ActionContext)} is used
          *     to infer the {@code Result}</li>
-         *     <li>If v is instance of {@code Map} then {@link #inferResult(Map, AppContext)} is used
+         *     <li>If v is instance of {@code Map} then {@link #inferResult(Map, ActionContext)} is used
          *     to infer the {@code Result}</li>
-         *     <li>If v is an array of {@code Object} then {@link #inferResult(Object[], AppContext)} is used
+         *     <li>If v is an array of {@code Object} then {@link #inferResult(Object[], ActionContext)} is used
          *     to infer the {@code Result}</li>
          * </ul>
          * @param v
-         * @param appContext
+         * @param actionContext
          * @return
          */
-        public static Result inferResult(Object v, AppContext appContext) {
+        public static Result inferResult(Object v, ActionContext actionContext) {
             if (null == v) {
                 return null;
             } else if (v instanceof Result) {
                 return (Result) v;
             } else if (v instanceof String) {
-                return inferResult((String) v, appContext);
+                return inferResult((String) v, actionContext);
             } else if (v instanceof InputStream) {
-                return inferResult((InputStream) v, appContext);
+                return inferResult((InputStream) v, actionContext);
             } else if (v instanceof File) {
-                return inferResult((File) v, appContext);
+                return inferResult((File) v, actionContext);
+            } else if (v instanceof ISObject) {
+                return inferResult((ISObject) v, actionContext);
             } else if (v instanceof Map) {
-                return inferResult((Map) v, appContext);
+                return inferResult((Map) v, actionContext);
             } else if (v instanceof Object[]) {
-                return inferResult((Object[]) v, appContext);
+                return inferResult((Object[]) v, actionContext);
             } else {
-                if (appContext.isJSON()) {
+                if (actionContext.isJSON()) {
                     return new RenderJSON(v);
                 } else {
-                    return inferResult(v.toString(), appContext);
+                    return inferResult(v.toString(), actionContext);
                 }
             }
         }

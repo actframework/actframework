@@ -1,6 +1,6 @@
 package act.handler.builtin.controller;
 
-import act.app.AppContext;
+import act.app.ActionContext;
 import act.plugin.Plugin;
 import org.osgl.mvc.result.Result;
 
@@ -21,11 +21,11 @@ public abstract class AfterInterceptor
      *
      * @param result     the generated result by either {@link BeforeInterceptor} or
      *                   controller action handler method
-     * @param appContext
+     * @param actionContext
      * @return the new result been processed
      */
     @Override
-    public Result handle(Result result, AppContext appContext) {
+    public Result handle(Result result, ActionContext actionContext) {
         return result;
     }
 

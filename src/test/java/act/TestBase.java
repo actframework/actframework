@@ -11,7 +11,7 @@ import org.mockito.stubbing.Answer;
 import org.osgl._;
 import org.osgl.http.H;
 import act.app.App;
-import act.app.AppContext;
+import act.app.ActionContext;
 import act.util.ClassNames;
 import org.osgl.util.E;
 import org.osgl.util.FastStr;
@@ -21,7 +21,6 @@ import org.osgl.util.S;
 import java.io.File;
 import java.io.InputStream;
 import java.lang.reflect.Field;
-import java.util.Arrays;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.argThat;
@@ -93,7 +92,7 @@ public class TestBase extends Assert {
     }
 
     protected Router mockRouter;
-    protected AppContext mockAppContext;
+    protected ActionContext mockActionContext;
     protected AppConfig mockAppConfig;
     protected App mockApp;
     protected H.Request mockReq;
@@ -103,10 +102,10 @@ public class TestBase extends Assert {
         mockApp = mock(App.class);
         mockAppConfig = mock(AppConfig.class);
         when(mockAppConfig.possibleControllerClass(argThat(new StartsWith("testapp.controller.")))).thenReturn(true);
-        mockAppContext = mock(AppContext.class);
-        when(mockAppContext.app()).thenReturn(mockApp);
-        when(mockAppContext.config()).thenReturn(mockAppConfig);
-        when(mockAppContext.newInstance(any(Class.class))).thenAnswer(new Answer<Object>() {
+        mockActionContext = mock(ActionContext.class);
+        when(mockActionContext.app()).thenReturn(mockApp);
+        when(mockActionContext.config()).thenReturn(mockAppConfig);
+        when(mockActionContext.newInstance(any(Class.class))).thenAnswer(new Answer<Object>() {
             @Override
             public Object answer(InvocationOnMock invocation) throws Throwable {
                 Object[] args = invocation.getArguments();

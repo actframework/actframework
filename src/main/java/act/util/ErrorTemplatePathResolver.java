@@ -1,18 +1,18 @@
 package act.util;
 
-import act.app.AppContext;
+import act.app.ActionContext;
 import org.osgl.http.H;
 import org.osgl.mvc.result.ErrorResult;
 import org.osgl.util.S;
 
 public interface ErrorTemplatePathResolver {
-    String resolve(ErrorResult result, AppContext context);
+    String resolve(ErrorResult result, ActionContext context);
 
     public static class DefaultErrorTemplatePathResolver implements ErrorTemplatePathResolver {
         @Override
-        public String resolve(ErrorResult result, AppContext context) {
+        public String resolve(ErrorResult result, ActionContext context) {
             int code = result.statusCode();
-            String suffix = "html";
+            String suffix;
             H.Format fmt = context.accept();
             switch (fmt) {
                 case json:

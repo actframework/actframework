@@ -1,6 +1,6 @@
 package act.view;
 
-import act.app.AppContext;
+import act.util.ActContext;
 import org.osgl.util.E;
 import org.osgl.util.S;
 
@@ -43,7 +43,7 @@ public abstract class VarDef {
      * @param context The application context
      * @return the variable value
      */
-    public abstract Object evaluate(AppContext context);
+    public abstract Object evaluate(ActContext context);
 
     @Override
     public String toString() {

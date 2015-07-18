@@ -1,6 +1,6 @@
 package act.validation;
 
-import act.app.AppContext;
+import act.app.ActionContext;
 import act.controller.ActionMethodParamAnnotationHandlerPlugin;
 import org.osgl._;
 import org.osgl.util.C;
@@ -20,7 +20,7 @@ public class PastHandler extends ActionMethodParamAnnotationHandlerPlugin {
     }
 
     @Override
-    public void handle(String paramName, Object paramVal, Annotation annotation, AppContext context) {
+    public void handle(String paramName, Object paramVal, Annotation annotation, ActionContext context) {
         if (paramVal == null) return;
         if (paramVal instanceof Date) {
             Date date = (Date)paramVal;

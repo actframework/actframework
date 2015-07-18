@@ -1,6 +1,5 @@
 package act.util;
 
-import act.app.App;
 import org.osgl._;
 import org.osgl.util.C;
 import org.osgl.util.E;

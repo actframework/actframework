@@ -1,10 +1,10 @@
 package testapp.controller;
 
-import act.app.AppContext;
+import act.app.ActionContext;
 
 public class ContextController extends ControllerBase {
-    protected AppContext ctx;
-    public void setAppContext(AppContext ctx) {
+    protected ActionContext ctx;
+    public void setAppContext(ActionContext ctx) {
         this.ctx = ctx;
     }
 }

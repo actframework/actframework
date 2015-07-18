@@ -1,6 +1,6 @@
 package act.data;
 
-import act.app.AppContext;
+import act.app.ActionContext;
 import org.osgl.http.H;
 import org.osgl.logging.L;
 import org.osgl.logging.Logger;
@@ -30,7 +30,7 @@ public abstract class RequestBodyParser {
         return parser;
     }
 
-    public abstract Map<String, String[]> parse(AppContext context);
+    public abstract Map<String, String[]> parse(ActionContext context);
 
 }
 

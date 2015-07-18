@@ -1,7 +1,7 @@
 package act.xio.undertow;
 
 import act.ResponseImplBase;
-import act.app.AppContext;
+import act.app.ActionContext;
 import act.conf.AppConfig;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.util.Headers;
@@ -21,8 +21,7 @@ public class UndertowResponse extends ResponseImplBase<UndertowResponse> {
     }
 
     private HttpServerExchange hse;
-    private Locale locale;
-    private AppContext ctx;
+    private ActionContext ctx;
     private volatile OutputStream os;
     private volatile Writer w;
 

@@ -1,6 +1,6 @@
 package act.data;
 
-import act.app.AppContext;
+import act.app.ActionContext;
 import org.apache.commons.codec.net.URLCodec;
 import org.osgl.exception.UnexpectedException;
 import org.osgl.http.H;
@@ -19,7 +19,7 @@ public class UrlEncodedParser extends RequestBodyParser {
     boolean forQueryString = false;
 
     @Override
-    public Map<String, String[]> parse(AppContext context) {
+    public Map<String, String[]> parse(ActionContext context) {
         H.Request request = context.req();
         // Encoding is either retrieved from contentType or it is the default encoding
         final String encoding = request.characterEncoding();

@@ -1,13 +1,16 @@
 package act.view;
 
-import act.app.AppContext;
+import act.app.ActionContext;
+import act.mail.MailerContext;
 
 /**
- * A Template represents a resource that can be merged with {@link AppContext application context}
+ * A Template represents a resource that can be merged with {@link ActionContext application context}
  * and output the result
  */
 public interface Template {
-    void merge(AppContext context);
+    void merge(ActionContext context);
 
-    String render(AppContext context);
+    String render(ActionContext context);
+
+    String render(MailerContext context);
 }

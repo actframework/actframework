@@ -1,7 +1,10 @@
 package act.view;
 
 import act.Act;
-import act.app.AppContext;
+import act.app.ActionContext;
+import act.mail.MailerContext;
+import act.view.rythm.ActionViewVarDef;
+import act.view.rythm.MailerViewVarDef;
 import org.osgl.http.H;
 import org.osgl.util.IO;
 
@@ -13,7 +16,7 @@ import java.util.Map;
 public abstract class TemplateBase implements Template {
 
     @Override
-    public void merge(AppContext context) {
+    public void merge(ActionContext context) {
         Map<String, Object> renderArgs = context.renderArgs();
         exposeImplicitVariables(renderArgs, context);
         beforeRender(context);
@@ -21,7 +24,15 @@ public abstract class TemplateBase implements Template {
     }
 
     @Override
-    public String render(AppContext context) {
+    public String render(ActionContext context) {
+        Map<String, Object> renderArgs = context.renderArgs();
+        exposeImplicitVariables(renderArgs, context);
+        beforeRender(context);
+        return render(renderArgs);
+    }
+
+    @Override
+    public String render(MailerContext context) {
         Map<String, Object> renderArgs = context.renderArgs();
         exposeImplicitVariables(renderArgs, context);
         beforeRender(context);
@@ -30,12 +41,19 @@ public abstract class TemplateBase implements Template {
 
     /**
      * Sub class can implement this method to inject logic that needs to be done
-     * before merge happening
+     * before rendering happening
      *
      * @param context
      */
-    protected void beforeRender(AppContext context) {
-    }
+    protected void beforeRender(ActionContext context) {}
+
+    /**
+     * Sub class can implement this method to inject logic that needs to be done
+     * before rendering happening
+     *
+     * @param context
+     */
+    protected void beforeRender(MailerContext context) {}
 
     protected void merge(Map<String, Object> renderArgs, H.Response response) {
         IO.writeContent(render(renderArgs), response.writer());
@@ -43,9 +61,16 @@ public abstract class TemplateBase implements Template {
 
     protected abstract String render(Map<String, Object> renderArgs);
 
-    private void exposeImplicitVariables(Map<String, Object> renderArgs, AppContext context) {
-        for (VarDef var : Act.viewManager().implicitVariables()) {
-            renderArgs.put(var.name(), var.evaluate(context));
+    private void exposeImplicitVariables(Map<String, Object> renderArgs, ActionContext context) {
+        for (ActionViewVarDef var : Act.viewManager().implicitActionViewVariables()) {
+            renderArgs.put(var.name(), var.eval(context));
+        }
+    }
+
+
+    private void exposeImplicitVariables(Map<String, Object> renderArgs, MailerContext context) {
+        for (MailerViewVarDef var : Act.viewManager().implicitMailerViewVariables()) {
+            renderArgs.put(var.name(), var.eval(context));
         }
     }
 }

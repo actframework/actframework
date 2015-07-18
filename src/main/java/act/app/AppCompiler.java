@@ -2,7 +2,6 @@ package act.app;
 
 import act.conf.AppConfig;
 import act.util.DestroyableBase;
-import act.view.ActServerError;
 import org.eclipse.jdt.core.compiler.IProblem;
 import org.eclipse.jdt.internal.compiler.*;
 import org.eclipse.jdt.internal.compiler.Compiler;

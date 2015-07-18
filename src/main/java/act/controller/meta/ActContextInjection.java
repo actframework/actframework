@@ -1,14 +1,14 @@
 package act.controller.meta;
 
-import act.app.AppContext;
+import act.app.ActionContext;
 import org.osgl._;
 import org.osgl.util.S;
 
 /**
- * Keep all information required to inject {@link AppContext}
+ * Keep all information required to inject {@link ActionContext}
  * into the controller action handler
  */
-public class AppContextInjection<T> {
+public class ActContextInjection<T> {
 
     /**
      * Define how framework should inject AppContext to the
@@ -19,7 +19,7 @@ public class AppContextInjection<T> {
          * Inject AppContext into controller instance field. This injection
          * is used when both of the following requirements are met
          * <ul>
-         * <li>The controller has a field with type {@link AppContext}</li>
+         * <li>The controller has a field with type {@link ActionContext}</li>
          * <li>The action handler method is not {@code static}</li>
          * </ul>
          * <p>Framework must instantiate an new instance of the
@@ -37,9 +37,9 @@ public class AppContextInjection<T> {
         /**
          * Save AppContext to {@link org.osgl.concurrent.ContextLocal}. If none of
          * the {@link #FIELD} and {@link #PARAM} can be used to inject the
-         * {@code AppContext}, then framework shall call {@link AppContext#saveLocal}
+         * {@code AppContext}, then framework shall call {@link ActionContext#saveLocal}
          * method to save the app context instance into thread local variable, such that the
-         * application developer could use {@link AppContext#current} method to
+         * application developer could use {@link ActionContext#current} method to
          * access the current application context
          */
         LOCAL;
@@ -60,7 +60,7 @@ public class AppContextInjection<T> {
     private InjectType type;
     protected T v;
 
-    private AppContextInjection(InjectType type, T v) {
+    private ActContextInjection(InjectType type, T v) {
         this.type = type;
         this.v = v;
     }
@@ -79,8 +79,8 @@ public class AppContextInjection<T> {
         if (obj == this) {
             return true;
         }
-        if (obj instanceof AppContextInjection) {
-            AppContextInjection that = (AppContextInjection) obj;
+        if (obj instanceof ActContextInjection) {
+            ActContextInjection that = (ActContextInjection) obj;
             return that.type == type && _.eq(that.v, v);
         }
         return false;
@@ -91,8 +91,8 @@ public class AppContextInjection<T> {
         return S.fmt("inject[%s, %s]", type.name().toLowerCase(), v);
     }
 
-    public static class FieldAppContextInjection extends AppContextInjection<String> {
-        FieldAppContextInjection(String fieldName) {
+    public static class FieldActContextInjection extends ActContextInjection<String> {
+        public FieldActContextInjection(String fieldName) {
             super(InjectType.FIELD, fieldName);
         }
 
@@ -101,11 +101,11 @@ public class AppContextInjection<T> {
         }
     }
 
-    public static class ParamAppContextInjection extends AppContextInjection<Integer> {
+    public static class ParamAppContextInjection extends ActContextInjection<Integer> {
 
         private int lvLookupIdx;
 
-        ParamAppContextInjection(Integer paramIndex) {
+        public ParamAppContextInjection(Integer paramIndex) {
             super(InjectType.PARAM, paramIndex);
         }
 
@@ -123,8 +123,8 @@ public class AppContextInjection<T> {
         }
     }
 
-    public static class LocalAppContextInjection extends AppContextInjection<Void> {
-        LocalAppContextInjection() {
+    public static class LocalAppContextInjection extends ActContextInjection<Void> {
+        public LocalAppContextInjection() {
             super(InjectType.LOCAL, null);
         }
 

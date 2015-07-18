@@ -2,12 +2,11 @@ package act.app;
 
 import act.Act;
 import act.Destroyable;
-import act.conf.AppConfig;
 import act.data.MapUtil;
 import act.data.RequestBodyParser;
 import act.handler.RequestHandler;
 import act.route.Router;
-import act.view.Template;
+import act.util.ActContext;
 import org.osgl._;
 import org.osgl.concurrent.ContextLocal;
 import org.osgl.http.H;
@@ -25,24 +24,20 @@ import java.util.*;
  * {@code AppContext} encapsulate contextual properties needed by
  * an application session
  */
-public class AppContext implements ParamValueProvider, Destroyable {
+public class ActionContext extends ActContext.ActContextBase<ActionContext> implements ActContext<ActionContext>, ParamValueProvider, Destroyable {
 
     public static final String ATTR_HANDLER = "__act_handler__";
 
-    private App app;
     private H.Request request;
     private H.Response response;
     private H.Session session;
     private H.Flash flash;
     private Set<Map.Entry<String, String[]>> requestParamCache;
     private Map<String, String> extraParams;
-    private Map<String, Object> renderArgs;
     private volatile Map<String, String[]> bodyParams;
     private Map<String, String[]> allParams;
     private String actionPath; // e.g. com.mycorp.myapp.controller.AbcController.foo
     private Map<String, Object> attributes;
-    private Template template;
-    private String templatePath;
     private State state;
     private Map<String, Object> controllerInstances;
     private List<ISObject> uploads;
@@ -50,13 +45,14 @@ public class AppContext implements ParamValueProvider, Destroyable {
     private Router router;
     private RequestHandler handler;
 
-    private AppContext(App app, H.Request request, H.Response response) {
+    private ActionContext(App app, H.Request request, H.Response response) {
+        super(app);
         E.NPE(app, request, response);
-        this.app = app;
         this.request = request;
         this.response = response;
         this._init();
         this.state = State.CREATED;
+        this.saveLocal();
     }
 
     public State state() {
@@ -95,17 +91,39 @@ public class AppContext implements ParamValueProvider, Destroyable {
         return router;
     }
 
-    public AppContext router(Router router) {
+    public ActionContext router(Router router) {
         E.NPE(router);
         this.router = router;
         return this;
+    }
+
+    // !!!IMPORTANT! the following methods needs to be kept to allow enhancer work correctly
+
+    @Override
+    public <T> T renderArg(String name) {
+        return super.renderArg(name);
+    }
+
+    @Override
+    public ActionContext renderArg(String name, Object val) {
+        return super.renderArg(name, val);
+    }
+
+    @Override
+    public Map<String, Object> renderArgs() {
+        return super.renderArgs();
+    }
+
+    @Override
+    public ActionContext templatePath(String templatePath) {
+        return super.templatePath(templatePath);
     }
 
     public RequestHandler handler() {
         return handler;
     }
 
-    public AppContext handler(RequestHandler handler) {
+    public ActionContext handler(RequestHandler handler) {
         E.NPE(handler);
         this.handler = handler;
         return this;
@@ -115,7 +133,7 @@ public class AppContext implements ParamValueProvider, Destroyable {
         return req().accept();
     }
 
-    public AppContext accept(H.Format fmt) {
+    public ActionContext accept(H.Format fmt) {
         req().accept(fmt);
         return this;
     }
@@ -132,7 +150,7 @@ public class AppContext implements ParamValueProvider, Destroyable {
         return req().isAjax();
     }
 
-    public AppContext param(String name, String value) {
+    public ActionContext param(String name, String value) {
         extraParams.put(name, value);
         return this;
     }
@@ -190,21 +208,9 @@ public class AppContext implements ParamValueProvider, Destroyable {
         return C.list(uploads);
     }
 
-    public AppContext addUpload(ISObject sobj) {
+    public ActionContext addUpload(ISObject sobj) {
         uploads.add(sobj);
         return this;
-    }
-
-    @SuppressWarnings("unchecked")
-    public <T> T renderArg(String name) {
-        return (T) renderArgs.get(name);
-    }
-
-    /**
-     * Returns all render arguments
-     */
-    public Map<String, Object> renderArgs() {
-        return C.newMap(renderArgs);
     }
 
     /**
@@ -213,16 +219,15 @@ public class AppContext implements ParamValueProvider, Destroyable {
      * @param names the render argument names separated by ","
      * @return this AppContext
      */
-    public AppContext __appRenderArgNames(String names) {
-        renderArgs.put("__arg_names__", C.listOf(names.split(",")));
-        return this;
+    public ActionContext __appRenderArgNames(String names) {
+        return renderArg("__arg_names__", C.listOf(names.split(",")));
     }
 
     public List<String> __appRenderArgNames() {
-        return (List<String>)renderArgs.get("__arg_names__");
+        return renderArg("__arg_names__");
     }
 
-    public AppContext __controllerInstance(String className, Object instance) {
+    public ActionContext __controllerInstance(String className, Object instance) {
         if (null == controllerInstances) {
             controllerInstances = C.newMap();
         }
@@ -242,7 +247,7 @@ public class AppContext implements ParamValueProvider, Destroyable {
      * @param attr the attribute object
      * @return this context
      */
-    public AppContext attribute(String name, Object attr) {
+    public ActionContext attribute(String name, Object attr) {
         attributes.put(name, attr);
         return this;
     }
@@ -252,21 +257,16 @@ public class AppContext implements ParamValueProvider, Destroyable {
     }
 
     public <T> T newInstance(Class<? extends T> clazz) {
-        if (clazz == AppContext.class) return _.cast(this);
+        if (clazz == ActionContext.class) return _.cast(this);
         return app().newInstance(clazz, this);
     }
 
-    public AppContext renderArg(String name, Object val) {
-        renderArgs.put(name, val);
-        return this;
-    }
-
-    public AppContext addViolations(Set<ConstraintViolation<?>> violations) {
+    public ActionContext addViolations(Set<ConstraintViolation<?>> violations) {
         this.violations.addAll(violations);
         return this;
     }
 
-    public AppContext addViolation(ConstraintViolation<?> violation) {
+    public ActionContext addViolation(ConstraintViolation<?> violation) {
         this.violations.add(violation);
         return this;
     }
@@ -301,40 +301,22 @@ public class AppContext implements ParamValueProvider, Destroyable {
         return violationMessage("\n");
     }
 
-    public AppContext flashViolationMessage() {
+    public ActionContext flashViolationMessage() {
         return flashViolationMessage("\n");
     }
 
-    public AppContext flashViolationMessage(String separator) {
+    public ActionContext flashViolationMessage(String separator) {
         if (violations.isEmpty()) return this;
         flash().error(violationMessage(separator));
         return this;
-    }
-
-    public App app() {
-        return app;
-    }
-
-    public AppConfig config() {
-        return app.config();
     }
 
     public String actionPath() {
         return actionPath;
     }
 
-    public AppContext actionPath(String path) {
+    public ActionContext actionPath(String path) {
         actionPath = path;
-        return this;
-    }
-
-    /**
-     * Set path to template file
-     * @param path the path to template file
-     * @return this {@code AppContext}
-     */
-    public AppContext templatePath(String path) {
-        templatePath = path;
         return this;
     }
 
@@ -344,20 +326,12 @@ public class AppContext implements ParamValueProvider, Destroyable {
      * @return either template path or action path if template path not set before
      */
     public String templatePath() {
-        if (S.notBlank(templatePath)) {
-            return templatePath;
+        String path = super.templatePath();
+        if (S.notBlank(path)) {
+            return path;
         } else {
             return actionPath().replace('.', '/');
         }
-    }
-
-    public Template cachedTemplate() {
-        return template;
-    }
-
-    public AppContext cacheTemplate(Template template) {
-        this.template = template;
-        return this;
     }
 
     /**
@@ -387,33 +361,24 @@ public class AppContext implements ParamValueProvider, Destroyable {
         state = State.SESSION_DISSOLVED;
     }
 
-    @Override
-    public boolean isDestroyed() {
-        return state == State.DESTROYED;
-    }
-
     /**
      * Clear all internal data store/cache and then
      * remove this context from thread local
      */
     @Override
-    public void destroy() {
-        if (isDestroyed()) return;
-        try {
+    protected void releaseResources() {
+        super.releaseResources();
+        if (this.state != State.DESTROYED) {
             this.allParams = null;
             this.extraParams = null;
             this.requestParamCache = null;
-            this.renderArgs.clear();
             this.attributes.clear();
-            this.template = null;
             this.router = null;
             this.handler = null;
-            this.app = null;
             // xio impl might need this this.request = null;
             // xio impl might need this this.response = null;
             this.flash = null;
             this.session = null;
-            this.template = null;
             this.controllerInstances = null;
             this.violations.clear();
             this.clearLocal();
@@ -424,9 +389,8 @@ public class AppContext implements ParamValueProvider, Destroyable {
                 }
             }
             this.attributes.clear();
-        } finally {
-            this.state = State.DESTROYED;
         }
+        this.state = State.DESTROYED;
     }
 
     public void saveLocal() {
@@ -465,7 +429,6 @@ public class AppContext implements ParamValueProvider, Destroyable {
     private void _init() {
         uploads = C.newList();
         extraParams = C.newMap();
-        renderArgs = C.newMap();
         violations = C.newSet();
         attributes = C.newMap();
         final Set<Map.Entry<String, String[]>> paramEntrySet = new AbstractSet<Map.Entry<String, String[]>>() {
@@ -565,11 +528,11 @@ public class AppContext implements ParamValueProvider, Destroyable {
         }
     }
 
-    private static ContextLocal<AppContext> _local = _.contextLocal();
+    private static ContextLocal<ActionContext> _local = _.contextLocal();
 
     public static final String METHOD_GET_CURRENT = "current";
 
-    public static AppContext current() {
+    public static ActionContext current() {
         return _local.get();
     }
 
@@ -580,8 +543,8 @@ public class AppContext implements ParamValueProvider, Destroyable {
     /**
      * Create an new {@code AppContext} and return the new instance
      */
-    public static AppContext create(App app, H.Request request, H.Response resp) {
-        return new AppContext(app, request, resp);
+    public static ActionContext create(App app, H.Request request, H.Response resp) {
+        return new ActionContext(app, request, resp);
     }
 
     public enum State {

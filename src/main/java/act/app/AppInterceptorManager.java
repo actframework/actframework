@@ -31,21 +31,21 @@ public class AppInterceptorManager extends AppServiceBase<AppInterceptorManager>
         super(app);
     }
 
-    public Result handleBefore(AppContext appContext) {
-        return BEFORE_INTERCEPTOR.apply(appContext);
+    public Result handleBefore(ActionContext actionContext) {
+        return BEFORE_INTERCEPTOR.apply(actionContext);
     }
 
-    public Result handleAfter(Result result, AppContext appContext) {
-        return AFTER_INTERCEPTOR.apply(result, appContext);
+    public Result handleAfter(Result result, ActionContext actionContext) {
+        return AFTER_INTERCEPTOR.apply(result, actionContext);
     }
 
-    public void handleFinally(AppContext appContext) {
-        FINALLY_INTERCEPTOR.apply(appContext);
+    public void handleFinally(ActionContext actionContext) {
+        FINALLY_INTERCEPTOR.apply(actionContext);
     }
 
 
-    public Result handleException(Exception ex, AppContext appContext) {
-        return EXCEPTION_INTERCEPTOR.apply(ex, appContext);
+    public Result handleException(Exception ex, ActionContext actionContext) {
+        return EXCEPTION_INTERCEPTOR.apply(ex, actionContext);
     }
 
     public void registerInterceptor(BeforeInterceptor interceptor) {

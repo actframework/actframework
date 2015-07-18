@@ -1,7 +1,7 @@
 package act.boot.spark;
 
+import act.app.ActionContext;
 import act.app.App;
-import act.app.AppContext;
 import act.app.ProjectLayout;
 import act.boot.ProjectLayoutBuilder;
 import act.conf.AppConfig;
@@ -219,7 +219,7 @@ public final class SparkApp extends App {
     private static RequestHandler constant(final Result result) {
         return new RequestHandlerBase() {
             @Override
-            public void handle(AppContext context) {
+            public void handle(ActionContext context) {
                 throw result;
             }
         };
@@ -249,7 +249,7 @@ public final class SparkApp extends App {
 
     public abstract static class Handler extends RequestHandlerBase {
         @Override
-        public void handle(AppContext context) {
+        public void handle(ActionContext context) {
             Result result;
             try {
                 Object obj = handle(context.req(), context.resp());
@@ -276,9 +276,9 @@ public final class SparkApp extends App {
         }
 
         @Override
-        public void handle(AppContext ctx) {
+        public void handle(ActionContext ctx) {
             try {
-                ctx.saveLocal();
+                //ctx.saveLocal();
                 try {
                     handleBefore(ctx);
                     super.handle(ctx);
@@ -289,17 +289,17 @@ public final class SparkApp extends App {
             } catch (Result result) {
                 onResult(result, ctx);
             } finally {
-                ctx.clearLocal();
+                //ctx.clearLocal();
             }
         }
 
-        private void onResult(Result result, AppContext context) {
+        private void onResult(Result result, ActionContext context) {
             H.Request req = context.req();
             H.Response resp = context.resp();
             result.apply(req, resp);
         }
 
-        private void onException(Exception e, AppContext ctx) {
+        private void onException(Exception e, ActionContext ctx) {
             for (Class<? extends Exception> c: registeredExceptions) {
                 if (c.isInstance(e)) {
                     List<RequestHandler> l = exceptionHandlers.get(c);
@@ -310,17 +310,17 @@ public final class SparkApp extends App {
             }
         }
 
-        private void handleBefore(AppContext ctx) {
+        private void handleBefore(ActionContext ctx) {
             runFilters(ctx, beforeHandlers);
             runPatternMatchedFilters(ctx, patternMatchedBeforeHandlers);
         }
 
-        private void handleAfter(AppContext ctx) {
+        private void handleAfter(ActionContext ctx) {
             runFilters(ctx, afterHandlers);
             runPatternMatchedFilters(ctx, patternMatchedAfterHandlers);
         }
 
-        private void runFilters(AppContext ctx, Map<String, List<RequestHandler>> staticRegistry) {
+        private void runFilters(ActionContext ctx, Map<String, List<RequestHandler>> staticRegistry) {
             List<RequestHandler> l = staticRegistry.get(GLOBAL);
             if (null != l) {
                 runFilters(ctx, l);
@@ -331,13 +331,13 @@ public final class SparkApp extends App {
             }
         }
 
-        private void runFilters(AppContext ctx, List<RequestHandler> handlers) {
+        private void runFilters(ActionContext ctx, List<RequestHandler> handlers) {
             for (RequestHandler h : handlers) {
                 h.handle(ctx);
             }
         }
 
-        private void runPatternMatchedFilters(AppContext ctx, List<Filter> patternMatchedRegistry) {
+        private void runPatternMatchedFilters(ActionContext ctx, List<Filter> patternMatchedRegistry) {
             for (Filter f : patternMatchedRegistry) {
                 if (f.matches(ctx.req().fullPath())) {
                     f.handle(ctx);

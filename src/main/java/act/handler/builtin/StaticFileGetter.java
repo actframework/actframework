@@ -1,7 +1,7 @@
 package act.handler.builtin;
 
+import act.app.ActionContext;
 import act.app.App;
-import act.app.AppContext;
 import act.controller.ParamNames;
 import act.handler.builtin.controller.FastRequestHandler;
 import org.osgl.http.H;
@@ -33,7 +33,7 @@ public class StaticFileGetter extends FastRequestHandler {
     }
 
     @Override
-    public void handle(AppContext context) {
+    public void handle(ActionContext context) {
         File file = base;
         if (!file.exists()) {
             AlwaysNotFound.INSTANCE.handle(context);
@@ -77,7 +77,7 @@ public class StaticFileGetter extends FastRequestHandler {
         return H.Format.valueOfIgnoreCase(s.toString());
     }
 
-    protected InputStream inputStream(String path, AppContext context) {
+    protected InputStream inputStream(String path, ActionContext context) {
         return context.app().classLoader().getResourceAsStream(path);
     }
 

@@ -1,7 +1,7 @@
 package act.xio.undertow;
 
+import act.app.ActionContext;
 import act.app.App;
-import act.app.AppContext;
 import act.conf.AppConfig;
 import act.xio.NetworkClient;
 import io.undertow.server.HttpHandler;
@@ -23,17 +23,17 @@ public class ActHttpHandler implements HttpHandler {
 
     @Override
     public void handleRequest(HttpServerExchange exchange) throws Exception {
-        AppContext ctx = createAppContext(exchange);
+        ActionContext ctx = createAppContext(exchange);
         client.handle(ctx);
     }
 
-    private AppContext createAppContext(HttpServerExchange exchange) {
+    private ActionContext createAppContext(HttpServerExchange exchange) {
         App app = client.app();
         AppConfig config = app.config();
-        AppContext ctx = AppContext.create(app, req(exchange, config), resp(exchange, config));
+        ActionContext ctx = ActionContext.create(app, req(exchange, config), resp(exchange, config));
         exchange.putAttachment(ActBlockingExchange.KEY_APP_CTX, ctx);
         exchange.startBlocking(new ActBlockingExchange(exchange));
-        ctx.saveLocal();
+        //ctx.saveLocal();
         return ctx;
     }
 

@@ -1,6 +1,6 @@
 package act.validation;
 
-import act.app.AppContext;
+import act.app.ActionContext;
 import act.controller.ActionMethodParamAnnotationHandlerPlugin;
 import org.osgl.util.C;
 import org.osgl.util.E;
@@ -21,7 +21,7 @@ public class SizeHandler extends ActionMethodParamAnnotationHandlerPlugin {
     }
 
     @Override
-    public void handle(String paramName, Object paramVal, Annotation annotation, AppContext context) {
+    public void handle(String paramName, Object paramVal, Annotation annotation, ActionContext context) {
         if (null == paramVal) {
             return;
         }

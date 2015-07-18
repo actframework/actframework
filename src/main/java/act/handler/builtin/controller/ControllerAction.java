@@ -1,6 +1,6 @@
 package act.handler.builtin.controller;
 
-import act.app.AppContext;
+import act.app.ActionContext;
 import org.osgl.mvc.result.Result;
 
 /**
@@ -16,8 +16,8 @@ public class ControllerAction extends ActionHandler<ControllerAction> {
     }
 
     @Override
-    public Result handle(AppContext appContext) {
-        return handlerInvoker.handle(appContext);
+    public Result handle(ActionContext actionContext) {
+        return handlerInvoker.handle(actionContext);
     }
 
     @Override

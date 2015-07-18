@@ -1,6 +1,6 @@
 package act.handler.builtin;
 
-import act.app.AppContext;
+import act.app.ActionContext;
 import act.handler.builtin.controller.FastRequestHandler;
 import org.osgl.http.H;
 import org.osgl.util.S;
@@ -20,7 +20,7 @@ public class Echo extends FastRequestHandler {
     }
 
     @Override
-    public void handle(AppContext context) {
+    public void handle(ActionContext context) {
         H.Response resp = context.resp();
         if (S.notBlank(contentType)) {
             resp.contentType(contentType);

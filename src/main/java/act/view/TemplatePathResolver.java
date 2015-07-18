@@ -1,21 +1,22 @@
 package act.view;
 
-import act.app.AppContext;
+import act.app.ActionContext;
+import act.util.ActContext;
 import org.osgl._;
 import org.osgl.http.H;
 import org.osgl.util.E;
 import org.osgl.util.S;
 
 /**
- * Resolve template path for {@link AppContext}
+ * Resolve template path for {@link ActionContext}
  */
-public class TemplatePathResolver extends _.Transformer<AppContext, String> {
+public class TemplatePathResolver extends _.Transformer<ActContext, String> {
     @Override
-    public final String transform(AppContext context) {
+    public final String transform(ActContext context) {
         return resolve(context);
     }
 
-    public final String resolve(AppContext context) {
+    public final String resolve(ActContext context) {
         String path = context.templatePath();
         return resolveTemplatePath(path, context);
     }
@@ -23,7 +24,7 @@ public class TemplatePathResolver extends _.Transformer<AppContext, String> {
     /**
      * Sub class shall use this method to implement template path resolving logic
      */
-    protected String resolveTemplatePath(String path, AppContext context) {
+    protected String resolveTemplatePath(String path, ActContext context) {
         if (path.contains(".")) {
             return path;
         }

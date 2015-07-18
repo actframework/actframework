@@ -5,7 +5,6 @@ import act.asm.*;
 import act.job.JobAnnotationProcessor;
 import act.util.AsmTypes;
 import act.util.ByteCodeVisitor;
-import org.osgl._;
 import org.osgl.util.E;
 import org.osgl.util.ListBuilder;
 

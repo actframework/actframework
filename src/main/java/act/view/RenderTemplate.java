@@ -1,7 +1,7 @@
 package act.view;
 
 import act.Act;
-import act.app.AppContext;
+import act.app.ActionContext;
 import org.osgl.http.H;
 import org.osgl.util.E;
 
@@ -9,7 +9,7 @@ import java.util.Map;
 
 /**
  * Render a template with template path and arguments provided
- * by {@link AppContext}
+ * by {@link ActionContext}
  */
 public class RenderTemplate extends RenderAny {
 
@@ -29,7 +29,7 @@ public class RenderTemplate extends RenderAny {
                 "apply to request and response. Please use apply(AppContext) instead");
     }
 
-    public void apply(AppContext context) {
+    public void apply(ActionContext context) {
         if (null != renderArgs && !renderArgs.isEmpty()) {
             for (String key : renderArgs.keySet()) {
                 context.renderArg(key, renderArgs.get(key));

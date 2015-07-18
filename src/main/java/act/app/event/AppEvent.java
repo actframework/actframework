@@ -2,9 +2,6 @@ package act.app.event;
 
 import act.app.App;
 import act.event.ActEvent;
-import org.osgl.util.C;
-
-import java.util.Map;
 
 public abstract class AppEvent extends ActEvent<App> {
     private int id;

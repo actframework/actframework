@@ -1,6 +1,6 @@
 package act.handler;
 
-import act.app.AppContext;
+import act.app.ActionContext;
 import org.osgl.util.E;
 
 /**
@@ -14,7 +14,7 @@ public class DelegateRequestHandler extends RequestHandlerBase {
     }
 
     @Override
-    public void handle(AppContext context) {
+    public void handle(ActionContext context) {
         handler_.handle(context);
     }
 

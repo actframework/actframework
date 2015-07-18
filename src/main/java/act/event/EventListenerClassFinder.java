@@ -1,7 +1,6 @@
 package act.event;
 
 import act.app.App;
-import act.app.event.AppClassLoaded;
 import act.app.event.AppCodeScanned;
 import act.app.event.AppEventId;
 import act.plugin.AppServicePlugin;

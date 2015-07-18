@@ -1,6 +1,6 @@
 package act.data;
 
-import act.app.AppContext;
+import act.app.ActionContext;
 import act.util.UploadFileStorageService;
 import org.apache.commons.fileupload.*;
 import org.apache.commons.fileupload.disk.DiskFileItem;
@@ -68,7 +68,7 @@ public class ApacheMultipartParser extends RequestBodyParser {
             fileTracker = new FileCleaningTracker();
         }
 
-        private AppContext context;
+        private ActionContext context;
 
         // ----------------------------------------------------- Manifest constants
         /**
@@ -127,7 +127,7 @@ public class ApacheMultipartParser extends RequestBodyParser {
          */
         private FileItemHeaders headers;
 
-        public AutoFileItem(FileItemStream stream, AppContext context) {
+        public AutoFileItem(FileItemStream stream, ActionContext context) {
             this.fieldName = stream.getFieldName();
             this.contentType = stream.getContentType();
             this.isFormField = stream.isFormField();
@@ -488,7 +488,7 @@ public class ApacheMultipartParser extends RequestBodyParser {
          *
          * @return The {@link java.io.File File} to be used for temporary storage.
          */
-        protected File getTempFile(AppContext context) {
+        protected File getTempFile(ActionContext context) {
             File tempDir = repository;
             if (tempDir == null) {
                 tempDir = context.app().tmpDir();
@@ -550,7 +550,7 @@ public class ApacheMultipartParser extends RequestBodyParser {
     }
 
     @Override
-    public Map<String, String[]> parse(AppContext context) {
+    public Map<String, String[]> parse(ActionContext context) {
         H.Request request = context.req();
         InputStream body = request.inputStream();
         Map<String, String[]> result = new HashMap<String, String[]>();

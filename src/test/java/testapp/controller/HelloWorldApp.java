@@ -4,7 +4,7 @@ import org.osgl.http.H;
 import org.osgl.mvc.annotation.Before;
 import org.osgl.mvc.annotation.GetAction;
 import org.osgl.mvc.result.Result;
-import act.app.AppContext;
+import act.app.ActionContext;
 import act.boot.app.RunApp;
 
 import static act.controller.Controller.Util.render;
@@ -18,7 +18,7 @@ import static act.controller.Controller.Util.text;
  */
 public class HelloWorldApp {
 
-    AppContext context;
+    ActionContext context;
 
     public HelloWorldApp() {
         System.out.println("The controller initialized");
@@ -44,6 +44,8 @@ public class HelloWorldApp {
 
     @GetAction("/greeting")
     public Result greeting(String who, int age) {
+        ActionContext ctx = ActionContext.current();
+        ctx.renderArg("who", who);
         return render(who, age);
     }
 

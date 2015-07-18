@@ -1,8 +1,8 @@
 package act.route;
 
 import act.Destroyable;
+import act.app.ActionContext;
 import act.app.App;
-import act.app.AppContext;
 import act.app.AppServiceBase;
 import act.conf.AppConfig;
 import act.controller.ParamNames;
@@ -81,13 +81,13 @@ public class Router extends AppServiceBase<Router> {
     }
 
     // --- routing ---
-    public RequestHandler getInvoker(H.Method method, CharSequence path, AppContext context) {
+    public RequestHandler getInvoker(H.Method method, CharSequence path, ActionContext context) {
         context.router(this);
         Node node = search(method, Path.tokenizer(Unsafe.bufOf(path)), context);
         return getInvokerFrom(node);
     }
 
-    public RequestHandler getInvoker(H.Method method, List<CharSequence> path, AppContext context) {
+    public RequestHandler getInvoker(H.Method method, List<CharSequence> path, ActionContext context) {
         context.router(this);
         Node node = search(method, path, context);
         return getInvokerFrom(node);
@@ -248,7 +248,7 @@ public class Router extends AppServiceBase<Router> {
         return targetMethods;
     }
 
-    private Node search(H.Method method, List<CharSequence> path, AppContext context) {
+    private Node search(H.Method method, List<CharSequence> path, ActionContext context) {
         Node node = root(method);
         int sz = path.size();
         int i = 0;
@@ -271,7 +271,7 @@ public class Router extends AppServiceBase<Router> {
         return node;
     }
 
-    private Node search(H.Method method, Iterator<CharSequence> path, AppContext context) {
+    private Node search(H.Method method, Iterator<CharSequence> path, ActionContext context) {
         Node node = root(method);
         while (null != node && path.hasNext()) {
             CharSequence nodeName = path.next();
@@ -417,7 +417,7 @@ public class Router extends AppServiceBase<Router> {
             return true;
         }
 
-        public Node child(CharSequence name, AppContext context) {
+        public Node child(CharSequence name, ActionContext context) {
             Node node = staticChildren.get(name);
             if (null == node && null != dynamicChild) {
                 if (dynamicChild.matches(name)) {
@@ -598,8 +598,8 @@ public class Router extends AppServiceBase<Router> {
             super(next);
         }
         @Override
-        public void handle(AppContext context) {
-            context.attribute(AppContext.ATTR_HANDLER, realHandler());
+        public void handle(ActionContext context) {
+            context.attribute(ActionContext.ATTR_HANDLER, realHandler());
             context.resolve();
             super.handle(context);
         }

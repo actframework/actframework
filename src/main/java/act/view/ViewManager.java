@@ -1,8 +1,10 @@
 package act.view;
 
 import act.app.App;
-import act.app.AppContext;
 import act.conf.AppConfig;
+import act.util.ActContext;
+import act.view.rythm.ActionViewVarDef;
+import act.view.rythm.MailerViewVarDef;
 import org.osgl._;
 import org.osgl.exception.UnexpectedException;
 import org.osgl.util.C;
@@ -16,7 +18,8 @@ import java.util.List;
 public class ViewManager {
 
     private C.List<View> viewList = C.newList();
-    private C.List<VarDef> implicitVariables = C.newList();
+    private C.List<ActionViewVarDef> implicitActionViewVariables = C.newList();
+    private C.List<MailerViewVarDef> implicitMailerViewVariables = C.newList();
 
     void register(View view) {
         E.NPE(view);
@@ -28,12 +31,19 @@ public class ViewManager {
 
     void register(ImplicitVariableProvider implicitVariableProvider) {
         E.NPE(implicitVariableProvider);
-        List<VarDef> l = implicitVariableProvider.implicitVariables();
-        for (VarDef var : l) {
-            if (implicitVariables.contains(var)) {
+        List<ActionViewVarDef> l0 = implicitVariableProvider.implicitActionViewVariables();
+        for (ActionViewVarDef var : l0) {
+            if (implicitActionViewVariables.contains(var)) {
                 throw new UnexpectedException("Implicit variable[%s] has already been registered", var.name());
             }
-            implicitVariables.add(var);
+            implicitActionViewVariables.add(var);
+        }
+        List<MailerViewVarDef> l1 = implicitVariableProvider.implicitMailerViewVariables();
+        for (MailerViewVarDef var: l1) {
+            if (implicitMailerViewVariables.contains(var)) {
+                throw new UnexpectedException("Implicit variable[%s] has already been registered", var.name());
+            }
+            implicitMailerViewVariables.add(var);
         }
     }
 
@@ -48,7 +58,7 @@ public class ViewManager {
         return viewBag.isDefined() ? viewBag.get() : null;
     }
 
-    public Template load(AppContext context) {
+    public Template load(ActContext context) {
         AppConfig config = context.config();
         View defView = config.defaultView();
         Template template;
@@ -68,8 +78,12 @@ public class ViewManager {
         return null;
     }
 
-    public List<VarDef> implicitVariables() {
-        return C.list(implicitVariables);
+    public List<ActionViewVarDef> implicitActionViewVariables() {
+        return C.list(implicitActionViewVariables);
+    }
+
+    public List<MailerViewVarDef> implicitMailerViewVariables() {
+        return C.list(implicitMailerViewVariables);
     }
 
     private boolean registered(View view) {

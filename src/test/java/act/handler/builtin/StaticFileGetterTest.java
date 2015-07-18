@@ -1,18 +1,22 @@
 package act.handler.builtin;
 
+import act.Act;
 import act.MockResponse;
 import act.RequestImplBase;
 import act.TestBase;
 import act.app.App;
-import act.app.AppContext;
+import act.app.ActionContext;
 import act.conf.AppConfig;
 import act.controller.ParamNames;
+import act.util.ActErrorPageRender;
+import act.view.ViewManager;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
+import org.osgl._;
 import org.osgl.http.H;
-import org.osgl.mvc.result.NotFound;
+import org.osgl.mvc.MvcConfig;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -22,16 +26,16 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 public class StaticFileGetterTest extends TestBase {
-    AppContext ctx;
+    ActionContext ctx;
     MockResponse resp;
     StaticFileGetter pathHandler;
     StaticFileGetter fileHandler;
 
     @Before
-    public void prepare() {
+    public void prepare() throws Exception {
+        super.setup();
         resp = new MockResponse();
-        App app = mock(App.class);
-        when(app.file(anyString())).thenAnswer(new Answer<File>() {
+        when(mockApp.file(anyString())).thenAnswer(new Answer<File>() {
             @Override
             public File answer(InvocationOnMock invocation) throws Throwable {
                 Object[] args = invocation.getArguments();
@@ -39,14 +43,16 @@ public class StaticFileGetterTest extends TestBase {
                 return new File("target/test-classes", path);
             }
         });
+        when(mockAppConfig.errorTemplatePathResolver()).thenCallRealMethod();
         RequestImplBase req = mock(RequestImplBase.class);
-        ctx = AppContext.create(app, req, resp);
-        pathHandler = new StaticFileGetter("/public", app);
-        fileHandler = new StaticFileGetter("/public/foo/bar.txt", app);
+        ctx = ActionContext.create(mockApp, req, resp);
+        pathHandler = new StaticFileGetter("/public", mockApp);
+        fileHandler = new StaticFileGetter("/public/foo/bar.txt", mockApp);
     }
 
     @Test
     public void invokePathHandlerOnNonExistingResource() {
+        when(ctx.accept()).thenReturn(H.Format.html);
         ctx.param(ParamNames.PATH, "/some/where/non_exists.txt");
         pathHandler.handle(ctx);
         eq(resp.status, 404);

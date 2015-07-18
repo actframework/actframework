@@ -1,17 +1,17 @@
 package act.db;
 
-import act.app.AppContext;
+import act.app.ActionContext;
 import act.app.security.SecurityContext;
 
 public abstract class DaoBase<ID_TYPE, MODEL_TYPE, QUERY_TYPE extends Dao.Query<MODEL_TYPE, QUERY_TYPE>, DAO_TYPE extends Dao<ID_TYPE, MODEL_TYPE, QUERY_TYPE, DAO_TYPE>>
         implements Dao<ID_TYPE, MODEL_TYPE, QUERY_TYPE, DAO_TYPE> {
 
-    private AppContext appCtx;
+    private ActionContext appCtx;
     private SecurityContext secCtx;
     private boolean destroyed;
 
     @Override
-    public void setAppContext(AppContext context) {
+    public void setAppContext(ActionContext context) {
         appCtx = context;
     }
 
@@ -36,7 +36,7 @@ public abstract class DaoBase<ID_TYPE, MODEL_TYPE, QUERY_TYPE extends Dao.Query<
 
     protected void releaseResources() {}
 
-    protected final AppContext appContext() {
+    protected final ActionContext appContext() {
         return appCtx;
     }
 

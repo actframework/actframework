@@ -2,7 +2,7 @@ package playground;
 
 import org.osgl.mvc.annotation.Before;
 import org.osgl.mvc.result.Result;
-import act.app.AppContext;
+import act.app.ActionContext;
 
 public class C2 extends CBase {
 
@@ -14,7 +14,7 @@ public class C2 extends CBase {
         return true;
     }
 
-    public void foo(String id, String email, AppContext ctx) {
+    public void foo(String id, String email, ActionContext ctx) {
         if (cond1()) {
             ctx.param("id", id);
             ctx.param("email", email);

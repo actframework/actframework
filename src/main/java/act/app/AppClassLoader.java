@@ -9,6 +9,9 @@ import act.controller.meta.ControllerClassMetaInfoHolder;
 import act.controller.meta.ControllerClassMetaInfoManager;
 import act.job.meta.JobClassMetaInfo;
 import act.job.meta.JobClassMetaInfoManager;
+import act.mail.meta.MailerClassMetaInfo;
+import act.mail.meta.MailerClassMetaInfoHolder;
+import act.mail.meta.MailerClassMetaInfoManager;
 import act.util.*;
 import org.osgl._;
 import org.osgl.exception.NotAppliedException;
@@ -31,13 +34,16 @@ import static org.osgl._.notNull;
 /**
  * The top level class loader to load a specific application classes into JVM
  */
-public class AppClassLoader extends ClassLoader implements ControllerClassMetaInfoHolder, AppService<AppClassLoader>, ActClassLoader {
+public class AppClassLoader
+        extends ClassLoader
+        implements ControllerClassMetaInfoHolder, MailerClassMetaInfoHolder, AppService<AppClassLoader>, ActClassLoader {
     protected final static Logger logger = L.get(AppClassLoader.class);
     private App app;
     private Map<String, byte[]> libClsCache = C.newMap();
     private ClassInfoRepository classInfoRepository;
     private boolean destroyed;
     protected ControllerClassMetaInfoManager controllerInfo = new ControllerClassMetaInfoManager();
+    protected MailerClassMetaInfoManager mailerInfo = new MailerClassMetaInfoManager();
     protected JobClassMetaInfoManager jobInfo = new JobClassMetaInfoManager();
 
     public AppClassLoader(App app) {
@@ -68,6 +74,7 @@ public class AppClassLoader extends ClassLoader implements ControllerClassMetaIn
     public final void destroy() {
         libClsCache.clear();
         controllerInfo.destroy();
+        mailerInfo.destroy();
         jobInfo.destroy();
         releaseResources();
         destroyed = true;
@@ -92,6 +99,15 @@ public class AppClassLoader extends ClassLoader implements ControllerClassMetaIn
 
     public ControllerClassMetaInfoManager controllerClassMetaInfoManager() {
         return controllerInfo;
+    }
+
+    @Override
+    public MailerClassMetaInfo mailerClassMetaInfo(String className) {
+        return mailerInfo.mailerMetaInfo(className);
+    }
+
+    public MailerClassMetaInfoManager mailerClassMetaInfoManager() {
+        return mailerInfo;
     }
 
     public JobClassMetaInfo jobClassMetaInfo(String jobClassName) {

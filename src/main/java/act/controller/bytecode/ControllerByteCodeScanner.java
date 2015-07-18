@@ -35,6 +35,8 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
     private ControllerClassMetaInfo classInfo;
     private volatile ControllerClassMetaInfoManager classInfoBase;
 
+    public ControllerByteCodeScanner() {}
+
     @Override
     protected boolean shouldScan(String className) {
         boolean isController = config().possibleControllerClass(className);
@@ -92,7 +94,7 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
 
         @Override
         public FieldVisitor visitField(int access, String name, String desc, String signature, Object value) {
-            if (classInfo.isController() && AsmTypes.APP_CONTEXT_DESC.equals(desc)) {
+            if (classInfo.isController() && AsmTypes.ACTION_CONTEXT_DESC.equals(desc)) {
                 classInfo.ctxField(name, isPrivate(access));
             }
             return super.visitField(access, name, desc, signature, value);
@@ -269,7 +271,7 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
                 boolean ctxByParam = false;
                 for (int i = 0; i < argTypes.length; ++i) {
                     Type type = argTypes[i];
-                    if (AsmTypes.APP_CONTEXT.asmType().equals(type)) {
+                    if (AsmTypes.ACTION_CONTEXT.asmType().equals(type)) {
                         ctxByParam = true;
                         info.appContextViaParam(i);
                     }

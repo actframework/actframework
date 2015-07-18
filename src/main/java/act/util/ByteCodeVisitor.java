@@ -25,6 +25,10 @@ public class ByteCodeVisitor extends ClassVisitor implements Opcodes {
     }
 
     public ByteCodeVisitor commitDownstream() {
+        if (null == _cv && null != cv && cv instanceof ByteCodeVisitor) {
+            ((ByteCodeVisitor) cv).commitDownstream();
+            return this;
+        }
         E.illegalStateIf(null == _cv || null != cv);
         cv = _cv.get();
         return this;

@@ -1,6 +1,6 @@
 package testapp.controller;
 
-import act.app.AppContext;
+import act.app.ActionContext;
 import act.boot.app.RunApp;
 import act.controller.Controller;
 import org.osgl.http.H;
@@ -13,7 +13,7 @@ import static act.controller.Controller.Util.text;
 @Controller
 public class VoidResultWithParamCtxFieldEmptyBody  {
     @Before
-    public void mockFormat(String fmt, AppContext context) {
+    public void mockFormat(String fmt, ActionContext context) {
         if ("json".equals(fmt)) {
             context.accept(H.Format.json);
         }

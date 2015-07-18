@@ -1,15 +1,15 @@
 package act.handler;
 
-import act.app.AppContext;
+import act.app.ActionContext;
 import org.osgl._;
 import org.osgl.exception.NotAppliedException;
 
-public abstract class RequestHandlerBase extends _.F1<AppContext, Void> implements RequestHandler {
+public abstract class RequestHandlerBase extends _.F1<ActionContext, Void> implements RequestHandler {
 
     private boolean destroyed;
 
     @Override
-    public final Void apply(AppContext context) throws NotAppliedException, _.Break {
+    public final Void apply(ActionContext context) throws NotAppliedException, _.Break {
         handle(context);
         return null;
     }

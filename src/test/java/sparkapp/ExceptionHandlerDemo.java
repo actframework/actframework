@@ -3,7 +3,7 @@ package sparkapp;
 import org.osgl.exception.UnexpectedException;
 import org.osgl.exception.UnexpectedIOException;
 import org.osgl.http.H;
-import act.app.AppContext;
+import act.app.ActionContext;
 import org.osgl.util.S;
 
 import java.io.IOException;
@@ -47,13 +47,13 @@ public class ExceptionHandlerDemo {
         on(FragileMomentException.class, echo("fragile moment!"));
         on(SuperIOException.class, new Handler() {
             @Override
-            public void handle(AppContext context) {
+            public void handle(ActionContext context) {
                 context.flash().error("super IO exception!!!");
             }
         });
         on(RuntimeException.class, new Handler() {
             @Override
-            public void handle(AppContext context) {
+            public void handle(ActionContext context) {
                 String error = context.flash().error();
                 if (S.notBlank(error)) {
                     context.resp().writeContent(S.builder("runtime exception: ").append(error).toString());

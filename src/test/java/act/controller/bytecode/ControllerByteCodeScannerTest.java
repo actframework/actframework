@@ -137,8 +137,8 @@ public class ControllerByteCodeScannerTest extends TestBase {
         ActionMethodMetaInfo action = action("WithAppContext", "staticReturnStringNoParam");
 
         // verify app context injection
-        AppContextInjection appContextInjection = _.cast(action.appContextInjection());
-        same(AppContextInjection.InjectType.LOCAL, appContextInjection.injectVia());
+        ActContextInjection actContextInjection = _.cast(action.appContextInjection());
+        same(ActContextInjection.InjectType.LOCAL, actContextInjection.injectVia());
 
         // verify return type
         eq(Type.getType(String.class), action.returnType());
@@ -185,7 +185,7 @@ public class ControllerByteCodeScannerTest extends TestBase {
         param = binderRequired.param(0);
         assertNotNull(param);
         assertNotNull(param.bindAnnoInfo());
-        eq(EmailBinder.class, param.bindAnnoInfo().binder(mockAppContext).getClass());
+        eq(EmailBinder.class, param.bindAnnoInfo().binder(mockActionContext).getClass());
     }
 
     @Test
@@ -274,17 +274,17 @@ public class ControllerByteCodeScannerTest extends TestBase {
     }
 
     private void assertFieldAppCtxInject(HandlerMethodMetaInfo action, String fieldName) {
-        AppContextInjection.FieldAppContextInjection appContextInjection = _.cast(action.appContextInjection());
+        ActContextInjection.FieldActContextInjection appContextInjection = _.cast(action.appContextInjection());
         eq(fieldName, appContextInjection.fieldName());
     }
 
     private void assertParamAppCtxInject(HandlerMethodMetaInfo action, int index) {
-        AppContextInjection.ParamAppContextInjection appContextInjection = _.cast(action.appContextInjection());
+        ActContextInjection.ParamAppContextInjection appContextInjection = _.cast(action.appContextInjection());
         same(index, appContextInjection.paramIndex());
     }
 
     private void assertLocalAppCtxInject(HandlerMethodMetaInfo action) {
-        same(AppContextInjection.InjectType.LOCAL, action.appContextInjection().injectVia());
+        same(ActContextInjection.InjectType.LOCAL, action.appContextInjection().injectVia());
     }
 
     private void assertNoParam(HandlerMethodMetaInfo action) {

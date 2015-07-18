@@ -1,6 +1,6 @@
 package act.boot.spark;
 
-import act.app.AppContext;
+import act.app.ActionContext;
 import act.controller.Controller;
 import org.osgl._;
 import org.osgl.exception.NotAppliedException;
@@ -8,7 +8,7 @@ import org.osgl.exception.NotAppliedException;
 /**
  * App developer use this interface implement the controller or filter logic
  */
-public abstract class SparkHandler extends _.F1<AppContext, Object> {
+public abstract class SparkHandler extends _.F1<ActionContext, Object> {
 
     /**
      * Controller action method shall either return an {@link Object} or throw out a
@@ -16,7 +16,7 @@ public abstract class SparkHandler extends _.F1<AppContext, Object> {
      * implementation.
      * <ul>
      *     <li>When an {@code Object} is returned, the framework will use
-     *     {@link Controller.Util#inferResult(Object, AppContext)}
+     *     {@link Controller.Util#inferResult(Object, ActionContext)}
      *     to infer a {@link org.osgl.mvc.result.Result} from the object, and then
      *     apply the result been inferred</li>
      *     <li>When a {@code Result} is returned directly, the framework will
@@ -35,7 +35,7 @@ public abstract class SparkHandler extends _.F1<AppContext, Object> {
      * @throws _.Break
      */
     @Override
-    public final Object apply(AppContext context) throws NotAppliedException, _.Break {
+    public final Object apply(ActionContext context) throws NotAppliedException, _.Break {
         return handle(context);
     }
 
@@ -45,5 +45,5 @@ public abstract class SparkHandler extends _.F1<AppContext, Object> {
      * @param context Stores all relevant information required for request handling
      * @return an Object as the request handle result
      */
-    protected abstract Object handle(AppContext context);
+    protected abstract Object handle(ActionContext context);
 }

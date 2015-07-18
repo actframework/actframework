@@ -1,7 +1,7 @@
 package act.xio;
 
+import act.app.ActionContext;
 import act.app.App;
-import act.app.AppContext;
 import act.app.RequestRefreshClassLoader;
 import act.app.RequestServerRestart;
 import act.handler.RequestHandler;
@@ -13,7 +13,7 @@ import org.osgl.http.H;
 import org.osgl.mvc.result.Result;
 import org.osgl.util.E;
 
-public class NetworkClient extends _.F1<AppContext, Void> {
+public class NetworkClient extends _.F1<ActionContext, Void> {
     private App app;
 
     public NetworkClient(App app) {
@@ -25,7 +25,7 @@ public class NetworkClient extends _.F1<AppContext, Void> {
         return app;
     }
 
-    public void handle(AppContext ctx) {
+    public void handle(ActionContext ctx) {
         H.Request req = ctx.req();
         String url = req.url();
         H.Method method = req.method();
@@ -48,12 +48,12 @@ public class NetworkClient extends _.F1<AppContext, Void> {
         } finally {
             // we don't destroy ctx here in case it's been passed to
             // another thread
-            AppContext.clearCurrent();
+            ActionContext.clearCurrent();
         }
     }
 
     @Override
-    public Void apply(AppContext ctx) throws NotAppliedException, _.Break {
+    public Void apply(ActionContext ctx) throws NotAppliedException, _.Break {
         handle(ctx);
         return null;
     }

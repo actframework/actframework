@@ -1,6 +1,6 @@
 package act.handler.builtin.controller;
 
-import act.app.AppContext;
+import act.app.ActionContext;
 import act.plugin.Plugin;
 
 /**
@@ -14,7 +14,7 @@ public abstract class FinallyInterceptor
         super(priority);
     }
 
-    public abstract void handle(AppContext appContext);
+    public abstract void handle(ActionContext actionContext);
 
     @Override
     public void register() {

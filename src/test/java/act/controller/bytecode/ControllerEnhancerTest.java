@@ -15,7 +15,7 @@ import org.osgl.mvc.result.NotFound;
 import org.osgl.mvc.result.Ok;
 import org.osgl.mvc.result.Result;
 import act.TestBase;
-import act.app.AppContext;
+import act.app.ActionContext;
 import act.asm.ClassReader;
 import act.asm.ClassWriter;
 import act.controller.meta.ControllerClassMetaInfo;
@@ -45,7 +45,7 @@ public class ControllerEnhancerTest extends TestBase implements ControllerClassM
     protected Object c;
     protected Method m;
     protected InvokeLog invokeLog;
-    protected AppContext ctx;
+    protected ActionContext ctx;
     private TestingAppClassLoader classLoader;
     private AppCodeScannerManager scannerManager;
     private AppByteCodeScanner scanner;
@@ -73,8 +73,8 @@ public class ControllerEnhancerTest extends TestBase implements ControllerClassM
         C.List<AppByteCodeScanner> scanners = C.list(scanner);
         when(scannerManager.byteCodeScanners()).thenReturn(scanners);
         InvokeLogFactory.set(invokeLog);
-        AppContext.clearCurrent();
-        ctx = AppContext.create(mockApp, mockReq, mockResp);
+        ActionContext.clearCurrent();
+        ctx = ActionContext.create(mockApp, mockReq, mockResp);
         base = new File("./target/test-classes");
     }
 
@@ -162,7 +162,7 @@ public class ControllerEnhancerTest extends TestBase implements ControllerClassM
     public void returnResultWithParamAppCtxLocal() throws Exception {
         prepare("ReturnResultWithParam");
         m = method(int.class, String.class);
-        ctx.saveLocal();
+        //ctx.saveLocal();
         Object r = m.invoke(c, 100, "foo");
         yes(r instanceof Result);
         eq(100, ctx.renderArg("foo"));
@@ -173,7 +173,7 @@ public class ControllerEnhancerTest extends TestBase implements ControllerClassM
     public void returnResultWithParamAndTemplatePath() throws Exception {
         prepare("ReturnResultWithParamAndTemplatePath");
         m = method(int.class, String.class);
-        ctx.saveLocal();
+        //ctx.saveLocal();
         Object r = m.invoke(c, 100, "foo");
         yes(r instanceof Result);
         eq(100, ctx.renderArg("foo"));
@@ -185,7 +185,7 @@ public class ControllerEnhancerTest extends TestBase implements ControllerClassM
     public void staticReturnResultWithParamAppCtxLocal() throws Exception {
         prepare("StaticReturnResultWithParam");
         m = method(int.class, String.class);
-        ctx.saveLocal();
+        //ctx.saveLocal();
         Object r = m.invoke(null, 100, "foo");
         yes(r instanceof Result);
         eq(100, ctx.renderArg("foo"));
@@ -196,7 +196,7 @@ public class ControllerEnhancerTest extends TestBase implements ControllerClassM
     public void throwResultWithParamAppCtxLocal() throws Exception {
         prepare("ThrowResultWithParam");
         m = method(int.class, String.class);
-        ctx.saveLocal();
+        //ctx.saveLocal();
         try {
             m.invoke(c, 100, "foo");
             fail("Result expected to be thrown out");
@@ -215,7 +215,7 @@ public class ControllerEnhancerTest extends TestBase implements ControllerClassM
     public void staticThrowResultWithParamAppCtxLocal() throws Exception {
         prepare("StaticThrowResultWithParam");
         m = method(int.class, String.class);
-        ctx.saveLocal();
+        //ctx.saveLocal();
         try {
             m.invoke(c, 100, "foo");
             fail("Result expected to be thrown out");
@@ -234,7 +234,7 @@ public class ControllerEnhancerTest extends TestBase implements ControllerClassM
     public void voidResultWithParamAppCtxLocal() throws Exception {
         prepare("VoidResultWithParam");
         m = method(int.class, String.class);
-        ctx.saveLocal();
+        //ctx.saveLocal();
         try {
             m.invoke(c, 100, "foo");
             fail("Result expected to be thrown out");
@@ -253,7 +253,7 @@ public class ControllerEnhancerTest extends TestBase implements ControllerClassM
     public void staticVoidResultWithParamAppCtxLocal() throws Exception {
         prepare("StaticVoidResultWithParam");
         m = method(int.class, String.class);
-        ctx.saveLocal();
+        //ctx.saveLocal();
         try {
             m.invoke(null, 100, "foo");
             fail("Result expected to be thrown out");
@@ -271,7 +271,7 @@ public class ControllerEnhancerTest extends TestBase implements ControllerClassM
     @Test
     public void returnResultWithParamAppCtxParam() throws Exception {
         prepare("ReturnResultWithParamCtxParam");
-        m = method(int.class, String.class, AppContext.class);
+        m = method(int.class, String.class, ActionContext.class);
         Object r = m.invoke(c, 100, "foo", ctx);
         yes(r instanceof Result);
         eq(100, ctx.renderArg("foo"));
@@ -282,7 +282,7 @@ public class ControllerEnhancerTest extends TestBase implements ControllerClassM
     public void returnResultWithParamAppCtxField() throws Exception {
         prepare("ReturnResultWithParamCtxField");
         m = method(int.class, String.class);
-        Method setCtx = cc.getMethod("setAppContext", AppContext.class);
+        Method setCtx = cc.getMethod("setAppContext", ActionContext.class);
         setCtx.invoke(c, ctx);
         Object r = m.invoke(c, 100, "foo");
         yes(r instanceof Result);
@@ -298,7 +298,7 @@ public class ControllerEnhancerTest extends TestBase implements ControllerClassM
     public void voidResultWithParamAppCtxFieldAndEmptyBody() throws Exception {
         prepare("VoidResultWithParamCtxFieldEmptyBody");
         m = method(String.class, int.class);
-        ctx.saveLocal();
+        //ctx.saveLocal();
         try {
             m.invoke(c, "foo", 100);
             fail("It shall throw out a Result");

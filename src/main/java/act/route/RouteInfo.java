@@ -1,11 +1,10 @@
 package act.route;
 
-import act.app.AppContext;
+import act.app.ActionContext;
 import act.handler.RequestHandler;
 import act.handler.RequestHandlerBase;
 import org.osgl._;
 import org.osgl.http.H;
-import org.osgl.mvc.result.NotFound;
 import org.osgl.util.E;
 
 /**
@@ -25,7 +24,7 @@ public class RouteInfo extends _.T3<String, String, String> {
         return _3;
     }
 
-    public static RouteInfo of(AppContext context) {
+    public static RouteInfo of(ActionContext context) {
         H.Method m = context.req().method();
         String path = context.req().url();
         RequestHandler handler = context.handler();
@@ -37,7 +36,7 @@ public class RouteInfo extends _.T3<String, String, String> {
 
     public static final RequestHandler UNKNOWN_HANDLER = new RequestHandlerBase() {
         @Override
-        public void handle(AppContext context) {
+        public void handle(ActionContext context) {
             throw E.unsupport();
         }
 

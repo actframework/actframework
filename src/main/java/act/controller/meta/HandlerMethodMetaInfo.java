@@ -23,7 +23,7 @@ import java.util.Map;
 public abstract class HandlerMethodMetaInfo<T extends HandlerMethodMetaInfo> extends DestroyableBase implements Prioritised {
     private String name;
     private InvokeType invokeType;
-    private AppContextInjection appContextInjection;
+    private ActContextInjection actContextInjection;
     private ControllerClassMetaInfo clsInfo;
     private C.List<ParamMetaInfo> params = C.newList();
     private ReturnTypeInfo returnType;
@@ -65,22 +65,22 @@ public abstract class HandlerMethodMetaInfo<T extends HandlerMethodMetaInfo> ext
     }
 
     public T appContextViaField(String fieldName) {
-        appContextInjection = new AppContextInjection.FieldAppContextInjection(fieldName);
+        actContextInjection = new ActContextInjection.FieldActContextInjection(fieldName);
         return me();
     }
 
     public T appContextViaParam(int paramIndex) {
-        appContextInjection = new AppContextInjection.ParamAppContextInjection(paramIndex);
+        actContextInjection = new ActContextInjection.ParamAppContextInjection(paramIndex);
         return me();
     }
 
     public T appContextViaLocalStorage() {
-        appContextInjection = new AppContextInjection.LocalAppContextInjection();
+        actContextInjection = new ActContextInjection.LocalAppContextInjection();
         return me();
     }
 
-    public AppContextInjection appContextInjection() {
-        return appContextInjection;
+    public ActContextInjection appContextInjection() {
+        return actContextInjection;
     }
 
     public T invokeStaticMethod() {
@@ -125,7 +125,7 @@ public abstract class HandlerMethodMetaInfo<T extends HandlerMethodMetaInfo> ext
 
     public HandlerMethodMetaInfo addParam(ParamMetaInfo param) {
         params.add(param);
-        if (AsmTypes.APP_CONTEXT.equals(param.type())) {
+        if (AsmTypes.ACTION_CONTEXT.equals(param.type())) {
         }
         return this;
     }
@@ -176,7 +176,7 @@ public abstract class HandlerMethodMetaInfo<T extends HandlerMethodMetaInfo> ext
 
     @Override
     public String toString() {
-        StringBuilder sb = S.builder(appContextInjection.toString()).append(" ");
+        StringBuilder sb = S.builder(actContextInjection.toString()).append(" ");
         sb.append(_invokeType())
                 .append(_return())
                 .append(fullName())

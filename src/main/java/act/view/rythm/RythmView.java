@@ -2,8 +2,8 @@ package act.view.rythm;
 
 import act.Act;
 import act.app.App;
-import act.app.AppContext;
 import act.conf.AppConfig;
+import act.util.ActContext;
 import act.view.Template;
 import act.view.VarDef;
 import act.view.View;
@@ -37,7 +37,7 @@ public class RythmView extends View {
     }
 
     @Override
-    protected Template loadTemplate(String resourcePath, AppContext context) {
+    protected Template loadTemplate(String resourcePath, ActContext context) {
         RythmEngine engine = getEngine(context.app());
         return RythmTemplate.find(engine, resourcePath, context.app());
     }
@@ -95,7 +95,7 @@ public class RythmView extends View {
             @Override
             public Map<String, ?> getRenderArgDescriptions() {
                 Map<String, String> map = C.newMap();
-                for (VarDef var : Act.viewManager().implicitVariables()) {
+                for (VarDef var : Act.viewManager().implicitActionViewVariables()) {
                     map.put(var.name(), var.type());
                 }
                 return map;

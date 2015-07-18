@@ -1,16 +1,14 @@
 package act.view.rythm;
 
+import act.app.ActionContext;
 import act.app.App;
-import act.app.AppContext;
+import act.mail.MailerContext;
 import act.view.TemplateBase;
-import org.osgl.http.H;
 import org.osgl.util.E;
-import org.osgl.util.IO;
 import org.rythmengine.RythmEngine;
 import org.rythmengine.resource.ITemplateResource;
 import org.rythmengine.template.ITemplate;
 
-import java.lang.ref.SoftReference;
 import java.util.Locale;
 import java.util.Map;
 
@@ -28,7 +26,13 @@ public class RythmTemplate extends TemplateBase {
     }
 
     @Override
-    protected void beforeRender(AppContext context) {
+    protected void beforeRender(ActionContext context) {
+        Locale locale = context.locale();
+        engine = engine.prepare(locale);
+    }
+
+    @Override
+    protected void beforeRender(MailerContext context) {
         Locale locale = context.locale();
         engine = engine.prepare(locale);
     }

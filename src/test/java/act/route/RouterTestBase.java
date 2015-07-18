@@ -1,13 +1,12 @@
 package act.route;
 
 import act.TestBase;
-import act.app.AppContext;
+import act.app.ActionContext;
 import act.conf.AppConfig;
 import act.handler.RequestHandler;
 import act.handler.RequestHandlerResolver;
 import org.junit.Before;
 import act.app.App;
-import org.mockito.Matchers;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
@@ -20,7 +19,7 @@ public abstract class RouterTestBase extends TestBase {
     protected Router router;
     protected RequestHandler controller;
     protected RequestHandlerResolver controllerLookup;
-    protected AppContext ctx;
+    protected ActionContext ctx;
     protected App app;
     protected static final File BASE = new File("target/test-classes");
 
@@ -41,7 +40,7 @@ public abstract class RouterTestBase extends TestBase {
         });
         router = new Router(controllerLookup, app);
         buildRouteMapping(router);
-        ctx = mock(AppContext.class);
+        ctx = mock(ActionContext.class);
         when(ctx.app()).thenReturn(app);
     }
 

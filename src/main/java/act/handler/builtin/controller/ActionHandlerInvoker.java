@@ -1,12 +1,12 @@
 package act.handler.builtin.controller;
 
 import act.Destroyable;
-import act.app.AppContext;
+import act.app.ActionContext;
 import act.util.Prioritised;
 import org.osgl.mvc.result.Result;
 
 public interface ActionHandlerInvoker extends Prioritised, Destroyable {
-    Result handle(AppContext appContext);
+    Result handle(ActionContext actionContext);
 
     public void accept(Visitor visitor);
 

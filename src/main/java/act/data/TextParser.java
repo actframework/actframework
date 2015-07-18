@@ -1,6 +1,6 @@
 package act.data;
 
-import act.app.AppContext;
+import act.app.ActionContext;
 import org.osgl.exception.UnexpectedException;
 import org.osgl.http.H;
 
@@ -14,7 +14,7 @@ public class TextParser extends RequestBodyParser {
     public static final TextParser INSTANCE = new TextParser();
 
     @Override
-    public Map<String, String[]> parse(AppContext context) {
+    public Map<String, String[]> parse(ActionContext context) {
         H.Request req = context.req();
         InputStream is = req.inputStream();
         try {

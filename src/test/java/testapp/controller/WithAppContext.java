@@ -3,7 +3,7 @@ package testapp.controller;
 import org.osgl.mvc.annotation.*;
 import org.osgl.mvc.result.Ok;
 import org.osgl.mvc.result.Result;
-import act.app.AppContext;
+import act.app.ActionContext;
 import act.app.ActAppException;
 import testapp.util.Trackable;
 
@@ -14,10 +14,10 @@ import static org.osgl.http.H.Method.*;
  */
 @With({FilterA.class, FilterB.class, FilterC.class})
 public class WithAppContext extends Trackable {
-    private AppContext ctx;
+    private ActionContext ctx;
 
     @Catch(ActAppException.class)
-    public void handle(ActAppException e, AppContext ctx) {
+    public void handle(ActAppException e, ActionContext ctx) {
         track("handle");
     }
 

@@ -10,7 +10,7 @@ import org.mockito.Mockito;
 import org.osgl.http.H;
 import org.osgl.mvc.result.NotFound;
 import act.app.App;
-import act.app.AppContext;
+import act.app.ActionContext;
 import act.TestBase;
 import org.osgl.util.*;
 import play.Play;
@@ -32,7 +32,7 @@ public class RouterBenchmark extends BenchmarkBase {
 
     private Router router;
     private RouteTableRouterBuilder builder;
-    private AppContext ctx;
+    private ActionContext ctx;
 
     public RouterBenchmark() {
         RequestHandlerResolver controllerLookup = new MockRequestHandlerResolver();
@@ -50,7 +50,7 @@ public class RouterBenchmark extends BenchmarkBase {
 
     @Before
     public void prepare() {
-        ctx = AppContext.create(mock(App.class), mock(H.Request.class), mock(H.Response.class));
+        ctx = ActionContext.create(mock(App.class), mock(H.Request.class), mock(H.Response.class));
     }
 
     void osgl(H.Method method, String url, Object... args) {

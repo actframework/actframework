@@ -1,7 +1,5 @@
 package act.util;
 
-import act.job.FixedDelay;
-
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;

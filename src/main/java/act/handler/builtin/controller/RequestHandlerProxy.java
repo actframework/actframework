@@ -2,8 +2,8 @@ package act.handler.builtin.controller;
 
 import act.Act;
 import act.Destroyable;
+import act.app.ActionContext;
 import act.app.App;
-import act.app.AppContext;
 import act.app.AppInterceptorManager;
 import act.controller.meta.ActionMethodMetaInfo;
 import act.controller.meta.CatchMethodMetaInfo;
@@ -20,7 +20,6 @@ import org.osgl.logging.L;
 import org.osgl.logging.Logger;
 import org.osgl.mvc.result.NoResult;
 import org.osgl.mvc.result.Result;
-import org.osgl.mvc.result.ServerError;
 import org.osgl.util.C;
 import org.osgl.util.E;
 import org.osgl.util.S;
@@ -35,29 +34,29 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
     protected enum CacheStrategy {
         NO_CACHE() {
             @Override
-            public Result cached(AppContext appContext, CacheService cache) {
+            public Result cached(ActionContext actionContext, CacheService cache) {
                 return null;
             }
         },
         SESSION_SCOPED() {
             @Override
-            protected String cacheKey(AppContext appContext) {
-                H.Session session = appContext.session();
-                return null == session ? null : super.cacheKey(appContext, session.id());
+            protected String cacheKey(ActionContext actionContext) {
+                H.Session session = actionContext.session();
+                return null == session ? null : super.cacheKey(actionContext, session.id());
             }
         },
         GLOBAL_SCOPED;
 
-        public Result cached(AppContext appContext, CacheService cache) {
-            return cache.get(cacheKey(appContext));
+        public Result cached(ActionContext actionContext, CacheService cache) {
+            return cache.get(cacheKey(actionContext));
         }
 
-        protected String cacheKey(AppContext appContext) {
-            return cacheKey(appContext, "");
+        protected String cacheKey(ActionContext actionContext) {
+            return cacheKey(actionContext, "");
         }
 
-        protected String cacheKey(AppContext appContext, String seed) {
-            H.Request request = appContext.req();
+        protected String cacheKey(ActionContext actionContext, String seed) {
+            H.Request request = actionContext.req();
             return S.builder("urlcache:").append(seed).append(request.url()).append(request.query()).append(request.accept()).toString();
         }
     }
@@ -136,7 +135,7 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
     }
 
     @Override
-    public void handle(AppContext context) {
+    public void handle(ActionContext context) {
         Result result = cacheStrategy.cached(context, cache);
         try {
             if (null != result) {
@@ -199,7 +198,7 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
         insertInterceptor(finallyInterceptors, interceptor);
     }
 
-    private void onResult(Result result, AppContext context) {
+    private void onResult(Result result, ActionContext context) {
         try {
             context.dissolve();
             if (result instanceof RenderAny) {
@@ -225,14 +224,14 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
         }
     }
 
-    private void ensureContextLocal(AppContext context) {
-        if (requireContextLocal) {
-            context.saveLocal();
-        }
+    private void ensureContextLocal(ActionContext context) {
+//        if (requireContextLocal) {
+//            context.saveLocal();
+//        }
     }
 
     // could be used by View to resolve default path to template
-    private void saveActionPath(AppContext context) {
+    private void saveActionPath(ActionContext context) {
         StringBuilder sb = S.builder(controllerClassName).append(".").append(actionMethodName);
         String path = sb.toString();
         context.actionPath(path);
@@ -305,45 +304,45 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
 
 
 
-    private Result handleBefore(AppContext appContext) {
-        Result r = GLOBAL_BEFORE_INTERCEPTOR.apply(appContext);
+    private Result handleBefore(ActionContext actionContext) {
+        Result r = GLOBAL_BEFORE_INTERCEPTOR.apply(actionContext);
         if (null == r) {
-            r = appInterceptor.handleBefore(appContext);
+            r = appInterceptor.handleBefore(actionContext);
         }
         if (null == r) {
-            r = BEFORE_INTERCEPTOR.apply(appContext);
+            r = BEFORE_INTERCEPTOR.apply(actionContext);
         }
         return r;
     }
 
-    private Result _handle(AppContext appContext) {
+    private Result _handle(ActionContext actionContext) {
         try {
-            return actionHandler.handle(appContext);
+            return actionHandler.handle(actionContext);
         } catch (Result r) {
             return r;
         }
     }
 
-    private Result handleAfter(Result result, AppContext appContext) {
-        result = AFTER_INTERCEPTOR.apply(result, appContext);
-        result = appInterceptor.handleAfter(result, appContext);
-        result = GLOBAL_AFTER_INTERCEPTOR.apply(result, appContext);
+    private Result handleAfter(Result result, ActionContext actionContext) {
+        result = AFTER_INTERCEPTOR.apply(result, actionContext);
+        result = appInterceptor.handleAfter(result, actionContext);
+        result = GLOBAL_AFTER_INTERCEPTOR.apply(result, actionContext);
         return result;
     }
 
-    private void handleFinally(AppContext appContext) {
-        FINALLY_INTERCEPTOR.apply(appContext);
-        appInterceptor.handleFinally(appContext);
-        GLOBAL_FINALLY_INTERCEPTOR.apply(appContext);
+    private void handleFinally(ActionContext actionContext) {
+        FINALLY_INTERCEPTOR.apply(actionContext);
+        appInterceptor.handleFinally(actionContext);
+        GLOBAL_FINALLY_INTERCEPTOR.apply(actionContext);
     }
 
-    private Result handleException(Exception ex, AppContext appContext) {
-        Result r = EXCEPTION_INTERCEPTOR.apply(ex, appContext);
+    private Result handleException(Exception ex, ActionContext actionContext) {
+        Result r = EXCEPTION_INTERCEPTOR.apply(ex, actionContext);
         if (null == r) {
-            r = appInterceptor.handleException(ex, appContext);
+            r = appInterceptor.handleException(ex, actionContext);
         }
         if (null == r) {
-            r = GLOBAL_EXCEPTION_INTERCEPTOR.apply(ex, appContext);
+            r = GLOBAL_EXCEPTION_INTERCEPTOR.apply(ex, actionContext);
         }
         return r;
     }
@@ -399,7 +398,7 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
         list.add(i);
     }
 
-    public static class GroupInterceptorWithResult extends _.F1<AppContext, Result> {
+    public static class GroupInterceptorWithResult extends _.F1<ActionContext, Result> {
         private C.List<? extends ActionHandler> interceptors;
 
         public GroupInterceptorWithResult(C.List<? extends ActionHandler> interceptors) {
@@ -407,11 +406,11 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
         }
 
         @Override
-        public Result apply(AppContext appContext) throws NotAppliedException, _.Break {
+        public Result apply(ActionContext actionContext) throws NotAppliedException, _.Break {
             try {
                 if (interceptors.isEmpty()) return null;
                 for (ActionHandler i : interceptors) {
-                    Result r = i.handle(appContext);
+                    Result r = i.handle(actionContext);
                     if (null != r) {
                         return r;
                     }
@@ -423,7 +422,7 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
         }
     }
 
-    public static class GroupAfterInterceptor extends _.F2<Result, AppContext, Result> {
+    public static class GroupAfterInterceptor extends _.F2<Result, ActionContext, Result> {
         private C.List<? extends AfterInterceptor> interceptors;
 
         public GroupAfterInterceptor(C.List<? extends AfterInterceptor> interceptors) {
@@ -431,15 +430,15 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
         }
 
         @Override
-        public Result apply(Result result, AppContext appContext) throws NotAppliedException, _.Break {
+        public Result apply(Result result, ActionContext actionContext) throws NotAppliedException, _.Break {
             for (AfterInterceptor i : interceptors) {
-                result = i.handle(result, appContext);
+                result = i.handle(result, actionContext);
             }
             return result;
         }
     }
 
-    public static class GroupFinallyInterceptor extends _.F1<AppContext, Void> {
+    public static class GroupFinallyInterceptor extends _.F1<ActionContext, Void> {
         private C.List<? extends FinallyInterceptor> interceptors;
 
         public GroupFinallyInterceptor(C.List<FinallyInterceptor> interceptors) {
@@ -447,16 +446,16 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
         }
 
         @Override
-        public Void apply(AppContext appContext) throws NotAppliedException, _.Break {
+        public Void apply(ActionContext actionContext) throws NotAppliedException, _.Break {
             if (interceptors.isEmpty()) return null;
             for (FinallyInterceptor i : interceptors) {
-                i.handle(appContext);
+                i.handle(actionContext);
             }
             return null;
         }
     }
 
-    public static class GroupExceptionInterceptor extends _.F2<Exception, AppContext, Result> {
+    public static class GroupExceptionInterceptor extends _.F2<Exception, ActionContext, Result> {
         private C.List<? extends ExceptionInterceptor> interceptors;
 
         public GroupExceptionInterceptor(C.List<? extends ExceptionInterceptor> interceptors) {
@@ -464,11 +463,11 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
         }
 
         @Override
-        public Result apply(Exception e, AppContext appContext) throws NotAppliedException, _.Break {
+        public Result apply(Exception e, ActionContext actionContext) throws NotAppliedException, _.Break {
             try {
                 if (interceptors.isEmpty()) return null;
                 for (ExceptionInterceptor i : interceptors) {
-                    Result r = i.handle(e, appContext);
+                    Result r = i.handle(e, actionContext);
                     if (null != r) {
                         return r;
                     }
