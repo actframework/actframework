@@ -1,0 +1,140 @@
+@args String header
+@extends(_base, header: header)
+@returnIf(!isDev())
+
+@render()
+
+@args org.osgl.mvc.result.ErrorResult _error
+@returnIf(!(_error instanceOf act.util.ActError))
+@{
+act.util.ActError actError = (act.util.ActError)_error
+act.app.SourceInfo sourceInfo = actError.sourceInfo();
+act.route.RouteInfo req = act.route.RouteInfo.of(_ctx);
+List<String> stackTrace = actError.stackTrace();
+}
+
+  @section(head){
+  <style>
+    .detail {
+      font-family: "Envy Code R", "Consolas", "Lucida Console", "Droid Sans Mono", "Andale Mono", "Monaco", "Lucida Sans Typewriter", "monospace";
+      font-size: 9pt;
+      padding: 20px;
+      padding-top: 8px;
+      border: 1px solid #efefef;
+      display: none;
+      overflow: auto;
+    }
+    .detail.active {
+      display: block;
+    }
+    #source .hljs {
+      padding: 0;
+      background-color: #fff;
+    }
+    #source .line.error, .trace-line.error {
+      background-color: #e00;
+      color: #fff;
+      cursor: pointer;
+    }
+    #source .line span {
+      display: inline-block;
+    }
+    #source .line span.line-number {
+      min-width: 20px;
+      text-align: right;
+    }
+    #stacktrace .exception {
+      font-size: 10pt;
+      font-weight: bold;
+      padding-bottom: 5px;;
+    }
+    .tabs .tab {
+      display: inline-block;
+      padding: 2px 10px;
+      cursor: pointer;
+      font-size: 9pt;
+      font-weight: bold;
+    }
+    .tabs .tab.active {
+      background: #efefef;
+    }
+  </style>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.6/styles/default.min.css">
+  <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.6/highlight.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.6/languages/java.min.js"></script>
+  }
+
+  <p>@render(description)</p>
+
+  <div class="tabs">
+    <div id="tab-stacktrace" class="stacktrace tab active" onclick="showStacktrace()">Stack Trace</div>
+    @if(sourceInfo) {
+    <div id="tab-source" class="code tab" onclick="showSource()">Source code</div>
+    }
+  </div>
+
+  <div id="stacktrace" class="detail active">
+    <div class="exception">@actError.getCause().toString()</div>
+    @for(String trace: stackTrace) {
+    @{
+    String cls = "";
+    if (trace.contains(sourceInfo.fileName() + ":" + sourceInfo.lineNumber())) {
+    cls = "error";
+    }
+    }
+    <div class="trace-line line @cls">@trace</div>
+    } else {
+    <div>No stack trace info</div>
+    }
+  </div>
+
+  @returnIf(null == sourceInfo)
+
+  <div id="source" class="detail">
+    @for(String line: sourceInfo.lines()) {
+    @{
+    String cls = line_index == sourceInfo.lineNumber() ? "error nohighlight" : ""
+    }
+    <div class="line @cls" data-line="@line_index">
+      <span class="line-number">@line_index</span>
+      <span class="line-code">@line.sp2nbsp()</span>
+    </div>
+    }
+  </div>
+
+
+  <script>
+    function showSource() {
+      document.getElementById("source").className = "detail active";
+      document.getElementById("tab-source").className = "tab active";
+      document.getElementById("stacktrace").className = "detail";
+      document.getElementById("tab-stacktrace").className = "tab";
+      var e = new Event('show-source');
+      window.dispatchEvent(e);
+    }
+    function showStacktrace() {
+      document.getElementById("source").className = "detail";
+      document.getElementById("tab-source").className = "tab";
+      document.getElementById("stacktrace").className = "detail active";
+      document.getElementById("tab-stacktrace").className = "tab active";
+    }
+    @if (sourceInfo) {
+      var sourceLoaded = false;
+      $('body').on('click', '.line.error', function() {
+        $.getJSON('http://localhost:8091?message=@(sourceInfo.fileName()):@(sourceInfo.lineNumber())')
+      });
+      var windowHeight = $(window).height(), maxDetailHeight = windowHeight - 180;
+      $('.detail').css({maxHeight: maxDetailHeight + 'px'});
+      window.addEventListener('show-source', function() {
+        if (sourceLoaded) return;
+        sourceLoaded = true;
+        document.getElementsByClassName('line error nohighlight')[0].scrollIntoView();
+      }, false);
+      $(document).ready(function() {
+        $('.line-code').each(function(i, block) {
+          hljs.highlightBlock(block);
+        });
+      });
+    }
+  </script>

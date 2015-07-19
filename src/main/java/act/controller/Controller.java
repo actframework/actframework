@@ -2,6 +2,8 @@ package act.controller;
 
 import act.app.ActionContext;
 import act.conf.AppConfigKey;
+import act.view.ActForbidden;
+import act.view.ActNotFound;
 import act.view.RenderAny;
 import act.view.RenderTemplate;
 import org.osgl.http.H;
@@ -55,15 +57,15 @@ public @interface Controller {
         /**
          * Returns an {@link Ok} result
          */
-        public static Ok ok() {
+        public static Result ok() {
             return OK;
         }
 
         /**
          * Returns an {@link NotFound} result
          */
-        public static NotFound notFound() {
-            return NOT_FOUND;
+        public static Result notFound() {
+            return new ActNotFound();
         }
 
         /**
@@ -73,8 +75,8 @@ public @interface Controller {
          * @param msg the message template
          * @param args the message argument
          */
-        public static NotFound notFound(String msg, Object... args) {
-            return new NotFound(msg, args);
+        public static Result notFound(String msg, Object... args) {
+            return new ActNotFound(msg, args);
         }
 
         /**
@@ -84,7 +86,7 @@ public @interface Controller {
          */
         public static void notFoundIfNull(Object o) {
             if (null == o) {
-                throw notFound();
+                throw new ActNotFound();
             }
         }
 
@@ -99,7 +101,7 @@ public @interface Controller {
          */
         public static void notFoundIfNull(Object o, String msg, Object... args) {
             if (null == o) {
-                throw notFound(msg, args);
+                throw new ActNotFound(msg, args);
             }
         }
 
@@ -111,7 +113,7 @@ public @interface Controller {
          */
         public static void notFoundIf(boolean test) {
             if (test) {
-                throw notFound();
+                throw new ActNotFound();
             }
         }
 
@@ -126,7 +128,7 @@ public @interface Controller {
          */
         public static void notFoundIf(boolean test, String msg, Object... args) {
             if (test) {
-                throw notFound(msg, args);
+                throw new ActNotFound(msg, args);
             }
         }
 
@@ -138,7 +140,7 @@ public @interface Controller {
          */
         public static void notFoundIfNot(boolean test) {
             if (!test) {
-                throw notFound();
+                throw new ActNotFound();
             }
         }
 
@@ -153,24 +155,24 @@ public @interface Controller {
          */
         public static void notFoundIfNot(boolean test, String msg, Object... args) {
             if (!test) {
-                throw notFound(msg, args);
+                throw new ActNotFound(msg, args);
             }
         }
 
-        public static BadRequest badRequest() {
+        public static Result badRequest() {
             return BAD_REQUEST;
         }
 
         /**
          * Returns a {@link Forbidden} result
          */
-        public static Forbidden forbidden() {
-            return FORBIDDEN;
+        public static Result forbidden() {
+            return new ActForbidden();
         }
 
         public static void forbiddenIf(boolean test) {
             if (test) {
-                throw forbidden();
+                throw new ActForbidden();
             }
         }
 
@@ -181,11 +183,11 @@ public @interface Controller {
          * @param msg the message template
          * @param args the message argument
          */
-        public static Forbidden forbidden(String msg, Object... args) {
-            return null == msg ? FORBIDDEN : new Forbidden(msg, args);
+        public static Result forbidden(String msg, Object... args) {
+            return null == msg ? new ActForbidden(): new ActForbidden(msg, args);
         }
 
-        public static Redirect redirect(String url, Object ... args) {
+        public static Result redirect(String url, Object ... args) {
             return new Redirect(url, args);
         }
 
