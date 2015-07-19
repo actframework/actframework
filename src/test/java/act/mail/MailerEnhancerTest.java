@@ -21,7 +21,6 @@ import org.osgl._;
 import org.osgl.util.C;
 import org.osgl.util.IO;
 import org.osgl.util.S;
-import org.powermock.api.mockito.PowerMockito;
 import testapp.util.InvokeLog;
 import testapp.util.InvokeLogFactory;
 
@@ -29,7 +28,6 @@ import java.io.*;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.List;
-import java.util.concurrent.Future;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;

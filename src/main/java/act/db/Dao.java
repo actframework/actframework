@@ -126,15 +126,6 @@ public interface Dao<ID_TYPE, MODEL_TYPE, QUERY_TYPE extends Dao.Query<MODEL_TYP
      */
     QUERY_TYPE q();
 
-    /**
-     * Returns a {@code Dao} on another database service. Note the database service must
-     * comply to the current Dao instance, otherwise @{code RuntimException} will be
-     * thrown out
-     * @param dbId
-     * @return A Dao instance on another db service
-     */
-    DAO_TYPE on(String dbId);
-
     interface Query<MODEL_TYPE, QUERY_TYPE extends Query<MODEL_TYPE, QUERY_TYPE>> {
         QUERY_TYPE offset(int pos);
         QUERY_TYPE limit(int limit);
