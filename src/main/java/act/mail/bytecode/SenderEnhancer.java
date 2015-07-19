@@ -208,15 +208,15 @@ public class SenderEnhancer extends MethodVisitor implements Opcodes {
                 }
                 InsnList list = new InsnList();
                 int len = loadInsnInfoList.size();
-                if (len == 0) {
-                    return;
-                }
-
                 // SetRenderArgs enhancement
                 list.add(new TypeInsnNode(NEW, AsmTypes.MAILER_CONTEXT_INTERNAL_NAME));
                 list.add(new InsnNode(DUP));
                 list.add(new MethodInsnNode(INVOKESTATIC, AsmTypes.APP_INTERNAL_NAME, "instance", "()" + AsmTypes.APP_DESC, false));
-                list.add(new LdcInsnNode(meta.configId()));
+                String confId = meta.configId();
+                if (null == confId) {
+                    confId = "default";
+                }
+                list.add(new LdcInsnNode(confId));
                 list.add(new MethodInsnNode(INVOKESPECIAL, AsmTypes.MAILER_CONTEXT_INTERNAL_NAME, "<init>", "(Lact/app/App;Ljava/lang/String;)V", false));
                 int maxLocal = segment.trans.mn.maxLocals;
                 list.add(new VarInsnNode(ASTORE, maxLocal));
@@ -239,6 +239,12 @@ public class SenderEnhancer extends MethodVisitor implements Opcodes {
                     list.add(insnNode);
                     MethodInsnNode invokeTemplatePath = new MethodInsnNode(INVOKEVIRTUAL, AsmTypes.MAILER_CONTEXT_INTERNAL_NAME, TEMPLATE_PATH_NM, TEMPLATE_PATH_DESC, false);
                     list.add(invokeTemplatePath);
+                } else {
+                    String className = meta.classInfo().className();
+                    String method = meta.name();
+                    list.add(new LdcInsnNode(className));
+                    list.add(new LdcInsnNode(method));
+                    list.add(new MethodInsnNode(INVOKEVIRTUAL, AsmTypes.MAILER_CONTEXT_INTERNAL_NAME, SENDER_PATH_NM, SENDER_PATH_DESC, false));
                 }
                 InsnNode pop = new InsnNode(POP);
                 list.add(pop);
@@ -408,7 +414,9 @@ public class SenderEnhancer extends MethodVisitor implements Opcodes {
     private static final String RENDER_NM = "renderArg";
     private static final String RENDER_DESC = AsmTypes.methodDesc(MailerContext.class, String.class, Object.class);
     private static final String TEMPLATE_PATH_NM = "templatePath";
+    private static final String SENDER_PATH_NM = "senderPath";
     private static final String TEMPLATE_PATH_DESC = AsmTypes.methodDesc(MailerContext.class, String.class);
+    private static final String SENDER_PATH_DESC = AsmTypes.methodDesc(MailerContext.class, String.class, String.class);
     private static final String RENDER_ARG_NAMES_NM = "__appRenderArgNames";
     private static final String RENDER_ARG_NAMES_DESC = AsmTypes.methodDesc(MailerContext.class, String.class);
 

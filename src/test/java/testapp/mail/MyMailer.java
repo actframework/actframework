@@ -18,7 +18,7 @@ public class MyMailer {
 
     public void doSendX(String username, String password) {
         MailerContext ctx = new MailerContext(App.instance(), "foo");
-        ctx.renderArg("username", username).renderArg("password", password).templatePath("/my/path");
+        ctx.renderArg("username", username).renderArg("password", password).senderPath("Foo", "bar");
         doSend(ctx);
     }
 

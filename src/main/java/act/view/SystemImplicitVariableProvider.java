@@ -53,7 +53,7 @@ public class SystemImplicitVariableProvider extends ImplicitVariableProvider {
     );
 
     private List<MailerViewVarDef> mailerViewVarDefs = C.listOf(
-            new MailerViewVarDef("_ctx", MailerContext.class) {
+            new MailerViewVarDef("_mailer", MailerContext.class) {
                 @Override
                 public Object eval(MailerContext context) {
                     return context;

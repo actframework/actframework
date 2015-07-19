@@ -44,9 +44,7 @@ public class MailerConfigManager extends AppServiceBase<MailerConfigManager> {
                 }
             }
         }
-        // add default if needed
-        if (map.containsKey("mailer.smtp.host") || map.containsKey("act.mailer.smtp.host")) {
-            configMap.put("default", new MailerConfig("default", map, app()));
-        }
+        // add default anyway
+        configMap.put("default", new MailerConfig("default", map, app()));
     }
 }

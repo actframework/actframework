@@ -12,15 +12,10 @@ import org.osgl.util.C;
 import org.osgl.util.E;
 import org.osgl.util.S;
 
-import javax.mail.Message;
-import javax.mail.Multipart;
-import javax.mail.Session;
+import javax.mail.*;
 import javax.mail.internet.*;
 import java.io.File;
-import java.util.Date;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 
 public class MailerContext extends ActContext.ActContextBase<MailerContext> {
 
@@ -219,7 +214,60 @@ public class MailerContext extends ActContext.ActContextBase<MailerContext> {
         return this;
     }
 
-    public MimeMessage createMessage() throws Exception {
+    public boolean send() {
+        try {
+            MimeMessage message = createMessage();
+            if (!mailerConfig().mock()) {
+                Transport.send(message);
+            } else {
+                logger.info("Sending email\n%sEnd email\n", debug(message));
+            }
+            return true;
+        } catch (Exception e) {
+            logger.error(e, "Error sending email: %s", this);
+            return false;
+        }
+    }
+
+    private String debug(MimeMessage msg) throws Exception {
+        List<String> lines = C.newList();
+        lines.add(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n>> recipients");
+        Address[] aa = msg.getAllRecipients();
+        if (null != aa) {
+            for (Address a: aa) {
+                lines.add(a.getType() + ":" + a.toString());
+            }
+        } else {
+            lines.add("[ERROR] no recipients defined");
+        }
+        lines.add(">> header lines");
+        Enumeration e = msg.getAllHeaderLines();
+        while (e.hasMoreElements()) {
+            lines.add(S.string(e.nextElement()));
+        }
+        Object content = msg.getContent();
+        if (content instanceof Multipart) {
+            lines.add(">> multipart content");
+            Multipart mp = (Multipart)content;
+            for (int i = 0; i < mp.getCount(); ++i) {
+                MimeBodyPart bp = (MimeBodyPart)mp.getBodyPart(i);
+                lines.add(S.fmt(">>> #%s [%s]", i, bp.getContentType()));
+                String fileName = bp.getFileName();
+                if (S.notBlank(fileName)) {
+                    lines.add("file: " + fileName);
+                } else {
+                    lines.add(S.string(bp.getContent()));
+                }
+            }
+        } else {
+            lines.add(">> content[" + msg.getContentType() + "]");
+            lines.add(S.string(msg.getContent()));
+        }
+        lines.add("<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<\n");
+        return S.join("\n", lines);
+    }
+
+    private MimeMessage createMessage() throws Exception {
         Session session = mailerConfig().session();
         MimeMessage msg = new MimeMessage(session);
 

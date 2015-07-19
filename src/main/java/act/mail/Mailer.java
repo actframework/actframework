@@ -3,6 +3,7 @@ package act.mail;
 import org.osgl.logging.L;
 import org.osgl.logging.Logger;
 import org.osgl.util.E;
+import org.osgl.util.S;
 
 import javax.mail.Transport;
 import javax.mail.internet.MimeMessage;
@@ -36,20 +37,63 @@ public @interface Mailer {
             throw E.unsupport("to be enhanced");
         }
 
+        public static void from(String from) {
+            ctx().from = from;
+        }
+
+        public static void to(String ... to) {
+            ctx().to = S.join(",", to);
+        }
+
+        public static void cc(String ... cc) {
+            ctx().cc = S.join(",", cc);
+        }
+
+        public static void bcc(String ... bcc) {
+            ctx().bcc = S.join(",", bcc);
+        }
+
+        private static SimpleContext ctx() {
+            return _ctx.get();
+        }
+
         public static Future<Boolean> doSend(final MailerContext context) {
+            SimpleContext ctx = _ctx.get();
+            if (null != ctx) {
+                if (S.notBlank(ctx.from)) {
+                    context.from(ctx.from);
+                }
+                if (S.notBlank(ctx.to)) {
+                    context.to(ctx.to);
+                }
+                if (S.notBlank(ctx.cc)) {
+                    context.cc(ctx.cc);
+                }
+                if (S.notBlank(ctx.bcc)) {
+                    context.bcc(ctx.bcc);
+                }
+                _ctx.remove();
+            }
             return context.app().jobManager().now(new Callable<Boolean>() {
                 @Override
                 public Boolean call() throws Exception {
-                    try {
-                        MimeMessage message = context.createMessage();
-                        Transport.send(message);
-                        return true;
-                    } catch (Exception e) {
-                        logger.error(e, "Error sending email: %s", context);
-                        return false;
-                    }
+                    return context.send();
                 }
             });
+        }
+
+        private static final ThreadLocal<SimpleContext> _ctx = new ThreadLocal<SimpleContext>() {
+            @Override
+            protected SimpleContext initialValue() {
+                return new SimpleContext();
+            }
+        };
+
+        private static class SimpleContext {
+            String from;
+            String to;
+            String cc;
+            String bcc;
         }
     }
 }

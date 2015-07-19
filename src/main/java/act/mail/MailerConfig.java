@@ -36,6 +36,7 @@ public class MailerConfig extends AppHolderBase {
 
     private String id;
     private boolean isDefault;
+    private boolean mock;
     private InternetAddress from;
     private H.Format contentType;
     private Locale locale;
@@ -61,14 +62,19 @@ public class MailerConfig extends AppHolderBase {
         this.locale = getLocaleConfig(properties);
         this.subject = getProperty(SUBJECT, properties);
         this.host = getProperty(SMTP_HOST, properties);
-        E.invalidConfigurationIf(null == host, "smtp host configuration required");
-        this.useTls = getBooleanConfig(SMTP_TLS, properties);
-        this.useSsl = getBooleanConfig(SMTP_SSL, properties);
-        this.port = getPortConfig(properties);
-        this.username = getProperty(SMTP_USERNAME, properties);
-        this.password = getProperty(SMTP_PASSWORD, properties);
-        if (null == username || null == password) {
-            logger.warn("Either smtp.username or smtp.password is not configured for mailer[%s]", id);
+        if (null == host) {
+            logger.warn("smtp host configuration not found, will use mock smtp to send email");
+            mock = true;
+        } else {
+            mock = false;
+            this.useTls = getBooleanConfig(SMTP_TLS, properties);
+            this.useSsl = getBooleanConfig(SMTP_SSL, properties);
+            this.port = getPortConfig(properties);
+            this.username = getProperty(SMTP_USERNAME, properties);
+            this.password = getProperty(SMTP_PASSWORD, properties);
+            if (null == username || null == password) {
+                logger.warn("Either smtp.username or smtp.password is not configured for mailer[%s]", id);
+            }
         }
         this.toList = getEmailListConfig(TO, properties);
         this.ccList = getEmailListConfig(CC, properties);
@@ -76,18 +82,19 @@ public class MailerConfig extends AppHolderBase {
     }
 
     private String getProperty(String key, Map<String, String> properties) {
+        String key0 = key;
         key = S.builder("mailer.").append(id).append(".").append(key).toString();
         String val = properties.get(key);
         if (null != val) {
             return val;
         }
         String key2 = "act." + key;
-        val = properties.get(key);
+        val = properties.get(key2);
         if (null != val) {
             return val;
         }
         if (isDefault) {
-            key = S.builder("mailer.").append(key).toString();
+            key = S.builder("mailer.").append(key0).toString();
             val = properties.get(key);
             if (null != val) {
                 return val;
@@ -252,6 +259,10 @@ public class MailerConfig extends AppHolderBase {
         return bccList;
     }
 
+    public boolean mock() {
+        return mock;
+    }
+
     public Session session() {
         if (null == session) {
             synchronized (this) {
@@ -265,8 +276,13 @@ public class MailerConfig extends AppHolderBase {
 
     private Session createSession() {
         Properties p = new Properties();
-        p.setProperty("mail.smtp.host", host);
-        p.setProperty("mail.smtp.port", port);
+        if (mock()) {
+            p.setProperty("mail.smtp.host", "unknown");
+            p.setProperty("mail.smtp.port", "465");
+        } else {
+            p.setProperty("mail.smtp.host", host);
+            p.setProperty("mail.smtp.port", port);
+        }
 
         if (null != username && null != password) {
             if (useTls) {
