@@ -161,8 +161,7 @@ public class SenderEnhancer extends MethodVisitor implements Opcodes {
 
             private void injectRenderArgSetCode(AbstractInsnNode invokeNode) {
                 if (!segment.meta.hasLocalVariableTable()) {
-                    System.out.println("Warning: local variable table info not found. AppContext render args will not be automatically populated");
-                    return;
+                    logger.warn("local variable table info not found. AppContext render args will not be automatically populated");
                 }
                 AbstractInsnNode node = invokeNode.getPrevious();
                 List<LoadInsnInfo> loadInsnInfoList = C.newList();

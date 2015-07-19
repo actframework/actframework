@@ -1,7 +1,9 @@
-package act.job.meta;
+package act.job.bytecode;
 
 import act.app.App;
 import act.conf.AppConfig;
+import act.job.meta.JobClassMetaInfo;
+import act.job.meta.JobMethodMetaInfo;
 import com.esotericsoftware.reflectasm.ConstructorAccess;
 import com.esotericsoftware.reflectasm.FieldAccess;
 import com.esotericsoftware.reflectasm.MethodAccess;

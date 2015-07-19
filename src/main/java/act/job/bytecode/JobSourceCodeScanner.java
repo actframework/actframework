@@ -1,4 +1,4 @@
-package act.job.meta;
+package act.job.bytecode;
 
 import act.app.AppSourceCodeScannerBase;
 import act.app.Source;

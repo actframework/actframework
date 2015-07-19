@@ -1,8 +1,11 @@
-package act.job.meta;
+package act.job.bytecode;
 
 import act.app.AppByteCodeScannerBase;
 import act.asm.*;
 import act.job.JobAnnotationProcessor;
+import act.job.meta.JobClassMetaInfo;
+import act.job.meta.JobClassMetaInfoManager;
+import act.job.meta.JobMethodMetaInfo;
 import act.util.AsmTypes;
 import act.util.ByteCodeVisitor;
 import org.osgl.util.E;

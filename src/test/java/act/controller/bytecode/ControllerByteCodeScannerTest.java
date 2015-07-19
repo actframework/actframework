@@ -7,7 +7,7 @@ import act.app.TestingAppClassLoader;
 import act.asm.Type;
 import act.controller.meta.*;
 import act.job.AppJobManager;
-import act.job.meta.JobByteCodeScanner;
+import act.job.bytecode.JobByteCodeScanner;
 import act.util.Files;
 import org.junit.Before;
 import org.junit.Test;

@@ -12,8 +12,8 @@ import act.di.DependencyInjector;
 import act.event.EventBus;
 import act.handler.builtin.StaticFileGetter;
 import act.job.AppJobManager;
-import act.job.meta.JobByteCodeScanner;
-import act.job.meta.JobSourceCodeScanner;
+import act.job.bytecode.JobByteCodeScanner;
+import act.job.bytecode.JobSourceCodeScanner;
 import act.mail.MailerConfigManager;
 import act.mail.MailerSourceCodeScanner;
 import act.mail.bytecode.MailerByteCodeScanner;
@@ -145,7 +145,6 @@ public class App {
         initInterceptorManager();
         loadConfig();
         initJobManager();
-        initMailerConfigManager();
         initResolverManager();
         initBinderManager();
         initUploadFileStorageService();
@@ -165,6 +164,7 @@ public class App {
             compilationException = e;
             throw new ActServerError(e, this);
         }
+        initMailerConfigManager();
         eventBus().emit(APP_CODE_SCANNED);
         loadRoutes();
         // setting context class loader here might lead to memory leaks

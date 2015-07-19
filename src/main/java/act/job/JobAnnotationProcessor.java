@@ -4,7 +4,7 @@ import act.app.App;
 import act.app.AppHolderBase;
 import act.job.meta.JobClassMetaInfo;
 import act.job.meta.JobMethodMetaInfo;
-import act.job.meta.ReflectedJobInvoker;
+import act.job.bytecode.ReflectedJobInvoker;
 import org.osgl.util.E;
 import org.osgl.util.S;
 

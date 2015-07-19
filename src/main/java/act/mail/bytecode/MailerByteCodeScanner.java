@@ -224,7 +224,7 @@ public class MailerByteCodeScanner extends AppByteCodeScannerBase {
 
                 @Override
                 public void visit(String name, Object value) {
-                    if ("name".equals(name)) {
+                    if ("value".equals(name)) {
                         methodInfo.configId(value.toString());
                     }
                 }
