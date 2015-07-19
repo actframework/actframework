@@ -1,6 +1,7 @@
 package act;
 
 import act.conf.AppConfig;
+import act.job.AppJobManager;
 import act.route.Router;
 import org.junit.Assert;
 import org.junit.Ignore;
@@ -94,12 +95,18 @@ public class TestBase extends Assert {
     protected Router mockRouter;
     protected ActionContext mockActionContext;
     protected AppConfig mockAppConfig;
+    protected AppJobManager mockJobManager;
     protected App mockApp;
     protected H.Request mockReq;
     protected H.Response mockResp;
 
     protected void setup() throws Exception {
         mockApp = mock(App.class);
+        Field f = App.class.getDeclaredField("INST");
+        f.setAccessible(true);
+        f.set(null, mockApp);
+        mockJobManager = mock(AppJobManager.class);
+        when(mockApp.jobManager()).thenReturn(mockJobManager);
         mockAppConfig = mock(AppConfig.class);
         when(mockAppConfig.possibleControllerClass(argThat(new StartsWith("testapp.controller.")))).thenReturn(true);
         mockActionContext = mock(ActionContext.class);

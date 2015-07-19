@@ -172,10 +172,6 @@ public class MailerByteCodeScanner extends AppByteCodeScannerBase {
                 boolean ctxByParam = false;
                 for (int i = 0; i < argTypes.length; ++i) {
                     Type type = argTypes[i];
-                    if (AsmTypes.ACTION_CONTEXT.asmType().equals(type)) {
-                        ctxByParam = true;
-                        info.appContextViaParam(i);
-                    }
                     ParamMetaInfo param = new ParamMetaInfo().type(type);
                     List<ParamAnnoInfoTrait> paraAnnoList = paramAnnoInfoList.get(i);
                     if (null != paraAnnoList) {
@@ -188,13 +184,6 @@ public class MailerByteCodeScanner extends AppByteCodeScannerBase {
                         param.addGeneralAnnotations(list);
                     }
                     info.addParam(param);
-                }
-                if (!ctxByParam) {
-                    if (classInfo.hasCtxField() && !isStatic) {
-                        info.appContextViaField(classInfo.ctxField());
-                    } else {
-                        info.appContextViaLocalStorage();
-                    }
                 }
                 if (null != signature) {
                     SignatureReader sr = new SignatureReader(signature);

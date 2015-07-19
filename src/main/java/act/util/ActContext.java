@@ -18,8 +18,7 @@ public interface ActContext<CTX_TYPE extends ActContext> {
     Locale locale();
     /**
      * If {@link #templatePath(String) template path has been set before} then return
-     * the template path. Otherwise returns the {@link #actionPath()}
-     * @return either template path or action path if template path not set before
+     * the template path
      */
     String templatePath();
     /**

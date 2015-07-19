@@ -8,11 +8,13 @@ import act.asm.Type;
 import act.asm.tree.*;
 import act.controller.meta.LocalVariableMetaInfo;
 import act.controller.meta.ParamMetaInfo;
+import act.mail.MailerContext;
 import act.mail.meta.SenderMethodMetaInfo;
+import act.util.AsmType;
 import act.util.AsmTypes;
+import com.sun.org.apache.bcel.internal.generic.DUP;
 import org.osgl.logging.L;
 import org.osgl.logging.Logger;
-import org.osgl.mvc.result.Result;
 import org.osgl.util.C;
 import org.osgl.util.E;
 import org.osgl.util.S;
@@ -20,12 +22,11 @@ import org.osgl.util.S;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
+import java.util.concurrent.Future;
 
 public class SenderEnhancer extends MethodVisitor implements Opcodes {
 
     private static final Logger logger = L.get(SenderEnhancer.class);
-
-    private static final String RESULT_CLASS = Result.class.getName();
 
     private SenderMethodMetaInfo info;
     private MethodVisitor next;
@@ -48,9 +49,6 @@ public class SenderEnhancer extends MethodVisitor implements Opcodes {
             if (paramId < info.paramCount()) {
                 ParamMetaInfo param = info.param(paramId);
                 param.name(name);
-                if (AsmTypes.ACTION_CONTEXT_TYPE.equals(param.type())) {
-                    info.appCtxLocalVariableTableIndex(index);
-                }
                 if (Type.getType(long.class).equals(param.type()) || Type.getType(double.class).equals(param.type())) {
                     paramIdShift++;
                 }
@@ -97,11 +95,11 @@ public class SenderEnhancer extends MethodVisitor implements Opcodes {
             }
         }
 
-        private static abstract class InstructionSender {
+        private static abstract class InstructionHandler {
             Segment segment;
             SenderMethodMetaInfo meta;
 
-            InstructionSender(Segment segment, SenderMethodMetaInfo meta) {
+            InstructionHandler(Segment segment, SenderMethodMetaInfo meta) {
                 this.segment = segment;
                 this.meta = meta;
             }
@@ -120,30 +118,32 @@ public class SenderEnhancer extends MethodVisitor implements Opcodes {
             SenderMethodMetaInfo meta;
             ListIterator<AbstractInsnNode> itr;
             Transformer trans;
-            private Map<Integer, InstructionSender> handlers = C.map(
-                    AbstractInsnNode.METHOD_INSN, new InvocationSender(this, meta)
-            );
+            private Map<Integer, InstructionHandler> handlers;
 
             Segment(Label start, SenderMethodMetaInfo meta, InsnList instructions, ListIterator<AbstractInsnNode> itr, Transformer trans) {
+                E.NPE(meta);
                 this.startLabel = start;
                 this.meta = meta;
                 this.instructions = instructions;
                 this.itr = itr;
                 this.trans = trans;
+                this.handlers = C.map(
+                        AbstractInsnNode.METHOD_INSN, new InvocationHandler(this, meta)
+                );
                 trans.lblList.add(start);
             }
 
             protected void handle(AbstractInsnNode node) {
-                InstructionSender handler = handlers.get(node.getType());
+                InstructionHandler handler = handlers.get(node.getType());
                 if (null != handler) {
                     handler.handle(node);
                 }
             }
         }
 
-        private static class InvocationSender extends InstructionSender {
+        private static class InvocationHandler extends InstructionHandler {
 
-            InvocationSender(Segment segment, SenderMethodMetaInfo meta) {
+            InvocationHandler(Segment segment, SenderMethodMetaInfo meta) {
                 super(segment, meta);
             }
 
@@ -154,18 +154,9 @@ public class SenderEnhancer extends MethodVisitor implements Opcodes {
                 Type retType = type.getReturnType();
                 //String method = n.name;
                 //String owner = Type.getType(n.owner).toString();
-                if (RESULT_CLASS.equals(retType.getClassName())) {
+                if (Future.class.getName().equals(retType.getClassName()) && "send".equals(n.name)) {
                     injectRenderArgSetCode(n);
-                    injectThrowCode(n);
                 }
-            }
-
-            private String ctxFieldName() {
-                return segment.meta.classInfo().ctxField();
-            }
-
-            private int ctxIndex() {
-                return segment.meta.appCtxLocalVariableTableIndex();
             }
 
             private void injectRenderArgSetCode(AbstractInsnNode invokeNode) {
@@ -220,26 +211,18 @@ public class SenderEnhancer extends MethodVisitor implements Opcodes {
                 if (len == 0) {
                     return;
                 }
-                int appCtxIdx = ctxIndex();
 
                 // SetRenderArgs enhancement
-                if (appCtxIdx < 0) {
-                    String appCtxFieldName = ctxFieldName();
-                    if (null == appCtxFieldName) {
-                        MethodInsnNode getAppCtx = new MethodInsnNode(INVOKESTATIC, AsmTypes.ACTION_CONTEXT_INTERNAL_NAME, ActionContext.METHOD_GET_CURRENT, GET_MAILER_CTX_DESC, false);
-                        list.add(getAppCtx);
-                    } else {
-                        VarInsnNode loadThis = new VarInsnNode(ALOAD, 0);
-                        FieldInsnNode getCtx = new FieldInsnNode(GETFIELD, segment.meta.classInfo().internalName(), appCtxFieldName, AsmTypes.ACTION_CONTEXT_DESC);
-                        list.add(loadThis);
-                        list.add(getCtx);
-                    }
-                } else {
-                    LabelNode lbl = new LabelNode();
-                    VarInsnNode loadCtx = new VarInsnNode(ALOAD, appCtxIdx);
-                    list.add(lbl);
-                    list.add(loadCtx);
-                }
+                list.add(new TypeInsnNode(NEW, AsmTypes.MAILER_CONTEXT_INTERNAL_NAME));
+                list.add(new InsnNode(DUP));
+                list.add(new MethodInsnNode(INVOKESTATIC, AsmTypes.APP_INTERNAL_NAME, "instance", "()" + AsmTypes.APP_DESC, false));
+                list.add(new LdcInsnNode(meta.configId()));
+                list.add(new MethodInsnNode(INVOKESPECIAL, AsmTypes.MAILER_CONTEXT_INTERNAL_NAME, "<init>", "(Lact/app/App;Ljava/lang/String;)V", false));
+                int maxLocal = segment.trans.mn.maxLocals;
+                list.add(new VarInsnNode(ASTORE, maxLocal));
+                segment.trans.mn.maxLocals++;
+                list.add(new VarInsnNode(ALOAD, maxLocal));
+
                 StringBuilder sb = S.builder();
                 for (int i = 0; i < len; ++i) {
                     LoadInsnInfo info = loadInsnInfoList.get(i);
@@ -247,96 +230,32 @@ public class SenderEnhancer extends MethodVisitor implements Opcodes {
                 }
                 LdcInsnNode ldc = new LdcInsnNode(sb.toString());
                 list.add(ldc);
-                MethodInsnNode invokeRenderArg = new MethodInsnNode(INVOKEVIRTUAL, AsmTypes.ACTION_CONTEXT_INTERNAL_NAME, RENDER_ARG_NAMES_NM, RENDER_ARG_NAMES_DESC, false);
+                MethodInsnNode invokeRenderArg = new MethodInsnNode(INVOKEVIRTUAL, AsmTypes.MAILER_CONTEXT_INTERNAL_NAME, RENDER_ARG_NAMES_NM, RENDER_ARG_NAMES_DESC, false);
                 list.add(invokeRenderArg);
-
-                InsnNode pop = new InsnNode(POP);
-                list.add(pop);
 
                 // setTemplatePath enhancement
                 if (null != templatePath) {
-                    if (appCtxIdx < 0) {
-                        String appCtxFieldName = ctxFieldName();
-                        if (null == appCtxFieldName) {
-                            MethodInsnNode getAppCtx = new MethodInsnNode(INVOKESTATIC, AsmTypes.ACTION_CONTEXT_INTERNAL_NAME, ActionContext.METHOD_GET_CURRENT, GET_MAILER_CTX_DESC, false);
-                            list.add(getAppCtx);
-                        } else {
-                            VarInsnNode loadThis = new VarInsnNode(ALOAD, 0);
-                            FieldInsnNode getCtx = new FieldInsnNode(GETFIELD, segment.meta.classInfo().internalName(), appCtxFieldName, AsmTypes.ACTION_CONTEXT_DESC);
-                            list.add(loadThis);
-                            list.add(getCtx);
-                        }
-                    } else {
-                        LabelNode lbl = new LabelNode();
-                        VarInsnNode loadCtx = new VarInsnNode(ALOAD, appCtxIdx);
-                        list.add(lbl);
-                        list.add(loadCtx);
-                    }
                     LdcInsnNode insnNode = new LdcInsnNode(templatePath);
                     list.add(insnNode);
-                    MethodInsnNode invokeTemplatePath = new MethodInsnNode(INVOKEVIRTUAL, AsmTypes.ACTION_CONTEXT_INTERNAL_NAME, TEMPLATE_PATH_NM, TEMPLATE_PATH_DESC, false);
+                    MethodInsnNode invokeTemplatePath = new MethodInsnNode(INVOKEVIRTUAL, AsmTypes.MAILER_CONTEXT_INTERNAL_NAME, TEMPLATE_PATH_NM, TEMPLATE_PATH_DESC, false);
                     list.add(invokeTemplatePath);
-                    pop = new InsnNode(POP);
-                    list.add(pop);
                 }
+                InsnNode pop = new InsnNode(POP);
+                list.add(pop);
+
+                list.add(new VarInsnNode(ALOAD, maxLocal));
+                MethodInsnNode realSend = new MethodInsnNode(INVOKESTATIC, "act/mail/Mailer$Util", "doSend", "(Lact/mail/MailerContext;)Ljava/util/concurrent/Future;", false);
+                list.add(realSend);
 
                 segment.instructions.insertBefore(node, list);
+                while (node != invokeNode) {
+                    AbstractInsnNode n0 = node.getNext();
+                    segment.instructions.remove(node);
+                    node = n0;
+                }
+                segment.instructions.remove(invokeNode);
             }
 
-            private void injectThrowCode(AbstractInsnNode invokeNode) {
-                if (segment.meta.hasReturn()) {
-                    return;
-                }
-                AbstractInsnNode next = invokeNode.getNext();
-                if (next.getOpcode() == POP) {
-                    AbstractInsnNode newNext = new InsnNode(ATHROW);
-                    InsnList instructions = segment.instructions;
-                    instructions.insert(invokeNode, newNext);
-                    instructions.remove(next);
-                    next = newNext.getNext();
-                    int curLine = -1;
-                    while (null != next) {
-                        boolean breakWhile = false;
-                        int type = next.getType();
-                        switch (type) {
-                            case AbstractInsnNode.LABEL:
-                                next = next.getNext();
-                                break;
-                            case AbstractInsnNode.LINE:
-                                curLine = ((LineNumberNode) next).line;
-                                next = next.getNext();
-                                break;
-                            case AbstractInsnNode.JUMP_INSN:
-                                AbstractInsnNode tmp = next.getNext();
-                                instructions.remove(next);
-                                next = tmp;
-                                break;
-                            case AbstractInsnNode.INSN:
-                                int op = next.getOpcode();
-                                if (op == RETURN) {
-                                    tmp = next.getNext();
-                                    instructions.remove(next);
-                                    next = tmp;
-                                    tmp = next.getPrevious();
-                                    if (tmp.getType() == AbstractInsnNode.LINE) {
-                                        instructions.remove(tmp);
-                                    }
-                                    break;
-                                }
-                            case AbstractInsnNode.FRAME:
-                                breakWhile = true;
-                                break;
-                            default:
-                                E.unexpected("Invalid statement after render result statement at line %s", curLine);
-                        }
-                        if (breakWhile) {
-                            break;
-                        }
-                    }
-                    refreshIteratorNext();
-                    //System.out.printf("ATHROW inserted\n");
-                }
-            }
         }
 
         private static final int _I = 'I';
@@ -377,7 +296,28 @@ public class SenderEnhancer extends MethodVisitor implements Opcodes {
                     MethodInsnNode method = new MethodInsnNode(INVOKESTATIC, owner, "valueOf", desc, false);
                     list.add(method);
                 }
-            }, L(LLOAD), F(FLOAD), D(DLOAD), A(ALOAD), Store(-1) {
+            }, L(LLOAD) {
+                @Override
+                void appendTo(InsnList list, int varIndex, String type) {
+                    super.appendTo(list, varIndex, type);
+                    MethodInsnNode method = new MethodInsnNode(INVOKESTATIC, "java/lang/Long", "valueOf", "(J)Ljava/lang/Long;", false);
+                    list.add(method);
+                }
+            }, F(FLOAD) {
+                @Override
+                void appendTo(InsnList list, int varIndex, String type) {
+                    super.appendTo(list, varIndex, type);
+                    MethodInsnNode method = new MethodInsnNode(INVOKESTATIC, "java/lang/Float", "valueOf", "(F)Ljava/lang/Float;", false);
+                    list.add(method);
+                }
+            }, D(DLOAD) {
+                @Override
+                void appendTo(InsnList list, int varIndex, String type) {
+                    super.appendTo(list, varIndex, type);
+                    MethodInsnNode method = new MethodInsnNode(INVOKESTATIC, "java/lang/Double", "valueOf", "(D)Ljava/lang/Double;", false);
+                    list.add(method);
+                }
+            }, A(ALOAD), Store(-1) {
                 @Override
                 void appendTo(InsnList list, int varIndex, String type) {
                     throw E.unsupport();
@@ -431,7 +371,7 @@ public class SenderEnhancer extends MethodVisitor implements Opcodes {
                 LdcInsnNode ldc = new LdcInsnNode(var.name());
                 list.add(ldc);
                 insn.appendTo(list, index, var.type());
-                MethodInsnNode invokeRenderArg = new MethodInsnNode(INVOKEVIRTUAL, AsmTypes.ACTION_CONTEXT_INTERNAL_NAME, RENDER_NM, RENDER_DESC, false);
+                MethodInsnNode invokeRenderArg = new MethodInsnNode(INVOKEVIRTUAL, AsmTypes.MAILER_CONTEXT_INTERNAL_NAME, RENDER_NM, RENDER_DESC, false);
                 list.add(invokeRenderArg);
                 if (paramNames.length() != 0) {
                     paramNames.append(',');
@@ -464,12 +404,12 @@ public class SenderEnhancer extends MethodVisitor implements Opcodes {
         }
     }
 
-    private static final String GET_MAILER_CTX_DESC = "()" + AsmTypes.ACTION_CONTEXT_DESC;
+    private static final String GET_MAILER_CTX_DESC = "()" + AsmTypes.MAILER_CONTEXT_DESC;
     private static final String RENDER_NM = "renderArg";
-    private static final String RENDER_DESC = AsmTypes.methodDesc(ActionContext.class, String.class, Object.class);
+    private static final String RENDER_DESC = AsmTypes.methodDesc(MailerContext.class, String.class, Object.class);
     private static final String TEMPLATE_PATH_NM = "templatePath";
-    private static final String TEMPLATE_PATH_DESC = AsmTypes.methodDesc(ActionContext.class, String.class);
+    private static final String TEMPLATE_PATH_DESC = AsmTypes.methodDesc(MailerContext.class, String.class);
     private static final String RENDER_ARG_NAMES_NM = "__appRenderArgNames";
-    private static final String RENDER_ARG_NAMES_DESC = AsmTypes.methodDesc(ActionContext.class, String.class);
+    private static final String RENDER_ARG_NAMES_DESC = AsmTypes.methodDesc(MailerContext.class, String.class);
 
 }

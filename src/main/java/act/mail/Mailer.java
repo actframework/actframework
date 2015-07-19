@@ -21,10 +21,19 @@ import java.util.concurrent.Future;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.METHOD, ElementType.TYPE})
 public @interface Mailer {
+
+    /**
+     * Defines the {@link MailerConfig mailer config ID}.
+     * <p>Default value: {@code "default"}</p>
+     */
+    String value() default "default";
+
     public static class Util {
+
         protected static final Logger logger = L.get(Mailer.class);
-        public static void send(Object... args) {
-            E.unsupport("to be enhanced");
+
+        public static Future<Boolean> send(Object... args) {
+            throw E.unsupport("to be enhanced");
         }
 
         public static Future<Boolean> doSend(final MailerContext context) {

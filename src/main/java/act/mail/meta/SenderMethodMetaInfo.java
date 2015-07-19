@@ -21,7 +21,6 @@ public class SenderMethodMetaInfo extends DestroyableBase {
     private String name;
     private String configId;
     private InvokeType invokeType;
-    private ActContextInjection actContextInjection;
     private MailerClassMetaInfo clsInfo;
     private C.List<ParamMetaInfo> params = C.newList();
     private ReturnTypeInfo returnType;
@@ -64,25 +63,6 @@ public class SenderMethodMetaInfo extends DestroyableBase {
 
     public String configId() {
         return null != configId ? configId : classInfo().configId();
-    }
-
-    public SenderMethodMetaInfo appContextViaField(String fieldName) {
-        actContextInjection = new ActContextInjection.FieldActContextInjection(fieldName);
-        return this;
-    }
-
-    public SenderMethodMetaInfo appContextViaParam(int paramIndex) {
-        actContextInjection = new ActContextInjection.ParamAppContextInjection(paramIndex);
-        return this;
-    }
-
-    public SenderMethodMetaInfo appContextViaLocalStorage() {
-        actContextInjection = new ActContextInjection.LocalAppContextInjection();
-        return this;
-    }
-
-    public ActContextInjection appContextInjection() {
-        return actContextInjection;
     }
 
     public SenderMethodMetaInfo invokeStaticMethod() {
@@ -178,7 +158,7 @@ public class SenderMethodMetaInfo extends DestroyableBase {
 
     @Override
     public String toString() {
-        StringBuilder sb = S.builder(actContextInjection.toString()).append(" ");
+        StringBuilder sb = S.builder();
         sb.append(_invokeType())
                 .append(_return())
                 .append(fullName())

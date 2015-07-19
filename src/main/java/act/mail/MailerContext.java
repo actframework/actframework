@@ -20,6 +20,7 @@ import java.io.File;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 public class MailerContext extends ActContext.ActContextBase<MailerContext> {
 
@@ -31,6 +32,7 @@ public class MailerContext extends ActContext.ActContextBase<MailerContext> {
     private List<InternetAddress> bcc = C.newList();
     private String confId;
     private List<ISObject> attachments = C.newList();
+    private String senderPath; // e.g. com.mycorp.myapp.mailer.AbcMailer.foo
 
     public MailerContext(App app, String confId) {
         super(app);
@@ -39,6 +41,20 @@ public class MailerContext extends ActContext.ActContextBase<MailerContext> {
 
     public MailerContext configId(String id) {
         confId = id;
+        return this;
+    }
+
+    public String senderPath() {
+        return senderPath;
+    }
+
+    public MailerContext senderPath(String path) {
+        senderPath = path;
+        return this;
+    }
+
+    public MailerContext senderPath(String className, String methodName) {
+        senderPath = S.builder(className).append(".").append(methodName).toString();
         return this;
     }
 
@@ -56,6 +72,55 @@ public class MailerContext extends ActContext.ActContextBase<MailerContext> {
     @Override
     public H.Format accept() {
         return null != fmt ? fmt : mailerConfig().contentType();
+    }
+
+
+    /**
+     * If {@link #templatePath(String) template path has been set before} then return
+     * the template path. Otherwise returns the {@link #senderPath()}
+     * @return either template path or action path if template path not set before
+     */
+    public String templatePath() {
+        String path = super.templatePath();
+        if (S.notBlank(path)) {
+            return path;
+        } else {
+            return senderPath().replace('.', '/');
+        }
+    }
+
+    @Override
+    public MailerContext templatePath(String templatePath) {
+        return super.templatePath(templatePath);
+    }
+
+    @Override
+    public <T> T renderArg(String name) {
+        return super.renderArg(name);
+    }
+
+    @Override
+    public MailerContext renderArg(String name, Object val) {
+        return super.renderArg(name, val);
+    }
+
+    @Override
+    public Map<String, Object> renderArgs() {
+        return super.renderArgs();
+    }
+
+    /**
+     * Called by bytecode enhancer to set the name list of the render arguments that is update
+     * by the enhancer
+     * @param names the render argument names separated by ","
+     * @return this AppContext
+     */
+    public MailerContext __appRenderArgNames(String names) {
+        return renderArg("__arg_names__", C.listOf(names.split(",")));
+    }
+
+    public List<String> __appRenderArgNames() {
+        return renderArg("__arg_names__");
     }
 
     public H.Format contentType() {

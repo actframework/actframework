@@ -45,7 +45,7 @@ public class C1 extends CBase {
     }
 
     //
-    @GetAction(value = "/do_anno", foo = {"1", "b"})
+    @GetAction(value = "/do_anno")
     public void doAnno(@Param("svc_id") String svcId, int age, @Param("map") String map) {
         ok();
     }

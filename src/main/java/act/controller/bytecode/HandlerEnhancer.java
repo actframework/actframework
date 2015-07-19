@@ -171,7 +171,7 @@ public class HandlerEnhancer extends MethodVisitor implements Opcodes {
 
             private void injectRenderArgSetCode(AbstractInsnNode invokeNode) {
                 if (!segment.meta.hasLocalVariableTable()) {
-                    System.out.println("Warning: local variable table info not found. AppContext render args will not be automatically populated");
+                    System.out.println("Warning: local variable table info not found. ActionContext render args will not be automatically populated");
                     return;
                 }
                 AbstractInsnNode node = invokeNode.getPrevious();
@@ -227,8 +227,8 @@ public class HandlerEnhancer extends MethodVisitor implements Opcodes {
                 if (appCtxIdx < 0) {
                     String appCtxFieldName = ctxFieldName();
                     if (null == appCtxFieldName) {
-                        MethodInsnNode getAppCtx = new MethodInsnNode(INVOKESTATIC, AsmTypes.ACTION_CONTEXT_INTERNAL_NAME, ActionContext.METHOD_GET_CURRENT, GET_ACTION_CTX_DESC, false);
-                        list.add(getAppCtx);
+                        MethodInsnNode getActionContext = new MethodInsnNode(INVOKESTATIC, AsmTypes.ACTION_CONTEXT_INTERNAL_NAME, ActionContext.METHOD_GET_CURRENT, GET_ACTION_CTX_DESC, false);
+                        list.add(getActionContext);
                     } else {
                         VarInsnNode loadThis = new VarInsnNode(ALOAD, 0);
                         FieldInsnNode getCtx = new FieldInsnNode(GETFIELD, segment.meta.classInfo().internalName(), appCtxFieldName, AsmTypes.ACTION_CONTEXT_DESC);
@@ -378,7 +378,28 @@ public class HandlerEnhancer extends MethodVisitor implements Opcodes {
                     MethodInsnNode method = new MethodInsnNode(INVOKESTATIC, owner, "valueOf", desc, false);
                     list.add(method);
                 }
-            }, L(LLOAD), F(FLOAD), D(DLOAD), A(ALOAD), Store(-1) {
+            }, L(LLOAD) {
+                @Override
+                void appendTo(InsnList list, int varIndex, String type) {
+                    super.appendTo(list, varIndex, type);
+                    MethodInsnNode method = new MethodInsnNode(INVOKESTATIC, "java/lang/Long", "valueOf", "(J)Ljava/lang/Long;", false);
+                    list.add(method);
+                }
+            }, F(FLOAD) {
+                @Override
+                void appendTo(InsnList list, int varIndex, String type) {
+                    super.appendTo(list, varIndex, type);
+                    MethodInsnNode method = new MethodInsnNode(INVOKESTATIC, "java/lang/Float", "valueOf", "(F)Ljava/lang/Float;", false);
+                    list.add(method);
+                }
+            }, D(DLOAD) {
+                @Override
+                void appendTo(InsnList list, int varIndex, String type) {
+                    super.appendTo(list, varIndex, type);
+                    MethodInsnNode method = new MethodInsnNode(INVOKESTATIC, "java/lang/Double", "valueOf", "(D)Ljava/lang/Double;", false);
+                    list.add(method);
+                }
+            }, A(ALOAD), Store(-1) {
                 @Override
                 void appendTo(InsnList list, int varIndex, String type) {
                     throw E.unsupport();
