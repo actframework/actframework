@@ -90,7 +90,9 @@ public class SenderEnhancer extends MethodVisitor implements Opcodes {
                 if (insn.getType() == AbstractInsnNode.LABEL) {
                     cur = new Segment(((LabelNode) insn).getLabel(), meta, instructions, itr, this);
                 } else if (null != cur) {
-                    cur.handle(insn);
+                    if (cur.handle(insn)) {
+                        cur = null;
+                    }
                 }
             }
         }
@@ -133,10 +135,13 @@ public class SenderEnhancer extends MethodVisitor implements Opcodes {
                 trans.lblList.add(start);
             }
 
-            protected void handle(AbstractInsnNode node) {
+            protected boolean handle(AbstractInsnNode node) {
                 InstructionHandler handler = handlers.get(node.getType());
                 if (null != handler) {
                     handler.handle(node);
+                    return true;
+                } else {
+                    return false;
                 }
             }
         }
@@ -154,8 +159,53 @@ public class SenderEnhancer extends MethodVisitor implements Opcodes {
                 Type retType = type.getReturnType();
                 //String method = n.name;
                 //String owner = Type.getType(n.owner).toString();
-                if (Future.class.getName().equals(retType.getClassName()) && "send".equals(n.name)) {
+                if (MailerContext.class.getName().equals(retType.getClassName())) {
+                    injectCreatingMailerContextCode(n);
+                } else if (Future.class.getName().equals(retType.getClassName()) && "send".equals(n.name)) {
                     injectRenderArgSetCode(n);
+                }
+            }
+
+            private void injectCreatingMailerContextCode(AbstractInsnNode insnNode) {
+                AbstractInsnNode node = insnNode.getNext();
+                InsnList list = new InsnList();
+                if (node instanceof VarInsnNode) {
+                    VarInsnNode varNode = (VarInsnNode) node;
+                    if (varNode.getOpcode() == ASTORE) {
+                        meta.appCtxLocalVariableTableIndex(varNode.var);
+                        list.add(new TypeInsnNode(NEW, AsmTypes.MAILER_CONTEXT_INTERNAL_NAME));
+                        list.add(new InsnNode(DUP));
+                        list.add(new MethodInsnNode(INVOKESTATIC, AsmTypes.APP_INTERNAL_NAME, "instance", "()" + AsmTypes.APP_DESC, false));
+                        String confId = meta.configId();
+                        if (null == confId) {
+                            confId = "default";
+                        }
+                        list.add(new LdcInsnNode(confId));
+                        list.add(new MethodInsnNode(INVOKESPECIAL, AsmTypes.MAILER_CONTEXT_INTERNAL_NAME, "<init>", "(Lact/app/App;Ljava/lang/String;)V", false));
+                        segment.instructions.insertBefore(node, list);
+                        segment.instructions.remove(insnNode);
+                    }
+                } else {
+                    list.add(new TypeInsnNode(NEW, AsmTypes.MAILER_CONTEXT_INTERNAL_NAME));
+                    list.add(new InsnNode(DUP));
+                    list.add(new MethodInsnNode(INVOKESTATIC, AsmTypes.APP_INTERNAL_NAME, "instance", "()" + AsmTypes.APP_DESC, false));
+                    String confId = meta.configId();
+                    if (null == confId) {
+                        confId = "default";
+                    }
+                    list.add(new LdcInsnNode(confId));
+                    list.add(new MethodInsnNode(INVOKESPECIAL, AsmTypes.MAILER_CONTEXT_INTERNAL_NAME, "<init>", "(Lact/app/App;Ljava/lang/String;)V", false));
+                    segment.instructions.insertBefore(node, list);
+                    segment.instructions.remove(insnNode);
+                    node = node.getNext();
+                    while (node.getOpcode() != POP) {
+                        node = node.getNext();
+                    }
+                    int maxLocal = segment.trans.mn.maxLocals;
+                    segment.trans.mn.maxLocals++;
+                    segment.instructions.insertBefore(node, new VarInsnNode(ASTORE, maxLocal));
+                    segment.instructions.remove(node);
+                    meta.appCtxLocalVariableTableIndex(maxLocal);
                 }
             }
 
@@ -207,20 +257,25 @@ public class SenderEnhancer extends MethodVisitor implements Opcodes {
                 }
                 InsnList list = new InsnList();
                 int len = loadInsnInfoList.size();
+
                 // SetRenderArgs enhancement
-                list.add(new TypeInsnNode(NEW, AsmTypes.MAILER_CONTEXT_INTERNAL_NAME));
-                list.add(new InsnNode(DUP));
-                list.add(new MethodInsnNode(INVOKESTATIC, AsmTypes.APP_INTERNAL_NAME, "instance", "()" + AsmTypes.APP_DESC, false));
-                String confId = meta.configId();
-                if (null == confId) {
-                    confId = "default";
+                int ctxId = meta.appCtxLocalVariableTableIndex();
+                if (ctxId < 0) {
+                    list.add(new TypeInsnNode(NEW, AsmTypes.MAILER_CONTEXT_INTERNAL_NAME));
+                    list.add(new InsnNode(DUP));
+                    list.add(new MethodInsnNode(INVOKESTATIC, AsmTypes.APP_INTERNAL_NAME, "instance", "()" + AsmTypes.APP_DESC, false));
+                    String confId = meta.configId();
+                    if (null == confId) {
+                        confId = "default";
+                    }
+                    list.add(new LdcInsnNode(confId));
+                    list.add(new MethodInsnNode(INVOKESPECIAL, AsmTypes.MAILER_CONTEXT_INTERNAL_NAME, "<init>", "(Lact/app/App;Ljava/lang/String;)V", false));
+                    int maxLocal = segment.trans.mn.maxLocals;
+                    list.add(new VarInsnNode(ASTORE, maxLocal));
+                    segment.trans.mn.maxLocals++;
+                    ctxId = maxLocal;
                 }
-                list.add(new LdcInsnNode(confId));
-                list.add(new MethodInsnNode(INVOKESPECIAL, AsmTypes.MAILER_CONTEXT_INTERNAL_NAME, "<init>", "(Lact/app/App;Ljava/lang/String;)V", false));
-                int maxLocal = segment.trans.mn.maxLocals;
-                list.add(new VarInsnNode(ASTORE, maxLocal));
-                segment.trans.mn.maxLocals++;
-                list.add(new VarInsnNode(ALOAD, maxLocal));
+                list.add(new VarInsnNode(ALOAD, ctxId));
 
                 StringBuilder sb = S.builder();
                 for (int i = 0; i < len; ++i) {
@@ -248,8 +303,9 @@ public class SenderEnhancer extends MethodVisitor implements Opcodes {
                 InsnNode pop = new InsnNode(POP);
                 list.add(pop);
 
-                list.add(new VarInsnNode(ALOAD, maxLocal));
-                MethodInsnNode realSend = new MethodInsnNode(INVOKESTATIC, "act/mail/Mailer$Util", "doSend", "(Lact/mail/MailerContext;)Ljava/util/concurrent/Future;", false);
+                list.add(new VarInsnNode(ALOAD, ctxId));
+                String method = meta.appCtxLocalVariableTableIndex() < 0 ? "doSend" : "doSendWithoutLoadThreadLocal";
+                MethodInsnNode realSend = new MethodInsnNode(INVOKESTATIC, "act/mail/Mailer$Util", method, "(Lact/mail/MailerContext;)Ljava/util/concurrent/Future;", false);
                 list.add(realSend);
 
                 segment.instructions.insertBefore(node, list);

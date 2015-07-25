@@ -37,6 +37,10 @@ public @interface Mailer {
             throw E.unsupport("to be enhanced");
         }
 
+        public static MailerContext mailer() {
+            throw E.unsupport("to be enhanced");
+        }
+
         public static void from(String from) {
             ctx().from = from;
         }
@@ -53,8 +57,21 @@ public @interface Mailer {
             ctx().bcc = S.join(",", bcc);
         }
 
+        public static void subject(String subject) {
+            ctx().subject = subject;
+        }
+
         private static SimpleContext ctx() {
             return _ctx.get();
+        }
+
+        public static Future<Boolean> doSendWithoutLoadThreadLocal(final MailerContext context) {
+            return context.app().jobManager().now(new Callable<Boolean>() {
+                @Override
+                public Boolean call() throws Exception {
+                    return context.send();
+                }
+            });
         }
 
         public static Future<Boolean> doSend(final MailerContext context) {
@@ -71,6 +88,9 @@ public @interface Mailer {
                 }
                 if (S.notBlank(ctx.bcc)) {
                     context.bcc(ctx.bcc);
+                }
+                if (S.notBlank(ctx.subject)) {
+                    context.subject(ctx.subject);
                 }
                 _ctx.remove();
             }
@@ -94,6 +114,7 @@ public @interface Mailer {
             String to;
             String cc;
             String bcc;
+            String subject;
         }
     }
 }

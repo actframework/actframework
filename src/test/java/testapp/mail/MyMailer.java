@@ -13,11 +13,12 @@ import static act.mail.Mailer.Util.send;
 public class MyMailer {
 
     public void sendX(String username, String password) {
+        Mailer.Util.mailer().from("abc@xxx.com").to("abc@xxx.com, xyz@xxx.com").subject("xyz");
         send("/my/path", username, password);
     }
 
     public void doSendX(String username, String password) {
-        MailerContext ctx = new MailerContext(App.instance(), "foo");
+        MailerContext ctx = new MailerContext(App.instance(), "foo").from("abc@xxx.com").to("abc@xxx.com, xyz@xxx.com").subject("xyz");
         ctx.renderArg("username", username).renderArg("password", password).senderPath("Foo", "bar");
         doSend(ctx);
     }
