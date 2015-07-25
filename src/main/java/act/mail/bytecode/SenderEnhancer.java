@@ -106,7 +106,7 @@ public class SenderEnhancer extends MethodVisitor implements Opcodes {
                 this.meta = meta;
             }
 
-            protected abstract void handle(AbstractInsnNode node);
+            protected abstract boolean handle(AbstractInsnNode node);
 
             protected void refreshIteratorNext() {
                 segment.itr.previous();
@@ -138,8 +138,7 @@ public class SenderEnhancer extends MethodVisitor implements Opcodes {
             protected boolean handle(AbstractInsnNode node) {
                 InstructionHandler handler = handlers.get(node.getType());
                 if (null != handler) {
-                    handler.handle(node);
-                    return true;
+                    return handler.handle(node);
                 } else {
                     return false;
                 }
@@ -153,20 +152,21 @@ public class SenderEnhancer extends MethodVisitor implements Opcodes {
             }
 
             @Override
-            protected void handle(AbstractInsnNode node) {
+            protected boolean handle(AbstractInsnNode node) {
                 MethodInsnNode n = (MethodInsnNode) node;
                 Type type = Type.getMethodType(n.desc);
                 Type retType = type.getReturnType();
                 //String method = n.name;
                 //String owner = Type.getType(n.owner).toString();
                 if (MailerContext.class.getName().equals(retType.getClassName())) {
-                    injectCreatingMailerContextCode(n);
+                    return injectCreatingMailerContextCode(n);
                 } else if (Future.class.getName().equals(retType.getClassName()) && "send".equals(n.name)) {
-                    injectRenderArgSetCode(n);
+                    return injectRenderArgSetCode(n);
                 }
+                return false;
             }
 
-            private void injectCreatingMailerContextCode(AbstractInsnNode insnNode) {
+            private boolean injectCreatingMailerContextCode(AbstractInsnNode insnNode) {
                 AbstractInsnNode node = insnNode.getNext();
                 InsnList list = new InsnList();
                 if (node instanceof VarInsnNode) {
@@ -184,7 +184,9 @@ public class SenderEnhancer extends MethodVisitor implements Opcodes {
                         list.add(new MethodInsnNode(INVOKESPECIAL, AsmTypes.MAILER_CONTEXT_INTERNAL_NAME, "<init>", "(Lact/app/App;Ljava/lang/String;)V", false));
                         segment.instructions.insertBefore(node, list);
                         segment.instructions.remove(insnNode);
+                        return true;
                     }
+                    return false;
                 } else {
                     list.add(new TypeInsnNode(NEW, AsmTypes.MAILER_CONTEXT_INTERNAL_NAME));
                     list.add(new InsnNode(DUP));
@@ -206,10 +208,11 @@ public class SenderEnhancer extends MethodVisitor implements Opcodes {
                     segment.instructions.insertBefore(node, new VarInsnNode(ASTORE, maxLocal));
                     segment.instructions.remove(node);
                     meta.appCtxLocalVariableTableIndex(maxLocal);
+                    return true;
                 }
             }
 
-            private void injectRenderArgSetCode(AbstractInsnNode invokeNode) {
+            private boolean injectRenderArgSetCode(AbstractInsnNode invokeNode) {
                 if (!segment.meta.hasLocalVariableTable()) {
                     logger.warn("local variable table info not found. AppContext render args will not be automatically populated");
                 }
@@ -315,6 +318,7 @@ public class SenderEnhancer extends MethodVisitor implements Opcodes {
                     node = n0;
                 }
                 segment.instructions.remove(invokeNode);
+                return true;
             }
 
         }
