@@ -123,7 +123,7 @@ public final class Act {
     public static ClassInfoRepository classInfoRepository() {
         ClassLoader cl = Act.class.getClassLoader();
         if (cl instanceof BootstrapClassLoader) {
-            return (ClassInfoRepository)((BootstrapClassLoader) cl).classInfoRepository();
+            return ((BootstrapClassLoader) cl).classInfoRepository();
         } else {
             logger.warn("Class loader [%s] of Act is not a ActClassLoader", cl);
             return null;

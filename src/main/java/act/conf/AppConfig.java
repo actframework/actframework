@@ -5,10 +5,7 @@ import act.Constants;
 import act.app.App;
 import act.app.AppHolder;
 import act.app.conf.AppConfigurator;
-import act.util.ActErrorPageRender;
-import act.util.ErrorTemplatePathResolver;
-import act.util.JavaVersion;
-import act.util.LocaleResolver;
+import act.util.*;
 import act.view.TemplatePathResolver;
 import act.view.View;
 import org.apache.commons.codec.Charsets;
@@ -688,6 +685,26 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         }
     }
 
+    private SessionMapper sessionMapper = null;
+    protected T sessionMapper(SessionMapper sessionMapper) {
+        this.sessionMapper = sessionMapper;
+        return me();
+    }
+    public SessionMapper sessionMapper() {
+        if (null == sessionMapper) {
+            sessionMapper = get(AppConfigKey.SESSION_MAPPER);
+            if (null == sessionMapper) {
+                sessionMapper = new SessionMapper.DefaultSessionMapper();
+            }
+        }
+        return sessionMapper;
+    }
+    private void _mergeSessionMapper(AppConfig config) {
+        if (null == get(AppConfigKey.SESSION_MAPPER)) {
+            sessionMapper = config.sessionMapper;
+        }
+    }
+
     private Boolean sessionSecure = null;
     protected T sessionSecure(boolean secure) {
         sessionSecure = secure;
@@ -800,6 +817,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         _mergeSessionEncrpt(conf);
         _mergeSessionHttpOnly(conf);
         _mergeSessionSecure(conf);
+        _mergeSessionMapper(conf);
         _mergeSecret(conf);
         _mergeCacheServiceProvider(conf);
 

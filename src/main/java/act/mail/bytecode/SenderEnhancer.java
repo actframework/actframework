@@ -1,6 +1,5 @@
 package act.mail.bytecode;
 
-import act.app.ActionContext;
 import act.asm.Label;
 import act.asm.MethodVisitor;
 import act.asm.Opcodes;
@@ -10,9 +9,7 @@ import act.controller.meta.LocalVariableMetaInfo;
 import act.controller.meta.ParamMetaInfo;
 import act.mail.MailerContext;
 import act.mail.meta.SenderMethodMetaInfo;
-import act.util.AsmType;
 import act.util.AsmTypes;
-import com.sun.org.apache.bcel.internal.generic.DUP;
 import org.osgl.logging.L;
 import org.osgl.logging.Logger;
 import org.osgl.util.C;

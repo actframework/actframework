@@ -507,6 +507,8 @@ public class ActionContext extends ActContext.ActContextBase<ActionContext> impl
     }
 
     private void resolveSession() {
+        String s = req().header("x-act-session");
+        System.out.println(s);
         this.session = Act.sessionManager().resolveSession(this);
     }
 
@@ -517,14 +519,14 @@ public class ActionContext extends ActContext.ActContextBase<ActionContext> impl
     private void dissolveSession() {
         Cookie c = Act.sessionManager().dissolveSession(this);
         if (null != c) {
-            resp().addCookie(c);
+            config().sessionMapper().serializeSession(c, this);
         }
     }
 
     private void dissolveFlash() {
         Cookie c = Act.sessionManager().dissolveFlash(this);
         if (null != c) {
-            resp().addCookie(c);
+            config().sessionMapper().serializeFlash(c, this);
         }
     }
 

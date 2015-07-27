@@ -278,6 +278,13 @@ public enum AppConfigKey implements ConfigKey {
     SESSION_HTTP_ONLY_ENABLED("session.http_only.enabled"),
 
     /**
+     * {@code session.mapper.impl} specify the implementation of {@link act.util.SessionMapper}
+     *
+     * <p>Default value: {@code act.util.SessionMapper.DefaultSessionMapper}</p>
+     */
+    SESSION_MAPPER("session.mapper.impl"),
+
+    /**
      * {@code session.secure.enabled} specifies whether the session cookie should
      * be set as secure. Enable secure session will cause session cookie only
      * effective in https connection. Literally this will enforce the web site to run

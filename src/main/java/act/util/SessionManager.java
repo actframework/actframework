@@ -140,6 +140,7 @@ public class SessionManager {
         private boolean sessionSecure;
         private long ttl;
         private boolean sessionWillExpire;
+        private SessionMapper sessionMapper;
         private String sessionCookieName;
         private String flashCookieName;
 
@@ -155,14 +156,14 @@ public class SessionManager {
             long ttl = conf.sessionTtl();
             this.ttl = ttl * 1000L;
             sessionWillExpire = ttl > 0;
+            sessionMapper = conf.sessionMapper();
             sessionCookieName = conf.sessionCookieName();
             flashCookieName = conf.flashCookieName();
         }
 
         Session resolveSession(ActionContext context) {
             H.Request req = context.req();
-            H.Cookie cookie = req.cookie(sessionCookieName);
-            String val = null == cookie ? null : cookie.value();
+            String val = sessionMapper.deserializeSession(context);
 
             Session session = new Session();
             long now = _.ms();
@@ -178,10 +179,10 @@ public class SessionManager {
         H.Flash resolveFlash(ActionContext context) {
             H.Request req = context.req();
 
-            final H.Cookie cookie = req.cookie(flashCookieName);
             H.Flash flash = new H.Flash();
-            if (null != cookie) {
-                resolveFromCookieContent(flash, cookie.value(), false);
+            String val = sessionMapper.deserializeFlash(context);
+            if (null != val) {
+                resolveFromCookieContent(flash, val, false);
                 flash.discard(); // prevent cookie content from been output to response again
             }
             return flash;
