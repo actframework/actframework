@@ -144,9 +144,6 @@ public class FullStackAppBootstrapClassLoader extends BootstrapClassLoader imple
         }
 
         if (null == c) {
-            if (name.contains("springframework")) {
-                System.out.println(name);
-            }
             return super.loadClass(name, resolve);
         } else {
             return c;

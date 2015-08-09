@@ -181,7 +181,12 @@ public final class Act {
     }
 
     public static void startApp() {
-        mode = Mode.DEV;
+        String s = System.getProperty("app.mode");
+        if (null != s) {
+            mode = Mode.valueOfIgnoreCase(s);
+        } else {
+            mode = Mode.DEV;
+        }
         start(true);
     }
 

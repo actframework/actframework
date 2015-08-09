@@ -5,11 +5,11 @@
 @render()
 
 @args org.osgl.mvc.result.ErrorResult _error
-@returnIf(!(_error instanceOf act.util.ActError))
+@returnIf(!(_error instanceof act.util.ActError))
 @{
-act.util.ActError actError = (act.util.ActError)_error
+act.util.ActError actError = (act.util.ActError)_error;
 act.app.SourceInfo sourceInfo = actError.sourceInfo();
-act.route.RouteInfo req = act.route.RouteInfo.of(_ctx);
+act.route.RouteInfo routeInfo = act.route.RouteInfo.of(_ctx);
 List<String> stackTrace = actError.stackTrace();
 }
 

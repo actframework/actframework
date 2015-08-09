@@ -80,6 +80,33 @@ public interface ProjectLayout {
 
         },
 
+        PKG() {
+            @Override
+            public File source(File appBase) {
+                return null;
+            }
+
+            @Override
+            public File resource(File appBase) {
+                return Utils.file(appBase, "classes");
+            }
+
+            @Override
+            public File lib(File appBase) {
+                return Utils.file(appBase, "lib");
+            }
+
+            @Override
+            public File asset(File appBase) {
+                return Utils.file(appBase, "asset");
+            }
+
+            @Override
+            public File target(File appBase) {
+                return null;
+            }
+        },
+
         /**
          * The Playframework v1.x project layout, looks like:
          * <pre>

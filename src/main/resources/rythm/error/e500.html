@@ -1,5 +1,10 @@
 @extends(errorPage, header: "500 Internal Error")
 
+@{
+act.route.RouteInfo routeInfo = act.route.RouteInfo.of(_ctx);
+  }
+
+
 @section(description) {
-Error handling request <code>@req.method() @req.path()</code>:
+Error handling request <code>@routeInfo.method() @routeInfo.path()</code>:
 }

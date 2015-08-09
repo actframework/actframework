@@ -63,6 +63,9 @@ public class AppScanner {
     private void scan(File appBase, _.Func1<App, ?> callback) {
         App app;
         ProjectLayout layout = probe(appBase);
+        if (null == layout && !Act.isDev()) {
+            layout = ProjectLayout.PredefinedLayout.PKG;
+        }
         if (null != layout) {
             app = App.create(appBase, layout);
             callback.apply(app);

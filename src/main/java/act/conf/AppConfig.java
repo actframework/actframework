@@ -426,7 +426,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
 
     private _.Predicate<String> APP_CLASS_TESTER = null;
 
-    private _.Predicate<String> appClassTester() {
+    public _.Predicate<String> appClassTester() {
         if (null == APP_CLASS_TESTER) {
             String scanPackage = get(AppConfigKey.SCAN_PACKAGE);
             if (S.isBlank(scanPackage)) {

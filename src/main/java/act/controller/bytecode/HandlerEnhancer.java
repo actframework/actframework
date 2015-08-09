@@ -171,7 +171,7 @@ public class HandlerEnhancer extends MethodVisitor implements Opcodes {
 
             private void injectRenderArgSetCode(AbstractInsnNode invokeNode) {
                 if (!segment.meta.hasLocalVariableTable()) {
-                    System.out.println("Warning: local variable table info not found. ActionContext render args will not be automatically populated");
+                    logger.warn("local variable table info not found. ActionContext render args will not be automatically populated");
                     return;
                 }
                 AbstractInsnNode node = invokeNode.getPrevious();

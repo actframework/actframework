@@ -15,6 +15,7 @@ import act.mail.meta.MailerClassMetaInfoManager;
 import act.util.*;
 import org.osgl._;
 import org.osgl.exception.NotAppliedException;
+import org.osgl.exception.UnexpectedException;
 import org.osgl.logging.L;
 import org.osgl.logging.Logger;
 import org.osgl.util.C;
@@ -183,7 +184,16 @@ public class AppClassLoader
             }
             ByteCodeVisitor theVisitor = ByteCodeVisitor.chain(visitors);
             ClassReader cr = new ClassReader(ba);
-            cr.accept(theVisitor, 0);
+            try {
+                cr.accept(theVisitor, 0);
+            } catch (UnexpectedException e) {
+                Throwable t = e.getCause();
+                if (t instanceof ClassNotFoundException) {
+                    continue;
+                } else {
+                    throw e;
+                }
+            }
             for (AppByteCodeScanner scanner : scanners) {
                 scanner.scanFinished(className);
                 Map<Class<? extends AppByteCodeScanner>, Set<String>> ss = scanner.dependencyClasses();
@@ -246,7 +256,7 @@ public class AppClassLoader
     }
 
     private void preloadLib() {
-        libClsCache.putAll(Jars.buildClassNameIndex(RuntimeDirs.lib(app), _F.SYS_CLASS_NAME));
+        libClsCache.putAll(Jars.buildClassNameIndex(RuntimeDirs.lib(app), app().config().appClassTester().negate()));
     }
 
     private void preloadClasses() {

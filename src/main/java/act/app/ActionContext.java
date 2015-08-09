@@ -507,8 +507,6 @@ public class ActionContext extends ActContext.ActContextBase<ActionContext> impl
     }
 
     private void resolveSession() {
-        String s = req().header("x-act-session");
-        System.out.println(s);
         this.session = Act.sessionManager().resolveSession(this);
     }
 

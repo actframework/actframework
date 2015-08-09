@@ -11,11 +11,10 @@ import java.io.File;
 public enum RuntimeDirs {
     ;
 
-    public static final String WEB_INF = "WEB-INF";
-    public static final String CONF = WEB_INF + "/conf";
-    public static final String ASSET = WEB_INF + "/asset";
-    public static final String CLASSES = WEB_INF + "/classes";
-    public static final String LIB = WEB_INF + "/lib";
+    public static final String CONF = "/conf";
+    public static final String ASSET = "/asset";
+    public static final String CLASSES = "/classes";
+    public static final String LIB = "/lib";
 
     public static File home(App app) {
         if (Act.isDev()) {
