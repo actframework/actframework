@@ -86,7 +86,7 @@ List<String> stackTrace = actError.stackTrace();
     if (null != sourceInfo && trace.contains(sourceInfo.fileName() + ":" + sourceInfo.lineNumber())) {
     cls = "error";
     }
-    if (trace.contains("Caused by") {
+    if (trace.contains("Caused by")) {
     cls = cls + " big-line";
     }
     }
