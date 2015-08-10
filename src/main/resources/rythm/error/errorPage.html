@@ -43,6 +43,10 @@ List<String> stackTrace = actError.stackTrace();
       min-width: 20px;
       text-align: right;
     }
+    #source .line.big-line, .trace-line.big-line {
+      padding-top: 0.5em;
+      font-weight: bold;
+    }
     #stacktrace .exception {
       font-size: 10pt;
       font-weight: bold;
@@ -79,8 +83,11 @@ List<String> stackTrace = actError.stackTrace();
     @for(String trace: stackTrace) {
     @{
     String cls = "";
-    if (trace.contains(sourceInfo.fileName() + ":" + sourceInfo.lineNumber())) {
+    if (null != sourceInfo && trace.contains(sourceInfo.fileName() + ":" + sourceInfo.lineNumber())) {
     cls = "error";
+    }
+    if (trace.contains("Caused by") {
+    cls = cls + " big-line";
     }
     }
     <div class="trace-line line @cls">@trace</div>

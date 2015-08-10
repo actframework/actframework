@@ -259,7 +259,7 @@ public class AppClassLoader
         libClsCache.putAll(Jars.buildClassNameIndex(RuntimeDirs.lib(app), app().config().appClassTester().negate()));
     }
 
-    private void preloadClasses() {
+    protected void preloadClasses() {
         File base = RuntimeDirs.classes(app);
         List<File> files = Files.filter(base, _F.SAFE_CLASS);
         for (File file : files) {

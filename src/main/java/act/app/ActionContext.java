@@ -4,6 +4,7 @@ import act.Act;
 import act.Destroyable;
 import act.data.MapUtil;
 import act.data.RequestBodyParser;
+import act.event.ActEvent;
 import act.handler.RequestHandler;
 import act.route.Router;
 import act.util.ActContext;
@@ -344,6 +345,7 @@ public class ActionContext extends ActContext.ActContextBase<ActionContext> impl
         resolveFlash();
         state = State.SESSION_RESOLVED;
         Act.sessionManager().fireSessionResolved(this);
+        app().eventBus().emit(new SessionResolvedEvent(this));
     }
 
     /**
@@ -356,9 +358,14 @@ public class ActionContext extends ActContext.ActContextBase<ActionContext> impl
         if (state == State.SESSION_DISSOLVED) {
             return;
         }
-        dissolveFlash();
-        dissolveSession();
-        state = State.SESSION_DISSOLVED;
+        app().eventBus().emit(new SessionWillDissolveEvent(this));
+        try {
+            dissolveFlash();
+            dissolveSession();
+            state = State.SESSION_DISSOLVED;
+        } finally {
+            app().eventBus().emit(new SessionDissolvedEvent(this));
+        }
     }
 
     /**
@@ -552,5 +559,29 @@ public class ActionContext extends ActContext.ActContextBase<ActionContext> impl
         SESSION_RESOLVED,
         SESSION_DISSOLVED,
         DESTROYED
+    }
+
+    private static class ActionContextEvent extends ActEvent<ActionContext> {
+        public ActionContextEvent(ActionContext source) {
+            super(source);
+        }
+    }
+
+    public static class SessionResolvedEvent extends ActionContextEvent {
+        public SessionResolvedEvent(ActionContext source) {
+            super(source);
+        }
+    }
+
+    public static class SessionWillDissolveEvent extends ActionContextEvent {
+        public SessionWillDissolveEvent(ActionContext source) {
+            super(source);
+        }
+    }
+
+    public static class SessionDissolvedEvent extends ActionContextEvent {
+        public SessionDissolvedEvent(ActionContext source) {
+            super(source);
+        }
     }
 }

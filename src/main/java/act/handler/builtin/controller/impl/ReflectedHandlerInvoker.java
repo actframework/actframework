@@ -124,6 +124,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         paramTypes = null;
         fieldAppCtxHandler = null;
         fieldName_appCtxHandler_lookup.clear();
+        ctxInjection = null;
         super.releaseResources();
     }
 

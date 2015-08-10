@@ -55,26 +55,31 @@ public interface ProjectLayout {
         MAVEN() {
             @Override
             public File source(File appBase) {
+                E.illegalStateIf(!Act.isDev());
                 return Utils.file(appBase, "src/main/java");
             }
 
             @Override
             public File resource(File appBase) {
-                return Utils.file(appBase, "src/main/resources");
+                String resources = Act.isDev() ? "src/main/resources" : "classes";
+                return Utils.file(appBase, resources);
             }
 
             @Override
             public File lib(File appBase) {
-                return Utils.file(appBase, "src/main/webapp/WEB-INF/lib");
+                String lib = Act.isDev() ? "src/main/lib" : "lib";
+                return Utils.file(appBase, lib);
             }
 
             @Override
             public File asset(File appBase) {
-                return Utils.file(appBase, "src/main/webapp/WEB-INF/asset");
+                String asset = Act.isDev() ? "src/main/asset" : "asset";
+                return Utils.file(appBase, asset);
             }
 
             @Override
             public File target(File appBase) {
+                E.illegalStateIf(!Act.isDev());
                 return Utils.file(appBase, "target");
             }
 

@@ -58,6 +58,11 @@ public class DevModeClassLoader extends AppClassLoader {
     }
 
     @Override
+    protected void preloadClasses() {
+        // do not preload classes in dev mode
+    }
+
+    @Override
     protected void scan() {
         super.scan();
         scanSources();
