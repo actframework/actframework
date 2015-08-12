@@ -291,14 +291,17 @@ class ConfigKeyHelper {
                 if (null != v) break;
             }
         } else if (v instanceof String) {
-            FastStr s = FastStr.of(v.toString());
-            String k = s.afterFirst("{").beforeFirst("}").toString();
-            String nv = System.getProperty(k);
-            if (null == nv) {
-                nv = System.getenv(k);
-            }
-            if (null != nv) {
-                v = nv;
+            String vs = v.toString();
+            if (vs.startsWith("$")) {
+                FastStr s = FastStr.of(v.toString());
+                String k = s.afterFirst("{").beforeFirst("}").toString();
+                String nv = System.getProperty(k);
+                if (null == nv) {
+                    nv = System.getenv(k);
+                }
+                if (null != nv) {
+                    v = nv;
+                }
             }
         }
         return v;
