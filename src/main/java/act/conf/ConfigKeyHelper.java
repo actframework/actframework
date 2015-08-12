@@ -6,6 +6,7 @@ import org.osgl.exception.ConfigurationException;
 import org.osgl.exception.NotAppliedException;
 import org.osgl.logging.L;
 import org.osgl.logging.Logger;
+import org.osgl.util.FastStr;
 import org.osgl.util.S;
 
 import java.io.File;
@@ -288,6 +289,16 @@ class ConfigKeyHelper {
             for (String k0 : aliases(key, suffix)) {
                 v = configuration.get(k0);
                 if (null != v) break;
+            }
+        } else if (v instanceof String) {
+            FastStr s = FastStr.of(v.toString());
+            String k = s.afterFirst("{").beforeFirst("}").toString();
+            String nv = System.getProperty(k);
+            if (null == nv) {
+                nv = System.getenv(k);
+            }
+            if (null != nv) {
+                v = nv;
             }
         }
         return v;

@@ -14,6 +14,8 @@ public enum FakedConfigKey implements ConfigKey {
     DAYS("days.int"),
     HOME_TMP("tmp.dir"),
     AMOUNT("amount.float"),
+    SOURCE_VERSION("source.version"),
+    PATH("path"),
     FOO("foo.bar") {
         @Override
         public <T> T val(Map<String, ?> configuration) {

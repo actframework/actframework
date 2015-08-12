@@ -77,6 +77,18 @@ public class ConfigKeyHelperTest extends TestBase {
     }
 
     @Test
+    public void fetchFromSysProps() {
+        put(FakedConfigKey.SOURCE_VERSION, "${java.version}");
+        eq(System.getProperty("java.version"), helper.getConfiguration(FakedConfigKey.SOURCE_VERSION, conf));
+    }
+
+    @Test
+    public void fetchFromSysEnv() {
+        put(FakedConfigKey.PATH, "${PATH}");
+        eq(System.getenv("PATH"), helper.getConfiguration(FakedConfigKey.PATH, conf));
+    }
+
+    @Test
     @Ignore
     public void fetchImpl() {
         E.tbd("fetchImpl");
