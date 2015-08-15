@@ -15,7 +15,11 @@ public class Redirect extends FastRequestHandler {
     @Override
     public void handle(ActionContext context) {
         H.Response resp = context.resp();
-        resp.status(H.Status.MOVED_PERMANENTLY);
+        if (context.isAjax()) {
+            resp.status(H.Status.FOUND_AJAX);
+        } else {
+            resp.status(H.Status.MOVED_PERMANENTLY);
+        }
         resp.header(H.Header.Names.LOCATION, url);
     }
 

@@ -4,6 +4,7 @@ import act.Act;
 import act.app.data.BinderManager;
 import act.app.data.StringValueResolverManager;
 import act.app.event.AppEventId;
+import act.app.util.AppCrypto;
 import act.conf.AppConfLoader;
 import act.conf.AppConfig;
 import act.controller.ControllerSourceCodeScanner;
@@ -23,9 +24,7 @@ import act.util.ClassInfoByteCodeScanner;
 import act.util.ClassInfoSourceCodeScanner;
 import act.util.UploadFileStorageService;
 import act.view.ActServerError;
-import org.apache.commons.codec.Charsets;
 import org.osgl._;
-import org.osgl.exception.UnexpectedException;
 import org.osgl.http.H;
 import org.osgl.logging.L;
 import org.osgl.logging.Logger;
@@ -33,7 +32,6 @@ import org.osgl.storage.IStorageService;
 import org.osgl.util.*;
 
 import java.io.File;
-import java.security.InvalidKeyException;
 import java.util.List;
 
 import static act.app.event.AppEventId.*;
@@ -43,7 +41,7 @@ import static act.app.event.AppEventId.*;
  */
 public class App {
 
-    private static Logger logger = L.get(App.class);
+    public static Logger logger = L.get(App.class);
 
     private static App INST;
 
@@ -72,7 +70,8 @@ public class App {
     private AppInterceptorManager interceptorManager;
     private DependencyInjector<?> dependencyInjector;
     private IStorageService uploadFileStorageService;
-    private ServiceResourceManager serviceResourceManager;
+    private AppServiceRegistry appServiceRegistry;
+    private AppCrypto crypto;
     // used in dev mode only
     private CompilationException compilationException;
 
@@ -97,6 +96,10 @@ public class App {
 
     public Router router() {
         return router;
+    }
+
+    public AppCrypto crypto() {
+        return crypto;
     }
 
     /**
@@ -144,6 +147,7 @@ public class App {
         initEventBus();
         initInterceptorManager();
         loadConfig();
+        initCrypto();
         initJobManager();
         initResolverManager();
         initBinderManager();
@@ -196,6 +200,10 @@ public class App {
         return new File(home(), path);
     }
 
+    public File resource(String path) {
+        return new File(this.layout().resource(appBase), path);
+    }
+
     public AppInterceptorManager interceptorManager() {
         return interceptorManager;
     }
@@ -242,44 +250,21 @@ public class App {
     }
 
     public String sign(String message) {
-        return Crypto.sign(message, config().secret().getBytes(Charsets.UTF_8));
+        return crypto().sign(message);
     }
 
     public String encrypt(String message) {
-        try {
-            return Crypto.encryptAES(message, config().secret());
-        } catch (UnexpectedException e) {
-            Throwable cause = e.getCause();
-            if (cause instanceof InvalidKeyException) {
-                logger.error("Cannot encrypt/decrypt! Please download Java Crypto Extension pack from Oracle: http://www.oracle.com/technetwork/java/javase/tech/index-jsp-136007.html");
-                if (Act.isDev()) {
-                    logger.warn("Application will keep running with no encrypt/decrypt facilities in Dev mode");
-                    return Codec.encodeBASE64(message);
-                }
-            }
-            throw e;
-        }
+        return crypto().encrypt(message);
     }
 
     public String decrypt(String message) {
-        try {
-            return Crypto.decryptAES(message, config().secret());
-        } catch (UnexpectedException e) {
-            Throwable cause = e.getCause();
-            if (cause instanceof InvalidKeyException) {
-                logger.error("Cannot encrypt/decrypt! Please download Java Crypto Extension pack from Oracle: http://www.oracle.com/technetwork/java/javase/tech/index-jsp-136007.html");
-                if (Act.isDev()) {
-                    logger.warn("Application will keep running with no encrypt/decrypt facilities in Dev mode");
-                    return new String(Codec.decodeBASE64(message));
-                }
-            }
-            throw e;
-        }
+        return crypto().decrypt(message);
     }
 
     public <T> T newInstance(Class<T> clz) {
         if (App.class == clz) return _.cast(this);
         if (AppConfig.class == clz) return _.cast(config());
+        if (AppCrypto.class == clz) return _.cast(crypto());
         if (null != dependencyInjector) {
             return dependencyInjector.create(clz);
         } else {
@@ -291,6 +276,7 @@ public class App {
         if (App.class == clz) return _.cast(this);
         if (AppConfig.class == clz) return _.cast(config());
         if (ActionContext.class == clz) return _.cast(context);
+        if (AppCrypto.class == clz) return _.cast(crypto());
         if (null != dependencyInjector) {
             return dependencyInjector.createContextAwareInjector(context).create(clz);
         } else {
@@ -320,8 +306,12 @@ public class App {
         return S.builder("app@[").append(appBase).append("]").toString();
     }
 
+    public <T extends AppService<T>> T service(Class<T> serviceClass) {
+        return appServiceRegistry.lookup(serviceClass);
+    }
+
     App register(AppService service) {
-        serviceResourceManager.register(service);
+        appServiceRegistry.register(service);
         return this;
     }
 
@@ -333,12 +323,12 @@ public class App {
     }
 
     private void initServiceResourceManager() {
-        if (null != serviceResourceManager) {
+        if (null != appServiceRegistry) {
             eventBus().emit(STOP);
-            serviceResourceManager.destroy();
+            appServiceRegistry.destroy();
             dependencyInjector = null;
         }
-        serviceResourceManager = new ServiceResourceManager();
+        appServiceRegistry = new AppServiceRegistry();
     }
 
     private void initUploadFileStorageService() {
@@ -351,6 +341,10 @@ public class App {
 
     private void initEventBus() {
         eventBus = new EventBus(this);
+    }
+
+    private void initCrypto() {
+        crypto = new AppCrypto(config());
     }
 
     private void initJobManager() {

@@ -1,5 +1,6 @@
 package act.util;
 
+import act.app.util.AppCrypto;
 import org.junit.Before;
 import org.junit.Test;
 import org.osgl.http.H;
@@ -15,6 +16,7 @@ import static org.mockito.Mockito.*;
 public class SessionManagerTest extends TestBase {
     App app;
     AppConfig config;
+    AppCrypto crypto;
     SessionManager.CookieResolver resolver;
     H.Session session;
     H.Flash flash;
@@ -23,8 +25,10 @@ public class SessionManagerTest extends TestBase {
     public void prepare() {
         config = mock(AppConfig.class);
         when(config.secret()).thenReturn("secret");
+        crypto = new AppCrypto(config);
         app = mock(App.class);
         when(app.config()).thenReturn(config);
+        when(app.crypto()).thenReturn(crypto);
         when(app.sign(anyString())).thenCallRealMethod();
         when(app.encrypt(anyString())).thenCallRealMethod();
         when(app.decrypt(anyString())).thenCallRealMethod();

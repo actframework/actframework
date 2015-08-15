@@ -108,7 +108,7 @@ public interface ProjectLayout {
 
             @Override
             public File target(File appBase) {
-                return null;
+                return appBase;
             }
         },
 
