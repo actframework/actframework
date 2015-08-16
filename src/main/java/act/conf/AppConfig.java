@@ -201,14 +201,34 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         }
     }
 
-    private int httpMaxParams = -1;
+    private String loginUrl = null;
+    protected T loginUrl(String loginUrl) {
+        E.illegalArgumentIf(!loginUrl.startsWith("/"), "login URL shall start with '/'");
+        this.loginUrl = loginUrl;
+        return me();
+    }
+    public String loginUrl() {
+        if (null == loginUrl) {
+            loginUrl = get(LOGIN_URL);
+            if (null == loginUrl) {
+                loginUrl = "/login";
+            }
+        }
+        return loginUrl;
+    }
+    private void _mergeLoginUrl(AppConfig conf) {
+        if (null == get(LOGIN_URL)) {
+            loginUrl = conf.loginUrl;
+        }
+    }
 
+
+    private int httpMaxParams = -1;
     protected T httpMaxParams(int max) {
         E.illegalArgumentIf(max < 0, "max params cannot be negative number: %s", max);
         this.httpMaxParams = max;
         return me();
     }
-
     public int httpMaxParams() {
         if (-1 == httpMaxParams) {
             Integer I = get(HTTP_MAX_PARAMS);
@@ -276,6 +296,27 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     private void _mergePort(AppConfig conf) {
         if (null == get(PORT)) {
             port = conf.port;
+        }
+    }
+
+    private MissingAuthenticationHandler mah = null;
+    protected T missingAuthenticationHandler(MissingAuthenticationHandler handler) {
+        E.NPE(handler);
+        mah = handler;
+        return me();
+    }
+    public MissingAuthenticationHandler missingAuthenticationHandler() {
+        if (null == mah) {
+            mah = get(MISSING_AUTHENTICATION_HANDLER);
+            if (null == mah) {
+                mah = new RedirectToLoginUrl();
+            }
+        }
+        return mah;
+    }
+    private void _mergeMissingAuthenticationHandler(AppConfig config) {
+        if (null == get(MISSING_AUTHENTICATION_HANDLER)) {
+            mah = config.mah;
         }
     }
 
@@ -932,8 +973,10 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         _mergeXForwardedProtocol(conf);
         _mergeControllerPackage(conf);
         _mergeHost(conf);
+        _mergeLoginUrl(conf);
         _mergeHttpMaxParams(conf);
         _mergeJobPoolSize(conf);
+        _mergeMissingAuthenticationHandler(conf);
         _mergePort(conf);
         _mergePorts(conf);
         _mergeErrorTemplatePathResolver(conf);

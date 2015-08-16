@@ -350,6 +350,20 @@ public enum AppConfigKey implements ConfigKey {
     URL_CONTEXT("url_context"),
 
     /**
+     * {@code url.login} specifies the login URL which is used
+     * by {@link act.util.RedirectToLoginUrl}
+     * <p>Default value: {@code /login}</p>
+     */
+    LOGIN_URL("url.login"),
+
+    /**
+     * {@code handler.missing_authentication.impl} specifies the implementation
+     * for {@link act.util.MissingAuthenticationHandler}
+     * <p>Default value: {@link act.util.RedirectToLoginUrl}</p>
+     */
+    MISSING_AUTHENTICATION_HANDLER("handler.missing_authentication.impl"),
+
+    /**
      * {@code act.view.default} specifies the default view solution. If there
      * are multiple views registered and default view are available, then
      * it will be used at priority to load the templates
