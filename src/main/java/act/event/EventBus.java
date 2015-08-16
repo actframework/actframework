@@ -117,6 +117,7 @@ public class EventBus extends AppServiceBase<EventBus> {
                 }
             });
         }
+        ll.clear();
 
         ll = appEventListeners[event.id()];
         for (AppEventListener l: ll) {
@@ -127,6 +128,7 @@ public class EventBus extends AppServiceBase<EventBus> {
                 throw E.tbd("support handling exception in jobs");
             }
         }
+        ll.clear();
         return this;
     }
 
