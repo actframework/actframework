@@ -8,7 +8,7 @@ import java.util.EventObject;
 /**
  * Used to pass class binding resolution to DI plugin(s)
  */
-public abstract class DiBinder<T> extends EventObject {
+public abstract class DiBinder<T> extends ActEvent {
 
     private Class<T> targetClass;
 
