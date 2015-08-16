@@ -6,16 +6,16 @@ import act.app.AppThreadFactory;
 import act.app.event.AppStart;
 import act.app.event.AppStop;
 import act.event.AppEventListenerBase;
+import org.joda.time.DateTime;
+import org.joda.time.Seconds;
 import org.osgl._;
 import org.osgl.exception.NotAppliedException;
 import org.osgl.util.C;
+import org.osgl.util.E;
 import org.osgl.util.S;
 
 import java.util.Map;
-import java.util.concurrent.Callable;
-import java.util.concurrent.Future;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.*;
 
 import static act.app.event.AppEventId.START;
 import static act.app.event.AppEventId.STOP;
@@ -55,8 +55,26 @@ public class AppJobManager extends AppServiceBase<AppJobManager> {
         executor.getQueue().clear();
     }
 
+    public <T> Future<T> now(Callable<T> callable) {
+        return executor().submit(callable);
+    }
+
     public void now(Runnable runnable) {
         executor().submit(runnable);
+    }
+
+    public void on(DateTime instant, Runnable runnable) {
+        DateTime now = DateTime.now();
+        E.illegalArgumentIf(instant.isBefore(now));
+        Seconds seconds = Seconds.secondsBetween(now, instant);
+        executor().schedule(runnable, seconds.getSeconds(), TimeUnit.SECONDS);
+    }
+
+    public <T> Future<T> on(DateTime instant, Callable<T> callable) {
+        DateTime now = DateTime.now();
+        E.illegalArgumentIf(instant.isBefore(now));
+        Seconds seconds = Seconds.secondsBetween(now, instant);
+        return executor().schedule(callable, seconds.getSeconds(), TimeUnit.SECONDS);
     }
 
     public void beforeAppStart(final Runnable runnable) {
@@ -87,10 +105,6 @@ public class AppJobManager extends AppServiceBase<AppJobManager> {
                 return null;
             }
         }, true));
-    }
-
-    public <T> Future<T> now(Callable<T> callable) {
-        return executor().submit(callable);
     }
 
     public _Job jobById(String id) {

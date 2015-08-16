@@ -49,8 +49,10 @@ public class JobAnnotationProcessor extends AppHolderBase<JobAnnotationProcessor
 
     private String evaluateExpression(String expression, Class<? extends Annotation> annoClass) {
         String prefix = annoClass.getSimpleName();
-        if (S.eq("FixedDelay", prefix)) {
+        if (S.eq(FixedDelay.class.getName(), prefix)) {
             prefix = "fixed-delay";
+        } else {
+            prefix = prefix.toLowerCase();
         }
         String ret = expression.trim();
         if (ret.startsWith(prefix)) {
