@@ -2,6 +2,7 @@ package act.di;
 
 import act.app.App;
 import act.event.ActEvent;
+import org.osgl.util.E;
 
 import java.util.EventObject;
 
@@ -12,8 +13,10 @@ public abstract class DiBinder<T> extends ActEvent {
 
     private Class<T> targetClass;
 
-    public DiBinder(Object source) {
+    public DiBinder(Object source, Class<T> targetClass) {
         super(source);
+        E.NPE(targetClass);
+        this.targetClass = targetClass;
     }
 
     public Class<T> targetClass() {
