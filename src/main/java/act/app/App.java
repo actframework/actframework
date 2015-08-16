@@ -3,6 +3,7 @@ package act.app;
 import act.Act;
 import act.app.data.BinderManager;
 import act.app.data.StringValueResolverManager;
+import act.app.event.AppEvent;
 import act.app.event.AppEventId;
 import act.app.util.AppCrypto;
 import act.app.util.NamedPort;
@@ -11,6 +12,8 @@ import act.conf.AppConfig;
 import act.controller.ControllerSourceCodeScanner;
 import act.controller.bytecode.ControllerByteCodeScanner;
 import act.di.DependencyInjector;
+import act.di.DiBinder;
+import act.event.AppEventListenerBase;
 import act.event.EventBus;
 import act.handler.builtin.StaticFileGetter;
 import act.job.AppJobManager;
@@ -33,6 +36,7 @@ import org.osgl.storage.IStorageService;
 import org.osgl.util.*;
 
 import java.io.File;
+import java.util.EventObject;
 import java.util.List;
 import java.util.Map;
 
@@ -332,8 +336,22 @@ public class App {
         return appServiceRegistry.lookup(serviceClass);
     }
 
-    App register(AppService service) {
+    App register(final AppService service) {
         appServiceRegistry.register(service);
+        if (null != eventBus) {
+            eventBus.bind(AppEventId.PRE_START, new AppEventListenerBase() {
+                @Override
+                public void on(EventObject event) throws Exception {
+                    final App app = App.this;
+                    eventBus.emit(new DiBinder(app, service.getClass()) {
+                        @Override
+                        public Object resolve(App app) {
+                            return app.service(service.getClass());
+                        }
+                    });
+                }
+            });
+        }
         return this;
     }
 
