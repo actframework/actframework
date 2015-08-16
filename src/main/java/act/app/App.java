@@ -190,8 +190,8 @@ public class App {
             compilationException = e;
             throw new ActServerError(e, this);
         }
-        initMailerConfigManager();
         eventBus().emit(APP_CODE_SCANNED);
+        initMailerConfigManager();
         loadRoutes();
         // setting context class loader here might lead to memory leaks
         // and cause weird problems as class loader been set to thread

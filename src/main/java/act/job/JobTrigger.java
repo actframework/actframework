@@ -218,11 +218,11 @@ abstract class JobTrigger {
 
         @Override
         void schedule(AppJobManager manager, _Job job) {
-            _Job associateTarget = manager.jobById(id);
             if (null == id) {
                 logger.warn("Failed to register job because target job not found: %s. Will try again after app started", id);
                 scheduleDelayedRegister(manager, job);
             } else {
+                _Job associateTarget = manager.jobById(id);
                 associate(job, associateTarget);
             }
         }

@@ -11,6 +11,7 @@ import java.util.UUID;
 class _Job extends DestroyableBase implements Runnable {
 
     private String id;
+    private boolean oneTime;
     private AppJobManager manager;
     private JobTrigger trigger;
     private _.Func0<?> worker;
@@ -37,6 +38,14 @@ class _Job extends DestroyableBase implements Runnable {
         this.worker = worker;
     }
 
+    _Job(String id, AppJobManager manager, _.Func0<?> worker, boolean oneTime) {
+        E.NPE(worker, manager);
+        this.id = id;
+        this.manager = manager;
+        this.worker = worker;
+        this.oneTime = oneTime;
+    }
+
     @Override
     protected void releaseResources() {
         worker = null;
@@ -45,6 +54,15 @@ class _Job extends DestroyableBase implements Runnable {
         followingJobs.clear();
         precedenceJobs.clear();
         super.releaseResources();
+    }
+
+    _Job setOneTime() {
+        oneTime = true;
+        return this;
+    }
+
+    boolean isOneTime() {
+        return oneTime;
     }
 
     final String id() {
@@ -58,16 +76,25 @@ class _Job extends DestroyableBase implements Runnable {
 
     final _Job addParallelJob(_Job thatJob) {
         parallelJobs.add(thatJob);
+        if (isOneTime()) {
+            thatJob.setOneTime();
+        }
         return this;
     }
 
     final _Job addFollowingJob(_Job thatJob) {
         followingJobs.add(thatJob);
+        if (isOneTime()) {
+            thatJob.setOneTime();
+        }
         return this;
     }
 
     final _Job addPrecedenceJob(_Job thatJob) {
         precedenceJobs.add(thatJob);
+        if (isOneTime()) {
+            thatJob.setOneTime();
+        }
         return this;
     }
 
@@ -76,6 +103,9 @@ class _Job extends DestroyableBase implements Runnable {
         invokeParallelJobs();
         runPrecedenceJobs();
         doJob();
+        if (isOneTime()) {
+            manager().removeJob(this);
+        }
         runFollowingJobs();
     }
 

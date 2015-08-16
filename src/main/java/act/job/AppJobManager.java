@@ -66,7 +66,7 @@ public class AppJobManager extends AppServiceBase<AppJobManager> {
                 runnable.run();
                 return null;
             }
-        }));
+        }, true));
     }
 
     public void afterAppStart(final Runnable runnable) {
@@ -76,7 +76,7 @@ public class AppJobManager extends AppServiceBase<AppJobManager> {
                 runnable.run();
                 return null;
             }
-        }));
+        }, true));
     }
 
     public void beforeAppStop(final Runnable runnable) {
@@ -86,7 +86,7 @@ public class AppJobManager extends AppServiceBase<AppJobManager> {
                 runnable.run();
                 return null;
             }
-        }));
+        }, true));
     }
 
     public <T> Future<T> now(Callable<T> callable) {
@@ -103,6 +103,10 @@ public class AppJobManager extends AppServiceBase<AppJobManager> {
 
     void addJob(_Job job) {
         jobs.put(job.id(), job);
+    }
+
+    void removeJob(_Job job) {
+        jobs.remove(job.id());
     }
 
     ScheduledThreadPoolExecutor executor() {
