@@ -32,10 +32,12 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
 
     private final static Logger logger = L.get(ControllerByteCodeScanner.class);
     private Router router;
+    private String portName = "";
     private ControllerClassMetaInfo classInfo;
     private volatile ControllerClassMetaInfoManager classInfoBase;
 
-    public ControllerByteCodeScanner() {}
+    public ControllerByteCodeScanner() {
+    }
 
     @Override
     protected boolean shouldScan(String className) {
@@ -174,6 +176,8 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
             public void visit(String name, Object value) {
                 if ("value".equals(name)) {
                     classInfo.contextPath(value.toString());
+                } else if ("port".equals(name)) {
+                    portName = value.toString();
                 }
             }
         }
@@ -465,6 +469,8 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
                     }
                     StringBuilder sb = S.builder(classInfo.className().replace('/', '.')).append(".").append(methodName);
                     String action = sb.toString();
+                    Router r = app().router(portName);
+                    E.NPE(r);
 
                     for (String actionPath : paths) {
                         String ctxPath = classInfo.contextPath();
@@ -480,7 +486,7 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
                             actionPath = sb.toString();
                         }
                         for (H.Method m : httpMethods) {
-                            router.addMappingIfNotMapped(m, actionPath, action);
+                            r.addMappingIfNotMapped(m, actionPath, action);
                         }
                     }
                 }

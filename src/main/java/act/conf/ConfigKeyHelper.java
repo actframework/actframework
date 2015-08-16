@@ -26,7 +26,6 @@ class ConfigKeyHelper {
     public ConfigKeyHelper(_.F0<Act.Mode> mode) {
         this.mode = mode;
     }
-
     <T> T getConfiguration(final ConfigKey confKey, Map<String, ?> configuration) {
         String key = confKey.key();
         _.F0<?> defVal = new _.F0<Object>() {
@@ -35,6 +34,9 @@ class ConfigKeyHelper {
                 return confKey.defVal();
             }
         };
+        return getConfiguration(key, defVal, configuration);
+    }
+    <T> T getConfiguration(final String key, _.F0<?> defVal, Map<String, ?> configuration) {
         if (key.endsWith(".enabled") || key.endsWith(".disabled")) {
             return (T) getEnabled(key, configuration, defVal);
         }
@@ -175,7 +177,7 @@ class ConfigKeyHelper {
         return l;
     }
 
-    private <T> T getX(Map<String, ?> configuration, String key, String suffix, _.F0<?> defVal, _.Func1<Object, T> converter) {
+    <T> T getX(Map<String, ?> configuration, String key, String suffix, _.F0<?> defVal, _.Func1<Object, T> converter) {
         Object v = getValFromAliases(configuration, key, suffix, defVal);
         return converter.apply(v);
     }
@@ -311,7 +313,7 @@ class ConfigKeyHelper {
         return getValFromAliases(configuration, mode().configKey(key), suffix);
     }
 
-    private Object getValFromAliases(Map<String, ?> configuration, String key, String suffix, _.F0<?> defVal) {
+    Object getValFromAliases(Map<String, ?> configuration, String key, String suffix, _.F0<?> defVal) {
         Object v = getValFromAliasesWithModelPrefix(configuration, key, suffix);
         if (null != v) {
             return v;
@@ -358,33 +360,33 @@ class ConfigKeyHelper {
         }
     }
 
-    private static enum F {
+    public static enum F {
         ;
-        static _.Func1<Object, Integer> TO_INT = new _.Transformer<Object, Integer>() {
+        public static _.Func1<Object, Integer> TO_INT = new _.Transformer<Object, Integer>() {
             @Override
             public Integer transform(Object object) {
                 return toInt(object);
             }
         };
-        static _.Func1<Object, Long> TO_LONG = new _.Transformer<Object, Long>() {
+        public static _.Func1<Object, Long> TO_LONG = new _.Transformer<Object, Long>() {
             @Override
             public Long transform(Object object) {
                 return toLong(object);
             }
         };
-        static _.Func1<Object, Float> TO_FLOAT = new _.Transformer<Object, Float>() {
+        public static _.Func1<Object, Float> TO_FLOAT = new _.Transformer<Object, Float>() {
             @Override
             public Float transform(Object object) {
                 return toFloat(object);
             }
         };
-        static _.Func1<Object, Double> TO_DOUBLE = new _.Transformer<Object, Double>() {
+        public static _.Func1<Object, Double> TO_DOUBLE = new _.Transformer<Object, Double>() {
             @Override
             public Double transform(Object object) {
                 return toDouble(object);
             }
         };
-        static _.Func1<Object, Boolean> TO_BOOLEAN = new _.Transformer<Object, Boolean>() {
+        public static _.Func1<Object, Boolean> TO_BOOLEAN = new _.Transformer<Object, Boolean>() {
             @Override
             public Boolean transform(Object object) {
                 return toBoolean(object);

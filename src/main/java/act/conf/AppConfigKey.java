@@ -153,7 +153,22 @@ public enum AppConfigKey implements ConfigKey {
     JOB_POOL_SIZE("job.pool.siz"),
 
     /**
-     * {@code act.port} specifies the port the application
+     * {@code act.namedPorts} specifies a list of port names this
+     * application listen to. These are additional ports other than
+     * the default {@link #PORT}
+     * <p/>
+     * The list is specified as
+     * <pre><code>
+     * act.namedPorts=admin:8888;ipc:8899
+     * </code></pre>
+     * <p>Default value: {@code null}</p>
+     * <p>Note, the default port that specified in {@link #PORT} configuration
+     * and shall not be specified in this namedPorts configuration</p>
+     */
+    NAMED_PORTS("namedPorts"),
+
+    /**
+     * {@code act.port} specifies the default port the application
      * listen to. This is preferred way to dispatch the
      * request to the application.
      * <p/>
@@ -348,7 +363,7 @@ public enum AppConfigKey implements ConfigKey {
     ;
     private String key;
     private Object defVal;
-    private static ConfigKeyHelper helper = new ConfigKeyHelper(Act.F.MODE_ACCESSOR);
+    static ConfigKeyHelper helper = new ConfigKeyHelper(Act.F.MODE_ACCESSOR);
 
     private AppConfigKey(String key) {
         this(key, null);

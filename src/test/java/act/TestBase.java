@@ -6,6 +6,7 @@ import act.route.Router;
 import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.runner.JUnitCore;
+import org.mockito.Matchers;
 import org.mockito.internal.matchers.StartsWith;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
@@ -116,12 +117,13 @@ public class TestBase extends Assert {
             @Override
             public Object answer(InvocationOnMock invocation) throws Throwable {
                 Object[] args = invocation.getArguments();
-                return _.newInstance((Class)args[0]);
+                return _.newInstance((Class) args[0]);
             }
         });
         mockRouter = mock(Router.class);
         when(mockApp.config()).thenReturn(mockAppConfig);
         when(mockApp.router()).thenReturn(mockRouter);
+        when(mockApp.router(Matchers.same(""))).thenReturn(mockRouter);
         when(mockApp.newInstance(any(Class.class))).thenAnswer(new Answer<Object>() {
             @Override
             public Object answer(InvocationOnMock invocation) throws Throwable {

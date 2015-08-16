@@ -1,6 +1,7 @@
 package act;
 
 import act.app.*;
+import act.app.util.NamedPort;
 import act.boot.BootstrapClassLoader;
 import act.boot.PluginClassProvider;
 import act.conf.ActConfLoader;
@@ -227,6 +228,10 @@ public final class Act {
     public static void hook(App app) {
         int port = app.config().port();
         network.register(port, new NetworkClient(app));
+        List<NamedPort> portList = app.config().namedPorts();
+        for (NamedPort np : portList) {
+            network.register(np.port(), new NetworkClient(app, np));
+        }
     }
 
     private static void loadConfig() {

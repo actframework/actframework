@@ -5,6 +5,7 @@ import act.Constants;
 import act.app.App;
 import act.app.AppHolder;
 import act.app.conf.AppConfigurator;
+import act.app.util.NamedPort;
 import act.util.*;
 import act.view.TemplatePathResolver;
 import act.view.View;
@@ -16,12 +17,11 @@ import org.osgl.exception.ConfigurationException;
 import org.osgl.logging.L;
 import org.osgl.logging.Logger;
 import org.osgl.mvc.MvcConfig;
-import org.osgl.util.E;
-import org.osgl.util.FastStr;
-import org.osgl.util.S;
+import org.osgl.util.*;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
@@ -71,6 +71,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
 
     private AppConfigurator configurator;
     private boolean configuratorLoaded = false;
+
     public AppConfigurator appConfigurator() {
         if (!configuratorLoaded) {
             configurator = get(CONFIG_IMPL);
@@ -80,6 +81,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     }
 
     private String urlContext = null;
+
     protected T urlContext(String context) {
         if (S.blank(context)) {
             urlContext = "/";
@@ -88,6 +90,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         }
         return me();
     }
+
     public String urlContext() {
         if (urlContext == null) {
             urlContext = get(URL_CONTEXT);
@@ -97,6 +100,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         }
         return urlContext;
     }
+
     private void _mergeUrlContext(AppConfig conf) {
         if (null == get(URL_CONTEXT)) {
             urlContext = conf.urlContext;
@@ -104,10 +108,12 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     }
 
     private String xForwardedProtocol = null;
+
     protected T forceHttps() {
         xForwardedProtocol = "https";
         return me();
     }
+
     public String xForwardedProtocol() {
         if (null == xForwardedProtocol) {
             xForwardedProtocol = get(X_FORWARD_PROTOCOL);
@@ -117,6 +123,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         }
         return xForwardedProtocol;
     }
+
     private void _mergeXForwardedProtocol(AppConfig conf) {
         if (null == get(X_FORWARD_PROTOCOL)) {
             xForwardedProtocol = conf.xForwardedProtocol;
@@ -124,18 +131,21 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     }
 
     private String controllerPackage = null;
+
     protected T controllerPackage(String pkg) {
         pkg = pkg.trim();
         E.illegalArgumentIf(pkg.length() == 0, "package name cannot be empty");
         controllerPackage = pkg;
         return me();
     }
+
     public String controllerPackage() {
         if (null == controllerPackage) {
             controllerPackage = get(CONTROLLER_PACKAGE);
         }
         return controllerPackage;
     }
+
     private void _mergeControllerPackage(AppConfig conf) {
         if (null == get(CONTROLLER_PACKAGE)) {
             controllerPackage = conf.controllerPackage;
@@ -143,10 +153,12 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     }
 
     private ErrorTemplatePathResolver errorTemplatePathResolver = null;
+
     protected T errorTemplatePathResolver(ErrorTemplatePathResolver resolver) {
         errorTemplatePathResolver = resolver;
         return me();
     }
+
     public ErrorTemplatePathResolver errorTemplatePathResolver() {
         if (null == errorTemplatePathResolver) {
             errorTemplatePathResolver = get(RESOLVER_ERROR_TEMPLATE_PATH);
@@ -156,6 +168,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         }
         return errorTemplatePathResolver;
     }
+
     private void _mergeErrorTemplatePathResolver(AppConfig conf) {
         if (null == get(RESOLVER_ERROR_TEMPLATE_PATH)) {
             errorTemplatePathResolver = conf.errorTemplatePathResolver;
@@ -163,12 +176,14 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     }
 
     private String host = null;
+
     protected T host(String hostname) {
         hostname = hostname.trim();
         E.illegalArgumentIf(hostname.length() == 0, "hostname cannot be empty");
         host = hostname;
         return me();
     }
+
     public String host() {
         if (null == host) {
             host = get(HOST);
@@ -179,6 +194,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         }
         return host;
     }
+
     private void _mergeHost(AppConfig conf) {
         if (null == get(HOST)) {
             host = conf.host;
@@ -186,11 +202,13 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     }
 
     private int httpMaxParams = -1;
+
     protected T httpMaxParams(int max) {
         E.illegalArgumentIf(max < 0, "max params cannot be negative number: %s", max);
         this.httpMaxParams = max;
         return me();
     }
+
     public int httpMaxParams() {
         if (-1 == httpMaxParams) {
             Integer I = get(HTTP_MAX_PARAMS);
@@ -204,6 +222,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         }
         return httpMaxParams;
     }
+
     private void _mergeHttpMaxParams(AppConfig conf) {
         if (null == get(HTTP_MAX_PARAMS)) {
             httpMaxParams = conf.httpMaxParams;
@@ -211,11 +230,13 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     }
 
     private int jobPoolSize = -1;
+
     protected T jobPoolSize(int size) {
         E.illegalArgumentIf(size < 1, "job pool size cannot be zero or negative number: %s", size);
         this.jobPoolSize = jobPoolSize;
         return me();
     }
+
     public int jobPoolSize() {
         if (-1 == jobPoolSize) {
             Integer I = get(JOB_POOL_SIZE);
@@ -226,6 +247,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         }
         return jobPoolSize;
     }
+
     private void _mergeJobPoolSize(AppConfig conf) {
         if (null == get(JOB_POOL_SIZE)) {
             jobPoolSize = conf.jobPoolSize;
@@ -233,11 +255,13 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     }
 
     private int port = -1;
+
     protected T port(int port) {
         E.illegalArgumentIf(port < 1, "port value not valid: %s", port);
         this.port = port;
         return me();
     }
+
     public int port() {
         if (-1 == port) {
             Integer I = get(PORT);
@@ -248,19 +272,61 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         }
         return port;
     }
+
     private void _mergePort(AppConfig conf) {
         if (null == get(PORT)) {
             port = conf.port;
         }
     }
 
+    private List<NamedPort> namedPorts = null;
+
+    protected T namedPorts(NamedPort... namedPorts) {
+        this.namedPorts = C.listOf(namedPorts);
+        return me();
+    }
+
+    public List<NamedPort> namedPorts() {
+        if (null == namedPorts) {
+            String s = get(NAMED_PORTS);
+            if (null == s) {
+                namedPorts = C.list();
+            } else {
+                String[] sa = (s.split("[,;]+"));
+                ListBuilder<NamedPort> builder = ListBuilder.create();
+                for (String s0 : sa) {
+                    String[] sa0 = s0.split(":");
+                    E.invalidConfigurationIf(2 != sa0.length, "Unknown named port configuration: %s", s);
+                    String name = sa0[0].trim();
+                    String val = sa0[1].trim();
+                    NamedPort port = new NamedPort(name, Integer.parseInt(val));
+                    if (!builder.contains(port)) {
+                        builder.add(port);
+                    } else {
+                        throw E.invalidConfiguration("port[%s] already configured", name);
+                    }
+                }
+                namedPorts = builder.toList();
+            }
+        }
+        return namedPorts;
+    }
+
+    private void _mergePorts(AppConfig config) {
+        if (null == get(NAMED_PORTS)) {
+            namedPorts = config.namedPorts;
+        }
+    }
+
     private String encoding = null;
+
     protected T encoding(String encoding) {
         encoding = encoding.trim();
         E.illegalArgumentIf(encoding.length() == 0, "encoding cannot be empty");
         this.encoding = encoding;
         return me();
     }
+
     public String encoding() {
         if (null == encoding) {
             encoding = get(ENCODING);
@@ -270,6 +336,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         }
         return encoding;
     }
+
     private void _mergeEncoding(AppConfig conf) {
         if (null == get(ENCODING)) {
             encoding = conf.encoding;
@@ -277,21 +344,24 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     }
 
     private String dateFmt = null;
+
     protected T dateFormat(String fmt) {
         E.illegalArgumentIf(S.blank(fmt), "Date format cannot be empty");
         this.dateFmt = fmt;
         return me();
     }
+
     public String dateFormat() {
         if (null == dateFmt) {
             dateFmt = get(FORMAT_DATE);
             if (null == dateFmt) {
                 DateFormat formatter = DateFormat.getDateInstance();
-                dateFmt  = ((SimpleDateFormat)formatter).toLocalizedPattern();
+                dateFmt = ((SimpleDateFormat) formatter).toLocalizedPattern();
             }
         }
         return dateFmt;
     }
+
     private void _mergeDateFmt(AppConfig conf) {
         if (null == get(FORMAT_DATE)) {
             dateFmt = conf.dateFmt;
@@ -299,21 +369,24 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     }
 
     private String timeFmt = null;
+
     protected T timeFormat(String fmt) {
         E.illegalArgumentIf(S.blank(fmt), "Time format cannot be empty");
         this.timeFmt = fmt;
         return me();
     }
+
     public String timeFormat() {
         if (null == timeFmt) {
             timeFmt = get(FORMAT_TIME);
             if (null == timeFmt) {
                 DateFormat formatter = DateFormat.getTimeInstance();
-                timeFmt  = ((SimpleDateFormat)formatter).toLocalizedPattern();
+                timeFmt = ((SimpleDateFormat) formatter).toLocalizedPattern();
             }
         }
         return timeFmt;
     }
+
     private void _mergeTimeFmt(AppConfig conf) {
         if (null == get(FORMAT_TIME)) {
             timeFmt = conf.timeFmt;
@@ -321,21 +394,24 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     }
 
     private String dateDateTimeFmt = null;
+
     protected T dateTimeFormat(String fmt) {
         E.illegalArgumentIf(S.blank(fmt), "Date time format cannot be empty");
         this.dateDateTimeFmt = fmt;
         return me();
     }
+
     public String dateTimeFormat() {
         if (null == dateDateTimeFmt) {
             dateDateTimeFmt = get(FORMAT_TIME);
             if (null == dateDateTimeFmt) {
                 DateFormat formatter = DateFormat.getDateInstance();
-                dateDateTimeFmt  = ((SimpleDateFormat)formatter).toLocalizedPattern();
+                dateDateTimeFmt = ((SimpleDateFormat) formatter).toLocalizedPattern();
             }
         }
         return dateDateTimeFmt;
     }
+
     private void _mergeDateTimeFmt(AppConfig conf) {
         if (null == get(FORMAT_TIME)) {
             dateDateTimeFmt = conf.dateDateTimeFmt;
@@ -343,11 +419,13 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     }
 
     private Locale locale = null;
+
     protected T locale(Locale locale) {
         E.NPE(locale);
         this.locale = locale;
         return me();
     }
+
     public Locale locale() {
         if (null == locale) {
             locale = get(LOCALE);
@@ -357,6 +435,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         }
         return locale;
     }
+
     private void _mergeLocale(AppConfig conf) {
         if (null == get(LOCALE)) {
             locale = conf.locale;
@@ -364,11 +443,13 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     }
 
     private LocaleResolver localeResolver = null;
+
     protected T localeResolver(LocaleResolver resolver) {
         E.NPE(resolver);
         this.localeResolver = resolver;
         return me();
     }
+
     public LocaleResolver localeResolver() {
         if (null == localeResolver) {
             localeResolver = get(RESOLVER_LOCALE);
@@ -378,6 +459,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         }
         return localeResolver;
     }
+
     private void _mergeLocaleResolver(AppConfig conf) {
         if (null == get(RESOLVER_LOCALE)) {
             localeResolver = conf.localeResolver;
@@ -385,19 +467,24 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     }
 
     private String sourceVersion = null;
+
     protected T sourceVersion(JavaVersion version) {
         sourceVersion = FastStr.of(version.name()).substr(1).replace('_', '.').toString();
         return me();
     }
+
     public String sourceVersion() {
         if (null == sourceVersion) {
             sourceVersion = get(AppConfigKey.SOURCE_VERSION);
             if (null == sourceVersion) {
                 sourceVersion = "1." + _.JAVA_VERSION;
+            } else if (sourceVersion.startsWith("1.")) {
+                sourceVersion = sourceVersion.substring(0, 3);
             }
         }
         return sourceVersion;
     }
+
     private void _mergeSourceVersion(AppConfig conf) {
         if (null == get(SOURCE_VERSION)) {
             sourceVersion = conf.sourceVersion;
@@ -405,19 +492,24 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     }
 
     private String targetVersion = null;
+
     protected T targetVersion(JavaVersion version) {
         targetVersion = FastStr.of(version.name()).substr(1).replace('_', '.').toString();
         return me();
     }
+
     public String targetVersion() {
         if (null == targetVersion) {
             targetVersion = get(TARGET_VERSION);
             if (null == targetVersion) {
                 targetVersion = "1." + _.JAVA_VERSION;
+            } else if (targetVersion.startsWith("1.")) {
+                targetVersion = targetVersion.substring(0, 3);
             }
         }
         return targetVersion;
     }
+
     private void _mergeTargetVersion(AppConfig conf) {
         if (null == get(TARGET_VERSION)) {
             targetVersion = conf.targetVersion;
@@ -459,6 +551,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     }
 
     private _.Predicate<String> CONTROLLER_CLASS_TESTER = null;
+
     private _.Predicate<String> controllerNameTester() {
         if (null == CONTROLLER_CLASS_TESTER) {
             String controllerPackage = get(CONTROLLER_PACKAGE);
@@ -475,11 +568,13 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     }
 
     private TemplatePathResolver templatePathResolver = null;
+
     protected T templatePathResolver(TemplatePathResolver resolver) {
         E.NPE(resolver);
         templatePathResolver = resolver;
         return me();
     }
+
     public TemplatePathResolver templatePathResolver() {
         if (null == templatePathResolver) {
             templatePathResolver = get(AppConfigKey.RESOLVER_TEMPLATE_PATH);
@@ -489,6 +584,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         }
         return templatePathResolver;
     }
+
     private void _mergeTemplatePathResolver(AppConfig conf) {
         if (null == get(AppConfigKey.RESOLVER_TEMPLATE_PATH)) {
             templatePathResolver = conf.templatePathResolver;
@@ -496,12 +592,14 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     }
 
     private String templateHome = null;
+
     protected T templateHome(String home) {
         home = home.trim();
         E.illegalArgumentIf(home.length() == 0, "template home cannot be empty");
         templateHome = home;
         return me();
     }
+
     public String templateHome() {
         if (null == templateHome) {
             templateHome = get(AppConfigKey.TEMPLATE_HOME);
@@ -511,6 +609,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         }
         return templateHome;
     }
+
     private void _mergeTemplateHome(AppConfig conf) {
         if (null == get(AppConfigKey.TEMPLATE_HOME)) {
             templateHome = conf.templateHome;
@@ -519,11 +618,13 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
 
     private String defViewName = null;
     private View defView = null;
+
     protected T defaultView(View view) {
         E.NPE(view);
         defView = view;
         return me();
     }
+
     public View defaultView() {
         if (null == defViewName) {
             defViewName = get(AppConfigKey.VIEW_DEFAULT);
@@ -534,6 +635,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         }
         return defView;
     }
+
     private void _mergeDefaultView(AppConfig conf) {
         if (null == get(AppConfigKey.VIEW_DEFAULT)) {
             defViewName = conf.defViewName;
@@ -543,11 +645,13 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
 
     private boolean pingPathResolved = false;
     private String pingPath = null;
+
     protected T pingPath(String path) {
         pingPathResolved = true;
         pingPath = path.trim();
         return me();
     }
+
     public String pingPath() {
         if (!pingPathResolved) {
             pingPath = get(AppConfigKey.PING_PATH);
@@ -564,6 +668,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     }
 
     private String sessionCookieName = null;
+
     protected T sessionCookieName(String name) {
         name = name.trim().toLowerCase();
         E.illegalArgumentIf(name.length() == 0, "session cookie name cannot be blank");
@@ -571,6 +676,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         sessionCookieName = name;
         return me();
     }
+
     public String sessionCookieName() {
         if (null == sessionCookieName) {
             String sessionCookiePrefix = get(AppConfigKey.SESSION_PREFIX);
@@ -578,6 +684,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         }
         return sessionCookieName;
     }
+
     private void _mergeSessionCookieName(AppConfig config) {
         if (null != config.sessionCookieName) {
             sessionCookieName = config.sessionCookieName;
@@ -585,6 +692,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     }
 
     private String flashCookieName = null;
+
     protected T flashCookieName(String name) {
         name = name.trim().toLowerCase();
         E.illegalArgumentIf(name.length() == 0, "flash cookie name cannot be blank");
@@ -592,6 +700,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         flashCookieName = name;
         return me();
     }
+
     public String flashCookieName() {
         if (null == flashCookieName) {
             String sessionCookiePrefix = get(AppConfigKey.SESSION_PREFIX);
@@ -599,6 +708,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         }
         return flashCookieName;
     }
+
     private void _mergeFlashCookieName(AppConfig config) {
         if (null != config.flashCookieName) {
             flashCookieName = config.flashCookieName;
@@ -606,10 +716,12 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     }
 
     private Long sessionTtl = null;
+
     protected T sessionTtl(long seconds) {
         sessionTtl = seconds;
         return me();
     }
+
     public long sessionTtl() {
         if (null == sessionTtl) {
             sessionTtl = get(AppConfigKey.SESSION_TTL);
@@ -619,6 +731,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         }
         return sessionTtl;
     }
+
     private void _mergeSessionTtl(AppConfig conf) {
         if (null == get(AppConfigKey.SESSION_TTL)) {
             sessionTtl = conf.sessionTtl;
@@ -626,10 +739,12 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     }
 
     private Boolean sessionPersistent = null;
+
     protected T sessionPersistent(boolean persistenSession) {
         sessionPersistent = persistenSession;
         return me();
     }
+
     public boolean persistSession() {
         if (null == sessionPersistent) {
             sessionPersistent = get(AppConfigKey.SESSION_PERSISTENT_ENABLED);
@@ -639,6 +754,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         }
         return sessionPersistent;
     }
+
     private void _mergeSessionPersistent(AppConfig config) {
         if (null == get(AppConfigKey.SESSION_PERSISTENT_ENABLED)) {
             sessionPersistent = config.sessionPersistent;
@@ -646,10 +762,12 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     }
 
     private Boolean sessionEncrypt = null;
+
     protected T sessionEncrypt(boolean encryptSession) {
         sessionEncrypt = encryptSession;
         return me();
     }
+
     public boolean encryptSession() {
         if (null == sessionEncrypt) {
             sessionEncrypt = get(AppConfigKey.SESSION_ENCRYPT_ENABLED);
@@ -659,6 +777,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         }
         return sessionEncrypt;
     }
+
     private void _mergeSessionEncrpt(AppConfig config) {
         if (null == get(AppConfigKey.SESSION_ENCRYPT_ENABLED)) {
             sessionEncrypt = config.sessionEncrypt;
@@ -666,10 +785,12 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     }
 
     private Boolean sessionHttpOnly = null;
+
     protected T sessionHttpOnly(boolean httpOnly) {
         sessionHttpOnly = httpOnly;
         return me();
     }
+
     public boolean sessionHttpOnly() {
         if (null == sessionHttpOnly) {
             sessionHttpOnly = get(AppConfigKey.SESSION_HTTP_ONLY_ENABLED);
@@ -679,6 +800,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         }
         return sessionHttpOnly;
     }
+
     private void _mergeSessionHttpOnly(AppConfig config) {
         if (null == get(AppConfigKey.SESSION_HTTP_ONLY_ENABLED)) {
             sessionHttpOnly = config.sessionHttpOnly;
@@ -686,10 +808,12 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     }
 
     private SessionMapper sessionMapper = null;
+
     protected T sessionMapper(SessionMapper sessionMapper) {
         this.sessionMapper = sessionMapper;
         return me();
     }
+
     public SessionMapper sessionMapper() {
         if (null == sessionMapper) {
             sessionMapper = get(AppConfigKey.SESSION_MAPPER);
@@ -699,6 +823,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         }
         return sessionMapper;
     }
+
     private void _mergeSessionMapper(AppConfig config) {
         if (null == get(AppConfigKey.SESSION_MAPPER)) {
             sessionMapper = config.sessionMapper;
@@ -706,10 +831,12 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     }
 
     private Boolean sessionSecure = null;
+
     protected T sessionSecure(boolean secure) {
         sessionSecure = secure;
         return me();
     }
+
     public boolean sessionSecure() {
         if (Act.isDev()) {
             return false;
@@ -722,6 +849,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         }
         return sessionSecure;
     }
+
     private void _mergeSessionSecure(AppConfig config) {
         if (null == get(AppConfigKey.SESSION_SECURE)) {
             sessionSecure = config.sessionSecure;
@@ -729,21 +857,24 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     }
 
     private String secret = null;
+
     protected T secret(String secret) {
         E.illegalArgumentIf(S.blank(secret));
         this.secret = secret;
         return me();
     }
+
     public String secret() {
         if (null == secret) {
             secret = get(AppConfigKey.SECRET);
             if (null == secret) {
-                secret ="myawesomeapp";
+                secret = "myawesomeapp";
                 logger.warn("Application secret key not set! You are in the dangerous zone!!!");
             }
         }
         return secret;
     }
+
     private void _mergeSecret(AppConfig config) {
         if (null == get(AppConfigKey.SECRET)) {
             secret = config.secret;
@@ -755,15 +886,18 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     }
 
     private CacheServiceProvider csp = null;
+
     protected T cacheService(CacheServiceProvider csp) {
         E.NPE(csp);
         this.csp = csp;
         return me();
     }
+
     protected T cacheService(Class<? extends CacheServiceProvider> csp) {
         this.csp = _.newInstance(csp);
         return me();
     }
+
     public CacheService cacheService(String name) {
         if (null == csp) {
             csp = get(AppConfigKey.CACHE_IMPL);
@@ -773,6 +907,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         }
         return csp.get(name);
     }
+
     private void _mergeCacheServiceProvider(AppConfig config) {
         if (null == get(AppConfigKey.CACHE_IMPL)) {
             csp = config.csp;
@@ -780,10 +915,12 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     }
 
     private boolean _merged = false;
+
     /**
      * Merge application configurator settings. Note application configurator
      * settings has lower priority as it's hardcoded thus only when configuration file
      * does not provided the settings, the app configurator will take effect
+     *
      * @param conf the application configurator
      */
     public void _merge(AppConfigurator conf) {
@@ -798,6 +935,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         _mergeHttpMaxParams(conf);
         _mergeJobPoolSize(conf);
         _mergePort(conf);
+        _mergePorts(conf);
         _mergeErrorTemplatePathResolver(conf);
         _mergeDateFmt(conf);
         _mergeDateTimeFmt(conf);

@@ -96,31 +96,37 @@ public abstract class ConfLoader<T extends Config> {
             logger.warn("Cannot read conf dir[%s]", confDir.getAbsolutePath());
             return C.newMap();
         }
+
+        Map map = C.newMap();
+
+        /*
+         * try load from common conf
+         */
+        String common = SysProps.get(KEY_COMMON_CONF_TAG);
+        if (S.blank(common)) {
+            common = "common";
+        }
+        File commonConfDir = new File(confDir, common);
+        if (commonConfDir.isDirectory()) {
+            map.putAll(loadConfFromDir_(commonConfDir));
+        }
+
         /*
          * try to load conf from tagged conf dir, e.g. ${conf_root}/uat or
          * ${conf_root}/dev etc
          */
         String confTag = SysProps.get(KEY_CONF_TAG);
         if (S.blank(confTag)) {
-            confTag = Act.mode().name();
+            confTag = Act.mode().name().toLowerCase();
         }
-        Map map = C.newMap();
         File taggedConfDir = new File(confDir, confTag);
         if (taggedConfDir.exists() && taggedConfDir.isDirectory()) {
-            // try load properties from common tag first
-            String common = SysProps.get(KEY_COMMON_CONF_TAG);
-            if (S.blank(common)) {
-                common = "common";
-            }
-            File commonConfDir = new File(confDir, common);
-            if (commonConfDir.isDirectory()) {
-                map.putAll(loadConfFromDir_(commonConfDir));
-            }
             map.putAll(loadConfFromDir_(taggedConfDir));
             return map;
-        } else {
-            return loadConfFromDir_(confDir);
         }
+
+        map.putAll(loadConfFromDir_(confDir));
+        return map;
     }
 
     private Map loadConfFromDir_(File confDir) {

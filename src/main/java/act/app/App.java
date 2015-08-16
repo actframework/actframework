@@ -5,6 +5,7 @@ import act.app.data.BinderManager;
 import act.app.data.StringValueResolverManager;
 import act.app.event.AppEventId;
 import act.app.util.AppCrypto;
+import act.app.util.NamedPort;
 import act.conf.AppConfLoader;
 import act.conf.AppConfig;
 import act.controller.ControllerSourceCodeScanner;
@@ -33,6 +34,7 @@ import org.osgl.util.*;
 
 import java.io.File;
 import java.util.List;
+import java.util.Map;
 
 import static act.app.event.AppEventId.*;
 
@@ -56,6 +58,7 @@ public class App {
     private File appBase;
     private File appHome;
     private Router router;
+    private Map<NamedPort, Router> moreRouters;
     private AppConfig config;
     private AppClassLoader classLoader;
     private ProjectLayout layout;
@@ -96,6 +99,25 @@ public class App {
 
     public Router router() {
         return router;
+    }
+
+    public Router router(String name) {
+        if (S.blank(name)) {
+            return router();
+        }
+        for (Map.Entry<NamedPort, Router> entry : moreRouters.entrySet()) {
+            if (S.eq(entry.getKey().name(), name)) {
+                return entry.getValue();
+            }
+        }
+        return null;
+    }
+
+    public Router router(NamedPort port) {
+        if (null == port) {
+            return router();
+        }
+        return moreRouters.get(port);
     }
 
     public AppCrypto crypto() {
@@ -152,7 +174,7 @@ public class App {
         initResolverManager();
         initBinderManager();
         initUploadFileStorageService();
-        initRouter();
+        initRouters();
         initDbServiceManager();
         eventBus().emit(DB_SVC_LOADED);
         loadGlobalPlugin();
@@ -335,8 +357,13 @@ public class App {
         uploadFileStorageService = UploadFileStorageService.create(this);
     }
 
-    private void initRouter() {
+    private void initRouters() {
         router = new Router(this);
+        moreRouters = C.newMap();
+        List<NamedPort> ports = config().namedPorts();
+        for (NamedPort port: ports) {
+            moreRouters.put(port, new Router(this));
+        }
     }
 
     private void initEventBus() {

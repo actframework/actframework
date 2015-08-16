@@ -45,6 +45,15 @@ public @interface Controller {
     String value() default "/";
 
     /**
+     * Specify the port this controller's action method shall be
+     * routed from.
+     *
+     * @return the port name
+     * @see AppConfigKey#NAMED_PORTS
+     */
+    String port() default "";
+
+    /**
      * Provides utilities for controller action methods to emit rendering results
      */
     public static class Util {

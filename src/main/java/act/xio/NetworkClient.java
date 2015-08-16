@@ -4,6 +4,7 @@ import act.app.ActionContext;
 import act.app.App;
 import act.app.RequestRefreshClassLoader;
 import act.app.RequestServerRestart;
+import act.app.util.NamedPort;
 import act.handler.RequestHandler;
 import act.route.Router;
 import act.view.ActServerError;
@@ -15,10 +16,16 @@ import org.osgl.util.E;
 
 public class NetworkClient extends _.F1<ActionContext, Void> {
     private App app;
+    private NamedPort port;
 
     public NetworkClient(App app) {
         E.NPE(app);
         this.app = app;
+    }
+
+    public NetworkClient(App app, NamedPort port) {
+        this(app);
+        this.port = port;
     }
 
     public App app() {
@@ -59,6 +66,6 @@ public class NetworkClient extends _.F1<ActionContext, Void> {
     }
 
     private Router router() {
-        return app.router();
+        return app.router(port);
     }
 }

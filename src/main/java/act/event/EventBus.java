@@ -123,6 +123,7 @@ public class EventBus extends AppServiceBase<EventBus> {
             try {
                 l.on(event);
             } catch (Exception e) {
+                logger.error(e, "Error executing job");
                 throw E.tbd("support handling exception in jobs");
             }
         }
@@ -168,6 +169,7 @@ public class EventBus extends AppServiceBase<EventBus> {
             try {
                 l.on(event);
             } catch (Exception e) {
+                logger.error(e, "Error executing job");
                 throw E.tbd("Support exception in jobs");
             }
         }
@@ -176,6 +178,7 @@ public class EventBus extends AppServiceBase<EventBus> {
             try {
                 l.on(event);
             } catch (Exception e) {
+                logger.error(e, "Error executing job");
                 throw E.tbd("Support exception in jobs");
             }
         }
@@ -191,6 +194,7 @@ public class EventBus extends AppServiceBase<EventBus> {
                 try {
                     l.on(event);
                 } catch (Exception e) {
+                    logger.error(e, "Error executing job");
                     throw E.tbd("Support exception in jobs");
                 }
             }
@@ -201,6 +205,7 @@ public class EventBus extends AppServiceBase<EventBus> {
                 try {
                     l.on(event);
                 } catch (Exception e) {
+                    logger.error(e, "Error executing job");
                     throw E.tbd("Support exception in jobs");
                 }
             }
@@ -229,6 +234,7 @@ public class EventBus extends AppServiceBase<EventBus> {
                 try {
                     l.on(event);
                 } catch (Exception e) {
+                    logger.error(e, "Error executing job");
                     throw E.tbd("Support exception in jobs");
                 }
             }
