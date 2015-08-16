@@ -189,6 +189,9 @@ public class EventBus extends AppServiceBase<EventBus> {
 
     public synchronized EventBus emitSync(final ActEvent event) {
         Class<? extends ActEvent> c = event.getClass();
+        while (c.getName().contains("$")) {
+            c = (Class)c.getSuperclass();
+        }
         List<ActEventListener> list = asyncActEventListeners.get(c);
         AppJobManager jobManager = app().jobManager();
         if (null != list) {
@@ -217,6 +220,9 @@ public class EventBus extends AppServiceBase<EventBus> {
 
     public synchronized EventBus emit(final ActEvent event) {
         Class<? extends ActEvent> c = event.getClass();
+        while (c.getName().contains("$")) {
+            c = (Class)c.getSuperclass();
+        }
         List<ActEventListener> list = asyncActEventListeners.get(c);
         AppJobManager jobManager = app().jobManager();
         if (null != list) {
@@ -246,6 +252,9 @@ public class EventBus extends AppServiceBase<EventBus> {
 
     public synchronized EventBus emitAsync(final ActEvent event) {
         Class<? extends ActEvent> c = event.getClass();
+        while (c.getName().contains("$")) {
+            c = (Class)c.getSuperclass();
+        }
         List<ActEventListener> list = asyncActEventListeners.get(c);
         AppJobManager jobManager = app().jobManager();
         if (null != list) {
