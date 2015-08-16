@@ -10,7 +10,7 @@ public abstract class DependencyInjectorBase<DI extends DependencyInjectorBase> 
     }
 
     protected DependencyInjectorBase(App app, boolean noRegister) {
-        super(app);
+        super(app, true);
         if (!noRegister) {
             app.injector(this);
         }

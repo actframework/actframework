@@ -337,8 +337,12 @@ public class App {
     }
 
     App register(final AppService service) {
+        return register(service, false);
+    }
+
+    App register(final AppService service, boolean noDiBinder) {
         appServiceRegistry.register(service);
-        if (null != eventBus) {
+        if (null != eventBus && !noDiBinder) {
             eventBus.bind(AppEventId.PRE_START, new AppEventListenerBase() {
                 @Override
                 public void on(EventObject event) throws Exception {

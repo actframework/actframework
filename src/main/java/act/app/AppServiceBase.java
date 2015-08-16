@@ -11,6 +11,11 @@ public abstract class AppServiceBase<T extends AppServiceBase> extends AppHolder
         app.register(this);
     }
 
+    protected AppServiceBase(App app, boolean noDiBinder) {
+        super(app);
+        app.register(this, noDiBinder);
+    }
+
     @Override
     public T app(App app) {
         app.register(this);
