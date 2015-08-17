@@ -357,11 +357,26 @@ public enum AppConfigKey implements ConfigKey {
     LOGIN_URL("url.login"),
 
     /**
+     * {@code url.login.ajax} specifies the login URL which is used
+     * by {@link act.util.RedirectToLoginUrl} when request is AJAX
+     * <p>Default value: the value of {@link #LOGIN_URL}</p>
+     */
+    AJAX_LOGIN_URL("url.login.ajax"),
+
+    /**
      * {@code handler.missing_authentication.impl} specifies the implementation
      * for {@link act.util.MissingAuthenticationHandler}
      * <p>Default value: {@link act.util.RedirectToLoginUrl}</p>
      */
     MISSING_AUTHENTICATION_HANDLER("handler.missing_authentication.impl"),
+
+    /**
+     * {@code handler.missing_authentication.ajax.impl} specifies the implementation
+     * for {@link act.util.MissingAuthenticationHandler} dealing with the case of AJAX
+     * request
+     * <p>Default value: the value of {@link #MISSING_AUTHENTICATION_HANDLER}</p>
+     */
+    AJAX_MISSING_AUTHENTICATION_HANDLER("handler.missing_authentication.ajax.impl"),
 
     /**
      * {@code act.view.default} specifies the default view solution. If there

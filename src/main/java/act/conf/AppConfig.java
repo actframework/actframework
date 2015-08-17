@@ -202,9 +202,9 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     }
 
     private String loginUrl = null;
-    protected T loginUrl(String loginUrl) {
-        E.illegalArgumentIf(!loginUrl.startsWith("/"), "login URL shall start with '/'");
-        this.loginUrl = loginUrl;
+    protected T loginUrl(String url) {
+        E.illegalArgumentIf(!url.startsWith("/"), "login URL shall start with '/'");
+        this.loginUrl = url;
         return me();
     }
     public String loginUrl() {
@@ -219,6 +219,27 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     private void _mergeLoginUrl(AppConfig conf) {
         if (null == get(LOGIN_URL)) {
             loginUrl = conf.loginUrl;
+        }
+    }
+
+    private String ajaxLoginUrl = null;
+    protected T ajaxLoginUrl(String url) {
+        E.illegalArgumentIf(!url.startsWith("/"), "login URL shall start with '/'");
+        this.ajaxLoginUrl = url;
+        return me();
+    }
+    public String ajaxLoginUrl() {
+        if (null == ajaxLoginUrl) {
+            ajaxLoginUrl = get(AJAX_LOGIN_URL);
+            if (null == ajaxLoginUrl) {
+                ajaxLoginUrl = loginUrl();
+            }
+        }
+        return ajaxLoginUrl;
+    }
+    private void _mergeAjaxLoginUrl(AppConfig conf) {
+        if (null == get(AJAX_LOGIN_URL)) {
+            ajaxLoginUrl = conf.ajaxLoginUrl;
         }
     }
 
@@ -316,6 +337,27 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     }
     private void _mergeMissingAuthenticationHandler(AppConfig config) {
         if (null == get(MISSING_AUTHENTICATION_HANDLER)) {
+            mah = config.mah;
+        }
+    }
+
+    private MissingAuthenticationHandler aMah = null;
+    protected T ajaxMissingAuthenticationHandler(MissingAuthenticationHandler handler) {
+        E.NPE(handler);
+        mah = handler;
+        return me();
+    }
+    public MissingAuthenticationHandler ajaxMissingAuthenticationHandler() {
+        if (null == mah) {
+            mah = get(AJAX_MISSING_AUTHENTICATION_HANDLER);
+            if (null == mah) {
+                mah = missingAuthenticationHandler();
+            }
+        }
+        return mah;
+    }
+    private void _mergeAjaxMissingAuthenticationHandler(AppConfig config) {
+        if (null == get(AJAX_MISSING_AUTHENTICATION_HANDLER)) {
             mah = config.mah;
         }
     }
@@ -974,9 +1016,11 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         _mergeControllerPackage(conf);
         _mergeHost(conf);
         _mergeLoginUrl(conf);
+        _mergeAjaxLoginUrl(conf);
         _mergeHttpMaxParams(conf);
         _mergeJobPoolSize(conf);
         _mergeMissingAuthenticationHandler(conf);
+        _mergeAjaxMissingAuthenticationHandler(conf);
         _mergePort(conf);
         _mergePorts(conf);
         _mergeErrorTemplatePathResolver(conf);

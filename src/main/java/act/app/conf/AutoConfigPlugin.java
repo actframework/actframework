@@ -2,6 +2,8 @@ package act.app.conf;
 
 import act.app.App;
 import act.app.AppByteCodeScanner;
+import act.app.event.AppEventId;
+import act.event.AppEventListenerBase;
 import act.util.AnnotatedTypeFinder;
 import org.osgl._;
 import org.osgl.exception.NotAppliedException;
@@ -9,6 +11,7 @@ import org.osgl.util.E;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
+import java.util.EventObject;
 import java.util.Map;
 import java.util.Set;
 
@@ -18,9 +21,9 @@ public class AutoConfigPlugin extends AnnotatedTypeFinder {
         super(AutoConfig.class, new _.F2<App, String, Map<Class<? extends AppByteCodeScanner>, Set<String>>>() {
             @Override
             public Map<Class<? extends AppByteCodeScanner>, Set<String>> apply(final App app, final String className) throws NotAppliedException, _.Break {
-                app.jobManager().beforeAppStart(new Runnable() {
+                app.eventBus().bind(AppEventId.APP_CODE_SCANNED, new AppEventListenerBase() {
                     @Override
-                    public void run() {
+                    public void on(EventObject event) throws Exception {
                         Class<?> autoConfigClass = _.classForName(className, app.classLoader());
                         new AutoConfigLoader(app, autoConfigClass).load();
                     }
