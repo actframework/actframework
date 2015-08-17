@@ -45,7 +45,7 @@ public class ClassNode {
     }
 
     public boolean isAbstract() {
-        return Modifier.isAbstract(modifiers);
+        return Modifier.isAbstract(modifiers) || Modifier.isInterface(modifiers);
     }
 
     public boolean publicNotAbstract() {

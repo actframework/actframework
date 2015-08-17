@@ -160,6 +160,7 @@ public class DevModeClassLoader extends AppClassLoader {
             return;
         }
 
+        // FIX ME: Embedded class is not scanned
         scanByteCode(classesNeedByteCodeScan, new _.F1<String, byte[]>() {
             @Override
             public byte[] apply(String s) throws NotAppliedException, _.Break {

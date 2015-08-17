@@ -1,15 +1,22 @@
 package act.app;
 
 import act.Act;
+import act.app.event.AppEventId;
 import act.conf.AppConfig;
+import act.db.Dao;
 import act.db.DbManager;
 import act.db.DbPlugin;
 import act.db.DbService;
+import act.event.AppEventListenerBase;
+import act.util.ClassNode;
+import org.osgl._;
 import org.osgl.exception.ConfigurationException;
 import org.osgl.util.C;
 import org.osgl.util.E;
 import org.rythmengine.utils.S;
 
+import java.lang.reflect.Constructor;
+import java.util.EventObject;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -17,16 +24,46 @@ public class DbServiceManager extends AppServiceBase<DbServiceManager> {
 
     public static final String DEFAULT = "default";
 
+    // map service id to service instance
     private Map<String, DbService> serviceMap = C.newMap();
 
-    protected DbServiceManager(App app) {
+    // map model class to dao class
+    private Map<Class<?>, Class<? extends Dao>> modelDaoMap = C.newMap();
+
+    protected DbServiceManager(final App app) {
         super(app, true);
         initServices(app.config());
+        app.eventBus().bind(AppEventId.APP_CODE_SCANNED, new AppEventListenerBase() {
+            @Override
+            public void on(EventObject event) throws Exception {
+                ClassNode node = app.classLoader().classInfoRepository().node(Dao.class.getName());
+                node.findPublicNotAbstract(new _.Visitor<ClassNode>() {
+                    @Override
+                    public void visit(ClassNode classNode) throws _.Break {
+                        Class<? extends Dao> daoType = _.classForName(classNode.name(), app.classLoader());
+                        try {
+                            Dao dao = _.cast(app.newInstance(daoType));
+                            Class<?> modelType = dao.modelType();
+                            modelDaoMap.put(modelType, daoType);
+                        } catch (Exception e) {
+                            // ignore
+                        }
+                    }
+                });
+            }
+        });
     }
 
     @Override
     protected void releaseResources() {
         serviceMap.clear();
+        modelDaoMap.clear();
+    }
+
+    public Dao dao(Class<?> modelClass) {
+        Class<? extends Dao> daoClass = modelDaoMap.get(modelClass);
+        E.NPE(daoClass);
+        return app().newInstance(daoClass);
     }
 
     public <T extends DbService> T dbService(String id) {

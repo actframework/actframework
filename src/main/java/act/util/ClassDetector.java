@@ -66,7 +66,7 @@ public abstract class ClassDetector extends ByteCodeVisitor {
         @Override
         public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
             super.visit(version, access, name, signature, superName, interfaces);
-            if (filter.noAbstract() && (access & ACC_ABSTRACT) != 0) {
+            if (filter.noAbstract() && ((access & ACC_ABSTRACT) != 0 || (access & ACC_INTERFACE) != 0)) {
                 return;
             }
             if (filter.publicOnly() && (access & ACC_PUBLIC) != 1) {

@@ -15,6 +15,11 @@ public interface Dao<ID_TYPE, MODEL_TYPE, QUERY_TYPE extends Dao.Query<MODEL_TYP
         extends AppContextAware, SecurityContextAware, Destroyable {
 
     /**
+     * Returns the class of the Model entity this Dao operates on
+     */
+    Class<MODEL_TYPE> modelType();
+
+    /**
      * Find an entity by id, the primary key
      * @param id the id to find the entity
      * @return the entity found, or {@code null} if not found
