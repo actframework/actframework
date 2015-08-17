@@ -20,7 +20,7 @@ public class DbServiceManager extends AppServiceBase<DbServiceManager> {
     private Map<String, DbService> serviceMap = C.newMap();
 
     protected DbServiceManager(App app) {
-        super(app);
+        super(app, true);
         initServices(app.config());
     }
 
