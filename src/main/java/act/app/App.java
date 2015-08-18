@@ -197,11 +197,20 @@ public class App {
         eventBus().emit(APP_CODE_SCANNED);
         initMailerConfigManager();
         loadRoutes();
+
         // setting context class loader here might lead to memory leaks
         // and cause weird problems as class loader been set to thread
         // could be switched to handling other app in ACT or still hold
         // old app class loader instance after the app been refreshed
         // - Thread.currentThread().setContextClassLoader(classLoader());
+
+        // let's any emit the dependency injector loaded event
+        // in case some other service depend on this event.
+        // If any DI plugin e.g. guice has emitted this event
+        // already, it doesn't matter we emit the event again
+        // because once app event is consumed the event listeners
+        // are cleared
+        eventBus().emit(DEPENDENCY_INJECTOR_LOADED);
         eventBus().emit(PRE_START);
         eventBus().emit(START);
     }

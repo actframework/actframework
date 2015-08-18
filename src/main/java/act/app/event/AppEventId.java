@@ -28,6 +28,11 @@ public enum AppEventId {
         public AppEvent of(App app) {
             return new AppCodeScanned(app);
         }
+    }, DEPENDENCY_INJECTOR_LOADED {
+        @Override
+        public AppEvent of(App app) {
+            return new AppDependencyInjectorLoaded(app);
+        }
     }, PRE_START () {
         @Override
         public AppEvent of(App app) {

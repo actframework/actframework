@@ -10,6 +10,7 @@ import org.osgl._;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.util.EventObject;
 
 public class EventListenerClassFinder extends AppServicePlugin {
     @Override
@@ -25,7 +26,7 @@ public class EventListenerClassFinder extends AppServicePlugin {
                     @Override
                     public void visit(ClassNode classNode) throws _.Break {
                         if (!classNode.publicNotAbstract()) return;
-                        Class<?> c = _.classForName(classNode.name(), app.classLoader());
+                        final Class<?> c = _.classForName(classNode.name(), app.classLoader());
                         ParameterizedType ptype = null;
                         Type superType = c.getGenericSuperclass();
                         while (ptype == null) {
@@ -42,10 +43,15 @@ public class EventListenerClassFinder extends AppServicePlugin {
                         Type[] ca = ptype.getActualTypeArguments();
                         for (Type t: ca) {
                             if (t instanceof Class) {
-                                Class tc = (Class)t;
+                                final Class tc = (Class)t;
                                 if (ActEvent.class.isAssignableFrom(tc)) {
-                                    ActEventListener listener = (ActEventListener)app.newInstance(c);
-                                    bus.bind(tc, listener);
+                                    app.eventBus().bind(AppEventId.DEPENDENCY_INJECTOR_LOADED, new AppEventListenerBase() {
+                                        @Override
+                                        public void on(EventObject event) throws Exception {
+                                            ActEventListener listener = (ActEventListener) app.newInstance(c);
+                                            bus.bind(tc, listener);
+                                        }
+                                    });
                                     return;
                                 }
                             }
