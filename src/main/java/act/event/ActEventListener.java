@@ -7,4 +7,5 @@ import java.util.EventObject;
 
 public interface ActEventListener<EVENT_TYPE extends EventObject> extends EventListener, Destroyable {
     void on(EVENT_TYPE event) throws Exception;
+    String id();
 }

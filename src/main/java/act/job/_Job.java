@@ -2,8 +2,10 @@ package act.job;
 
 import act.util.DestroyableBase;
 import org.osgl._;
+import org.osgl.exception.NotAppliedException;
 import org.osgl.util.C;
 import org.osgl.util.E;
+import org.osgl.util.S;
 
 import java.util.List;
 import java.util.UUID;
@@ -143,6 +145,36 @@ class _Job extends DestroyableBase implements Runnable {
 
     protected void scheduleNextInvocation() {
         if (null != trigger) trigger.scheduleFollowingCalls(manager(), this);
+    }
+
+    private static _Job of(String jobId, final Runnable runnable, AppJobManager manager, boolean oneTime) {
+        return new _Job(jobId, manager, new _.F0() {
+            @Override
+            public Object apply() throws NotAppliedException, _.Break {
+                runnable.run();
+                return null;
+            }
+        }, oneTime);
+    }
+
+    private static _Job of(final Runnable runnable, AppJobManager manager, boolean oneTime) {
+        return of(S.uuid(), runnable, manager, oneTime);
+    }
+
+    static _Job oneTime(final Runnable runnable, AppJobManager manager) {
+        return of(runnable, manager, true);
+    }
+
+    static _Job oneTime(String jobId, final Runnable runnable, AppJobManager manager) {
+        return of(jobId, runnable, manager, true);
+    }
+
+    static _Job multipleTimes(final Runnable runnable, AppJobManager manager) {
+        return of(runnable, manager, false);
+    }
+
+    static _Job multipleTimes(String jobId, final Runnable runnable, AppJobManager manager) {
+        return of(jobId, runnable, manager, false);
     }
 
     private static String uuid() {

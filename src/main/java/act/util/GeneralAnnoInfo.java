@@ -97,7 +97,7 @@ public class GeneralAnnoInfo {
 
     @Override
     public String toString() {
-        C.List<String> keys = C.newList(attributes.keySet()).append(listAttributes.keySet()).sort();
+        C.List<String> keys = C.newList(attributes.keySet()).append(listAttributes.keySet()).sorted();
         StringBuilder sb = S.builder().append("@").append(type.getClassName()).append("(");
         for (String key: keys) {
             Object v = attributes.get(key);

@@ -13,7 +13,6 @@ import act.exception.BindException;
 import act.handler.builtin.controller.*;
 import act.util.DestroyableBase;
 import act.util.GeneralAnnoInfo;
-import com.esotericsoftware.reflectasm.ConstructorAccess;
 import com.esotericsoftware.reflectasm.FieldAccess;
 import com.esotericsoftware.reflectasm.MethodAccess;
 import org.osgl._;
@@ -49,7 +48,6 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
     private ClassLoader cl;
     private ControllerClassMetaInfo controller;
     private Class<?> controllerClass;
-    protected ConstructorAccess<?> constructorAccess;
     protected MethodAccess methodAccess;
     private M handler;
     protected int handlerIndex;
@@ -79,7 +77,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
             throw E.unexpected(e);
         }
         if (!handlerMetaInfo.isStatic()) {
-            constructorAccess = ConstructorAccess.get(controllerClass);
+            //constructorAccess = ConstructorAccess.get(controllerClass);
             methodAccess = MethodAccess.get(controllerClass);
             handlerIndex = methodAccess.getIndex(handlerMetaInfo.name(), paramTypes);
         } else {
@@ -116,7 +114,6 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         cl = null;
         controller = null;
         controllerClass = null;
-        constructorAccess = null;
         method = null;
         methodAccess = null;
         handler.destroy();
@@ -165,13 +162,9 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
     }
 
     private Object controllerInstance(ActionContext context) {
-        if (null == constructorAccess) {
-            return null;
-        }
         String controller = controllerClass.getName();
         Object inst = context.__controllerInstance(controller);
         if (null == inst) {
-            //inst = constructorAccess.newInstance();
             inst = context.newInstance(controllerClass);
             context.__controllerInstance(controller, inst);
         }

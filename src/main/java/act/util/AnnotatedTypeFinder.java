@@ -35,7 +35,7 @@ public abstract class AnnotatedTypeFinder extends AppCodeScannerPluginBase {
 
     @Override
     public AppSourceCodeScanner createAppSourceCodeScanner(App app) {
-        return new SourceCodeSensor();
+        return null;
     }
 
     @Override

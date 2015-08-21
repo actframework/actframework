@@ -1,6 +1,7 @@
 package act.job;
 
 import act.app.App;
+import act.app.event.AppEventId;
 import act.conf.AppConfig;
 import com.cronutils.model.CronType;
 import com.cronutils.model.definition.CronDefinition;
@@ -20,8 +21,9 @@ import org.rythmengine.utils.Time;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import static act.job.AppJobManager.JOB_APP_SHUTDOWN;
-import static act.job.AppJobManager.JOB_APP_START;
+import static act.app.event.AppEventId.START;
+import static act.app.event.AppEventId.STOP;
+import static act.job.AppJobManager.appEventJobId;
 
 abstract class JobTrigger {
 
@@ -48,17 +50,17 @@ abstract class JobTrigger {
 
     static JobTrigger of(AppConfig config, OnAppStart anno) {
         if (anno.async()) {
-            return alongWith(JOB_APP_START);
+            return alongWith(START);
         } else {
-            return after(JOB_APP_START);
+            return after(START);
         }
     }
 
     static JobTrigger of(AppConfig config, OnAppStop anno) {
         if (anno.async()) {
-            return alongWith(JOB_APP_SHUTDOWN);
+            return alongWith(STOP);
         } else {
-            return before(JOB_APP_SHUTDOWN);
+            return before(STOP);
         }
     }
 
@@ -115,11 +117,11 @@ abstract class JobTrigger {
     }
 
     static JobTrigger onAppStart(boolean async) {
-        return async ? alongWith(JOB_APP_START) : after(JOB_APP_START);
+        return async ? alongWith(START) : after(START);
     }
 
     static JobTrigger onAppStop(boolean async) {
-        return async ? alongWith(JOB_APP_SHUTDOWN) : before(JOB_APP_SHUTDOWN);
+        return async ? alongWith(STOP) : before(STOP);
     }
 
     static JobTrigger delayForSeconds(int seconds) {
@@ -130,12 +132,24 @@ abstract class JobTrigger {
         return new _AlongWith(jobId);
     }
 
+    static JobTrigger alongWith(AppEventId appEvent) {
+        return new _AlongWith(appEventJobId(appEvent));
+    }
+
     static JobTrigger before(String jobId) {
         return new _Before(jobId);
     }
 
+    static JobTrigger before(AppEventId appEvent) {
+        return before(appEventJobId(appEvent));
+    }
+
     static JobTrigger after(String jobId) {
         return new _After(jobId);
+    }
+
+    static JobTrigger after(AppEventId appEvent) {
+        return after(appEventJobId(appEvent));
     }
 
     static class _Cron extends JobTrigger {
@@ -229,7 +243,7 @@ abstract class JobTrigger {
 
         private void scheduleDelayedRegister(final AppJobManager manager, final _Job job) {
             final String id = delayedRegisterJobId(job);
-            before(JOB_APP_START).register(new _Job(id, manager, new _.F0<Void>() {
+            before(START).register(new _Job(id, manager, new _.F0<Void>() {
                 @Override
                 public Void apply() throws NotAppliedException, _.Break {
                     _Job associateTo = manager.jobById(id);

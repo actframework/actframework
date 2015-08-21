@@ -51,7 +51,7 @@ public class AutoConfigPlugin extends AnnotatedTypeFinder {
         AutoConfigLoader(App app, Class<?> autoConfigClass) {
             this.app = app;
             this.autoConfigClass = autoConfigClass;
-            this.ns = ((AutoConfig) autoConfigClass.getAnnotation(AutoConfig.class)).value();
+            this.ns = (autoConfigClass.getAnnotation(AutoConfig.class)).value();
         }
 
         void load() {

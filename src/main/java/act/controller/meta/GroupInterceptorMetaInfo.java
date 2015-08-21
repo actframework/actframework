@@ -99,10 +99,10 @@ public class GroupInterceptorMetaInfo extends DestroyableBase {
         classInterceptors.afterList.each(_F.mergeInto(this.afterList, actionName));
         classInterceptors.catchList.each(_F.mergeInto(this.catchList, actionName));
         classInterceptors.finallyList.each(_F.mergeInto(this.finallyList, actionName));
-        beforeList = beforeList.sort();
-        afterList = afterList.sort();
-        catchList = catchList.sort();
-        finallyList = finallyList.sort();
+        beforeList = beforeList.sorted();
+        afterList = afterList.sorted();
+        catchList = catchList.sorted();
+        finallyList = finallyList.sorted();
     }
 
     @Override

@@ -220,9 +220,9 @@ public class EventBus extends AppServiceBase<EventBus> {
 
     public synchronized EventBus emit(final ActEvent event) {
         Class<? extends ActEvent> c = event.getClass();
-        while (c.getName().contains("$")) {
-            c = (Class)c.getSuperclass();
-        }
+//        while (c.getName().contains("$")) {
+//            c = (Class)c.getSuperclass();
+//        }
         List<ActEventListener> list = asyncActEventListeners.get(c);
         AppJobManager jobManager = app().jobManager();
         if (null != list) {

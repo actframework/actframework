@@ -165,7 +165,7 @@ public final class SparkApp extends App {
         if (null == l) {
             l = C.newList(handler);
             exceptionHandlers.put(e, l);
-            registeredExceptions = registeredExceptions.append(e).sort();
+            registeredExceptions = registeredExceptions.append(e).sorted();
         } else {
             l.add(handler);
         }

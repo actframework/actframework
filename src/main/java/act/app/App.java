@@ -3,13 +3,11 @@ package act.app;
 import act.Act;
 import act.app.data.BinderManager;
 import act.app.data.StringValueResolverManager;
-import act.app.event.AppEvent;
 import act.app.event.AppEventId;
 import act.app.util.AppCrypto;
 import act.app.util.NamedPort;
 import act.conf.AppConfLoader;
 import act.conf.AppConfig;
-import act.controller.ControllerSourceCodeScanner;
 import act.controller.bytecode.ControllerByteCodeScanner;
 import act.di.DependencyInjector;
 import act.di.DiBinder;
@@ -18,14 +16,11 @@ import act.event.EventBus;
 import act.handler.builtin.StaticFileGetter;
 import act.job.AppJobManager;
 import act.job.bytecode.JobByteCodeScanner;
-import act.job.bytecode.JobSourceCodeScanner;
 import act.mail.MailerConfigManager;
-import act.mail.MailerSourceCodeScanner;
 import act.mail.bytecode.MailerByteCodeScanner;
 import act.route.RouteTableRouterBuilder;
 import act.route.Router;
 import act.util.ClassInfoByteCodeScanner;
-import act.util.ClassInfoSourceCodeScanner;
 import act.util.UploadFileStorageService;
 import act.view.ActServerError;
 import org.osgl._;
@@ -33,7 +28,10 @@ import org.osgl.http.H;
 import org.osgl.logging.L;
 import org.osgl.logging.Logger;
 import org.osgl.storage.IStorageService;
-import org.osgl.util.*;
+import org.osgl.util.C;
+import org.osgl.util.E;
+import org.osgl.util.IO;
+import org.osgl.util.S;
 
 import java.io.File;
 import java.util.EventObject;
@@ -434,13 +432,13 @@ public class App {
     }
 
     private void loadBuiltInScanners() {
-        scannerManager.register(new ClassInfoSourceCodeScanner());
+        //scannerManager.register(new ClassInfoSourceCodeScanner());
         scannerManager.register(new ClassInfoByteCodeScanner());
-        scannerManager.register(new ControllerSourceCodeScanner());
+        //scannerManager.register(new ControllerSourceCodeScanner());
         scannerManager.register(new ControllerByteCodeScanner());
-        scannerManager.register(new MailerSourceCodeScanner());
+        //scannerManager.register(new MailerSourceCodeScanner());
         scannerManager.register(new MailerByteCodeScanner());
-        scannerManager.register(new JobSourceCodeScanner());
+        //scannerManager.register(new JobSourceCodeScanner());
         scannerManager.register(new JobByteCodeScanner());
     }
 

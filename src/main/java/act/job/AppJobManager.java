@@ -3,8 +3,7 @@ package act.job;
 import act.app.App;
 import act.app.AppServiceBase;
 import act.app.AppThreadFactory;
-import act.app.event.AppStart;
-import act.app.event.AppStop;
+import act.app.event.*;
 import act.event.AppEventListenerBase;
 import org.joda.time.DateTime;
 import org.joda.time.Seconds;
@@ -14,6 +13,7 @@ import org.osgl.util.C;
 import org.osgl.util.E;
 import org.osgl.util.S;
 
+import java.util.EventObject;
 import java.util.Map;
 import java.util.concurrent.*;
 
@@ -22,27 +22,26 @@ import static act.app.event.AppEventId.STOP;
 
 public class AppJobManager extends AppServiceBase<AppJobManager> {
 
-    public static final String JOB_APP_START = "__act_app_started";
-    public static final String JOB_APP_SHUTDOWN = "__act_app_shutdown";
-
     private ScheduledThreadPoolExecutor executor;
     private Map<String, _Job> jobs = C.newMap();
+
+    static String appEventJobId(AppEventId eventId) {
+        return S.builder("__act_app_").append(eventId.toString().toLowerCase()).toString();
+    }
 
     public AppJobManager(App app) {
         super(app);
         initExecutor(app);
-        registerSysJobs();
-        app.eventBus().bind(START, new AppEventListenerBase<AppStart>("job-mgr-start") {
-            @Override
-            public void on(AppStart event) {
-                jobs.get(JOB_APP_START).run();
-            }
-        }).bind(STOP, new AppEventListenerBase<AppStop>("job-mgr-stop") {
-            @Override
-            public void on(AppStop event) {
-                jobs.get(JOB_APP_SHUTDOWN).run();
-            }
-        });
+        for (AppEventId appEventId : AppEventId.values()) {
+            final String jobId = appEventJobId(appEventId);
+            addJob(new _Job(jobId, this));
+            app.eventBus().bind(appEventId, new AppEventListenerBase() {
+                @Override
+                public void on(EventObject event) throws Exception {
+                    jobs.get(jobId).run();
+                }
+            });
+        }
     }
 
     @Override
@@ -77,34 +76,32 @@ public class AppJobManager extends AppServiceBase<AppJobManager> {
         return executor().schedule(callable, seconds.getSeconds(), TimeUnit.SECONDS);
     }
 
+    public void on(AppEventId appEvent, final Runnable runnable) {
+        jobById(appEventJobId(appEvent)).addPrecedenceJob(_Job.oneTime(runnable, this));
+    }
+
+    public void post(AppEventId appEvent, final Runnable runnable) {
+        jobById(appEventJobId(appEvent)).addFollowingJob(_Job.oneTime(runnable, this));
+    }
+
+    public void on(AppEventId appEvent, String jobId, final Runnable runnable) {
+        jobById(appEventJobId(appEvent)).addPrecedenceJob(_Job.oneTime(jobId, runnable, this));
+    }
+
+    public void post(AppEventId appEvent, String jobId, final Runnable runnable) {
+        jobById(appEventJobId(appEvent)).addFollowingJob(_Job.oneTime(jobId, runnable, this));
+    }
+
     public void beforeAppStart(final Runnable runnable) {
-        jobById(JOB_APP_START).addPrecedenceJob(new _Job(S.uuid(), this, new _.F0() {
-            @Override
-            public Object apply() throws NotAppliedException, _.Break {
-                runnable.run();
-                return null;
-            }
-        }, true));
+        on(AppEventId.START, runnable);
     }
 
     public void afterAppStart(final Runnable runnable) {
-        jobById(JOB_APP_START).addFollowingJob(new _Job(S.uuid(), this, new _.F0() {
-            @Override
-            public Object apply() throws NotAppliedException, _.Break {
-                runnable.run();
-                return null;
-            }
-        }, true));
+        post(AppEventId.START, runnable);
     }
 
     public void beforeAppStop(final Runnable runnable) {
-        jobById(JOB_APP_SHUTDOWN).addFollowingJob(new _Job(S.uuid(), this, new _.F0() {
-            @Override
-            public Object apply() throws NotAppliedException, _.Break {
-                runnable.run();
-                return null;
-            }
-        }, true));
+        on(AppEventId.STOP, runnable);
     }
 
     public _Job jobById(String id) {
@@ -130,15 +127,6 @@ public class AppJobManager extends AppServiceBase<AppJobManager> {
     private void initExecutor(App app) {
         int poolSize = app.config().jobPoolSize();
         executor = new ScheduledThreadPoolExecutor(poolSize, new AppThreadFactory("jobs"), new ThreadPoolExecutor.AbortPolicy());
-    }
-
-    private void registerSysJobs() {
-        registerSysJob(JOB_APP_START);
-        registerSysJob(JOB_APP_SHUTDOWN);
-    }
-
-    private void registerSysJob(String id) {
-        addJob(new _Job(id, this));
     }
 
 }

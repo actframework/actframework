@@ -899,10 +899,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
 
     public SessionMapper sessionMapper() {
         if (null == sessionMapper) {
-            sessionMapper = get(AppConfigKey.SESSION_MAPPER);
-            if (null == sessionMapper) {
-                sessionMapper = new SessionMapper.DefaultSessionMapper();
-            }
+            sessionMapper = SessionMapper.DefaultSessionMapper.wrap((SessionMapper)get(AppConfigKey.SESSION_MAPPER));
         }
         return sessionMapper;
     }
