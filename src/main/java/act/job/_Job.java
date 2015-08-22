@@ -161,11 +161,11 @@ class _Job extends DestroyableBase implements Runnable {
         return of(S.uuid(), runnable, manager, oneTime);
     }
 
-    static _Job oneTime(final Runnable runnable, AppJobManager manager) {
+    static _Job once(final Runnable runnable, AppJobManager manager) {
         return of(runnable, manager, true);
     }
 
-    static _Job oneTime(String jobId, final Runnable runnable, AppJobManager manager) {
+    static _Job once(String jobId, final Runnable runnable, AppJobManager manager) {
         return of(jobId, runnable, manager, true);
     }
 

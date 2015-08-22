@@ -1,5 +1,6 @@
 package act.util;
 
+import act.Destroyable;
 import act.app.App;
 import act.conf.AppConfig;
 import act.view.Template;
@@ -7,6 +8,7 @@ import org.osgl.http.H;
 import org.osgl.util.C;
 import org.osgl.util.E;
 
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
@@ -35,12 +37,20 @@ public interface ActContext<CTX_TYPE extends ActContext> {
      */
     Map<String, Object> renderArgs();
     CTX_TYPE renderArg(String name, Object val);
+    CTX_TYPE addListener(Listener listener);
+    CTX_TYPE addDestroyable(Destroyable resource);
+
+    public static interface Listener {
+        void onDestroy(ActContext context);
+    }
 
     public static abstract class ActContextBase<VC_TYPE extends ActContextBase> extends DestroyableBase implements ActContext<VC_TYPE> {
         private App app;
         private String templatePath;
         private Template template;
         private Map<String, Object> renderArgs;
+        private List<Listener> listenerList = C.newList();
+        private List<Destroyable> destroyableList = C.newList();
 
         public ActContextBase(App app) {
             E.NPE(app);
@@ -50,10 +60,20 @@ public interface ActContext<CTX_TYPE extends ActContext> {
 
         @Override
         protected void releaseResources() {
+            for (Listener l : listenerList) {
+                try {
+                    l.onDestroy(this);
+                } catch (Exception e) {
+                    logger.warn(e, "error calling listener onDestroy method");
+                }
+            }
+            Destroyable.Util.destroyAll(destroyableList);
             this.renderArgs.clear();
             this.template = null;
             this.app = null;
             this.template = null;
+            this.listenerList.clear();
+            this.destroyableList.clear();
         }
 
         @Override
@@ -106,6 +126,18 @@ public interface ActContext<CTX_TYPE extends ActContext> {
         @Override
         public Map<String, Object> renderArgs() {
             return C.newMap(renderArgs);
+        }
+
+        @Override
+        public VC_TYPE addListener(Listener listener) {
+            listenerList.add(listener);
+            return me();
+        }
+
+        @Override
+        public VC_TYPE addDestroyable(Destroyable resource) {
+            destroyableList.add(resource);
+            return me();
         }
     }
 }

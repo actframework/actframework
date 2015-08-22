@@ -69,9 +69,15 @@ public interface Dao<ID_TYPE, MODEL_TYPE, QUERY_TYPE extends Dao.Query<MODEL_TYP
 
     /**
      * Find all entities of the collection/table specified by {@code MODEL_TYPE}
-     * @return all entities of the type bound to this Dao object
+     * @return all entities of the type bound to this Dao object in {@link Iterable}
      */
     Iterable<MODEL_TYPE> findAll();
+
+    /**
+     * Find all entities of the collection/table specified by {@code MODEL_TYPE}
+     * @return all entities of the type bound to this Dao object in {@link List}
+     */
+    List<MODEL_TYPE> findAllAsList();
 
     /**
      * Reload a model entity from persistent storage by it's {@link ModelBase#_id()}. This method

@@ -5,6 +5,9 @@ import act.app.App;
 import act.util.ActContext;
 import act.view.Template;
 import act.view.ViewManager;
+import com.sun.jmx.snmp.ThreadContext;
+import org.osgl._;
+import org.osgl.concurrent.ContextLocal;
 import org.osgl.http.H;
 import org.osgl.storage.ISObject;
 import org.osgl.storage.impl.SObject;
@@ -29,9 +32,21 @@ public class MailerContext extends ActContext.ActContextBase<MailerContext> {
     private List<ISObject> attachments = C.newList();
     private String senderPath; // e.g. com.mycorp.myapp.mailer.AbcMailer.foo
 
+    private static final ContextLocal<MailerContext> _local = _.contextLocal();
+
     public MailerContext(App app, String confId) {
         super(app);
         this.confId = confId;
+        _local.set(this);
+    }
+
+    @Override
+    protected void releaseResources() {
+        super.releaseResources();
+        to.clear();
+        cc.clear();
+        bcc.clear();
+        _local.remove();
     }
 
     public MailerContext configId(String id) {
@@ -306,6 +321,10 @@ public class MailerContext extends ActContext.ActContextBase<MailerContext> {
     }
 
     private static final String SEP = "[;:,]+";
+
+    public static MailerContext current() {
+        return _local.get();
+    }
 
     public static List<InternetAddress> canonicalRecipients(List<InternetAddress> l, String... recipients) {
         if (null == l) l = C.newList();

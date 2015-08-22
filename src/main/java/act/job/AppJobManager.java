@@ -7,8 +7,6 @@ import act.app.event.*;
 import act.event.AppEventListenerBase;
 import org.joda.time.DateTime;
 import org.joda.time.Seconds;
-import org.osgl._;
-import org.osgl.exception.NotAppliedException;
 import org.osgl.util.C;
 import org.osgl.util.E;
 import org.osgl.util.S;
@@ -16,9 +14,6 @@ import org.osgl.util.S;
 import java.util.EventObject;
 import java.util.Map;
 import java.util.concurrent.*;
-
-import static act.app.event.AppEventId.START;
-import static act.app.event.AppEventId.STOP;
 
 public class AppJobManager extends AppServiceBase<AppJobManager> {
 
@@ -77,19 +72,19 @@ public class AppJobManager extends AppServiceBase<AppJobManager> {
     }
 
     public void on(AppEventId appEvent, final Runnable runnable) {
-        jobById(appEventJobId(appEvent)).addPrecedenceJob(_Job.oneTime(runnable, this));
+        jobById(appEventJobId(appEvent)).addPrecedenceJob(_Job.once(runnable, this));
     }
 
     public void post(AppEventId appEvent, final Runnable runnable) {
-        jobById(appEventJobId(appEvent)).addFollowingJob(_Job.oneTime(runnable, this));
+        jobById(appEventJobId(appEvent)).addFollowingJob(_Job.once(runnable, this));
     }
 
     public void on(AppEventId appEvent, String jobId, final Runnable runnable) {
-        jobById(appEventJobId(appEvent)).addPrecedenceJob(_Job.oneTime(jobId, runnable, this));
+        jobById(appEventJobId(appEvent)).addPrecedenceJob(_Job.once(jobId, runnable, this));
     }
 
     public void post(AppEventId appEvent, String jobId, final Runnable runnable) {
-        jobById(appEventJobId(appEvent)).addFollowingJob(_Job.oneTime(jobId, runnable, this));
+        jobById(appEventJobId(appEvent)).addFollowingJob(_Job.once(jobId, runnable, this));
     }
 
     public void beforeAppStart(final Runnable runnable) {
