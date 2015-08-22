@@ -12,8 +12,11 @@ public class ProjectLayoutBuilder implements ProjectLayout {
     private String appBase;
 
     private String src;
+    private String tstSrc;
     private String rsrc;
+    private String tstRsrc;
     private String lib;
+    private String tstLib;
     private String asset;
     private String tgt;
     private String routeTable;
@@ -31,14 +34,32 @@ public class ProjectLayoutBuilder implements ProjectLayout {
         return this;
     }
 
+    public ProjectLayoutBuilder testSource(String s) {
+        this.tstSrc = s;
+        _refresh();
+        return this;
+    }
+
     public ProjectLayoutBuilder resource(String rsrc) {
         this.rsrc = rsrc;
         _refresh();
         return this;
     }
 
+    public ProjectLayoutBuilder testResource(String s) {
+        this.tstRsrc = s;
+        _refresh();
+        return this;
+    }
+
     public ProjectLayoutBuilder lib(String lib) {
         this.lib = lib;
+        _refresh();
+        return this;
+    }
+
+    public ProjectLayoutBuilder testLib(String s) {
+        this.tstLib = s;
         _refresh();
         return this;
     }
@@ -73,13 +94,28 @@ public class ProjectLayoutBuilder implements ProjectLayout {
     }
 
     @Override
+    public File testSource(File appBase) {
+        return _layout.testSource(appBase);
+    }
+
+    @Override
     public File resource(File appBase) {
         return _layout.resource(appBase);
     }
 
     @Override
+    public File testResource(File appBase) {
+        return _layout.testResource(appBase);
+    }
+
+    @Override
     public File lib(File appBase) {
         return _layout.lib(appBase);
+    }
+
+    @Override
+    public File testLib(File appBase) {
+        return _layout.testLib(appBase);
     }
 
     @Override
@@ -103,6 +139,6 @@ public class ProjectLayoutBuilder implements ProjectLayout {
     }
 
     public ProjectLayout toLayout() {
-        return new ProjectLayout.CustomizedProjectLayout(src, rsrc, lib, asset, tgt, routeTable, conf);
+        return new ProjectLayout.CustomizedProjectLayout(src, tstSrc, rsrc, tstRsrc, lib, tstLib, asset, tgt, routeTable, conf);
     }
 }

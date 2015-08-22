@@ -25,6 +25,21 @@ public class MyProjectLayoutProbe extends BuildFileProbe.FileParser implements P
             }
 
             @Override
+            public File testSource(File appBase) {
+                return null;
+            }
+
+            @Override
+            public File testResource(File appBase) {
+                return null;
+            }
+
+            @Override
+            public File testLib(File appBase) {
+                return null;
+            }
+
+            @Override
             public File resource(File appBase) {
                 return null;
             }

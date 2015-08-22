@@ -60,14 +60,32 @@ public interface ProjectLayout {
             }
 
             @Override
+            public File testSource(File appBase) {
+                E.illegalStateIf(!Act.isDev());
+                return Utils.file(appBase, "src/test/java");
+            }
+
+            @Override
             public File resource(File appBase) {
                 String resources = Act.isDev() ? "src/main/resources" : "classes";
                 return Utils.file(appBase, resources);
             }
 
             @Override
+            public File testResource(File appBase) {
+                String resources = Act.isDev() ? "src/test/resources" : "test-classes";
+                return Utils.file(appBase, resources);
+            }
+
+            @Override
             public File lib(File appBase) {
                 String lib = Act.isDev() ? "src/main/lib" : "lib";
+                return Utils.file(appBase, lib);
+            }
+
+            @Override
+            public File testLib(File appBase) {
+                String lib = Act.isDev() ? "src/test/lib" : "test-lib";
                 return Utils.file(appBase, lib);
             }
 
@@ -88,6 +106,21 @@ public interface ProjectLayout {
         PKG() {
             @Override
             public File source(File appBase) {
+                return null;
+            }
+
+            @Override
+            public File testSource(File appBase) {
+                return null;
+            }
+
+            @Override
+            public File testResource(File appBase) {
+                return null;
+            }
+
+            @Override
+            public File testLib(File appBase) {
                 return null;
             }
 
@@ -137,13 +170,28 @@ public interface ProjectLayout {
             }
 
             @Override
+            public File testSource(File appBase) {
+                return Utils.file(appBase, "test");
+            }
+
+            @Override
             public File resource(File appBase) {
                 return Utils.file(appBase, "conf");
             }
 
             @Override
+            public File testResource(File appBase) {
+                return resource(appBase);
+            }
+
+            @Override
             public File lib(File appBase) {
                 return Utils.file(appBase, "lib");
+            }
+
+            @Override
+            public File testLib(File appBase) {
+                return lib(appBase);
             }
 
             @Override
@@ -155,7 +203,8 @@ public interface ProjectLayout {
             public File target(File appBase) {
                 return Utils.file(appBase, "tmp");
             }
-        },;
+        },
+        ;
 
         @Override
         public File conf(File appBase) {
@@ -181,9 +230,17 @@ public interface ProjectLayout {
 
     /**
      * Returns Java srccode file root in relation to the
-     * {@code appBase} specified
+     * {@code appBase}
      */
     File source(File appBase);
+
+    /**
+     * Returns Java source code file root in test scope in relation
+     * to the {@code appBase}
+     * @param appBase
+     * @return
+     */
+    File testSource(File appBase);
 
     /**
      * Returns Resource files root in relation to the
@@ -195,10 +252,25 @@ public interface ProjectLayout {
     File resource(File appBase);
 
     /**
+     * Returns Resource files root in test scope in relation to the
+     * {@code appBase} specified
+     *
+     * @param appBase
+     * @return
+     */
+    File testResource(File appBase);
+
+    /**
      * Returns lib folder which contains arbitrary jar files in relation to the
      * {@code appBase} specified
      */
     File lib(File appBase);
+
+    /**
+     * Returns lib folder which contains arbitrary jar files in relation to the
+     * {@code appBase} specified in test scope
+     */
+    File testLib(File appBase);
 
     /**
      * Returns asset folder which contains public accessible files like js/css/img etc
@@ -267,13 +339,16 @@ public interface ProjectLayout {
          */
         public static ProjectLayout build(Properties p) {
             String source = _get("source", p);
+            String testSource = _get("testSource", p);
             String lib = _get("lib", p);
+            String testLib = _get("testLib", p);
             String resource = _get("resource", p);
+            String testResource = _get("testResource", p);
             String asset = _get("asset", p);
             String routes = _get("routes", p);
             String conf = _get("conf", p);
             String target = _get("target", p);
-            return new CustomizedProjectLayout(source, resource, lib, asset, target, routes, conf);
+            return new CustomizedProjectLayout(source, testSource, resource, testResource, lib, testLib, asset, target, routes, conf);
         }
 
         private static String _get(String key, Properties p) {
@@ -285,17 +360,23 @@ public interface ProjectLayout {
 
     public static class CustomizedProjectLayout implements ProjectLayout {
         private String source;
+        private String testSource;
         private String lib;
+        private String testLib;
         private String routeTable;
         private String conf;
         private String target;
         private String asset;
         private String resource;
+        private String testResource;
 
-        public CustomizedProjectLayout(String src, String resource, String lib, String asset, String tgt, String routeTable, String conf) {
+        public CustomizedProjectLayout(String src, String testSource, String resource, String testResource, String lib, String testLib, String asset, String tgt, String routeTable, String conf) {
             this.source = src;
+            this.testSource = testSource;
             this.resource = resource;
+            this.testResource = testResource;
             this.lib = lib;
+            this.testLib = testLib;
             this.asset = asset;
             this.target = tgt;
             this.routeTable = routeTable;
@@ -308,8 +389,18 @@ public interface ProjectLayout {
         }
 
         @Override
+        public File testSource(File appBase) {
+            return Utils.file(appBase, testSource);
+        }
+
+        @Override
         public File lib(File appBase) {
             return Utils.file(appBase, lib);
+        }
+
+        @Override
+        public File testLib(File appBase) {
+            return Utils.file(appBase, testLib);
         }
 
         @Override
@@ -320,6 +411,11 @@ public interface ProjectLayout {
         @Override
         public File resource(File appBase) {
             return Utils.file(appBase, resource);
+        }
+
+        @Override
+        public File testResource(File appBase) {
+            return Utils.file(appBase, testResource);
         }
 
         @Override
