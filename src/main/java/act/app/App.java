@@ -169,10 +169,10 @@ public class App {
         Act.viewManager().reload(this);
         initServiceResourceManager();
         initEventBus();
-        initInterceptorManager();
         loadConfig();
         initCrypto();
         initJobManager();
+        initInterceptorManager();
         initResolverManager();
         initBinderManager();
         initUploadFileStorageService();
@@ -432,13 +432,9 @@ public class App {
     }
 
     private void loadBuiltInScanners() {
-        //scannerManager.register(new ClassInfoSourceCodeScanner());
         scannerManager.register(new ClassInfoByteCodeScanner());
-        //scannerManager.register(new ControllerSourceCodeScanner());
         scannerManager.register(new ControllerByteCodeScanner());
-        //scannerManager.register(new MailerSourceCodeScanner());
         scannerManager.register(new MailerByteCodeScanner());
-        //scannerManager.register(new JobSourceCodeScanner());
         scannerManager.register(new JobByteCodeScanner());
     }
 

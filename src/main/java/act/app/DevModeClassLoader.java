@@ -6,14 +6,18 @@ import act.util.Files;
 import act.util.FsChangeDetector;
 import act.util.FsEvent;
 import act.util.FsEventListener;
+import com.sun.org.apache.xerces.internal.impl.xpath.regex.Match;
 import org.osgl._;
 import org.osgl.exception.NotAppliedException;
 import org.osgl.util.C;
+import org.osgl.util.S;
 
 import java.io.File;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * Dev mode application class loader, which is able to
@@ -82,6 +86,10 @@ public class DevModeClassLoader extends AppClassLoader {
     }
 
     public Source source(String className) {
+        if (className.contains("$")) {
+            String name0 = S.before(className, "$");
+            return sources.get(name0);
+        }
         return sources.get(className);
     }
 
@@ -136,9 +144,8 @@ public class DevModeClassLoader extends AppClassLoader {
                     l.add(scanner);
                 }
             }
-            if (l.isEmpty()) {
-                continue;
-            }
+            EmbeddedClassFinder finder = new EmbeddedClassFinder();
+            l.add(finder);
             Source source = source(className);
             String[] lines = source.code().split("[\\n\\r]+");
             for (int i = 0, j = lines.length; i < j; ++i) {
@@ -147,13 +154,9 @@ public class DevModeClassLoader extends AppClassLoader {
                     scanner.visit(i, line, className);
                 }
             }
-//            for (AppSourceCodeScanner scanner: l) {
-//                if (scanner.triggerBytecodeScanning()) {
-//                    logger.debug("bytecode scanning triggered on %s", className);
-//                    classesNeedByteCodeScan.add(className);
-//                    break;
-//                }
-//            }
+            if (!finder.embeddedClassNames.isEmpty()) {
+                classesNeedByteCodeScan.addAll(finder.embeddedClassNames);
+            }
         }
 
         if (classesNeedByteCodeScan.isEmpty()) {
@@ -178,6 +181,10 @@ public class DevModeClassLoader extends AppClassLoader {
         if (null == bytes && compile) {
             compiler.compile(name);
             bytes = source.bytes();
+        }
+        if (name.contains("$")) {
+            String innerClassName = S.afterFirst(name, "$");
+            return source.bytes(innerClassName);
         }
         return bytes;
     }
@@ -271,4 +278,35 @@ public class DevModeClassLoader extends AppClassLoader {
             }
         }
     };
+
+    private static class EmbeddedClassFinder implements AppSourceCodeScanner {
+
+        private List<String> embeddedClassNames = C.newList();
+        private String className;
+        private static final Pattern P = Pattern.compile("\\s*public\\s+static\\s+class\\s+([_a-zA-Z][a-zA-Z_0-9]*).*");
+
+        @Override
+        public void visit(int lineNumber, String line, String className) {
+            Matcher m = P.matcher(line);
+            if (m.matches()) {
+                embeddedClassNames.add(className + "$" + m.group(1));
+            }
+        }
+
+        @Override
+        public boolean triggerBytecodeScanning() {
+            return false;
+        }
+
+        @Override
+        public void setApp(App app) {
+
+        }
+
+        @Override
+        public boolean start(String className) {
+            this.className = className;
+            return true;
+        }
+    }
 }

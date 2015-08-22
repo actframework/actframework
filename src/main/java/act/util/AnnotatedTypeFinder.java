@@ -48,63 +48,6 @@ public abstract class AnnotatedTypeFinder extends AppCodeScannerPluginBase {
         return true;
     }
 
-    private class SourceCodeSensor extends AppSourceCodeScannerBase {
-
-        private boolean pkgFound;
-
-        @Override
-        protected void reset(String className) {
-            super.reset(className);
-            pkgFound = false;
-        }
-
-        @Override
-        protected void _visit(int lineNumber, String line, String className) {
-            if (!pkgFound) {
-                if (line.contains(pkgName)) {
-                    pkgFound = true;
-                }
-            }
-            if (pkgFound) {
-                boolean found = line.contains(clsName);
-                if (found) {
-                    markScanByteCode();
-                    logFound(className);
-                }
-            }
-        }
-
-        protected void logFound(String className) {
-            logger.info("[%s]annotated type detected: %s", S.builder(pkgName).append(".").append(clsName), className);
-        }
-
-        @Override
-        protected boolean shouldScan(String className) {
-            return true;
-        }
-
-        private String key() {
-            return pkgName + clsName;
-        }
-
-        @Override
-        public int hashCode() {
-            return _.hc(pkgName, clsName, SourceCodeSensor.class);
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (obj == this) {
-                return true;
-            }
-            if (obj instanceof SourceCodeSensor) {
-                SourceCodeSensor that = (SourceCodeSensor)obj;
-                return _.eq(that.key(), this.key());
-            }
-            return false;
-        }
-    }
-
     private class ByteCodeSensor extends AppByteCodeScannerBase {
         private ClassDetector detector;
         private _.Func2<App, String, Map<Class<? extends AppByteCodeScanner>, Set<String>>> foundHandler = AnnotatedTypeFinder.this.foundHandler;

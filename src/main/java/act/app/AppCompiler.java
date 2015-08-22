@@ -204,16 +204,17 @@ class AppCompiler extends DestroyableBase {
                     clazzName.append(compoundName[j]);
                 }
                 String name = clazzName.toString();
-                String innerName = name;
-                if (name.contains("$")) name = S.before(name, "$");
-
-                logger.trace("Compiled %s", clazzName);
-
-                Source source = classLoader.source(innerName);
-                if (null == source) {
-                    source = Source.ofInnerClass(classLoader.source(name).file(), innerName);
+                String name0 = name;
+                if (name.contains("$")) {
+                    name0 = S.beforeFirst(name, "$");
                 }
-                source.compiled(clazzFile.getBytes());
+                Source source = classLoader.source(name0);
+                if (name != name0) {
+                    String innerName = S.afterFirst(name, "$");
+                    source.compiled(innerName, clazzFile.getBytes());
+                } else {
+                    source.compiled(clazzFile.getBytes());
+                }
             }
         }
     };

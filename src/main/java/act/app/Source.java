@@ -3,12 +3,10 @@ package act.app;
 import act.util.ClassNames;
 import org.eclipse.jdt.internal.compiler.env.ICompilationUnit;
 import org.osgl._;
-import org.osgl.util.E;
-import org.osgl.util.FastStr;
-import org.osgl.util.IO;
-import org.osgl.util.S;
+import org.osgl.util.*;
 
 import java.io.File;
+import java.util.Map;
 import java.util.StringTokenizer;
 
 /**
@@ -63,6 +61,8 @@ public class Source {
     // The byte code
     private byte[] bytes;
 
+    private Map<String, byte[]> innerBytes = C.newMap();
+
     private State state = State.CREATED;
 
     private ICompilationUnit compilationUnit;
@@ -103,6 +103,10 @@ public class Source {
         return bytes;
     }
 
+    public byte[] bytes(String innerClass) {
+        return innerBytes.get(innerClass);
+    }
+
     public File file() {
         return file;
     }
@@ -123,6 +127,10 @@ public class Source {
     void compiled(byte[] bytecode) {
         this.bytes = _.notNull(bytecode);
         updateState(State.COMPILED);
+    }
+
+    void compiled(String innerClassName, byte[] bytecode) {
+        innerBytes.put(innerClassName, bytecode);
     }
 
     void enhanced(byte[] bytecode) {
