@@ -14,7 +14,6 @@ import java.util.Map;
 import java.util.Properties;
 
 import static act.conf.ConfigKey.KEY_COMMON_CONF_TAG;
-import static act.conf.ConfigKey.KEY_CONF_TAG;
 
 /**
  * Loading configurations from conf file or conf dir
@@ -112,14 +111,14 @@ public abstract class ConfLoader<T extends Config> {
         }
 
         /*
-         * try to load conf from tagged conf dir, e.g. ${conf_root}/uat or
+         * try to load conf from profile conf dir, e.g. ${conf_root}/uat or
          * ${conf_root}/dev etc
          */
-        String confTag = SysProps.get(KEY_CONF_TAG);
-        if (S.blank(confTag)) {
-            confTag = Act.mode().name().toLowerCase();
+        String profile = SysProps.get(AppConfigKey.PROFILE.key());
+        if (S.blank(profile)) {
+            profile = Act.mode().name().toLowerCase();
         }
-        File taggedConfDir = new File(confDir, confTag);
+        File taggedConfDir = new File(confDir, profile);
         if (taggedConfDir.exists() && taggedConfDir.isDirectory()) {
             map.putAll(loadConfFromDir_(taggedConfDir));
             return map;

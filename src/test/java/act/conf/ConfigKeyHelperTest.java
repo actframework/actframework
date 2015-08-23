@@ -16,7 +16,7 @@ public class ConfigKeyHelperTest extends TestBase {
     ConfigKeyHelper helper = new ConfigKeyHelper(new _.F0<Act.Mode>() {
         @Override
         public Act.Mode apply() throws NotAppliedException, _.Break {
-            return Act.Mode.UAT;
+            return Act.Mode.DEV;
         }
     });
 
@@ -63,9 +63,7 @@ public class ConfigKeyHelperTest extends TestBase {
     @Test
     public void fetchIntWithModeConf() {
         put(FakedConfigKey.CONN_CNT, "10");
-        put(Act.Mode.UAT.configKey(FakedConfigKey.CONN_CNT.key()), "20");
-        put(Act.Mode.DEV.configKey(FakedConfigKey.CONN_CNT.key()), 40);
-        eq(20, helper.getConfiguration(FakedConfigKey.CONN_CNT, conf));
+        eq(10, helper.getConfiguration(FakedConfigKey.CONN_CNT, conf));
     }
 
     @Test

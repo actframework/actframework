@@ -38,7 +38,7 @@ import java.util.List;
 public final class Act {
 
     public enum Mode {
-        PROD, UAT, SIT, DEV() {
+        PROD, DEV() {
             @Override
             public AppScanner appScanner() {
                 return AppScanner.SINGLE_APP_SCANNER;
@@ -232,6 +232,10 @@ public final class Act {
         for (NamedPort np : portList) {
             network.register(np.port(), new NetworkClient(app, np));
         }
+    }
+
+    public static String suid() {
+        return null;
     }
 
     private static void loadConfig() {

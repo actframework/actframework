@@ -8,6 +8,7 @@ import act.app.util.AppCrypto;
 import act.app.util.NamedPort;
 import act.conf.AppConfLoader;
 import act.conf.AppConfig;
+import act.conf.AppConfigKey;
 import act.controller.bytecode.ControllerByteCodeScanner;
 import act.di.DependencyInjector;
 import act.di.DiBinder;
@@ -21,6 +22,8 @@ import act.mail.bytecode.MailerByteCodeScanner;
 import act.route.RouteTableRouterBuilder;
 import act.route.Router;
 import act.util.ClassInfoByteCodeScanner;
+import act.util.IdGenerator;
+import act.util.SysProps;
 import act.util.UploadFileStorageService;
 import act.view.ActServerError;
 import org.osgl._;
@@ -57,6 +60,7 @@ public class App {
         public static _.Predicate<String> ROUTES_FILE = _.F.eq(RouteTableRouterBuilder.ROUTES_FILE);
     }
 
+    private volatile String profile;
     private File appBase;
     private File appHome;
     private Router router;
@@ -77,6 +81,7 @@ public class App {
     private IStorageService uploadFileStorageService;
     private AppServiceRegistry appServiceRegistry;
     private AppCrypto crypto;
+    private IdGenerator idGenerator;
     // used in dev mode only
     private CompilationException compilationException;
 
@@ -93,6 +98,21 @@ public class App {
 
     public static App instance() {
         return INST;
+    }
+
+    public String profile() {
+        if (null == profile) {
+            synchronized (this) {
+                if (null == profile) {
+                    String s = SysProps.get(AppConfigKey.PROFILE.key());
+                    if (null == s) {
+                        s = Act.mode().name().toLowerCase();
+                    }
+                    profile = s;
+                }
+            }
+        }
+        return profile;
     }
 
     public AppConfig config() {
@@ -166,6 +186,7 @@ public class App {
     }
 
     public void refresh() {
+        profile = null;
         Act.viewManager().reload(this);
         initServiceResourceManager();
         initEventBus();
@@ -339,6 +360,14 @@ public class App {
         return S.builder("app@[").append(appBase).append("]").toString();
     }
 
+    /**
+     * Return an ID in string that is unique across the cluster
+     * @return
+     */
+    public String cuid() {
+        return idGenerator.id();
+    }
+
     public <T extends AppService<T>> T service(Class<T> serviceClass) {
         return appServiceRegistry.lookup(serviceClass);
     }
@@ -371,6 +400,14 @@ public class App {
         logger.debug("loading app configuration: %s ...", appBase.getPath());
         config = new AppConfLoader().load(conf);
         config.app(this);
+    }
+
+    private void initIdGenerator() {
+        idGenerator = new IdGenerator(
+                config().nodeIdProvider(),
+                config().startIdProvider(),
+                config().sequenceProvider()
+        );
     }
 
     private void initServiceResourceManager() {

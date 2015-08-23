@@ -107,6 +107,21 @@ public class DevModeClassLoader extends AppClassLoader {
                 }
             }
         });
+        if ("test".equals(app().profile())) {
+            final File testSourceRoot = app().layout().testSource(app().base());
+            Files.filter(testSourceRoot, App.F.JAVA_SOURCE, new _.Visitor<File>() {
+                @Override
+                public void visit(File file) throws _.Break {
+                    Source source = Source.ofFile(sourceRoot, file);
+                    if (null != source) {
+                        if (null == sources) {
+                            sources = C.newMap();
+                        }
+                        sources.put(source.className(), source);
+                    }
+                }
+            });
+        }
     }
 
     private void preloadSource(File sourceRoot, String className) {

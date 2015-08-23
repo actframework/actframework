@@ -124,6 +124,44 @@ public enum AppConfigKey implements ConfigKey {
     HTTP_MAX_PARAMS("http.params.max"),
 
     /**
+     * {@code act.idgen.node_id.provider.impl} specifies the {@link act.util.IdGenerator.NodeIdProvider}
+     * implementation for {@link App#idGenerator}
+     * <p>Default value: {@link act.util.IdGenerator.NodeIdProvider.IpProvider}</p>
+     */
+    ID_GEN_NODE_ID_PROVIDER("idgen.node_id.provider.impl"),
+
+    /**
+     * {@code act.idgen.node_id.effective_ip_bytes} specifies how many bytes in the ip address
+     * will be used to calculate node ID. Usually in a cluster environment, the ip address will
+     * be different at only (last) one byte or (last) two bytes, in which case it could set this
+     * configuration to {@code 1} or {@code 2}. When the configuration is set to {@code 4} then
+     * it means all 4 IP bytes will be used to calculate the node ID
+     * <p>Default value: {@code 4}</p>
+     */
+    ID_GEN_NODE_ID_EFFECTIVE_IP_BYTES("idgen.node_id.effective_ip_bytes"),
+
+    /**
+     * {@code act.idgen.start_id.provider.impl} specifies the {@link act.util.IdGenerator.StartIdProvider}
+     * implementation for {@link App#idGenerator}
+     * <p>Default value: {@link act.util.IdGenerator.StartIdProvider.DefaultStartIdProvider}</p>
+     */
+    ID_GEN_START_ID_PROVIDER("idgen.start_id.provider.impl"),
+
+    /**
+     * {@code act.idgen.start_id.file} specifies the start id persistent file for
+     * {@link act.util.IdGenerator.StartIdProvider.FileBasedStartCounter}
+     * <p>Default value: {@code act_start.id}</p>
+     */
+    ID_GEN_START_ID_FILE("idgen.start_id.file"),
+
+    /**
+     * {@code act.idgen.seq_id.provider.impl} specifies the {@link act.util.IdGenerator.SequenceProvider}
+     * implementation for {@link App#idGenerator}
+     * <p>Default value: {@link act.util.IdGenerator.SequenceProvider.AtomicLongSeq}</p>
+     */
+    ID_GEN_SEQ_ID_PROVIDER("idgen.seq_id.provider.impl"),
+
+    /**
      * {@code act.locale} specifies the application default locale
      * <p>Default value: {@link java.util.Locale#getDefault}</p>
      */
@@ -195,6 +233,20 @@ public enum AppConfigKey implements ConfigKey {
      * <p>Default value: {@code null}</p>
      */
     PING_PATH("ping.path"),
+
+    /**
+     * {@code profile} specifies the profile to load configuration
+     * If this setting is specified, and there is a folder named as
+     * the {@code profile} setting sit under {@code /resource/conf}
+     * folder, then the properties files will be loaded from
+     * that folder.
+     * <p>Default value: the value of the {@link Act#mode()}</p>
+     * <p>Note, unlike other configuration items which is usually specified
+     * in the configuration file. {@code profile} setting is load
+     * by {@link System#getProperty(String)}</p>, thus it is usually
+     * specified with JVM argument {@code -Dprofile=<profile>}
+     */
+    PROFILE("profile"),
 
 
     /**

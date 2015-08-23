@@ -19,6 +19,7 @@ import org.osgl.logging.Logger;
 import org.osgl.mvc.MvcConfig;
 import org.osgl.util.*;
 
+import java.io.File;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.List;
@@ -201,6 +202,108 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         }
     }
 
+    Integer ipEffectiveBytes;
+    protected T ipEffectiveBytes(int n) {
+        E.illegalArgumentIf(n < 1 || n > 4, "integer from 1 to 4 (inclusive) expected");
+        ipEffectiveBytes = n;
+        return me();
+    }
+    public int ipEffectiveBytes() {
+        if (null == ipEffectiveBytes) {
+            ipEffectiveBytes = get(ID_GEN_NODE_ID_EFFECTIVE_IP_BYTES);
+            if (null == ipEffectiveBytes) {
+                ipEffectiveBytes = 4;
+            }
+        }
+        return ipEffectiveBytes;
+    }
+    private void _mergeIpEffectiveBytes(AppConfig conf) {
+        if (null == get(ID_GEN_NODE_ID_EFFECTIVE_IP_BYTES)) {
+            ipEffectiveBytes = conf.ipEffectiveBytes;
+        }
+    }
+
+    private IdGenerator.NodeIdProvider nodeIdProvider;
+    protected T nodeIdProvider(IdGenerator.NodeIdProvider provider) {
+        this.nodeIdProvider = _.NPE(provider);
+        return me();
+    }
+    public IdGenerator.NodeIdProvider nodeIdProvider() {
+        if (null == nodeIdProvider) {
+            nodeIdProvider = get(ID_GEN_NODE_ID_PROVIDER);
+            if (null == nodeIdProvider) {
+                nodeIdProvider = new IdGenerator.NodeIdProvider.IpProvider(ipEffectiveBytes());
+            }
+        }
+        return nodeIdProvider;
+    }
+    private void _mergeNodeIdProvider(AppConfig conf) {
+        if (null == get(ID_GEN_NODE_ID_PROVIDER)) {
+            nodeIdProvider = conf.nodeIdProvider;
+        }
+    }
+
+    private String startIdFile;
+    protected T startIdFile(String file) {
+        E.illegalArgumentIf(S.blank(file));
+        startIdFile = file;
+        return me();
+    }
+    public String startIdFile() {
+        if (null == startIdFile) {
+            startIdFile = get(ID_GEN_START_ID_FILE);
+            if (null == startIdFile) {
+                startIdFile = "act_start.id";
+            }
+        }
+        return startIdFile;
+    }
+    private void _mergeStartIdFile(AppConfig conf) {
+        if (null == get(ID_GEN_START_ID_FILE)) {
+            startIdFile = conf.startIdFile;
+        }
+    }
+
+    private IdGenerator.StartIdProvider startIdProvider;
+    protected T startIdProvider(IdGenerator.StartIdProvider provider) {
+        startIdProvider = _.NPE(provider);
+        return me();
+    }
+    public IdGenerator.StartIdProvider startIdProvider() {
+        if (null == startIdProvider) {
+            startIdProvider = get(ID_GEN_START_ID_PROVIDER);
+            if (null == startIdProvider) {
+                startIdProvider = new IdGenerator.StartIdProvider.DefaultStartIdProvider(startIdFile());
+            }
+        }
+        return startIdProvider;
+    }
+    private void _mergeStartIdProvider(AppConfig conf) {
+        if (null == get(ID_GEN_START_ID_PROVIDER)) {
+            startIdProvider = conf.startIdProvider;
+        }
+    }
+
+    private IdGenerator.SequenceProvider sequenceProvider;
+    protected T sequenceProvider(IdGenerator.SequenceProvider provider) {
+        this.sequenceProvider = _.NPE(provider);
+        return me();
+    }
+    public IdGenerator.SequenceProvider sequenceProvider() {
+        if (null == sequenceProvider) {
+            sequenceProvider = get(ID_GEN_SEQ_ID_PROVIDER);
+            if (null == sequenceProvider) {
+                sequenceProvider = new IdGenerator.SequenceProvider.AtomicLongSeq();
+            }
+        }
+        return sequenceProvider;
+    }
+    private void _mergeSequenceProvider(AppConfig conf) {
+        if (null == get(ID_GEN_SEQ_ID_PROVIDER)) {
+            sequenceProvider = conf.sequenceProvider;
+        }
+    }
+
     private String loginUrl = null;
     protected T loginUrl(String url) {
         E.illegalArgumentIf(!url.startsWith("/"), "login URL shall start with '/'");
@@ -294,6 +397,8 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
             jobPoolSize = conf.jobPoolSize;
         }
     }
+
+    private String profile;
 
     private int port = -1;
 
@@ -1025,6 +1130,11 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         _mergeDateTimeFmt(conf);
         _mergeTimeFmt(conf);
         _mergeEncoding(conf);
+        _mergeNodeIdProvider(conf);
+        _mergeIpEffectiveBytes(conf);
+        _mergeStartIdFile(conf);
+        _mergeStartIdProvider(conf);
+        _mergeSequenceProvider(conf);
         _mergeLocale(conf);
         _mergeLocaleResolver(conf);
         _mergeSourceVersion(conf);
