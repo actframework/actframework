@@ -85,10 +85,17 @@ public interface Dao<ID_TYPE, MODEL_TYPE, QUERY_TYPE extends Dao.Query<MODEL_TYP
      * passed in as parameter if it's mutable object or a fresh new object instance with the
      * same ID as the model been passed in.
      *
-     * @param model the model to be reloaded
+     * @param entity the model to be reloaded
      * @return a model been reloaded
      */
-    MODEL_TYPE reload(MODEL_TYPE model);
+    MODEL_TYPE reload(MODEL_TYPE entity);
+
+    /**
+     * Extract ID value from the give model entity
+     * @param entity the model entity object
+     * @return the ID of the entity
+     */
+    ID_TYPE getId(MODEL_TYPE entity);
 
     /**
      * Returns total number of entities of the model type of this {@code Dao} object.
