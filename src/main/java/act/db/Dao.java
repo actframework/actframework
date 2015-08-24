@@ -133,6 +133,18 @@ public interface Dao<ID_TYPE, MODEL_TYPE, QUERY_TYPE extends Dao.Query<MODEL_TYP
     void delete(MODEL_TYPE entity);
 
     /**
+     * Remove entities specified by Query
+     * @param query the query specifies entities to be removed
+     */
+    void delete(QUERY_TYPE query);
+
+    /**
+     * Remove entity by ID
+     * @param id the ID of the entity to be removed
+     */
+    void deleteById(ID_TYPE id);
+
+    /**
      * Drop all entities from persistent storage
      */
     void drop();
