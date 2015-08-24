@@ -133,6 +133,11 @@ public interface Dao<ID_TYPE, MODEL_TYPE, QUERY_TYPE extends Dao.Query<MODEL_TYP
     void delete(MODEL_TYPE entity);
 
     /**
+     * Drop all entities from persistent storage
+     */
+    void drop();
+
+    /**
      * Return a {@link act.db.Dao.Query} of bound to this {@code MODEL_TYPE}
      */
     QUERY_TYPE q();
