@@ -365,7 +365,7 @@ public class App {
      * @return
      */
     public String cuid() {
-        return idGenerator.id();
+        return idGenerator.genId();
     }
 
     public <T extends AppService<T>> T service(Class<T> serviceClass) {

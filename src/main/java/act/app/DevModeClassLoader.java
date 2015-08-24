@@ -159,8 +159,6 @@ public class DevModeClassLoader extends AppClassLoader {
                     l.add(scanner);
                 }
             }
-            EmbeddedClassFinder finder = new EmbeddedClassFinder();
-            l.add(finder);
             Source source = source(className);
             String[] lines = source.code().split("[\\n\\r]+");
             for (int i = 0, j = lines.length; i < j; ++i) {
@@ -169,22 +167,28 @@ public class DevModeClassLoader extends AppClassLoader {
                     scanner.visit(i, line, className);
                 }
             }
-            if (!finder.embeddedClassNames.isEmpty()) {
-                classesNeedByteCodeScan.addAll(finder.embeddedClassNames);
-            }
         }
 
         if (classesNeedByteCodeScan.isEmpty()) {
             return;
         }
 
-        // FIX ME: Embedded class is not scanned
+        final Set<String> embeddedClassNames = C.newSet();
         scanByteCode(classesNeedByteCodeScan, new _.F1<String, byte[]>() {
             @Override
             public byte[] apply(String s) throws NotAppliedException, _.Break {
-                return bytecodeFromSource(s, true);
+                return bytecodeFromSource(s, embeddedClassNames);
             }
         });
+
+        if (!embeddedClassNames.isEmpty()) {
+            scanByteCode(embeddedClassNames, new _.F1<String, byte[]>() {
+                @Override
+                public byte[] apply(String s) throws NotAppliedException, _.Break {
+                    return bytecodeFromSource(s, embeddedClassNames);
+                }
+            });
+        }
     }
 
     private byte[] bytecodeFromSource(String name, boolean compile) {
@@ -196,6 +200,24 @@ public class DevModeClassLoader extends AppClassLoader {
         if (null == bytes && compile) {
             compiler.compile(name);
             bytes = source.bytes();
+        }
+        if (name.contains("$")) {
+            String innerClassName = S.afterFirst(name, "$");
+            return source.bytes(innerClassName);
+        }
+        return bytes;
+    }
+
+    private byte[] bytecodeFromSource(String name, Set<String> embeddedClassNames) {
+        Source source = source(name);
+        if (null == source) {
+            return null;
+        }
+        byte[] bytes = source.bytes();
+        if (null == bytes) {
+            compiler.compile(name);
+            bytes = source.bytes();
+            embeddedClassNames.addAll(C.list(source.innerClassNames()).map(S.F.prepend(name + "$")));
         }
         if (name.contains("$")) {
             String innerClassName = S.afterFirst(name, "$");
@@ -294,34 +316,4 @@ public class DevModeClassLoader extends AppClassLoader {
         }
     };
 
-    private static class EmbeddedClassFinder implements AppSourceCodeScanner {
-
-        private List<String> embeddedClassNames = C.newList();
-        private String className;
-        private static final Pattern P = Pattern.compile("\\s*public\\s+static\\s+class\\s+([_a-zA-Z][a-zA-Z_0-9]*).*");
-
-        @Override
-        public void visit(int lineNumber, String line, String className) {
-            Matcher m = P.matcher(line);
-            if (m.matches()) {
-                embeddedClassNames.add(className + "$" + m.group(1));
-            }
-        }
-
-        @Override
-        public boolean triggerBytecodeScanning() {
-            return false;
-        }
-
-        @Override
-        public void setApp(App app) {
-
-        }
-
-        @Override
-        public boolean start(String className) {
-            this.className = className;
-            return true;
-        }
-    }
 }

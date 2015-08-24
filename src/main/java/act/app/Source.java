@@ -7,6 +7,7 @@ import org.osgl.util.*;
 
 import java.io.File;
 import java.util.Map;
+import java.util.Set;
 import java.util.StringTokenizer;
 
 /**
@@ -105,6 +106,10 @@ public class Source {
 
     public byte[] bytes(String innerClass) {
         return innerBytes.get(innerClass);
+    }
+
+    public Set<String> innerClassNames() {
+        return innerBytes.keySet();
     }
 
     public File file() {

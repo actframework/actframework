@@ -170,6 +170,9 @@ public class AppClassLoader
             logger.debug("scanning %s ...", className);
             dependencies.remove(className);
             byte[] ba = bytecodeProvider.apply(className);
+            if (null == ba) {
+                throw new NullPointerException();
+            }
             List<ByteCodeVisitor> visitors = C.newList();
             List<AppByteCodeScanner> scanners = C.newList();
             for (AppByteCodeScanner scanner : scannerManager.byteCodeScanners()) {

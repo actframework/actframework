@@ -2,11 +2,10 @@ package act.util;
 
 import org.joda.time.DateTime;
 import org.osgl._;
-import org.osgl.util.E;
-import org.osgl.util.IO;
-import org.osgl.util.S;
+import org.osgl.util.*;
 
 import java.io.File;
+import java.security.SecureRandom;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -208,21 +207,22 @@ public class IdGenerator {
         this.sequenceProvider = new SequenceProvider.AtomicLongSeq();
     }
 
-    public String id() {
+    /**
+     * Generate a unique ID across the cluster
+     * @return
+     */
+    public String genId() {
         StringBuilder sb = S.builder();
         sb.append(nodeIdProvider.nodeId()).append(startIdProvider.startId()).append(sequenceProvider.seqId());
         return sb.toString();
     }
 
     public static void main(String[] args) {
-        long ts = _.ms();
-        IdGenerator generator = new IdGenerator(4);
-        System.out.println(generator.id());
-        for (int i = 0; i < 22147201; ++i) {
-            generator.id();
+        for (int i = 0; i < 10; ++i) {
+            //System.out.println(Crypto.genRandomDigits(4));
+            //System.out.println(Crypto.genRandomStr(8));
+            System.out.println(Crypto.genSecret(8));
         }
-        System.out.println(generator.id());
-        System.out.println(_.ms() - ts);
     }
 
     /**
