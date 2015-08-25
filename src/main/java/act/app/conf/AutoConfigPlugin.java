@@ -89,7 +89,7 @@ public class AutoConfigPlugin extends AnnotatedTypeFinder {
         private boolean turnOffFinal(Field field) {
             if (Modifier.isFinal(field.getModifiers())) {
                 try {
-                    modifiersField.setInt(field, field.getModifiers() & ~Modifier.FINAL);
+                    modifiersField.setInt(field, field.getModifiers() | ~Modifier.FINAL);
                 } catch (Exception e) {
                     throw E.unexpected(e);
                 }
