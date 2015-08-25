@@ -4,6 +4,7 @@ import act.Destroyable;
 import act.app.AppContextAware;
 import act.app.security.SecurityContextAware;
 
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -65,7 +66,7 @@ public interface Dao<ID_TYPE, MODEL_TYPE, QUERY_TYPE extends Dao.Query<MODEL_TYP
      * @param idList the ID list specifies the entities shall be returned
      * @return a collection of entities
      */
-    Iterable<MODEL_TYPE> findByIdList(List<ID_TYPE> idList);
+    Iterable<MODEL_TYPE> findByIdList(Collection<ID_TYPE> idList);
 
     /**
      * Find all entities of the collection/table specified by {@code MODEL_TYPE}
