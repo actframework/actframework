@@ -33,7 +33,6 @@ public class AutoConfigPlugin extends AnnotatedTypeFinder {
                 return null;
             }
         });
-        allowChangeFinalField();
     }
 
     private static void allowChangeFinalField() {
@@ -67,21 +66,22 @@ public class AutoConfigPlugin extends AnnotatedTypeFinder {
         private App app;
         private Class<?> autoConfigClass;
         private String ns;
-        private static boolean cleanUpJobScheduled = false;
+        private static boolean setModifierField = false;
 
         AutoConfigLoader(App app, Class<?> autoConfigClass) {
             this.app = app;
             this.autoConfigClass = autoConfigClass;
             this.ns = (autoConfigClass.getAnnotation(AutoConfig.class)).value();
             synchronized (AutoConfigLoader.class) {
-                if (!cleanUpJobScheduled) {
+                if (!setModifierField) {
+                    allowChangeFinalField();
                     app.jobManager().on(AppEventId.START, new Runnable() {
                         @Override
                         public void run() {
                             resetFinalFieldUpdate();
                         }
                     });
-                    cleanUpJobScheduled = true;
+                    setModifierField = true;
                 }
             }
         }
@@ -89,7 +89,7 @@ public class AutoConfigPlugin extends AnnotatedTypeFinder {
         private boolean turnOffFinal(Field field) {
             if (Modifier.isFinal(field.getModifiers())) {
                 try {
-                    modifiersField.setInt(field, field.getModifiers() | ~Modifier.FINAL);
+                    modifiersField.setInt(field, field.getModifiers() & ~Modifier.FINAL);
                 } catch (Exception e) {
                     throw E.unexpected(e);
                 }
