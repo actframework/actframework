@@ -27,6 +27,8 @@ import act.util.SysProps;
 import act.util.UploadFileStorageService;
 import act.view.ActServerError;
 import org.osgl._;
+import org.osgl.cache.CacheService;
+import org.osgl.cache.CacheServiceProvider;
 import org.osgl.http.H;
 import org.osgl.logging.L;
 import org.osgl.logging.Logger;
@@ -82,6 +84,7 @@ public class App {
     private AppServiceRegistry appServiceRegistry;
     private AppCrypto crypto;
     private IdGenerator idGenerator;
+    private CacheService cache;
     // used in dev mode only
     private CompilationException compilationException;
 
@@ -191,6 +194,7 @@ public class App {
         initServiceResourceManager();
         initEventBus();
         loadConfig();
+        initCache();
         initCrypto();
         initJobManager();
         initInterceptorManager();
@@ -275,6 +279,10 @@ public class App {
     }
 
     public BinderManager binderManager() {return binderManager;}
+
+    public CacheService cache() {
+        return cache;
+    }
 
     public MailerConfigManager mailerConfigManager() {
         return mailerConfigManager;
@@ -415,6 +423,9 @@ public class App {
             eventBus().emit(STOP);
             appServiceRegistry.destroy();
             dependencyInjector = null;
+            if (null != cache) {
+                cache.shutdown();
+            }
         }
         appServiceRegistry = new AppServiceRegistry();
     }
@@ -434,6 +445,11 @@ public class App {
 
     private void initEventBus() {
         eventBus = new EventBus(this);
+    }
+
+    private void initCache() {
+        cache = CacheServiceProvider.Impl.Simple.get("_act_app_");
+        cache.startup();
     }
 
     private void initCrypto() {
