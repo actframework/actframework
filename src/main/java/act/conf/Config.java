@@ -115,7 +115,9 @@ public abstract class Config<E extends ConfigKey> extends DestroyableBase {
         }
         key = key.toLowerCase();
         for (Map.Entry<String, Object> entries: raw.entrySet()) {
-            if (entries.getKey().toLowerCase().endsWith(key)) {
+            if (entries.getKey().toLowerCase().equals(key)) {
+                return (T) entries.getValue();
+            } else if (entries.getKey().replace('_', '.').equals(key.replace('_', '.'))) {
                 return (T) entries.getValue();
             }
         }
