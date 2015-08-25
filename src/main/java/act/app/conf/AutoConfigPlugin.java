@@ -17,6 +17,8 @@ import java.util.Set;
 
 public class AutoConfigPlugin extends AnnotatedTypeFinder {
 
+    private static Field modifiersField;
+
     public AutoConfigPlugin() {
         super(AutoConfig.class, new _.F2<App, String, Map<Class<? extends AppByteCodeScanner>, Set<String>>>() {
             @Override
@@ -31,6 +33,24 @@ public class AutoConfigPlugin extends AnnotatedTypeFinder {
                 return null;
             }
         });
+        allowChangeFinalField();
+    }
+
+    private static void allowChangeFinalField() {
+        try {
+            modifiersField = Field.class.getDeclaredField("modifiers");
+            modifiersField.setAccessible(true);
+        } catch (Exception e) {
+            throw E.unexpected(e);
+        }
+    }
+
+    private static void resetFinalFieldUpdate() {
+        try {
+            modifiersField.setAccessible(false);
+        } catch (Exception e) {
+            throw E.unexpected(e);
+        }
     }
 
     /**
@@ -47,11 +67,43 @@ public class AutoConfigPlugin extends AnnotatedTypeFinder {
         private App app;
         private Class<?> autoConfigClass;
         private String ns;
+        private static boolean cleanUpJobScheduled = false;
 
         AutoConfigLoader(App app, Class<?> autoConfigClass) {
             this.app = app;
             this.autoConfigClass = autoConfigClass;
             this.ns = (autoConfigClass.getAnnotation(AutoConfig.class)).value();
+            synchronized (AutoConfigLoader.class) {
+                if (!cleanUpJobScheduled) {
+                    app.jobManager().on(AppEventId.START, new Runnable() {
+                        @Override
+                        public void run() {
+                            resetFinalFieldUpdate();
+                        }
+                    });
+                    cleanUpJobScheduled = true;
+                }
+            }
+        }
+
+        private boolean turnOffFinal(Field field) {
+            if (Modifier.isFinal(field.getModifiers())) {
+                try {
+                    modifiersField.setInt(field, field.getModifiers() & ~Modifier.FINAL);
+                } catch (Exception e) {
+                    throw E.unexpected(e);
+                }
+                return true;
+            }
+            return false;
+        }
+
+        private void turnOnFinal(Field field) {
+            try {
+                modifiersField.setInt(field, field.getModifiers() | Modifier.FINAL);
+            } catch (Exception e) {
+                throw E.unexpected(e);
+            }
         }
 
         void load() {
@@ -76,13 +128,20 @@ public class AutoConfigPlugin extends AnnotatedTypeFinder {
 
         private void loadAutoConfig_(Field f, String ns) {
             String key = ns + "." + f.getName();
-            Object val = app.config().get(key);
+            Object val = app.config().getIgnoreCase(key);
             if (null == val) {
-                return;
+                // try to change the "prefix.key_x_an_y" form to "prefix.key.x.an.y" form
+                key = key.replace('_', '.');
+                val = app.config().getIgnoreCase(key);
+                if (null == val) {
+                    return;
+                }
             }
             Class<?> type = f.getType();
+            boolean isFinal = false;
             try {
-                //f.setAccessible(true);
+                // we really want it to be public, so comment out: f.setAccessible(true);
+                isFinal = turnOffFinal(f);
                 if (String.class.equals(type)) {
                     f.set(null, val);
                 } else if (Integer.TYPE.equals(type) || Integer.class.equals(type)) {
@@ -106,6 +165,10 @@ public class AutoConfigPlugin extends AnnotatedTypeFinder {
                 }
             } catch (Exception e) {
                 throw E.invalidConfiguration("Error get configuration " + key + ": " + e.getMessage());
+            } finally {
+                if (isFinal) {
+                    turnOnFinal(f);
+                }
             }
         }
     }

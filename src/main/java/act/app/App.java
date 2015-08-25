@@ -439,7 +439,7 @@ public class App {
         moreRouters = C.newMap();
         List<NamedPort> ports = config().namedPorts();
         for (NamedPort port: ports) {
-            moreRouters.put(port, new Router(this));
+            moreRouters.put(port, new Router(this, port.name()));
         }
     }
 

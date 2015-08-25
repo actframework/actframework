@@ -32,7 +32,7 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
 
     private final static Logger logger = L.get(ControllerByteCodeScanner.class);
     private Router router;
-    private String portName = "";
+    private String[] ports = {};
     private ControllerClassMetaInfo classInfo;
     private volatile ControllerClassMetaInfoManager classInfoBase;
 
@@ -176,9 +176,23 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
             public void visit(String name, Object value) {
                 if ("value".equals(name)) {
                     classInfo.contextPath(value.toString());
-                } else if ("port".equals(name)) {
-                    portName = value.toString();
                 }
+            }
+
+            @Override
+            public AnnotationVisitor visitArray(String name) {
+                AnnotationVisitor av = super.visitArray(name);
+                if ("port".equals(name)) {
+                    return new StringArrayVisitor(av) {
+                        @Override
+                        public void visitEnd() {
+                            ports = new String[strings.size()];
+                            ports = strings.toArray(ports);
+                            super.visitEnd();
+                        }
+                    };
+                }
+                return av;
             }
         }
 
@@ -469,24 +483,31 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
                     }
                     StringBuilder sb = S.builder(classInfo.className().replace('/', '.')).append(".").append(methodName);
                     String action = sb.toString();
-                    Router r = app().router(portName);
-                    E.NPE(r);
-
-                    for (String actionPath : paths) {
-                        String ctxPath = classInfo.contextPath();
-                        if (!(S.blank(ctxPath) || "/".equals(ctxPath))) {
-                            if (ctxPath.endsWith("/")) {
-                                ctxPath = ctxPath.substring(0, ctxPath.length() - 1);
-                            }
-                            sb = new StringBuilder(ctxPath);
-                            if (!actionPath.startsWith("/")) {
-                                sb.append("/");
-                            }
-                            sb.append(actionPath);
-                            actionPath = sb.toString();
+                    List<Router> routers = C.newList();
+                    if (null == ports || ports.length == 0) {
+                        routers.add(app().router());
+                    } else {
+                        for (String portName : ports) {
+                            routers.add(app().router(portName));
                         }
-                        for (H.Method m : httpMethods) {
-                            r.addMappingIfNotMapped(m, actionPath, action);
+                    }
+                    for (Router r: routers) {
+                        for (String actionPath : paths) {
+                            String ctxPath = classInfo.contextPath();
+                            if (!(S.blank(ctxPath) || "/".equals(ctxPath))) {
+                                if (ctxPath.endsWith("/")) {
+                                    ctxPath = ctxPath.substring(0, ctxPath.length() - 1);
+                                }
+                                sb = new StringBuilder(ctxPath);
+                                if (!actionPath.startsWith("/")) {
+                                    sb.append("/");
+                                }
+                                sb.append(actionPath);
+                                actionPath = sb.toString();
+                            }
+                            for (H.Method m : httpMethods) {
+                                r.addMappingIfNotMapped(m, actionPath, action);
+                            }
                         }
                     }
                 }

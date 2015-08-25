@@ -46,6 +46,7 @@ public class Router extends AppServiceBase<Router> {
     private RequestHandlerResolver handlerLookup;
     private C.Set<String> actionNames = C.newSet();
     private AppConfig appConfig;
+    private String portId;
 
     private void initControllerLookup(RequestHandlerResolver lookup) {
         if (null == lookup) {
@@ -60,13 +61,22 @@ public class Router extends AppServiceBase<Router> {
     }
 
     public Router(App app) {
-        this(null, app);
+        this(null, app, null);
+    }
+
+    public Router(App app, String portId) {
+        this(null, app, portId);
     }
 
     public Router(RequestHandlerResolver handlerLookup, App app) {
+        this(handlerLookup, app, null);
+    }
+
+    public Router(RequestHandlerResolver handlerLookup, App app, String portId) {
         super(app);
         initControllerLookup(handlerLookup);
         this.appConfig = app.config();
+        this.portId = portId;
     }
 
     @Override
@@ -78,6 +88,10 @@ public class Router extends AppServiceBase<Router> {
         handlerLookup.destroy();
         actionNames.clear();
         appConfig = null;
+    }
+
+    public String portId() {
+        return portId;
     }
 
     // --- routing ---

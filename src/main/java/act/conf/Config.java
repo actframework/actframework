@@ -105,6 +105,23 @@ public abstract class Config<E extends ConfigKey> extends DestroyableBase {
         }
     }
 
+    public <T> T getIgnoreCase(String key) {
+        if (key.startsWith(PREFIX)) {
+            key = key.substring(PREFIX_LEN);
+        }
+        T t = get(key);
+        if (null != t) {
+            return t;
+        }
+        key = key.toLowerCase();
+        for (Map.Entry<String, Object> entries: raw.entrySet()) {
+            if (entries.getKey().toLowerCase().endsWith(key)) {
+                return (T) entries.getValue();
+            }
+        }
+        return null;
+    }
+
     public Map rawConfiguration() {
         return raw;
     }

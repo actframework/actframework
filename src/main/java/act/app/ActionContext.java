@@ -29,6 +29,7 @@ public class ActionContext extends ActContext.ActContextBase<ActionContext> impl
 
     public static final String ATTR_HANDLER = "__act_handler__";
 
+    private String portId;
     private H.Request request;
     private H.Response response;
     private H.Session session;
@@ -93,8 +94,8 @@ public class ActionContext extends ActContext.ActContextBase<ActionContext> impl
     }
 
     public ActionContext router(Router router) {
-        E.NPE(router);
-        this.router = router;
+        this.router = _.notNull(router);
+        this.portId = router.portId();
         return this;
     }
 
@@ -137,6 +138,10 @@ public class ActionContext extends ActContext.ActContextBase<ActionContext> impl
     public ActionContext accept(H.Format fmt) {
         req().accept(fmt);
         return this;
+    }
+
+    public String portId() {
+        return portId;
     }
 
     public Locale locale() {
