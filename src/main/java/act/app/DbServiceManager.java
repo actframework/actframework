@@ -20,7 +20,7 @@ import java.util.EventObject;
 import java.util.HashMap;
 import java.util.Map;
 
-public class DbServiceManager extends AppServiceBase<DbServiceManager> {
+public class DbServiceManager extends AppServiceBase<DbServiceManager> implements DaoLocator {
 
     public static final String DEFAULT = "default";
 
@@ -60,6 +60,7 @@ public class DbServiceManager extends AppServiceBase<DbServiceManager> {
         modelDaoMap.clear();
     }
 
+    @Override
     public Dao dao(Class<?> modelClass) {
         Class<? extends Dao> daoClass = modelDaoMap.get(modelClass);
         E.NPE(daoClass);
