@@ -43,7 +43,12 @@ abstract class JobTrigger {
         String v = anno.value();
         if (v.startsWith("cron.")) {
             v = (String) config.get(v);
-            E.NPE(v);
+        } else if (v.startsWith("${") && v.endsWith("}")) {
+            v = v.substring(2, v.length() - 1);
+            v = (String) config.get(v);
+        }
+        if (S.blank(v)) {
+            throw E.invalidConfiguration("Cannot find configuration for cron: %s", anno.value());
         }
         return cron(v);
     }
@@ -68,9 +73,12 @@ abstract class JobTrigger {
         String delay = anno.value();
         if (delay.startsWith("delay.")) {
             delay = (String) config.get(delay);
-            if (S.blank(delay)) {
-                throw E.invalidConfiguration("Cannot find configuration for delay: %s", anno.value());
-            }
+        } else if (delay.startsWith("${") && delay.endsWith("}")) {
+            delay = delay.substring(2, delay.length() - 1);
+            delay = (String) config.get(delay);
+        }
+        if (S.blank(delay)) {
+            throw E.invalidConfiguration("Cannot find configuration for delay: %s", anno.value());
         }
         return fixedDelay(delay);
     }
@@ -79,9 +87,12 @@ abstract class JobTrigger {
         String duration = anno.value();
         if (duration.startsWith("every.")) {
             duration = (String) config.get(duration);
-            if (S.blank(duration)) {
-                throw E.invalidConfiguration("Cannot find configuration for duration: %s", anno.value());
-            }
+        } else if (duration.startsWith("${") && duration.endsWith("}")) {
+            duration = duration.substring(2, duration.length() - 1);
+            duration = (String) config.get(duration);
+        }
+        if (S.blank(duration)) {
+            throw E.invalidConfiguration("Cannot find configuration for duration: %s", anno.value());
         }
         return null;
     }

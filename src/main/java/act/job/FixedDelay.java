@@ -26,6 +26,7 @@ public @interface FixedDelay {
      * set to {@code 1s} one second</p>
      * <p>The value shall not be zero or negative, otherwise IllegalArgumentException
      * will be thrown out</p>
+     * <p>Default value: {@code 60s}</p>
      */
-    String value() default "1s";
+    String value() default "60s";
 }

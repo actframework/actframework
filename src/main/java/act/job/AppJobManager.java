@@ -10,6 +10,7 @@ import org.joda.time.Seconds;
 import org.osgl.util.C;
 import org.osgl.util.E;
 import org.osgl.util.S;
+import org.rythmengine.utils.Time;
 
 import java.util.EventObject;
 import java.util.Map;
@@ -55,6 +56,31 @@ public class AppJobManager extends AppServiceBase<AppJobManager> {
 
     public void now(Runnable runnable) {
         executor().submit(runnable);
+    }
+
+    public <T> Future<T> delay(Callable<T> callable, long delay, TimeUnit timeUnit) {
+        return executor().schedule(callable, delay, timeUnit);
+    }
+
+    public void delay(Runnable runnable, long delay, TimeUnit timeUnit) {
+        executor().schedule(runnable, delay, timeUnit);
+    }
+
+    public <T> Future<T> delay(Callable<T> callable, String delay) {
+        int seconds = parseTime(delay);
+        return executor().schedule(callable, seconds, TimeUnit.SECONDS);
+    }
+
+    public void delay(Runnable runnable, String delay) {
+        int seconds = parseTime(delay);
+        executor().schedule(runnable, seconds, TimeUnit.SECONDS);
+    }
+
+    private int parseTime(String timeDuration) {
+        if (timeDuration.startsWith("${") && timeDuration.endsWith("}")) {
+            timeDuration = (String) app().config().get(timeDuration.substring(2, timeDuration.length() - 1));
+        }
+        return Time.parseDuration(timeDuration);
     }
 
     public void on(DateTime instant, Runnable runnable) {
