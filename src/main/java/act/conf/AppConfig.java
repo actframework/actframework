@@ -58,6 +58,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     public AppConfig<T> app(App app) {
         E.NPE(app);
         this.app = app;
+        AppConfigKey.onApp(app);
         return this;
     }
 
@@ -1004,7 +1005,8 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
 
     public SessionMapper sessionMapper() {
         if (null == sessionMapper) {
-            sessionMapper = SessionMapper.DefaultSessionMapper.wrap((SessionMapper)get(AppConfigKey.SESSION_MAPPER));
+            Object o = get(SESSION_MAPPER);
+            sessionMapper = SessionMapper.DefaultSessionMapper.wrap((SessionMapper) o);
         }
         return sessionMapper;
     }

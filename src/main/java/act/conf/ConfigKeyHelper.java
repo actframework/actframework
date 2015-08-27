@@ -22,9 +22,23 @@ class ConfigKeyHelper {
 
     private static Logger logger = L.get(ConfigKeyHelper.class);
     private _.F0<Act.Mode> mode;
+    private _.F0<ClassLoader> classLoaderProvider;
 
+    public ConfigKeyHelper(_.F0<Act.Mode> mode, final ClassLoader cl) {
+        this.mode = mode;
+        this.classLoaderProvider = new _.F0<ClassLoader>() {
+            @Override
+            public ClassLoader apply() throws NotAppliedException, _.Break {
+                return cl;
+            }
+        };
+    }
     public ConfigKeyHelper(_.F0<Act.Mode> mode) {
         this.mode = mode;
+    }
+    ConfigKeyHelper classLoaderProvider(_.F0<ClassLoader> provider) {
+        this.classLoaderProvider = provider;
+        return this;
     }
     <T> T getConfiguration(final ConfigKey confKey, Map<String, ?> configuration) {
         String key = confKey.key();
@@ -191,12 +205,16 @@ class ConfigKeyHelper {
         return toBoolean(v);
     }
 
+    private ClassLoader myClassLoader() {
+        return classLoaderProvider.apply();
+    }
+
     private <T> T getImpl(Map<String, ?> configuration, String key, String suffix, _.F0<?> defVal) {
         Object v = getValFromAliases(configuration, key, "impl", defVal);
         if (null == v) return null;
         if (v instanceof Class) {
             try {
-                return _.newInstance((Class<T>) v);
+                return _.newInstance((Class<T>) v, myClassLoader());
             } catch (Exception e) {
                 throw new ConfigurationException(e, "Error getting implementation configuration: %s", key);
             }
@@ -204,7 +222,7 @@ class ConfigKeyHelper {
         if (!(v instanceof String)) return (T) v;
         String clsName = (String) v;
         try {
-            return _.newInstance(clsName);
+            return _.newInstance(clsName, myClassLoader());
         } catch (Exception e) {
             throw new ConfigurationException(e, "Error getting implementation configuration: %s", key);
         }

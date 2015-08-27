@@ -59,7 +59,7 @@ public enum ActConfigKey implements ConfigKey {
     NETWORK_SERVER_IMPL("xio.impl");
 
     private static Logger logger = L.get(AppConfigKey.class);
-    private static ConfigKeyHelper helper = new ConfigKeyHelper(Act.F.MODE_ACCESSOR);
+    private static ConfigKeyHelper helper = new ConfigKeyHelper(Act.F.MODE_ACCESSOR, Act.class.getClassLoader());
 
     private String key;
     private Object defVal;

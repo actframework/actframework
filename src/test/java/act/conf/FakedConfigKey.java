@@ -36,7 +36,7 @@ public enum FakedConfigKey implements ConfigKey {
         }
     }
     ;
-    private static ConfigKeyHelper helper = new ConfigKeyHelper(Act.F.MODE_ACCESSOR);
+    private static ConfigKeyHelper helper = new ConfigKeyHelper(Act.F.MODE_ACCESSOR, FakedConfigKey.class.getClassLoader());
 
     private String key;
     private Object defVal;

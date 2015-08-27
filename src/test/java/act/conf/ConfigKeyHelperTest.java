@@ -18,7 +18,7 @@ public class ConfigKeyHelperTest extends TestBase {
         public Act.Mode apply() throws NotAppliedException, _.Break {
             return Act.Mode.DEV;
         }
-    });
+    }, ConfigKeyHelperTest.class.getClassLoader());
 
     private C.Map<String, Object> conf;
 

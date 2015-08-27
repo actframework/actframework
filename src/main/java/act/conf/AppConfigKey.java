@@ -4,6 +4,8 @@ import act.Act;
 import act.app.App;
 import act.view.TemplatePathResolver;
 import act.view.View;
+import org.osgl._;
+import org.osgl.exception.NotAppliedException;
 import org.osgl.util.E;
 import org.osgl.util.S;
 
@@ -453,6 +455,15 @@ public enum AppConfigKey implements ConfigKey {
     private AppConfigKey(String key, Object defVal) {
         this.key = key;
         this.defVal = defVal;
+    }
+
+    public static void onApp(final App app) {
+        helper.classLoaderProvider(new _.F0<ClassLoader>() {
+            @Override
+            public ClassLoader apply() throws NotAppliedException, _.Break {
+                return app.classLoader();
+            }
+        });
     }
 
     /**

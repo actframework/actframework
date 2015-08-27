@@ -41,6 +41,16 @@ public abstract class RequestImplBase<T extends H.Request> extends H.Request<T> 
     public H.Method method() {
         if (null == method) {
             method = _method();
+            if (method == H.Method.POST) {
+                // check the method overload
+                String s = header(H.Header.Names.X_HTTP_METHOD_OVERRIDE);
+                if (S.blank(s)) {
+                    s = paramVal("_method"); // Spring use this
+                }
+                if (S.notBlank(s)) {
+                    method = H.Method.valueOfIgnoreCase(s);
+                }
+            }
         }
         return method;
     }
