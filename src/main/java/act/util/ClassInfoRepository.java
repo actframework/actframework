@@ -1,5 +1,6 @@
 package act.util;
 
+import org.osgl._;
 import org.osgl.util.C;
 
 import java.util.Map;
@@ -18,10 +19,27 @@ public class ClassInfoRepository extends DestroyableBase {
     }
 
     public ClassNode node(String name) {
+        String cname = canonicalName(name);
+        ClassNode node = classes.get(cname);
+        if (null == node) {
+            if (name.contains("ActAAAService")) {
+                _.nil();
+            }
+            ClassNode newNode = new ClassNode(name.replace('/', '.'), cname, this);
+            node = classes.putIfAbsent(cname, newNode);
+            if (null == node) {
+                node = newNode;
+            }
+        }
+        return node;
+    }
+
+    public ClassNode node(String name, String canonicalName) {
+        String cname = canonicalName(name);
         ClassNode node = classes.get(name);
         if (null == node) {
-            ClassNode newNode = new ClassNode(name, this);
-            node = classes.putIfAbsent(name, newNode);
+            ClassNode newNode = new ClassNode(name.replace('/', '.'), canonicalName, this);
+            node = classes.putIfAbsent(cname, newNode);
             if (null == node) {
                 node = newNode;
             }
@@ -52,5 +70,9 @@ public class ClassInfoRepository extends DestroyableBase {
         } catch (InternalError e) {
             return null;
         }
+    }
+
+    public static String canonicalName(String name) {
+        return name.replace('/', '.').replace('$', '.');
     }
 }

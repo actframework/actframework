@@ -30,6 +30,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import static act.util.ClassInfoRepository.canonicalName;
+import static org.osgl._.nil;
 import static org.osgl._.notNull;
 
 /**
@@ -173,6 +175,7 @@ public class AppClassLoader
             if (null == ba) {
                 throw new NullPointerException();
             }
+            libClsCache.put(className, ba);
             List<ByteCodeVisitor> visitors = C.newList();
             List<AppByteCodeScanner> scanners = C.newList();
             for (AppByteCodeScanner scanner : scannerManager.byteCodeScanners()) {
@@ -228,7 +231,9 @@ public class AppClassLoader
                 visitors.add(scanner.byteCodeVisitor());
             }
             ByteCodeVisitor theVisitor = ByteCodeVisitor.chain(visitors);
-            ClassReader cr = new ClassReader(bytecodeProvider.apply(className));
+            byte[] bytes = bytecodeProvider.apply(className);
+            libClsCache.put(className, bytes);
+            ClassReader cr = new ClassReader(bytes);
             cr.accept(theVisitor, 0);
             for (AppByteCodeScanner scanner : scanners) {
                 scanner.scanFinished(className);
@@ -260,6 +265,17 @@ public class AppClassLoader
 
     private void preloadLib() {
         libClsCache.putAll(Jars.buildClassNameIndex(RuntimeDirs.lib(app), app().config().appClassTester().negate()));
+    }
+
+    void loadClasses() {
+        for (String key : libClsCache.keySet()) {
+            try {
+                Class<?> c = loadClass(key, true);
+                cache(c);
+            } catch (Exception e) {
+                logger.warn(e, "error loading class");
+            }
+        }
     }
 
     protected void preloadClasses() {
@@ -366,6 +382,38 @@ public class AppClassLoader
     byte[] enhancedBytecode(String name) {
         byte[] bytecode = bytecode(name, false);
         return null == bytecode ? null : enhance(name, bytecode);
+    }
+
+    private synchronized ClassNode cache(Class<?> c) {
+        String cname = canonicalName(c);
+        if (null == cname) {
+            return null;
+        }
+        ClassInfoRepository repo = (ClassInfoRepository)classInfoRepository();
+        if (repo.has(cname)) {
+            return repo.node(cname);
+        }
+        String name = c.getName();
+        ClassNode node = repo.node(name, cname);
+        node.modifiers(c.getModifiers());
+        Class[] ca = c.getInterfaces();
+        for (Class pc: ca) {
+            if (pc == Object.class) continue;
+            String pcname = canonicalName(pc);
+            if (null != pcname) {
+                cache(pc);
+                node.addInterface(pcname);
+            }
+        }
+        Class pc = c.getSuperclass();
+        if (null != pc && Object.class != pc) {
+            String pcname = canonicalName(pc);
+            if (null != pcname) {
+                cache(pc);
+                node.parent(pcname);
+            }
+        }
+        return node;
     }
 
     private _.F1<String, byte[]> bytecodeLookup = new _.F1<String, byte[]>() {

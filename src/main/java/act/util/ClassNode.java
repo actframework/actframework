@@ -11,24 +11,38 @@ public class ClassNode {
 
     private ClassInfoRepository infoBase;
     private String name;
+    private String canonicalName;
     private int modifiers;
     private ClassNode parent;
     private Set<ClassNode> children = C.newSet();
     private Set<ClassNode> interfaces = C.newSet();
 
     ClassNode(String name, int modifiers, ClassInfoRepository infoBase) {
-        this(name, infoBase);
+        this(name, name.replace('$', '.'), modifiers, infoBase);
+    }
+
+    ClassNode(String name, String canonicalName, int modifiers, ClassInfoRepository infoBase) {
+        this(name, canonicalName, infoBase);
         this.modifiers = modifiers;
     }
 
     ClassNode(String name, ClassInfoRepository infoBase) {
+        this(name, name.replace('$', '.'), infoBase);
+    }
+
+    ClassNode(String name, String canonicalName, ClassInfoRepository infoBase) {
         E.NPE(name, infoBase);
         this.name = name;
+        this.canonicalName = canonicalName;
         this.infoBase = infoBase;
     }
 
     public String name() {
         return name;
+    }
+
+    public String canonicalName() {
+        return canonicalName;
     }
 
     public ClassNode modifiers(int modifiers) {

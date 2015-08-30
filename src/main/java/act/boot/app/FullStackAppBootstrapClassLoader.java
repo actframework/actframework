@@ -97,9 +97,10 @@ public class FullStackAppBootstrapClassLoader extends BootstrapClassLoader imple
         if (null == cname) {
             return null;
         }
+        String name = c.getName();
         ClassInfoRepository repo = (ClassInfoRepository)classInfoRepository();
         if (repo.has(cname)) {
-            return repo.node(cname);
+            return repo.node(name, cname);
         }
         actClasses.add(c);
         ClassNode node = repo.node(cname);
