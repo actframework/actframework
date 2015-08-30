@@ -43,18 +43,42 @@ public class EventBus extends AppServiceBase<EventBus> {
     }
 
     public synchronized EventBus bind(AppEventId appEventId, AppEventListener l) {
+        if (app().eventEmitted(appEventId)) {
+            try {
+                l.on(appEventLookup.get(appEventId));
+            } catch (Exception e) {
+                logger.warn(e, "error calling event handler");
+            }
+            return this;
+        }
         List<AppEventListener> list = appEventListeners[appEventId.ordinal()];
         if (!list.contains(l)) list.add(l);
         return this;
     }
 
     public synchronized EventBus bindAsync(AppEventId appEventId, AppEventListener l) {
+        if (app().eventEmitted(appEventId)) {
+            try {
+                l.on(appEventLookup.get(appEventId));
+            } catch (Exception e) {
+                logger.warn(e, "error calling event handler");
+            }
+            return this;
+        }
         List<AppEventListener> list = asyncAppEventListeners[appEventId.ordinal()];
         if (!list.contains(l)) list.add(l);
         return this;
     }
 
     public synchronized EventBus bindSync(AppEventId appEventId, AppEventListener l) {
+        if (app().eventEmitted(appEventId)) {
+            try {
+                l.on(appEventLookup.get(appEventId));
+            } catch (Exception e) {
+                logger.warn(e, "error calling event handler");
+            }
+            return this;
+        }
         List<AppEventListener> list = appEventListeners[appEventId.ordinal()];
         if (!list.contains(l)) list.add(l);
         return this;

@@ -3,6 +3,12 @@ package act.app.event;
 import act.app.App;
 
 public enum AppEventId {
+    CONFIG_LOADED() {
+        @Override
+        public AppEvent of(App app) {
+            return new AppConfigLoaded(app);
+        }
+    },
     DB_SVC_LOADED () {
         @Override
         public AppEvent of(App app) {
@@ -27,6 +33,16 @@ public enum AppEventId {
         @Override
         public AppEvent of(App app) {
             return new AppCodeScanned(app);
+        }
+    }, APP_ACT_PLUGIN_LOADED {
+        @Override
+        public AppEvent of(App app) {
+            return new AppCodeScanned(app);
+        }
+    }, ROUTER_LOADED() {
+        @Override
+        public AppEvent of(App app) {
+            return new AppRouterLoaded(app);
         }
     }, DEPENDENCY_INJECTOR_LOADED {
         @Override

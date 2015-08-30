@@ -19,12 +19,10 @@ import act.job.AppJobManager;
 import act.job.bytecode.JobByteCodeScanner;
 import act.mail.MailerConfigManager;
 import act.mail.bytecode.MailerByteCodeScanner;
+import act.plugin.Plugin;
 import act.route.RouteTableRouterBuilder;
 import act.route.Router;
-import act.util.ClassInfoByteCodeScanner;
-import act.util.IdGenerator;
-import act.util.SysProps;
-import act.util.UploadFileStorageService;
+import act.util.*;
 import act.view.ActServerError;
 import org.osgl._;
 import org.osgl.cache.CacheService;
@@ -42,6 +40,7 @@ import java.io.File;
 import java.util.EventObject;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static act.app.event.AppEventId.*;
 
@@ -87,6 +86,8 @@ public class App {
     private CacheService cache;
     // used in dev mode only
     private CompilationException compilationException;
+    private AppEventId currentState;
+    private Set<AppEventId> eventEmitted;
 
     protected App() {
         INST = this;
@@ -192,23 +193,30 @@ public class App {
         profile = null;
         Act.viewManager().reload(this);
         initServiceResourceManager();
+        eventEmitted = C.newSet();
         initEventBus();
         loadConfig();
+        emit(CONFIG_LOADED);
+
         initCache();
         initCrypto();
         initJobManager();
+
         initInterceptorManager();
         initResolverManager();
         initBinderManager();
         initUploadFileStorageService();
         initRouters();
+
         initDbServiceManager();
-        eventBus().emit(DB_SVC_LOADED);
+        emit(DB_SVC_LOADED);
+
         loadGlobalPlugin();
         initScannerManager();
         loadActScanners();
         loadBuiltInScanners();
-        eventBus().emit(PRE_LOAD_CLASSES);
+        emit(PRE_LOAD_CLASSES);
+
         initClassLoader();
         try {
             scanAppCodes();
@@ -217,9 +225,11 @@ public class App {
             compilationException = e;
             throw new ActServerError(e, this);
         }
-        eventBus().emit(APP_CODE_SCANNED);
+        emit(APP_CODE_SCANNED);
+
         initMailerConfigManager();
         loadRoutes();
+        emit(ROUTER_LOADED);
 
         // setting context class loader here might lead to memory leaks
         // and cause weird problems as class loader been set to thread
@@ -233,9 +243,9 @@ public class App {
         // already, it doesn't matter we emit the event again
         // because once app event is consumed the event listeners
         // are cleared
-        eventBus().emit(DEPENDENCY_INJECTOR_LOADED);
-        eventBus().emit(PRE_START);
-        eventBus().emit(START);
+        emit(DEPENDENCY_INJECTOR_LOADED);
+        emit(PRE_START);
+        emit(START);
     }
 
     public AppBuilder builder() {
@@ -403,6 +413,22 @@ public class App {
         return this;
     }
 
+    public void emit(AppEventId appEvent) {
+        EventBus bus = eventBus();
+        if (null != bus) {
+            bus.emit(appEvent);
+        }
+        eventEmitted().add(appEvent);
+    }
+
+    public Set<AppEventId> eventEmitted() {
+        return eventEmitted;
+    }
+
+    public boolean eventEmitted(AppEventId appEvent) {
+        return eventEmitted().contains(appEvent);
+    }
+
     private void loadConfig() {
         File conf = RuntimeDirs.conf(this);
         logger.debug("loading app configuration: %s ...", appBase.getPath());
@@ -510,9 +536,9 @@ public class App {
 
     private void initClassLoader() {
         classLoader = Act.mode().classLoader(this);
-        eventBus().emit(AppEventId.CLASS_LOADER_INITIALIZED);
+        emit(AppEventId.CLASS_LOADER_INITIALIZED);
         classLoader.preload();
-        eventBus().emit(AppEventId.CLASS_LOADED);
+        emit(AppEventId.CLASS_LOADED);
     }
 
     private void initResolverManager() {

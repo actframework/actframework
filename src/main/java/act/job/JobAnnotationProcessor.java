@@ -57,7 +57,7 @@ public class JobAnnotationProcessor extends AppHolderBase<JobAnnotationProcessor
         String ret = expression.trim();
         if (ret.startsWith(prefix)) {
             ret = (String) app().config().get(expression);
-            if (S.blank(expression)) {
+            if (S.blank(ret)) {
                 throw E.invalidConfiguration("Expression configuration not found: %s", expression);
             }
         }

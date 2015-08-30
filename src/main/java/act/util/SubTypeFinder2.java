@@ -37,10 +37,9 @@ public abstract class SubTypeFinder2<T> extends AppServicePlugin {
             public void on(EventObject event) throws Exception {
                 ClassInfoRepository repo = app.classLoader().classInfoRepository();
                 ClassNode parent = repo.node(targetType.getName());
-                parent.accept(new _.Visitor<ClassNode>() {
+                parent.findPublicNotAbstract(new _.Visitor<ClassNode>() {
                     @Override
                     public void visit(ClassNode classNode) throws _.Break {
-                        if (!classNode.publicNotAbstract()) return;
                         final Class<T> c = _.classForName(classNode.name(), app.classLoader());
                         found(c, app);
                     }
