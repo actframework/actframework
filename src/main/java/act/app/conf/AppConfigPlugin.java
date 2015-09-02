@@ -1,5 +1,6 @@
 package act.app.conf;
 
+import act.ActComponent;
 import act.app.App;
 import act.app.AppByteCodeScanner;
 import act.app.AppClassLoader;
@@ -17,6 +18,7 @@ import java.util.Set;
  * any user defined {@link AppConfigurator} implementation and use it to populate
  * {@link act.conf.AppConfig} default values
  */
+@ActComponent
 public class AppConfigPlugin extends SubTypeFinder {
     public AppConfigPlugin() {
         super(true, false, AppConfigurator.class, new _.F2<App, String, Map<Class<? extends AppByteCodeScanner>, Set<String>>>() {
@@ -40,6 +42,7 @@ public class AppConfigPlugin extends SubTypeFinder {
         return true;
     }
 
+    @ActComponent
     private static class AppConfiguratorClassLoader extends AppClassLoader {
         AppClassLoader p;
         protected AppConfiguratorClassLoader(AppClassLoader parent) {

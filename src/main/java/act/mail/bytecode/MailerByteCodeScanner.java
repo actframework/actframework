@@ -1,5 +1,6 @@
 package act.mail.bytecode;
 
+import act.ActComponent;
 import act.app.AppByteCodeScannerBase;
 import act.asm.*;
 import act.asm.signature.SignatureReader;
@@ -24,6 +25,7 @@ import java.util.Map;
 /**
  * Mailer scanner implementation
  */
+@ActComponent
 public class MailerByteCodeScanner extends AppByteCodeScannerBase {
 
     private final static Logger logger = L.get(MailerByteCodeScanner.class);

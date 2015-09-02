@@ -1,5 +1,6 @@
 package act.job;
 
+import act.ActComponent;
 import act.app.App;
 import act.app.AppHolderBase;
 import act.job.meta.JobClassMetaInfo;
@@ -10,6 +11,7 @@ import org.osgl.util.S;
 
 import java.lang.annotation.Annotation;
 
+@ActComponent
 public class JobAnnotationProcessor extends AppHolderBase<JobAnnotationProcessor> {
 
     private AppJobManager manager;

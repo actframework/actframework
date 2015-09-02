@@ -1,5 +1,6 @@
 package act.mail.bytecode;
 
+import act.ActComponent;
 import act.app.App;
 import act.asm.ClassVisitor;
 import act.asm.MethodVisitor;
@@ -13,6 +14,7 @@ import org.osgl._;
 /**
  * Enhance mailer class
  */
+@ActComponent
 public class MailerEnhancer extends AppByteCodeEnhancer<MailerEnhancer> {
     private MailerClassMetaInfoHolder classInfoHolder;
     private String className;

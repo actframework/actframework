@@ -1,5 +1,6 @@
 package act.app;
 
+import act.ActComponent;
 import act.handler.builtin.controller.AfterInterceptor;
 import act.handler.builtin.controller.BeforeInterceptor;
 import act.handler.builtin.controller.ExceptionInterceptor;
@@ -16,6 +17,7 @@ import static act.handler.builtin.controller.RequestHandlerProxy.insertIntercept
 /**
  * Manage interceptors at App level
  */
+@ActComponent
 public class AppInterceptorManager extends AppServiceBase<AppInterceptorManager> {
     private C.List<BeforeInterceptor> beforeInterceptors = C.newList();
     private C.List<AfterInterceptor> afterInterceptors = C.newList();

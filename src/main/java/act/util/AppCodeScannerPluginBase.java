@@ -1,6 +1,7 @@
 package act.util;
 
 import act.Act;
+import act.ActComponent;
 import act.app.App;
 import act.app.AppByteCodeScanner;
 import act.app.AppSourceCodeScanner;
@@ -8,6 +9,7 @@ import act.plugin.Plugin;
 import org.osgl.logging.L;
 import org.osgl.logging.Logger;
 
+@ActComponent
 public abstract class AppCodeScannerPluginBase implements Plugin {
 
     protected final static Logger logger = L.get(AppCodeScannerPluginBase.class);

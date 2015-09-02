@@ -1,6 +1,7 @@
 package act.app;
 
 import act.Act;
+import act.ActComponent;
 import act.app.event.AppEventId;
 import act.conf.AppConfig;
 import act.db.Dao;
@@ -20,6 +21,7 @@ import java.util.EventObject;
 import java.util.HashMap;
 import java.util.Map;
 
+@ActComponent
 public class DbServiceManager extends AppServiceBase<DbServiceManager> implements DaoLocator {
 
     public static final String DEFAULT = "default";

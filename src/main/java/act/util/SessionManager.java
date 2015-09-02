@@ -1,6 +1,7 @@
 package act.util;
 
 import act.Act;
+import act.ActComponent;
 import act.app.ActionContext;
 import act.app.App;
 import act.conf.AppConfig;
@@ -103,6 +104,7 @@ public class SessionManager {
         }
     }
 
+    @ActComponent
     public static class Listener extends DestroyableBase implements Plugin {
         @Override
         public void register() {

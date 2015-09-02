@@ -1,5 +1,6 @@
 package act.event;
 
+import act.ActComponent;
 import act.Destroyable;
 import act.app.App;
 import act.app.AppServiceBase;
@@ -16,6 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
 
+@ActComponent
 public class EventBus extends AppServiceBase<EventBus> {
 
     private final List[] appEventListeners;

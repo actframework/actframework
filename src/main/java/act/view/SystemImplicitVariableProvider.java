@@ -1,5 +1,6 @@
 package act.view;
 
+import act.ActComponent;
 import act.app.ActionContext;
 import act.mail.MailerContext;
 import act.view.rythm.ActionViewVarDef;
@@ -14,6 +15,7 @@ import java.util.Map;
 /**
  * Define system implicit variables
  */
+@ActComponent
 public class SystemImplicitVariableProvider extends ImplicitVariableProvider {
     @Override
     public List<ActionViewVarDef> implicitActionViewVariables() {

@@ -1,6 +1,7 @@
 package act.view.rythm;
 
 import act.Act;
+import act.ActComponent;
 import act.app.App;
 import act.conf.AppConfig;
 import act.util.ActContext;
@@ -27,6 +28,7 @@ import static org.rythmengine.conf.RythmConfigurationKey.*;
 /**
  * Implement a view with Rythm Template Engine
  */
+@ActComponent
 public class RythmView extends View {
 
     ConcurrentMap<App, RythmEngine> engines = new ConcurrentHashMap<App, RythmEngine>();

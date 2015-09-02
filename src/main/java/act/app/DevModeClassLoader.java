@@ -1,6 +1,7 @@
 package act.app;
 
 import act.Act;
+import act.ActComponent;
 import act.controller.meta.ControllerClassMetaInfo;
 import act.util.Files;
 import act.util.FsChangeDetector;
@@ -23,6 +24,7 @@ import java.util.regex.Pattern;
  * Dev mode application class loader, which is able to
  * load classes directly from app src folder
  */
+@ActComponent
 public class DevModeClassLoader extends AppClassLoader {
 
 

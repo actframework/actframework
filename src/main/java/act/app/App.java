@@ -225,7 +225,7 @@ public class App {
             compilationException = e;
             throw new ActServerError(e, this);
         }
-        classLoader().loadClasses();
+        //classLoader().loadClasses();
         emit(APP_CODE_SCANNED);
 
         initMailerConfigManager();

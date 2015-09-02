@@ -1,6 +1,7 @@
 package act.app;
 
 import act.Act;
+import act.ActComponent;
 import org.osgl.util.E;
 
 import java.io.File;
@@ -12,6 +13,7 @@ import java.util.Properties;
  * <p>Used ONLY at dev time for Act to decide where to pick up
  * the application srccode files, configuration files etc</p>
  */
+@ActComponent
 public interface ProjectLayout {
 
     /**
@@ -358,6 +360,7 @@ public interface ProjectLayout {
         }
     }
 
+    @ActComponent
     public static class CustomizedProjectLayout implements ProjectLayout {
         private String source;
         private String testSource;

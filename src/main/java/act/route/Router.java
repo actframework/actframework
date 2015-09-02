@@ -1,5 +1,6 @@
 package act.route;
 
+import act.ActComponent;
 import act.Destroyable;
 import act.app.ActionContext;
 import act.app.App;
@@ -29,6 +30,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+@ActComponent
 public class Router extends AppServiceBase<Router> {
 
     private static final NotFound NOT_FOUND = new NotFound();

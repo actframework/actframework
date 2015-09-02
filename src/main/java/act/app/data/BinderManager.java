@@ -1,5 +1,6 @@
 package act.app.data;
 
+import act.ActComponent;
 import act.app.App;
 import act.app.AppServiceBase;
 import act.conf.AppConfig;
@@ -16,6 +17,7 @@ import java.lang.reflect.Array;
 import java.lang.reflect.Modifier;
 import java.util.*;
 
+@ActComponent
 public class BinderManager extends AppServiceBase<BinderManager> {
 
     private Map<Object, Binder> binders = C.newMap();

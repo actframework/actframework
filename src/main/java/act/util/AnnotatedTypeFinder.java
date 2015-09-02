@@ -1,5 +1,6 @@
 package act.util;
 
+import act.ActComponent;
 import act.app.*;
 import org.osgl._;
 import org.osgl.util.E;
@@ -10,6 +11,7 @@ import java.lang.annotation.Annotation;
 import java.util.Map;
 import java.util.Set;
 
+@ActComponent
 public abstract class AnnotatedTypeFinder extends AppCodeScannerPluginBase {
 
     private _.Func2<App, String, Map<Class<? extends AppByteCodeScanner>, Set<String>>> foundHandler;
@@ -48,6 +50,7 @@ public abstract class AnnotatedTypeFinder extends AppCodeScannerPluginBase {
         return true;
     }
 
+    @ActComponent
     private class ByteCodeSensor extends AppByteCodeScannerBase {
         private ClassDetector detector;
         private _.Func2<App, String, Map<Class<? extends AppByteCodeScanner>, Set<String>>> foundHandler = AnnotatedTypeFinder.this.foundHandler;

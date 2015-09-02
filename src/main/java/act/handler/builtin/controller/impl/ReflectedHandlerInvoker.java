@@ -1,6 +1,7 @@
 package act.handler.builtin.controller.impl;
 
 import act.Act;
+import act.ActComponent;
 import act.app.ActionContext;
 import act.app.App;
 import act.app.data.BinderManager;
@@ -341,6 +342,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         return new _Finally(new ReflectedHandlerInvoker(meta, app));
     }
 
+    @ActComponent
     private static class _Before extends BeforeInterceptor {
         private ActionHandlerInvoker invoker;
 
@@ -366,6 +368,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         }
     }
 
+    @ActComponent
     private static class _After extends AfterInterceptor {
         private AfterInterceptorInvoker invoker;
 
@@ -396,6 +399,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         }
     }
 
+    @ActComponent
     private static class _Exception extends ExceptionInterceptor {
         private ExceptionInterceptorInvoker invoker;
 
@@ -426,6 +430,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         }
     }
 
+    @ActComponent
     private static class _Finally extends FinallyInterceptor {
         private ActionHandlerInvoker invoker;
 

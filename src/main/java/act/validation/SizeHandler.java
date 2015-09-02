@@ -1,5 +1,6 @@
 package act.validation;
 
+import act.ActComponent;
 import act.app.ActionContext;
 import act.controller.ActionMethodParamAnnotationHandlerPlugin;
 import org.osgl.util.C;
@@ -12,6 +13,7 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 
+@ActComponent
 public class SizeHandler extends ActionMethodParamAnnotationHandlerPlugin {
     @Override
     public Set<Class<? extends Annotation>> listenTo() {

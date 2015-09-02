@@ -22,9 +22,6 @@ public class ClassInfoRepository extends DestroyableBase {
         String cname = canonicalName(name);
         ClassNode node = classes.get(cname);
         if (null == node) {
-            if (name.contains("ActAAAService")) {
-                _.nil();
-            }
             ClassNode newNode = new ClassNode(name.replace('/', '.'), cname, this);
             node = classes.putIfAbsent(cname, newNode);
             if (null == node) {

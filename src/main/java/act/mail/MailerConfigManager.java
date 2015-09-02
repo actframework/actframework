@@ -1,5 +1,6 @@
 package act.mail;
 
+import act.ActComponent;
 import act.Destroyable;
 import act.app.App;
 import act.app.AppServiceBase;
@@ -8,6 +9,7 @@ import org.osgl.util.C;
 
 import java.util.Map;
 
+@ActComponent
 public class MailerConfigManager extends AppServiceBase<MailerConfigManager> {
 
     public static final String KEY_MAILER = "mailer";

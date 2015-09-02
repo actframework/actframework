@@ -1,5 +1,6 @@
 package act.controller.bytecode;
 
+import act.ActComponent;
 import act.app.App;
 import act.asm.ClassVisitor;
 import act.asm.MethodVisitor;
@@ -14,6 +15,7 @@ import org.osgl._;
  * Enhance controllers (classes with either request handler method or
  * interceptor methods)
  */
+@ActComponent
 public class ControllerEnhancer extends AppByteCodeEnhancer<ControllerEnhancer> {
     private ControllerClassMetaInfoHolder classInfoHolder;
     private String className;

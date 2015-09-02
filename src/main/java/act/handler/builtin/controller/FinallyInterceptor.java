@@ -1,5 +1,6 @@
 package act.handler.builtin.controller;
 
+import act.ActComponent;
 import act.app.ActionContext;
 import act.plugin.Plugin;
 

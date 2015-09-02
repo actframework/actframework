@@ -286,7 +286,7 @@
             <version>2.9</version>
             <configuration>
               <stylesheetfile>src/etc/javadoc.css</stylesheetfile>
-              <quiet/>
+              <quiet />
             </configuration>
             <executions>
               <execution>
@@ -294,6 +294,24 @@
                 <phase>prepare-package</phase>
                 <goals>
                   <goal>javadoc</goal>
+                </goals>
+              </execution>
+              <execution>
+                <id>attach-javadocs</id>
+                <goals>
+                  <goal>jar</goal>
+                </goals>
+              </execution>
+            </executions>
+          </plugin>
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-source-plugin</artifactId>
+            <executions>
+              <execution>
+                <id>attach-sources</id>
+                <goals>
+                  <goal>jar</goal>
                 </goals>
               </execution>
             </executions>

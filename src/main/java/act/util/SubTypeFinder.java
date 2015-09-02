@@ -1,5 +1,6 @@
 package act.util;
 
+import act.ActComponent;
 import act.app.*;
 import org.osgl._;
 import org.osgl.util.E;
@@ -10,6 +11,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+@ActComponent
 public abstract class SubTypeFinder extends AppCodeScannerPluginBase {
 
     private _.Func2<App, String, Map<Class<? extends AppByteCodeScanner>, Set<String>>> foundHandler;
@@ -48,6 +50,7 @@ public abstract class SubTypeFinder extends AppCodeScannerPluginBase {
         return true;
     }
 
+    @ActComponent
     private class SourceCodeSensor extends AppSourceCodeScannerBase {
 
         private boolean pkgFound;
@@ -107,6 +110,7 @@ public abstract class SubTypeFinder extends AppCodeScannerPluginBase {
         }
     }
 
+    @ActComponent
     private class ByteCodeSensor extends AppByteCodeScannerBase {
         private ClassDetector detector;
         private _.Func2<App, String, Map<Class<? extends AppByteCodeScanner>, Set<String>>> foundHandler = SubTypeFinder.this.foundHandler;

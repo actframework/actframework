@@ -1,5 +1,6 @@
 package act.validation;
 
+import act.ActComponent;
 import act.app.ActionContext;
 import act.controller.ActionMethodParamAnnotationHandlerPlugin;
 import org.osgl.util.C;
@@ -10,6 +11,7 @@ import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Set;
 
+@ActComponent
 public class DigitsHandler extends ActionMethodParamAnnotationHandlerPlugin {
 
     @Override

@@ -1,5 +1,6 @@
 package act.app.conf;
 
+import act.ActComponent;
 import act.app.App;
 import act.app.AppByteCodeScanner;
 import act.app.event.AppEventId;
@@ -15,6 +16,7 @@ import java.util.EventObject;
 import java.util.Map;
 import java.util.Set;
 
+@ActComponent
 public class AutoConfigPlugin extends AnnotatedTypeFinder {
 
     private static Field modifiersField;
