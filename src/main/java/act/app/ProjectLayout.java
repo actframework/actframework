@@ -57,13 +57,11 @@ public interface ProjectLayout {
         MAVEN() {
             @Override
             public File source(File appBase) {
-                E.illegalStateIf(!Act.isDev());
                 return Utils.file(appBase, "src/main/java");
             }
 
             @Override
             public File testSource(File appBase) {
-                E.illegalStateIf(!Act.isDev());
                 return Utils.file(appBase, "src/test/java");
             }
 
@@ -99,7 +97,6 @@ public interface ProjectLayout {
 
             @Override
             public File target(File appBase) {
-                E.illegalStateIf(!Act.isDev());
                 return Utils.file(appBase, "target");
             }
 

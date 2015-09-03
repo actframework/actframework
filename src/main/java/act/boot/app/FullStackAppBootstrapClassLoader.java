@@ -103,7 +103,7 @@ public class FullStackAppBootstrapClassLoader extends BootstrapClassLoader imple
             return repo.node(name, cname);
         }
         actClasses.add(c);
-        ClassNode node = repo.node(cname);
+        ClassNode node = repo.node(name);
         node.modifiers(c.getModifiers());
         Class[] ca = c.getInterfaces();
         for (Class pc: ca) {
