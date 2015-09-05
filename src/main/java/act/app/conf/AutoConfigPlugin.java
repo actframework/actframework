@@ -89,6 +89,7 @@ public class AutoConfigPlugin extends AnnotatedTypeFinder {
         }
 
         private boolean turnOffFinal(Field field) {
+            field.setAccessible(true);
             if (Modifier.isFinal(field.getModifiers())) {
                 try {
                     modifiersField.setInt(field, field.getModifiers() & ~Modifier.FINAL);
@@ -120,7 +121,7 @@ public class AutoConfigPlugin extends AnnotatedTypeFinder {
                     loadClass(c0, ns + "." + c0.getSimpleName());
                 }
             }
-            Field[] fa = c.getFields();
+            Field[] fa = c.getDeclaredFields();
             for (Field f : fa) {
                 if (Modifier.isStatic(f.getModifiers())) {
                     loadAutoConfig_(f, ns);

@@ -11,11 +11,13 @@ import java.lang.annotation.Annotation;
 public class ActionMethodParamConstraintViolation<T> implements ConstraintViolation<T> {
 
     private String msgTmpl;
+    private String interpolatedMsg;
     private ConstraintDescriptor constraint;
     private ActionContext context;
 
-    public ActionMethodParamConstraintViolation(String messageTemplate, Annotation annotation, ActionContext context) {
+    public ActionMethodParamConstraintViolation(String messageTemplate, /*String interpolatedMsg,*/ Annotation annotation, ActionContext context) {
         this.msgTmpl = messageTemplate;
+        //this.interpolatedMsg = interpolatedMsg;
         this.constraint = new ActionMethodParamConstraintDescriptor(annotation);
         this.context = context;
     }

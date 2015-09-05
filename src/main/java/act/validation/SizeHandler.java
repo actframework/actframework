@@ -48,4 +48,9 @@ public class SizeHandler extends ActionMethodParamAnnotationHandlerPlugin {
         }
     }
 
+//    private String interpolate(Size sizeAnno, int curSize) {
+//        String temp = sizeAnno.message();
+//
+//    }
+
 }

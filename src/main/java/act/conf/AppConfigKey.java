@@ -404,6 +404,13 @@ public enum AppConfigKey implements ConfigKey {
     URL_CONTEXT("url_context"),
 
     /**
+     * {@code validation.message.interpolator.impl} specifies the
+     * {@link javax.validation.MessageInterpolator} implementation
+     * <p>Default value: {@link act.validation.ValidationMessageInterpolator}</p>
+     */
+    VALIDATION_MSG_INTERPOLATOR("validation.message.interpolator.impl"),
+
+    /**
      * {@code url.login} specifies the login URL which is used
      * by {@link act.util.RedirectToLoginUrl}
      * <p>Default value: {@code /login}</p>
