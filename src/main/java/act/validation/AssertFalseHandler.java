@@ -23,7 +23,7 @@ public class AssertFalseHandler extends ActionMethodParamAnnotationHandlerPlugin
     public void handle(String paramName, Object paramVal, Annotation annotation, ActionContext context) {
         if (null != paramVal && Boolean.parseBoolean(paramVal.toString())) {
             AssertFalse theAnno = (AssertFalse) annotation;
-            context.addViolation(new ActionMethodParamConstraintViolation<Object>(theAnno.message(), theAnno, context));
+            context.addViolation(new ActionMethodParamConstraintViolation<Object>(paramVal, theAnno.message(), theAnno, context));
         }
     }
 

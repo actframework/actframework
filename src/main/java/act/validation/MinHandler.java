@@ -28,7 +28,7 @@ public class MinHandler extends ActionMethodParamAnnotationHandlerPlugin {
         Min theAnno = (Min) annotation;
         long limit = theAnno.value();
         if (limit > num) {
-            context.addViolation(new ActionMethodParamConstraintViolation<Object>(theAnno.message(), theAnno, context));
+            context.addViolation(new ActionMethodParamConstraintViolation<Object>(paramVal, theAnno.message(), theAnno, context));
         }
     }
 

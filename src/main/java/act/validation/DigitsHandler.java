@@ -61,7 +61,7 @@ public class DigitsHandler extends ActionMethodParamAnnotationHandlerPlugin {
             }
         }
         if (violated) {
-            context.addViolation(new ActionMethodParamConstraintViolation<Object>(theAnno.message(), theAnno, context));
+            context.addViolation(new ActionMethodParamConstraintViolation<Object>(val, theAnno.message(), theAnno, context));
         }
     }
 

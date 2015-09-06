@@ -22,7 +22,7 @@ public class NullHandler extends ActionMethodParamAnnotationHandlerPlugin {
     public void handle(String paramName, Object paramVal, Annotation annotation, ActionContext context) {
         if (null != paramVal) {
             Null notNull = (Null) annotation;
-            context.addViolation(new ActionMethodParamConstraintViolation<Object>(notNull.message(), notNull, context));
+            context.addViolation(new ActionMethodParamConstraintViolation<Object>(paramVal, notNull.message(), notNull, context));
         }
     }
 }

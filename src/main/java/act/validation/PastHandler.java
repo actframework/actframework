@@ -29,7 +29,7 @@ public class PastHandler extends ActionMethodParamAnnotationHandlerPlugin {
             if (date.getTime() < _.ms()) return;
         }
         Past theAnno = (Past) annotation;
-        context.addViolation(new ActionMethodParamConstraintViolation<Object>(theAnno.message(), theAnno, context));
+        context.addViolation(new ActionMethodParamConstraintViolation<Object>(paramVal, theAnno.message(), theAnno, context));
     }
 
 }

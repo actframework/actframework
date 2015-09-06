@@ -2,10 +2,12 @@ package act.validation;
 
 import act.ActComponent;
 import act.app.ActionContext;
+import act.conf.AppConfig;
 import act.controller.ActionMethodParamAnnotationHandlerPlugin;
 import org.osgl.util.C;
 import org.osgl.util.E;
 
+import javax.validation.MessageInterpolator;
 import javax.validation.constraints.Size;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Array;
@@ -30,7 +32,7 @@ public class SizeHandler extends ActionMethodParamAnnotationHandlerPlugin {
         int size = sizeOf(paramVal);
         Size theAnno = (Size) annotation;
         if (size < theAnno.min() || size > theAnno.max()) {
-            context.addViolation(new ActionMethodParamConstraintViolation<Object>(theAnno.message(), theAnno, context));
+            context.addViolation(new ActionMethodParamConstraintViolation<Object>(paramVal, theAnno.message(), theAnno, context));
         }
     }
 
@@ -48,9 +50,14 @@ public class SizeHandler extends ActionMethodParamAnnotationHandlerPlugin {
         }
     }
 
-//    private String interpolate(Size sizeAnno, int curSize) {
-//        String temp = sizeAnno.message();
-//
-//    }
+    private String interpolate(Size sizeAnno, int curSize, ActionContext context) {
+        AppConfig config = context.config();
+        String tmpl = sizeAnno.message();
+        MessageInterpolator interpolator = config.validationMessageInterpolator();
+        //MessageInterpolator.Context mc =
+        return null;
+    }
+
+
 
 }

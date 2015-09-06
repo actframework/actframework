@@ -2,11 +2,13 @@ package act.conf;
 
 import act.Act;
 import act.Constants;
+import act.app.ActionContext;
 import act.app.App;
 import act.app.AppHolder;
 import act.app.conf.AppConfigurator;
 import act.app.util.NamedPort;
 import act.util.*;
+import act.validation.ValidationMessageInterpolator;
 import act.view.TemplatePathResolver;
 import act.view.View;
 import org.apache.commons.codec.Charsets;
@@ -19,6 +21,7 @@ import org.osgl.logging.Logger;
 import org.osgl.mvc.MvcConfig;
 import org.osgl.util.*;
 
+import javax.validation.MessageInterpolator;
 import java.io.File;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -318,6 +321,10 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
                 loginUrl = "/login";
             }
         }
+        ActionContext context = ActionContext.current();
+        if (null != context && context.isAjax()) {
+            return ajaxLoginUrl();
+        }
         return loginUrl;
     }
     private void _mergeLoginUrl(AppConfig conf) {
@@ -367,7 +374,6 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         }
         return httpMaxParams;
     }
-
     private void _mergeHttpMaxParams(AppConfig conf) {
         if (null == get(HTTP_MAX_PARAMS)) {
             httpMaxParams = conf.httpMaxParams;
@@ -1044,13 +1050,11 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     }
 
     private String secret = null;
-
     protected T secret(String secret) {
         E.illegalArgumentIf(S.blank(secret));
         this.secret = secret;
         return me();
     }
-
     public String secret() {
         if (null == secret) {
             secret = get(AppConfigKey.SECRET);
@@ -1061,12 +1065,33 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         }
         return secret;
     }
-
     private void _mergeSecret(AppConfig config) {
         if (null == get(AppConfigKey.SECRET)) {
             secret = config.secret;
         }
     }
+
+    private MessageInterpolator _messageInterpolator = null;
+    protected T messageInterpolator(MessageInterpolator messageInterpolator) {
+        this._messageInterpolator = _.notNull(messageInterpolator);
+        return me();
+    }
+    public MessageInterpolator validationMessageInterpolator() {
+        if (null == _messageInterpolator) {
+            _messageInterpolator = get(AppConfigKey.VALIDATION_MSG_INTERPOLATOR);
+            if (null == _messageInterpolator) {
+                _messageInterpolator = new ValidationMessageInterpolator(this);
+            }
+        }
+        return _messageInterpolator;
+    }
+
+    private void _mergeMessageInterpolator(AppConfig config) {
+        if (null == get(AppConfigKey.VALIDATION_MSG_INTERPOLATOR)) {
+            this._messageInterpolator = config._messageInterpolator;
+        }
+    }
+
 
     public boolean possibleControllerClass(String className) {
         return controllerNameTester().test(className);
@@ -1154,6 +1179,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         _mergeSessionMapper(conf);
         _mergeSecret(conf);
         _mergeCacheServiceProvider(conf);
+        _mergeMessageInterpolator(conf);
 
         Set<String> keys = conf.propKeys();
         for (String k : keys) {

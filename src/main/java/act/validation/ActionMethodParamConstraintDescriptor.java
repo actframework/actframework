@@ -6,6 +6,7 @@ import org.osgl.util.E;
 import javax.validation.ConstraintTarget;
 import javax.validation.ConstraintValidator;
 import javax.validation.Payload;
+import javax.validation.constraints.*;
 import javax.validation.metadata.ConstraintDescriptor;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Array;
@@ -81,6 +82,29 @@ public class ActionMethodParamConstraintDescriptor<T extends Annotation> impleme
 
     @Override
     public Map<String, Object> getAttributes() {
+        if (anno instanceof Size) {
+            Size size = (Size) anno;
+            return C.map("min", size.min(), "max", size.max());
+        } else if (anno instanceof Max) {
+            Max max = (Max) anno;
+            return C.map("value", max.value());
+        } else if (anno instanceof Min) {
+            Min min = (Min) anno;
+            return C.map("value", min.value());
+        } else if (anno instanceof Pattern) {
+            Pattern ptn = (Pattern) anno;
+            return C.map("regexp", ptn.regexp());
+        } else if (anno instanceof Digits) {
+            Digits digits = (Digits) anno;
+            return C.map("integer", digits.integer(), "fraction", digits.fraction());
+        } else if (anno instanceof DecimalMax) {
+            DecimalMax max = (DecimalMax) anno;
+            return C.map("value", max.value());
+        } else if (anno instanceof DecimalMin) {
+            DecimalMin min = (DecimalMin) anno;
+            return C.map("value", min.value());
+        }
+
         return C.map();
     }
 

@@ -37,7 +37,7 @@ public class PatternHandler extends ActionMethodParamAnnotationHandlerPlugin {
         }
         java.util.regex.Pattern P = java.util.regex.Pattern.compile(pattern, flag);
         if (!P.matcher(val).matches()) {
-            context.addViolation(new ActionMethodParamConstraintViolation<Object>(theAnno.message(), theAnno, context));
+            context.addViolation(new ActionMethodParamConstraintViolation<Object>(paramVal, theAnno.message(), theAnno, context));
         }
     }
 
