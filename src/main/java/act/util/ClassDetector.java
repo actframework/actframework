@@ -35,6 +35,7 @@ public abstract class ClassDetector extends ByteCodeVisitor {
     private static class FilteredClassDetector extends ClassDetector {
         private final ClassFilter filter;
         private boolean found = false;
+        private boolean skip = false;
 
         FilteredClassDetector(ClassFilter filter) {
             E.NPE(filter);
@@ -67,9 +68,11 @@ public abstract class ClassDetector extends ByteCodeVisitor {
         public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
             super.visit(version, access, name, signature, superName, interfaces);
             if (filter.noAbstract() && ((access & ACC_ABSTRACT) != 0 || (access & ACC_INTERFACE) != 0)) {
+                skip = true;
                 return;
             }
             if (filter.publicOnly() && (access & ACC_PUBLIC) != 1) {
+                skip = true;
                 return;
             }
             Class<?> superType = filter.superType();
@@ -94,7 +97,7 @@ public abstract class ClassDetector extends ByteCodeVisitor {
         @Override
         public AnnotationVisitor visitAnnotation(String desc, boolean visible) {
             AnnotationVisitor av = super.visitAnnotation(desc, visible);
-            if (found) {
+            if (found || skip) {
                 return av;
             }
             if (isExtendsAnnotation(desc)) {
