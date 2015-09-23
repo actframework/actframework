@@ -76,7 +76,7 @@ public class ValidationMessageInterpolator extends DestroyableBase implements Me
             sb.append(paramVal);
             s = s.substr(p1 + 1);
         }
-        return sb.toString();
+        return sb.length() == 0 ? template : sb.toString();
     }
 
     private String resolveTemplate(String messageTemplateId, Locale locale) {
