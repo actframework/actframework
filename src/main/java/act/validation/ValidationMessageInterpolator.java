@@ -68,6 +68,7 @@ public class ValidationMessageInterpolator extends DestroyableBase implements Me
             if (p0 >= 0) {
                 s = s.substr(p0 + 1);
             } else {
+                sb.append(s);
                 break;
             }
             int p1 = s.indexOf('}');
