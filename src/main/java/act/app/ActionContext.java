@@ -267,6 +267,73 @@ public class ActionContext extends ActContext.ActContextBase<ActionContext> impl
         return app().newInstance(clazz, this);
     }
 
+    private String sessionCacheKey(String key) {
+        return S.builder(session.id()).append(key).toString();
+    }
+
+    /**
+     * Add an object into cache by key
+     * @param key the key to index the object within the cache
+     * @param obj the object to be cached
+     */
+    public void cache(String key, Object obj) {
+        app().cache().put(sessionCacheKey(key), obj);
+    }
+
+    /**
+     * Add an object into cache by key with expiration time specified
+     * @param key the key to index the object within the cache
+     * @param obj the object to be cached
+     * @param expiration the seconds after which the object will be evicted from the cache
+     */
+    public void cache(String key, Object obj, int expiration) {
+        app().cache().put(sessionCacheKey(key), obj, expiration);
+    }
+
+    /**
+     * Add an object into cache by key and expired after one hour
+     * @param key the key to index the object within the cache
+     * @param obj the object to be cached
+     */
+    public void cacheForOneHour(String key, Object obj) {
+        cache(key, obj, 60 * 60);
+    }
+
+    /**
+     * Add an object into cache by key and expired after half hour
+     * @param key the key to index the object within the cache
+     * @param obj the object to be cached
+     */
+    public void cacheForHalfHour(String key, Object obj) {
+        cache(key, obj, 30 * 60);
+    }
+
+    /**
+     * Add an object into cache by key and expired after 10 minutes
+     * @param key the key to index the object within the cache
+     * @param obj the object to be cached
+     */
+    public void cacheForTenMinutes(String key, Object obj) {
+        cache(key, obj, 10 * 60);
+    }
+
+    /**
+     * Add an object into cache by key and expired after one minute
+     * @param key the key to index the object within the cache+
+     * @param obj the object to be cached
+     */
+    public void cacheForOneMinute(String key, Object obj) {
+        cache(key, obj, 60);
+    }
+
+    /**
+     * Evict cached object
+     * @param key the key indexed the cached object to be evicted
+     */
+    public void evictCache(String key) {
+        app().cache().evict(sessionCacheKey(key));
+    }
+
     public ActionContext addViolations(Set<ConstraintViolation<?>> violations) {
         this.violations.addAll(violations);
         return this;
@@ -393,7 +460,7 @@ public class ActionContext extends ActContext.ActContextBase<ActionContext> impl
             this.session = null;
             this.controllerInstances = null;
             this.violations.clear();
-            this.clearLocal();
+            clearLocal();
             this.uploads.clear();
             for (Object o : this.attributes.values()) {
                 if (o instanceof Destroyable) {
