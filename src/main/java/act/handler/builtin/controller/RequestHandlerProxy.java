@@ -199,8 +199,8 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
     }
 
     private void onResult(Result result, ActionContext context) {
+        context.dissolve();
         try {
-            context.dissolve();
             if (result instanceof RenderAny) {
                 RenderAny any = (RenderAny) result;
                 any.apply(context);
@@ -209,9 +209,11 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
                 H.Response resp = context.resp();
                 result.apply(req, resp);
             }
-        } finally {
-            context.destroy();
+        } catch (Exception e) {
+            context.cacheTemplate(null);
+            throw e;
         }
+        context.destroy();
     }
 
     private void ensureAgentsReady() {
@@ -275,33 +277,32 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
 
     public void accept(Handler.Visitor visitor) {
         ensureAgentsReady();
-        for (BeforeInterceptor i: globalBeforeInterceptors) {
+        for (BeforeInterceptor i : globalBeforeInterceptors) {
             i.accept(visitor);
         }
-        for (BeforeInterceptor i: beforeInterceptors) {
+        for (BeforeInterceptor i : beforeInterceptors) {
             i.accept(visitor);
         }
         actionHandler.accept(visitor);
-        for (AfterInterceptor i: afterInterceptors) {
+        for (AfterInterceptor i : afterInterceptors) {
             i.accept(visitor);
         }
-        for (AfterInterceptor i: globalAfterInterceptors) {
+        for (AfterInterceptor i : globalAfterInterceptors) {
             i.accept(visitor);
         }
-        for (FinallyInterceptor i: finallyInterceptors) {
+        for (FinallyInterceptor i : finallyInterceptors) {
             i.accept(visitor);
         }
-        for (FinallyInterceptor i: globalFinallyInterceptors) {
+        for (FinallyInterceptor i : globalFinallyInterceptors) {
             i.accept(visitor);
         }
-        for (ExceptionInterceptor i: exceptionInterceptors) {
+        for (ExceptionInterceptor i : exceptionInterceptors) {
             i.accept(visitor);
         }
-        for (ExceptionInterceptor i: globalExceptionInterceptors) {
+        for (ExceptionInterceptor i : globalExceptionInterceptors) {
             i.accept(visitor);
         }
     }
-
 
 
     private Result handleBefore(ActionContext actionContext) {
