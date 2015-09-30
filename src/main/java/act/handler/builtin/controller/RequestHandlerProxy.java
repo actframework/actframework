@@ -161,13 +161,13 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
             logger.error(e, "Error handling request");
             result = handleException(e, context);
             if (null == result) {
-                result = new ActServerError(e, app);
+                result = ActServerError.of(e, app);
             }
             try {
                 onResult(result, context);
             } catch (Exception e2) {
                 logger.error(e2, "error rendering exception handle  result");
-                onResult(new ActServerError(e2, app), context);
+                onResult(ActServerError.of(e2, app), context);
             }
         } finally {
             handleFinally(context);

@@ -50,7 +50,7 @@ public class NetworkClient extends _.F1<ActionContext, Void> {
         } catch (Result r) {
             r.apply(req, ctx.resp());
         } catch (Throwable t) {
-            Result r = new ActServerError(t, app());
+            Result r = ActServerError.of(t, app());
             r.apply(req, ctx.resp());
         } finally {
             // we don't destroy ctx here in case it's been passed to

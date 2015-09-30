@@ -258,7 +258,7 @@ public final class SparkApp extends App {
                 result = r;
             } catch (RuntimeException e) {
                 logger.error(e, "Error handling request: %s", e.getMessage());
-                result = new ActServerError(e, app);
+                result = ActServerError.of(e, app);
             }
         }
 

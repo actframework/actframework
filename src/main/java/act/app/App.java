@@ -180,7 +180,7 @@ public class App {
     public void detectChanges() {
         classLoader.detectChanges();
         if (null != compilationException) {
-            throw new ActServerError(compilationException, this);
+            throw ActServerError.of(compilationException, this);
         }
     }
 
@@ -223,7 +223,7 @@ public class App {
             compilationException = null;
         } catch (CompilationException e) {
             compilationException = e;
-            throw new ActServerError(e, this);
+            throw ActServerError.of(e, this);
         }
         //classLoader().loadClasses();
         emit(APP_CODE_SCANNED);
