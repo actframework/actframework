@@ -15,10 +15,7 @@ import act.handler.builtin.controller.impl.ReflectedHandlerInvoker;
 import act.plugin.AppServicePluginManager;
 import act.plugin.GenericPluginManager;
 import act.plugin.PluginScanner;
-import act.util.AppCodeScannerPluginManager;
-import act.util.Banner;
-import act.util.ClassInfoRepository;
-import act.util.SessionManager;
+import act.util.*;
 import act.view.ViewManager;
 import act.xio.NetworkClient;
 import act.xio.NetworkService;
@@ -110,6 +107,7 @@ public final class Act {
     private static DbManager dbManager;
     private static GenericPluginManager pluginManager;
     private static AppServicePluginManager appPluginManager;
+    private static IdGenerator idGenerator = new IdGenerator();
 
     public static List<Class<?>> pluginClasses() {
         ClassLoader cl = Act.class.getClassLoader();
@@ -234,8 +232,12 @@ public final class Act {
         }
     }
 
-    public static String suid() {
-        return null;
+    /**
+     * Generate custer unique ID
+     * @return a cluster unique ID generated
+     */
+    public static String cuid() {
+        return idGenerator.genId();
     }
 
     private static void loadConfig() {
