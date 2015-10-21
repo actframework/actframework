@@ -177,30 +177,65 @@ public class IdGenerator {
     private final StartIdProvider startIdProvider;
     private final SequenceProvider sequenceProvider;
 
+    /**
+     * Create a default IdGenerator with following configuration:
+     * <ul>
+     *     <li>Node ID provider: four byte IP address</li>
+     *     <li>Start ID provider: stored in <code>_sys_start.do.not.delete</code> file</li>
+     *     <li>Sequence ID provider: Atomic Long sequence</li>
+     * </ul>
+     */
     public IdGenerator() {
         nodeIdProvider = new NodeIdProvider.IpProvider();
         startIdProvider = new StartIdProvider.DefaultStartIdProvider();
         sequenceProvider = new SequenceProvider.AtomicLongSeq();
     }
 
+    /**
+     * Create a default IdGenerator with specified node id provider, start id provider and sequence provider:
+     */
     public IdGenerator(NodeIdProvider nodeIdProvider, StartIdProvider startIdProvider, SequenceProvider sequenceProvider) {
         this.nodeIdProvider = Objects.requireNonNull(nodeIdProvider);
         this.startIdProvider = Objects.requireNonNull(startIdProvider);
         this.sequenceProvider = Objects.requireNonNull(sequenceProvider);
     }
 
+    /**
+     * Create a default IdGenerator with following configuration:
+     * <ul>
+     *     <li>Node ID provider: N byte IP address, where N is specified by effectiveIpBytes argument</li>
+     *     <li>Start ID provider: stored in <code>_sys_start.do.not.delete</code> file</li>
+     *     <li>Sequnce ID provider: Atomic Long sequence</li>
+     * </ul>
+     */
     public IdGenerator(int effectiveIpBytes) {
         this.nodeIdProvider = new NodeIdProvider.IpProvider(effectiveIpBytes);
         this.startIdProvider = new StartIdProvider.DefaultStartIdProvider();
         this.sequenceProvider = new SequenceProvider.AtomicLongSeq();
     }
 
+    /**
+     * Create a default IdGenerator with following configuration:
+     * <ul>
+     *     <li>Node ID provider: N byte IP address, where N is specified by effectiveIpBytes argument</li>
+     *     <li>Start ID provider: use start ID file specified by startIdFile argument</li>
+     *     <li>Sequnce ID provider: Atomic Long sequence</li>
+     * </ul>
+     */
     public IdGenerator(int effectiveIpBytes, String startIdFile) {
         this.nodeIdProvider = new NodeIdProvider.IpProvider(effectiveIpBytes);
         this.startIdProvider = new StartIdProvider.DefaultStartIdProvider(startIdFile);
         this.sequenceProvider = new SequenceProvider.AtomicLongSeq();
     }
 
+    /**
+     * Create a default IdGenerator with following configuration:
+     * <ul>
+     *     <li>Node ID provider: 4 byte IP address</li>
+     *     <li>Start ID provider: use start ID file specified by startIdFile argument</li>
+     *     <li>Sequnce ID provider: Atomic Long sequence</li>
+     * </ul>
+     */
     public IdGenerator(String startIdFile) {
         this.nodeIdProvider = new NodeIdProvider.IpProvider();
         this.startIdProvider = new StartIdProvider.DefaultStartIdProvider(startIdFile);
@@ -218,10 +253,13 @@ public class IdGenerator {
     }
 
     public static void main(String[] args) {
+        IdGenerator idGen = new IdGenerator(1);
         for (int i = 0; i < 10; ++i) {
-            //System.out.println(Crypto.genRandomDigits(4));
-            //System.out.println(Crypto.genRandomStr(8));
-            System.out.println(Crypto.genSecret(8));
+            System.out.println(idGen.genId());
+        }
+        idGen = new IdGenerator(4);
+        for (int i = 0; i < 10; ++i) {
+            System.out.println(idGen.genId());
         }
     }
 
