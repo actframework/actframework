@@ -149,7 +149,7 @@ public class ActionContext extends ActContext.ActContextBase<ActionContext> impl
     }
 
     public boolean isJSON() {
-        return accept() == H.Format.json;
+        return accept() == H.Format.JSON;
     }
 
     public boolean isAjax() {

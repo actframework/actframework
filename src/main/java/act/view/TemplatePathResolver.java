@@ -7,6 +7,8 @@ import org.osgl.http.H;
 import org.osgl.util.E;
 import org.osgl.util.S;
 
+import static org.osgl.http.H.Format.*;
+
 /**
  * Resolve template path for {@link ActionContext}
  */
@@ -29,17 +31,12 @@ public class TemplatePathResolver extends _.Transformer<ActContext, String> {
             return path;
         }
         H.Format fmt = context.accept();
-        switch (fmt) {
-            case html:
-            case xml:
-            case json:
-            case txt:
-            case csv:
-                return S.builder(path).append(".").append(fmt.name()).toString();
-            case unknown:
-                return S.builder(path).append(".html").toString();
-            default:
-                throw E.unsupport("Request accept not supported: %s", fmt);
+        if (UNKNOWN == fmt) {
+            fmt = HTML;
         }
+        if (HTML == fmt || JSON == fmt || XML == fmt || TXT == fmt || CSV == fmt) {
+            return S.builder(path).append(".").append(fmt.name()).toString();
+        }
+        throw E.unsupport("Request accept not supported: %s", fmt);
     }
 }

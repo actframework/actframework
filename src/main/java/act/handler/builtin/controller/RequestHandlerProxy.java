@@ -249,25 +249,25 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
             requireContextLocal = true;
         }
         App app = this.app;
-        for (InterceptorMethodMetaInfo info : ctrlInfo.beforeInterceptors()) {
+        for (InterceptorMethodMetaInfo info : ctrlInfo.beforeInterceptors(app)) {
             beforeInterceptors.add(mode.createBeforeInterceptor(info, app));
             if (info.appContextInjection().injectVia().isLocal()) {
                 requireContextLocal = true;
             }
         }
-        for (InterceptorMethodMetaInfo info : ctrlInfo.afterInterceptors()) {
+        for (InterceptorMethodMetaInfo info : ctrlInfo.afterInterceptors(app)) {
             afterInterceptors.add(mode.createAfterInterceptor(info, app));
             if (info.appContextInjection().injectVia().isLocal()) {
                 requireContextLocal = true;
             }
         }
-        for (CatchMethodMetaInfo info : ctrlInfo.exceptionInterceptors()) {
+        for (CatchMethodMetaInfo info : ctrlInfo.exceptionInterceptors(app)) {
             exceptionInterceptors.add(mode.createExceptionInterceptor(info, app));
             if (info.appContextInjection().injectVia().isLocal()) {
                 requireContextLocal = true;
             }
         }
-        for (InterceptorMethodMetaInfo info : ctrlInfo.finallyInterceptors()) {
+        for (InterceptorMethodMetaInfo info : ctrlInfo.finallyInterceptors(app)) {
             finallyInterceptors.add(mode.createFinallyInterceptor(info, app));
             if (info.appContextInjection().injectVia().isLocal()) {
                 requireContextLocal = true;

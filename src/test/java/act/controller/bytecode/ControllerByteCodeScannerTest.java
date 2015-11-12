@@ -160,7 +160,7 @@ public class ControllerByteCodeScannerTest extends TestBase {
         assertNotNull(infoSrc.controllerMetaInfo(FilterA.class.getName()));
         assertNotNull(infoSrc.controllerMetaInfo(FilterB.class.getName()));
         ControllerClassMetaInfo info = infoSrc.controllerMetaInfo(ControllerWithInheritedInterceptor.class.getName());
-        assertHasInterceptor("FilterA", "afterP10", info.afterInterceptors());
+        assertHasInterceptor("FilterA", "afterP10", info.afterInterceptors(mockApp));
     }
 
     @Test
@@ -200,7 +200,7 @@ public class ControllerByteCodeScannerTest extends TestBase {
             classLoader.preloadClassFile(base, file);
         }
         classLoader.scan();
-        infoSrc.mergeActionMetaInfo();
+        infoSrc.mergeActionMetaInfo(mockApp);
     }
 
     private void assertHasInterceptor(String className, String actionName, List<InterceptorMethodMetaInfo> list) {

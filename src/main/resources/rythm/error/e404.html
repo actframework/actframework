@@ -37,38 +37,38 @@
 
 @import act.route.*
 @{
-List<RouteInfo> routes = _ctx.router().debug();
+  List<RouteInfo> routes = _ctx.router().debug();
   act.route.RouteInfo req = RouteInfo.of(_ctx);
-  }
+}
 
-  @def tr(RouteInfo r, String parity) {
+@def tr(RouteInfo r, String parity) {
   <tr class="route @parity">
     <td class="m">@r.method()</td>
     <td class="p" title="@r.path()">
       @if (r.method() == "GET") {
-      <a href="@r.path()">@r.path()</a>
+        <a href="@r.path()">@r.path()</a>
       } else {
-      @r.path()
+        @r.path()
       }
     </td>
     <td class="h" title="@r.handler()">@r.handler()</td>
   </tr>
-  }
+}
 
-  <p>Cannot find handler for the current request <code>@req.method() @req.path()</code> in the router table(<span id="toggle-routetable" class="expanded" onclick="toggleRouteTable()">hide</span>)</p>
+<p>Cannot find handler for the current request <code>@req.method() @req.path()</code> in the router table(<span id="toggle-routetable" class="expanded" onclick="toggleRouteTable()">hide</span>)</p>
 
-  <table id="route-table">
-    <thead>
-    <tr>
-      <th class="m">method</th>
-      <th class="p">path</th>
-      <th class="h">handler</th>
-    </tr>
-    </thead>
-    <tbody>
-    @for(RouteInfo r: routes) {@tr(r, r_parity)}
-    </tbody>
-  </table>
+<table id="route-table">
+  <thead>
+  <tr>
+    <th class="m">method</th>
+    <th class="p">path</th>
+    <th class="h">handler</th>
+  </tr>
+  </thead>
+  <tbody>
+  @for(RouteInfo r: routes) {@tr(r, r_parity)}
+  </tbody>
+</table>
 
   <script>
   function toggleRouteTable() {
@@ -84,8 +84,22 @@ List<RouteInfo> routes = _ctx.router().debug();
       btn.innerText = 'hide';
     }
   }
+  @{
+    act.app.SourceInfo sourceInfo = null;
+    act.app.SourceInfo templateSourceInfo = null;
+    if (_error instanceof act.util.ActError) {
+    act.util.ActError actError = (act.util.ActError)_error;
+      sourceInfo = actError.sourceInfo();
+      if (_error instanceof act.view.RythmError) {
+      templateSourceInfo = ((act.view.RythmError) actError).templateSourceInfo();
+      }
+    }
+  }
+  @if(null != sourceInfo || null != templateSourceInfo) {
+  toggleRouteTable();
+  }
 </script>
 
-  @section(description) {
+@section(description) {
   NotFound 404 thrown out from source code:
-  }
+}

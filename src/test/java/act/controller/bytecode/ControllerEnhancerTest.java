@@ -335,7 +335,7 @@ public class ControllerEnhancerTest extends TestBase implements ControllerClassM
         //File file = new File(base, ClassNames.classNameToClassFileName(className));
         //classLoader.preloadClassFile(base, file);
         classLoader.scan();
-        infoSrc.mergeActionMetaInfo();
+        infoSrc.mergeActionMetaInfo(mockApp);
     }
 
     private class TestAppClassLoader extends ClassLoader {

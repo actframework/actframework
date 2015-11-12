@@ -3,6 +3,7 @@ package act.mail;
 import act.ActComponent;
 import act.app.App;
 import act.app.AppHolderBase;
+import org.osgl.exception.ConfigurationException;
 import org.osgl.http.H;
 import org.osgl.util.C;
 import org.osgl.util.E;
@@ -187,13 +188,12 @@ public class MailerConfig extends AppHolderBase {
         }
         try {
             H.Format fmt = H.Format.valueOf(s);
-            switch (fmt) {
-                case html:
-                case txt:
-                    return fmt;
-                default:
-                    throw E.invalidConfiguration("Content type not supported by mailer: %s", fmt);
+            if (H.Format.HTML == fmt || H.Format.TXT == fmt) {
+                return fmt;
             }
+            throw E.invalidConfiguration("Content type not supported by mailer: %s", fmt);
+        } catch (ConfigurationException e) {
+            throw e;
         } catch (Exception e) {
             throw E.invalidConfiguration("Invalid mailer config content type: %s", s);
         }

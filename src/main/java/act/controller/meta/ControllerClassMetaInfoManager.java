@@ -1,5 +1,6 @@
 package act.controller.meta;
 
+import act.app.App;
 import act.asm.Type;
 import act.util.AsmTypes;
 import act.util.DestroyableBase;
@@ -61,9 +62,9 @@ public class ControllerClassMetaInfoManager extends DestroyableBase {
         return controllers.get(className);
     }
 
-    public void mergeActionMetaInfo() {
+    public void mergeActionMetaInfo(App app) {
         for (ControllerClassMetaInfo info : controllers.values()) {
-            info.merge(this);
+            info.merge(this, app);
         }
     }
 

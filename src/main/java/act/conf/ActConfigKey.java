@@ -43,8 +43,6 @@ public enum ActConfigKey implements ConfigKey {
      * <ul>
      * <li>{@code dev} - run Act during development, loading and refreshing class
      * directly from srccode code enabled in this mode</li>
-     * <li>{@code sit} - run Act during system test</li>
-     * <li>{@code uat} - run Act during UAT test</li>
      * <li>{@code prod} - run Act when system is live</li>
      * </ul>
      * <p>You pass the mode to Act runtime during start up like:</p>

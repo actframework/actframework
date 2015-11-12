@@ -5,6 +5,8 @@ import org.osgl.http.H;
 import org.osgl.mvc.result.ErrorResult;
 import org.osgl.util.S;
 
+import static org.osgl.http.H.Format.*;
+
 public interface ErrorTemplatePathResolver {
     String resolve(ErrorResult result, ActionContext context);
 
@@ -14,14 +16,10 @@ public interface ErrorTemplatePathResolver {
             int code = result.statusCode();
             String suffix;
             H.Format fmt = context.accept();
-            switch (fmt) {
-                case json:
-                case html:
-                case xml:
-                    suffix = fmt.name();
-                    break;
-                default:
-                    suffix = H.Format.txt.name();
+            if (JSON == fmt || HTML == fmt || XML == fmt) {
+                suffix = fmt.name();
+            } else {
+                suffix = TXT.name();
             }
             return S.fmt("/error/e%s.%s", code, suffix);
         }

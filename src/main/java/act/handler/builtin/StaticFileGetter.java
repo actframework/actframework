@@ -74,7 +74,7 @@ public class StaticFileGetter extends FastRequestHandler {
 
     private H.Format contentType(String path) {
         FastStr s = FastStr.unsafeOf(path).afterLast('.');
-        return H.Format.valueOfIgnoreCase(s.toString());
+        return H.Format.of(s.toString());
     }
 
     protected InputStream inputStream(String path, ActionContext context) {

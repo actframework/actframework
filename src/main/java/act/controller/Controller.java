@@ -21,6 +21,10 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.util.Map;
 
+import static org.osgl.http.H.Format.CSV;
+import static org.osgl.http.H.Format.HTML;
+import static org.osgl.http.H.Format.TXT;
+
 /**
  * Mark a class as Controller, which contains at least one of the following:
  * <ul>
@@ -333,7 +337,7 @@ public @interface Controller {
         }
 
         private static void setDefaultContextType(H.Request req, H.Response resp) {
-            resp.contentType(req.contentType().toContentType());
+            resp.contentType(req.contentType().contentType());
         }
 
         public static Result inferResult(Result r, ActionContext actionContext) {
@@ -350,23 +354,20 @@ public @interface Controller {
                 return new RenderJSON(s);
             }
             H.Format fmt = actionContext.accept();
-            switch (fmt) {
-                case txt:
-                case csv:
-                    return new RenderText(fmt, s);
-                case html:
-                case unknown:
-                    return html(s);
-                default:
-                    throw E.unexpected("Cannot apply text result to format: %s", fmt);
+            if (HTML == fmt || H.Format.UNKNOWN == fmt) {
+                return html(s);
             }
+            if (TXT == fmt || CSV == fmt) {
+                return new RenderText(fmt, s);
+            }
+            throw E.unexpected("Cannot apply text result to format: %s", fmt);
         }
 
-        public static Result inferResult(Map<String, ?> map, ActionContext actionContext) {
+        public static Result inferResult(Map<String, Object> map, ActionContext actionContext) {
             if (actionContext.isJSON()) {
                 return new RenderJSON(map);
             }
-            throw E.tbd("render template with render args in map");
+            return new RenderTemplate(map);
         }
 
         /**

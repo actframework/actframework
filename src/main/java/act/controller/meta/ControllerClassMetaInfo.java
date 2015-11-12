@@ -1,5 +1,7 @@
 package act.controller.meta;
 
+import act.app.App;
+import act.app.AppClassLoader;
 import act.asm.Type;
 import act.handler.builtin.controller.ControllerAction;
 import act.handler.builtin.controller.Handler;
@@ -205,27 +207,63 @@ public final class ControllerClassMetaInfo extends DestroyableBase {
         return handlerLookup.get(className() + "." + name);
     }
 
-    public List<InterceptorMethodMetaInfo> beforeInterceptors() {
-        return interceptors.beforeList();
+    public List<InterceptorMethodMetaInfo> beforeInterceptors(App app) {
+        C.List<InterceptorMethodMetaInfo> list = C.newList();
+        AppClassLoader cl = app.classLoader();
+        for (String with : withList) {
+            ControllerClassMetaInfo withInfo = cl.controllerClassMetaInfo(with);
+            if (null != withInfo) {
+                list.addAll(withInfo.beforeInterceptors(app));
+            }
+        }
+        list.addAll(interceptors.beforeList());
+        return list;
     }
 
-    public List<InterceptorMethodMetaInfo> afterInterceptors() {
-        return interceptors.afterList();
+    public List<InterceptorMethodMetaInfo> afterInterceptors(App app) {
+        C.List<InterceptorMethodMetaInfo> list = C.newList();
+        AppClassLoader cl = app.classLoader();
+        for (String with : withList) {
+            ControllerClassMetaInfo withInfo = cl.controllerClassMetaInfo(with);
+            if (null != withInfo) {
+                list.addAll(withInfo.afterInterceptors(app));
+            }
+        }
+        list.addAll(interceptors.afterList());
+        return list;
     }
 
-    public List<CatchMethodMetaInfo> exceptionInterceptors() {
-        return interceptors.catchList();
+    public List<CatchMethodMetaInfo> exceptionInterceptors(App app) {
+        C.List<CatchMethodMetaInfo> list = C.newList();
+        AppClassLoader cl = app.classLoader();
+        for (String with : withList) {
+            ControllerClassMetaInfo withInfo = cl.controllerClassMetaInfo(with);
+            if (null != withInfo) {
+                list.addAll(withInfo.exceptionInterceptors(app));
+            }
+        }
+        list.addAll(interceptors.catchList());
+        return list;
     }
 
-    public List<InterceptorMethodMetaInfo> finallyInterceptors() {
-        return interceptors.finallyList();
+    public List<InterceptorMethodMetaInfo> finallyInterceptors(App app) {
+        C.List<InterceptorMethodMetaInfo> list = C.newList();
+        AppClassLoader cl = app.classLoader();
+        for (String with : withList) {
+            ControllerClassMetaInfo withInfo = cl.controllerClassMetaInfo(with);
+            if (null != withInfo) {
+                list.addAll(withInfo.finallyInterceptors(app));
+            }
+        }
+        list.addAll(interceptors.finallyList());
+        return list;
     }
 
-    public ControllerClassMetaInfo merge(ControllerClassMetaInfoManager infoBase) {
-        mergeFromWithList(infoBase);
+    public ControllerClassMetaInfo merge(ControllerClassMetaInfoManager infoBase, App app) {
+        mergeFromWithList(infoBase, app);
         mergeIntoActionList();
         buildActionLookup();
-        buildHandlerLookup();
+        buildHandlerLookup(app);
         return this;
     }
 
@@ -258,13 +296,13 @@ public final class ControllerClassMetaInfo extends DestroyableBase {
         }
     }
 
-    private void mergeFromWithList(ControllerClassMetaInfoManager infoBase) {
+    private void mergeFromWithList(ControllerClassMetaInfoManager infoBase, App app) {
         C.Set<String> withClasses = C.newSet();
         getAllWithList(withClasses, infoBase);
         for (String withClass : withClasses) {
             ControllerClassMetaInfo withClassInfo = infoBase.controllerMetaInfo(withClass);
             if (null != withClassInfo) {
-                withClassInfo.merge(infoBase);
+                withClassInfo.merge(infoBase, app);
                 interceptors.mergeFrom(withClassInfo.interceptors);
             } else {
                 logger.warn("Cannot find class info for @With class: %s", withClass);
@@ -286,19 +324,19 @@ public final class ControllerClassMetaInfo extends DestroyableBase {
         actionLookup = lookup;
     }
 
-    private void buildHandlerLookup() {
+    private void buildHandlerLookup(App app) {
         C.Map<String, HandlerMethodMetaInfo> lookup = C.newMap();
         lookup.putAll(actionLookup);
-        for (InterceptorMethodMetaInfo info : beforeInterceptors()) {
+        for (InterceptorMethodMetaInfo info : beforeInterceptors(app)) {
             lookup.put(info.fullName(), info);
         }
-        for (InterceptorMethodMetaInfo info : afterInterceptors()) {
+        for (InterceptorMethodMetaInfo info : afterInterceptors(app)) {
             lookup.put(info.fullName(), info);
         }
-        for (InterceptorMethodMetaInfo info : exceptionInterceptors()) {
+        for (InterceptorMethodMetaInfo info : exceptionInterceptors(app)) {
             lookup.put(info.fullName(), info);
         }
-        for (InterceptorMethodMetaInfo info : finallyInterceptors()) {
+        for (InterceptorMethodMetaInfo info : finallyInterceptors(app)) {
             lookup.put(info.fullName(), info);
         }
         handlerLookup = lookup;
