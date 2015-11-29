@@ -344,7 +344,7 @@ public class AppClassLoader
         if (null == enhancer) {
             return bytecode;
         }
-        cw.set(new ClassWriter(ClassWriter.COMPUTE_MAXS));
+        cw.set(new ClassWriter(ClassWriter.COMPUTE_FRAMES));
         enhancer.commitDownstream();
         ClassReader r = new ClassReader(bytecode);
         r.accept(enhancer, 0);

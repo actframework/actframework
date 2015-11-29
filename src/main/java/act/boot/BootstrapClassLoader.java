@@ -85,7 +85,7 @@ public abstract class BootstrapClassLoader extends ClassLoader implements Plugin
         if (null == enhancer) {
             c = defineClassX(name, ba, 0, ba.length, DOMAIN);
         } else {
-            ClassWriter w = new ClassWriter(ClassWriter.COMPUTE_MAXS);
+            ClassWriter w = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
             cw.set(w);
             enhancer.commitDownstream();
             ClassReader r;
