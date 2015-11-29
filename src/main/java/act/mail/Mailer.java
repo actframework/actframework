@@ -5,8 +5,6 @@ import org.osgl.logging.Logger;
 import org.osgl.util.E;
 import org.osgl.util.S;
 
-import javax.mail.Transport;
-import javax.mail.internet.MimeMessage;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;

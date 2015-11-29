@@ -1,7 +1,6 @@
 package act.db;
 
 import act.app.ActionContext;
-import act.app.App;
 import act.app.security.SecurityContext;
 
 public abstract class DaoBase<ID_TYPE, MODEL_TYPE, QUERY_TYPE extends Dao.Query<MODEL_TYPE, QUERY_TYPE>, DAO_TYPE extends Dao<ID_TYPE, MODEL_TYPE, QUERY_TYPE, DAO_TYPE>>

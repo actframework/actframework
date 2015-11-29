@@ -1,12 +1,12 @@
 package act.util;
 
+import act.TestBase;
+import act.app.App;
 import act.app.util.AppCrypto;
+import act.conf.AppConfig;
 import org.junit.Before;
 import org.junit.Test;
 import org.osgl.http.H;
-import act.TestBase;
-import act.app.App;
-import act.conf.AppConfig;
 
 import static org.mockito.Mockito.*;
 

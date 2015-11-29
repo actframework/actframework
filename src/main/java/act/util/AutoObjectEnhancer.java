@@ -3,7 +3,6 @@ package act.util;
 import act.ActComponent;
 import act.asm.*;
 import org.osgl.$;
-import org.osgl.Osgl;
 import org.osgl.util.C;
 import org.osgl.util.FastStr;
 

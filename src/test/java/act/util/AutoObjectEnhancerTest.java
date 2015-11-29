@@ -1,42 +1,22 @@
 package act.util;
 
 import act.TestBase;
-import act.app.ActionContext;
-import act.app.AppByteCodeScanner;
-import act.app.AppCodeScannerManager;
-import act.app.TestingAppClassLoader;
 import act.asm.ClassReader;
 import act.asm.ClassVisitor;
 import act.asm.ClassWriter;
-import act.asm.util.CheckClassAdapter;
 import act.asm.util.TraceClassVisitor;
-import act.controller.bytecode.ControllerByteCodeScanner;
-import act.controller.bytecode.ControllerEnhancer;
-import act.controller.meta.ControllerClassMetaInfo;
-import act.controller.meta.ControllerClassMetaInfoHolder;
-import act.controller.meta.ControllerClassMetaInfoManager;
 import org.junit.Before;
 import org.junit.Test;
 import org.osgl.$;
-import org.osgl.mvc.result.NotFound;
-import org.osgl.mvc.result.Ok;
-import org.osgl.mvc.result.Result;
-import org.osgl.util.C;
 import org.osgl.util.E;
 import org.osgl.util.IO;
 import org.osgl.util.S;
-import testapp.util.InvokeLog;
-import testapp.util.InvokeLogFactory;
 
-import java.io.*;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.PrintWriter;
 import java.lang.reflect.Method;
-import java.util.List;
-
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 public class AutoObjectEnhancerTest extends TestBase {
 

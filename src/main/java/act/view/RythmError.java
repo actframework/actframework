@@ -1,7 +1,6 @@
 package act.view;
 
 import act.app.App;
-import act.app.Source;
 import act.app.SourceInfo;
 import org.osgl.util.C;
 import org.rythmengine.exception.RythmException;

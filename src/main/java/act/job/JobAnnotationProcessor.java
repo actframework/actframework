@@ -3,9 +3,9 @@ package act.job;
 import act.ActComponent;
 import act.app.App;
 import act.app.AppHolderBase;
+import act.job.bytecode.ReflectedJobInvoker;
 import act.job.meta.JobClassMetaInfo;
 import act.job.meta.JobMethodMetaInfo;
-import act.job.bytecode.ReflectedJobInvoker;
 import org.osgl.util.E;
 import org.osgl.util.S;
 

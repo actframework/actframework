@@ -1,8 +1,8 @@
 package testapp.controller;
 
+import act.controller.Controller;
 import org.osgl.mvc.annotation.GetAction;
 import org.osgl.mvc.result.Ok;
-import act.controller.Controller;
 
 /**
  * A Controller declared with context path

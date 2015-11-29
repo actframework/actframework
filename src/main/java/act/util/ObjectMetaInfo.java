@@ -1,11 +1,12 @@
 package act.util;
 
-import act.asm.*;
+import act.asm.Label;
+import act.asm.MethodVisitor;
+import act.asm.Opcodes;
+import act.asm.Type;
 import org.osgl.$;
 import org.osgl.util.C;
 import org.osgl.util.S;
-
-import java.util.Objects;
 
 /**
  * Datastructure captures a class's meta information in related to {@link AutoObjectEnhancer}.

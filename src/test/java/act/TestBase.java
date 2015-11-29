@@ -1,10 +1,12 @@
 package act;
 
+import act.app.ActionContext;
+import act.app.App;
 import act.conf.AppConfig;
 import act.job.AppJobManager;
 import act.route.Router;
+import act.util.ClassNames;
 import org.junit.Assert;
-import org.junit.ComparisonFailure;
 import org.junit.Ignore;
 import org.junit.runner.JUnitCore;
 import org.mockito.Matchers;
@@ -13,9 +15,6 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.osgl.$;
 import org.osgl.http.H;
-import act.app.App;
-import act.app.ActionContext;
-import act.util.ClassNames;
 import org.osgl.util.E;
 import org.osgl.util.FastStr;
 import org.osgl.util.IO;

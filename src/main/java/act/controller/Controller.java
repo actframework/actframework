@@ -21,9 +21,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.util.Map;
 
-import static org.osgl.http.H.Format.CSV;
-import static org.osgl.http.H.Format.HTML;
-import static org.osgl.http.H.Format.TXT;
+import static org.osgl.http.H.Format.*;
 
 /**
  * Mark a class as Controller, which contains at least one of the following:

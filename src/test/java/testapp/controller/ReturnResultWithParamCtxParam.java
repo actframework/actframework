@@ -1,8 +1,8 @@
 package testapp.controller;
 
+import act.app.ActionContext;
 import org.osgl.mvc.annotation.GetAction;
 import org.osgl.mvc.result.Result;
-import act.app.ActionContext;
 
 public class ReturnResultWithParamCtxParam extends HandlerEnhancerTestController {
     @GetAction("/")

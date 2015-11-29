@@ -1,8 +1,8 @@
 package testapp.model;
 
+import act.controller.Controller;
 import org.osgl.mvc.annotation.GetAction;
 import org.osgl.mvc.result.Result;
-import act.controller.Controller;
 import testapp.controller.HandlerEnhancerTestController;
 
 @Controller

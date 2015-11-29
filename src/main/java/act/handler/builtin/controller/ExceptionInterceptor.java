@@ -1,6 +1,5 @@
 package act.handler.builtin.controller;
 
-import act.ActComponent;
 import act.plugin.Plugin;
 
 public abstract class ExceptionInterceptor

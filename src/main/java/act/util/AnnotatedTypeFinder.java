@@ -1,7 +1,10 @@
 package act.util;
 
 import act.ActComponent;
-import act.app.*;
+import act.app.App;
+import act.app.AppByteCodeScanner;
+import act.app.AppByteCodeScannerBase;
+import act.app.AppSourceCodeScanner;
 import org.osgl.$;
 import org.osgl.util.E;
 import org.osgl.util.FastStr;

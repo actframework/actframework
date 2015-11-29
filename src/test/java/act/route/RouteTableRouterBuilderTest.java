@@ -1,25 +1,24 @@
 package act.route;
 
+import act.TestBase;
 import act.app.App;
+import act.handler.RequestHandler;
+import act.handler.RequestHandlerResolver;
+import act.handler.builtin.Echo;
+import act.handler.builtin.StaticFileGetter;
 import org.junit.Test;
-import org.mockito.Matchers;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.osgl.http.H;
 import org.osgl.mvc.result.NotFound;
-import act.handler.RequestHandler;
-import act.handler.RequestHandlerResolver;
-import act.handler.builtin.Echo;
-import act.handler.builtin.StaticFileGetter;
-import act.TestBase;
 
 import java.io.File;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.when;
-import static org.osgl.http.H.Method.*;
+import static org.osgl.http.H.Method.GET;
 
 public class RouteTableRouterBuilderTest extends RouterTestBase {
 

@@ -4,12 +4,11 @@ import act.app.ActionContext;
 import act.controller.Controller;
 import org.hibernate.validator.internal.engine.MessageInterpolatorContext;
 
-import javax.validation.*;
+import javax.validation.ConstraintViolation;
+import javax.validation.MessageInterpolator;
+import javax.validation.Path;
 import javax.validation.metadata.ConstraintDescriptor;
 import java.lang.annotation.Annotation;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 public class ActionMethodParamConstraintViolation<T> implements ConstraintViolation<T> {
 

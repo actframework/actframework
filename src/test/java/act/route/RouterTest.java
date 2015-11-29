@@ -1,16 +1,15 @@
 package act.route;
 
+import act.app.App;
+import act.conf.AppConfig;
 import act.controller.ParamNames;
+import act.handler.RequestHandler;
+import act.handler.builtin.StaticFileGetter;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Matchers;
 import org.mockito.Mockito;
 import org.osgl.http.H;
 import org.osgl.mvc.result.NotFound;
-import act.app.App;
-import act.conf.AppConfig;
-import act.handler.RequestHandler;
-import act.handler.builtin.StaticFileGetter;
 
 import java.io.File;
 import java.util.Map;

@@ -1,11 +1,11 @@
 package act.plugin;
 
 import act.Act;
+import act.BootstrapClassLoaderTestRunner;
+import act.TestBase;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import act.BootstrapClassLoaderTestRunner;
-import act.TestBase;
 
 @RunWith(BootstrapClassLoaderTestRunner.class)
 public class PluginScannerTest extends TestBase {

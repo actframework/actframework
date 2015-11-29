@@ -4,8 +4,6 @@ import act.app.App;
 import act.event.ActEvent;
 import org.osgl.util.E;
 
-import java.util.EventObject;
-
 /**
  * Used to pass class binding resolution to DI plugin(s)
  */

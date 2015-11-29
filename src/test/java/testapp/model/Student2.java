@@ -1,7 +1,6 @@
 package testapp.model;
 
 import act.util.AutoObject;
-import org.osgl.$;
 
 /**
  * Created by luog on 28/11/15.

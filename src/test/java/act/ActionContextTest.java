@@ -1,16 +1,17 @@
 package act;
 
+import act.app.ActionContext;
+import act.app.App;
 import org.junit.Before;
 import org.junit.Test;
 import org.osgl.http.H;
-import act.app.App;
-import act.app.ActionContext;
 import org.osgl.util.C;
 
 import java.util.Arrays;
 import java.util.Map;
 
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class ActionContextTest extends TestBase {
 

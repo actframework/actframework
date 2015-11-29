@@ -1,13 +1,14 @@
 package testapp.controller;
 
+import act.app.ActAppException;
+import act.app.ActionContext;
 import org.osgl.mvc.annotation.*;
 import org.osgl.mvc.result.Ok;
 import org.osgl.mvc.result.Result;
-import act.app.ActionContext;
-import act.app.ActAppException;
 import testapp.util.Trackable;
 
-import static org.osgl.http.H.Method.*;
+import static org.osgl.http.H.Method.GET;
+import static org.osgl.http.H.Method.PUT;
 
 /**
  * A faked controller class with AppContext field

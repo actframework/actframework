@@ -1,10 +1,10 @@
 package act.be;
 
-import org.junit.Test;
-import act.app.ActionContext;
 import act.TestBase;
+import act.app.ActionContext;
 import act.asm.Type;
 import act.util.AsmTypes;
+import org.junit.Test;
 
 import java.lang.reflect.Method;
 

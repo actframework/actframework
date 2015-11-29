@@ -1,6 +1,5 @@
 package sparkapp;
 
-import act.controller.Controller;
 import org.osgl.http.H;
 import org.osgl.util.E;
 

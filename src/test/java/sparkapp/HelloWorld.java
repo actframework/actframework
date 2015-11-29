@@ -1,5 +1,7 @@
 package sparkapp;
-import static act.boot.spark.SparkApp.*;
+
+import static act.boot.spark.SparkApp.echo;
+import static act.boot.spark.SparkApp.get;
 
 public class HelloWorld {
     public static void main(String[] args) {

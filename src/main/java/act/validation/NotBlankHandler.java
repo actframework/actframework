@@ -6,7 +6,6 @@ import act.controller.ActionMethodParamAnnotationHandlerPlugin;
 import org.osgl.util.C;
 import org.osgl.util.S;
 
-import javax.validation.constraints.NotNull;
 import java.lang.annotation.Annotation;
 import java.util.Set;
 

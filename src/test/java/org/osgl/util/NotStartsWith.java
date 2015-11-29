@@ -1,7 +1,6 @@
 package org.osgl.util;
 
 import org.hamcrest.Description;
-import org.junit.internal.matchers.SubstringMatcher;
 import org.mockito.ArgumentMatcher;
 
 import java.io.Serializable;
