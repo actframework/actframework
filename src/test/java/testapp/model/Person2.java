@@ -1,10 +1,15 @@
 package testapp.model;
 
 import act.util.AutoObject;
+import act.util.EqualIgnore;
 import org.osgl.$;
+import org.osgl.util.S;
 
 @AutoObject
 public class Person2 {
+
+    @EqualIgnore
+    private String v1;
     private String firstName;
     private String lastName;
     private Address2 address;
@@ -15,6 +20,7 @@ public class Person2 {
         lastName = ln;
         address = addr;
         this.age = age;
+        v1 = S.random();
     }
 
     public String getFirstName() {

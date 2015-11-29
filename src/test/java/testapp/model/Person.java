@@ -1,7 +1,9 @@
 package testapp.model;
 
 import act.util.AutoObject;
+import act.util.EqualIgnore;
 import org.osgl.$;
+import org.osgl.util.S;
 
 @AutoObject
 public class Person {

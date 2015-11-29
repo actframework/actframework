@@ -55,10 +55,14 @@ class ObjectMetaInfo implements Opcodes {
             mv.visitMethodInsn(INVOKESTATIC, "org/osgl/Osgl", "eq", S.fmt("(%s%s)Z", s, s), false);
             mv.visitJumpInsn(IFEQ, jumpTo);
         }
-        void addHashCodeInstruction(Type host, MethodVisitor mv) {
+        boolean addHashCodeInstruction(Type host, MethodVisitor mv) {
+            if (!eligible()) {
+                return false;
+            }
             mv.visitVarInsn(ALOAD, 0); // load this pointer
             mv.visitFieldInsn(GETFIELD, host.getInternalName(), name, type.getDescriptor());
             convertFromPrimaryType(type, mv);
+            return true;
         }
         private void convertFromPrimaryType(Type fieldType, MethodVisitor mv) {
             switch (fieldType.getSort()) {
@@ -124,9 +128,10 @@ class ObjectMetaInfo implements Opcodes {
         return fields;
     }
 
-    void addField(String fieldName, Type fieldType, boolean isTransient) {
+    FieldMetaInfo addField(String fieldName, Type fieldType, boolean isTransient) {
         FieldMetaInfo fi = new FieldMetaInfo(fieldName, fieldType, isTransient);
         fields.add(fi);
+        return fi;
     }
 
     void requireCallSuper() {

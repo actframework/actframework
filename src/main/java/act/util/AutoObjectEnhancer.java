@@ -37,6 +37,9 @@ public class AutoObjectEnhancer extends AppByteCodeEnhancer<AutoObjectEnhancer> 
         super.visit(version, access, name, signature, superName, interfaces);
     }
 
+    private static final String EQ_IGNORE = Type.getType(EqualIgnore.class).getDescriptor();
+    private static final String EQ_FORCE = Type.getType(EqualField.class).getDescriptor();
+
     @Override
     public FieldVisitor visitField(int access, String name, String desc, String signature, Object value) {
         FieldVisitor fv = super.visitField(access, name, desc, signature, value);
@@ -47,10 +50,15 @@ public class AutoObjectEnhancer extends AppByteCodeEnhancer<AutoObjectEnhancer> 
         if (metaInfo.hasAutoObjectAnnotation()) {
             boolean isTransient = ((access & ACC_TRANSIENT) != 0);
             Type fieldType = Type.getType(desc);
-            metaInfo.addField(name, fieldType, isTransient);
+            final ObjectMetaInfo.FieldMetaInfo fi = metaInfo.addField(name, fieldType, isTransient);
             return new FieldVisitor(ASM5, fv) {
                 @Override
                 public AnnotationVisitor visitAnnotation(String desc, boolean visible) {
+                    if (EQ_IGNORE.equals(desc)) {
+                        fi.setEqualIgnore();
+                    } else if (EQ_FORCE.equals(desc)) {
+                        fi.setEqualForce();
+                    }
                     return super.visitAnnotation(desc, visible);
                 }
 
@@ -142,8 +150,10 @@ public class AutoObjectEnhancer extends AppByteCodeEnhancer<AutoObjectEnhancer> 
         C.List<ObjectMetaInfo.FieldMetaInfo> fields = metaInfo.fields();
         int cnt = 0;
         for (ObjectMetaInfo.FieldMetaInfo fi : fields) {
-            fi.addHashCodeInstruction(host, mv);
-            cnt++;
+            boolean added = fi.addHashCodeInstruction(host, mv);
+            if (added) {
+                cnt++;
+            }
         }
         if (metaInfo.shouldCallSuper()) {
             mv.visitVarInsn(ALOAD, 0);
