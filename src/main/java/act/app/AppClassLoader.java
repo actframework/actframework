@@ -13,7 +13,7 @@ import act.mail.meta.MailerClassMetaInfo;
 import act.mail.meta.MailerClassMetaInfoHolder;
 import act.mail.meta.MailerClassMetaInfoManager;
 import act.util.*;
-import org.osgl._;
+import org.osgl.$;
 import org.osgl.exception.NotAppliedException;
 import org.osgl.exception.UnexpectedException;
 import org.osgl.logging.L;
@@ -31,8 +31,7 @@ import java.util.Map;
 import java.util.Set;
 
 import static act.util.ClassInfoRepository.canonicalName;
-import static org.osgl._.nil;
-import static org.osgl._.notNull;
+import static org.osgl.$.notNull;
 
 /**
  * The top level class loader to load a specific application classes into JVM
@@ -164,7 +163,7 @@ public class AppClassLoader
      *     due to the context is not established can be captured eventually</li>
      * </ol>
      */
-    protected void scanByteCode(Iterable<String> classes, _.Function<String, byte[]> bytecodeProvider) {
+    protected void scanByteCode(Iterable<String> classes, $.Function<String, byte[]> bytecodeProvider) {
         logger.debug("start to scan bytecode ...");
         final AppCodeScannerManager scannerManager = app().scannerManager();
         Map<String, List<AppByteCodeScanner>> dependencies = C.newMap();
@@ -340,7 +339,7 @@ public class AppClassLoader
 
     private byte[] asmEnhance(String className, byte[] bytecode) {
         if (!enhanceEligible(className)) return bytecode;
-        _.Var<ClassWriter> cw = _.var(null);
+        $.Var<ClassWriter> cw = $.var(null);
         ByteCodeVisitor enhancer = Act.enhancerManager().appEnhancer(app, className, cw);
         if (null == enhancer) {
             return bytecode;
@@ -416,9 +415,9 @@ public class AppClassLoader
         return node;
     }
 
-    private _.F1<String, byte[]> bytecodeLookup = new _.F1<String, byte[]>() {
+    private $.F1<String, byte[]> bytecodeLookup = new $.F1<String, byte[]>() {
         @Override
-        public byte[] apply(String s) throws NotAppliedException, _.Break {
+        public byte[] apply(String s) throws NotAppliedException, $.Break {
             return appBytecode(s);
         }
     };
@@ -437,13 +436,13 @@ public class AppClassLoader
 
     private static enum _F {
         ;
-        static _.Predicate<String> SYS_CLASS_NAME = new _.Predicate<String>() {
+        static $.Predicate<String> SYS_CLASS_NAME = new $.Predicate<String>() {
             @Override
             public boolean test(String s) {
                 return s.startsWith("java") || s.startsWith("org.osgl.");
             }
         };
-        static _.Predicate<String> SAFE_CLASS = S.F.endsWith(".class").and(SYS_CLASS_NAME.negate());
+        static $.Predicate<String> SAFE_CLASS = S.F.endsWith(".class").and(SYS_CLASS_NAME.negate());
     }
 
     protected static boolean enhanceEligible(String name) {

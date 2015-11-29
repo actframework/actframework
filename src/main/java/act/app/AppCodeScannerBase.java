@@ -1,7 +1,7 @@
 package act.app;
 
 import act.conf.AppConfig;
-import org.osgl._;
+import org.osgl.$;
 import org.osgl.logging.L;
 import org.osgl.logging.Logger;
 import org.osgl.util.E;
@@ -52,7 +52,7 @@ public abstract class AppCodeScannerBase implements AppCodeScanner {
 
     @Override
     public int hashCode() {
-        return _.hc(app, getClass());
+        return $.hc(app, getClass());
     }
 
     @Override

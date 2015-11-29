@@ -1,7 +1,7 @@
 package act.app;
 
 import act.Act;
-import org.osgl._;
+import org.osgl.$;
 import org.osgl.util.C;
 import org.osgl.util.E;
 
@@ -108,10 +108,10 @@ public class AppManager {
     private enum _F {
         ;
 
-        static final _.F1<App, ?> loadApp(final AppManager mgr) {
-            return new _.Visitor<App>() {
+        static final $.F1<App, ?> loadApp(final AppManager mgr) {
+            return new $.Visitor<App>() {
                 @Override
-                public void visit(App app) throws _.Break {
+                public void visit(App app) throws $.Break {
                     mgr.load(app);
                 }
             };

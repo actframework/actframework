@@ -2,7 +2,7 @@ package act.validation;
 
 import act.conf.AppConfig;
 import act.util.DestroyableBase;
-import org.osgl._;
+import org.osgl.$;
 import org.osgl.util.C;
 import org.osgl.util.FastStr;
 import org.osgl.util.S;
@@ -25,7 +25,7 @@ public class ValidationMessageInterpolator extends DestroyableBase implements Me
     private ResourceBundle defaultBundle;
 
     public ValidationMessageInterpolator(AppConfig config) {
-        appConfig = _.notNull(config);
+        appConfig = $.notNull(config);
         appConfig.addSubResource(this);
         appBundleMap = C.newMap();
         defaultBundleMap = C.newMap();

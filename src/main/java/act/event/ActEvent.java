@@ -1,6 +1,6 @@
 package act.event;
 
-import org.osgl._;
+import org.osgl.$;
 
 import java.util.EventObject;
 
@@ -10,11 +10,11 @@ public class ActEvent<T> extends EventObject {
 
     public ActEvent(T source) {
         super(source);
-        ts = _.ms();
+        ts = $.ms();
     }
 
     public final T source() {
-        return _.cast(getSource());
+        return $.cast(getSource());
     }
 
     public final long timestamp() {

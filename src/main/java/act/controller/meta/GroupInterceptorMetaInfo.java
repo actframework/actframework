@@ -1,7 +1,7 @@
 package act.controller.meta;
 
 import act.util.DestroyableBase;
-import org.osgl._;
+import org.osgl.$;
 import org.osgl.util.C;
 import org.osgl.util.S;
 
@@ -136,10 +136,10 @@ public class GroupInterceptorMetaInfo extends DestroyableBase {
     private static enum _F {
         ;
 
-        static _.Visitor<InterceptorMethodMetaInfo> mergeInto(final C.List<InterceptorMethodMetaInfo> toList, final String actionName) {
-            return new _.Visitor<InterceptorMethodMetaInfo>() {
+        static $.Visitor<InterceptorMethodMetaInfo> mergeInto(final C.List<InterceptorMethodMetaInfo> toList, final String actionName) {
+            return new $.Visitor<InterceptorMethodMetaInfo>() {
                 @Override
-                public void visit(InterceptorMethodMetaInfo info) throws _.Break {
+                public void visit(InterceptorMethodMetaInfo info) throws $.Break {
                     info.mergeInto(toList, actionName);
                 }
             };

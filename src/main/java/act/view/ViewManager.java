@@ -5,7 +5,7 @@ import act.conf.AppConfig;
 import act.util.ActContext;
 import act.view.rythm.ActionViewVarDef;
 import act.view.rythm.MailerViewVarDef;
-import org.osgl._;
+import org.osgl.$;
 import org.osgl.exception.UnexpectedException;
 import org.osgl.util.C;
 import org.osgl.util.E;
@@ -54,7 +54,7 @@ public class ViewManager {
     }
 
     public View view(String name) {
-        _.Option<View> viewBag = findViewByName(name);
+        $.Option<View> viewBag = findViewByName(name);
         return viewBag.isDefined() ? viewBag.get() : null;
     }
 
@@ -91,8 +91,8 @@ public class ViewManager {
         return findViewByName(name).isDefined();
     }
 
-    private _.Option<View> findViewByName(final String name) {
-        return viewList.findFirst(new _.Predicate<View>() {
+    private $.Option<View> findViewByName(final String name) {
+        return viewList.findFirst(new $.Predicate<View>() {
             @Override
             public boolean test(View view) {
                 return view.name().toUpperCase().equals(name);

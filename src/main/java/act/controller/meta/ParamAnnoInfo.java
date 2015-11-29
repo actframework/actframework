@@ -1,6 +1,6 @@
 package act.controller.meta;
 
-import org.osgl._;
+import org.osgl.$;
 import org.osgl.mvc.annotation.Param;
 import org.osgl.mvc.util.StringValueResolver;
 import org.osgl.util.C;
@@ -45,7 +45,7 @@ public class ParamAnnoInfo extends ParamAnnoInfoTraitBase {
         }
         Object v = defValMap.get(type);
         if (null == v) return null;
-        return _.cast(v);
+        return $.cast(v);
     }
 
     private static Map<Class, Class> primitiveTypes = C.map(

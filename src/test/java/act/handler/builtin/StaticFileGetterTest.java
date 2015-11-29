@@ -1,22 +1,15 @@
 package act.handler.builtin;
 
-import act.Act;
 import act.MockResponse;
 import act.RequestImplBase;
 import act.TestBase;
-import act.app.App;
 import act.app.ActionContext;
-import act.conf.AppConfig;
 import act.controller.ParamNames;
-import act.util.ActErrorPageRender;
-import act.view.ViewManager;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
-import org.osgl._;
 import org.osgl.http.H;
-import org.osgl.mvc.MvcConfig;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;

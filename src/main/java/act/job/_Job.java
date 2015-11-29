@@ -1,7 +1,7 @@
 package act.job;
 
 import act.util.DestroyableBase;
-import org.osgl._;
+import org.osgl.$;
 import org.osgl.exception.NotAppliedException;
 import org.osgl.util.C;
 import org.osgl.util.E;
@@ -16,7 +16,7 @@ class _Job extends DestroyableBase implements Runnable {
     private boolean oneTime;
     private AppJobManager manager;
     private JobTrigger trigger;
-    private _.Func0<?> worker;
+    private $.Func0<?> worker;
     private List<_Job> parallelJobs = C.newList();
     private List<_Job> followingJobs = C.newList();
     private List<_Job> precedenceJobs = C.newList();
@@ -33,14 +33,14 @@ class _Job extends DestroyableBase implements Runnable {
         this.manager = manager;
     }
 
-    _Job(String id, AppJobManager manager, _.Func0<?> worker) {
+    _Job(String id, AppJobManager manager, $.Func0<?> worker) {
         E.NPE(worker, manager);
         this.id = id;
         this.manager = manager;
         this.worker = worker;
     }
 
-    _Job(String id, AppJobManager manager, _.Func0<?> worker, boolean oneTime) {
+    _Job(String id, AppJobManager manager, $.Func0<?> worker, boolean oneTime) {
         E.NPE(worker, manager);
         this.id = id;
         this.manager = manager;
@@ -148,9 +148,9 @@ class _Job extends DestroyableBase implements Runnable {
     }
 
     private static _Job of(String jobId, final Runnable runnable, AppJobManager manager, boolean oneTime) {
-        return new _Job(jobId, manager, new _.F0() {
+        return new _Job(jobId, manager, new $.F0() {
             @Override
-            public Object apply() throws NotAppliedException, _.Break {
+            public Object apply() throws NotAppliedException, $.Break {
                 runnable.run();
                 return null;
             }

@@ -3,14 +3,14 @@ package act.route;
 import act.app.ActionContext;
 import act.handler.RequestHandler;
 import act.handler.RequestHandlerBase;
-import org.osgl._;
+import org.osgl.$;
 import org.osgl.http.H;
 import org.osgl.util.E;
 
 /**
  * Used to expose Router table for debugging purpose
  */
-public class RouteInfo extends _.T3<String, String, String> {
+public class RouteInfo extends $.T3<String, String, String> {
     public RouteInfo(H.Method method, String path, RequestHandler handler) {
         super(method.name(), path, handler.toString());
     }

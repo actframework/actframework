@@ -1,7 +1,7 @@
 package act.app;
 
 import act.Act;
-import org.osgl._;
+import org.osgl.$;
 import org.osgl.logging.L;
 import org.osgl.logging.Logger;
 import org.osgl.util.C;
@@ -46,7 +46,7 @@ public class AppScanner {
         return buildFileProbeMap.size() + projectLayoutProbes.size();
     }
 
-    void scan(_.Func1<App, ?> callback) {
+    void scan($.Func1<App, ?> callback) {
         File[] appBases = appBases();
         int size = appBases.length;
         for (int i = 0; i < size; ++i) {
@@ -60,7 +60,7 @@ public class AppScanner {
         return appBase.listFiles();
     }
 
-    private void scan(File appBase, _.Func1<App, ?> callback) {
+    private void scan(File appBase, $.Func1<App, ?> callback) {
         App app;
         ProjectLayout layout = probe(appBase);
         if (null == layout && !Act.isDev()) {

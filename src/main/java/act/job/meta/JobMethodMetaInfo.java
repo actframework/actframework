@@ -4,7 +4,7 @@ import act.asm.Type;
 import act.sys.meta.InvokeType;
 import act.sys.meta.ReturnTypeInfo;
 import act.util.DestroyableBase;
-import org.osgl._;
+import org.osgl.$;
 import org.osgl.util.S;
 
 public class JobMethodMetaInfo extends DestroyableBase {
@@ -79,7 +79,7 @@ public class JobMethodMetaInfo extends DestroyableBase {
 
     @Override
     public int hashCode() {
-        return _.hc(fullName());
+        return $.hc(fullName());
     }
 
     @Override
@@ -89,7 +89,7 @@ public class JobMethodMetaInfo extends DestroyableBase {
         }
         if (obj instanceof JobMethodMetaInfo) {
             JobMethodMetaInfo that = (JobMethodMetaInfo) obj;
-            return _.eq(that.fullName(), fullName());
+            return $.eq(that.fullName(), fullName());
         }
         return false;
     }

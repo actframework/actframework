@@ -2,7 +2,7 @@ package act.app.conf;
 
 import act.conf.AppConfig;
 import act.route.Router;
-import org.osgl._;
+import org.osgl.$;
 import org.osgl.http.H;
 import org.osgl.logging.Logger;
 import org.osgl.mvc.util.StringValueResolver;
@@ -70,7 +70,7 @@ public abstract class AppConfigurator<T extends AppConfigurator> extends AppConf
     }
 
     public <V> V propVal(String key) {
-        return _.cast(userProps.get(key));
+        return $.cast(userProps.get(key));
     }
 
     /**

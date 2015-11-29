@@ -12,7 +12,7 @@ import act.controller.meta.InterceptorMethodMetaInfo;
 import act.handler.RequestHandlerBase;
 import act.view.ActServerError;
 import act.view.RenderAny;
-import org.osgl._;
+import org.osgl.$;
 import org.osgl.cache.CacheService;
 import org.osgl.exception.NotAppliedException;
 import org.osgl.http.H;
@@ -399,7 +399,7 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
         list.add(i);
     }
 
-    public static class GroupInterceptorWithResult extends _.F1<ActionContext, Result> {
+    public static class GroupInterceptorWithResult extends $.F1<ActionContext, Result> {
         private C.List<? extends ActionHandler> interceptors;
 
         public GroupInterceptorWithResult(C.List<? extends ActionHandler> interceptors) {
@@ -407,7 +407,7 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
         }
 
         @Override
-        public Result apply(ActionContext actionContext) throws NotAppliedException, _.Break {
+        public Result apply(ActionContext actionContext) throws NotAppliedException, $.Break {
             try {
                 if (interceptors.isEmpty()) return null;
                 for (ActionHandler i : interceptors) {
@@ -423,7 +423,7 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
         }
     }
 
-    public static class GroupAfterInterceptor extends _.F2<Result, ActionContext, Result> {
+    public static class GroupAfterInterceptor extends $.F2<Result, ActionContext, Result> {
         private C.List<? extends AfterInterceptor> interceptors;
 
         public GroupAfterInterceptor(C.List<? extends AfterInterceptor> interceptors) {
@@ -431,7 +431,7 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
         }
 
         @Override
-        public Result apply(Result result, ActionContext actionContext) throws NotAppliedException, _.Break {
+        public Result apply(Result result, ActionContext actionContext) throws NotAppliedException, $.Break {
             for (AfterInterceptor i : interceptors) {
                 result = i.handle(result, actionContext);
             }
@@ -439,7 +439,7 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
         }
     }
 
-    public static class GroupFinallyInterceptor extends _.F1<ActionContext, Void> {
+    public static class GroupFinallyInterceptor extends $.F1<ActionContext, Void> {
         private C.List<? extends FinallyInterceptor> interceptors;
 
         public GroupFinallyInterceptor(C.List<FinallyInterceptor> interceptors) {
@@ -447,7 +447,7 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
         }
 
         @Override
-        public Void apply(ActionContext actionContext) throws NotAppliedException, _.Break {
+        public Void apply(ActionContext actionContext) throws NotAppliedException, $.Break {
             if (interceptors.isEmpty()) return null;
             for (FinallyInterceptor i : interceptors) {
                 i.handle(actionContext);
@@ -456,7 +456,7 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
         }
     }
 
-    public static class GroupExceptionInterceptor extends _.F2<Exception, ActionContext, Result> {
+    public static class GroupExceptionInterceptor extends $.F2<Exception, ActionContext, Result> {
         private C.List<? extends ExceptionInterceptor> interceptors;
 
         public GroupExceptionInterceptor(C.List<? extends ExceptionInterceptor> interceptors) {
@@ -464,7 +464,7 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
         }
 
         @Override
-        public Result apply(Exception e, ActionContext actionContext) throws NotAppliedException, _.Break {
+        public Result apply(Exception e, ActionContext actionContext) throws NotAppliedException, $.Break {
             try {
                 if (interceptors.isEmpty()) return null;
                 for (ExceptionInterceptor i : interceptors) {

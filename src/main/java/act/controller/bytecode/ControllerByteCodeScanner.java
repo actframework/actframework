@@ -11,7 +11,7 @@ import act.route.Router;
 import act.util.AsmTypes;
 import act.util.ByteCodeVisitor;
 import act.util.GeneralAnnoInfo;
-import org.osgl._;
+import org.osgl.$;
 import org.osgl.http.H;
 import org.osgl.logging.L;
 import org.osgl.logging.Logger;
@@ -229,7 +229,7 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
                 AnnotationVisitor av = super.visitAnnotation(desc, visible);
                 Type type = Type.getType(desc);
                 String className = type.getClassName();
-                Class<? extends Annotation> c = _.classForName(className);
+                Class<? extends Annotation> c = $.classForName(className);
                 if (ControllerClassMetaInfo.isActionAnnotation(c)) {
                     markRequireScan();
                     ActionMethodMetaInfo tmp = new ActionMethodMetaInfo(classInfo);
@@ -250,9 +250,9 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
             public AnnotationVisitor visitParameterAnnotation(int parameter, String desc, boolean visible) {
                 AnnotationVisitor av = super.visitParameterAnnotation(parameter, desc, visible);
                 Type type = Type.getType(desc);
-                if (_.eq(type, AsmTypes.PARAM.asmType())) {
+                if ($.eq(type, AsmTypes.PARAM.asmType())) {
                     return new ParamAnnotationVisitor(av, parameter);
-                } else if (_.eq(type, AsmTypes.BIND.asmType())) {
+                } else if ($.eq(type, AsmTypes.BIND.asmType())) {
                     return new BindAnnotationVisitor(av, parameter);
                 } else {
                     //return av;
@@ -317,7 +317,7 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
                 }
                 if (null != signature) {
                     SignatureReader sr = new SignatureReader(signature);
-                    final _.Var<Integer> id = new _.Var<>(-1);
+                    final $.Var<Integer> id = new $.Var<>(-1);
                     sr.accept(new SignatureVisitor(ASM5) {
 
                         boolean startParsing;
@@ -583,7 +583,7 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
                 }
 
                 private <T> T c(Object v) {
-                    return _.cast(v);
+                    return $.cast(v);
                 }
             }
 
@@ -603,7 +603,7 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
                         info.model((String) value);
                     } else if ("value".endsWith(name)) {
                         Type type = (Type) value;
-                        Class<? extends Binder> c = _.classForName(type.getClassName(), getClass().getClassLoader());
+                        Class<? extends Binder> c = $.classForName(type.getClassName(), getClass().getClassLoader());
                         info.binder(c);
                     }
                 }

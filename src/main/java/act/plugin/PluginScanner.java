@@ -1,7 +1,7 @@
 package act.plugin;
 
 import act.Act;
-import org.osgl._;
+import org.osgl.$;
 import org.osgl.exception.UnexpectedException;
 import org.osgl.logging.L;
 import org.osgl.logging.Logger;
@@ -32,7 +32,7 @@ public class PluginScanner {
             }
             if (Plugin.class.isAssignableFrom(c)) {
                 try {
-                    Plugin p = (Plugin) _.newInstance(c);
+                    Plugin p = (Plugin) $.newInstance(c);
                     p.register();
                 } catch (UnexpectedException e) {
                     // ignore: some plugin does not provide default constructor

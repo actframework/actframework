@@ -2,10 +2,9 @@ package act.util;
 
 import act.ActComponent;
 import act.app.*;
-import org.osgl._;
+import org.osgl.$;
 import org.osgl.util.E;
 import org.osgl.util.FastStr;
-import org.osgl.util.S;
 
 import java.lang.annotation.Annotation;
 import java.util.Map;
@@ -14,14 +13,14 @@ import java.util.Set;
 @ActComponent
 public abstract class AnnotatedTypeFinder extends AppCodeScannerPluginBase {
 
-    private _.Func2<App, String, Map<Class<? extends AppByteCodeScanner>, Set<String>>> foundHandler;
+    private $.Func2<App, String, Map<Class<? extends AppByteCodeScanner>, Set<String>>> foundHandler;
     private String clsName;
     private String pkgName;
     private Class<? extends Annotation> annoType;
     private boolean noAbstract;
     private boolean publicOnly;
 
-    protected AnnotatedTypeFinder(boolean publicOnly, boolean noAbstract, Class<? extends Annotation> annoType, _.Func2<App, String, Map<Class<? extends AppByteCodeScanner>, Set<String>>> foundHandler) {
+    protected AnnotatedTypeFinder(boolean publicOnly, boolean noAbstract, Class<? extends Annotation> annoType, $.Func2<App, String, Map<Class<? extends AppByteCodeScanner>, Set<String>>> foundHandler) {
         E.NPE(annoType, foundHandler);
         this.clsName = annoType.getSimpleName();
         this.pkgName = FastStr.of(annoType.getName()).beforeLast('.').toString();
@@ -31,7 +30,7 @@ public abstract class AnnotatedTypeFinder extends AppCodeScannerPluginBase {
         this.publicOnly = publicOnly;
     }
 
-    protected AnnotatedTypeFinder(Class<? extends Annotation> annoType, _.Func2<App, String, Map<Class<? extends AppByteCodeScanner>, Set<String>>> foundHandler) {
+    protected AnnotatedTypeFinder(Class<? extends Annotation> annoType, $.Func2<App, String, Map<Class<? extends AppByteCodeScanner>, Set<String>>> foundHandler) {
         this(true, true, annoType, foundHandler);
     }
 
@@ -53,7 +52,7 @@ public abstract class AnnotatedTypeFinder extends AppCodeScannerPluginBase {
     @ActComponent
     private class ByteCodeSensor extends AppByteCodeScannerBase {
         private ClassDetector detector;
-        private _.Func2<App, String, Map<Class<? extends AppByteCodeScanner>, Set<String>>> foundHandler = AnnotatedTypeFinder.this.foundHandler;
+        private $.Func2<App, String, Map<Class<? extends AppByteCodeScanner>, Set<String>>> foundHandler = AnnotatedTypeFinder.this.foundHandler;
 
         @Override
         protected void reset(String className) {
@@ -93,7 +92,7 @@ public abstract class AnnotatedTypeFinder extends AppCodeScannerPluginBase {
 
         @Override
         public int hashCode() {
-            return _.hc(detector, ByteCodeSensor.class);
+            return $.hc(detector, ByteCodeSensor.class);
         }
 
         @Override
@@ -103,7 +102,7 @@ public abstract class AnnotatedTypeFinder extends AppCodeScannerPluginBase {
             }
             if (obj instanceof ByteCodeSensor) {
                 ByteCodeSensor that = (ByteCodeSensor)obj;
-                return _.eq(that.detector, this.detector) && _.eq(that.foundHandler, this.foundHandler);
+                return $.eq(that.detector, this.detector) && $.eq(that.foundHandler, this.foundHandler);
             }
             return false;
         }

@@ -7,7 +7,7 @@ import act.boot.PluginClassProvider;
 import act.boot.app.FullStackAppBootstrapClassLoader;
 import act.util.ByteCodeVisitor;
 import act.util.Jars;
-import org.osgl._;
+import org.osgl.$;
 import org.osgl.logging.L;
 import org.osgl.logging.Logger;
 import org.osgl.util.C;
@@ -153,7 +153,7 @@ public class ServerBootstrapClassLoader extends ClassLoader implements PluginCla
         }
 
         if (null == c) {
-            _.Var<ClassWriter> cw = _.val(null);
+            $.Var<ClassWriter> cw = $.val(null);
             ByteCodeVisitor enhancer = Act.enhancerManager().generalEnhancer(name, cw);
             if (null == enhancer) {
                 c = super.defineClass(name, ba, 0, ba.length, DOMAIN);

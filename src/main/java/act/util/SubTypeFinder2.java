@@ -5,7 +5,7 @@ import act.app.App;
 import act.app.event.AppEventId;
 import act.event.AppEventListenerBase;
 import act.plugin.AppServicePlugin;
-import org.osgl._;
+import org.osgl.$;
 import org.osgl.logging.L;
 import org.osgl.logging.Logger;
 import org.osgl.util.E;
@@ -39,10 +39,10 @@ public abstract class SubTypeFinder2<T> extends AppServicePlugin {
             public void on(EventObject event) throws Exception {
                 ClassInfoRepository repo = app.classLoader().classInfoRepository();
                 ClassNode parent = repo.node(targetType.getName());
-                parent.findPublicNotAbstract(new _.Visitor<ClassNode>() {
+                parent.findPublicNotAbstract(new $.Visitor<ClassNode>() {
                     @Override
-                    public void visit(ClassNode classNode) throws _.Break {
-                        final Class<T> c = _.classForName(classNode.name(), app.classLoader());
+                    public void visit(ClassNode classNode) throws $.Break {
+                        final Class<T> c = $.classForName(classNode.name(), app.classLoader());
                         found(c, app);
                     }
                 });

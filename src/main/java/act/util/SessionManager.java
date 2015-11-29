@@ -7,7 +7,7 @@ import act.app.App;
 import act.conf.AppConfig;
 import act.plugin.Plugin;
 import org.apache.commons.codec.Charsets;
-import org.osgl._;
+import org.osgl.$;
 import org.osgl.http.H;
 import org.osgl.http.H.Session;
 import org.osgl.logging.L;
@@ -168,7 +168,7 @@ public class SessionManager {
             String val = sessionMapper.deserializeSession(context);
 
             Session session = new Session();
-            long now = _.ms();
+            long now = $.ms();
             if (S.blank(val)) {
                 session = processExpiration(session, now, true, req);
             } else {
@@ -207,7 +207,7 @@ public class SessionManager {
                 session.id(); // ensure session ID is generated
                 if (sessionWillExpire && !session.contains(KEY_EXPIRATION)) {
                     // session get cleared before
-                    session.put(KEY_EXPIRATION, _.ms() + ttl);
+                    session.put(KEY_EXPIRATION, $.ms() + ttl);
                 }
                 String data = dissolveIntoCookieContent(session, true);
                 cookie = createCookie(sessionCookieName, data);

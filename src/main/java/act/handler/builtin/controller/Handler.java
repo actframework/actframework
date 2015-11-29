@@ -1,7 +1,7 @@
 package act.handler.builtin.controller;
 
 import act.util.DestroyableBase;
-import org.osgl._;
+import org.osgl.$;
 
 /**
  * The base class of @Before, @After, @Exception, @Finally interceptor and
@@ -26,7 +26,7 @@ public abstract class Handler<T extends Handler> extends DestroyableBase impleme
 
     @Override
     public int hashCode() {
-        return _.hc(priority, getClass());
+        return $.hc(priority, getClass());
     }
 
     @Override

@@ -4,7 +4,7 @@ import act.asm.AnnotationVisitor;
 import act.asm.ClassWriter;
 import act.asm.Type;
 import act.plugin.Extends;
-import org.osgl._;
+import org.osgl.$;
 import org.osgl.exception.NotAppliedException;
 import org.osgl.logging.L;
 import org.osgl.logging.Logger;
@@ -44,7 +44,7 @@ public abstract class ClassDetector extends ByteCodeVisitor {
 
         @Override
         public int hashCode() {
-            return _.hc(filter, FilteredClassDetector.class);
+            return $.hc(filter, FilteredClassDetector.class);
         }
 
         @Override
@@ -54,7 +54,7 @@ public abstract class ClassDetector extends ByteCodeVisitor {
             }
             if (obj instanceof FilteredClassDetector) {
                 FilteredClassDetector that = (FilteredClassDetector)obj;
-                return _.eq(that.filter, this.filter);
+                return $.eq(that.filter, this.filter);
             }
             return false;
         }
@@ -158,9 +158,9 @@ public abstract class ClassDetector extends ByteCodeVisitor {
             return new FilteredClassDetector(filters[0]);
         }
         return new ClassDetector() {
-            C.List<ClassDetector> detectors = C.listOf(filters).map(new _.F1<ClassFilter, ClassDetector>() {
+            C.List<ClassDetector> detectors = C.listOf(filters).map(new $.F1<ClassFilter, ClassDetector>() {
                 @Override
-                public ClassDetector apply(ClassFilter classFilter) throws NotAppliedException, _.Break {
+                public ClassDetector apply(ClassFilter classFilter) throws NotAppliedException, $.Break {
                     return new FilteredClassDetector(classFilter);
                 }
             });
@@ -168,7 +168,7 @@ public abstract class ClassDetector extends ByteCodeVisitor {
 
             @Override
             public int hashCode() {
-                return _.hc(detectors);
+                return $.hc(detectors);
             }
 
             @Override

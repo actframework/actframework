@@ -12,6 +12,7 @@ import act.controller.meta.ParamMetaInfo;
 import act.util.ActContext;
 import act.util.AsmTypes;
 import org.osgl.logging.L;
+import org.osgl.logging.LogManager;
 import org.osgl.logging.Logger;
 import org.osgl.mvc.result.Result;
 import org.osgl.util.C;
@@ -24,7 +25,7 @@ import java.util.Map;
 
 public class HandlerEnhancer extends MethodVisitor implements Opcodes {
 
-    private static final Logger logger = L.get(HandlerEnhancer.class);
+    private static final Logger logger = LogManager.get(HandlerEnhancer.class);
 
     private static final String RESULT_CLASS = Result.class.getName();
 

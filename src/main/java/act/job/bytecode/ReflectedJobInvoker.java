@@ -7,7 +7,7 @@ import act.job.meta.JobMethodMetaInfo;
 import com.esotericsoftware.reflectasm.ConstructorAccess;
 import com.esotericsoftware.reflectasm.FieldAccess;
 import com.esotericsoftware.reflectasm.MethodAccess;
-import org.osgl._;
+import org.osgl.$;
 import org.osgl.exception.NotAppliedException;
 import org.osgl.util.C;
 import org.osgl.util.E;
@@ -20,10 +20,10 @@ import java.util.Map;
  * Implement handler using
  * https://github.com/EsotericSoftware/reflectasm
  */
-public class ReflectedJobInvoker<M extends JobMethodMetaInfo> extends _.F0<Object> {
+public class ReflectedJobInvoker<M extends JobMethodMetaInfo> extends $.F0<Object> {
 
-    private static Map<String, _.F2<App, Object, ?>> fieldName_appHandler_lookup = C.newMap();
-    private static Map<String, _.F2<AppConfig, Object, ?>> fieldName_appConfigHandler_lookup = C.newMap();
+    private static Map<String, $.F2<App, Object, ?>> fieldName_appHandler_lookup = C.newMap();
+    private static Map<String, $.F2<AppConfig, Object, ?>> fieldName_appConfigHandler_lookup = C.newMap();
     private App app;
     private AppConfig appConfig;
     private ClassLoader cl;
@@ -34,8 +34,8 @@ public class ReflectedJobInvoker<M extends JobMethodMetaInfo> extends _.F0<Objec
     private M methodInfo;
     protected int methodIndex;
     protected Method method; //
-    protected _.F2<App, Object, ?> fieldAppHandler;
-    protected _.F2<AppConfig, Object, ?> fieldAppConfigHandler;
+    protected $.F2<App, Object, ?> fieldAppHandler;
+    protected $.F2<AppConfig, Object, ?> fieldAppConfigHandler;
 
     public ReflectedJobInvoker(M handlerMetaInfo, App app) {
         this.cl = app.classLoader();
@@ -46,7 +46,7 @@ public class ReflectedJobInvoker<M extends JobMethodMetaInfo> extends _.F0<Objec
     }
 
     private void init() {
-        jobClass = _.classForName(classInfo.className(), cl);
+        jobClass = $.classForName(classInfo.className(), cl);
 
         fieldAppHandler = injectField(classInfo.appField(), jobClass, fieldName_appHandler_lookup);
         fieldAppConfigHandler = injectField(classInfo.appConfigField(), jobClass, fieldName_appConfigHandler_lookup);
@@ -67,7 +67,7 @@ public class ReflectedJobInvoker<M extends JobMethodMetaInfo> extends _.F0<Objec
     }
 
     @Override
-    public Object apply() throws NotAppliedException, _.Break {
+    public Object apply() throws NotAppliedException, $.Break {
         if (null == jobClass) {
             init();
         }
@@ -109,17 +109,17 @@ public class ReflectedJobInvoker<M extends JobMethodMetaInfo> extends _.F0<Objec
         return result;
     }
 
-    private static <T> _.F2<T, Object, ?> injectField(final String fieldName, final Class<?> controllerClass, final Map<String, _.F2<T, Object, ?>> cache) {
+    private static <T> $.F2<T, Object, ?> injectField(final String fieldName, final Class<?> controllerClass, final Map<String, $.F2<T, Object, ?>> cache) {
         if (S.blank(fieldName)) return null;
         String key = S.builder(controllerClass.getName()).append(".").append(fieldName).toString();
-        _.F2<T, Object, ?> injector = cache.get(key);
+        $.F2<T, Object, ?> injector = cache.get(key);
         if (null == injector) {
-            injector = new _.F2<T, Object, Void>() {
+            injector = new $.F2<T, Object, Void>() {
                 private FieldAccess fieldAccess = FieldAccess.get(controllerClass);
                 private int fieldIdx = getFieldIndex(fieldName, fieldAccess);
 
                 @Override
-                public Void apply(T injectTarget, Object controllerInstance) throws _.Break {
+                public Void apply(T injectTarget, Object controllerInstance) throws $.Break {
                     fieldAccess.set(controllerInstance, fieldIdx, injectTarget);
                     return null;
                 }

@@ -5,7 +5,7 @@ import act.asm.ClassWriter;
 import act.util.AppByteCodeEnhancer;
 import act.util.AsmByteCodeEnhancer;
 import act.util.ByteCodeVisitor;
-import org.osgl._;
+import org.osgl.$;
 import org.osgl.util.C;
 
 import java.util.List;
@@ -29,12 +29,12 @@ public class BytecodeEnhancerManager {
         appEnhancers.add(enhancer);
     }
 
-    public ByteCodeVisitor appEnhancer(App app, String className, _.Var<ClassWriter> cw) {
+    public ByteCodeVisitor appEnhancer(App app, String className, $.Var<ClassWriter> cw) {
         List<AppByteCodeEnhancer> l = appFilter(app, className);
         return l.isEmpty() ? null : ByteCodeVisitor.chain(cw, l);
     }
 
-    public ByteCodeVisitor generalEnhancer(String className, _.Var<ClassWriter> cw) {
+    public ByteCodeVisitor generalEnhancer(String className, $.Var<ClassWriter> cw) {
         List<AsmByteCodeEnhancer> l = generalFilter(className);
         return l.isEmpty() ? null : ByteCodeVisitor.chain(cw, l);
     }

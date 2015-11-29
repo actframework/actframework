@@ -443,12 +443,15 @@ public @interface Controller {
          * @param actionContext
          * @return
          */
-        public static Result inferResult(Object v, ActionContext actionContext) {
+        public static Result inferResult(Object v, ActionContext actionContext, boolean hasTemplate) {
             if (null == v) {
                 return null;
             } else if (v instanceof Result) {
                 return (Result) v;
             } else if (v instanceof String) {
+                if (hasTemplate) {
+                    return inferToTemplate(v, actionContext);
+                }
                 return inferResult((String) v, actionContext);
             } else if (v instanceof InputStream) {
                 return inferResult((InputStream) v, actionContext);
@@ -457,16 +460,35 @@ public @interface Controller {
             } else if (v instanceof ISObject) {
                 return inferResult((ISObject) v, actionContext);
             } else if (v instanceof Map) {
+                if (hasTemplate) {
+                    return inferToTemplate((Map)v, actionContext);
+                }
                 return inferResult((Map) v, actionContext);
             } else if (v instanceof Object[]) {
+                if (hasTemplate) {
+                    throw E.tbd("Render template with array");
+                }
                 return inferResult((Object[]) v, actionContext);
             } else {
+                if (hasTemplate) {
+                    return inferToTemplate(v, actionContext);
+                }
                 if (actionContext.isJSON()) {
                     return new RenderJSON(v);
                 } else {
                     return inferResult(v.toString(), actionContext);
                 }
             }
+        }
+
+        private static Result inferToTemplate(Object v, ActionContext actionContext) {
+            String action = actionContext.actionPath();
+            actionContext.renderArg(S.str(action).afterLast('.').toString(), v);
+            return new RenderTemplate();
+        }
+
+        private static Result inferToTemplate(Map map, ActionContext actionContext) {
+            return new RenderTemplate(map);
         }
     }
 

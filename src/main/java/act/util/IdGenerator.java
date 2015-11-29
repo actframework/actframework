@@ -1,11 +1,10 @@
 package act.util;
 
 import org.joda.time.DateTime;
-import org.osgl._;
+import org.osgl.$;
 import org.osgl.util.*;
 
 import java.io.File;
-import java.security.SecureRandom;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -33,7 +32,7 @@ public class IdGenerator {
             public Timestamp() {
                 long origin = DateTime.parse("2015-08-23").getMillis();
                 // let's assume the system cannot be restart within 10 seconds
-                long l = (_.ms() - origin) / 1000 / 10;
+                long l = ($.ms() - origin) / 1000 / 10;
                 id = longToStr(l);
             }
 

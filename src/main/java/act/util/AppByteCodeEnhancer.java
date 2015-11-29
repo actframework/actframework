@@ -2,20 +2,20 @@ package act.util;
 
 import act.app.App;
 import act.asm.ClassVisitor;
-import org.osgl._;
-import org.osgl.logging.L;
+import org.osgl.$;
+import org.osgl.logging.LogManager;
 import org.osgl.logging.Logger;
 import org.osgl.util.E;
 
 public abstract class AppByteCodeEnhancer<T extends AppByteCodeEnhancer> extends AsmByteCodeEnhancer<T> {
-    protected static Logger logger = L.get(App.class);
+    protected static Logger logger = LogManager.get(App.class);
     protected App app;
 
-    protected AppByteCodeEnhancer(_.Predicate<String> targetClassPredicate) {
+    protected AppByteCodeEnhancer($.Predicate<String> targetClassPredicate) {
         super(targetClassPredicate);
     }
 
-    protected AppByteCodeEnhancer(_.Predicate<String> targetClassPredicate, ClassVisitor cv) {
+    protected AppByteCodeEnhancer($.Predicate<String> targetClassPredicate, ClassVisitor cv) {
         super(targetClassPredicate, cv);
     }
 

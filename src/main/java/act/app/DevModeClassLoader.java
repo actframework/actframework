@@ -7,8 +7,7 @@ import act.util.Files;
 import act.util.FsChangeDetector;
 import act.util.FsEvent;
 import act.util.FsEventListener;
-import com.sun.org.apache.xerces.internal.impl.xpath.regex.Match;
-import org.osgl._;
+import org.osgl.$;
 import org.osgl.exception.NotAppliedException;
 import org.osgl.util.C;
 import org.osgl.util.S;
@@ -17,8 +16,6 @@ import java.io.File;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * Dev mode application class loader, which is able to
@@ -97,9 +94,9 @@ public class DevModeClassLoader extends AppClassLoader {
 
     private void preloadSources() {
         final File sourceRoot = app().layout().source(app().base());
-        Files.filter(sourceRoot, App.F.JAVA_SOURCE, new _.Visitor<File>() {
+        Files.filter(sourceRoot, App.F.JAVA_SOURCE, new $.Visitor<File>() {
             @Override
-            public void visit(File file) throws _.Break {
+            public void visit(File file) throws $.Break {
                 Source source = Source.ofFile(sourceRoot, file);
                 if (null != source) {
                     if (null == sources) {
@@ -111,9 +108,9 @@ public class DevModeClassLoader extends AppClassLoader {
         });
         if ("test".equals(app().profile())) {
             final File testSourceRoot = app().layout().testSource(app().base());
-            Files.filter(testSourceRoot, App.F.JAVA_SOURCE, new _.Visitor<File>() {
+            Files.filter(testSourceRoot, App.F.JAVA_SOURCE, new $.Visitor<File>() {
                 @Override
-                public void visit(File file) throws _.Break {
+                public void visit(File file) throws $.Break {
                     Source source = Source.ofFile(sourceRoot, file);
                     if (null != source) {
                         if (null == sources) {
@@ -176,17 +173,17 @@ public class DevModeClassLoader extends AppClassLoader {
         }
 
         final Set<String> embeddedClassNames = C.newSet();
-        scanByteCode(classesNeedByteCodeScan, new _.F1<String, byte[]>() {
+        scanByteCode(classesNeedByteCodeScan, new $.F1<String, byte[]>() {
             @Override
-            public byte[] apply(String s) throws NotAppliedException, _.Break {
+            public byte[] apply(String s) throws NotAppliedException, $.Break {
                 return bytecodeFromSource(s, embeddedClassNames);
             }
         });
 
         if (!embeddedClassNames.isEmpty()) {
-            scanByteCode(embeddedClassNames, new _.F1<String, byte[]>() {
+            scanByteCode(embeddedClassNames, new $.F1<String, byte[]>() {
                 @Override
-                public byte[] apply(String s) throws NotAppliedException, _.Break {
+                public byte[] apply(String s) throws NotAppliedException, $.Break {
                     return bytecodeFromSource(s, embeddedClassNames);
                 }
             });

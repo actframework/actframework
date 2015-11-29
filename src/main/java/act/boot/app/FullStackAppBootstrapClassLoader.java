@@ -6,7 +6,7 @@ import act.util.ActClassLoader;
 import act.util.ClassInfoRepository;
 import act.util.ClassNode;
 import act.util.Jars;
-import org.osgl._;
+import org.osgl.$;
 import org.osgl.util.C;
 import org.osgl.util.E;
 import org.osgl.util.S;
@@ -65,13 +65,13 @@ public class FullStackAppBootstrapClassLoader extends BootstrapClassLoader imple
             if (cl instanceof URLClassLoader) {
                 URLClassLoader realm = (URLClassLoader) cl;
                 C.List<URL> urlList = C.listOf(realm.getURLs());
-                urlList = urlList.filter(new _.Predicate<URL>() {
+                urlList = urlList.filter(new $.Predicate<URL>() {
                     @Override
                     public boolean test(URL url) {
                         return url.getFile().endsWith(".jar");
                     }
                 });
-                return urlList.map(new _.Transformer<URL, File>() {
+                return urlList.map(new $.Transformer<URL, File>() {
                     @Override
                     public File transform(URL url) {
                         try {
@@ -84,7 +84,7 @@ public class FullStackAppBootstrapClassLoader extends BootstrapClassLoader imple
             }
         }
         path = path.filter(S.F.contains("jre" + File.separator + "lib").negate().and(S.F.endsWith(".jar")));
-        return path.map(new _.Transformer<String, File>() {
+        return path.map(new $.Transformer<String, File>() {
             @Override
             public File transform(String s) {
                 return new File(s);

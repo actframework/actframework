@@ -2,13 +2,13 @@ package act.boot.spark;
 
 import act.app.ActionContext;
 import act.controller.Controller;
-import org.osgl._;
+import org.osgl.$;
 import org.osgl.exception.NotAppliedException;
 
 /**
  * App developer use this interface implement the controller or filter logic
  */
-public abstract class SparkHandler extends _.F1<ActionContext, Object> {
+public abstract class SparkHandler extends $.F1<ActionContext, Object> {
 
     /**
      * Controller action method shall either return an {@link Object} or throw out a
@@ -32,10 +32,10 @@ public abstract class SparkHandler extends _.F1<ActionContext, Object> {
      * @param context
      * @return
      * @throws NotAppliedException
-     * @throws _.Break
+     * @throws $.Break
      */
     @Override
-    public final Object apply(ActionContext context) throws NotAppliedException, _.Break {
+    public final Object apply(ActionContext context) throws NotAppliedException, $.Break {
         return handle(context);
     }
 

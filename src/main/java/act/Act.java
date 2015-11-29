@@ -20,7 +20,7 @@ import act.view.ViewManager;
 import act.xio.NetworkClient;
 import act.xio.NetworkService;
 import act.xio.undertow.UndertowService;
-import org.osgl._;
+import org.osgl.$;
 import org.osgl.exception.NotAppliedException;
 import org.osgl.logging.L;
 import org.osgl.logging.Logger;
@@ -302,9 +302,9 @@ public final class Act {
 
     public enum F {
         ;
-        public static final _.F0<Mode> MODE_ACCESSOR = new _.F0<Mode>() {
+        public static final $.F0<Mode> MODE_ACCESSOR = new $.F0<Mode>() {
             @Override
-            public Mode apply() throws NotAppliedException, _.Break {
+            public Mode apply() throws NotAppliedException, $.Break {
                 return mode;
             }
         };

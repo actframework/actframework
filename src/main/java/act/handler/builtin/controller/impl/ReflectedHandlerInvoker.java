@@ -14,9 +14,12 @@ import act.exception.BindException;
 import act.handler.builtin.controller.*;
 import act.util.DestroyableBase;
 import act.util.GeneralAnnoInfo;
+import act.view.Template;
+import act.view.TemplatePathResolver;
 import com.esotericsoftware.reflectasm.FieldAccess;
 import com.esotericsoftware.reflectasm.MethodAccess;
-import org.osgl._;
+import org.osgl.$;
+import org.osgl.http.H;
 import org.osgl.mvc.result.Result;
 import org.osgl.mvc.util.Binder;
 import org.osgl.mvc.util.StringValueResolver;
@@ -37,14 +40,14 @@ import java.util.Set;
 public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends DestroyableBase
         implements ActionHandlerInvoker, AfterInterceptorInvoker, ExceptionInterceptorInvoker {
 
-    private static _.Visitor<ActionContext> STORE_APPCTX_TO_THREAD_LOCAL = new _.Visitor<ActionContext>() {
+    private static $.Visitor<ActionContext> STORE_APPCTX_TO_THREAD_LOCAL = new $.Visitor<ActionContext>() {
         @Override
-        public void visit(ActionContext actionContext) throws _.Break {
+        public void visit(ActionContext actionContext) throws $.Break {
             //actionContext.saveLocal();
         }
     };
 
-    private static Map<String, _.F2<ActionContext, Object, ?>> fieldName_appCtxHandler_lookup = C.newMap();
+    private static Map<String, $.F2<ActionContext, Object, ?>> fieldName_appCtxHandler_lookup = C.newMap();
     private App app;
     private ClassLoader cl;
     private ControllerClassMetaInfo controller;
@@ -53,17 +56,18 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
     private M handler;
     protected int handlerIndex;
     private ActContextInjection ctxInjection;
+    private Map<H.Format, Boolean> templateCache = C.newMap();
     private Class[] paramTypes;
     private Map<Integer, List<ActionMethodParamAnnotationHandler>> paramAnnoHandlers = null;
     protected Method method; //
-    protected _.F2<ActionContext, Object, ?> fieldAppCtxHandler;
+    protected $.F2<ActionContext, Object, ?> fieldAppCtxHandler;
 
     protected ReflectedHandlerInvoker(M handlerMetaInfo, App app) {
         this.app = app;
         this.cl = app.classLoader();
         this.handler = handlerMetaInfo;
         this.controller = handlerMetaInfo.classInfo();
-        controllerClass = _.classForName(controller.className(), cl);
+        controllerClass = $.classForName(controller.className(), cl);
 
         this.ctxInjection = handlerMetaInfo.appContextInjection();
         if (ctxInjection.injectVia().isField()) {
@@ -131,7 +135,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         return handler.priority();
     }
 
-    public interface ReflectedHandlerInvokerVisitor extends Visitor, _.Func2<Class<?>, Method, Void> {}
+    public interface ReflectedHandlerInvokerVisitor extends Visitor, $.Func2<Class<?>, Method, Void> {}
 
     @Override
     public void accept(Visitor visitor) {
@@ -196,7 +200,23 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
                 throw E.unexpected(e);
             }
         }
-        return Controller.Util.inferResult(result, context);
+        boolean hasTemplate = checkTemplate(context);
+        return Controller.Util.inferResult(result, context, hasTemplate);
+    }
+
+    private synchronized boolean checkTemplate(ActionContext context) {
+        H.Format fmt = context.accept();
+        Boolean B = templateCache.get(fmt);
+        if (null == B || Act.isDev()) {
+            if (!TemplatePathResolver.isAcceptFormatSupported(fmt)) {
+                B = false;
+            } else {
+                Template t = Act.viewManager().load(context);
+                B = t != null;
+            }
+            templateCache.put(fmt, B);
+        }
+        return B;
     }
 
     private Object[] params(ActionContext ctx, Result result, Exception exception) {
@@ -227,7 +247,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
                     } else {
                         Type componentType = param.componentType();
                         if (null != componentType) {
-                            binder = binderManager.binder(paramType, _.classForName(componentType.getClassName(), cl), param);
+                            binder = binderManager.binder(paramType, $.classForName(componentType.getClassName(), cl), param);
                             if (null == binder) {
                                 binder = binderManager.binder(param);
                             }
@@ -294,21 +314,21 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         for (int i = 0; i < paramCount; ++i) {
             ParamMetaInfo param = handler.param(i);
             String className = param.type().getClassName();
-            ca[i] = _.classForName(className, cl);
+            ca[i] = $.classForName(className, cl);
         }
         return ca;
     }
 
-    private static _.F2<ActionContext, Object, ?> storeAppCtxToCtrlrField(final String fieldName, final Class<?> controllerClass) {
+    private static $.F2<ActionContext, Object, ?> storeAppCtxToCtrlrField(final String fieldName, final Class<?> controllerClass) {
         String key = S.builder(controllerClass.getName()).append(".").append(fieldName).toString();
-        _.F2<ActionContext, Object, ?> ctxHandler = fieldName_appCtxHandler_lookup.get(key);
+        $.F2<ActionContext, Object, ?> ctxHandler = fieldName_appCtxHandler_lookup.get(key);
         if (null == ctxHandler) {
-            ctxHandler = new _.F2<ActionContext, Object, Void>() {
+            ctxHandler = new $.F2<ActionContext, Object, Void>() {
                 private FieldAccess fieldAccess = FieldAccess.get(controllerClass);
                 private int fieldIdx = getFieldIndex(fieldName, fieldAccess);
 
                 @Override
-                public Void apply(ActionContext actionContext, Object controllerInstance) throws _.Break {
+                public Void apply(ActionContext actionContext, Object controllerInstance) throws $.Break {
                     fieldAccess.set(controllerInstance, fieldIdx, actionContext);
                     return null;
                 }

@@ -3,7 +3,7 @@ package act.controller.meta;
 import act.app.App;
 import act.asm.Type;
 import act.util.GeneralAnnoInfo;
-import org.osgl._;
+import org.osgl.$;
 import org.osgl.mvc.util.StringValueResolver;
 import org.osgl.util.C;
 import org.osgl.util.S;
@@ -105,7 +105,7 @@ public class ParamMetaInfo {
 
     @Override
     public int hashCode() {
-        return _.hc(name, type);
+        return $.hc(name, type);
     }
 
     @Override
@@ -115,7 +115,7 @@ public class ParamMetaInfo {
         }
         if (obj instanceof ParamMetaInfo) {
             ParamMetaInfo that = (ParamMetaInfo)obj;
-            return _.eq(that.name, this.name) && _.eq(that.type, this.type);
+            return $.eq(that.name, this.name) && $.eq(that.type, this.type);
         }
         return false;
     }

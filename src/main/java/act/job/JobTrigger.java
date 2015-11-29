@@ -10,7 +10,7 @@ import com.cronutils.model.time.ExecutionTime;
 import com.cronutils.parser.CronParser;
 import org.joda.time.DateTime;
 import org.joda.time.Duration;
-import org.osgl._;
+import org.osgl.$;
 import org.osgl.exception.NotAppliedException;
 import org.osgl.logging.L;
 import org.osgl.logging.Logger;
@@ -254,9 +254,9 @@ abstract class JobTrigger {
 
         private void scheduleDelayedRegister(final AppJobManager manager, final _Job job) {
             final String id = delayedRegisterJobId(job);
-            before(START).register(new _Job(id, manager, new _.F0<Void>() {
+            before(START).register(new _Job(id, manager, new $.F0<Void>() {
                 @Override
-                public Void apply() throws NotAppliedException, _.Break {
+                public Void apply() throws NotAppliedException, $.Break {
                     _Job associateTo = manager.jobById(id);
                     if (null == id) {
                         throw E.invalidConfiguration("dependency job not found: %s", id);

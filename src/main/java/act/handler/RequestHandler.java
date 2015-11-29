@@ -3,7 +3,7 @@ package act.handler;
 import act.Destroyable;
 import act.app.ActionContext;
 import act.handler.builtin.StaticFileGetter;
-import org.osgl._;
+import org.osgl.$;
 
 /**
  * Defines a thread-save function object that can be applied
@@ -12,7 +12,7 @@ import org.osgl._;
  * {@link org.osgl.http.H.Response} associated with the
  * context
  */
-public interface RequestHandler extends _.Function<ActionContext, Void>, Destroyable {
+public interface RequestHandler extends $.Function<ActionContext, Void>, Destroyable {
 
     /**
      * Invoke handler upon an application context

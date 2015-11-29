@@ -17,7 +17,7 @@ import act.util.Files;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
-import org.osgl._;
+import org.osgl.$;
 import org.osgl.util.C;
 import org.osgl.util.IO;
 import org.osgl.util.S;
@@ -96,7 +96,7 @@ public class MailerEnhancerTest extends TestBase implements MailerClassMetaInfoH
         mailerName = "testapp.mail." + className;
         scan(mailerName);
         mailerClass = new TestAppClassLoader().loadClass(mailerName);
-        mailer = _.newInstance(mailerClass);
+        mailer = $.newInstance(mailerClass);
     }
 
     private Method method(String name, Class... types) throws Exception {
@@ -159,12 +159,12 @@ public class MailerEnhancerTest extends TestBase implements MailerClassMetaInfoH
 
     private static enum _F {
         ;
-        static _.Predicate<String> SYS_CLASS_NAME = new _.Predicate<String>() {
+        static $.Predicate<String> SYS_CLASS_NAME = new $.Predicate<String>() {
             @Override
             public boolean test(String s) {
                 return s.startsWith("java") || s.startsWith("org.osgl.");
             }
         };
-        static _.Predicate<String> SAFE_CLASS = S.F.endsWith(".class").and(SYS_CLASS_NAME.negate());
+        static $.Predicate<String> SAFE_CLASS = S.F.endsWith(".class").and(SYS_CLASS_NAME.negate());
     }
 }

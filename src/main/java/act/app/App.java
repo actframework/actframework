@@ -19,15 +19,15 @@ import act.job.AppJobManager;
 import act.job.bytecode.JobByteCodeScanner;
 import act.mail.MailerConfigManager;
 import act.mail.bytecode.MailerByteCodeScanner;
-import act.plugin.Plugin;
 import act.route.RouteTableRouterBuilder;
 import act.route.Router;
 import act.util.*;
 import act.view.ActServerError;
-import org.osgl._;
+import org.osgl.$;
 import org.osgl.cache.CacheService;
 import org.osgl.cache.CacheServiceProvider;
 import org.osgl.http.H;
+import org.osgl.http.HttpConfig;
 import org.osgl.logging.L;
 import org.osgl.logging.Logger;
 import org.osgl.storage.IStorageService;
@@ -55,10 +55,10 @@ public class App {
 
     public enum F {
         ;
-        public static _.Predicate<String> JAVA_SOURCE = S.F.endsWith(".java");
-        public static _.Predicate<String> JAR_FILE = S.F.endsWith(".jar");
-        public static _.Predicate<String> CONF_FILE = S.F.endsWith(".conf").or(S.F.endsWith(".properties"));
-        public static _.Predicate<String> ROUTES_FILE = _.F.eq(RouteTableRouterBuilder.ROUTES_FILE);
+        public static $.Predicate<String> JAVA_SOURCE = S.F.endsWith(".java");
+        public static $.Predicate<String> JAR_FILE = S.F.endsWith(".jar");
+        public static $.Predicate<String> CONF_FILE = S.F.endsWith(".conf").or(S.F.endsWith(".properties"));
+        public static $.Predicate<String> ROUTES_FILE = $.F.eq(RouteTableRouterBuilder.ROUTES_FILE);
     }
 
     private volatile String profile;
@@ -335,25 +335,25 @@ public class App {
     }
 
     public <T> T newInstance(Class<T> clz) {
-        if (App.class == clz) return _.cast(this);
-        if (AppConfig.class == clz) return _.cast(config());
-        if (AppCrypto.class == clz) return _.cast(crypto());
+        if (App.class == clz) return $.cast(this);
+        if (AppConfig.class == clz) return $.cast(config());
+        if (AppCrypto.class == clz) return $.cast(crypto());
         if (null != dependencyInjector) {
             return dependencyInjector.create(clz);
         } else {
-            return _.newInstance(clz);
+            return $.newInstance(clz);
         }
     }
 
     <T> T newInstance(Class<T> clz, ActionContext context) {
-        if (App.class == clz) return _.cast(this);
-        if (AppConfig.class == clz) return _.cast(config());
-        if (ActionContext.class == clz) return _.cast(context);
-        if (AppCrypto.class == clz) return _.cast(crypto());
+        if (App.class == clz) return $.cast(this);
+        if (AppConfig.class == clz) return $.cast(config());
+        if (ActionContext.class == clz) return $.cast(context);
+        if (AppCrypto.class == clz) return $.cast(crypto());
         if (null != dependencyInjector) {
             return dependencyInjector.createContextAwareInjector(context).create(clz);
         } else {
-            return _.newInstance(clz);
+            return $.newInstance(clz);
         }
     }
 
@@ -369,7 +369,7 @@ public class App {
         }
         if (obj instanceof App) {
             App that = (App) obj;
-            return _.eq(that.appBase, appBase);
+            return $.eq(that.appBase, appBase);
         }
         return false;
     }
@@ -477,6 +477,17 @@ public class App {
     private void initCache() {
         cache = CacheServiceProvider.Impl.Simple.get("_act_app_");
         cache.startup();
+        HttpConfig.setCacheServiceProvider(new CacheServiceProvider() {
+            @Override
+            public CacheService get() {
+                return cache;
+            }
+
+            @Override
+            public CacheService get(String name) {
+                return CacheServiceProvider.Impl.Simple.get(name);
+            }
+        });
     }
 
     private void initCrypto() {

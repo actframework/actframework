@@ -13,7 +13,7 @@ import act.handler.builtin.Redirect;
 import act.handler.builtin.StaticFileGetter;
 import act.handler.builtin.controller.RequestHandlerProxy;
 import act.util.DestroyableBase;
-import org.osgl._;
+import org.osgl.$;
 import org.osgl.http.H;
 import org.osgl.http.util.Path;
 import org.osgl.logging.L;
@@ -309,7 +309,7 @@ public class Router extends AppServiceBase<Router> {
     }
 
     private RequestHandler resolveActionHandler(CharSequence action) {
-        _.T2<String, String> t2 = splitActionStr(action);
+        $.T2<String, String> t2 = splitActionStr(action);
         String directive = t2._1, payload = t2._2;
 
         if (S.notEmpty(directive)) {
@@ -327,11 +327,11 @@ public class Router extends AppServiceBase<Router> {
         }
     }
 
-    private _.T2<String, String> splitActionStr(CharSequence action) {
+    private $.T2<String, String> splitActionStr(CharSequence action) {
         FastStr fs = FastStr.of(action);
         FastStr fs1 = fs.beforeFirst(':');
         FastStr fs2 = fs1.isEmpty() ? fs : fs.substr(fs1.length() + 1);
-        return _.T2(fs1.trim().toString(), fs2.trim().toString());
+        return $.T2(fs1.trim().toString(), fs2.trim().toString());
     }
 
     private Node root(H.Method method) {
@@ -350,7 +350,7 @@ public class Router extends AppServiceBase<Router> {
     }
 
     public final class f {
-        public _.Predicate<String> IS_CONTROLLER = new _.Predicate<String>() {
+        public $.Predicate<String> IS_CONTROLLER = new $.Predicate<String>() {
             @Override
             public boolean test(String s) {
                 for (String action : actionNames) {
@@ -416,7 +416,7 @@ public class Router extends AppServiceBase<Router> {
         }
 
         boolean metaInfoMatches(StrBase string) {
-            _.T2<StrBase, Pattern> result = _parseDynaName(string);
+            $.T2<StrBase, Pattern> result = _parseDynaName(string);
             if (pattern != null && result._2 != null) {
                 return pattern.pattern().equals(result._2.pattern());
             } else {
@@ -533,14 +533,14 @@ public class Router extends AppServiceBase<Router> {
         }
 
         private void parseDynaName(StrBase name) {
-            _.T2<StrBase, Pattern> result = _parseDynaName(name);
+            $.T2<StrBase, Pattern> result = _parseDynaName(name);
             if (null != result) {
                 this.varName = result._1;
                 this.pattern = result._2;
             }
         }
 
-        private static _.T2<StrBase, Pattern> _parseDynaName(StrBase name) {
+        private static $.T2<StrBase, Pattern> _parseDynaName(StrBase name) {
             name = name.trim();
             if (name.startsWith("{") && name.endsWith("}")) {
                 StrBase s = name.afterFirst('{').beforeLast('}').trim();
@@ -548,9 +548,9 @@ public class Router extends AppServiceBase<Router> {
                     StrBase varName = s.afterLast('>').trim();
                     StrBase ptn = s.afterFirst('<').beforeLast('>').trim();
                     Pattern pattern = Pattern.compile(ptn.toString());
-                    return _.T2(varName, pattern);
+                    return $.T2(varName, pattern);
                 } else {
-                    return _.T2(s, null);
+                    return $.T2(s, null);
                 }
             }
             return null;

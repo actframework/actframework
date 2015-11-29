@@ -1,6 +1,5 @@
 package act.util;
 
-import org.osgl._;
 import org.osgl.util.C;
 
 import java.util.Map;

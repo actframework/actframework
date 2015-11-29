@@ -5,7 +5,7 @@ import act.TestBase;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.osgl._;
+import org.osgl.$;
 import org.osgl.exception.NotAppliedException;
 import org.osgl.util.C;
 import org.osgl.util.E;
@@ -13,9 +13,9 @@ import org.osgl.util.S;
 
 public class ConfigKeyHelperTest extends TestBase {
 
-    ConfigKeyHelper helper = new ConfigKeyHelper(new _.F0<Act.Mode>() {
+    ConfigKeyHelper helper = new ConfigKeyHelper(new $.F0<Act.Mode>() {
         @Override
-        public Act.Mode apply() throws NotAppliedException, _.Break {
+        public Act.Mode apply() throws NotAppliedException, $.Break {
             return Act.Mode.DEV;
         }
     }, ConfigKeyHelperTest.class.getClassLoader());

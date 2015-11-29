@@ -2,7 +2,7 @@ package act.view;
 
 import act.app.ActionContext;
 import act.util.ActContext;
-import org.osgl._;
+import org.osgl.$;
 import org.osgl.http.H;
 import org.osgl.util.E;
 import org.osgl.util.S;
@@ -12,7 +12,7 @@ import static org.osgl.http.H.Format.*;
 /**
  * Resolve template path for {@link ActionContext}
  */
-public class TemplatePathResolver extends _.Transformer<ActContext, String> {
+public class TemplatePathResolver extends $.Transformer<ActContext, String> {
     @Override
     public final String transform(ActContext context) {
         return resolve(context);
@@ -34,9 +34,13 @@ public class TemplatePathResolver extends _.Transformer<ActContext, String> {
         if (UNKNOWN == fmt) {
             fmt = HTML;
         }
-        if (HTML == fmt || JSON == fmt || XML == fmt || TXT == fmt || CSV == fmt) {
+        if (isAcceptFormatSupported(fmt)) {
             return S.builder(path).append(".").append(fmt.name()).toString();
         }
         throw E.unsupport("Request accept not supported: %s", fmt);
+    }
+
+    public static boolean isAcceptFormatSupported(H.Format fmt) {
+        return (UNKNOWN == fmt || HTML == fmt || JSON == fmt || XML == fmt || TXT == fmt || CSV == fmt);
     }
 }

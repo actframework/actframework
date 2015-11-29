@@ -1,6 +1,6 @@
 package act.util;
 
-import org.osgl._;
+import org.osgl.$;
 import org.osgl.exception.NotAppliedException;
 import org.osgl.logging.L;
 import org.osgl.logging.Logger;
@@ -26,10 +26,10 @@ public enum Jars {
     private static Logger logger = L.get(Jars.class);
 
     public static Map<String, byte[]> buildClassNameIndex(File dir) {
-        return buildClassNameIndex(dir, _.F.FALSE);
+        return buildClassNameIndex(dir, $.F.FALSE);
     }
 
-    public static Map<String, byte[]> buildClassNameIndex(File dir, final _.Func1<String, Boolean> ignoredClassNames) {
+    public static Map<String, byte[]> buildClassNameIndex(File dir, final $.Func1<String, Boolean> ignoredClassNames) {
         final Map<String, byte[]> idx = C.newMap();
         _F.JarEntryVisitor visitor = _F.classNameIndexBuilder(idx, ignoredClassNames);
         scanDir(dir, visitor);
@@ -37,10 +37,10 @@ public enum Jars {
     }
 
     public static Map<String, byte[]> buildClassNameIndex(List<File> jars) {
-        return buildClassNameIndex(jars, _.F.FALSE);
+        return buildClassNameIndex(jars, $.F.FALSE);
     }
 
-    public static Map<String, byte[]> buildClassNameIndex(List<File> jars, final _.Func1<String, Boolean> ignoredClassNames) {
+    public static Map<String, byte[]> buildClassNameIndex(List<File> jars, final $.Func1<String, Boolean> ignoredClassNames) {
         final Map<String, byte[]> idx = C.newMap();
         _F.JarEntryVisitor visitor = _F.classNameIndexBuilder(idx, ignoredClassNames);
         scanList(jars, visitor);
@@ -66,10 +66,10 @@ public enum Jars {
     /**
      * @param file
      */
-    public static void scanForBytecode(File file, final _.F1<byte[], ?> bytecodeHandler) {
+    public static void scanForBytecode(File file, final $.F1<byte[], ?> bytecodeHandler) {
         _F.JarEntryVisitor visitor = new _F.JarEntryVisitor() {
             @Override
-            public Void apply(JarFile jarFile, JarEntry entry) throws NotAppliedException, _.Break {
+            public Void apply(JarFile jarFile, JarEntry entry) throws NotAppliedException, $.Break {
                 try {
                     byte[] ba = getBytes(jarFile, entry);
                     bytecodeHandler.apply(ba);
@@ -146,13 +146,13 @@ public enum Jars {
     private enum _F {
         ;
 
-        static abstract class JarEntryVisitor extends _.F2<JarFile, JarEntry, Void> {
+        static abstract class JarEntryVisitor extends $.F2<JarFile, JarEntry, Void> {
         }
 
-        static JarEntryVisitor classNameIndexBuilder(final Map<String, byte[]> map, final _.Function<String, Boolean> ignoredClassNames) {
+        static JarEntryVisitor classNameIndexBuilder(final Map<String, byte[]> map, final $.Function<String, Boolean> ignoredClassNames) {
             return new _F.JarEntryVisitor() {
                 @Override
-                public Void apply(JarFile jarFile, JarEntry entry) throws NotAppliedException, _.Break {
+                public Void apply(JarFile jarFile, JarEntry entry) throws NotAppliedException, $.Break {
                     try {
                         String className = ClassNames.classFileNameToClassName(entry.getName());
                         if (!ignoredClassNames.apply(className)) {

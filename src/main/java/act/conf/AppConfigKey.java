@@ -4,7 +4,7 @@ import act.Act;
 import act.app.App;
 import act.view.TemplatePathResolver;
 import act.view.View;
-import org.osgl._;
+import org.osgl.$;
 import org.osgl.exception.NotAppliedException;
 import org.osgl.util.E;
 import org.osgl.util.S;
@@ -465,9 +465,9 @@ public enum AppConfigKey implements ConfigKey {
     }
 
     public static void onApp(final App app) {
-        helper.classLoaderProvider(new _.F0<ClassLoader>() {
+        helper.classLoaderProvider(new $.F0<ClassLoader>() {
             @Override
-            public ClassLoader apply() throws NotAppliedException, _.Break {
+            public ClassLoader apply() throws NotAppliedException, $.Break {
                 return app.classLoader();
             }
         });

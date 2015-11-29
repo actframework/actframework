@@ -1,7 +1,7 @@
 package act.util;
 
 import act.app.ProjectLayout;
-import org.osgl._;
+import org.osgl.$;
 import org.osgl.util.C;
 import org.osgl.util.ListBuilder;
 
@@ -18,13 +18,13 @@ public enum Files {
         return ProjectLayout.Utils.file(parent, path);
     }
 
-    public static List<File> filter(File baseDir, _.F1<String, Boolean> filter) {
+    public static List<File> filter(File baseDir, $.F1<String, Boolean> filter) {
         ListBuilder<File> list = ListBuilder.create(500);
         filter(baseDir, filter, C.F.addTo(list));
         return list.toList();
     }
 
-    public static void filter(File baseDir, _.F1<String, Boolean> filter, _.F1<File, ?> visitor) {
+    public static void filter(File baseDir, $.F1<String, Boolean> filter, $.F1<File, ?> visitor) {
         File[] files = baseDir.listFiles();
         if (null == files) {
             return;

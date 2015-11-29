@@ -9,7 +9,7 @@ import act.util.ActClassLoader;
 import act.util.ByteCodeVisitor;
 import act.util.ClassInfoRepository;
 import act.util.ClassNode;
-import org.osgl._;
+import org.osgl.$;
 import org.osgl.logging.L;
 import org.osgl.logging.Logger;
 import org.osgl.util.C;
@@ -80,7 +80,7 @@ public abstract class BootstrapClassLoader extends ClassLoader implements Plugin
 
     protected Class<?> defineClass(String name, byte[] ba) {
         Class<?> c;
-        _.Var<ClassWriter> cw = _.val(null);
+        $.Var<ClassWriter> cw = $.val(null);
         ByteCodeVisitor enhancer = enhancerManager.generalEnhancer(name, cw);
         if (null == enhancer) {
             c = defineClassX(name, ba, 0, ba.length, DOMAIN);

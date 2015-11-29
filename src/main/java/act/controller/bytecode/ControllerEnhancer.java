@@ -9,7 +9,7 @@ import act.controller.meta.ControllerClassMetaInfo;
 import act.controller.meta.ControllerClassMetaInfoHolder;
 import act.controller.meta.HandlerMethodMetaInfo;
 import act.util.AppByteCodeEnhancer;
-import org.osgl._;
+import org.osgl.$;
 
 /**
  * Enhance controllers (classes with either request handler method or
@@ -86,8 +86,8 @@ public class ControllerEnhancer extends AppByteCodeEnhancer<ControllerEnhancer> 
     private static enum _F {
         ;
 
-        private static final _.Predicate<String> isController(final ControllerClassMetaInfoHolder infoSrc) {
-            return new _.Predicate<String>() {
+        private static final $.Predicate<String> isController(final ControllerClassMetaInfoHolder infoSrc) {
+            return new $.Predicate<String>() {
                 @Override
                 public boolean test(String s) {
                     return infoSrc.controllerClassMetaInfo(s) != null;

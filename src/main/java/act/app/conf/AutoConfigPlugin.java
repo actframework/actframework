@@ -6,7 +6,7 @@ import act.app.AppByteCodeScanner;
 import act.app.event.AppEventId;
 import act.event.AppEventListenerBase;
 import act.util.AnnotatedTypeFinder;
-import org.osgl._;
+import org.osgl.$;
 import org.osgl.exception.NotAppliedException;
 import org.osgl.util.E;
 
@@ -22,13 +22,13 @@ public class AutoConfigPlugin extends AnnotatedTypeFinder {
     private static Field modifiersField;
 
     public AutoConfigPlugin() {
-        super(AutoConfig.class, new _.F2<App, String, Map<Class<? extends AppByteCodeScanner>, Set<String>>>() {
+        super(AutoConfig.class, new $.F2<App, String, Map<Class<? extends AppByteCodeScanner>, Set<String>>>() {
             @Override
-            public Map<Class<? extends AppByteCodeScanner>, Set<String>> apply(final App app, final String className) throws NotAppliedException, _.Break {
+            public Map<Class<? extends AppByteCodeScanner>, Set<String>> apply(final App app, final String className) throws NotAppliedException, $.Break {
                 app.eventBus().bind(AppEventId.APP_CODE_SCANNED, new AppEventListenerBase() {
                     @Override
                     public void on(EventObject event) throws Exception {
-                        Class<?> autoConfigClass = _.classForName(className, app.classLoader());
+                        Class<?> autoConfigClass = $.classForName(className, app.classLoader());
                         new AutoConfigLoader(app, autoConfigClass).load();
                     }
                 });

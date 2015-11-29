@@ -5,8 +5,7 @@ import act.app.App;
 import act.util.ActContext;
 import act.view.Template;
 import act.view.ViewManager;
-import com.sun.jmx.snmp.ThreadContext;
-import org.osgl._;
+import org.osgl.$;
 import org.osgl.concurrent.ContextLocal;
 import org.osgl.http.H;
 import org.osgl.storage.ISObject;
@@ -32,7 +31,7 @@ public class MailerContext extends ActContext.ActContextBase<MailerContext> {
     private List<ISObject> attachments = C.newList();
     private String senderPath; // e.g. com.mycorp.myapp.mailer.AbcMailer.foo
 
-    private static final ContextLocal<MailerContext> _local = _.contextLocal();
+    private static final ContextLocal<MailerContext> _local = $.contextLocal();
 
     public MailerContext(App app, String confId) {
         super(app);

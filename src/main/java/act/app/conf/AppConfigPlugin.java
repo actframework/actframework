@@ -6,7 +6,7 @@ import act.app.AppByteCodeScanner;
 import act.app.AppClassLoader;
 import act.controller.bytecode.ControllerByteCodeScanner;
 import act.util.SubTypeFinder;
-import org.osgl._;
+import org.osgl.$;
 import org.osgl.exception.NotAppliedException;
 import org.osgl.util.C;
 
@@ -21,12 +21,12 @@ import java.util.Set;
 @ActComponent
 public class AppConfigPlugin extends SubTypeFinder {
     public AppConfigPlugin() {
-        super(true, false, AppConfigurator.class, new _.F2<App, String, Map<Class<? extends AppByteCodeScanner>, Set<String>>>() {
+        super(true, false, AppConfigurator.class, new $.F2<App, String, Map<Class<? extends AppByteCodeScanner>, Set<String>>>() {
             @Override
-            public Map<Class<? extends AppByteCodeScanner>, Set<String>> apply(App app, String className) throws NotAppliedException, _.Break {
+            public Map<Class<? extends AppByteCodeScanner>, Set<String>> apply(App app, String className) throws NotAppliedException, $.Break {
                 AppConfiguratorClassLoader cl = new AppConfiguratorClassLoader(app.classLoader());
-                Class<? extends AppConfigurator> c = _.classForName(className, cl);
-                AppConfigurator<?> conf = _.newInstance(c);
+                Class<? extends AppConfigurator> c = $.classForName(className, cl);
+                AppConfigurator<?> conf = $.newInstance(c);
                 conf.app(app);
                 conf.configure();
                 app.config()._merge(conf);

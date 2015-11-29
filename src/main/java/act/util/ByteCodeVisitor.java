@@ -3,7 +3,7 @@ package act.util;
 import act.asm.ClassVisitor;
 import act.asm.ClassWriter;
 import act.asm.Opcodes;
-import org.osgl._;
+import org.osgl.$;
 import org.osgl.util.E;
 
 import java.util.Iterator;
@@ -14,7 +14,7 @@ import java.util.List;
  */
 public class ByteCodeVisitor extends ClassVisitor implements Opcodes {
 
-    private _.Var<? extends ClassVisitor> _cv;
+    private $.Var<? extends ClassVisitor> _cv;
 
     protected ByteCodeVisitor(ClassVisitor cv) {
         super(ASM5, cv);
@@ -34,7 +34,7 @@ public class ByteCodeVisitor extends ClassVisitor implements Opcodes {
         return this;
     }
 
-    private ByteCodeVisitor setDownstream(_.Var<? extends ClassVisitor> cv) {
+    private ByteCodeVisitor setDownstream($.Var<? extends ClassVisitor> cv) {
         E.illegalStateIf(null != this.cv);
         _cv = cv;
         return this;
@@ -46,7 +46,7 @@ public class ByteCodeVisitor extends ClassVisitor implements Opcodes {
         return this;
     }
 
-    public static ByteCodeVisitor chain(_.Var<ClassWriter> cw, List<? extends ByteCodeVisitor> visitors) {
+    public static ByteCodeVisitor chain($.Var<ClassWriter> cw, List<? extends ByteCodeVisitor> visitors) {
         if (visitors.isEmpty()) {
             return null;
         }

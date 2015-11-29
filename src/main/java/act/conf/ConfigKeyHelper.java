@@ -1,7 +1,7 @@
 package act.conf;
 
 import act.Act;
-import org.osgl._;
+import org.osgl.$;
 import org.osgl.exception.ConfigurationException;
 import org.osgl.exception.NotAppliedException;
 import org.osgl.logging.L;
@@ -21,36 +21,36 @@ import java.util.*;
 class ConfigKeyHelper {
 
     private static Logger logger = L.get(ConfigKeyHelper.class);
-    private _.F0<Act.Mode> mode;
-    private _.F0<ClassLoader> classLoaderProvider;
+    private $.F0<Act.Mode> mode;
+    private $.F0<ClassLoader> classLoaderProvider;
 
-    public ConfigKeyHelper(_.F0<Act.Mode> mode, final ClassLoader cl) {
+    public ConfigKeyHelper($.F0<Act.Mode> mode, final ClassLoader cl) {
         this.mode = mode;
-        this.classLoaderProvider = new _.F0<ClassLoader>() {
+        this.classLoaderProvider = new $.F0<ClassLoader>() {
             @Override
-            public ClassLoader apply() throws NotAppliedException, _.Break {
+            public ClassLoader apply() throws NotAppliedException, $.Break {
                 return cl;
             }
         };
     }
-    public ConfigKeyHelper(_.F0<Act.Mode> mode) {
+    public ConfigKeyHelper($.F0<Act.Mode> mode) {
         this.mode = mode;
     }
-    ConfigKeyHelper classLoaderProvider(_.F0<ClassLoader> provider) {
+    ConfigKeyHelper classLoaderProvider($.F0<ClassLoader> provider) {
         this.classLoaderProvider = provider;
         return this;
     }
     <T> T getConfiguration(final ConfigKey confKey, Map<String, ?> configuration) {
         String key = confKey.key();
-        _.F0<?> defVal = new _.F0<Object>() {
+        $.F0<?> defVal = new $.F0<Object>() {
             @Override
-            public Object apply() throws NotAppliedException, _.Break {
+            public Object apply() throws NotAppliedException, $.Break {
                 return confKey.defVal();
             }
         };
         return getConfiguration(key, defVal, configuration);
     }
-    <T> T getConfiguration(final String key, _.F0<?> defVal, Map<String, ?> configuration) {
+    <T> T getConfiguration(final String key, $.F0<?> defVal, Map<String, ?> configuration) {
         if (key.endsWith(".enabled") || key.endsWith(".disabled")) {
             return (T) getEnabled(key, configuration, defVal);
         }
@@ -191,12 +191,12 @@ class ConfigKeyHelper {
         return l;
     }
 
-    <T> T getX(Map<String, ?> configuration, String key, String suffix, _.F0<?> defVal, _.Func1<Object, T> converter) {
+    <T> T getX(Map<String, ?> configuration, String key, String suffix, $.F0<?> defVal, $.Func1<Object, T> converter) {
         Object v = getValFromAliases(configuration, key, suffix, defVal);
         return converter.apply(v);
     }
 
-    private Boolean getEnabled(String key, Map<String, ?> configuration, _.F0<?> defVal) {
+    private Boolean getEnabled(String key, Map<String, ?> configuration, $.F0<?> defVal) {
         Object v = getValFromAliases(configuration, key, "enabled", defVal);
         if (null == v) {
             v = getValFromAliases(configuration, key, "disabled", defVal);
@@ -209,12 +209,12 @@ class ConfigKeyHelper {
         return classLoaderProvider.apply();
     }
 
-    private <T> T getImpl(Map<String, ?> configuration, String key, String suffix, _.F0<?> defVal) {
+    private <T> T getImpl(Map<String, ?> configuration, String key, String suffix, $.F0<?> defVal) {
         Object v = getValFromAliases(configuration, key, "impl", defVal);
         if (null == v) return null;
         if (v instanceof Class) {
             try {
-                return _.newInstance((Class<T>) v, myClassLoader());
+                return $.newInstance((Class<T>) v, myClassLoader());
             } catch (Exception e) {
                 throw new ConfigurationException(e, "Error getting implementation configuration: %s", key);
             }
@@ -222,13 +222,13 @@ class ConfigKeyHelper {
         if (!(v instanceof String)) return (T) v;
         String clsName = (String) v;
         try {
-            return _.newInstance(clsName, myClassLoader());
+            return $.newInstance(clsName, myClassLoader());
         } catch (Exception e) {
             throw new ConfigurationException(e, "Error getting implementation configuration: %s", key);
         }
     }
 
-    private URI getUri(Map<String, ?> configuration, String key, String suffix, _.F0<?> defVal) {
+    private URI getUri(Map<String, ?> configuration, String key, String suffix, $.F0<?> defVal) {
         Object v = getValFromAliases(configuration, key, suffix, defVal);
         if (null == v) return null;
         if (v instanceof File) {
@@ -331,7 +331,7 @@ class ConfigKeyHelper {
         return getValFromAliases(configuration, mode().configKey(key), suffix);
     }
 
-    Object getValFromAliases(Map<String, ?> configuration, String key, String suffix, _.F0<?> defVal) {
+    Object getValFromAliases(Map<String, ?> configuration, String key, String suffix, $.F0<?> defVal) {
         Object v = getValFromAliasesWithModelPrefix(configuration, key, suffix);
         if (null != v) {
             return v;
@@ -380,31 +380,31 @@ class ConfigKeyHelper {
 
     public static enum F {
         ;
-        public static _.Func1<Object, Integer> TO_INT = new _.Transformer<Object, Integer>() {
+        public static $.Func1<Object, Integer> TO_INT = new $.Transformer<Object, Integer>() {
             @Override
             public Integer transform(Object object) {
                 return toInt(object);
             }
         };
-        public static _.Func1<Object, Long> TO_LONG = new _.Transformer<Object, Long>() {
+        public static $.Func1<Object, Long> TO_LONG = new $.Transformer<Object, Long>() {
             @Override
             public Long transform(Object object) {
                 return toLong(object);
             }
         };
-        public static _.Func1<Object, Float> TO_FLOAT = new _.Transformer<Object, Float>() {
+        public static $.Func1<Object, Float> TO_FLOAT = new $.Transformer<Object, Float>() {
             @Override
             public Float transform(Object object) {
                 return toFloat(object);
             }
         };
-        public static _.Func1<Object, Double> TO_DOUBLE = new _.Transformer<Object, Double>() {
+        public static $.Func1<Object, Double> TO_DOUBLE = new $.Transformer<Object, Double>() {
             @Override
             public Double transform(Object object) {
                 return toDouble(object);
             }
         };
-        public static _.Func1<Object, Boolean> TO_BOOLEAN = new _.Transformer<Object, Boolean>() {
+        public static $.Func1<Object, Boolean> TO_BOOLEAN = new $.Transformer<Object, Boolean>() {
             @Override
             public Boolean transform(Object object) {
                 return toBoolean(object);

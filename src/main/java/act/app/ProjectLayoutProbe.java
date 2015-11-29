@@ -4,7 +4,7 @@ import act.Act;
 import act.ActComponent;
 import act.plugin.Plugin;
 import act.util.DescendantClassFilter;
-import org.osgl._;
+import org.osgl.$;
 
 import java.io.File;
 
@@ -32,7 +32,7 @@ public abstract class ProjectLayoutProbe implements Plugin {
     public static final DescendantClassFilter<ProjectLayoutProbe> PLUGIN_FILTER = new DescendantClassFilter<ProjectLayoutProbe>(true, true, ProjectLayoutProbe.class) {
         @Override
         public void found(Class<? extends ProjectLayoutProbe> clazz) {
-            Act.mode().appScanner().register(_.newInstance(clazz));
+            Act.mode().appScanner().register($.newInstance(clazz));
         }
     };
 

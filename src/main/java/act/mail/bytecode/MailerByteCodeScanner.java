@@ -14,7 +14,7 @@ import act.mail.meta.SenderMethodMetaInfo;
 import act.util.AsmTypes;
 import act.util.ByteCodeVisitor;
 import act.util.GeneralAnnoInfo;
-import org.osgl._;
+import org.osgl.$;
 import org.osgl.logging.L;
 import org.osgl.logging.Logger;
 import org.osgl.util.C;
@@ -189,7 +189,7 @@ public class MailerByteCodeScanner extends AppByteCodeScannerBase {
                 }
                 if (null != signature) {
                     SignatureReader sr = new SignatureReader(signature);
-                    final _.Var<Integer> id = new _.Var<>(-1);
+                    final $.Var<Integer> id = new $.Var<>(-1);
                     sr.accept(new SignatureVisitor(ASM5) {
 
                         boolean startParsing;

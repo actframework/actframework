@@ -253,7 +253,7 @@ public final class SparkApp extends App {
             Result result;
             try {
                 Object obj = handle(context.req(), context.resp());
-                result = Controller.Util.inferResult(obj, context);
+                result = Controller.Util.inferResult(obj, context, false);
             } catch (Result r) {
                 result = r;
             } catch (RuntimeException e) {

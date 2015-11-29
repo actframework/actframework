@@ -1,6 +1,6 @@
 package act.controller.meta;
 
-import org.osgl._;
+import org.osgl.$;
 import org.osgl.util.S;
 
 /**
@@ -14,12 +14,12 @@ public abstract class HarmonyParamAnnotationTraitBase extends ParamAnnoInfoTrait
 
     @Override
     public boolean compatibleWith(ParamAnnoInfoTrait otherParamAnnotation) {
-        return _.eq(otherParamAnnotation.getClass(), this.getClass());
+        return $.eq(otherParamAnnotation.getClass(), this.getClass());
     }
 
     @Override
     public String compatibilityErrorMessage(ParamAnnoInfoTrait otherParamAnnotation) {
-        if (_.eq(otherParamAnnotation.getClass(), getClass())) {
+        if ($.eq(otherParamAnnotation.getClass(), getClass())) {
             return S.fmt("Duplicated annotation found: %s", getClass());
         }
         return null;

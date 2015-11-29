@@ -1,7 +1,7 @@
 package act.controller.meta;
 
 import act.app.ActionContext;
-import org.osgl._;
+import org.osgl.$;
 import org.osgl.util.S;
 
 /**
@@ -71,7 +71,7 @@ public class ActContextInjection<T> {
 
     @Override
     public int hashCode() {
-        return _.hc(type, v);
+        return $.hc(type, v);
     }
 
     @Override
@@ -81,7 +81,7 @@ public class ActContextInjection<T> {
         }
         if (obj instanceof ActContextInjection) {
             ActContextInjection that = (ActContextInjection) obj;
-            return that.type == type && _.eq(that.v, v);
+            return that.type == type && $.eq(that.v, v);
         }
         return false;
     }

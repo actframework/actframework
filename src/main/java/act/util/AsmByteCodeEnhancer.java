@@ -4,7 +4,7 @@ import act.Act;
 import act.asm.ClassVisitor;
 import act.asm.Opcodes;
 import act.plugin.Plugin;
-import org.osgl._;
+import org.osgl.$;
 import org.osgl.util.E;
 
 /**
@@ -12,20 +12,20 @@ import org.osgl.util.E;
  */
 public abstract class AsmByteCodeEnhancer<T extends AsmByteCodeEnhancer> extends PredictableByteCodeVisitor
         implements Opcodes, Plugin, Cloneable {
-    private _.Predicate<String> targetClassPredicate;
+    private $.Predicate<String> targetClassPredicate;
 
     protected abstract Class<T> subClass();
 
-    protected AsmByteCodeEnhancer(_.Predicate<String> targetClassPredicate) {
+    protected AsmByteCodeEnhancer($.Predicate<String> targetClassPredicate) {
         this.targetClassPredicate = targetClassPredicate;
     }
 
-    protected AsmByteCodeEnhancer(_.Predicate<String> targetClassPredicate, ClassVisitor cv) {
+    protected AsmByteCodeEnhancer($.Predicate<String> targetClassPredicate, ClassVisitor cv) {
         super(cv);
         this.targetClassPredicate = targetClassPredicate;
     }
 
-    public void predicate(_.Predicate<String> predicate) {
+    public void predicate($.Predicate<String> predicate) {
         targetClassPredicate = predicate;
     }
 

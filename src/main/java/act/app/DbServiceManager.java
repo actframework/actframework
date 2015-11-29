@@ -10,13 +10,12 @@ import act.db.DbPlugin;
 import act.db.DbService;
 import act.event.AppEventListenerBase;
 import act.util.ClassNode;
-import org.osgl._;
+import org.osgl.$;
 import org.osgl.exception.ConfigurationException;
 import org.osgl.util.C;
 import org.osgl.util.E;
 import org.rythmengine.utils.S;
 
-import java.lang.reflect.Constructor;
 import java.util.EventObject;
 import java.util.HashMap;
 import java.util.Map;
@@ -39,12 +38,12 @@ public class DbServiceManager extends AppServiceBase<DbServiceManager> implement
             @Override
             public void on(EventObject event) throws Exception {
                 ClassNode node = app.classLoader().classInfoRepository().node(Dao.class.getName());
-                node.findPublicNotAbstract(new _.Visitor<ClassNode>() {
+                node.findPublicNotAbstract(new $.Visitor<ClassNode>() {
                     @Override
-                    public void visit(ClassNode classNode) throws _.Break {
-                        Class<? extends Dao> daoType = _.classForName(classNode.name(), app.classLoader());
+                    public void visit(ClassNode classNode) throws $.Break {
+                        Class<? extends Dao> daoType = $.classForName(classNode.name(), app.classLoader());
                         try {
-                            Dao dao = _.cast(app.newInstance(daoType));
+                            Dao dao = $.cast(app.newInstance(daoType));
                             Class<?> modelType = dao.modelType();
                             modelDaoMap.put(modelType, daoType);
                         } catch (Exception e) {

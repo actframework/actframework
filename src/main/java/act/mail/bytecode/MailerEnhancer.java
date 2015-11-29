@@ -9,7 +9,7 @@ import act.mail.meta.MailerClassMetaInfo;
 import act.mail.meta.MailerClassMetaInfoHolder;
 import act.mail.meta.SenderMethodMetaInfo;
 import act.util.AppByteCodeEnhancer;
-import org.osgl._;
+import org.osgl.$;
 
 /**
  * Enhance mailer class
@@ -85,8 +85,8 @@ public class MailerEnhancer extends AppByteCodeEnhancer<MailerEnhancer> {
     private static enum _F {
         ;
 
-        private static final _.Predicate<String> isMailer(final MailerClassMetaInfoHolder infoSrc) {
-            return new _.Predicate<String>() {
+        private static final $.Predicate<String> isMailer(final MailerClassMetaInfoHolder infoSrc) {
+            return new $.Predicate<String>() {
                 @Override
                 public boolean test(String s) {
                     return infoSrc.mailerClassMetaInfo(s) != null;

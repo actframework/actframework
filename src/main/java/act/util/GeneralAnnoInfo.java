@@ -3,7 +3,7 @@ package act.util;
 import act.asm.AnnotationVisitor;
 import act.asm.Opcodes;
 import act.asm.Type;
-import org.osgl._;
+import org.osgl.$;
 import org.osgl.util.C;
 import org.osgl.util.E;
 import org.osgl.util.S;
@@ -51,7 +51,7 @@ public class GeneralAnnoInfo {
     }
 
     public Class annotationClass(ClassLoader classLoader) {
-        return _.classForName(type.getClassName(), classLoader);
+        return $.classForName(type.getClassName(), classLoader);
     }
 
     public Map<String, Object> attributes() {
@@ -92,7 +92,7 @@ public class GeneralAnnoInfo {
 
     @Override
     public int hashCode() {
-        return _.hc(type, attributes, listAttributes);
+        return $.hc(type, attributes, listAttributes);
     }
 
     @Override
@@ -170,7 +170,7 @@ public class GeneralAnnoInfo {
         private final Map<String, Object> values;
 
         AnnotationInvocationHandler(GeneralAnnoInfo annoInfo, ClassLoader classLoader) {
-            this.annotationType = _.classForName(annoInfo.type().getClassName(), classLoader);
+            this.annotationType = $.classForName(annoInfo.type().getClassName(), classLoader);
             this.annoInfo = annoInfo;
             this.hashCode = annoInfo.hashCode();
             this.values = retrieveAnnotationValues(annoInfo, annotationType);
@@ -191,21 +191,21 @@ public class GeneralAnnoInfo {
             } else if (c == Class.class) {
                 return list.toArray(new Class[size]);
             } else if (c == Boolean.class) {
-                return _.asPrimitive(list.toArray(new Boolean[size]));
+                return $.asPrimitive(list.toArray(new Boolean[size]));
             } else if (c == Byte.class) {
-                return _.asPrimitive(list.toArray(new Byte[size]));
+                return $.asPrimitive(list.toArray(new Byte[size]));
             } else if (c == Short.class) {
-                return _.asPrimitive(list.toArray(new Short[size]));
+                return $.asPrimitive(list.toArray(new Short[size]));
             } else if (c == Character.class) {
-                return _.asPrimitive(list.toArray(new Character[size]));
+                return $.asPrimitive(list.toArray(new Character[size]));
             } else if (c == Integer.class) {
-                return _.asPrimitive(list.toArray(new Integer[size]));
+                return $.asPrimitive(list.toArray(new Integer[size]));
             } else if (c == Float.class) {
-                return _.asPrimitive(list.toArray(new Float[size]));
+                return $.asPrimitive(list.toArray(new Float[size]));
             } else if (c == Long.class) {
-                return _.asPrimitive(list.toArray(new Long[size]));
+                return $.asPrimitive(list.toArray(new Long[size]));
             } else if (c == Double.class) {
-                return _.asPrimitive(list.toArray(new Double[size]));
+                return $.asPrimitive(list.toArray(new Double[size]));
             } else {
                 return list.toArray((T[])Array.newInstance(c, size));
             }
@@ -234,14 +234,14 @@ public class GeneralAnnoInfo {
             for (Map.Entry<String, Object> member : annoInfo.attributes.entrySet()) {
                 Object value = member.getValue();
                 Object otherValue = getAnnotationMemberValue(other, member.getKey());
-                if (!_.eq2(value, otherValue)) {
+                if (!$.eq2(value, otherValue)) {
                     return false;
                 }
             }
             for (Map.Entry<String, List<Object>> member : annoInfo.listAttributes.entrySet()) {
                 Object value = toArray(member.getValue());
                 Object otherValue = getAnnotationMemberValue(other, member.getKey());
-                if (!_.eq2(value, otherValue)) {
+                if (!$.eq2(value, otherValue)) {
                     return false;
                 }
             }

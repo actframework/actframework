@@ -2,7 +2,7 @@ package act.app;
 
 import act.util.ClassNames;
 import org.eclipse.jdt.internal.compiler.env.ICompilationUnit;
-import org.osgl._;
+import org.osgl.$;
 import org.osgl.util.*;
 
 import java.io.File;
@@ -130,7 +130,7 @@ public class Source {
     }
 
     void compiled(byte[] bytecode) {
-        this.bytes = _.notNull(bytecode);
+        this.bytes = $.notNull(bytecode);
         updateState(State.COMPILED);
     }
 
@@ -139,7 +139,7 @@ public class Source {
     }
 
     void enhanced(byte[] bytecode) {
-        this.bytes = _.notNull(bytecode);
+        this.bytes = $.notNull(bytecode);
         updateState(State.ENHANCED);
     }
 
@@ -151,7 +151,7 @@ public class Source {
 
     private void updateState(State state) {
         this.state = state;
-        this.ts = _.ms();
+        this.ts = $.ms();
     }
 
     private void tryLoadSourceFile() {

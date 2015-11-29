@@ -9,7 +9,7 @@ import act.sys.meta.ReturnTypeInfo;
 import act.util.AsmTypes;
 import act.util.DestroyableBase;
 import act.util.Prioritised;
-import org.osgl._;
+import org.osgl.$;
 import org.osgl.util.C;
 import org.osgl.util.E;
 import org.osgl.util.S;
@@ -159,7 +159,7 @@ public abstract class HandlerMethodMetaInfo<T extends HandlerMethodMetaInfo> ext
 
     @Override
     public int hashCode() {
-        return _.hc(fullName());
+        return $.hc(fullName());
     }
 
     @Override
@@ -169,7 +169,7 @@ public abstract class HandlerMethodMetaInfo<T extends HandlerMethodMetaInfo> ext
         }
         if (obj instanceof HandlerMethodMetaInfo) {
             HandlerMethodMetaInfo that = (HandlerMethodMetaInfo) obj;
-            return _.eq(that.fullName(), fullName());
+            return $.eq(that.fullName(), fullName());
         }
         return false;
     }
@@ -207,7 +207,7 @@ public abstract class HandlerMethodMetaInfo<T extends HandlerMethodMetaInfo> ext
     }
 
     private String _params() {
-        return S.join(", ", params.map(new _.Transformer<ParamMetaInfo, String>() {
+        return S.join(", ", params.map(new $.Transformer<ParamMetaInfo, String>() {
             @Override
             public String transform(ParamMetaInfo paramMetaInfo) {
                 return paramMetaInfo.type().getClassName();

@@ -2,7 +2,6 @@ package act.mail.meta;
 
 import act.asm.Label;
 import act.asm.Type;
-import act.controller.meta.ActContextInjection;
 import act.controller.meta.HandlerMethodMetaInfo;
 import act.controller.meta.LocalVariableMetaInfo;
 import act.controller.meta.ParamMetaInfo;
@@ -10,7 +9,7 @@ import act.sys.meta.InvokeType;
 import act.sys.meta.ReturnTypeInfo;
 import act.util.AsmTypes;
 import act.util.DestroyableBase;
-import org.osgl._;
+import org.osgl.$;
 import org.osgl.util.C;
 import org.osgl.util.E;
 import org.osgl.util.S;
@@ -141,7 +140,7 @@ public class SenderMethodMetaInfo extends DestroyableBase {
 
     @Override
     public int hashCode() {
-        return _.hc(fullName());
+        return $.hc(fullName());
     }
 
     @Override
@@ -151,7 +150,7 @@ public class SenderMethodMetaInfo extends DestroyableBase {
         }
         if (obj instanceof HandlerMethodMetaInfo) {
             HandlerMethodMetaInfo that = (HandlerMethodMetaInfo) obj;
-            return _.eq(that.fullName(), fullName());
+            return $.eq(that.fullName(), fullName());
         }
         return false;
     }
@@ -189,7 +188,7 @@ public class SenderMethodMetaInfo extends DestroyableBase {
     }
 
     private String _params() {
-        return S.join(", ", params.map(new _.Transformer<ParamMetaInfo, String>() {
+        return S.join(", ", params.map(new $.Transformer<ParamMetaInfo, String>() {
             @Override
             public String transform(ParamMetaInfo paramMetaInfo) {
                 return paramMetaInfo.type().getClassName();

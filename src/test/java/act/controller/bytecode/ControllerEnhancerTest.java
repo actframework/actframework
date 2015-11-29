@@ -10,7 +10,7 @@ import act.controller.meta.ControllerClassMetaInfoManager;
 import act.util.Files;
 import org.junit.Before;
 import org.junit.Test;
-import org.osgl._;
+import org.osgl.$;
 import org.osgl.mvc.result.NotFound;
 import org.osgl.mvc.result.Ok;
 import org.osgl.mvc.result.Result;
@@ -314,7 +314,7 @@ public class ControllerEnhancerTest extends TestBase implements ControllerClassM
         cn = "testapp.controller." + className;
         scan(cn);
         cc = new TestAppClassLoader().loadClass(cn);
-        c = _.newInstance(cc);
+        c = $.newInstance(cc);
     }
 
     private Method method(Class... types) throws Exception {
@@ -378,12 +378,12 @@ public class ControllerEnhancerTest extends TestBase implements ControllerClassM
 
     private static enum _F {
         ;
-        static _.Predicate<String> SYS_CLASS_NAME = new _.Predicate<String>() {
+        static $.Predicate<String> SYS_CLASS_NAME = new $.Predicate<String>() {
             @Override
             public boolean test(String s) {
                 return s.startsWith("java") || s.startsWith("org.osgl.");
             }
         };
-        static _.Predicate<String> SAFE_CLASS = S.F.endsWith(".class").and(SYS_CLASS_NAME.negate());
+        static $.Predicate<String> SAFE_CLASS = S.F.endsWith(".class").and(SYS_CLASS_NAME.negate());
     }
 }

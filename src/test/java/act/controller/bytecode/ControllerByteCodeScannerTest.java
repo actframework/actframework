@@ -12,7 +12,7 @@ import act.util.Files;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.internal.verification.Times;
-import org.osgl._;
+import org.osgl.$;
 import org.osgl.http.H;
 import org.osgl.util.C;
 import org.osgl.util.E;
@@ -54,7 +54,7 @@ public class ControllerByteCodeScannerTest extends TestBase {
         when(mockApp.jobManager()).thenReturn(jobManager);
         when(mockAppConfig.possibleControllerClass(anyString())).thenReturn(true);
         when(mockRouter.isActionMethod(anyString(), anyString())).thenReturn(false);
-        C.List<AppByteCodeScanner> scanners = _.cast(C.listOf(controllerScanner, jobScanner));
+        C.List<AppByteCodeScanner> scanners = $.cast(C.listOf(controllerScanner, jobScanner));
         //C.List<AppByteCodeScanner> scanners = C.list(controllerScanner);
         when(scannerManager.byteCodeScanners()).thenReturn(scanners);
         controllerScanner.setApp(mockApp);
@@ -137,7 +137,7 @@ public class ControllerByteCodeScannerTest extends TestBase {
         ActionMethodMetaInfo action = action("WithAppContext", "staticReturnStringNoParam");
 
         // verify app context injection
-        ActContextInjection actContextInjection = _.cast(action.appContextInjection());
+        ActContextInjection actContextInjection = $.cast(action.appContextInjection());
         same(ActContextInjection.InjectType.LOCAL, actContextInjection.injectVia());
 
         // verify return type
@@ -274,12 +274,12 @@ public class ControllerByteCodeScannerTest extends TestBase {
     }
 
     private void assertFieldAppCtxInject(HandlerMethodMetaInfo action, String fieldName) {
-        ActContextInjection.FieldActContextInjection appContextInjection = _.cast(action.appContextInjection());
+        ActContextInjection.FieldActContextInjection appContextInjection = $.cast(action.appContextInjection());
         eq(fieldName, appContextInjection.fieldName());
     }
 
     private void assertParamAppCtxInject(HandlerMethodMetaInfo action, int index) {
-        ActContextInjection.ParamAppContextInjection appContextInjection = _.cast(action.appContextInjection());
+        ActContextInjection.ParamAppContextInjection appContextInjection = $.cast(action.appContextInjection());
         same(index, appContextInjection.paramIndex());
     }
 
@@ -293,12 +293,12 @@ public class ControllerByteCodeScannerTest extends TestBase {
 
     private static enum _F {
         ;
-        static _.Predicate<String> SYS_CLASS_NAME = new _.Predicate<String>() {
+        static $.Predicate<String> SYS_CLASS_NAME = new $.Predicate<String>() {
             @Override
             public boolean test(String s) {
                 return s.startsWith("java") || s.startsWith("org.osgl.");
             }
         };
-        static _.Predicate<String> SAFE_CLASS = S.F.endsWith(".class").and(SYS_CLASS_NAME.negate());
+        static $.Predicate<String> SAFE_CLASS = S.F.endsWith(".class").and(SYS_CLASS_NAME.negate());
     }
 }

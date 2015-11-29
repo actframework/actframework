@@ -5,7 +5,7 @@ import act.app.App;
 import act.app.AppServiceBase;
 import act.conf.AppConfig;
 import act.controller.meta.ParamMetaInfo;
-import org.osgl._;
+import org.osgl.$;
 import org.osgl.mvc.util.Binder;
 import org.osgl.mvc.util.ParamValueProvider;
 import org.osgl.mvc.util.StringValueResolver;
@@ -153,10 +153,10 @@ public class BinderManager extends AppServiceBase<BinderManager> {
                 }
             } else {
                 try {
-                    return (Collection)_.newInstance(containerType);
+                    return (Collection) $.newInstance(containerType);
                 } catch (Exception e) {
                     try {
-                        return (Collection)_.newInstance(containerType, 100);
+                        return (Collection) $.newInstance(containerType, 100);
                     } catch (Exception e2) {
                         logger.warn("Cannot initialize container with type: %s", containerType);
                         return null;

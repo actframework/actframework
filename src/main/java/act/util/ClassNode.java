@@ -1,6 +1,6 @@
 package act.util;
 
-import org.osgl._;
+import org.osgl.$;
 import org.osgl.util.C;
 import org.osgl.util.E;
 
@@ -79,7 +79,7 @@ public class ClassNode {
         return this;
     }
 
-    public ClassNode accept(_.Function<ClassNode, ?> treeVisitor) {
+    public ClassNode accept($.Function<ClassNode, ?> treeVisitor) {
         for (ClassNode child : children) {
             child.accept(treeVisitor);
         }
@@ -87,8 +87,8 @@ public class ClassNode {
         return this;
     }
 
-    public ClassNode findPublicNotAbstract(_.Function<ClassNode, ?> treeVisitor) {
-        return accept(_.guardedVisitor(new _.Predicate<ClassNode>() {
+    public ClassNode findPublicNotAbstract($.Function<ClassNode, ?> treeVisitor) {
+        return accept($.guardedVisitor(new $.Predicate<ClassNode>() {
             @Override
             public boolean test(ClassNode classNode) {
                 return classNode.publicNotAbstract();
@@ -113,7 +113,7 @@ public class ClassNode {
         }
         if (obj instanceof ClassNode) {
             ClassNode that = (ClassNode) obj;
-            return _.eq(that.name, this.name);
+            return $.eq(that.name, this.name);
         }
         return false;
     }

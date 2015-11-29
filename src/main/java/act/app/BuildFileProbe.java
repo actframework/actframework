@@ -3,7 +3,7 @@ package act.app;
 import act.Act;
 import act.ActComponent;
 import act.plugin.Plugin;
-import org.osgl._;
+import org.osgl.$;
 import org.osgl.exception.NotAppliedException;
 import org.osgl.util.IO;
 
@@ -23,11 +23,11 @@ public class BuildFileProbe extends ProjectLayoutProbe {
     }
 
     public static abstract class FileParser
-            extends _.F1<File, ProjectLayout>
+            extends $.F1<File, ProjectLayout>
             implements BuildFileNameProvider, Plugin {
 
         @Override
-        public ProjectLayout apply(File file) throws NotAppliedException, _.Break {
+        public ProjectLayout apply(File file) throws NotAppliedException, $.Break {
             return parse(file);
         }
 
@@ -41,12 +41,12 @@ public class BuildFileProbe extends ProjectLayoutProbe {
 
     @ActComponent
     public static abstract class StringParser
-            extends _.F1<String, ProjectLayout>
+            extends $.F1<String, ProjectLayout>
             implements BuildFileNameProvider, Plugin {
 
 
         @Override
-        public ProjectLayout apply(String s) throws NotAppliedException, _.Break {
+        public ProjectLayout apply(String s) throws NotAppliedException, $.Break {
             return parse(s);
         }
 
@@ -59,11 +59,11 @@ public class BuildFileProbe extends ProjectLayoutProbe {
     }
 
     public static abstract class LinesParser
-            extends _.F1<List<String>, ProjectLayout>
+            extends $.F1<List<String>, ProjectLayout>
             implements BuildFileNameProvider, Plugin {
 
         @Override
-        public ProjectLayout apply(List<String> lines) throws NotAppliedException, _.Break {
+        public ProjectLayout apply(List<String> lines) throws NotAppliedException, $.Break {
             return parse(lines);
         }
 

@@ -1,7 +1,7 @@
 package act.util;
 
 import act.exception.ActException;
-import org.osgl._;
+import org.osgl.$;
 import org.osgl.exception.NotAppliedException;
 import org.osgl.logging.L;
 import org.osgl.logging.Logger;
@@ -21,13 +21,13 @@ public class FsChangeDetector {
 
     private C.List<FsEventListener> listeners = C.newList();
     private final File dir;
-    private final _.Predicate<String> fileNameFilter;
+    private final $.Predicate<String> fileNameFilter;
     private final Map<String, Long> timestamps = C.newMap();
     private final int contextLen;
     private final String context;
-    private final _.Var<Long> lastChecksum = _.var(0L);
+    private final $.Var<Long> lastChecksum = $.var(0L);
 
-    public FsChangeDetector(File file, _.Predicate<String> fileNameFilter) {
+    public FsChangeDetector(File file, $.Predicate<String> fileNameFilter) {
         this.dir = file;
         this.fileNameFilter = fileNameFilter;
         this.context = file.getAbsolutePath();
@@ -36,7 +36,7 @@ public class FsChangeDetector {
     }
 
 
-    public FsChangeDetector(File file, _.Predicate<String> fileNameFilter, FsEventListener... listeners) {
+    public FsChangeDetector(File file, $.Predicate<String> fileNameFilter, FsEventListener... listeners) {
         this(file, fileNameFilter);
         this.listeners.append(C.listOf(listeners));
     }
@@ -46,7 +46,7 @@ public class FsChangeDetector {
     }
 
     public void detectChanges() {
-        _.Var<Long> checksum = _.var(0L);
+        $.Var<Long> checksum = $.var(0L);
         Map<String, Long> newTimestamps = walkThrough(dir, checksum);
         if (!checksum.get().equals(lastChecksum.get())) {
             if (dir.isDirectory()) {
@@ -64,7 +64,7 @@ public class FsChangeDetector {
         walkThrough(dir, timestamps, lastChecksum);
     }
 
-    private Map<String, Long> walkThrough(File file, _.Var<Long> checksum) {
+    private Map<String, Long> walkThrough(File file, $.Var<Long> checksum) {
         Map<String, Long> map = C.newMap();
         walkThrough(file, map, checksum);
         return map;
@@ -114,15 +114,15 @@ public class FsChangeDetector {
     }
 
     private Set<String> prependContext(C.Set<String> paths) {
-        return C.set(paths.map(new _.F1<String, String>() {
+        return C.set(paths.map(new $.F1<String, String>() {
             @Override
-            public String apply(String s) throws NotAppliedException, _.Break {
+            public String apply(String s) throws NotAppliedException, $.Break {
                 return context + s;
             }
         }));
     }
 
-    private void walkThrough(File file, Map<String, Long> timestamps, _.Var<Long> checksum) {
+    private void walkThrough(File file, Map<String, Long> timestamps, $.Var<Long> checksum) {
         if (file.isDirectory()) {
             Files.filter(file, fileNameFilter, visitor(timestamps, checksum));
         } else {
@@ -133,10 +133,10 @@ public class FsChangeDetector {
         }
     }
 
-    private _.Visitor<File> visitor(final Map<String, Long> timestamps, final _.Var<Long> checksum) {
-        return new _.Visitor<File>() {
+    private $.Visitor<File> visitor(final Map<String, Long> timestamps, final $.Var<Long> checksum) {
+        return new $.Visitor<File>() {
             @Override
-            public void visit(File file) throws _.Break {
+            public void visit(File file) throws $.Break {
                 long ts = file.lastModified();
                 String path = file.getAbsolutePath().substring(contextLen);
                 checksum.set(checksum.get() + path.hashCode() + ts);

@@ -8,13 +8,13 @@ import act.app.util.NamedPort;
 import act.handler.RequestHandler;
 import act.route.Router;
 import act.view.ActServerError;
-import org.osgl._;
+import org.osgl.$;
 import org.osgl.exception.NotAppliedException;
 import org.osgl.http.H;
 import org.osgl.mvc.result.Result;
 import org.osgl.util.E;
 
-public class NetworkClient extends _.F1<ActionContext, Void> {
+public class NetworkClient extends $.F1<ActionContext, Void> {
     private App app;
     private NamedPort port;
 
@@ -60,7 +60,7 @@ public class NetworkClient extends _.F1<ActionContext, Void> {
     }
 
     @Override
-    public Void apply(ActionContext ctx) throws NotAppliedException, _.Break {
+    public Void apply(ActionContext ctx) throws NotAppliedException, $.Break {
         handle(ctx);
         return null;
     }

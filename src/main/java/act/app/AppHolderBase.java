@@ -2,10 +2,9 @@ package act.app;
 
 import act.Destroyable;
 import act.util.DestroyableBase;
-import org.osgl._;
+import org.osgl.$;
 import org.osgl.logging.L;
 import org.osgl.logging.Logger;
-import org.osgl.util.E;
 
 public abstract class AppHolderBase<T extends AppHolderBase> extends DestroyableBase implements AppHolder<T>, Destroyable {
 
@@ -17,7 +16,7 @@ public abstract class AppHolderBase<T extends AppHolderBase> extends Destroyable
     }
 
     protected AppHolderBase(App app) {
-        this.app = _.notNull(app);
+        this.app = $.notNull(app);
     }
 
     public T app(App app) {

@@ -3,7 +3,7 @@ package act.validation;
 import act.ActComponent;
 import act.app.ActionContext;
 import act.controller.ActionMethodParamAnnotationHandlerPlugin;
-import org.osgl._;
+import org.osgl.$;
 import org.osgl.util.C;
 
 import javax.validation.constraints.Future;
@@ -26,7 +26,7 @@ public class FutureHandler extends ActionMethodParamAnnotationHandlerPlugin {
         if (paramVal == null) return;
         if (paramVal instanceof Date) {
             Date date = (Date)paramVal;
-            if (date.getTime() > _.ms()) return;
+            if (date.getTime() > $.ms()) return;
         }
         Future theAnno = (Future) annotation;
         context.addViolation(new ActionMethodParamConstraintViolation<Object>(paramVal, theAnno.message(), theAnno, context));

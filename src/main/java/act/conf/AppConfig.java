@@ -12,7 +12,7 @@ import act.validation.ValidationMessageInterpolator;
 import act.view.TemplatePathResolver;
 import act.view.View;
 import org.apache.commons.codec.Charsets;
-import org.osgl._;
+import org.osgl.$;
 import org.osgl.cache.CacheService;
 import org.osgl.cache.CacheServiceProvider;
 import org.osgl.exception.ConfigurationException;
@@ -22,7 +22,6 @@ import org.osgl.mvc.MvcConfig;
 import org.osgl.util.*;
 
 import javax.validation.MessageInterpolator;
-import java.io.File;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.List;
@@ -229,7 +228,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
 
     private IdGenerator.NodeIdProvider nodeIdProvider;
     protected T nodeIdProvider(IdGenerator.NodeIdProvider provider) {
-        this.nodeIdProvider = _.NPE(provider);
+        this.nodeIdProvider = $.NPE(provider);
         return me();
     }
     public IdGenerator.NodeIdProvider nodeIdProvider() {
@@ -270,7 +269,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
 
     private IdGenerator.StartIdProvider startIdProvider;
     protected T startIdProvider(IdGenerator.StartIdProvider provider) {
-        startIdProvider = _.NPE(provider);
+        startIdProvider = $.NPE(provider);
         return me();
     }
     public IdGenerator.StartIdProvider startIdProvider() {
@@ -290,7 +289,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
 
     private IdGenerator.SequenceProvider sequenceProvider;
     protected T sequenceProvider(IdGenerator.SequenceProvider provider) {
-        this.sequenceProvider = _.NPE(provider);
+        this.sequenceProvider = $.NPE(provider);
         return me();
     }
     public IdGenerator.SequenceProvider sequenceProvider() {
@@ -672,7 +671,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         if (null == sourceVersion) {
             sourceVersion = get(AppConfigKey.SOURCE_VERSION);
             if (null == sourceVersion) {
-                sourceVersion = "1." + _.JAVA_VERSION;
+                sourceVersion = "1." + $.JAVA_VERSION;
             } else if (sourceVersion.startsWith("1.")) {
                 sourceVersion = sourceVersion.substring(0, 3);
             }
@@ -697,7 +696,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         if (null == targetVersion) {
             targetVersion = get(TARGET_VERSION);
             if (null == targetVersion) {
-                targetVersion = "1." + _.JAVA_VERSION;
+                targetVersion = "1." + $.JAVA_VERSION;
             } else if (targetVersion.startsWith("1.")) {
                 targetVersion = targetVersion.substring(0, 3);
             }
@@ -711,20 +710,20 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         }
     }
 
-    private _.Predicate<String> APP_CLASS_TESTER = null;
+    private $.Predicate<String> APP_CLASS_TESTER = null;
 
-    public _.Predicate<String> appClassTester() {
+    public $.Predicate<String> appClassTester() {
         if (null == APP_CLASS_TESTER) {
             String scanPackage = get(AppConfigKey.SCAN_PACKAGE);
             if (S.isBlank(scanPackage)) {
-                APP_CLASS_TESTER = _.F.yes();
+                APP_CLASS_TESTER = $.F.yes();
             } else {
                 final String[] sp = scanPackage.trim().split(Constants.LIST_SEPARATOR);
                 final int len = sp.length;
                 if (1 == len) {
                     APP_CLASS_TESTER = S.F.startsWith(sp[0]);
                 } else {
-                    APP_CLASS_TESTER = new _.Predicate<String>() {
+                    APP_CLASS_TESTER = new $.Predicate<String>() {
                         @Override
                         public boolean test(String className) {
                             for (int i = 0; i < len; ++i) {
@@ -745,17 +744,17 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         return appClassTester().test(className) || controllerNameTester().test(className);
     }
 
-    private _.Predicate<String> CONTROLLER_CLASS_TESTER = null;
+    private $.Predicate<String> CONTROLLER_CLASS_TESTER = null;
 
-    private _.Predicate<String> controllerNameTester() {
+    private $.Predicate<String> controllerNameTester() {
         if (null == CONTROLLER_CLASS_TESTER) {
             String controllerPackage = get(CONTROLLER_PACKAGE);
             if (S.isBlank(controllerPackage)) {
-                _.Predicate<String> f = _.F.no();
+                $.Predicate<String> f = $.F.no();
                 CONTROLLER_CLASS_TESTER = f.or(app().router().f.IS_CONTROLLER);
             } else {
                 final String cp = controllerPackage.trim();
-                _.Predicate<String> f = S.F.startsWith(cp);
+                $.Predicate<String> f = S.F.startsWith(cp);
                 CONTROLLER_CLASS_TESTER = f.or(app().router().f.IS_CONTROLLER);
             }
         }
@@ -1073,7 +1072,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
 
     private MessageInterpolator _messageInterpolator = null;
     protected T messageInterpolator(MessageInterpolator messageInterpolator) {
-        this._messageInterpolator = _.notNull(messageInterpolator);
+        this._messageInterpolator = $.notNull(messageInterpolator);
         return me();
     }
     public MessageInterpolator validationMessageInterpolator() {
@@ -1106,7 +1105,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     }
 
     protected T cacheService(Class<? extends CacheServiceProvider> csp) {
-        this.csp = _.newInstance(csp);
+        this.csp = $.newInstance(csp);
         return me();
     }
 
@@ -1196,7 +1195,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     }
 
     protected T me() {
-        return _.cast(this);
+        return $.cast(this);
     }
 
 }

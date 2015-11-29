@@ -4,13 +4,14 @@ import act.conf.AppConfig;
 import act.job.AppJobManager;
 import act.route.Router;
 import org.junit.Assert;
+import org.junit.ComparisonFailure;
 import org.junit.Ignore;
 import org.junit.runner.JUnitCore;
 import org.mockito.Matchers;
 import org.mockito.internal.matchers.StartsWith;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
-import org.osgl._;
+import org.osgl.$;
 import org.osgl.http.H;
 import act.app.App;
 import act.app.ActionContext;
@@ -42,6 +43,10 @@ public class TestBase extends Assert {
 
     protected void eq(Object o1, Object o2) {
         assertEquals(o1, o2);
+    }
+
+    protected void ne(Object expected, Object actual) {
+        no($.eq(expected, actual));
     }
 
     protected void ceq(Object o1, Object o2) {
@@ -117,7 +122,7 @@ public class TestBase extends Assert {
             @Override
             public Object answer(InvocationOnMock invocation) throws Throwable {
                 Object[] args = invocation.getArguments();
-                return _.newInstance((Class) args[0]);
+                return $.newInstance((Class) args[0]);
             }
         });
         mockRouter = mock(Router.class);
@@ -128,7 +133,7 @@ public class TestBase extends Assert {
             @Override
             public Object answer(InvocationOnMock invocation) throws Throwable {
                 Object[] args = invocation.getArguments();
-                return _.newInstance((Class)args[0]);
+                return $.newInstance((Class)args[0]);
             }
         });
         mockReq = mock(H.Request.class);

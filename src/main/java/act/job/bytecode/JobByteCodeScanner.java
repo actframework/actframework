@@ -63,7 +63,6 @@ public class JobByteCodeScanner extends AppByteCodeScannerBase {
     private class _ByteCodeVisitor extends ByteCodeVisitor {
         @Override
         public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
-            logger.trace("Scanning %s", name);
             classInfo.className(name);
             Type superType = Type.getObjectType(superName);
             classInfo.superType(superType);

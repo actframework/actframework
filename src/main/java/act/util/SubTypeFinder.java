@@ -2,7 +2,7 @@ package act.util;
 
 import act.ActComponent;
 import act.app.*;
-import org.osgl._;
+import org.osgl.$;
 import org.osgl.util.E;
 import org.osgl.util.FastStr;
 import org.osgl.util.S;
@@ -14,14 +14,14 @@ import java.util.regex.Pattern;
 @ActComponent
 public abstract class SubTypeFinder extends AppCodeScannerPluginBase {
 
-    private _.Func2<App, String, Map<Class<? extends AppByteCodeScanner>, Set<String>>> foundHandler;
+    private $.Func2<App, String, Map<Class<? extends AppByteCodeScanner>, Set<String>>> foundHandler;
     private String pkgName;
     private String clsName;
     private Class<?> superType;
     private boolean publicOnly;
     private boolean noAbstract;
 
-    protected SubTypeFinder(boolean publicOnly, boolean noAbstract, Class<?> superType, _.Func2<App, String, Map<Class<? extends AppByteCodeScanner>, Set<String>>> foundHandler) {
+    protected SubTypeFinder(boolean publicOnly, boolean noAbstract, Class<?> superType, $.Func2<App, String, Map<Class<? extends AppByteCodeScanner>, Set<String>>> foundHandler) {
         E.NPE(superType, foundHandler);
         this.clsName = superType.getSimpleName();
         this.pkgName = FastStr.of(superType.getName()).beforeLast('.').toString();
@@ -31,7 +31,7 @@ public abstract class SubTypeFinder extends AppCodeScannerPluginBase {
         this.publicOnly = publicOnly;
         logger.info("pkg: %s, cls: %s", pkgName, clsName);
     }
-    protected SubTypeFinder(Class<?> superType, _.Func2<App, String, Map<Class<? extends AppByteCodeScanner>, Set<String>>> foundHandler) {
+    protected SubTypeFinder(Class<?> superType, $.Func2<App, String, Map<Class<? extends AppByteCodeScanner>, Set<String>>> foundHandler) {
         this(true, true, superType, foundHandler);
     }
 
@@ -94,7 +94,7 @@ public abstract class SubTypeFinder extends AppCodeScannerPluginBase {
 
         @Override
         public int hashCode() {
-            return _.hc(PATTERN, SourceCodeSensor.class);
+            return $.hc(PATTERN, SourceCodeSensor.class);
         }
 
         @Override
@@ -104,7 +104,7 @@ public abstract class SubTypeFinder extends AppCodeScannerPluginBase {
             }
             if (obj instanceof SourceCodeSensor) {
                 SourceCodeSensor that = (SourceCodeSensor)obj;
-                return _.eq(that.PATTERN, this.PATTERN);
+                return $.eq(that.PATTERN, this.PATTERN);
             }
             return false;
         }
@@ -113,7 +113,7 @@ public abstract class SubTypeFinder extends AppCodeScannerPluginBase {
     @ActComponent
     private class ByteCodeSensor extends AppByteCodeScannerBase {
         private ClassDetector detector;
-        private _.Func2<App, String, Map<Class<? extends AppByteCodeScanner>, Set<String>>> foundHandler = SubTypeFinder.this.foundHandler;
+        private $.Func2<App, String, Map<Class<? extends AppByteCodeScanner>, Set<String>>> foundHandler = SubTypeFinder.this.foundHandler;
 
         @Override
         protected void reset(String className) {
@@ -153,7 +153,7 @@ public abstract class SubTypeFinder extends AppCodeScannerPluginBase {
 
         @Override
         public int hashCode() {
-            return _.hc(detector, ByteCodeSensor.class);
+            return $.hc(detector, ByteCodeSensor.class);
         }
 
         @Override
@@ -163,7 +163,7 @@ public abstract class SubTypeFinder extends AppCodeScannerPluginBase {
             }
             if (obj instanceof ByteCodeSensor) {
                 ByteCodeSensor that = (ByteCodeSensor)obj;
-                return _.eq(that.detector, this.detector) && _.eq(that.foundHandler, this.foundHandler);
+                return $.eq(that.detector, this.detector) && $.eq(that.foundHandler, this.foundHandler);
             }
             return false;
         }

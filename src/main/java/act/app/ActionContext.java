@@ -8,7 +8,7 @@ import act.event.ActEvent;
 import act.handler.RequestHandler;
 import act.route.Router;
 import act.util.ActContext;
-import org.osgl._;
+import org.osgl.$;
 import org.osgl.concurrent.ContextLocal;
 import org.osgl.http.H;
 import org.osgl.http.H.Cookie;
@@ -94,7 +94,7 @@ public class ActionContext extends ActContext.ActContextBase<ActionContext> impl
     }
 
     public ActionContext router(Router router) {
-        this.router = _.notNull(router);
+        this.router = $.notNull(router);
         this.portId = router.portId();
         return this;
     }
@@ -259,25 +259,43 @@ public class ActionContext extends ActContext.ActContextBase<ActionContext> impl
     }
 
     public <T> T attribute(String name) {
-        return _.cast(attributes.get(name));
+        return $.cast(attributes.get(name));
     }
 
     public <T> T newInstance(Class<? extends T> clazz) {
-        if (clazz == ActionContext.class) return _.cast(this);
+        if (clazz == ActionContext.class) return $.cast(this);
         return app().newInstance(clazz, this);
     }
 
-    private String sessionCacheKey(String key) {
-        return S.builder(session.id()).append(key).toString();
+    /**
+     * Return cached object by key. The key will be concatenated with
+     * current session id when fetching the cached object
+     * @param key
+     * @param <T> the object type
+     * @return the cached object
+     */
+    public <T> T cached(String key) {
+        H.Session sess = session();
+        if (null != sess) {
+            return sess.cached(key);
+        } else {
+            return app().cache().get(key);
+        }
     }
 
     /**
-     * Add an object into cache by key
+     * Add an object into cache by key. The key will be used in conjunction with session id if
+     * there is a session instance
      * @param key the key to index the object within the cache
      * @param obj the object to be cached
      */
     public void cache(String key, Object obj) {
-        app().cache().put(sessionCacheKey(key), obj);
+        H.Session sess = session();
+        if (null != sess) {
+            sess.cache(key, obj);
+        } else {
+            app().cache().put(key, obj);
+        }
     }
 
     /**
@@ -287,7 +305,12 @@ public class ActionContext extends ActContext.ActContextBase<ActionContext> impl
      * @param expiration the seconds after which the object will be evicted from the cache
      */
     public void cache(String key, Object obj, int expiration) {
-        app().cache().put(sessionCacheKey(key), obj, expiration);
+        H.Session session = this.session;
+        if (null != session) {
+            session.cache(key, obj, expiration);
+        } else {
+            app().cache().put(key, obj, expiration);
+        }
     }
 
     /**
@@ -331,7 +354,12 @@ public class ActionContext extends ActContext.ActContextBase<ActionContext> impl
      * @param key the key indexed the cached object to be evicted
      */
     public void evictCache(String key) {
-        app().cache().evict(sessionCacheKey(key));
+        H.Session sess = session();
+        if (null != sess) {
+            sess.evict(key);
+        } else {
+            app().cache().evict(key);
+        }
     }
 
     public ActionContext addViolations(Set<ConstraintViolation<?>> violations) {
@@ -607,7 +635,7 @@ public class ActionContext extends ActContext.ActContextBase<ActionContext> impl
         }
     }
 
-    private static ContextLocal<ActionContext> _local = _.contextLocal();
+    private static ContextLocal<ActionContext> _local = $.contextLocal();
 
     public static final String METHOD_GET_CURRENT = "current";
 
