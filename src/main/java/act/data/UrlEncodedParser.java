@@ -6,6 +6,7 @@ import org.osgl.exception.UnexpectedException;
 import org.osgl.http.H;
 import org.osgl.mvc.result.ErrorResult;
 import org.osgl.mvc.result.Result;
+import org.osgl.util.C;
 
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
@@ -37,6 +38,11 @@ public class UrlEncodedParser extends RequestBodyParser {
             if (data.length() == 0) {
                 //data is empty - can skip the rest
                 return new HashMap<String, String[]>(0);
+            }
+
+            // check if data is in JSON format
+            if (data.startsWith("{") && data.endsWith("}") || data.startsWith("[") && data.endsWith("]")) {
+                return C.map("body", new String[]{data});
             }
 
             // data is o the form:

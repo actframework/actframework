@@ -16,6 +16,9 @@ import act.util.DestroyableBase;
 import act.util.GeneralAnnoInfo;
 import act.view.Template;
 import act.view.TemplatePathResolver;
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import com.esotericsoftware.reflectasm.FieldAccess;
 import com.esotericsoftware.reflectasm.MethodAccess;
 import org.osgl.$;
@@ -227,6 +230,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         }
         StringValueResolverManager resolverManager = app.resolverManager();
         BinderManager binderManager = app.binderManager();
+
         for (int i = 0; i < paramCount; ++i) {
             ParamMetaInfo param = handler.param(i);
             Class<?> paramType = paramTypes[i];
@@ -245,9 +249,9 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
                         binder = bindInfo.binder(ctx);
                         bindName = bindInfo.model();
                     } else {
-                        Type componentType = param.componentType();
-                        if (null != componentType) {
-                            binder = binderManager.binder(paramType, $.classForName(componentType.getClassName(), cl), param);
+                        Type type = param.type();
+                        if (null != type) {
+                            binder = binderManager.binder(paramType, $.classForName(type.getClassName(), cl), param);
                             if (null == binder) {
                                 binder = binderManager.binder(param);
                             }
@@ -262,6 +266,18 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
                         }
                         String reqVal = ctx.paramVal(bindName);
                         if (null == reqVal) {
+                            JSONObject jsonObject = ctx.jsonObject(bindName);
+                            if (null != jsonObject) {
+                                // todo: implement a more efficient way to deserialize JSON
+                                Object o = JSON.parseObject(jsonObject.toJSONString(), paramType);
+                                oa[i] = o;
+                                continue;
+                            } else {
+                                JSONArray jsonArray = ctx.jsonArray();
+                                if (null != jsonArray) {
+                                    // todo: map JSONObject to object type
+                                }
+                            }
                             Object o = param.defVal(paramType);
                             if (null != o) {
                                 oa[i] = o;

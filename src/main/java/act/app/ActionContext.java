@@ -8,6 +8,9 @@ import act.event.ActEvent;
 import act.handler.RequestHandler;
 import act.route.Router;
 import act.util.ActContext;
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import org.osgl.$;
 import org.osgl.concurrent.ContextLocal;
 import org.osgl.http.H;
@@ -37,6 +40,8 @@ public class ActionContext extends ActContext.ActContextBase<ActionContext> impl
     private Set<Map.Entry<String, String[]>> requestParamCache;
     private Map<String, String> extraParams;
     private volatile Map<String, String[]> bodyParams;
+    private volatile JSONObject jsonObject;
+    private volatile JSONArray jsonArray;
     private Map<String, String[]> allParams;
     private String actionPath; // e.g. com.mycorp.myapp.controller.AbcController.foo
     private Map<String, Object> attributes;
@@ -189,6 +194,22 @@ public class ActionContext extends ActContext.ActContextBase<ActionContext> impl
         return sa;
     }
 
+    public JSONObject jsonObject(String name) {
+        if (null == jsonObject) {
+            return null;
+        }
+        Object o = jsonObject.get(name);
+        if (null != o && o instanceof JSONObject) {
+            return (JSONObject) o;
+        } else {
+            return jsonObject;
+        }
+    }
+
+    public JSONArray jsonArray() {
+        return jsonArray;
+    }
+
     private Map<String, String[]> bodyParams() {
         if (null == bodyParams) {
             synchronized (this) {
@@ -200,6 +221,18 @@ public class ActionContext extends ActContext.ActContextBase<ActionContext> impl
                         map = parser.parse(this);
                     }
                     bodyParams = map;
+                    // try to check if the body is a JSON string
+                    if (bodyParams.size() == 1) {
+                        String[] sa = bodyParams.get("body");
+                        if (null != sa && sa.length == 1) {
+                            String s = sa[0];
+                            if (s.startsWith("{") && s.endsWith("}")) {
+                                jsonObject = (JSONObject) JSON.parse(s);
+                            } else if (s.startsWith("[") && s.endsWith("]")) {
+                                jsonArray = (JSONArray) JSON.parse(s);
+                            }
+                        }
+                    }
                 }
             }
         }
