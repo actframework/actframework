@@ -190,7 +190,7 @@ public final class Act {
     }
 
     private static void start(boolean singleAppServer) {
-        Banner.print("0.0.3-SNAPSHOT");
+        Banner.print("0.1.0-SNAPSHOT");
         loadConfig();
         initPluginManager();
         initAppServicePluginManager();

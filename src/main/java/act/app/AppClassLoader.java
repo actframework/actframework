@@ -319,11 +319,19 @@ public class AppClassLoader
         }
         try {
             byte[] baNew = enhance(name, bytecode);
-            Class<?> c = super.defineClass(name, baNew, 0, baNew.length, DOMAIN);
-            if (resolve) {
-                super.resolveClass(c);
+            try {
+                Class<?> c = super.defineClass(name, baNew, 0, baNew.length, DOMAIN);
+
+                if (resolve) {
+                    super.resolveClass(c);
+                }
+                return c;
+            } catch (VerifyError e) {
+                File f = File.createTempFile(name, ".class");
+                IO.write(baNew, f);
+                System.out.println("Erroring byte code logged into " + f.getAbsolutePath());
+                throw  e;
             }
-            return c;
         } catch (RuntimeException e) {
             throw e;
         } catch (Error e) {

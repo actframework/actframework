@@ -14,11 +14,11 @@ public abstract class RequestBodyParser {
     protected static final Logger logger = L.get(RequestBodyParser.class);
 
     private static Map<H.Format, RequestBodyParser> parsers = C.newMap(
-            H.Format.form_multipart_data, new ApacheMultipartParser(),
-            H.Format.form_url_encoded, new UrlEncodedParser(),
-            H.Format.json, TextParser.INSTANCE,
-            H.Format.xml, TextParser.INSTANCE,
-            H.Format.csv, TextParser.INSTANCE
+            H.Format.FORM_MULTIPART_DATA, new ApacheMultipartParser(),
+            H.Format.FORM_URL_ENCODED, new UrlEncodedParser(),
+            H.Format.JSON, TextParser.INSTANCE,
+            H.Format.XML, TextParser.INSTANCE,
+            H.Format.CSV, TextParser.INSTANCE
     );
 
     public static RequestBodyParser get(H.Request req) {
