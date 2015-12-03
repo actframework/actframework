@@ -53,7 +53,12 @@ class ObjectMetaInfo implements Opcodes {
             if (s.length() > 1) {
                 s = OBJECT_TYPE.getDescriptor();
             }
-            mv.visitMethodInsn(INVOKESTATIC, "org/osgl/Osgl", "eq", S.fmt("(%s%s)Z", s, s), false);
+            String op = "eq";
+            if (typeDesc.startsWith("[")) {
+                // array needs deep eq
+                op = "eq2";
+            }
+            mv.visitMethodInsn(INVOKESTATIC, "org/osgl/Osgl", op, S.fmt("(%s%s)Z", s, s), false);
             mv.visitJumpInsn(IFEQ, jumpTo);
         }
         boolean addHashCodeInstruction(Type host, MethodVisitor mv) {
