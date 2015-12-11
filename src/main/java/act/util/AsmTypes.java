@@ -4,6 +4,7 @@ import act.app.ActionContext;
 import act.app.App;
 import act.asm.Opcodes;
 import act.asm.Type;
+import act.cli.*;
 import act.conf.AppConfig;
 import act.mail.MailerContext;
 import org.osgl.mvc.annotation.Bind;
@@ -13,16 +14,27 @@ import org.osgl.util.S;
 
 public enum AsmTypes implements Opcodes {
     ;
+    public static AsmType<Void> VOID = new AsmType<Void>(Void.class);
     public static AsmType<Object> OBJECT = new AsmType<Object>(Object.class);
     public static AsmType<ActContext> ACT_CONTEXT = new AsmType<ActContext>(ActContext.class);
     public static AsmType<ActionContext> ACTION_CONTEXT = new AsmType<ActionContext>(ActionContext.class);
     public static AsmType<MailerContext> MAILER_CONTEXT = new AsmType<MailerContext>(MailerContext.class);
+    public static AsmType<CliContext> CLI_CONTEXT = new AsmType<CliContext>(CliContext.class);
     public static AsmType<App> APP = new AsmType<App>(App.class);
+
     public static AsmType<AppConfig> APP_CONFIG = new AsmType<AppConfig>(AppConfig.class);
     public static AsmType<Param> PARAM = new AsmType<Param>(Param.class);
     public static AsmType<Bind> BIND = new AsmType<Bind>(Bind.class);
     public static AsmType<Result> RESULT = new AsmType<Result>(Result.class);
 
+    public static AsmType<DataView> DATA_VIEW = new AsmType<DataView>(DataView.class);
+
+    public static AsmType<Command> COMMAND = new AsmType<Command>(Command.class);
+    public static AsmType<Optional> OPTIONAL = new AsmType<Optional>(Optional.class);
+    public static AsmType<Required> REQUIRED = new AsmType<Required>(Required.class);
+    public static AsmType<HelpMsg> HELP_MSG = new AsmType<HelpMsg>(HelpMsg.class);
+
+    public static final Type RETURN_VOID = Type.VOID_TYPE;
     public static final Type OBJECT_TYPE = OBJECT.asmType();
     public static final String OBJECT_NAME = OBJECT.className();
     public static final String OBJECT_INTERNAL_NAME = OBJECT.internalName();

@@ -346,8 +346,7 @@ public @interface Controller {
             if (actionContext.isJSON()) {
                 s = s.trim();
                 if (!s.startsWith("[") && !s.startsWith("{")) {
-                    String action = actionContext.actionPath();
-                    s = S.fmt("{\"%s\": \"%s\"}", S.str(action).afterLast('.'), s);
+                    s = S.fmt("{\"result\": \"%s\"}", s);
                 }
                 return new RenderJSON(s);
             }
@@ -356,6 +355,13 @@ public @interface Controller {
                 return html(s);
             }
             if (TXT == fmt || CSV == fmt) {
+                return new RenderText(fmt, s);
+            }
+            if (XML == fmt) {
+                s = s.trim();
+                if (!s.startsWith("<") && !s.endsWith(">")) {
+                    s = S.fmt("<result>%s</result>", s);
+                }
                 return new RenderText(fmt, s);
             }
             throw E.unexpected("Cannot apply text result to format: %s", fmt);

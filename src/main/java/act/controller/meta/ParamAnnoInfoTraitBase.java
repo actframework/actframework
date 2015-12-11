@@ -3,7 +3,7 @@ package act.controller.meta;
 import org.osgl.util.E;
 import org.osgl.util.S;
 
-abstract class ParamAnnoInfoTraitBase implements ParamAnnoInfoTrait {
+public abstract class ParamAnnoInfoTraitBase implements ParamAnnoInfoTrait {
     private int index;
     protected ParamAnnoInfoTraitBase(int index) {
         E.illegalArgumentIf(index < 0);

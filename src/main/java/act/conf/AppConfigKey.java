@@ -31,6 +31,23 @@ import java.util.Map;
 public enum AppConfigKey implements ConfigKey {
 
     /**
+     * {@code act.cli.port} specifies the default cli (telnet) port the application
+     * listen to.
+     * <p>Default value: {@code 5461}</p>
+     */
+    CLI_PORT("cli.port") {
+        @Override
+        public <T> T val(Map<String, ?> configuration) {
+            Object v = configuration.get(key());
+            if (null == v) return (T) (Number) 5460;
+            if (v instanceof Number) {
+                return (T) v;
+            }
+            return (T) (Integer.valueOf(v.toString()));
+        }
+    },
+
+    /**
      * {@code act.config.impl}
      * <p>Specifies the application configuration class which provides default configuration
      * via source code. The settings provided by application configuration class might be
@@ -126,6 +143,25 @@ public enum AppConfigKey implements ConfigKey {
     HTTP_MAX_PARAMS("http.params.max"),
 
     /**
+     * {@code act.http.port} specifies the default http port the application
+     * listen to. This is preferred way to dispatch the http request to the
+     * application.
+     * <p/>
+     * <p>Default value: {@code 5460}</p>
+     */
+    HTTP_PORT("http.port") {
+        @Override
+        public <T> T val(Map<String, ?> configuration) {
+            Object v = configuration.get(key());
+            if (null == v) return (T) (Number) 5460;
+            if (v instanceof Number) {
+                return (T) v;
+            }
+            return (T) (Integer.valueOf(v.toString()));
+        }
+    },
+
+    /**
      * {@code act.idgen.node_id.provider.impl} specifies the {@link act.util.IdGenerator.NodeIdProvider}
      * implementation for {@link App#idGenerator}
      * <p>Default value: {@link act.util.IdGenerator.NodeIdProvider.IpProvider}</p>
@@ -195,36 +231,17 @@ public enum AppConfigKey implements ConfigKey {
     /**
      * {@code act.namedPorts} specifies a list of port names this
      * application listen to. These are additional ports other than
-     * the default {@link #PORT}
+     * the default {@link #HTTP_PORT}
      * <p/>
      * The list is specified as
      * <pre><code>
      * act.namedPorts=admin:8888;ipc:8899
      * </code></pre>
      * <p>Default value: {@code null}</p>
-     * <p>Note, the default port that specified in {@link #PORT} configuration
+     * <p>Note, the default port that specified in {@link #HTTP_PORT} configuration
      * and shall not be specified in this namedPorts configuration</p>
      */
     NAMED_PORTS("namedPorts"),
-
-    /**
-     * {@code act.port} specifies the default port the application
-     * listen to. This is preferred way to dispatch the
-     * request to the application.
-     * <p/>
-     * <p>Default value: {@code 5460}</p>
-     */
-    PORT("port") {
-        @Override
-        public <T> T val(Map<String, ?> configuration) {
-            Object v = configuration.get(key());
-            if (null == v) return (T) (Number) 5460;
-            if (v instanceof Number) {
-                return (T) v;
-            }
-            return (T) (Integer.valueOf(v.toString()));
-        }
-    },
 
     /**
      * {@code ping.path} specify the ping path.
@@ -396,7 +413,7 @@ public enum AppConfigKey implements ConfigKey {
      * {@code url_context} specifies the context part
      * of the URL. This is used for Act to dispatch the
      * incoming request to the application. Usually
-     * the {@link #PORT port} configuration is preferred
+     * the {@link #HTTP_PORT port} configuration is preferred
      * than this configuration
      * <p/>
      * <p>Default value is empty string</p>

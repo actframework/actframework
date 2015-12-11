@@ -224,7 +224,7 @@ public final class Act {
     }
 
     public static void hook(App app) {
-        int port = app.config().port();
+        int port = app.config().httpPort();
         network.register(port, new NetworkClient(app));
         List<NamedPort> portList = app.config().namedPorts();
         for (NamedPort np : portList) {

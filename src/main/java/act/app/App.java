@@ -6,6 +6,7 @@ import act.app.data.StringValueResolverManager;
 import act.app.event.AppEventId;
 import act.app.util.AppCrypto;
 import act.app.util.NamedPort;
+import act.cli.CliDispatcher;
 import act.conf.AppConfLoader;
 import act.conf.AppConfig;
 import act.conf.AppConfigKey;
@@ -68,6 +69,7 @@ public class App {
     private File appBase;
     private File appHome;
     private Router router;
+    private CliDispatcher cliDispatcher;
     private Map<NamedPort, Router> moreRouters;
     private AppConfig config;
     private AppClassLoader classLoader;
@@ -124,6 +126,10 @@ public class App {
 
     public AppConfig config() {
         return config;
+    }
+
+    public CliDispatcher cliDispatcher() {
+        return cliDispatcher;
     }
 
     public Router router() {
@@ -210,6 +216,7 @@ public class App {
         initBinderManager();
         initUploadFileStorageService();
         initRouters();
+        initCliDispatcher();
 
         initDbServiceManager();
         emit(DB_SVC_LOADED);
@@ -462,6 +469,10 @@ public class App {
 
     private void initUploadFileStorageService() {
         uploadFileStorageService = UploadFileStorageService.create(this);
+    }
+
+    private void initCliDispatcher() {
+        cliDispatcher = new CliDispatcher(this);
     }
 
     private void initRouters() {

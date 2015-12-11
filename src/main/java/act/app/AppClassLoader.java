@@ -4,6 +4,8 @@ import act.Act;
 import act.asm.ClassReader;
 import act.asm.ClassWriter;
 import act.boot.BootstrapClassLoader;
+import act.cli.meta.CommanderClassMetaInfo;
+import act.cli.meta.CommanderClassMetaInfoManager;
 import act.controller.meta.ControllerClassMetaInfo;
 import act.controller.meta.ControllerClassMetaInfoHolder;
 import act.controller.meta.ControllerClassMetaInfoManager;
@@ -46,6 +48,7 @@ public class AppClassLoader
     private boolean destroyed;
     protected ControllerClassMetaInfoManager controllerInfo = new ControllerClassMetaInfoManager();
     protected MailerClassMetaInfoManager mailerInfo = new MailerClassMetaInfoManager();
+    protected CommanderClassMetaInfoManager commanderInfo = new CommanderClassMetaInfoManager();
     protected JobClassMetaInfoManager jobInfo = new JobClassMetaInfoManager();
 
     public AppClassLoader(App app) {
@@ -101,6 +104,14 @@ public class AppClassLoader
 
     public ControllerClassMetaInfoManager controllerClassMetaInfoManager() {
         return controllerInfo;
+    }
+
+    public CommanderClassMetaInfo commanderClassMetaInfo(String commanderClassName) {
+        return commanderInfo.commanderMetaInfo(commanderClassName);
+    }
+
+    public CommanderClassMetaInfoManager commanderClassMetaInfoManager() {
+        return commanderInfo;
     }
 
     @Override

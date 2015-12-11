@@ -23,8 +23,12 @@ public class ActHttpHandler implements HttpHandler {
 
     @Override
     public void handleRequest(HttpServerExchange exchange) throws Exception {
-        ActionContext ctx = createAppContext(exchange);
-        client.handle(ctx);
+        if (exchange.isInIoThread()) {
+            exchange.dispatch(this);
+        } else {
+            ActionContext ctx = createAppContext(exchange);
+            client.handle(ctx);
+        }
     }
 
     private ActionContext createAppContext(HttpServerExchange exchange) {

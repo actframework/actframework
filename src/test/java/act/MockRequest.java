@@ -16,6 +16,11 @@ public class MockRequest extends H.Request<MockRequest> {
     }
 
     @Override
+    public H.Request method(H.Method method) {
+        return this;
+    }
+
+    @Override
     public String header(String name) {
         return null;
     }

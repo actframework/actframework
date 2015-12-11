@@ -101,7 +101,7 @@ public final class SparkApp extends App {
     private static void _startAct() {
         service = new UndertowService();
         client = new NetworkClient(_app());
-        service.register(_app().config().port(), client);
+        service.register(_app().config().httpPort(), client);
         service.start();
     }
 

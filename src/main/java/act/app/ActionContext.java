@@ -31,6 +31,7 @@ import java.util.*;
 public class ActionContext extends ActContext.ActContextBase<ActionContext> implements ActContext<ActionContext>, ParamValueProvider, Destroyable {
 
     public static final String ATTR_HANDLER = "__act_handler__";
+    public static final String REQ_BODY = "_body";
 
     private String portId;
     private H.Request request;
@@ -223,7 +224,7 @@ public class ActionContext extends ActContext.ActContextBase<ActionContext> impl
                     bodyParams = map;
                     // try to check if the body is a JSON string
                     if (bodyParams.size() == 1) {
-                        String[] sa = bodyParams.get("body");
+                        String[] sa = bodyParams.get(REQ_BODY);
                         if (null != sa && sa.length == 1) {
                             String s = sa[0];
                             if (s.startsWith("{") && s.endsWith("}")) {

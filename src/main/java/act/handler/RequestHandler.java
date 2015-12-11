@@ -15,7 +15,7 @@ import org.osgl.$;
 public interface RequestHandler extends $.Function<ActionContext, Void>, Destroyable {
 
     /**
-     * Invoke handler upon an application context
+     * Invoke handler upon an action context
      *
      * @param context
      */

@@ -84,6 +84,32 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         return configurator;
     }
 
+    private int cliPort = -1;
+
+    protected T cliPort(int port) {
+        E.illegalArgumentIf(port < 1, "port value not valid: %s", port);
+        this.cliPort = port;
+        return me();
+    }
+
+    public int cliPort() {
+        if (-1 == cliPort) {
+            Integer I = get(CLI_PORT);
+            if (null == I) {
+                I = 5460;
+            }
+            cliPort = I;
+        }
+        return cliPort;
+    }
+
+    private void _mergeCliPort(AppConfig conf) {
+        if (null == get(CLI_PORT)) {
+            cliPort = conf.cliPort;
+        }
+    }
+
+
     private String urlContext = null;
 
     protected T urlContext(String context) {
@@ -404,30 +430,28 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         }
     }
 
-    private String profile;
+    private int httpPort = -1;
 
-    private int port = -1;
-
-    protected T port(int port) {
+    protected T httpPort(int port) {
         E.illegalArgumentIf(port < 1, "port value not valid: %s", port);
-        this.port = port;
+        this.httpPort = port;
         return me();
     }
 
-    public int port() {
-        if (-1 == port) {
-            Integer I = get(PORT);
+    public int httpPort() {
+        if (-1 == httpPort) {
+            Integer I = get(HTTP_PORT);
             if (null == I) {
                 I = 5460;
             }
-            port = I;
+            httpPort = I;
         }
-        return port;
+        return httpPort;
     }
 
-    private void _mergePort(AppConfig conf) {
-        if (null == get(PORT)) {
-            port = conf.port;
+    private void _mergeHttpPort(AppConfig conf) {
+        if (null == get(HTTP_PORT)) {
+            httpPort = conf.httpPort;
         }
     }
 
@@ -1139,6 +1163,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
             return;
         }
         _merged = true;
+        _mergeCliPort(conf);
         _mergeUrlContext(conf);
         _mergeXForwardedProtocol(conf);
         _mergeControllerPackage(conf);
@@ -1149,7 +1174,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         _mergeJobPoolSize(conf);
         _mergeMissingAuthenticationHandler(conf);
         _mergeAjaxMissingAuthenticationHandler(conf);
-        _mergePort(conf);
+        _mergeHttpPort(conf);
         _mergePorts(conf);
         _mergeErrorTemplatePathResolver(conf);
         _mergeDateFmt(conf);

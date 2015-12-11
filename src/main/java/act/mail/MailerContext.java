@@ -21,7 +21,7 @@ import java.util.*;
 
 public class MailerContext extends ActContext.ActContextBase<MailerContext> {
 
-    private H.Format fmt = H.Format.html;
+    private H.Format fmt = H.Format.HTML;
     private InternetAddress from;
     private String subject;
     private List<InternetAddress> to = C.newList();

@@ -41,8 +41,6 @@ public class NetworkClient extends $.F1<ActionContext, Void> {
                 app.detectChanges();
             } catch (RequestRefreshClassLoader refreshRequest) {
                 app.refresh();
-            } catch (RequestServerRestart requestServerRestart) {
-                app.refresh();
             }
             RequestHandler rh = router().getInvoker(method, url, ctx);
             ctx.handler(rh);

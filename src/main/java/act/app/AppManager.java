@@ -48,7 +48,7 @@ public class AppManager {
     public void load(App app) {
         app.build();
         app.refresh();
-        int port = app.config().port();
+        int port = app.config().httpPort();
         if (port < 0) {
             loadIntoContextMap(app.config().urlContext(), app);
         } else {
