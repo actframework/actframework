@@ -94,6 +94,7 @@ public final class Act {
         }
     }
 
+    public static final String VERSION = "0.1.0";
     private static Logger logger = L.get(Act.class);
     private static ActConfig conf;
     private static Mode mode = Mode.PROD;
@@ -190,7 +191,7 @@ public final class Act {
     }
 
     private static void start(boolean singleAppServer) {
-        Banner.print("0.1.0-SNAPSHOT");
+        Banner.print();
         loadConfig();
         initPluginManager();
         initAppServicePluginManager();

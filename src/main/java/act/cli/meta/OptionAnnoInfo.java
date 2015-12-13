@@ -1,6 +1,8 @@
 package act.cli.meta;
 
+import org.osgl.util.C;
 import org.osgl.util.E;
+import org.osgl.util.S;
 
 /**
  * Store the option annotation meta info. There are two mutually exclusive
@@ -22,7 +24,9 @@ public class OptionAnnoInfo {
     private String lead2;
     private String defVal;
     private String group;
+    private String help;
     private boolean required;
+    private String param;
 
     public OptionAnnoInfo(int index, boolean optional) {
         this.index = index;
@@ -59,12 +63,23 @@ public class OptionAnnoInfo {
         return lead2;
     }
 
-    public OptionAnnoInfo setLeadsIfNotSet(String paramName) {
+    public String leads() {
+        if (null == lead1 && null == lead2) {
+            return "";
+        }
+        if (null == lead1) {
+            return lead2;
+        } else if (null == lead2) {
+            return lead1;
+        }
+        return S.join(",", lead1, lead2);
+    }
+
+    private void setLeadsIfNotSet(String paramName) {
         if (null == lead1) {
             lead1 = "-" + paramName.charAt(0);
             lead2 = "--" + paramName;
         }
-        return this;
     }
 
     public OptionAnnoInfo required(boolean required) {
@@ -92,5 +107,35 @@ public class OptionAnnoInfo {
 
     public String group() {
         return group;
+    }
+
+    public OptionAnnoInfo paramName(String name) {
+        param = name;
+        setLeadsIfNotSet(name);
+        return this;
+    }
+
+    public OptionAnnoInfo help(String helpMessage) {
+        help = helpMessage;
+        return this;
+    }
+
+    public String help() {
+        StringBuilder sb = S.builder();
+        sb.append("\n\t");
+        if (S.notEmpty(lead1)) {
+            sb.append(lead1);
+            if (S.notEmpty(lead2)) {
+                sb.append(", ").append(lead2);
+            }
+        } else if (S.notEmpty(lead2)) {
+            sb.append(lead2);
+        }
+        String s = help;
+        if (null == s) {
+            s = param;
+        }
+        sb.append("\t").append(s);
+        return sb.toString();
     }
 }

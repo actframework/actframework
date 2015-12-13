@@ -1,7 +1,7 @@
 package act.handler;
 
 import act.Destroyable;
-import act.cli.CliContext;
+import act.app.CliContext;
 import org.osgl.$;
 
 /**
@@ -17,4 +17,6 @@ public interface CliHandler extends $.Function<CliContext, Void>, Destroyable {
      * @param context the cli context
      */
     void handle(CliContext context);
+
+    String help();
 }

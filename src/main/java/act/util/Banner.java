@@ -1,5 +1,6 @@
 package act.util;
 
+import act.Act;
 import org.osgl.util.S;
 
 /**
@@ -7,11 +8,11 @@ import org.osgl.util.S;
  */
 public class Banner {
 
-    public static void print(String version) {
-        System.out.println(banner(version));
+    public static void print() {
+        System.out.println(banner(Act.VERSION));
     }
 
-    private static String banner(String version) {
+    public static String banner(String version) {
         String s = "    _     ____  ____ \n" +
                 "   / \\  / ____| ____|\n" +
                 "  / _ \\ | |     | |  \n" +
@@ -30,6 +31,6 @@ public class Banner {
     }
 
     public static void main(String[] args) {
-        print("0.0.1");
+        print();
     }
 }

@@ -25,7 +25,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import act.cli.CliContext;
+import act.app.CliContext;
 import act.cli.ascii_table.spec.IASCIITableAware;
 import act.cli.ascii_table.ASCIITableHeader;
 import org.osgl.$;

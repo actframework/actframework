@@ -44,4 +44,10 @@ public @interface Optional {
      * @see #value()
      */
     String defVal() default "";
+
+    /**
+     * Specify the help message for this option
+     * @return the help message
+     */
+    String help() default "";
 }

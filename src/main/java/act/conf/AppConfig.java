@@ -109,6 +109,55 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         }
     }
 
+    private int cliSessionExpiration = -1;
+
+    protected T cliSessionExpiration(int expire) {
+        E.illegalArgumentIf(expire < 1, "cli session expire not valid: %s", expire);
+        this.cliSessionExpiration = expire;
+        return me();
+    }
+
+    public int cliSessionExpiration() {
+        if (-1 == cliSessionExpiration) {
+            Integer I = get(CLI_SESSION_EXPIRATION);
+            if (null == I) {
+                I = 300;
+            }
+            cliSessionExpiration = I;
+        }
+        return cliSessionExpiration;
+    }
+
+    private void _mergeCliSessionExpiration(AppConfig conf) {
+        if (null == get(CLI_SESSION_EXPIRATION)) {
+            cliSessionExpiration = conf.cliSessionExpiration;
+        }
+    }
+
+    private int maxCliSession = -1;
+
+    protected T maxCliSession(int size) {
+        E.illegalArgumentIf(size < 1, "max cli session number cannot be zero or negative number: %s", size);
+        this.maxCliSession = size;
+        return me();
+    }
+
+    public int maxCliSession() {
+        if (-1 == maxCliSession) {
+            Integer I = get(CLI_SESSION_MAX);
+            if (null == I) {
+                I = 3;
+            }
+            maxCliSession = I;
+        }
+        return maxCliSession;
+    }
+
+    private void _mergeMaxCliSession(AppConfig conf) {
+        if (null == get(CLI_SESSION_MAX)) {
+            maxCliSession = conf.maxCliSession;
+        }
+    }
 
     private String urlContext = null;
 
@@ -409,7 +458,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
 
     protected T jobPoolSize(int size) {
         E.illegalArgumentIf(size < 1, "job pool size cannot be zero or negative number: %s", size);
-        this.jobPoolSize = jobPoolSize;
+        this.jobPoolSize = size;
         return me();
     }
 
@@ -1164,6 +1213,8 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         }
         _merged = true;
         _mergeCliPort(conf);
+        _mergeCliSessionExpiration(conf);
+        _mergeMaxCliSession(conf);
         _mergeUrlContext(conf);
         _mergeXForwardedProtocol(conf);
         _mergeControllerPackage(conf);

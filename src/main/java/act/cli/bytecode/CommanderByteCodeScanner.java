@@ -264,7 +264,7 @@ public class CommanderByteCodeScanner extends AppByteCodeScannerBase {
                         methodInfo.addLead(option.lead2());
                     }
                 }
-                dispatcher.registerCommandHandler(methodInfo.commandName(), methodInfo.fullName());
+                dispatcher.registerCommandHandler(methodInfo.commandName(), methodInfo);
                 super.visitEnd();
             }
 
@@ -307,6 +307,8 @@ public class CommanderByteCodeScanner extends AppByteCodeScannerBase {
                         info.group((String) value);
                     } else if (S.eq("defVal", name)) {
                         info.defVal((String) value);
+                    } else if (S.eq("help", name)) {
+                        info.help((String) value);
                     }
                 }
 

@@ -1,36 +1,40 @@
 package act.handler.builtin.cli;
 
 import act.app.App;
-import act.cli.CliContext;
+import act.app.CliContext;
+import act.cli.CliError;
 import act.cli.CommandExecutor;
+import act.cli.ascii_table.ASCIITable;
+import act.cli.ascii_table.impl.CollectionASCIITableAware;
+import act.cli.ascii_table.impl.SimpleASCIITableImpl;
+import act.cli.bytecode.ReflectedCommandExecutor;
+import act.cli.meta.CommandMethodMetaInfo;
+import act.cli.util.CommandLineParser;
 import act.controller.meta.ActionMethodMetaInfo;
 import act.controller.meta.ControllerClassMetaInfo;
 import act.handler.CliHandlerBase;
+import act.util.DataView;
+import org.osgl.$;
 import org.osgl.logging.L;
 import org.osgl.logging.Logger;
+import org.osgl.util.C;
 import org.osgl.util.E;
 import org.osgl.util.S;
+
+import java.util.List;
 
 public final class CliHandlerProxy extends CliHandlerBase {
 
     private static Logger logger = L.get(CliHandlerProxy.class);
 
     private App app;
-    private String commandClassName;
-    private String commandMethodName;
-    private Boolean requireContextLocal = null;
+    private CommandMethodMetaInfo meta;
 
     private volatile CommandExecutor executor = null;
 
-    public CliHandlerProxy(String commandMethodName, App app) {
-        int pos = commandMethodName.lastIndexOf('.');
-        final String ERR = "Invalid command method: %s";
-        E.illegalArgumentIf(pos < 0, ERR, commandMethodName);
-        commandClassName = commandMethodName.substring(0, pos);
-        E.illegalArgumentIf(S.isEmpty(commandClassName), ERR, commandMethodName);
-        this.commandMethodName = commandMethodName.substring(pos + 1);
-        E.illegalArgumentIf(S.isEmpty(this.commandMethodName), ERR, commandMethodName);
-        this.app = app;
+    public CliHandlerProxy(CommandMethodMetaInfo metaInfo, App app) {
+        this.meta = $.NPE(metaInfo);
+        this.app = $.NPE(app);
     }
 
     @Override
@@ -41,14 +45,6 @@ public final class CliHandlerProxy extends CliHandlerBase {
         }
     }
 
-    public String commander() {
-        return commandClassName;
-    }
-
-    public String command() {
-        return commandMethodName;
-    }
-
     @Override
     public void handle(CliContext context) {
         try {
@@ -56,13 +52,36 @@ public final class CliHandlerProxy extends CliHandlerBase {
             saveCommandPath(context);
             Object result = _handle(context);
             onResult(result, context);
+        } catch (CliError error) {
+            context.println(error.getMessage());
         } catch (Exception e) {
+            context.println("Error processing command: " + e.getMessage());
             logger.error(e, "Error handling request");
         }
     }
 
+    public String help() {
+        return meta.help();
+    }
+
+    @SuppressWarnings("unchecked")
     private void onResult(Object result, CliContext context) {
-        E.tbd();
+        if (null == result) {
+            return;
+        }
+        DataView.MetaInfo dataView = meta.dataViewInfo();
+        if (null != dataView) {
+            List<String> labelList = dataView.outputFields();
+            List dataList;
+            if (result instanceof Iterable) {
+                dataList = C.list((Iterable) result);
+            } else {
+                dataList = C.listOf(result);
+            }
+            context.printTable(new CollectionASCIITableAware(dataList, labelList, C.list()));
+        } else {
+            context.println(result.toString());
+        }
     }
 
     private void ensureAgentsReady() {
@@ -77,12 +96,13 @@ public final class CliHandlerProxy extends CliHandlerBase {
 
     // could be used by View to resolve default path to template
     private void saveCommandPath(CliContext context) {
-        StringBuilder sb = S.builder(commandClassName).append(".").append(commandMethodName);
+        StringBuilder sb = S.builder(meta.fullName());
         String path = sb.toString();
         context.commandPath(path);
     }
 
     private void generateExecutor() {
+        executor = new ReflectedCommandExecutor(meta, app);
     }
 
 
@@ -90,14 +110,9 @@ public final class CliHandlerProxy extends CliHandlerBase {
         return executor.execute(context);
     }
 
-    private ActionMethodMetaInfo lookupAction() {
-        ControllerClassMetaInfo ctrl = app.classLoader().controllerClassMetaInfo(commandClassName);
-        return ctrl.action(commandMethodName);
-    }
-
     @Override
     public String toString() {
-        return S.fmt("%s.%s", commandClassName, commandMethodName);
+        return meta.fullName();
     }
 
 }

@@ -39,8 +39,13 @@ public class CommandLineParser {
         parse(sl);
     }
 
+    public String commandLine() {
+        return raw;
+    }
+
     private void parse(List<String> tokens) {
         command = tokens.remove(0).intern();
+        arguments = C.newList();
         String lead = null;
         for (String cur : tokens) {
             if (cur.startsWith("-")) {
@@ -64,9 +69,6 @@ public class CommandLineParser {
                     options.put(lead, cur);
                     lead = null;
                 } else {
-                    if (null == arguments) {
-                        arguments = C.newList();
-                    }
                     arguments.add(cur);
                 }
             }

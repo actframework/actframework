@@ -38,6 +38,10 @@ public class CommandMethodMetaInfo extends DestroyableBase {
         this.clsInfo = $.NPE(clsInfo);
     }
 
+    public CommanderClassMetaInfo classInfo() {
+        return clsInfo;
+    }
+
     public CommandMethodMetaInfo methodName(String name) {
         this.methodName = $.NPE(name);
         return this;
@@ -127,6 +131,20 @@ public class CommandMethodMetaInfo extends DestroyableBase {
         }
         optionLeads.add(lead);
         return this;
+    }
+
+    public String help() {
+        StringBuilder sb = S.builder().append(commandName);
+        if (S.notBlank(helpMsg)) {
+            sb.append("\t").append(helpMsg);
+        }
+        for (CommandParamMetaInfo param : params) {
+            OptionAnnoInfo opt = param.optionInfo();
+            if (null != opt) {
+                sb.append(opt.help());
+            }
+        }
+        return sb.toString();
     }
 
     @Override

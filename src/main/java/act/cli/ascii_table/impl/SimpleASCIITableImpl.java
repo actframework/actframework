@@ -15,6 +15,8 @@
  */
 package act.cli.ascii_table.impl;
 
+import java.io.PrintStream;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
@@ -22,6 +24,7 @@ import java.util.Vector;
 import act.cli.ascii_table.spec.IASCIITable;
 import act.cli.ascii_table.spec.IASCIITableAware;
 import act.cli.ascii_table.ASCIITableHeader;
+import act.view.SystemImplicitVariableProvider;
 
 /**
  * This implementation builds the header and data  rows
@@ -37,6 +40,16 @@ import act.cli.ascii_table.ASCIITableHeader;
  */
 public class SimpleASCIITableImpl implements IASCIITable {
 
+	private PrintWriter pw;
+
+	public SimpleASCIITableImpl() {
+		pw = new PrintWriter(System.out);
+	}
+
+	public SimpleASCIITableImpl(PrintWriter pw) {
+		this.pw = pw;
+	}
+
 	@Override
 	public void printTable(String[] header, String[][] data) {
 		printTable(header, DEFAULT_HEADER_ALIGN, data, DEFAULT_DATA_ALIGN);
@@ -49,7 +62,7 @@ public class SimpleASCIITableImpl implements IASCIITable {
 
 	@Override
 	public void printTable(String[] header, int headerAlign, String[][] data, int dataAlign) {
-		System.out.println(getTable(header, headerAlign, data, dataAlign));
+		pw.println(getTable(header, headerAlign, data, dataAlign));
 	}
 	
 	@Override
@@ -76,7 +89,7 @@ public class SimpleASCIITableImpl implements IASCIITable {
 	}
 	
 	public void printTable(ASCIITableHeader[] headerObjs, String[][] data) {
-		System.out.println(getTable(headerObjs, data));
+		pw.println(getTable(headerObjs, data));
 	}
 	
 	@Override
@@ -147,7 +160,7 @@ public class SimpleASCIITableImpl implements IASCIITable {
 
 	@Override
 	public void printTable(IASCIITableAware asciiTableAware) {
-		System.out.println(getTable(asciiTableAware));
+		pw.println(getTable(asciiTableAware));
 	}
 	
 	public String getTable(ASCIITableHeader[] headerObjs, String[][] data) {

@@ -1,6 +1,6 @@
 package act.handler;
 
-import act.cli.CliContext;
+import act.app.CliContext;
 import org.osgl.$;
 import org.osgl.exception.NotAppliedException;
 

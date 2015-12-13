@@ -1,6 +1,10 @@
-package act.cli;
+package act.app;
 
-import act.app.App;
+import act.cli.ascii_table.ASCIITableHeader;
+import act.cli.ascii_table.impl.SimpleASCIITableImpl;
+import act.cli.ascii_table.spec.IASCIITable;
+import act.cli.ascii_table.spec.IASCIITableAware;
+import act.cli.util.CommandLineParser;
 import act.util.ActContext;
 import org.osgl.$;
 import org.osgl.Osgl;
@@ -11,23 +15,32 @@ import org.osgl.http.H;
 import org.osgl.util.C;
 import org.osgl.util.E;
 import org.osgl.util.S;
-import org.osgl.util.Str;
 
+import java.io.PrintWriter;
 import java.io.Serializable;
-import java.util.*;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 
-public class CliContext extends ActContext.ActContextBase<CliContext> {
+public class CliContext extends ActContext.ActContextBase<CliContext> implements IASCIITable {
 
     private static final ContextLocal<CliContext> _local = $.contextLocal();
 
     private String commandPath; // e.g. myapp.cli.ListUser
 
-    private List<String> arguments;
+    private Map<String, Object> commanderInstances = C.newMap();
+
+    private PrintWriter pw;
+
+    private CommandLineParser parser;
+
+    private IASCIITable asciiTable;
 
     private Osgl.T2<? extends Osgl.Function<String, Serializable>, ? extends Osgl.Func2<String, Serializable, ?>> evaluatorCache;
 
-    public CliContext(App app) {
+    public CliContext(String line, App app, PrintWriter pw) {
         super(app);
+        parser = new CommandLineParser(line);
         final CacheService cache = app.cache();
         Osgl.F1<String, Serializable> getter = new Osgl.F1<String, Serializable>() {
             @Override
@@ -43,19 +56,23 @@ public class CliContext extends ActContext.ActContextBase<CliContext> {
             }
         };
         evaluatorCache = Osgl.T2(getter, setter);
+        this.pw = $.NPE(pw);
     }
 
     public Osgl.T2<? extends Osgl.Function<String, Serializable>, ? extends Osgl.Func2<String, Serializable, ?>> evaluatorCache() {
         return evaluatorCache;
     }
 
-    public CliContext arguments(String ... arguments) {
-        this.arguments = C.listOf(arguments);
-        return this;
+    public CommandLineParser commandLine() {
+        return parser;
+    }
+
+    public String command() {
+        return parser.command();
     }
 
     public List<String> arguments() {
-        return arguments;
+        return parser.;
     }
 
     @Override
@@ -66,6 +83,15 @@ public class CliContext extends ActContext.ActContextBase<CliContext> {
     @Override
     public H.Format accept() {
         throw E.unsupport();
+    }
+
+    public void print(String template, Object... args) {
+        pw.printf(template, args);
+    }
+
+    public void println(String template, Object... args) {
+        print(template, args);
+        pw.println();
     }
 
     @Override
@@ -81,6 +107,23 @@ public class CliContext extends ActContext.ActContextBase<CliContext> {
     public CliContext commandPath(String path) {
         commandPath = path;
         return this;
+    }
+
+    public <T> T newInstance(Class<? extends T> clazz) {
+        if (clazz == CliContext.class) return $.cast(this);
+        return app().newInstance(clazz, this);
+    }
+
+    public CliContext __commanderInstance(String className, Object instance) {
+        if (null == commanderInstances) {
+            commanderInstances = C.newMap();
+        }
+        commanderInstances.put(className, instance);
+        return this;
+    }
+
+    public Object __commanderInstance(String className) {
+        return null == commanderInstances ? null : commanderInstances.get(className);
     }
 
     /**
@@ -134,6 +177,63 @@ public class CliContext extends ActContext.ActContextBase<CliContext> {
     @Override
     public Locale locale() {
         return config().locale();
+    }
+
+    private synchronized IASCIITable tbl() {
+        if (asciiTable == null) {
+            asciiTable = new SimpleASCIITableImpl(pw);
+        }
+        return asciiTable;
+    }
+
+    @Override
+    public void printTable(String[] header, String[][] data) {
+        tbl().printTable(header, data);
+    }
+
+    @Override
+    public void printTable(String[] header, String[][] data, int dataAlign) {
+        tbl().printTable(header, data, dataAlign);
+    }
+
+    @Override
+    public void printTable(String[] header, int headerAlign, String[][] data, int dataAlign) {
+        tbl().printTable(header, headerAlign, data, dataAlign);
+    }
+
+    @Override
+    public void printTable(ASCIITableHeader[] headerObjs, String[][] data) {
+        tbl().printTable(headerObjs, data);
+    }
+
+    @Override
+    public void printTable(IASCIITableAware asciiTableAware) {
+        tbl().printTable(asciiTableAware);
+    }
+
+    @Override
+    public String getTable(String[] header, String[][] data) {
+        return tbl().getTable(header, data);
+    }
+
+    @Override
+    public String getTable(String[] header, String[][] data, int dataAlign) {
+        return tbl().getTable(header, data, dataAlign);
+    }
+
+    @Override
+    public String getTable(String[] header, int headerAlign, String[][] data, int dataAlign) {
+        return tbl().getTable(header, headerAlign, data, dataAlign);
+    }
+
+    @Override
+    public String getTable(ASCIITableHeader[] headerObjs, String[][] data) {
+        return tbl().getTable(headerObjs, data);
+    }
+
+    @Override
+    public String getTable(IASCIITableAware asciiTableAware) {
+        return tbl().getTable(asciiTableAware);
     }
 
     public static CliContext current() {

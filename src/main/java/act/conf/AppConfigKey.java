@@ -39,13 +39,27 @@ public enum AppConfigKey implements ConfigKey {
         @Override
         public <T> T val(Map<String, ?> configuration) {
             Object v = configuration.get(key());
-            if (null == v) return (T) (Number) 5460;
+            if (null == v) return (T) (Number) 5461;
             if (v instanceof Number) {
                 return (T) v;
             }
             return (T) (Integer.valueOf(v.toString()));
         }
     },
+
+    /**
+     * {@code cli.session.expiration} specifies the number of seconds
+     * a cli session can exists after last user interation
+     * <p>Default value: {@code 300} seconds. e.g. 5 minutes</p>
+     */
+    CLI_SESSION_EXPIRATION("cli.session.expiration"),
+
+    /**
+     * {@code cli.session.max} specifies the maximum number of cli threads
+     * can exists concurrently
+     * <p>Default value: {@code 3}</p>
+     */
+    CLI_SESSION_MAX("cli.session.max"),
 
     /**
      * {@code act.config.impl}

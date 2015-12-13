@@ -1,7 +1,9 @@
 package act.view;
 
 import act.Act;
+import act.app.ActAppException;
 import act.app.ActionContext;
+import act.exception.ActException;
 import org.osgl.http.H;
 import org.osgl.util.E;
 
@@ -37,6 +39,9 @@ public class RenderTemplate extends RenderAny {
         }
         ViewManager vm = Act.viewManager();
         Template t = vm.load(context);
+        if (null == t) {
+            throw new ActException("Render template[%s] not found", context.templatePath());
+        }
         applyStatus(context.resp());
         t.merge(context);
     }

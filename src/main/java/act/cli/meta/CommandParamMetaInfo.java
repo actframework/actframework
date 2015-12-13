@@ -44,7 +44,7 @@ public class CommandParamMetaInfo extends DestroyableBase {
 
     public CommandParamMetaInfo optionInfo(OptionAnnoInfo optionInfo) {
         this.optionInfo = $.NPE(optionInfo);
-        optionInfo.setLeadsIfNotSet(name);
+        optionInfo.paramName(name);
         return this;
     }
 

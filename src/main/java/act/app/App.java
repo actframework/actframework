@@ -7,6 +7,7 @@ import act.app.event.AppEventId;
 import act.app.util.AppCrypto;
 import act.app.util.NamedPort;
 import act.cli.CliDispatcher;
+import act.cli.bytecode.CommanderByteCodeScanner;
 import act.conf.AppConfLoader;
 import act.conf.AppConfig;
 import act.conf.AppConfigKey;
@@ -19,13 +20,11 @@ import act.handler.builtin.StaticFileGetter;
 import act.job.AppJobManager;
 import act.job.bytecode.JobByteCodeScanner;
 import act.mail.MailerConfigManager;
+import act.mail.MailerContext;
 import act.mail.bytecode.MailerByteCodeScanner;
 import act.route.RouteTableRouterBuilder;
 import act.route.Router;
-import act.util.ClassInfoByteCodeScanner;
-import act.util.IdGenerator;
-import act.util.SysProps;
-import act.util.UploadFileStorageService;
+import act.util.*;
 import act.view.ActServerError;
 import org.osgl.$;
 import org.osgl.cache.CacheService;
@@ -39,6 +38,7 @@ import org.osgl.util.C;
 import org.osgl.util.E;
 import org.osgl.util.IO;
 import org.osgl.util.S;
+import sun.awt.AppContext;
 
 import java.io.File;
 import java.util.EventObject;
@@ -79,6 +79,7 @@ public class App {
     private AppCodeScannerManager scannerManager;
     private DbServiceManager dbServiceManager;
     private AppJobManager jobManager;
+    private CliServer cliServer;
     private MailerConfigManager mailerConfigManager;
     private StringValueResolverManager resolverManager;
     private BinderManager binderManager;
@@ -217,6 +218,7 @@ public class App {
         initUploadFileStorageService();
         initRouters();
         initCliDispatcher();
+        initCliServer();
 
         initDbServiceManager();
         emit(DB_SVC_LOADED);
@@ -355,10 +357,12 @@ public class App {
         }
     }
 
-    <T> T newInstance(Class<T> clz, ActionContext context) {
+    <T> T newInstance(Class<T> clz, ActContext context) {
         if (App.class == clz) return $.cast(this);
         if (AppConfig.class == clz) return $.cast(config());
         if (ActionContext.class == clz) return $.cast(context);
+        if (CliContext.class == clz) return $.cast(context);
+        if (MailerContext.class == clz) return $.cast(context);
         if (AppCrypto.class == clz) return $.cast(crypto());
         if (null != dependencyInjector) {
             return dependencyInjector.createContextAwareInjector(context).create(clz);
@@ -475,6 +479,10 @@ public class App {
         cliDispatcher = new CliDispatcher(this);
     }
 
+    private void initCliServer() {
+        cliServer = new CliServer(this);
+    }
+
     private void initRouters() {
         router = new Router(this);
         moreRouters = C.newMap();
@@ -541,6 +549,7 @@ public class App {
         scannerManager.register(new ControllerByteCodeScanner());
         scannerManager.register(new MailerByteCodeScanner());
         scannerManager.register(new JobByteCodeScanner());
+        scannerManager.register(new CommanderByteCodeScanner());
     }
 
     private void loadRoutes() {
