@@ -70,15 +70,15 @@ public final class CliHandlerProxy extends CliHandlerBase {
             return;
         }
         DataView.MetaInfo dataView = meta.dataViewInfo();
+        List<String> outputs = dataView.outputFields();
         if (null != dataView) {
-            List<String> labelList = dataView.outputFields();
             List dataList;
             if (result instanceof Iterable) {
                 dataList = C.list((Iterable) result);
             } else {
                 dataList = C.listOf(result);
             }
-            context.printTable(new CollectionASCIITableAware(dataList, labelList, C.list()));
+            context.printTable(new CollectionASCIITableAware(dataList, dataView.outputFields(), dataView.labels()));
         } else {
             context.println(result.toString());
         }

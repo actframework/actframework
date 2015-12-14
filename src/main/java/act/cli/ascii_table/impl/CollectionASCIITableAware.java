@@ -100,7 +100,7 @@ public class CollectionASCIITableAware<T> implements IASCIITableAware {
 	}
 
 	private Object getProperty(Osgl.T2<? extends Osgl.Function<String, Serializable>, ? extends Osgl.Func2<String, Serializable, ?>> evaluatorCache, Class<?> dataClazz, T obj, String property) {
-		return $.eval(evaluatorCache, obj, property);
+		return $.getProperty(evaluatorCache, obj, property);
 	}
 	
 	private Method getMethod(Class<?> dataClazz, String methodName) {

@@ -72,7 +72,7 @@ public class CliContext extends ActContext.ActContextBase<CliContext> implements
     }
 
     public List<String> arguments() {
-        return parser.;
+        return parser.arguments();
     }
 
     @Override

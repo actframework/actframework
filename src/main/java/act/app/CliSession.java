@@ -28,6 +28,7 @@ class CliSession extends DestroyableBase implements Runnable {
     private Socket socket;
     private long ts;
     private boolean exit;
+    private Thread runningThread;
 
     CliSession(Socket socket, CliServer server) {
         this.socket = $.NPE(socket);
@@ -60,14 +61,16 @@ class CliSession extends DestroyableBase implements Runnable {
 
     @Override
     public void run() {
+        runningThread = Thread.currentThread();
         try {
             final BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             final PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
 
             out.println(Banner.banner(Act.VERSION));
+            String user = username();
 
             while (!exit) {
-                out.print("act[" + id + "]>");
+                out.print("act[" + user + "]>");
                 out.flush();
                 final String line = reader.readLine();
                 if (exit) {
@@ -118,9 +121,24 @@ class CliSession extends DestroyableBase implements Runnable {
         }
     }
 
+    private String username() {
+        String user = System.getProperty("user.name");
+        if (S.blank(user)) {
+            user = System.getenv("USER");
+            if (S.blank(user)) {
+                user = System.getenv("USERNAME");
+                if (S.blank(user)) {
+                    user = "anonymous";
+                }
+            }
+        }
+        return user;
+    }
+
     void stop() {
         exit = true;
         IO.close(socket);
+        runningThread.interrupt();
     }
 
 }

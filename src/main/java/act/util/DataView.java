@@ -104,6 +104,14 @@ public @interface DataView {
             return C.list(outputs);
         }
 
+        public List<String> labels() {
+            List<String> retList = C.newList();
+            for (String f : outputs) {
+                retList.add(label(f));
+            }
+            return retList;
+        }
+
         public Set<String> excludedFields() {
             return C.set(excluded);
         }

@@ -27,6 +27,7 @@ class CliServer extends AppServiceBase<CliServer> implements Runnable {
     private ConcurrentMap<Integer, CliSession> sessions = new ConcurrentHashMap<Integer, CliSession>();
     private int port;
     private ServerSocket serverSocket;
+    private Thread monitorThread;
 
     CliServer(App app) {
         super(app);
@@ -67,6 +68,9 @@ class CliServer extends AppServiceBase<CliServer> implements Runnable {
     }
 
     void stop() {
+        if (!running()) {
+            return;
+        }
         running.set(false);
         try {
             serverSocket.close();
@@ -74,6 +78,10 @@ class CliServer extends AppServiceBase<CliServer> implements Runnable {
             log.warn(e, "error closing server socket");
         } finally {
             serverSocket = null;
+        }
+        if (null != monitorThread) {
+            monitorThread.interrupt();
+            monitorThread = null;
         }
     }
 
@@ -90,6 +98,7 @@ class CliServer extends AppServiceBase<CliServer> implements Runnable {
             executor.submit(new Runnable() {
                 @Override
                 public void run() {
+                    monitorThread = Thread.currentThread();
                     int expiration = app().config().cliSessionExpiration();
                     while (running()) {
                         List<CliSession> toBeRemoved = C.newList();
@@ -105,7 +114,12 @@ class CliServer extends AppServiceBase<CliServer> implements Runnable {
                         try {
                             Thread.sleep(60 * 1000);
                         } catch (InterruptedException e) {
-                            // ignore
+                            return;
+                        }
+                        try {
+                            app().detectChanges();
+                        } catch (RequestRefreshClassLoader refreshRequest) {
+                            app().refresh();
                         }
                     }
                 }
