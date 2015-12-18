@@ -96,6 +96,15 @@ public class SenderMethodMetaInfo extends DestroyableBase {
         return returnType.type();
     }
 
+    public Type returnComponentType() {
+        return returnType.componentType();
+    }
+
+    public SenderMethodMetaInfo returnComponentType(Type type) {
+        returnType.componentType(type);
+        return this;
+    }
+
     public boolean hasReturn() {
         return returnType.hasReturn();
     }

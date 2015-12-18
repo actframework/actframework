@@ -70,8 +70,8 @@ public final class CliHandlerProxy extends CliHandlerBase {
             return;
         }
         DataView.MetaInfo dataView = meta.dataViewInfo();
-        List<String> outputs = dataView.outputFields();
         if (null != dataView) {
+            List<String> outputs = dataView.outputFields();
             List dataList;
             if (result instanceof Iterable) {
                 dataList = C.list((Iterable) result);

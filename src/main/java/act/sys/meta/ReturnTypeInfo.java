@@ -4,6 +4,7 @@ import act.asm.Type;
 
 public class ReturnTypeInfo {
     private Type type;
+    private Type componentType;
 
     private ReturnTypeInfo() {
         this(Type.VOID_TYPE);
@@ -15,6 +16,15 @@ public class ReturnTypeInfo {
 
     public Type type() {
         return type;
+    }
+
+    public ReturnTypeInfo componentType(Type type) {
+        componentType = type;
+        return this;
+    }
+
+    public Type componentType() {
+        return componentType;
     }
 
     public boolean hasReturn() {

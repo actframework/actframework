@@ -338,7 +338,15 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
 
                         @Override
                         public void visitClassType(String name) {
-                            if (startParsing) info.param(id.get()).componentType(Type.getObjectType(name));
+                            if (startParsing) {
+                                Type type = Type.getObjectType(name);
+                                int n = id.get();
+                                if (n < 0) {
+                                    info.returnComponentType(type);
+                                } else {
+                                    info.param(n).componentType(type);
+                                }
+                            }
                             startParsing = false;
                         }
                     });
