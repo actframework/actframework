@@ -74,7 +74,7 @@ public class AutoObjectEnhancer extends AppByteCodeEnhancer<AutoObjectEnhancer> 
     @Override
     public AnnotationVisitor visitAnnotation(String desc, boolean visible) {
         AnnotationVisitor def = super.visitAnnotation(desc, visible);
-        if (Type.getType(AutoObject.class).getDescriptor().equals(desc)) {
+        if (Type.getType(Data.class).getDescriptor().equals(desc)) {
             metaInfo.autoObjectAnnotationFound();
             return new AnnotationVisitor(ASM5, def) {
                 @Override

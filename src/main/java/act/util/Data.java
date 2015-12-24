@@ -22,7 +22,7 @@ import java.lang.annotation.Target;
  */
 @Retention(RetentionPolicy.CLASS)
 @Target(ElementType.TYPE)
-public @interface AutoObject {
+public @interface Data {
     /**
      * Whether the generated {@code equals} and {@code hashCode}
      * method should call super methods.

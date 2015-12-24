@@ -1,10 +1,10 @@
 package testapp.model;
 
-import act.util.AutoObject;
+import act.util.Data;
 import act.util.EqualIgnore;
 import org.osgl.util.S;
 
-@AutoObject
+@Data
 public class Person2 {
 
     @EqualIgnore

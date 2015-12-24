@@ -1,8 +1,8 @@
 package testapp.model;
 
-import act.util.AutoObject;
+import act.util.Data;
 
-@AutoObject
+@Data
 public class Address2 {
     public static String foo;
     private String streetNo;

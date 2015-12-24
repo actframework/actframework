@@ -1,9 +1,9 @@
 package testapp.model;
 
-import act.util.AutoObject;
+import act.util.Data;
 import org.osgl.$;
 
-@AutoObject
+@Data
 public class Person {
 
     private String firstName;

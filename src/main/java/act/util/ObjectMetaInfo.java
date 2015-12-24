@@ -12,7 +12,7 @@ import org.osgl.util.S;
  * Datastructure captures a class's meta information in related to {@link AutoObjectEnhancer}.
  * The following info will be captured:
  * <ul>
- *     <li>Is the class annotated with {@link AutoObject} annotation</li>
+ *     <li>Is the class annotated with {@link Data} annotation</li>
  *     <li>A list of {@link FieldMetaInfo} of all declared fields</li>
  * </ul>
  */

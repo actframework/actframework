@@ -18,7 +18,7 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.lang.reflect.Method;
 
-public class AutoObjectEnhancerTest extends TestBase {
+public class DataEnhancerTest extends TestBase {
 
     public static final String TMPL_PATH = "/path/to/template";
 

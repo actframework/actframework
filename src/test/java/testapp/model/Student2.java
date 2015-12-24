@@ -1,11 +1,11 @@
 package testapp.model;
 
-import act.util.AutoObject;
+import act.util.Data;
 
 /**
  * Created by luog on 28/11/15.
  */
-@AutoObject(callSuper = true)
+@Data(callSuper = true)
 public class Student2 extends Person2 {
     private String clazz;
     private String studentId;

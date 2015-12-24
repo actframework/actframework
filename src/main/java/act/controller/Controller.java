@@ -486,8 +486,7 @@ public @interface Controller {
         }
 
         private static Result inferToTemplate(Object v, ActionContext actionContext) {
-            String action = actionContext.actionPath();
-            actionContext.renderArg(S.str(action).afterLast('.').toString(), v);
+            actionContext.renderArg("result", v);
             return new RenderTemplate();
         }
 

@@ -8,7 +8,7 @@ import java.lang.annotation.Target;
 /**
  * Mark a field must be considered when generating {@link Object#equals(Object)}
  * and {@link Object#hashCode()} methods on the enclosing class.
- * @see AutoObject
+ * @see Data
  */
 @Retention(RetentionPolicy.CLASS)
 @Target(ElementType.FIELD)

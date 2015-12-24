@@ -1,12 +1,12 @@
 package testapp.model;
 
-import act.util.AutoObject;
+import act.util.Data;
 import org.osgl.$;
 
 /**
  * Created by luog on 28/11/15.
  */
-@AutoObject(callSuper = false)
+@Data(callSuper = false)
 public class Teacher extends Person {
     private String teacherId;
     public Teacher(String fn, String ln, Address addr, Integer age, String teacherId) {

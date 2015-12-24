@@ -1,10 +1,10 @@
 package testapp.model;
 
 import act.asm.Type;
-import act.util.AutoObject;
+import act.util.Data;
 import org.osgl.$;
 
-@AutoObject(callSuper = true)
+@Data(callSuper = true)
 public class Student extends Person {
     private String clazz;
     private String studentId;
