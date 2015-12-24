@@ -166,7 +166,8 @@ public class SimpleASCIITableImpl implements IASCIITable {
 	public String getTable(ASCIITableHeader[] headerObjs, String[][] data) {
 	
 		if (data == null || data.length == 0) {
-			throw new IllegalArgumentException("Please provide valid data : " + data);
+			//throw new IllegalArgumentException("Please provide valid data : " + data);
+			return "";
 		}
 		
 		/**

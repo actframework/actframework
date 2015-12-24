@@ -38,7 +38,6 @@ import org.osgl.util.C;
 import org.osgl.util.E;
 import org.osgl.util.IO;
 import org.osgl.util.S;
-import sun.awt.AppContext;
 
 import java.io.File;
 import java.util.EventObject;
@@ -200,6 +199,7 @@ public class App {
     }
 
     public void refresh() {
+        logger.info("App starting ....");
         profile = null;
         Act.viewManager().reload(this);
         initServiceResourceManager();
@@ -259,6 +259,7 @@ public class App {
         emit(DEPENDENCY_INJECTOR_LOADED);
         emit(PRE_START);
         emit(START);
+        logger.info("App started");
     }
 
     public AppBuilder builder() {

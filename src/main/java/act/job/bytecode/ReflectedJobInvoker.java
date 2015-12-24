@@ -25,35 +25,26 @@ public class ReflectedJobInvoker<M extends JobMethodMetaInfo> extends $.F0<Objec
     private static Map<String, $.F2<App, Object, ?>> fieldName_appHandler_lookup = C.newMap();
     private static Map<String, $.F2<AppConfig, Object, ?>> fieldName_appConfigHandler_lookup = C.newMap();
     private App app;
-    private AppConfig appConfig;
     private ClassLoader cl;
     private JobClassMetaInfo classInfo;
     private Class<?> jobClass;
-    protected ConstructorAccess<?> constructorAccess;
     protected MethodAccess methodAccess;
     private M methodInfo;
     protected int methodIndex;
     protected Method method; //
-    protected $.F2<App, Object, ?> fieldAppHandler;
-    protected $.F2<AppConfig, Object, ?> fieldAppConfigHandler;
 
     public ReflectedJobInvoker(M handlerMetaInfo, App app) {
         this.cl = app.classLoader();
         this.methodInfo = handlerMetaInfo;
         this.classInfo = handlerMetaInfo.classInfo();
         this.app = app;
-        this.appConfig = app.config();
     }
 
     private void init() {
         jobClass = $.classForName(classInfo.className(), cl);
 
-        fieldAppHandler = injectField(classInfo.appField(), jobClass, fieldName_appHandler_lookup);
-        fieldAppConfigHandler = injectField(classInfo.appConfigField(), jobClass, fieldName_appConfigHandler_lookup);
-
         Class<?>[] paramTypes = new Class[0];
         if (!methodInfo.isStatic()) {
-            constructorAccess = ConstructorAccess.get(jobClass);
             methodAccess = MethodAccess.get(jobClass);
             methodIndex = methodAccess.getIndex(methodInfo.name(), paramTypes);
         } else {
@@ -72,27 +63,15 @@ public class ReflectedJobInvoker<M extends JobMethodMetaInfo> extends $.F0<Objec
             init();
         }
         Object job = jobClassInstance(app);
-        applyApp(app, job);
         Object[] params = new Object[0];
         return invoke(job, params);
     }
 
     private Object jobClassInstance(App app) {
-        if (null == constructorAccess) {
+        if (null == methodAccess) {
             return null;
         }
         return app.newInstance(jobClass);
-    }
-
-    private void applyApp(App app, Object jobClassInstance) {
-        if (null == constructorAccess) return;
-        if (null != fieldAppHandler) {
-            fieldAppHandler.apply(app, jobClassInstance);
-        }
-        if (null != fieldAppConfigHandler) {
-            fieldAppConfigHandler.apply(app.config(), jobClassInstance);
-        }
-        // ignore ContextLocal save as it's processed for one time when RequestHandlerProxy is invoked
     }
 
     private Object invoke(Object jobClassInstance, Object[] params) {

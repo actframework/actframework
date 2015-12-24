@@ -282,6 +282,10 @@ public class MailerContext extends ActContext.ActContextBase<MailerContext> {
     }
 
     private MimeMessage createMessage() throws Exception {
+        MailerConfig config = mailerConfig();
+        if (null == config) {
+            throw E.unexpected("Cannot find mailer config for %s", confId);
+        }
         Session session = mailerConfig().session();
         MimeMessage msg = new MimeMessage(session);
 
@@ -297,12 +301,12 @@ public class MailerContext extends ActContext.ActContextBase<MailerContext> {
         Template t = vm.load(this);
         String content = t.render(this);
         if (attachments.isEmpty()) {
-            msg.setContent(content, accept().toContentType());
+            msg.setText(content, config().encoding(), accept().name());
         } else {
             Multipart mp = new MimeMultipart();
             MimeBodyPart bp = new MimeBodyPart();
             mp.addBodyPart(bp);
-            bp.setContent(content, accept().toContentType());
+            bp.setText(content, config().encoding(), accept().name());
             for (ISObject sobj : attachments) {
                 MimeBodyPart attachment = new MimeBodyPart();
                 attachment.attachFile(sobj.asFile(), sobj.getAttribute(ISObject.ATTR_CONTENT_TYPE), "utf-8");
@@ -310,6 +314,7 @@ public class MailerContext extends ActContext.ActContextBase<MailerContext> {
             }
             msg.setContent(mp);
         }
+        msg.saveChanges();
         return msg;
     }
 

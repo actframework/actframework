@@ -18,5 +18,8 @@ public interface CliHandler extends $.Function<CliContext, Void>, Destroyable {
      */
     void handle(CliContext context);
 
+    /**
+     * @return help message
+     */
     String help();
 }

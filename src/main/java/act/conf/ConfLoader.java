@@ -90,6 +90,30 @@ public abstract class ConfLoader<T extends Config> {
         return C.newMap();
     }
 
+    /**
+     * Return the "common" configuration set name. By default it is "common"
+     * @return the "common" conf set name
+     */
+    public static String common() {
+        String common = SysProps.get(KEY_COMMON_CONF_TAG);
+        if (S.blank(common)) {
+            common = "common";
+        }
+        return common;
+    }
+
+    /**
+     * Return the name of the current conf set
+     * @return the conf set name
+     */
+    public static String confSetName() {
+        String profile = SysProps.get(AppConfigKey.PROFILE.key());
+        if (S.blank(profile)) {
+            profile = Act.mode().name().toLowerCase();
+        }
+        return profile;
+    }
+
     private Map loadConfFromDir(File confDir) {
         if (!confDir.exists()) {
             logger.warn("Cannot read conf dir[%s]", confDir.getAbsolutePath());
@@ -101,10 +125,7 @@ public abstract class ConfLoader<T extends Config> {
         /*
          * try load from common conf
          */
-        String common = SysProps.get(KEY_COMMON_CONF_TAG);
-        if (S.blank(common)) {
-            common = "common";
-        }
+        String common = common();
         File commonConfDir = new File(confDir, common);
         if (commonConfDir.isDirectory()) {
             map.putAll(loadConfFromDir_(commonConfDir));
@@ -114,10 +135,7 @@ public abstract class ConfLoader<T extends Config> {
          * try to load conf from profile conf dir, e.g. ${conf_root}/uat or
          * ${conf_root}/dev etc
          */
-        String profile = SysProps.get(AppConfigKey.PROFILE.key());
-        if (S.blank(profile)) {
-            profile = Act.mode().name().toLowerCase();
-        }
+        String profile = confSetName();
         File taggedConfDir = new File(confDir, profile);
         if (taggedConfDir.exists() && taggedConfDir.isDirectory()) {
             map.putAll(loadConfFromDir_(taggedConfDir));

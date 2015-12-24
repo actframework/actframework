@@ -59,9 +59,12 @@ public class FullStackAppBootstrapClassLoader extends BootstrapClassLoader imple
     }
 
     private List<File> jars() {
+        return jars(FullStackAppBootstrapClassLoader.class.getClassLoader());
+    }
+
+    public static List<File> jars(ClassLoader cl) {
         C.List<String> path = C.listOf(System.getProperty(KEY_CLASSPATH).split(File.pathSeparator));
         if (path.size() < 10) {
-            ClassLoader cl = getClass().getClassLoader();
             if (cl instanceof URLClassLoader) {
                 URLClassLoader realm = (URLClassLoader) cl;
                 C.List<URL> urlList = C.listOf(realm.getURLs());

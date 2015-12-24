@@ -12,6 +12,7 @@ import act.cli.meta.CommandMethodMetaInfo;
 import act.cli.meta.CommandParamMetaInfo;
 import act.cli.meta.OptionAnnoInfo;
 import act.cli.util.CommandLineParser;
+import act.conf.AppConfig;
 import act.controller.ActionMethodParamAnnotationHandler;
 import act.controller.Controller;
 import act.controller.meta.BindAnnoInfo;
@@ -125,6 +126,10 @@ public class ReflectedCommandExecutor extends CommandExecutor {
             Class<?> paramType = paramTypes[i];
             if (CliContext.class.equals(paramType)) {
                 oa[i] = ctx;
+            } else if (App.class.equals(paramType)) {
+                oa[i] = ctx.app();
+            } else if (AppConfig.class.equals(paramType)) {
+                oa[i] = ctx.app().config();
             } else {
                 String argStr;
                 OptionAnnoInfo option = param.optionInfo();

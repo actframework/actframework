@@ -14,6 +14,7 @@ import org.osgl.util.S;
 import org.rythmengine.utils.Time;
 
 import java.util.EventObject;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.*;
 
@@ -127,7 +128,11 @@ public class AppJobManager extends AppServiceBase<AppJobManager> {
         on(AppEventId.STOP, runnable);
     }
 
-    public _Job jobById(String id) {
+    C.List<_Job> jobs() {
+        return C.list(jobs.values());
+    }
+
+    _Job jobById(String id) {
         _Job job = jobs.get(id);
         if (null == job) {
             logger.warn("cannot find job by id: %s", id);

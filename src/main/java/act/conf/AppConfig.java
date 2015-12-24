@@ -24,10 +24,7 @@ import org.osgl.util.*;
 import javax.validation.MessageInterpolator;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import static act.conf.AppConfigKey.*;
 
@@ -793,8 +790,9 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
             } else {
                 final String[] sp = scanPackage.trim().split(Constants.LIST_SEPARATOR);
                 final int len = sp.length;
+                final $.Predicate<String> IS_ACT_ADMIN = S.F.startsWith("act").and(S.F.endsWith("Admin"));
                 if (1 == len) {
-                    APP_CLASS_TESTER = S.F.startsWith(sp[0]);
+                    APP_CLASS_TESTER = S.F.startsWith(sp[0]).or(IS_ACT_ADMIN);
                 } else {
                     APP_CLASS_TESTER = new $.Predicate<String>() {
                         @Override
@@ -806,7 +804,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
                             }
                             return false;
                         }
-                    };
+                    }.or(IS_ACT_ADMIN);
                 }
             }
         }
@@ -1198,7 +1196,34 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         }
     }
 
-    private boolean _merged = false;
+    private Set<AppConfigurator> mergeTracker = C.newSet();
+
+    public void loadJarProperties(Map<String, Properties> jarProperties) {
+        // load common properties
+        Properties p0 = jarProperties.remove("common");
+        // load app env properties
+        Properties p1 = jarProperties.remove(ConfLoader.confSetName());
+        if (null != p1) {
+            if (null != p0) {
+                p0.putAll(p1);
+            } else {
+                p0 = p1;
+            }
+        }
+        if (null != p0) {
+            loadJarProperties(p0);
+        }
+    }
+
+    private void loadJarProperties(Properties p) {
+        Enumeration<?> keys = p.propertyNames();
+        while (keys.hasMoreElements()) {
+            String key = S.string(keys.nextElement());
+            if (!raw.containsKey(key)) {
+                raw.put(key, p.getProperty(key));
+            }
+        }
+    }
 
     /**
      * Merge application configurator settings. Note application configurator
@@ -1208,10 +1233,10 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
      * @param conf the application configurator
      */
     public void _merge(AppConfigurator conf) {
-        if (_merged) {
+        if (mergeTracker.contains(conf)) {
             return;
         }
-        _merged = true;
+        mergeTracker.add(conf);
         _mergeCliPort(conf);
         _mergeCliSessionExpiration(conf);
         _mergeMaxCliSession(conf);

@@ -29,6 +29,11 @@ abstract class JobTrigger {
 
     protected static Logger logger = L.get(App.class);
 
+    @Override
+    public String toString() {
+        return getClass().getSimpleName();
+    }
+
     final void register(_Job job, AppJobManager manager) {
         manager.addJob(job);
         schedule(manager, job);
@@ -94,7 +99,7 @@ abstract class JobTrigger {
         if (S.blank(duration)) {
             throw E.invalidConfiguration("Cannot find configuration for duration: %s", anno.value());
         }
-        return null;
+        return every(duration);
     }
 
     static JobTrigger of(AppConfig config, AlongWith anno) {
@@ -172,6 +177,11 @@ abstract class JobTrigger {
         }
 
         @Override
+        public String toString() {
+            return S.builder("cron :").append(cron.asString()).toString();
+        }
+
+        @Override
         void schedule(AppJobManager manager, _Job job) {
             DateTime now = DateTime.now();
             ExecutionTime executionTime = ExecutionTime.forCron(cron);
@@ -213,6 +223,11 @@ abstract class JobTrigger {
         }
 
         @Override
+        public String toString() {
+            return S.builder("fixed delay of ").append(seconds).append(" seconds").toString();
+        }
+
+        @Override
         void schedule(AppJobManager manager, _Job job) {
             ScheduledThreadPoolExecutor executor = manager.executor();
             executor.scheduleWithFixedDelay(job, seconds, seconds, TimeUnit.SECONDS);
@@ -228,6 +243,11 @@ abstract class JobTrigger {
         }
 
         @Override
+        public String toString() {
+            return S.builder("every ").append(seconds).append(" seconds").toString();
+        }
+
+        @Override
         void schedule(AppJobManager manager, _Job job) {
             ScheduledThreadPoolExecutor executor = manager.executor();
             executor.scheduleAtFixedRate(job, seconds, seconds, TimeUnit.SECONDS);
@@ -235,7 +255,7 @@ abstract class JobTrigger {
     }
 
     private abstract static class _AssociatedTo extends JobTrigger {
-        private String id;
+        protected String id;
         _AssociatedTo(String id) {
             E.illegalArgumentIf(S.blank(id), "associate job ID expected");
             this.id = id;
@@ -281,6 +301,11 @@ abstract class JobTrigger {
         }
 
         @Override
+        public String toString() {
+            return S.builder("along with ").append(id).toString();
+        }
+
+        @Override
         void associate(_Job theJob, _Job toJob) {
             toJob.addParallelJob(theJob);
         }
@@ -292,6 +317,11 @@ abstract class JobTrigger {
         }
 
         @Override
+        public String toString() {
+            return S.builder("before ").append(id).toString();
+        }
+
+        @Override
         void associate(_Job theJob, _Job toJob) {
             toJob.addPrecedenceJob(theJob);
         }
@@ -300,6 +330,11 @@ abstract class JobTrigger {
     private static class _After extends _AssociatedTo {
         _After(String id) {
             super(id);
+        }
+
+        @Override
+        public String toString() {
+            return S.builder("after ").append(id).toString();
         }
 
         @Override

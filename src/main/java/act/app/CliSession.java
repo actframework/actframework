@@ -1,6 +1,7 @@
 package act.app;
 
 import act.Act;
+import act.boot.app.RunApp;
 import act.cli.CliDispatcher;
 import act.cli.builtin.Exit;
 import act.handler.CliHandler;
@@ -103,13 +104,10 @@ class CliSession extends DestroyableBase implements Runnable {
                 try {
                     handler.handle(context);
                 } catch (Exception e) {
-                    if (e instanceof IOException) {
-                        throw e;
-                    }
                     out.println("Error: " + e.getMessage());
                 }
             }
-        } catch (IOException e) {
+        } catch (Throwable e) {
             logger.error(e, "Error processing cli session");
         } finally {
             server.remove(this);

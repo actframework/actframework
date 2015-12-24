@@ -7,10 +7,13 @@ import org.osgl.util.C;
 import org.osgl.util.E;
 import org.osgl.util.S;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 
 class _Job extends DestroyableBase implements Runnable {
+
+    static final String LIST_VIEW = "id,oneTime,trigger";
 
     private String id;
     private boolean oneTime;
@@ -56,6 +59,28 @@ class _Job extends DestroyableBase implements Runnable {
         followingJobs.clear();
         precedenceJobs.clear();
         super.releaseResources();
+    }
+
+    protected String brief() {
+        return S.fmt("job[%s]\none time job?%s\ntrigger:%s", id, oneTime, trigger);
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder sb = S.builder(brief());
+        printSubJobs(parallelJobs, "parallel jobs", sb);
+        printSubJobs(followingJobs, "following jobs", sb);
+        printSubJobs(precedenceJobs, "precedence jobs", sb);
+        return sb.toString();
+    }
+
+    private static void printSubJobs(Collection<? extends _Job> subJobs, String label, StringBuilder sb) {
+        if (null != subJobs && !subJobs.isEmpty()) {
+            sb.append("\n").append(label);
+            for (_Job job : subJobs) {
+                sb.append("\n\t").append(job.brief());
+            }
+        }
     }
 
     _Job setOneTime() {
@@ -104,7 +129,12 @@ class _Job extends DestroyableBase implements Runnable {
     public void run() {
         invokeParallelJobs();
         runPrecedenceJobs();
-        doJob();
+        try {
+            doJob();
+        } catch (RuntimeException e) {
+            // TODO inject Job Exception Handling mechanism here
+            logger.warn(e, "error executing job %s", id());
+        }
         if (isOneTime()) {
             manager().removeJob(this);
         }

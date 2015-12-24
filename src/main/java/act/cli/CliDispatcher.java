@@ -9,6 +9,8 @@ import act.cli.meta.CommandMethodMetaInfo;
 import act.cli.util.CommandLineParser;
 import act.handler.CliHandler;
 import act.handler.builtin.cli.CliHandlerProxy;
+import org.osgl.logging.LogManager;
+import org.osgl.logging.Logger;
 import org.osgl.util.C;
 import org.osgl.util.E;
 
@@ -19,6 +21,8 @@ import java.util.Map;
  * Dispatch console command to CLI command handler
  */
 public class CliDispatcher extends AppServiceBase<CliDispatcher> {
+
+    private static Logger logger = LogManager.get(CliDispatcher.class);
 
     private Map<String, CliHandler> registry = C.newMap();
 
@@ -32,6 +36,7 @@ public class CliDispatcher extends AppServiceBase<CliDispatcher> {
             throw E.invalidConfiguration("Command %s already registered");
         }
         registry.put(command, new CliHandlerProxy(methodMetaInfo, app()));
+        logger.info("Command registered: %s", command);
         return this;
     }
 
@@ -40,7 +45,11 @@ public class CliDispatcher extends AppServiceBase<CliDispatcher> {
     }
 
     public CliHandler handler(String command) {
-        return registry.get(command);
+        CliHandler handler = registry.get(command);
+        if (null == handler && !command.startsWith("act.")) {
+            handler = registry.get("act." + command);
+        }
+        return handler;
     }
 
     /**

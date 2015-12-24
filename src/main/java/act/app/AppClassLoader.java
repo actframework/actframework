@@ -4,8 +4,10 @@ import act.Act;
 import act.asm.ClassReader;
 import act.asm.ClassWriter;
 import act.boot.BootstrapClassLoader;
+import act.boot.app.FullStackAppBootstrapClassLoader;
 import act.cli.meta.CommanderClassMetaInfo;
 import act.cli.meta.CommanderClassMetaInfoManager;
+import act.conf.AppConfig;
 import act.controller.meta.ControllerClassMetaInfo;
 import act.controller.meta.ControllerClassMetaInfoHolder;
 import act.controller.meta.ControllerClassMetaInfoManager;
@@ -30,6 +32,7 @@ import java.io.File;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 
 import static act.util.ClassInfoRepository.canonicalName;
@@ -153,6 +156,11 @@ public class AppClassLoader
             return c;
         }
 
+        // ensure we
+        if (name.startsWith("act.") && name.endsWith("Admin")) {
+            return super.loadClass(name, resolve);
+        }
+
         c = loadAppClass(name, resolve);
 
         if (null == c) {
@@ -274,7 +282,22 @@ public class AppClassLoader
     }
 
     private void preloadLib() {
-        libClsCache.putAll(Jars.buildClassNameIndex(RuntimeDirs.lib(app), app().config().appClassTester().negate()));
+        final Map<String, byte[]> bytecodeIdx = C.newMap();
+        final Map<String, Properties> jarConf = C.newMap();
+        final $.Function<String, Boolean> ignoredClassNames = app().config().appClassTester().negate();
+        Jars.F.JarEntryVisitor classNameIndexBuilder = Jars.F.classNameIndexBuilder(bytecodeIdx, ignoredClassNames);
+        Jars.F.JarEntryVisitor confIndexBuilder = Jars.F.appConfigFileIndexBuilder(jarConf);
+        Jars.scan(RuntimeDirs.lib(app), classNameIndexBuilder, confIndexBuilder);
+        if (Act.isDev()) {
+            // need to load maven jars
+            List<File> jars = FullStackAppBootstrapClassLoader.jars(AppClassLoader.class.getClassLoader());
+            for (File jar: jars) {
+                Jars.scan(jar, classNameIndexBuilder, confIndexBuilder);
+            }
+        }
+        libClsCache.putAll(bytecodeIdx);
+        AppConfig config = app().config();
+        config.loadJarProperties(jarConf);
     }
 
     void loadClasses() {

@@ -32,6 +32,27 @@ public abstract class AppConfigurator<T extends AppConfigurator> extends AppConf
     private Map<String, Object> userProps = C.newMap();
 
     @Override
+    public boolean equals(Object obj) {
+        if (obj == this) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        return obj.getClass() == getClass();
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
+    }
+
+    @Override
+    public String toString() {
+        return getClass().getName();
+    }
+
+    @Override
     protected void releaseResources() {
         controllerClasses.clear();
         userProps.clear();
