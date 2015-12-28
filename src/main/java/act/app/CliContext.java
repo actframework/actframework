@@ -6,6 +6,7 @@ import act.cli.ascii_table.spec.IASCIITable;
 import act.cli.ascii_table.spec.IASCIITableAware;
 import act.cli.util.CommandLineParser;
 import act.util.ActContext;
+import jline.console.ConsoleReader;
 import org.osgl.$;
 import org.osgl.Osgl;
 import org.osgl.cache.CacheService;
@@ -16,6 +17,7 @@ import org.osgl.util.C;
 import org.osgl.util.E;
 import org.osgl.util.S;
 
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Serializable;
 import java.util.List;
@@ -30,7 +32,7 @@ public class CliContext extends ActContext.ActContextBase<CliContext> implements
 
     private Map<String, Object> commanderInstances = C.newMap();
 
-    private PrintWriter pw;
+    private ConsoleReader console;
 
     private CommandLineParser parser;
 
@@ -38,7 +40,7 @@ public class CliContext extends ActContext.ActContextBase<CliContext> implements
 
     private Osgl.T2<? extends Osgl.Function<String, Serializable>, ? extends Osgl.Func2<String, Serializable, ?>> evaluatorCache;
 
-    public CliContext(String line, App app, PrintWriter pw) {
+    public CliContext(String line, App app, ConsoleReader console) {
         super(app);
         parser = new CommandLineParser(line);
         final CacheService cache = app.cache();
@@ -56,7 +58,7 @@ public class CliContext extends ActContext.ActContextBase<CliContext> implements
             }
         };
         evaluatorCache = Osgl.T2(getter, setter);
-        this.pw = $.NPE(pw);
+        this.console = $.NPE(console);
     }
 
     public Osgl.T2<? extends Osgl.Function<String, Serializable>, ? extends Osgl.Func2<String, Serializable, ?>> evaluatorCache() {
@@ -86,12 +88,19 @@ public class CliContext extends ActContext.ActContextBase<CliContext> implements
     }
 
     public void print(String template, Object... args) {
-        pw.printf(template, args);
+        try {
+            console.print(S.fmt(template, args));
+        } catch (IOException e) {
+            throw E.ioException(e);
+        }
     }
 
     public void println(String template, Object... args) {
-        print(template, args);
-        pw.println();
+        try {
+            console.println(S.fmt(template, args));
+        } catch (IOException e) {
+            throw E.ioException(e);
+        }
     }
 
     @Override
@@ -181,7 +190,7 @@ public class CliContext extends ActContext.ActContextBase<CliContext> implements
 
     private synchronized IASCIITable tbl() {
         if (asciiTable == null) {
-            asciiTable = new SimpleASCIITableImpl(pw);
+            asciiTable = new SimpleASCIITableImpl(new PrintWriter(console.getOutput()));
         }
         return asciiTable;
     }

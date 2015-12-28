@@ -104,6 +104,9 @@ public class JobMethodMetaInfo extends DestroyableBase {
     }
 
     private String _invokeType() {
+        if (null == invokeType) {
+            return "";
+        }
         switch (invokeType) {
             case VIRTUAL:
                 return "";
@@ -116,6 +119,9 @@ public class JobMethodMetaInfo extends DestroyableBase {
     }
 
     private String _return() {
+        if (null == returnType) {
+            return " ";
+        }
         if (returnType.hasReturn()) {
             return returnType.type().getClassName() + " ";
         } else {

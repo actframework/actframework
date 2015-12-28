@@ -44,51 +44,47 @@ public class EventBus extends AppServiceBase<EventBus> {
         appEventLookup.clear();
     }
 
+    @SuppressWarnings("unchecked")
+    private boolean bindIfEmitted(AppEventId appEventId, AppEventListener l) {
+        if (app().eventEmitted(appEventId)) {
+            try {
+                l.on(appEventLookup.get(appEventId));
+            } catch (Exception e) {
+                logger.warn(e, "error calling event handler");
+            }
+            return true;
+        }
+        return false;
+    }
+
+    @SuppressWarnings("unchecked")
+    private EventBus _bind(List[] listeners, AppEventId appEventId, AppEventListener l) {
+        if (bindIfEmitted(appEventId, l)) {
+            return this;
+        }
+        List<AppEventListener> list = listeners[appEventId.ordinal()];
+        if (!list.contains(l)) list.add(l);
+        return this;
+    }
+
+    @SuppressWarnings("unchecked")
     public synchronized EventBus bind(AppEventId appEventId, AppEventListener l) {
-        if (app().eventEmitted(appEventId)) {
-            try {
-                l.on(appEventLookup.get(appEventId));
-            } catch (Exception e) {
-                logger.warn(e, "error calling event handler");
-            }
-            return this;
-        }
-        List<AppEventListener> list = appEventListeners[appEventId.ordinal()];
-        if (!list.contains(l)) list.add(l);
-        return this;
+        return _bind(appEventListeners, appEventId, l);
     }
 
+    @SuppressWarnings("unused")
     public synchronized EventBus bindAsync(AppEventId appEventId, AppEventListener l) {
-        if (app().eventEmitted(appEventId)) {
-            try {
-                l.on(appEventLookup.get(appEventId));
-            } catch (Exception e) {
-                logger.warn(e, "error calling event handler");
-            }
-            return this;
-        }
-        List<AppEventListener> list = asyncAppEventListeners[appEventId.ordinal()];
-        if (!list.contains(l)) list.add(l);
-        return this;
+        return _bind(asyncAppEventListeners, appEventId, l);
     }
 
+    @SuppressWarnings("unused")
     public synchronized EventBus bindSync(AppEventId appEventId, AppEventListener l) {
-        if (app().eventEmitted(appEventId)) {
-            try {
-                l.on(appEventLookup.get(appEventId));
-            } catch (Exception e) {
-                logger.warn(e, "error calling event handler");
-            }
-            return this;
-        }
-        List<AppEventListener> list = appEventListeners[appEventId.ordinal()];
-        if (!list.contains(l)) list.add(l);
-        return this;
+        return bind(appEventId, l);
     }
 
     private static boolean isAsync(Class<?> c) {
         Annotation[] aa = c.getAnnotations();
-        for (Annotation a: aa) {
+        for (Annotation a : aa) {
             if (a.annotationType().getName().contains("Async")) {
                 return true;
             }
@@ -96,8 +92,7 @@ public class EventBus extends AppServiceBase<EventBus> {
         return false;
     }
 
-    public synchronized EventBus bind(Class<? extends EventObject> c, ActEventListener l) {
-        Map<Class<? extends EventObject>, List<ActEventListener>> listeners = isAsync(l.getClass()) ? asyncActEventListeners : actEventListeners;
+    private EventBus _bind(Map<Class<? extends EventObject>, List<ActEventListener>> listeners, Class<? extends EventObject> c, ActEventListener l) {
         List<ActEventListener> list = listeners.get(c);
         if (null == list) {
             list = C.newList();
@@ -107,24 +102,17 @@ public class EventBus extends AppServiceBase<EventBus> {
         return this;
     }
 
+    public synchronized EventBus bind(Class<? extends EventObject> c, ActEventListener l) {
+        Map<Class<? extends EventObject>, List<ActEventListener>> listeners = isAsync(l.getClass()) ? asyncActEventListeners : actEventListeners;
+        return _bind(listeners, c, l);
+    }
+
     public synchronized EventBus bindSync(Class<? extends EventObject> c, ActEventListener l) {
-        List<ActEventListener> list = actEventListeners.get(c);
-        if (null == list) {
-            list = C.newList();
-            actEventListeners.put(c, list);
-        }
-        if (!list.contains(l)) list.add(l);
-        return this;
+        return _bind(actEventListeners, c, l);
     }
 
     public synchronized EventBus bindAsync(Class<? extends EventObject> c, ActEventListener l) {
-        List<ActEventListener> list = asyncActEventListeners.get(c);
-        if (null == list) {
-            list = C.newList();
-            asyncActEventListeners.put(c, list);
-        }
-        if (!list.contains(l)) list.add(l);
-        return this;
+        return _bind(asyncActEventListeners, c, l);
     }
 
     public synchronized EventBus emit(AppEventId eventId) {
@@ -134,10 +122,10 @@ public class EventBus extends AppServiceBase<EventBus> {
     public synchronized EventBus emit(final AppEvent event) {
         List<AppEventListener> ll = asyncAppEventListeners[event.id()];
         final AppJobManager jobManager = app().jobManager();
-        for (final AppEventListener l: ll) {
+        for (final AppEventListener l : ll) {
             jobManager.now(new Callable<Void>() {
                 @Override
-                public Void call() throws Exception{
+                public Void call() throws Exception {
                     l.on(event);
                     return null;
                 }
@@ -146,7 +134,7 @@ public class EventBus extends AppServiceBase<EventBus> {
         ll.clear();
 
         ll = appEventListeners[event.id()];
-        for (AppEventListener l: ll) {
+        for (AppEventListener l : ll) {
             try {
                 l.on(event);
             } catch (Exception e) {
@@ -165,7 +153,7 @@ public class EventBus extends AppServiceBase<EventBus> {
     public synchronized EventBus emitAsync(final AppEvent event) {
         List<AppEventListener> ll = asyncAppEventListeners[event.id()];
         AppJobManager jobManager = app().jobManager();
-        for (final AppEventListener l: ll) {
+        for (final AppEventListener l : ll) {
             jobManager.now(new Callable<Void>() {
                 @Override
                 public Void call() throws Exception {
@@ -175,7 +163,7 @@ public class EventBus extends AppServiceBase<EventBus> {
             });
         }
         ll = appEventListeners[event.id()];
-        for (final AppEventListener l: ll) {
+        for (final AppEventListener l : ll) {
             jobManager.now(new Callable<Void>() {
                 @Override
                 public Void call() throws Exception {
@@ -193,7 +181,7 @@ public class EventBus extends AppServiceBase<EventBus> {
 
     public synchronized EventBus emitSync(AppEvent event) {
         List<AppEventListener> ll = asyncAppEventListeners[event.id()];
-        for (AppEventListener l: ll) {
+        for (AppEventListener l : ll) {
             try {
                 l.on(event);
             } catch (Exception e) {
@@ -202,7 +190,7 @@ public class EventBus extends AppServiceBase<EventBus> {
             }
         }
         ll = appEventListeners[event.id()];
-        for (AppEventListener l: ll) {
+        for (AppEventListener l : ll) {
             try {
                 l.on(event);
             } catch (Exception e) {
@@ -216,7 +204,7 @@ public class EventBus extends AppServiceBase<EventBus> {
     public synchronized EventBus emitSync(final ActEvent event) {
         Class<? extends ActEvent> c = event.getClass();
         while (c.getName().contains("$")) {
-            c = (Class)c.getSuperclass();
+            c = (Class) c.getSuperclass();
         }
         List<ActEventListener> list = asyncActEventListeners.get(c);
         AppJobManager jobManager = app().jobManager();
@@ -279,7 +267,7 @@ public class EventBus extends AppServiceBase<EventBus> {
     public synchronized EventBus emitAsync(final ActEvent event) {
         Class<? extends ActEvent> c = event.getClass();
         while (c.getName().contains("$")) {
-            c = (Class)c.getSuperclass();
+            c = (Class) c.getSuperclass();
         }
         List<ActEventListener> list = asyncActEventListeners.get(c);
         AppJobManager jobManager = app().jobManager();

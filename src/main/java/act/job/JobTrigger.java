@@ -35,9 +35,9 @@ abstract class JobTrigger {
     }
 
     final void register(_Job job, AppJobManager manager) {
+        job.trigger(this);
         manager.addJob(job);
         schedule(manager, job);
-        job.trigger(this);
     }
 
     void scheduleFollowingCalls(AppJobManager manager, _Job job) {}
@@ -138,6 +138,10 @@ abstract class JobTrigger {
 
     static JobTrigger onAppStop(boolean async) {
         return async ? alongWith(STOP) : before(STOP);
+    }
+
+    static JobTrigger onAppEvent(AppEventId eventId, boolean async) {
+        return async ? alongWith(eventId) : after(eventId);
     }
 
     static JobTrigger delayForSeconds(int seconds) {

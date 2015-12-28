@@ -7,6 +7,7 @@ import act.cli.builtin.Exit;
 import act.handler.CliHandler;
 import act.util.Banner;
 import act.util.DestroyableBase;
+import jline.console.ConsoleReader;
 import org.osgl.$;
 import org.osgl.util.IO;
 import org.osgl.util.S;
@@ -64,18 +65,16 @@ class CliSession extends DestroyableBase implements Runnable {
     public void run() {
         runningThread = Thread.currentThread();
         try {
-            final BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-            final PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
-
-            out.println(Banner.banner(Act.VERSION));
             String user = username();
 
+            ConsoleReader console = new ConsoleReader(socket.getInputStream(), socket.getOutputStream());
+            console.println(Banner.banner(Act.VERSION));
+            console.setPrompt("act[" + user + "]>");
+
             while (!exit) {
-                out.print("act[" + user + "]>");
-                out.flush();
-                final String line = reader.readLine();
+                final String line = console.readLine();
                 if (exit) {
-                    out.println("session terminated");
+                    console.println("session terminated");
                     return;
                 }
                 ts = $.ms();
@@ -88,7 +87,7 @@ class CliSession extends DestroyableBase implements Runnable {
                     continue;
                 }
 
-                CliContext context = new CliContext(line, app, out);
+                CliContext context = new CliContext(line, app, console);
 
                 //handle the command
                 final CliHandler handler = dispatcher.handler(context.command());
@@ -97,14 +96,14 @@ class CliSession extends DestroyableBase implements Runnable {
                     continue;
                 }
                 if (handler == Exit.INSTANCE) {
-                    out.println("bye");
+                    console.println("bye");
                     exit = true;
                     return;
                 }
                 try {
                     handler.handle(context);
                 } catch (Exception e) {
-                    out.println("Error: " + e.getMessage());
+                    console.println("Error: " + e.getMessage());
                 }
             }
         } catch (Throwable e) {

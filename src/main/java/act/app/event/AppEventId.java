@@ -3,6 +3,12 @@ package act.app.event;
 import act.app.App;
 
 public enum AppEventId {
+    EVENT_BUS_INITIALIZED() {
+        @Override
+        public AppEvent of(App app) {
+            return new EventBusInitialized(app);
+        }
+    },
     CONFIG_LOADED() {
         @Override
         public AppEvent of(App app) {
@@ -58,6 +64,17 @@ public enum AppEventId {
         @Override
         public AppEvent of(App app) {
             return new AppStart(app);
+        }
+    },
+    /**
+     * The App POST_START event
+     * is used for framework. Application shall not
+     * use this event
+     */
+    POST_START() {
+        @Override
+        public AppEvent of(App app) {
+            return new AppPostStart(app);
         }
     }, STOP () {
         @Override

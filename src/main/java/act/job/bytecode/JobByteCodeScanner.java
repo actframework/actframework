@@ -2,6 +2,7 @@ package act.job.bytecode;
 
 import act.ActComponent;
 import act.app.AppByteCodeScannerBase;
+import act.app.event.AppEventId;
 import act.asm.*;
 import act.job.JobAnnotationProcessor;
 import act.job.meta.JobClassMetaInfo;
@@ -9,6 +10,7 @@ import act.job.meta.JobClassMetaInfoManager;
 import act.job.meta.JobMethodMetaInfo;
 import act.util.AsmTypes;
 import act.util.ByteCodeVisitor;
+import org.osgl.$;
 import org.osgl.util.E;
 import org.osgl.util.ListBuilder;
 
@@ -124,6 +126,7 @@ public class JobByteCodeScanner extends AppByteCodeScannerBase {
                 this.methodName = methodName;
             }
 
+            @SuppressWarnings("unchecked")
             @Override
             public AnnotationVisitor visitAnnotation(String desc, boolean visible) {
                 AnnotationVisitor av = super.visitAnnotation(desc, visible);
@@ -175,6 +178,7 @@ public class JobByteCodeScanner extends AppByteCodeScannerBase {
             private class ActionAnnotationVisitor extends AnnotationVisitor implements Opcodes {
 
                 Object value;
+                Object async;
                 JobMethodMetaInfo method;
                 Class<? extends Annotation> c;
 
@@ -185,16 +189,28 @@ public class JobByteCodeScanner extends AppByteCodeScannerBase {
                 }
 
                 @Override
+                public void visitEnum(String name, String desc, String value) {
+                    if (desc.contains("AppEventId")) {
+                        this.value = AppEventId.valueOf(value);
+                    }
+                }
+
+                @Override
                 public void visit(String name, Object value) {
                     if ("value".equals(name)) {
                         this.value = value;
                     }
-                    if ("async".endsWith(name)) {
-                        this.value = value;
+                    if ("async".equals(name)) {
+                        this.async = value;
                     }
                 }
 
                 public void doRegistration() {
+                    if (value != null && async != null) {
+                        value = $.T2(value, async);
+                    } else if (value == null) {
+                        value = async;
+                    }
                     annotationProcessor.register(method, c, value);
                 }
             }

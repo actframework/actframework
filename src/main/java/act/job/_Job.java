@@ -1,5 +1,8 @@
 package act.job;
 
+import act.app.App;
+import act.app.event.AppEventId;
+import act.event.AppEventListenerBase;
 import act.util.DestroyableBase;
 import org.osgl.$;
 import org.osgl.exception.NotAppliedException;
@@ -8,6 +11,7 @@ import org.osgl.util.E;
 import org.osgl.util.S;
 
 import java.util.Collection;
+import java.util.EventObject;
 import java.util.List;
 import java.util.UUID;
 
@@ -17,6 +21,7 @@ class _Job extends DestroyableBase implements Runnable {
 
     private String id;
     private boolean oneTime;
+    private boolean executed;
     private AppJobManager manager;
     private JobTrigger trigger;
     private $.Func0<?> worker;
@@ -25,28 +30,20 @@ class _Job extends DestroyableBase implements Runnable {
     private List<_Job> precedenceJobs = C.newList();
 
     _Job(AppJobManager manager) {
-        E.NPE(manager);
-        this.manager = manager;
-        id = uuid();
+        this(uuid(), manager);
     }
 
     _Job(String id, AppJobManager manager) {
-        E.NPE(manager);
-        this.id = (null == id) ? uuid() : id;
-        this.manager = manager;
+        this(id, manager, null);
     }
 
     _Job(String id, AppJobManager manager, $.Func0<?> worker) {
-        E.NPE(worker, manager);
-        this.id = id;
-        this.manager = manager;
-        this.worker = worker;
+        this(id, manager, worker, true);
     }
 
     _Job(String id, AppJobManager manager, $.Func0<?> worker, boolean oneTime) {
-        E.NPE(worker, manager);
         this.id = id;
-        this.manager = manager;
+        this.manager = $.NPE(manager);
         this.worker = worker;
         this.oneTime = oneTime;
     }
@@ -92,6 +89,10 @@ class _Job extends DestroyableBase implements Runnable {
         return oneTime;
     }
 
+    boolean done() {
+        return executed && oneTime;
+    }
+
     final String id() {
         return id;
     }
@@ -102,6 +103,10 @@ class _Job extends DestroyableBase implements Runnable {
     }
 
     final _Job addParallelJob(_Job thatJob) {
+        if (done()) {
+            manager.now(thatJob);
+            return this;
+        }
         parallelJobs.add(thatJob);
         if (isOneTime()) {
             thatJob.setOneTime();
@@ -110,6 +115,10 @@ class _Job extends DestroyableBase implements Runnable {
     }
 
     final _Job addFollowingJob(_Job thatJob) {
+        if (done()) {
+            thatJob.run();
+            return this;
+        }
         followingJobs.add(thatJob);
         if (isOneTime()) {
             thatJob.setOneTime();
@@ -118,6 +127,10 @@ class _Job extends DestroyableBase implements Runnable {
     }
 
     final _Job addPrecedenceJob(_Job thatJob) {
+        if (done()) {
+            thatJob.run();
+            return this;
+        }
         precedenceJobs.add(thatJob);
         if (isOneTime()) {
             thatJob.setOneTime();
@@ -134,9 +147,21 @@ class _Job extends DestroyableBase implements Runnable {
         } catch (RuntimeException e) {
             // TODO inject Job Exception Handling mechanism here
             logger.warn(e, "error executing job %s", id());
-        }
-        if (isOneTime()) {
-            manager().removeJob(this);
+        } finally {
+            executed = true;
+            if (isOneTime()) {
+                App app = manager().app();
+                if (AppEventId.POST_START == app.currentState()) {
+                    manager().removeJob(this);
+                } else {
+                    app.eventBus().bind(AppEventId.POST_START, new AppEventListenerBase() {
+                        @Override
+                        public void on(EventObject event) throws Exception {
+                            manager().removeJob(_Job.this);
+                        }
+                    });
+                }
+            }
         }
         runFollowingJobs();
     }

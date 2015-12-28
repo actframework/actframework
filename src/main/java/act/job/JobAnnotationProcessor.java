@@ -3,9 +3,13 @@ package act.job;
 import act.ActComponent;
 import act.app.App;
 import act.app.AppHolderBase;
+import act.app.event.AppEvent;
+import act.app.event.AppEventId;
 import act.job.bytecode.ReflectedJobInvoker;
 import act.job.meta.JobClassMetaInfo;
 import act.job.meta.JobMethodMetaInfo;
+import org.osgl.$;
+import org.osgl.Osgl;
 import org.osgl.util.E;
 import org.osgl.util.S;
 
@@ -42,8 +46,19 @@ public class JobAnnotationProcessor extends AppHolderBase<JobAnnotationProcessor
             boolean async = null == v ? false : (Boolean)v;
             registerOnAppStart(job, async);
         } else if (OnAppStop.class.isAssignableFrom(anno)) {
-            boolean async = null == v ? false : (Boolean)v;
+            boolean async = null == v ? false : (Boolean) v;
             registerOnAppStop(job, async);
+        } else if (OnAppEvent.class.isAssignableFrom(anno)) {
+            boolean async = false;
+            AppEventId appEventId;
+            if (v instanceof $.T2) {
+                $.T2<AppEventId, Boolean> t2 = $.cast(v);
+                appEventId = t2._1;
+                async = t2._2;
+            } else {
+                appEventId = $.cast(v);
+            }
+            registerOnAppEvent(job, appEventId, async);
         } else {
             throw E.unsupport("Unknown job annotation class: %s", anno.getName());
         }
@@ -96,6 +111,10 @@ public class JobAnnotationProcessor extends AppHolderBase<JobAnnotationProcessor
 
     private void registerOnAppStop(_Job job, boolean async) {
         JobTrigger.onAppStop(async).register(job, manager);
+    }
+
+    private void registerOnAppEvent(_Job job, AppEventId appEventId, boolean async) {
+        JobTrigger.onAppEvent(appEventId, async).register(job, manager);
     }
 
     private boolean validJob(JobMethodMetaInfo method) {

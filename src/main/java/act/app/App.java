@@ -205,6 +205,7 @@ public class App {
         initServiceResourceManager();
         eventEmitted = C.newSet();
         initEventBus();
+        emit(EVENT_BUS_INITIALIZED);
         loadConfig();
         emit(CONFIG_LOADED);
 
@@ -434,15 +435,20 @@ public class App {
         if (null != bus) {
             bus.emit(appEvent);
         }
+        currentState = appEvent;
         eventEmitted().add(appEvent);
     }
 
-    public Set<AppEventId> eventEmitted() {
+    private Set<AppEventId> eventEmitted() {
         return eventEmitted;
     }
 
     public boolean eventEmitted(AppEventId appEvent) {
         return eventEmitted().contains(appEvent);
+    }
+
+    public AppEventId currentState() {
+        return currentState;
     }
 
     private void loadConfig() {
