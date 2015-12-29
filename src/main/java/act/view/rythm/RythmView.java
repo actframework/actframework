@@ -50,7 +50,8 @@ public class RythmView extends View {
             engine = createEngine(app);
             RythmEngine engine0 = engines.putIfAbsent(app, engine);
             if (null != engine0) {
-                engine0.shutdown();
+                engine.shutdown();
+                engine = engine0;
             }
         }
         return engine;
