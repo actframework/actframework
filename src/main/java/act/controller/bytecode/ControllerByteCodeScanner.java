@@ -34,7 +34,6 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
 
     private final static Logger logger = L.get(ControllerByteCodeScanner.class);
     private Router router;
-    private String[] ports = {};
     private ControllerClassMetaInfo classInfo;
     private volatile ControllerClassMetaInfoManager classInfoBase;
 
@@ -80,6 +79,7 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
     }
 
     private class _ByteCodeVisitor extends ByteCodeVisitor {
+        private String[] ports = {};
         @Override
         public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
             logger.trace("Scanning %s", name);
