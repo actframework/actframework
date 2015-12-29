@@ -4,6 +4,7 @@ import act.ResponseImplBase;
 import act.app.ActionContext;
 import act.conf.AppConfig;
 import io.undertow.server.HttpServerExchange;
+import io.undertow.util.HeaderMap;
 import io.undertow.util.Headers;
 import io.undertow.util.HttpString;
 import org.osgl.http.H;
@@ -114,7 +115,9 @@ public class UndertowResponse extends ResponseImplBase<UndertowResponse> {
 
     @Override
     public UndertowResponse addHeader(String name, String value) {
-        return null;
+        HeaderMap map = hse.getResponseHeaders();
+        map.add(HttpString.tryFromString(name), value);
+        return this;
     }
 
     public void closeStreamAndWriter() {

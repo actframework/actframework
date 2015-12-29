@@ -13,6 +13,7 @@ import org.eclipse.jdt.internal.compiler.env.INameEnvironment;
 import org.eclipse.jdt.internal.compiler.env.NameEnvironmentAnswer;
 import org.eclipse.jdt.internal.compiler.impl.CompilerOptions;
 import org.eclipse.jdt.internal.compiler.problem.DefaultProblemFactory;
+import org.osgl.$;
 import org.osgl.logging.L;
 import org.osgl.logging.Logger;
 import org.osgl.util.C;
@@ -209,6 +210,10 @@ class AppCompiler extends DestroyableBase {
                     name0 = S.beforeFirst(name, "$");
                 }
                 Source source = classLoader.source(name0);
+                if (null == source) {
+                    $.nil();
+                    source = classLoader.source(name0);
+                }
                 if (name != name0) {
                     String innerName = S.afterFirst(name, "$");
                     source.compiled(innerName, clazzFile.getBytes());

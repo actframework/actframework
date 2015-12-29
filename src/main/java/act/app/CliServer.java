@@ -44,6 +44,9 @@ class CliServer extends AppServiceBase<CliServer> implements Runnable {
         executor.shutdown();
         Destroyable.Util.destroyAll(sessions.values());
         sessions.clear();
+        if (null != serverSocket) {
+            IO.close(serverSocket);
+        }
     }
 
     void remove(CliSession session) {

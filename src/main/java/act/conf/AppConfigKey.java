@@ -2,6 +2,7 @@ package act.conf;
 
 import act.Act;
 import act.app.App;
+import act.handler.UnknownHttpMethodProcessor;
 import act.view.TemplatePathResolver;
 import act.view.View;
 import org.osgl.$;
@@ -422,6 +423,14 @@ public enum AppConfigKey implements ConfigKey {
      * <p>Default value: {@code default}</p>
      */
     TEMPLATE_HOME("template.home"),
+
+    /**
+     * {@code unknown_http_method_handler} specifies a class/instance that
+     * implements {@link UnknownHttpMethodProcessor} that process
+     * the HTTP methods that are not recognized by {@link act.route.Router},
+     * e.g. "OPTION", "PATCH" etc
+     */
+    UNKNOWN_HTTP_METHOD_HANDLER("unknown_http_method_handler.impl"),
 
     /**
      * {@code url_context} specifies the context part

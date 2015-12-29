@@ -7,6 +7,7 @@ import act.app.App;
 import act.app.AppHolder;
 import act.app.conf.AppConfigurator;
 import act.app.util.NamedPort;
+import act.handler.UnknownHttpMethodProcessor;
 import act.util.*;
 import act.validation.ValidationMessageInterpolator;
 import act.view.TemplatePathResolver;
@@ -1196,6 +1197,30 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         }
     }
 
+    private UnknownHttpMethodProcessor _unknownHttpMethodProcessor = null;
+
+    protected T unknownHttpMethodProcessor(UnknownHttpMethodProcessor handler) {
+        this._unknownHttpMethodProcessor = $.notNull(handler);;
+        return me();
+    }
+
+    public UnknownHttpMethodProcessor unknownHttpMethodProcessor() {
+        if (null == _unknownHttpMethodProcessor) {
+            _unknownHttpMethodProcessor = get(AppConfigKey.UNKNOWN_HTTP_METHOD_HANDLER);
+            if (null == _unknownHttpMethodProcessor) {
+                _unknownHttpMethodProcessor = UnknownHttpMethodProcessor.METHOD_NOT_ALLOWED;
+            }
+        }
+        return _unknownHttpMethodProcessor;
+    }
+
+    private void _mergeUnknownHttpMethodHandler(AppConfig config) {
+        if (null == get(AppConfigKey.UNKNOWN_HTTP_METHOD_HANDLER)) {
+            this._unknownHttpMethodProcessor = config._unknownHttpMethodProcessor;
+        }
+    }
+
+
     private Set<AppConfigurator> mergeTracker = C.newSet();
 
     public void loadJarProperties(Map<String, Properties> jarProperties) {
@@ -1280,6 +1305,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         _mergeSecret(conf);
         _mergeCacheServiceProvider(conf);
         _mergeMessageInterpolator(conf);
+        _mergeUnknownHttpMethodHandler(conf);
 
         Set<String> keys = conf.propKeys();
         for (String k : keys) {

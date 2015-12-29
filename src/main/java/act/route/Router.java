@@ -8,10 +8,7 @@ import act.app.AppServiceBase;
 import act.conf.AppConfig;
 import act.controller.ParamNames;
 import act.handler.*;
-import act.handler.builtin.AlwaysMethodNotAllowed;
-import act.handler.builtin.Echo;
-import act.handler.builtin.Redirect;
-import act.handler.builtin.StaticFileGetter;
+import act.handler.builtin.*;
 import act.handler.builtin.controller.RequestHandlerProxy;
 import act.util.DestroyableBase;
 import org.osgl.$;
@@ -97,7 +94,7 @@ public class Router extends AppServiceBase<Router> {
     // --- routing ---
     public RequestHandler getInvoker(H.Method method, CharSequence path, ActionContext context) {
         if (Arrays.binarySearch(targetMethods, method) < 0) {
-            return AlwaysMethodNotAllowed.INSTANCE;
+            return UnknownHttpMethodHandler.INSTANCE;
         }
         context.router(this);
         Node node = search(method, Path.tokenizer(Unsafe.bufOf(path)), context);
