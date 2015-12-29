@@ -16,6 +16,10 @@ public class RunApp {
     private static final Logger logger = L.get(RunApp.class);
 
     public static void start(Class<?> anyController) throws Exception {
+        start(null, anyController);
+    }
+
+    public static void start(String appName, Class<?> anyController) throws Exception {
         long ts = $.ms();
         String pkg = anyController.getPackage().getName();
         logger.info("run fullstack application with controller package: %s", pkg);
@@ -31,8 +35,8 @@ public class RunApp {
         FullStackAppBootstrapClassLoader classLoader = new FullStackAppBootstrapClassLoader(RunApp.class.getClassLoader());
         Thread.currentThread().setContextClassLoader(classLoader);
         Class<?> actClass = classLoader.loadClass("act.Act");
-        Method m = actClass.getDeclaredMethod("startApp");
-        m.invoke(null);
+        Method m = actClass.getDeclaredMethod("startApp", String.class);
+        m.invoke(null, appName);
         System.out.printf("it talks %sms to start the app\n", $.ms() - ts);
     }
 }

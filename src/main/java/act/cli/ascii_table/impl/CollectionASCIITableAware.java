@@ -30,6 +30,7 @@ import act.cli.ascii_table.spec.IASCIITableAware;
 import act.cli.ascii_table.ASCIITableHeader;
 import org.osgl.$;
 import org.osgl.Osgl;
+import org.osgl.util.S;
 
 /**
  * This class is useful to extract the header and row data from
@@ -100,6 +101,9 @@ public class CollectionASCIITableAware<T> implements IASCIITableAware {
 	}
 
 	private Object getProperty(Osgl.T2<? extends Osgl.Function<String, Serializable>, ? extends Osgl.Func2<String, Serializable, ?>> evaluatorCache, Class<?> dataClazz, T obj, String property) {
+		if (S.eq("this", property)) {
+			return obj;
+		}
 		return $.getProperty(evaluatorCache, obj, property);
 	}
 	

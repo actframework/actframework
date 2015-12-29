@@ -17,10 +17,7 @@ import org.xnio.*;
 import org.xnio.channels.AcceptingChannel;
 
 import java.io.IOException;
-import java.net.Inet4Address;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.UnknownHostException;
+import java.net.*;
 import java.nio.ByteBuffer;
 import java.util.List;
 
@@ -56,7 +53,7 @@ public class UndertowService extends NetworkServiceBase {
     }
 
     @Override
-    protected void clientRegistered(NetworkClient client, int port) {
+    protected void setUpClient(NetworkClient client, int port) throws IOException {
         App app = client.app();
         AppConfig config = app.config();
         InetAddress addr;
@@ -72,13 +69,9 @@ public class UndertowService extends NetworkServiceBase {
         openListener.setRootHandler(handler);
         ChannelListener<AcceptingChannel<StreamConnection>> acceptListener = ChannelListeners.openListenerAdapter(openListener);
 
-        try {
-            AcceptingChannel<? extends StreamConnection> server = worker.createStreamConnectionServer(new InetSocketAddress(addr, port), acceptListener, socketOptions);
-            server.resumeAccepts();
-            channels.add(server);
-        } catch (IOException e) {
-            throw E.ioException(e);
-        }
+        AcceptingChannel<? extends StreamConnection> server = worker.createStreamConnectionServer(new InetSocketAddress(addr, port), acceptListener, socketOptions);
+        server.resumeAccepts();
+        channels.add(server);
     }
 
     @Override

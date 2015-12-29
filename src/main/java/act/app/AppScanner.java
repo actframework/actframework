@@ -46,12 +46,12 @@ public class AppScanner {
         return buildFileProbeMap.size() + projectLayoutProbes.size();
     }
 
-    void scan($.Func1<App, ?> callback) {
+    void scan(String appName, $.Func1<App, ?> callback) {
         File[] appBases = appBases();
         int size = appBases.length;
         for (int i = 0; i < size; ++i) {
             File appBase = appBases[i];
-            scan(appBase, callback);
+            scan(appName, appBase, callback);
         }
     }
 
@@ -60,7 +60,7 @@ public class AppScanner {
         return appBase.listFiles();
     }
 
-    private void scan(File appBase, $.Func1<App, ?> callback) {
+    private void scan(String appName, File appBase, $.Func1<App, ?> callback) {
         App app;
         ProjectLayout layout = probe(appBase);
         if (null == layout && !Act.isDev()) {
@@ -68,6 +68,9 @@ public class AppScanner {
         }
         if (null != layout) {
             app = App.create(appBase, layout);
+            if (null != appName) {
+                app.name(appName);
+            }
             callback.apply(app);
         } else {
             logger.warn("%s is not a valid app base", appBase.getPath());

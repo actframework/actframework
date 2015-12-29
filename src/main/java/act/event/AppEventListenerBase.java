@@ -2,6 +2,9 @@ package act.event;
 
 import act.app.event.AppEvent;
 import act.app.event.AppEventListener;
+import org.osgl.$;
+
+import java.util.EventObject;
 
 public abstract class AppEventListenerBase<EVENT_TYPE extends AppEvent> extends ActEventListenerBase<EVENT_TYPE> implements AppEventListener<EVENT_TYPE> {
     public AppEventListenerBase(CharSequence id) {
@@ -11,4 +14,5 @@ public abstract class AppEventListenerBase<EVENT_TYPE extends AppEvent> extends 
     public AppEventListenerBase() {
         super();
     }
+
 }

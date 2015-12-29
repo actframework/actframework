@@ -17,6 +17,11 @@ public abstract class DiBinder<T> extends ActEvent {
         this.targetClass = targetClass;
     }
 
+    @Override
+    public Class eventType() {
+        return DiBinder.class;
+    }
+
     public Class<T> targetClass() {
         return targetClass;
     }

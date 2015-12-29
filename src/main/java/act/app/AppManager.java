@@ -20,12 +20,12 @@ public class AppManager {
     }
 
     public AppManager scan() {
-        Act.mode().appScanner().scan(_F.loadApp(this));
+        Act.mode().appScanner().scan(null, _F.loadApp(this));
         return this;
     }
 
-    public AppManager loadSingleApp() {
-        AppScanner.SINGLE_APP_SCANNER.scan(_F.loadApp(this));
+    public AppManager loadSingleApp(String name) {
+        AppScanner.SINGLE_APP_SCANNER.scan(name, _F.loadApp(this));
         return this;
     }
 

@@ -5,24 +5,24 @@ import act.app.App;
 import act.app.AppServiceBase;
 import act.app.AppThreadFactory;
 import act.app.event.AppEventId;
+import act.app.event.AppEventListener;
 import act.event.AppEventListenerBase;
 import org.joda.time.DateTime;
 import org.joda.time.Seconds;
+import org.osgl.$;
 import org.osgl.util.C;
 import org.osgl.util.E;
 import org.osgl.util.S;
 import org.rythmengine.utils.Time;
 
 import java.util.EventObject;
-import java.util.List;
-import java.util.Map;
 import java.util.concurrent.*;
 
 @ActComponent
 public class AppJobManager extends AppServiceBase<AppJobManager> {
 
     private ScheduledThreadPoolExecutor executor;
-    private Map<String, _Job> jobs = C.newMap();
+    private ConcurrentMap<String, _Job> jobs = new ConcurrentHashMap<String, _Job>();
 
     static String appEventJobId(AppEventId eventId) {
         return S.builder("__act_app_").append(eventId.toString().toLowerCase()).toString();
@@ -32,14 +32,7 @@ public class AppJobManager extends AppServiceBase<AppJobManager> {
         super(app);
         initExecutor(app);
         for (AppEventId appEventId : AppEventId.values()) {
-            final String jobId = appEventJobId(appEventId);
-            addJob(new _Job(jobId, this));
-            app.eventBus().bind(appEventId, new AppEventListenerBase() {
-                @Override
-                public void on(EventObject event) throws Exception {
-                    jobs.get(jobId).run();
-                }
-            });
+            createAppEventListener(appEventId);
         }
     }
 
@@ -157,4 +150,23 @@ public class AppJobManager extends AppServiceBase<AppJobManager> {
         executor = new ScheduledThreadPoolExecutor(poolSize, new AppThreadFactory("jobs"), new ThreadPoolExecutor.AbortPolicy());
     }
 
+    private static class _AppEventListener extends AppEventListenerBase {
+        private Runnable worker;
+        _AppEventListener(String id, Runnable worker) {
+            super(id);
+            this.worker = $.NPE(worker);
+        }
+
+        @Override
+        public void on(EventObject event) throws Exception {
+            worker.run();
+        }
+    }
+
+    private void createAppEventListener(AppEventId appEventId) {
+        String jobId = appEventJobId(appEventId);
+        _Job job = new _Job(jobId, this);
+        addJob(job);
+        app().eventBus().bind(appEventId, new _AppEventListener(jobId, job));
+    }
 }

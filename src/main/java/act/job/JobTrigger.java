@@ -3,6 +3,7 @@ package act.job;
 import act.app.App;
 import act.app.event.AppEventId;
 import act.conf.AppConfig;
+import act.event.AppEventListenerBase;
 import com.cronutils.model.CronType;
 import com.cronutils.model.definition.CronDefinition;
 import com.cronutils.model.definition.CronDefinitionBuilder;
@@ -18,6 +19,7 @@ import org.osgl.util.E;
 import org.osgl.util.S;
 import org.rythmengine.utils.Time;
 
+import java.util.EventObject;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
@@ -186,7 +188,21 @@ abstract class JobTrigger {
         }
 
         @Override
-        void schedule(AppJobManager manager, _Job job) {
+        void schedule(final AppJobManager manager, final _Job job) {
+            App app = manager.app();
+            if (AppEventId.POST_START != app.currentState()) {
+                app.eventBus().bindAsync(AppEventId.POST_START, new AppEventListenerBase() {
+                    @Override
+                    public void on(EventObject event) throws Exception {
+                        delayedSchedule(manager, job);
+                    }
+                });
+            } else {
+                delayedSchedule(manager, job);
+            }
+        }
+
+        private void delayedSchedule(AppJobManager manager, _Job job) {
             DateTime now = DateTime.now();
             ExecutionTime executionTime = ExecutionTime.forCron(cron);
             Duration nextExecution = executionTime.timeToNextExecution(now.withDurationAdded(1, 1));
@@ -232,7 +248,21 @@ abstract class JobTrigger {
         }
 
         @Override
-        void schedule(AppJobManager manager, _Job job) {
+        void schedule(final AppJobManager manager, final _Job job) {
+            App app = manager.app();
+            if (AppEventId.POST_START != app.currentState()) {
+                app.eventBus().bindAsync(AppEventId.POST_START, new AppEventListenerBase() {
+                    @Override
+                    public void on(EventObject event) throws Exception {
+                        delayedSchedule(manager, job);
+                    }
+                });
+            } else {
+                delayedSchedule(manager, job);
+            }
+        }
+
+        private void delayedSchedule(AppJobManager manager, _Job job) {
             ScheduledThreadPoolExecutor executor = manager.executor();
             executor.scheduleWithFixedDelay(job, seconds, seconds, TimeUnit.SECONDS);
         }
@@ -242,9 +272,6 @@ abstract class JobTrigger {
         _Every(String duration) {
             super(duration);
         }
-        _Every(int seconds) {
-            super(seconds);
-        }
 
         @Override
         public String toString() {
@@ -252,7 +279,21 @@ abstract class JobTrigger {
         }
 
         @Override
-        void schedule(AppJobManager manager, _Job job) {
+        void schedule(final AppJobManager manager, final _Job job) {
+            App app = manager.app();
+            if (AppEventId.POST_START != app.currentState()) {
+                app.eventBus().bindAsync(AppEventId.POST_START, new AppEventListenerBase() {
+                    @Override
+                    public void on(EventObject event) throws Exception {
+                        delayedSchedule(manager, job);
+                    }
+                });
+            } else {
+                delayedSchedule(manager, job);
+            }
+        }
+
+        private void delayedSchedule(AppJobManager manager, _Job job) {
             ScheduledThreadPoolExecutor executor = manager.executor();
             executor.scheduleAtFixedRate(job, seconds, seconds, TimeUnit.SECONDS);
         }

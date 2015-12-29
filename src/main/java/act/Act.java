@@ -177,20 +177,20 @@ public final class Act {
     }
 
     public static void startServer() {
-        start(false);
+        start(false, null);
     }
 
-    public static void startApp() {
+    public static void startApp(String appName) {
         String s = System.getProperty("app.mode");
         if (null != s) {
             mode = Mode.valueOfIgnoreCase(s);
         } else {
             mode = Mode.DEV;
         }
-        start(true);
+        start(true, appName);
     }
 
-    private static void start(boolean singleAppServer) {
+    private static void start(boolean singleAppServer, String appName) {
         Banner.print();
         loadConfig();
         initPluginManager();
@@ -205,7 +205,7 @@ public final class Act {
         initNetworkLayer();
         initApplicationManager();
         if (singleAppServer) {
-            appManager.loadSingleApp();
+            appManager.loadSingleApp(appName);
         } else {
             appManager.scan();
         }

@@ -63,6 +63,11 @@ public class NetworkClient extends $.F1<ActionContext, Void> {
         return null;
     }
 
+    @Override
+    public String toString() {
+        return app().name();
+    }
+
     private Router router() {
         return app.router(port);
     }

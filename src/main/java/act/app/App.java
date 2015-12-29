@@ -65,6 +65,7 @@ public class App {
     }
 
     private volatile String profile;
+    private String name;
     private File appBase;
     private File appHome;
     private Router router;
@@ -99,6 +100,11 @@ public class App {
     }
 
     protected App(File appBase, ProjectLayout layout) {
+        this("MyApp", appBase, layout);
+    }
+
+    protected App(String name, File appBase, ProjectLayout layout) {
+        this.name = name;
         this.appBase = appBase;
         this.layout = layout;
         this.appHome = RuntimeDirs.home(this);
@@ -107,6 +113,15 @@ public class App {
 
     public static App instance() {
         return INST;
+    }
+
+    App name(String name) {
+        this.name = name;
+        return this;
+    }
+
+    public String name() {
+        return name;
     }
 
     public String profile() {
@@ -260,7 +275,8 @@ public class App {
         emit(DEPENDENCY_INJECTOR_LOADED);
         emit(PRE_START);
         emit(START);
-        logger.info("App started");
+        logger.info("App[%s] started", name());
+        emit(POST_START);
     }
 
     public AppBuilder builder() {
@@ -352,6 +368,9 @@ public class App {
         if (App.class == clz) return $.cast(this);
         if (AppConfig.class == clz) return $.cast(config());
         if (AppCrypto.class == clz) return $.cast(crypto());
+        if (AppJobManager.class == clz) return $.cast(jobManager());
+        if (EventBus.class == clz) return $.cast(eventBus());
+        if (CacheService.class == clz) return $.cast(cache());
         if (null != dependencyInjector) {
             return dependencyInjector.create(clz);
         } else {
@@ -414,7 +433,7 @@ public class App {
     App register(final AppService service, boolean noDiBinder) {
         appServiceRegistry.register(service);
         if (null != eventBus && !noDiBinder) {
-            eventBus.bind(AppEventId.PRE_START, new AppEventListenerBase() {
+            eventBus.bind(AppEventId.DEPENDENCY_INJECTOR_LOADED, new AppEventListenerBase() {
                 @Override
                 public void on(EventObject event) throws Exception {
                     final App app = App.this;
@@ -431,12 +450,12 @@ public class App {
     }
 
     public void emit(AppEventId appEvent) {
+        currentState = appEvent;
+        eventEmitted().add(appEvent);
         EventBus bus = eventBus();
         if (null != bus) {
             bus.emit(appEvent);
         }
-        currentState = appEvent;
-        eventEmitted().add(appEvent);
     }
 
     private Set<AppEventId> eventEmitted() {

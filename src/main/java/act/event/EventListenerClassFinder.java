@@ -37,10 +37,10 @@ public class EventListenerClassFinder extends SubTypeFinder2<ActEventListener> {
             if (t instanceof Class) {
                 final Class tc = (Class) t;
                 if (ActEvent.class.isAssignableFrom(tc)) {
-                    app.eventBus().bind(AppEventId.DEPENDENCY_INJECTOR_LOADED, new AppEventListenerBase() {
+                    app.eventBus().bind(AppEventId.START, new AppEventListenerBase() {
                         @Override
                         public void on(EventObject event) throws Exception {
-                            ActEventListener listener = (ActEventListener) app.newInstance(target);
+                            ActEventListener listener = app.newInstance(target);
                             bus.bind(tc, listener);
                         }
                     });
