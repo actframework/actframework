@@ -5,7 +5,6 @@ import act.app.App;
 import act.app.AppServiceBase;
 import act.app.AppThreadFactory;
 import act.app.event.AppEventId;
-import act.app.event.AppEventListener;
 import act.event.AppEventListenerBase;
 import org.joda.time.DateTime;
 import org.joda.time.Seconds;

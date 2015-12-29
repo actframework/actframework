@@ -3,13 +3,11 @@ package act.job;
 import act.ActComponent;
 import act.app.App;
 import act.app.AppHolderBase;
-import act.app.event.AppEvent;
 import act.app.event.AppEventId;
 import act.job.bytecode.ReflectedJobInvoker;
 import act.job.meta.JobClassMetaInfo;
 import act.job.meta.JobMethodMetaInfo;
 import org.osgl.$;
-import org.osgl.Osgl;
 import org.osgl.util.E;
 import org.osgl.util.S;
 

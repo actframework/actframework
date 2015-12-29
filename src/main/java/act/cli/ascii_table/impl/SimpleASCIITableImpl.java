@@ -15,16 +15,14 @@
  */
 package act.cli.ascii_table.impl;
 
-import java.io.PrintStream;
+import act.cli.ascii_table.ASCIITableHeader;
+import act.cli.ascii_table.spec.IASCIITable;
+import act.cli.ascii_table.spec.IASCIITableAware;
+
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
-
-import act.cli.ascii_table.spec.IASCIITable;
-import act.cli.ascii_table.spec.IASCIITableAware;
-import act.cli.ascii_table.ASCIITableHeader;
-import act.view.SystemImplicitVariableProvider;
 
 /**
  * This implementation builds the header and data  rows

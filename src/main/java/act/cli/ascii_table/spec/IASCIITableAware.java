@@ -15,9 +15,9 @@
  */
 package act.cli.ascii_table.spec;
 
-import java.util.List;
-
 import act.cli.ascii_table.ASCIITableHeader;
+
+import java.util.List;
 
 /**
  * An ASCII table interface for extracting the header, data

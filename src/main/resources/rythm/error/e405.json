@@ -1,0 +1,1 @@
+@extends(_base, code: 405, msg: "Method Not Allowed")

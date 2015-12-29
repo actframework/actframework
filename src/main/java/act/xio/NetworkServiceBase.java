@@ -6,7 +6,6 @@ import org.osgl.util.C;
 import org.osgl.util.E;
 
 import java.io.IOException;
-import java.net.BindException;
 import java.util.Map;
 
 /**

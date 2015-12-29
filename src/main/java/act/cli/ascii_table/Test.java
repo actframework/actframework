@@ -15,11 +15,11 @@
  */
 package act.cli.ascii_table;
 
-import java.util.Arrays;
-import java.util.List;
-
 import act.cli.ascii_table.impl.CollectionASCIITableAware;
 import act.cli.ascii_table.spec.IASCIITableAware;
+
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * ASCII Table test cases.

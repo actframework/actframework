@@ -1,7 +1,6 @@
 package act.app;
 
 import act.Act;
-import act.boot.app.RunApp;
 import act.cli.CliDispatcher;
 import act.cli.builtin.Exit;
 import act.handler.CliHandler;
@@ -12,10 +11,7 @@ import org.osgl.$;
 import org.osgl.util.IO;
 import org.osgl.util.S;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.concurrent.atomic.AtomicInteger;
 

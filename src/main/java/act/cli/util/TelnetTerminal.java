@@ -1,12 +1,9 @@
 package act.cli.util;
 
 import jline.Terminal2;
-import jline.TerminalSupport;
 import jline.UnixTerminal;
 import net.wimpi.telnetd.io.BasicTerminalIO;
 import org.osgl.$;
-
-import java.io.IOException;
 
 /**
  * Implement jline2 Terminal on Telnet Socket IO

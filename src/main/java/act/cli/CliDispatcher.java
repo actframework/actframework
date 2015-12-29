@@ -2,11 +2,9 @@ package act.cli;
 
 import act.app.App;
 import act.app.AppServiceBase;
-import act.app.CliContext;
 import act.cli.builtin.Exit;
 import act.cli.builtin.Help;
 import act.cli.meta.CommandMethodMetaInfo;
-import act.cli.util.CommandLineParser;
 import act.handler.CliHandler;
 import act.handler.builtin.cli.CliHandlerProxy;
 import org.osgl.logging.LogManager;

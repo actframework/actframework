@@ -1,16 +1,9 @@
 package act.cli.meta;
 
-import act.app.App;
 import act.asm.Type;
-import act.controller.meta.*;
 import act.util.DestroyableBase;
-import org.osgl.http.H;
-import org.osgl.mvc.annotation.*;
 import org.osgl.util.C;
 import org.osgl.util.S;
-
-import java.lang.annotation.Annotation;
-import java.util.Set;
 
 import static act.Destroyable.Util.destroyAll;
 

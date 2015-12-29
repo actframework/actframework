@@ -8,6 +8,7 @@ import act.app.AppServiceBase;
 import act.conf.AppConfig;
 import act.controller.ParamNames;
 import act.handler.*;
+import act.handler.builtin.AlwaysMethodNotAllowed;
 import act.handler.builtin.Echo;
 import act.handler.builtin.Redirect;
 import act.handler.builtin.StaticFileGetter;
@@ -24,18 +25,15 @@ import org.osgl.util.*;
 import java.io.File;
 import java.io.PrintStream;
 import java.io.Serializable;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.regex.Pattern;
 
 @ActComponent
 public class Router extends AppServiceBase<Router> {
 
-    private static final NotFound NOT_FOUND = new NotFound();
-    private static final H.Method[] targetMethods = new H.Method[]{H.Method.GET, H.Method.POST, H.Method.PUT,
-            H.Method.DELETE};
+    private static final NotFound NOT_FOUND = NotFound.INSTANCE;
+    private static final H.Method[] targetMethods = new H.Method[]{
+            H.Method.GET, H.Method.POST, H.Method.DELETE, H.Method.PUT};
     private static final Logger logger = L.get(Router.class);
 
     private Node _GET = Node.newRoot();
@@ -98,6 +96,9 @@ public class Router extends AppServiceBase<Router> {
 
     // --- routing ---
     public RequestHandler getInvoker(H.Method method, CharSequence path, ActionContext context) {
+        if (Arrays.binarySearch(targetMethods, method) < 0) {
+            return AlwaysMethodNotAllowed.INSTANCE;
+        }
         context.router(this);
         Node node = search(method, Path.tokenizer(Unsafe.bufOf(path)), context);
         return getInvokerFrom(node);

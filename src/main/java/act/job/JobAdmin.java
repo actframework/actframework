@@ -1,7 +1,6 @@
 package act.job;
 
 import act.app.App;
-import act.app.CliContext;
 import act.cli.Command;
 import act.cli.HelpMsg;
 import act.cli.Optional;

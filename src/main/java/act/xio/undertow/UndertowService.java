@@ -17,7 +17,10 @@ import org.xnio.*;
 import org.xnio.channels.AcceptingChannel;
 
 import java.io.IOException;
-import java.net.*;
+import java.net.Inet4Address;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.util.List;
 

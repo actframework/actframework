@@ -1,11 +1,8 @@
 package act.cli.bytecode;
 
-import act.app.ActionContext;
 import act.app.App;
 import act.app.CliContext;
-import act.app.data.BinderManager;
 import act.app.data.StringValueResolverManager;
-import act.asm.Type;
 import act.cli.CliError;
 import act.cli.CommandExecutor;
 import act.cli.meta.CommandMethodMetaInfo;
@@ -13,23 +10,11 @@ import act.cli.meta.CommandParamMetaInfo;
 import act.cli.meta.OptionAnnoInfo;
 import act.cli.util.CommandLineParser;
 import act.conf.AppConfig;
-import act.controller.ActionMethodParamAnnotationHandler;
-import act.controller.Controller;
-import act.controller.meta.BindAnnoInfo;
-import act.controller.meta.ParamMetaInfo;
-import act.exception.BindException;
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
 import com.esotericsoftware.reflectasm.MethodAccess;
 import org.osgl.$;
-import org.osgl.mvc.result.Result;
-import org.osgl.mvc.util.Binder;
-import org.osgl.mvc.util.StringValueResolver;
 import org.osgl.util.E;
 import org.osgl.util.S;
 
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.List;
 

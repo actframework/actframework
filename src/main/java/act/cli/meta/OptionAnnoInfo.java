@@ -1,6 +1,5 @@
 package act.cli.meta;
 
-import org.osgl.util.C;
 import org.osgl.util.E;
 import org.osgl.util.S;
 

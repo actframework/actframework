@@ -1,7 +1,6 @@
 package act.cli.builtin;
 
 import act.app.CliContext;
-import act.handler.CliHandler;
 import act.handler.CliHandlerBase;
 import org.osgl.util.E;
 

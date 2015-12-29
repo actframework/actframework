@@ -15,22 +15,18 @@
  */
 package act.cli.ascii_table.impl;
 
+import act.app.CliContext;
+import act.cli.ascii_table.ASCIITableHeader;
+import act.cli.ascii_table.spec.IASCIITableAware;
+import org.osgl.$;
+import org.osgl.Osgl;
+import org.osgl.util.S;
+
 import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.math.BigDecimal;
 import java.text.DecimalFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import act.app.CliContext;
-import act.cli.ascii_table.spec.IASCIITableAware;
-import act.cli.ascii_table.ASCIITableHeader;
-import org.osgl.$;
-import org.osgl.Osgl;
-import org.osgl.util.S;
+import java.util.*;
 
 /**
  * This class is useful to extract the header and row data from

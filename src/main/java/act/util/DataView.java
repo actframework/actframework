@@ -1,6 +1,5 @@
 package act.util;
 
-import org.osgl.$;
 import org.osgl.util.C;
 
 import java.lang.annotation.ElementType;

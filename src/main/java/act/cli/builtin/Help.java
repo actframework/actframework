@@ -5,7 +5,6 @@ import act.cli.CliDispatcher;
 import act.handler.CliHandler;
 import act.handler.CliHandlerBase;
 import org.osgl.util.C;
-import org.osgl.util.E;
 import org.osgl.util.S;
 
 import java.util.List;

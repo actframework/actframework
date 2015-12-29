@@ -3,7 +3,6 @@ package act.xio;
 import act.app.ActionContext;
 import act.app.App;
 import act.app.RequestRefreshClassLoader;
-import act.app.RequestServerRestart;
 import act.app.util.NamedPort;
 import act.handler.RequestHandler;
 import act.route.Router;

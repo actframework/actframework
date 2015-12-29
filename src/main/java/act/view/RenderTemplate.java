@@ -1,7 +1,6 @@
 package act.view;
 
 import act.Act;
-import act.app.ActAppException;
 import act.app.ActionContext;
 import act.exception.ActException;
 import org.osgl.http.H;

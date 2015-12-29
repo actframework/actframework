@@ -1,7 +1,6 @@
 package testapp.cli;
 
 import act.cli.Command;
-import act.cli.HelpMsg;
 import act.cli.Optional;
 import act.cli.Required;
 import act.util.DataView;

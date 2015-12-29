@@ -1,7 +1,6 @@
 package act.cli.util;
 
 import act.TestBase;
-import act.cli.InvalidCommandLineException;
 import org.junit.Test;
 import org.osgl.util.C;
 

@@ -7,25 +7,26 @@ import act.app.TestingAppClassLoader;
 import act.asm.Type;
 import act.cli.CliDispatcher;
 import act.cli.meta.*;
-import act.controller.meta.*;
+import act.controller.meta.HandlerMethodMetaInfo;
 import act.handler.CliHandler;
 import act.job.AppJobManager;
 import act.util.AsmTypes;
 import act.util.DataView;
 import act.util.Files;
-import testapp.cli.InstanceWithReturnType;
-import testapp.cli.StaticWithoutReturnType;
 import org.junit.Before;
 import org.junit.Test;
 import org.osgl.$;
 import org.osgl.util.C;
 import org.osgl.util.S;
+import testapp.cli.InstanceWithReturnType;
+import testapp.cli.StaticWithoutReturnType;
 
 import java.io.File;
 import java.util.List;
 
 import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class CommanderByteCodeScannerTest extends TestBase {
 
