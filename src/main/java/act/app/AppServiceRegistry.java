@@ -30,12 +30,9 @@ class AppServiceRegistry {
     }
 
     void destroy() {
-        for (Destroyable service : appendix) {
-            service.destroy();
-        }
-        for (Destroyable service : registry.values()) {
-            service.destroy();
-        }
+        Destroyable.Util.destroyAll(C.<Destroyable>list(appendix));
+        Destroyable.Util.destroyAll(C.<Destroyable>list(registry.values()));
+        appendix.clear();
         registry.clear();
     }
 
