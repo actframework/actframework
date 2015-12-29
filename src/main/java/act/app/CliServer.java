@@ -1,5 +1,6 @@
 package act.app;
 
+import act.Act;
 import act.Destroyable;
 import act.exception.ActException;
 import org.osgl.logging.LogManager;
@@ -11,6 +12,7 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -44,9 +46,6 @@ class CliServer extends AppServiceBase<CliServer> implements Runnable {
         executor.shutdown();
         Destroyable.Util.destroyAll(sessions.values());
         sessions.clear();
-        if (null != serverSocket) {
-            IO.close(serverSocket);
-        }
     }
 
     void remove(CliSession session) {
@@ -77,16 +76,16 @@ class CliServer extends AppServiceBase<CliServer> implements Runnable {
             return;
         }
         running.set(false);
+        if (null != monitorThread) {
+            monitorThread.interrupt();
+            monitorThread = null;
+        }
         try {
             serverSocket.close();
         } catch (IOException e) {
             log.warn(e, "error closing server socket");
         } finally {
             serverSocket = null;
-        }
-        if (null != monitorThread) {
-            monitorThread.interrupt();
-            monitorThread = null;
         }
     }
 

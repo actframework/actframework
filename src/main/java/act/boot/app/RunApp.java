@@ -20,15 +20,19 @@ public class RunApp {
     }
 
     public static void start(String appName, Class<?> anyController) throws Exception {
-        long ts = $.ms();
         String pkg = anyController.getPackage().getName();
-        logger.info("run fullstack application with controller package: %s", pkg);
-        System.setProperty(AppConfigKey.CONTROLLER_PACKAGE.key(), pkg);
+        start(appName, pkg);
+    }
+
+    public static void start(String appName, String packageName) throws Exception {
+        long ts = $.ms();
+        logger.info("run fullstack application with controller package: %s", packageName);
+        System.setProperty(AppConfigKey.CONTROLLER_PACKAGE.key(), packageName);
         final String SCAN_KEY = AppConfigKey.SCAN_PACKAGE.key();
         if (!System.getProperties().containsKey(SCAN_KEY)) {
-            String scan = pkg;
-            if (FastStr.of(pkg).afterLast('.').startsWith("controller")) {
-                scan = FastStr.of(pkg).beforeLast('.').toString();
+            String scan = packageName;
+            if (FastStr.of(packageName).afterLast('.').startsWith("controller")) {
+                scan = FastStr.of(packageName).beforeLast('.').toString();
             }
             System.setProperty(AppConfigKey.SCAN_PACKAGE.key(), scan);
         }

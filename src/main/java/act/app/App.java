@@ -201,7 +201,7 @@ public class App {
         return layout;
     }
 
-    public void detectChanges() {
+    public synchronized void detectChanges() {
         classLoader.detectChanges();
         if (null != compilationException) {
             throw ActServerError.of(compilationException, this);
@@ -213,7 +213,7 @@ public class App {
         refresh();
     }
 
-    public void refresh() {
+    public synchronized void refresh() {
         logger.info("App starting ....");
         profile = null;
         Act.viewManager().reload(this);

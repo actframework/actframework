@@ -1,5 +1,6 @@
 package act.xio;
 
+import act.Act;
 import act.app.ActionContext;
 import act.app.App;
 import act.app.RequestRefreshClassLoader;
@@ -14,7 +15,7 @@ import org.osgl.mvc.result.Result;
 import org.osgl.util.E;
 
 public class NetworkClient extends $.F1<ActionContext, Void> {
-    private App app;
+    final private App app;
     private NamedPort port;
 
     public NetworkClient(App app) {
@@ -36,10 +37,14 @@ public class NetworkClient extends $.F1<ActionContext, Void> {
         String url = req.url();
         H.Method method = req.method();
         try {
-            try {
-                app.detectChanges();
-            } catch (RequestRefreshClassLoader refreshRequest) {
-                app.refresh();
+            if (Act.isDev()) {
+                synchronized (app) {
+                    try {
+                        app.detectChanges();
+                    } catch (RequestRefreshClassLoader refreshRequest) {
+                        app.refresh();
+                    }
+                }
             }
             RequestHandler rh = router().getInvoker(method, url, ctx);
             ctx.handler(rh);

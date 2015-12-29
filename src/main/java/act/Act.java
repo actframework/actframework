@@ -221,7 +221,7 @@ public final class Act {
 
     public static RequestRefreshClassLoader requestRefreshClassLoader() {
         E.illegalStateIf(!isDev());
-        throw new RequestRefreshClassLoader();
+        throw RequestRefreshClassLoader.INSTANCE;
     }
 
     public static void hook(App app) {

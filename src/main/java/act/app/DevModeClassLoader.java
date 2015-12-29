@@ -268,7 +268,7 @@ public class DevModeClassLoader extends AppClassLoader {
     private final FsEventListener sourceChangeListener = new FsEventListener() {
         @Override
         public void on(FsEvent... events) {
-            throw RequestRefreshClassLoader.INSTANCE;
+            Act.requestRefreshClassLoader();
         }
     };
 
