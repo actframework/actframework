@@ -10,7 +10,7 @@ import org.osgl.logging.L;
 import org.osgl.logging.Logger;
 
 @ActComponent
-public abstract class AppCodeScannerPluginBase implements Plugin {
+public abstract class AppCodeScannerPluginBase extends DestroyableBase implements Plugin {
 
     protected final static Logger logger = L.get(AppCodeScannerPluginBase.class);
 

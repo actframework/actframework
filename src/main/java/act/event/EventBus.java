@@ -8,6 +8,7 @@ import act.app.event.AppEvent;
 import act.app.event.AppEventId;
 import act.app.event.AppEventListener;
 import act.job.AppJobManager;
+import org.osgl.mvc.result.Result;
 import org.osgl.util.C;
 import org.osgl.util.E;
 
@@ -122,34 +123,62 @@ public class EventBus extends AppServiceBase<EventBus> {
         return _bind(asyncActEventListeners, c, l);
     }
 
+
+    @SuppressWarnings("unchecked")
+    private void callOn(ActEvent e, ActEventListener l) {
+        try {
+            l.on(e);
+        } catch (Result r) {
+            // in case event listener needs to return a result back
+            throw r;
+        } catch (Exception x) {
+            logger.error(x, "Error executing job");
+        }
+    }
+
+    private <T extends ActEvent> void callOn(final T event, List<? extends ActEventListener> listeners, boolean async) {
+        if (null == listeners) {
+            return;
+        }
+        AppJobManager jobManager = null;
+        if (async) {
+            jobManager = app().jobManager();
+        }
+        // copy the list to avoid ConcurrentModificationException
+        listeners = C.list(listeners);
+        for (final ActEventListener l : listeners) {
+            if (!async) {
+                callOn(event, l);
+            } else {
+                jobManager.now(new Callable<Object>() {
+                    @Override
+                    public Object call() throws Exception {
+                        callOn(event, l);
+                        return null;
+                    }
+                });
+            }
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private void callOn(final AppEvent event, List[] appEventListeners, boolean async) {
+        List<AppEventListener> ll = appEventListeners[event.id()];
+        callOn(event, ll, async);
+    }
+
+    private void callOn(ActEvent event, Map<Class<? extends EventObject>, List<ActEventListener>> listeners, boolean async) {
+        List<ActEventListener> list = listeners.get(event.eventType());
+        callOn(event, list, async);
+    }
+
     public synchronized EventBus emit(AppEventId eventId) {
         return emit(appEventLookup.get(eventId));
     }
 
     public synchronized EventBus emit(final AppEvent event) {
-        List<AppEventListener> ll = asyncAppEventListeners[event.id()];
-        final AppJobManager jobManager = app().jobManager();
-        for (final AppEventListener l : ll) {
-            jobManager.now(new Callable<Void>() {
-                @Override
-                public Void call() throws Exception {
-                    l.on(event);
-                    return null;
-                }
-            });
-        }
-        ll.clear();
-
-        ll = appEventListeners[event.id()];
-        for (AppEventListener l : ll) {
-            try {
-                l.on(event);
-            } catch (Exception e) {
-                logger.error(e, "Error executing job");
-                throw E.tbd("support handling exception in jobs");
-            }
-        }
-        ll.clear();
+        callOn(event, asyncAppEventListeners, true);
+        callOn(event, appEventListeners, false);
         return this;
     }
 
@@ -158,27 +187,8 @@ public class EventBus extends AppServiceBase<EventBus> {
     }
 
     public synchronized EventBus emitAsync(final AppEvent event) {
-        List<AppEventListener> ll = asyncAppEventListeners[event.id()];
-        AppJobManager jobManager = app().jobManager();
-        for (final AppEventListener l : ll) {
-            jobManager.now(new Callable<Void>() {
-                @Override
-                public Void call() throws Exception {
-                    l.on(event);
-                    return null;
-                }
-            });
-        }
-        ll = appEventListeners[event.id()];
-        for (final AppEventListener l : ll) {
-            jobManager.now(new Callable<Void>() {
-                @Override
-                public Void call() throws Exception {
-                    l.on(event);
-                    return null;
-                }
-            });
-        }
+        callOn(event, asyncAppEventListeners, true);
+        callOn(event, appEventListeners, true);
         return this;
     }
 
@@ -187,118 +197,27 @@ public class EventBus extends AppServiceBase<EventBus> {
     }
 
     public synchronized EventBus emitSync(AppEvent event) {
-        List<AppEventListener> ll = asyncAppEventListeners[event.id()];
-        for (AppEventListener l : ll) {
-            try {
-                l.on(event);
-            } catch (Exception e) {
-                logger.error(e, "Error executing job");
-                throw E.tbd("Support exception in jobs");
-            }
-        }
-        ll = appEventListeners[event.id()];
-        for (AppEventListener l : ll) {
-            try {
-                l.on(event);
-            } catch (Exception e) {
-                logger.error(e, "Error executing job");
-                throw E.tbd("Support exception in jobs");
-            }
-        }
+        callOn(event, asyncAppEventListeners, false);
+        callOn(event, appEventListeners, false);
         return this;
     }
 
     public synchronized EventBus emitSync(final ActEvent event) {
-        Class<? extends ActEvent> c = event.getClass();
-        while (c.getName().contains("$")) {
-            c = (Class) c.getSuperclass();
-        }
-        List<ActEventListener> list = asyncActEventListeners.get(c);
-        AppJobManager jobManager = app().jobManager();
-        if (null != list) {
-            for (final ActEventListener l : list) {
-                try {
-                    l.on(event);
-                } catch (Exception e) {
-                    logger.error(e, "Error executing job");
-                    throw E.tbd("Support exception in jobs");
-                }
-            }
-        }
-        list = actEventListeners.get(c);
-        if (null != list) {
-            for (ActEventListener l : list) {
-                try {
-                    l.on(event);
-                } catch (Exception e) {
-                    logger.error(e, "Error executing job");
-                    throw E.tbd("Support exception in jobs");
-                }
-            }
-        }
+        callOn(event, asyncActEventListeners, false);
+        callOn(event, actEventListeners, false);
         return this;
     }
 
     @SuppressWarnings("unchecked")
     public synchronized EventBus emit(final ActEvent event) {
-        Class<? extends ActEvent> c = event.eventType();
-        List<ActEventListener> list = asyncActEventListeners.get(c);
-        AppJobManager jobManager = app().jobManager();
-        if (null != list) {
-            for (final ActEventListener l : list) {
-                jobManager.now(new Callable<Void>() {
-                    @Override
-                    public Void call() throws Exception {
-                        l.on(event);
-                        return null;
-                    }
-                });
-            }
-        }
-        list = actEventListeners.get(c);
-        if (null != list) {
-            for (ActEventListener l : list) {
-                try {
-                    l.on(event);
-                } catch (Exception e) {
-                    logger.error(e, "Error executing job");
-                    throw E.tbd("Support exception in jobs");
-                }
-            }
-        }
+        callOn(event, asyncActEventListeners, true);
+        callOn(event, actEventListeners, false);
         return this;
     }
 
     public synchronized EventBus emitAsync(final ActEvent event) {
-        Class<? extends ActEvent> c = event.getClass();
-        while (c.getName().contains("$")) {
-            c = (Class) c.getSuperclass();
-        }
-        List<ActEventListener> list = asyncActEventListeners.get(c);
-        AppJobManager jobManager = app().jobManager();
-        if (null != list) {
-            for (final ActEventListener l : list) {
-                jobManager.now(new Callable<Void>() {
-                    @Override
-                    public Void call() throws Exception {
-                        l.on(event);
-                        return null;
-                    }
-                });
-            }
-        }
-        list = actEventListeners.get(c);
-        if (null != list) {
-            for (final ActEventListener l : list) {
-                jobManager.now(new Callable<Void>() {
-                    @Override
-                    public Void call() throws Exception {
-                        l.on(event);
-                        return null;
-                    }
-                });
-            }
-        }
+        callOn(event, asyncActEventListeners, true);
+        callOn(event, actEventListeners, true);
         return this;
     }
 

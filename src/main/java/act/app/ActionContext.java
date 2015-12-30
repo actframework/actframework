@@ -5,6 +5,7 @@ import act.Destroyable;
 import act.data.MapUtil;
 import act.data.RequestBodyParser;
 import act.event.ActEvent;
+import act.event.EventBus;
 import act.handler.RequestHandler;
 import act.route.Router;
 import act.util.ActContext;
@@ -478,8 +479,10 @@ public class ActionContext extends ActContext.ActContextBase<ActionContext> impl
         resolveSession();
         resolveFlash();
         state = State.SESSION_RESOLVED;
+        EventBus eventBus = app().eventBus();
+        eventBus.emit(new PreFireSessionResolvedEvent(session, this));
         Act.sessionManager().fireSessionResolved(this);
-        app().eventBus().emit(new SessionResolvedEvent(this));
+        eventBus.emit(new SessionResolvedEvent(session, this));
     }
 
     /**
@@ -695,15 +698,47 @@ public class ActionContext extends ActContext.ActContextBase<ActionContext> impl
         DESTROYED
     }
 
-    private static class ActionContextEvent extends ActEvent<ActionContext> {
+    public static class ActionContextEvent extends ActEvent<ActionContext> {
         public ActionContextEvent(ActionContext source) {
             super(source);
         }
+
+        public ActionContext context() {
+            return source();
+        }
     }
 
-    public static class SessionResolvedEvent extends ActionContextEvent {
-        public SessionResolvedEvent(ActionContext source) {
+    private static class SessionEvent extends ActionContextEvent {
+        private H.Session session;
+        public SessionEvent(H.Session session, ActionContext source) {
             super(source);
+            this.session = session;
+        }
+
+        public H.Session session() {
+            return session;
+        }
+    }
+
+    /**
+     * This event is fired after session resolved and before any
+     * {@link act.util.SessionManager.Listener} get called
+     */
+    public static class PreFireSessionResolvedEvent extends SessionEvent {
+        public PreFireSessionResolvedEvent(H.Session session, ActionContext context) {
+            super(session, context);
+        }
+    }
+
+    /**
+     * This event is fired after session resolved and after all
+     * {@link act.util.SessionManager.Listener} get notified and
+     * in turn after all event listeners that listen to the
+     * {@link PreFireSessionResolvedEvent} get notified
+     */
+    public static class SessionResolvedEvent extends SessionEvent {
+        public SessionResolvedEvent(H.Session session, ActionContext context) {
+            super(session, context);
         }
     }
 

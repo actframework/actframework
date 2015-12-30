@@ -104,8 +104,7 @@ public class SessionManager {
         }
     }
 
-    @ActComponent
-    public static class Listener extends DestroyableBase implements Plugin {
+    public static abstract class Listener extends DestroyableBase implements Plugin {
         @Override
         public void register() {
             Act.sessionManager().register(this);
