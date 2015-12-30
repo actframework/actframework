@@ -3,6 +3,8 @@ package act.app;
 import act.Act;
 import act.cli.CliDispatcher;
 import act.cli.builtin.Exit;
+import act.cli.event.CliSessionStart;
+import act.cli.event.CliSessionTerminate;
 import act.handler.CliHandler;
 import act.util.Banner;
 import act.util.DestroyableBase;
@@ -12,10 +14,13 @@ import org.osgl.util.IO;
 import org.osgl.util.S;
 
 import java.io.IOException;
+import java.io.InterruptedIOException;
+import java.io.OutputStream;
+import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.concurrent.atomic.AtomicInteger;
 
-class CliSession extends DestroyableBase implements Runnable {
+public class CliSession extends DestroyableBase implements Runnable {
 
     private static final AtomicInteger ID_GEN = new AtomicInteger();
 
@@ -60,11 +65,12 @@ class CliSession extends DestroyableBase implements Runnable {
     @Override
     public void run() {
         runningThread = Thread.currentThread();
+        app.eventBus().emitSync(new CliSessionStart(this));
         try {
             String user = username();
-
-            ConsoleReader console = new ConsoleReader(socket.getInputStream(), socket.getOutputStream());
-            console.println(Banner.banner(Act.VERSION));
+            OutputStream os = socket.getOutputStream();
+            ConsoleReader console = new ConsoleReader(socket.getInputStream(), os);
+            new PrintWriter(os).println(Banner.banner(Act.VERSION));
             console.setPrompt("act[" + user + "]>");
 
             while (!exit) {
@@ -102,6 +108,8 @@ class CliSession extends DestroyableBase implements Runnable {
                     console.println("Error: " + e.getMessage());
                 }
             }
+        } catch (InterruptedIOException e) {
+            logger.info("session thread interrupted");
         } catch (Throwable e) {
             logger.error(e, "Error processing cli session");
         } finally {
@@ -111,6 +119,7 @@ class CliSession extends DestroyableBase implements Runnable {
             } catch (IOException e) {
                 logger.warn(e, "Failed to close the socket");
             }
+            app.eventBus().emitSync(new CliSessionTerminate(this));
         }
     }
 

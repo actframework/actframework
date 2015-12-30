@@ -3,6 +3,7 @@ package act.handler.builtin;
 import act.app.ActionContext;
 import act.handler.builtin.controller.FastRequestHandler;
 import act.handler.builtin.controller.RequestHandlerProxy;
+import act.handler.event.BeforeCommit;
 import org.osgl.http.H;
 import org.osgl.mvc.result.Result;
 
@@ -17,6 +18,7 @@ public class UnknownHttpMethodHandler extends FastRequestHandler implements Seri
         H.Method method = context.req().method();
         Result result = context.config().unknownHttpMethodProcessor().handle(method);
         result = RequestHandlerProxy.GLOBAL_AFTER_INTERCEPTOR.apply(result, context);
+        context.app().eventBus().emit(new BeforeCommit(result, context));
         result.apply(context.req(), context.resp());
     }
 

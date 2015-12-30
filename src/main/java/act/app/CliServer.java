@@ -60,13 +60,16 @@ class CliServer extends AppServiceBase<CliServer> implements Runnable {
                 socket = serverSocket.accept();
                 CliSession session = new CliSession(socket, this);
                 sessions.put(session.id(), session);
-                session.run();
+                executor.submit(session);
             } catch (Exception e) {
                 log.error(e, "Error processing CLI session");
                 stop();
                 return;
             } finally {
-                IO.close(socket);
+                // Note we cannot close socket here. The ownership
+                // of socket has been transferred to the CliSession
+                // and it is up to the session to manage the socket
+                // IO.close(socket);
             }
         }
     }

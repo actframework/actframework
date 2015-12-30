@@ -6,6 +6,7 @@ import act.cli.ascii_table.spec.IASCIITable;
 import act.cli.ascii_table.spec.IASCIITableAware;
 import act.cli.util.CommandLineParser;
 import act.util.ActContext;
+import jline.Terminal2;
 import jline.console.ConsoleReader;
 import org.osgl.$;
 import org.osgl.Osgl;
@@ -18,6 +19,7 @@ import org.osgl.util.E;
 import org.osgl.util.S;
 
 import java.io.IOException;
+import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.Serializable;
 import java.util.List;
@@ -33,6 +35,9 @@ public class CliContext extends ActContext.ActContextBase<CliContext> implements
     private Map<String, Object> commanderInstances = C.newMap();
 
     private ConsoleReader console;
+
+    // workaround of issue http://stackoverflow.com/questions/34467383/jline2-print-j-when-it-should-print-n-on-a-telnet-console
+    private PrintWriter pw;
 
     private CommandLineParser parser;
 
@@ -59,6 +64,9 @@ public class CliContext extends ActContext.ActContextBase<CliContext> implements
         };
         evaluatorCache = Osgl.T2(getter, setter);
         this.console = $.NPE(console);
+        Terminal2 t2 = $.cast(console.getTerminal());
+        t2.setEchoEnabled(false);
+        this.pw = new PrintWriter(console.getOutput());
     }
 
     public Osgl.T2<? extends Osgl.Function<String, Serializable>, ? extends Osgl.Func2<String, Serializable, ?>> evaluatorCache() {
@@ -87,7 +95,7 @@ public class CliContext extends ActContext.ActContextBase<CliContext> implements
         throw E.unsupport();
     }
 
-    public void print(String template, Object... args) {
+    public void print0(String template, Object... args) {
         try {
             console.print(S.fmt(template, args));
         } catch (IOException e) {
@@ -95,12 +103,21 @@ public class CliContext extends ActContext.ActContextBase<CliContext> implements
         }
     }
 
-    public void println(String template, Object... args) {
+    public void print(String template, Object ... args) {
+        pw.printf(template, args);
+    }
+
+    public void println0(String template, Object... args) {
         try {
             console.println(S.fmt(template, args));
         } catch (IOException e) {
             throw E.ioException(e);
         }
+    }
+
+    public void println(String template, Object... args) {
+        pw.printf(template, args);
+        pw.println();
     }
 
     @Override
