@@ -6,6 +6,8 @@ import act.app.App;
 import act.app.RequestRefreshClassLoader;
 import act.app.util.NamedPort;
 import act.handler.RequestHandler;
+import act.handler.builtin.controller.RequestHandlerProxy;
+import act.handler.event.BeforeCommit;
 import act.route.Router;
 import act.view.ActServerError;
 import org.osgl.$;
@@ -50,9 +52,13 @@ public class NetworkClient extends $.F1<ActionContext, Void> {
             ctx.handler(rh);
             rh.handle(ctx);
         } catch (Result r) {
+            r = RequestHandlerProxy.GLOBAL_AFTER_INTERCEPTOR.apply(r, ctx);
+            app.eventBus().emit(new BeforeCommit(r, ctx));
             r.apply(req, ctx.resp());
         } catch (Throwable t) {
             Result r = ActServerError.of(t, app());
+            r = RequestHandlerProxy.GLOBAL_AFTER_INTERCEPTOR.apply(r, ctx);
+            app.eventBus().emit(new BeforeCommit(r, ctx));
             r.apply(req, ctx.resp());
         } finally {
             // we don't destroy ctx here in case it's been passed to

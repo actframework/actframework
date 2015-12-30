@@ -10,6 +10,7 @@ import act.controller.meta.CatchMethodMetaInfo;
 import act.controller.meta.ControllerClassMetaInfo;
 import act.controller.meta.InterceptorMethodMetaInfo;
 import act.handler.RequestHandlerBase;
+import act.handler.event.BeforeCommit;
 import act.view.ActServerError;
 import act.view.RenderAny;
 import org.osgl.$;
@@ -66,10 +67,10 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
     private static final C.List<FinallyInterceptor> globalFinallyInterceptors = C.newList();
     private static final C.List<ExceptionInterceptor> globalExceptionInterceptors = C.newList();
 
-    static final GroupInterceptorWithResult GLOBAL_BEFORE_INTERCEPTOR = new GroupInterceptorWithResult(globalBeforeInterceptors);
-    static final GroupAfterInterceptor GLOBAL_AFTER_INTERCEPTOR = new GroupAfterInterceptor(globalAfterInterceptors);
-    static final GroupFinallyInterceptor GLOBAL_FINALLY_INTERCEPTOR = new GroupFinallyInterceptor(globalFinallyInterceptors);
-    static final GroupExceptionInterceptor GLOBAL_EXCEPTION_INTERCEPTOR = new GroupExceptionInterceptor(globalExceptionInterceptors);
+    public static final GroupInterceptorWithResult GLOBAL_BEFORE_INTERCEPTOR = new GroupInterceptorWithResult(globalBeforeInterceptors);
+    public static final GroupAfterInterceptor GLOBAL_AFTER_INTERCEPTOR = new GroupAfterInterceptor(globalAfterInterceptors);
+    public static final GroupFinallyInterceptor GLOBAL_FINALLY_INTERCEPTOR = new GroupFinallyInterceptor(globalFinallyInterceptors);
+    public static final GroupExceptionInterceptor GLOBAL_EXCEPTION_INTERCEPTOR = new GroupExceptionInterceptor(globalExceptionInterceptors);
 
     private App app;
     private AppInterceptorManager appInterceptor;
@@ -200,6 +201,7 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
 
     private void onResult(Result result, ActionContext context) {
         context.dissolve();
+        app.eventBus().emit(new BeforeCommit(result, context));
         try {
             if (result instanceof RenderAny) {
                 RenderAny any = (RenderAny) result;

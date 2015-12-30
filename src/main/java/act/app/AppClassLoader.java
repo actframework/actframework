@@ -156,10 +156,6 @@ public class AppClassLoader
             return c;
         }
 
-        if (name.contains("act.fsa.jobs.JobApp")) {
-            $.nil();
-        }
-
         // ensure we
         if (name.startsWith("act.") && name.endsWith("Admin")) {
             return super.loadClass(name, resolve);

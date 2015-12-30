@@ -17,6 +17,7 @@ import org.osgl.http.util.Path;
 import org.osgl.logging.L;
 import org.osgl.logging.Logger;
 import org.osgl.mvc.result.NotFound;
+import org.osgl.mvc.result.Result;
 import org.osgl.util.*;
 
 import java.io.File;
@@ -109,11 +110,11 @@ public class Router extends AppServiceBase<Router> {
 
     private RequestHandler getInvokerFrom(Node node) {
         if (null == node) {
-            throw NOT_FOUND;
+            throw notFound();
         }
         RequestHandler handler = node.handler;
         if (null == handler) {
-            throw NOT_FOUND;
+            throw notFound();
         }
         return handler;
     }
@@ -345,6 +346,10 @@ public class Router extends AppServiceBase<Router> {
             default:
                 throw E.unexpected("HTTP Method not supported: %s", method);
         }
+    }
+
+    private static Result notFound() {
+        throw NOT_FOUND;
     }
 
     public final class f {
