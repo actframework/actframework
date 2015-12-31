@@ -18,6 +18,7 @@ import java.io.InterruptedIOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.net.SocketException;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class CliSession extends DestroyableBase implements Runnable {
@@ -110,15 +111,13 @@ public class CliSession extends DestroyableBase implements Runnable {
             }
         } catch (InterruptedIOException e) {
             logger.info("session thread interrupted");
+        } catch (SocketException e) {
+            logger.error(e.getMessage());
         } catch (Throwable e) {
             logger.error(e, "Error processing cli session");
         } finally {
             server.remove(this);
-            try {
-                socket.close();
-            } catch (IOException e) {
-                logger.warn(e, "Failed to close the socket");
-            }
+            IO.close(socket);
             app.eventBus().emitSync(new CliSessionTerminate(this));
         }
     }

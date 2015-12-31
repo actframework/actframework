@@ -1,5 +1,6 @@
 package act.app;
 
+import act.Destroyable;
 import act.cli.ascii_table.ASCIITableHeader;
 import act.cli.ascii_table.impl.SimpleASCIITableImpl;
 import act.cli.ascii_table.spec.IASCIITable;
@@ -45,6 +46,15 @@ public class CliContext extends ActContext.ActContextBase<CliContext> implements
 
     private Osgl.T2<? extends Osgl.Function<String, Serializable>, ? extends Osgl.Func2<String, Serializable, ?>> evaluatorCache;
 
+    /**
+     * Allow user command to attach data to the context and fetched for later use.
+     * <p>
+     *     A typical usage scenario is user command wants to set up a "context" for the
+     *     following commands. However it shall provide a command to exit the "context"
+     * </p>
+     */
+    private Map<String, Object> attributes = C.newMap();
+
     public CliContext(String line, App app, ConsoleReader console) {
         super(app);
         parser = new CommandLineParser(line);
@@ -83,6 +93,26 @@ public class CliContext extends ActContext.ActContextBase<CliContext> implements
 
     public List<String> arguments() {
         return parser.arguments();
+    }
+
+    /**
+     * Associate a value to a key in this context
+     * @param key the key
+     * @param val the value
+     */
+    public void attribute(String key, Object val) {
+        attributes.put(key, val);
+    }
+
+    /**
+     * Fetch the value {@link #attribute(String, Object) attributed} with
+     * the key specified in this context
+     * @param key the key
+     * @param <T> the generic type of the value
+     * @return the value object associated with the key
+     */
+    public <T> T attribute(String key) {
+        return $.cast(attributes.get(key));
     }
 
     @Override
@@ -124,6 +154,8 @@ public class CliContext extends ActContext.ActContextBase<CliContext> implements
     protected void releaseResources() {
         super.releaseResources();
         _local.remove();
+        Destroyable.Util.tryDestroyAll(attributes.values());
+        attributes.clear();
     }
 
     public String commandPath() {
