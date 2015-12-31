@@ -226,6 +226,7 @@ public class App {
 
         initCache();
         initCrypto();
+        initIdGenerator();
         initJobManager();
 
         initInterceptorManager();
