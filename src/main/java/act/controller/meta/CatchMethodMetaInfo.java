@@ -21,7 +21,7 @@ public class CatchMethodMetaInfo extends InterceptorMethodMetaInfo {
 
     @Override
     protected void releaseResources() {
-        targetExceptionClassNames.clear();
+        targetExceptionClassNames = null;
         super.releaseResources();
     }
 
