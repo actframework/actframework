@@ -16,6 +16,7 @@ import org.osgl.concurrent.ContextLocal;
 import org.osgl.exception.NotAppliedException;
 import org.osgl.http.H;
 import org.osgl.util.C;
+import org.osgl.util.Crypto;
 import org.osgl.util.E;
 import org.osgl.util.S;
 
@@ -30,6 +31,8 @@ import java.util.Map;
 public class CliContext extends ActContext.ActContextBase<CliContext> implements IASCIITable {
 
     private static final ContextLocal<CliContext> _local = $.contextLocal();
+
+    private String sessionId;
 
     private String commandPath; // e.g. myapp.cli.ListUser
 
@@ -55,8 +58,9 @@ public class CliContext extends ActContext.ActContextBase<CliContext> implements
      */
     private Map<String, Object> attributes = C.newMap();
 
-    public CliContext(String line, App app, ConsoleReader console) {
+    public CliContext(String id, String line, App app, ConsoleReader console) {
         super(app);
+        this.sessionId = id;
         parser = new CommandLineParser(line);
         final CacheService cache = app.cache();
         Osgl.F1<String, Serializable> getter = new Osgl.F1<String, Serializable>() {
@@ -77,6 +81,29 @@ public class CliContext extends ActContext.ActContextBase<CliContext> implements
         Terminal2 t2 = $.cast(console.getTerminal());
         t2.setEchoEnabled(false);
         this.pw = new PrintWriter(console.getOutput());
+    }
+
+    /**
+     * Set the console prompt
+     * @param prompt the prompt
+     */
+    public void prompt(String prompt) {
+        console.setPrompt(prompt);
+    }
+
+    /**
+     * Reset the console prompt to "{@code act[<session-id>]>}"
+     */
+    public void resetPrompt() {
+        prompt("act[" + sessionId + "]>");
+    }
+
+    /**
+     * Returns the Cli session ID
+     * @return the session ID
+     */
+    public String sessionId() {
+        return sessionId;
     }
 
     public Osgl.T2<? extends Osgl.Function<String, Serializable>, ? extends Osgl.Func2<String, Serializable, ?>> evaluatorCache() {

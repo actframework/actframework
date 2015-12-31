@@ -23,9 +23,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class CliSession extends DestroyableBase implements Runnable {
 
-    private static final AtomicInteger ID_GEN = new AtomicInteger();
-
-    private int id;
+    private String id;
     private CliServer server;
     private CliDispatcher dispatcher;
     private App app;
@@ -39,11 +37,11 @@ public class CliSession extends DestroyableBase implements Runnable {
         this.server = $.NPE(server);
         this.app = server.app();
         this.dispatcher = app.cliDispatcher();
-        id = ID_GEN.getAndIncrement();
+        id = app.cuid();
         ts = $.ms();
     }
 
-    int id() {
+    public String id() {
         return id;
     }
 
@@ -68,11 +66,10 @@ public class CliSession extends DestroyableBase implements Runnable {
         runningThread = Thread.currentThread();
         app.eventBus().emitSync(new CliSessionStart(this));
         try {
-            String user = username();
             OutputStream os = socket.getOutputStream();
             ConsoleReader console = new ConsoleReader(socket.getInputStream(), os);
             new PrintWriter(os).println(Banner.banner(Act.VERSION));
-            console.setPrompt("act[" + user + "]>");
+            console.setPrompt("act[" + id + "]>");
 
             while (!exit) {
                 final String line = console.readLine();
@@ -90,7 +87,7 @@ public class CliSession extends DestroyableBase implements Runnable {
                     continue;
                 }
 
-                CliContext context = new CliContext(line, app, console);
+                CliContext context = new CliContext(id, line, app, console);
 
                 //handle the command
                 final CliHandler handler = dispatcher.handler(context.command());
@@ -120,20 +117,6 @@ public class CliSession extends DestroyableBase implements Runnable {
             IO.close(socket);
             app.eventBus().emitSync(new CliSessionTerminate(this));
         }
-    }
-
-    private String username() {
-        String user = System.getProperty("user.name");
-        if (S.blank(user)) {
-            user = System.getenv("USER");
-            if (S.blank(user)) {
-                user = System.getenv("USERNAME");
-                if (S.blank(user)) {
-                    user = "anonymous";
-                }
-            }
-        }
-        return user;
     }
 
     void stop() {

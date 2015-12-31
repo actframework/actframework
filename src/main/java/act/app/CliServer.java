@@ -28,7 +28,7 @@ class CliServer extends AppServiceBase<CliServer> implements Runnable {
 
     private ScheduledThreadPoolExecutor executor;
     private AtomicBoolean running = new AtomicBoolean();
-    private ConcurrentMap<Integer, CliSession> sessions = new ConcurrentHashMap<Integer, CliSession>();
+    private ConcurrentMap<String, CliSession> sessions = new ConcurrentHashMap<String, CliSession>();
     private int port;
     private ServerSocket serverSocket;
     private Thread monitorThread;
