@@ -32,6 +32,11 @@ public class OptionAnnoInfo {
         this.required = !optional;
     }
 
+    @Override
+    public String toString() {
+        return S.fmt("%s %s", leads(), help());
+    }
+
     public int index() {
         return index;
     }

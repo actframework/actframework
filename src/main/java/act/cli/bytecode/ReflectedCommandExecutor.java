@@ -123,7 +123,7 @@ public class ReflectedCommandExecutor extends CommandExecutor {
                 } else {
                     argStr = parser.getString(option.lead1(), option.lead2());
                     if (S.blank(argStr) && option.required()) {
-                        throw new CliError("Miss required option " + option.leads());
+                        throw new CliError("Missing required option [%s]", option);
                     }
                 }
                 oa[i] = resolverManager.resolve(argStr, paramType);
