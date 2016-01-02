@@ -81,6 +81,8 @@ public class CliContext extends ActContext.ActContextBase<CliContext> implements
         Terminal2 t2 = $.cast(console.getTerminal());
         t2.setEchoEnabled(false);
         this.pw = new PrintWriter(console.getOutput());
+        saveLocal();
+
     }
 
     /**
@@ -257,6 +259,10 @@ public class CliContext extends ActContext.ActContextBase<CliContext> implements
 
     public List<String> __appRenderArgNames() {
         return renderArg("__arg_names__");
+    }
+
+    public void saveLocal() {
+        _local.set(this);
     }
 
     @Override

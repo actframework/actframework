@@ -56,7 +56,7 @@ public class ReflectedCommandExecutor extends CommandExecutor {
     public Object execute(CliContext context) {
         Object cmd = commanderInstance(context);
         Object[] params = params(context);
-        return invoke(context, cmd, params);
+        return invoke(cmd, params);
     }
 
     @Override
@@ -123,6 +123,14 @@ public class ReflectedCommandExecutor extends CommandExecutor {
                 } else {
                     argStr = parser.getString(option.lead1(), option.lead2());
                     if (S.blank(argStr) && option.required()) {
+                        if (paramCount == 1) {
+                            // try to use the single param as the option
+                            List<String> args0 = parser.arguments();
+                            if (args0.size() == 1) {
+                                oa[i] = resolverManager.resolve(args0.get(0), paramType);
+                                return oa;
+                            }
+                        }
                         throw new CliError("Missing required option [%s]", option);
                     }
                 }
@@ -132,7 +140,7 @@ public class ReflectedCommandExecutor extends CommandExecutor {
         return oa;
     }
 
-    private Object invoke(CliContext context, Object commander, Object[] params) {
+    private Object invoke(Object commander, Object[] params) {
         Object result;
         if (null != methodAccess) {
             try {
