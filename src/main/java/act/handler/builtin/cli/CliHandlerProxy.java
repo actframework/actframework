@@ -8,7 +8,7 @@ import act.cli.ascii_table.impl.CollectionASCIITableAware;
 import act.cli.bytecode.ReflectedCommandExecutor;
 import act.cli.meta.CommandMethodMetaInfo;
 import act.handler.CliHandlerBase;
-import act.util.DataView;
+import act.util.PropertyFilter;
 import org.osgl.$;
 import org.osgl.logging.L;
 import org.osgl.logging.Logger;
@@ -63,18 +63,8 @@ public final class CliHandlerProxy extends CliHandlerBase {
         if (null == result) {
             return;
         }
-        DataView.MetaInfo dataView = meta.dataViewInfo();
-        if (null != dataView) {
-            List dataList;
-            if (result instanceof Iterable) {
-                dataList = C.list((Iterable) result);
-            } else {
-                dataList = C.listOf(result);
-            }
-            context.printTable(new CollectionASCIITableAware(dataList, dataView.outputFields(), dataView.labels()));
-        } else {
-            context.println(result.toString());
-        }
+        PropertyFilter.MetaInfo filter = meta.dataViewInfo();
+        meta.view().print(result, filter, context);
     }
 
     private void ensureAgentsReady() {

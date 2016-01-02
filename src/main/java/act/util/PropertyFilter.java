@@ -30,10 +30,28 @@ import java.util.regex.Pattern;
  *     <li>lastName</li>
  *     <li>email</li>
  * </ul>
+ * <p>
+ *     When the result is to be presented on a {@link act.app.CliSession} and
+ *     {@code PropertyFilter} annotation is presented, either {@link act.cli.TableView}
+ *     or {@link act.cli.JsonView} can be used to define the presenting style.
+ *     If both {@code TableView} and {@code JsonView} are found on the method
+ *     then {@code JsonView} is the winner. If non of them is presented then
+ *     {@code JsonView} will be used by default
+ * </p>
+ * <p>
+ *     When the result is to be write to an {@link org.osgl.http.H.Response}, and
+ *     {@code PropertyFilter} annotation is presented on the controller action method,
+ *     then the return value (if not of type {@link org.osgl.mvc.result.Result}) will
+ *     be serialized into a JSON string and the filter will effect and impact the
+ *     JSON string
+ * </p>
+ * @see act.cli.TableView
+ * @see act.cli.JsonView
+ * @see FastJsonPropertyPreFilter
  */
 @Retention(RetentionPolicy.CLASS)
 @Target(ElementType.METHOD)
-public @interface DataView {
+public @interface PropertyFilter {
     /**
      * Specify the object fields to be displayed in final result. E.g.
      * <pre>
@@ -82,7 +100,7 @@ public @interface DataView {
             String[] sa = value.split("[,;:]+");
             for (String s: sa) {
                 if (s.startsWith("-")) {
-                    excluded.add(s);
+                    excluded.add(s.substring(1));
                     outputs.clear();
                 } else {
                     String[] sa0 = p.split(s);

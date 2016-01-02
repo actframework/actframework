@@ -7,7 +7,7 @@ import act.cli.CliDispatcher;
 import act.cli.meta.*;
 import act.util.AsmTypes;
 import act.util.ByteCodeVisitor;
-import act.util.DataView;
+import act.util.PropertyFilter;
 import org.osgl.$;
 import org.osgl.logging.L;
 import org.osgl.logging.Logger;
@@ -197,9 +197,17 @@ public class CommanderByteCodeScanner extends AppByteCodeScannerBase {
                                     throw E.unexpected("command name cannot be empty");
                                 }
                                 methodInfo.commandName(commandName);
+                            } else if (S.eq("help", name)) {
+                                methodInfo.helpMsg(S.string(value));
                             }
                         }
                     };
+                } else if ($.eq(AsmTypes.TABLE_VIEW.asmType(), type)) {
+                    methodInfo.view(CommandMethodMetaInfo.View.TABLE);
+                    return super.visitAnnotation(desc, visible);
+                } else if ($.eq(AsmTypes.JSON_VIEW.asmType(), type)) {
+                    methodInfo.view(CommandMethodMetaInfo.View.JSON);
+                    return super.visitAnnotation(desc, visible);
                 } else if ($.eq(AsmTypes.HELP_MSG.asmType(), type)) {
                     return new AnnotationVisitor(ASM5, av) {
                         @Override
@@ -210,7 +218,7 @@ public class CommanderByteCodeScanner extends AppByteCodeScannerBase {
                         }
                     };
                 } else if ($.eq(AsmTypes.DATA_VIEW.asmType(), type)) {
-                    final DataView.MetaInfo info = new DataView.MetaInfo();
+                    final PropertyFilter.MetaInfo info = new PropertyFilter.MetaInfo();
                     methodInfo.dataView(info);
                     return new AnnotationVisitor(ASM5, av) {
                         @Override

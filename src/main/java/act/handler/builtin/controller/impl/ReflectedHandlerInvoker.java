@@ -266,19 +266,12 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
                         }
                         String reqVal = ctx.paramVal(bindName);
                         if (null == reqVal) {
-                            JSONObject jsonObject = ctx.jsonObject(bindName);
-                            if (null != jsonObject) {
-                                // todo: implement a more efficient way to deserialize JSON
-                                Object o = JSON.parseObject(jsonObject.toJSONString(), paramType);
+                            Object o = ctx.tryParseJson(bindName, paramType);
+                            if (null != o) {
                                 oa[i] = o;
                                 continue;
-                            } else {
-                                JSONArray jsonArray = ctx.jsonArray();
-                                if (null != jsonArray) {
-                                    // todo: map JSONObject to object type
-                                }
                             }
-                            Object o = param.defVal(paramType);
+                            o = param.defVal(paramType);
                             if (null != o) {
                                 oa[i] = o;
                                 continue;

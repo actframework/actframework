@@ -52,7 +52,12 @@ class LocalIpAddressUtil {
     }
 
     public static String ip() {
-        return resolveLocalAddress().getHostAddress();
+        InetAddress addr = resolveLocalAddress();
+        if (null == addr) {
+            // you are running the app in a host without network connection
+            return "127.0.0.1";
+        }
+        return addr.getHostAddress();
     }
 
     private static boolean isSpecialIp(String ip) {

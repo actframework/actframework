@@ -16,6 +16,11 @@ public @interface Command {
      */
     String value();
 
+    /**
+     * @return the help message for the command
+     */
+    String help() default "";
+
     public static class Util {
 
     }

@@ -5,10 +5,7 @@ import act.app.App;
 import act.app.CliContext;
 import act.asm.Opcodes;
 import act.asm.Type;
-import act.cli.Command;
-import act.cli.HelpMsg;
-import act.cli.Optional;
-import act.cli.Required;
+import act.cli.*;
 import act.conf.AppConfig;
 import act.mail.MailerContext;
 import org.osgl.mvc.annotation.Bind;
@@ -31,12 +28,15 @@ public enum AsmTypes implements Opcodes {
     public static AsmType<Bind> BIND = new AsmType<Bind>(Bind.class);
     public static AsmType<Result> RESULT = new AsmType<Result>(Result.class);
 
-    public static AsmType<DataView> DATA_VIEW = new AsmType<DataView>(DataView.class);
+    public static AsmType<PropertyFilter> DATA_VIEW = new AsmType<PropertyFilter>(PropertyFilter.class);
 
     public static AsmType<Command> COMMAND = new AsmType<Command>(Command.class);
     public static AsmType<Optional> OPTIONAL = new AsmType<Optional>(Optional.class);
     public static AsmType<Required> REQUIRED = new AsmType<Required>(Required.class);
+    @Deprecated
     public static AsmType<HelpMsg> HELP_MSG = new AsmType<HelpMsg>(HelpMsg.class);
+    public static AsmType<TableView> TABLE_VIEW = new AsmType<TableView>(TableView.class);
+    public static AsmType<JsonView> JSON_VIEW = new AsmType<JsonView>(JsonView.class);
 
     public static final Type RETURN_VOID = Type.VOID_TYPE;
     public static final Type OBJECT_TYPE = OBJECT.asmType();

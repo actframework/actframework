@@ -11,6 +11,10 @@ import java.lang.annotation.Target;
  */
 @Retention(RetentionPolicy.CLASS)
 @Target(ElementType.METHOD)
+@Deprecated
+/**
+ * This is obsolete. Use {@link Command#help()} instead
+ */
 public @interface HelpMsg {
     /**
      * @return the help message

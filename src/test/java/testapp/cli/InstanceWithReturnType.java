@@ -3,7 +3,7 @@ package testapp.cli;
 import act.cli.Command;
 import act.cli.Optional;
 import act.cli.Required;
-import act.util.DataView;
+import act.util.PropertyFilter;
 
 import java.util.List;
 
@@ -12,7 +12,7 @@ public class InstanceWithReturnType {
     private String s;
 
     @Command("user.list")
-    @DataView("fn as firstName,ln as lastName")
+    @PropertyFilter("fn as firstName,ln as lastName")
     public List<String> getUserList(
             @Required(value = "-i,--id", group = "group1") String id,
             boolean b,

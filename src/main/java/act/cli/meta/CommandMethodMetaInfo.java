@@ -1,16 +1,21 @@
 package act.cli.meta;
 
 import act.Destroyable;
+import act.app.CliContext;
 import act.asm.Type;
+import act.cli.ascii_table.impl.CollectionASCIITableAware;
 import act.sys.meta.InvokeType;
 import act.sys.meta.ReturnTypeInfo;
-import act.util.DataView;
+import act.util.FastJsonPropertyPreFilter;
+import act.util.PropertyFilter;
 import act.util.DestroyableBase;
+import com.alibaba.fastjson.serializer.SerializerFeature;
 import org.osgl.$;
 import org.osgl.util.C;
 import org.osgl.util.E;
 import org.osgl.util.S;
 
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -24,15 +29,82 @@ import java.util.Set;
  */
 public class CommandMethodMetaInfo extends DestroyableBase {
 
+    /**
+     * Define how the command method return result should
+     * be presented
+     */
+    public static enum View {
+        /**
+         * present the result using {@link act.cli.TableView}
+         */
+        TABLE () {
+            @Override
+            @SuppressWarnings("unchecked")
+            public void print(Object result, PropertyFilter.MetaInfo filter, CliContext context) {
+                if (null == filter) {
+                    // TODO: support Table View when filter annotation is not presented
+                    TO_STRING.print(result, null, context);
+                    return;
+                }
+                List dataList;
+                if (result instanceof Iterable) {
+                    dataList = C.list((Iterable) result);
+                } else {
+                    dataList = C.listOf(result);
+                }
+                context.printTable(new CollectionASCIITableAware(dataList, filter.outputFields(), filter.labels()));
+            }
+        },
+
+        /**
+         * Present the result using {@link act.cli.JsonView}
+         */
+        JSON () {
+            @Override
+            public void print(Object result, PropertyFilter.MetaInfo filter, CliContext context) {
+                String json;
+                if (null == filter) {
+                    json = com.alibaba.fastjson.JSON.toJSONString(result, SerializerFeature.PrettyFormat);
+                } else {
+                    FastJsonPropertyPreFilter f = new FastJsonPropertyPreFilter();
+                    f.addIncludes(filter.outputFields());
+                    f.addExcludes(filter.excludedFields());
+                    json = com.alibaba.fastjson.JSON.toJSONString(result, f, SerializerFeature.PrettyFormat);
+                }
+                // TODO: handle labels in JSON serialization
+                context.println(json);
+            }
+        },
+
+        /**
+         * Present the result using {@link Object#toString()}
+         */
+        TO_STRING () {
+            @Override
+            public void print(Object result, PropertyFilter.MetaInfo filter, CliContext context) {
+                if (null != filter) {
+                    // if PropertyFilter annotation presented, then by default
+                    // use the JSON view to print the result
+                    JSON.print(result, filter, context);
+                } else {
+                    context.println(result.toString());
+                }
+            }
+        };
+
+        public abstract void print(Object result, PropertyFilter.MetaInfo filter, CliContext context);
+    }
+
     private String methodName;
     private String commandName;
     private String helpMsg;
     private InvokeType invokeType;
     private CommanderClassMetaInfo clsInfo;
-    private DataView.MetaInfo dataView;
+    private PropertyFilter.MetaInfo dataView;
     private C.List<CommandParamMetaInfo> params = C.newList();
     private ReturnTypeInfo returnType;
     private Set<String> optionLeads = C.newSet();
+    private View view = View.TO_STRING;
 
     public CommandMethodMetaInfo(CommanderClassMetaInfo clsInfo) {
         this.clsInfo = $.NPE(clsInfo);
@@ -49,6 +121,15 @@ public class CommandMethodMetaInfo extends DestroyableBase {
 
     public String methodName() {
         return methodName;
+    }
+
+    public CommandMethodMetaInfo view(View view) {
+        this.view = $.notNull(view);
+        return this;
+    }
+
+    public View view() {
+        return view;
     }
 
     public CommandMethodMetaInfo commandName(String name) {
@@ -87,12 +168,12 @@ public class CommandMethodMetaInfo extends DestroyableBase {
         return InvokeType.STATIC == invokeType;
     }
 
-    public CommandMethodMetaInfo dataView(DataView.MetaInfo dataView) {
+    public CommandMethodMetaInfo dataView(PropertyFilter.MetaInfo dataView) {
         this.dataView = dataView;
         return this;
     }
 
-    public DataView.MetaInfo dataViewInfo() {
+    public PropertyFilter.MetaInfo dataViewInfo() {
         return dataView;
     }
 

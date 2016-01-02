@@ -196,13 +196,19 @@ public class ActionContext extends ActContext.ActContextBase<ActionContext> impl
         return sa;
     }
 
-    public JSONObject jsonObject(String name) {
+    public Object tryParseJson(String name, Class<?> paramType) {
         if (null == jsonObject) {
             return null;
         }
         Object o = jsonObject.get(name);
-        if (null != o && o instanceof JSONObject) {
-            return (JSONObject) o;
+        if (null != o) {
+            if (o instanceof JSONObject) {
+                return JSON.parseObject(((JSONObject) o).toJSONString(), paramType);
+            } else if (o instanceof JSONArray) {
+                return JSON.parseArray(((JSONArray) o).toJSONString(), paramType);
+            } else {
+                return o;
+            }
         } else {
             return jsonObject;
         }

@@ -1,11 +1,8 @@
 package act.job;
 
 import act.app.App;
-import act.cli.Command;
-import act.cli.HelpMsg;
-import act.cli.Optional;
-import act.cli.Required;
-import act.util.DataView;
+import act.cli.*;
+import act.util.PropertyFilter;
 import com.alibaba.fastjson.JSONObject;
 import org.osgl.$;
 import org.osgl.util.C;
@@ -23,9 +20,9 @@ public class JobAdmin {
      * List all jobs in the job manager
      * @return a list of {@link _Job jobs}
      */
-    @Command("act.job.list")
-    @HelpMsg("List jobs")
-    @DataView(_Job.LIST_VIEW)
+    @Command(value = "act.job.list", help = "List jobs")
+    @PropertyFilter(_Job.BRIEF_VIEW)
+    @TableView
     public List<_Job> listJobs(@Optional("-q") final String q, App app) {
         AppJobManager jobManager = app.jobManager();
         C.List<_Job> jobs = jobManager.jobs();
@@ -40,15 +37,15 @@ public class JobAdmin {
         return jobs;
     }
 
-    @Command("act.job.show")
-    @HelpMsg("Show job")
+    @Command(value = "act.job.show", help = "Show job details")
+    @JsonView
+    @PropertyFilter(_Job.DETAIL_VIEW)
     public _Job getJob(@Required(value = "-i,--id", help = "specify the query string") final String id, App app) {
         AppJobManager jobManager = app.jobManager();
         return jobManager.jobById(id);
     }
 
-    @Command("act.job.scheduler")
-    @HelpMsg("Show Job manager scheduler status")
+    @Command(value = "act.job.scheduler", help = "Show Job manager scheduler status")
     public String getSchedulerStatus(App app) {
         AppJobManager jobManager = app.jobManager();
         ScheduledThreadPoolExecutor executor = jobManager.executor();

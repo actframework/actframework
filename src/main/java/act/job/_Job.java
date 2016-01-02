@@ -17,7 +17,8 @@ import java.util.UUID;
 
 class _Job extends DestroyableBase implements Runnable {
 
-    static final String LIST_VIEW = "id,oneTime,trigger";
+    static final String BRIEF_VIEW = "id,oneTime,executed,trigger";
+    static final String DETAIL_VIEW = "id,oneTime,executed,trigger,worker";
 
     private String id;
     private boolean oneTime;

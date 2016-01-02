@@ -11,7 +11,7 @@ import act.controller.meta.HandlerMethodMetaInfo;
 import act.handler.CliHandler;
 import act.job.AppJobManager;
 import act.util.AsmTypes;
-import act.util.DataView;
+import act.util.PropertyFilter;
 import act.util.Files;
 import org.junit.Before;
 import org.junit.Test;
@@ -100,7 +100,7 @@ public class CommanderByteCodeScannerTest extends TestBase {
 
         no(methodMetaInfo.isStatic());
 
-        DataView.MetaInfo dataView = methodMetaInfo.dataViewInfo();
+        PropertyFilter.MetaInfo dataView = methodMetaInfo.dataViewInfo();
         ceq(C.list("fn", "ln"), dataView.outputFields());
 
         eq(Type.getType(List.class), methodMetaInfo.returnType());
