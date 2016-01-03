@@ -35,7 +35,7 @@ public @interface Optional {
      * </ul>
      * @return the argument lead as described
      */
-    String[] value() default "";
+    String[] lead() default "";
 
     /**
      * Specify the default value in String. The framework will automatically convert the String
@@ -44,6 +44,12 @@ public @interface Optional {
      * @see #value()
      */
     String defVal() default "";
+
+    /**
+     * Alias of {@link #help()}
+     * @return the help message
+     */
+    String value() default "";
 
     /**
      * Specify the help message for this option

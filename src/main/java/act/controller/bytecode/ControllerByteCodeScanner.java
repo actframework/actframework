@@ -11,6 +11,7 @@ import act.route.Router;
 import act.util.AsmTypes;
 import act.util.ByteCodeVisitor;
 import act.util.GeneralAnnoInfo;
+import act.util.PropertySpec;
 import org.osgl.$;
 import org.osgl.http.H;
 import org.osgl.logging.L;
@@ -208,6 +209,7 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
             private boolean requireScan;
             private boolean isRoutedMethod;
             private HandlerMethodMetaInfo methodInfo;
+            private PropertySpec.MetaInfo propSpec;
             private Map<Integer, List<ParamAnnoInfoTrait>> paramAnnoInfoList = C.newMap();
             private Map<Integer, List<GeneralAnnoInfo>> genericParamAnnoInfoList = C.newMap();
 
@@ -235,12 +237,40 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
                     ActionMethodMetaInfo tmp = new ActionMethodMetaInfo(classInfo);
                     methodInfo = tmp;
                     classInfo.addAction(tmp);
+                    if (null != propSpec) {
+                        methodInfo.propertySpec(propSpec);
+                    }
                     return new ActionAnnotationVisitor(av, AnnotationMethodLookup.get(c));
                 } else if (ControllerClassMetaInfo.isInterceptorAnnotation(c)) {
                     markRequireScan();
                     InterceptorAnnotationVisitor visitor = new InterceptorAnnotationVisitor(av, c);
                     methodInfo = visitor.info;
+                    if (null != propSpec) {
+                        methodInfo.propertySpec(propSpec);
+                    }
                     return visitor;
+                } else if ($.eq(AsmTypes.PROPERTY_SPEC.asmType(), type)) {
+                    propSpec = new PropertySpec.MetaInfo();
+                    if (null != methodInfo) {
+                        methodInfo.propertySpec(propSpec);
+                    }
+                    return new AnnotationVisitor(ASM5, av) {
+                        @Override
+                        public AnnotationVisitor visitArray(String name) {
+                            AnnotationVisitor av0 = super.visitArray(name);
+                            if (S.eq("value", name)) {
+                                return new AnnotationVisitor(ASM5, av0) {
+                                    @Override
+                                    public void visit(String name, Object value) {
+                                        super.visit(name, value);
+                                        propSpec.onValue(S.string(value));
+                                    }
+                                };
+                            } else {
+                                return av0;
+                            }
+                        }
+                    };
                 }
                 //markNotTargetClass();
                 return av;

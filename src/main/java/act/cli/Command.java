@@ -12,9 +12,16 @@ import java.lang.annotation.Target;
 @Target(ElementType.METHOD)
 public @interface Command {
     /**
+     * alias of {@link #name()}
      * @return the command string
      */
-    String value();
+    String value() default "";
+
+    /**
+     * Returns the name of the command
+     * @return the command string
+     */
+    String name() default "";
 
     /**
      * @return the help message for the command

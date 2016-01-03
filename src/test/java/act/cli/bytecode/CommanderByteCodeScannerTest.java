@@ -11,7 +11,7 @@ import act.controller.meta.HandlerMethodMetaInfo;
 import act.handler.CliHandler;
 import act.job.AppJobManager;
 import act.util.AsmTypes;
-import act.util.PropertyFilter;
+import act.util.PropertySpec;
 import act.util.Files;
 import org.junit.Before;
 import org.junit.Test;
@@ -69,7 +69,7 @@ public class CommanderByteCodeScannerTest extends TestBase {
         eq(StaticWithoutReturnType.class.getName() + ".doIt", methodMetaInfo.fullName());
         eq("help", methodMetaInfo.helpMsg());
         yes(methodMetaInfo.isStatic());
-        assertNull(methodMetaInfo.dataViewInfo());
+        assertNull(methodMetaInfo.propertySpec());
         eq(AsmTypes.RETURN_VOID, methodMetaInfo.returnType());
         C.List<CommandParamMetaInfo> params = methodMetaInfo.params();
         eq(2, params.size());
@@ -100,7 +100,7 @@ public class CommanderByteCodeScannerTest extends TestBase {
 
         no(methodMetaInfo.isStatic());
 
-        PropertyFilter.MetaInfo dataView = methodMetaInfo.dataViewInfo();
+        PropertySpec.MetaInfo dataView = methodMetaInfo.propertySpec();
         ceq(C.list("fn", "ln"), dataView.outputFields());
 
         eq(Type.getType(List.class), methodMetaInfo.returnType());

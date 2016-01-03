@@ -17,7 +17,7 @@ import java.util.regex.Pattern;
  * <p>This annotation is only effective when there is one and only one
  * type of object returned, as a single instance or a collection of instances, e.g</p>
  * <pre>
- *     {@literal @}DataView({"firstName","lastName","email"})
+ *     {@literal @}PropertySpec({"firstName","lastName","email"})
  *     public List&lt;Employee&gt; getEmployees(String search) {
  *         List&lt;Employee&gt; retList = EmployeeDao.find(search).asList();
  *         return retList;
@@ -32,7 +32,7 @@ import java.util.regex.Pattern;
  * </ul>
  * <p>
  *     When the result is to be presented on a {@link act.app.CliSession} and
- *     {@code PropertyFilter} annotation is presented, either {@link act.cli.TableView}
+ *     {@code PropertySpec} annotation is presented, either {@link act.cli.TableView}
  *     or {@link act.cli.JsonView} can be used to define the presenting style.
  *     If both {@code TableView} and {@code JsonView} are found on the method
  *     then {@code JsonView} is the winner. If non of them is presented then
@@ -40,7 +40,7 @@ import java.util.regex.Pattern;
  * </p>
  * <p>
  *     When the result is to be write to an {@link org.osgl.http.H.Response}, and
- *     {@code PropertyFilter} annotation is presented on the controller action method,
+ *     {@code PropertySpec} annotation is presented on the controller action method,
  *     then the return value (if not of type {@link org.osgl.mvc.result.Result}) will
  *     be serialized into a JSON string and the filter will effect and impact the
  *     JSON string
@@ -51,43 +51,43 @@ import java.util.regex.Pattern;
  */
 @Retention(RetentionPolicy.CLASS)
 @Target(ElementType.METHOD)
-public @interface PropertyFilter {
+public @interface PropertySpec {
     /**
      * Specify the object fields to be displayed in final result. E.g.
      * <pre>
-     * {@literal @}DataView({"firstName","lastName","email"})
+     * {@literal @}PropertySpec({"firstName","lastName","email"})
      * </pre>
      * You can specify multiple fields in one string, with fields
      * separated with one of the following character: {@code ,;:|}
      * <pre>
-     * {@literal @}DataView("firstName,lastName,email")
+     * {@literal @}PropertySpec("firstName,lastName,email")
      * </pre>
      * You can use {@code as} to specify the label, e.g.
      * <pre>
-     * {@literal @}DataView("fn as First name,ln as Last name,email as Email")
+     * {@literal @}PropertySpec("fn as First name,ln as Last name,email as Email")
      * </pre>
      * If there are multiple levels of objects, use {@code .} or {@code /} to
      * express the traverse path:
      * <pre>
-     * {@literal @}DataView("fn,ln,contact.address.street,contact.address.city,contact.email")
+     * {@literal @}PropertySpec("fn,ln,contact.address.street,contact.address.city,contact.email")
      * </pre>
      * Instead of specifying fields to be exported, it can also specify the fields to be
      * excluded from output with the symbol {@code -}, e.g.
      * <pre>
-     * {@literal @}DataView("-password,-salary")
+     * {@literal @}PropertySpec("-password,-salary")
      * </pre>
      * when symbol {@code -} is used to specify the excluded fields, then all the fields
      * without symbol {@code -} in the list will be ignored. However it can still use
      * {@code as} notation to specify the label. E.g.
      * <pre>
-     * {@literal @}DataView("-password,-salary,fn as firstName,ln as lastName")
+     * {@literal @}PropertySpec("-password,-salary,fn as firstName,ln as lastName")
      * </pre>
      * @return the field specification
      */
     String[] value();
 
     /**
-     * Capture the {@code DataView} annotation meta info in bytecode scanning phase
+     * Capture the {@code PropertySpec} annotation meta info in bytecode scanning phase
      */
     public static class MetaInfo {
         // split "fn as firstName" into "fn" and "firstName"
@@ -121,12 +121,16 @@ public @interface PropertyFilter {
             return C.list(outputs);
         }
 
-        public List<String> labels() {
+        public List<String> labels(List<String> outputs) {
             List<String> retList = C.newList();
             for (String f : outputs) {
                 retList.add(label(f));
             }
             return retList;
+        }
+
+        public Map<String, String> labelMapping() {
+            return C.map(labels);
         }
 
         public Set<String> excludedFields() {

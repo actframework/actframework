@@ -1,14 +1,18 @@
 package act.cli.meta;
 
 import act.Destroyable;
+import act.app.App;
 import act.app.CliContext;
 import act.asm.Type;
 import act.cli.ascii_table.impl.CollectionASCIITableAware;
+import act.cli.util.MappedFastJsonNameFilter;
+import act.data.DataPropertyRepository;
 import act.sys.meta.InvokeType;
 import act.sys.meta.ReturnTypeInfo;
 import act.util.FastJsonPropertyPreFilter;
-import act.util.PropertyFilter;
+import act.util.PropertySpec;
 import act.util.DestroyableBase;
+import com.alibaba.fastjson.serializer.SerializeFilter;
 import com.alibaba.fastjson.serializer.SerializerFeature;
 import org.osgl.$;
 import org.osgl.util.C;
@@ -39,12 +43,16 @@ public class CommandMethodMetaInfo extends DestroyableBase {
          */
         TABLE () {
             @Override
+            public void print(Object result, PropertySpec.MetaInfo spec, CliContext context) {
+                context.println(render(result, spec, context));
+            }
+
+            @Override
             @SuppressWarnings("unchecked")
-            public void print(Object result, PropertyFilter.MetaInfo filter, CliContext context) {
+            public String render(Object result, PropertySpec.MetaInfo filter, CliContext context) {
                 if (null == filter) {
                     // TODO: support Table View when filter annotation is not presented
-                    TO_STRING.print(result, null, context);
-                    return;
+                    return TO_STRING.render(result, null);
                 }
                 List dataList;
                 if (result instanceof Iterable) {
@@ -52,7 +60,15 @@ public class CommandMethodMetaInfo extends DestroyableBase {
                 } else {
                     dataList = C.listOf(result);
                 }
-                context.printTable(new CollectionASCIITableAware(dataList, filter.outputFields(), filter.labels()));
+
+                Set<String> excluded = filter.excludedFields();
+                List<String> outputFields = filter.outputFields();
+                if (!excluded.isEmpty()) {
+                    DataPropertyRepository repo = App.instance().service(DataPropertyRepository.class);
+                    List<String> allFields = repo.propertyListOf(result.getClass());
+                    outputFields = C.list(allFields).without(excluded);
+                }
+                return context.getTable(new CollectionASCIITableAware(dataList, outputFields, filter.labels(outputFields)));
             }
         },
 
@@ -61,18 +77,33 @@ public class CommandMethodMetaInfo extends DestroyableBase {
          */
         JSON () {
             @Override
-            public void print(Object result, PropertyFilter.MetaInfo filter, CliContext context) {
+            public String render(Object result, PropertySpec.MetaInfo filter) {
                 String json;
                 if (null == filter) {
                     json = com.alibaba.fastjson.JSON.toJSONString(result, SerializerFeature.PrettyFormat);
                 } else {
-                    FastJsonPropertyPreFilter f = new FastJsonPropertyPreFilter();
-                    f.addIncludes(filter.outputFields());
-                    f.addExcludes(filter.excludedFields());
-                    json = com.alibaba.fastjson.JSON.toJSONString(result, f, SerializerFeature.PrettyFormat);
+                    FastJsonPropertyPreFilter propertyFilter = new FastJsonPropertyPreFilter();
+                    List<String> outputs = filter.outputFields();
+                    Set<String> excluded = filter.excludedFields();
+                    if (excluded.isEmpty()) {
+                        // output fields only applied when excluded fields not presented
+                        propertyFilter.addIncludes(outputs);
+                    } else {
+                        propertyFilter.addExcludes(excluded);
+                    }
+
+                    MappedFastJsonNameFilter nameFilter = new MappedFastJsonNameFilter(filter.labelMapping());
+
+                    if (nameFilter.isEmpty()) {
+                        json = com.alibaba.fastjson.JSON.toJSONString(result, propertyFilter, SerializerFeature.PrettyFormat);
+                    } else {
+                        SerializeFilter[] filters = new SerializeFilter[2];
+                        filters[0] = nameFilter;
+                        filters[1] = propertyFilter;
+                        json = com.alibaba.fastjson.JSON.toJSONString(result, filters, SerializerFeature.PrettyFormat);
+                    }
                 }
-                // TODO: handle labels in JSON serialization
-                context.println(json);
+                return json;
             }
         },
 
@@ -81,18 +112,28 @@ public class CommandMethodMetaInfo extends DestroyableBase {
          */
         TO_STRING () {
             @Override
-            public void print(Object result, PropertyFilter.MetaInfo filter, CliContext context) {
+            public String render(Object result, PropertySpec.MetaInfo filter) {
                 if (null != filter) {
-                    // if PropertyFilter annotation presented, then by default
+                    // if PropertySpec annotation presented, then by default
                     // use the JSON view to print the result
-                    JSON.print(result, filter, context);
+                    return JSON.render(result, filter);
                 } else {
-                    context.println(result.toString());
+                    return (result.toString());
                 }
             }
         };
 
-        public abstract void print(Object result, PropertyFilter.MetaInfo filter, CliContext context);
+        public String render(Object result, PropertySpec.MetaInfo spec) {
+            throw E.unsupport();
+        }
+
+        protected String render(Object result, PropertySpec.MetaInfo spec, CliContext context) {
+            throw E.unsupport();
+        }
+
+        public void print(Object result, PropertySpec.MetaInfo spec, CliContext context) {
+            context.println(render(result, spec));
+        }
     }
 
     private String methodName;
@@ -100,7 +141,7 @@ public class CommandMethodMetaInfo extends DestroyableBase {
     private String helpMsg;
     private InvokeType invokeType;
     private CommanderClassMetaInfo clsInfo;
-    private PropertyFilter.MetaInfo dataView;
+    private PropertySpec.MetaInfo propertySpec;
     private C.List<CommandParamMetaInfo> params = C.newList();
     private ReturnTypeInfo returnType;
     private Set<String> optionLeads = C.newSet();
@@ -168,13 +209,13 @@ public class CommandMethodMetaInfo extends DestroyableBase {
         return InvokeType.STATIC == invokeType;
     }
 
-    public CommandMethodMetaInfo dataView(PropertyFilter.MetaInfo dataView) {
-        this.dataView = dataView;
+    public CommandMethodMetaInfo propertySpec(PropertySpec.MetaInfo propertySpec) {
+        this.propertySpec = propertySpec;
         return this;
     }
 
-    public PropertyFilter.MetaInfo dataViewInfo() {
-        return dataView;
+    public PropertySpec.MetaInfo propertySpec() {
+        return propertySpec;
     }
 
     public CommandMethodMetaInfo returnType(Type type) {

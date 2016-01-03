@@ -41,11 +41,11 @@ public class OptionAnnoInfo {
         return index;
     }
 
-    public OptionAnnoInfo value(String[] value) {
-        E.illegalArgumentIf(null == value || value.length == 0);
-        lead1 = value[0];
-        if (value.length > 1) {
-            lead2 = value[1];
+    public OptionAnnoInfo spec(String[] specs) {
+        E.illegalArgumentIf(null == specs || specs.length == 0);
+        lead1 = specs[0];
+        if (specs.length > 1) {
+            lead2 = specs[1];
         } else {
             String[] sa = lead1.split("[,;]+");
             if (sa.length > 2) {

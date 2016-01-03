@@ -12,8 +12,8 @@ public class StaticWithoutReturnType {
     @Command("foo.bar")
     @HelpMsg("help")
     public static void doIt(
-            @Required("-o,--op1") String op1,
-            @Optional("-n,--number") int num
+            @Required(lead = "-o,--op1") String op1,
+            @Optional(lead = "-n,--number") int num
     ) {
     }
 

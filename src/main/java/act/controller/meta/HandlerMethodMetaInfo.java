@@ -9,6 +9,7 @@ import act.sys.meta.ReturnTypeInfo;
 import act.util.AsmTypes;
 import act.util.DestroyableBase;
 import act.util.Prioritised;
+import act.util.PropertySpec;
 import org.osgl.$;
 import org.osgl.util.C;
 import org.osgl.util.E;
@@ -27,6 +28,7 @@ public abstract class HandlerMethodMetaInfo<T extends HandlerMethodMetaInfo> ext
     private ControllerClassMetaInfo clsInfo;
     private C.List<ParamMetaInfo> params = C.newList();
     private ReturnTypeInfo returnType;
+    private PropertySpec.MetaInfo propertySpec;
     private Map<Label, Map<Integer, LocalVariableMetaInfo>> locals = C.newMap();
     private int appCtxLVT_id = -1;
 
@@ -95,6 +97,15 @@ public abstract class HandlerMethodMetaInfo<T extends HandlerMethodMetaInfo> ext
 
     public boolean isStatic() {
         return InvokeType.STATIC == invokeType;
+    }
+
+    public HandlerMethodMetaInfo propertySpec(PropertySpec.MetaInfo propertySpec) {
+        this.propertySpec = propertySpec;
+        return this;
+    }
+
+    public PropertySpec.MetaInfo propertySpec() {
+        return propertySpec;
     }
 
     public T returnType(Type type) {

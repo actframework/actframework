@@ -2,10 +2,9 @@ package act.controller;
 
 import act.app.ActionContext;
 import act.conf.AppConfigKey;
-import act.view.ActForbidden;
-import act.view.ActNotFound;
-import act.view.RenderAny;
-import act.view.RenderTemplate;
+import act.controller.meta.HandlerMethodMetaInfo;
+import act.util.PropertySpec;
+import act.view.*;
 import org.osgl.http.H;
 import org.osgl.mvc.result.*;
 import org.osgl.storage.ISObject;
@@ -447,7 +446,7 @@ public @interface Controller {
          * @param actionContext
          * @return
          */
-        public static Result inferResult(Object v, ActionContext actionContext, boolean hasTemplate) {
+        public static Result inferResult(HandlerMethodMetaInfo meta, Object v, ActionContext actionContext, boolean hasTemplate) {
             if (null == v) {
                 return null;
             } else if (v instanceof Result) {
@@ -478,7 +477,11 @@ public @interface Controller {
                     return inferToTemplate(v, actionContext);
                 }
                 if (actionContext.isJSON()) {
-                    return new RenderJSON(v);
+                    PropertySpec.MetaInfo propertySpec = (null == meta) ? null : meta.propertySpec();
+                    if (null == propertySpec) {
+                        return new RenderJSON(v);
+                    }
+                    return new FilteredRenderJSON(v, propertySpec);
                 } else {
                     return inferResult(v.toString(), actionContext);
                 }

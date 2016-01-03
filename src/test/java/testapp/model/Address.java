@@ -1,6 +1,6 @@
 package testapp.model;
 
-import act.util.Data;
+import act.data.Data;
 import org.osgl.$;
 
 @Data

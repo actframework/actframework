@@ -1,6 +1,6 @@
 package testapp.model;
 
-import act.util.Data;
+import act.data.Data;
 import act.util.EqualIgnore;
 import org.osgl.util.S;
 

@@ -150,7 +150,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         Object ctrl = controllerInstance(actionContext);
         applyAppContext(actionContext, ctrl);
         Object[] params = params(actionContext, null, null);
-        return invoke(actionContext, ctrl, params);
+        return invoke(handler, actionContext, ctrl, params);
     }
 
     @Override
@@ -158,7 +158,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         Object ctrl = controllerInstance(actionContext);
         applyAppContext(actionContext, ctrl);
         Object[] params = params(actionContext, result, null);
-        return invoke(actionContext, ctrl, params);
+        return invoke(handler, actionContext, ctrl, params);
     }
 
     @Override
@@ -166,7 +166,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         Object ctrl = controllerInstance(actionContext);
         applyAppContext(actionContext, ctrl);
         Object[] params = params(actionContext, null, e);
-        return invoke(actionContext, ctrl, params);
+        return invoke(handler, actionContext, ctrl, params);
     }
 
     private Object controllerInstance(ActionContext context) {
@@ -186,7 +186,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         // ignore ContextLocal save as it's processed for one time when RequestHandlerProxy is invoked
     }
 
-    private Result invoke(ActionContext context, Object controller, Object[] params) {
+    private Result invoke(M handlerMetaInfo, ActionContext context, Object controller, Object[] params) {
         Object result;
         if (null != methodAccess) {
             try {
@@ -204,7 +204,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
             }
         }
         boolean hasTemplate = checkTemplate(context);
-        return Controller.Util.inferResult(result, context, hasTemplate);
+        return Controller.Util.inferResult(handlerMetaInfo, result, context, hasTemplate);
     }
 
     private synchronized boolean checkTemplate(ActionContext context) {

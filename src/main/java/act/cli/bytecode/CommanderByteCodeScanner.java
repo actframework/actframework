@@ -7,7 +7,7 @@ import act.cli.CliDispatcher;
 import act.cli.meta.*;
 import act.util.AsmTypes;
 import act.util.ByteCodeVisitor;
-import act.util.PropertyFilter;
+import act.util.PropertySpec;
 import org.osgl.$;
 import org.osgl.logging.L;
 import org.osgl.logging.Logger;
@@ -191,7 +191,7 @@ public class CommanderByteCodeScanner extends AppByteCodeScannerBase {
                     return new AnnotationVisitor(ASM5, av) {
                         @Override
                         public void visit(String name, Object value) {
-                            if (S.eq("value", name)) {
+                            if (S.eq("value", name) || S.eq("name", name)) {
                                 String commandName = S.string(value);
                                 if (S.empty(commandName)) {
                                     throw E.unexpected("command name cannot be empty");
@@ -200,6 +200,14 @@ public class CommanderByteCodeScanner extends AppByteCodeScannerBase {
                             } else if (S.eq("help", name)) {
                                 methodInfo.helpMsg(S.string(value));
                             }
+                        }
+
+                        @Override
+                        public void visitEnd() {
+                            if (S.blank(methodInfo.commandName())) {
+                                throw new IllegalArgumentException("command name not defined");
+                            }
+                            super.visitEnd();
                         }
                     };
                 } else if ($.eq(AsmTypes.TABLE_VIEW.asmType(), type)) {
@@ -217,9 +225,9 @@ public class CommanderByteCodeScanner extends AppByteCodeScannerBase {
                             }
                         }
                     };
-                } else if ($.eq(AsmTypes.DATA_VIEW.asmType(), type)) {
-                    final PropertyFilter.MetaInfo info = new PropertyFilter.MetaInfo();
-                    methodInfo.dataView(info);
+                } else if ($.eq(AsmTypes.PROPERTY_SPEC.asmType(), type)) {
+                    final PropertySpec.MetaInfo propSpec = new PropertySpec.MetaInfo();
+                    methodInfo.propertySpec(propSpec);
                     return new AnnotationVisitor(ASM5, av) {
                         @Override
                         public AnnotationVisitor visitArray(String name) {
@@ -228,7 +236,8 @@ public class CommanderByteCodeScanner extends AppByteCodeScannerBase {
                                 return new AnnotationVisitor(ASM5, av0) {
                                     @Override
                                     public void visit(String name, Object value) {
-                                        info.onValue(S.string(value));
+                                        super.visit(name, value);
+                                        propSpec.onValue(S.string(value));
                                     }
                                 };
                             } else {
@@ -288,7 +297,7 @@ public class CommanderByteCodeScanner extends AppByteCodeScannerBase {
 
             private class OptionAnnotationVisitor extends AnnotationVisitor implements Opcodes {
                 protected int index;
-                protected List<String> values = C.newList();
+                protected List<String> specs = C.newList();
                 protected OptionAnnoInfo info;
 
                 public OptionAnnotationVisitor(AnnotationVisitor av, int index, boolean optional) {
@@ -300,11 +309,11 @@ public class CommanderByteCodeScanner extends AppByteCodeScannerBase {
                 @Override
                 public AnnotationVisitor visitArray(String name) {
                     AnnotationVisitor av = super.visitArray(name);
-                    if (S.eq("value", name)) {
+                    if (S.eq("lead", name)) {
                         return new AnnotationVisitor(ASM5, av) {
                             @Override
                             public void visit(String name, Object value) {
-                                values.add((String) value);
+                                specs.add((String) value);
                             }
                         };
                     }
@@ -317,15 +326,15 @@ public class CommanderByteCodeScanner extends AppByteCodeScannerBase {
                         info.group((String) value);
                     } else if (S.eq("defVal", name)) {
                         info.defVal((String) value);
-                    } else if (S.eq("help", name)) {
+                    } else if (S.eq("value", name) || S.eq("help", name)) {
                         info.help((String) value);
                     }
                 }
 
                 @Override
                 public void visitEnd() {
-                    if (!values.isEmpty()) {
-                        info.value(values.toArray(new String[values.size()]));
+                    if (!specs.isEmpty()) {
+                        info.spec(specs.toArray(new String[specs.size()]));
                     }
                     optionAnnoInfo.put(index, info);
                 }

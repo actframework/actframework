@@ -2,7 +2,7 @@ package act.job;
 
 import act.app.App;
 import act.cli.*;
-import act.util.PropertyFilter;
+import act.util.PropertySpec;
 import com.alibaba.fastjson.JSONObject;
 import org.osgl.$;
 import org.osgl.util.C;
@@ -21,9 +21,9 @@ public class JobAdmin {
      * @return a list of {@link _Job jobs}
      */
     @Command(value = "act.job.list", help = "List jobs")
-    @PropertyFilter(_Job.BRIEF_VIEW)
+    @PropertySpec(_Job.BRIEF_VIEW)
     @TableView
-    public List<_Job> listJobs(@Optional("-q") final String q, App app) {
+    public List<_Job> listJobs(@Optional(lead = "-q") final String q, App app) {
         AppJobManager jobManager = app.jobManager();
         C.List<_Job> jobs = jobManager.jobs();
         if (S.notBlank(q)) {
@@ -39,8 +39,8 @@ public class JobAdmin {
 
     @Command(value = "act.job.show", help = "Show job details")
     @JsonView
-    @PropertyFilter(_Job.DETAIL_VIEW)
-    public _Job getJob(@Required(value = "-i,--id", help = "specify the query string") final String id, App app) {
+    @PropertySpec(_Job.DETAIL_VIEW)
+    public _Job getJob(@Required("specify the query string") final String id, App app) {
         AppJobManager jobManager = app.jobManager();
         return jobManager.jobById(id);
     }

@@ -2,6 +2,7 @@ package act.util;
 
 import act.ActComponent;
 import act.asm.*;
+import act.data.Data;
 import org.osgl.$;
 import org.osgl.util.C;
 import org.osgl.util.FastStr;

@@ -1,5 +1,7 @@
 package act.util;
 
+import act.data.Data;
+
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;

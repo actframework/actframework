@@ -34,7 +34,7 @@ public @interface Required {
      * </ul>
      * @return the argument lead as described
      */
-    String[] value() default "";
+    String[] lead() default "";
 
     /**
      * Specify the mutual exclusive group. If there are multiple {@code @Required} options found
@@ -59,6 +59,13 @@ public @interface Required {
      * @return the mutual exclusive group
      */
     String group() default "";
+
+
+    /**
+     * Alias of {@link #help()}
+     * @return the help message
+     */
+    String value() default "";
 
     /**
      * Specify the help message for this option

@@ -1,6 +1,6 @@
 package testapp.model;
 
-import act.util.Data;
+import act.data.Data;
 import org.osgl.$;
 
 @Data
@@ -44,6 +44,10 @@ public class Person {
 
     public void happyBirthday() {
         age++;
+    }
+
+    public int getAge() {
+        return age;
     }
 
     @Override

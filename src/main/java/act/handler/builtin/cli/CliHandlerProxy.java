@@ -4,18 +4,14 @@ import act.app.App;
 import act.app.CliContext;
 import act.cli.CliError;
 import act.cli.CommandExecutor;
-import act.cli.ascii_table.impl.CollectionASCIITableAware;
 import act.cli.bytecode.ReflectedCommandExecutor;
 import act.cli.meta.CommandMethodMetaInfo;
 import act.handler.CliHandlerBase;
-import act.util.PropertyFilter;
+import act.util.PropertySpec;
 import org.osgl.$;
 import org.osgl.logging.L;
 import org.osgl.logging.Logger;
-import org.osgl.util.C;
 import org.osgl.util.S;
-
-import java.util.List;
 
 public final class CliHandlerProxy extends CliHandlerBase {
 
@@ -63,7 +59,7 @@ public final class CliHandlerProxy extends CliHandlerBase {
         if (null == result) {
             return;
         }
-        PropertyFilter.MetaInfo filter = meta.dataViewInfo();
+        PropertySpec.MetaInfo filter = meta.propertySpec();
         meta.view().print(result, filter, context);
     }
 

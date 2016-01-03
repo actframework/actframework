@@ -1,7 +1,7 @@
 package testapp.model;
 
 import act.asm.Type;
-import act.util.Data;
+import act.data.Data;
 import org.osgl.$;
 
 @Data(callSuper = true)

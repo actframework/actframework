@@ -1,4 +1,7 @@
-package act.util;
+package act.data;
+
+import act.util.EqualField;
+import act.util.EqualIgnore;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

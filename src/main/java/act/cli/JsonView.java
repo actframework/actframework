@@ -1,5 +1,7 @@
 package act.cli;
 
+import act.util.PropertySpec;
+
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -22,7 +24,7 @@ import java.lang.annotation.Target;
  * ]
  * </pre>
  * <p>
- *     {@code JsonView} can be used in conjunction with {@link act.util.PropertyFilter}
+ *     {@code JsonView} can be used in conjunction with {@link PropertySpec}
  *     to export only specified fields
  * </p>
  * <p>
@@ -31,7 +33,7 @@ import java.lang.annotation.Target;
  *     {@link Object#toString()} to present the data
  * </p>
  * @see TableView
- * @see act.util.PropertyFilter
+ * @see PropertySpec
  */
 @Retention(RetentionPolicy.CLASS)
 @Target(ElementType.METHOD)
