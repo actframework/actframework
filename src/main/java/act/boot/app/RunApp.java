@@ -4,8 +4,10 @@ import act.conf.AppConfigKey;
 import org.osgl.$;
 import org.osgl.logging.L;
 import org.osgl.logging.Logger;
+import org.osgl.util.E;
 import org.osgl.util.FastStr;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 /**
@@ -40,7 +42,16 @@ public class RunApp {
         Thread.currentThread().setContextClassLoader(classLoader);
         Class<?> actClass = classLoader.loadClass("act.Act");
         Method m = actClass.getDeclaredMethod("startApp", String.class);
-        m.invoke(null, appName);
+        try {
+            m.invoke(null, appName);
+        } catch (InvocationTargetException e) {
+            Throwable t = e.getCause();
+            if (t instanceof Exception) {
+                throw (Exception) t;
+            } else {
+                throw E.unexpected(t, "Unknown error captured starting the application");
+            }
+        }
         System.out.printf("it talks %sms to start the app\n", $.ms() - ts);
     }
 }

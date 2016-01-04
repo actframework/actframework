@@ -144,7 +144,7 @@ class CliServer extends AppServiceBase<CliServer> implements Runnable {
     private void initExecutor(App app) {
         // cli session thread + server thread + expiration monitor thread
         int poolSize = app.config().maxCliSession() + 2;
-        executor = new ScheduledThreadPoolExecutor(poolSize, new AppThreadFactory("cli"), new ThreadPoolExecutor.AbortPolicy());
+        executor = new ScheduledThreadPoolExecutor(poolSize, new AppThreadFactory("cli", true), new ThreadPoolExecutor.AbortPolicy());
     }
 
 }
