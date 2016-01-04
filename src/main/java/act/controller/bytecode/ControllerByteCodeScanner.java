@@ -1,6 +1,7 @@
 package act.controller.bytecode;
 
 import act.ActComponent;
+import act.app.App;
 import act.app.AppByteCodeScannerBase;
 import act.asm.*;
 import act.asm.signature.SignatureReader;
@@ -527,8 +528,13 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
                     if (null == ports || ports.length == 0) {
                         routers.add(app().router());
                     } else {
+                        App app = app();
                         for (String portName : ports) {
-                            routers.add(app().router(portName));
+                            Router r = app.router(portName);
+                            if (null == r) {
+                                throw E.invalidConfiguration("Cannot find configuration for named port[%s]", portName);
+                            }
+                            routers.add(r);
                         }
                     }
                     for (Router r: routers) {

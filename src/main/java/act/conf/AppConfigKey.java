@@ -50,7 +50,7 @@ public enum AppConfigKey implements ConfigKey {
 
     /**
      * {@code cli.session.expiration} specifies the number of seconds
-     * a cli session can exists after last user interation
+     * a cli session can exists after last user interaction
      * <p>Default value: {@code 300} seconds. e.g. 5 minutes</p>
      */
     CLI_SESSION_EXPIRATION("cli.session.expiration"),
