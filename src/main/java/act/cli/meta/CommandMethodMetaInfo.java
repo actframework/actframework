@@ -56,8 +56,10 @@ public class CommandMethodMetaInfo extends DestroyableBase {
                     return TO_STRING.render(result, null);
                 }
                 List dataList;
+                boolean isList = false;
                 if (result instanceof Iterable) {
                     dataList = C.list((Iterable) result);
+                    isList = true;
                 } else {
                     dataList = C.listOf(result);
                 }
@@ -66,7 +68,14 @@ public class CommandMethodMetaInfo extends DestroyableBase {
                 List<String> outputFields = filter.outputFields();
                 if (!excluded.isEmpty()) {
                     DataPropertyRepository repo = App.instance().service(DataPropertyRepository.class);
-                    List<String> allFields = repo.propertyListOf(result.getClass());
+                    Class resultClass = result.getClass();
+                    if (isList) {
+                        if (dataList.isEmpty()) {
+                            return "no data found";
+                        }
+                        resultClass = dataList.get(0).getClass();
+                    }
+                    List<String> allFields = repo.propertyListOf(resultClass);
                     outputFields = C.list(allFields).without(excluded);
                 }
                 return context.getTable(new CollectionASCIITableAware(dataList, outputFields, filter.labels(outputFields)));

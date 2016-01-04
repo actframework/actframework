@@ -12,6 +12,7 @@ import act.conf.AppConfLoader;
 import act.conf.AppConfig;
 import act.conf.AppConfigKey;
 import act.controller.bytecode.ControllerByteCodeScanner;
+import act.data.DataPropertyRepository;
 import act.di.DependencyInjector;
 import act.di.DiBinder;
 import act.event.AppEventListenerBase;
@@ -225,6 +226,7 @@ public class App {
         emit(CONFIG_LOADED);
 
         initCache();
+        initDataPropertyRepository();
         initCrypto();
         initIdGenerator();
         initJobManager();
@@ -557,6 +559,10 @@ public class App {
 
     private void initDbServiceManager() {
         dbServiceManager = new DbServiceManager(this);
+    }
+
+    private void initDataPropertyRepository() {
+        new DataPropertyRepository(this);
     }
 
     private void initMailerConfigManager() {

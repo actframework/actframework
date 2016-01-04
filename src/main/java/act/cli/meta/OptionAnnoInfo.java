@@ -47,7 +47,7 @@ public class OptionAnnoInfo {
         if (specs.length > 1) {
             lead2 = specs[1];
         } else {
-            String[] sa = lead1.split("[,;]+");
+            String[] sa = lead1.split("[,;\\s]+");
             if (sa.length > 2) {
                 throw E.unexpected("Option cannot have more than two leads");
             }

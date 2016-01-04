@@ -99,19 +99,20 @@ public @interface PropertySpec {
         public void onValue(String value) {
             String[] sa = value.split("[,;:]+");
             for (String s: sa) {
+                s = s.trim();
                 if (s.startsWith("-")) {
                     excluded.add(s.substring(1));
                     outputs.clear();
                 } else {
                     String[] sa0 = p.split(s);
                     if (sa0.length > 1) {
-                        String k = sa0[0], v = sa0[1];
+                        String k = sa0[0].trim(), v = sa0[1].trim();
                         labels.put(k, v);
                         if (excluded.isEmpty()) {
                             outputs.add(k);
                         }
                     } else if (excluded.isEmpty()) {
-                        outputs.add(s);
+                        outputs.add(s.trim());
                     }
                 }
             }

@@ -71,6 +71,9 @@ public class DataPropertyRepository extends AppServiceBase<DataPropertyRepositor
     }
 
     private List<String> buildPropertyPath(String context, Method m) {
+        if (m.getParameterTypes().length > 0) {
+            return null;
+        }
         String name = m.getName();
         if ("getClass".equals(name)) {
             return null;
@@ -146,6 +149,7 @@ public class DataPropertyRepository extends AppServiceBase<DataPropertyRepositor
         s0.add("java.time.LocalTime");
         s0.add("java.time.LocalDate");
         s0.add("java.time.LocalDateTime");
+        s0.add("org.bson.types.ObjectId");
 
         extendedTerminators = s0;
     }
