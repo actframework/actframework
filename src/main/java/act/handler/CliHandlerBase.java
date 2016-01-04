@@ -1,5 +1,6 @@
 package act.handler;
 
+import act.Act;
 import act.app.CliContext;
 import org.osgl.$;
 import org.osgl.exception.NotAppliedException;
@@ -12,6 +13,11 @@ public abstract class CliHandlerBase extends $.F1<CliContext, Void> implements C
     public final Void apply(CliContext context) throws NotAppliedException, $.Break {
         handle(context);
         return null;
+    }
+
+    @Override
+    public boolean appliedIn(Act.Mode mode) {
+        return true;
     }
 
     @Override

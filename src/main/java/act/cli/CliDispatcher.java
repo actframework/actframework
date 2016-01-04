@@ -1,5 +1,6 @@
 package act.cli;
 
+import act.Act;
 import act.app.App;
 import act.app.AppServiceBase;
 import act.cli.builtin.Exit;
@@ -7,6 +8,7 @@ import act.cli.builtin.Help;
 import act.cli.meta.CommandMethodMetaInfo;
 import act.handler.CliHandler;
 import act.handler.builtin.cli.CliHandlerProxy;
+import org.osgl.Osgl;
 import org.osgl.logging.LogManager;
 import org.osgl.logging.Logger;
 import org.osgl.util.C;
@@ -47,7 +49,13 @@ public class CliDispatcher extends AppServiceBase<CliDispatcher> {
         if (null == handler && !command.startsWith("act.")) {
             handler = registry.get("act." + command);
         }
-        return handler;
+
+        Act.Mode mode = Act.mode();
+        if (null != handler && handler.appliedIn(mode)) {
+            return handler;
+        }
+
+        return null;
     }
 
     /**
@@ -55,7 +63,28 @@ public class CliDispatcher extends AppServiceBase<CliDispatcher> {
      * @return the list of commands
      */
     public List<String> commands() {
-        return C.list(registry.keySet()).sorted();
+        C.List<String> list = C.newList();
+        Act.Mode mode = Act.mode();
+        for (String s : registry.keySet()) {
+            CliHandler h = registry.get(s);
+            if (h.appliedIn(mode)) {
+                list.add(s);
+            }
+        }
+        return list.sorted(new Osgl.Comparator<String>() {
+            @Override
+            public int compare(String o1, String o2) {
+                boolean b1 = (o1.startsWith("act."));
+                boolean b2 = (o2.startsWith("act."));
+                if (b1 & !b2) {
+                    return -1;
+                }
+                if (!b1 & b2) {
+                    return 1;
+                }
+                return o1.compareTo(o2);
+            }
+        });
     }
 
     @Override
@@ -64,9 +93,9 @@ public class CliDispatcher extends AppServiceBase<CliDispatcher> {
     }
 
     private void registerBuiltInHandlers() {
-        registry.put("exit", Exit.INSTANCE);
-        registry.put("quit", Exit.INSTANCE);
-        registry.put("bye", Exit.INSTANCE);
-        registry.put("help", Help.INSTANCE);
+        registry.put("act.exit", Exit.INSTANCE);
+        registry.put("act.quit", Exit.INSTANCE);
+        registry.put("act.bye", Exit.INSTANCE);
+        registry.put("act.help", Help.INSTANCE);
     }
 }

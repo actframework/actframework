@@ -1,5 +1,6 @@
 package act.handler.builtin.cli;
 
+import act.Act;
 import act.app.App;
 import act.app.CliContext;
 import act.cli.CliError;
@@ -36,6 +37,11 @@ public final class CliHandlerProxy extends CliHandlerBase {
     }
 
     @Override
+    public boolean appliedIn(Act.Mode mode) {
+        return mode == Act.Mode.DEV || mode == meta.mode();
+    }
+
+    @Override
     public void handle(CliContext context) {
         try {
             ensureAgentsReady();
@@ -50,8 +56,8 @@ public final class CliHandlerProxy extends CliHandlerBase {
         }
     }
 
-    public String help() {
-        return meta.help();
+    public String help(String commandName) {
+        return meta.help(commandName);
     }
 
     @SuppressWarnings("unchecked")

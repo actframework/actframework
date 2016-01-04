@@ -1,5 +1,6 @@
 package act.cli.meta;
 
+import act.Act;
 import act.Destroyable;
 import act.app.App;
 import act.app.CliContext;
@@ -146,6 +147,7 @@ public class CommandMethodMetaInfo extends DestroyableBase {
     private ReturnTypeInfo returnType;
     private Set<String> optionLeads = C.newSet();
     private View view = View.TO_STRING;
+    private Act.Mode mode = Act.Mode.PROD;
 
     public CommandMethodMetaInfo(CommanderClassMetaInfo clsInfo) {
         this.clsInfo = $.NPE(clsInfo);
@@ -193,6 +195,15 @@ public class CommandMethodMetaInfo extends DestroyableBase {
 
     public String helpMsg() {
         return helpMsg;
+    }
+
+    public CommandMethodMetaInfo mode(Act.Mode mode) {
+        this.mode = mode;
+        return this;
+    }
+
+    public Act.Mode mode() {
+        return mode;
     }
 
     public CommandMethodMetaInfo invokeStaticMethod() {
@@ -255,7 +266,7 @@ public class CommandMethodMetaInfo extends DestroyableBase {
         return this;
     }
 
-    public String help() {
+    public String help(String commandName) {
         StringBuilder sb = S.builder().append(commandName);
         if (S.notBlank(helpMsg)) {
             sb.append("\t").append(helpMsg);

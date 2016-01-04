@@ -26,7 +26,7 @@ public class Help extends CliHandlerBase {
             if (null == handler) {
                 context.println("Unrecognized command: %s", command);
             } else {
-                context.println(handler.help());
+                context.println(handler.help(command));
             }
         } else {
             List<String> commands = dispatcher.commands();
@@ -43,15 +43,15 @@ public class Help extends CliHandlerBase {
                 if (sb.length() > 0) {
                     sb.append("\n");
                 }
-                sb.append(handler.help());
+                sb.append(handler.help(command));
             }
             context.println(sb.toString());
         }
     }
 
     @Override
-    public String help() {
-        return "help\tShow help message";
+    public String help(String commandName) {
+        return commandName + "\tShow help message";
     }
 
     private Object readResolve() {

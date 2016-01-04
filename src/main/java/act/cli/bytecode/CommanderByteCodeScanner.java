@@ -1,5 +1,6 @@
 package act.cli.bytecode;
 
+import act.Act;
 import act.ActComponent;
 import act.app.AppByteCodeScannerBase;
 import act.asm.*;
@@ -199,6 +200,14 @@ public class CommanderByteCodeScanner extends AppByteCodeScannerBase {
                                 methodInfo.commandName(commandName);
                             } else if (S.eq("help", name)) {
                                 methodInfo.helpMsg(S.string(value));
+                            }
+                        }
+
+                        @Override
+                        public void visitEnum(String name, String desc, String value) {
+                            super.visitEnum(name, desc, value);
+                            if ("mode".equals(name)) {
+                                methodInfo.mode(Act.Mode.valueOf(value));
                             }
                         }
 

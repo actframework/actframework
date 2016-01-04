@@ -20,7 +20,7 @@ public class Exit extends CliHandlerBase {
     }
 
     @Override
-    public String help() {
-        return "exit\tExit act console";
+    public String help(String commandName) {
+        return commandName + "\tExit act console";
     }
 }
