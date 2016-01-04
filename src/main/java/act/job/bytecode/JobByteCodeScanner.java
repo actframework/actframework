@@ -44,7 +44,7 @@ public class JobByteCodeScanner extends AppByteCodeScannerBase {
 
     @Override
     public void scanFinished(String className) {
-        classInfoBase().registerControllerMetaInfo(classInfo);
+        classInfoBase().registerJobMetaInfo(classInfo);
     }
 
     @Override

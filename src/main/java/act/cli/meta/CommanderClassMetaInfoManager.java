@@ -34,9 +34,6 @@ public class CommanderClassMetaInfoManager extends DestroyableBase {
     }
 
     public void registerCommanderMetaInfo(CommanderClassMetaInfo metaInfo) {
-        if (!metaInfo.hasCommand()) {
-            return;
-        }
         String className = Type.getObjectType(metaInfo.className()).getClassName();
         commands.put(className, metaInfo);
         Type superType = metaInfo.superType();
@@ -59,7 +56,6 @@ public class CommanderClassMetaInfoManager extends DestroyableBase {
             }
             subTypeInfo.remove(metaInfo.type());
         }
-        logger.trace("Commander meta info registered for: %s", className);
     }
 
     public CommanderClassMetaInfo commanderMetaInfo(String className) {

@@ -28,4 +28,8 @@ public class AsmType<T> {
     public String desc() {
         return type.getDescriptor();
     }
+
+    public static void main(String[] args) {
+        System.out.println(Type.getDescriptor(String.class));
+    }
 }

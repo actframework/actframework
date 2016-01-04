@@ -11,7 +11,7 @@ public class CommandParamMetaInfo extends DestroyableBase {
     private String name;
     private Type type;
     private Type componentType;
-    private OptionAnnoInfo optionInfo;
+    private ParamOptionAnnoInfo optionInfo;
 
     public CommandParamMetaInfo name(String name) {
         this.name = $.NPE(name);
@@ -40,13 +40,13 @@ public class CommandParamMetaInfo extends DestroyableBase {
         return componentType;
     }
 
-    public CommandParamMetaInfo optionInfo(OptionAnnoInfo optionInfo) {
+    public CommandParamMetaInfo optionInfo(ParamOptionAnnoInfo optionInfo) {
         this.optionInfo = $.NPE(optionInfo);
         optionInfo.paramName(name);
         return this;
     }
 
-    public OptionAnnoInfo optionInfo() {
+    public ParamOptionAnnoInfo optionInfo() {
         return optionInfo;
     }
 

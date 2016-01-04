@@ -11,8 +11,7 @@ import org.osgl.util.S;
  *     <li>{@link act.cli.Required}</li>
  * </ul>
  */
-public class OptionAnnoInfo {
-    private int index;
+public class OptionAnnoInfoBase {
     /*
      * e.g -o
      */
@@ -27,8 +26,7 @@ public class OptionAnnoInfo {
     private boolean required;
     private String param;
 
-    public OptionAnnoInfo(int index, boolean optional) {
-        this.index = index;
+    public OptionAnnoInfoBase(boolean optional) {
         this.required = !optional;
     }
 
@@ -37,11 +35,7 @@ public class OptionAnnoInfo {
         return S.fmt("%s %s", leads(), help());
     }
 
-    public int index() {
-        return index;
-    }
-
-    public OptionAnnoInfo spec(String[] specs) {
+    public OptionAnnoInfoBase spec(String[] specs) {
         E.illegalArgumentIf(null == specs || specs.length == 0);
         lead1 = specs[0];
         if (specs.length > 1) {
@@ -86,7 +80,7 @@ public class OptionAnnoInfo {
         }
     }
 
-    public OptionAnnoInfo required(boolean required) {
+    public OptionAnnoInfoBase required(boolean required) {
         this.required = required;
         return this;
     }
@@ -95,7 +89,7 @@ public class OptionAnnoInfo {
         return required;
     }
 
-    public OptionAnnoInfo defVal(String defVal) {
+    public OptionAnnoInfoBase defVal(String defVal) {
         this.defVal = defVal;
         return this;
     }
@@ -104,7 +98,7 @@ public class OptionAnnoInfo {
         return defVal;
     }
 
-    public OptionAnnoInfo group(String group) {
+    public OptionAnnoInfoBase group(String group) {
         this.group = group;
         return this;
     }
@@ -113,13 +107,13 @@ public class OptionAnnoInfo {
         return group;
     }
 
-    public OptionAnnoInfo paramName(String name) {
+    public OptionAnnoInfoBase paramName(String name) {
         param = name;
         setLeadsIfNotSet(name);
         return this;
     }
 
-    public OptionAnnoInfo help(String helpMessage) {
+    public OptionAnnoInfoBase help(String helpMessage) {
         help = helpMessage;
         return this;
     }

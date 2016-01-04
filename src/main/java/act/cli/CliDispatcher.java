@@ -6,6 +6,7 @@ import act.app.AppServiceBase;
 import act.cli.builtin.Exit;
 import act.cli.builtin.Help;
 import act.cli.meta.CommandMethodMetaInfo;
+import act.cli.meta.CommanderClassMetaInfo;
 import act.handler.CliHandler;
 import act.handler.builtin.cli.CliHandlerProxy;
 import org.osgl.Osgl;
@@ -31,11 +32,11 @@ public class CliDispatcher extends AppServiceBase<CliDispatcher> {
         registerBuiltInHandlers();
     }
 
-    public CliDispatcher registerCommandHandler(String command, CommandMethodMetaInfo methodMetaInfo) {
+    public CliDispatcher registerCommandHandler(String command, CommandMethodMetaInfo methodMetaInfo, CommanderClassMetaInfo classMetaInfo) {
         if (registry.containsKey(command)) {
             throw E.invalidConfiguration("Command %s already registered");
         }
-        registry.put(command, new CliHandlerProxy(methodMetaInfo, app()));
+        registry.put(command, new CliHandlerProxy(classMetaInfo, methodMetaInfo, app()));
         logger.info("Command registered: %s", command);
         return this;
     }

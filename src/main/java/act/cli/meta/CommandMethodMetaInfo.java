@@ -275,16 +275,19 @@ public class CommandMethodMetaInfo extends DestroyableBase {
         return this;
     }
 
-    public String help(String commandName) {
+    public String help(String commandName, List<FieldOptionAnnoInfo> fieldOptionAnnoInfoList) {
         StringBuilder sb = S.builder().append(commandName);
         if (S.notBlank(helpMsg)) {
             sb.append("\t").append(helpMsg);
         }
         for (CommandParamMetaInfo param : params) {
-            OptionAnnoInfo opt = param.optionInfo();
+            ParamOptionAnnoInfo opt = param.optionInfo();
             if (null != opt) {
                 sb.append(opt.help());
             }
+        }
+        for (FieldOptionAnnoInfo field : fieldOptionAnnoInfoList) {
+            sb.append(field.help());
         }
         return sb.toString();
     }

@@ -7,6 +7,7 @@ import act.cli.CliError;
 import act.cli.CommandExecutor;
 import act.cli.bytecode.ReflectedCommandExecutor;
 import act.cli.meta.CommandMethodMetaInfo;
+import act.cli.meta.CommanderClassMetaInfo;
 import act.handler.CliHandlerBase;
 import act.util.PropertySpec;
 import org.osgl.$;
@@ -19,13 +20,15 @@ public final class CliHandlerProxy extends CliHandlerBase {
     private static Logger logger = L.get(CliHandlerProxy.class);
 
     private App app;
-    private CommandMethodMetaInfo meta;
+    private CommandMethodMetaInfo methodMetaInfo;
+    private CommanderClassMetaInfo classMetaInfo;
 
     private volatile CommandExecutor executor = null;
 
-    public CliHandlerProxy(CommandMethodMetaInfo metaInfo, App app) {
-        this.meta = $.NPE(metaInfo);
-        this.app = $.NPE(app);
+    public CliHandlerProxy(CommanderClassMetaInfo classMetaInfo, CommandMethodMetaInfo metaInfo, App app) {
+        this.methodMetaInfo = $.notNull(metaInfo);
+        this.classMetaInfo = $.notNull(classMetaInfo);
+        this.app = $.notNull(app);
     }
 
     @Override
@@ -38,7 +41,7 @@ public final class CliHandlerProxy extends CliHandlerBase {
 
     @Override
     public boolean appliedIn(Act.Mode mode) {
-        return mode == Act.Mode.DEV || mode == meta.mode();
+        return mode == Act.Mode.DEV || mode == methodMetaInfo.mode();
     }
 
     @Override
@@ -57,7 +60,7 @@ public final class CliHandlerProxy extends CliHandlerBase {
     }
 
     public String help(String commandName) {
-        return meta.help(commandName);
+        return methodMetaInfo.help(commandName, classMetaInfo.fieldOptionAnnoInfoList());
     }
 
     @SuppressWarnings("unchecked")
@@ -65,8 +68,8 @@ public final class CliHandlerProxy extends CliHandlerBase {
         if (null == result) {
             return;
         }
-        PropertySpec.MetaInfo filter = meta.propertySpec();
-        meta.view().print(result, filter, context);
+        PropertySpec.MetaInfo filter = methodMetaInfo.propertySpec();
+        methodMetaInfo.view().print(result, filter, context);
     }
 
     private void ensureAgentsReady() {
@@ -81,13 +84,13 @@ public final class CliHandlerProxy extends CliHandlerBase {
 
     // could be used by View to resolve default path to template
     private void saveCommandPath(CliContext context) {
-        StringBuilder sb = S.builder(meta.fullName());
+        StringBuilder sb = S.builder(methodMetaInfo.fullName());
         String path = sb.toString();
         context.commandPath(path);
     }
 
     private void generateExecutor() {
-        executor = new ReflectedCommandExecutor(meta, app);
+        executor = new ReflectedCommandExecutor(classMetaInfo, methodMetaInfo, app);
     }
 
 
@@ -97,7 +100,7 @@ public final class CliHandlerProxy extends CliHandlerBase {
 
     @Override
     public String toString() {
-        return meta.fullName();
+        return methodMetaInfo.fullName();
     }
 
 }

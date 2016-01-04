@@ -5,6 +5,8 @@ import act.util.DestroyableBase;
 import org.osgl.util.C;
 import org.osgl.util.S;
 
+import java.util.List;
+
 import static act.Destroyable.Util.destroyAll;
 
 /**
@@ -16,9 +18,8 @@ public final class CommanderClassMetaInfo extends DestroyableBase {
     private Type type;
     private Type superType;
     private boolean isAbstract = false;
-    private String ctxField = null;
-    private boolean ctxFieldIsPrivate = true;
     private C.List<CommandMethodMetaInfo> commands = C.newList();
+    private C.List<FieldOptionAnnoInfo> fieldOptionAnnoInfoList = C.newList();
     // commandLookup index command method by method name
     private C.Map<String, CommandMethodMetaInfo> commandLookup = null;
     private CommanderClassMetaInfo parent;
@@ -62,6 +63,19 @@ public final class CommanderClassMetaInfo extends DestroyableBase {
         return this;
     }
 
+    public CommanderClassMetaInfo addFieldOptionAnnotationInfo(FieldOptionAnnoInfo info) {
+        fieldOptionAnnoInfoList.add(info);
+        return this;
+    }
+
+    public List<FieldOptionAnnoInfo> fieldOptionAnnoInfoList() {
+        C.List<FieldOptionAnnoInfo> list = C.list(fieldOptionAnnoInfoList);
+        if (null != parent) {
+            list = list.append(parent.fieldOptionAnnoInfoList());
+        }
+        return list;
+    }
+
     public Type superType() {
         return superType;
     }
@@ -80,37 +94,6 @@ public final class CommanderClassMetaInfo extends DestroyableBase {
         return this;
     }
 
-    public CommanderClassMetaInfo ctxField(String fieldName, boolean isPrivate) {
-        ctxField = fieldName;
-        ctxFieldIsPrivate = isPrivate;
-        return this;
-    }
-
-    public String nonPrivateCtxField() {
-        if (null != ctxField) {
-            return ctxFieldIsPrivate ? null : ctxField;
-        }
-        return null == parent ? null : parent.nonPrivateCtxField();
-    }
-
-    public String ctxField() {
-        if (null != ctxField) {
-            return ctxField;
-        }
-        if (null != parent) {
-            return parent.nonPrivateCtxField();
-        }
-        return null;
-    }
-
-    public boolean hasCtxField() {
-        return null != ctxField;
-    }
-
-    public boolean ctxFieldIsPrivate() {
-        return ctxFieldIsPrivate;
-    }
-
     public CommanderClassMetaInfo addCommand(CommandMethodMetaInfo info) {
         commands.add(info);
         return this;
@@ -125,6 +108,10 @@ public final class CommanderClassMetaInfo extends DestroyableBase {
 
     public boolean hasCommand() {
         return !commands.isEmpty();
+    }
+
+    public List<CommandMethodMetaInfo> commandList() {
+        return C.list(commands);
     }
 
     public String contextPath() {

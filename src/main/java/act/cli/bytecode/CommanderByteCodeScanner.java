@@ -14,7 +14,6 @@ import org.osgl.logging.L;
 import org.osgl.logging.Logger;
 import org.osgl.util.C;
 import org.osgl.util.E;
-import org.osgl.util.ListBuilder;
 import org.osgl.util.S;
 
 import java.util.List;
@@ -56,9 +55,10 @@ public class CommanderByteCodeScanner extends AppByteCodeScannerBase {
 
     @Override
     public void scanFinished(String className) {
-        if (classInfo.hasCommand()) {
-            classInfoBase().registerCommanderMetaInfo(classInfo);
+        if (!classInfo.fieldOptionAnnoInfoList().isEmpty() || className.contains("DeviceAdmin")) {
+            $.nil();
         }
+        classInfoBase().registerCommanderMetaInfo(classInfo);
     }
 
     @Override
@@ -80,7 +80,6 @@ public class CommanderByteCodeScanner extends AppByteCodeScannerBase {
         @Override
         public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
             classInfo.className(name);
-            String className = name.replace('/', '.');
             Type superType = Type.getObjectType(superName);
             classInfo.superType(superType);
             if (isAbstract(access)) {
@@ -91,10 +90,9 @@ public class CommanderByteCodeScanner extends AppByteCodeScannerBase {
 
         @Override
         public FieldVisitor visitField(int access, String name, String desc, String signature, Object value) {
-            if (AsmTypes.ACTION_CONTEXT_DESC.equals(desc)) {
-                classInfo.ctxField(name, isPrivate(access));
-            }
-            return super.visitField(access, name, desc, signature, value);
+            FieldVisitor fv = super.visitField(access, name, desc, signature, value);
+            Type type = Type.getType(desc);
+            return new CommanderFieldVisitor(fv, name, type);
         }
 
         @Override
@@ -103,26 +101,60 @@ public class CommanderByteCodeScanner extends AppByteCodeScannerBase {
             if (!isEligibleMethod(access, name, desc)) {
                 return mv;
             }
-            String className = classInfo.className();
             return new CommandMethodVisitor(mv, access, name, desc, signature, exceptions);
+        }
+
+        @Override
+        public void visitEnd() {
+            for (CommandMethodMetaInfo commandMethodMetaInfo: classInfo.commandList()) {
+                dispatcher.registerCommandHandler(commandMethodMetaInfo.commandName(), commandMethodMetaInfo, classInfo);
+            }
+            super.visitEnd();
         }
 
         private boolean isEligibleMethod(int access, String name, String desc) {
             return isPublic(access) && !isAbstract(access) && !isConstructor(name);
         }
 
-        private class StringArrayVisitor extends AnnotationVisitor {
-            protected ListBuilder<String> strings = ListBuilder.create();
+        private class CommanderFieldVisitor extends FieldVisitor implements Opcodes {
+            private String fieldName;
+            private Type type;
 
-            public StringArrayVisitor(AnnotationVisitor av) {
-                super(ASM5, av);
+            public CommanderFieldVisitor(FieldVisitor fv, String fieldName, Type type) {
+                super(ASM5, fv);
+                this.fieldName = fieldName;
+                this.type = type;
             }
 
             @Override
-            public void visit(String name, Object value) {
-                strings.add(value.toString());
-                super.visit(name, value);
+            public void visitAttribute(Attribute attr) {
+                super.visitAttribute(attr);
             }
+
+            @Override
+            public AnnotationVisitor visitAnnotation(String desc, boolean visible) {
+                AnnotationVisitor av = super.visitAnnotation(desc, visible);
+                Type type = Type.getType(desc);
+                boolean isOptional = $.eq(type, AsmTypes.OPTIONAL.asmType());
+                boolean isRequired = $.eq(type, AsmTypes.REQUIRED.asmType());
+                if (isOptional || isRequired) {
+                    return new FieldOptionAnnotationVisitor(av, isOptional, fieldName, this.type);
+                }
+                return av;
+            }
+
+            private class FieldOptionAnnotationVisitor extends OptionAnnotationVisitorBase implements Opcodes {
+                public FieldOptionAnnotationVisitor(AnnotationVisitor av, boolean optional, String fieldName, Type type) {
+                    super(av, optional);
+                    this.OptionAnnoInfo = new FieldOptionAnnoInfo(fieldName, type, optional);
+                }
+
+                @Override
+                public void visitEnd2() {
+                    classInfo.addFieldOptionAnnotationInfo((FieldOptionAnnoInfo) OptionAnnoInfo);
+                }
+            }
+
         }
 
         private class CommandMethodVisitor extends MethodVisitor implements Opcodes {
@@ -133,7 +165,7 @@ public class CommanderByteCodeScanner extends AppByteCodeScannerBase {
             private String signature;
             private boolean requireScan;
             private CommandMethodMetaInfo methodInfo;
-            private Map<Integer, OptionAnnoInfo> optionAnnoInfo = C.newMap();
+            private Map<Integer, ParamOptionAnnoInfo> optionAnnoInfo = C.newMap();
             private boolean isStatic;
 
             private int paramIdShift = 0;
@@ -192,6 +224,7 @@ public class CommanderByteCodeScanner extends AppByteCodeScannerBase {
                     return new AnnotationVisitor(ASM5, av) {
                         @Override
                         public void visit(String name, Object value) {
+                            super.visit(name, value);
                             if (S.eq("value", name) || S.eq("name", name)) {
                                 String commandName = S.string(value);
                                 if (S.empty(commandName)) {
@@ -229,6 +262,7 @@ public class CommanderByteCodeScanner extends AppByteCodeScannerBase {
                     return new AnnotationVisitor(ASM5, av) {
                         @Override
                         public void visit(String name, Object value) {
+                            super.visit(name, value);
                             if (S.eq("value", name)) {
                                 methodInfo.helpMsg(S.string(value));
                             }
@@ -268,7 +302,7 @@ public class CommanderByteCodeScanner extends AppByteCodeScannerBase {
                     if (optionAnnoInfo.containsKey(paramIndex)) {
                         throw E.unexpected("Option annotation already found on index %s", paramIndex);
                     }
-                    return new OptionAnnotationVisitor(av, paramIndex, isOptional);
+                    return new ParamOptionAnnotationVisitor(av, paramIndex, isOptional);
                 } else {
                     return av;
                 }
@@ -283,16 +317,14 @@ public class CommanderByteCodeScanner extends AppByteCodeScannerBase {
                 classInfo.addCommand(methodInfo);
                 Type[] argTypes = Type.getArgumentTypes(desc);
                 for (int i = 0; i < argTypes.length; ++i) {
-                    Type type = argTypes[i];
                     CommandParamMetaInfo param = methodInfo.param(i);
-                    OptionAnnoInfo option = optionAnnoInfo.get(i);
+                    ParamOptionAnnoInfo option = optionAnnoInfo.get(i);
                     if (null != option) {
                         param.optionInfo(option);
                         methodInfo.addLead(option.lead1());
                         methodInfo.addLead(option.lead2());
                     }
                 }
-                dispatcher.registerCommandHandler(methodInfo.commandName(), methodInfo);
                 super.visitEnd();
             }
 
@@ -304,52 +336,73 @@ public class CommanderByteCodeScanner extends AppByteCodeScannerBase {
                 return requireScan;
             }
 
-            private class OptionAnnotationVisitor extends AnnotationVisitor implements Opcodes {
+            private class ParamOptionAnnotationVisitor extends OptionAnnotationVisitorBase implements Opcodes {
                 protected int index;
-                protected List<String> specs = C.newList();
-                protected OptionAnnoInfo info;
 
-                public OptionAnnotationVisitor(AnnotationVisitor av, int index, boolean optional) {
-                    super(ASM5, av);
+                public ParamOptionAnnotationVisitor(AnnotationVisitor av, int index, boolean optional) {
+                    super(av, optional);
                     this.index = index;
-                    this.info = new OptionAnnoInfo(index, optional);
+                    this.OptionAnnoInfo = new ParamOptionAnnoInfo(index, optional);
                 }
 
                 @Override
-                public AnnotationVisitor visitArray(String name) {
-                    AnnotationVisitor av = super.visitArray(name);
-                    if (S.eq("lead", name)) {
-                        return new AnnotationVisitor(ASM5, av) {
-                            @Override
-                            public void visit(String name, Object value) {
-                                specs.add((String) value);
-                            }
-                        };
-                    }
-                    return av;
-                }
-
-                @Override
-                public void visit(String name, Object value) {
-                    if (S.eq("group", name)) {
-                        info.group((String) value);
-                    } else if (S.eq("defVal", name)) {
-                        info.defVal((String) value);
-                    } else if (S.eq("value", name) || S.eq("help", name)) {
-                        info.help((String) value);
-                    }
-                }
-
-                @Override
-                public void visitEnd() {
-                    if (!specs.isEmpty()) {
-                        info.spec(specs.toArray(new String[specs.size()]));
-                    }
-                    optionAnnoInfo.put(index, info);
+                public void visitEnd2() {
+                    optionAnnoInfo.put(index, (ParamOptionAnnoInfo) OptionAnnoInfo);
                 }
             }
 
         }
     }
+
+    private static class OptionAnnotationVisitorBase extends AnnotationVisitor implements Opcodes {
+        protected List<String> specs = C.newList();
+        protected OptionAnnoInfoBase OptionAnnoInfo;
+
+        public OptionAnnotationVisitorBase(AnnotationVisitor av, boolean optional) {
+            super(ASM5, av);
+            // sub class to init "info" field here
+        }
+
+        @Override
+        public AnnotationVisitor visitArray(String name) {
+            AnnotationVisitor av = super.visitArray(name);
+            if (S.eq("lead", name)) {
+                return new AnnotationVisitor(ASM5, av) {
+                    @Override
+                    public void visit(String name, Object value) {
+                        super.visit(name, value);
+                        specs.add((String) value);
+                    }
+                };
+            }
+            return av;
+        }
+
+        @Override
+        public void visit(String name, Object value) {
+            super.visit(name, value);
+            if (S.eq("group", name)) {
+                OptionAnnoInfo.group((String) value);
+            } else if (S.eq("defVal", name)) {
+                OptionAnnoInfo.defVal((String) value);
+            } else if (S.eq("value", name) || S.eq("help", name)) {
+                OptionAnnoInfo.help((String) value);
+            }
+        }
+
+        @Override
+        public void visitEnd() {
+            if (!specs.isEmpty()) {
+                OptionAnnoInfo.spec(specs.toArray(new String[specs.size()]));
+            }
+            visitEnd2();
+            super.visitEnd();
+        }
+
+        protected void visitEnd2() {
+            // ...
+        }
+    }
+
 
 }

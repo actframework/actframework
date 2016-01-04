@@ -76,7 +76,7 @@ public class CommanderByteCodeScannerTest extends TestBase {
 
         CommandParamMetaInfo op = params.get(0);
         eq("op1", op.name());
-        OptionAnnoInfo anno = op.optionInfo();
+        ParamOptionAnnoInfo anno = op.optionInfo();
         eq("-o", anno.lead1());
         eq("--op1", anno.lead2());
 
@@ -110,7 +110,7 @@ public class CommanderByteCodeScannerTest extends TestBase {
 
         CommandParamMetaInfo op = params.get(0);
         eq("id", op.name());
-        OptionAnnoInfo anno = op.optionInfo();
+        ParamOptionAnnoInfo anno = op.optionInfo();
         eq("-i", anno.lead1());
         eq("--id", anno.lead2());
         eq("group1", anno.group());

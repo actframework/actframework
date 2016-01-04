@@ -29,7 +29,7 @@ public class JobClassMetaInfoManager extends DestroyableBase {
         super.releaseResources();
     }
 
-    public void registerControllerMetaInfo(JobClassMetaInfo metaInfo) {
+    public void registerJobMetaInfo(JobClassMetaInfo metaInfo) {
         String className = Type.getObjectType(metaInfo.className()).getClassName();
         jobs.put(className, metaInfo);
         if (metaInfo.isJob()) {
