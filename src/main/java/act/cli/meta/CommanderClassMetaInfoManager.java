@@ -36,26 +36,6 @@ public class CommanderClassMetaInfoManager extends DestroyableBase {
     public void registerCommanderMetaInfo(CommanderClassMetaInfo metaInfo) {
         String className = Type.getObjectType(metaInfo.className()).getClassName();
         commands.put(className, metaInfo);
-        Type superType = metaInfo.superType();
-        if (!AsmTypes.OBJECT_TYPE.equals(superType)) {
-            CommanderClassMetaInfo superInfo = commanderMetaInfo(superType.getClassName());
-            if (null != superInfo) {
-                metaInfo.parent(superInfo);
-            } else {
-                List<CommanderClassMetaInfo> subTypes = subTypeInfo.get(superType);
-                if (null == subTypes) {
-                    subTypes = C.newList();
-                }
-                subTypes.add(metaInfo);
-            }
-        }
-        List<CommanderClassMetaInfo> subTypes = subTypeInfo.get(metaInfo.type());
-        if (null != subTypes) {
-            for (CommanderClassMetaInfo subTypeInfo : subTypes) {
-                subTypeInfo.parent(metaInfo);
-            }
-            subTypeInfo.remove(metaInfo.type());
-        }
     }
 
     public CommanderClassMetaInfo commanderMetaInfo(String className) {

@@ -1,5 +1,6 @@
 package act.cli.meta;
 
+import act.app.AppClassLoader;
 import act.asm.Type;
 import act.util.DestroyableBase;
 import org.osgl.util.C;
@@ -13,7 +14,14 @@ import static act.Destroyable.Util.destroyAll;
  * Stores all class level information to support generating of
  * {@link act.cli.CommandExecutor command executor}
  */
-public final class CommanderClassMetaInfo extends DestroyableBase {
+public class CommanderClassMetaInfo extends DestroyableBase {
+
+    private static CommanderClassMetaInfo NULL = new CommanderClassMetaInfo() {
+        @Override
+        protected CommanderClassMetaInfo parent(AppClassLoader classLoader) {
+            return this;
+        }
+    };
 
     private Type type;
     private Type superType;
@@ -68,12 +76,24 @@ public final class CommanderClassMetaInfo extends DestroyableBase {
         return this;
     }
 
-    public List<FieldOptionAnnoInfo> fieldOptionAnnoInfoList() {
+    public List<FieldOptionAnnoInfo> fieldOptionAnnoInfoList(AppClassLoader appClassLoader) {
         C.List<FieldOptionAnnoInfo> list = C.list(fieldOptionAnnoInfoList);
-        if (null != parent) {
-            list = list.append(parent.fieldOptionAnnoInfoList());
+        CommanderClassMetaInfo p = parent(appClassLoader);
+        if (null != p && NULL != p) {
+            list = list.append(p.fieldOptionAnnoInfoList(appClassLoader));
         }
         return list;
+    }
+
+    protected CommanderClassMetaInfo parent(AppClassLoader classLoader) {
+        if (null == parent) {
+            CommanderClassMetaInfoManager manager = classLoader.commanderClassMetaInfoManager();
+            parent = manager.commanderMetaInfo(superType.getClassName());
+            if (null == parent) {
+                parent = NULL;
+            }
+        }
+        return parent;
     }
 
     public Type superType() {
@@ -87,11 +107,6 @@ public final class CommanderClassMetaInfo extends DestroyableBase {
 
     public boolean isAbstract() {
         return isAbstract;
-    }
-
-    public CommanderClassMetaInfo parent(CommanderClassMetaInfo parentInfo) {
-        parent = parentInfo;
-        return this;
     }
 
     public CommanderClassMetaInfo addCommand(CommandMethodMetaInfo info) {

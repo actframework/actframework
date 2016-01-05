@@ -55,9 +55,6 @@ public class CommanderByteCodeScanner extends AppByteCodeScannerBase {
 
     @Override
     public void scanFinished(String className) {
-        if (!classInfo.fieldOptionAnnoInfoList().isEmpty() || className.contains("DeviceAdmin")) {
-            $.nil();
-        }
         classInfoBase().registerCommanderMetaInfo(classInfo);
     }
 

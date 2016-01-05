@@ -64,4 +64,16 @@ public class CommandLineParserTest extends TestBase {
         p = p("myCommand -o x -b -s \"some=string\" arg1 2 3");
         eq("some=string", p.getString("-s", "--string"));
     }
+
+    @Test
+    public void booleanTypeOptionNotAtTail() {
+        p = p("myCommand -t -a abc");
+        yes(p.getBoolean("-t", null));
+    }
+
+    @Test
+    public void booleanTypeOptionAtTail() {
+        p = p("myCommand -a abc -t");
+        yes(p.getBoolean("-t", null));
+    }
 }

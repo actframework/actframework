@@ -80,7 +80,7 @@ public class ReflectedCommandExecutor extends CommandExecutor {
             context.__commanderInstance(commander, inst);
         }
         $.Var<Integer> argIdx = $.var(0);
-        List<FieldOptionAnnoInfo> list = classMetaInfo.fieldOptionAnnoInfoList();
+        List<FieldOptionAnnoInfo> list = classMetaInfo.fieldOptionAnnoInfoList(app.classLoader());
         for (FieldOptionAnnoInfo fieldOptionAnnoInfo : list) {
             String fieldName = fieldOptionAnnoInfo.fieldName();
             Object val = optionVal(fieldOptionAnnoInfo.fieldType(), fieldOptionAnnoInfo, argIdx, false, context);

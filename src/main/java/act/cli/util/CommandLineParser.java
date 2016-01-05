@@ -73,6 +73,10 @@ public class CommandLineParser {
                 }
             }
         }
+
+        if (null != lead) {
+            options.put(lead, "true");
+        }
     }
 
     public String command() {

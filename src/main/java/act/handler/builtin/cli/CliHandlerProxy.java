@@ -60,7 +60,7 @@ public final class CliHandlerProxy extends CliHandlerBase {
     }
 
     public String help(String commandName) {
-        return methodMetaInfo.help(commandName, classMetaInfo.fieldOptionAnnoInfoList());
+        return methodMetaInfo.help(commandName, classMetaInfo.fieldOptionAnnoInfoList(app.classLoader()));
     }
 
     @SuppressWarnings("unchecked")
