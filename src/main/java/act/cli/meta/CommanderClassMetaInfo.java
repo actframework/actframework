@@ -85,6 +85,18 @@ public class CommanderClassMetaInfo extends DestroyableBase {
         return list;
     }
 
+    public boolean hasOption(AppClassLoader classLoader) {
+        boolean retVal = !fieldOptionAnnoInfoList.isEmpty();
+        if (retVal) {
+            return true;
+        }
+        CommanderClassMetaInfo p = parent(classLoader);
+        if (null != p && NULL != p) {
+            return p.hasOption(classLoader);
+        }
+        return false;
+    }
+
     protected CommanderClassMetaInfo parent(AppClassLoader classLoader) {
         if (null == parent) {
             CommanderClassMetaInfoManager manager = classLoader.commanderClassMetaInfoManager();

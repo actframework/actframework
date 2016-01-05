@@ -3,11 +3,13 @@ package act.cli.meta;
 import act.Act;
 import act.Destroyable;
 import act.app.App;
+import act.app.AppClassLoader;
 import act.app.CliContext;
 import act.asm.Type;
 import act.cli.ascii_table.impl.CollectionASCIITableAware;
 import act.cli.util.MappedFastJsonNameFilter;
 import act.data.DataPropertyRepository;
+import act.handler.CliHandler;
 import act.sys.meta.InvokeType;
 import act.sys.meta.ReturnTypeInfo;
 import act.util.FastJsonPropertyPreFilter;
@@ -16,6 +18,7 @@ import act.util.DestroyableBase;
 import com.alibaba.fastjson.serializer.SerializeFilter;
 import com.alibaba.fastjson.serializer.SerializerFeature;
 import org.osgl.$;
+import org.osgl.Osgl;
 import org.osgl.util.C;
 import org.osgl.util.E;
 import org.osgl.util.S;
@@ -88,6 +91,10 @@ public class CommandMethodMetaInfo extends DestroyableBase {
         JSON () {
             @Override
             public String render(Object result, PropertySpec.MetaInfo filter) {
+                return render(result, filter, true);
+            }
+
+            public String render(Object result, PropertySpec.MetaInfo filter, boolean format) {
                 String json;
                 if (null == filter) {
                     json = com.alibaba.fastjson.JSON.toJSONString(result, SerializerFeature.PrettyFormat);
@@ -105,12 +112,20 @@ public class CommandMethodMetaInfo extends DestroyableBase {
                     MappedFastJsonNameFilter nameFilter = new MappedFastJsonNameFilter(filter.labelMapping());
 
                     if (nameFilter.isEmpty()) {
-                        json = com.alibaba.fastjson.JSON.toJSONString(result, propertyFilter, SerializerFeature.PrettyFormat);
+                        if (format) {
+                            json = com.alibaba.fastjson.JSON.toJSONString(result, propertyFilter, SerializerFeature.PrettyFormat);
+                        } else {
+                            json = com.alibaba.fastjson.JSON.toJSONString(result, propertyFilter);
+                        }
                     } else {
                         SerializeFilter[] filters = new SerializeFilter[2];
                         filters[0] = nameFilter;
                         filters[1] = propertyFilter;
-                        json = com.alibaba.fastjson.JSON.toJSONString(result, filters, SerializerFeature.PrettyFormat);
+                        if (format) {
+                            json = com.alibaba.fastjson.JSON.toJSONString(result, filters, SerializerFeature.PrettyFormat);
+                        } else {
+                            json = com.alibaba.fastjson.JSON.toJSONString(result, filters);
+                        }
                     }
                 }
                 return json;
@@ -206,6 +221,60 @@ public class CommandMethodMetaInfo extends DestroyableBase {
         return helpMsg;
     }
 
+    /**
+     * Returns {@link CliHandler#options()}
+     * @return options list
+     * @see CliHandler#options()
+     */
+    public List<$.T2<String, String>> options(CommanderClassMetaInfo classMetaInfo, AppClassLoader classLoader) {
+        List<$.T2<String, String>> retVal = C.newList();
+        for (CommandParamMetaInfo param : params) {
+            OptionAnnoInfoBase opt = param.optionInfo();
+            if (null != opt) {
+                retVal.add($.T2(opt.leads(), opt.help()));
+            }
+        }
+        for (OptionAnnoInfoBase opt : classMetaInfo.fieldOptionAnnoInfoList(classLoader)) {
+            retVal.add($.T2(opt.leads(), opt.help()));
+        }
+        return retVal;
+    }
+
+    /**
+     * Returns {@link act.handler.CliHandler#commandLine(String)}
+     * @return the command line
+     * @see act.handler.CliHandler#commandLine(String)
+     */
+    public $.T2<String, String> commandLine(String commandName, CommanderClassMetaInfo classMetaInfo, AppClassLoader classLoader) {
+        boolean hasOptions = classMetaInfo.hasOption(classLoader);
+        String firstArg = null;
+        boolean hasMoreArgs = false;
+        for (CommandParamMetaInfo param : params) {
+            if (param.optionInfo() != null) {
+                hasOptions = true;
+            } else {
+                if (firstArg == null) {
+                    firstArg = param.name();
+                } else {
+                    hasMoreArgs = true;
+                }
+            }
+        }
+        StringBuilder sb = S.builder(commandName);
+        if (hasOptions) {
+            sb.append(" [options]");
+        }
+        if (null != firstArg) {
+            sb.append(" ");
+            sb.append("[").append(firstArg);
+            if (hasMoreArgs) {
+                sb.append("...");
+            }
+            sb.append("]");
+        }
+        return $.T2(sb.toString(), helpMsg());
+    }
+
     public CommandMethodMetaInfo mode(Act.Mode mode) {
         this.mode = mode;
         return this;
@@ -273,23 +342,6 @@ public class CommandMethodMetaInfo extends DestroyableBase {
         }
         optionLeads.add(lead);
         return this;
-    }
-
-    public String help(String commandName, List<FieldOptionAnnoInfo> fieldOptionAnnoInfoList) {
-        StringBuilder sb = S.builder().append(commandName);
-        if (S.notBlank(helpMsg)) {
-            sb.append("\t").append(helpMsg);
-        }
-        for (CommandParamMetaInfo param : params) {
-            ParamOptionAnnoInfo opt = param.optionInfo();
-            if (null != opt) {
-                sb.append(opt.help());
-            }
-        }
-        for (FieldOptionAnnoInfo field : fieldOptionAnnoInfoList) {
-            sb.append(field.help());
-        }
-        return sb.toString();
     }
 
     @Override

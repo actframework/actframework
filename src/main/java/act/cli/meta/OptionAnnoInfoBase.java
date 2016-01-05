@@ -1,5 +1,6 @@
 package act.cli.meta;
 
+import act.cli.builtin.Help;
 import org.osgl.util.E;
 import org.osgl.util.S;
 
@@ -50,6 +51,7 @@ public class OptionAnnoInfoBase {
                 lead2 = sa[1];
             }
         }
+        Help.updateMaxWidth(leads().length());
         return this;
     }
 
@@ -119,21 +121,6 @@ public class OptionAnnoInfoBase {
     }
 
     public String help() {
-        StringBuilder sb = S.builder();
-        sb.append("\n\t");
-        if (S.notEmpty(lead1)) {
-            sb.append(lead1);
-            if (S.notEmpty(lead2)) {
-                sb.append(", ").append(lead2);
-            }
-        } else if (S.notEmpty(lead2)) {
-            sb.append(lead2);
-        }
-        String s = help;
-        if (null == s) {
-            s = param;
-        }
-        sb.append("\t").append(s);
-        return sb.toString();
+        return help;
     }
 }

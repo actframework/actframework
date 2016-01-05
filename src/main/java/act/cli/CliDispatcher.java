@@ -36,7 +36,7 @@ public class CliDispatcher extends AppServiceBase<CliDispatcher> {
         if (registry.containsKey(command)) {
             throw E.invalidConfiguration("Command %s already registered");
         }
-        registry.put(command, new CliHandlerProxy(classMetaInfo, methodMetaInfo, app()));
+        addToRegistry(command, new CliHandlerProxy(classMetaInfo, methodMetaInfo, app()));
         logger.info("Command registered: %s", command);
         return this;
     }
@@ -63,10 +63,18 @@ public class CliDispatcher extends AppServiceBase<CliDispatcher> {
      * Returns all commands in alphabetic order
      * @return the list of commands
      */
-    public List<String> commands() {
+    public List<String> commands(boolean sys, boolean app) {
         C.List<String> list = C.newList();
         Act.Mode mode = Act.mode();
+        boolean all = !sys && !app;
         for (String s : registry.keySet()) {
+            boolean isSysCmd = s.startsWith("act.");
+            if (isSysCmd && !sys && !all) {
+                continue;
+            }
+            if (!isSysCmd && !app && !all) {
+                continue;
+            }
             CliHandler h = registry.get(s);
             if (h.appliedIn(mode)) {
                 list.add(s);
@@ -93,10 +101,15 @@ public class CliDispatcher extends AppServiceBase<CliDispatcher> {
         registry.clear();
     }
 
+    private void addToRegistry(String name, CliHandler handler) {
+        registry.put(name, handler);
+        Help.updateMaxWidth(name.length());
+    }
+
     private void registerBuiltInHandlers() {
-        registry.put("act.exit", Exit.INSTANCE);
-        registry.put("act.quit", Exit.INSTANCE);
-        registry.put("act.bye", Exit.INSTANCE);
-        registry.put("act.help", Help.INSTANCE);
+        addToRegistry("act.exit", Exit.INSTANCE);
+        addToRegistry("act.quit", Exit.INSTANCE);
+        addToRegistry("act.bye", Exit.INSTANCE);
+        addToRegistry("act.help", Help.INSTANCE);
     }
 }

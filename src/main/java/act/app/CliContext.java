@@ -162,6 +162,10 @@ public class CliContext extends ActContext.ActContextBase<CliContext> implements
         }
     }
 
+    public void flush() {
+        pw.flush();
+    }
+
     public void print(String template, Object ... args) {
         pw.printf(template, args);
     }

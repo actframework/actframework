@@ -2,7 +2,11 @@ package act.cli.builtin;
 
 import act.app.CliContext;
 import act.handler.CliHandlerBase;
+import org.osgl.$;
+import org.osgl.util.C;
 import org.osgl.util.E;
+
+import java.util.List;
 
 public class Exit extends CliHandlerBase {
 
@@ -20,7 +24,13 @@ public class Exit extends CliHandlerBase {
     }
 
     @Override
-    public String help(String commandName) {
-        return commandName + "\tExit act console";
+    public $.T2<String, String> commandLine(String commandName) {
+        return $.T2(commandName, "exit the console");
     }
+
+    @Override
+    public List<$.T2<String, String>> options() {
+        return C.list();
+    }
+
 }

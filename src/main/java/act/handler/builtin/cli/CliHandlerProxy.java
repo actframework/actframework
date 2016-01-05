@@ -5,15 +5,20 @@ import act.app.App;
 import act.app.CliContext;
 import act.cli.CliError;
 import act.cli.CommandExecutor;
+import act.cli.builtin.Help;
 import act.cli.bytecode.ReflectedCommandExecutor;
 import act.cli.meta.CommandMethodMetaInfo;
 import act.cli.meta.CommanderClassMetaInfo;
+import act.cli.util.CommandLineParser;
 import act.handler.CliHandlerBase;
 import act.util.PropertySpec;
 import org.osgl.$;
+import org.osgl.Osgl;
 import org.osgl.logging.L;
 import org.osgl.logging.Logger;
 import org.osgl.util.S;
+
+import java.util.List;
 
 public final class CliHandlerProxy extends CliHandlerBase {
 
@@ -59,8 +64,14 @@ public final class CliHandlerProxy extends CliHandlerBase {
         }
     }
 
-    public String help(String commandName) {
-        return methodMetaInfo.help(commandName, classMetaInfo.fieldOptionAnnoInfoList(app.classLoader()));
+    @Override
+    public $.T2<String, String> commandLine(String commandName) {
+        return methodMetaInfo.commandLine(commandName, classMetaInfo, app.classLoader());
+    }
+
+    @Override
+    public List<$.T2<String, String>> options() {
+        return methodMetaInfo.options(classMetaInfo, app.classLoader());
     }
 
     @SuppressWarnings("unchecked")
