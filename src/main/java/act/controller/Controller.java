@@ -3,6 +3,7 @@ package act.controller;
 import act.app.ActionContext;
 import act.conf.AppConfigKey;
 import act.controller.meta.HandlerMethodMetaInfo;
+import act.util.FastJsonIterable;
 import act.util.PropertySpec;
 import act.view.*;
 import org.osgl.http.H;
@@ -18,6 +19,7 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import java.util.Collection;
 import java.util.Map;
 
 import static org.osgl.http.H.Format.*;
@@ -477,6 +479,10 @@ public @interface Controller {
                     return inferToTemplate(v, actionContext);
                 }
                 if (actionContext.isJSON()) {
+                    // patch https://github.com/alibaba/fastjson/issues/478
+                    if (v instanceof Iterable && !(v instanceof Collection)) {
+                        v = new FastJsonIterable<>((Iterable) v);
+                    }
                     PropertySpec.MetaInfo propertySpec = (null == meta) ? null : meta.propertySpec();
                     if (null == propertySpec) {
                         return new RenderJSON(v);

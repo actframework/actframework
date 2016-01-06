@@ -217,6 +217,7 @@ public class App {
     public synchronized void refresh() {
         logger.info("App starting ....");
         profile = null;
+
         Act.viewManager().reload(this);
         initServiceResourceManager();
         eventEmitted = C.newSet();

@@ -2,12 +2,22 @@ package act.util;
 
 import act.TestBase;
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.serializer.SerializeConfig;
 import org.junit.Before;
 import org.junit.Test;
+import org.osgl.$;
+import org.osgl.util.C;
+import org.osgl.util.E;
+
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.NoSuchElementException;
 
 public class FastJsonPropertyPreFilterTest extends TestBase {
     private FastJsonPropertyPreFilter filter;
     private Foo foo;
+    private Foo foo2;
 
     @Before
     public void prepare() {
@@ -15,6 +25,8 @@ public class FastJsonPropertyPreFilterTest extends TestBase {
         Zee zee = new Zee("zee", false);
         Bar bar = new Bar("bar", 5, zee);
         foo = new Foo("foo", bar);
+        foo2 = new Foo("foo2", bar);
+        JsonUtilConfig.config();
     }
 
     @Test
@@ -29,6 +41,95 @@ public class FastJsonPropertyPreFilterTest extends TestBase {
         filter.addExcludes("bar/zee/flag,name");
         String s = JSON.toJSONString(foo, filter);
         eq("{\"bar\":{\"age\":5,\"name\":\"bar\",\"zee\":{\"name\":\"zee\"}}}", s);
+    }
+
+
+    @Test
+    public void testWithIterable() {
+        class Person {
+            private String name;
+            public Person(String s) {
+                this.name = s;
+            }
+            public String getName() {
+                return name;
+            }
+        }
+        final Person s1 = new Person("fast");
+        final Person s2 = new Person("fast");
+        Iterable<Person> iterable = new Iterable<Person>() {
+            @Override
+            public Iterator<Person> iterator() {
+                return new Iterator<Person>() {
+                    int cursor = 0;
+                    @Override
+                    public boolean hasNext() {
+                        return cursor < 2;
+                    }
+
+                    @Override
+                    public Person next() {
+                        switch (cursor++) {
+                            case 0:
+                                return s1;
+                            case 1:
+                                return s2;
+                            default:
+                                throw new NoSuchElementException();
+                        }
+                    }
+
+                    @Override
+                    public void remove() {
+                        throw new UnsupportedOperationException();
+                    }
+                };
+            }
+        };
+        List<Person> list = new ArrayList<>();
+        for (Person p : iterable) {
+            list.add(p);
+        }
+        iterable = new FastJsonIterable<>(iterable);
+        assertEquals("[{\"name\":\"fast\"},{\"name\":\"fast\"}]", JSON.toJSONString(list));
+        assertEquals("[{\"name\":\"fast\"},{\"name\":\"fast\"}]", JSON.toJSONString(iterable));
+    }
+
+    private Iterable<Foo> fooIterable() {
+        return new Iterable<Foo>() {
+            @Override
+            public Iterator<Foo> iterator() {
+                return new Iterator<Foo>() {
+                    private $.Var<Integer> cursor = $.var(0);
+                    @Override
+                    public boolean hasNext() {
+                        return cursor.get() < 2;
+                    }
+
+                    @Override
+                    public Foo next() {
+                        Foo retVal;
+                        switch (cursor.get()) {
+                            case 0:
+                                retVal = foo;
+                                break;
+                            case 1:
+                                retVal = foo2;
+                                break;
+                            default:
+                                throw new NoSuchElementException();
+                        }
+                        cursor.set(cursor.get() + 1);
+                        return retVal;
+                    }
+
+                    @Override
+                    public void remove() {
+                        throw E.unsupport();
+                    }
+                };
+            }
+        };
     }
 }
 
