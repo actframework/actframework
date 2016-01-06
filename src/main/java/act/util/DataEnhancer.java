@@ -6,27 +6,28 @@ import act.data.Data;
 import org.osgl.$;
 import org.osgl.util.C;
 import org.osgl.util.FastStr;
+import org.osgl.util.S;
 
 /**
  * A tool to enhance a object by generating common {@link Object}
  * methods, e.g. {@link Object#equals(Object)}
  */
 @ActComponent
-public class AutoObjectEnhancer extends AppByteCodeEnhancer<AutoObjectEnhancer> {
+public class DataEnhancer extends AppByteCodeEnhancer<DataEnhancer> {
 
     private ObjectMetaInfo metaInfo;
 
-    public AutoObjectEnhancer() {
+    public DataEnhancer() {
         super($.F.<String>yes());
     }
 
-    protected AutoObjectEnhancer(ClassVisitor cv) {
+    protected DataEnhancer(ClassVisitor cv) {
         super($.F.<String>yes(), cv);
     }
 
     @Override
-    protected Class<AutoObjectEnhancer> subClass() {
-        return AutoObjectEnhancer.class;
+    protected Class<DataEnhancer> subClass() {
+        return DataEnhancer.class;
     }
 
     @Override
@@ -47,7 +48,7 @@ public class AutoObjectEnhancer extends AppByteCodeEnhancer<AutoObjectEnhancer> 
         if (isStatic) {
             return fv;
         }
-        if (metaInfo.hasAutoObjectAnnotation()) {
+        if (metaInfo.hasDataAnnotation()) {
             boolean isTransient = ((access & ACC_TRANSIENT) != 0);
             Type fieldType = Type.getType(desc);
             final ObjectMetaInfo.FieldMetaInfo fi = metaInfo.addField(name, fieldType, isTransient);
@@ -90,6 +91,19 @@ public class AutoObjectEnhancer extends AppByteCodeEnhancer<AutoObjectEnhancer> 
             };
         }
         return def;
+    }
+
+    @Override
+    public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
+        MethodVisitor mv = super.visitMethod(access, name, desc, signature, exceptions);
+        if (metaInfo.hasDataAnnotation()) {
+            if (S.eq("hashCode", name) && S.eq("()I", desc)) {
+                metaInfo.hashCodeMethodFound();
+            } else if (S.eq("equals", name) && S.eq("(Ljava/lang/Object;)Z", desc)) {
+                metaInfo.equalMethodFound();
+            }
+        }
+        return mv;
     }
 
     @Override

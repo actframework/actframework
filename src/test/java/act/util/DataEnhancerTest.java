@@ -141,7 +141,7 @@ public class DataEnhancerTest extends TestBase {
             try {
                 ClassReader cr = new ClassReader(is);
                 ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
-                AutoObjectEnhancer enhancer = new AutoObjectEnhancer(cw);
+                DataEnhancer enhancer = new DataEnhancer(cw);
                 cr.accept(enhancer, 0);
                 b = cw.toByteArray();
                 //CheckClassAdapter.verify(new ClassReader(cw.toByteArray()), true, new PrintWriter(System.out));

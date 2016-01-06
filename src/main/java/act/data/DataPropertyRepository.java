@@ -88,6 +88,12 @@ public class DataPropertyRepository extends AppServiceBase<DataPropertyRepositor
             return null;
         }
         Class c = m.getReturnType();
+        if (Class.class.equals(c)) {
+            return null;
+        }
+        if (Enum.class.isAssignableFrom(c)) {
+            return C.list(context + propName);
+        }
         if (terminators.contains(c) || extendedTerminators.contains(c.getName())) {
             return C.list(context + propName);
         }
