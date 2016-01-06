@@ -475,6 +475,7 @@ public class App {
     }
 
     private void loadConfig() {
+        JsonUtilConfig.config();
         File conf = RuntimeDirs.conf(this);
         logger.debug("loading app configuration: %s ...", appBase.getPath());
         config = new AppConfLoader().load(conf);

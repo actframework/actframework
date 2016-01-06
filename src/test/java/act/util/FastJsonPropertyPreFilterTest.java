@@ -95,42 +95,6 @@ public class FastJsonPropertyPreFilterTest extends TestBase {
         assertEquals("[{\"name\":\"fast\"},{\"name\":\"fast\"}]", JSON.toJSONString(iterable));
     }
 
-    private Iterable<Foo> fooIterable() {
-        return new Iterable<Foo>() {
-            @Override
-            public Iterator<Foo> iterator() {
-                return new Iterator<Foo>() {
-                    private $.Var<Integer> cursor = $.var(0);
-                    @Override
-                    public boolean hasNext() {
-                        return cursor.get() < 2;
-                    }
-
-                    @Override
-                    public Foo next() {
-                        Foo retVal;
-                        switch (cursor.get()) {
-                            case 0:
-                                retVal = foo;
-                                break;
-                            case 1:
-                                retVal = foo2;
-                                break;
-                            default:
-                                throw new NoSuchElementException();
-                        }
-                        cursor.set(cursor.get() + 1);
-                        return retVal;
-                    }
-
-                    @Override
-                    public void remove() {
-                        throw E.unsupport();
-                    }
-                };
-            }
-        };
-    }
 }
 
 
