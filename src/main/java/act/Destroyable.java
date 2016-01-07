@@ -32,7 +32,8 @@ public interface Destroyable {
             for (Object o: col) {
                 if (o instanceof Destroyable) {
                     ((Destroyable) o).destroy();
-                } else if (o instanceof Closeable) {
+                }
+                if (o instanceof Closeable) {
                     IO.close((Closeable) o);
                 }
             }

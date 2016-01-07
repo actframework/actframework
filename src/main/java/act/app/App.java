@@ -83,6 +83,7 @@ public class App {
     private CliServer cliServer;
     private MailerConfigManager mailerConfigManager;
     private StringValueResolverManager resolverManager;
+    private SingletonRegistry singletonRegistry;
     private BinderManager binderManager;
     private AppInterceptorManager interceptorManager;
     private DependencyInjector<?> dependencyInjector;
@@ -232,6 +233,8 @@ public class App {
         initIdGenerator();
         initJobManager();
 
+        initSingletonRegistry();
+
         initInterceptorManager();
         initResolverManager();
         initBinderManager();
@@ -307,6 +310,10 @@ public class App {
         return new File(this.layout().resource(appBase), path);
     }
 
+    SingletonRegistry singletonRegistry() {
+        return singletonRegistry;
+    }
+
     public AppInterceptorManager interceptorManager() {
         return interceptorManager;
     }
@@ -366,6 +373,10 @@ public class App {
 
     public String decrypt(String message) {
         return crypto().decrypt(message);
+    }
+
+    public <T> T singleton(Class<T> clz) {
+        return singletonRegistry.get(clz);
     }
 
     public <T> T newInstance(Class<T> clz) {
@@ -616,6 +627,10 @@ public class App {
     }
     private void initBinderManager() {
         binderManager = new BinderManager(this);
+    }
+
+    private void initSingletonRegistry() {
+        singletonRegistry = new SingletonRegistry(this);
     }
 
     private void loadPlugins() {

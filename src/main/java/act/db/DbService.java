@@ -9,7 +9,7 @@ public abstract class DbService extends AppServiceBase<DbService> {
     private String id;
 
     protected DbService(String id, App app) {
-        super(app, true);
+        super(app);
         E.NPE(id);
         this.id = id;
     }
