@@ -13,21 +13,21 @@ import org.osgl.util.S;
  * methods, e.g. {@link Object#equals(Object)}
  */
 @ActComponent
-public class DataEnhancer extends AppByteCodeEnhancer<DataEnhancer> {
+public class DataObjectEnhancer extends AppByteCodeEnhancer<DataObjectEnhancer> {
 
     private ObjectMetaInfo metaInfo;
 
-    public DataEnhancer() {
+    public DataObjectEnhancer() {
         super($.F.<String>yes());
     }
 
-    protected DataEnhancer(ClassVisitor cv) {
+    protected DataObjectEnhancer(ClassVisitor cv) {
         super($.F.<String>yes(), cv);
     }
 
     @Override
-    protected Class<DataEnhancer> subClass() {
-        return DataEnhancer.class;
+    protected Class<DataObjectEnhancer> subClass() {
+        return DataObjectEnhancer.class;
     }
 
     @Override

@@ -18,7 +18,7 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.lang.reflect.Method;
 
-public class DataEnhancerTest extends TestBase {
+public class DataObjectEnhancerTest extends TestBase {
 
     public static final String TMPL_PATH = "/path/to/template";
 
@@ -141,7 +141,7 @@ public class DataEnhancerTest extends TestBase {
             try {
                 ClassReader cr = new ClassReader(is);
                 ClassWriter cw = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
-                DataEnhancer enhancer = new DataEnhancer(cw);
+                DataObjectEnhancer enhancer = new DataObjectEnhancer(cw);
                 cr.accept(enhancer, 0);
                 b = cw.toByteArray();
                 //CheckClassAdapter.verify(new ClassReader(cw.toByteArray()), true, new PrintWriter(System.out));

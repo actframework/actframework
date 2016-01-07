@@ -45,7 +45,7 @@ public class StaticFileGetterTest extends TestBase {
 
     @Test
     public void invokePathHandlerOnNonExistingResource() {
-        when(ctx.accept()).thenReturn(H.Format.html);
+        when(ctx.accept()).thenReturn(H.Format.HTML);
         ctx.param(ParamNames.PATH, "/some/where/non_exists.txt");
         pathHandler.handle(ctx);
         eq(resp.status, 404);

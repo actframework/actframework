@@ -11,7 +11,7 @@ public class Echo extends FastRequestHandler {
     private String contentType;
 
     public Echo(String msg) {
-        this(msg, H.Format.txt.toContentType());
+        this(msg, H.Format.TXT.contentType());
     }
 
     public Echo(String msg, String contentType) {

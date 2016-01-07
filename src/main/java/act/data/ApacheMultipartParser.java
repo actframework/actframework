@@ -1005,7 +1005,7 @@ public class ApacheMultipartParser extends RequestBodyParser {
          */
         FileItemIteratorImpl(InputStream input, H.Format contentType, String charEncoding) throws FileUploadException, IOException {
 
-            if ((null == contentType) || (!contentType.toContentType().toLowerCase().startsWith(MULTIPART))) {
+            if ((null == contentType) || (!contentType.contentType().toLowerCase().startsWith(MULTIPART))) {
                 throw new InvalidContentTypeException("the request doesn't contain a " + MULTIPART_FORM_DATA + " or " + MULTIPART_MIXED + " stream, content type header is " + contentType);
             }
 
@@ -1022,7 +1022,7 @@ public class ApacheMultipartParser extends RequestBodyParser {
 
             }
 
-            boundary = getBoundary(contentType.toContentType());
+            boundary = getBoundary(contentType.contentType());
             if (boundary == null) {
                 throw new FileUploadException("the request was rejected because " + "no multipart boundary was found");
             }

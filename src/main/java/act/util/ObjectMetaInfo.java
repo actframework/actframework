@@ -10,7 +10,7 @@ import org.osgl.util.C;
 import org.osgl.util.S;
 
 /**
- * Datastructure captures a class's meta information in related to {@link DataEnhancer}.
+ * Datastructure captures a class's meta information in related to {@link DataObjectEnhancer}.
  * The following info will be captured:
  * <ul>
  *     <li>Is the class annotated with {@link Data} annotation</li>
