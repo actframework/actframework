@@ -175,6 +175,30 @@ public @interface Controller {
             return BAD_REQUEST;
         }
 
+        public static void badRequestIf(boolean test) {
+            if (test) {
+                throw BadRequest.INSTANCE;
+            }
+        }
+
+        public static void badRequestIf(boolean test, String msg, Object... args) {
+            if (test) {
+                throw new BadRequest(msg, args);
+            }
+        }
+
+        public static void badRequestIfNot(boolean test) {
+            if (!test) {
+                throw BadRequest.INSTANCE;
+            }
+        }
+
+        public static void badRequestIfNot(boolean test, String msg, Object... args) {
+            if (!test) {
+                throw new BadRequest(msg, args);
+            }
+        }
+
         /**
          * Returns a {@link Forbidden} result
          */

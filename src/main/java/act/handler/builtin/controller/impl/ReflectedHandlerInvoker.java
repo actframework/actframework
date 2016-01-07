@@ -16,9 +16,6 @@ import act.util.DestroyableBase;
 import act.util.GeneralAnnoInfo;
 import act.view.Template;
 import act.view.TemplatePathResolver;
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
 import com.esotericsoftware.reflectasm.FieldAccess;
 import com.esotericsoftware.reflectasm.MethodAccess;
 import org.osgl.$;
@@ -61,6 +58,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
     private ActContextInjection ctxInjection;
     private Map<H.Format, Boolean> templateCache = C.newMap();
     private Class[] paramTypes;
+    private Class[] paramComponentTypes; // in case there are generic container type in paramTypes
     private Map<Integer, List<ActionMethodParamAnnotationHandler>> paramAnnoHandlers = null;
     protected Method method; //
     protected $.F2<ActionContext, Object, ?> fieldAppCtxHandler;
@@ -78,7 +76,9 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
             fieldAppCtxHandler = storeAppCtxToCtrlrField(faci.fieldName(), controllerClass);
         }
 
-        paramTypes = paramTypes();
+        $.T2<Class[], Class[]> t2 = paramTypes();
+        paramTypes = t2._1;
+        paramComponentTypes = t2._2;
         try {
             method = controllerClass.getMethod(handlerMetaInfo.name(), paramTypes);
         } catch (NoSuchMethodException e) {
@@ -97,7 +97,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
             List<ActionMethodParamAnnotationHandler> availableHandlers = Act.pluginManager().pluginList(ActionMethodParamAnnotationHandler.class);
             for (ActionMethodParamAnnotationHandler annotationHandler: availableHandlers) {
                 Set<Class<? extends Annotation>> listenTo = annotationHandler.listenTo();
-                for (int i = 0,j = paramTypes().length; i < j; ++i) {
+                for (int i = 0,j = paramTypes.length; i < j; ++i) {
                     ParamMetaInfo paramMetaInfo = handlerMetaInfo.param(i);
                     List<GeneralAnnoInfo> annoInfoList = paramMetaInfo.generalAnnoInfoList();
                     for (GeneralAnnoInfo annoInfo : annoInfoList) {
@@ -234,6 +234,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         for (int i = 0; i < paramCount; ++i) {
             ParamMetaInfo param = handler.param(i);
             Class<?> paramType = paramTypes[i];
+            Class<?> paramComponentType = paramComponentTypes[i];
             if (ActionContext.class.equals(paramType)) {
                 oa[i] = ctx;
             } else if (Result.class.isAssignableFrom(paramType)) {
@@ -266,7 +267,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
                         }
                         String reqVal = ctx.paramVal(bindName);
                         if (null == reqVal) {
-                            Object o = ctx.tryParseJson(bindName, paramType);
+                            Object o = ctx.tryParseJson(bindName, paramType, paramComponentType);
                             if (null != o) {
                                 oa[i] = o;
                                 continue;
@@ -314,18 +315,25 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         return retVal;
     }
 
-    private Class<?>[] paramTypes() {
+    private $.T2<Class[], Class[]> paramTypes() {
         int paramCount = handler.paramCount();
-        Class<?>[] ca = new Class[paramCount];
+        Class[] ca = new Class[paramCount];
+        Class[] ca2 = new Class[paramCount];
         if (0 == paramCount) {
-            return ca;
+            return $.T2(ca, ca2);
         }
         for (int i = 0; i < paramCount; ++i) {
             ParamMetaInfo param = handler.param(i);
             String className = param.type().getClassName();
             ca[i] = $.classForName(className, cl);
+            Type componentType = param.componentType();
+            if (null == componentType) {
+                ca2[i] = null;
+            } else {
+                ca2[i] = $.classForName(componentType.getClassName(), cl);
+            }
         }
-        return ca;
+        return $.T2(ca, ca2);
     }
 
     private static $.F2<ActionContext, Object, ?> storeAppCtxToCtrlrField(final String fieldName, final Class<?> controllerClass) {
