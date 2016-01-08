@@ -7,6 +7,7 @@ import act.app.AppClassLoader;
 import act.app.CliContext;
 import act.asm.Type;
 import act.cli.ascii_table.impl.CollectionASCIITableAware;
+import act.cli.tree.TreeNode;
 import act.cli.util.MappedFastJsonNameFilter;
 import act.data.DataPropertyRepository;
 import act.handler.CliHandler;
@@ -23,6 +24,9 @@ import org.osgl.util.C;
 import org.osgl.util.E;
 import org.osgl.util.S;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -46,11 +50,6 @@ public class CommandMethodMetaInfo extends DestroyableBase {
          * present the result using {@link act.cli.TableView}
          */
         TABLE () {
-            @Override
-            public void print(Object result, PropertySpec.MetaInfo spec, CliContext context) {
-                context.println(render(result, spec, context));
-            }
-
             @Override
             @SuppressWarnings("unchecked")
             public String render(Object result, PropertySpec.MetaInfo filter, CliContext context) {
@@ -82,6 +81,54 @@ public class CommandMethodMetaInfo extends DestroyableBase {
                     outputFields = C.list(allFields).without(excluded);
                 }
                 return context.getTable(new CollectionASCIITableAware(dataList, outputFields, filter.labels(outputFields)));
+            }
+        },
+
+        /**
+         * Present data in a Tree structure.
+         * <p>
+         *     Note the {@code result} parameter must be a root {@link act.cli.tree.TreeNode node} of the tree,
+         *     otherwise the data will be presented in
+         * </p>
+         * <ul>
+         *     <li>{@link #TABLE Table view} if the result is an {@link Iterable}, or</li>
+         *     <li>{@link #JSON JSON view} otherwise</li>
+         * </ul>
+         */
+        TREE() {
+            @Override
+            public String render(Object result, PropertySpec.MetaInfo spec, CliContext context) {
+                if (result instanceof TreeNode) {
+                    return toTreeString((TreeNode) result);
+                } else if (result instanceof Iterable) {
+                    return TABLE.render(result, spec, context);
+                } else if (null != spec) {
+                    return JSON.render(result, spec, context);
+                } else {
+                    return S.string(result);
+                }
+            }
+
+            private String toTreeString(TreeNode result) {
+                StringBuilder sb = S.builder();
+                buildTree(sb, result, "", true);
+                return sb.toString();
+            }
+
+            private void buildTree(StringBuilder sb, TreeNode node, String prefix, boolean isTrail) {
+                StringBuilder sb0 = S.builder(prefix).append(isTrail ? "└── " : "├── ").append(node.label()).append("\n");
+                sb.append(sb0);
+                List<TreeNode> children = node.children();
+                int sz = children.size();
+                if (sz == 0) {
+                    return;
+                }
+                final String subPrefix = S.builder(prefix).append(isTrail ? "    " : "│   ").toString();
+                for (int i = 0; i < sz - 1; ++i) {
+                    TreeNode child = children.get(i);
+                    buildTree(sb, child, subPrefix, false);
+                }
+                buildTree(sb, children.get(sz - 1), subPrefix, true);
             }
         },
 
@@ -137,13 +184,15 @@ public class CommandMethodMetaInfo extends DestroyableBase {
          */
         TO_STRING () {
             @Override
-            public String render(Object result, PropertySpec.MetaInfo filter) {
-                if (null != filter) {
-                    // if PropertySpec annotation presented, then by default
-                    // use the JSON view to print the result
-                    return JSON.render(result, filter);
+            public String render(Object result, PropertySpec.MetaInfo filter, CliContext cliContext) {
+                if (result instanceof Iterable) {
+                    return TABLE.render(result, filter, cliContext);
+                } else if (result instanceof TreeNode) {
+                    return TREE.render(result, filter, cliContext);
+                } else if (null != filter) {
+                    return JSON.render(result, filter, cliContext);
                 } else {
-                    return (result.toString());
+                    return S.string(result);
                 }
             }
         };
@@ -153,11 +202,11 @@ public class CommandMethodMetaInfo extends DestroyableBase {
         }
 
         protected String render(Object result, PropertySpec.MetaInfo spec, CliContext context) {
-            throw E.unsupport();
+            return render(result, spec);
         }
 
         public void print(Object result, PropertySpec.MetaInfo spec, CliContext context) {
-            context.println(render(result, spec));
+            context.println(render(result, spec, context));
         }
     }
 

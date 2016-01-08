@@ -27,11 +27,6 @@ import java.lang.annotation.Target;
  *     {@code JsonView} can be used in conjunction with {@link PropertySpec}
  *     to export only specified fields
  * </p>
- * <p>
- *     Note if a method is marked with neither {@link TableView} nor
- *     {@link JsonView} then the console will simply use
- *     {@link Object#toString()} to present the data
- * </p>
  * @see TableView
  * @see PropertySpec
  */
