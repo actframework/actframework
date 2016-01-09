@@ -6,6 +6,7 @@ import act.app.AppByteCodeScannerBase;
 import act.asm.*;
 import act.cli.CliDispatcher;
 import act.cli.meta.*;
+import act.cli.view.CliView;
 import act.util.AsmTypes;
 import act.util.ByteCodeVisitor;
 import act.util.PropertySpec;
@@ -250,13 +251,13 @@ public class CommanderByteCodeScanner extends AppByteCodeScannerBase {
                         }
                     };
                 } else if ($.eq(AsmTypes.TREE_VIEW.asmType(), type)) {
-                    methodInfo.view(CommandMethodMetaInfo.View.TREE);
+                    methodInfo.view(CliView.TREE);
                     return super.visitAnnotation(desc, visible);
                 } else if ($.eq(AsmTypes.TABLE_VIEW.asmType(), type)) {
-                    methodInfo.view(CommandMethodMetaInfo.View.TABLE);
+                    methodInfo.view(CliView.TABLE);
                     return super.visitAnnotation(desc, visible);
                 } else if ($.eq(AsmTypes.JSON_VIEW.asmType(), type)) {
-                    methodInfo.view(CommandMethodMetaInfo.View.JSON);
+                    methodInfo.view(CliView.JSON);
                     return super.visitAnnotation(desc, visible);
                 } else if ($.eq(AsmTypes.HELP_MSG.asmType(), type)) {
                     return new AnnotationVisitor(ASM5, av) {

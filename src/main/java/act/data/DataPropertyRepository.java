@@ -2,11 +2,15 @@ package act.data;
 
 import act.app.App;
 import act.app.AppServiceBase;
+import act.util.PropertySpec;
 import org.joda.time.*;
+import org.osgl.$;
 import org.osgl.util.C;
 import org.rythmengine.utils.S;
 
 import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.*;
 
 /**
@@ -28,6 +32,8 @@ public class DataPropertyRepository extends AppServiceBase<DataPropertyRepositor
      * Map a list of property path to class name
      */
     private Map<String, List<String>> repo = C.newMap();
+
+    private OutputFieldsCache outputFieldsCache = new OutputFieldsCache();
 
     public DataPropertyRepository(App app) {
         super(app, true);
@@ -57,26 +63,27 @@ public class DataPropertyRepository extends AppServiceBase<DataPropertyRepositor
         return ls;
     }
 
+    public List<String> outputFields(PropertySpec.MetaInfo spec, Class<?> componentClass) {
+        return outputFieldsCache.getOutputFields(spec, componentClass);
+    }
+
     private List<String> buildPropertyList(Class c) {
         Method[] ma = c.getMethods();
         String context = "";
         List<String> retLst = C.newList();
         for (Method m: ma) {
-            List<String> propertyPaths = buildPropertyPath(context, m);
-            if (null != propertyPaths) {
-                retLst.addAll(propertyPaths);
-            }
+            buildPropertyPath(context, m, retLst);
         }
         return retLst;
     }
 
-    private List<String> buildPropertyPath(String context, Method m) {
+    private void buildPropertyPath(String context, Method m, List<String> repo) {
         if (m.getParameterTypes().length > 0) {
-            return null;
+            return;
         }
         String name = m.getName();
         if ("getClass".equals(name)) {
-            return null;
+            return;
         }
         String propName = "";
         if (name.startsWith("get")) {
@@ -85,25 +92,40 @@ public class DataPropertyRepository extends AppServiceBase<DataPropertyRepositor
             propName = isPropName(name);
         }
         if (S.isEmpty(propName)) {
-            return null;
+            return;
         }
         Class c = m.getReturnType();
         if (Class.class.equals(c)) {
-            return null;
+            return;
         }
         if (Enum.class.isAssignableFrom(c)) {
-            return C.list(context + propName);
+            repo.add(context + propName);
+            return;
+        }
+        if (Iterable.class.isAssignableFrom(c)) {
+            Type t = m.getGenericReturnType();
+            if (t instanceof ParameterizedType) {
+                ParameterizedType pt = (ParameterizedType) t;
+                Type[] ta = pt.getActualTypeArguments();
+                for (Type t0: ta) {
+                    Class<?> c0 = (Class) t0;
+                    List<String> retTypeProperties = propertyListOf(c0);
+                    context = context + propName + ".";
+                    for (String s: retTypeProperties) {
+                        repo.add(context + s);
+                    }
+                }
+            }
+            return;
         }
         if (terminators.contains(c) || extendedTerminators.contains(c.getName())) {
-            return C.list(context + propName);
+            repo.add(context + propName);
         }
-        List<String> paths = C.newList();
         List<String> retTypeProperties = propertyListOf(c);
         context = context + propName + ".";
         for (String s : retTypeProperties) {
-            paths.add(context + s);
+            repo.add(context + s);
         }
-        return paths;
     }
 
     private static String getPropName(String name) {

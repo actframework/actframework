@@ -1,10 +1,12 @@
 package act.cli.tree;
 
+import act.cli.view.CliView;
+
 import java.util.List;
 
 /**
  * Defines an abstract tree node that can be printed
- * using {@link act.cli.meta.CommandMethodMetaInfo.View#TREE Tree view}
+ * using {@link CliView#TREE Tree view}
  */
 public interface TreeNode {
     /**

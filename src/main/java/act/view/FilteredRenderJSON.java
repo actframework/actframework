@@ -1,6 +1,6 @@
 package act.view;
 
-import act.cli.meta.CommandMethodMetaInfo;
+import act.cli.view.CliView;
 import act.util.PropertySpec;
 import org.osgl.http.H;
 import org.osgl.mvc.result.RenderContent;
@@ -16,6 +16,6 @@ public class FilteredRenderJSON extends RenderContent {
     }
 
     private static String render(Object v, PropertySpec.MetaInfo spec) {
-        return CommandMethodMetaInfo.View.JSON.render(v, spec);
+        return CliView.JSON.render(v, spec);
     }
 }

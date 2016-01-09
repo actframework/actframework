@@ -1,8 +1,11 @@
 package act.util;
 
 import act.TestBase;
+import act.app.App;
+import act.data.DataPropertyRepository;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.serializer.SerializeConfig;
+import com.alibaba.fastjson.serializer.SerializerFeature;
 import org.junit.Before;
 import org.junit.Test;
 import org.osgl.$;
@@ -18,15 +21,24 @@ public class FastJsonPropertyPreFilterTest extends TestBase {
     private FastJsonPropertyPreFilter filter;
     private Foo foo;
     private Foo foo2;
+    private DataPropertyRepository repo;
+    private List<String> fooProps;
 
     @Before
-    public void prepare() {
+    public void prepare() throws Exception {
+        super.setup();
         filter = new FastJsonPropertyPreFilter();
         Zee zee = new Zee("zee", false);
+        Zee zee2 = new Zee("zee2", true);
         Bar bar = new Bar("bar", 5, zee);
+        Bar bar1 = new Bar("bar1", 4, zee2);
+        Bar bar2 = new Bar("bar2", 3, null);
         foo = new Foo("foo", bar);
-        foo2 = new Foo("foo2", bar);
+        foo2 = new Foo("foo2", bar, bar1, bar2);
         JsonUtilConfig.config();
+        repo = new DataPropertyRepository(mockApp);
+        fooProps = repo.propertyListOf(Foo.class);
+        filter.setFullPaths(fooProps);
     }
 
     @Test
@@ -40,9 +52,22 @@ public class FastJsonPropertyPreFilterTest extends TestBase {
     public void testExcludes() {
         filter.addExcludes("bar/zee/flag,name");
         String s = JSON.toJSONString(foo, filter);
-        eq("{\"bar\":{\"age\":5,\"name\":\"bar\",\"zee\":{\"name\":\"zee\"}}}", s);
+        eq("{\"bar\":{\"age\":5,\"name\":\"bar\",\"zee\":{\"name\":\"zee\"}},\"barList\":[]}", s);
     }
 
+    @Test
+    public void testPatternIncludes() {
+        filter.addIncludes(".*\\.flag");
+        String s = JSON.toJSONString(foo2, filter);
+        eq("{\"bar\":{\"zee\":{\"flag\":false}},\"barList\":[{\"zee\":{\"flag\":true}},{}]}", s);
+    }
+
+    @Test
+    public void testPatternExclude() {
+        filter.addExcludes("(.*\\.)?name");
+        String s = JSON.toJSONString(foo2, filter);
+        eq("{\"bar\":{\"age\":5,\"zee\":{\"flag\":false}},\"barList\":[{\"age\":4,\"zee\":{\"flag\":true}},{\"age\":3}]}", s);
+    }
 
     @Test
     public void testWithIterable() {
@@ -162,6 +187,7 @@ class Bar {
 class Foo {
     String name;
     Bar bar;
+    List<Bar> barList;
 
     public String getName() {
         return name;
@@ -179,8 +205,17 @@ class Foo {
         this.bar = bar;
     }
 
-    Foo(String name, Bar bar) {
+    public List<Bar> getBarList() {
+        return barList;
+    }
+
+    public void setBarList(List<Bar> barList) {
+        this.barList = barList;
+    }
+
+    Foo(String name, Bar bar, Bar ... bars) {
         this.name = name;
         this.bar = bar;
+        this.barList = C.listOf(bars);
     }
 }
