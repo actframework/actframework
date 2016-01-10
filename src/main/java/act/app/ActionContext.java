@@ -210,7 +210,7 @@ public class ActionContext extends ActContext.ActContextBase<ActionContext> impl
                 return o;
             }
         } else {
-            return jsonObject;
+            return JSON.parseObject(jsonObject.toJSONString(), paramType);
         }
     }
 

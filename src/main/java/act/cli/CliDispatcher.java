@@ -34,7 +34,7 @@ public class CliDispatcher extends AppServiceBase<CliDispatcher> {
 
     public CliDispatcher registerCommandHandler(String command, CommandMethodMetaInfo methodMetaInfo, CommanderClassMetaInfo classMetaInfo) {
         if (registry.containsKey(command)) {
-            throw E.invalidConfiguration("Command %s already registered");
+            throw E.invalidConfiguration("Command %s already registered", command);
         }
         addToRegistry(command, new CliHandlerProxy(classMetaInfo, methodMetaInfo, app()));
         logger.info("Command registered: %s", command);
