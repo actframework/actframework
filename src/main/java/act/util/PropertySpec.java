@@ -1,5 +1,8 @@
 package act.util;
 
+import act.app.ActionContext;
+import act.app.CliContext;
+import org.osgl.$;
 import org.osgl.util.C;
 
 import java.lang.annotation.ElementType;
@@ -84,7 +87,29 @@ public @interface PropertySpec {
      * </pre>
      * @return the field specification
      */
-    String[] value();
+    String[] value() default {};
+
+    /**
+     * Specify the spec for command line interface output
+     * <p>
+     *     If not specified, then it will use the spec specified in {@link #value()}
+     *     when output to CLI
+     * </p>
+     * @return the field specification for CLI
+     * @see #value()
+     */
+    String[] cli() default {};
+
+    /**
+     * Specify the spec for http response output
+     * <p>
+     *     If not specified, then it will use the spec specified in {@link #value()}
+     *     when output to http response
+     * </p>
+     * @return the field specification for http
+     * @see #value()
+     */
+    String[] http() default {};
 
     /**
      * Capture the {@code PropertySpec} annotation meta info in bytecode scanning phase
@@ -92,55 +117,119 @@ public @interface PropertySpec {
     public static class MetaInfo {
         // split "fn as firstName" into "fn" and "firstName"
         private static Pattern p = Pattern.compile("\\s+as\\s+", Pattern.CASE_INSENSITIVE);
-        private List<String> outputs = C.newList();
-        private Set<String> excluded = C.newSet();
-        private Map<String, String> labels = C.newMap();
+
+        static class Spec extends $.T3<List<String>, Set<String>, Map<String, String>> {
+
+            Spec() {
+                super(C.<String>newList(), C.<String>newSet(), C.<String, String>newMap());
+            }
+
+            List<String> outputs() {
+                return _1;
+            }
+
+            Set<String> excluded() {
+                return _2;
+            }
+
+            Map<String, String> labels() {
+                return _3;
+            }
+
+            boolean isEmpty() {
+                return _1.isEmpty() && _2.isEmpty() && _3.isEmpty();
+            }
+
+        }
+
+        private static Spec newSpec() {
+            return new Spec();
+        }
+
+        private Spec common = newSpec();
+        private Spec cli = newSpec();
+        private Spec http = newSpec();
 
         public void onValue(String value) {
-            String[] sa = value.split("[,;:]+");
+            _on(value, common);
+        }
+
+        public void onCli(String value) {
+            _on(value, cli);
+        }
+
+        public void onHttp(String value) {
+            _on(value, http);
+        }
+
+        public void ensureValid() {
+            if (common.isEmpty() && http.isEmpty() && cli.isEmpty()) {
+                throw new IllegalStateException("no spec defined");
+            }
+        }
+
+        private void _on(String string, Spec spec) {
+            String[] sa = string.split("[,;:]+");
             for (String s: sa) {
                 s = s.trim();
                 if (s.startsWith("-")) {
-                    excluded.add(s.substring(1));
-                    outputs.clear();
+                    spec.excluded().add(s.substring(1));
+                    spec.outputs().clear();
                 } else {
                     String[] sa0 = p.split(s);
                     if (sa0.length > 1) {
                         String k = sa0[0].trim(), v = sa0[1].trim();
-                        labels.put(k, v);
-                        if (excluded.isEmpty()) {
-                            outputs.add(k);
+                        spec.labels().put(k, v);
+                        if (spec.excluded().isEmpty()) {
+                            spec.outputs().add(k);
                         }
-                    } else if (excluded.isEmpty()) {
-                        outputs.add(s.trim());
+                    } else if (spec.excluded().isEmpty()) {
+                        spec.outputs().add(s.trim());
                     }
                 }
             }
         }
 
+        @Deprecated
         public List<String> outputFields() {
-            return C.list(outputs);
+            return C.list(common.outputs());
         }
 
-        public List<String> labels(List<String> outputs) {
+        public List<String> outputFields(ActContext context) {
+            Spec spec = spec(context);
+            return null == spec ? C.<String>list() : spec.outputs();
+        }
+
+        public List<String> labels(List<String> outputs, ActContext context) {
             List<String> retList = C.newList();
             for (String f : outputs) {
-                retList.add(label(f));
+                retList.add(label(f, context));
             }
             return retList;
         }
 
         public Map<String, String> labelMapping() {
-            return C.map(labels);
+            return C.map(common.labels());
         }
 
-        public Set<String> excludedFields() {
-            return C.set(excluded);
+        public Set<String> excludedFields(ActContext context) {
+            return C.set(spec(context).excluded());
         }
 
-        public String label(String field) {
-            String lbl = labels.get(field);
+        public String label(String field, ActContext context) {
+            String lbl = spec(context).labels().get(field);
             return null == lbl ? field : lbl;
+        }
+
+        private Spec spec(ActContext context) {
+            if (context instanceof ActionContext) {
+                return null == http || http.isEmpty() ? common : http;
+            } else if (context instanceof CliContext) {
+                return null == cli || cli.isEmpty() ? common : cli;
+            } else {
+                // mail context is unlikely to happen
+                throw new IllegalStateException("context not applied: " + context);
+            }
         }
     }
 

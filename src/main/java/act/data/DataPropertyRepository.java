@@ -2,6 +2,7 @@ package act.data;
 
 import act.app.App;
 import act.app.AppServiceBase;
+import act.util.ActContext;
 import act.util.PropertySpec;
 import org.joda.time.*;
 import org.osgl.$;
@@ -63,8 +64,8 @@ public class DataPropertyRepository extends AppServiceBase<DataPropertyRepositor
         return ls;
     }
 
-    public List<String> outputFields(PropertySpec.MetaInfo spec, Class<?> componentClass) {
-        return outputFieldsCache.getOutputFields(spec, componentClass);
+    public List<String> outputFields(PropertySpec.MetaInfo spec, Class<?> componentClass, ActContext context) {
+        return outputFieldsCache.getOutputFields(spec, componentClass, context);
     }
 
     private List<String> buildPropertyList(Class c) {

@@ -6,6 +6,7 @@ import act.cli.ascii_table.impl.CollectionASCIITableAware;
 import act.cli.tree.TreeNode;
 import act.cli.util.MappedFastJsonNameFilter;
 import act.data.DataPropertyRepository;
+import act.util.ActContext;
 import act.util.FastJsonPropertyPreFilter;
 import act.util.PropertySpec;
 import com.alibaba.fastjson.serializer.SerializeFilter;
@@ -33,7 +34,7 @@ public enum CliView {
 
         @Override
         @SuppressWarnings("unchecked")
-        public String render(Object result, PropertySpec.MetaInfo spec, CliContext context) {
+        public String render(Object result, PropertySpec.MetaInfo spec, ActContext context) {
 
             if (null == result) {
                 return "no data";
@@ -41,8 +42,14 @@ public enum CliView {
 
             if (null == spec) {
                 // TODO: support Table View when filter annotation is not presented
-                return TO_STRING.render(result, null);
+                return TO_STRING.render(result, null, context);
             }
+
+            if (!(context instanceof CliContext)) {
+                throw E.unsupport("TableView support in CliContext only. You context: ", context.getClass());
+            }
+
+            CliContext cliContext = (CliContext) context;
 
             List dataList;
             Class<?> componentType;
@@ -57,8 +64,8 @@ public enum CliView {
                 componentType = result.getClass();
             }
             DataPropertyRepository repo = context.app().service(DataPropertyRepository.class);
-            List<String> outputFields = repo.outputFields(spec, componentType);
-            return context.getTable(new CollectionASCIITableAware(dataList, outputFields, spec.labels(outputFields)));
+            List<String> outputFields = repo.outputFields(spec, componentType, context);
+            return cliContext.getTable(new CollectionASCIITableAware(dataList, outputFields, spec.labels(outputFields, context)));
         }
 
     },
@@ -76,7 +83,7 @@ public enum CliView {
      */
     TREE() {
         @Override
-        public String render(Object result, PropertySpec.MetaInfo spec, CliContext context) {
+        public String render(Object result, PropertySpec.MetaInfo spec, ActContext context) {
             if (result instanceof TreeNode) {
                 return toTreeString((TreeNode) result);
             } else if (result instanceof Iterable) {
@@ -116,18 +123,18 @@ public enum CliView {
      */
     JSON () {
         @Override
-        public String render(Object result, PropertySpec.MetaInfo filter) {
-            return render(result, filter, true);
+        public String render(Object result, PropertySpec.MetaInfo filter, ActContext context) {
+            return render(result, filter, context, true);
         }
 
-        public String render(Object result, PropertySpec.MetaInfo filter, boolean format) {
+        public String render(Object result, PropertySpec.MetaInfo filter, ActContext context, boolean format) {
             String json;
             if (null == filter) {
                 json = com.alibaba.fastjson.JSON.toJSONString(result, SerializerFeature.PrettyFormat);
             } else {
                 FastJsonPropertyPreFilter propertyFilter = new FastJsonPropertyPreFilter();
-                List<String> outputs = filter.outputFields();
-                Set<String> excluded = filter.excludedFields();
+                List<String> outputs = filter.outputFields(context);
+                Set<String> excluded = filter.excludedFields(context);
                 if (excluded.isEmpty()) {
                     // output fields only applied when excluded fields not presented
                     propertyFilter.addIncludes(outputs);
@@ -163,25 +170,21 @@ public enum CliView {
      */
     TO_STRING () {
         @Override
-        public String render(Object result, PropertySpec.MetaInfo filter, CliContext cliContext) {
+        public String render(Object result, PropertySpec.MetaInfo filter, ActContext context) {
             if (result instanceof Iterable && null != filter) {
-                return TABLE.render(result, filter, cliContext);
+                return TABLE.render(result, filter, context);
             } else if (result instanceof TreeNode) {
-                return TREE.render(result, filter, cliContext);
+                return TREE.render(result, filter, context);
             } else if (null != filter) {
-                return JSON.render(result, filter, cliContext);
+                return JSON.render(result, filter, context);
             } else {
                 return S.string(result);
             }
         }
     };
 
-    public String render(Object result, PropertySpec.MetaInfo spec) {
+    public String render(Object result, PropertySpec.MetaInfo spec, ActContext context) {
         throw E.unsupport();
-    }
-
-    protected String render(Object result, PropertySpec.MetaInfo spec, CliContext context) {
-        return render(result, spec);
     }
 
     public void print(Object result, PropertySpec.MetaInfo spec, CliContext context) {

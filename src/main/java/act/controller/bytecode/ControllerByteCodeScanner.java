@@ -267,6 +267,22 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
                                         propSpec.onValue(S.string(value));
                                     }
                                 };
+                            } else if (S.eq("cli", name)) {
+                                return new AnnotationVisitor(ASM5, av0) {
+                                    @Override
+                                    public void visit(String name, Object value) {
+                                        super.visit(name, value);
+                                        propSpec.onCli(S.string(value));
+                                    }
+                                };
+                            } else if (S.eq("http", name)) {
+                                return new AnnotationVisitor(ASM5, av0) {
+                                    @Override
+                                    public void visit(String name, Object value) {
+                                        super.visit(name, value);
+                                        propSpec.onHttp(S.string(value));
+                                    }
+                                };
                             } else {
                                 return av0;
                             }

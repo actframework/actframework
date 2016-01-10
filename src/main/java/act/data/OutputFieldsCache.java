@@ -2,6 +2,7 @@ package act.data;
 
 import act.app.App;
 import act.data.util.StringOrPattern;
+import act.util.ActContext;
 import act.util.PropertySpec;
 import org.osgl.$;
 import org.osgl.util.C;
@@ -51,8 +52,8 @@ class OutputFieldsCache {
 
     private Map<K, List<String>> cache = C.newMap();
 
-    public List<String> getOutputFields(PropertySpec.MetaInfo spec, Class<?> componentClass) {
-        K k = new K(spec.excludedFields(), spec.outputFields(), componentClass);
+    public List<String> getOutputFields(PropertySpec.MetaInfo spec, Class<?> componentClass, ActContext context) {
+        K k = new K(spec.excludedFields(context), spec.outputFields(context), componentClass);
         List<String> outputs = cache.get(k);
         if (null == outputs) {
             outputs = calculateOutputs(k);

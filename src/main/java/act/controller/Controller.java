@@ -511,7 +511,7 @@ public @interface Controller {
                     if (null == propertySpec) {
                         return new RenderJSON(v);
                     }
-                    return new FilteredRenderJSON(v, propertySpec);
+                    return new FilteredRenderJSON(v, propertySpec, actionContext);
                 } else {
                     return inferResult(v.toString(), actionContext);
                 }

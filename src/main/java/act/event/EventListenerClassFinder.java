@@ -2,8 +2,11 @@ package act.event;
 
 import act.ActComponent;
 import act.app.App;
+import act.app.event.AppEvent;
 import act.app.event.AppEventId;
+import act.app.event.AppEventListener;
 import act.util.SubTypeFinder2;
+import org.osgl.$;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -36,7 +39,11 @@ public class EventListenerClassFinder extends SubTypeFinder2<ActEventListener> {
         for (Type t : ca) {
             if (t instanceof Class) {
                 final Class tc = (Class) t;
-                if (ActEvent.class.isAssignableFrom(tc)) {
+                if (AppEvent.class.isAssignableFrom(tc)) {
+                    AppEvent prototype = $.cast($.newInstance(tc, app));
+                    AppEventListener listener = $.cast(app.newInstance(target));
+                    app.eventBus().bind(AppEventId.values()[prototype.id()], listener);
+                } else if (ActEvent.class.isAssignableFrom(tc)) {
                     app.eventBus().bind(AppEventId.START, new AppEventListenerBase() {
                         @Override
                         public void on(EventObject event) throws Exception {
