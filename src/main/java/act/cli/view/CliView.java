@@ -124,7 +124,7 @@ public enum CliView {
     JSON () {
         @Override
         public String render(Object result, PropertySpec.MetaInfo filter, ActContext context) {
-            return render(result, filter, context, true);
+            return render(result, filter, context, context instanceof CliContext);
         }
 
         public String render(Object result, PropertySpec.MetaInfo filter, ActContext context, boolean format) {
@@ -141,9 +141,17 @@ public enum CliView {
                     } else {
                         // output fields only applied when excluded fields not presented
                         propertyFilter.addIncludes(outputs);
+                        if (FastJsonPropertyPreFilter.hasPattern(outputs)) {
+                            // TODO: handle the case when result is an Iterable
+                            propertyFilter.setFullPaths(context.app().service(DataPropertyRepository.class).propertyListOf(result.getClass()));
+                        }
                     }
                 } else {
                     propertyFilter.addExcludes(excluded);
+                    if (FastJsonPropertyPreFilter.hasPattern(excluded)) {
+                        // TODO: handle the case when result is an Iterable
+                        propertyFilter.setFullPaths(context.app().service(DataPropertyRepository.class).propertyListOf(result.getClass()));
+                    }
                 }
 
                 MappedFastJsonNameFilter nameFilter = new MappedFastJsonNameFilter(filter.labelMapping());

@@ -163,7 +163,7 @@ public class FastJsonPropertyPreFilter implements PropertyPreFilter {
         return false;
     }
 
-    private boolean hasPattern(Set<String> paths) {
+    public static boolean hasPattern(Collection<String> paths) {
         return S.join("", paths).contains("*");
     }
 
