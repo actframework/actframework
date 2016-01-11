@@ -136,8 +136,12 @@ public enum CliView {
                 List<String> outputs = filter.outputFields(context);
                 Set<String> excluded = filter.excludedFields(context);
                 if (excluded.isEmpty()) {
-                    // output fields only applied when excluded fields not presented
-                    propertyFilter.addIncludes(outputs);
+                    if (outputs.isEmpty()) {
+                        propertyFilter = null; // no filter defined actually
+                    } else {
+                        // output fields only applied when excluded fields not presented
+                        propertyFilter.addIncludes(outputs);
+                    }
                 } else {
                     propertyFilter.addExcludes(excluded);
                 }

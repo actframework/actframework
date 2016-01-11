@@ -196,7 +196,7 @@ public class ActionContext extends ActContext.ActContextBase<ActionContext> impl
         return sa;
     }
 
-    public Object tryParseJson(String name, Class<?> paramType, Class<?> paramComponentType) {
+    public Object tryParseJson(String name, Class<?> paramType, Class<?> paramComponentType, boolean singleParam) {
         if (null == jsonObject) {
             return null;
         }
@@ -210,7 +210,19 @@ public class ActionContext extends ActContext.ActContextBase<ActionContext> impl
                 return o;
             }
         } else {
-            return JSON.parseObject(jsonObject.toJSONString(), paramType);
+            if (Iterable.class.isAssignableFrom(paramType)) {
+                if (List.class.equals(paramType)) {
+                    o = C.list();
+                } else if (Set.class.equals(paramType)) {
+                    o = C.newSet();
+                }
+            } else if (Map.class.equals(paramType)) {
+                o = C.map();
+            } else if (paramType.isArray()) {
+                o = new Object[]{};
+            }
+
+            return singleParam ? JSON.parseObject(jsonObject.toJSONString(), paramType) : o;
         }
     }
 
@@ -263,6 +275,7 @@ public class ActionContext extends ActContext.ActContextBase<ActionContext> impl
     /**
      * Called by bytecode enhancer to set the name list of the render arguments that is update
      * by the enhancer
+     *
      * @param names the render argument names separated by ","
      * @return this AppContext
      */
@@ -311,6 +324,7 @@ public class ActionContext extends ActContext.ActContextBase<ActionContext> impl
     /**
      * Return cached object by key. The key will be concatenated with
      * current session id when fetching the cached object
+     *
      * @param key
      * @param <T> the object type
      * @return the cached object
@@ -327,6 +341,7 @@ public class ActionContext extends ActContext.ActContextBase<ActionContext> impl
     /**
      * Add an object into cache by key. The key will be used in conjunction with session id if
      * there is a session instance
+     *
      * @param key the key to index the object within the cache
      * @param obj the object to be cached
      */
@@ -341,8 +356,9 @@ public class ActionContext extends ActContext.ActContextBase<ActionContext> impl
 
     /**
      * Add an object into cache by key with expiration time specified
-     * @param key the key to index the object within the cache
-     * @param obj the object to be cached
+     *
+     * @param key        the key to index the object within the cache
+     * @param obj        the object to be cached
      * @param expiration the seconds after which the object will be evicted from the cache
      */
     public void cache(String key, Object obj, int expiration) {
@@ -356,6 +372,7 @@ public class ActionContext extends ActContext.ActContextBase<ActionContext> impl
 
     /**
      * Add an object into cache by key and expired after one hour
+     *
      * @param key the key to index the object within the cache
      * @param obj the object to be cached
      */
@@ -365,6 +382,7 @@ public class ActionContext extends ActContext.ActContextBase<ActionContext> impl
 
     /**
      * Add an object into cache by key and expired after half hour
+     *
      * @param key the key to index the object within the cache
      * @param obj the object to be cached
      */
@@ -374,6 +392,7 @@ public class ActionContext extends ActContext.ActContextBase<ActionContext> impl
 
     /**
      * Add an object into cache by key and expired after 10 minutes
+     *
      * @param key the key to index the object within the cache
      * @param obj the object to be cached
      */
@@ -383,6 +402,7 @@ public class ActionContext extends ActContext.ActContextBase<ActionContext> impl
 
     /**
      * Add an object into cache by key and expired after one minute
+     *
      * @param key the key to index the object within the cache+
      * @param obj the object to be cached
      */
@@ -392,6 +412,7 @@ public class ActionContext extends ActContext.ActContextBase<ActionContext> impl
 
     /**
      * Evict cached object
+     *
      * @param key the key indexed the cached object to be evicted
      */
     public void evictCache(String key) {
@@ -465,6 +486,7 @@ public class ActionContext extends ActContext.ActContextBase<ActionContext> impl
     /**
      * If {@link #templatePath(String) template path has been set before} then return
      * the template path. Otherwise returns the {@link #actionPath()}
+     *
      * @return either template path or action path if template path not set before
      */
     public String templatePath() {
@@ -716,6 +738,7 @@ public class ActionContext extends ActContext.ActContextBase<ActionContext> impl
 
     private static class SessionEvent extends ActionContextEvent {
         private H.Session session;
+
         public SessionEvent(H.Session session, ActionContext source) {
             super(source);
             this.session = session;
