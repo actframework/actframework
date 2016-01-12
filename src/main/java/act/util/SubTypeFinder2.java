@@ -25,7 +25,7 @@ public abstract class SubTypeFinder2<T> extends AppServicePlugin {
     private Class<T> targetType;
     private App app;
 
-    protected SubTypeFinder2(Class<T> target) {
+    public SubTypeFinder2(Class<T> target) {
         E.NPE(target);
         targetType = target;
     }
