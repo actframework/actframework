@@ -60,5 +60,9 @@ public class AppCrypto {
             throw e;
         }
     }
-    
+
+    public String secret() {
+        return secret;
+    }
+
 }
