@@ -1,6 +1,7 @@
 package act.app;
 
 import act.Act;
+import act.app.event.AppEventId;
 import act.asm.ClassReader;
 import act.asm.ClassWriter;
 import act.boot.BootstrapClassLoader;
@@ -11,6 +12,7 @@ import act.conf.AppConfig;
 import act.controller.meta.ControllerClassMetaInfo;
 import act.controller.meta.ControllerClassMetaInfoHolder;
 import act.controller.meta.ControllerClassMetaInfoManager;
+import act.event.AppEventListenerBase;
 import act.job.meta.JobClassMetaInfo;
 import act.job.meta.JobClassMetaInfoManager;
 import act.mail.meta.MailerClassMetaInfo;
@@ -30,10 +32,7 @@ import org.osgl.util.S;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.InputStream;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
-import java.util.Set;
+import java.util.*;
 
 import static act.util.ClassInfoRepository.canonicalName;
 import static org.osgl.$.notNull;
@@ -54,13 +53,25 @@ public class AppClassLoader
     protected CommanderClassMetaInfoManager commanderInfo = new CommanderClassMetaInfoManager();
     protected JobClassMetaInfoManager jobInfo = new JobClassMetaInfoManager();
 
-    public AppClassLoader(App app) {
+    public AppClassLoader(final App app) {
         super(Act.class.getClassLoader());
         this.app = notNull(app);
         ClassInfoRepository actClassInfoRepository = Act.classInfoRepository();
         if (null != actClassInfoRepository) {
             this.classInfoRepository = new AppClassInfoRepository(app, actClassInfoRepository);
         }
+        app.eventBus().bind(AppEventId.APP_CODE_SCANNED, new AppEventListenerBase() {
+
+            @Override
+            public String id() {
+                return "appClassLoader:controllerInfo:mergeActionMetaInfo";
+            }
+
+            @Override
+            public void on(EventObject event) throws Exception {
+                controllerInfo.mergeActionMetaInfo(app);
+            }
+        });
     }
 
     @Override

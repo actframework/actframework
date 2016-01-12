@@ -59,10 +59,6 @@ public class CommanderByteCodeScanner extends AppByteCodeScannerBase {
         classInfoBase().registerCommanderMetaInfo(classInfo);
     }
 
-    @Override
-    public void allScanFinished() {
-    }
-
     private CommanderClassMetaInfoManager classInfoBase() {
         if (null == classInfoBase) {
             synchronized (this) {

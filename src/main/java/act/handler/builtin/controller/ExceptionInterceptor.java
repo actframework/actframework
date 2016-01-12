@@ -6,7 +6,7 @@ public abstract class ExceptionInterceptor
         extends Handler<ExceptionInterceptor>
         implements Plugin, ExceptionInterceptorInvoker {
 
-    protected ExceptionInterceptor(int priority) {
+    public ExceptionInterceptor(int priority) {
         super(priority);
     }
 

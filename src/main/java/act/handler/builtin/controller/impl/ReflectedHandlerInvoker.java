@@ -4,6 +4,7 @@ import act.Act;
 import act.ActComponent;
 import act.app.ActionContext;
 import act.app.App;
+import act.app.AppClassLoader;
 import act.app.data.BinderManager;
 import act.app.data.StringValueResolverManager;
 import act.asm.Type;
@@ -163,7 +164,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
 
     @Override
     public Result handle(Exception e, ActionContext actionContext) {
-        Object ctrl = controllerInstance(actionContext);
+        Object ctrl = handler.isStatic() ? null : controllerInstance(actionContext);
         applyAppContext(actionContext, ctrl);
         Object[] params = params(actionContext, null, e);
         return invoke(handler, actionContext, ctrl, params);
@@ -372,7 +373,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
     }
 
     public static ExceptionInterceptor createExceptionInterceptor(CatchMethodMetaInfo meta, App app) {
-        return new _Exception(new ReflectedHandlerInvoker(meta, app));
+        return new _Exception(new ReflectedHandlerInvoker(meta, app), meta);
     }
 
     public static FinallyInterceptor createFinannyInterceptor(InterceptorMethodMetaInfo meta, App app) {
@@ -439,15 +440,34 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
     @ActComponent
     private static class _Exception extends ExceptionInterceptor {
         private ExceptionInterceptorInvoker invoker;
+        private List<Class<?>> myExceptions;
 
-        _Exception(ExceptionInterceptorInvoker invoker) {
+        _Exception(ExceptionInterceptorInvoker invoker, CatchMethodMetaInfo metaInfo) {
             super(invoker.priority());
             this.invoker = invoker;
+            List<String> classNames = metaInfo.exceptionClasses();
+            myExceptions = C.newSizedList(classNames.size());
+            AppClassLoader cl = App.instance().classLoader();
+            for (String cn : classNames) {
+                myExceptions.add($.classForName(cn, cl));
+            }
         }
 
         @Override
         public Result handle(Exception e, ActionContext actionContext) {
+            if (!isMyException(e)) {
+                return null;
+            }
             return invoker.handle(e, actionContext);
+        }
+
+        private boolean isMyException(Exception e) {
+            for (Class c : myExceptions) {
+                if (c.isInstance(e)) {
+                    return true;
+                }
+            }
+            return false;
         }
 
         @Override

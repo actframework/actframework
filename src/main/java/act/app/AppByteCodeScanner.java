@@ -27,9 +27,4 @@ public interface AppByteCodeScanner extends AppCodeScanner {
      * Called when scanning for one class finished
      */
     void scanFinished(String className);
-
-    /**
-     * Called when scanning for all classes finished
-     */
-    void allScanFinished();
 }

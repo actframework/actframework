@@ -37,10 +37,6 @@ public class ClassInfoByteCodeScanner extends AppByteCodeScannerBase {
     public void scanFinished(String className) {
     }
 
-    @Override
-    public void allScanFinished() {
-    }
-
     private class _ByteCodeVisitor extends ByteCodeVisitor {
         @Override
         public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {

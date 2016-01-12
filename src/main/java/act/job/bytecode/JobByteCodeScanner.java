@@ -47,10 +47,6 @@ public class JobByteCodeScanner extends AppByteCodeScannerBase {
         classInfoBase().registerJobMetaInfo(classInfo);
     }
 
-    @Override
-    public void allScanFinished() {
-    }
-
     private JobClassMetaInfoManager classInfoBase() {
         if (null == classInfoBase) {
             synchronized (this) {

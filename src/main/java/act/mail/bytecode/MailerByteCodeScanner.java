@@ -48,11 +48,6 @@ public class MailerByteCodeScanner extends AppByteCodeScannerBase {
         classInfoBase().registerMailerMetaInfo(classInfo);
     }
 
-    @Override
-    public void allScanFinished() {
-        // nothing need to be done here
-    }
-
     private MailerClassMetaInfoManager classInfoBase() {
         if (null == classInfoBase) {
             synchronized (this) {

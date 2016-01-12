@@ -143,10 +143,6 @@ public abstract class SubTypeFinder extends AppCodeScannerPluginBase {
         }
 
         @Override
-        public void allScanFinished() {
-        }
-
-        @Override
         protected boolean shouldScan(String className) {
             return true;
         }

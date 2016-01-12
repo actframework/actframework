@@ -64,11 +64,6 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
         classInfoBase().registerControllerMetaInfo(classInfo);
     }
 
-    @Override
-    public void allScanFinished() {
-        classInfoBase().mergeActionMetaInfo(app());
-    }
-
     private ControllerClassMetaInfoManager classInfoBase() {
         if (null == classInfoBase) {
             synchronized (this) {
