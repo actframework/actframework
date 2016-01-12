@@ -440,34 +440,27 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
     @ActComponent
     private static class _Exception extends ExceptionInterceptor {
         private ExceptionInterceptorInvoker invoker;
-        private List<Class<?>> myExceptions;
 
         _Exception(ExceptionInterceptorInvoker invoker, CatchMethodMetaInfo metaInfo) {
-            super(invoker.priority());
+            super(invoker.priority(), exceptionClassesOf(metaInfo));
             this.invoker = invoker;
+        }
+
+        @SuppressWarnings("unchecked")
+        private static List<Class<? extends Exception>> exceptionClassesOf(CatchMethodMetaInfo metaInfo) {
             List<String> classNames = metaInfo.exceptionClasses();
-            myExceptions = C.newSizedList(classNames.size());
+            List<Class<? extends Exception>> clsList = C.newSizedList(classNames.size());
+            clsList = C.newSizedList(classNames.size());
             AppClassLoader cl = App.instance().classLoader();
             for (String cn : classNames) {
-                myExceptions.add($.classForName(cn, cl));
+                clsList.add((Class) $.classForName(cn, cl));
             }
+            return clsList;
         }
 
         @Override
-        public Result handle(Exception e, ActionContext actionContext) {
-            if (!isMyException(e)) {
-                return null;
-            }
+        protected Result internalHandle(Exception e, ActionContext actionContext) {
             return invoker.handle(e, actionContext);
-        }
-
-        private boolean isMyException(Exception e) {
-            for (Class c : myExceptions) {
-                if (c.isInstance(e)) {
-                    return true;
-                }
-            }
-            return false;
         }
 
         @Override
