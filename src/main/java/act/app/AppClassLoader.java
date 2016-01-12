@@ -60,6 +60,9 @@ public class AppClassLoader
         if (null != actClassInfoRepository) {
             this.classInfoRepository = new AppClassInfoRepository(app, actClassInfoRepository);
         }
+        if (null == app.eventBus()) {
+            return; // for unit test only
+        }
         app.eventBus().bind(AppEventId.APP_CODE_SCANNED, new AppEventListenerBase() {
 
             @Override

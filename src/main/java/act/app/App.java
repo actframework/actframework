@@ -446,6 +446,9 @@ public class App {
     }
 
     App register(final AppService service, boolean noDiBinder) {
+        if (null == appServiceRegistry) {
+            return this; // for unit test only
+        }
         appServiceRegistry.register(service);
         if (null != eventBus && !noDiBinder) {
             eventBus.bind(AppEventId.DEPENDENCY_INJECTOR_LOADED, new AppEventListenerBase() {
