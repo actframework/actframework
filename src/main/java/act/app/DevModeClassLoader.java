@@ -180,13 +180,15 @@ public class DevModeClassLoader extends AppClassLoader {
             }
         });
 
-        if (!embeddedClassNames.isEmpty()) {
-            scanByteCode(embeddedClassNames, new $.F1<String, byte[]>() {
+        while (!embeddedClassNames.isEmpty()) {
+            Set<String> embeddedClassNameCopy = C.newSet(embeddedClassNames);
+            scanByteCode(embeddedClassNameCopy, new $.F1<String, byte[]>() {
                 @Override
                 public byte[] apply(String s) throws NotAppliedException, $.Break {
                     return bytecodeFromSource(s, embeddedClassNames);
                 }
             });
+            embeddedClassNames.removeAll(embeddedClassNameCopy);
         }
     }
 
@@ -216,9 +218,10 @@ public class DevModeClassLoader extends AppClassLoader {
         if (null == bytes) {
             compiler.compile(name);
             bytes = source.bytes();
-            embeddedClassNames.addAll(C.list(source.innerClassNames()).map(S.F.prepend(name + "$")));
         }
-        if (name.contains("$")) {
+        if (!name.contains("$")) {
+            embeddedClassNames.addAll(C.list(source.innerClassNames()).map(S.F.prepend(name + "$")));
+        } else {
             String innerClassName = S.afterFirst(name, "$");
             return source.bytes(innerClassName);
         }
