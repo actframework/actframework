@@ -3,6 +3,7 @@ package act.view;
 import act.ActComponent;
 import act.app.ActionContext;
 import act.mail.MailerContext;
+import act.util.ActContext;
 import act.view.rythm.ActionViewVarDef;
 import act.view.rythm.MailerViewVarDef;
 import org.osgl.http.H;
@@ -28,7 +29,13 @@ public class SystemImplicitVariableProvider extends ImplicitVariableProvider {
     }
 
     private List<ActionViewVarDef> actionViewVarDefs = C.listOf(
-            new ActionViewVarDef("_ctx", ActionContext.class) {
+            new ActionViewVarDef("_ctx", ActContext.class) {
+                @Override
+                public Object eval(ActionContext context) {
+                    return context;
+                }
+            },
+            new ActionViewVarDef("_action", ActionContext.class) {
                 @Override
                 public Object eval(ActionContext context) {
                     return context;
@@ -55,6 +62,12 @@ public class SystemImplicitVariableProvider extends ImplicitVariableProvider {
     );
 
     private List<MailerViewVarDef> mailerViewVarDefs = C.listOf(
+            new MailerViewVarDef("_ctx", ActContext.class) {
+                @Override
+                public Object eval(MailerContext context) {
+                    return context;
+                }
+            },
             new MailerViewVarDef("_mailer", MailerContext.class) {
                 @Override
                 public Object eval(MailerContext context) {

@@ -1,6 +1,5 @@
 package act.view;
 
-import act.app.ActionContext;
 import act.util.ActContext;
 import org.osgl.$;
 import org.osgl.http.H;
@@ -10,7 +9,7 @@ import org.osgl.util.S;
 import static org.osgl.http.H.Format.*;
 
 /**
- * Resolve template path for {@link ActionContext}
+ * Resolve template path for {@link ActContext}
  */
 public class TemplatePathResolver extends $.Transformer<ActContext, String> {
     @Override
