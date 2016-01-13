@@ -645,7 +645,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
             dateFmt = get(FORMAT_DATE);
             if (null == dateFmt) {
                 DateFormat formatter = DateFormat.getDateInstance();
-                dateFmt = ((SimpleDateFormat) formatter).toLocalizedPattern();
+                dateFmt = ((SimpleDateFormat) formatter).toPattern();
             }
         }
         return dateFmt;
