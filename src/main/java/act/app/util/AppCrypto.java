@@ -8,6 +8,7 @@ import org.osgl.exception.UnexpectedException;
 import org.osgl.logging.Logger;
 import org.osgl.util.Codec;
 import org.osgl.util.Crypto;
+import org.osgl.util.Token;
 
 import java.security.InvalidKeyException;
 
@@ -61,8 +62,20 @@ public class AppCrypto {
         }
     }
 
-    public String secret() {
-        return secret;
+    public String generateToken(String id, String... payload) {
+        return Token.generateToken(secret, id, payload);
+    }
+
+    public String generateToken(Token.Life expiration, String id, String ... payload) {
+        return Token.generateToken(secret, expiration, id, payload);
+    }
+
+    public String generateToken(int seconds, String id, String ... payload) {
+        return Token.generateToken(secret, seconds, id, payload);
+    }
+
+    public Token parseToken(String tokenString) {
+        return Token.parseToken(secret, tokenString);
     }
 
 }

@@ -168,11 +168,33 @@ public enum AppConfigKey implements ConfigKey {
         @Override
         public <T> T val(Map<String, ?> configuration) {
             Object v = configuration.get(key());
-            if (null == v) return (T) (Number) 5460;
+            if (null == v) return null;
             if (v instanceof Number) {
                 return (T) v;
             }
             return (T) (Integer.valueOf(v.toString()));
+        }
+    },
+
+    /**
+     * {@code act.http.secure} specifies whether the default http port is
+     * running https or http.
+     * <p></p>
+     * <p>
+     *     Default value: {@code false} when Act is running in dev mode
+     *     or {@code true} when Act is running in prod mode
+     * </p>
+     */
+    @SuppressWarnings("unchecked")
+    HTTP_SECURE("http.secure") {
+        @Override
+        public <T> T val(Map<String, ?> configuration) {
+            Object v = configuration.get(key());
+            if (null == v) return null;
+            if (v instanceof Boolean) {
+                return (T) ((Boolean) v);
+            }
+            return (T) (Boolean.valueOf(v.toString()));
         }
     },
 

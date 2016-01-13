@@ -502,6 +502,30 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         }
     }
 
+    private Boolean httpSecure = null;
+
+    protected T httpSecure(boolean secure) {
+        this.httpSecure = secure;
+        return me();
+    }
+
+    public boolean httpSecure() {
+        if (null == httpSecure) {
+            Boolean B = get(HTTP_SECURE);
+            if (null == B) {
+                B = !Act.isDev();
+            }
+            httpSecure = B;
+        }
+        return httpSecure;
+    }
+
+    private void _mergeHttpSecure(AppConfig conf) {
+        if (null == get(HTTP_SECURE)) {
+            httpSecure = conf.httpSecure;
+        }
+    }
+
     private MissingAuthenticationHandler mah = null;
     protected T missingAuthenticationHandler(MissingAuthenticationHandler handler) {
         E.NPE(handler);
@@ -1276,6 +1300,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         _mergeMissingAuthenticationHandler(conf);
         _mergeAjaxMissingAuthenticationHandler(conf);
         _mergeHttpPort(conf);
+        _mergeHttpSecure(conf);
         _mergePorts(conf);
         _mergeErrorTemplatePathResolver(conf);
         _mergeDateFmt(conf);
