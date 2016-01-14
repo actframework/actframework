@@ -4,7 +4,7 @@
 @args act.util.ActError _error
 @{
 act.app.SourceInfo sourceInfo = _error.sourceInfo();
-act.route.RouteInfo req = act.route.RouteInfo.of(_ctx);
+act.route.RouteInfo req = act.route.RouteInfo.of(_action);
 List<String> stackTrace = _error.stackTrace();
   }
 

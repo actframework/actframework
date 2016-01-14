@@ -37,8 +37,8 @@
 
 @import act.route.*
 @{
-  List<RouteInfo> routes = _ctx.router().debug();
-  act.route.RouteInfo req = RouteInfo.of(_ctx);
+  List<RouteInfo> routes = _action.router().debug();
+  act.route.RouteInfo req = RouteInfo.of(_action);
 }
 
 @def tr(RouteInfo r, String parity) {

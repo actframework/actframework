@@ -18,7 +18,7 @@ act.app.SourceInfo templateSourceInfo = null;
 if (_error instanceof act.view.RythmError) {
 templateSourceInfo = ((act.view.RythmError) actError).templateSourceInfo();
 }
-act.route.RouteInfo routeInfo = act.route.RouteInfo.of(_ctx);
+act.route.RouteInfo routeInfo = null != _action ? act.route.RouteInfo.of(_action) : null;
 List<String> stackTrace = actError.stackTrace();
   }
 

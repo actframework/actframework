@@ -41,6 +41,12 @@ public class SystemImplicitVariableProvider extends ImplicitVariableProvider {
                     return context;
                 }
             },
+            new ActionViewVarDef("_mailer", MailerContext.class) {
+                @Override
+                public Object eval(ActionContext context) {
+                    return null;
+                }
+            },
             new ActionViewVarDef("_session", H.Session.class) {
                 @Override
                 public Object eval(ActionContext context) {
@@ -72,6 +78,12 @@ public class SystemImplicitVariableProvider extends ImplicitVariableProvider {
                 @Override
                 public Object eval(MailerContext context) {
                     return context;
+                }
+            },
+            new MailerViewVarDef("_action", ActionContext.class) {
+                @Override
+                public Object eval(MailerContext context) {
+                    return null;
                 }
             },
             new MailerViewVarDef("_from", InternetAddress.class) {
