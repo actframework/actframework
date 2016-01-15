@@ -14,6 +14,7 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 /**
  * Provide admin service to act {@link AppJobManager}
  */
+@SuppressWarnings("unused")
 public class JobAdmin {
 
     /**

@@ -5,6 +5,7 @@ import act.Destroyable;
 import act.app.ActionContext;
 import act.app.App;
 import act.app.AppServiceBase;
+import act.cli.tree.TreeNode;
 import act.conf.AppConfig;
 import act.controller.ParamNames;
 import act.handler.*;
@@ -34,10 +35,10 @@ public class Router extends AppServiceBase<Router> {
             H.Method.GET, H.Method.POST, H.Method.DELETE, H.Method.PUT};
     private static final Logger logger = L.get(Router.class);
 
-    private Node _GET = Node.newRoot();
-    private Node _PUT = Node.newRoot();
-    private Node _POST = Node.newRoot();
-    private Node _DEL = Node.newRoot();
+    Node _GET = Node.newRoot("GET");
+    Node _PUT = Node.newRoot("PUT");
+    Node _POST = Node.newRoot("POST");
+    Node _DEL = Node.newRoot("DELETE");
 
     private Map<String, RequestHandlerResolver> resolvers = C.newMap();
 
@@ -372,9 +373,11 @@ public class Router extends AppServiceBase<Router> {
      * The data structure support decision tree for
      * fast URL routing
      */
-    private static class Node extends DestroyableBase implements Serializable {
-        static Node newRoot() {
-            return new Node(-1);
+    private static class Node extends DestroyableBase implements Serializable, TreeNode {
+        static Node newRoot(String name) {
+            Node node = new Node(-1);
+            node.name = S.str(name);
+            return node;
         }
 
         private int id;
@@ -430,10 +433,14 @@ public class Router extends AppServiceBase<Router> {
 
         public boolean matches(CharSequence chars) {
             if (!isDynamic()) return name.contentEquals(chars);
-            if (null != pattern) {
-                return pattern.matcher(chars).matches();
-            }
-            return true;
+            return (null == pattern) || pattern.matcher(chars).matches();
+        }
+
+        @Override
+        @SuppressWarnings("unchecked")
+        public List<TreeNode> children() {
+            C.List<TreeNode> list = (C.List) C.list(staticChildren.values());
+            return null == dynamicChild ? list : list.append(dynamicChild);
         }
 
         public Node child(CharSequence name, ActionContext context) {
@@ -445,6 +452,15 @@ public class Router extends AppServiceBase<Router> {
                 }
             }
             return node;
+        }
+
+        @Override
+        public String label() {
+            StringBuilder sb = S.builder(name);
+            if (null != handler) {
+                sb.append(" -> ").append(handler);
+            }
+            return sb.toString();
         }
 
         @Override
