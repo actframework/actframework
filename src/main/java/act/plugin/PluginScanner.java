@@ -33,7 +33,7 @@ public class PluginScanner {
             if (Plugin.class.isAssignableFrom(c)) {
                 try {
                     Plugin p = (Plugin) $.newInstance(c);
-                    p.register();
+                    Plugin.InfoRepo.register(p);
                 } catch (UnexpectedException e) {
                     // ignore: some plugin does not provide default constructor
                 }
