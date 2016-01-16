@@ -1,15 +1,10 @@
 package act.app;
 
-import act.app.conf.AutoConfig;
-import act.app.event.AppEventId;
-import act.event.AppEventListenerBase;
 import act.util.AnnotatedTypeFinder;
 import org.osgl.$;
 import org.osgl.exception.NotAppliedException;
 
 import javax.inject.Singleton;
-import java.lang.annotation.Annotation;
-import java.util.EventObject;
 import java.util.Map;
 import java.util.Set;
 

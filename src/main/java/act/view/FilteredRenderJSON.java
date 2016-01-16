@@ -1,6 +1,5 @@
 package act.view;
 
-import act.app.ActionContext;
 import act.cli.view.CliView;
 import act.util.ActContext;
 import act.util.PropertySpec;

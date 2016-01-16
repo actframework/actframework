@@ -3,7 +3,6 @@ package act.cli.meta;
 import act.app.App;
 import act.asm.Type;
 import org.osgl.$;
-import org.osgl.util.S;
 
 /**
  * Store {@link OptionAnnoInfoBase option annotation info} that

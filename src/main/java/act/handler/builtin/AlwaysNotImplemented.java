@@ -2,7 +2,6 @@ package act.handler.builtin;
 
 import act.app.ActionContext;
 import act.handler.builtin.controller.FastRequestHandler;
-import org.osgl.mvc.result.MethodNotAllowed;
 import org.osgl.mvc.result.NotImplemented;
 
 public class AlwaysNotImplemented extends FastRequestHandler {

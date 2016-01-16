@@ -1,6 +1,5 @@
 package act.cli.view;
 
-import act.app.App;
 import act.app.CliContext;
 import act.cli.ascii_table.impl.CollectionASCIITableAware;
 import act.cli.tree.TreeNode;
@@ -11,16 +10,12 @@ import act.util.FastJsonPropertyPreFilter;
 import act.util.PropertySpec;
 import com.alibaba.fastjson.serializer.SerializeFilter;
 import com.alibaba.fastjson.serializer.SerializerFeature;
-import org.osgl.$;
 import org.osgl.util.C;
 import org.osgl.util.E;
 import org.osgl.util.S;
 
-import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
-import java.util.regex.Pattern;
 
 /**
  * Define how the command method return result should

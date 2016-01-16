@@ -1,7 +1,6 @@
 package act.util;
 
 import act.Act;
-import act.ActComponent;
 import act.app.ActionContext;
 import act.app.App;
 import act.conf.AppConfig;

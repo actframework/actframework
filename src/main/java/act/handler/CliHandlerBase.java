@@ -2,14 +2,8 @@ package act.handler;
 
 import act.Act;
 import act.app.CliContext;
-import act.cli.builtin.Help;
-import act.cli.util.CommandLineParser;
 import org.osgl.$;
-import org.osgl.Osgl;
 import org.osgl.exception.NotAppliedException;
-
-import java.util.List;
-import java.util.Map;
 
 public abstract class CliHandlerBase extends $.F1<CliContext, Void> implements CliHandler {
 

@@ -5,7 +5,6 @@ import act.app.AppServiceBase;
 import act.util.ActContext;
 import act.util.PropertySpec;
 import org.joda.time.*;
-import org.osgl.$;
 import org.osgl.util.C;
 import org.rythmengine.utils.S;
 

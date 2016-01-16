@@ -15,13 +15,11 @@ import org.osgl.$;
 import org.osgl.util.IO;
 import org.osgl.util.S;
 
-import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.net.SocketException;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public class CliSession extends DestroyableBase implements Runnable {
 

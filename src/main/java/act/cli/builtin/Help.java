@@ -2,20 +2,15 @@ package act.cli.builtin;
 
 import act.app.CliContext;
 import act.cli.CliDispatcher;
-import act.cli.Command;
 import act.cli.util.CommandLineParser;
 import act.handler.CliHandler;
 import act.handler.CliHandlerBase;
-import org.osgl.$;
-import org.osgl.Osgl;
 import org.osgl.util.C;
 import org.osgl.util.S;
 
 import java.util.List;
-import java.util.Set;
 
 import static org.osgl.Osgl.T2;
-import static org.osgl.Osgl.async;
 
 public class Help extends CliHandlerBase {
 

@@ -1,8 +1,5 @@
 package act.cli.meta;
 
-import org.osgl.util.E;
-import org.osgl.util.S;
-
 /**
  * Store {@link OptionAnnoInfoBase option annotation info} that
  * come from a method parameter

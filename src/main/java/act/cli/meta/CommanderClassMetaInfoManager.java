@@ -1,7 +1,6 @@
 package act.cli.meta;
 
 import act.asm.Type;
-import act.util.AsmTypes;
 import act.util.DestroyableBase;
 import org.osgl.logging.LogManager;
 import org.osgl.logging.Logger;

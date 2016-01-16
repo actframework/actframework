@@ -4,7 +4,6 @@ import org.osgl.$;
 import org.osgl.util.S;
 
 import java.util.List;
-import java.util.regex.Pattern;
 
 /**
  * A {@code TreeNodeFilter} can be applied to a {@link TreeNode} and

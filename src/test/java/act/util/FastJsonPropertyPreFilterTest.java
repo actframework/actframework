@@ -1,16 +1,11 @@
 package act.util;
 
 import act.TestBase;
-import act.app.App;
 import act.data.DataPropertyRepository;
 import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.serializer.SerializeConfig;
-import com.alibaba.fastjson.serializer.SerializerFeature;
 import org.junit.Before;
 import org.junit.Test;
-import org.osgl.$;
 import org.osgl.util.C;
-import org.osgl.util.E;
 
 import java.util.ArrayList;
 import java.util.Iterator;

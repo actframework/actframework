@@ -10,7 +10,6 @@ import act.app.event.AppEventListener;
 import act.job.AppJobManager;
 import org.osgl.mvc.result.Result;
 import org.osgl.util.C;
-import org.osgl.util.E;
 
 import java.lang.annotation.Annotation;
 import java.util.EventObject;

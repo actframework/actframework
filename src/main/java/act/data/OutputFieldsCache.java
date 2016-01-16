@@ -6,7 +6,6 @@ import act.util.ActContext;
 import act.util.PropertySpec;
 import org.osgl.$;
 import org.osgl.util.C;
-import org.osgl.util.S;
 
 import java.util.Collection;
 import java.util.List;
