@@ -9,6 +9,18 @@ import java.util.List;
  * using {@link CliView#TREE Tree view}
  */
 public interface TreeNode {
+
+    /**
+     * Returns {@code id} of this node.
+     * <p>
+     *     The {@code id} of a node can be used to identify a
+     *     node in a certain context In other words children
+     *     nodes of the same parent node cannot share a same id
+     * </p>
+     * @return the node id
+     */
+    public String id();
+
     /**
      * Returns the label on the current tree node
      * @return the label string

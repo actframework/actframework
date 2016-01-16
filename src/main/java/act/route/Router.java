@@ -455,6 +455,11 @@ public class Router extends AppServiceBase<Router> {
         }
 
         @Override
+        public String id() {
+            return name.toString();
+        }
+
+        @Override
         public String label() {
             StringBuilder sb = S.builder(name);
             if (null != handler) {
