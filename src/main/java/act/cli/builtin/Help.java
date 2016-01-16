@@ -23,50 +23,57 @@ public class Help extends CliHandlerBase {
     @Override
     public void handle(CliContext context) {
         List<String> args = context.arguments();
+        String command = null;
         if (args.size() > 0) {
-            String command = args.get(0);
-            showHelp(command, context);
-        } else {
-            CommandLineParser parser = context.commandLine();
-            boolean sys = parser.getBoolean("-s", "--system");
-            boolean app = parser.getBoolean("-a", "--app");
-            if (!sys && !app) {
-                sys = true;
-                app = true;
+            command = args.get(0);
+            if (showHelp(command, context)) {
+                return;
             }
+        }
+        CommandLineParser parser = context.commandLine();
+        boolean sys = parser.getBoolean("-s", "--system");
+        boolean app = parser.getBoolean("-a", "--app");
+        if (!sys && !app) {
+            sys = true;
+            app = true;
+        }
 
-            CliDispatcher dispatcher = context.app().cliDispatcher();
-            List<String> sysCommands = dispatcher.commands(true, false);
-            List<String> appCommands = dispatcher.commands(false, true);
-            int maxLen;
-            if (sys && !app) {
-                maxLen = calMaxCmdLen(sysCommands);
-            } else if (app && !sys) {
-                maxLen = calMaxCmdLen(appCommands);
-            } else {
-                maxLen = calMaxCmdLen(C.list(sysCommands).append(appCommands));
-            }
-            String fmt = "%-" + (maxLen + 4) + "s - %s";
+        CliDispatcher dispatcher = context.app().cliDispatcher();
+        List<String> sysCommands = dispatcher.commands(true, false);
+        List<String> appCommands = dispatcher.commands(false, true);
+        int maxLen;
+        if (sys && !app) {
+            maxLen = calMaxCmdLen(sysCommands);
+        } else if (app && !sys) {
+            maxLen = calMaxCmdLen(appCommands);
+        } else {
+            maxLen = calMaxCmdLen(C.list(sysCommands).append(appCommands));
+        }
+        String fmt = "%-" + (maxLen + 4) + "s - %s";
+        if (sys) {
+            list(command, "System commands", fmt, sysCommands, dispatcher, context);
+        }
+        if (app) {
             if (sys) {
-                list("System commands", fmt, sysCommands, dispatcher, context);
+                context.println("");
             }
-            if (app) {
-                if (sys) {
-                    context.println("");
-                }
-                list("Application commands", fmt, appCommands, dispatcher, context);
-            }
+            list(command, "Application commands", fmt, appCommands, dispatcher, context);
         }
     }
 
-    private void list(String label, String fmt, List<String> commands, CliDispatcher dispatcher, CliContext context) {
+    private void list(String search, String label, String fmt, List<String> commands, CliDispatcher dispatcher, CliContext context) {
         List<String> lines = C.newList();
-        lines.add(label.toUpperCase());
-        lines.add("");
+        boolean noSearch = S.blank(search);
+        if (noSearch) {
+            lines.add(label.toUpperCase());
+            lines.add("");
+        }
         for (String cmd : commands) {
             CliHandler handler = dispatcher.handler(cmd);
             T2<String, String> commandLine = handler.commandLine(cmd);
-            lines.add(S.fmt(fmt, cmd, commandLine._2));
+            if (noSearch || commandLine._1.contains(search)) {
+                lines.add(S.fmt(fmt, cmd, commandLine._2));
+            }
         }
         context.println(S.join("\n", lines));
     }
@@ -79,11 +86,11 @@ public class Help extends CliHandlerBase {
         return max;
     }
 
-    public void showHelp(String command, CliContext context) {
+    public boolean showHelp(String command, CliContext context) {
         CliHandler handler = context.app().cliDispatcher().handler(command);
         if (null == handler) {
-            context.println("Unrecongized command: %s", command);
-            return;
+            // context.println("Unrecongized command: %s", command);
+            return false;
         }
         List<String> lines = C.newList();
 
@@ -112,6 +119,7 @@ public class Help extends CliHandlerBase {
         }
 
         context.println(S.join("\n", lines));
+        return true;
     }
 
     @Override

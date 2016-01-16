@@ -86,7 +86,7 @@ public class CommandMethodMetaInfo extends DestroyableBase {
     }
 
     public String helpMsg() {
-        return helpMsg;
+        return null == helpMsg ? "" : helpMsg;
     }
 
     /**
