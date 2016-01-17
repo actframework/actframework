@@ -80,7 +80,6 @@ public class CliContext extends ActContext.ActContextBase<CliContext> implements
         t2.setEchoEnabled(false);
         this.pw = new PrintWriter(console.getOutput());
         saveLocal();
-
     }
 
     /**

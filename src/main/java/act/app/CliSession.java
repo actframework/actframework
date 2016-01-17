@@ -2,6 +2,7 @@ package act.app;
 
 import act.Act;
 import act.cli.CliDispatcher;
+import act.cli.CommandNameCompleter;
 import act.cli.builtin.Exit;
 import act.cli.builtin.Help;
 import act.cli.event.CliSessionStart;
@@ -32,6 +33,7 @@ public class CliSession extends DestroyableBase implements Runnable {
     private boolean exit;
     private Thread runningThread;
     private ConsoleReader console;
+    private CommandNameCompleter commandNameCompleter;
 
     CliSession(Socket socket, CliServer server) {
         this.socket = $.NPE(socket);
@@ -40,6 +42,7 @@ public class CliSession extends DestroyableBase implements Runnable {
         this.dispatcher = app.cliDispatcher();
         id = app.cuid();
         ts = $.ms();
+        commandNameCompleter = app.newInstance(CommandNameCompleter.class);
     }
 
     public String id() {
@@ -71,6 +74,7 @@ public class CliSession extends DestroyableBase implements Runnable {
             console = new ConsoleReader(socket.getInputStream(), os);
             new PrintWriter(os).println(Banner.banner(Act.VERSION));
             console.setPrompt("act[" + id + "]>");
+            console.addCompleter(commandNameCompleter);
 
             while (!exit) {
                 final String line = console.readLine();
