@@ -126,7 +126,9 @@ public class CliSession extends DestroyableBase implements Runnable {
         } catch (Throwable e) {
             logger.error(e, "Error processing cli session");
         } finally {
-            server.remove(this);
+            if (null != server) {
+                server.remove(this);
+            }
             IO.close(socket);
             app.eventBus().emitSync(new CliSessionTerminate(this));
         }
