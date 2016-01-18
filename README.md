@@ -1,6 +1,6 @@
 ##### ACT Framework
 
-I love PlayFramework v1.x because it is simple, clear and expressive. It brought us a completely different experience in web development with Java. However I don't totally agree with where Play 2.X is heading to, and it looks like I am not the only person with the concern as per this [open letter to Play Framework Developers](https://groups.google.com/d/msg/play-framework/AcZs8GXNWUc/IanbqC-c-MkJ). 
+I love PlayFramework v1.x because it is simple, clear and expressive. It brought us a completely different experience in web development with Java. However I don't totally agree with where Play 2.X is heading for, and it looks like I am not the only person with the concern as per this [open letter to Play Framework Developers](https://groups.google.com/d/msg/play-framework/AcZs8GXNWUc/IanbqC-c-MkJ). 
 
 So I [decide](http://software-lgl.blogspot.com.au/2012/12/thinking-about-creating-new-java-web.html) to roll out something that could follow the road paved by Play 1.x, something that is simple, clear, expressive and Java (specifically) developer friendly. And that comes up with this ACT Framework.
 
