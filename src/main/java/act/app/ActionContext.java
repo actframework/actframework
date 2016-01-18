@@ -196,7 +196,7 @@ public class ActionContext extends ActContext.ActContextBase<ActionContext> impl
         return sa;
     }
 
-    public Object tryParseJson(String name, Class<?> paramType, Class<?> paramComponentType, boolean singleParam) {
+    public Object tryParseJson(String name, Class<?> paramType, Class<?> paramComponentType, int paramCount) {
         if (null == jsonObject) {
             return null;
         }
@@ -222,6 +222,8 @@ public class ActionContext extends ActContext.ActContextBase<ActionContext> impl
                 o = new Object[]{};
             }
 
+            paramCount = paramCount - extraParams.size();
+            boolean singleParam = paramCount == 1;
             return singleParam ? JSON.parseObject(jsonObject.toJSONString(), paramType) : o;
         }
     }

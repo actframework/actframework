@@ -268,7 +268,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
                         }
                         String reqVal = ctx.paramVal(bindName);
                         if (null == reqVal) {
-                            Object o = ctx.tryParseJson(bindName, paramType, paramComponentType, paramCount == 1);
+                            Object o = ctx.tryParseJson(bindName, paramType, paramComponentType, paramCount);
                             if (null != o) {
                                 oa[i] = o;
                                 continue;
