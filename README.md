@@ -1,6 +1,8 @@
 ##### ACT Framework
 
-The reason I create ACT Framework is because I was so in fond of PlayFramework1 V1.x and I want to continue along the road paved by the great product. In essence I need an expressive, Java developer friendly MVC framework, and that comes with ACT Framework.
+I love PlayFramework v1.x because it is simple, clear and expressive. It brought us a completely different experience in web development with Java. However I don't totally agree with where Play 2.X is heading for, and it looks like I am not the only person with the concern as per this [open letter to Play Framework Developers](https://groups.google.com/d/msg/play-framework/AcZs8GXNWUc/IanbqC-c-MkJ). 
+
+I [have thought of](http://software-lgl.blogspot.com.au/2012/12/thinking-about-creating-new-java-web.html) rolling out something that could follow the road paved by Play 1.x, something that is simple, clear, expressive and Java (specifically) developer friendly. About one and half year after that I decide I could start the project seriously, and now another one and half year passed by, I've got this ACT framework in a relatively good shape.
 
 Controller sample code:
 
@@ -39,12 +41,12 @@ There are a couple of ACT Demo applications could be found at https://github.com
 * Dependency injection with Guice: https://github.com/actframework/act-demo-apps/tree/master/fullstack-app/guice
 * Configuration with code: https://github.com/actframework/act-demo-apps/tree/master/fullstack-app/app-config
 * Jobs: https://github.com/actframework/act-demo-apps/tree/master/fullstack-app/jobs
-* Validation (JSR 303, not fully completed): https://github.com/actframework/act-demo-apps/tree/master/fullstack-app/validation
+* Validation: https://github.com/actframework/act-demo-apps/tree/master/fullstack-app/validation
 * MongoDB with morphia: https://github.com/actframework/act-demo-apps/tree/master/fullstack-app/todo-morphia
 * SQL DB with Ebean: https://github.com/actframework/act-demo-apps/tree/master/fullstack-app/todo-ebean
 * Transactional support with Ebean: https://github.com/actframework/act-demo-apps/tree/master/fullstack-app/transaction-ebean
 
-All the demo apps shall be able to run directly by `cd path/to/app` and `mvn clean compile exec:exec`. Then you can open your browser and navigate to `http://localhost:5460`. The demo apps are using default view based on [Rythm](http://rythmengine.org), which is my another open source contribution.
+All the demo apps shall be able to run directly by `cd path/to/app` and `mvn clean compile exec:exec`. Then you can open your browser and navigate to `http://localhost:5460`. The demo apps are using default view based on [Rythm](http://rythmengine.org), which is my [another open source initiative](http://github.com/greenlaw110/rythm).
 
 At the moment ACT framework is still under development and not ready for product use. But you are welcome to give it a try and send me feedback by [raising issues](/actframework/actframework/issues) or send email to actframework@googlegroup.com. 中国的朋友可以申请加入ＱＱ群：283919975.
 
