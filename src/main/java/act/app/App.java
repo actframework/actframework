@@ -35,10 +35,7 @@ import org.osgl.http.HttpConfig;
 import org.osgl.logging.L;
 import org.osgl.logging.Logger;
 import org.osgl.storage.IStorageService;
-import org.osgl.util.C;
-import org.osgl.util.E;
-import org.osgl.util.IO;
-import org.osgl.util.S;
+import org.osgl.util.*;
 
 import java.io.File;
 import java.util.EventObject;
@@ -494,6 +491,12 @@ public class App {
         logger.debug("loading app configuration: %s ...", appBase.getPath());
         config = new AppConfLoader().load(conf);
         config.app(this);
+        registerValueObjectCodec();
+    }
+
+    // TODO: move this to somewhere that is more appropriate
+    private void registerValueObjectCodec() {
+        ValueObject.register(new JodaDateTimeCodec(config));
     }
 
     private void initIdGenerator() {

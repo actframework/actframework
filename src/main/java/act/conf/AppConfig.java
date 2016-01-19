@@ -670,7 +670,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
             timeFmt = get(FORMAT_TIME);
             if (null == timeFmt) {
                 DateFormat formatter = DateFormat.getTimeInstance();
-                timeFmt = ((SimpleDateFormat) formatter).toLocalizedPattern();
+                timeFmt = ((SimpleDateFormat) formatter).toPattern();
             }
         }
         return timeFmt;
@@ -692,17 +692,17 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
 
     public String dateTimeFormat() {
         if (null == dateDateTimeFmt) {
-            dateDateTimeFmt = get(FORMAT_TIME);
+            dateDateTimeFmt = get(FORMAT_DATE_TIME);
             if (null == dateDateTimeFmt) {
-                DateFormat formatter = DateFormat.getDateInstance();
-                dateDateTimeFmt = ((SimpleDateFormat) formatter).toLocalizedPattern();
+                DateFormat formatter = DateFormat.getDateTimeInstance();
+                dateDateTimeFmt = ((SimpleDateFormat) formatter).toPattern();
             }
         }
         return dateDateTimeFmt;
     }
 
     private void _mergeDateTimeFmt(AppConfig conf) {
-        if (null == get(FORMAT_TIME)) {
+        if (null == get(FORMAT_DATE_TIME)) {
             dateDateTimeFmt = conf.dateDateTimeFmt;
         }
     }
