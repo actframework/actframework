@@ -13,6 +13,7 @@ import act.conf.AppConfig;
 import act.conf.AppConfigKey;
 import act.controller.bytecode.ControllerByteCodeScanner;
 import act.data.DataPropertyRepository;
+import act.data.JodaDateTimeCodec;
 import act.di.DependencyInjector;
 import act.di.DiBinder;
 import act.event.AppEventListenerBase;
@@ -219,6 +220,8 @@ public class App {
         Act.viewManager().reload(this);
         initServiceResourceManager();
         eventEmitted = C.newSet();
+
+        initSingletonRegistry();
         initEventBus();
         emit(EVENT_BUS_INITIALIZED);
         loadConfig();
@@ -229,8 +232,6 @@ public class App {
         initCrypto();
         initIdGenerator();
         initJobManager();
-
-        initSingletonRegistry();
 
         initInterceptorManager();
         initResolverManager();
@@ -307,7 +308,7 @@ public class App {
         return new File(this.layout().resource(appBase), path);
     }
 
-    SingletonRegistry singletonRegistry() {
+    public SingletonRegistry singletonRegistry() {
         return singletonRegistry;
     }
 
@@ -383,6 +384,10 @@ public class App {
         if (AppJobManager.class == clz) return $.cast(jobManager());
         if (EventBus.class == clz) return $.cast(eventBus());
         if (CacheService.class == clz) return $.cast(cache());
+        T t = singleton(clz);
+        if (null != t) {
+            return t;
+        }
         if (null != dependencyInjector) {
             return dependencyInjector.create(clz);
         } else {
@@ -397,6 +402,10 @@ public class App {
         if (CliContext.class == clz) return $.cast(context);
         if (MailerContext.class == clz) return $.cast(context);
         if (AppCrypto.class == clz) return $.cast(crypto());
+        T t = singleton(clz);
+        if (null != t) {
+            return t;
+        }
         if (null != dependencyInjector) {
             return dependencyInjector.createContextAwareInjector(context).create(clz);
         } else {
@@ -486,7 +495,7 @@ public class App {
     }
 
     private void loadConfig() {
-        JsonUtilConfig.config();
+        JsonUtilConfig.configure(this);
         File conf = RuntimeDirs.conf(this);
         logger.debug("loading app configuration: %s ...", appBase.getPath());
         config = new AppConfLoader().load(conf);

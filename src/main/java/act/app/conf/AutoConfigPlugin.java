@@ -55,7 +55,7 @@ public class AutoConfigPlugin extends AnnotatedTypeFinder {
     }
 
     /**
-     * Used by plugin that to load their {@link AutoConfig auto config class}
+     * Used by plugin that to load their {@link AutoConfig auto configure class}
      *
      * @param autoConfigClass the class with {@link AutoConfig} annotation
      * @param app             the application instance

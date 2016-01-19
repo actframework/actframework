@@ -270,7 +270,13 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
                         if (null == reqVal) {
                             Object o = ctx.tryParseJson(bindName, paramType, paramComponentType, paramCount);
                             if (null != o) {
-                                oa[i] = o;
+                                if (paramType != String.class && o instanceof String) {
+                                    oa[i] = resolverManager.resolve((String) o, paramType);
+                                } else if (paramType.isAssignableFrom(o.getClass())) {
+                                    oa[i] = o;
+                                } else {
+                                    throw new BindException("Cannot resolve parameter[%s] from %s", bindName, o);
+                                }
                                 continue;
                             }
                             o = param.defVal(paramType);

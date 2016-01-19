@@ -22,7 +22,7 @@ import java.util.concurrent.Future;
 public @interface Mailer {
 
     /**
-     * Defines the {@link MailerConfig mailer config ID}.
+     * Defines the {@link MailerConfig mailer configure ID}.
      * <p>Default value: {@code "default"}</p>
      */
     String value() default "default";

@@ -30,7 +30,7 @@ public class FastJsonPropertyPreFilterTest extends TestBase {
         Bar bar2 = new Bar("bar2", 3, null);
         foo = new Foo("foo", bar);
         foo2 = new Foo("foo2", bar, bar1, bar2);
-        JsonUtilConfig.config();
+        JsonUtilConfig.configure(mockApp);
         repo = new DataPropertyRepository(mockApp);
         fooProps = repo.propertyListOf(Foo.class);
         filter.setFullPaths(fooProps);

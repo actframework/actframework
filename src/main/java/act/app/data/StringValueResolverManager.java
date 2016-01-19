@@ -3,10 +3,13 @@ package act.app.data;
 import act.ActComponent;
 import act.app.App;
 import act.app.AppServiceBase;
+import act.app.SingletonRegistry;
 import act.conf.AppConfig;
-import act.data.DateResolver;
-import act.data.JodaDateResolver;
+import act.data.*;
 import org.joda.time.DateTime;
+import org.joda.time.LocalDate;
+import org.joda.time.LocalDateTime;
+import org.joda.time.LocalTime;
 import org.osgl.mvc.util.StringValueResolver;
 import org.osgl.util.C;
 
@@ -50,7 +53,16 @@ public class StringValueResolverManager extends AppServiceBase<StringValueResolv
     }
 
     private void registerBuiltInResolvers(AppConfig config) {
-        resolvers.put(Date.class, new DateResolver(config));
-        resolvers.put(DateTime.class, new JodaDateResolver(config));
+        put(Date.class, new DateResolver(config));
+        put(LocalDate.class, new JodaLocalDateCodec(config));
+        put(LocalDateTime.class, new JodaLocalDateTimeCodec(config));
+        put(LocalTime.class, new JodaLocalTimeCodec(config));
+        put(DateTime.class, new JodaDateTimeCodec(config));
+    }
+
+    private void put(Class type, StringValueResolver resolver) {
+        SingletonRegistry singletonRegistry = app().singletonRegistry();
+        singletonRegistry.register(resolver.getClass(), resolver);
+        resolvers.put(type, resolver);
     }
 }

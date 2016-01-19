@@ -63,7 +63,7 @@ public enum AppConfigKey implements ConfigKey {
     CLI_SESSION_MAX("cli.session.max"),
 
     /**
-     * {@code act.config.impl}
+     * {@code act.configure.impl}
      * <p>Specifies the application configuration class which provides default configuration
      * via source code. The settings provided by application configuration class might be
      * overwritten by configuration file</p>

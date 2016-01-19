@@ -168,7 +168,7 @@ public enum Jars {
          * For example, a jar entry named "conf/dev/abc.properties", the content will be loaded into a properties
          * instance and then put into an existing properties indexed by "dev" tag. If no env tag found
          * then the properties will be loaded into a properties instance indexed by "common"
-         * @param map the map stores the properties mapped to a config tag (e.g. common, dev, uat etc)
+         * @param map the map stores the properties mapped to a configure tag (e.g. common, dev, uat etc)
          * @return the visitor
          */
         public static JarEntryVisitor appConfigFileIndexBuilder(final Map<String, Properties> map) {

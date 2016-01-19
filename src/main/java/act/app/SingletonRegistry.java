@@ -9,7 +9,7 @@ import java.util.concurrent.ConcurrentMap;
 /**
  * provides service for app to get singleton instance by type
  */
-class SingletonRegistry extends AppServiceBase<SingletonRegistry> {
+public class SingletonRegistry extends AppServiceBase<SingletonRegistry> {
 
     private ConcurrentMap<Class<?>, Object> registry = new ConcurrentHashMap<Class<?>, Object>();
 
@@ -24,6 +24,10 @@ class SingletonRegistry extends AppServiceBase<SingletonRegistry> {
                 registry.put(singletonClass, app().newInstance(singletonClass));
             }
         });
+    }
+
+    public void register(Class singletonClass, Object singleton) {
+        registry.put(singletonClass, singleton);
     }
 
     <T> T get(Class<T> singletonClass) {

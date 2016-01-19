@@ -2,6 +2,7 @@ package act;
 
 import act.app.ActionContext;
 import act.app.App;
+import act.app.SingletonRegistry;
 import act.conf.AppConfig;
 import act.job.AppJobManager;
 import act.route.Router;
@@ -101,6 +102,7 @@ public class TestBase extends Assert {
     protected ActionContext mockActionContext;
     protected AppConfig mockAppConfig;
     protected AppJobManager mockJobManager;
+    protected SingletonRegistry mockSingletonRegistry;
     protected App mockApp;
     protected H.Request mockReq;
     protected H.Response mockResp;
@@ -110,6 +112,8 @@ public class TestBase extends Assert {
         Field f = App.class.getDeclaredField("INST");
         f.setAccessible(true);
         f.set(null, mockApp);
+        mockSingletonRegistry = mock(SingletonRegistry.class);
+        when(mockApp.singletonRegistry()).thenReturn(mockSingletonRegistry);
         mockJobManager = mock(AppJobManager.class);
         when(mockApp.jobManager()).thenReturn(mockJobManager);
         mockAppConfig = mock(AppConfig.class);
