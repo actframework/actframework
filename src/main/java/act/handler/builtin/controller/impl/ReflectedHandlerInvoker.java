@@ -275,6 +275,13 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
                                 } else if (paramType.isAssignableFrom(o.getClass())) {
                                     oa[i] = o;
                                 } else {
+                                    // try primitive wrapper juggling
+                                    if (paramType.isPrimitive()) {
+                                        if ($.wrapperClassOf(paramType).isAssignableFrom(o.getClass())) {
+                                            oa[i] = o;
+                                            continue;
+                                        }
+                                    }
                                     throw new BindException("Cannot resolve parameter[%s] from %s", bindName, o);
                                 }
                                 continue;
