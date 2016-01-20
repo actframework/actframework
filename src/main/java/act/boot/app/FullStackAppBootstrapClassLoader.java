@@ -139,7 +139,7 @@ public class FullStackAppBootstrapClassLoader extends BootstrapClassLoader imple
             return c;
         }
 
-        if (name.startsWith("java") || name.startsWith("org.springframework") || name.startsWith("org.apache") || name.startsWith("org.osgl")) {
+        if (name.startsWith("java") || name.startsWith("org.osgl")) {
             return super.loadClass(name, resolve);
         }
 
