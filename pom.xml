@@ -213,7 +213,7 @@
     </dependency>
 
     <dependency>
-      <groupId>org.eclipse.jdt.core.compiler</groupId>
+      <groupId>org.eclipse.scout.sdk.deps</groupId>
       <artifactId>ecj</artifactId>
       <version>4.5</version>
     </dependency>
