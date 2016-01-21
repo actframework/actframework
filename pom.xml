@@ -213,9 +213,9 @@
     </dependency>
 
     <dependency>
-      <groupId>org.eclipse.scout.sdk.deps</groupId>
+      <groupId>org.eclipse.jdt.core.compiler</groupId>
       <artifactId>ecj</artifactId>
-      <version>4.5</version>
+      <version>4.4.2</version>
     </dependency>
 
     <dependency>
