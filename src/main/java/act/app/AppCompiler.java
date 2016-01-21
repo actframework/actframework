@@ -65,8 +65,7 @@ class AppCompiler extends DestroyableBase {
         opt(map, OPTION_Process_Annotations, ENABLED);
         opt(map, OPTION_Source, conf.sourceVersion());
         opt(map, OPTION_TargetPlatform, conf.targetVersion());
-        //opt(map, OPTION_TargetPlatform, conf.sourceVersion());
-        //opt(map, OPTION_Compliance, conf.sourceVersion());
+        opt(map, OPTION_Compliance, conf.sourceVersion());
         compilerOptions = new CompilerOptions(map);
     }
 
