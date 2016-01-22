@@ -6,7 +6,7 @@ import java.util.EventObject;
 
 /**
  * An {@code ActEvent} is a generic version of {@link EventObject}
- * @param <T> the generic type (the sub class type) of the event instance
+ * @param <T> the generic type (the sub class type) of the event source
  */
 public class ActEvent<T> extends EventObject {
 

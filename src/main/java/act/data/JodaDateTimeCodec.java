@@ -21,7 +21,7 @@ public class JodaDateTimeCodec extends StringValueResolver<DateTime> implements 
     public JodaDateTimeCodec(AppConfig config) {
         String patten = config.dateTimeFormat();
         if (patten.contains("8601")) {
-            dateFormat = ISODateTimeFormat.dateTimeNoMillis();
+            dateFormat = ISODateTimeFormat.dateTime();
         } else {
             dateFormat = DateTimeFormat.forPattern(patten);
         }
