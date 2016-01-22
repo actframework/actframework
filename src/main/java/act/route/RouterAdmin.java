@@ -80,4 +80,23 @@ public class RouterAdmin {
         }
     }
 
+    @Command(name = "act.route.count", help = "count routes")
+    public int countRoutes(
+            @Optional("specify the port name") String name,
+            @Optional("specify route filter") String q
+    ) {
+        final Router router = S.blank(name) ? app.router() : app.router(name);
+        List<RouteInfo> list = router.debug();
+        if (S.notBlank(q)) {
+            List<RouteInfo> toBeRemoved = C.newList();
+            for (RouteInfo info: list) {
+                if (!info.path().matches(q)) {
+                    toBeRemoved.add(info);
+                }
+            }
+            list = C.list(list).without(toBeRemoved);
+        }
+        return list.size();
+    }
+
 }

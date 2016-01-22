@@ -159,6 +159,8 @@ public class Router extends AppServiceBase<Router> {
         if (null == node.handler) {
             logger.info("[%s %s] -> [%s]", method, path, action);
             node.handler(resolveActionHandler(action));
+        } else {
+            logger.info("mapping already found: %s", node.handler);
         }
     }
 
@@ -502,17 +504,17 @@ public class Router extends AppServiceBase<Router> {
         Node addChild(StrBase<?> name) {
             name = name.trim();
             Node child = childByMetaInfo(name);
-            if (null != child) {
+            if (null != child && !child.isDynamic()) {
                 return child;
             }
-            child = new Node(name, this);
-            if (child.isDynamic()) {
+            Node newChild = new Node(name, this);
+            if (newChild.isDynamic()) {
                 E.unexpectedIf(null != dynamicChild, "Cannot have more than one dynamic node in the route tree: %s", name);
-                dynamicChild = child;
+                dynamicChild = newChild;
             } else {
-                staticChildren.put(name, child);
+                staticChildren.put(name, newChild);
             }
-            return child;
+            return newChild;
         }
 
         Node handler(RequestHandler handler) {

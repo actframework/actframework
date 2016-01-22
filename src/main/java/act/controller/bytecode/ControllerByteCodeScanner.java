@@ -77,6 +77,7 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
 
     private class _ByteCodeVisitor extends ByteCodeVisitor {
         private String[] ports = {};
+
         @Override
         public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
             logger.trace("Scanning %s", name);
@@ -122,6 +123,10 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
             }
             String className = classInfo.className();
             boolean isRoutedMethod = router.isActionMethod(className, name);
+            if (className.contains("DeviceController")) {
+                logger.info("scanning method: " + name);
+                logger.info("isRoutedMethod = " + isRoutedMethod);
+            }
             return new ActionMethodVisitor(isRoutedMethod, mv, access, name, desc, signature, exceptions);
         }
 
