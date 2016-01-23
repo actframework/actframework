@@ -47,6 +47,8 @@ public class CliContext extends ActContext.ActContextBase<CliContext> implements
 
     private Osgl.T2<? extends Osgl.Function<String, Serializable>, ? extends Osgl.Func2<String, Serializable, ?>> evaluatorCache;
 
+    private boolean rawPrint;
+
     /**
      * Allow user command to attach data to the context and fetched for later use.
      * <p>
@@ -79,6 +81,7 @@ public class CliContext extends ActContext.ActContextBase<CliContext> implements
         Terminal2 t2 = $.cast(console.getTerminal());
         t2.setEchoEnabled(false);
         this.pw = new PrintWriter(console.getOutput());
+        this.rawPrint = null == System.getenv("cli-no-raw-print");
         saveLocal();
     }
 
@@ -151,7 +154,7 @@ public class CliContext extends ActContext.ActContextBase<CliContext> implements
         throw E.unsupport();
     }
 
-    public void print0(String template, Object... args) {
+    private void print0(String template, Object... args) {
         try {
             console.print(S.fmt(template, args));
         } catch (IOException e) {
@@ -164,10 +167,18 @@ public class CliContext extends ActContext.ActContextBase<CliContext> implements
     }
 
     public void print(String template, Object ... args) {
+        if (rawPrint) {
+            print1(template, args);
+        } else {
+            print0(template, args);
+        }
+    }
+
+    private void print1(String template, Object ... args) {
         pw.printf(template, args);
     }
 
-    public void println0(String template, Object... args) {
+    private void println0(String template, Object... args) {
         try {
             console.println(S.fmt(template, args));
         } catch (IOException e) {
@@ -176,6 +187,14 @@ public class CliContext extends ActContext.ActContextBase<CliContext> implements
     }
 
     public void println(String template, Object... args) {
+        if (rawPrint) {
+            println1(template, args);
+        } else {
+            println0(template, args);
+        }
+    }
+
+    private void println1(String template, Object... args) {
         pw.printf(template, args);
         pw.println();
     }
