@@ -8,6 +8,7 @@ import act.asm.Type;
 import act.controller.meta.*;
 import act.job.AppJobManager;
 import act.job.bytecode.JobByteCodeScanner;
+import act.route.RouteSource;
 import act.util.Files;
 import org.junit.Before;
 import org.junit.Test;
@@ -25,6 +26,7 @@ import testapp.model.ModelControllerWithAnnotation;
 import java.io.File;
 import java.util.List;
 
+import static act.route.RouteSource.ACTION_ANNOTATION;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.*;
 import static org.osgl.http.H.Method.*;
@@ -102,7 +104,7 @@ public class ControllerByteCodeScannerTest extends TestBase {
     @Test
     public void controllerContextPathShallBeAppendToActionPath() {
         scan(WithContextPath.class);
-        verify(mockRouter).addMappingIfNotMapped(GET, "/foo/bar", "testapp.controller.WithContextPath.bar");
+        verify(mockRouter).addMapping(GET, "/foo/bar", "testapp.controller.WithContextPath.bar", RouteSource.ACTION_ANNOTATION);
     }
 
     public void verifyWithAppContextNoReturnNoParam() {
@@ -220,13 +222,13 @@ public class ControllerByteCodeScannerTest extends TestBase {
 
     private void verifyRouting(String url, String controller, String action, H.Method... methods) {
         for (H.Method method : methods) {
-            verify(mockRouter).addMappingIfNotMapped(method, url, "testapp.controller." + controller + "." + action);
+            verify(mockRouter).addMapping(method, url, "testapp.controller." + controller + "." + action, ACTION_ANNOTATION);
         }
     }
 
     private void verifyNoRouting(String url, String controller, String action, H.Method... methods) {
         for (H.Method method : methods) {
-            verify(mockRouter, new Times(0)).addMappingIfNotMapped(method, url, "testapp.controller." + controller + "." + action);
+            verify(mockRouter, new Times(0)).addMapping(method, url, "testapp.controller." + controller + "." + action, ACTION_ANNOTATION);
         }
     }
 

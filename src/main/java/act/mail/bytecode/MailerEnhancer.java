@@ -58,7 +58,7 @@ public class MailerEnhancer extends AppByteCodeEnhancer<MailerEnhancer> {
         if (null == info) {
             return mv;
         }
-        logger.info(">>>About to enhance handler: %s", name);
+        logger.debug(">>>About to enhance handler: %s", name);
         return new SenderEnhancer(mv, info, access, name, desc, signature, exceptions);
     }
 

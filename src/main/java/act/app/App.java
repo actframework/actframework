@@ -24,6 +24,7 @@ import act.job.bytecode.JobByteCodeScanner;
 import act.mail.MailerConfigManager;
 import act.mail.MailerContext;
 import act.mail.bytecode.MailerByteCodeScanner;
+import act.route.RouteSource;
 import act.route.RouteTableRouterBuilder;
 import act.route.Router;
 import act.util.*;
@@ -627,7 +628,7 @@ public class App {
     }
 
     private void loadBuiltInRoutes() {
-        router().addMapping(H.Method.GET, "/asset/", new StaticFileGetter(layout().asset(base())));
+        router().addMapping(H.Method.GET, "/asset/", new StaticFileGetter(layout().asset(base())), RouteSource.BUILD_IN);
     }
 
     private void initClassLoader() {

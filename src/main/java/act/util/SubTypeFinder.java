@@ -29,7 +29,6 @@ public abstract class SubTypeFinder extends AppCodeScannerPluginBase {
         this.foundHandler = foundHandler;
         this.noAbstract = noAbstract;
         this.publicOnly = publicOnly;
-        logger.info("pkg: %s, cls: %s", pkgName, clsName);
     }
     protected SubTypeFinder(Class<?> superType, $.Func2<App, String, Map<Class<? extends AppByteCodeScanner>, Set<String>>> foundHandler) {
         this(true, true, superType, foundHandler);
@@ -84,7 +83,7 @@ public abstract class SubTypeFinder extends AppCodeScannerPluginBase {
         }
 
         protected void logFound(String className) {
-            logger.info("Subtype of %s detected: %s", S.builder(pkgName).append(".").append(clsName), className);
+            logger.debug("Subtype of %s detected: %s", S.builder(pkgName).append(".").append(clsName), className);
         }
 
         @Override

@@ -10,6 +10,7 @@ import act.controller.meta.ActionMethodMetaInfo;
 import act.controller.meta.CatchMethodMetaInfo;
 import act.controller.meta.InterceptorMethodMetaInfo;
 import act.db.DbManager;
+import act.exception.ActException;
 import act.handler.builtin.controller.*;
 import act.handler.builtin.controller.impl.ReflectedHandlerInvoker;
 import act.plugin.AppServicePluginManager;
@@ -154,7 +155,9 @@ public final class Act {
         return pluginManager;
     }
 
-    public static DbManager dbManager() {return dbManager;}
+    public static DbManager dbManager() {
+        return dbManager;
+    }
 
     public static ViewManager viewManager() {
         return viewManager;
@@ -204,10 +207,15 @@ public final class Act {
         loadPlugins();
         initNetworkLayer();
         initApplicationManager();
-        if (singleAppServer) {
-            appManager.loadSingleApp(appName);
-        } else {
-            appManager.scan();
+        try {
+            if (singleAppServer) {
+                appManager.loadSingleApp(appName);
+            } else {
+                appManager.scan();
+            }
+        } catch (ActAppException e) {
+            logger.fatal(e, "Error starting ACT: %s\n%s", e.getErrorTitle(), e.getErrorDescription());
+            return;
         }
         startNetworkLayer();
 
@@ -235,6 +243,7 @@ public final class Act {
 
     /**
      * Generate custer unique ID
+     *
      * @return a cluster unique ID generated
      */
     public static String cuid() {

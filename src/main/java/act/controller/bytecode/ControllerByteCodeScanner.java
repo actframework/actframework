@@ -8,6 +8,7 @@ import act.asm.signature.SignatureReader;
 import act.asm.signature.SignatureVisitor;
 import act.controller.Controller;
 import act.controller.meta.*;
+import act.route.RouteSource;
 import act.route.Router;
 import act.util.AsmTypes;
 import act.util.ByteCodeVisitor;
@@ -123,10 +124,6 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
             }
             String className = classInfo.className();
             boolean isRoutedMethod = router.isActionMethod(className, name);
-            if (className.contains("DeviceController")) {
-                logger.info("scanning method: " + name);
-                logger.info("isRoutedMethod = " + isRoutedMethod);
-            }
             return new ActionMethodVisitor(isRoutedMethod, mv, access, name, desc, signature, exceptions);
         }
 
@@ -568,7 +565,7 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
                                 actionPath = sb.toString();
                             }
                             for (H.Method m : httpMethods) {
-                                r.addMappingIfNotMapped(m, actionPath, action);
+                                r.addMapping(m, actionPath, action, RouteSource.ACTION_ANNOTATION);
                             }
                         }
                     }

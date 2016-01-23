@@ -2,6 +2,7 @@ package act.route;
 
 import act.ActComponent;
 import act.Destroyable;
+import act.app.ActAppException;
 import act.app.ActionContext;
 import act.app.App;
 import act.app.AppServiceBase;
@@ -124,44 +125,75 @@ public class Router extends AppServiceBase<Router> {
     }
 
     // --- route building ---
-    public boolean isMapped(H.Method method, CharSequence path) {
+    static enum ConflictResolver {
+        /**
+         * Overwrite existing route
+         */
+        OVERWRITE,
+
+        /**
+         * Overwrite and log warn message
+         */
+        OVERWRITE_WARN,
+
+        /**
+         * Skip the new route
+         */
+        SKIP,
+
+        /**
+         * Report error and exit app
+         */
+        EXIT
+    }
+
+    public void addMapping(H.Method method, CharSequence path, CharSequence action) {
+        addMapping(method, path, resolveActionHandler(action), RouteSource.ROUTE_TABLE);
+    }
+
+    public void addMapping(H.Method method, CharSequence path, CharSequence action, RouteSource source) {
+        addMapping(method, path, resolveActionHandler(action), source);
+    }
+
+    public void addMapping(H.Method method, CharSequence path, RequestHandler handler, RouteSource source) {
+        Node node = _locate(method, path);
+        if (null == node.handler) {
+            logger.debug(routeInfo(method, path, handler));
+            node.handler(handler, source);
+        } else {
+            RouteSource existing = node.routeSource();
+            ConflictResolver resolving = source.onConflict(existing);
+            switch (resolving) {
+                case OVERWRITE_WARN:
+                    logger.warn("Overwrite existing route \n\t%s\nwith new route\n\t%s",
+                            routeInfo(method, path, node.handler()),
+                            routeInfo(method, path, handler)
+                    );
+                case OVERWRITE:
+                    node.handler(handler, source);
+                case SKIP:
+                    break;
+                case EXIT:
+                    throw new DuplicateRouteMappingException(
+                            new RouteInfo(method, path.toString(), node.handler()),
+                            new RouteInfo(method, path.toString(), handler)
+                    );
+                default:
+                    throw E.unsupport();
+            }
+        }
+    }
+
+    boolean isMapped(H.Method method, CharSequence path) {
         return null != _search(method, path);
     }
 
     public void addMapping(H.Method method, CharSequence path, RequestHandler handler) {
-        addMapping(method, path, handler, true);
+        addMapping(method, path, handler, RouteSource.ROUTE_TABLE);
     }
 
-    private void addMapping(H.Method method, CharSequence path, RequestHandler handler, boolean logInfo) {
-        if (logInfo) {
-            logger.info("Add mapping on %s %s to %s", method, path, handler.getClass());
-        }
-        Node node = _locate(method, path);
-        node.handler(handler);
-    }
-
-    public void addMapping(H.Method method, CharSequence path, CharSequence action) {
-        logger.info("[%s %s] -> [%s]", method, path, action);
-        RequestHandler handler = resolveActionHandler(action);
-        addMapping(method, path, handler, false);
-    }
-
-    public void addMappingIfNotMapped(H.Method method, CharSequence path, RequestHandler handler) {
-        Node node = _locate(method, path);
-        if (null == node.handler) {
-            logger.info("[%s %s] -> [%s]", method, path, handler.getClass().getName());
-            node.handler(handler);
-        }
-    }
-
-    public void addMappingIfNotMapped(H.Method method, CharSequence path, CharSequence action) {
-        Node node = _locate(method, path);
-        if (null == node.handler) {
-            logger.info("[%s %s] -> [%s]", method, path, action);
-            node.handler(resolveActionHandler(action));
-        } else {
-            logger.info("mapping already found: %s", node.handler);
-        }
+    private static String routeInfo(H.Method method, CharSequence path, Object handler) {
+        return S.fmt("[%s %s] - > [%s]", method, path, handler);
     }
 
     private Node _search(H.Method method, CharSequence path) {
@@ -393,6 +425,7 @@ public class Router extends AppServiceBase<Router> {
         private Node dynamicChild;
         private C.Map<CharSequence, Node> staticChildren = C.newMap();
         private RequestHandler handler;
+        private RouteSource routeSource;
 
         private Node(int id) {
             this.id = id;
@@ -503,28 +536,32 @@ public class Router extends AppServiceBase<Router> {
 
         Node addChild(StrBase<?> name) {
             name = name.trim();
-            Node child = childByMetaInfo(name);
-            if (null != child && !child.isDynamic()) {
-                return child;
+            Node node = childByMetaInfo(name);
+            if (null != node && !node.isDynamic()) {
+                return node;
             }
-            Node newChild = new Node(name, this);
-            if (newChild.isDynamic()) {
+            Node child = new Node(name, this);
+            if (child.isDynamic()) {
                 E.unexpectedIf(null != dynamicChild, "Cannot have more than one dynamic node in the route tree: %s", name);
-                dynamicChild = newChild;
+                dynamicChild = child;
             } else {
-                staticChildren.put(name, newChild);
+                staticChildren.put(name, child);
             }
-            return newChild;
+            return child;
         }
 
-        Node handler(RequestHandler handler) {
-            E.NPE(handler);
+        Node handler(RequestHandler handler, RouteSource source) {
+            this.routeSource = $.notNull(source);
             this.handler = handler.requireResolveContext() ? new ContextualHandler((RequestHandlerBase)handler) : handler;
             return this;
         }
 
         RequestHandler handler() {
             return this.handler;
+        }
+
+        RouteSource routeSource() {
+            return routeSource;
         }
 
         boolean terminateRouteSearch() {

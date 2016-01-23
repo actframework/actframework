@@ -15,6 +15,9 @@ import java.io.File;
 import java.util.Map;
 import java.util.Properties;
 
+import static act.route.RouteSource.ACTION_ANNOTATION;
+import static act.route.RouteSource.ROUTE_TABLE;
+
 public class RouterTest extends RouterTestBase {
     private RequestHandler staticDirHandler;
 
@@ -92,7 +95,7 @@ public class RouterTest extends RouterTestBase {
     @Test
     public void doNotOverrideExistingRouting() {
         routeWithStaticDir();
-        router.addMappingIfNotMapped(H.Method.GET, "/public", "file:/private");
+        router.addMapping(H.Method.GET, "/public", "file:/private", ACTION_ANNOTATION);
         RequestHandler handler = router.getInvoker(H.Method.GET, "/public/foo/bar.txt", ctx);
         yes(handler instanceof StaticFileGetter);
         yes(handler.supportPartialPath());
@@ -123,6 +126,22 @@ public class RouterTest extends RouterTestBase {
 
         router.addMapping(H.Method.GET, "/bar", "com.newcontroller.Controller.bar");
         yes(router.isActionMethod("com.newcontroller.Controller", "bar"));
+    }
+
+    @Test
+    public void itShallNotOverwriteRouteMappingWithSameRouteSource() {
+        for (RouteSource source : RouteSource.values()) {
+            router = new Router(controllerLookup, app);
+            router.addMapping(H.Method.GET, "/foo", "Controller.foo", source);
+            try {
+                router.addMapping(H.Method.GET, "/foo", "Foo.bar", source);
+                if (source != ROUTE_TABLE) {
+                    fail("expected DuplicateRouteMappingException");
+                }
+            } catch (DuplicateRouteMappingException e) {
+                // good
+            }
+        }
     }
 
 }

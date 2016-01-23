@@ -1,6 +1,7 @@
 package act.app.conf;
 
 import act.conf.AppConfig;
+import act.route.RouteSource;
 import act.route.Router;
 import org.osgl.$;
 import org.osgl.http.H;
@@ -164,7 +165,7 @@ public abstract class AppConfigurator<T extends AppConfigurator> extends AppConf
                 CharSequence path = S.builder(this.path).append("/").append(name);
                 CharSequence action = S.builder(context).append(".").append(name);
                 for (H.Method method : this.methods) {
-                    router.addMapping(method, path, action);
+                    router.addMapping(method, path, action, RouteSource.APP_CONFIG);
                 }
                 mapped = true;
             }
@@ -182,7 +183,7 @@ public abstract class AppConfigurator<T extends AppConfigurator> extends AppConf
         private void checkAndCommit() {
             E.illegalStateIf(S.blank(path), "route path not specified");
             for (H.Method method: methods) {
-                router.addMapping(method, path, action);
+                router.addMapping(method, path, action, RouteSource.APP_CONFIG);
             }
             methods.clear();
             path = null;

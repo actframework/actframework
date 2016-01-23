@@ -6,6 +6,7 @@ import act.handler.RequestHandlerBase;
 import org.osgl.$;
 import org.osgl.http.H;
 import org.osgl.util.E;
+import org.osgl.util.S;
 
 /**
  * Used to expose Router table for debugging purpose
@@ -22,6 +23,11 @@ public class RouteInfo extends $.T3<String, String, String> {
     }
     public String handler() {
         return _3;
+    }
+
+    @Override
+    public String toString() {
+        return S.fmt("[%s %s] -> [%s]", method(), path(), handler());
     }
 
     public static RouteInfo of(ActionContext context) {
