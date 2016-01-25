@@ -17,6 +17,7 @@ import java.util.Properties;
 
 import static act.route.RouteSource.ACTION_ANNOTATION;
 import static act.route.RouteSource.ROUTE_TABLE;
+import static org.osgl.http.H.Method.GET;
 
 public class RouterTest extends RouterTestBase {
     private RequestHandler staticDirHandler;
@@ -33,21 +34,21 @@ public class RouterTest extends RouterTestBase {
 
     @Test
     public void testMappingAdded() {
-        no(router.isMapped(H.Method.GET, "/foo"));
-        router.addMapping(H.Method.GET, "/foo", "Foo.bar");
-        yes(router.isMapped(H.Method.GET, "/foo"));
+        no(router.isMapped(GET, "/foo"));
+        router.addMapping(GET, "/foo", "Foo.bar");
+        yes(router.isMapped(GET, "/foo"));
     }
 
     @Test
     public void searchRoot() {
-        router.addMapping(H.Method.GET, "/", controller);
-        router.getInvoker(H.Method.GET, "/", ctx).handle(ctx);
+        router.addMapping(GET, "/", controller);
+        router.getInvoker(GET, "/", ctx).handle(ctx);
         controllerInvoked();
     }
 
     @Test(expected = NotFound.class)
     public void searchBadUrl() {
-        router.getInvoker(H.Method.GET, "/nonexists", ctx);
+        router.getInvoker(GET, "/nonexists", ctx);
     }
 
     @Test
@@ -59,24 +60,24 @@ public class RouterTest extends RouterTestBase {
 
     @Test
     public void searchDynamicUrl() {
-        router.addMapping(H.Method.GET, "/svc/{<[0-9]{4}>id}", controller);
-        router.getInvoker(H.Method.GET, "/svc/1234/", ctx).handle(ctx);
+        router.addMapping(GET, "/svc/{<[0-9]{4}>id}", controller);
+        router.getInvoker(GET, "/svc/1234/", ctx).handle(ctx);
         controllerInvoked();
         Mockito.verify(ctx).param("id", "1234");
     }
 
     @Test
     public void searchPartialUrl() {
-        router.addMapping(H.Method.GET, "/public", staticDirHandler);
-        router.getInvoker(H.Method.GET, "/public/foo/bar.txt", ctx).handle(ctx);
+        router.addMapping(GET, "/public", staticDirHandler);
+        router.getInvoker(GET, "/public/foo/bar.txt", ctx).handle(ctx);
         Mockito.verify(staticDirHandler).handle(ctx);
         Mockito.verify(ctx).param(ParamNames.PATH, "/foo/bar.txt");
     }
 
     @Test
     public void routeWithStaticDir() {
-        router.addMapping(H.Method.GET, "/public", "file:/public");
-        RequestHandler handler = router.getInvoker(H.Method.GET, "/public/foo/bar.txt", ctx);
+        router.addMapping(GET, "/public", "file:/public");
+        RequestHandler handler = router.getInvoker(GET, "/public/foo/bar.txt", ctx);
         yes(handler instanceof StaticFileGetter);
         yes(handler.supportPartialPath());
         eq(new File(BASE, "/public"), fieldVal(handler, "base"));
@@ -85,8 +86,8 @@ public class RouterTest extends RouterTestBase {
     @Test
     public void overrideExistingRouting() {
         routeWithStaticDir();
-        router.addMapping(H.Method.GET, "/public", "file:/private");
-        RequestHandler handler = router.getInvoker(H.Method.GET, "/public/foo/bar.txt", ctx);
+        router.addMapping(GET, "/public", "file:/private");
+        RequestHandler handler = router.getInvoker(GET, "/public/foo/bar.txt", ctx);
         yes(handler instanceof StaticFileGetter);
         yes(handler.supportPartialPath());
         eq(new File(BASE, "/private"), fieldVal(handler, "base"));
@@ -95,8 +96,8 @@ public class RouterTest extends RouterTestBase {
     @Test
     public void doNotOverrideExistingRouting() {
         routeWithStaticDir();
-        router.addMapping(H.Method.GET, "/public", "file:/private", ACTION_ANNOTATION);
-        RequestHandler handler = router.getInvoker(H.Method.GET, "/public/foo/bar.txt", ctx);
+        router.addMapping(GET, "/public", "file:/private", ACTION_ANNOTATION);
+        RequestHandler handler = router.getInvoker(GET, "/public/foo/bar.txt", ctx);
         yes(handler instanceof StaticFileGetter);
         yes(handler.supportPartialPath());
         eq(new File(BASE, "/public"), fieldVal(handler, "base"));
@@ -111,20 +112,20 @@ public class RouterTest extends RouterTestBase {
         Mockito.when(app.config()).thenReturn(appConfig);
         router = new Router(controllerLookup, app);
 
-        router.addMapping(H.Method.GET, "/foo", "Controller.foo");
+        router.addMapping(GET, "/foo", "Controller.foo");
         yes(router.isActionMethod("foo.controller.Controller", "foo"));
 
-        router.addMapping(H.Method.GET, "/bar", "com.newcontroller.Controller.bar");
+        router.addMapping(GET, "/bar", "com.newcontroller.Controller.bar");
         yes(router.isActionMethod("com.newcontroller.Controller", "bar"));
     }
 
     @Test
     public void senseControllerMethodWithoutControllerPackage() {
-        router.addMapping(H.Method.GET, "/foo", "Controller.foo");
+        router.addMapping(GET, "/foo", "Controller.foo");
         no(router.isActionMethod("foo.controller.Controller", "foo"));
         yes(router.isActionMethod("Controller", "foo"));
 
-        router.addMapping(H.Method.GET, "/bar", "com.newcontroller.Controller.bar");
+        router.addMapping(GET, "/bar", "com.newcontroller.Controller.bar");
         yes(router.isActionMethod("com.newcontroller.Controller", "bar"));
     }
 
@@ -132,9 +133,9 @@ public class RouterTest extends RouterTestBase {
     public void itShallNotOverwriteRouteMappingWithSameRouteSource() {
         for (RouteSource source : RouteSource.values()) {
             router = new Router(controllerLookup, app);
-            router.addMapping(H.Method.GET, "/foo", "Controller.foo", source);
+            router.addMapping(GET, "/foo", "Controller.foo", source);
             try {
-                router.addMapping(H.Method.GET, "/foo", "Foo.bar", source);
+                router.addMapping(GET, "/foo", "Foo.bar", source);
                 if (source != ROUTE_TABLE) {
                     fail("expected DuplicateRouteMappingException");
                 }
@@ -142,6 +143,18 @@ public class RouterTest extends RouterTestBase {
                 // good
             }
         }
+    }
+
+    @Test
+    public void testAddingTwoRoutesWithSameDynamicPart() {
+        router.addMapping(GET, "/foo/{id}", "Controller.foo");
+        router.addMapping(GET, "/foo/{id}/bar", "Foo.bar");
+    }
+
+    @Test(expected = DuplicateRouteMappingException.class)
+    public void itShallNotAllowAddingHandlersToSameRouteEndingWithDynamicPart() {
+        router.addMapping(GET, "/foo/{id}", "Controller.foo", RouteSource.ACTION_ANNOTATION);
+        router.addMapping(GET, "/foo/{id}", "Foo.bar", RouteSource.ACTION_ANNOTATION);
     }
 
 }

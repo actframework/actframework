@@ -175,7 +175,7 @@ public class CliContext extends ActContext.ActContextBase<CliContext> implements
     }
 
     private void print1(String template, Object ... args) {
-        pw.printf(template, args);
+        pw.printf(osNative(template), args);
     }
 
     private void println0(String template, Object... args) {
@@ -195,7 +195,7 @@ public class CliContext extends ActContext.ActContextBase<CliContext> implements
     }
 
     private void println1(String template, Object... args) {
-        pw.printf(template, args);
+        pw.printf(osNative(template), args);
         pw.println();
     }
 
@@ -349,6 +349,16 @@ public class CliContext extends ActContext.ActContextBase<CliContext> implements
 
     public static CliContext current() {
         return _local.get();
+    }
+
+    private static String osNative(String s) {
+        s = s.replace("\n\r", "\n");
+        s = s.replace("\r", "\n");
+        if ("\n".equals($.OS.lineSeparator())) {
+            return s;
+        }
+        s = s.replace("\n", $.OS.lineSeparator());
+        return s;
     }
 
 }

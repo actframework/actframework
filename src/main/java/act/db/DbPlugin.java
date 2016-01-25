@@ -25,13 +25,7 @@ public abstract class DbPlugin extends DestroyableBase implements Plugin {
 
     @Override
     public boolean equals(Object obj) {
-        if (obj == this) {
-            return true;
-        }
-        if (null == obj) {
-            return false;
-        }
-        return getClass() == obj.getClass();
+        return obj == this || null != obj && getClass() == obj.getClass();
     }
 
     public abstract DbService initDbService(String id, App app, Map<String, Object> conf);

@@ -542,8 +542,11 @@ public class Router extends AppServiceBase<Router> {
             }
             Node child = new Node(name, this);
             if (child.isDynamic()) {
-                E.unexpectedIf(null != dynamicChild, "Cannot have more than one dynamic node in the route tree: %s", name);
-                dynamicChild = child;
+                //E.unexpectedIf(null != dynamicChild, "Cannot have more than one dynamic node in the route tree: %s", name);
+                if (null == dynamicChild) {
+                    dynamicChild = child;
+                }
+                return dynamicChild;
             } else {
                 staticChildren.put(name, child);
             }

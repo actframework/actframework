@@ -6,6 +6,7 @@ import act.app.AppByteCodeScanner;
 import act.app.AppByteCodeScannerBase;
 import act.app.AppSourceCodeScanner;
 import org.osgl.$;
+import org.osgl.util.C;
 import org.osgl.util.E;
 import org.osgl.util.FastStr;
 
@@ -17,16 +18,14 @@ import java.util.Set;
 public abstract class AnnotatedTypeFinder extends AppCodeScannerPluginBase {
 
     private $.Func2<App, String, Map<Class<? extends AppByteCodeScanner>, Set<String>>> foundHandler;
-    private String clsName;
-    private String pkgName;
     private Class<? extends Annotation> annoType;
     private boolean noAbstract;
     private boolean publicOnly;
+    private App app;
+    protected Set<String> foundClasses = C.newSet();
 
     protected AnnotatedTypeFinder(boolean publicOnly, boolean noAbstract, Class<? extends Annotation> annoType, $.Func2<App, String, Map<Class<? extends AppByteCodeScanner>, Set<String>>> foundHandler) {
         E.NPE(annoType, foundHandler);
-        this.clsName = annoType.getSimpleName();
-        this.pkgName = FastStr.of(annoType.getName()).beforeLast('.').toString();
         this.annoType = annoType;
         this.foundHandler = foundHandler;
         this.noAbstract = noAbstract;
@@ -37,6 +36,14 @@ public abstract class AnnotatedTypeFinder extends AppCodeScannerPluginBase {
         this(true, true, annoType, foundHandler);
     }
 
+    protected AnnotatedTypeFinder(Class<? extends Annotation> annoType) {
+        this(true, true, annoType, null);
+    }
+
+    protected App app() {
+        return app;
+    }
+
     @Override
     public AppSourceCodeScanner createAppSourceCodeScanner(App app) {
         return null;
@@ -44,6 +51,7 @@ public abstract class AnnotatedTypeFinder extends AppCodeScannerPluginBase {
 
     @Override
     public AppByteCodeScanner createAppByteCodeScanner(App app) {
+        this.app = app;
         return new ByteCodeSensor();
     }
 
@@ -75,7 +83,9 @@ public abstract class AnnotatedTypeFinder extends AppCodeScannerPluginBase {
         @Override
         public void scanFinished(String className) {
             if (detector.found()) {
-                Map<Class<? extends AppByteCodeScanner>, Set<String>> dependencies = foundHandler.apply(app(), className);
+                foundClasses.add(className);
+                Map<Class<? extends AppByteCodeScanner>, Set<String>> dependencies =
+                        null == foundHandler ? null : foundHandler.apply(app(), className);
                 if (null != dependencies && !dependencies.isEmpty()) {
                     for (Class<? extends AppByteCodeScanner> c : dependencies.keySet()) {
                         addDependencyClassToScanner(c, dependencies.get(c));

@@ -15,6 +15,7 @@ import act.handler.builtin.controller.*;
 import act.handler.builtin.controller.impl.ReflectedHandlerInvoker;
 import act.plugin.AppServicePluginManager;
 import act.plugin.GenericPluginManager;
+import act.plugin.Plugin;
 import act.plugin.PluginScanner;
 import act.util.*;
 import act.view.ViewManager;
@@ -29,6 +30,7 @@ import org.osgl.util.C;
 import org.osgl.util.E;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * The Act server
@@ -110,6 +112,7 @@ public final class Act {
     private static GenericPluginManager pluginManager;
     private static AppServicePluginManager appPluginManager;
     private static IdGenerator idGenerator = new IdGenerator();
+    private static Map<String, Plugin> genericPluginRegistry = C.newMap();
 
     public static List<Class<?>> pluginClasses() {
         ClassLoader cl = Act.class.getClassLoader();
@@ -177,6 +180,15 @@ public final class Act {
 
     public static AppManager applicationManager() {
         return appManager;
+    }
+
+    public static void registerPlugin(Plugin plugin) {
+        genericPluginRegistry.put(plugin.getClass().getCanonicalName().intern(), plugin);
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <T extends Plugin> T registeredPlugin(Class<T> type) {
+        return (T)genericPluginRegistry.get(type.getCanonicalName().intern());
     }
 
     public static void startServer() {
