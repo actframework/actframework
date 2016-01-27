@@ -61,7 +61,7 @@ public class UndertowService extends NetworkServiceBase {
         AppConfig config = app.config();
         InetAddress addr;
         try {
-            addr = Inet4Address.getByName(config.host());
+            addr = Inet4Address.getByName("localhost");
         } catch (UnknownHostException e) {
             logger.error(e, "Cannot start app[%s]:", app.home());
             return;
