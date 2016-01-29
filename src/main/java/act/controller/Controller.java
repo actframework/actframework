@@ -74,6 +74,24 @@ public @interface Controller {
         }
 
         /**
+         * Returns a {@link Created} result
+         * @param resourceGetUrl the URL to access the new resource been created
+         * @return the result as described
+         */
+        public static Result created(String resourceGetUrl) {
+            return new Created(resourceGetUrl);
+        }
+
+        /**
+         * Returns a {@link Accepted} result
+         * @param statusMonitorUrl the URL to check the request process status
+         * @return the result as described
+         */
+        public static Result accepted(String statusMonitorUrl) {
+            return new Accepted(statusMonitorUrl);
+        }
+
+        /**
          * Returns an {@link NotFound} result
          */
         public static Result notFound() {
