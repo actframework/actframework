@@ -134,9 +134,18 @@ public class SimpleASCIITableImpl implements IASCIITable {
 						
 						//Transform the data using the transformation function provided.
 						cellData = asciiTableAware.formatData(colHeader, i, j, rowData.get(j));
-						
+
+						ASCIITableHeader header = headerObjs[j];
+						int align = header.getDataAlign();
 						if (cellData == null) {
 							cellData = String.valueOf(rowData.get(j));
+							if (IASCIITable.ALIGN_AUTO == align) {
+								header.setDataAlign(ALIGN_LEFT);
+							}
+						} else {
+							if (IASCIITable.ALIGN_AUTO == align) {
+								header.setDataAlign(ALIGN_RIGHT);
+							}
 						}
 						
 						rowTransData.add(cellData);

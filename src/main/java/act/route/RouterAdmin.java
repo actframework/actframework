@@ -16,6 +16,7 @@ import java.util.List;
 /**
  * An admin interface to Act application router
  */
+@SuppressWarnings("unused")
 public class RouterAdmin {
 
     private App app;
@@ -66,17 +67,7 @@ public class RouterAdmin {
             };
             return S.blank(q) ? root : new FilteredTreeNode(root, TreeNodeFilter.Common.pathMatches(q));
         } else {
-            List<RouteInfo> list = router.debug();
-            if (S.notBlank(q)) {
-                List<RouteInfo> toBeRemoved = C.newList();
-                for (RouteInfo info: list) {
-                    if (!info.path().matches(q)) {
-                        toBeRemoved.add(info);
-                    }
-                }
-                list = C.list(list).without(toBeRemoved);
-            }
-            return list;
+            return routeInfoList(name, q);
         }
     }
 
@@ -85,18 +76,23 @@ public class RouterAdmin {
             @Optional("specify the port name") String name,
             @Optional("specify route filter") String q
     ) {
-        final Router router = S.blank(name) ? app.router() : app.router(name);
+        return routeInfoList(name, q).size();
+    }
+
+    private List<RouteInfo> routeInfoList(String portName, String q) {
+        final Router router = S.blank(portName) ? app.router() : app.router(portName);
         List<RouteInfo> list = router.debug();
         if (S.notBlank(q)) {
             List<RouteInfo> toBeRemoved = C.newList();
             for (RouteInfo info: list) {
-                if (!info.path().matches(q)) {
-                    toBeRemoved.add(info);
+                if (info.path().matches(q) || S.string(info.handler()).matches(q)) {
+                    continue;
                 }
+                toBeRemoved.add(info);
             }
             list = C.list(list).without(toBeRemoved);
         }
-        return list.size();
+        return list;
     }
 
 }

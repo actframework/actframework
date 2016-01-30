@@ -29,9 +29,10 @@ public interface IASCIITable {
 	public static final int ALIGN_LEFT = -1;
 	public static final int ALIGN_CENTER = 0;
 	public static final int ALIGN_RIGHT = 1;
-	
-	public static final int DEFAULT_HEADER_ALIGN = ALIGN_CENTER;
-	public static final int DEFAULT_DATA_ALIGN = ALIGN_RIGHT;
+    public static final int ALIGN_AUTO = Integer.MAX_VALUE;
+
+    public static final int DEFAULT_HEADER_ALIGN = ALIGN_CENTER;
+	public static final int DEFAULT_DATA_ALIGN = ALIGN_AUTO;
 	
 	/**
 	 * Prints the ASCII table to console.
