@@ -13,7 +13,7 @@ import java.util.List;
 public class PluginAdmin {
 
     @Command(name = "act.plugin.list", help = "list plugins")
-    @PropertySpec("this")
+    @PropertySpec("this as Plugin")
     public List<String> list(
             @Optional("sort alphabetically") boolean sort
     ) {

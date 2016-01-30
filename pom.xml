@@ -85,6 +85,186 @@
             <includePom>true</includePom>
           </configuration>
         </plugin>
+        <plugin>
+          <groupId>pl.project13.maven</groupId>
+          <artifactId>git-commit-id-plugin</artifactId>
+          <version>2.1.15</version>
+          <executions>
+            <execution>
+              <goals>
+                <goal>revision</goal>
+              </goals>
+            </execution>
+          </executions>
+
+          <configuration>
+            <!--
+                If you'd like to tell the plugin where your .git directory is,
+                use this setting, otherwise we'll perform a search trying to
+                figure out the right directory. It's better to add it explicite IMHO.
+            -->
+            <dotGitDirectory>${project.basedir}/.git</dotGitDirectory>
+
+            <!-- that's the default value, you don't have to set it -->
+            <prefix>git</prefix>
+
+            <!-- that's the default value -->
+            <dateFormat>dd.MM.yyyy '@' HH:mm:ss z</dateFormat>
+
+            <!-- false is default here, it prints some more information during the build -->
+            <verbose>false</verbose>
+
+            <!-- ALTERNATE SETUP - GENERATE FILE -->
+            <!--
+                If you want to keep git information, even in your WAR file etc,
+                use this mode, which will generate a properties file (with filled out values)
+                which you can then normally read using new Properties().load(/**/)
+            -->
+
+            <!-- this is false by default, forces the plugin to generate the git.properties file -->
+            <generateGitPropertiesFile>true</generateGitPropertiesFile>
+
+            <!-- The path for the to be generated properties file, it's relative to ${project.basedir} -->
+            <generateGitPropertiesFilename>src/main/resources/git.properties</generateGitPropertiesFilename>
+
+            <!-- Denotes the format to save properties in. Valid options are "properties" (default) and "json". Properties will be saved to the generateGitPropertiesFilename if generateGitPropertiesFile is set to `true`. -->
+            <format>properties</format>
+
+            <!--
+                this is true by default; You may want to set this to false, if the plugin should run inside a
+                <packaging>pom</packaging> project. Most projects won't need to override this property.
+
+                For an use-case for this kind of behaviour see: https://github.com/ktoso/maven-git-commit-id-plugin/issues/21
+            -->
+            <skipPoms>true</skipPoms>
+
+            <!-- @since 2.1.4 -->
+            <!--
+                Tell maven-git-commit-id to inject the git properties into all reactor projects not just the current one.
+                For details about why you might want to skip this, read this issue: https://github.com/ktoso/maven-git-commit-id-plugin/pull/65
+                The property is set to ``false`` by default to prevent the overriding of properties that may be unrelated to the project.
+            -->
+            <injectAllReactorProjects>false</injectAllReactorProjects>
+
+            <!-- @since 2.0.4 -->
+            <!-- true by default, controls whether the plugin will fail when no .git directory is found, when set to false the plugin will just skip execution -->
+            <failOnNoGitDirectory>true</failOnNoGitDirectory>
+
+            <!-- @since 2.1.5 -->
+            <!-- true by default, controls whether the plugin will fail if it was unable to obtain enough data for a complete run, if you don't care about this, you may want to set this value to false. -->
+            <failOnUnableToExtractRepoInfo>true</failOnUnableToExtractRepoInfo>
+
+            <!-- @since 2.1.8 -->
+            <!--
+                skip the plugin execution completely. This is useful for e.g. profile activated plugin invocations or
+                to use properties to enable / disable pom features. Default value is 'false'.
+            -->
+            <skip>false</skip>
+
+            <!-- @since 2.1.12 -->
+            <!--
+               Use with caution!
+
+               In a multi-module build, only run once. This means that the plugins effects will only execute once, for the parent project.
+               This probably won't "do the right thing" if your project has more than one git repository.
+
+               Important: If you're using `generateGitPropertiesFile`, setting `runOnlyOnce` will make the plugin
+               only generate the file in the directory where you started your build (!).
+
+               The `git.*` maven properties are available in all modules.
+               Default value is `false`.
+            -->
+            <runOnlyOnce>false</runOnlyOnce>
+
+            <!-- @since 2.1.9 -->
+            <!--
+                Can be used to exclude certain properties from being emited into the resulting file.
+                May be useful when you want to hide {@code git.remote.origin.url} (maybe because it contains your repo password?),
+                or the email of the committer etc.
+
+                Each value may be globbing, that is, you can write {@code git.commit.user.*} to exclude both, the {@code name},
+                as well as {@code email} properties from being emitted into the resulting files.
+
+                Please note that the strings here are Java regexes ({@code .*} is globbing, not plain {@code *}).
+            -->
+            <excludeProperties>
+              <!-- <excludeProperty>git.user.*</excludeProperty> -->
+            </excludeProperties>
+
+            <!-- @since 2.1.14 -->
+            <!--
+                Can be used to include only certain properties into the resulting file.
+                Will be overruled by the exclude properties.
+
+                Each value may be globbing, that is, you can write {@code git.commit.user.*} to include both, the {@code name},
+                as well as {@code email} properties into the resulting files.
+
+                Please note that the strings here are Java regexes ({@code .*} is globbing, not plain {@code *}).
+            -->
+            <includeOnlyProperties>
+              <!-- <includeOnlyProperty>^git.commit.id.full$</includeOnlyProperty> -->
+            </includeOnlyProperties>
+
+            <!-- @since 2.1.10 -->
+            <!--
+              false is default here, if set to true it uses native `git` excutable for extracting all data.
+              This usually has better performance than the default (jgit) implemenation, but requires you to
+              have git available as executable for the build as well as *might break unexpectedly* when you
+              upgrade your system-wide git installation.
+
+              As rule of thumb - stay on `jgit` (keep this `false`) until you notice performance problems.
+            -->
+            <useNativeGit>false</useNativeGit>
+
+            <!-- @since v2.0.4 -->
+            <!--
+                 Controls the length of the abbreviated git commit it (git.commit.id.abbrev)
+
+                 Defaults to `7`.
+                 `0` carries the special meaning.
+                 Maximum value is `40`, because of max SHA-1 length.
+             -->
+            <abbrevLength>7</abbrevLength>
+
+            <!-- @since 2.1.0 -->
+            <!--
+                read up about git-describe on the in man, or it's homepage - it's a really powerful versioning helper
+                and the recommended way to use git-commit-id-plugin. The configuration bellow is optional,
+                by default describe will run "just like git-describe on the command line", even though it's a JGit reimplementation.
+            -->
+            <gitDescribe>
+
+              <!-- don't generate the describe property -->
+              <skip>false</skip>
+
+              <!--
+                  if no tag was found "near" this commit, just print the commit's id instead,
+                  helpful when you always expect this field to be not-empty
+              -->
+              <always>false</always>
+              <!--
+                   how many chars should be displayed as the commit object id?
+                   7 is git's default,
+                   0 has a special meaning (see end of this README.md),
+                   and 40 is the maximum value here
+              -->
+              <abbrev>7</abbrev>
+
+              <!-- when the build is triggered while the repo is in "dirty state", append this suffix -->
+              <dirty>-dirty</dirty>
+
+              <!-- Only consider tags matching the given pattern. This can be used to avoid leaking private tags from the repository. -->
+              <match>*</match>
+
+              <!--
+                   always print using the "tag-commits_from_tag-g_commit_id-maybe_dirty" format, even if "on" a tag.
+                   The distance will always be 0 if you're "on" the tag.
+              -->
+              <forceLongFormat>false</forceLongFormat>
+            </gitDescribe>
+          </configuration>
+
+        </plugin>
       </plugins>
     </pluginManagement>
   </build>

@@ -71,14 +71,6 @@ public class RouterAdmin {
         }
     }
 
-    @Command(name = "act.route.count", help = "count routes")
-    public int countRoutes(
-            @Optional("specify the port name") String name,
-            @Optional("specify route filter") String q
-    ) {
-        return routeInfoList(name, q).size();
-    }
-
     private List<RouteInfo> routeInfoList(String portName, String q) {
         final Router router = S.blank(portName) ? app.router() : app.router(portName);
         List<RouteInfo> list = router.debug();

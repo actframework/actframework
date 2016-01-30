@@ -13,7 +13,7 @@ import java.lang.annotation.Target;
  * +---------------------------------+---------+---------+
  * |                ID               | ONETIME | TRIGGER |
  * +---------------------------------+---------+---------+
- * |                  __act_app_stop |    true |    null |
+ * | __act_app_stop                  |    true |    null |
  * | __act_app_app_act_plugin_loaded |    true |    null |
  * +---------------------------------+---------+---------+
  * </pre>

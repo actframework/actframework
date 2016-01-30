@@ -60,7 +60,8 @@ public enum CliView {
             }
             DataPropertyRepository repo = context.app().service(DataPropertyRepository.class);
             List<String> outputFields = repo.outputFields(spec, componentType, context);
-            return cliContext.getTable(new CollectionASCIITableAware(dataList, outputFields, spec.labels(outputFields, context)));
+            String tableString = cliContext.getTable(new CollectionASCIITableAware(dataList, outputFields, spec.labels(outputFields, context)));
+            return S.builder(tableString).append("Items found: ").append(dataList.size()).toString();
         }
 
     },
