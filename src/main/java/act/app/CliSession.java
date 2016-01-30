@@ -42,7 +42,7 @@ public class CliSession extends DestroyableBase implements Runnable {
         this.dispatcher = app.cliDispatcher();
         id = app.cuid();
         ts = $.ms();
-        commandNameCompleter = app.newInstance(CommandNameCompleter.class);
+        commandNameCompleter = new CommandNameCompleter(app);
     }
 
     public String id() {

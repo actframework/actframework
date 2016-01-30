@@ -1,40 +1,38 @@
 package act.view;
 
 import act.Act;
-import act.app.*;
+import act.app.SourceInfo;
 import act.util.ActError;
-import org.osgl.mvc.result.Forbidden;
-import org.osgl.util.C;
-import org.osgl.util.S;
+import org.osgl.mvc.result.Conflict;
 
 import java.util.List;
 
-public class ActForbidden extends Forbidden implements ActError {
+public class ActConflict extends Conflict implements ActError {
 
     private SourceInfo sourceInfo;
 
-    public ActForbidden() {
+    public ActConflict() {
         super();
         if (Act.isDev()) {
             loadSourceInfo();
         }
     }
 
-    public ActForbidden(String message, Object... args) {
+    public ActConflict(String message, Object... args) {
         super(message, args);
         if (Act.isDev()) {
             loadSourceInfo();
         }
     }
 
-    public ActForbidden(Throwable cause, String message, Object ... args) {
+    public ActConflict(Throwable cause, String message, Object ... args) {
         super(cause, message, args);
         if (Act.isDev()) {
             loadSourceInfo();
         }
     }
 
-    public ActForbidden(Throwable cause) {
+    public ActConflict(Throwable cause) {
         super(cause);
         if (Act.isDev()) {
             loadSourceInfo();
@@ -44,9 +42,8 @@ public class ActForbidden extends Forbidden implements ActError {
     private void loadSourceInfo() {
         doFillInStackTrace();
         Throwable cause = getCause();
-        sourceInfo = Util.loadSourceInfo(null == cause ? getStackTrace() : cause.getStackTrace(), ActForbidden.class);
+        sourceInfo = Util.loadSourceInfo(null == cause ? getStackTrace() : cause.getStackTrace(), ActConflict.class);
     }
-
 
     @Override
     public Throwable getCauseOrThis() {
@@ -68,19 +65,19 @@ public class ActForbidden extends Forbidden implements ActError {
         return Util.stackTraceOf(cause, root);
     }
 
-    public static Forbidden create() {
-        return Act.isDev() ? new ActForbidden() : Forbidden.INSTANCE;
+    public static Conflict create() {
+        return Act.isDev() ? new ActConflict() : Conflict.INSTANCE;
     }
 
-    public static Forbidden create(String msg, Object... args) {
-        return Act.isDev() ? new ActForbidden(msg, args) : new Forbidden(msg, args);
+    public static Conflict create(String msg, Object... args) {
+        return Act.isDev() ? new ActConflict(msg, args) : new Conflict(msg, args);
     }
 
-    public static Forbidden create(Throwable cause, String msg, Object ... args) {
-        return Act.isDev() ? new ActForbidden(cause, msg, args) : new Forbidden(cause, msg, args);
+    public static Conflict create(Throwable cause, String msg, Object ... args) {
+        return Act.isDev() ? new ActConflict(cause, msg, args) : new Conflict(cause, msg, args);
     }
 
-    public static Forbidden create(Throwable cause) {
-        return Act.isDev() ? new ActForbidden(cause) : new Forbidden(cause);
+    public static Conflict create(Throwable cause) {
+        return Act.isDev() ? new ActConflict(cause) : new Conflict(cause);
     }
 }

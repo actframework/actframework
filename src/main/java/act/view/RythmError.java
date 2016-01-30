@@ -1,6 +1,5 @@
 package act.view;
 
-import act.app.App;
 import act.app.SourceInfo;
 import org.osgl.util.C;
 import org.rythmengine.exception.RythmException;
@@ -11,8 +10,8 @@ public class RythmError extends ActServerError {
 
     private SourceInfo templateInfo;
 
-    public RythmError(RythmException t, App app) {
-        super(t, app);
+    public RythmError(RythmException t) {
+        super(t);
     }
 
     public RythmException rythmException() {
@@ -24,7 +23,7 @@ public class RythmError extends ActServerError {
     }
 
     @Override
-    protected void populateSourceInfo(Throwable t, App app) {
+    protected void populateSourceInfo(Throwable t) {
         RythmException re = (RythmException) t;
         sourceInfo = new RythmSourceInfo(re, true);
         templateInfo = new RythmSourceInfo(re, false);

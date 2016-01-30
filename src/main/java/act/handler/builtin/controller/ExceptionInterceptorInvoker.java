@@ -6,6 +6,6 @@ import act.util.Prioritised;
 import org.osgl.mvc.result.Result;
 
 public interface ExceptionInterceptorInvoker extends Prioritised, Destroyable {
-    Result handle(Exception e, ActionContext actionContext);
+    Result handle(Exception e, ActionContext actionContext) throws Exception;
     void accept(ActionHandlerInvoker.Visitor visitor);
 }

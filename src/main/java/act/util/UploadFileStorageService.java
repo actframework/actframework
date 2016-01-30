@@ -10,6 +10,7 @@ import org.osgl.storage.impl.SObject;
 import org.osgl.util.C;
 import org.osgl.util.E;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.Map;
 import java.util.UUID;
@@ -20,10 +21,13 @@ public class UploadFileStorageService extends FileSystemService {
     }
 
     public static IStorageService create(App app) {
+        File tmp = app.tmpDir();
+        if (!tmp.exists() && !tmp.mkdirs()) {
+            throw E.unexpected("Cannot create tmp dir");
+        }
         Map<String, String> conf = C.newMap("storage.fs.home.dir", Files.file(app.tmpDir(), "uploads").getAbsolutePath(),
                 "storage.keygen", KeyGenerator.BY_DATE.name());
-        IStorageService ss = new UploadFileStorageService(conf);
-        return ss;
+        return new UploadFileStorageService(conf);
     }
 
     public static ISObject store(FileItem file, App app) {

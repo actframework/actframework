@@ -71,7 +71,7 @@ List<String> stackTrace = _error.stackTrace();
   </div>
 
   <div id="stacktrace" class="detail active">
-    <div class="exception">@_error.getCause().toString()</div>
+    <div class="exception">@_error.getCauseOrThis().toString()</div>
     @for(String trace: stackTrace) {
     @{
     String cls = "";

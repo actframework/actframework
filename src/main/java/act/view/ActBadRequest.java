@@ -1,40 +1,38 @@
 package act.view;
 
 import act.Act;
-import act.app.*;
+import act.app.SourceInfo;
 import act.util.ActError;
-import org.osgl.mvc.result.Forbidden;
-import org.osgl.util.C;
-import org.osgl.util.S;
+import org.osgl.mvc.result.BadRequest;
 
 import java.util.List;
 
-public class ActForbidden extends Forbidden implements ActError {
+public class ActBadRequest extends BadRequest implements ActError {
 
     private SourceInfo sourceInfo;
 
-    public ActForbidden() {
+    public ActBadRequest() {
         super();
         if (Act.isDev()) {
             loadSourceInfo();
         }
     }
 
-    public ActForbidden(String message, Object... args) {
+    public ActBadRequest(String message, Object... args) {
         super(message, args);
         if (Act.isDev()) {
             loadSourceInfo();
         }
     }
 
-    public ActForbidden(Throwable cause, String message, Object ... args) {
+    public ActBadRequest(Throwable cause, String message, Object ... args) {
         super(cause, message, args);
         if (Act.isDev()) {
             loadSourceInfo();
         }
     }
 
-    public ActForbidden(Throwable cause) {
+    public ActBadRequest(Throwable cause) {
         super(cause);
         if (Act.isDev()) {
             loadSourceInfo();
@@ -44,15 +42,15 @@ public class ActForbidden extends Forbidden implements ActError {
     private void loadSourceInfo() {
         doFillInStackTrace();
         Throwable cause = getCause();
-        sourceInfo = Util.loadSourceInfo(null == cause ? getStackTrace() : cause.getStackTrace(), ActForbidden.class);
+        sourceInfo = Util.loadSourceInfo(null == cause ? getStackTrace() : cause.getStackTrace(), ActBadRequest.class);
     }
-
 
     @Override
     public Throwable getCauseOrThis() {
         Throwable cause = super.getCause();
         return null == cause ? this : cause;
     }
+
 
     public SourceInfo sourceInfo() {
         return sourceInfo;
@@ -68,19 +66,19 @@ public class ActForbidden extends Forbidden implements ActError {
         return Util.stackTraceOf(cause, root);
     }
 
-    public static Forbidden create() {
-        return Act.isDev() ? new ActForbidden() : Forbidden.INSTANCE;
+    public static BadRequest create() {
+        return Act.isDev() ? new ActBadRequest() : BadRequest.INSTANCE;
     }
 
-    public static Forbidden create(String msg, Object... args) {
-        return Act.isDev() ? new ActForbidden(msg, args) : new Forbidden(msg, args);
+    public static BadRequest create(String msg, Object... args) {
+        return Act.isDev() ? new ActBadRequest(msg, args) : new BadRequest(msg, args);
     }
 
-    public static Forbidden create(Throwable cause, String msg, Object ... args) {
-        return Act.isDev() ? new ActForbidden(cause, msg, args) : new Forbidden(cause, msg, args);
+    public static BadRequest create(Throwable cause, String msg, Object ... args) {
+        return Act.isDev() ? new ActBadRequest(cause, msg, args) : new BadRequest(cause, msg, args);
     }
 
-    public static Forbidden create(Throwable cause) {
-        return Act.isDev() ? new ActForbidden(cause) : new Forbidden(cause);
+    public static BadRequest create(Throwable cause) {
+        return Act.isDev() ? new ActBadRequest(cause) : new BadRequest(cause);
     }
 }

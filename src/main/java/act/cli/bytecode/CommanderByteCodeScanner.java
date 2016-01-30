@@ -100,7 +100,7 @@ public class CommanderByteCodeScanner extends AppByteCodeScannerBase {
 
         @Override
         public void visitEnd() {
-            for (CommandMethodMetaInfo commandMethodMetaInfo: classInfo.commandList()) {
+            for (CommandMethodMetaInfo commandMethodMetaInfo : classInfo.commandList()) {
                 dispatcher.registerCommandHandler(commandMethodMetaInfo.commandName(), commandMethodMetaInfo, classInfo);
             }
             super.visitEnd();

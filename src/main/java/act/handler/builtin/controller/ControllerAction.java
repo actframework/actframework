@@ -16,7 +16,7 @@ public class ControllerAction extends ActionHandler<ControllerAction> {
     }
 
     @Override
-    public Result handle(ActionContext actionContext) {
+    public Result handle(ActionContext actionContext) throws Exception {
         return handlerInvoker.handle(actionContext);
     }
 

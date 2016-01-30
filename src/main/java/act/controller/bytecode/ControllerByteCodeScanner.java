@@ -550,6 +550,9 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
                             routers.add(r);
                         }
                     }
+                    if (paths.isEmpty()) {
+                        paths.add("");
+                    }
                     for (Router r: routers) {
                         for (String actionPath : paths) {
                             String ctxPath = classInfo.contextPath();

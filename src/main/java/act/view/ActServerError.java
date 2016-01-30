@@ -4,26 +4,52 @@ import act.Act;
 import act.app.*;
 import act.exception.ActException;
 import act.util.ActError;
+import org.osgl.$;
+import org.osgl.Osgl;
+import org.osgl.exception.InvalidArgException;
+import org.osgl.exception.InvalidRangeException;
 import org.osgl.exception.UnexpectedException;
+import org.osgl.exception.UnsupportedException;
+import org.osgl.mvc.annotation.ResponseStatus;
+import org.osgl.mvc.result.BadRequest;
+import org.osgl.mvc.result.Result;
 import org.osgl.mvc.result.ServerError;
 import org.osgl.util.C;
 import org.rythmengine.exception.RythmException;
 
+import javax.validation.Validation;
+import javax.validation.ValidationException;
+import java.util.IllegalFormatException;
 import java.util.List;
+import java.util.Map;
 
 public class ActServerError extends ServerError implements ActError {
 
     protected SourceInfo sourceInfo;
 
-    protected ActServerError(Throwable t, App app) {
-        super(t);
+    protected ActServerError(Throwable t) {
+        super($.notNull(t));
         if (Act.isDev()) {
-            populateSourceInfo(t, app);
+            populateSourceInfo(t);
         }
+    }
+
+
+    @Override
+    public Throwable getCauseOrThis() {
+        Throwable cause = super.getCause();
+        return null == cause ? this : cause;
     }
 
     public SourceInfo sourceInfo() {
         return sourceInfo;
+    }
+
+    @Override
+    public int statusCode() {
+        Throwable cause = getCause();
+        int statusCode = userDefinedStatusCode(cause.getClass());
+        return -1 == statusCode ? super.statusCode() : statusCode;
     }
 
     public List<String> stackTrace() {
@@ -42,11 +68,11 @@ public class ActServerError extends ServerError implements ActError {
         return l;
     }
 
-    protected void populateSourceInfo(Throwable t, App app) {
+    protected void populateSourceInfo(Throwable t) {
         if (t instanceof SourceInfo) {
             this.sourceInfo = (SourceInfo)t;
         } else {
-            DevModeClassLoader cl = (DevModeClassLoader) app.classLoader();
+            DevModeClassLoader cl = (DevModeClassLoader) App.instance().classLoader();
             for (StackTraceElement stackTraceElement : t.getStackTrace()) {
                 int line = stackTraceElement.getLineNumber();
                 if (line <= 0) {
@@ -61,36 +87,67 @@ public class ActServerError extends ServerError implements ActError {
         }
     }
 
-    public static ActServerError of(Throwable t, App app) {
+    private static Map<Class<? extends Throwable>, $.Function<Throwable, Result>> x = C.newMap();
+    static {
+        $.Function<Throwable, Result> unsupported = new $.Transformer<Throwable, Result>() {
+            @Override
+            public Result transform(Throwable throwable) {
+                return ActNotImplemented.create(throwable);
+            }
+        };
+        x.put(UnsupportedException.class, unsupported);
+        x.put(UnsupportedOperationException.class, unsupported);
+        x.put(IllegalStateException.class, new $.Transformer<Throwable, Result>() {
+            @Override
+            public Result transform(Throwable throwable) {
+                return ActConflict.create(throwable);
+            }
+        });
+        $.Transformer<Throwable, Result> badRequest = new $.Transformer<Throwable, Result>() {
+            @Override
+            public Result transform(Throwable throwable) {
+                return ActBadRequest.create(throwable);
+            }
+        };
+        x.put(IllegalArgumentException.class, badRequest);
+        x.put(IllegalFormatException.class, badRequest);
+        x.put(InvalidArgException.class, badRequest);
+        x.put(InvalidRangeException.class, badRequest);
+        x.put(ArrayIndexOutOfBoundsException.class, badRequest);
+        x.put(ValidationException.class, badRequest);
+    }
+
+    private static Map<Class, Integer> userDefinedStatus = C.newMap();
+
+    private static int userDefinedStatusCode(Class<? extends Throwable> exCls) {
+        Integer I = userDefinedStatus.get(exCls);
+        if (null == I) {
+            ResponseStatus rs = exCls.getAnnotation(ResponseStatus.class);
+            if (null == rs) {
+                I = -1;
+                userDefinedStatus.put(exCls, -1);
+            } else {
+                I = rs.value();
+            }
+        }
+        return I;
+    }
+
+    public static Result of(Throwable t) {
         if (t instanceof RythmException) {
-            return new RythmError((RythmException) t, app);
+            return new RythmError((RythmException) t);
         } else {
-            return new ActServerError(t, app);
+            $.Function<Throwable, Result> transformer = x.get(t.getClass());
+            return null == transformer ? new ActServerError(t) : transformer.apply(t);
         }
     }
 
-    public static ActServerError of(NullPointerException e, App app) {
-        return new ActServerError(e, app);
+    public static ActServerError of(NullPointerException e) {
+        return new ActServerError(e);
     }
 
-    public static ActServerError of(UnexpectedException e, App app) {
-        return new ActServerError(e, app);
-    }
-
-    public static ActServerError of(ActException e, App app) {
-        return new ActServerError(e, app);
-    }
-
-    public static ActServerError of(IllegalArgumentException e, App app) {
-        return new ActServerError(e, app);
-    }
-
-    public static ActServerError of(IllegalStateException e, App app) {
-        return new ActServerError(e, app);
-    }
-
-    public static ActServerError of(RythmException e, App app) {
-        return new RythmError(e, app);
+    public static ActServerError of(RythmException e) {
+        return new RythmError(e);
     }
 
 }

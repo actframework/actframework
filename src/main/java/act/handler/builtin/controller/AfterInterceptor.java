@@ -25,7 +25,7 @@ public abstract class AfterInterceptor
      * @return the new result been processed
      */
     @Override
-    public Result handle(Result result, ActionContext actionContext) {
+    public Result handle(Result result, ActionContext actionContext) throws Exception {
         return result;
     }
 

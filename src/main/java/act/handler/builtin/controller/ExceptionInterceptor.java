@@ -37,7 +37,7 @@ public abstract class ExceptionInterceptor
     }
 
     @Override
-    public Result handle(Exception e, ActionContext actionContext) {
+    public Result handle(Exception e, ActionContext actionContext) throws Exception {
         for (Class<? extends Exception> c : exClasses) {
             if (c.isInstance(e)) {
                 return internalHandle(e, actionContext);
@@ -46,7 +46,7 @@ public abstract class ExceptionInterceptor
         return null;
     }
 
-    protected abstract Result internalHandle(Exception e, ActionContext actionContext);
+    protected abstract Result internalHandle(Exception e, ActionContext actionContext) throws Exception;
 
     @Override
     public void register() {

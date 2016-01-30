@@ -160,18 +160,26 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
             onResult(result, context);
         } catch (Exception e) {
             logger.error(e, "Error handling request");
-            result = handleException(e, context);
+            try {
+                result = handleException(e, context);
+            } catch (Exception e0) {
+                logger.error(e0, "Error invoking exception handler");
+            }
             if (null == result) {
-                result = ActServerError.of(e, app);
+                result = ActServerError.of(e);
             }
             try {
                 onResult(result, context);
             } catch (Exception e2) {
                 logger.error(e2, "error rendering exception handle  result");
-                onResult(ActServerError.of(e2, app), context);
+                onResult(ActServerError.of(e2), context);
             }
         } finally {
-            handleFinally(context);
+            try {
+                handleFinally(context);
+            } catch (Exception e) {
+                logger.error(e, "Error invoking final handler");
+            }
         }
     }
 
@@ -307,7 +315,7 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
     }
 
 
-    private Result handleBefore(ActionContext actionContext) {
+    private Result handleBefore(ActionContext actionContext) throws Exception {
         Result r = GLOBAL_BEFORE_INTERCEPTOR.apply(actionContext);
         if (null == r) {
             r = appInterceptor.handleBefore(actionContext);
@@ -318,7 +326,7 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
         return r;
     }
 
-    private Result _handle(ActionContext actionContext) {
+    private Result _handle(ActionContext actionContext) throws Exception {
         try {
             return actionHandler.handle(actionContext);
         } catch (Result r) {
@@ -326,20 +334,20 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
         }
     }
 
-    private Result handleAfter(Result result, ActionContext actionContext) {
+    private Result handleAfter(Result result, ActionContext actionContext) throws Exception {
         result = AFTER_INTERCEPTOR.apply(result, actionContext);
         result = appInterceptor.handleAfter(result, actionContext);
         result = GLOBAL_AFTER_INTERCEPTOR.apply(result, actionContext);
         return result;
     }
 
-    private void handleFinally(ActionContext actionContext) {
+    private void handleFinally(ActionContext actionContext) throws Exception {
         FINALLY_INTERCEPTOR.apply(actionContext);
         appInterceptor.handleFinally(actionContext);
         GLOBAL_FINALLY_INTERCEPTOR.apply(actionContext);
     }
 
-    private Result handleException(Exception ex, ActionContext actionContext) {
+    private Result handleException(Exception ex, ActionContext actionContext) throws Exception {
         Result r = EXCEPTION_INTERCEPTOR.apply(ex, actionContext);
         if (null == r) {
             r = appInterceptor.handleException(ex, actionContext);
@@ -401,15 +409,14 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
         list.add(i);
     }
 
-    public static class GroupInterceptorWithResult extends $.F1<ActionContext, Result> {
+    public static class GroupInterceptorWithResult {
         private C.List<? extends ActionHandler> interceptors;
 
         public GroupInterceptorWithResult(C.List<? extends ActionHandler> interceptors) {
             this.interceptors = interceptors;
         }
 
-        @Override
-        public Result apply(ActionContext actionContext) throws NotAppliedException, $.Break {
+        public Result apply(ActionContext actionContext) throws Exception {
             try {
                 if (interceptors.isEmpty()) return null;
                 for (ActionHandler i : interceptors) {
@@ -425,15 +432,14 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
         }
     }
 
-    public static class GroupAfterInterceptor extends $.F2<Result, ActionContext, Result> {
+    public static class GroupAfterInterceptor {
         private C.List<? extends AfterInterceptor> interceptors;
 
         public GroupAfterInterceptor(C.List<? extends AfterInterceptor> interceptors) {
             this.interceptors = interceptors;
         }
 
-        @Override
-        public Result apply(Result result, ActionContext actionContext) throws NotAppliedException, $.Break {
+        public Result apply(Result result, ActionContext actionContext) throws Exception {
             for (AfterInterceptor i : interceptors) {
                 result = i.handle(result, actionContext);
             }
@@ -441,15 +447,14 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
         }
     }
 
-    public static class GroupFinallyInterceptor extends $.F1<ActionContext, Void> {
+    public static class GroupFinallyInterceptor {
         private C.List<? extends FinallyInterceptor> interceptors;
 
         public GroupFinallyInterceptor(C.List<FinallyInterceptor> interceptors) {
             this.interceptors = interceptors;
         }
 
-        @Override
-        public Void apply(ActionContext actionContext) throws NotAppliedException, $.Break {
+        public Void apply(ActionContext actionContext) throws Exception {
             if (interceptors.isEmpty()) return null;
             for (FinallyInterceptor i : interceptors) {
                 i.handle(actionContext);
@@ -458,15 +463,14 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
         }
     }
 
-    public static class GroupExceptionInterceptor extends $.F2<Exception, ActionContext, Result> {
+    public static class GroupExceptionInterceptor {
         private C.List<? extends ExceptionInterceptor> interceptors;
 
         public GroupExceptionInterceptor(C.List<? extends ExceptionInterceptor> interceptors) {
             this.interceptors = interceptors;
         }
 
-        @Override
-        public Result apply(Exception e, ActionContext actionContext) throws NotAppliedException, $.Break {
+        public Result apply(Exception e, ActionContext actionContext) throws Exception {
             try {
                 if (interceptors.isEmpty()) return null;
                 for (ExceptionInterceptor i : interceptors) {

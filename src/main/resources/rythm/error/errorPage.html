@@ -89,8 +89,13 @@ List<String> stackTrace = actError.stackTrace();
 
   <p>@render(description)</p>
 
+  @def Throwable getCauseOrThis(Throwable t) {
+    Throwable cause = t.getCause();
+    return null == cause ? t : cause;
+  }
+
   @if(templateSourceInfo) {
-  <div class="error-message">@(((org.rythmengine.exception.RythmException)_error.getCause()).errorDesc().raw())</div>
+  <div class="error-message">@(((org.rythmengine.exception.RythmException)getCauseOrThis(_error)).errorDesc().raw())</div>
   }
 
   <div class="tabs">
@@ -118,7 +123,7 @@ List<String> stackTrace = actError.stackTrace();
   </div>
   } else {
   <div id="stacktrace" class="detail active">
-    <div class="exception">@actError.getCause().toString()</div>
+    <div class="exception">@actError.getCauseOrThis().toString()</div>
     @for(String trace: stackTrace) {
     @{
     String cls = "";

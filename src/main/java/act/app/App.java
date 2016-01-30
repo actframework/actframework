@@ -205,7 +205,7 @@ public class App {
     public synchronized void detectChanges() {
         classLoader.detectChanges();
         if (null != compilationException) {
-            throw ActServerError.of(compilationException, this);
+            throw ActServerError.of(compilationException);
         }
     }
 
@@ -257,7 +257,7 @@ public class App {
             compilationException = null;
         } catch (CompilationException e) {
             compilationException = e;
-            throw ActServerError.of(e, this);
+            throw ActServerError.of(e);
         }
         //classLoader().loadClasses();
         emit(APP_CODE_SCANNED);

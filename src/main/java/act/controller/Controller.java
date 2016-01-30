@@ -1,8 +1,10 @@
 package act.controller;
 
+import act.Act;
 import act.app.ActionContext;
 import act.conf.AppConfigKey;
 import act.controller.meta.HandlerMethodMetaInfo;
+import act.util.ActContext;
 import act.util.FastJsonIterable;
 import act.util.PropertySpec;
 import act.view.*;
@@ -75,6 +77,7 @@ public @interface Controller {
 
         /**
          * Returns a {@link Created} result
+         *
          * @param resourceGetUrl the URL to access the new resource been created
          * @return the result as described
          */
@@ -84,6 +87,7 @@ public @interface Controller {
 
         /**
          * Returns a {@link Accepted} result
+         *
          * @param statusMonitorUrl the URL to check the request process status
          * @return the result as described
          */
@@ -95,28 +99,30 @@ public @interface Controller {
          * Returns an {@link NotFound} result
          */
         public static Result notFound() {
-            return new ActNotFound();
+            return ActNotFound.create();
         }
 
         /**
          * Returns an {@link NotFound} result with custom message
          * template and arguments. The final message is rendered with
          * the template and arguments using {@link String#format(String, Object...)}
-         * @param msg the message template
+         *
+         * @param msg  the message template
          * @param args the message argument
          */
         public static Result notFound(String msg, Object... args) {
-            return new ActNotFound(msg, args);
+            return ActNotFound.create(msg, args);
         }
 
         /**
          * Throws out an {@link NotFound} result if the object specified is
          * {@code null}
+         *
          * @param o the object to be evaluated
          */
         public static void notFoundIfNull(Object o) {
             if (null == o) {
-                throw new ActNotFound();
+                throw ActNotFound.create();
             }
         }
 
@@ -125,13 +131,14 @@ public @interface Controller {
          * arguments if the object specified is {@code null}. The final message is
          * rendered with the template and arguments using
          * {@link String#format(String, Object...)}
-         * @param o the object to be evaluated
-         * @param msg the message template
+         *
+         * @param o    the object to be evaluated
+         * @param msg  the message template
          * @param args the message argument
          */
         public static void notFoundIfNull(Object o, String msg, Object... args) {
             if (null == o) {
-                throw new ActNotFound(msg, args);
+                throw ActNotFound.create(msg, args);
             }
         }
 
@@ -139,11 +146,12 @@ public @interface Controller {
          * Throws out an {@link NotFound} result if the boolean expression specified
          * is {@code true}
          * {@code null}
+         *
          * @param test the boolean expression to be evaluated
          */
         public static void notFoundIf(boolean test) {
             if (test) {
-                throw new ActNotFound();
+                throw ActNotFound.create();
             }
         }
 
@@ -152,13 +160,14 @@ public @interface Controller {
          * arguments if the expression specified is {@code true}. The final message is
          * rendered with the template and arguments using
          * {@link String#format(String, Object...)}
+         *
          * @param test the boolean expression
-         * @param msg the message template
+         * @param msg  the message template
          * @param args the message argument
          */
         public static void notFoundIf(boolean test, String msg, Object... args) {
             if (test) {
-                throw new ActNotFound(msg, args);
+                throw ActNotFound.create(msg, args);
             }
         }
 
@@ -166,12 +175,11 @@ public @interface Controller {
          * Throws out an {@link NotFound} result if the boolean expression specified
          * is {@code false}
          * {@code null}
+         *
          * @param test the boolean expression to be evaluated
          */
         public static void notFoundIfNot(boolean test) {
-            if (!test) {
-                throw new ActNotFound();
-            }
+            notFoundIf(!test);
         }
 
         /**
@@ -179,69 +187,132 @@ public @interface Controller {
          * arguments if the expression specified is {@code false}. The final message is
          * rendered with the template and arguments using
          * {@link String#format(String, Object...)}
+         *
          * @param test the boolean expression
-         * @param msg the message template
+         * @param msg  the message template
          * @param args the message argument
          */
         public static void notFoundIfNot(boolean test, String msg, Object... args) {
-            if (!test) {
-                throw new ActNotFound(msg, args);
-            }
+            notFoundIf(!test, msg, args);
         }
 
         public static Result badRequest() {
-            return BAD_REQUEST;
+            return ActBadRequest.create();
         }
 
         public static void badRequestIf(boolean test) {
             if (test) {
-                throw BadRequest.INSTANCE;
+                throw ActBadRequest.create();
             }
         }
 
         public static void badRequestIf(boolean test, String msg, Object... args) {
             if (test) {
-                throw new BadRequest(msg, args);
+                throw ActBadRequest.create(msg, args);
             }
         }
 
         public static void badRequestIfNot(boolean test) {
             if (!test) {
-                throw BadRequest.INSTANCE;
+                throw ActBadRequest.create();
             }
         }
 
         public static void badRequestIfNot(boolean test, String msg, Object... args) {
-            if (!test) {
-                throw new BadRequest(msg, args);
+            badRequestIf(!test, msg, args);
+        }
+
+        public static Result conflict() {
+            return ActConflict.create();
+        }
+
+        public static Result conflict(String message, Object... args) {
+            return ActConflict.create(message, args);
+        }
+
+        public static void conflictIf(boolean test) {
+            if (test) {
+                throw ActConflict.create();
             }
+        }
+
+        public static void conflictIf(boolean test, String message, Object... args) {
+            if (test) {
+                throw ActConflict.create(message, args);
+            }
+        }
+
+        public static void conflictIfNot(boolean test) {
+            conflictIf(!test);
+        }
+
+        public static void conflictIfNot(boolean test, String message, Object... args) {
+            conflictIf(!test, message, args);
         }
 
         /**
          * Returns a {@link Forbidden} result
          */
         public static Result forbidden() {
-            return new ActForbidden();
+            return ActForbidden.create();
         }
 
+        /**
+         * Throws a {@link Forbidden} result if the test condition is {@code true}
+         *
+         * @param test the test condition
+         */
         public static void forbiddenIf(boolean test) {
             if (test) {
-                throw new ActForbidden();
+                throw ActForbidden.create();
             }
+        }
+
+        /**
+         * Throws a {@link Forbidden} result if the test condition is {@code false}
+         *
+         * @param test the test condition
+         */
+        public static void forbiddenIfNot(boolean test) {
+            forbiddenIf(!test);
         }
 
         /**
          * Returns a {@link Forbidden} result with custom message
          * template and arguments. The final message is rendered with
          * the template and arguments using {@link String#format(String, Object...)}
-         * @param msg the message template
+         *
+         * @param msg  the message template
          * @param args the message argument
          */
         public static Result forbidden(String msg, Object... args) {
-            return null == msg ? new ActForbidden(): new ActForbidden(msg, args);
+            return ActForbidden.create(msg, args);
         }
 
-        public static Result redirect(String url, Object ... args) {
+        /**
+         * Throws a {@link Forbidden} result if test condition is {@code true}
+         * @param test the test condition
+         * @param msg the message format template
+         * @param args the message format arguments
+         */
+        public static void forbiddenIf(boolean test, String msg, Object... args) {
+            if (test) {
+                throw ActForbidden.create(msg, args);
+            }
+        }
+
+        /**
+         * Throws a {@link Forbidden} result if the test condition is {@code false}
+         *
+         * @param test the test condition
+         * @param msg the message format template
+         * @param args the message format arguments
+         */
+        public static void forbiddenIfNot(boolean test, String msg, Object... args) {
+            forbiddenIf(!test, msg, args);
+        }
+
+        public static Result redirect(String url, Object... args) {
             return new Redirect(url, args);
         }
 
@@ -249,8 +320,9 @@ public @interface Controller {
          * Returns a {@link RenderText} result with specified message template
          * and args. The final message is rendered with the template and arguments using
          * {@link String#format(String, Object...)}
-         * @param msg
-         * @param args
+         *
+         * @param msg the message format template
+         * @param args the message format arguments
          */
         public static Result text(String msg, Object... args) {
             return new RenderText(msg, args);
@@ -260,8 +332,9 @@ public @interface Controller {
          * Returns a {@link RenderText} result with specified message template
          * and args. The final message is rendered with the template and arguments using
          * {@link String#format(String, Object...)}
-         * @param msg
-         * @param args
+         *
+         * @param msg the message format template
+         * @param args the message format arguments
          */
         public static Result html(String msg, Object... args) {
             return new RenderHtml(msg, args);
@@ -271,8 +344,9 @@ public @interface Controller {
          * Returns a {@link RenderJSON} result with specified message template
          * and args. The final message is rendered with the template and arguments using
          * {@link String#format(String, Object...)}
-         * @param msg
-         * @param args
+         *
+         * @param msg the message format template
+         * @param args the message format arguments
          */
         public static Result json(String msg, Object... args) {
             return new RenderJSON(msg, args);
@@ -281,7 +355,8 @@ public @interface Controller {
         /**
          * Returns a {@link RenderJSON} result with any object. This method will
          * call underline JSON serializer to transform the object into a JSON string
-         * @param data
+         *
+         * @param data the data to be rendered as JSON string
          */
         public static Result json(Object data) {
             return new RenderJSON(data);
@@ -291,6 +366,7 @@ public @interface Controller {
         /**
          * Returns a {@link RenderBinary} result with an {@link ISObject} instance. The result will render
          * the binary using "inline" content disposition
+         *
          * @param sobj the {@link ISObject} instance
          */
         public static Result binary(ISObject sobj) {
@@ -300,6 +376,7 @@ public @interface Controller {
         /**
          * Returns a {@link RenderBinary} result with an {@link ISObject} instance. The result will render
          * the binary using "attachment" content disposition
+         *
          * @param sobj the {@link ISObject} instance
          */
         public static Result download(ISObject sobj) {
@@ -309,6 +386,7 @@ public @interface Controller {
         /**
          * Returns a {@link RenderBinary} result with a file. The result will render
          * the binary using "inline" content disposition.
+         *
          * @param file the file to be rendered
          */
         public static Result binary(File file) {
@@ -318,6 +396,7 @@ public @interface Controller {
         /**
          * Returns a {@link RenderBinary} result with a file. The result will render
          * the binary using "attachment" content disposition.
+         *
          * @param file the file to be rendered
          */
         public static Result download(File file) {
@@ -328,6 +407,7 @@ public @interface Controller {
          * Returns a {@link RenderTemplate} result with a render arguments map.
          * Note the template path should be set via {@link ActionContext#templatePath(String)}
          * method
+         *
          * @param args
          */
         public static Result template(Map<String, Object> args) {
@@ -343,23 +423,23 @@ public @interface Controller {
          * context via {@link ActionContext#templatePath(String)} method.
          * <p>This method returns different render results depends on the request format</p>
          * <table>
-         *     <tr>
-         *         <th>Format</th>
-         *         <th>Result type</th>
-         *     </tr>
-         *     <tr>
-         *         <td>{@link org.osgl.http.H.Format#json}</td>
-         *         <td>A JSON string that map the arguments to their own local variable names</td>
-         *     </tr>
-         *     <tr>
-         *         <td>{@link org.osgl.http.H.Format#html} or any other text formats</td>
-         *         <td>{@link RenderTemplate}</td>
-         *     </tr>
-         *     <tr>
-         *         <td>{@link org.osgl.http.H.Format#pdf} or any other binary format</td>
-         *         <td>If first argument is of type File or InputStream, then outbound the
-         *         content as a binary stream, otherwise throw out {@link org.osgl.exception.UnsupportedException}</td>
-         *     </tr>
+         * <tr>
+         * <th>Format</th>
+         * <th>Result type</th>
+         * </tr>
+         * <tr>
+         * <td>{@link org.osgl.http.H.Format#json}</td>
+         * <td>A JSON string that map the arguments to their own local variable names</td>
+         * </tr>
+         * <tr>
+         * <td>{@link org.osgl.http.H.Format#html} or any other text formats</td>
+         * <td>{@link RenderTemplate}</td>
+         * </tr>
+         * <tr>
+         * <td>{@link org.osgl.http.H.Format#pdf} or any other binary format</td>
+         * <td>If first argument is of type File or InputStream, then outbound the
+         * content as a binary stream, otherwise throw out {@link org.osgl.exception.UnsupportedException}</td>
+         * </tr>
          * </table>
          *
          * @param args
@@ -371,9 +451,10 @@ public @interface Controller {
         /**
          * Kind of like {@link #render(Object...)}, the only differences is this method force to render a template
          * without regarding to the request format
+         *
          * @param args
          */
-        public static Result renderTemplate(Object ... args) {
+        public static Result renderTemplate(Object... args) {
             return new RenderTemplate();
         }
 
@@ -418,7 +499,6 @@ public @interface Controller {
         }
 
         /**
-         *
          * @param array
          * @param actionContext
          * @return
@@ -434,7 +514,8 @@ public @interface Controller {
          * Infer {@link Result} from an {@link InputStream}. If the current context is in
          * {@code JSON} format then it will render a {@link RenderJSON JSON} result from the content of the
          * input stream. Otherwise, it will render a {@link RenderBinary binary} result from the inputstream
-         * @param is the inputstream
+         *
+         * @param is            the inputstream
          * @param actionContext
          * @return a Result inferred from the inputstream specified
          */
@@ -450,7 +531,8 @@ public @interface Controller {
          * Infer {@link Result} from an {@link File}. If the current context is in
          * {@code JSON} format then it will render a {@link RenderJSON JSON} result from the content of the
          * file. Otherwise, it will render a {@link RenderBinary binary} result from the file specified
-         * @param file the file
+         *
+         * @param file          the file
          * @param actionContext
          * @return a Result inferred from the file specified
          */
@@ -473,19 +555,20 @@ public @interface Controller {
         /**
          * Infer a {@link Result} from a {@link Object object} value v:
          * <ul>
-         *     <li>If v is {@code null} then null returned</li>
-         *     <li>If v is instance of {@code Result} then it is returned directly</li>
-         *     <li>If v is instance of {@code String} then {@link #inferResult(String, ActionContext)} is used
-         *     to infer the {@code Result}</li>
-         *     <li>If v is instance of {@code InputStream} then {@link #inferResult(InputStream, ActionContext)} is used
-         *     to infer the {@code Result}</li>
-         *     <li>If v is instance of {@code File} then {@link #inferResult(File, ActionContext)} is used
-         *     to infer the {@code Result}</li>
-         *     <li>If v is instance of {@code Map} then {@link #inferResult(Map, ActionContext)} is used
-         *     to infer the {@code Result}</li>
-         *     <li>If v is an array of {@code Object} then {@link #inferResult(Object[], ActionContext)} is used
-         *     to infer the {@code Result}</li>
+         * <li>If v is {@code null} then null returned</li>
+         * <li>If v is instance of {@code Result} then it is returned directly</li>
+         * <li>If v is instance of {@code String} then {@link #inferResult(String, ActionContext)} is used
+         * to infer the {@code Result}</li>
+         * <li>If v is instance of {@code InputStream} then {@link #inferResult(InputStream, ActionContext)} is used
+         * to infer the {@code Result}</li>
+         * <li>If v is instance of {@code File} then {@link #inferResult(File, ActionContext)} is used
+         * to infer the {@code Result}</li>
+         * <li>If v is instance of {@code Map} then {@link #inferResult(Map, ActionContext)} is used
+         * to infer the {@code Result}</li>
+         * <li>If v is an array of {@code Object} then {@link #inferResult(Object[], ActionContext)} is used
+         * to infer the {@code Result}</li>
          * </ul>
+         *
          * @param v
          * @param actionContext
          * @return
@@ -508,7 +591,7 @@ public @interface Controller {
                 return inferResult((ISObject) v, actionContext);
             } else if (v instanceof Map) {
                 if (hasTemplate) {
-                    return inferToTemplate((Map)v, actionContext);
+                    return inferToTemplate((Map) v, actionContext);
                 }
                 return inferResult((Map) v, actionContext);
             } else if (v instanceof Object[]) {

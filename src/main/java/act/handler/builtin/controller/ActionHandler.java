@@ -12,6 +12,6 @@ public abstract class ActionHandler<T extends ActionHandler> extends Handler<T> 
         super(priority);
     }
 
-    public abstract Result handle(ActionContext actionContext);
+    public abstract Result handle(ActionContext actionContext) throws Exception;
 
 }

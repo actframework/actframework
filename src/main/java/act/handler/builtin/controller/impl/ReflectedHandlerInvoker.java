@@ -147,7 +147,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         rv.apply(controllerClass, method);
     }
 
-    public Result handle(ActionContext actionContext) {
+    public Result handle(ActionContext actionContext) throws Exception {
         Object ctrl = controllerInstance(actionContext);
         applyAppContext(actionContext, ctrl);
         Object[] params = params(actionContext, null, null);
@@ -155,7 +155,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
     }
 
     @Override
-    public Result handle(Result result, ActionContext actionContext) {
+    public Result handle(Result result, ActionContext actionContext) throws Exception {
         Object ctrl = controllerInstance(actionContext);
         applyAppContext(actionContext, ctrl);
         Object[] params = params(actionContext, result, null);
@@ -163,7 +163,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
     }
 
     @Override
-    public Result handle(Exception e, ActionContext actionContext) {
+    public Result handle(Exception e, ActionContext actionContext) throws Exception {
         Object ctrl = handler.isStatic() ? null : controllerInstance(actionContext);
         applyAppContext(actionContext, ctrl);
         Object[] params = params(actionContext, null, e);
@@ -187,7 +187,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         // ignore ContextLocal save as it's processed for one time when RequestHandlerProxy is invoked
     }
 
-    private Result invoke(M handlerMetaInfo, ActionContext context, Object controller, Object[] params) {
+    private Result invoke(M handlerMetaInfo, ActionContext context, Object controller, Object[] params) throws Exception {
         Object result;
         if (null != methodAccess) {
             try {
@@ -200,8 +200,6 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
                 result = method.invoke(null, params);
             } catch (Result r) {
                 return r;
-            } catch (Exception e) {
-                throw E.unexpected(e);
             }
         }
         boolean hasTemplate = checkTemplate(context);
@@ -403,7 +401,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         }
 
         @Override
-        public Result handle(ActionContext actionContext) {
+        public Result handle(ActionContext actionContext) throws Exception {
             return invoker.handle(actionContext);
         }
 
@@ -429,7 +427,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         }
 
         @Override
-        public Result handle(Result result, ActionContext actionContext) {
+        public Result handle(Result result, ActionContext actionContext) throws Exception {
             return invoker.handle(result, actionContext);
         }
 
@@ -472,7 +470,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         }
 
         @Override
-        protected Result internalHandle(Exception e, ActionContext actionContext) {
+        protected Result internalHandle(Exception e, ActionContext actionContext) throws Exception {
             return invoker.handle(e, actionContext);
         }
 
@@ -503,7 +501,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         }
 
         @Override
-        public void handle(ActionContext actionContext) {
+        public void handle(ActionContext actionContext) throws Exception {
             invoker.handle(actionContext);
         }
 

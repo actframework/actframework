@@ -9,14 +9,20 @@ import act.handler.RequestHandler;
 import act.handler.builtin.controller.RequestHandlerProxy;
 import act.handler.event.BeforeCommit;
 import act.route.Router;
+import act.util.ActError;
 import act.view.ActServerError;
 import org.osgl.$;
 import org.osgl.exception.NotAppliedException;
 import org.osgl.http.H;
+import org.osgl.logging.LogManager;
+import org.osgl.logging.Logger;
 import org.osgl.mvc.result.Result;
 import org.osgl.util.E;
 
 public class NetworkClient extends $.F1<ActionContext, Void> {
+
+    private static Logger logger = LogManager.get(NetworkClient.class);
+
     final private App app;
     private NamedPort port;
 
@@ -52,12 +58,22 @@ public class NetworkClient extends $.F1<ActionContext, Void> {
             ctx.handler(rh);
             rh.handle(ctx);
         } catch (Result r) {
-            r = RequestHandlerProxy.GLOBAL_AFTER_INTERCEPTOR.apply(r, ctx);
+            try {
+                r = RequestHandlerProxy.GLOBAL_AFTER_INTERCEPTOR.apply(r, ctx);
+            } catch (Exception e) {
+                logger.error(e, "Error calling global after interceptor");
+                r = ActServerError.of(e);
+            }
             app.eventBus().emit(new BeforeCommit(r, ctx));
             r.apply(req, ctx.resp());
         } catch (Throwable t) {
-            Result r = ActServerError.of(t, app());
-            r = RequestHandlerProxy.GLOBAL_AFTER_INTERCEPTOR.apply(r, ctx);
+            Result r = ActServerError.of(t);
+            try {
+                r = RequestHandlerProxy.GLOBAL_EXCEPTION_INTERCEPTOR.apply(r, ctx);
+            } catch (Exception e) {
+                logger.error(e, "Error calling global exception interceptor");
+                r = ActServerError.of(e);
+            }
             app.eventBus().emit(new BeforeCommit(r, ctx));
             r.apply(req, ctx.resp());
         } finally {

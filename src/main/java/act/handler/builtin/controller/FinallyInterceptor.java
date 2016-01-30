@@ -14,7 +14,7 @@ public abstract class FinallyInterceptor
         super(priority);
     }
 
-    public abstract void handle(ActionContext actionContext);
+    public abstract void handle(ActionContext actionContext) throws Exception;
 
     @Override
     public void register() {

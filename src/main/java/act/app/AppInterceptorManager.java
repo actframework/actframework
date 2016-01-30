@@ -33,20 +33,20 @@ public class AppInterceptorManager extends AppServiceBase<AppInterceptorManager>
         super(app);
     }
 
-    public Result handleBefore(ActionContext actionContext) {
+    public Result handleBefore(ActionContext actionContext) throws Exception {
         return BEFORE_INTERCEPTOR.apply(actionContext);
     }
 
-    public Result handleAfter(Result result, ActionContext actionContext) {
+    public Result handleAfter(Result result, ActionContext actionContext) throws Exception {
         return AFTER_INTERCEPTOR.apply(result, actionContext);
     }
 
-    public void handleFinally(ActionContext actionContext) {
+    public void handleFinally(ActionContext actionContext) throws Exception {
         FINALLY_INTERCEPTOR.apply(actionContext);
     }
 
 
-    public Result handleException(Exception ex, ActionContext actionContext) {
+    public Result handleException(Exception ex, ActionContext actionContext) throws Exception {
         return EXCEPTION_INTERCEPTOR.apply(ex, actionContext);
     }
 
