@@ -215,9 +215,10 @@ public class Router extends AppServiceBase<Router> {
 
     private Node _locate(H.Method method, CharSequence path) {
         Node node = root(method);
-        assert node != null;
         E.unsupportedIf(null == node, "Method %s is not supported", method);
-        if (path.length() == 1 && path.charAt(0) == '/') {
+        assert null != node;
+        int pathLen = path.length();
+        if (0 == pathLen || (1 == pathLen && path.charAt(0) == '/')) {
             return node;
         }
         String sUrl = path.toString();

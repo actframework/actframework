@@ -574,7 +574,7 @@ public @interface Controller {
          * @return
          */
         public static Result inferResult(HandlerMethodMetaInfo meta, Object v, ActionContext actionContext, boolean hasTemplate) {
-            if (null == v) {
+            if (null == v && !hasTemplate) {
                 return null;
             } else if (v instanceof Result) {
                 return (Result) v;
