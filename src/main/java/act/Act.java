@@ -226,7 +226,7 @@ public final class Act {
                 appManager.scan();
             }
         } catch (ActAppException e) {
-            logger.fatal(e, "Error starting ACT: %s\n%s", e.getErrorTitle(), e.getErrorDescription());
+            logger.fatal(e, "Error starting ACT");
             return;
         }
         startNetworkLayer();

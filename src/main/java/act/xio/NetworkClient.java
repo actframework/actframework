@@ -66,13 +66,17 @@ public class NetworkClient extends $.F1<ActionContext, Void> {
             }
             app.eventBus().emit(new BeforeCommit(r, ctx));
             r.apply(req, ctx.resp());
-        } catch (Throwable t) {
-            Result r = ActServerError.of(t);
+        } catch (Exception t) {
+            logger.error(t, "Error handling network request");
+            Result r;
             try {
-                r = RequestHandlerProxy.GLOBAL_EXCEPTION_INTERCEPTOR.apply(r, ctx);
+                r = RequestHandlerProxy.GLOBAL_EXCEPTION_INTERCEPTOR.apply(t, ctx);
             } catch (Exception e) {
                 logger.error(e, "Error calling global exception interceptor");
                 r = ActServerError.of(e);
+            }
+            if (null == r) {
+                r = ActServerError.of(t);
             }
             app.eventBus().emit(new BeforeCommit(r, ctx));
             r.apply(req, ctx.resp());

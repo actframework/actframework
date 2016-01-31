@@ -26,6 +26,11 @@ public class DuplicateRouteMappingException extends ActAppException {
     }
 
     @Override
+    public String getMessage() {
+        return getErrorDescription();
+    }
+
+    @Override
     public String getErrorDescription() {
         return S.fmt("Can not overwrite existing route mapping:\n\t%s\nwith new route mapping:\n\t%s", existingRouteMapping, newRouteMapping);
     }
