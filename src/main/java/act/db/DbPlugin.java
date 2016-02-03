@@ -16,6 +16,7 @@ public abstract class DbPlugin extends DestroyableBase implements Plugin {
     @Override
     public void register() {
         Act.dbManager().register(this);
+        Act.trigger(new DbPluginRegistered(this));
     }
 
     @Override

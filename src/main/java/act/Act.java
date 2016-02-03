@@ -10,6 +10,8 @@ import act.controller.meta.ActionMethodMetaInfo;
 import act.controller.meta.CatchMethodMetaInfo;
 import act.controller.meta.InterceptorMethodMetaInfo;
 import act.db.DbManager;
+import act.event.ActEvent;
+import act.event.ActEventListener;
 import act.exception.ActException;
 import act.handler.builtin.controller.*;
 import act.handler.builtin.controller.impl.ReflectedHandlerInvoker;
@@ -113,6 +115,7 @@ public final class Act {
     private static AppServicePluginManager appPluginManager;
     private static IdGenerator idGenerator = new IdGenerator();
     private static Map<String, Plugin> genericPluginRegistry = C.newMap();
+    private static Map<Class<? extends ActEvent>, List<ActEventListener>> listeners = C.newMap();
 
     public static List<Class<?>> pluginClasses() {
         ClassLoader cl = Act.class.getClassLoader();
@@ -250,6 +253,30 @@ public final class Act {
         List<NamedPort> portList = app.config().namedPorts();
         for (NamedPort np : portList) {
             network.register(np.port(), new NetworkClient(app, np));
+        }
+    }
+
+    public static synchronized void trigger(ActEvent<?> event) {
+        List<ActEventListener> list = listeners.get(event.getClass());
+        if (null != list) {
+            for (ActEventListener l : list) {
+                try {
+                    l.on(event);
+                } catch (Exception e) {
+                    logger.error(e, "error calling act event listener %s on event %s", l.id(), event);
+                }
+            }
+        }
+    }
+
+    public static synchronized  <T extends ActEvent> void registerEventListener(Class<T> eventClass, ActEventListener<T> listener) {
+        List<ActEventListener> list = listeners.get(eventClass);
+        if (null == list) {
+            list = C.newList();
+            listeners.put(eventClass, list);
+        }
+        if (!list.contains(listener)) {
+            list.add(listener);
         }
     }
 
