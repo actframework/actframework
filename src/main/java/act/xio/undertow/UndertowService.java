@@ -59,20 +59,20 @@ public class UndertowService extends NetworkServiceBase {
     protected void setUpClient(NetworkClient client, int port) throws IOException {
         App app = client.app();
         AppConfig config = app.config();
-        InetAddress addr;
-        try {
-            addr = Inet4Address.getByName("localhost");
-        } catch (UnknownHostException e) {
-            logger.error(e, "Cannot start app[%s]:", app.home());
-            return;
-        }
+//        InetAddress addr;
+//        try {
+//            addr = Inet4Address.getByName("localhost");
+//        } catch (UnknownHostException e) {
+//            logger.error(e, "Cannot start app[%s]:", app.home());
+//            return;
+//        }
 
         HttpHandler handler = new ActHttpHandler(client);
         HttpOpenListener openListener = new HttpOpenListener(buffers, undertowOptions);
         openListener.setRootHandler(handler);
         ChannelListener<AcceptingChannel<StreamConnection>> acceptListener = ChannelListeners.openListenerAdapter(openListener);
 
-        AcceptingChannel<? extends StreamConnection> server = worker.createStreamConnectionServer(new InetSocketAddress(addr, port), acceptListener, socketOptions);
+        AcceptingChannel<? extends StreamConnection> server = worker.createStreamConnectionServer(new InetSocketAddress(port), acceptListener, socketOptions);
         server.resumeAccepts();
         channels.add(server);
     }
