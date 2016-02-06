@@ -17,6 +17,7 @@ public enum AsmTypes implements Opcodes {
     ;
     public static AsmType<Void> VOID = new AsmType<Void>(Void.class);
     public static AsmType<Object> OBJECT = new AsmType<Object>(Object.class);
+    public static AsmType<String> STRING = new AsmType<String>(String.class);
     public static AsmType<ActContext> ACT_CONTEXT = new AsmType<ActContext>(ActContext.class);
     public static AsmType<ActionContext> ACTION_CONTEXT = new AsmType<ActionContext>(ActionContext.class);
     public static AsmType<MailerContext> MAILER_CONTEXT = new AsmType<MailerContext>(MailerContext.class);
@@ -40,10 +41,16 @@ public enum AsmTypes implements Opcodes {
     public static AsmType<TreeView> TREE_VIEW = new AsmType<TreeView>(TreeView.class);
 
     public static final Type RETURN_VOID = Type.VOID_TYPE;
+
     public static final Type OBJECT_TYPE = OBJECT.asmType();
     public static final String OBJECT_NAME = OBJECT.className();
     public static final String OBJECT_INTERNAL_NAME = OBJECT.internalName();
     public static final String OBJECT_DESC = OBJECT.desc();
+
+    public static final Type STRING_TYPE = STRING.asmType();
+    public static final String STRING_NAME = STRING.className();
+    public static final String STRING_INTERNAL_NAME = STRING.internalName();
+    public static final String STRING_DESC = STRING.desc();
 
     public static final Type APP_TYPE = APP.asmType();
     public static final String APP_NAME = APP.className();
