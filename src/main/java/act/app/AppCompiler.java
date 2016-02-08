@@ -1,5 +1,6 @@
 package act.app;
 
+import act.Act;
 import act.conf.AppConfig;
 import act.util.DestroyableBase;
 import org.eclipse.jdt.core.compiler.IProblem;
@@ -149,7 +150,15 @@ class AppCompiler extends DestroyableBase {
 
         private NameEnvironmentAnswer findType(String type) {
             try {
-                byte[] bytes = classLoader.enhancedBytecode(type);
+                byte[] bytes;
+                Source source;
+                if (Act.isDev()) {
+                    source = classLoader.source(type);
+                    if (null != source) {
+                        return new NameEnvironmentAnswer(source.compilationUnit(), null);
+                    }
+                }
+                bytes = classLoader.enhancedBytecode(type);
                 if (bytes != null) {
                     ClassFileReader classFileReader = new ClassFileReader(bytes, type.toCharArray(), true);
                     return new NameEnvironmentAnswer(classFileReader, null);
@@ -158,7 +167,10 @@ class AppCompiler extends DestroyableBase {
                         return null;
                     }
                 }
-                Source source = classLoader.source(type);
+                if (Act.isDev()) {
+                    return null;
+                }
+                source = classLoader.source(type);
                 if (null == source) {
                     return null;
                 } else {

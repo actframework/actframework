@@ -444,7 +444,7 @@ public class AppClassLoader
         if (null == cname) {
             return null;
         }
-        ClassInfoRepository repo = (ClassInfoRepository)classInfoRepository();
+        ClassInfoRepository repo = classInfoRepository();
         if (repo.has(cname)) {
             return repo.node(cname);
         }

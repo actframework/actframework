@@ -555,7 +555,7 @@ public class ApacheMultipartParser extends RequestBodyParser {
         InputStream body = request.inputStream();
         Map<String, String[]> result = new HashMap<String, String[]>();
         try {
-            FileItemIteratorImpl iter = new FileItemIteratorImpl(body, request.contentType(), request.characterEncoding());
+            FileItemIteratorImpl iter = new FileItemIteratorImpl(body, request.header("content-type"), request.characterEncoding());
             while (iter.hasNext()) {
                 FileItemStream item = iter.next();
                 FileItem fileItem = new AutoFileItem(item, context);
@@ -1003,9 +1003,9 @@ public class ApacheMultipartParser extends RequestBodyParser {
          * @throws FileUploadException An error occurred while parsing the request.
          * @throws IOException         An I/O error occurred.
          */
-        FileItemIteratorImpl(InputStream input, H.Format contentType, String charEncoding) throws FileUploadException, IOException {
+        FileItemIteratorImpl(InputStream input, String contentType, String charEncoding) throws FileUploadException, IOException {
 
-            if ((null == contentType) || (!contentType.contentType().toLowerCase().startsWith(MULTIPART))) {
+            if ((null == contentType) || (!contentType.toLowerCase().startsWith(MULTIPART))) {
                 throw new InvalidContentTypeException("the request doesn't contain a " + MULTIPART_FORM_DATA + " or " + MULTIPART_MIXED + " stream, content type header is " + contentType);
             }
 
@@ -1022,7 +1022,7 @@ public class ApacheMultipartParser extends RequestBodyParser {
 
             }
 
-            boundary = getBoundary(contentType.contentType());
+            boundary = getBoundary(contentType);
             if (boundary == null) {
                 throw new FileUploadException("the request was rejected because " + "no multipart boundary was found");
             }
@@ -1108,13 +1108,7 @@ public class ApacheMultipartParser extends RequestBodyParser {
          * @throws IOException         Reading the file item failed.
          */
         public boolean hasNext() throws FileUploadException, IOException {
-            if (eof) {
-                return false;
-            }
-            if (itemValid) {
-                return true;
-            }
-            return findNextItem();
+            return !eof && (itemValid || findNextItem());
         }
 
         /**
