@@ -16,6 +16,7 @@ import java.util.Map;
 import java.util.UUID;
 
 public class UploadFileStorageService extends FileSystemService {
+
     public UploadFileStorageService(Map<String, String> conf) {
         super(conf);
     }
@@ -27,6 +28,7 @@ public class UploadFileStorageService extends FileSystemService {
         }
         Map<String, String> conf = C.newMap("storage.fs.home.dir", Files.file(app.tmpDir(), "uploads").getAbsolutePath(),
                 "storage.keygen", KeyGenerator.BY_DATE.name());
+        conf.put(IStorageService.CONF_ID, "__upload");
         return new UploadFileStorageService(conf);
     }
 

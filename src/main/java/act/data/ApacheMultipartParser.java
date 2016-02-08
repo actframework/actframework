@@ -579,7 +579,7 @@ public class ApacheMultipartParser extends RequestBodyParser {
 
                     MapUtil.mergeValueInMap(result, fileItem.getFieldName(), fileItem.getString(_encoding));
                 } else {
-                    context.addUpload(UploadFileStorageService.store(fileItem, context.app()));
+                    context.addUpload(fileItem.getFieldName(), UploadFileStorageService.store(fileItem, context.app()));
                     MapUtil.mergeValueInMap(result, fileItem.getFieldName(), fileItem.getFieldName());
                 }
             }

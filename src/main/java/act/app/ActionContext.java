@@ -49,7 +49,7 @@ public class ActionContext extends ActContext.ActContextBase<ActionContext> impl
     private Map<String, Object> attributes;
     private State state;
     private Map<String, Object> controllerInstances;
-    private List<ISObject> uploads;
+    private Map<String, ISObject> uploads;
     private Set<ConstraintViolation> violations;
     private Router router;
     private RequestHandler handler;
@@ -265,12 +265,12 @@ public class ActionContext extends ActContext.ActContextBase<ActionContext> impl
         return allParams;
     }
 
-    public List<ISObject> uploads() {
-        return C.list(uploads);
+    public ISObject upload(String name) {
+        return uploads.get(name);
     }
 
-    public ActionContext addUpload(ISObject sobj) {
-        uploads.add(sobj);
+    public ActionContext addUpload(String name, ISObject sobj) {
+        uploads.put(name, sobj);
         return this;
     }
 
@@ -601,7 +601,7 @@ public class ActionContext extends ActContext.ActContextBase<ActionContext> impl
     }
 
     private void _init() {
-        uploads = C.newList();
+        uploads = C.newMap();
         extraParams = C.newMap();
         violations = C.newSet();
         attributes = C.newMap();

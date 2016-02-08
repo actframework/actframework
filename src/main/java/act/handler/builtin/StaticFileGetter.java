@@ -61,7 +61,7 @@ public class StaticFileGetter extends FastRequestHandler {
         }
         InputStream is = new BufferedInputStream(IO.is(file));
         H.Response resp = context.resp();
-        if (H.Format.UNKNOWN != fmt) {
+        if (null != fmt && H.Format.UNKNOWN != fmt) {
             resp.contentType(fmt.contentType());
         }
         IO.copy(is, context.resp().outputStream());
