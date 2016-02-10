@@ -35,7 +35,7 @@ public class ActEvent<T> extends EventObject {
      * <p>This allows the ActFramework properly handle the event class registration</p>
      * @return the type of the event
      */
-    public Class<ActEvent<T>> eventType() {
+    public Class<? extends ActEvent<T>> eventType() {
         return $.cast(getClass());
     }
 
