@@ -613,6 +613,9 @@ public @interface Controller {
                         return new RenderJSON(v);
                     }
                     return new FilteredRenderJSON(v, propertySpec, actionContext);
+                } else if (actionContext.accept() == H.Format.CSV) {
+                    PropertySpec.MetaInfo propertySpec = (null == meta) ? null : meta.propertySpec();
+                    return new RenderCSV(v, propertySpec, actionContext);
                 } else {
                     return inferResult(v.toString(), actionContext);
                 }

@@ -73,7 +73,7 @@ public class GroupInterceptorMetaInfo extends DestroyableBase {
     }
 
     private C.List<InterceptorMethodMetaInfo> allList() {
-        return beforeList().lazy().append(afterList()).append(catchList()).append(finallyList());
+        return beforeList().lazy().append(afterList()).append((List<CatchMethodMetaInfo>)catchList()).append(finallyList());
     }
 
     public InterceptorMethodMetaInfo find(String methodName, String className) {

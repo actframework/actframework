@@ -10,12 +10,14 @@ import act.util.FastJsonPropertyPreFilter;
 import act.util.PropertySpec;
 import com.alibaba.fastjson.serializer.SerializeFilter;
 import com.alibaba.fastjson.serializer.SerializerFeature;
+import org.osgl.$;
 import org.osgl.util.C;
 import org.osgl.util.E;
+import org.osgl.util.Iterators;
 import org.osgl.util.S;
+import org.rythmengine.utils.Escape;
 
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Define how the command method return result should
@@ -50,14 +52,17 @@ public enum CliView {
             Class<?> componentType;
             if (result instanceof Iterable) {
                 dataList = C.list((Iterable) result);
-                if (dataList.isEmpty()) {
-                    return "no data";
-                }
-                componentType = dataList.get(0).getClass();
+            } else if (result instanceof Iterator) {
+                dataList = C.list((Iterator) result);
+            } else if (result instanceof Enumeration) {
+                dataList = C.list((Enumeration) result);
             } else {
                 dataList = C.listOf(result);
-                componentType = result.getClass();
             }
+            if (dataList.isEmpty()) {
+                return "no data";
+            }
+            componentType = dataList.get(0).getClass();
             DataPropertyRepository repo = context.app().service(DataPropertyRepository.class);
             List<String> outputFields = repo.outputFields(spec, componentType, context);
             String tableString = cliContext.getTable(new CollectionASCIITableAware(dataList, outputFields, spec.labels(outputFields, context)));
@@ -188,6 +193,81 @@ public enum CliView {
             } else {
                 return S.string(result);
             }
+        }
+    },
+
+    CSV() {
+        @Override
+        public String render(Object result, PropertySpec.MetaInfo spec, ActContext context) {
+            if (null == result) {
+                return "no data";
+            }
+            List dataList;
+            Class<?> componentType;
+            if (result instanceof Iterable) {
+                dataList = C.list((Iterable) result);
+            } else if (result instanceof Iterator) {
+                dataList = C.list((Iterator) result);
+            } else if (result instanceof Enumeration) {
+                dataList = C.list((Enumeration) result);
+            } else {
+                dataList = C.list(result);
+            }
+            if (dataList.isEmpty()) {
+                return "no data";
+            }
+            componentType = dataList.get(0).getClass();
+            DataPropertyRepository repo = context.app().service(DataPropertyRepository.class);
+            if (null == spec) {
+                spec = new PropertySpec.MetaInfo();
+                spec.onValue("-not_exists");
+            }
+            List<String> outputFields = repo.outputFields(spec, componentType, context);
+            StringBuilder sb = S.builder();
+            buildHeaderLine(sb, outputFields, spec.labelMapping());
+            for (Object entity: dataList) {
+                sb.append($.OS.lineSeparator());
+                buildDataLine(sb, entity, outputFields);
+            }
+            return sb.toString();
+        }
+
+        private void buildDataLine(StringBuilder sb, Object data, List<String> outputFields) {
+            Iterator<String> itr = outputFields.iterator();
+            String prop = itr.next();
+            sb.append(getProperty(data, prop));
+            while (itr.hasNext()) {
+                sb.append(",").append(getProperty(data, itr.next()));
+            }
+        }
+
+        private String getProperty(Object data, String prop) {
+            if ("this".equals(prop)) {
+                return (escape(data));
+            } else {
+                return escape($.getProperty(data, prop));
+            }
+        }
+
+        private void buildHeaderLine(StringBuilder sb, List<String> outputFields, Map<String, String> labels) {
+            if (null == labels) {
+                labels = C.newMap();
+            }
+            Iterator<String> itr = outputFields.iterator();
+            String label = label(itr.next(), labels);
+            sb.append(label);
+            while (itr.hasNext()) {
+                sb.append(",").append(escape(label(itr.next(), labels)));
+            }
+        }
+
+        private String label(String key, Map<String, String> labels) {
+            String s = labels.get(key);
+            return null == s ? key : s;
+        }
+
+        private String escape(Object o) {
+            return Escape.CSV.apply(o).toString();
         }
     };
 
