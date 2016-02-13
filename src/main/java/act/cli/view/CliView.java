@@ -10,6 +10,7 @@ import act.util.FastJsonPropertyPreFilter;
 import act.util.PropertySpec;
 import com.alibaba.fastjson.serializer.SerializeFilter;
 import com.alibaba.fastjson.serializer.SerializerFeature;
+import com.thoughtworks.xstream.XStream;
 import org.osgl.$;
 import org.osgl.util.C;
 import org.osgl.util.E;
@@ -38,7 +39,7 @@ public enum CliView {
             }
 
             if (null == spec) {
-                // TODO: support Table View when filter annotation is not presented
+                // TODO support Table View when filter annotation is not presented
                 return TO_STRING.render(result, null, context);
             }
 
@@ -48,17 +49,8 @@ public enum CliView {
 
             CliContext cliContext = (CliContext) context;
 
-            List dataList;
+            List dataList = toList(result);
             Class<?> componentType;
-            if (result instanceof Iterable) {
-                dataList = C.list((Iterable) result);
-            } else if (result instanceof Iterator) {
-                dataList = C.list((Iterator) result);
-            } else if (result instanceof Enumeration) {
-                dataList = C.list((Enumeration) result);
-            } else {
-                dataList = C.listOf(result);
-            }
             if (dataList.isEmpty()) {
                 return "no data";
             }
@@ -120,22 +112,51 @@ public enum CliView {
     },
 
     /**
+     * Present the result using {@link act.cli.XmlView}
+     */
+    XML() {
+        @Override
+        public String render(Object result, PropertySpec.MetaInfo spec, ActContext context) {
+            if (null == result) {
+                return "<result></result>";
+            }
+            List dataList = toList(result);
+            if (dataList.isEmpty()) {
+                return "<result></result>";
+            }
+            boolean isList = dataList.get(0) != result;
+            XStream xStream = new XStream();
+            Class c = dataList.get(0).getClass();
+            if (isList) {
+                xStream.alias("result", List.class);
+                xStream.alias(c.getSimpleName(), c);
+            } else {
+                xStream.alias("result", c);
+            }
+            if (null == spec) {
+                return xStream.toXML(result);
+            }
+            return xStream.toXML(result);
+        }
+    },
+
+    /**
      * Present the result using {@link act.cli.JsonView}
      */
     JSON () {
         @Override
-        public String render(Object result, PropertySpec.MetaInfo filter, ActContext context) {
-            return render(result, filter, context, context instanceof CliContext);
+        public String render(Object result, PropertySpec.MetaInfo spec, ActContext context) {
+            return render(result, spec, context, context instanceof CliContext);
         }
 
-        public String render(Object result, PropertySpec.MetaInfo filter, ActContext context, boolean format) {
+        public String render(Object result, PropertySpec.MetaInfo spec, ActContext context, boolean format) {
             String json;
-            if (null == filter) {
+            if (null == spec) {
                 json = com.alibaba.fastjson.JSON.toJSONString(result, SerializerFeature.PrettyFormat);
             } else {
                 FastJsonPropertyPreFilter propertyFilter = new FastJsonPropertyPreFilter();
-                List<String> outputs = filter.outputFields(context);
-                Set<String> excluded = filter.excludedFields(context);
+                List<String> outputs = spec.outputFields(context);
+                Set<String> excluded = spec.excludedFields(context);
                 if (excluded.isEmpty()) {
                     if (outputs.isEmpty()) {
                         propertyFilter = null; // no filter defined actually
@@ -155,7 +176,7 @@ public enum CliView {
                     }
                 }
 
-                MappedFastJsonNameFilter nameFilter = new MappedFastJsonNameFilter(filter.labelMapping());
+                MappedFastJsonNameFilter nameFilter = new MappedFastJsonNameFilter(spec.labelMapping());
 
                 if (nameFilter.isEmpty()) {
                     if (format) {
@@ -269,6 +290,7 @@ public enum CliView {
         private String escape(Object o) {
             return Escape.CSV.apply(o).toString();
         }
+
     };
 
     public String render(Object result, PropertySpec.MetaInfo spec, ActContext context) {
@@ -277,5 +299,20 @@ public enum CliView {
 
     public void print(Object result, PropertySpec.MetaInfo spec, CliContext context) {
         context.println(render(result, spec, context));
+    }
+
+    protected List toList(Object result) {
+        List dataList;
+        Class<?> componentType;
+        if (result instanceof Iterable) {
+            dataList = C.list((Iterable) result);
+        } else if (result instanceof Iterator) {
+            dataList = C.list((Iterator) result);
+        } else if (result instanceof Enumeration) {
+            dataList = C.list((Enumeration) result);
+        } else {
+            dataList = C.listOf(result);
+        }
+        return dataList;
     }
 }

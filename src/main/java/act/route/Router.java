@@ -119,6 +119,18 @@ public class Router extends AppServiceBase<Router> {
         }
         RequestHandler handler = node.handler;
         if (null == handler) {
+            if (null != node.dynamicChild) {
+                node = node.dynamicChild;
+                if (null != node.pattern) {
+                    if (node.pattern.matcher("").matches()) {
+                        return node.handler;
+                    } else {
+                        throw notFound();
+                    }
+                } else {
+                    return node.handler;
+                }
+            }
             throw notFound();
         }
         return handler;

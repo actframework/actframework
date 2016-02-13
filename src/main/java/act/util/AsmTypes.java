@@ -34,11 +34,11 @@ public enum AsmTypes implements Opcodes {
     public static AsmType<Command> COMMAND = new AsmType<Command>(Command.class);
     public static AsmType<Optional> OPTIONAL = new AsmType<Optional>(Optional.class);
     public static AsmType<Required> REQUIRED = new AsmType<Required>(Required.class);
-    @Deprecated
-    public static AsmType<HelpMsg> HELP_MSG = new AsmType<HelpMsg>(HelpMsg.class);
     public static AsmType<TableView> TABLE_VIEW = new AsmType<TableView>(TableView.class);
     public static AsmType<JsonView> JSON_VIEW = new AsmType<JsonView>(JsonView.class);
     public static AsmType<TreeView> TREE_VIEW = new AsmType<TreeView>(TreeView.class);
+    public static AsmType<CsvView> CSV_VIEW = new AsmType<CsvView>(CsvView.class);
+
 
     public static final Type RETURN_VOID = Type.VOID_TYPE;
 

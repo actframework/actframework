@@ -246,6 +246,9 @@ public class CommanderByteCodeScanner extends AppByteCodeScannerBase {
                             super.visitEnd();
                         }
                     };
+                } else if ($.eq(AsmTypes.CSV_VIEW.asmType(), type)) {
+                    methodInfo.view(CliView.CSV);
+                    return super.visitAnnotation(desc, visible);
                 } else if ($.eq(AsmTypes.TREE_VIEW.asmType(), type)) {
                     methodInfo.view(CliView.TREE);
                     return super.visitAnnotation(desc, visible);
@@ -255,16 +258,6 @@ public class CommanderByteCodeScanner extends AppByteCodeScannerBase {
                 } else if ($.eq(AsmTypes.JSON_VIEW.asmType(), type)) {
                     methodInfo.view(CliView.JSON);
                     return super.visitAnnotation(desc, visible);
-                } else if ($.eq(AsmTypes.HELP_MSG.asmType(), type)) {
-                    return new AnnotationVisitor(ASM5, av) {
-                        @Override
-                        public void visit(String name, Object value) {
-                            super.visit(name, value);
-                            if (S.eq("value", name)) {
-                                methodInfo.helpMsg(S.string(value));
-                            }
-                        }
-                    };
                 } else if ($.eq(AsmTypes.PROPERTY_SPEC.asmType(), type)) {
                     final PropertySpec.MetaInfo propSpec = new PropertySpec.MetaInfo();
                     methodInfo.propertySpec(propSpec);

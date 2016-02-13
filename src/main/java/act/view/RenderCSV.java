@@ -7,9 +7,7 @@ import org.osgl.http.H;
 import org.osgl.mvc.result.RenderContent;
 
 /**
- * An enhanced version of {@link org.osgl.mvc.result.RenderJSON} that
- * allows {@link PropertySpec} to be applied to control the
- * output fields
+ * Render object as CSV
  */
 public class RenderCSV extends RenderContent {
 

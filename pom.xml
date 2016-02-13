@@ -366,6 +366,12 @@
     </dependency>
 
     <dependency>
+      <groupId>com.thoughtworks.xstream</groupId>
+      <artifactId>xstream</artifactId>
+      <version>1.4.8</version>
+    </dependency>
+
+    <dependency>
       <groupId>com.jamonapi</groupId>
       <artifactId>jamon</artifactId>
       <version>2.80</version>
@@ -431,7 +437,6 @@
       <artifactId>commons-codec</artifactId>
       <version>1.10</version>
     </dependency>
-
 
     <dependency>
       <groupId>com.cronutils</groupId>

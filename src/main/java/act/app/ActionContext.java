@@ -159,6 +159,10 @@ public class ActionContext extends ActContext.ActContextBase<ActionContext> impl
         return accept() == H.Format.JSON;
     }
 
+    public boolean isXML() {
+        return accept() == H.Format.XML;
+    }
+
     public boolean isAjax() {
         return req().isAjax();
     }

@@ -10,6 +10,7 @@ import act.util.PropertySpec;
 import act.view.*;
 import org.osgl.http.H;
 import org.osgl.mvc.result.*;
+import org.osgl.mvc.result.RenderXML;
 import org.osgl.storage.ISObject;
 import org.osgl.util.E;
 import org.osgl.util.IO;
@@ -569,9 +570,9 @@ public @interface Controller {
          * to infer the {@code Result}</li>
          * </ul>
          *
-         * @param v
-         * @param actionContext
-         * @return
+         * @param v the value to be rendered
+         * @param actionContext the action context
+         * @return the rendered result
          */
         public static Result inferResult(HandlerMethodMetaInfo meta, Object v, ActionContext actionContext, boolean hasTemplate) {
             if (null == v && !hasTemplate) {
@@ -613,6 +614,9 @@ public @interface Controller {
                         return new RenderJSON(v);
                     }
                     return new FilteredRenderJSON(v, propertySpec, actionContext);
+                } else if (actionContext.isXML()) {
+                    PropertySpec.MetaInfo propertySpec = (null == meta) ? null : meta.propertySpec();
+                    return new FilteredRenderXML(v, propertySpec, actionContext);
                 } else if (actionContext.accept() == H.Format.CSV) {
                     PropertySpec.MetaInfo propertySpec = (null == meta) ? null : meta.propertySpec();
                     return new RenderCSV(v, propertySpec, actionContext);

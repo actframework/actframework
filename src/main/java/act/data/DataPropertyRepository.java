@@ -120,6 +120,7 @@ public class DataPropertyRepository extends AppServiceBase<DataPropertyRepositor
         }
         if (terminators.contains(c) || extendedTerminators.contains(c.getName())) {
             repo.add(context + propName);
+            return;
         }
         List<String> retTypeProperties = propertyListOf(c);
         context = context + propName + ".";
