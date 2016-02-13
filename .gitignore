@@ -14,3 +14,4 @@ classes
 *.iml
 deploy
 _sys_start.do.not.delete
+.global.id.do-not-delete
