@@ -32,7 +32,7 @@ public class IdGenerator {
         public static class Timestamp implements StartIdProvider {
             private final String id;
             public Timestamp() {
-                long origin = DateTime.parse("2015-08-23").getMillis();
+                long origin = DateTime.parse("2016-03-04").getMillis();
                 // let's assume the system cannot be restart within 10 seconds
                 long l = ($.ms() - origin) / 1000 / 10;
                 id = longToStr(l);
@@ -52,7 +52,7 @@ public class IdGenerator {
             private final String id;
 
             public FileBasedStartCounter() {
-                this("_sys_start.do.not.delete");
+                this(".global.id.do-not-delete");
             }
 
             public FileBasedStartCounter(String path) {
@@ -84,7 +84,7 @@ public class IdGenerator {
             private StartIdProvider delegate;
 
             public DefaultStartIdProvider() {
-                this("_sys_start.do.not.delete");
+                this(".global.id.do-not-delete");
             }
 
             public DefaultStartIdProvider(String path) {
@@ -182,7 +182,7 @@ public class IdGenerator {
      * Create a default IdGenerator with following configuration:
      * <ul>
      *     <li>Node ID provider: four byte IP address</li>
-     *     <li>Start ID provider: stored in <code>_sys_start.do.not.delete</code> file</li>
+     *     <li>Start ID provider: stored in <code>.global.id.do-not-delete</code> file</li>
      *     <li>Sequence ID provider: Atomic Long sequence</li>
      * </ul>
      */
@@ -205,7 +205,7 @@ public class IdGenerator {
      * Create a default IdGenerator with following configuration:
      * <ul>
      *     <li>Node ID provider: N byte IP address, where N is specified by effectiveIpBytes argument</li>
-     *     <li>Start ID provider: stored in <code>_sys_start.do.not.delete</code> file</li>
+     *     <li>Start ID provider: stored in <code>.global.id.do-not-delete</code> file</li>
      *     <li>Sequnce ID provider: Atomic Long sequence</li>
      * </ul>
      */
