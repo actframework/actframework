@@ -10,10 +10,7 @@ import act.controller.Controller;
 import act.controller.meta.*;
 import act.route.RouteSource;
 import act.route.Router;
-import act.util.AsmTypes;
-import act.util.ByteCodeVisitor;
-import act.util.GeneralAnnoInfo;
-import act.util.PropertySpec;
+import act.util.*;
 import org.osgl.$;
 import org.osgl.http.H;
 import org.osgl.logging.L;
@@ -26,6 +23,7 @@ import org.osgl.util.ListBuilder;
 import org.osgl.util.S;
 
 import java.lang.annotation.Annotation;
+import java.util.BitSet;
 import java.util.List;
 import java.util.Map;
 
@@ -210,6 +208,7 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
             private PropertySpec.MetaInfo propSpec;
             private Map<Integer, List<ParamAnnoInfoTrait>> paramAnnoInfoList = C.newMap();
             private Map<Integer, List<GeneralAnnoInfo>> genericParamAnnoInfoList = C.newMap();
+            private BitSet contextInfo = new BitSet();
 
             ActionMethodVisitor(boolean isRoutedMethod, MethodVisitor mv, int access, String methodName, String desc, String signature, String[] exceptions) {
                 super(ASM5, mv);
@@ -298,6 +297,9 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
                     return new ParamAnnotationVisitor(av, parameter);
                 } else if ($.eq(type, AsmTypes.BIND.asmType())) {
                     return new BindAnnotationVisitor(av, parameter);
+                } else if ($.eq(type, AsmTypes.CONTEXT.asmType())) {
+                    contextInfo.set(parameter);
+                    return av;
                 } else {
                     //return av;
                     GeneralAnnoInfo info = new GeneralAnnoInfo(type);
@@ -340,6 +342,9 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
                         info.appContextViaParam(i);
                     }
                     ParamMetaInfo param = new ParamMetaInfo().type(type);
+                    if (contextInfo.get(i)) {
+                        param.setContext();
+                    }
                     List<ParamAnnoInfoTrait> paraAnnoList = paramAnnoInfoList.get(i);
                     if (null != paraAnnoList) {
                         for (ParamAnnoInfoTrait trait : paraAnnoList) {

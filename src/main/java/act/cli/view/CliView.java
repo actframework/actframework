@@ -39,8 +39,7 @@ public enum CliView {
             }
 
             if (null == spec) {
-                // TODO support Table View when filter annotation is not presented
-                return TO_STRING.render(result, null, context);
+                spec = new PropertySpec.MetaInfo();
             }
 
             if (!(context instanceof CliContext)) {

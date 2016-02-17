@@ -14,6 +14,7 @@ import act.conf.AppConfigKey;
 import act.controller.bytecode.ControllerByteCodeScanner;
 import act.data.DataPropertyRepository;
 import act.data.JodaDateTimeCodec;
+import act.data.util.ActPropertyHandlerFactory;
 import act.di.DependencyInjector;
 import act.di.DiBinder;
 import act.event.AppEventListenerBase;
@@ -30,6 +31,7 @@ import act.route.Router;
 import act.util.*;
 import act.view.ActServerError;
 import org.osgl.$;
+import org.osgl.Osgl;
 import org.osgl.cache.CacheService;
 import org.osgl.cache.CacheServiceProvider;
 import org.osgl.http.H;
@@ -629,6 +631,7 @@ public class App {
 
     private void loadBuiltInRoutes() {
         router().addMapping(H.Method.GET, "/asset/", new StaticFileGetter(layout().asset(base())), RouteSource.BUILD_IN);
+        router().addMapping(H.Method.GET, "/~/uploads/{path}", new UploadFileStorageService.UploadFileGetter(), RouteSource.BUILD_IN);
     }
 
     private void initClassLoader() {
@@ -640,6 +643,7 @@ public class App {
 
     private void initResolverManager() {
         resolverManager = new StringValueResolverManager(this);
+        Osgl.propertyHandlerFactory = new ActPropertyHandlerFactory(resolverManager);
     }
     private void initBinderManager() {
         binderManager = new BinderManager(this);

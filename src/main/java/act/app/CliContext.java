@@ -45,7 +45,7 @@ public class CliContext extends ActContext.ActContextBase<CliContext> implements
 
     private IASCIITable asciiTable;
 
-    private Osgl.T2<? extends Osgl.Function<String, Serializable>, ? extends Osgl.Func2<String, Serializable, ?>> evaluatorCache;
+    private CacheService evaluatorCache;
 
     private boolean rawPrint;
 
@@ -62,21 +62,7 @@ public class CliContext extends ActContext.ActContextBase<CliContext> implements
         super(app);
         this.sessionId = id;
         parser = new CommandLineParser(line);
-        final CacheService cache = app.cache();
-        Osgl.F1<String, Serializable> getter = new Osgl.F1<String, Serializable>() {
-            @Override
-            public Serializable apply(String s) throws NotAppliedException, Osgl.Break {
-                return cache.get(s);
-            }
-        };
-        Osgl.F2<String, Serializable, Object> setter = new Osgl.F2<String, Serializable, Object>() {
-            @Override
-            public Object apply(String s, Serializable serializable) throws NotAppliedException, Osgl.Break {
-                cache.put(s, serializable);
-                return null;
-            }
-        };
-        evaluatorCache = Osgl.T2(getter, setter);
+        evaluatorCache = app.cache();
         this.console = $.NPE(console);
         Terminal2 t2 = $.cast(console.getTerminal());
         t2.setEchoEnabled(false);
@@ -108,7 +94,7 @@ public class CliContext extends ActContext.ActContextBase<CliContext> implements
         return sessionId;
     }
 
-    public Osgl.T2<? extends Osgl.Function<String, Serializable>, ? extends Osgl.Func2<String, Serializable, ?>> evaluatorCache() {
+    public CacheService evaluatorCache() {
         return evaluatorCache;
     }
 

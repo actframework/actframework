@@ -213,7 +213,7 @@ public enum AppConfigKey implements ConfigKey {
      * it means all 4 IP bytes will be used to calculate the node ID
      * <p>Default value: {@code 4}</p>
      */
-    ID_GEN_NODE_ID_EFFECTIVE_IP_BYTES("idgen.node_id.effective_ip_bytes"),
+    ID_GEN_NODE_ID_EFFECTIVE_IP_BYTES("idgen.node_id.effective_ip_bytes.int"),
 
     /**
      * {@code act.idgen.start_id.provider.impl} specifies the {@link act.util.IdGenerator.StartIdProvider}

@@ -11,6 +11,7 @@ import act.asm.Type;
 import act.controller.ActionMethodParamAnnotationHandler;
 import act.controller.Controller;
 import act.controller.meta.*;
+import act.data.AutoBinder;
 import act.exception.BindException;
 import act.handler.builtin.controller.*;
 import act.util.DestroyableBase;
@@ -53,6 +54,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
     private ClassLoader cl;
     private ControllerClassMetaInfo controller;
     private Class<?> controllerClass;
+    private AutoBinder autoBinder;
     protected MethodAccess methodAccess;
     private M handler;
     protected int handlerIndex;
@@ -76,6 +78,8 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
             ActContextInjection.FieldActContextInjection faci = (ActContextInjection.FieldActContextInjection) ctxInjection;
             fieldAppCtxHandler = storeAppCtxToCtrlrField(faci.fieldName(), controllerClass);
         }
+
+        this.autoBinder = new AutoBinder(app);
 
         $.T2<Class[], Class[]> t2 = paramTypes();
         paramTypes = t2._1;
@@ -233,6 +237,10 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         for (int i = 0; i < paramCount; ++i) {
             ParamMetaInfo param = handler.param(i);
             Class<?> paramType = paramTypes[i];
+            if (param.isContext()) {
+                oa[i] = app.newInstance(paramType);
+                continue;
+            }
             Class<?> paramComponentType = paramComponentTypes[i];
             if (ActionContext.class.equals(paramType)) {
                 oa[i] = ctx;
@@ -240,6 +248,8 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
                 oa[i] = result;
             } else if (Exception.class.isAssignableFrom(paramType)) {
                 oa[i] = exception;
+            } else if (App.class.equals(paramType)) {
+                oa[i] = app;
             } else {
                 try {
                     BindAnnoInfo bindInfo = param.bindAnnoInfo();
@@ -291,7 +301,16 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
                             }
                         }
                         if (null == resolver) {
-                            oa[i] = resolverManager.resolve(reqVal, paramType);
+                            Object o = resolverManager.resolve(reqVal, paramType);
+                            if (null == o) {
+                                try {
+                                    Object entity = $.newInstance(paramType);
+                                    o = autoBinder.resolve(entity, bindName, ctx);
+                                } catch (Exception e) {
+                                    logger.warn(e, "Error binding parameter %s", bindName);
+                                }
+                            }
+                            oa[i] = o;
                         } else {
                             oa[i] = resolver.resolve(reqVal);
                         }

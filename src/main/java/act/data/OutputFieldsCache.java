@@ -65,7 +65,7 @@ class OutputFieldsCache {
         C.List<StringOrPattern> outputs = C.newList();
         boolean hasPattern = hasPattern(k.outputs, outputs);
         Set<String> excluded = k.excluded;
-        if (hasPattern || !excluded.isEmpty()) {
+        if (hasPattern || outputs.isEmpty()) {
             DataPropertyRepository repo = App.instance().service(DataPropertyRepository.class);
             List<String> allFields = repo.propertyListOf(k.componentType);
             if (!excluded.isEmpty()) {
@@ -87,7 +87,11 @@ class OutputFieldsCache {
                     }
                     return finalOutputs;
                 }
-            } else { // excluded is empty and output fields has pattern
+            } else {
+                if (outputs.isEmpty()) {
+                    return allFields;
+                }
+                // excluded is empty and output fields has pattern
                 List<String> finalOutputs = C.newList();
                 for (StringOrPattern sp: outputs) {
                     if (sp.isPattern()) {

@@ -7,6 +7,7 @@ import act.asm.Opcodes;
 import act.asm.Type;
 import act.cli.*;
 import act.conf.AppConfig;
+import act.di.Context;
 import act.mail.MailerContext;
 import org.osgl.mvc.annotation.Bind;
 import org.osgl.mvc.annotation.Param;
@@ -27,6 +28,7 @@ public enum AsmTypes implements Opcodes {
     public static AsmType<AppConfig> APP_CONFIG = new AsmType<AppConfig>(AppConfig.class);
     public static AsmType<Param> PARAM = new AsmType<Param>(Param.class);
     public static AsmType<Bind> BIND = new AsmType<Bind>(Bind.class);
+    public static AsmType<Context> CONTEXT = new AsmType<Context>(Context.class);
     public static AsmType<Result> RESULT = new AsmType<Result>(Result.class);
 
     public static AsmType<PropertySpec> PROPERTY_SPEC = new AsmType<PropertySpec>(PropertySpec.class);

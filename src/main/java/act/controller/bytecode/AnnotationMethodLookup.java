@@ -11,7 +11,8 @@ class AnnotationMethodLookup {
             GetAction.class, H.Method.GET,
             PostAction.class, H.Method.POST,
             PutAction.class, H.Method.PUT,
-            DeleteAction.class, H.Method.DELETE);
+            DeleteAction.class, H.Method.DELETE
+    );
 
     static H.Method get(Class annotationClass) {
         return METHOD_LOOKUP.get(annotationClass);

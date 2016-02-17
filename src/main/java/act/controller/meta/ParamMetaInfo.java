@@ -14,6 +14,7 @@ public class ParamMetaInfo {
     private String name;
     private Type type;
     private Type componentType;
+    private boolean context;
     private ParamAnnoInfo paramAnno;
     private BindAnnoInfo bindAnno;
     private List<GeneralAnnoInfo> generalAnnoInfoList = C.newList();
@@ -53,6 +54,15 @@ public class ParamMetaInfo {
             }
         }
         return bindName;
+    }
+
+    public ParamMetaInfo setContext() {
+        this.context = true;
+        return this;
+    }
+
+    public boolean isContext() {
+        return context;
     }
 
     public Object defVal(Class<?> type) {

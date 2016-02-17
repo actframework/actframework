@@ -20,6 +20,7 @@ import act.cli.ascii_table.ASCIITableHeader;
 import act.cli.ascii_table.spec.IASCIITableAware;
 import org.osgl.$;
 import org.osgl.Osgl;
+import org.osgl.cache.CacheService;
 import org.osgl.util.S;
 
 import java.io.Serializable;
@@ -77,7 +78,7 @@ public class CollectionASCIITableAware<T> implements IASCIITableAware {
 			List<Object> rowData = null;
 			Class<?> dataClazz = objList.get(0).getClass();
 			Map<String, Serializable> propertyExtractorMap = new HashMap<String, Serializable>();
-			Osgl.T2<? extends Osgl.Function<String, Serializable>, ? extends Osgl.Func2<String, Serializable, ?>> cache = null;
+			CacheService cache = null;
 			CliContext ctx = CliContext.current();
 			if (null != ctx) {
 				cache = ctx.evaluatorCache();
@@ -96,7 +97,7 @@ public class CollectionASCIITableAware<T> implements IASCIITableAware {
 		}
 	}
 
-	private Object getProperty(Osgl.T2<? extends Osgl.Function<String, Serializable>, ? extends Osgl.Func2<String, Serializable, ?>> evaluatorCache, Class<?> dataClazz, T obj, String property) {
+	private Object getProperty(CacheService evaluatorCache, Class<?> dataClazz, T obj, String property) {
 		if (S.eq("this", property)) {
 			return obj;
 		}
