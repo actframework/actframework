@@ -631,7 +631,7 @@ public class App {
 
     private void loadBuiltInRoutes() {
         router().addMapping(H.Method.GET, "/asset/", new StaticFileGetter(layout().asset(base())), RouteSource.BUILD_IN);
-        router().addMapping(H.Method.GET, "/~/uploads/{path}", new UploadFileStorageService.UploadFileGetter(), RouteSource.BUILD_IN);
+        router().addMapping(H.Method.GET, "/~upload/{path}", new UploadFileStorageService.UploadFileGetter(), RouteSource.BUILD_IN);
     }
 
     private void initClassLoader() {
@@ -643,7 +643,7 @@ public class App {
 
     private void initResolverManager() {
         resolverManager = new StringValueResolverManager(this);
-        Osgl.propertyHandlerFactory = new ActPropertyHandlerFactory(resolverManager);
+        Osgl.propertyHandlerFactory = new ActPropertyHandlerFactory(this);
     }
     private void initBinderManager() {
         binderManager = new BinderManager(this);

@@ -43,10 +43,11 @@ public class UploadFileStorageService extends FileSystemService {
     public static ISObject store(FileItem file, App app) {
         IStorageService ss = app.uploadFileStorageService();
         try {
+            String key = newKey();
             ISObject sobj = SObject.of(file.getInputStream());
             sobj.setAttribute(SObject.ATTR_FILE_NAME, file.getName());
             sobj.setAttribute(SObject.ATTR_CONTENT_TYPE, file.getContentType());
-            String key = newKey();
+            sobj.setAttribute(SObject.ATTR_URL, "/~upload/" + sobj.getKey());
             ss.put(key, sobj);
             return ss.get(key);
         } catch (IOException e) {

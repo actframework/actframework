@@ -2,22 +2,28 @@ package act.data.util;
 
 import act.app.App;
 import act.app.data.StringValueResolverManager;
-import org.osgl.util.PropertySetter;
-import org.osgl.util.ReflectionPropertyHandlerFactory;
+import org.osgl.util.*;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
 public class ActPropertyHandlerFactory extends ReflectionPropertyHandlerFactory {
 
-    private StringValueResolverManager resolverManager;
+    private ActObjectFactory objectFactory;
+    private ActStringValueResolver stringValueResolver;
 
-    public ActPropertyHandlerFactory(StringValueResolverManager resolverManager) {
-        this.resolverManager = resolverManager;
+    public ActPropertyHandlerFactory(App app) {
+        this.objectFactory = new ActObjectFactory(app);
+        this.stringValueResolver = new ActStringValueResolver(app);
     }
 
     @Override
     protected PropertySetter newSetter(Class c, Method m, Field f) {
-        return new ActReflectionPropertySetter(c, m, f, resolverManager);
+        return new ReflectionPropertySetter(objectFactory, stringValueResolver, c, m, f);
+    }
+
+    @Override
+    protected PropertyGetter newGetter(Class c, Method m, Field f) {
+        return new ReflectionPropertyGetter(objectFactory, stringValueResolver, c, m, f, this);
     }
 }

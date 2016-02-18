@@ -30,6 +30,7 @@ import org.osgl.util.E;
 import org.osgl.util.S;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Map;
@@ -374,15 +375,45 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
             ctxHandler = new $.F2<ActionContext, Object, Void>() {
                 private FieldAccess fieldAccess = FieldAccess.get(controllerClass);
                 private int fieldIdx = getFieldIndex(fieldName, fieldAccess);
+                private Field field = getCtxField(fieldName);
 
                 @Override
                 public Void apply(ActionContext actionContext, Object controllerInstance) throws $.Break {
-                    fieldAccess.set(controllerInstance, fieldIdx, actionContext);
+                    if (fieldIdx >= 0) {
+                        fieldAccess.set(controllerInstance, fieldIdx, actionContext);
+                    } else {
+                        try {
+                            field.set(controllerInstance, actionContext);
+                        } catch (IllegalAccessException e) {
+                            throw E.unexpected(e);
+                        }
+                    }
                     return null;
                 }
 
                 private int getFieldIndex(String fieldName, FieldAccess fieldAccess) {
-                    return fieldAccess.getIndex(fieldName);
+                    try {
+                        return fieldAccess.getIndex(fieldName);
+                    } catch (Exception e) {
+                        return -1;
+                    }
+                }
+
+                private Field getCtxField(String fieldName) {
+                    if (fieldIdx < 0) {
+                        Class c = controllerClass;
+                        while (!Object.class.equals(c)) {
+                            try {
+                                Field f = c.getDeclaredField(fieldName);
+                                f.setAccessible(true);
+                                return f;
+                            } catch (Exception e) {
+                                // ignore
+                            }
+                        }
+                        throw E.unexpected("Cannot find field %s in controller class %s", fieldName, controllerClass);
+                    }
+                    return null;
                 }
             };
             fieldName_appCtxHandler_lookup.put(key, ctxHandler);
