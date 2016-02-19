@@ -204,7 +204,7 @@ public enum CliView {
     TO_STRING () {
         @Override
         public String render(Object result, PropertySpec.MetaInfo filter, ActContext context) {
-            if (result instanceof Iterable && null != filter) {
+            if (result instanceof Iterable) {
                 return TABLE.render(result, filter, context);
             } else if (result instanceof TreeNode) {
                 return TREE.render(result, filter, context);
