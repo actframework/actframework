@@ -12,7 +12,7 @@ import java.util.List;
  * @param <ID_TYPE> the generic key type
  * @param <MODEL_TYPE> the generic model type
  */
-public interface Dao<ID_TYPE, MODEL_TYPE, QUERY_TYPE extends Dao.Query<MODEL_TYPE, QUERY_TYPE>, DAO_TYPE extends Dao<ID_TYPE, MODEL_TYPE, QUERY_TYPE, DAO_TYPE>>
+public interface Dao<ID_TYPE, MODEL_TYPE, QUERY_TYPE extends Dao.Query<MODEL_TYPE, QUERY_TYPE>>
         extends AppContextAware, SecurityContextAware, Destroyable {
 
     /**

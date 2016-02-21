@@ -23,10 +23,10 @@ public class JsonUtilConfig {
         config.put(FastJsonIterable.class, FastJsonIterableSerializer.instance);
 
         FastJsonJodaDateCodec jodaDateCodec = new FastJsonJodaDateCodec(app);
-        app.singletonRegistry().register(FastJsonJodaDateCodec.class, jodaDateCodec);
+        app.registerSingleton(FastJsonJodaDateCodec.class, jodaDateCodec);
 
         FastJsonValueObjectSerializer valueObjectSerializer = new FastJsonValueObjectSerializer();
-        app.singletonRegistry().register(FastJsonValueObjectSerializer.class, valueObjectSerializer);
+        app.registerSingleton(FastJsonValueObjectSerializer.class, valueObjectSerializer);
 
         config.put(DateTime.class, jodaDateCodec);
         config.put(LocalDate.class, jodaDateCodec);

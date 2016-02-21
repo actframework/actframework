@@ -6,9 +6,9 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Mark a class or method to as "asynchronous"
+ * Mark a class as "general"
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.TYPE, ElementType.METHOD})
-public @interface Async {
+@Target({ElementType.TYPE})
+public @interface General {
 }

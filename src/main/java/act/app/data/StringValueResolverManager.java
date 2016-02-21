@@ -61,8 +61,7 @@ public class StringValueResolverManager extends AppServiceBase<StringValueResolv
     }
 
     private void put(Class type, StringValueResolver resolver) {
-        SingletonRegistry singletonRegistry = app().singletonRegistry();
-        singletonRegistry.register(resolver.getClass(), resolver);
+        app().registerSingleton(resolver);
         resolvers.put(type, resolver);
     }
 }

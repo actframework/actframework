@@ -1,14 +1,19 @@
 package act.db;
 
 import act.app.App;
+import act.app.AppHolderBase;
 import act.app.AppServiceBase;
+import act.util.DestroyableBase;
+import org.osgl.$;
 import org.osgl.util.E;
 
-public abstract class DbService extends AppServiceBase<DbService> {
+import java.lang.annotation.Annotation;
+
+public abstract class DbService extends AppHolderBase<DbService> {
 
     private String id;
 
-    protected DbService(String id, App app) {
+    public DbService(String id, App app) {
         super(app);
         E.NPE(id);
         this.id = id;
@@ -21,5 +26,9 @@ public abstract class DbService extends AppServiceBase<DbService> {
     @Override
     protected abstract void releaseResources();
 
-    protected abstract <DAO extends Dao> DAO defaultDao(Class<?> modelType);
+    public abstract <DAO extends Dao> DAO defaultDao(Class<?> modelType);
+
+    public abstract <DAO extends Dao> DAO newDaoInstance(Class<DAO> daoType);
+
+    public abstract Class<? extends Annotation> entityAnnotationType();
 }

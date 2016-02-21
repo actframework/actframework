@@ -315,6 +315,18 @@ public class App {
         return singletonRegistry;
     }
 
+    public <T> void registerSingleton(Class<? extends T> cls, T instance) {
+        singletonRegistry.register(cls, instance);
+    }
+
+    public void registerSingletonClass(Class<?> aClass) {
+        singletonRegistry.register(aClass);
+    }
+
+    public void registerSingleton(Object instance) {
+        singletonRegistry.register(instance.getClass(), instance);
+    }
+
     public AppInterceptorManager interceptorManager() {
         return interceptorManager;
     }

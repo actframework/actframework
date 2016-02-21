@@ -16,7 +16,7 @@ public class SingletonFinder extends AnnotatedTypeFinder {
         super(Singleton.class, new $.F2<App, String, Map<Class<? extends AppByteCodeScanner>, Set<String>>>() {
             @Override
             public Map<Class<? extends AppByteCodeScanner>, Set<String>> apply(final App app, final String className) throws NotAppliedException, $.Break {
-                app.singletonRegistry().register($.classForName(className, app.classLoader()));
+                app.registerSingletonClass($.classForName(className, app.classLoader()));
                 return null;
             }
         });

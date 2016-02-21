@@ -2,12 +2,10 @@ package act.app;
 
 import act.Act;
 import act.ActComponent;
+import act.Destroyable;
 import act.app.event.AppEventId;
 import act.conf.AppConfig;
-import act.db.Dao;
-import act.db.DbManager;
-import act.db.DbPlugin;
-import act.db.DbService;
+import act.db.*;
 import act.event.AppEventListenerBase;
 import act.util.ClassNode;
 import org.osgl.$;
@@ -29,7 +27,7 @@ public class DbServiceManager extends AppServiceBase<DbServiceManager> implement
     private Map<String, DbService> serviceMap = C.newMap();
 
     // map model class to dao class
-    private Map<Class<?>, Class<? extends Dao>> modelDaoMap = C.newMap();
+    private Map<Class<?>, Dao> modelDaoMap = C.newMap();
 
     protected DbServiceManager(final App app) {
         super(app, true);
@@ -45,7 +43,12 @@ public class DbServiceManager extends AppServiceBase<DbServiceManager> implement
                         try {
                             Dao dao = $.cast(app.newInstance(daoType));
                             Class<?> modelType = dao.modelType();
-                            modelDaoMap.put(modelType, daoType);
+                            DB db = modelType.getAnnotation(DB.class);
+                            String svcId = null == db ? DEFAULT : db.value();
+                            DbService dbService = dbService(svcId);
+                            E.invalidConfigurationIf(null == dbService, "cannot find db service by id: %s", svcId);
+                            dao = dbService.newDaoInstance(daoType);
+                            modelDaoMap.put(modelType, dao);
                         } catch (Exception e) {
                             // ignore
                         }
@@ -57,19 +60,34 @@ public class DbServiceManager extends AppServiceBase<DbServiceManager> implement
 
     @Override
     protected void releaseResources() {
+        Destroyable.Util.tryDestroyAll(serviceMap.values());
         serviceMap.clear();
+        Destroyable.Util.tryDestroyAll(modelDaoMap.values());
         modelDaoMap.clear();
     }
 
     @Override
     public Dao dao(Class<?> modelClass) {
-        Class<? extends Dao> daoClass = modelDaoMap.get(modelClass);
-        E.NPE(daoClass);
-        return app().newInstance(daoClass);
+        Dao dao = modelDaoMap.get(modelClass);
+        if (null == dao) {
+            String svcId = DEFAULT;
+            DB db = modelClass.getDeclaredAnnotation(DB.class);
+            if (null != db) {
+                svcId = db.value();
+            }
+            DbService dbService = dbService(svcId);
+            dao = dbService.defaultDao(modelClass);
+            modelDaoMap.put(modelClass, dao);
+        }
+        return dao;
     }
 
     public <T extends DbService> T dbService(String id) {
         return (T)serviceMap.get(id);
+    }
+
+    public Iterable<DbService> registeredServices() {
+        return serviceMap.values();
     }
 
     private void initServices(AppConfig config) {

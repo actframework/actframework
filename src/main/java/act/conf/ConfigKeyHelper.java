@@ -66,7 +66,7 @@ class ConfigKeyHelper {
         if (key.endsWith(".long") || key.endsWith(".ttl")) {
             return (T) getX(configuration, key, suffixOf(key), defVal, F.TO_LONG);
         }
-        if (key.endsWith(".int") || key.endsWith(".count") || key.endsWith(".times") || key.endsWith(".size")) {
+        if (key.endsWith(".int") || key.endsWith(".len") || key.endsWith(".count") || key.endsWith(".times") || key.endsWith(".size")) {
             return (T) getX(configuration, key, suffixOf(key), defVal, F.TO_INT);
         }
         if (key.endsWith(".float")) {
@@ -200,7 +200,7 @@ class ConfigKeyHelper {
         Object v = getValFromAliases(configuration, key, "enabled", defVal);
         if (null == v) {
             v = getValFromAliases(configuration, key, "disabled", defVal);
-            return !toBoolean(v);
+            return null == v ? null : !toBoolean(v);
         }
         return toBoolean(v);
     }
@@ -273,32 +273,32 @@ class ConfigKeyHelper {
         }
     }
 
-    private static boolean toBoolean(Object v) {
-        if (null == v) return false;
+    private static Boolean toBoolean(Object v) {
+        if (null == v) return null;
         if (v instanceof Boolean) return (Boolean) v;
         return Boolean.parseBoolean(v.toString());
     }
 
-    private static long toLong(Object v) {
-        if (null == v) return 0l;
+    private static Long toLong(Object v) {
+        if (null == v) return null;
         if (v instanceof Number) return ((Number) v).longValue();
         return Long.parseLong(v.toString());
     }
 
-    private static int toInt(Object v) {
-        if (null == v) return 0;
+    private static Integer toInt(Object v) {
+        if (null == v) return null;
         if (v instanceof Number) return ((Number) v).intValue();
         return Integer.parseInt(v.toString());
     }
 
-    private static float toFloat(Object v) {
-        if (null == v) return 0f;
+    private static Float toFloat(Object v) {
+        if (null == v) return null;
         if (v instanceof Number) return ((Number) v).floatValue();
         return Float.parseFloat(v.toString());
     }
 
-    private static double toDouble(Object v) {
-        if (null == v) return 0d;
+    private static Double toDouble(Object v) {
+        if (null == v) return null;
         if (v instanceof Number) return ((Number) v).doubleValue();
         return Double.parseDouble(v.toString());
     }

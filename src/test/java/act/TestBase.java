@@ -113,7 +113,7 @@ public class TestBase extends Assert {
         f.setAccessible(true);
         f.set(null, mockApp);
         mockSingletonRegistry = mock(SingletonRegistry.class);
-        when(mockApp.singletonRegistry()).thenReturn(mockSingletonRegistry);
+        //when(mockApp.singletonRegistry()).thenReturn(mockSingletonRegistry);
         mockJobManager = mock(AppJobManager.class);
         when(mockApp.jobManager()).thenReturn(mockJobManager);
         mockAppConfig = mock(AppConfig.class);

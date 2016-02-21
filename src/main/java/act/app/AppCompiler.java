@@ -190,8 +190,10 @@ class AppCompiler extends DestroyableBase {
                 for (IProblem problem : result.getErrors()) {
                     char[][] caa = result.packageName;
                     StringBuilder sb = S.builder();
-                    for (char[] ca: caa) {
-                        sb.append(ca).append(".");
+                    if (null != caa) {
+                        for (char[] ca : caa) {
+                            sb.append(ca).append(".");
+                        }
                     }
                     String className = sb.append(new String(problem.getOriginatingFileName())).toString();
                     className = className.substring(0, className.length() - 5);
