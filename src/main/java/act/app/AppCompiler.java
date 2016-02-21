@@ -189,6 +189,9 @@ class AppCompiler extends DestroyableBase {
             if (result.hasErrors()) {
                 for (IProblem problem : result.getErrors()) {
                     char[][] caa = result.packageName;
+                    if (null == caa) {
+                        caa = result.compilationUnit.getPackageName();
+                    }
                     StringBuilder sb = S.builder();
                     if (null != caa) {
                         for (char[] ca : caa) {
@@ -202,7 +205,12 @@ class AppCompiler extends DestroyableBase {
                         // Non sense !
                         message = problem.getArguments()[0] + " cannot be resolved";
                     }
-                    throw new CompilationException(classLoader.source(className).file(), message, problem.getSourceLineNumber(), problem.getSourceStart(), problem.getSourceEnd());
+                    Source src = classLoader.source(className);
+                    if (null != src) {
+                        throw new CompilationException(src.file(), message, problem.getSourceLineNumber(), problem.getSourceStart(), problem.getSourceEnd());
+                    } else {
+                        throw new CompilationException(problem.getMessage());
+                    }
                 }
             }
             // Something has been compiled
