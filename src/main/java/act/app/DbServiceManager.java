@@ -8,12 +8,14 @@ import act.conf.AppConfig;
 import act.db.*;
 import act.event.AppEventListenerBase;
 import act.util.ClassNode;
+import act.util.General;
 import org.osgl.$;
 import org.osgl.exception.ConfigurationException;
 import org.osgl.util.C;
 import org.osgl.util.E;
 import org.rythmengine.utils.S;
 
+import java.lang.annotation.Annotation;
 import java.util.EventObject;
 import java.util.HashMap;
 import java.util.Map;
@@ -37,9 +39,22 @@ public class DbServiceManager extends AppServiceBase<DbServiceManager> implement
             public void on(EventObject event) throws Exception {
                 ClassNode node = app.classLoader().classInfoRepository().node(Dao.class.getName());
                 node.findPublicNotAbstract(new $.Visitor<ClassNode>() {
+                    private boolean isGeneral(Class c) {
+                        Annotation[] aa = c.getDeclaredAnnotations();
+                        for (Annotation a : aa) {
+                            if (a instanceof General) {
+                                return true;
+                            }
+                        }
+                        return false;
+                    }
+
                     @Override
                     public void visit(ClassNode classNode) throws $.Break {
                         Class<? extends Dao> daoType = $.classForName(classNode.name(), app.classLoader());
+                        if (isGeneral(daoType)) {
+                            return;
+                        }
                         try {
                             Dao dao = $.cast(app.newInstance(daoType));
                             Class<?> modelType = dao.modelType();
@@ -48,6 +63,7 @@ public class DbServiceManager extends AppServiceBase<DbServiceManager> implement
                             DbService dbService = dbService(svcId);
                             E.invalidConfigurationIf(null == dbService, "cannot find db service by id: %s", svcId);
                             dao = dbService.newDaoInstance(daoType);
+                            app.registerSingleton(dao);
                             modelDaoMap.put(modelType, dao);
                         } catch (Exception e) {
                             // ignore
