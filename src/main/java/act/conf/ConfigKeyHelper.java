@@ -6,6 +6,7 @@ import org.osgl.exception.ConfigurationException;
 import org.osgl.exception.NotAppliedException;
 import org.osgl.logging.L;
 import org.osgl.logging.Logger;
+import org.osgl.util.C;
 import org.osgl.util.FastStr;
 import org.osgl.util.S;
 
@@ -50,9 +51,17 @@ class ConfigKeyHelper {
         };
         return getConfiguration(key, defVal, configuration);
     }
-    <T> T getConfiguration(final String key, $.F0<?> defVal, Map<String, ?> configuration) {
+    <T> T getConfiguration(String key, $.F0<?> defVal, Map<String, ?> configuration) {
         if (key.endsWith(".enabled") || key.endsWith(".disabled")) {
-            return (T) getEnabled(key, configuration, defVal);
+            String key0 = S.beforeLast(key, ".");
+            Boolean B = getEnabled(key0, configuration, defVal);
+            if (null == B) {
+                return null;
+            }
+            if (key.endsWith(".disabled")) {
+                B = !B;
+            }
+            return (T) B;
         }
         if (key.endsWith(".impl")) {
             return getImpl(configuration, key, suffixOf(key), defVal);
@@ -345,16 +354,25 @@ class ConfigKeyHelper {
         return v;
     }
 
-    private List<String> aliases(String key, String suffix) {
-        List<String> l = new ArrayList<String>();
-        l.add(Config.PREFIX + key);
-        l.add(key);
+    private Set<String> aliases(String key, String suffix) {
+        Set<String> set = C.newSet();
+        set.add(Config.PREFIX + key);
+        set.add(key);
         if (S.notBlank(suffix)) {
-            String k0 = key.replace("." + suffix, "");
-            l.add(Config.PREFIX + k0);
-            l.add(k0);
+            if (key.contains(suffix)) {
+                String k0 = key.replace("." + suffix, "");
+                set.add(Config.PREFIX + k0);
+                set.add(k0);
+            } else {
+                if (!suffix.startsWith(".")) {
+                    suffix = "." + suffix;
+                }
+                String k0 = S.builder(key).append(suffix).toString();
+                set.add(Config.PREFIX + k0);
+                set.add(k0);
+            }
         }
-        return l;
+        return set;
     }
 
     private Act.Mode mode() {
