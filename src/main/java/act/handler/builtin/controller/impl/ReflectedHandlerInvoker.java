@@ -22,6 +22,7 @@ import com.esotericsoftware.reflectasm.FieldAccess;
 import com.esotericsoftware.reflectasm.MethodAccess;
 import org.osgl.$;
 import org.osgl.http.H;
+import org.osgl.mvc.result.NotFound;
 import org.osgl.mvc.result.Result;
 import org.osgl.mvc.util.Binder;
 import org.osgl.mvc.util.StringValueResolver;
@@ -206,6 +207,9 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
             } catch (Result r) {
                 return r;
             }
+        }
+        if (null == result && handler.hasReturn()) {
+            return NotFound.INSTANCE;
         }
         boolean hasTemplate = checkTemplate(context);
         return Controller.Util.inferResult(handlerMetaInfo, result, context, hasTemplate);
