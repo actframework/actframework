@@ -11,6 +11,7 @@ public class CommandParamMetaInfo extends DestroyableBase {
     private String name;
     private Type type;
     private Type componentType;
+    private boolean context;
     private ParamOptionAnnoInfo optionInfo;
 
     public CommandParamMetaInfo name(String name) {
@@ -30,6 +31,16 @@ public class CommandParamMetaInfo extends DestroyableBase {
     public Type type() {
         return type;
     }
+
+    public CommandParamMetaInfo setContext() {
+        this.context = true;
+        return this;
+    }
+
+    public boolean isContext() {
+        return context;
+    }
+
 
     public CommandParamMetaInfo componentType(Type type) {
         this.componentType = $.NPE(type);

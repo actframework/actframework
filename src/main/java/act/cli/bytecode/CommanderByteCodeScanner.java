@@ -17,6 +17,7 @@ import org.osgl.util.C;
 import org.osgl.util.E;
 import org.osgl.util.S;
 
+import java.util.BitSet;
 import java.util.List;
 import java.util.Map;
 
@@ -160,6 +161,7 @@ public class CommanderByteCodeScanner extends AppByteCodeScannerBase {
             private boolean requireScan;
             private CommandMethodMetaInfo methodInfo;
             private Map<Integer, ParamOptionAnnoInfo> optionAnnoInfo = C.newMap();
+            private BitSet contextInfo = new BitSet();
             private boolean isStatic;
 
             private int paramIdShift = 0;
@@ -309,6 +311,9 @@ public class CommanderByteCodeScanner extends AppByteCodeScannerBase {
                         throw E.unexpected("Option annotation already found on index %s", paramIndex);
                     }
                     return new ParamOptionAnnotationVisitor(av, paramIndex, isOptional);
+                } else if ($.eq(type, AsmTypes.CONTEXT.asmType())) {
+                    contextInfo.set(paramIndex);
+                    return av;
                 } else {
                     return av;
                 }
@@ -325,6 +330,9 @@ public class CommanderByteCodeScanner extends AppByteCodeScannerBase {
                 for (int i = 0; i < argTypes.length; ++i) {
                     CommandParamMetaInfo param = methodInfo.param(i);
                     ParamOptionAnnoInfo option = optionAnnoInfo.get(i);
+                    if (contextInfo.get(i)) {
+                        param.setContext();
+                    }
                     if (null != option) {
                         param.optionInfo(option);
                         methodInfo.addLead(option.lead1());

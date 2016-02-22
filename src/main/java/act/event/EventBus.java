@@ -175,10 +175,18 @@ public class EventBus extends AppServiceBase<EventBus> {
         return emit(appEventLookup.get(eventId));
     }
 
+    public synchronized EventBus trigger(AppEventId eventId) {
+        return emit(eventId);
+    }
+
     public synchronized EventBus emit(final AppEvent event) {
         callOn(event, asyncAppEventListeners, true);
         callOn(event, appEventListeners, false);
         return this;
+    }
+
+    public synchronized EventBus trigger(final AppEvent event) {
+        return emit(event);
     }
 
     public synchronized EventBus emitAsync(AppEventId eventId) {
@@ -191,8 +199,16 @@ public class EventBus extends AppServiceBase<EventBus> {
         return this;
     }
 
+    public synchronized EventBus triggerAsync(final AppEvent event) {
+        return emitAsync(event);
+    }
+
     public synchronized EventBus emitSync(AppEventId eventId) {
         return emitSync(appEventLookup.get(eventId));
+    }
+
+    public synchronized EventBus triggerSync(AppEventId eventId) {
+        return emitSync(eventId);
     }
 
     public synchronized EventBus emitSync(AppEvent event) {
@@ -201,10 +217,18 @@ public class EventBus extends AppServiceBase<EventBus> {
         return this;
     }
 
+    public synchronized EventBus triggerSync(AppEvent event) {
+        return emitSync(event);
+    }
+
     public synchronized EventBus emitSync(final ActEvent event) {
         callOn(event, asyncActEventListeners, false);
         callOn(event, actEventListeners, false);
         return this;
+    }
+
+    public synchronized EventBus triggerSync(final ActEvent event) {
+        return emitSync(event);
     }
 
     @SuppressWarnings("unchecked")
@@ -214,10 +238,18 @@ public class EventBus extends AppServiceBase<EventBus> {
         return this;
     }
 
+    public synchronized EventBus trigger(final ActEvent event) {
+        return emit(event);
+    }
+
     public synchronized EventBus emitAsync(final ActEvent event) {
         callOn(event, asyncActEventListeners, true);
         callOn(event, actEventListeners, true);
         return this;
+    }
+
+    public synchronized EventBus triggerAsync(final ActEvent event) {
+        return emitAsync(event);
     }
 
     private Map<AppEventId, AppEvent> initAppEventLookup(App app) {

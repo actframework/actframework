@@ -125,7 +125,11 @@ public class ReflectedCommandExecutor extends CommandExecutor {
         for (int i = 0; i < paramCount; ++i) {
             CommandParamMetaInfo param = methodMetaInfo.param(i);
             Class<?> paramType = paramTypes[i];
-            oa[i] = optionVal(paramType, param.optionInfo(), argIdx, paramCount == 1, ctx);
+            if (param.isContext()) {
+                oa[i] = app.newInstance(paramType);
+            } else {
+                oa[i] = optionVal(paramType, param.optionInfo(), argIdx, paramCount == 1, ctx);
+            }
         }
         return oa;
     }
