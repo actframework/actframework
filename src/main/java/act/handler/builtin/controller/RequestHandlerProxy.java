@@ -146,10 +146,13 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
             ensureAgentsReady();
             ensureContextLocal(context);
             saveActionPath(context);
+            context.startIntercepting();
             result = handleBefore(context);
             if (null == result) {
+                context.startHandling();
                 result = _handle(context);
             }
+            context.startIntercepting();
             Result afterResult = handleAfter(result, context);
             if (null != afterResult) {
                 result = afterResult;

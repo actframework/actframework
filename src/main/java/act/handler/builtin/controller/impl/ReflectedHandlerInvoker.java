@@ -216,6 +216,10 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
     }
 
     private synchronized boolean checkTemplate(ActionContext context) {
+        if (!context.state().isHandling()) {
+            // we don't check template on interceptors
+            return false;
+        }
         H.Format fmt = context.accept();
         Boolean B = templateCache.get(fmt);
         if (null == B || Act.isDev()) {

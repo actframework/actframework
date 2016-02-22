@@ -504,6 +504,14 @@ public class ActionContext extends ActContext.ActContextBase<ActionContext> impl
         }
     }
 
+    public void startIntercepting() {
+        state = State.INTERCEPTING;
+    }
+
+    public void startHandling() {
+        state = State.HANDLING;
+    }
+
     /**
      * Initialize params/renderArgs/attributes and then
      * resolve session and flash from cookies
@@ -729,7 +737,15 @@ public class ActionContext extends ActContext.ActContextBase<ActionContext> impl
         CREATED,
         SESSION_RESOLVED,
         SESSION_DISSOLVED,
-        DESTROYED
+        INTERCEPTING,
+        HANDLING,
+        DESTROYED;
+        public boolean isHandling() {
+            return this == HANDLING;
+        }
+        public boolean isIntercepting() {
+            return this == INTERCEPTING;
+        }
     }
 
     public static class ActionContextEvent extends ActEvent<ActionContext> {
