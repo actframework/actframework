@@ -3,6 +3,7 @@ package act.view;
 import act.Act;
 import act.app.*;
 import act.exception.ActException;
+import act.exception.BindException;
 import act.util.ActError;
 import org.osgl.$;
 import org.osgl.Osgl;
@@ -10,11 +11,11 @@ import org.osgl.exception.InvalidArgException;
 import org.osgl.exception.InvalidRangeException;
 import org.osgl.exception.UnexpectedException;
 import org.osgl.exception.UnsupportedException;
+import org.osgl.http.H;
 import org.osgl.mvc.annotation.ResponseStatus;
-import org.osgl.mvc.result.BadRequest;
-import org.osgl.mvc.result.Result;
-import org.osgl.mvc.result.ServerError;
+import org.osgl.mvc.result.*;
 import org.osgl.util.C;
+import org.osgl.util.E;
 import org.rythmengine.exception.RythmException;
 
 import javax.validation.Validation;
@@ -115,6 +116,7 @@ public class ActServerError extends ServerError implements ActError {
         x.put(InvalidRangeException.class, badRequest);
         x.put(ArrayIndexOutOfBoundsException.class, badRequest);
         x.put(ValidationException.class, badRequest);
+        x.put(BindException.class, badRequest);
     }
 
     private static Map<Class, Integer> userDefinedStatus = C.newMap();
@@ -137,9 +139,23 @@ public class ActServerError extends ServerError implements ActError {
         if (t instanceof RythmException) {
             return new RythmError((RythmException) t);
         } else {
-            $.Function<Throwable, Result> transformer = x.get(t.getClass());
+            $.Function<Throwable, Result> transformer = transformerOf(t);
             return null == transformer ? new ActServerError(t) : transformer.apply(t);
         }
+    }
+
+    private static $.Function<Throwable, Result> transformerOf(Throwable t) {
+        Class tc = t.getClass();
+        $.Function<Throwable, Result> transformer = x.get(tc);
+        if (null != transformer) {
+            return transformer;
+        }
+        for (Class c : x.keySet()) {
+            if (c.isAssignableFrom(tc)) {
+                return x.get(c);
+            }
+        }
+        return null;
     }
 
     public static ActServerError of(NullPointerException e) {
@@ -148,6 +164,30 @@ public class ActServerError extends ServerError implements ActError {
 
     public static ActServerError of(RythmException e) {
         return new RythmError(e);
+    }
+
+    public static Result of(int statusCode) {
+        E.illegalArgumentIf(statusCode < 400);
+        switch (statusCode) {
+            case 400:
+                return ActBadRequest.create();
+            case 401:
+                return ActUnauthorized.create();
+            case 403:
+                return ActForbidden.create();
+            case 404:
+                return ActNotFound.create();
+            case 405:
+                return ActMethodNotAllowed.create();
+            case 409:
+                return ActConflict.create();
+            case 500:
+                return new ActServerError(new RuntimeException());
+            case 501:
+                return ActNotImplemented.create();
+            default:
+                return new ErrorResult(H.Status.of(statusCode));
+        }
     }
 
 }

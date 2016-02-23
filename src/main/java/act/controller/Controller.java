@@ -86,6 +86,14 @@ public @interface Controller {
             return new Created(resourceGetUrl);
         }
 
+        public static Result notModified() {
+            return NotModified.INSTANCE;
+        }
+
+        public static Result notModified(String etag, Object ... args) {
+            return new NotModified(etag, args);
+        }
+
         /**
          * Returns a {@link Accepted} result
          *
@@ -249,6 +257,34 @@ public @interface Controller {
 
         public static void conflictIfNot(boolean test, String message, Object... args) {
             conflictIf(!test, message, args);
+        }
+
+        public static Result unauthorized() {
+            return ActUnauthorized.create();
+        }
+
+        public static Result unauthorized(String realm) {
+            return ActUnauthorized.create(realm);
+        }
+
+        public static void unauthorizedIf(boolean test) {
+            if (test) {
+                throw ActUnauthorized.create();
+            }
+        }
+
+        public static void unauthorizedIf(boolean test, String realm) {
+            if (test) {
+                throw ActUnauthorized.create(realm);
+            }
+        }
+
+        public static void unauthorizedIfNot(boolean test) {
+            unauthorizedIf(!test);
+        }
+
+        public static void unauthorizedIfNot(boolean test, String realm) {
+            unauthorizedIf(!test, realm);
         }
 
         /**
