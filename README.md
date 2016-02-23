@@ -1,3 +1,8 @@
+**Note**
+
+Act-doc project has been started at https://github.com/actframework/act-doc/blob/master/en/index.md
+
+
 ##### ACT Framework
 
 I love PlayFramework v1.x because it is simple, clear and expressive. It brought us a completely different experience in web development with Java. However I don't totally agree with where Play 2.X is heading for, and it looks like I am not the only person with the concern as per this [open letter to Play Framework Developers](https://groups.google.com/d/msg/play-framework/AcZs8GXNWUc/IanbqC-c-MkJ). 
