@@ -88,6 +88,7 @@ public class CliSession extends DestroyableBase implements Runnable {
                     app.detectChanges();
                 } catch (RequestRefreshClassLoader refreshRequest) {
                     app.refresh();
+                    return;
                 }
                 if (S.blank(line)) {
                     continue;

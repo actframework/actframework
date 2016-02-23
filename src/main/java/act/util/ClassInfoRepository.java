@@ -65,6 +65,8 @@ public class ClassInfoRepository extends DestroyableBase {
             return c.getCanonicalName();
         } catch (InternalError e) {
             return null;
+        } catch (IllegalAccessError e) {
+            return null;
         }
     }
 
