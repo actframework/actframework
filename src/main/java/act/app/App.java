@@ -241,6 +241,7 @@ public class App {
         initBinderManager();
         initUploadFileStorageService();
         initRouters();
+        loadRoutes();
         initCliDispatcher();
         initCliServer();
 
@@ -265,7 +266,6 @@ public class App {
         emit(APP_CODE_SCANNED);
 
         initMailerConfigManager();
-        loadRoutes();
         emit(ROUTER_LOADED);
 
         // setting context class loader here might lead to memory leaks

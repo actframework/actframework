@@ -111,10 +111,8 @@ public class ActServerError extends ServerError implements ActError {
             }
         };
         x.put(IllegalArgumentException.class, badRequest);
-        x.put(IllegalFormatException.class, badRequest);
-        x.put(InvalidArgException.class, badRequest);
         x.put(InvalidRangeException.class, badRequest);
-        x.put(ArrayIndexOutOfBoundsException.class, badRequest);
+        x.put(IndexOutOfBoundsException.class, badRequest);
         x.put(ValidationException.class, badRequest);
         x.put(BindException.class, badRequest);
     }
