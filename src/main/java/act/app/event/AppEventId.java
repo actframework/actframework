@@ -45,7 +45,12 @@ public enum AppEventId {
         public AppEvent of(App app) {
             return new AppCodeScanned(app);
         }
-    }, ROUTER_LOADED() {
+    }, ROUTER_INITIALIZED {
+        @Override
+        public AppEvent of(App app) {
+            return new AppRouterInitialized(app);
+        }
+    }, ROUTER_LOADED {
         @Override
         public AppEvent of(App app) {
             return new AppRouterLoaded(app);
