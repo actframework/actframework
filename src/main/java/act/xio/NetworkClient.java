@@ -4,6 +4,7 @@ import act.Act;
 import act.app.ActionContext;
 import act.app.App;
 import act.app.RequestRefreshClassLoader;
+import act.app.RequestServerRestart;
 import act.app.util.NamedPort;
 import act.handler.RequestHandler;
 import act.handler.builtin.controller.RequestHandlerProxy;
@@ -50,6 +51,8 @@ public class NetworkClient extends $.F1<ActionContext, Void> {
                     try {
                         app.detectChanges();
                     } catch (RequestRefreshClassLoader refreshRequest) {
+                        app.refresh();
+                    } catch (RequestServerRestart requestServerRestart) {
                         app.refresh();
                     }
                 }
