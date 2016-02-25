@@ -22,12 +22,15 @@ Controller sample code:
     }
 
     @GetAction("/bye")
-    public void byePlayAndSpring() {
-        text("bye Play and Spring!!");
+    public Result byePlayAndSpring() {
+        // use text to force response be "text/plain" content type
+        return text("bye Play and Spring!!");
     }
 
     @GetAction("/greeting")
     public void greeting(String who, int age) {
+        // if you didn't return render result, Act will throw it out 
+        // as an Exception. Just like what Play!framework did 
         render(who, age);
     }
 
