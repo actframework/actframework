@@ -13,8 +13,7 @@ Controller sample code:
 
 ```java
     @GetAction("/")
-    public Result home() {
-        return render();
+    public void home() {
     }
 
     @GetAction({"/hello", "/hi"})
