@@ -26,16 +26,24 @@ public class AutoBinder {
         ActionContext ctx = $.cast(paramValueProvider);
         Set<String> params = ctx.allParams().keySet();
         Set<String> relevantParams = C.newSet();
-        String prefix = bindName + "[";
+        String prefix = bindName;
         for (String s : params) {
-            if (s.startsWith(prefix)) {
+            String p2;
+            if (s.contains(".")) {
+                p2 = prefix + ".";
+            } else if (s.contains("[")) {
+                p2 = prefix + "[";
+            } else {
+                continue;
+            }
+            if (s.startsWith(p2)) {
                 relevantParams.add(s);
             }
         }
         if (relevantParams.isEmpty()) {
             return null;
         }
-        int prefixLen = prefix.length();
+        int prefixLen = prefix.length() + 1;
         for (String s : relevantParams) {
             String v = ctx.paramVal(s);
             if (S.blank(v)) {

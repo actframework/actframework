@@ -12,6 +12,7 @@ import org.joda.time.LocalDateTime;
 import org.joda.time.LocalTime;
 import org.osgl.mvc.util.StringValueResolver;
 import org.osgl.util.C;
+import org.osgl.util.S;
 
 import java.util.Date;
 import java.util.Map;
@@ -42,7 +43,7 @@ public class StringValueResolverManager extends AppServiceBase<StringValueResolv
         if (null != r) {
             return r.resolve(strVal);
         }
-        if (null != strVal && Enum.class.isAssignableFrom(targetType)) {
+        if (S.notBlank(strVal) && Enum.class.isAssignableFrom(targetType)) {
             return Enum.valueOf(((Class<Enum>) targetType), strVal);
         }
         return null;
