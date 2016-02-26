@@ -16,13 +16,11 @@ public class RythmTemplate extends TemplateBase {
 
     private RythmEngine engine;
     private String path;
-    private App app;
 
     public RythmTemplate(RythmEngine engine, String path, App app) {
         E.NPE(engine);
         this.engine = engine;
         this.path = path;
-        this.app = app;
     }
 
     @Override

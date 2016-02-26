@@ -3,8 +3,6 @@ package act.view;
 import act.Act;
 import act.ActComponent;
 import act.plugin.Plugin;
-import act.view.rythm.ActionViewVarDef;
-import act.view.rythm.MailerViewVarDef;
 
 import java.util.List;
 

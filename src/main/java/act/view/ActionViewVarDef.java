@@ -1,4 +1,4 @@
-package act.view.rythm;
+package act.view;
 
 import act.app.ActionContext;
 import act.util.ActContext;

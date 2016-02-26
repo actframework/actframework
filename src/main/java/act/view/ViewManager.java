@@ -3,8 +3,6 @@ package act.view;
 import act.app.App;
 import act.conf.AppConfig;
 import act.util.ActContext;
-import act.view.rythm.ActionViewVarDef;
-import act.view.rythm.MailerViewVarDef;
 import org.osgl.$;
 import org.osgl.exception.UnexpectedException;
 import org.osgl.util.C;

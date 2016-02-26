@@ -22,6 +22,7 @@ public class PluginScanner {
     }
 
     public void scan() {
+        Plugin.InfoRepo.clear();
         List<Class<?>> pluginClasses = Act.pluginClasses();
         int sz = pluginClasses.size();
         for (int i = 0; i < sz; ++i) {

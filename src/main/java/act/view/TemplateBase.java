@@ -3,8 +3,6 @@ package act.view;
 import act.Act;
 import act.app.ActionContext;
 import act.mail.MailerContext;
-import act.view.rythm.ActionViewVarDef;
-import act.view.rythm.MailerViewVarDef;
 import org.osgl.http.H;
 import org.osgl.util.IO;
 

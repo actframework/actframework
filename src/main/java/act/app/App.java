@@ -220,7 +220,6 @@ public class App {
         logger.info("App starting ....");
         profile = null;
 
-        Act.viewManager().reload(this);
         initServiceResourceManager();
         eventEmitted = C.newSet();
 
@@ -229,6 +228,8 @@ public class App {
         emit(EVENT_BUS_INITIALIZED);
         loadConfig();
         emit(CONFIG_LOADED);
+
+        Act.viewManager().reload(this);
 
         initCache();
         initDataPropertyRepository();
