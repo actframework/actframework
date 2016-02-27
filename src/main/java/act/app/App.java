@@ -19,6 +19,7 @@ import act.di.DependencyInjector;
 import act.di.DiBinder;
 import act.event.AppEventListenerBase;
 import act.event.EventBus;
+import act.event.bytecode.SimpleEventListenerByteCodeScanner;
 import act.handler.builtin.StaticFileGetter;
 import act.job.AppJobManager;
 import act.job.bytecode.JobByteCodeScanner;
@@ -627,6 +628,7 @@ public class App {
         scannerManager.register(new ControllerByteCodeScanner());
         scannerManager.register(new MailerByteCodeScanner());
         scannerManager.register(new JobByteCodeScanner());
+        scannerManager.register(new SimpleEventListenerByteCodeScanner());
         scannerManager.register(new CommanderByteCodeScanner());
     }
 
