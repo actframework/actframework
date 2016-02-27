@@ -126,11 +126,14 @@ public class DbServiceManager extends AppServiceBase<DbServiceManager> implement
             }
         }
 
+        String firstInstance = null;
         if (dbConf.containsKey("db.instances")) {
             String instances = dbConf.get("db.instances").toString();
-            for (String dbId: instances.split("[,\\s;:]+")) {
+            String[] sa = instances.split("[,\\s;:]+");
+            for (String dbId: sa) {
                 initService(dbId, dbConf);
             }
+            firstInstance = sa[0];
         }
         if (serviceMap.containsKey(DEFAULT)) return;
         // try init default service if conf found
@@ -149,7 +152,7 @@ public class DbServiceManager extends AppServiceBase<DbServiceManager> implement
         } else {
             if (serviceMap.isEmpty()) {
                 if (null == db) {
-                    logger.warn("DB service not intialized: need to specify default db service implementation");
+                    logger.warn("DB service not initialized: need to specify default db service implementation");
                 } else {
                     logger.warn("DB configuration not found. Will try to init default service with the sole db plugin: %s", db);
                     Map<String, Object> svcConf = C.newMap();
@@ -164,7 +167,8 @@ public class DbServiceManager extends AppServiceBase<DbServiceManager> implement
                     serviceMap.put(DEFAULT, svc);
                 }
             } else {
-                throw E.invalidConfiguration("Default db service for the application needs to be specified");
+                logger.warn("Default service not specified. Use the first db instance as default service: %s", firstInstance);
+                serviceMap.put(DEFAULT, serviceMap.get(firstInstance));
             }
         }
     }
