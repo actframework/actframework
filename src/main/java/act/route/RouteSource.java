@@ -81,7 +81,28 @@ public enum RouteSource {
                     return Router.ConflictResolver.OVERWRITE_WARN;
             }
         }
-    };
+    },
+
+    /**
+     * The route mapping com from admin console instruction
+     */
+    ADMIN_OVERWRITE() {
+        @Override
+        Router.ConflictResolver onConflict(RouteSource existingRoute) {
+            return Router.ConflictResolver.OVERWRITE_WARN;
+        }
+    },
+
+    /**
+     * The route mapping com from admin console add instruction
+     */
+    ADMIN_ADD() {
+        @Override
+        Router.ConflictResolver onConflict(RouteSource existingRoute) {
+            return Router.ConflictResolver.EXIT;
+        }
+    },
+    ;
 
     abstract Router.ConflictResolver onConflict(RouteSource existingRoute);
 }

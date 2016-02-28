@@ -1,12 +1,15 @@
 package act.route;
 
 import act.app.App;
+import act.app.CliContext;
 import act.cli.Command;
 import act.cli.Optional;
+import act.cli.Required;
 import act.cli.tree.FilteredTreeNode;
 import act.cli.tree.TreeNode;
 import act.cli.tree.TreeNodeFilter;
 import act.util.PropertySpec;
+import org.osgl.http.H;
 import org.osgl.util.C;
 import org.osgl.util.S;
 
@@ -20,10 +23,15 @@ import java.util.List;
 public class RouterAdmin {
 
     private App app;
+    private CliContext context;
 
     @Inject
-    public RouterAdmin(App app) {
+    public RouterAdmin(
+            App app,
+            CliContext context
+    ) {
         this.app = app;
+        this.context = context;
     }
 
     @Command(name = "act.route.list", help = "list routes")
@@ -85,6 +93,34 @@ public class RouterAdmin {
             list = C.list(list).without(toBeRemoved);
         }
         return list;
+    }
+
+    @Command(name = "route.overwrite", help = "overwrite a route entry")
+    public void overwrite(
+            @Required("specify http method") String method,
+            @Required("specify path") String path,
+            @Required("specify handler") String handler,
+            @Optional("specify the port name") String name
+    ) {
+        final Router router = S.blank(name) ? app.router() : app.router(name);
+        router.addMapping(H.Method.valueOfIgnoreCase(method), path, handler, RouteSource.ADMIN_OVERWRITE);
+        context.println("route entry has been added/overwritten");
+    }
+
+    @Command(name = "route.add", help = "overwrite a route entry")
+    public void admin(
+            @Required("specify http method") String method,
+            @Required("specify path") String path,
+            @Required("specify handler") String handler,
+            @Optional("specify the port name") String name
+    ) {
+        final Router router = S.blank(name) ? app.router() : app.router(name);
+        try {
+            router.addMapping(H.Method.valueOfIgnoreCase(method), path, handler, RouteSource.ADMIN_ADD);
+            context.println("route entry has been added");
+        } catch (DuplicateRouteMappingException e) {
+            context.println("Route entry already exist");
+        }
     }
 
 }
