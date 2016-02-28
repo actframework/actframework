@@ -16,6 +16,7 @@ import java.util.Map;
 import java.util.Properties;
 
 import static act.route.RouteSource.ACTION_ANNOTATION;
+import static act.route.RouteSource.ADMIN_OVERWRITE;
 import static act.route.RouteSource.ROUTE_TABLE;
 import static org.osgl.http.H.Method.GET;
 
@@ -136,7 +137,7 @@ public class RouterTest extends RouterTestBase {
             router.addMapping(GET, "/foo", "Controller.foo", source);
             try {
                 router.addMapping(GET, "/foo", "Foo.bar", source);
-                if (source != ROUTE_TABLE) {
+                if (source != ROUTE_TABLE && source != ADMIN_OVERWRITE) {
                     fail("expected DuplicateRouteMappingException");
                 }
             } catch (DuplicateRouteMappingException e) {
