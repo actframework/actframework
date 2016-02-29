@@ -2,8 +2,8 @@
 
 Documentation is ready at
 
-[English version](https://github.com/actframework/act-doc/blob/master/en/index.md)
-[Chinese version](https://github.com/actframework/act-doc/blob/master/cn/index.md)
+* [English version](https://github.com/actframework/act-doc/blob/master/en/index.md)
+* [Chinese version](https://github.com/actframework/act-doc/blob/master/cn/index.md)
 
 
 ##### ACT Framework
