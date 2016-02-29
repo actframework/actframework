@@ -1,6 +1,9 @@
 **Note**
 
-Act-doc project has been started at https://github.com/actframework/act-doc/blob/master/en/index.md
+Documentation is ready at
+
+[English version](https://github.com/actframework/act-doc/blob/master/en/index.md)
+[Chinese version](https://github.com/actframework/act-doc/blob/master/cn/index.md)
 
 
 ##### ACT Framework
