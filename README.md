@@ -3,7 +3,7 @@
 Documentation is ready at
 
 * [English version](https://github.com/actframework/act-doc/blob/master/en/index.md)
-* [Chinese version](https://github.com/actframework/act-doc/blob/master/cn/index.md)
+* [中文版](https://github.com/actframework/act-doc/blob/master/cn/index.md)
 
 
 ##### ACT Framework
