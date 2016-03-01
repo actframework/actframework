@@ -26,7 +26,10 @@ import org.osgl.util.E;
 import org.osgl.util.S;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.ListIterator;
+import java.util.Set;
+import java.util.regex.Pattern;
 
 public final class RequestHandlerProxy extends RequestHandlerBase {
 
@@ -252,6 +255,31 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
         context.actionPath(path);
     }
 
+    private boolean matches(String actionMethodName, Set<String> patterns) {
+        if (patterns.contains(actionMethodName)) {
+            return true;
+        }
+        for (String s : patterns) {
+            if (Pattern.compile(s).matcher(actionMethodName).matches()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean applied(InterceptorMethodMetaInfo interceptor) {
+        Set<String> blackList = interceptor.blackList();
+        if (!blackList.isEmpty()) {
+            return !matches(actionMethodName, blackList);
+        } else {
+            Set<String> whiteList = interceptor.whiteList();
+            if (!whiteList.isEmpty()) {
+                return matches(actionMethodName, whiteList);
+            }
+            return true;
+        }
+    }
+
     private void generateHandlers() {
         ControllerClassMetaInfo ctrlInfo = app.classLoader().controllerClassMetaInfo(controllerClassName);
         ActionMethodMetaInfo actionInfo = ctrlInfo.action(actionMethodName);
@@ -263,24 +291,36 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
         }
         App app = this.app;
         for (InterceptorMethodMetaInfo info : ctrlInfo.beforeInterceptors(app)) {
+            if (!applied(info)) {
+                continue;
+            }
             beforeInterceptors.add(mode.createBeforeInterceptor(info, app));
             if (info.appContextInjection().injectVia().isLocal()) {
                 requireContextLocal = true;
             }
         }
         for (InterceptorMethodMetaInfo info : ctrlInfo.afterInterceptors(app)) {
+            if (!applied(info)) {
+                continue;
+            }
             afterInterceptors.add(mode.createAfterInterceptor(info, app));
             if (info.appContextInjection().injectVia().isLocal()) {
                 requireContextLocal = true;
             }
         }
         for (CatchMethodMetaInfo info : ctrlInfo.exceptionInterceptors(app)) {
+            if (!applied(info)) {
+                continue;
+            }
             exceptionInterceptors.add(mode.createExceptionInterceptor(info, app));
             if (info.appContextInjection().injectVia().isLocal()) {
                 requireContextLocal = true;
             }
         }
         for (InterceptorMethodMetaInfo info : ctrlInfo.finallyInterceptors(app)) {
+            if (!applied(info)) {
+                continue;
+            }
             finallyInterceptors.add(mode.createFinallyInterceptor(info, app));
             if (info.appContextInjection().injectVia().isLocal()) {
                 requireContextLocal = true;

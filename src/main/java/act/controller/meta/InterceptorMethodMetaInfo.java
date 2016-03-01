@@ -59,12 +59,12 @@ public class InterceptorMethodMetaInfo extends HandlerMethodMetaInfo<Interceptor
         return priority;
     }
 
-    public List<String> whiteList() {
-        return C.list(whiteList);
+    public Set<String> whiteList() {
+        return C.set(whiteList);
     }
 
-    public List<String> blackList() {
-        return C.list(blackList);
+    public Set<String> blackList() {
+        return C.set(blackList);
     }
 
     void mergeInto(C.List<InterceptorMethodMetaInfo> list, String targetName) {
