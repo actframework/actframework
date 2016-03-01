@@ -15,7 +15,7 @@ public class ConfAdmin {
     @Inject
     private AppConfig appConfig;
 
-    @Command("conf.list")
+    @Command(name = "act.conf.list", help = "list configuration")
     public List<ConfigItem> list(
             @Optional("list system configuration") boolean system,
             @Optional(lead = "-q", help = "specify search text") String q

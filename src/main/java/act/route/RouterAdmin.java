@@ -95,7 +95,7 @@ public class RouterAdmin {
         return list;
     }
 
-    @Command(name = "route.overwrite", help = "overwrite a route entry")
+    @Command(name = "act.route.overwrite", help = "overwrite a route entry")
     public void overwrite(
             @Required("specify http method") String method,
             @Required("specify path") String path,
@@ -107,7 +107,7 @@ public class RouterAdmin {
         context.println("route entry has been added/overwritten");
     }
 
-    @Command(name = "route.add", help = "overwrite a route entry")
+    @Command(name = "act.route.add", help = "overwrite a route entry")
     public void admin(
             @Required("specify http method") String method,
             @Required("specify path") String path,
