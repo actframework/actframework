@@ -299,6 +299,7 @@ public class MailerContext extends ActContext.ActContextBase<MailerContext> {
 
         ViewManager vm = Act.viewManager();
         Template t = vm.load(this);
+        E.illegalStateIf(null == t, "Mail template not defined");
         String content = t.render(this);
         if (attachments.isEmpty()) {
             msg.setText(content, config().encoding(), accept().name());

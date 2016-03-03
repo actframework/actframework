@@ -147,6 +147,7 @@ public class AppJobManager extends AppServiceBase<AppJobManager> {
     private void initExecutor(App app) {
         int poolSize = app.config().jobPoolSize();
         executor = new ScheduledThreadPoolExecutor(poolSize, new AppThreadFactory("jobs"), new ThreadPoolExecutor.AbortPolicy());
+        executor.setRemoveOnCancelPolicy(true);
     }
 
     private static class _AppEventListener extends AppEventListenerBase {
