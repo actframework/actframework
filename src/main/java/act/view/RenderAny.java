@@ -51,6 +51,16 @@ public class RenderAny extends Result {
             }
             new RenderJSON(map).apply(context.req(), context.resp());
             return;
+        } else if (XML == fmt) {
+            List<String> varNames = context.__appRenderArgNames();
+            Map<String, Object> map = C.newMap();
+            if (null != varNames && !varNames.isEmpty()) {
+                for (String name : varNames) {
+                    map.put(name, context.renderArg(name));
+                }
+            }
+            new FilteredRenderXML(map, null, context).apply(context.req(), context.resp());
+            return;
         } else if (HTML == fmt || TXT == fmt || CSV == fmt) {
             new RenderTemplate().apply(context);
             return;

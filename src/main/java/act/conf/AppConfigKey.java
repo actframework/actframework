@@ -80,6 +80,17 @@ public enum AppConfigKey implements ConfigKey {
     CACHE_IMPL("cache.impl"),
 
     /**
+     * {@code act.content_suffix.aware.enabled}
+     * <p>
+     *     Once enabled then the framework automatically recognize request with content suffix.
+     *     E.g. {@code /customer/123/json} will match the route {@code /customer/123} and set the
+     *     request {@code Accept} header to {@code text/xml}
+     * </p>
+     * <p>Default value: {@code false}</p>
+     */
+    CONTENT_SUFFIX_AWARE("content_suffix.aware.enabled"),
+
+    /**
      * {@code act.controller_package} specify the java
      * package where controller classes are aggregated.
      * <p>Once controller_package is specified then the application developer could

@@ -5,9 +5,7 @@ import act.cli.ascii_table.impl.CollectionASCIITableAware;
 import act.cli.tree.TreeNode;
 import act.cli.util.MappedFastJsonNameFilter;
 import act.data.DataPropertyRepository;
-import act.util.ActContext;
-import act.util.FastJsonPropertyPreFilter;
-import act.util.PropertySpec;
+import act.util.*;
 import com.alibaba.fastjson.serializer.SerializeFilter;
 import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.thoughtworks.xstream.XStream;
@@ -125,6 +123,8 @@ public enum CliView {
             }
             boolean isList = dataList.get(0) != result;
             XStream xStream = new XStream();
+            xStream.registerConverter(new XstreamOsglCollectionConverter(xStream.getMapper()));
+            xStream.registerConverter(new XstreamOsglMapConverter(xStream.getMapper()));
             Class c = dataList.get(0).getClass();
             if (isList) {
                 xStream.alias("result", List.class);

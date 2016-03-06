@@ -57,6 +57,18 @@ public class NetworkClient extends $.F1<ActionContext, Void> {
                     }
                 }
             }
+            if (app.config().contentSuffixAware()) {
+                if (url.endsWith("/json") || url.endsWith(".json")) {
+                    url = url.substring(0, url.length() - 5);
+                    req.accept(H.Format.JSON);
+                } else if (url.endsWith("/xml") || url.endsWith(".xml")) {
+                    url = url.substring(0, url.length() - 4);
+                    req.accept(H.Format.XML);
+                } else if (url.endsWith("/csv") || url.endsWith(".csv")) {
+                    url = url.substring(0, url.length() - 4);
+                    req.accept(H.Format.CSV);
+                }
+            }
             RequestHandler rh = router().getInvoker(method, url, ctx);
             ctx.handler(rh);
             rh.handle(ctx);

@@ -229,6 +229,29 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         }
     }
 
+    private Boolean contentSuffixAware = null;
+
+    protected T contentSuffixAware(boolean b) {
+        contentSuffixAware = b;
+        return me();
+    }
+
+    public Boolean contentSuffixAware() {
+        if (null == contentSuffixAware) {
+            contentSuffixAware = get(CONTENT_SUFFIX_AWARE);
+            if (null == contentSuffixAware) {
+                contentSuffixAware = false;
+            }
+        }
+        return contentSuffixAware;
+    }
+
+    private void _mergeContentSuffixAware(AppConfig conf) {
+        if (null == get(CONTENT_SUFFIX_AWARE)) {
+            contentSuffixAware = conf.contentSuffixAware;
+        }
+    }
+
     private ErrorTemplatePathResolver errorTemplatePathResolver = null;
 
     protected T errorTemplatePathResolver(ErrorTemplatePathResolver resolver) {
@@ -1302,6 +1325,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         _mergeHttpPort(conf);
         _mergeHttpSecure(conf);
         _mergePorts(conf);
+        _mergeContentSuffixAware(conf);
         _mergeErrorTemplatePathResolver(conf);
         _mergeDateFmt(conf);
         _mergeDateTimeFmt(conf);

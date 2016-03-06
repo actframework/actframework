@@ -1,10 +1,7 @@
 package act.xio.undertow;
 
 import act.app.ActionContext;
-import io.undertow.io.BlockingSenderImpl;
-import io.undertow.io.Sender;
-import io.undertow.io.UndertowInputStream;
-import io.undertow.io.UndertowOutputStream;
+import io.undertow.io.*;
 import io.undertow.server.BlockingHttpExchange;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.servlet.core.BlockingWriterSenderImpl;
@@ -51,6 +48,11 @@ public class ActBlockingExchange implements BlockingHttpExchange {
         } else {
             return new BlockingSenderImpl(exchange, response.outputStream());
         }
+    }
+
+    @Override
+    public Receiver getReceiver() {
+        return new BlockingReceiverImpl(this.exchange, this.getInputStream());
     }
 
     @Override
