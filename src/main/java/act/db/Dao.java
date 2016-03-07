@@ -51,8 +51,8 @@ public interface Dao<ID_TYPE, MODEL_TYPE, QUERY_TYPE extends Dao.Query<MODEL_TYP
 
     /**
      * Find one entity with fields and values specified.
-     * @param fields
-     * @param values
+     * @param fields the fields specification in {@code String}
+     * @param values the value array corresponding to the fields specification
      * @return the entity matches or {@code null} if not found
      * @throws IllegalArgumentException
      * @see #findBy(String, Object...)
@@ -127,9 +127,9 @@ public interface Dao<ID_TYPE, MODEL_TYPE, QUERY_TYPE extends Dao.Query<MODEL_TYP
      * does not impact the update operation, however the {@link ModelBase#_id()} will be used to
      * locate the record/document in the persistent layer corresponding to this entity.</p>
      * <p>For fields and value specification rule, please refer to {@link #findBy(String, Object...)}</p>
-     * @param entity the
-     * @param fields
-     * @param values
+     * @param entity the entity
+     * @param fields the fields specification in {@code String}
+     * @param values the value array corresponding to the fields specification
      * @throws IllegalArgumentException
      */
     void save(MODEL_TYPE entity, String fields, Object ... values) throws IllegalArgumentException;
@@ -158,9 +158,17 @@ public interface Dao<ID_TYPE, MODEL_TYPE, QUERY_TYPE extends Dao.Query<MODEL_TYP
     void drop();
 
     /**
-     * Return a {@link act.db.Dao.Query} of bound to this {@code MODEL_TYPE}
+     * Return a {@link act.db.Dao.Query} bound to the {@code MODEL_TYPE}
      */
     QUERY_TYPE q();
+
+    /**
+     * Return a {@link act.db.Dao.Query} bound to the {@code MODEL_TYPE} by fields and value arguments
+     * @param fields the fields specification in {@code String}
+     * @param values the value array corresponding to the fields specification
+     * @return the query instance
+     */
+    QUERY_TYPE q(String fields, Object... values);
 
     interface Query<MODEL_TYPE, QUERY_TYPE extends Query<MODEL_TYPE, QUERY_TYPE>> {
         QUERY_TYPE offset(int pos);
