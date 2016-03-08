@@ -6,7 +6,7 @@ import act.route.Router;
 import org.osgl.$;
 import org.osgl.http.H;
 import org.osgl.logging.Logger;
-import org.osgl.mvc.util.StringValueResolver;
+import org.osgl.util.StringValueResolver;
 import org.osgl.util.C;
 import org.osgl.util.E;
 import org.osgl.util.FastStr;

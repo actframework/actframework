@@ -5,7 +5,7 @@ import org.joda.time.LocalDate;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
-import org.osgl.mvc.util.StringValueResolver;
+import org.osgl.util.StringValueResolver;
 import org.osgl.util.ValueObject;
 
 public class JodaLocalDateCodec extends StringValueResolver<LocalDate> implements ValueObject.Codec<LocalDate> {

@@ -3,7 +3,7 @@ package act.data;
 import act.conf.AppConfig;
 import org.osgl.logging.L;
 import org.osgl.logging.Logger;
-import org.osgl.mvc.util.StringValueResolver;
+import org.osgl.util.StringValueResolver;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;

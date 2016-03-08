@@ -10,7 +10,7 @@ import org.joda.time.DateTime;
 import org.joda.time.LocalDate;
 import org.joda.time.LocalDateTime;
 import org.joda.time.LocalTime;
-import org.osgl.mvc.util.StringValueResolver;
+import org.osgl.util.StringValueResolver;
 import org.osgl.util.C;
 import org.osgl.util.S;
 

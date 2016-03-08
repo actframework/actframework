@@ -1,7 +1,7 @@
 package act.data;
 
 import act.plugin.Plugin;
-import org.osgl.mvc.util.StringValueResolver;
+import org.osgl.util.StringValueResolver;
 
 public abstract class StringValueResolverPlugin<T> extends StringValueResolver<T> implements Plugin {
 
