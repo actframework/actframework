@@ -236,6 +236,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
 
     private Object[] params(ActionContext ctx, Result result, Exception exception) {
         int paramCount = handler.paramCount();
+        int ctxParamCount = 0;
         Object[] oa = new Object[paramCount];
         if (0 == paramCount) {
             return oa;
@@ -248,17 +249,22 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
             Class<?> paramType = paramTypes[i];
             if (param.isContext()) {
                 oa[i] = app.newInstance(paramType);
+                ctxParamCount++;
                 continue;
             }
             Class<?> paramComponentType = paramComponentTypes[i];
             if (ActionContext.class.equals(paramType)) {
                 oa[i] = ctx;
+                ctxParamCount++;
             } else if (Result.class.isAssignableFrom(paramType)) {
                 oa[i] = result;
+                ctxParamCount++;
             } else if (Exception.class.isAssignableFrom(paramType)) {
                 oa[i] = exception;
+                ctxParamCount++;
             } else if (App.class.equals(paramType)) {
                 oa[i] = app;
+                ctxParamCount++;
             } else {
                 try {
                     BindAnnoInfo bindInfo = param.bindAnnoInfo();
@@ -285,7 +291,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
                         }
                         String reqVal = ctx.paramVal(bindName);
                         if (null == reqVal) {
-                            Object o = ctx.tryParseJson(bindName, paramType, paramComponentType, paramCount);
+                            Object o = ctx.tryParseJson(bindName, paramType, paramComponentType, paramCount - ctxParamCount);
                             if (null != o) {
                                 if (paramType != String.class && o instanceof String) {
                                     oa[i] = resolverManager.resolve((String) o, paramType);
@@ -313,7 +319,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
                             Object o = resolverManager.resolve(reqVal, paramType);
                             if (null == o) {
                                 try {
-                                    Object entity = $.newInstance(paramType);
+                                    Object entity = newInstance(paramType);
                                     o = autoBinder.resolve(entity, bindName, ctx);
                                 } catch (Exception e) {
                                     logger.warn(e, "Error binding parameter %s", bindName);
@@ -340,6 +346,17 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
             }
         }
         return oa;
+    }
+
+    private Object newInstance(Class c) {
+        if (List.class.equals(c)) {
+            return C.newList();
+        } else if (Map.class.equals(c)) {
+            return C.newMap();
+        } else if (Set.class.equals(c)) {
+            return C.newSet();
+        }
+        return app.newInstance(c);
     }
 
     private List<Annotation> paramAnnotationList(int paramIndex) {

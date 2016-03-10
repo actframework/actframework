@@ -201,35 +201,49 @@ public class ActionContext extends ActContext.ActContextBase<ActionContext> impl
     }
 
     public Object tryParseJson(String name, Class<?> paramType, Class<?> paramComponentType, int paramCount) {
-        if (null == jsonObject) {
-            return null;
-        }
-        Object o = jsonObject.get(name);
-        if (null != o) {
-            if (o instanceof JSONObject) {
-                return JSON.parseObject(((JSONObject) o).toJSONString(), paramType);
-            } else if (o instanceof JSONArray) {
-                return JSON.parseArray(((JSONArray) o).toJSONString(), paramComponentType);
-            } else {
-                return o;
-            }
-        } else {
-            if (Iterable.class.isAssignableFrom(paramType)) {
-                if (List.class.equals(paramType)) {
-                    o = C.list();
-                } else if (Set.class.equals(paramType)) {
-                    o = C.newSet();
+        if (null != jsonObject) {
+            Object o = jsonObject.get(name);
+            if (null != o) {
+                if (o instanceof JSONObject) {
+                    return JSON.parseObject(((JSONObject) o).toJSONString(), paramType);
+                } else if (o instanceof JSONArray) {
+                    return JSON.parseArray(((JSONArray) o).toJSONString(), paramComponentType);
+                } else {
+                    return o;
                 }
-            } else if (Map.class.equals(paramType)) {
-                o = C.map();
-            } else if (paramType.isArray()) {
-                o = new Object[]{};
-            }
+            } else {
+                if (Iterable.class.isAssignableFrom(paramType)) {
+                    if (List.class.equals(paramType)) {
+                        o = C.list();
+                    } else if (Set.class.equals(paramType)) {
+                        o = C.newSet();
+                    }
+                } else if (Map.class.equals(paramType)) {
+                    o = C.map();
+                } else if (paramType.isArray()) {
+                    o = new Object[]{};
+                }
 
+                paramCount = paramCount - extraParams.size();
+                boolean singleParam = paramCount == 1;
+                return singleParam ? JSON.parseObject(jsonObject.toJSONString(), paramType) : o;
+            }
+        } else if (null != jsonArray) {
             paramCount = paramCount - extraParams.size();
             boolean singleParam = paramCount == 1;
-            return singleParam ? JSON.parseObject(jsonObject.toJSONString(), paramType) : o;
+            if (!singleParam) {
+                return null;
+            }
+            List list = JSON.parseArray(jsonArray.toJSONString(), paramComponentType);
+            if (Iterable.class.isAssignableFrom(paramType)) {
+                if (List.class.equals(paramType)) {
+                    return list;
+                } else if (Set.class.equals(paramType)) {
+                    return C.newSet(list);
+                }
+            }
         }
+        return null;
     }
 
     public JSONArray jsonArray() {
