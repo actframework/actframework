@@ -498,7 +498,7 @@ public class Router extends AppServiceBase<Router> {
             Node node = staticChildren.get(name);
             if (null == node && null != dynamicChild) {
                 if (dynamicChild.matches(name)) {
-                    context.param(dynamicChild.varName.toString(), name.toString());
+                    context.param(dynamicChild.varName.toString(), S.urlDecode(S.string(name)));
                     return dynamicChild;
                 }
             }
