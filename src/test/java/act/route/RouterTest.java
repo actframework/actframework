@@ -62,6 +62,9 @@ public class RouterTest extends RouterTestBase {
     @Test
     public void searchDynamicUrl() {
         router.addMapping(GET, "/svc/{<[0-9]{4}>id}", controller);
+        H.Request req = Mockito.mock(H.Request.class);
+        Mockito.when(ctx.req()).thenReturn(req);
+        Mockito.when(req.path()).thenReturn("/svc/1234");
         router.getInvoker(GET, "/svc/1234/", ctx).handle(ctx);
         controllerInvoked();
         Mockito.verify(ctx).param("id", "1234");
