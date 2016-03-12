@@ -1,8 +1,11 @@
 package act.app;
 
 import act.Destroyable;
+import act.app.event.AppEventId;
+import act.event.AppEventListenerBase;
 import org.osgl.$;
 
+import java.util.EventObject;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -12,18 +15,22 @@ import java.util.concurrent.ConcurrentMap;
 public class SingletonRegistry extends AppServiceBase<SingletonRegistry> {
 
     private ConcurrentMap<Class<?>, Object> registry = new ConcurrentHashMap<Class<?>, Object>();
+    private ConcurrentHashMap<Class<?>, Class<?>> preRegistry = new ConcurrentHashMap<>();
 
     SingletonRegistry(App app) {
         super(app, false);
     }
 
-    void register(final Class<?> singletonClass) {
-        app().jobManager().beforeAppStart(new Runnable() {
-            @Override
-            public void run() {
-                registry.put(singletonClass, app().newInstance(singletonClass));
-            }
-        });
+    synchronized void register(final Class<?> singletonClass) {
+        if (preRegistry.isEmpty()) {
+            app().eventBus().bind(AppEventId.DEPENDENCY_INJECTOR_LOADED, new AppEventListenerBase("register-singleton-instances") {
+                @Override
+                public void on(EventObject event) throws Exception {
+                    doRegister();
+                }
+            });
+        }
+        preRegistry.put(singletonClass, singletonClass);
     }
 
     public void register(Class singletonClass, Object singleton) {
@@ -38,5 +45,12 @@ public class SingletonRegistry extends AppServiceBase<SingletonRegistry> {
     protected void releaseResources() {
         Destroyable.Util.tryDestroyAll(registry.values());
         registry.clear();
+    }
+
+    private void doRegister() {
+        for (Class<?> c : preRegistry.keySet()) {
+            registry.put(c, app().newInstance(c));
+        }
+        preRegistry.clear();
     }
 }

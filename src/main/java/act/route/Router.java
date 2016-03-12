@@ -237,9 +237,9 @@ public class Router extends AppServiceBase<Router> {
         List<CharSequence> paths = Path.tokenize(Unsafe.bufOf(sUrl));
         int len = paths.size();
         for (int i = 0; i < len - 1; ++i) {
-            node = node.addChild((StrBase) paths.get(i));
+            node = node.addChild((StrBase) paths.get(i), path);
         }
-        return node.addChild((StrBase) paths.get(len - 1));
+        return node.addChild((StrBase) paths.get(len - 1), path);
     }
 
     // --- action handler resolving
@@ -437,6 +437,7 @@ public class Router extends AppServiceBase<Router> {
         private Node parent;
         private Node dynamicChild;
         private C.Map<CharSequence, Node> staticChildren = C.newMap();
+        private C.Map<UrlPath, Node> dynamicAliases = C.newMap();
         private RequestHandler handler;
         private RouteSource routeSource;
 
@@ -498,7 +499,15 @@ public class Router extends AppServiceBase<Router> {
             Node node = staticChildren.get(name);
             if (null == node && null != dynamicChild) {
                 if (dynamicChild.matches(name)) {
-                    context.param(dynamicChild.varName.toString(), S.urlDecode(S.string(name)));
+                    UrlPath path = new UrlPath(context.req().path());
+                    CharSequence varName = dynamicChild.varName;
+                    for (Map.Entry<UrlPath, Node> entry : dynamicChild.dynamicAliases.entrySet()) {
+                        if (entry.getKey().equals(path)) {
+                            varName = entry.getValue().varName;
+                            break;
+                        }
+                    }
+                    context.param(varName.toString(), S.urlDecode(S.string(name)));
                     return dynamicChild;
                 }
             }
@@ -547,7 +556,7 @@ public class Router extends AppServiceBase<Router> {
             return childByMetaInfo(name);
         }
 
-        Node addChild(StrBase<?> name) {
+        Node addChild(StrBase<?> name, CharSequence path) {
             name = name.trim();
             Node node = childByMetaInfo(name);
             if (null != node && !node.isDynamic()) {
@@ -555,9 +564,11 @@ public class Router extends AppServiceBase<Router> {
             }
             Node child = new Node(name, this);
             if (child.isDynamic()) {
-                //E.unexpectedIf(null != dynamicChild, "Cannot have more than one dynamic node in the route tree: %s", name);
                 if (null == dynamicChild) {
                     dynamicChild = child;
+                    child.dynamicAliases.put(new UrlPath(path), child);
+                } else {
+                    dynamicChild.dynamicAliases.put(new UrlPath(path), child);
                 }
                 return dynamicChild;
             } else {
@@ -634,8 +645,14 @@ public class Router extends AppServiceBase<Router> {
                 } else {
                     return $.T2(s, null);
                 }
+            } else if (name.contains(":")) {
+                StrBase varName = name.beforeFirst(":");
+                StrBase ptn = name.afterFirst(":");
+                Pattern pattern = ptn.isBlank() ? null : Pattern.compile(ptn.toString());
+                return $.T2(varName, pattern);
+            } else {
+                return null;
             }
-            return null;
         }
     }
 
@@ -667,10 +684,7 @@ public class Router extends AppServiceBase<Router> {
                 }
                 return new StaticFileGetter(file);
             }
-        }
-        ;
-
-
+        };
 
         private static RequestHandler tryResolve(CharSequence directive, CharSequence payload, App app) {
             String s = directive.toString().toLowerCase();
