@@ -2,7 +2,7 @@ package act.controller.meta;
 
 import org.osgl.$;
 import org.osgl.mvc.annotation.Param;
-import org.osgl.mvc.util.StringValueResolver;
+import org.osgl.util.StringValueResolver;
 import org.osgl.util.C;
 
 import java.util.Map;

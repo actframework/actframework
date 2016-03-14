@@ -25,7 +25,7 @@ import org.osgl.http.H;
 import org.osgl.mvc.result.NotFound;
 import org.osgl.mvc.result.Result;
 import org.osgl.mvc.util.Binder;
-import org.osgl.mvc.util.StringValueResolver;
+import org.osgl.util.StringValueResolver;
 import org.osgl.util.C;
 import org.osgl.util.E;
 import org.osgl.util.S;

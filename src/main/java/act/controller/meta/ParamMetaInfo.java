@@ -4,7 +4,7 @@ import act.app.App;
 import act.asm.Type;
 import act.util.GeneralAnnoInfo;
 import org.osgl.$;
-import org.osgl.mvc.util.StringValueResolver;
+import org.osgl.util.StringValueResolver;
 import org.osgl.util.C;
 import org.osgl.util.S;
 
