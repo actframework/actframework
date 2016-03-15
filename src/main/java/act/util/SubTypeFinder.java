@@ -1,167 +1,58 @@
 package act.util;
 
 import act.ActComponent;
-import act.app.*;
+import act.app.App;
+import act.app.event.AppEventId;
+import act.event.AppEventListenerBase;
+import act.plugin.AppServicePlugin;
 import org.osgl.$;
+import org.osgl.logging.L;
+import org.osgl.logging.Logger;
 import org.osgl.util.E;
-import org.osgl.util.FastStr;
-import org.osgl.util.S;
 
-import java.util.Map;
-import java.util.Set;
-import java.util.regex.Pattern;
+import java.util.EventObject;
 
+/**
+ * Find classes that extends a specified type directly
+ * or indirectly, or implement a specified type directly
+ * or indirectly
+ */
 @ActComponent
-public abstract class SubTypeFinder extends AppCodeScannerPluginBase {
+public abstract class SubTypeFinder<T> extends AppServicePlugin {
 
-    private $.Func2<App, String, Map<Class<? extends AppByteCodeScanner>, Set<String>>> foundHandler;
-    private String pkgName;
-    private String clsName;
-    private Class<?> superType;
-    private boolean publicOnly;
-    private boolean noAbstract;
+    protected static Logger logger = L.get(SubTypeFinder.class);
 
-    protected SubTypeFinder(boolean publicOnly, boolean noAbstract, Class<?> superType, $.Func2<App, String, Map<Class<? extends AppByteCodeScanner>, Set<String>>> foundHandler) {
-        E.NPE(superType, foundHandler);
-        this.clsName = superType.getSimpleName();
-        this.pkgName = FastStr.of(superType.getName()).beforeLast('.').toString();
-        this.superType = superType;
-        this.foundHandler = foundHandler;
-        this.noAbstract = noAbstract;
-        this.publicOnly = publicOnly;
+    private Class<T> targetType;
+    private App app;
+    private AppEventId bindingEvent = AppEventId.DEPENDENCY_INJECTOR_PROVISIONED;
+
+    public SubTypeFinder(Class<T> target) {
+        E.NPE(target);
+        targetType = target;
     }
-    protected SubTypeFinder(Class<?> superType, $.Func2<App, String, Map<Class<? extends AppByteCodeScanner>, Set<String>>> foundHandler) {
-        this(true, true, superType, foundHandler);
+
+    public SubTypeFinder(Class<T> target, AppEventId bindingEvent) {
+        this(target);
+        this.bindingEvent = $.notNull(bindingEvent);
     }
+
+    protected abstract void found(Class<T> target, App app);
 
     @Override
-    public AppSourceCodeScanner createAppSourceCodeScanner(App app) {
-        return new SourceCodeSensor();
-    }
-
-    @Override
-    public AppByteCodeScanner createAppByteCodeScanner(App app) {
-        return new ByteCodeSensor();
-    }
-
-    @Override
-    public boolean load() {
-        return true;
-    }
-
-    @ActComponent
-    private class SourceCodeSensor extends AppSourceCodeScannerBase {
-
-        private boolean pkgFound;
-        private final Pattern PATTERN = Pattern.compile(".*@Extends\\(\\s*" + clsName + "\\.class\\s*\\).*");
-
-        @Override
-        protected void reset(String className) {
-            super.reset(className);
-            pkgFound = false;
-        }
-
-        @Override
-        protected void _visit(int lineNumber, String line, String className) {
-            if (PATTERN.matcher(line).matches()) {
-                markScanByteCode();
-                logFound(className);
-                return;
-            }
-            if (!pkgFound) {
-                if (line.contains(pkgName)) {
-                    pkgFound = true;
-                }
-            }
-            if (pkgFound) {
-                boolean found = line.contains(clsName);
-                if (found) {
-                    markScanByteCode();
-                    logFound(className);
-                }
-            }
-        }
-
-        protected void logFound(String className) {
-            logger.debug("Subtype of %s detected: %s", S.builder(pkgName).append(".").append(clsName), className);
-        }
-
-        @Override
-        protected boolean shouldScan(String className) {
-            return true;
-        }
-
-        @Override
-        public int hashCode() {
-            return $.hc(PATTERN, SourceCodeSensor.class);
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (obj == this) {
-                return true;
-            }
-            if (obj instanceof SourceCodeSensor) {
-                SourceCodeSensor that = (SourceCodeSensor)obj;
-                return $.eq(that.PATTERN, this.PATTERN);
-            }
-            return false;
-        }
-    }
-
-    @ActComponent
-    private class ByteCodeSensor extends AppByteCodeScannerBase {
-        private ClassDetector detector;
-        private $.Func2<App, String, Map<Class<? extends AppByteCodeScanner>, Set<String>>> foundHandler = SubTypeFinder.this.foundHandler;
-
-        @Override
-        protected void reset(String className) {
-            super.reset(className);
-            detector = ClassDetector.of(new DescendantClassFilter(publicOnly, noAbstract, superType) {
-                @Override
-                public void found(Class clazz) {
-                }
-            });
-        }
-
-        @Override
-        public ByteCodeVisitor byteCodeVisitor() {
-            return detector;
-        }
-
-        @Override
-        public void scanFinished(String className) {
-            if (detector.found()) {
-                Map<Class<? extends AppByteCodeScanner>, Set<String>> dependencies = foundHandler.apply(app(), className);
-                if (null != dependencies && !dependencies.isEmpty()) {
-                    for (Class<? extends AppByteCodeScanner> c : dependencies.keySet()) {
-                        addDependencyClassToScanner(c, dependencies.get(c));
+    final protected void applyTo(final App app) {
+        app.eventBus().bind(bindingEvent, new AppEventListenerBase() {
+            @Override
+            public void on(EventObject event) throws Exception {
+                ClassInfoRepository repo = app.classLoader().classInfoRepository();
+                ClassNode parent = repo.node(targetType.getName());
+                parent.findPublicNotAbstract(new $.Visitor<ClassNode>() {
+                    @Override
+                    public void visit(ClassNode classNode) throws $.Break {
+                        final Class<T> c = $.classForName(classNode.name(), app.classLoader());
+                        found(c, app);
                     }
-                }
+                });
             }
-        }
-
-        @Override
-        protected boolean shouldScan(String className) {
-            return true;
-        }
-
-        @Override
-        public int hashCode() {
-            return $.hc(detector, ByteCodeSensor.class);
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (obj == this) {
-                return true;
-            }
-            if (obj instanceof ByteCodeSensor) {
-                ByteCodeSensor that = (ByteCodeSensor)obj;
-                return $.eq(that.detector, this.detector) && $.eq(that.foundHandler, this.foundHandler);
-            }
-            return false;
-        }
+        });
     }
-
 }

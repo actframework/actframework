@@ -304,6 +304,9 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
                                             oa[i] = o;
                                             continue;
                                         }
+                                    } else if (paramType == String.class) {
+                                        oa[i] = S.string(o);
+                                        continue;
                                     }
                                     throw new BindException("Cannot resolve parameter[%s] from %s", bindName, o);
                                 }

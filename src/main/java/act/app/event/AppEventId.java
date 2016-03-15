@@ -60,6 +60,16 @@ public enum AppEventId {
         public AppEvent of(App app) {
             return new AppDependencyInjectorLoaded(app);
         }
+    }, DEPENDENCY_INJECTOR_PROVISIONED {
+        @Override
+        public AppEvent of(App app) {
+            return new AppDependencyInjectorProvisioned(app);
+        }
+    }, SINGLETON_PROVISIONED {
+        @Override
+        public AppEvent of(App app) {
+            return new SingletonProvisioned(app);
+        }
     }, PRE_START () {
         @Override
         public AppEvent of(App app) {

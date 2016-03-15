@@ -5,7 +5,7 @@ import act.app.App;
 import act.app.AppByteCodeScanner;
 import act.app.AppClassLoader;
 import act.controller.bytecode.ControllerByteCodeScanner;
-import act.util.SubTypeFinder;
+import act.util.InternalSubTypeFinder;
 import org.osgl.$;
 import org.osgl.exception.NotAppliedException;
 import org.osgl.util.C;
@@ -19,7 +19,7 @@ import java.util.Set;
  * {@link act.conf.AppConfig} default values
  */
 @ActComponent
-public class AppConfigPlugin extends SubTypeFinder {
+public class AppConfigPlugin extends InternalSubTypeFinder {
     public AppConfigPlugin() {
         super(true, false, AppConfigurator.class, new $.F2<App, String, Map<Class<? extends AppByteCodeScanner>, Set<String>>>() {
             @Override

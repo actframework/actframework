@@ -3,7 +3,7 @@ package act.util;
 import act.app.App;
 import org.osgl.util.ValueObject;
 
-public class ValueObjectCodecFinder extends SubTypeFinder2<ValueObject.Codec> {
+public class ValueObjectCodecFinder extends SubTypeFinder<ValueObject.Codec> {
     public ValueObjectCodecFinder() {
         super(ValueObject.Codec.class);
     }

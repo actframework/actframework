@@ -284,6 +284,8 @@ public class App {
         // because once app event is consumed the event listeners
         // are cleared
         emit(DEPENDENCY_INJECTOR_LOADED);
+        emit(DEPENDENCY_INJECTOR_PROVISIONED);
+        emit(SINGLETON_PROVISIONED);
         emit(PRE_START);
         emit(START);
         logger.info("App[%s] started", name());

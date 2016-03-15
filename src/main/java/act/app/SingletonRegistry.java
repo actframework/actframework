@@ -23,7 +23,7 @@ public class SingletonRegistry extends AppServiceBase<SingletonRegistry> {
 
     synchronized void register(final Class<?> singletonClass) {
         if (preRegistry.isEmpty()) {
-            app().eventBus().bind(AppEventId.DEPENDENCY_INJECTOR_LOADED, new AppEventListenerBase("register-singleton-instances") {
+            app().eventBus().bind(AppEventId.DEPENDENCY_INJECTOR_PROVISIONED, new AppEventListenerBase("register-singleton-instances") {
                 @Override
                 public void on(EventObject event) throws Exception {
                     doRegister();
@@ -37,7 +37,7 @@ public class SingletonRegistry extends AppServiceBase<SingletonRegistry> {
         registry.put(singletonClass, singleton);
     }
 
-    <T> T get(Class<T> singletonClass) {
+    synchronized <T> T get(Class<T> singletonClass) {
         return $.cast(registry.get(singletonClass));
     }
 

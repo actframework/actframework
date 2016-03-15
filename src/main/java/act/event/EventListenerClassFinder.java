@@ -5,7 +5,7 @@ import act.app.App;
 import act.app.event.AppEvent;
 import act.app.event.AppEventId;
 import act.app.event.AppEventListener;
-import act.util.SubTypeFinder2;
+import act.util.SubTypeFinder;
 import org.osgl.$;
 
 import java.lang.reflect.ParameterizedType;
@@ -13,7 +13,7 @@ import java.lang.reflect.Type;
 import java.util.EventObject;
 
 @ActComponent
-public class EventListenerClassFinder extends SubTypeFinder2<ActEventListener> {
+public class EventListenerClassFinder extends SubTypeFinder<ActEventListener> {
 
     public EventListenerClassFinder() {
         super(ActEventListener.class);
