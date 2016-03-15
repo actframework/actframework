@@ -259,6 +259,8 @@ public class App {
         emit(PRE_LOAD_CLASSES);
 
         initClassLoader();
+        emit(AppEventId.CLASS_LOADER_INITIALIZED);
+        preloadClasses();
         try {
             scanAppCodes();
             compilationException = null;
@@ -268,6 +270,7 @@ public class App {
         }
         //classLoader().loadClasses();
         emit(APP_CODE_SCANNED);
+        emit(CLASS_LOADED);
 
         initMailerConfigManager();
 
@@ -654,9 +657,10 @@ public class App {
 
     private void initClassLoader() {
         classLoader = Act.mode().classLoader(this);
-        emit(AppEventId.CLASS_LOADER_INITIALIZED);
+    }
+
+    private void preloadClasses() {
         classLoader.preload();
-        emit(AppEventId.CLASS_LOADED);
     }
 
     private void initResolverManager() {
