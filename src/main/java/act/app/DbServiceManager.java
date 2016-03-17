@@ -87,9 +87,11 @@ public class DbServiceManager extends AppServiceBase<DbServiceManager> implement
         Dao dao = modelDaoMap.get(modelClass);
         if (null == dao) {
             String svcId = DEFAULT;
-            DB db = modelClass.getDeclaredAnnotation(DB.class);
-            if (null != db) {
-                svcId = db.value();
+            Annotation[] aa = modelClass.getDeclaredAnnotations();
+            for (Annotation a : aa) {
+                if (a instanceof DB) {
+                    svcId = ((DB)a).value();
+                }
             }
             DbService dbService = dbService(svcId);
             dao = dbService.defaultDao(modelClass);
