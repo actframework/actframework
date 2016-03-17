@@ -170,7 +170,7 @@ public class AppClassLoader
             return c;
         }
 
-        // ensure we
+        // ensure we can enhance the act classes specified below
         if (name.startsWith("act.") && name.endsWith("Admin")) {
             return super.loadClass(name, resolve);
         }

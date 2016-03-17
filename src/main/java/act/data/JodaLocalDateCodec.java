@@ -8,10 +8,13 @@ import org.joda.time.format.ISODateTimeFormat;
 import org.osgl.util.StringValueResolver;
 import org.osgl.util.ValueObject;
 
+import javax.inject.Inject;
+
 public class JodaLocalDateCodec extends StringValueResolver<LocalDate> implements ValueObject.Codec<LocalDate> {
 
     private DateTimeFormatter dateFormat;
 
+    @Inject
     public JodaLocalDateCodec(AppConfig config) {
         String patten = config.dateFormat();
         if (patten.contains("8601")) {
