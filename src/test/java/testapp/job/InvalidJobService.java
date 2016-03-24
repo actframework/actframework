@@ -4,7 +4,7 @@ import act.job.OnAppStart;
 
 public class InvalidJobService {
     @OnAppStart
-    public void bar(String s) {
+    public void bar() {
         System.out.println("bar");
     }
 }

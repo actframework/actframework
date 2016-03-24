@@ -91,21 +91,7 @@ public class JobByteCodeScanner extends AppByteCodeScannerBase {
 
         private boolean isEligibleMethod(int access, String name, String desc) {
             // TODO: analyze parameters
-            return isPublic(access) && !isAbstract(access) && !isConstructor(name) && (desc.startsWith("()"));
-        }
-
-        private class StringArrayVisitor extends AnnotationVisitor {
-            protected ListBuilder<String> strings = ListBuilder.create();
-
-            public StringArrayVisitor(AnnotationVisitor av) {
-                super(ASM5, av);
-            }
-
-            @Override
-            public void visit(String name, Object value) {
-                strings.add(value.toString());
-                super.visit(name, value);
-            }
+            return isPublic(access);
         }
 
         private class JobMethodVisitor extends MethodVisitor implements Opcodes {

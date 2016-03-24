@@ -6,6 +6,7 @@ import act.app.AppCodeScannerManager;
 import act.app.TestingAppClassLoader;
 import act.asm.Type;
 import act.controller.meta.*;
+import act.event.EventBus;
 import act.job.AppJobManager;
 import act.job.bytecode.JobByteCodeScanner;
 import act.route.RouteSource;
@@ -39,6 +40,7 @@ public class ControllerByteCodeScannerTest extends TestBase {
     private AppJobManager jobManager;
     private ControllerByteCodeScanner controllerScanner;
     private JobByteCodeScanner jobScanner;
+    private EventBus eventBus;
     private File base;
 
     @Before
@@ -47,7 +49,9 @@ public class ControllerByteCodeScannerTest extends TestBase {
         controllerScanner = new ControllerByteCodeScanner();
         jobScanner = new JobByteCodeScanner();
         scannerManager = mock(AppCodeScannerManager.class);
-        jobManager = mock(AppJobManager.class);
+        eventBus = mock(EventBus.class);
+        when(mockApp.eventBus()).thenReturn(eventBus);
+        jobManager = new AppJobManager(mockApp);
         classLoader = new TestingAppClassLoader(mockApp);
         when(mockApp.classLoader()).thenReturn(classLoader);
         infoSrc = classLoader.controllerClassMetaInfoManager();

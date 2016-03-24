@@ -93,60 +93,10 @@ public final class JobClassMetaInfo extends DestroyableBase {
         return this;
     }
 
-    public String nonPrivateAppField() {
-        if (null != appField) {
-            return appFieldIsPrivate ? null : appField;
-        }
-        return null == parent ? null : parent.nonPrivateAppField();
-    }
-
-    public String appField() {
-        if (null != appField) {
-            return appField;
-        }
-        if (null != parent) {
-            return parent.nonPrivateAppField();
-        }
-        return null;
-    }
-
-    public boolean hasAppField() {
-        return null != appField;
-    }
-
-    public boolean appFieldIsPrivate() {
-        return appFieldIsPrivate;
-    }
-
     public JobClassMetaInfo appConfigField(String fieldName, boolean isPrivate) {
         appConfigField = fieldName;
         appConfigFieldIsPrivate = isPrivate;
         return this;
-    }
-
-    public String nonPrivateAppConfigField() {
-        if (null != appConfigField) {
-            return appConfigFieldIsPrivate ? null : appConfigField;
-        }
-        return null == parent ? null : parent.nonPrivateAppConfigField();
-    }
-
-    public String appConfigField() {
-        if (null != appConfigField) {
-            return appConfigField;
-        }
-        if (null != parent) {
-            return parent.nonPrivateAppConfigField();
-        }
-        return null;
-    }
-
-    public boolean hasAppConfigField() {
-        return null != appConfigField;
-    }
-
-    public boolean appConfigFieldIsPrivate() {
-        return appConfigFieldIsPrivate;
     }
 
     public JobClassMetaInfo addAction(JobMethodMetaInfo info) {

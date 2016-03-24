@@ -12,6 +12,7 @@ import org.osgl.util.E;
 import org.osgl.util.S;
 
 import java.lang.annotation.Annotation;
+import java.util.List;
 
 @ActComponent
 public class JobAnnotationProcessor extends AppHolderBase<JobAnnotationProcessor> {
@@ -23,8 +24,17 @@ public class JobAnnotationProcessor extends AppHolderBase<JobAnnotationProcessor
         manager = app.jobManager();
     }
 
-    public void register(JobMethodMetaInfo method, Class<? extends Annotation> anno, Object v) {
-        if (!validJob(method)) {
+    public void register(final JobMethodMetaInfo method, final Class<? extends Annotation> anno, final Object v) {
+        if (isAbstract(method)) {
+            app().jobManager().on(AppEventId.SINGLETON_PROVISIONED, new Runnable() {
+                @Override
+                public void run() {
+                    List<JobMethodMetaInfo> list = method.extendedJobMethodMetaInfoList(app());
+                    for (JobMethodMetaInfo subMethodInfo : list) {
+                        register(subMethodInfo, anno, v);
+                    }
+                }
+            });
             return;
         }
         _Job job = createMethodJob(method);
@@ -115,9 +125,9 @@ public class JobAnnotationProcessor extends AppHolderBase<JobAnnotationProcessor
         JobTrigger.onAppEvent(appEventId, async).register(job, manager);
     }
 
-    private boolean validJob(JobMethodMetaInfo method) {
+    private boolean isAbstract(JobMethodMetaInfo method) {
         JobClassMetaInfo classMetaInfo = method.classInfo();
-        return !(classMetaInfo.isAbstract());
+        return (classMetaInfo.isAbstract());
     }
     
     private _Job createMethodJob(JobMethodMetaInfo method) {

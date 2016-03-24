@@ -1,18 +1,27 @@
 package act.job.meta;
 
+import act.app.App;
 import act.asm.Type;
+import act.controller.meta.ParamMetaInfo;
 import act.sys.meta.InvokeType;
 import act.sys.meta.ReturnTypeInfo;
+import act.util.ClassNode;
 import act.util.DestroyableBase;
 import org.osgl.$;
+import org.osgl.Osgl;
+import org.osgl.util.C;
+import org.osgl.util.E;
 import org.osgl.util.S;
+
+import java.util.List;
 
 public class JobMethodMetaInfo extends DestroyableBase {
     private String id;
     private String name;
     private InvokeType invokeType;
     private JobClassMetaInfo clsInfo;
-    private ReturnTypeInfo returnType;
+    private ReturnTypeInfo returnType = new ReturnTypeInfo();
+    private C.List<ParamMetaInfo> params = C.newList();
 
     public JobMethodMetaInfo(JobClassMetaInfo clsInfo) {
         this.clsInfo = clsInfo;
@@ -101,6 +110,36 @@ public class JobMethodMetaInfo extends DestroyableBase {
                 .append(_return())
                 .append(fullName());
         return sb.toString();
+    }
+
+    public List<JobMethodMetaInfo> extendedJobMethodMetaInfoList(App app) {
+        E.illegalStateIf(!classInfo().isAbstract(), "this job method meta info is not abstract");
+        final C.List<JobMethodMetaInfo> list = C.newList();
+        final JobClassMetaInfo clsInfo = classInfo();
+        String clsName = clsInfo.className();
+        ClassNode node = app.classLoader().classInfoRepository().node(clsName);
+        if (null == node) {
+            return list;
+        }
+        final JobMethodMetaInfo me = this;
+        node.accept(new Osgl.Visitor<ClassNode>() {
+            @Override
+            public void visit(ClassNode classNode) throws Osgl.Break {
+                if (!classNode.isAbstract() && classNode.isPublic()) {
+                    JobClassMetaInfo subClsInfo = new JobClassMetaInfo().className(classNode.name());
+                    JobMethodMetaInfo subMethodInfo = new JobMethodMetaInfo(subClsInfo);
+                    if (me.isStatic()) {
+                        subMethodInfo.invokeStaticMethod();
+                    } else {
+                        subMethodInfo.invokeInstanceMethod();
+                    }
+                    subMethodInfo.name(me.name());
+                    subMethodInfo.returnType(me.returnType());
+                    list.add(subMethodInfo);
+                }
+            }
+        });
+        return list;
     }
 
     private String _invokeType() {

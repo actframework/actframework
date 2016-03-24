@@ -145,8 +145,6 @@ public abstract class HandlerMethodMetaInfo<T extends HandlerMethodMetaInfo> ext
 
     public HandlerMethodMetaInfo addParam(ParamMetaInfo param) {
         params.add(param);
-        if (AsmTypes.ACTION_CONTEXT.equals(param.type())) {
-        }
         return this;
     }
 

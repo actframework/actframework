@@ -6,7 +6,7 @@ public class ReturnTypeInfo {
     private Type type;
     private Type componentType;
 
-    private ReturnTypeInfo() {
+    public ReturnTypeInfo() {
         this(Type.VOID_TYPE);
     }
 
