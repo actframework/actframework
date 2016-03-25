@@ -4,13 +4,9 @@ import act.app.App;
 import act.app.event.AppEventId;
 import act.conf.AppConfig;
 import act.event.AppEventListenerBase;
-import com.cronutils.model.CronType;
-import com.cronutils.model.definition.CronDefinition;
-import com.cronutils.model.definition.CronDefinitionBuilder;
-import com.cronutils.model.time.ExecutionTime;
-import com.cronutils.parser.CronParser;
+import fc.cron.CronExpression;
 import org.joda.time.DateTime;
-import org.joda.time.Duration;
+import org.joda.time.Seconds;
 import org.osgl.$;
 import org.osgl.exception.NotAppliedException;
 import org.osgl.logging.L;
@@ -175,16 +171,14 @@ abstract class JobTrigger {
     }
 
     static class _Cron extends JobTrigger {
-        private static final CronDefinition def = CronDefinitionBuilder.instanceDefinitionFor(CronType.QUARTZ);
-        private static final CronParser parser = new CronParser(def);
-        private com.cronutils.model.Cron cron;
+        private CronExpression cronExpr;
         _Cron(String expression) {
-            cron = parser.parse(expression);
+            cronExpr = new CronExpression(expression);
         }
 
         @Override
         public String toString() {
-            return S.builder("cron :").append(cron.asString()).toString();
+            return S.builder("cron :").append(cronExpr.toString()).toString();
         }
 
         @Override
@@ -203,16 +197,10 @@ abstract class JobTrigger {
         }
 
         private void delayedSchedule(AppJobManager manager, _Job job) {
-            DateTime now = DateTime.now();
-            ExecutionTime executionTime = ExecutionTime.forCron(cron);
-            Duration nextExecution = executionTime.timeToNextExecution(now.withDurationAdded(1, 1));
-            long seconds = nextExecution.getStandardSeconds();
-            int times = 1;
-            while (seconds == 0) {
-                nextExecution = executionTime.timeToNextExecution(now.withDurationAdded(1, times++));
-                seconds = nextExecution.getStandardSeconds();
-            }
-            manager.executor().schedule(job, seconds, TimeUnit.SECONDS);
+            DateTime now = DateTime.now().plusMillis(1);
+            DateTime next = cronExpr.nextTimeAfter(now);
+            Seconds seconds = Seconds.secondsBetween(now, next);
+            manager.executor().schedule(job, seconds.getSeconds(), TimeUnit.SECONDS);
         }
 
         @Override
