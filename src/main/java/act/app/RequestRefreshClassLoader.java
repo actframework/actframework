@@ -14,4 +14,8 @@ public class RequestRefreshClassLoader extends ActException {
     public String getMessage() {
         return "app class loader refresh required";
     }
+
+    public void doRefresh(App app) {
+        app.asyncRefresh();
+    }
 }

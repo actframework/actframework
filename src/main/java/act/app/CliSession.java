@@ -87,15 +87,7 @@ public class CliSession extends DestroyableBase implements Runnable {
                 try {
                     app.detectChanges();
                 } catch (RequestRefreshClassLoader refreshRequest) {
-                    // Note we need to do this in a separate thread
-                    // as the current thread will be interrupted when app restart
-                    // thus it will trigger issue: https://github.com/ebean-orm/avaje-ebeanorm/issues/620
-                    new Thread() {
-                        @Override
-                        public void run() {
-                            app.refresh();
-                        }
-                    }.start();
+                    refreshRequest.doRefresh(app);
                     return;
                 }
                 if (S.blank(line)) {

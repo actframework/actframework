@@ -217,6 +217,20 @@ public class App {
         refresh();
     }
 
+    /**
+     * In dev mode it could request app to refresh. However if
+     * the request is issued in a thread that will be interrupted
+     * e.g. the cli thread, it should call refresh in an new thread
+     */
+    public void asyncRefresh() {
+        new Thread() {
+            @Override
+            public void run() {
+                refresh();
+            }
+        }.start();
+    }
+
     public synchronized void refresh() {
         logger.info("App starting ....");
         profile = null;

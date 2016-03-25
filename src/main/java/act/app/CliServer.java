@@ -123,7 +123,7 @@ class CliServer extends AppServiceBase<CliServer> implements Runnable {
                         try {
                             app().detectChanges();
                         } catch (RequestRefreshClassLoader refreshRequest) {
-                            app().refresh();
+                            refreshRequest.doRefresh(app());
                         }
                     }
                 }
