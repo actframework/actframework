@@ -197,8 +197,9 @@ abstract class JobTrigger {
         }
 
         private void delayedSchedule(AppJobManager manager, _Job job) {
-            DateTime now = DateTime.now().plusMillis(1);
-            DateTime next = cronExpr.nextTimeAfter(now);
+            DateTime now = DateTime.now();
+            // add one seconds to prevent the next time be the current time (now)
+            DateTime next = cronExpr.nextTimeAfter(now.plusSeconds(1));
             Seconds seconds = Seconds.secondsBetween(now, next);
             manager.executor().schedule(job, seconds.getSeconds(), TimeUnit.SECONDS);
         }
