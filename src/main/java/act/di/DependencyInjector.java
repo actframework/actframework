@@ -19,4 +19,10 @@ public interface DependencyInjector<DI extends DependencyInjector> extends AppSe
      * @return a injector instance support injecting app context
      */
     DependencyInjector<DI> createContextAwareInjector(ActContext context);
+
+    /**
+     * Register a {@link DiBinder} to the injector
+     * @param binder the binder
+     */
+    void registerDiBinder(DiBinder binder);
 }

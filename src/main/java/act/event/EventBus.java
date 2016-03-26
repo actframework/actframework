@@ -7,6 +7,8 @@ import act.app.AppServiceBase;
 import act.app.event.AppEvent;
 import act.app.event.AppEventId;
 import act.app.event.AppEventListener;
+import act.di.DependencyInjector;
+import act.di.DiBinder;
 import act.job.AppJobManager;
 import org.osgl.mvc.result.Result;
 import org.osgl.util.C;
@@ -375,6 +377,24 @@ public class EventBus extends AppServiceBase<EventBus> {
             l.clear();
         }
         listeners.clear();
+    }
+
+    public void loadDefaultEventListener() {
+        loadDiBinderListener();
+    }
+
+    private void loadDiBinderListener() {
+        bind(DiBinder.class, new ActEventListenerBase<DiBinder>() {
+            @Override
+            public void on(DiBinder event) throws Exception {
+                DependencyInjector injector = app().injector();
+                if (null == injector) {
+                    logger.warn("Dependency injector not found");
+                } else {
+                    injector.registerDiBinder(event);
+                }
+            }
+        });
     }
 
 
