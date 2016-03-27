@@ -6,8 +6,6 @@ import org.osgl.mvc.util.Binder;
 import org.osgl.mvc.util.ParamValueProvider;
 import org.osgl.storage.ISObject;
 
-import java.io.File;
-
 /**
  * Resolve file uploads
  */

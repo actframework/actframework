@@ -3,7 +3,6 @@ package act.util;
 import com.thoughtworks.xstream.converters.MarshallingContext;
 import com.thoughtworks.xstream.converters.UnmarshallingContext;
 import com.thoughtworks.xstream.converters.collections.AbstractCollectionConverter;
-import com.thoughtworks.xstream.converters.collections.CollectionConverter;
 import com.thoughtworks.xstream.io.HierarchicalStreamReader;
 import com.thoughtworks.xstream.io.HierarchicalStreamWriter;
 import com.thoughtworks.xstream.mapper.Mapper;
@@ -12,11 +11,9 @@ import org.osgl.Osgl;
 import org.osgl.util.C;
 import org.osgl.util.E;
 import org.osgl.util.SetBase;
-import org.osgl.util.TraversableBase;
 
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.Set;
 
 public class XstreamOsglCollectionConverter extends AbstractCollectionConverter {
     public XstreamOsglCollectionConverter(Mapper mapper) {

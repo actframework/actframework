@@ -15,9 +15,7 @@ import java.io.File;
 import java.util.Map;
 import java.util.Properties;
 
-import static act.route.RouteSource.ACTION_ANNOTATION;
-import static act.route.RouteSource.ADMIN_OVERWRITE;
-import static act.route.RouteSource.ROUTE_TABLE;
+import static act.route.RouteSource.*;
 import static org.osgl.http.H.Method.GET;
 
 public class RouterTest extends RouterTestBase {

@@ -44,4 +44,5 @@ public abstract class DaoBase<ID_TYPE, MODEL_TYPE, QUERY_TYPE extends Dao.Query<
     protected final SecurityContext securityContext() {
         return secCtx;
     }
+
 }

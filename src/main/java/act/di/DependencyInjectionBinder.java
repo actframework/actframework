@@ -9,11 +9,11 @@ import javax.inject.Provider;
 /**
  * Used to pass class binding resolution to DI plugin(s)
  */
-public abstract class DiBinder<T> extends ActEvent implements Provider<T> {
+public abstract class DependencyInjectionBinder<T> extends ActEvent implements Provider<T> {
 
     private Class<T> targetClass;
 
-    public DiBinder(Object source, Class<T> targetClass) {
+    public DependencyInjectionBinder(Object source, Class<T> targetClass) {
         super(source);
         E.NPE(targetClass);
         this.targetClass = targetClass;
@@ -21,7 +21,7 @@ public abstract class DiBinder<T> extends ActEvent implements Provider<T> {
 
     @Override
     public Class eventType() {
-        return DiBinder.class;
+        return DependencyInjectionBinder.class;
     }
 
     public Class<T> targetClass() {

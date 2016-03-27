@@ -7,7 +7,6 @@ import org.osgl.logging.Logger;
 import org.osgl.util.C;
 import org.osgl.util.S;
 
-import java.util.List;
 import java.util.Set;
 
 /**

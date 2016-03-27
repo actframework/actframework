@@ -15,8 +15,8 @@ import act.controller.bytecode.ControllerByteCodeScanner;
 import act.data.DataPropertyRepository;
 import act.data.JodaDateTimeCodec;
 import act.data.util.ActPropertyHandlerFactory;
+import act.di.DependencyInjectionBinder;
 import act.di.DependencyInjector;
-import act.di.DiBinder;
 import act.event.AppEventListenerBase;
 import act.event.EventBus;
 import act.event.bytecode.SimpleEventListenerByteCodeScanner;
@@ -498,7 +498,7 @@ public class App {
                 @Override
                 public void on(EventObject event) throws Exception {
                     final App app = App.this;
-                    eventBus.emit(new DiBinder(app, service.getClass()) {
+                    eventBus.emit(new DependencyInjectionBinder(app, service.getClass()) {
                         @Override
                         public Object resolve(App app) {
                             return app.service(service.getClass());

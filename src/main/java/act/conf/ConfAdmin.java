@@ -3,7 +3,6 @@ package act.conf;
 import act.Act;
 import act.cli.Command;
 import act.cli.Optional;
-import act.cli.Required;
 import org.osgl.util.C;
 import org.osgl.util.S;
 

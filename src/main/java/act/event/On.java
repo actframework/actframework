@@ -1,7 +1,5 @@
 package act.event;
 
-import act.app.event.AppEventId;
-
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;

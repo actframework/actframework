@@ -1,11 +1,8 @@
 package act.db.di;
 
-import act.db.Dao;
-import act.di.DiListener;
+import act.di.DependencyInjectionListener;
 
-public interface DaoInjectionListener extends DiListener<Dao> {
-
-    Class<? extends Dao> targetDaoType();
+public interface DaoInjectionListener extends DependencyInjectionListener {
 
     /**
      * This allows the implementation to fetch the db service ID from DB annotation

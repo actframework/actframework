@@ -3,7 +3,6 @@ package act.util;
 import act.data.util.StringOrPattern;
 import com.alibaba.fastjson.serializer.JSONSerializer;
 import com.alibaba.fastjson.serializer.PropertyPreFilter;
-import org.osgl.$;
 import org.osgl.util.C;
 import org.osgl.util.FastStr;
 import org.osgl.util.S;

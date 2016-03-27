@@ -2,9 +2,6 @@ package act.db;
 
 import act.app.App;
 import act.app.AppHolderBase;
-import act.app.AppServiceBase;
-import act.util.DestroyableBase;
-import org.osgl.$;
 import org.osgl.util.E;
 
 import java.lang.annotation.Annotation;

@@ -2,7 +2,6 @@ package testapp.util;
 
 import act.app.App;
 import act.util.SingletonBase;
-import org.osgl.util.E;
 
 import javax.inject.Singleton;
 

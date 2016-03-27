@@ -1,12 +1,9 @@
 package act.view;
 
 import act.Act;
-import act.app.*;
+import act.app.SourceInfo;
 import act.util.ActError;
-import org.osgl.mvc.result.Forbidden;
 import org.osgl.mvc.result.NotFound;
-import org.osgl.util.C;
-import org.osgl.util.S;
 
 import java.util.List;
 

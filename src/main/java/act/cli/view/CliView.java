@@ -12,7 +12,6 @@ import com.thoughtworks.xstream.XStream;
 import org.osgl.$;
 import org.osgl.util.C;
 import org.osgl.util.E;
-import org.osgl.util.Iterators;
 import org.osgl.util.S;
 import org.rythmengine.utils.Escape;
 

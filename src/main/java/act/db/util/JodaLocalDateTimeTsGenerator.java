@@ -1,9 +1,7 @@
 package act.db.util;
 
-import act.db.TimestampGenerator;
 import act.db.TimestampGeneratorBase;
 import org.joda.time.LocalDateTime;
-import org.joda.time.LocalTime;
 
 public class JodaLocalDateTimeTsGenerator extends TimestampGeneratorBase<LocalDateTime> {
     @Override

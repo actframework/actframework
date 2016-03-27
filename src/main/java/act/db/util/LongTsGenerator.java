@@ -1,7 +1,6 @@
 package act.db.util;
 
 import act.db.TimestampGeneratorBase;
-import org.joda.time.DateTime;
 import org.osgl.$;
 
 public class LongTsGenerator extends TimestampGeneratorBase<Long> {

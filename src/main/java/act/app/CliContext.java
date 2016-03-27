@@ -10,10 +10,8 @@ import act.util.ActContext;
 import jline.Terminal2;
 import jline.console.ConsoleReader;
 import org.osgl.$;
-import org.osgl.Osgl;
 import org.osgl.cache.CacheService;
 import org.osgl.concurrent.ContextLocal;
-import org.osgl.exception.NotAppliedException;
 import org.osgl.http.H;
 import org.osgl.util.C;
 import org.osgl.util.E;
@@ -21,7 +19,6 @@ import org.osgl.util.S;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.io.Serializable;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;

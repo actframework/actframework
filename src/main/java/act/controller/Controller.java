@@ -1,16 +1,13 @@
 package act.controller;
 
-import act.Act;
 import act.app.ActionContext;
 import act.conf.AppConfigKey;
 import act.controller.meta.HandlerMethodMetaInfo;
-import act.util.ActContext;
 import act.util.FastJsonIterable;
 import act.util.PropertySpec;
 import act.view.*;
 import org.osgl.http.H;
 import org.osgl.mvc.result.*;
-import org.osgl.mvc.result.RenderXML;
 import org.osgl.storage.ISObject;
 import org.osgl.util.E;
 import org.osgl.util.IO;

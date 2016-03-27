@@ -1,8 +1,6 @@
 package act.db.util;
 
-import act.db.TimestampGenerator;
 import act.db.TimestampGeneratorBase;
-import org.joda.time.LocalDate;
 import org.joda.time.LocalTime;
 
 public class JodaLocalTimeTsGenerator extends TimestampGeneratorBase<LocalTime> {

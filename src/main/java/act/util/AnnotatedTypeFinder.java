@@ -8,7 +8,6 @@ import act.app.AppSourceCodeScanner;
 import org.osgl.$;
 import org.osgl.util.C;
 import org.osgl.util.E;
-import org.osgl.util.FastStr;
 
 import java.lang.annotation.Annotation;
 import java.util.Map;

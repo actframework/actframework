@@ -10,7 +10,6 @@ import act.handler.RequestHandler;
 import act.handler.builtin.controller.RequestHandlerProxy;
 import act.handler.event.BeforeCommit;
 import act.route.Router;
-import act.util.ActError;
 import act.view.ActServerError;
 import org.osgl.$;
 import org.osgl.exception.NotAppliedException;

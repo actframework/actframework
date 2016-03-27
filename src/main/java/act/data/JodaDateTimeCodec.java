@@ -5,8 +5,8 @@ import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
-import org.osgl.util.StringValueResolver;
 import org.osgl.util.S;
+import org.osgl.util.StringValueResolver;
 import org.osgl.util.ValueObject;
 
 import javax.inject.Inject;

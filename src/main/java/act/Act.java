@@ -12,7 +12,6 @@ import act.controller.meta.InterceptorMethodMetaInfo;
 import act.db.DbManager;
 import act.event.ActEvent;
 import act.event.ActEventListener;
-import act.exception.ActException;
 import act.handler.builtin.controller.*;
 import act.handler.builtin.controller.impl.ReflectedHandlerInvoker;
 import act.plugin.AppServicePluginManager;

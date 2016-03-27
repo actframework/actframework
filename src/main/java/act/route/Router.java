@@ -2,7 +2,6 @@ package act.route;
 
 import act.ActComponent;
 import act.Destroyable;
-import act.app.ActAppException;
 import act.app.ActionContext;
 import act.app.App;
 import act.app.AppServiceBase;
