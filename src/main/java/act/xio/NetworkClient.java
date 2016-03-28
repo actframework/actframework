@@ -9,6 +9,9 @@ import act.app.util.NamedPort;
 import act.handler.RequestHandler;
 import act.handler.builtin.controller.RequestHandlerProxy;
 import act.handler.event.BeforeCommit;
+import act.metric.Metric;
+import act.metric.MetricInfo;
+import act.metric.Timer;
 import act.route.Router;
 import act.view.ActServerError;
 import org.osgl.$;
@@ -18,6 +21,7 @@ import org.osgl.logging.LogManager;
 import org.osgl.logging.Logger;
 import org.osgl.mvc.result.Result;
 import org.osgl.util.E;
+import org.osgl.util.S;
 
 public class NetworkClient extends $.F1<ActionContext, Void> {
 
@@ -25,15 +29,18 @@ public class NetworkClient extends $.F1<ActionContext, Void> {
 
     final private App app;
     private NamedPort port;
+    private Metric metric;
 
     public NetworkClient(App app) {
         E.NPE(app);
         this.app = app;
+        this.metric = Act.metricPlugin().metric();
     }
 
     public NetworkClient(App app, NamedPort port) {
         this(app);
         this.port = port;
+        this.metric = Act.metricPlugin().metric();
     }
 
     public App app() {
@@ -44,6 +51,7 @@ public class NetworkClient extends $.F1<ActionContext, Void> {
         H.Request req = ctx.req();
         String url = req.url();
         H.Method method = req.method();
+        Timer timer = null;
         try {
             if (Act.isDev()) {
                 synchronized (app) {
@@ -68,8 +76,11 @@ public class NetworkClient extends $.F1<ActionContext, Void> {
                     req.accept(H.Format.CSV);
                 }
             }
+            timer = metric.startTimer(MetricInfo.ROUTING);
             RequestHandler rh = router().getInvoker(method, url, ctx);
+            timer.stop();
             ctx.handler(rh);
+            timer = metric.startTimer(S.builder(MetricInfo.ACTION_HANDLER).append(":").append(rh).toString());
             rh.handle(ctx);
         } catch (Result r) {
             try {
@@ -98,6 +109,9 @@ public class NetworkClient extends $.F1<ActionContext, Void> {
             // we don't destroy ctx here in case it's been passed to
             // another thread
             ActionContext.clearCurrent();
+            if (null != timer) {
+                timer.stop();
+            }
         }
     }
 

@@ -14,6 +14,8 @@ import act.event.ActEvent;
 import act.event.ActEventListener;
 import act.handler.builtin.controller.*;
 import act.handler.builtin.controller.impl.ReflectedHandlerInvoker;
+import act.metric.MetricPlugin;
+import act.metric.SimpleMetricPlugin;
 import act.plugin.AppServicePluginManager;
 import act.plugin.GenericPluginManager;
 import act.plugin.Plugin;
@@ -106,6 +108,7 @@ public final class Act {
     private static AppManager appManager;
     private static ViewManager viewManager;
     private static NetworkService network;
+    private static MetricPlugin metricPlugin;
     private static BytecodeEnhancerManager enhancerManager;
     private static SessionManager sessionManager;
     private static AppCodeScannerPluginManager scannerPluginManager;
@@ -184,6 +187,10 @@ public final class Act {
         return appManager;
     }
 
+    public static MetricPlugin metricPlugin() {
+        return metricPlugin;
+    }
+
     public static void registerPlugin(Plugin plugin) {
         genericPluginRegistry.put(plugin.getClass().getCanonicalName().intern(), plugin);
     }
@@ -210,6 +217,7 @@ public final class Act {
     private static void start(boolean singleAppServer, String appName) {
         Banner.print();
         loadConfig();
+        initMetricPlugin();
         initPluginManager();
         initAppServicePluginManager();
         initDbManager();
@@ -306,6 +314,10 @@ public final class Act {
 
     private static void initViewManager() {
         viewManager = new ViewManager();
+    }
+
+    private static void initMetricPlugin() {
+        metricPlugin = new SimpleMetricPlugin();
     }
 
     private static void initPluginManager() {
