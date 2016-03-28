@@ -49,7 +49,7 @@ public class MetricInfo implements Comparable<MetricInfo> {
 
     @Override
     public int hashCode() {
-        return $.hc(name, ns);
+        return $.hc(name);
     }
 
     @Override
@@ -59,7 +59,7 @@ public class MetricInfo implements Comparable<MetricInfo> {
         }
         if (obj instanceof MetricInfo) {
             MetricInfo that = (MetricInfo) obj;
-            return ns == that.ns & $.eq(name, that.name);
+            return $.eq(name, that.name);
         }
         return false;
     }
@@ -75,7 +75,7 @@ public class MetricInfo implements Comparable<MetricInfo> {
         if (l < 0) {
             return -1;
         } else if (l == 0) {
-            return 0;
+            return metricInfo.name.compareTo(name);
         } else {
             return 1;
         }
