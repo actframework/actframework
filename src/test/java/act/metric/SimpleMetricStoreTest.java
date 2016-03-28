@@ -9,7 +9,7 @@ public class SimpleMetricStoreTest extends TestBase {
 
     @Before
     public void prepare() {
-        store = new SimpleMetricStore();
+        store = new SimpleMetricStore(new SimpleMetricPlugin());
     }
 
     @Test
