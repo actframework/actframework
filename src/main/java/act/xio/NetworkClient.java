@@ -80,7 +80,7 @@ public class NetworkClient extends $.F1<ActionContext, Void> {
             RequestHandler rh = router().getInvoker(method, url, ctx);
             timer.stop();
             ctx.handler(rh);
-            timer = metric.startTimer(S.builder(MetricInfo.ACTION_HANDLER).append(":").append(rh).toString());
+            timer = metric.startTimer(S.builder(MetricInfo.HTTP_HANDLER).append(":").append(rh).toString());
             rh.handle(ctx);
         } catch (Result r) {
             try {

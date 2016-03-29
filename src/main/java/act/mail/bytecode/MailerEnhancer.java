@@ -16,6 +16,7 @@ import org.osgl.$;
  */
 @ActComponent
 public class MailerEnhancer extends AppByteCodeEnhancer<MailerEnhancer> {
+
     private MailerClassMetaInfoHolder classInfoHolder;
     private String className;
 
@@ -58,7 +59,7 @@ public class MailerEnhancer extends AppByteCodeEnhancer<MailerEnhancer> {
         if (null == info) {
             return mv;
         }
-        logger.debug(">>>About to enhance handler: %s", name);
+        logger.debug(">>>About to enhance mailer method: %s", name);
         return new SenderEnhancer(mv, info, access, name, desc, signature, exceptions);
     }
 

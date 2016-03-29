@@ -212,7 +212,7 @@ public class AppClassLoader
             List<AppByteCodeScanner> scanners = C.newList();
             for (AppByteCodeScanner scanner : scannerManager.byteCodeScanners()) {
                 if (scanner.start(className)) {
-                    logger.debug("scanner %s added to the list", scanner);
+                    logger.trace("scanner %s added to the list", scanner);
                     visitors.add(scanner.byteCodeVisitor());
                     scanners.add(scanner);
                 }
@@ -236,13 +236,13 @@ public class AppClassLoader
                 scanner.scanFinished(className);
                 Map<Class<? extends AppByteCodeScanner>, Set<String>> ss = scanner.dependencyClasses();
                 if (ss.isEmpty()) {
-                    logger.debug("no dependencies found for %s by scanner %s", className, scanner);
+                    logger.trace("no dependencies found for %s by scanner %s", className, scanner);
                     continue;
                 }
                 for (Class<? extends AppByteCodeScanner> scannerClass : ss.keySet()) {
                     AppByteCodeScanner scannerA = scannerManager.byteCodeScannerByClass(scannerClass);
                     for (String dependencyClass : ss.get(scannerClass)) {
-                        logger.debug("dependencies[%s] found for %s by scanner %s", dependencyClass, className, scannerA);
+                        logger.trace("dependencies[%s] found for %s by scanner %s", dependencyClass, className, scannerA);
                         List<AppByteCodeScanner> l = dependencies.get(dependencyClass);
                         if (null == l) {
                             l = C.newList();
@@ -271,13 +271,13 @@ public class AppClassLoader
                 scanner.scanFinished(className);
                 Map<Class<? extends AppByteCodeScanner>, Set<String>> ss = scanner.dependencyClasses();
                 if (ss.isEmpty()) {
-                    logger.debug("no dependencies found for %s by scanner %s", className, scanner);
+                    logger.trace("no dependencies found for %s by scanner %s", className, scanner);
                     continue;
                 }
                 for (Class<? extends AppByteCodeScanner> scannerClass : ss.keySet()) {
                     AppByteCodeScanner scannerA = scannerManager.byteCodeScannerByClass(scannerClass);
                     for (String dependencyClass : ss.get(scannerClass)) {
-                        logger.debug("dependencies[%s] found for %s by scanner %s", dependencyClass, className, scannerA);
+                        logger.trace("dependencies[%s] found for %s by scanner %s", dependencyClass, className, scannerA);
                         List<AppByteCodeScanner> l = dependencies.get(dependencyClass);
                         if (null == l) {
                             l = C.newList();
