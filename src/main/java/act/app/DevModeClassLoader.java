@@ -9,6 +9,8 @@ import act.util.FsEvent;
 import act.util.FsEventListener;
 import org.osgl.$;
 import org.osgl.exception.NotAppliedException;
+import org.osgl.logging.L;
+import org.osgl.logging.Logger;
 import org.osgl.util.C;
 import org.osgl.util.S;
 
@@ -23,7 +25,7 @@ import java.util.Set;
  */
 @ActComponent
 public class DevModeClassLoader extends AppClassLoader {
-
+    private final static Logger logger = L.get(DevModeClassLoader.class);
 
     private Map<String, Source> sources = C.newMap();
     private final AppCompiler compiler;
@@ -154,7 +156,7 @@ public class DevModeClassLoader extends AppClassLoader {
             List<AppSourceCodeScanner> l = C.newList();
             for (AppSourceCodeScanner scanner : scanners) {
                 if (scanner.start(className)) {
-                    logger.debug("scanner %s added to the list", scanner);
+                    logger.trace("scanner %s added to the list", scanner.getClass().getName());
                     l.add(scanner);
                 }
             }

@@ -4,12 +4,12 @@ import org.osgl.$;
 
 public class MetricInfo implements Comparable<MetricInfo> {
 
-    public static final String HTTP_HANDLER = "act.http";
-    public static final String JOB_HANDLER = "act.job";
-    public static final String CLI_HANDLER = "act.cli";
-    public static final String MAILER = "act.mail";
-    public static final String EVENT_HANDLER = "act.event";
-    public static final String ROUTING = "act.routing";
+    public static final String HTTP_HANDLER = "act:http";
+    public static final String JOB_HANDLER = "act:job";
+    public static final String CLI_HANDLER = "act:cli";
+    public static final String MAILER = "act:mail";
+    public static final String EVENT_HANDLER = "act:event";
+    public static final String ROUTING = "act:routing";
 
     private String name;
     private long count;

@@ -18,6 +18,7 @@ import act.job.meta.JobClassMetaInfoManager;
 import act.mail.meta.MailerClassMetaInfo;
 import act.mail.meta.MailerClassMetaInfoHolder;
 import act.mail.meta.MailerClassMetaInfoManager;
+import act.metric.Metric;
 import act.util.*;
 import org.osgl.$;
 import org.osgl.exception.NotAppliedException;
@@ -43,7 +44,7 @@ import static org.osgl.$.notNull;
 public class AppClassLoader
         extends ClassLoader
         implements ControllerClassMetaInfoHolder, MailerClassMetaInfoHolder, AppService<AppClassLoader>, ActClassLoader {
-    protected final static Logger logger = L.get(AppClassLoader.class);
+    private final static Logger logger = L.get(AppClassLoader.class);
     private App app;
     private Map<String, byte[]> libClsCache = C.newMap();
     private ClassInfoRepository classInfoRepository;
@@ -52,6 +53,7 @@ public class AppClassLoader
     protected MailerClassMetaInfoManager mailerInfo = new MailerClassMetaInfoManager();
     protected CommanderClassMetaInfoManager commanderInfo = new CommanderClassMetaInfoManager();
     protected JobClassMetaInfoManager jobInfo = new JobClassMetaInfoManager();
+    protected Metric metric = Act.metricPlugin().metric("act.classload");
 
     public AppClassLoader(final App app) {
         super(Act.class.getClassLoader());
@@ -208,11 +210,12 @@ public class AppClassLoader
                 throw new NullPointerException();
             }
             libClsCache.put(className, ba);
+            act.metric.Timer timer = metric.startTimer("act:classload:scan:bytecode:" + className);
             List<ByteCodeVisitor> visitors = C.newList();
             List<AppByteCodeScanner> scanners = C.newList();
             for (AppByteCodeScanner scanner : scannerManager.byteCodeScanners()) {
                 if (scanner.start(className)) {
-                    logger.trace("scanner %s added to the list", scanner);
+                    logger.trace("scanner %s added to the list", scanner.getClass().getName());
                     visitors.add(scanner.byteCodeVisitor());
                     scanners.add(scanner);
                 }
@@ -252,10 +255,12 @@ public class AppClassLoader
                     }
                 }
             }
+            timer.stop();
         }
         // loop through dependencies until it's all processed
         while (!dependencies.isEmpty()) {
             String className = dependencies.keySet().iterator().next();
+            act.metric.Timer timer = metric.startTimer("act:classload:scan:bytecode:" + className);
             List<AppByteCodeScanner> scanners = dependencies.remove(className);
             List<ByteCodeVisitor> visitors = C.newList();
             for (AppByteCodeScanner scanner: scanners) {
@@ -287,6 +292,7 @@ public class AppClassLoader
                     }
                 }
             }
+            timer.stop();
         }
     }
 

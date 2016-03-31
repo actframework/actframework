@@ -35,6 +35,14 @@ public class CommandLineParserTest extends TestBase {
     }
 
     @Test
+    public void testGetStringWithSingleQuotes() {
+        p = p("myCommand -s 'some string'");
+        eq("some string", p.getString("-s", "--string"));
+        p = p("myCommand --string \"some string\"");
+        eq("some string", p.getString("-s", "--string"));
+    }
+
+    @Test
     public void testGetArguments() {
         p = p("myCommand -o x -b -s \"some string\" arg1 2 3");
         ceq(C.listOf("arg1 2 3".split(" ")), p.arguments());

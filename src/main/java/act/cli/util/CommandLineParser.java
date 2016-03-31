@@ -24,19 +24,37 @@ public class CommandLineParser {
     private Map<String, String> options;
     private List<String> arguments;
 
-    static final Pattern P = Pattern.compile("([^\"]\\S*|\".+?\")\\s*");
+    static final Pattern P_QUOTATION = Pattern.compile("([^\"]\\S*|\".+?\")\\s*");
+    static final Pattern P_APOSTROPHE = Pattern.compile("([^\']\\S*|\'.+?\')\\s*");
     public CommandLineParser(String line) {
         E.illegalArgumentIf(S.blank(line));
         raw = line.trim();
         options = C.newMap();
         List<String> sl = C.newList();
-        Matcher m = P.matcher(raw);
+        Pattern ptn = choosePattern(raw);
+        Matcher m = ptn.matcher(raw);
         while (m.find()) {
             String s = m.group(1);
-            s = S.strip(s, "\"", "\"");
+            if (ptn == P_QUOTATION) {
+                s = S.strip(s, "\"", "\"");
+            } else {
+                s = S.strip(s, "\'", "\'");
+            }
             sl.add(s);
         }
         parse(sl);
+    }
+
+    private Pattern choosePattern(String s) {
+        Pattern ptn = P_APOSTROPHE;
+        int p1 = s.indexOf('"');
+        if (p1 > -1) {
+            int p2 = s.indexOf('\'');
+            if (p2 < 0 || p1 < p2) {
+                ptn = P_QUOTATION;
+            }
+        }
+        return ptn;
     }
 
     public String commandLine() {

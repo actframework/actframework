@@ -230,6 +230,7 @@ public final class Act {
         initNetworkLayer();
         initApplicationManager();
         try {
+            logger.info("loading application(s) ...");
             if (singleAppServer) {
                 appManager.loadSingleApp(appName);
             } else {
@@ -297,9 +298,9 @@ public final class Act {
     }
 
     private static void loadConfig() {
-        logger.debug("loading configuration ...");
+        logger.info("loading configuration ...");
 
-        String s = System.getProperty("act.mode");
+        String s = SysProps.get("act.mode");
         if (null != s) {
             mode = Mode.valueOfIgnoreCase(s);
         }
@@ -309,54 +310,62 @@ public final class Act {
     }
 
     private static void loadPlugins() {
+        logger.info("scanning plugins ...");
         new PluginScanner().scan();
     }
 
     private static void initViewManager() {
+        logger.info("initializing view manager ...");
         viewManager = new ViewManager();
     }
 
     private static void initMetricPlugin() {
+        logger.info("initializing metric plugin ...");
         metricPlugin = new SimpleMetricPlugin();
     }
 
     private static void initPluginManager() {
+        logger.info("initializing generic plugin manager ...");
         pluginManager = new GenericPluginManager();
     }
 
     private static void initAppServicePluginManager() {
+        logger.info("initializing app service plugin manager ...");
         appPluginManager = new AppServicePluginManager();
     }
 
     private static void initSessionManager() {
+        logger.info("initializing session manager ...");
         sessionManager = new SessionManager();
     }
 
     private static void initDbManager() {
+        logger.info("initializing db manager ...");
         dbManager = new DbManager();
     }
 
     private static void initAppCodeScannerPluginManager() {
+        logger.info("initializing app code scanner plugin manager ...");
         scannerPluginManager = new AppCodeScannerPluginManager();
     }
 
-    private static void initExecuteService() {
-        E.tbd("init execute service");
-    }
-
     static void initEnhancerManager() {
+        logger.info("initializing byte code enhancer manager ...");
         enhancerManager = new BytecodeEnhancerManager();
     }
 
     private static void initNetworkLayer() {
+        logger.info("initializing network layer ...");
         network = new UndertowService();
     }
 
     protected static void initApplicationManager() {
+        logger.info("initializing application manager ...");
         appManager = AppManager.create();
     }
 
     private static void startNetworkLayer() {
+        logger.info("starting network layer ...");
         network.start();
     }
 

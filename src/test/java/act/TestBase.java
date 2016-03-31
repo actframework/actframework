@@ -5,6 +5,7 @@ import act.app.App;
 import act.app.SingletonRegistry;
 import act.conf.AppConfig;
 import act.job.AppJobManager;
+import act.metric.SimpleMetricPlugin;
 import act.route.Router;
 import act.util.ClassNames;
 import org.junit.Assert;
@@ -108,6 +109,7 @@ public class TestBase extends Assert {
     protected H.Response mockResp;
 
     protected void setup() throws Exception {
+        initActMetricPlugin();
         mockApp = mock(App.class);
         Field f = App.class.getDeclaredField("INST");
         f.setAccessible(true);
@@ -147,6 +149,12 @@ public class TestBase extends Assert {
         String fileName = ClassNames.classNameToClassFileName(className);
         InputStream is = getClass().getResourceAsStream(fileName);
         return IO.readContent(is);
+    }
+
+    private void initActMetricPlugin() throws Exception {
+        Field f = Act.class.getDeclaredField("metricPlugin");
+        f.setAccessible(true);
+        f.set(null, new SimpleMetricPlugin());
     }
 
 }

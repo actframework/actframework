@@ -1,11 +1,15 @@
 package act.boot.app;
 
+import act.Act;
 import act.conf.AppConfigKey;
+import act.metric.Timer;
+import act.util.SysProps;
 import org.osgl.$;
 import org.osgl.logging.L;
 import org.osgl.logging.Logger;
 import org.osgl.util.E;
 import org.osgl.util.FastStr;
+import org.osgl.util.S;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -28,7 +32,13 @@ public class RunApp {
 
     public static void start(String appName, String packageName) throws Exception {
         long ts = $.ms();
-        logger.info("run fullstack application with controller package: %s", packageName);
+        String profile = SysProps.get(AppConfigKey.PROFILE.key());
+        if (S.blank(profile)) {
+            profile = "";
+        } else {
+            profile = "using profile[" + profile + "]";
+        }
+        logger.info("run fullstack application with controller package[%s] %s", packageName, profile);
         System.setProperty(AppConfigKey.CONTROLLER_PACKAGE.key(), packageName);
         final String SCAN_KEY = AppConfigKey.SCAN_PACKAGE.key();
         if (!System.getProperties().containsKey(SCAN_KEY)) {
@@ -38,8 +48,10 @@ public class RunApp {
             }
             System.setProperty(AppConfigKey.SCAN_PACKAGE.key(), scan);
         }
+        logger.debug("loading bootstrap classloader...");
         FullStackAppBootstrapClassLoader classLoader = new FullStackAppBootstrapClassLoader(RunApp.class.getClassLoader());
         Thread.currentThread().setContextClassLoader(classLoader);
+        logger.debug("loading Act class...");
         Class<?> actClass = classLoader.loadClass("act.Act");
         Method m = actClass.getDeclaredMethod("startApp", String.class);
         try {

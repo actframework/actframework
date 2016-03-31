@@ -2,6 +2,8 @@ package act.app;
 
 import act.Act;
 import act.conf.AppConfig;
+import act.metric.Metric;
+import act.metric.Timer;
 import act.util.DestroyableBase;
 import org.eclipse.jdt.core.compiler.IProblem;
 import org.eclipse.jdt.internal.compiler.*;
@@ -39,11 +41,13 @@ class AppCompiler extends DestroyableBase {
     private App app;
     private AppConfig conf;
     private CompilerOptions compilerOptions;
+    private Metric metric;
 
     AppCompiler(DevModeClassLoader classLoader) {
         this.classLoader = classLoader;
         this.app = classLoader.app();
         this.conf = app.config();
+        this.metric = Act.metricPlugin().metric("act.classload.compile");
         configureCompilerOptions();
     }
 
@@ -74,11 +78,10 @@ class AppCompiler extends DestroyableBase {
         map.put(key, val);
     }
 
-    public void compile(String... classNames) {
-        ICompilationUnit[] compilationUnits = new ICompilationUnit[classNames.length];
-        for (int i = 0; i < classNames.length; i++) {
-            compilationUnits[i] = classLoader.source(classNames[i]).compilationUnit();
-        }
+    public void compile(String className) {
+        Timer timer = metric.startTimer("act:classload:compile:" + className);
+        ICompilationUnit[] compilationUnits = new ICompilationUnit[1];
+        compilationUnits[0] = classLoader.source(className).compilationUnit();
         IErrorHandlingPolicy policy = DefaultErrorHandlingPolicies.exitOnFirstError();
         IProblemFactory problemFactory = new DefaultProblemFactory(Locale.ENGLISH);
 
@@ -90,6 +93,7 @@ class AppCompiler extends DestroyableBase {
         };
 
         jdtCompiler.compile(compilationUnits);
+        timer.stop();
     }
 
     private INameEnvironment nameEnv = new INameEnvironment() {

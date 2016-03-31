@@ -574,7 +574,11 @@ public class App {
     }
 
     private void initCliServer() {
-        cliServer = new CliServer(this);
+        try {
+            cliServer = new CliServer(this);
+        } catch (Exception e) {
+            logger.error(e, "Error initializing CLI server");
+        }
     }
 
     private void initRouters() {
