@@ -99,7 +99,7 @@ public class SimpleMetricStore implements MetricStore {
 
     @Override
     public List<MetricInfo> timers() {
-        Set<MetricInfo> set = new TreeSet<MetricInfo>();
+        Set<MetricInfo> set = C.newSet();
         for (Map.Entry<String, AtomicLong> entry : timers.entrySet()) {
             set.add(new MetricInfo(entry.getKey(), entry.getValue().get(), counters.get(entry.getKey()).get()));
         }

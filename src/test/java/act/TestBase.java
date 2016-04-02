@@ -83,13 +83,7 @@ public class TestBase extends Assert {
     }
 
     protected static <T> T fieldVal(Object entity, String field) {
-        try {
-            Field f = entity.getClass().getDeclaredField(field);
-            f.setAccessible(true);
-            return (T) f.get(entity);
-        } catch (Exception e) {
-            throw E.unexpected(e);
-        }
+        return $.getProperty(entity, field);
     }
 
     public static File root() {

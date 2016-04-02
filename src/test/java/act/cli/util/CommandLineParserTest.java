@@ -38,8 +38,24 @@ public class CommandLineParserTest extends TestBase {
     public void testGetStringWithSingleQuotes() {
         p = p("myCommand -s 'some string'");
         eq("some string", p.getString("-s", "--string"));
-        p = p("myCommand --string \"some string\"");
+        p = p("myCommand --string 'some string'");
         eq("some string", p.getString("-s", "--string"));
+    }
+
+    @Test
+    public void testGetStringWithSingleQuotesInsideQuotes() {
+        p = p("myCommand -s \"he said: 'some string'\" -i 10");
+        eq("he said: 'some string'", p.getString("-s", "--string"));
+        p = p("myCommand --string \"he said: 'some string'\"");
+        eq("he said: 'some string'", p.getString("-s", "--string"));
+    }
+
+    @Test
+    public void testGetStringWithQuotesInsideSingleQuotes() {
+        p = p("myCommand -s 'he said: \"some string\"' -i 10");
+        eq("he said: \"some string\"", p.getString("-s", "--string"));
+        p = p("myCommand --string 'he said: \"some string\"'");
+        eq("he said: \"some string\"", p.getString("-s", "--string"));
     }
 
     @Test

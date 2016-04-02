@@ -2,7 +2,9 @@ package act.metric;
 
 import org.osgl.$;
 
-public class MetricInfo implements Comparable<MetricInfo> {
+import java.util.Comparator;
+
+public class MetricInfo {
 
     public static final String HTTP_HANDLER = "act:http";
     public static final String JOB_HANDLER = "act:job";
@@ -10,6 +12,7 @@ public class MetricInfo implements Comparable<MetricInfo> {
     public static final String MAILER = "act:mail";
     public static final String EVENT_HANDLER = "act:event";
     public static final String ROUTING = "act:routing";
+    public static final String PATH_SEPARATOR = Metric.PATH_SEPARATOR;
 
     private String name;
     private long count;
@@ -46,8 +49,20 @@ public class MetricInfo implements Comparable<MetricInfo> {
         return count;
     }
 
+    public String getCountAsStr() {
+        return CountScale.format(count);
+    }
+
     public long getMsAvg() {
         return getMs() / count;
+    }
+
+    public String getAccumulated() {
+        return DurationScale.format(ns);
+    }
+
+    public String getAvg() {
+        return DurationScale.format(ns / count);
     }
 
     @Override
@@ -67,20 +82,38 @@ public class MetricInfo implements Comparable<MetricInfo> {
         return false;
     }
 
-    @Override
-    public int compareTo(MetricInfo metricInfo) {
-        long l;
-        if (null == ns) {
-            l = metricInfo.count - count;
-        } else {
-            l = metricInfo.getMsAvg() - getMsAvg();
-        }
-        if (l < 0) {
-            return -1;
-        } else if (l == 0) {
-            return metricInfo.name.compareTo(name);
-        } else {
-            return 1;
-        }
+    public static enum Comparator {
+        ;
+        public static $.Comparator<MetricInfo> COUNTER = new $.Comparator<MetricInfo>() {
+            @Override
+            public int compare(MetricInfo m1, MetricInfo m2) {
+                long l = m2.count - m1.count;
+                if (l < 0) {
+                    return -1;
+                } else if (l == 0) {
+                    return m2.name.compareTo(m1.name);
+                }
+                return 1;
+            }
+        };
+
+        public static $.Comparator<MetricInfo> TIMER = new $.Comparator<MetricInfo>() {
+            @Override
+            public int compare(MetricInfo m1, MetricInfo m2) {
+                long l;
+                if (null == m1.ns) {
+                    l = m2.count - m1.count;
+                } else {
+                    l = m2.getMsAvg() - m1.getMsAvg();
+                }
+                if (l < 0) {
+                    return -1;
+                } else if (l == 0) {
+                    return m2.name.compareTo(m1.name);
+                } else {
+                    return 1;
+                }
+            }
+        };
     }
 }

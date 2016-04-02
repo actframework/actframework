@@ -51,11 +51,29 @@ public abstract class TreeNodeFilter extends $.F2<List<? extends TreeNode>, Tree
             };
         }
 
+        public static TreeNodeFilter pathMatches(final $.Function<String, Boolean> predicate) {
+            return new TreeNodeFilter() {
+                @Override
+                protected boolean test(List<? extends TreeNode> path, TreeNode theNode) {
+                    return predicate.apply(path(path, theNode));
+                }
+            };
+        }
+
         public static TreeNodeFilter labelMatches(final String pattern) {
             return new TreeNodeFilter() {
                 @Override
                 protected boolean test(List<? extends TreeNode> path, TreeNode theNode) {
                     return theNode.label().matches(pattern);
+                }
+            };
+        }
+
+        public static TreeNodeFilter labelMatches(final $.Function<String, Boolean> predicate) {
+            return new TreeNodeFilter() {
+                @Override
+                protected boolean test(List<? extends TreeNode> path, TreeNode theNode) {
+                    return predicate.apply(theNode.label());
                 }
             };
         }

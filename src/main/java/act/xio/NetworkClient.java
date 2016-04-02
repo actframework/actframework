@@ -34,13 +34,13 @@ public class NetworkClient extends $.F1<ActionContext, Void> {
     public NetworkClient(App app) {
         E.NPE(app);
         this.app = app;
-        this.metric = Act.metricPlugin().metric();
+        this.metric = Act.metricPlugin().metric("act.http");
     }
 
     public NetworkClient(App app, NamedPort port) {
         this(app);
         this.port = port;
-        this.metric = Act.metricPlugin().metric();
+        this.metric = Act.metricPlugin().metric("act.http");
     }
 
     public App app() {
