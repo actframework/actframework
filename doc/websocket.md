@@ -22,7 +22,7 @@ It looks like websocket request will attach the cookies. Which could be used to 
 1. upon `act_credential` message, server will store the credential along with the WS session
 
 
-## Proposed use scenario
+## Proposed usage scenario
 
 ### Chat room
 
@@ -45,7 +45,7 @@ public class ChatRoom {
         chatRoom.remove(session);
     }
     
-    @WsMessage("/chatroom/{roomId}/send)
+    @WsMessage("/chatroom/{roomId}/send")
     public void sendMessage(int roomId, String message) {
     	ChatRoom chatRoom = chatRoomDao.findById(roomId);
         notFoundIfNull(chatRoom);
@@ -54,3 +54,4 @@ public class ChatRoom {
 
 }
 ```
+
