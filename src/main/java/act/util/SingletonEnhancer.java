@@ -32,6 +32,7 @@ public class SingletonEnhancer extends AppByteCodeEnhancer<SingletonEnhancer> {
 
     @Override
     public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
+        super.visit(version, access, name, signature, superName, interfaces);
         if (SingletonBase.class.getName().equals(Type.getObjectType(superName).getClassName())) {
             if (isAbstract(access)) {
                 logger.warn("SingletonBase sub class is abstract: %s", name);
@@ -44,7 +45,6 @@ public class SingletonEnhancer extends AppByteCodeEnhancer<SingletonEnhancer> {
             this.typeName = name;
             this.className = Type.getObjectType(typeName).getClassName();
         }
-        super.visit(version, access, name, signature, superName, interfaces);
     }
 
     @Override

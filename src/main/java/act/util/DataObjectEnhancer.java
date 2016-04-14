@@ -18,7 +18,7 @@ public class DataObjectEnhancer extends AppByteCodeEnhancer<DataObjectEnhancer> 
     private ObjectMetaInfo metaInfo;
 
     public DataObjectEnhancer() {
-        super($.F.<String>yes());
+        super(S.F.startsWith("act.").negate().or(S.F.startsWith("act.fsa")));
     }
 
     protected DataObjectEnhancer(ClassVisitor cv) {

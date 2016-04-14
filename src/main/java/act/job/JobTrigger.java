@@ -126,8 +126,24 @@ abstract class JobTrigger {
         return new _FixedDelay(duration);
     }
 
+    static JobTrigger fixedDelay(long seconds) {
+        return new _FixedDelay(seconds);
+    }
+
+    static JobTrigger fixedDelay(long interval, TimeUnit timeUnit) {
+        return new _FixedDelay(timeUnit.toSeconds(interval));
+    }
+
     static JobTrigger every(String duration) {
         return new _Every(duration);
+    }
+
+    static JobTrigger every(long seconds) {
+        return new _Every(seconds, TimeUnit.SECONDS);
+    }
+
+    static JobTrigger every(long duration, TimeUnit timeUnit) {
+        return new _Every(duration, timeUnit);
     }
 
     static JobTrigger onAppStart(boolean async) {
@@ -142,7 +158,7 @@ abstract class JobTrigger {
         return async ? alongWith(eventId) : after(eventId);
     }
 
-    static JobTrigger delayForSeconds(int seconds) {
+    static JobTrigger delayForSeconds(long seconds) {
         return new _FixedDelay(seconds);
     }
 
@@ -211,13 +227,13 @@ abstract class JobTrigger {
     }
 
     private abstract static class _Periodical extends JobTrigger {
-        protected int seconds;
+        protected long seconds;
         _Periodical(String duration) {
             E.illegalArgumentIf(S.blank(duration), "delay duration shall not be empty");
             seconds = Time.parseDuration(duration);
             E.illegalArgumentIf(seconds < 1, "delay duration shall not be zero or negative number");
         }
-        _Periodical(int seconds) {
+        _Periodical(long seconds) {
             E.illegalArgumentIf(seconds < 1, "delay duration cannot be zero or negative");
             this.seconds = seconds;
         }
@@ -227,7 +243,7 @@ abstract class JobTrigger {
         _FixedDelay(String duration) {
             super(duration);
         }
-        _FixedDelay(int seconds) {
+        _FixedDelay(long seconds) {
             super(seconds);
         }
 
@@ -260,6 +276,10 @@ abstract class JobTrigger {
     private static class _Every extends _Periodical {
         _Every(String duration) {
             super(duration);
+        }
+
+        _Every(long duration, TimeUnit timeUnit) {
+            super(timeUnit.toSeconds(duration));
         }
 
         @Override

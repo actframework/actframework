@@ -8,7 +8,7 @@ import org.osgl.util.E;
  *     Note, the sub type must NOT be abstract and has public constructor
  * </p>
  */
-public abstract class SingletonBase {
+public abstract class SingletonBase extends DestroyableBase {
 
     /**
      * Returns the singleton instance of the sub type

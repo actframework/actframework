@@ -1,6 +1,7 @@
 package act.app;
 
 import act.Act;
+import act.Destroyable;
 import act.app.data.BinderManager;
 import act.app.data.StringValueResolverManager;
 import act.app.event.AppEventId;
@@ -91,6 +92,7 @@ public class App {
     private DependencyInjector<?> dependencyInjector;
     private IStorageService uploadFileStorageService;
     private AppServiceRegistry appServiceRegistry;
+    private Map<String, Daemon> daemonRegistry;
     private AppCrypto crypto;
     private IdGenerator idGenerator;
     private CacheService cache;
@@ -251,6 +253,7 @@ public class App {
         initCrypto();
         initIdGenerator();
         initJobManager();
+        initDaemonRegistry();
 
         initInterceptorManager();
         initResolverManager();
@@ -335,6 +338,10 @@ public class App {
 
     public SingletonRegistry singletonRegistry() {
         return singletonRegistry;
+    }
+
+    public void registerDaemon(Daemon dameon) {
+        daemonRegistry.put(dameon.id(), dameon);
     }
 
     public <T> void registerSingleton(Class<? extends T> cls, T instance) {
@@ -551,6 +558,36 @@ public class App {
                 config().startIdProvider(),
                 config().sequenceProvider()
         );
+    }
+
+    private void initDaemonRegistry() {
+        if (null != daemonRegistry) {
+            Destroyable.Util.tryDestroyAll(daemonRegistry.values());
+        }
+        daemonRegistry = C.newMap();
+        jobManager.on(AppEventId.START, new Runnable() {
+            @Override
+            public void run() {
+                jobManager.fixedDelay("daemon-keeper", new Runnable() {
+                    @Override
+                    public void run() {
+                        daemonKeeper();
+                    }
+                }, "5mn");
+            }
+        });
+    }
+
+    private void daemonKeeper() {
+        for (Daemon d : daemonRegistry.values()) {
+            if (d.state() == Daemon.State.STOPPED) {
+                try {
+                    d.start();
+                } catch (Exception e) {
+                    logger.error(e, "Error starting daemon [%s]", d.id());
+                }
+            }
+        }
     }
 
     private void initServiceResourceManager() {

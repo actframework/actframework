@@ -71,6 +71,38 @@ public class AppJobManager extends AppServiceBase<AppJobManager> {
         executor().schedule(runnable, seconds, TimeUnit.SECONDS);
     }
 
+    public void every(String id, Runnable runnable, String interval) {
+        JobTrigger.every(interval).schedule(this, _Job.multipleTimes(id, runnable, this));
+    }
+
+    public void every(Runnable runnable, String interval) {
+        JobTrigger.every(interval).schedule(this, _Job.multipleTimes(runnable, this));
+    }
+
+    public void every(Runnable runnable, long interval, TimeUnit timeUnit) {
+        JobTrigger.every(interval, timeUnit).schedule(this, _Job.multipleTimes(runnable, this));
+    }
+
+    public void every(String id, Runnable runnable, long interval, TimeUnit timeUnit) {
+        JobTrigger.every(interval, timeUnit).schedule(this, _Job.multipleTimes(id, runnable, this));
+    }
+
+    public void fixedDelay(Runnable runnable, String interval) {
+        JobTrigger.every(interval).schedule(this, _Job.multipleTimes(runnable, this));
+    }
+
+    public void fixedDelay(String id, Runnable runnable, String interval) {
+        JobTrigger.every(interval).schedule(this, _Job.multipleTimes(id, runnable, this));
+    }
+
+    public void fixedDelay(Runnable runnable, long interval, TimeUnit timeUnit) {
+        JobTrigger.fixedDelay(interval, timeUnit).schedule(this, _Job.multipleTimes(runnable, this));
+    }
+
+    public void fixedDelay(String id, Runnable runnable, long interval, TimeUnit timeUnit) {
+        JobTrigger.fixedDelay(interval, timeUnit).schedule(this, _Job.multipleTimes(id, runnable, this));
+    }
+
     private int parseTime(String timeDuration) {
         if (timeDuration.startsWith("${") && timeDuration.endsWith("}")) {
             timeDuration = (String) app().config().get(timeDuration.substring(2, timeDuration.length() - 1));

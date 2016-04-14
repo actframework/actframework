@@ -7,6 +7,7 @@ import act.asm.MethodVisitor;
 import act.asm.Type;
 import act.util.AppByteCodeEnhancer;
 import org.osgl.$;
+import org.osgl.util.S;
 
 /**
  * Add {@code public static Dao dao()} method to the entity model class
@@ -22,7 +23,7 @@ public class EntityClassEnhancer extends AppByteCodeEnhancer<EntityClassEnhancer
     private DbServiceManager dbm;
 
     public EntityClassEnhancer() {
-        super($.F.<String>yes());
+        super(S.F.startsWith("act.").negate().or(S.F.startsWith("act.fsa")));
     }
 
     @Override
