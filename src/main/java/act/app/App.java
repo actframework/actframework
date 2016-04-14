@@ -308,6 +308,7 @@ public class App {
         emit(SINGLETON_PROVISIONED);
         emit(PRE_START);
         emit(START);
+        startDaemons();
         logger.info("App[%s] started", name());
         emit(POST_START);
     }
@@ -340,9 +341,28 @@ public class App {
         return singletonRegistry;
     }
 
-    public void registerDaemon(Daemon dameon) {
-        daemonRegistry.put(dameon.id(), dameon);
+    public void registerDaemon(Daemon daemon) {
+        daemonRegistry.put(daemon.id(), daemon);
     }
+
+    public void unregisterDaemon(Daemon daemon) {
+        daemonRegistry.remove(daemon.id());
+    }
+
+    List<Daemon> registeredDaemons() {
+        return C.list(daemonRegistry.values());
+    }
+
+    Daemon registeredDaemon(String id) {
+        return daemonRegistry.get(id);
+    }
+
+    private void startDaemons() {
+        for (Daemon daemon : registeredDaemons()) {
+            daemon.start();
+        }
+    }
+
 
     public <T> void registerSingleton(Class<? extends T> cls, T instance) {
         singletonRegistry.register(cls, instance);

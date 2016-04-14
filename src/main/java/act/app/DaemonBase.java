@@ -38,6 +38,7 @@ public abstract class DaemonBase extends SingletonBase implements Daemon {
         synchronized (this) {
             state = State.STARTED;
         }
+        logger.info("Daemon[%s] started", id());
     }
 
     @Override
@@ -57,6 +58,7 @@ public abstract class DaemonBase extends SingletonBase implements Daemon {
         synchronized (this){
             state = State.STOPPED;
         }
+        logger.info("Daemon[%s] stopped", id());
     }
 
     @Override
