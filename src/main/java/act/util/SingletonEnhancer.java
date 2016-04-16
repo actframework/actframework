@@ -19,7 +19,6 @@ public class SingletonEnhancer extends AppByteCodeEnhancer<SingletonEnhancer> {
     private boolean shouldEnhance = false;
     private boolean shouldAddAnnotation = true;
     private String typeName;
-    private String className;
 
     public SingletonEnhancer() {
         super($.F.<String>yes());
@@ -43,7 +42,6 @@ public class SingletonEnhancer extends AppByteCodeEnhancer<SingletonEnhancer> {
             }
             shouldEnhance = true;
             this.typeName = name;
-            this.className = Type.getObjectType(typeName).getClassName();
         }
     }
 
@@ -69,7 +67,6 @@ public class SingletonEnhancer extends AppByteCodeEnhancer<SingletonEnhancer> {
         if (shouldAddAnnotation) {
             AnnotationVisitor av = super.visitAnnotation(Type.getType(Singleton.class).getDescriptor(), true);
             av.visitEnd();
-            scheduleSingletonRegistering();
         }
     }
 
@@ -90,16 +87,6 @@ public class SingletonEnhancer extends AppByteCodeEnhancer<SingletonEnhancer> {
 
     private String instanceTypeDesc() {
         return S.fmt("L%s;", typeName);
-    }
-
-    private void scheduleSingletonRegistering() {
-        app.jobManager().on(AppEventId.DEPENDENCY_INJECTOR_LOADED, new Runnable() {
-            @Override
-            public void run() {
-                Class c = $.classForName(className, app.classLoader());
-                app.registerSingletonClass(c);
-            }
-        });
     }
 
 }

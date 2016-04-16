@@ -80,9 +80,9 @@ public abstract class DaemonBase extends SingletonBase implements Daemon {
         return state;
     }
 
-    protected void setup() {}
+    protected void setup() throws Exception {}
 
-    protected void teardown() {}
+    protected void teardown() throws Exception {}
 
     @Override
     protected void releaseResources() {

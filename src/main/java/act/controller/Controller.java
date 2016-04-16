@@ -3,6 +3,7 @@ package act.controller;
 import act.app.ActionContext;
 import act.conf.AppConfigKey;
 import act.controller.meta.HandlerMethodMetaInfo;
+import act.util.DisableFastJsonCircularReferenceDetect;
 import act.util.FastJsonIterable;
 import act.util.PropertySpec;
 import act.view.*;
@@ -643,10 +644,19 @@ public @interface Controller {
                         v = new FastJsonIterable<>((Iterable) v);
                     }
                     PropertySpec.MetaInfo propertySpec = (null == meta) ? null : meta.propertySpec();
-                    if (null == propertySpec) {
-                        return new RenderJSON(v);
+                    if (meta.disableJsonCircularRefDetect()) {
+                        DisableFastJsonCircularReferenceDetect.option.set(true);
                     }
-                    return new FilteredRenderJSON(v, propertySpec, actionContext);
+                    try {
+                        if (null == propertySpec) {
+                            return new RenderJSON(v);
+                        }
+                        return new FilteredRenderJSON(v, propertySpec, actionContext);
+                    } finally {
+                        if (meta.disableJsonCircularRefDetect()) {
+                            DisableFastJsonCircularReferenceDetect.option.set(false);
+                        }
+                    }
                 } else if (actionContext.isXML()) {
                     PropertySpec.MetaInfo propertySpec = (null == meta) ? null : meta.propertySpec();
                     return new FilteredRenderXML(v, propertySpec, actionContext);

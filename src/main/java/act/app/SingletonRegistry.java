@@ -16,21 +16,26 @@ public class SingletonRegistry extends AppServiceBase<SingletonRegistry> {
 
     private ConcurrentMap<Class<?>, Object> registry = new ConcurrentHashMap<Class<?>, Object>();
     private ConcurrentHashMap<Class<?>, Class<?>> preRegistry = new ConcurrentHashMap<>();
+    private boolean batchRegistered = false;
 
     SingletonRegistry(App app) {
         super(app, false);
     }
 
     synchronized void register(final Class<?> singletonClass) {
-        if (preRegistry.isEmpty()) {
-            app().eventBus().bind(AppEventId.DEPENDENCY_INJECTOR_PROVISIONED, new AppEventListenerBase("register-singleton-instances") {
-                @Override
-                public void on(EventObject event) throws Exception {
-                    doRegister();
-                }
-            });
+        if (!batchRegistered) {
+            if (preRegistry.isEmpty()) {
+                app().jobManager().on(AppEventId.DEPENDENCY_INJECTOR_PROVISIONED, "register-singleton-instances", new Runnable() {
+                    @Override
+                    public void run() {
+                        doRegister();
+                    }
+                }, true);
+            }
+            preRegistry.put(singletonClass, singletonClass);
+        } else {
+            register(singletonClass, app().newInstance(singletonClass));
         }
-        preRegistry.put(singletonClass, singletonClass);
     }
 
     public void register(Class singletonClass, Object singleton) {
@@ -47,7 +52,8 @@ public class SingletonRegistry extends AppServiceBase<SingletonRegistry> {
         registry.clear();
     }
 
-    private void doRegister() {
+    private synchronized void doRegister() {
+        batchRegistered = true;
         for (Class<?> c : preRegistry.keySet()) {
             registry.put(c, app().newInstance(c));
         }

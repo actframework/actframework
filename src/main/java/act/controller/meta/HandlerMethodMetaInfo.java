@@ -28,6 +28,7 @@ public abstract class HandlerMethodMetaInfo<T extends HandlerMethodMetaInfo> ext
     private C.List<ParamMetaInfo> params = C.newList();
     private ReturnTypeInfo returnType;
     private PropertySpec.MetaInfo propertySpec;
+    private boolean disableJsonCircularRefDetect = false;
     private Map<Label, Map<Integer, LocalVariableMetaInfo>> locals = C.newMap();
     private int appCtxLVT_id = -1;
 
@@ -82,6 +83,15 @@ public abstract class HandlerMethodMetaInfo<T extends HandlerMethodMetaInfo> ext
 
     public ActContextInjection appContextInjection() {
         return actContextInjection;
+    }
+
+    public T disableJsonCircularRefDetect(boolean b) {
+        disableJsonCircularRefDetect = b;
+        return me();
+    }
+
+    public boolean disableJsonCircularRefDetect() {
+        return disableJsonCircularRefDetect;
     }
 
     public T invokeStaticMethod() {

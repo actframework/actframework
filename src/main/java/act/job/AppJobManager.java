@@ -125,19 +125,67 @@ public class AppJobManager extends AppServiceBase<AppJobManager> {
     }
 
     public void on(AppEventId appEvent, final Runnable runnable) {
-        jobById(appEventJobId(appEvent)).addPrecedenceJob(_Job.once(runnable, this));
+        on(appEvent, runnable, false);
+    }
+
+    public void on(AppEventId appEvent, final Runnable runnable, boolean runImmediatelyIfEventDispatched) {
+        _Job job = jobById(appEventJobId(appEvent));
+        if (null == job) {
+            processDelayedJob(runnable, runImmediatelyIfEventDispatched);
+        } else {
+            job.addPrecedenceJob(_Job.once(runnable, this));
+        }
     }
 
     public void post(AppEventId appEvent, final Runnable runnable) {
-        jobById(appEventJobId(appEvent)).addFollowingJob(_Job.once(runnable, this));
+        post(appEvent, runnable, false);
+    }
+
+    public void post(AppEventId appEvent, final Runnable runnable, boolean runImmediatelyIfEventDispatched) {
+        _Job job = jobById(appEventJobId(appEvent));
+        if (null == job) {
+            processDelayedJob(runnable, runImmediatelyIfEventDispatched);
+        } else {
+            job.addFollowingJob(_Job.once(runnable, this));
+        }
     }
 
     public void on(AppEventId appEvent, String jobId, final Runnable runnable) {
-        jobById(appEventJobId(appEvent)).addPrecedenceJob(_Job.once(jobId, runnable, this));
+        on(appEvent, jobId, runnable, false);
+    }
+
+    public void on(AppEventId appEvent, String jobId, final Runnable runnable, boolean runImmediatelyIfEventDispatched) {
+        _Job job = jobById(appEventJobId(appEvent));
+        if (null == job) {
+            processDelayedJob(runnable, runImmediatelyIfEventDispatched);
+        } else {
+            job.addPrecedenceJob(_Job.once(jobId, runnable, this));
+        }
     }
 
     public void post(AppEventId appEvent, String jobId, final Runnable runnable) {
-        jobById(appEventJobId(appEvent)).addFollowingJob(_Job.once(jobId, runnable, this));
+        post(appEvent, jobId, runnable, false);
+    }
+
+    public void post(AppEventId appEvent, String jobId, final Runnable runnable, boolean runImmediatelyIfEventDispatched) {
+        _Job job = jobById(appEventJobId(appEvent));
+        if (null == job) {
+            processDelayedJob(runnable, runImmediatelyIfEventDispatched);
+        } else {
+            job.addFollowingJob(_Job.once(jobId, runnable, this));
+        }
+    }
+
+    private void processDelayedJob(final Runnable runnable, boolean runImmediatelyIfEventDispatched) {
+        if (runImmediatelyIfEventDispatched) {
+            try {
+                runnable.run();
+            } catch (Exception e) {
+                logger.error(e, "Error running job");
+            }
+        } else {
+            now(runnable);
+        }
     }
 
     public void beforeAppStart(final Runnable runnable) {

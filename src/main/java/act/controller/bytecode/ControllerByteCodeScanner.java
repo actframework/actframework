@@ -10,10 +10,7 @@ import act.controller.Controller;
 import act.controller.meta.*;
 import act.route.RouteSource;
 import act.route.Router;
-import act.util.AsmTypes;
-import act.util.ByteCodeVisitor;
-import act.util.GeneralAnnoInfo;
-import act.util.PropertySpec;
+import act.util.*;
 import org.osgl.$;
 import org.osgl.http.H;
 import org.osgl.logging.L;
@@ -287,6 +284,8 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
                             }
                         }
                     };
+                } else if ($.eq(AsmTypes.DISABLE_JSON_CIRCULAR_REF_DETECT.asmType(), type)) {
+                    methodInfo.disableJsonCircularRefDetect(true);
                 }
                 //markNotTargetClass();
                 return av;

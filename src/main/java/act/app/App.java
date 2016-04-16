@@ -233,6 +233,10 @@ public class App {
         }.start();
     }
 
+    public boolean isStarted() {
+        return currentState == POST_START;
+    }
+
     public synchronized void refresh() {
         logger.info("App starting ....");
         profile = null;

@@ -6,6 +6,8 @@ import act.app.AppByteCodeScanner;
 import act.app.AppByteCodeScannerBase;
 import act.app.AppSourceCodeScanner;
 import org.osgl.$;
+import org.osgl.Osgl;
+import org.osgl.exception.NotAppliedException;
 import org.osgl.util.C;
 import org.osgl.util.E;
 
@@ -24,7 +26,7 @@ public abstract class AnnotatedTypeFinder extends AppCodeScannerPluginBase {
     protected Set<String> foundClasses = C.newSet();
 
     protected AnnotatedTypeFinder(boolean publicOnly, boolean noAbstract, Class<? extends Annotation> annoType, $.Func2<App, String, Map<Class<? extends AppByteCodeScanner>, Set<String>>> foundHandler) {
-        E.NPE(annoType, foundHandler);
+        E.NPE(annoType);
         this.annoType = annoType;
         this.foundHandler = foundHandler;
         this.noAbstract = noAbstract;

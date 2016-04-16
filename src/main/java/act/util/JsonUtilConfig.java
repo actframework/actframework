@@ -43,7 +43,12 @@ public class JsonUtilConfig {
         MvcConfig.jsonSerializer(new $.F1<Object, String>() {
             @Override
             public String apply(Object o) throws NotAppliedException, Osgl.Break {
-                return JSON.toJSONString(o, SerializerFeature.WriteDateUseDateFormat);
+                Boolean b = DisableFastJsonCircularReferenceDetect.option.get();
+                if (null != b && b) {
+                    return JSON.toJSONString(o, SerializerFeature.WriteDateUseDateFormat, SerializerFeature.DisableCircularReferenceDetect);
+                } else {
+                    return JSON.toJSONString(o, SerializerFeature.WriteDateUseDateFormat);
+                }
             }
         });
     }
