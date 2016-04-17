@@ -114,4 +114,16 @@ public enum AsmTypes implements Opcodes {
         return (ACC_STATIC & access) > 0;
     }
 
+    public static boolean isPublic(int access) {
+        return (ACC_PUBLIC & access) > 0;
+    }
+
+    public static boolean isAbstract(int access) {
+        return (ACC_ABSTRACT & access) > 0;
+    }
+
+    public static boolean isPublicNotAbstract(int access) {
+        return isPublic(access) && !isAbstract(access);
+    }
+
 }

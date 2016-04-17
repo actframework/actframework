@@ -9,13 +9,15 @@ public class SimpleEventListenerMetaInfo {
     private List<String> events;
     private String className;
     private String methodName;
+    private String asyncMethodName;
     private List<String> paramTypes;
     private boolean async;
 
-    public SimpleEventListenerMetaInfo(List<String> events, String className, String methodName, List<String> paramTypes, boolean async) {
+    public SimpleEventListenerMetaInfo(List<String> events, String className, String methodName, String asyncMethodName, List<String> paramTypes, boolean async) {
         this.events = C.list(events);
         this.className = $.notNull(className);
         this.methodName = $.notNull(methodName);
+        this.asyncMethodName = asyncMethodName;
         this.paramTypes = C.list(paramTypes);
         this.async = async;
     }
@@ -30,6 +32,10 @@ public class SimpleEventListenerMetaInfo {
 
     public String methodName() {
         return methodName;
+    }
+
+    public String asyncMethodName() {
+        return asyncMethodName;
     }
 
     public List<String> paramTypes() {

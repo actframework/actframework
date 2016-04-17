@@ -1,5 +1,7 @@
 package act.util;
 
+import org.osgl.util.S;
+
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -11,4 +13,20 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE, ElementType.METHOD})
 public @interface Async {
+    /**
+     * When a `public void` method has been annotated as `@Async`, ActFramework will
+     * enhance the class by adding an new method as a copy of the original method, the name
+     * of the new method will be the result of calling the original method.
+     */
+    public static class MethodNameTransformer {
+
+        /**
+         * Returns the new async method's name based on the give name
+         * @param methodName the original method name
+         * @return the name of the async method that pairs to the original method
+         */
+        public static String transform(String methodName) {
+            return S.builder("__act_").append(methodName).append("_async").toString();
+        }
+    }
 }

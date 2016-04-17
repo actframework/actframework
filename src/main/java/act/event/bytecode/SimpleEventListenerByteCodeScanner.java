@@ -8,6 +8,7 @@ import act.asm.Type;
 import act.event.EventBus;
 import act.event.On;
 import act.event.meta.SimpleEventListenerMetaInfo;
+import act.util.AsmTypes;
 import act.util.Async;
 import act.util.ByteCodeVisitor;
 import org.osgl.util.C;
@@ -65,6 +66,9 @@ public class SimpleEventListenerByteCodeScanner extends AppByteCodeScannerBase {
         public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
             MethodVisitor mv = super.visitMethod(access, name, desc, signature, exceptions);
             final List<String> paramTypes = C.newList();
+            Type returnType = Type.getReturnType(desc);
+            final boolean isVoid = "V".equals(returnType.toString());
+            final boolean isPublicNotAbstract = AsmTypes.isPublicNotAbstract(access);
             Type[] arguments = Type.getArgumentTypes(desc);
             if (null != arguments) {
                 for (Type type : arguments) {
@@ -77,6 +81,8 @@ public class SimpleEventListenerByteCodeScanner extends AppByteCodeScannerBase {
                 private List<String> events = C.newList();
 
                 private boolean isAsync;
+
+                private String asyncMethodName = null;
 
                 @Override
                 public AnnotationVisitor visitAnnotation(String desc, boolean visible) {
@@ -109,7 +115,13 @@ public class SimpleEventListenerByteCodeScanner extends AppByteCodeScannerBase {
                         };
                     } else {
                         if (Async.class.getName().equals(className)) {
-                            isAsync = true;
+                            if (!isVoid) {
+                                logger.warn("Error found in method %s.%s: @Async annotation cannot be used with method that has return type", className, methodName);
+                            } else if (!isPublicNotAbstract) {
+                                logger.warn("Error found in method %s.%s: @Async annotation cannot be used with method that are not public or abstract method", className, methodName);
+                            } else {
+                                asyncMethodName = Async.MethodNameTransformer.transform(methodName);
+                            }
                         }
                         return av;
                     }
@@ -118,7 +130,7 @@ public class SimpleEventListenerByteCodeScanner extends AppByteCodeScannerBase {
                 @Override
                 public void visitEnd() {
                     if (!events.isEmpty()) {
-                        SimpleEventListenerMetaInfo metaInfo = new SimpleEventListenerMetaInfo(events, className, methodName, paramTypes, isAsync);
+                        SimpleEventListenerMetaInfo metaInfo = new SimpleEventListenerMetaInfo(events, className, methodName, asyncMethodName, paramTypes, isAsync);
                         metaInfoList.add(metaInfo);
                     }
                     super.visitEnd();
