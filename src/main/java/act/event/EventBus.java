@@ -54,7 +54,7 @@ public class EventBus extends AppServiceBase<EventBus> {
     }
 
     @SuppressWarnings("unchecked")
-    private boolean bindIfEmitted(AppEventId appEventId, AppEventListener l) {
+    private boolean callNowIfEmitted(AppEventId appEventId, AppEventListener l) {
         if (app().eventEmitted(appEventId)) {
             try {
                 l.on(appEventLookup.get(appEventId));
@@ -68,7 +68,7 @@ public class EventBus extends AppServiceBase<EventBus> {
 
     @SuppressWarnings("unchecked")
     private EventBus _bind(List[] listeners, AppEventId appEventId, AppEventListener l) {
-        if (bindIfEmitted(appEventId, l)) {
+        if (callNowIfEmitted(appEventId, l)) {
             return this;
         }
         List<AppEventListener> list = listeners[appEventId.ordinal()];
@@ -78,13 +78,6 @@ public class EventBus extends AppServiceBase<EventBus> {
 
     @SuppressWarnings("unchecked")
     public synchronized EventBus bind(final AppEventId appEventId, final AppEventListener l) {
-        if (app().eventEmitted(appEventId)) {
-            try {
-                l.on(appEventId.of(app()));
-            } catch (Exception e) {
-                logger.warn(e, "error execute event listener");
-            }
-        }
         return _bind(appEventListeners, appEventId, l);
     }
 
