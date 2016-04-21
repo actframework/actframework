@@ -19,6 +19,14 @@ public class SimpleTreeNode implements TreeNode {
         this.children = C.newList();
     }
 
+    public SimpleTreeNode(String id) {
+        this(id, id);
+    }
+
+    public SimpleTreeNode(String id, String label) {
+        this(id, label, C.<TreeNode>newList());
+    }
+
     public SimpleTreeNode(String id, String label, List<TreeNode> children) {
         this.id = id;
         this.label = label;
