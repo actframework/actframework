@@ -336,6 +336,10 @@ public class ActionContext extends ActContext.ActContextBase<ActionContext> impl
         return $.cast(attributes.get(name));
     }
 
+    public <T> T newIntance(String className) {
+        return app().newInstance(className, this);
+    }
+
     public <T> T newInstance(Class<? extends T> clazz) {
         if (clazz == ActionContext.class) return $.cast(this);
         return app().newInstance(clazz, this);

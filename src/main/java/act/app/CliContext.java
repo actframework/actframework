@@ -199,6 +199,10 @@ public class CliContext extends ActContext.ActContextBase<CliContext> implements
         return this;
     }
 
+    public <T> T newInstance(String className) {
+        return app().newInstance(className, this);
+    }
+
     public <T> T newInstance(Class<? extends T> clazz) {
         if (clazz == CliContext.class) return $.cast(this);
         return app().newInstance(clazz, this);

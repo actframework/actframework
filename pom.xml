@@ -478,7 +478,7 @@
     <dependency>
       <groupId>org.rythmengine</groupId>
       <artifactId>rythm-engine</artifactId>
-      <version>1.1.4-SNAPSHOT</version>
+      <version>1.1.5-SNAPSHOT</version>
     </dependency>
 
   </dependencies>

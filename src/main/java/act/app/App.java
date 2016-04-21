@@ -341,10 +341,6 @@ public class App {
         return new File(this.layout().resource(appBase), path);
     }
 
-    public SingletonRegistry singletonRegistry() {
-        return singletonRegistry;
-    }
-
     public void registerDaemon(Daemon daemon) {
         daemonRegistry.put(daemon.id(), daemon);
     }
@@ -444,6 +440,27 @@ public class App {
     public <T> T singleton(Class<T> clz) {
         return singletonRegistry.get(clz);
     }
+
+    /**
+     * Get/Create new instance of a class specified by the className
+     *
+     * **Note** if the class is a singleton class, then the singleton instance
+     * will be returned
+     *
+     * @param className the className of the instance to be returned
+     * @param <T> the generic type of the class
+     * @return the instance of the class
+     */
+    public <T> T newInstance(String className) {
+        Class<T> c = $.classForName(className, classLoader());
+        return newInstance(c);
+    }
+
+    public <T> T newInstance(String className, ActContext context) {
+        Class<T> c = $.classForName(className, classLoader());
+        return newInstance(c, context);
+    }
+
 
     public <T> T newInstance(Class<T> clz) {
         if (App.class == clz) return $.cast(this);
