@@ -25,13 +25,9 @@ public class RouterAdmin {
     private App app;
     private CliContext context;
 
-    @Inject
-    public RouterAdmin(
-            App app,
-            CliContext context
-    ) {
-        this.app = app;
-        this.context = context;
+    public RouterAdmin() {
+        this.app = App.instance();
+        this.context = CliContext.current();
     }
 
     @Command(name = "act.route.list", help = "list routes")

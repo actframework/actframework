@@ -1,6 +1,7 @@
 package act.app;
 
 import act.Act;
+import act.Destroyable;
 import act.cli.CliDispatcher;
 import act.cli.CommandNameCompleter;
 import act.cli.builtin.Exit;
@@ -13,6 +14,7 @@ import act.util.Banner;
 import act.util.DestroyableBase;
 import jline.console.ConsoleReader;
 import org.osgl.$;
+import org.osgl.util.C;
 import org.osgl.util.IO;
 import org.osgl.util.S;
 
@@ -21,6 +23,7 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.net.SocketException;
+import java.util.Map;
 
 public class CliSession extends DestroyableBase implements Runnable {
 
@@ -34,6 +37,14 @@ public class CliSession extends DestroyableBase implements Runnable {
     private Thread runningThread;
     private ConsoleReader console;
     private CommandNameCompleter commandNameCompleter;
+    /**
+     * Allow user command to attach data to the context and fetched for later use.
+     * <p>
+     *     A typical usage scenario is user command wants to set up a "context" for the
+     *     following commands. However it shall provide a command to exit the "context"
+     * </p>
+     */
+    private Map<String, Object> attributes = C.newMap();
 
     CliSession(Socket socket, CliServer server) {
         this.socket = $.NPE(socket);
@@ -47,6 +58,14 @@ public class CliSession extends DestroyableBase implements Runnable {
 
     public String id() {
         return id;
+    }
+
+    void setAttribute(String key, Object val) {
+        attributes.put(key, val);
+    }
+
+    <T> T getAttribute(String key) {
+        return $.cast(attributes.get(key));
     }
 
     /**
@@ -63,6 +82,7 @@ public class CliSession extends DestroyableBase implements Runnable {
     protected void releaseResources() {
         stop();
         server = null;
+        Destroyable.Util.tryDestroyAll(attributes.values());
     }
 
     @Override
@@ -94,7 +114,7 @@ public class CliSession extends DestroyableBase implements Runnable {
                     continue;
                 }
 
-                CliContext context = new CliContext(id, line, app, console);
+                CliContext context = new CliContext(line, app, console, this);
 
                 //handle the command
                 final CliHandler handler = dispatcher.handler(context.command());

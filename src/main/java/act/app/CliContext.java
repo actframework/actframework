@@ -27,7 +27,7 @@ public class CliContext extends ActContext.ActContextBase<CliContext> implements
 
     private static final ContextLocal<CliContext> _local = $.contextLocal();
 
-    private String sessionId;
+    private CliSession session;
 
     private String commandPath; // e.g. myapp.cli.ListUser
 
@@ -46,18 +46,10 @@ public class CliContext extends ActContext.ActContextBase<CliContext> implements
 
     private boolean rawPrint;
 
-    /**
-     * Allow user command to attach data to the context and fetched for later use.
-     * <p>
-     *     A typical usage scenario is user command wants to set up a "context" for the
-     *     following commands. However it shall provide a command to exit the "context"
-     * </p>
-     */
-    private Map<String, Object> attributes = C.newMap();
 
-    public CliContext(String id, String line, App app, ConsoleReader console) {
+    public CliContext(String line, App app, ConsoleReader console, CliSession session) {
         super(app);
-        this.sessionId = id;
+        this.session = session;
         parser = new CommandLineParser(line);
         evaluatorCache = app.cache();
         this.console = $.NPE(console);
@@ -80,15 +72,7 @@ public class CliContext extends ActContext.ActContextBase<CliContext> implements
      * Reset the console prompt to "{@code act[<session-id>]>}"
      */
     public void resetPrompt() {
-        prompt("act[" + sessionId + "]>");
-    }
-
-    /**
-     * Returns the Cli session ID
-     * @return the session ID
-     */
-    public String sessionId() {
-        return sessionId;
+        prompt("act[" + session.id() + "]>");
     }
 
     public CacheService evaluatorCache() {
@@ -113,7 +97,7 @@ public class CliContext extends ActContext.ActContextBase<CliContext> implements
      * @param val the value
      */
     public void attribute(String key, Object val) {
-        attributes.put(key, val);
+        session.setAttribute(key, val);
     }
 
     /**
@@ -124,7 +108,7 @@ public class CliContext extends ActContext.ActContextBase<CliContext> implements
      * @return the value object associated with the key
      */
     public <T> T attribute(String key) {
-        return $.cast(attributes.get(key));
+        return session.getAttribute(key);
     }
 
     @Override
@@ -158,12 +142,19 @@ public class CliContext extends ActContext.ActContextBase<CliContext> implements
     }
 
     private void print1(String template, Object ... args) {
-        pw.printf(osNative(template), args);
+        if (args.length == 0) {
+            pw.print(template);
+        } else {
+            pw.printf(osNative(template), args);
+        }
     }
 
     private void println0(String template, Object... args) {
         try {
-            console.println(S.fmt(template, args));
+            if (args.length > 0) {
+                template = S.fmt(template);
+            }
+            console.println(template);
         } catch (IOException e) {
             throw E.ioException(e);
         }
@@ -178,7 +169,11 @@ public class CliContext extends ActContext.ActContextBase<CliContext> implements
     }
 
     private void println1(String template, Object... args) {
-        pw.printf(osNative(template), args);
+        if (args.length == 0) {
+            pw.print(template);
+        } else {
+            pw.printf(osNative(template), args);
+        }
         pw.println();
     }
 
@@ -186,8 +181,6 @@ public class CliContext extends ActContext.ActContextBase<CliContext> implements
     protected void releaseResources() {
         super.releaseResources();
         _local.remove();
-        Destroyable.Util.tryDestroyAll(attributes.values());
-        attributes.clear();
     }
 
     public String commandPath() {
