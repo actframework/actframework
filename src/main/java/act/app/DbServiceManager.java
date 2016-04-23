@@ -34,7 +34,7 @@ public class DbServiceManager extends AppServiceBase<DbServiceManager> implement
     protected DbServiceManager(final App app) {
         super(app, true);
         initServices(app.config());
-        app.eventBus().bind(AppEventId.APP_CODE_SCANNED, new AppEventListenerBase() {
+        app.eventBus().bind(AppEventId.DEPENDENCY_INJECTOR_PROVISIONED, new AppEventListenerBase() {
             @Override
             public void on(EventObject event) throws Exception {
                 ClassNode node = app.classLoader().classInfoRepository().node(Dao.class.getName());
@@ -66,7 +66,7 @@ public class DbServiceManager extends AppServiceBase<DbServiceManager> implement
                             app.registerSingleton(dao);
                             modelDaoMap.put(modelType, dao);
                         } catch (Exception e) {
-                            // ignore
+                            logger.warn(e, "error loading DAO: %s", daoType);
                         }
                     }
                 });
