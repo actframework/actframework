@@ -1,6 +1,5 @@
 package act.util;
 
-import act.app.event.AppEventId;
 import act.asm.AnnotationVisitor;
 import act.asm.MethodVisitor;
 import act.asm.Type;
@@ -32,6 +31,7 @@ public class SingletonEnhancer extends AppByteCodeEnhancer<SingletonEnhancer> {
     @Override
     public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
         super.visit(version, access, name, signature, superName, interfaces);
+        this.typeName = name;
         if (SingletonBase.class.getName().equals(Type.getObjectType(superName).getClassName())) {
             if (isAbstract(access)) {
                 logger.warn("SingletonBase sub class is abstract: %s", name);
@@ -41,7 +41,6 @@ public class SingletonEnhancer extends AppByteCodeEnhancer<SingletonEnhancer> {
                 return;
             }
             shouldEnhance = true;
-            this.typeName = name;
         }
     }
 
@@ -50,6 +49,7 @@ public class SingletonEnhancer extends AppByteCodeEnhancer<SingletonEnhancer> {
         Type type = Type.getType(desc);
         if (Singleton.class.getName().equals(type.getClassName())) {
             shouldAddAnnotation = false;
+            shouldEnhance = true;
         }
         return super.visitAnnotation(desc, visible);
     }

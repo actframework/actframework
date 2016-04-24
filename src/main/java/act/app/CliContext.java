@@ -1,6 +1,7 @@
 package act.app;
 
 import act.Destroyable;
+import act.SysUtilAdmin;
 import act.cli.ascii_table.ASCIITableHeader;
 import act.cli.ascii_table.impl.SimpleASCIITableImpl;
 import act.cli.ascii_table.spec.IASCIITable;
@@ -17,6 +18,7 @@ import org.osgl.util.C;
 import org.osgl.util.E;
 import org.osgl.util.S;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.List;
@@ -24,6 +26,8 @@ import java.util.Locale;
 import java.util.Map;
 
 public class CliContext extends ActContext.ActContextBase<CliContext> implements IASCIITable {
+
+    public static final String ATTR_PWD = "__act_pwd__";
 
     private static final ContextLocal<CliContext> _local = $.contextLocal();
 
@@ -109,6 +113,25 @@ public class CliContext extends ActContext.ActContextBase<CliContext> implements
      */
     public <T> T attribute(String key) {
         return session.getAttribute(key);
+    }
+
+    /**
+     * Return the current working directory
+     * @return the current working directory
+     */
+    public File curDir() {
+        File file = attribute(ATTR_PWD);;
+        if (null == file) {
+            file = new File(System.getProperty("user.dir"));
+            attribute(ATTR_PWD, file);
+        }
+        return file;
+    }
+
+    public CliContext chDir(File dir) {
+        E.illegalArgumentIf(!dir.isDirectory());
+        attribute(ATTR_PWD, dir);
+        return this;
     }
 
     @Override

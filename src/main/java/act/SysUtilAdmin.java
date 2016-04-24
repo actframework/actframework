@@ -14,8 +14,6 @@ import java.util.List;
 @SuppressWarnings("unused")
 public class SysUtilAdmin {
 
-    public static final String ATTR_PWD = "__act_pwd__";
-
     private CliContext context;
 
     public SysUtilAdmin() {
@@ -47,17 +45,12 @@ public class SysUtilAdmin {
             context.println("path is not a directory");
             return;
         }
-        context.attribute(ATTR_PWD, file);
+        context.chDir(file);
         context.println("current working directory changed to %s", file.getAbsolutePath());
     }
 
     private static File pwd(CliContext context) {
-        File file = context.attribute(ATTR_PWD);;
-        if (null == file) {
-            file = new File(System.getProperty("user.dir"));
-            context.attribute(ATTR_PWD, file);
-        }
-        return file;
+        return context.curDir();
     }
 
     private static List<FileInfo> dir(File file, CliContext context) {

@@ -13,6 +13,7 @@ import org.osgl.$;
 import org.osgl.util.E;
 import org.osgl.util.S;
 
+import java.io.File;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.List;
@@ -161,6 +162,13 @@ public class ReflectedCommandExecutor extends CommandExecutor {
                         }
                     }
                     throw new CliError("Missing required option [%s]", option);
+                }
+            }
+            if (File.class.isAssignableFrom(optionType)) {
+                if (argStr.startsWith(File.separator) || argStr.startsWith("/")) {
+                    return new File(argStr);
+                } else {
+                    return new File(ctx.curDir(), argStr);
                 }
             }
             return resolverManager.resolve(argStr, optionType);
