@@ -13,6 +13,7 @@ import javax.inject.Singleton;
  * has {@link javax.inject.Singleton} annotation, and generate {@link SingletonBase#instance()}
  * implementation
  */
+@SuppressWarnings("unused")
 public class SingletonEnhancer extends AppByteCodeEnhancer<SingletonEnhancer> {
 
     private boolean shouldEnhance = false;

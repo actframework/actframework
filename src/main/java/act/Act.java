@@ -100,7 +100,7 @@ public final class Act {
         }
     }
 
-    public static final String VERSION = "0.1.2";
+    public static final String VERSION = Version.fullVersion();
     private static Logger logger = L.get(Act.class);
     private static ActConfig conf;
     private static Mode mode = Mode.PROD;
