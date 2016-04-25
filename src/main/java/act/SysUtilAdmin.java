@@ -20,6 +20,11 @@ public class SysUtilAdmin {
         context = CliContext.current();
     }
 
+    @Command(name = "act.version", help = "Print actframework version")
+    public String version() {
+        return Version.fullVersion().replace("-S-", "-SNAPSHOT-");
+    }
+
     @Command(name = "act.pwd", help = "Print name of the current working directory")
     public String pwd() {
         return pwd(context).getAbsolutePath();

@@ -24,7 +24,7 @@ public class Banner {
         for (int i = 0; i < spaceLeft; ++i) {
             sb.append(" ");
         }
-        sb.append("v").append(version);
+        sb.append(version);
         sb.append("\n");
         sb.append("-------------------\n");
         return sb.toString();

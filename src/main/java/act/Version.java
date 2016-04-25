@@ -10,6 +10,7 @@ import java.util.Properties;
  * Stores the act version and build number
  */
 class Version {
+    private static boolean snapshot;
     private static String version;
     private static String buildNumber;
 
@@ -19,7 +20,8 @@ class Version {
             p.load(Version.class.getResourceAsStream("/act.version"));
             version = p.getProperty("version");
             if (version.endsWith("SNAPSHOT")) {
-                version = version.replace("SNAPSHOT", "S");
+                version = "s" + version.replace("-SNAPSHOT", "");
+                snapshot = true;
             } else {
                 version = "R" + version;
             }
@@ -27,6 +29,10 @@ class Version {
         } catch (IOException e) {
             throw E.ioException(e);
         }
+    }
+
+    static boolean snapshot() {
+        return snapshot;
     }
 
     static String version() {
