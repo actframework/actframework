@@ -126,6 +126,14 @@ public enum AppConfigKey implements ConfigKey {
     CONTROLLER_PACKAGE("controller_package"),
 
     /**
+     * `act.db.seq_gen.impl` specifies the implementation of
+     * {@link act.db.util._SequenceNumberGenerator}.
+     *
+     * Default value: `null`
+     */
+    DB_SEQ_GENERATOR("db.seq_gen.impl"),
+
+    /**
      * {@code act.encoding} specifies application default encoding
      * <p>Default value: utf-8</p>
      */

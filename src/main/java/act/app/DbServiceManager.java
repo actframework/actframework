@@ -6,6 +6,8 @@ import act.Destroyable;
 import act.app.event.AppEventId;
 import act.conf.AppConfig;
 import act.db.*;
+import act.db.util.SequenceNumberGenerator;
+import act.db.util._SequenceNumberGenerator;
 import act.event.AppEventListenerBase;
 import act.util.ClassNode;
 import act.util.General;
@@ -34,6 +36,7 @@ public class DbServiceManager extends AppServiceBase<DbServiceManager> implement
     protected DbServiceManager(final App app) {
         super(app, true);
         initServices(app.config());
+        configureSequenceGenerator(app);
         app.eventBus().bind(AppEventId.DEPENDENCY_INJECTOR_PROVISIONED, new AppEventListenerBase() {
             @Override
             public void on(EventObject event) throws Exception {
@@ -70,6 +73,17 @@ public class DbServiceManager extends AppServiceBase<DbServiceManager> implement
                         }
                     }
                 });
+            }
+        });
+    }
+
+    private void configureSequenceGenerator(final App app) {
+        app.jobManager().on(AppEventId.DEPENDENCY_INJECTOR_PROVISIONED, new Runnable() {
+            @Override
+            public void run() {
+                _SequenceNumberGenerator seqGen = app.config().sequenceNumberGenerator();
+                seqGen.configure(app.config(), DbServiceManager.this);
+                SequenceNumberGenerator.registerImpl(seqGen);
             }
         });
     }

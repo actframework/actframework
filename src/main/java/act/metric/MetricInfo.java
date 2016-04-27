@@ -2,8 +2,6 @@ package act.metric;
 
 import org.osgl.$;
 
-import java.util.Comparator;
-
 public class MetricInfo {
 
     public static final String HTTP_HANDLER = "act:http";

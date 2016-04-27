@@ -7,6 +7,8 @@ import act.app.App;
 import act.app.AppHolder;
 import act.app.conf.AppConfigurator;
 import act.app.util.NamedPort;
+import act.db.DB;
+import act.db.util._SequenceNumberGenerator;
 import act.handler.UnknownHttpMethodProcessor;
 import act.util.*;
 import act.validation.ValidationMessageInterpolator;
@@ -249,6 +251,30 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     private void _mergeContentSuffixAware(AppConfig conf) {
         if (null == get(CONTENT_SUFFIX_AWARE)) {
             contentSuffixAware = conf.contentSuffixAware;
+        }
+    }
+
+    private _SequenceNumberGenerator seqGen = null;
+
+    protected T sequenceNumberGenerator(_SequenceNumberGenerator seqGen) {
+        this.seqGen = seqGen;
+        return me();
+    }
+
+    public _SequenceNumberGenerator sequenceNumberGenerator() {
+        if (null == seqGen) {
+            seqGen = get(DB_SEQ_GENERATOR);
+            if (null == seqGen) {
+                seqGen = new _SequenceNumberGenerator.InMemorySequenceNumberGenerator();
+                logger.info("Sequence number generator loaded: %s", seqGen.getClass().getName());
+            }
+        }
+        return seqGen;
+    }
+
+    private void _mergeSequenceNumberGenerator(AppConfig conf) {
+        if (null == get(DB_SEQ_GENERATOR)) {
+            seqGen = conf.seqGen;
         }
     }
 
@@ -1326,6 +1352,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         _mergeHttpSecure(conf);
         _mergePorts(conf);
         _mergeContentSuffixAware(conf);
+        _mergeSequenceNumberGenerator(conf);
         _mergeErrorTemplatePathResolver(conf);
         _mergeDateFmt(conf);
         _mergeDateTimeFmt(conf);

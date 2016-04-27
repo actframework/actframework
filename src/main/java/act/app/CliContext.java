@@ -1,7 +1,5 @@
 package act.app;
 
-import act.Destroyable;
-import act.SysUtilAdmin;
 import act.cli.ascii_table.ASCIITableHeader;
 import act.cli.ascii_table.impl.SimpleASCIITableImpl;
 import act.cli.ascii_table.spec.IASCIITable;

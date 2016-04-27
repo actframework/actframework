@@ -5,7 +5,6 @@ import act.cli.Command;
 import act.cli.Optional;
 import act.util.PropertySpec;
 import org.osgl.$;
-import org.osgl.Osgl;
 import org.osgl.util.C;
 
 import java.util.Comparator;

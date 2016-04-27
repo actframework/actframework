@@ -2,10 +2,8 @@ package act.app;
 
 import act.Destroyable;
 import act.app.event.AppEventId;
-import act.event.AppEventListenerBase;
 import org.osgl.$;
 
-import java.util.EventObject;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 

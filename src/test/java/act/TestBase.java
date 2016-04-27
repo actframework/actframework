@@ -17,7 +17,6 @@ import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.osgl.$;
 import org.osgl.http.H;
-import org.osgl.util.E;
 import org.osgl.util.FastStr;
 import org.osgl.util.IO;
 import org.osgl.util.S;

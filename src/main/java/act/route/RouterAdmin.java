@@ -13,7 +13,6 @@ import org.osgl.http.H;
 import org.osgl.util.C;
 import org.osgl.util.S;
 
-import javax.inject.Inject;
 import java.util.List;
 
 /**

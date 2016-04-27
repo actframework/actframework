@@ -1,6 +1,5 @@
 package act.app;
 
-import act.app.event.AppEventId;
 import act.util.SubTypeFinder;
 
 /**

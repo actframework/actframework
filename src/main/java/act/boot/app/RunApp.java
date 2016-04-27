@@ -1,8 +1,6 @@
 package act.boot.app;
 
-import act.Act;
 import act.conf.AppConfigKey;
-import act.metric.Timer;
 import act.util.SysProps;
 import org.osgl.$;
 import org.osgl.logging.L;

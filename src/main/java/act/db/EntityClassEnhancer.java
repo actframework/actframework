@@ -6,7 +6,6 @@ import act.asm.AnnotationVisitor;
 import act.asm.MethodVisitor;
 import act.asm.Type;
 import act.util.AppByteCodeEnhancer;
-import org.osgl.$;
 import org.osgl.util.S;
 
 /**

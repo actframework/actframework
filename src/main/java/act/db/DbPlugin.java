@@ -31,4 +31,7 @@ public abstract class DbPlugin extends DestroyableBase implements Plugin {
 
     public abstract DbService initDbService(String id, App app, Map<String, Object> conf);
 
+    public void afterDbServiceLoaded() {
+    }
+
 }

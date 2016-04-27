@@ -23,7 +23,6 @@ public abstract class SubTypeFinder<T> extends AppServicePlugin {
     protected static Logger logger = L.get(SubTypeFinder.class);
 
     private Class<T> targetType;
-    private App app;
     private AppEventId bindingEvent = AppEventId.DEPENDENCY_INJECTOR_PROVISIONED;
 
     public SubTypeFinder(Class<T> target) {
