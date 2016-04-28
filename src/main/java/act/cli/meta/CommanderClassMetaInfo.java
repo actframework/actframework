@@ -27,7 +27,7 @@ public class CommanderClassMetaInfo extends DestroyableBase {
     private Type superType;
     private boolean isAbstract = false;
     private C.List<CommandMethodMetaInfo> commands = C.newList();
-    private C.List<FieldOptionAnnoInfo> fieldOptionAnnoInfoList = C.newList();
+    private C.Map<String, FieldOptionAnnoInfo> fieldOptionAnnoInfoMap = C.newMap();
     // commandLookup index command method by method name
     private C.Map<String, CommandMethodMetaInfo> commandLookup = null;
     private CommanderClassMetaInfo parent;
@@ -72,12 +72,16 @@ public class CommanderClassMetaInfo extends DestroyableBase {
     }
 
     public CommanderClassMetaInfo addFieldOptionAnnotationInfo(FieldOptionAnnoInfo info) {
-        fieldOptionAnnoInfoList.add(info);
+        fieldOptionAnnoInfoMap.put(info.fieldName(), info);
         return this;
     }
 
+    public FieldOptionAnnoInfo fieldOptionAnnoInfo(String name) {
+        return fieldOptionAnnoInfoMap.get(name);
+    }
+
     public List<FieldOptionAnnoInfo> fieldOptionAnnoInfoList(AppClassLoader appClassLoader) {
-        C.List<FieldOptionAnnoInfo> list = C.list(fieldOptionAnnoInfoList);
+        C.List<FieldOptionAnnoInfo> list = C.list(fieldOptionAnnoInfoMap.values());
         CommanderClassMetaInfo p = parent(appClassLoader);
         if (null != p && NULL != p) {
             list = list.append(p.fieldOptionAnnoInfoList(appClassLoader));
@@ -86,7 +90,7 @@ public class CommanderClassMetaInfo extends DestroyableBase {
     }
 
     public boolean hasOption(AppClassLoader classLoader) {
-        boolean retVal = !fieldOptionAnnoInfoList.isEmpty();
+        boolean retVal = !fieldOptionAnnoInfoMap.isEmpty();
         if (retVal) {
             return true;
         }

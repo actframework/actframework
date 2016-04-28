@@ -113,6 +113,7 @@ public class CommanderByteCodeScanner extends AppByteCodeScannerBase {
 
         private class CommanderFieldVisitor extends FieldVisitor implements Opcodes {
             private String fieldName;
+            private boolean readFileContent;
             private Type type;
 
             public CommanderFieldVisitor(FieldVisitor fv, String fieldName, Type type) {
@@ -131,7 +132,8 @@ public class CommanderByteCodeScanner extends AppByteCodeScannerBase {
                 AnnotationVisitor av = super.visitAnnotation(desc, visible);
                 Type type = Type.getType(desc);
                 boolean isOptional = $.eq(type, AsmTypes.OPTIONAL.asmType());
-                boolean isRequired = $.eq(type, AsmTypes.REQUIRED.asmType());
+                boolean isRequired = !isOptional && $.eq(type, AsmTypes.REQUIRED.asmType());
+                readFileContent = !isOptional && !isRequired && $.eq(type, AsmTypes.READ_FILE_CONTENT.asmType());
                 if (isOptional || isRequired) {
                     return new FieldOptionAnnotationVisitor(av, isOptional, fieldName, this.type);
                 }
@@ -141,15 +143,25 @@ public class CommanderByteCodeScanner extends AppByteCodeScannerBase {
             private class FieldOptionAnnotationVisitor extends OptionAnnotationVisitorBase implements Opcodes {
                 public FieldOptionAnnotationVisitor(AnnotationVisitor av, boolean optional, String fieldName, Type type) {
                     super(av, optional);
-                    this.OptionAnnoInfo = new FieldOptionAnnoInfo(fieldName, type, optional);
+                    this.optionAnnoInfo = new FieldOptionAnnoInfo(fieldName, type, optional);
                 }
 
                 @Override
                 public void visitEnd2() {
-                    classInfo.addFieldOptionAnnotationInfo((FieldOptionAnnoInfo) OptionAnnoInfo);
+                    classInfo.addFieldOptionAnnotationInfo((FieldOptionAnnoInfo) optionAnnoInfo);
                 }
             }
 
+            @Override
+            public void visitEnd() {
+                if (readFileContent) {
+                    FieldOptionAnnoInfo info = classInfo.fieldOptionAnnoInfo(fieldName);
+                    if (null != info) {
+                        info.setReadFileContent();
+                    }
+                }
+                super.visitEnd();
+            }
         }
 
         private class CommandMethodVisitor extends MethodVisitor implements Opcodes {
@@ -160,9 +172,10 @@ public class CommanderByteCodeScanner extends AppByteCodeScannerBase {
             private String signature;
             private boolean requireScan;
             private CommandMethodMetaInfo methodInfo;
-            private Map<Integer, ParamOptionAnnoInfo> optionAnnoInfo = C.newMap();
+            private Map<Integer, ParamOptionAnnoInfo> optionAnnoInfoMap = C.newMap();
             private BitSet contextInfo = new BitSet();
             private boolean isStatic;
+            private Map<Integer, Boolean> readFileContentFlags = C.newMap();
 
             private int paramIdShift = 0;
 
@@ -305,14 +318,18 @@ public class CommanderByteCodeScanner extends AppByteCodeScannerBase {
                 AnnotationVisitor av = super.visitParameterAnnotation(paramIndex, desc, visible);
                 Type type = Type.getType(desc);
                 boolean isOptional = $.eq(type, AsmTypes.OPTIONAL.asmType());
-                boolean isRequired = $.eq(type, AsmTypes.REQUIRED.asmType());
+                boolean isRequired = !isOptional && $.eq(type, AsmTypes.REQUIRED.asmType());
+
                 if (isOptional || isRequired) {
-                    if (optionAnnoInfo.containsKey(paramIndex)) {
+                    if (optionAnnoInfoMap.containsKey(paramIndex)) {
                         throw E.unexpected("Option annotation already found on index %s", paramIndex);
                     }
                     return new ParamOptionAnnotationVisitor(av, paramIndex, isOptional);
                 } else if ($.eq(type, AsmTypes.CONTEXT.asmType())) {
                     contextInfo.set(paramIndex);
+                    return av;
+                } else if ($.eq(type, AsmTypes.READ_FILE_CONTENT.asmType())) {
+                    readFileContentFlags.put(paramIndex, true);
                     return av;
                 } else {
                     return av;
@@ -329,7 +346,7 @@ public class CommanderByteCodeScanner extends AppByteCodeScannerBase {
                 Type[] argTypes = Type.getArgumentTypes(desc);
                 for (int i = 0; i < argTypes.length; ++i) {
                     CommandParamMetaInfo param = methodInfo.param(i);
-                    ParamOptionAnnoInfo option = optionAnnoInfo.get(i);
+                    ParamOptionAnnoInfo option = optionAnnoInfoMap.get(i);
                     if (contextInfo.get(i)) {
                         param.setContext();
                     }
@@ -337,6 +354,9 @@ public class CommanderByteCodeScanner extends AppByteCodeScannerBase {
                         param.optionInfo(option);
                         methodInfo.addLead(option.lead1());
                         methodInfo.addLead(option.lead2());
+                    }
+                    if (null != readFileContentFlags.get(i)) {
+                        param.setReadFileContent();
                     }
                 }
                 super.visitEnd();
@@ -356,12 +376,12 @@ public class CommanderByteCodeScanner extends AppByteCodeScannerBase {
                 public ParamOptionAnnotationVisitor(AnnotationVisitor av, int index, boolean optional) {
                     super(av, optional);
                     this.index = index;
-                    this.OptionAnnoInfo = new ParamOptionAnnoInfo(index, optional);
+                    this.optionAnnoInfo = new ParamOptionAnnoInfo(index, optional);
                 }
 
                 @Override
                 public void visitEnd2() {
-                    optionAnnoInfo.put(index, (ParamOptionAnnoInfo) OptionAnnoInfo);
+                    optionAnnoInfoMap.put(index, (ParamOptionAnnoInfo) optionAnnoInfo);
                 }
             }
 
@@ -370,7 +390,7 @@ public class CommanderByteCodeScanner extends AppByteCodeScannerBase {
 
     private static class OptionAnnotationVisitorBase extends AnnotationVisitor implements Opcodes {
         protected List<String> specs = C.newList();
-        protected OptionAnnoInfoBase OptionAnnoInfo;
+        protected OptionAnnoInfoBase optionAnnoInfo;
 
         public OptionAnnotationVisitorBase(AnnotationVisitor av, boolean optional) {
             super(ASM5, av);
@@ -396,18 +416,18 @@ public class CommanderByteCodeScanner extends AppByteCodeScannerBase {
         public void visit(String name, Object value) {
             super.visit(name, value);
             if (S.eq("group", name)) {
-                OptionAnnoInfo.group((String) value);
+                optionAnnoInfo.group((String) value);
             } else if (S.eq("defVal", name)) {
-                OptionAnnoInfo.defVal((String) value);
+                optionAnnoInfo.defVal((String) value);
             } else if (S.eq("value", name) || S.eq("help", name)) {
-                OptionAnnoInfo.help((String) value);
+                optionAnnoInfo.help((String) value);
             }
         }
 
         @Override
         public void visitEnd() {
             if (!specs.isEmpty()) {
-                OptionAnnoInfo.spec(specs.toArray(new String[specs.size()]));
+                optionAnnoInfo.spec(specs.toArray(new String[specs.size()]));
             }
             visitEnd2();
             super.visitEnd();

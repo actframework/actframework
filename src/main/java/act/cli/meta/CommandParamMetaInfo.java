@@ -10,6 +10,7 @@ import org.osgl.$;
 public class CommandParamMetaInfo extends DestroyableBase {
     private String name;
     private Type type;
+    private boolean readFileContent;
     private Type componentType;
     private boolean context;
     private ParamOptionAnnoInfo optionInfo;
@@ -59,6 +60,14 @@ public class CommandParamMetaInfo extends DestroyableBase {
 
     public ParamOptionAnnoInfo optionInfo() {
         return optionInfo;
+    }
+
+    public void setReadFileContent() {
+        readFileContent = true;
+    }
+
+    public boolean readFileContent() {
+        return readFileContent;
     }
 
 }

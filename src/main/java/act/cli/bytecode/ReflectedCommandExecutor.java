@@ -11,6 +11,7 @@ import act.conf.AppConfig;
 import com.esotericsoftware.reflectasm.MethodAccess;
 import org.osgl.$;
 import org.osgl.util.E;
+import org.osgl.util.IO;
 import org.osgl.util.S;
 
 import java.io.File;
@@ -84,7 +85,7 @@ public class ReflectedCommandExecutor extends CommandExecutor {
         List<FieldOptionAnnoInfo> list = classMetaInfo.fieldOptionAnnoInfoList(app.classLoader());
         for (FieldOptionAnnoInfo fieldOptionAnnoInfo : list) {
             String fieldName = fieldOptionAnnoInfo.fieldName();
-            Object val = optionVal(fieldOptionAnnoInfo.fieldType(), fieldOptionAnnoInfo, argIdx, false, context);
+            Object val = optionVal(fieldOptionAnnoInfo.fieldType(), fieldOptionAnnoInfo, argIdx, false, fieldOptionAnnoInfo.readFileContent(), context);
             Class instClass = inst.getClass();
             try {
                 Field field = instClass.getField(fieldName);
@@ -129,13 +130,13 @@ public class ReflectedCommandExecutor extends CommandExecutor {
             if (param.isContext()) {
                 oa[i] = app.newInstance(paramType);
             } else {
-                oa[i] = optionVal(paramType, param.optionInfo(), argIdx, paramCount == 1, ctx);
+                oa[i] = optionVal(paramType, param.optionInfo(), argIdx, paramCount == 1, param.readFileContent(), ctx);
             }
         }
         return oa;
     }
 
-    private Object optionVal(Class<?> optionType, OptionAnnoInfoBase option, $.Var<Integer> argIdx, boolean useArgumentIfOptionNotFound, CliContext ctx) {
+    private Object optionVal(Class<?> optionType, OptionAnnoInfoBase option, $.Var<Integer> argIdx, boolean useArgumentIfOptionNotFound, boolean readFileContent, CliContext ctx) {
         StringValueResolverManager resolverManager = app.resolverManager();
         CommandLineParser parser = ctx.commandLine();
         List<String> args = ctx.arguments();
@@ -169,6 +170,20 @@ public class ReflectedCommandExecutor extends CommandExecutor {
                     return new File(argStr);
                 } else {
                     return new File(ctx.curDir(), argStr);
+                }
+            } else if (readFileContent) {
+                File file;
+                if (argStr.startsWith(File.separator) || argStr.startsWith("/")) {
+                    file = new File(argStr).getAbsoluteFile();
+                } else {
+                    file = new File(ctx.curDir(), argStr);
+                }
+                if (file.exists()) {
+                    if (List.class.isAssignableFrom(optionType)) {
+                        return IO.readLines(file);
+                    } else {
+                        argStr = IO.readContentAsString(file);
+                    }
                 }
             }
             return resolverManager.resolve(argStr, optionType);

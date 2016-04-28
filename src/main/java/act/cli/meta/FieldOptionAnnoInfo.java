@@ -11,6 +11,7 @@ import org.osgl.$;
 public class FieldOptionAnnoInfo extends OptionAnnoInfoBase {
     private String fieldName;
     private Type type;
+    private boolean readFileContent;
 
     public FieldOptionAnnoInfo(String fieldName, Type type, boolean optional) {
         super(optional);
@@ -24,6 +25,14 @@ public class FieldOptionAnnoInfo extends OptionAnnoInfoBase {
 
     public Class fieldType() {
         return $.classForName(type.getClassName(), App.instance().classLoader());
+    }
+
+    public void setReadFileContent() {
+        readFileContent = true;
+    }
+
+    public boolean readFileContent() {
+        return readFileContent;
     }
 
 }
