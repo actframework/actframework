@@ -2,6 +2,8 @@ package act;
 
 import act.app.CliContext;
 import act.cli.Command;
+import act.cli.Optional;
+import act.di.Context;
 import act.util.PropertySpec;
 import org.osgl.util.C;
 import org.osgl.util.E;
@@ -32,13 +34,30 @@ public class SysUtilAdmin {
 
     @Command(name = "act.ls", help = "List files in the current working directory")
     @PropertySpec("context,path,size")
-    public List<FileInfo> ls() {
-        return dir(pwd(context), context);
+    public List<FileInfo> ls(
+            @Optional String path,
+            @Context CliContext ctx
+            ) {
+        if (S.blank(path)) {
+            return dir(curDir(), context);
+        } else {
+            File file = getFile(path);
+            if (!file.exists()) {
+                ctx.println("%s is not a file or directory", path);
+                return null;
+            } else {
+                if (file.isDirectory()) {
+                    return dir(file, context);
+                } else {
+                    return C.list(new FileInfo(file.getParentFile(), file));
+                }
+            }
+        }
     }
 
     @Command(name = "act.cd", help = "Change working directory")
     public void cd(String path) {
-        File file = (path.startsWith("/") || path.startsWith("\\")) ? new File(path) :new File(pwd(context), path);
+        File file = getFile(path);
         if (path.contains("..")) {
             try {
                 file = new File(file.getCanonicalPath());
@@ -54,6 +73,14 @@ public class SysUtilAdmin {
         context.println("current working directory changed to %s", file.getAbsolutePath());
     }
 
+    private File getFile(String path) {
+        return (path.startsWith("/") || path.startsWith("\\")) ? new File(path) :new File(pwd(context), path);
+    }
+
+    private File curDir() {
+        return pwd(context);
+    }
+
     private static File pwd(CliContext context) {
         return context.curDir();
     }
@@ -65,9 +92,9 @@ public class SysUtilAdmin {
             context.println("Invalid dir: %s", file.getAbsolutePath());
             return C.list();
         }
-        File pwd = pwd(context);
+        File parent = file.getAbsoluteFile();
         for (File f0 : files) {
-            list.add(new FileInfo(pwd, f0));
+            list.add(new FileInfo(parent, f0));
         }
         list = list.sorted();
         return list;
@@ -78,9 +105,9 @@ public class SysUtilAdmin {
         String path;
         String size;
         boolean isDir;
-        private FileInfo(File context, File file) {
+        private FileInfo(File parent, File file) {
             this.isDir = file.isDirectory();
-            this.context = context.getAbsolutePath();
+            this.context = null == parent ? "/" : parent.getAbsolutePath();
             this.path = printPath(file);
             this.size = printSize(file);
         }
