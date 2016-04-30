@@ -101,6 +101,8 @@ public final class Act {
     }
 
     public static final String VERSION = Version.fullVersion();
+    public static String APP_NAME;
+    public static String APP_VERSION;
     private static Logger logger = L.get(Act.class);
     private static ActConfig conf;
     private static Mode mode = Mode.PROD;
@@ -201,21 +203,23 @@ public final class Act {
     }
 
     public static void startServer() {
-        start(false, null);
+        start(false, null, null);
     }
 
-    public static void startApp(String appName) {
+    public static void startApp(String appName, String appVersion) {
         String s = System.getProperty("app.mode");
         if (null != s) {
             mode = Mode.valueOfIgnoreCase(s);
         } else {
             mode = Mode.DEV;
         }
-        start(true, appName);
+        start(true, appName, appVersion);
     }
 
-    private static void start(boolean singleAppServer, String appName) {
-        Banner.print();
+    private static void start(boolean singleAppServer, String appName, String appVersion) {
+        APP_VERSION = appName;
+        APP_VERSION = appVersion;
+        Banner.print(appName, appVersion);
         loadConfig();
         initMetricPlugin();
         initPluginManager();

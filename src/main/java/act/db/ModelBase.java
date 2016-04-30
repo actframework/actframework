@@ -34,6 +34,19 @@ implements Model<ID_TYPE, MODEL_TYPE> {
         return (T) App.instance().dbServiceManager().dao(ModelBase.class);
     }
 
+    /**
+     * Returns a {@link Dao} object that can operate on this entity of
+     * the entities with the same type.
+     *
+     * <p>Note this method needs to be enhanced by framework to be called</p>
+     *
+     * @return the {@code Dao} object
+     */
+    public static <T extends Dao>
+    T dao(Class<T> cls) {
+        return (T) App.instance().dbServiceManager().dao(ModelBase.class);
+    }
+
     @Override
     public int hashCode() {
         return $.hc(getClass(), _id());

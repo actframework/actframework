@@ -20,15 +20,15 @@ public class RunApp {
     private static final Logger logger = L.get(RunApp.class);
 
     public static void start(Class<?> anyController) throws Exception {
-        start(null, anyController);
+        start(null, null, anyController);
     }
 
-    public static void start(String appName, Class<?> anyController) throws Exception {
+    public static void start(String appName, String appVersion, Class<?> anyController) throws Exception {
         String pkg = anyController.getPackage().getName();
-        start(appName, pkg);
+        start(appName, appVersion, pkg);
     }
 
-    public static void start(String appName, String packageName) throws Exception {
+    public static void start(String appName, String appVersion, String packageName) throws Exception {
         long ts = $.ms();
         String profile = SysProps.get(AppConfigKey.PROFILE.key());
         if (S.blank(profile)) {
@@ -51,9 +51,9 @@ public class RunApp {
         Thread.currentThread().setContextClassLoader(classLoader);
         logger.debug("loading Act class...");
         Class<?> actClass = classLoader.loadClass("act.Act");
-        Method m = actClass.getDeclaredMethod("startApp", String.class);
+        Method m = actClass.getDeclaredMethod("startApp", String.class, String.class);
         try {
-            m.invoke(null, appName);
+            m.invoke(null, appName, appVersion);
         } catch (InvocationTargetException e) {
             Throwable t = e.getCause();
             if (t instanceof Exception) {

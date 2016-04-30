@@ -1,36 +1,54 @@
 package act.util;
 
 import act.Act;
+import com.github.lalyos.jfiglet.FigletFont;
+import org.osgl.util.E;
 import org.osgl.util.S;
+
+import java.io.IOException;
 
 /**
  * ASCII arts for Act
  */
 public class Banner {
 
-    public static void print() {
-        System.out.println(banner(Act.VERSION));
+    public static void print(String appName, String appVersion) {
+        String banner;
+        if (S.anyBlank(appName, appVersion)) {
+            banner = banner("ACT", Act.VERSION, null);
+        } else {
+            banner = banner(appName, Act.VERSION, appVersion);
+        }
+        System.out.println(banner);
     }
 
-    public static String banner(String version) {
-        String s = "    _     ____  ____ \n" +
-                "   / \\  / ____| ____|\n" +
-                "  / _ \\ | |     | |  \n" +
-                " / ___ \\| |___  | |  \n" +
-                "/_/   \\_\\ ____| |_|  \n";
-        int n = version.length();
-        int spaceLeft = (20 - n - 1) / 2;
-        StringBuilder sb = S.builder(s).append("\n");
-        for (int i = 0; i < spaceLeft; ++i) {
-            sb.append(" ");
+    public static String banner(String text, String actVersion, String appVersion) {
+        String s = asciiArt(text);
+        StringBuilder sb = S.builder(s);
+        if (null == appVersion) {
+            int n = actVersion.length();
+            int spaceLeft = (24 - n - 1) / 2;
+            for (int i = 0; i < spaceLeft; ++i) {
+                sb.append(" ");
+            }
+            sb.append(actVersion);
+        } else {
+            sb.append(" App: ").append(appVersion);
+            sb.append("\n Act: ").append(actVersion);
         }
-        sb.append(version);
         sb.append("\n");
-        sb.append("-------------------\n");
         return sb.toString();
     }
 
+    private static String asciiArt(String s) {
+        try {
+            return FigletFont.convertOneLine(s);
+        } catch (IOException e) {
+            throw E.ioException(e);
+        }
+    }
+
     public static void main(String[] args) {
-        print();
+        print("ACT", null);
     }
 }

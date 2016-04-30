@@ -20,7 +20,7 @@ class Version {
             p.load(Version.class.getResourceAsStream("/act.version"));
             version = p.getProperty("version");
             if (version.endsWith("SNAPSHOT")) {
-                version = "s" + version.replace("-SNAPSHOT", "");
+                version = "v" + version.replace("-SNAPSHOT", "");
                 snapshot = true;
             } else {
                 version = "R" + version;

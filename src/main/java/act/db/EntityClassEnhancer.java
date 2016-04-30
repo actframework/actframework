@@ -17,6 +17,8 @@ public class EntityClassEnhancer extends AppByteCodeEnhancer<EntityClassEnhancer
 
     private boolean daoMethodFound;
 
+    private boolean daoMethod2Found;
+
     private boolean isEntityClass;
 
     private DbServiceManager dbm;

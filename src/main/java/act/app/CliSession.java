@@ -92,7 +92,7 @@ public class CliSession extends DestroyableBase implements Runnable {
         try {
             OutputStream os = socket.getOutputStream();
             console = new ConsoleReader(socket.getInputStream(), os);
-            new PrintWriter(os).println(Banner.banner(Act.VERSION));
+            new PrintWriter(os).println(Banner.banner(Act.APP_NAME, Act.VERSION, Act.APP_VERSION));
             console.setPrompt("act[" + id + "]>");
             console.addCompleter(commandNameCompleter);
 
