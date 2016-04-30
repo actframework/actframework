@@ -52,14 +52,14 @@ public class SimpleMetricStore implements MetricStore {
 
     @Override
     public void onTimerStart(String name) {
-        logger(name).trace("Timer started");
+        logger(name).trace("Timer[%s] started", name);
     }
 
     @Override
     public void onTimerStop(Timer timer) {
         String name = timer.name();
         long ns = timer.ns();
-        logger(name).trace("Timer stopped. Time elapsed: %sns", ns);
+        logger(name).trace("Timer[%s] stopped. Time elapsed: %sns", name, ns);
         onTimerStop_(name, ns);
     }
 

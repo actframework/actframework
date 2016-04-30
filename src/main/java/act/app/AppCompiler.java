@@ -23,6 +23,7 @@ import org.osgl.util.C;
 import org.osgl.util.E;
 import org.osgl.util.S;
 
+import java.util.Collection;
 import java.util.Locale;
 import java.util.Map;
 
@@ -76,6 +77,28 @@ class AppCompiler extends DestroyableBase {
 
     private void opt(Map map, String key, String val) {
         map.put(key, val);
+    }
+
+    public void compile(Collection<Source> sources) {
+        Timer timer = metric.startTimer("act:classload:compile:_all");
+        int len = sources.size();
+        ICompilationUnit[] compilationUnits = new ICompilationUnit[len];
+        int i = 0;
+        for (Source source: sources) {
+            compilationUnits[i++] = source.compilationUnit();
+        }
+        IErrorHandlingPolicy policy = DefaultErrorHandlingPolicies.exitOnFirstError();
+        IProblemFactory problemFactory = new DefaultProblemFactory(Locale.ENGLISH);
+
+        org.eclipse.jdt.internal.compiler.Compiler jdtCompiler = new Compiler(
+                nameEnv, policy, compilerOptions, requestor, problemFactory) {
+            @Override
+            protected void handleInternalException(Throwable e, CompilationUnitDeclaration ud, CompilationResult result) {
+            }
+        };
+
+        jdtCompiler.compile(compilationUnits);
+        timer.stop();
     }
 
     public void compile(String className) {

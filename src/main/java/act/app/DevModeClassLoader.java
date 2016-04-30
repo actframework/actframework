@@ -70,6 +70,7 @@ public class DevModeClassLoader extends AppClassLoader {
     @Override
     protected void scan() {
         super.scan();
+        compileSources();
         scanSources();
     }
 
@@ -141,6 +142,11 @@ public class DevModeClassLoader extends AppClassLoader {
         }
     }
 
+    private void compileSources() {
+        logger.debug("start to compile sources ...");
+        compiler.compile(sources.values());
+    }
+
     private void scanSources() {
         logger.debug("start to scan sources...");
         List<AppSourceCodeScanner> scanners = app().scannerManager().sourceCodeScanners();
@@ -156,7 +162,7 @@ public class DevModeClassLoader extends AppClassLoader {
             List<AppSourceCodeScanner> l = C.newList();
             for (AppSourceCodeScanner scanner : scanners) {
                 if (scanner.start(className)) {
-                    logger.trace("scanner %s added to the list", scanner.getClass().getName());
+                    //logger.trace("scanner %s added to the list", scanner.getClass().getName());
                     l.add(scanner);
                 }
             }

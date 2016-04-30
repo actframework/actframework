@@ -358,8 +358,13 @@ public class App {
     }
 
     private void startDaemons() {
-        for (Daemon daemon : registeredDaemons()) {
-            daemon.start();
+        for (final Daemon daemon : registeredDaemons()) {
+            jobManager().now(new Runnable() {
+                @Override
+                public void run() {
+                    daemon.start();
+                }
+            });
         }
     }
 
