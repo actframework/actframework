@@ -12,6 +12,8 @@ import java.io.IOException;
  */
 public class Banner {
 
+    private static String cachedBanner;
+
     public static void print(String appName, String appVersion) {
         String banner;
         if (S.anyBlank(appName, appVersion)) {
@@ -20,6 +22,11 @@ public class Banner {
             banner = banner(appName, Act.VERSION, appVersion);
         }
         System.out.println(banner);
+        cachedBanner = banner;
+    }
+
+    public static String cachedBanner() {
+        return cachedBanner;
     }
 
     public static String banner(String text, String actVersion, String appVersion) {

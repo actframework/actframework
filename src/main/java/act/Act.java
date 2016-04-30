@@ -217,7 +217,7 @@ public final class Act {
     }
 
     private static void start(boolean singleAppServer, String appName, String appVersion) {
-        APP_VERSION = appName;
+        APP_NAME = appName;
         APP_VERSION = appVersion;
         Banner.print(appName, appVersion);
         loadConfig();

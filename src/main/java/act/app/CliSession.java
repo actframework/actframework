@@ -18,6 +18,7 @@ import org.osgl.util.C;
 import org.osgl.util.IO;
 import org.osgl.util.S;
 
+import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
@@ -92,7 +93,8 @@ public class CliSession extends DestroyableBase implements Runnable {
         try {
             OutputStream os = socket.getOutputStream();
             console = new ConsoleReader(socket.getInputStream(), os);
-            new PrintWriter(os).println(Banner.banner(Act.APP_NAME, Act.VERSION, Act.APP_VERSION));
+            String banner = Banner.cachedBanner();
+            printBanner(banner, console);
             console.setPrompt("act[" + id + "]>");
             console.addCompleter(commandNameCompleter);
 
@@ -171,6 +173,13 @@ public class CliSession extends DestroyableBase implements Runnable {
             pw.flush();
         }
         stop();
+    }
+
+    private static void printBanner(String banner, ConsoleReader console) throws IOException {
+        String[] lines = banner.split("[\n\r]");
+        for (String line : lines) {
+            console.println(line);
+        }
     }
 
 }
