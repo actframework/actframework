@@ -1,6 +1,10 @@
 package act.app;
 
 import act.util.SingletonBase;
+import org.joda.time.DateTime;
+import org.osgl.util.C;
+
+import java.util.Map;
 
 /**
  * The base implementation of {@link Daemon}
@@ -10,6 +14,9 @@ public abstract class DaemonBase extends SingletonBase implements Daemon {
 
     private State state = State.STOPPED;
     private Exception lastError;
+    private DateTime ts = DateTime.now();
+    private DateTime errTs;
+    private Map<String, Object> attributes = C.newMap();
 
     @Override
     public final void restart() {
@@ -26,7 +33,7 @@ public abstract class DaemonBase extends SingletonBase implements Daemon {
             if (state == State.STARTED || state == State.STARTING) {
                 return;
             }
-            state = State.STARTING;
+            setState(State.STARTING);
         }
         try {
             setup();
@@ -36,7 +43,7 @@ public abstract class DaemonBase extends SingletonBase implements Daemon {
             return;
         }
         synchronized (this) {
-            state = State.STARTED;
+            setState(State.STARTED);
         }
         logger.info("Daemon[%s] started", id());
     }
@@ -47,7 +54,7 @@ public abstract class DaemonBase extends SingletonBase implements Daemon {
             if (state == State.STOPPED || state == State.STOPPING) {
                 return;
             }
-            state = State.STOPPING;
+            setState(State.STOPPING);
         }
         try {
             teardown();
@@ -56,7 +63,7 @@ public abstract class DaemonBase extends SingletonBase implements Daemon {
             return;
         }
         synchronized (this){
-            state = State.STOPPED;
+            setState(State.STOPPED);
         }
         logger.info("Daemon[%s] stopped", id());
     }
@@ -78,6 +85,11 @@ public abstract class DaemonBase extends SingletonBase implements Daemon {
     @Override
     public synchronized State state() {
         return state;
+    }
+
+    @Override
+    public DateTime timestamp() {
+        return ts;
     }
 
     protected void setup() throws Exception {}
@@ -110,9 +122,28 @@ public abstract class DaemonBase extends SingletonBase implements Daemon {
         return lastError;
     }
 
+    @Override
+    public DateTime errorTimestamp() {
+        return errTs;
+    }
+
+    @Override
+    public void setAttribute(String key, Object value) {
+        attributes.put(key, value);
+    }
+
+    @Override
+    public <T> T getAttribute(String key) {
+        return (T) attributes.get(key);
+    }
+
+    public Map<String, Object> getAttributes() {
+        return C.newMap(attributes);
+    }
+
     protected synchronized void onException(Exception e, String message, Object... args) {
         this.lastError = e;
-        this.state = State.ERROR;
+        setState(State.ERROR);
         logger.error(e, message, args);
     }
 
@@ -122,6 +153,14 @@ public abstract class DaemonBase extends SingletonBase implements Daemon {
      */
     protected synchronized void setLastError(Exception e) {
         this.lastError = e;
+    }
+
+    private void setState(State state) {
+        this.state = state;
+        ts = DateTime.now();
+        if (state == State.ERROR) {
+            errTs = ts;
+        }
     }
 
 }

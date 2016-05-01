@@ -312,7 +312,7 @@ public class App {
         emit(SINGLETON_PROVISIONED);
         emit(PRE_START);
         emit(START);
-        startDaemons();
+        daemonKeeper();
         logger.info("App[%s] started", name());
         emit(POST_START);
     }
@@ -356,18 +356,6 @@ public class App {
     Daemon registeredDaemon(String id) {
         return daemonRegistry.get(id);
     }
-
-    private void startDaemons() {
-        for (final Daemon daemon : registeredDaemons()) {
-            jobManager().now(new Runnable() {
-                @Override
-                public void run() {
-                    daemon.start();
-                }
-            });
-        }
-    }
-
 
     public <T> void registerSingleton(Class<? extends T> cls, T instance) {
         singletonRegistry.register(cls, instance);
@@ -619,21 +607,54 @@ public class App {
                     public void run() {
                         daemonKeeper();
                     }
-                }, "5mn");
+                }, "1mn");
             }
         });
     }
 
     private void daemonKeeper() {
-        for (Daemon d : daemonRegistry.values()) {
+        final String KEY_COUNTER = "c";
+        final String KEY_SEQ_NO = "sn";
+        final String KEY_LAST_SEQ_NO = "lsn";
+        for (final Daemon d : daemonRegistry.values()) {
             if (d.state() == Daemon.State.STOPPED) {
-                try {
-                    d.start();
-                } catch (Exception e) {
-                    logger.error(e, "Error starting daemon [%s]", d.id());
+                startDaemon(d);
+            } else if (d.state() == Daemon.State.ERROR) {
+                Integer counter = d.getAttribute(KEY_COUNTER);
+                Integer seqNo, lastSeqNo;
+                if (null == counter) {
+                    counter = 1;
+                    seqNo = 1;
+                    lastSeqNo = 0;
+                } else {
+                    seqNo = d.getAttribute(KEY_SEQ_NO);
+                    lastSeqNo = d.getAttribute(KEY_LAST_SEQ_NO);
                 }
+                if (--counter == 0) {
+                    startDaemon(d);
+                    int nextSeqNo = seqNo + lastSeqNo;
+                    lastSeqNo = seqNo;
+                    seqNo = nextSeqNo;
+                    counter = seqNo;
+                    d.setAttribute(KEY_SEQ_NO, seqNo);
+                    d.setAttribute(KEY_LAST_SEQ_NO, lastSeqNo);
+                }
+                d.setAttribute(KEY_COUNTER, counter);
             }
         }
+    }
+
+    private void startDaemon(final Daemon daemon) {
+        jobManager().now(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    daemon.start();
+                } catch (Exception e) {
+                    logger.error(e, "Error starting daemon [%s]", daemon.id());
+                }
+            }
+        });
     }
 
     private void initServiceResourceManager() {

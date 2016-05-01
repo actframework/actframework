@@ -16,7 +16,7 @@ public class JodaLocalTimeCodec extends StringValueResolver<LocalTime> implement
 
     @Inject
     public JodaLocalTimeCodec(AppConfig config) {
-        String patten = config.dateFormat();
+        String patten = config.timeFormat();
         if (patten.contains("8601")) {
             dateFormat = ISODateTimeFormat.time();
         } else {

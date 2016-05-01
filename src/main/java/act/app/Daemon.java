@@ -1,5 +1,9 @@
 package act.app;
 
+import org.joda.time.DateTime;
+
+import java.util.Map;
+
 /**
  * A daemon encapsulate a long running logic that can be
  *
@@ -36,6 +40,12 @@ public interface Daemon extends Runnable {
     State state();
 
     /**
+     * Returns the timestamp when last state transfer happening
+     * @return the timestamp
+     */
+    DateTime timestamp();
+
+    /**
      * Returns ID of the daemon logic
      * @return ID
      */
@@ -47,4 +57,30 @@ public interface Daemon extends Runnable {
      */
     Exception lastError();
 
+    /**
+     * Returns the timestamp when last error happening
+     * @return the timestamp
+     */
+    DateTime errorTimestamp();
+
+    /**
+     * Set an attribute to the daemon
+     * @param key the attribute key
+     * @param value attribute value
+     */
+    void setAttribute(String key, Object value);
+
+    /**
+     * Return the attribute set to the daemon
+     * @param key the attribute key
+     * @param <T> the gneric type of the attribute value
+     * @return the attribute value
+     */
+    <T> T getAttribute(String key);
+
+    /**
+     * Returns all attributes set on this daemon
+     * @return the attributes set on this daemon
+     */
+    Map<String, Object> getAttributes();
 }

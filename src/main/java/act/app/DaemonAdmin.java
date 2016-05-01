@@ -2,9 +2,15 @@ package act.app;
 
 import act.cli.Command;
 import act.cli.Required;
+import act.conf.AppConfig;
+import act.data.JodaDateTimeCodec;
+import act.data.JodaLocalTimeCodec;
 import act.di.Context;
 import act.util.PropertySpec;
+import org.joda.time.DateTime;
 import org.osgl.util.E;
+
+import java.util.Map;
 
 /**
  * Access application daemon status
@@ -51,14 +57,25 @@ public class DaemonAdmin {
     @Command(name = "act.daemon.status", help = "Report app daemon status")
     public void status(
             @Required("specify daemon id") String id,
-            @Context CliContext context
+            @Context CliContext context,
+            @Context JodaDateTimeCodec fmt
     ) {
         Daemon daemon = get(id, context);
         Daemon.State state = daemon.state();
+        DateTime ts = daemon.timestamp();
         Exception lastError = daemon.lastError();
-        context.println("Daemon[%s]: %s", id, state);
+        context.println("Daemon[%s]: %s at %s", id, state, fmt.toString(ts));
         if (null != lastError) {
-            context.println("Last error: %s", E.stackTrace(lastError));
+            DateTime errTs = daemon.errorTimestamp();
+            if (null != errTs) {
+                context.println("Last error: %s at %s", E.stackTrace(lastError), fmt.toString(errTs));
+            } else {
+                context.println("Last error: %s", E.stackTrace(lastError));
+            }
+        }
+        Map<String, Object> attributes = daemon.getAttributes();
+        if (!attributes.isEmpty()) {
+            context.println("Attributes: %s", attributes);
         }
     }
 
