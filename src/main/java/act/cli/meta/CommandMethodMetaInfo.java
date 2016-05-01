@@ -40,6 +40,7 @@ public class CommandMethodMetaInfo extends DestroyableBase {
     private Set<String> optionLeads = C.newSet();
     private CliView view = CliView.TO_STRING;
     private Act.Mode mode = Act.Mode.PROD;
+    private int ctxParamCnt = -1;
 
     public CommandMethodMetaInfo(CommanderClassMetaInfo clsInfo) {
         this.clsInfo = $.NPE(clsInfo);
@@ -199,6 +200,22 @@ public class CommandMethodMetaInfo extends DestroyableBase {
 
     public int paramCount() {
         return params.size();
+    }
+
+    public synchronized int ctxParamCount() {
+        if (ctxParamCnt < 0) {
+            if (paramCount() == 0) {
+                ctxParamCnt = 0;
+            } else {
+                ctxParamCnt = 0;
+                for (CommandParamMetaInfo param : params) {
+                    if (param.isContext()) {
+                        ctxParamCnt++;
+                    }
+                }
+            }
+        }
+        return ctxParamCnt;
     }
 
     public CommandMethodMetaInfo addLead(String lead) {

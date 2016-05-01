@@ -12,7 +12,10 @@ import act.mail.MailerContext;
 import org.osgl.mvc.annotation.Bind;
 import org.osgl.mvc.annotation.Param;
 import org.osgl.mvc.result.Result;
+import org.osgl.util.C;
 import org.osgl.util.S;
+
+import java.util.Set;
 
 public enum AsmTypes implements Opcodes {
     ;
@@ -127,4 +130,18 @@ public enum AsmTypes implements Opcodes {
         return isPublic(access) && !isAbstract(access);
     }
 
+    private static Set<Type> contextTypes = C.set(
+            Type.getType(App.class),
+            Type.getType(AppConfig.class),
+            Type.getType(ActionContext.class),
+            Type.getType(MailerContext.class),
+            Type.getType(CliContext.class),
+            Type.getType(ActContext.class),
+            Type.getType(Exception.class),
+            Type.getType(Result.class)
+    );
+
+    public static boolean isContextType(Type type) {
+        return contextTypes.contains(type);
+    }
 }

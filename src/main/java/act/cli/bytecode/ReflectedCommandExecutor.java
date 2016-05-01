@@ -119,6 +119,7 @@ public class ReflectedCommandExecutor extends CommandExecutor {
 
     private Object[] params(CliContext ctx) {
         int paramCount = methodMetaInfo.paramCount();
+        int ctxParamCount = methodMetaInfo.ctxParamCount();
         Object[] oa = new Object[paramCount];
         if (0 == paramCount) {
             return oa;
@@ -130,7 +131,7 @@ public class ReflectedCommandExecutor extends CommandExecutor {
             if (param.isContext()) {
                 oa[i] = app.newInstance(paramType);
             } else {
-                oa[i] = optionVal(paramType, param.optionInfo(), argIdx, paramCount == 1, param.readFileContent(), ctx);
+                oa[i] = optionVal(paramType, param.optionInfo(), argIdx, (paramCount - ctxParamCount) == 1, param.readFileContent(), ctx);
             }
         }
         return oa;
@@ -154,7 +155,7 @@ public class ReflectedCommandExecutor extends CommandExecutor {
                 argIdx.set(i + 1);
             } else {
                 argStr = parser.getString(option.lead1(), option.lead2());
-                if (S.blank(argStr) && option.required()) {
+                if (S.blank(argStr)) {
                     if (useArgumentIfOptionNotFound) {
                         // try to use the single param as the option
                         List<String> args0 = parser.arguments();
@@ -162,7 +163,9 @@ public class ReflectedCommandExecutor extends CommandExecutor {
                             return resolverManager.resolve(args0.get(0), optionType);
                         }
                     }
-                    throw new CliError("Missing required option [%s]", option);
+                    if (option.required()) {
+                        throw new CliError("Missing required option [%s]", option);
+                    }
                 }
             }
             if (File.class.isAssignableFrom(optionType)) {

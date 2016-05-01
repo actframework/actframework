@@ -2,6 +2,7 @@ package act.controller.meta;
 
 import act.app.App;
 import act.asm.Type;
+import act.util.AsmTypes;
 import act.util.GeneralAnnoInfo;
 import org.osgl.$;
 import org.osgl.util.C;
@@ -21,6 +22,9 @@ public class ParamMetaInfo {
 
     public ParamMetaInfo type(Type type) {
         this.type = type;
+        if (AsmTypes.isContextType(type)) {
+            this.context = true;
+        }
         return this;
     }
 

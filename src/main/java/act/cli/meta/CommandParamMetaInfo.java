@@ -1,6 +1,7 @@
 package act.cli.meta;
 
 import act.asm.Type;
+import act.util.AsmTypes;
 import act.util.DestroyableBase;
 import org.osgl.$;
 
@@ -26,6 +27,9 @@ public class CommandParamMetaInfo extends DestroyableBase {
 
     public CommandParamMetaInfo type(Type type) {
         this.type = $.NPE(type);
+        if (AsmTypes.isContextType(type)) {
+            context = true;
+        }
         return this;
     }
 

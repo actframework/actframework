@@ -31,6 +31,7 @@ public abstract class HandlerMethodMetaInfo<T extends HandlerMethodMetaInfo> ext
     private boolean disableJsonCircularRefDetect = false;
     private Map<Label, Map<Integer, LocalVariableMetaInfo>> locals = C.newMap();
     private int appCtxLVT_id = -1;
+    private int ctxParamCnt = -1;
 
     public HandlerMethodMetaInfo(ControllerClassMetaInfo clsInfo) {
         this.clsInfo = clsInfo;
@@ -182,6 +183,22 @@ public abstract class HandlerMethodMetaInfo<T extends HandlerMethodMetaInfo> ext
 
     public int paramCount() {
         return params.size();
+    }
+
+    public synchronized int ctxParamCount() {
+        if (ctxParamCnt < 0) {
+            if (paramCount() == 0) {
+                ctxParamCnt = 0;
+            } else {
+                ctxParamCnt = 0;
+                for (ParamMetaInfo param : params) {
+                    if (param.isContext()) {
+                        ctxParamCnt ++;
+                    }
+                }
+            }
+        }
+        return ctxParamCnt;
     }
 
     @Override

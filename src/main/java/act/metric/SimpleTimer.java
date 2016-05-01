@@ -27,7 +27,7 @@ public class SimpleTimer implements Timer {
 
     @Override
     public void stop() {
-        this.duration = $.ns() - start;
+        duration = $.ns() - start;
         metricStore.onTimerStop(this);
     }
 
