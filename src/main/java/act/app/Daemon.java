@@ -71,6 +71,12 @@ public interface Daemon extends Runnable {
     void setAttribute(String key, Object value);
 
     /**
+     * Remove an attribute from a daemon
+     * @param key the attribute key
+     */
+    void removeAttribute(String key);
+
+    /**
      * Return the attribute set to the daemon
      * @param key the attribute key
      * @param <T> the gneric type of the attribute value

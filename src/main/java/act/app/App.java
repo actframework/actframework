@@ -617,9 +617,19 @@ public class App {
         final String KEY_SEQ_NO = "sn";
         final String KEY_LAST_SEQ_NO = "lsn";
         for (final Daemon d : daemonRegistry.values()) {
-            if (d.state() == Daemon.State.STOPPED) {
+            Daemon.State state = d.state();
+            if (state == Daemon.State.STARTED) {
+                // daemon running successfully, clear the error recovery state
+                if (d.getAttribute(KEY_COUNTER) != null) {
+                    d.removeAttribute(KEY_COUNTER);
+                    d.removeAttribute(KEY_SEQ_NO);
+                    d.removeAttribute(KEY_LAST_SEQ_NO);
+                }
+            } else if (state == Daemon.State.STOPPED) {
                 startDaemon(d);
-            } else if (d.state() == Daemon.State.ERROR) {
+            } else if (state == Daemon.State.ERROR) {
+                // try to recover daemon, the recovery duration shall
+                // follow a fibonacci sequence
                 Integer counter = d.getAttribute(KEY_COUNTER);
                 Integer seqNo, lastSeqNo;
                 if (null == counter) {

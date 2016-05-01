@@ -128,12 +128,17 @@ public abstract class DaemonBase extends SingletonBase implements Daemon {
     }
 
     @Override
-    public void setAttribute(String key, Object value) {
+    public synchronized void setAttribute(String key, Object value) {
         attributes.put(key, value);
     }
 
     @Override
-    public <T> T getAttribute(String key) {
+    public synchronized void removeAttribute(String key) {
+        attributes.remove(key);
+    }
+
+    @Override
+    public synchronized  <T> T getAttribute(String key) {
         return (T) attributes.get(key);
     }
 
