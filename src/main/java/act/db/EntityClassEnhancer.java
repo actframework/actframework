@@ -3,8 +3,10 @@ package act.db;
 import act.app.App;
 import act.app.DbServiceManager;
 import act.asm.AnnotationVisitor;
+import act.asm.Label;
 import act.asm.MethodVisitor;
 import act.asm.Type;
+import act.asm.commons.Method;
 import act.util.AppByteCodeEnhancer;
 import org.osgl.util.S;
 
@@ -16,8 +18,7 @@ public class EntityClassEnhancer extends AppByteCodeEnhancer<EntityClassEnhancer
     private String classDesc;
 
     private boolean daoMethodFound;
-
-    private boolean daoMethod2Found;
+    private boolean daoClsMethodFound;
 
     private boolean isEntityClass;
 
@@ -52,28 +53,50 @@ public class EntityClassEnhancer extends AppByteCodeEnhancer<EntityClassEnhancer
     @Override
     public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
         if (isEntityClass) {
-            if ("dao".equals(name) && "()Lact/db/Dao;".equals(desc)) {
-                daoMethodFound = true;
-                logger.warn("dao() method already defined in the model class");
+            if ("dao".equals(name)) {
+                if ("()Lact/db/Dao;".equals(desc)) {
+                    daoMethodFound = true;
+                    logger.warn("dao() method already defined in the model class");
+                }
+                if ("(Ljava/lang/Class;)Lact/db/Dao;".equals(desc)) {
+                    daoClsMethodFound = true;
+                    logger.warn("dao(Class) method already defined in the model class");
+                }
             }
+
         }
         return super.visitMethod(access, name, desc, signature, exceptions);
     }
 
     @Override
     public void visitEnd() {
-        if (isEntityClass && !daoMethodFound) {
-            MethodVisitor mv = super.visitMethod(ACC_PUBLIC + ACC_STATIC,
-                    "dao", "()Lact/db/Dao;",
-                    "<ID_TYPE:Ljava/lang/Object;MODEL_TYPE:Lact/db/ModelBase<TID_TYPE;TMODEL_TYPE;>;QUERY_TYPE::Lact/db/Dao$Query<TMODEL_TYPE;TQUERY_TYPE;>;DAO_TYPE::Lact/db/Dao<TID_TYPE;TMODEL_TYPE;TQUERY_TYPE;TDAO_TYPE;>;>()TDAO_TYPE;", null);
-            mv.visitCode();
-            mv.visitMethodInsn(INVOKESTATIC, "act/app/App", "instance", "()Lact/app/App;", false);
-            mv.visitMethodInsn(INVOKEVIRTUAL, "act/app/App", "dbServiceManager", "()Lact/app/DbServiceManager;", false);
-            mv.visitLdcInsn(Type.getType(classDesc));
-            mv.visitMethodInsn(INVOKEVIRTUAL, "act/app/DbServiceManager", "dao", "(Ljava/lang/Class;)Lact/db/Dao;", false);
-            mv.visitInsn(ARETURN);
-            mv.visitMaxs(2, 0);
-            mv.visitEnd();
+        if (isEntityClass) {
+            if (!daoMethodFound) {
+                // add Model.dao() method
+                MethodVisitor mv = super.visitMethod(ACC_PUBLIC + ACC_STATIC,
+                        "dao", "()Lact/db/Dao;",
+                        "<ID_TYPE:Ljava/lang/Object;MODEL_TYPE:Lact/db/ModelBase<TID_TYPE;TMODEL_TYPE;>;QUERY_TYPE::Lact/db/Dao$Query<TMODEL_TYPE;TQUERY_TYPE;>;DAO_TYPE::Lact/db/Dao<TID_TYPE;TMODEL_TYPE;TQUERY_TYPE;TDAO_TYPE;>;>()TDAO_TYPE;", null);
+                mv.visitCode();
+                mv.visitMethodInsn(INVOKESTATIC, "act/app/App", "instance", "()Lact/app/App;", false);
+                mv.visitMethodInsn(INVOKEVIRTUAL, "act/app/App", "dbServiceManager", "()Lact/app/DbServiceManager;", false);
+                mv.visitLdcInsn(Type.getType(classDesc));
+                mv.visitMethodInsn(INVOKEVIRTUAL, "act/app/DbServiceManager", "dao", "(Ljava/lang/Class;)Lact/db/Dao;", false);
+                mv.visitInsn(ARETURN);
+                mv.visitMaxs(2, 0);
+                mv.visitEnd();
+            }
+            if (!daoClsMethodFound) {
+                // add Model.dao(Class c) method
+                MethodVisitor mv = super.visitMethod(ACC_PUBLIC + ACC_STATIC, "dao", "(Ljava/lang/Class;)Lact/db/Dao;", "<T::Lact/db/Dao;>(Ljava/lang/Class<TT;>;)TT;", null);
+                mv.visitCode();
+                mv.visitMethodInsn(INVOKESTATIC, "act/app/App", "instance", "()Lact/app/App;", false);
+                mv.visitMethodInsn(INVOKEVIRTUAL, "act/app/App", "dbServiceManager", "()Lact/app/DbServiceManager;", false);
+                mv.visitLdcInsn(Type.getType(classDesc));
+                mv.visitMethodInsn(INVOKEVIRTUAL, "act/app/DbServiceManager", "dao", "(Ljava/lang/Class;)Lact/db/Dao;", false);
+                mv.visitInsn(ARETURN);
+                mv.visitMaxs(1, 1);
+                mv.visitEnd();
+            }
         }
         super.visitEnd();
     }

@@ -301,6 +301,16 @@ public final class Act {
         return idGenerator.genId();
     }
 
+    /**
+     * Utility method to retrieve singleton instance via {@link App#singleton(Class)} method
+     * @param singletonClass
+     * @param <T>
+     * @return the singleton instance
+     */
+    public static <T> T singleton(Class<T> singletonClass) {
+        return App.instance().singleton(singletonClass);
+    }
+
     private static void loadConfig() {
         logger.info("loading configuration ...");
 
