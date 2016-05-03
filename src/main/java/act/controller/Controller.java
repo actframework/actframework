@@ -640,13 +640,13 @@ public @interface Controller {
                 }
                 if (actionContext.isJSON()) {
                     // patch https://github.com/alibaba/fastjson/issues/478
+                    if (meta.disableJsonCircularRefDetect()) {
+                        DisableFastJsonCircularReferenceDetect.option.set(true);
+                    }
                     if (v instanceof Iterable && !(v instanceof Collection)) {
                         v = new FastJsonIterable<>((Iterable) v);
                     }
                     PropertySpec.MetaInfo propertySpec = (null == meta) ? null : meta.propertySpec();
-                    if (meta.disableJsonCircularRefDetect()) {
-                        DisableFastJsonCircularReferenceDetect.option.set(true);
-                    }
                     try {
                         if (null == propertySpec) {
                             return new RenderJSON(v);

@@ -25,8 +25,7 @@ public enum CliView {
     /**
      * present the result using {@link act.cli.TableView}
      */
-    TABLE () {
-
+    TABLE() {
         @Override
         @SuppressWarnings("unchecked")
         public String render(Object result, PropertySpec.MetaInfo spec, ActContext context) {
@@ -62,12 +61,12 @@ public enum CliView {
     /**
      * Present data in a Tree structure.
      * <p>
-     *     Note the {@code result} parameter must be a root {@link act.cli.tree.TreeNode node} of the tree,
-     *     otherwise the data will be presented in
+     * Note the {@code result} parameter must be a root {@link act.cli.tree.TreeNode node} of the tree,
+     * otherwise the data will be presented in
      * </p>
      * <ul>
-     *     <li>{@link #TABLE Table view} if the result is an {@link Iterable}, or</li>
-     *     <li>{@link #JSON JSON view} otherwise</li>
+     * <li>{@link #TABLE Table view} if the result is an {@link Iterable}, or</li>
+     * <li>{@link #JSON JSON view} otherwise</li>
      * </ul>
      */
     TREE() {
@@ -141,7 +140,7 @@ public enum CliView {
     /**
      * Present the result using {@link act.cli.JsonView}
      */
-    JSON () {
+    JSON() {
         @Override
         public String render(Object result, PropertySpec.MetaInfo spec, ActContext context) {
             return render(result, spec, context, context instanceof CliContext);
@@ -149,10 +148,11 @@ public enum CliView {
 
         public String render(Object result, PropertySpec.MetaInfo spec, ActContext context, boolean format) {
             String json;
+            FastJsonPropertyPreFilter propertyFilter;
             if (null == spec) {
-                json = com.alibaba.fastjson.JSON.toJSONString(result, SerializerFeature.PrettyFormat);
+                propertyFilter = null;
             } else {
-                FastJsonPropertyPreFilter propertyFilter = new FastJsonPropertyPreFilter();
+                propertyFilter = new FastJsonPropertyPreFilter();
                 List<String> outputs = spec.outputFields(context);
                 Set<String> excluded = spec.excludedFields(context);
                 if (excluded.isEmpty()) {
@@ -173,34 +173,52 @@ public enum CliView {
                         propertyFilter.setFullPaths(context.app().service(DataPropertyRepository.class).propertyListOf(result.getClass()));
                     }
                 }
+            }
 
+            List<SerializerFeature> featureList = C.newList();
+            if (format) {
+                featureList.add(SerializerFeature.PrettyFormat);
+            }
+            if (null == propertyFilter) {
+                Boolean b = DisableFastJsonCircularReferenceDetect.option.get();
+                if (null != b && b) {
+                    featureList.add(SerializerFeature.DisableCircularReferenceDetect);
+                }
+                SerializerFeature[] featureArray = new SerializerFeature[featureList.size()];
+                featureArray = featureList.toArray(featureArray);
+                if (format) {
+                    json = com.alibaba.fastjson.JSON.toJSONString(result, featureArray);
+                } else {
+                    json = com.alibaba.fastjson.JSON.toJSONString(result);
+                }
+            } else {
+                // Note: we can't check DisableFastJsonCircularReferenceDetect here because if
+                // that option is set, then FastJson will skip the JsonSerializer.context setting
+                // and there is property filter mechanism will break
                 MappedFastJsonNameFilter nameFilter = new MappedFastJsonNameFilter(spec.labelMapping());
 
+                SerializerFeature[] featureArray = new SerializerFeature[featureList.size()];
+                featureArray = featureList.toArray(featureArray);
+
                 if (nameFilter.isEmpty()) {
-                    if (format) {
-                        json = com.alibaba.fastjson.JSON.toJSONString(result, propertyFilter, SerializerFeature.PrettyFormat);
-                    } else {
-                        json = com.alibaba.fastjson.JSON.toJSONString(result, propertyFilter);
-                    }
+                    json = com.alibaba.fastjson.JSON.toJSONString(result, propertyFilter, featureArray);
                 } else {
                     SerializeFilter[] filters = new SerializeFilter[2];
                     filters[0] = nameFilter;
                     filters[1] = propertyFilter;
-                    if (format) {
-                        json = com.alibaba.fastjson.JSON.toJSONString(result, filters, SerializerFeature.PrettyFormat);
-                    } else {
-                        json = com.alibaba.fastjson.JSON.toJSONString(result, filters);
-                    }
+                    json = com.alibaba.fastjson.JSON.toJSONString(result, filters, featureArray);
                 }
             }
             return json;
         }
+
+
     },
 
     /**
      * Present the result using {@link Object#toString()}
      */
-    TO_STRING () {
+    TO_STRING() {
         @Override
         public String render(Object result, PropertySpec.MetaInfo filter, ActContext context) {
             if (result instanceof Iterable) {
@@ -244,7 +262,7 @@ public enum CliView {
             List<String> outputFields = repo.outputFields(spec, componentType, context);
             StringBuilder sb = S.builder();
             buildHeaderLine(sb, outputFields, spec.labelMapping());
-            for (Object entity: dataList) {
+            for (Object entity : dataList) {
                 sb.append($.OS.lineSeparator());
                 buildDataLine(sb, entity, outputFields);
             }

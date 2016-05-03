@@ -134,7 +134,7 @@ public class FastJsonPropertyPreFilter implements PropertyPreFilter {
         // if context path is "$.bar.zee" or "$[0].bar.zee" and name is "foo"
         // then path should be "bar.zee.foo"
         String path;
-        FastStr fs = FastStr.of(serializer.getContext().getPath()).append('.').append(name);
+        FastStr fs = FastStr.of(serializer.getContext().toString()).append('.').append(name);
         path = fs.substring(fs.indexOf('.') + 1); // skip the first "."
 
         return !matches(excludes, path, true) && (includes.isEmpty() || matches(includes, path, false));
