@@ -135,6 +135,12 @@ public interface Dao<ID_TYPE, MODEL_TYPE, QUERY_TYPE extends Dao.Query<MODEL_TYP
     void save(MODEL_TYPE entity, String fields, Object ... values) throws IllegalArgumentException;
 
     /**
+     * Batch save entities
+     * @param entities an iterable to get entities to be saved
+     */
+    void save(Iterable<MODEL_TYPE> entities);
+
+    /**
      * Remove the entity specified
      * @param entity the entity to be removed
      */

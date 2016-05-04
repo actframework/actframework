@@ -96,6 +96,7 @@ public class Test {
 	public static class Contact {
 		private String address;
 		private String mobile;
+		private Contact() {}
 
 		public Contact(String address, String mobile) {
 			this.address = address;
