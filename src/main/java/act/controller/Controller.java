@@ -127,10 +127,11 @@ public @interface Controller {
          *
          * @param o the object to be evaluated
          */
-        public static void notFoundIfNull(Object o) {
+        public static <T> T notFoundIfNull(T o) {
             if (null == o) {
                 throw ActNotFound.create();
             }
+            return o;
         }
 
         /**
@@ -143,10 +144,11 @@ public @interface Controller {
          * @param msg  the message template
          * @param args the message argument
          */
-        public static void notFoundIfNull(Object o, String msg, Object... args) {
+        public static <T> T notFoundIfNull(T o, String msg, Object... args) {
             if (null == o) {
                 throw ActNotFound.create(msg, args);
             }
+            return o;
         }
 
         /**

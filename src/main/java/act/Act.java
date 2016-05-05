@@ -1,19 +1,23 @@
 package act;
 
 import act.app.*;
+import act.app.event.AppEventId;
 import act.app.util.NamedPort;
 import act.boot.BootstrapClassLoader;
 import act.boot.PluginClassProvider;
 import act.conf.ActConfLoader;
 import act.conf.ActConfig;
+import act.conf.AppConfig;
 import act.controller.meta.ActionMethodMetaInfo;
 import act.controller.meta.CatchMethodMetaInfo;
 import act.controller.meta.InterceptorMethodMetaInfo;
 import act.db.DbManager;
 import act.event.ActEvent;
 import act.event.ActEventListener;
+import act.event.EventBus;
 import act.handler.builtin.controller.*;
 import act.handler.builtin.controller.impl.ReflectedHandlerInvoker;
+import act.job.AppJobManager;
 import act.metric.MetricPlugin;
 import act.metric.SimpleMetricPlugin;
 import act.plugin.AppServicePluginManager;
@@ -26,6 +30,7 @@ import act.xio.NetworkClient;
 import act.xio.NetworkService;
 import act.xio.undertow.UndertowService;
 import org.osgl.$;
+import org.osgl.cache.CacheService;
 import org.osgl.exception.NotAppliedException;
 import org.osgl.logging.L;
 import org.osgl.logging.Logger;
@@ -293,12 +298,28 @@ public final class Act {
     }
 
     /**
-     * Generate custer unique ID
+     * Generate custer unique ID via {@link App#cuid()}
      *
      * @return a cluster unique ID generated
      */
     public static String cuid() {
-        return idGenerator.genId();
+        return App.instance().cuid();
+    }
+
+    /**
+     * Return the {@link App} instance
+     * @return the App instance
+     */
+    public static App app() {
+        return App.instance();
+    }
+
+    /**
+     * Return the {@link App}'s config
+     * @return the app config
+     */
+    public static AppConfig appConfig() {
+        return App.instance().config();
     }
 
     /**
@@ -309,6 +330,66 @@ public final class Act {
      */
     public static <T> T singleton(Class<T> singletonClass) {
         return App.instance().singleton(singletonClass);
+    }
+
+    /**
+     * Returns the application's {@link App#cache() cache service}
+     * @return the cache service
+     */
+    public static CacheService cache() {
+        return App.instance().cache();
+    }
+
+    /**
+     * Trigger an {@link act.app.event.AppEventId App event}
+     * @param appEvent the app event
+     */
+    public static void emit(AppEventId appEvent) {
+        App.instance().emit(appEvent);
+    }
+
+    /**
+     * Alias of {@link #emit(AppEventId)}
+     * @param appEventId the app event
+     */
+    public static void trigger(AppEventId appEventId) {
+        emit(appEventId);
+    }
+
+    /**
+     * Returns the {@link App app}'s {@link EventBus eventBus}
+     * @return the eventBus
+     */
+    public static EventBus eventBus() {
+        return App.instance().eventBus();
+    }
+
+    /**
+     * Returns the {@link App app}'s {@link AppJobManager}
+     * @return the app's jobManager
+     */
+    public static AppJobManager jobManager() {
+        return App.instance().jobManager();
+    }
+
+    /**
+     * Return an instance with give class name
+     * @param className the class name
+     * @param <T> the generic type of the class
+     * @return the instance of the class
+     */
+    public static <T> T newInstance(String className) {
+        return App.instance().newInstance(className);
+    }
+
+    /**
+     * Return an instance with give class
+     * @param clz the class
+     * @param <T> the generic type of the class
+     * @return the instance of the class
+     */
+    public static <T> T newInstance(Class<T> clz) {
+        return App.instance().newInstance(clz);
     }
 
     private static void loadConfig() {
