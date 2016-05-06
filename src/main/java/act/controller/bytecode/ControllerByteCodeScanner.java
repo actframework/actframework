@@ -236,7 +236,8 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
                 private boolean optional;
                 public FieldAnnotationVisitor (AnnotationVisitor av, boolean optional) {
                     super(ASM5, av);
-                    pathVariable = fieldName;
+                    this.pathVariable = fieldName;
+                    this.optional = optional;
                 }
 
                 @Override
@@ -623,6 +624,11 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
                     if (paths.isEmpty()) {
                         paths.add("");
                     }
+
+                    /*
+                     * Note we need to schedule route registration after all app code scanned because we need the
+                     * parent context information be set on class meta info, which is done after controller scanning
+                     */
                     app().jobManager().on(AppEventId.APP_CODE_SCANNED, new RouteRegister(httpMethods, paths, action, routers, classInfo));
                 }
 
