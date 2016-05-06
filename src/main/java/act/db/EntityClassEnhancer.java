@@ -3,10 +3,8 @@ package act.db;
 import act.app.App;
 import act.app.DbServiceManager;
 import act.asm.AnnotationVisitor;
-import act.asm.Label;
 import act.asm.MethodVisitor;
 import act.asm.Type;
-import act.asm.commons.Method;
 import act.util.AppByteCodeEnhancer;
 import org.osgl.util.S;
 

@@ -8,7 +8,6 @@ import act.app.AppClassLoader;
 import act.app.data.BinderManager;
 import act.app.data.StringValueResolverManager;
 import act.asm.Type;
-import act.cli.meta.FieldOptionAnnoInfo;
 import act.controller.ActionMethodParamAnnotationHandler;
 import act.controller.Controller;
 import act.controller.meta.*;

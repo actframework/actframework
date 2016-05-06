@@ -15,7 +15,6 @@ import act.util.AsmTypes;
 import act.util.ByteCodeVisitor;
 import act.util.GeneralAnnoInfo;
 import act.util.PropertySpec;
-import com.sun.org.apache.xpath.internal.operations.Bool;
 import org.osgl.$;
 import org.osgl.http.H;
 import org.osgl.logging.L;

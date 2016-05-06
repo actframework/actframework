@@ -7,7 +7,7 @@ import act.cli.CliError;
 import act.cli.CommandExecutor;
 import act.cli.meta.*;
 import act.cli.util.CommandLineParser;
-import act.conf.AppConfig;
+import act.sys.meta.SessionVariableAnnoInfo;
 import com.esotericsoftware.reflectasm.MethodAccess;
 import org.osgl.$;
 import org.osgl.util.E;
@@ -15,7 +15,6 @@ import org.osgl.util.IO;
 import org.osgl.util.S;
 
 import java.io.File;
-import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.List;
 
@@ -85,20 +84,17 @@ public class ReflectedCommandExecutor extends CommandExecutor {
         List<FieldOptionAnnoInfo> list = classMetaInfo.fieldOptionAnnoInfoList(app.classLoader());
         for (FieldOptionAnnoInfo fieldOptionAnnoInfo : list) {
             String fieldName = fieldOptionAnnoInfo.fieldName();
-            Object val = optionVal(fieldOptionAnnoInfo.fieldType(), fieldOptionAnnoInfo, argIdx, false, fieldOptionAnnoInfo.readFileContent(), context);
-            Class instClass = inst.getClass();
-            try {
-                Field field = instClass.getField(fieldName);
-                field.setAccessible(true);
-                field.set(val, inst);
-            } catch (Exception e) {
-                try {
-                    Method method = instClass.getMethod("set" + S.capFirst(fieldName), fieldOptionAnnoInfo.fieldType());
-                    method.invoke(inst, val);
-                } catch (Exception e1) {
-                    throw E.unexpected("Cannot find the setter for field %s on class %s", fieldName, instClass);
-                }
+            Object sessionVal = null;
+            SessionVariableAnnoInfo sessionAttributeAnnoInfo = classMetaInfo.fieldSessionVariableAnnoInfo(fieldName);
+            if (null != sessionAttributeAnnoInfo) {
+                String key = sessionAttributeAnnoInfo.name();
+                sessionVal = context.attribute(key);
             }
+            if (null == sessionVal) {
+                sessionVal = context.attribute(fieldName);
+            }
+            Object val = optionVal(fieldOptionAnnoInfo.fieldType(), fieldOptionAnnoInfo, argIdx, false, fieldOptionAnnoInfo.readFileContent(), sessionVal, context);
+            $.setProperty(inst, val, fieldName);
         }
         return inst;
     }
@@ -131,66 +127,70 @@ public class ReflectedCommandExecutor extends CommandExecutor {
             if (param.isContext()) {
                 oa[i] = app.newInstance(paramType);
             } else {
-                oa[i] = optionVal(paramType, param.optionInfo(), argIdx, (paramCount - ctxParamCount) == 1, param.readFileContent(), ctx);
+                Object sessionVal = null;
+                String sessionVarName = param.cliSessionAttributeKey();
+                if (null != sessionVarName) {
+                    sessionVal = ctx.attribute(sessionVarName);
+                }
+                if (null == sessionVal) {
+                    sessionVal = ctx.attribute(param.name());
+                }
+                oa[i] = optionVal(paramType, param.optionInfo(), argIdx, (paramCount - ctxParamCount) == 1, param.readFileContent(), sessionVal, ctx);
             }
         }
         return oa;
     }
 
-    private Object optionVal(Class<?> optionType, OptionAnnoInfoBase option, $.Var<Integer> argIdx, boolean useArgumentIfOptionNotFound, boolean readFileContent, CliContext ctx) {
+    private Object optionVal(Class<?> optionType, OptionAnnoInfoBase option, $.Var<Integer> argIdx,
+                             boolean useArgumentIfOptionNotFound, boolean readFileContent, Object cliSessionAttributeVal, CliContext ctx) {
         StringValueResolverManager resolverManager = app.resolverManager();
         CommandLineParser parser = ctx.commandLine();
         List<String> args = ctx.arguments();
-        if (CliContext.class.equals(optionType)) {
-            return ctx;
-        } else if (App.class.equals(optionType)) {
-            return ctx.app();
-        } else if (AppConfig.class.equals(optionType)) {
-            return ctx.app().config();
+        String argStr;
+        if (null == option) {
+            int i = argIdx.get();
+            argStr = args.get(i);
+            argIdx.set(i + 1);
         } else {
-            String argStr;
-            if (null == option) {
-                int i = argIdx.get();
-                argStr = args.get(i);
-                argIdx.set(i + 1);
-            } else {
-                argStr = parser.getString(option.lead1(), option.lead2());
-                if (S.blank(argStr)) {
-                    if (useArgumentIfOptionNotFound) {
-                        // try to use the single param as the option
-                        List<String> args0 = parser.arguments();
-                        if (args0.size() == 1) {
-                            return resolverManager.resolve(args0.get(0), optionType);
-                        }
+            argStr = parser.getString(option.lead1(), option.lead2());
+            if (S.blank(argStr)) {
+                if (useArgumentIfOptionNotFound) {
+                    // try to use the single param as the option
+                    List<String> args0 = parser.arguments();
+                    if (args0.size() == 1) {
+                        return resolverManager.resolve(args0.get(0), optionType);
                     }
-                    if (option.required()) {
-                        throw new CliError("Missing required option [%s]", option);
-                    }
+                }
+                if (null != cliSessionAttributeVal) {
+                    return cliSessionAttributeVal;
+                }
+                if (option.required()) {
+                    throw new CliError("Missing required option [%s]", option);
                 }
             }
-            if (File.class.isAssignableFrom(optionType)) {
-                if (argStr.startsWith(File.separator) || argStr.startsWith("/")) {
-                    return new File(argStr);
-                } else {
-                    return new File(ctx.curDir(), argStr);
-                }
-            } else if (readFileContent) {
-                File file;
-                if (argStr.startsWith(File.separator) || argStr.startsWith("/")) {
-                    file = new File(argStr).getAbsoluteFile();
-                } else {
-                    file = new File(ctx.curDir(), argStr);
-                }
-                if (file.exists()) {
-                    if (List.class.isAssignableFrom(optionType)) {
-                        return IO.readLines(file);
-                    } else {
-                        argStr = IO.readContentAsString(file);
-                    }
-                }
-            }
-            return resolverManager.resolve(argStr, optionType);
         }
+        if (File.class.isAssignableFrom(optionType)) {
+            if (argStr.startsWith(File.separator) || argStr.startsWith("/")) {
+                return new File(argStr);
+            } else {
+                return new File(ctx.curDir(), argStr);
+            }
+        } else if (readFileContent) {
+            File file;
+            if (argStr.startsWith(File.separator) || argStr.startsWith("/")) {
+                file = new File(argStr).getAbsoluteFile();
+            } else {
+                file = new File(ctx.curDir(), argStr);
+            }
+            if (file.exists()) {
+                if (List.class.isAssignableFrom(optionType)) {
+                    return IO.readLines(file);
+                } else {
+                    argStr = IO.readContentAsString(file);
+                }
+            }
+        }
+        return resolverManager.resolve(argStr, optionType);
     }
 
     private Object invoke(Object commander, Object[] params) {

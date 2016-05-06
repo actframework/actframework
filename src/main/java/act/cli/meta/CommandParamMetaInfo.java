@@ -4,6 +4,7 @@ import act.asm.Type;
 import act.util.AsmTypes;
 import act.util.DestroyableBase;
 import org.osgl.$;
+import org.osgl.util.S;
 
 /**
  * Stores Command parameter meta info
@@ -14,6 +15,7 @@ public class CommandParamMetaInfo extends DestroyableBase {
     private boolean readFileContent;
     private Type componentType;
     private boolean context;
+    private String cliSessionAttributeKey;
     private ParamOptionAnnoInfo optionInfo;
 
     public CommandParamMetaInfo name(String name) {
@@ -64,6 +66,18 @@ public class CommandParamMetaInfo extends DestroyableBase {
 
     public ParamOptionAnnoInfo optionInfo() {
         return optionInfo;
+    }
+
+    public CommandParamMetaInfo attributeKey(String cliSessionAttributeKey) {
+        if (S.blank(cliSessionAttributeKey)) {
+            cliSessionAttributeKey = name;
+        }
+        this.cliSessionAttributeKey = cliSessionAttributeKey;
+        return this;
+    }
+
+    public String cliSessionAttributeKey() {
+        return cliSessionAttributeKey;
     }
 
     public void setReadFileContent() {

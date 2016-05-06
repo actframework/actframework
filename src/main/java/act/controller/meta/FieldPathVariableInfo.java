@@ -2,7 +2,6 @@ package act.controller.meta;
 
 import act.app.App;
 import act.asm.Type;
-import act.cli.meta.OptionAnnoInfoBase;
 import org.osgl.$;
 
 /**

@@ -7,6 +7,7 @@ import act.asm.*;
 import act.cli.CliDispatcher;
 import act.cli.meta.*;
 import act.cli.view.CliView;
+import act.sys.meta.SessionVariableAnnoInfo;
 import act.util.AsmTypes;
 import act.util.ByteCodeVisitor;
 import act.util.PropertySpec;
@@ -136,8 +137,36 @@ public class CommanderByteCodeScanner extends AppByteCodeScannerBase {
                 readFileContent = !isOptional && !isRequired && $.eq(type, AsmTypes.READ_FILE_CONTENT.asmType());
                 if (isOptional || isRequired) {
                     return new FieldOptionAnnotationVisitor(av, isOptional, fieldName, this.type);
+                } else if ($.eq(type, AsmTypes.CLI_SESSION_ATTRIBUTE.asmType())) {
+                    return new FieldCliSessionVariableAnnotationVisitor(av);
                 }
                 return av;
+            }
+
+            private class FieldCliSessionVariableAnnotationVisitor extends AnnotationVisitor implements Opcodes {
+                private String sessionVariableName = fieldName;
+                public FieldCliSessionVariableAnnotationVisitor(AnnotationVisitor av) {
+                    super(ASM5, av);
+                }
+
+                @Override
+                public void visit(String name, Object value) {
+                    super.visit(name, value);
+                    if ("value".equals(name)) {
+                        String key = S.string(value);
+                        if (S.blank(key)) {
+                            sessionVariableName = fieldName;
+                        } else {
+                            sessionVariableName = key;
+                        }
+                    }
+                }
+
+                @Override
+                public void visitEnd() {
+                    super.visitEnd();
+                    classInfo.addFieldSessionVariableAnnotInfo(fieldName, new SessionVariableAnnoInfo(sessionVariableName));
+                }
             }
 
             private class FieldOptionAnnotationVisitor extends OptionAnnotationVisitorBase implements Opcodes {
@@ -173,6 +202,7 @@ public class CommanderByteCodeScanner extends AppByteCodeScannerBase {
             private boolean requireScan;
             private CommandMethodMetaInfo methodInfo;
             private Map<Integer, ParamOptionAnnoInfo> optionAnnoInfoMap = C.newMap();
+            private Map<Integer, String> cliSessionAttributeMap = C.newMap();
             private BitSet contextInfo = new BitSet();
             private boolean isStatic;
             private Map<Integer, Boolean> readFileContentFlags = C.newMap();
@@ -314,7 +344,7 @@ public class CommanderByteCodeScanner extends AppByteCodeScannerBase {
             }
 
             @Override
-            public AnnotationVisitor visitParameterAnnotation(int paramIndex, String desc, boolean visible) {
+            public AnnotationVisitor visitParameterAnnotation(final int paramIndex, String desc, boolean visible) {
                 AnnotationVisitor av = super.visitParameterAnnotation(paramIndex, desc, visible);
                 Type type = Type.getType(desc);
                 boolean isOptional = $.eq(type, AsmTypes.OPTIONAL.asmType());
@@ -331,6 +361,23 @@ public class CommanderByteCodeScanner extends AppByteCodeScannerBase {
                 } else if ($.eq(type, AsmTypes.READ_FILE_CONTENT.asmType())) {
                     readFileContentFlags.put(paramIndex, true);
                     return av;
+                } else if ($.eq(type, AsmTypes.CLI_SESSION_ATTRIBUTE.asmType())) {
+                    return new AnnotationVisitor(ASM5, av) {
+                        private String attributeKey = "";
+
+                        @Override
+                        public void visit(String name, Object value) {
+                            if ("value".equals(name)) {
+                                attributeKey = S.string(value);
+                            }
+                        }
+
+                        @Override
+                        public void visitEnd() {
+                            cliSessionAttributeMap.put(paramIndex, attributeKey);
+                            super.visitEnd();
+                        }
+                    };
                 } else {
                     return av;
                 }
@@ -346,10 +393,10 @@ public class CommanderByteCodeScanner extends AppByteCodeScannerBase {
                 Type[] argTypes = Type.getArgumentTypes(desc);
                 for (int i = 0; i < argTypes.length; ++i) {
                     CommandParamMetaInfo param = methodInfo.param(i);
-                    ParamOptionAnnoInfo option = optionAnnoInfoMap.get(i);
                     if (contextInfo.get(i)) {
                         param.setContext();
                     }
+                    ParamOptionAnnoInfo option = optionAnnoInfoMap.get(i);
                     if (null != option) {
                         param.optionInfo(option);
                         methodInfo.addLead(option.lead1());
@@ -357,6 +404,10 @@ public class CommanderByteCodeScanner extends AppByteCodeScannerBase {
                     }
                     if (null != readFileContentFlags.get(i)) {
                         param.setReadFileContent();
+                    }
+                    String attributeKey = cliSessionAttributeMap.get(i);
+                    if (null != attributeKey) {
+
                     }
                 }
                 super.visitEnd();

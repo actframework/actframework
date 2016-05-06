@@ -7,7 +7,6 @@ import act.app.App;
 import act.app.AppHolder;
 import act.app.conf.AppConfigurator;
 import act.app.util.NamedPort;
-import act.db.DB;
 import act.db.util._SequenceNumberGenerator;
 import act.handler.UnknownHttpMethodProcessor;
 import act.util.*;

@@ -2,6 +2,7 @@ package act.cli.meta;
 
 import act.app.AppClassLoader;
 import act.asm.Type;
+import act.sys.meta.SessionVariableAnnoInfo;
 import act.util.DestroyableBase;
 import org.osgl.util.C;
 import org.osgl.util.S;
@@ -28,6 +29,7 @@ public class CommanderClassMetaInfo extends DestroyableBase {
     private boolean isAbstract = false;
     private C.List<CommandMethodMetaInfo> commands = C.newList();
     private C.Map<String, FieldOptionAnnoInfo> fieldOptionAnnoInfoMap = C.newMap();
+    private C.Map<String, SessionVariableAnnoInfo> fieldSessionVariableAnnoInfoMap = C.newMap();
     // commandLookup index command method by method name
     private C.Map<String, CommandMethodMetaInfo> commandLookup = null;
     private CommanderClassMetaInfo parent;
@@ -76,8 +78,25 @@ public class CommanderClassMetaInfo extends DestroyableBase {
         return this;
     }
 
+    public CommanderClassMetaInfo addFieldSessionVariableAnnotInfo(String fieldName, SessionVariableAnnoInfo info) {
+        fieldSessionVariableAnnoInfoMap.put(fieldName, info);
+        return this;
+    }
+
     public FieldOptionAnnoInfo fieldOptionAnnoInfo(String name) {
-        return fieldOptionAnnoInfoMap.get(name);
+        FieldOptionAnnoInfo info = fieldOptionAnnoInfoMap.get(name);
+        if (null == info && null != parent) {
+            info = parent.fieldOptionAnnoInfo(name);
+        }
+        return info;
+    }
+
+    public SessionVariableAnnoInfo fieldSessionVariableAnnoInfo(String name) {
+        SessionVariableAnnoInfo info = fieldSessionVariableAnnoInfoMap.get(name);
+        if (null == info && null != parent) {
+            info = parent.fieldSessionVariableAnnoInfo(name);
+        }
+        return info;
     }
 
     public List<FieldOptionAnnoInfo> fieldOptionAnnoInfoList(AppClassLoader appClassLoader) {

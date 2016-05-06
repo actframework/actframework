@@ -2,9 +2,7 @@ package act.app;
 
 import act.cli.Command;
 import act.cli.Required;
-import act.conf.AppConfig;
 import act.data.JodaDateTimeCodec;
-import act.data.JodaLocalTimeCodec;
 import act.di.Context;
 import act.util.PropertySpec;
 import org.joda.time.DateTime;

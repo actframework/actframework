@@ -2,7 +2,6 @@ package act.db.util;
 
 import act.app.DbServiceManager;
 import act.conf.AppConfig;
-import act.util.IdGenerator;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;

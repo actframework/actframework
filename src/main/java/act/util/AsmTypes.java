@@ -10,6 +10,7 @@ import act.conf.AppConfig;
 import act.di.Context;
 import act.di.OptionalPathVariable;
 import act.di.PathVariable;
+import act.di.SessionVariable;
 import act.mail.MailerContext;
 import org.osgl.mvc.annotation.Bind;
 import org.osgl.mvc.annotation.Param;
@@ -34,6 +35,7 @@ public enum AsmTypes implements Opcodes {
     public static AsmType<Param> PARAM = new AsmType<Param>(Param.class);
     public static AsmType<PathVariable> PATH_VARIABLE = new AsmType<PathVariable>(PathVariable.class);
     public static AsmType<OptionalPathVariable> OPTIONAL_PATH_VARIABLE = new AsmType<OptionalPathVariable>(OptionalPathVariable.class);
+    public static AsmType<SessionVariable> CLI_SESSION_ATTRIBUTE = new AsmType<SessionVariable>(SessionVariable.class);
     public static AsmType<Bind> BIND = new AsmType<Bind>(Bind.class);
     public static AsmType<Context> CONTEXT = new AsmType<Context>(Context.class);
     public static AsmType<Result> RESULT = new AsmType<Result>(Result.class);

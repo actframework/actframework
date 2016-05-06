@@ -1,6 +1,5 @@
 package act.app;
 
-import act.Act;
 import act.Destroyable;
 import act.cli.CliDispatcher;
 import act.cli.CommandNameCompleter;
@@ -63,6 +62,10 @@ public class CliSession extends DestroyableBase implements Runnable {
 
     void setAttribute(String key, Object val) {
         attributes.put(key, val);
+    }
+
+    void removeAttribute(String key) {
+        attributes.remove(key);
     }
 
     <T> T getAttribute(String key) {

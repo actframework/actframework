@@ -98,8 +98,9 @@ public class CliContext extends ActContext.ActContextBase<CliContext> implements
      * @param key the key
      * @param val the value
      */
-    public void attribute(String key, Object val) {
+    public CliContext attribute(String key, Object val) {
         session.setAttribute(key, val);
+        return this;
     }
 
     /**
@@ -111,6 +112,11 @@ public class CliContext extends ActContext.ActContextBase<CliContext> implements
      */
     public <T> T attribute(String key) {
         return session.getAttribute(key);
+    }
+
+    public CliContext removeAttribute(String key) {
+        session.removeAttribute(key);
+        return this;
     }
 
     /**

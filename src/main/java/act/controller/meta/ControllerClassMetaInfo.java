@@ -3,7 +3,6 @@ package act.controller.meta;
 import act.app.App;
 import act.app.AppClassLoader;
 import act.asm.Type;
-import act.cli.meta.FieldOptionAnnoInfo;
 import act.handler.builtin.controller.ControllerAction;
 import act.handler.builtin.controller.Handler;
 import act.util.DestroyableBase;
