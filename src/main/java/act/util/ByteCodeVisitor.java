@@ -98,6 +98,10 @@ public class ByteCodeVisitor extends ClassVisitor implements Opcodes {
     public static boolean isPrivate(int access) {
         return (ACC_PRIVATE & access) > 0;
     }
+
+    public static boolean isStatic(int access) {
+        return (ACC_STATIC & access) > 0;
+    }
     public static boolean isAbstract(int access) {
         return (ACC_ABSTRACT & access) > 0;
     }

@@ -3,6 +3,7 @@ package act.controller.bytecode;
 import act.ActComponent;
 import act.app.App;
 import act.app.AppByteCodeScannerBase;
+import act.app.event.AppEventId;
 import act.asm.*;
 import act.asm.signature.SignatureReader;
 import act.asm.signature.SignatureVisitor;
@@ -14,6 +15,7 @@ import act.util.AsmTypes;
 import act.util.ByteCodeVisitor;
 import act.util.GeneralAnnoInfo;
 import act.util.PropertySpec;
+import com.sun.org.apache.xpath.internal.operations.Bool;
 import org.osgl.$;
 import org.osgl.http.H;
 import org.osgl.logging.L;
@@ -98,10 +100,14 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
 
         @Override
         public FieldVisitor visitField(int access, String name, String desc, String signature, Object value) {
-            if (classInfo.isController() && AsmTypes.ACTION_CONTEXT_DESC.equals(desc)) {
-                classInfo.ctxField(name, isPrivate(access));
+            FieldVisitor fv = super.visitField(access, name, desc, signature, value);
+            if (classInfo.isController()) {
+                if (!isStatic(access)) {
+                    Type type = Type.getType(desc);
+                    return new ControllerFieldVisitor(fv, name, type);
+                }
             }
-            return super.visitField(access, name, desc, signature, value);
+            return fv;
         }
 
         @Override
@@ -196,6 +202,60 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
                 }
                 return av;
             }
+        }
+
+        private class ControllerFieldVisitor extends FieldVisitor implements Opcodes {
+            private String fieldName;
+            private Type type;
+
+            public ControllerFieldVisitor(FieldVisitor fv, String fieldName, Type type) {
+                super(ASM5, fv);
+                this.fieldName = fieldName;
+                this.type = type;
+            }
+
+            @Override
+            public void visitAttribute(Attribute attr) {
+                super.visitAttribute(attr);
+            }
+
+            @Override
+            public AnnotationVisitor visitAnnotation(String desc, boolean visible) {
+                AnnotationVisitor av = super.visitAnnotation(desc, visible);
+                Type type = Type.getType(desc);
+                if ($.eq(type, AsmTypes.PATH_VARIABLE.asmType())) {
+                    return new FieldAnnotationVisitor(av, false);
+                } else if ($.eq(type, AsmTypes.OPTIONAL_PATH_VARIABLE.asmType())) {
+                    return new FieldAnnotationVisitor(av, true);
+                }
+                return av;
+            }
+
+            private class FieldAnnotationVisitor extends AnnotationVisitor implements Opcodes {
+                private String pathVariable;
+                private boolean optional;
+                public FieldAnnotationVisitor (AnnotationVisitor av, boolean optional) {
+                    super(ASM5, av);
+                    pathVariable = fieldName;
+                }
+
+                @Override
+                public void visit(String name, Object value) {
+                    if ("value".equals(name)) {
+                        pathVariable = S.string(value);
+                    } else if ("optional".equals(name)) {
+                        if (value instanceof Boolean) {
+                            optional = (Boolean) value;
+                        }
+                    }
+                    super.visit(name, value);
+                }
+
+                public void visitEnd() {
+                    classInfo.addFieldPathVariableInfo(new FieldPathVariableInfo(fieldName, type, pathVariable, optional));
+                }
+            }
+
         }
 
         private class ActionMethodVisitor extends MethodVisitor implements Opcodes {
@@ -298,7 +358,7 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
             public AnnotationVisitor visitParameterAnnotation(int parameter, String desc, boolean visible) {
                 AnnotationVisitor av = super.visitParameterAnnotation(parameter, desc, visible);
                 Type type = Type.getType(desc);
-                if ($.eq(type, AsmTypes.PARAM.asmType())) {
+                if ($.eq(type, AsmTypes.PARAM.asmType()) || $.eq(type, AsmTypes.PATH_VARIABLE.asmType())) {
                     return new ParamAnnotationVisitor(av, parameter);
                 } else if ($.eq(type, AsmTypes.BIND.asmType())) {
                     return new BindAnnotationVisitor(av, parameter);
@@ -546,8 +606,8 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
                         httpMethods.addAll(H.Method.actionMethods());
                     }
                     StringBuilder sb = S.builder(classInfo.className().replace('/', '.')).append(".").append(methodName);
-                    String action = sb.toString();
-                    List<Router> routers = C.newList();
+                    final String action = sb.toString();
+                    final List<Router> routers = C.newList();
                     if (null == ports || ports.length == 0) {
                         routers.add(app().router());
                     } else {
@@ -563,26 +623,9 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
                     if (paths.isEmpty()) {
                         paths.add("");
                     }
-                    for (Router r: routers) {
-                        for (String actionPath : paths) {
-                            String ctxPath = classInfo.contextPath();
-                            if (!(S.blank(ctxPath) || "/".equals(ctxPath))) {
-                                if (ctxPath.endsWith("/")) {
-                                    ctxPath = ctxPath.substring(0, ctxPath.length() - 1);
-                                }
-                                sb = new StringBuilder(ctxPath);
-                                if (!actionPath.startsWith("/")) {
-                                    sb.append("/");
-                                }
-                                sb.append(actionPath);
-                                actionPath = sb.toString();
-                            }
-                            for (H.Method m : httpMethods) {
-                                r.addMapping(m, actionPath, action, RouteSource.ACTION_ANNOTATION);
-                            }
-                        }
-                    }
+                    app().jobManager().on(AppEventId.APP_CODE_SCANNED, new RouteRegister(httpMethods, paths, action, routers, classInfo));
                 }
+
             }
 
             private abstract class ParamAnnotationVisitorBase<T extends ParamAnnoInfoTrait>
@@ -681,4 +724,44 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
         }
     }
 
+    private static class RouteRegister implements Runnable {
+        List<Router> routers;
+        List<String> paths;
+        String action;
+        ControllerClassMetaInfo classInfo;
+        List<H.Method> httpMethods;
+
+        RouteRegister(List<H.Method> methods,  List<String> paths,  String action, List<Router> routers, ControllerClassMetaInfo classInfo) {
+            this.routers = routers;
+            this.paths = paths;
+            this.action = action;
+            this.classInfo = classInfo;
+            this.httpMethods = methods;
+        }
+
+        @Override
+        public void run() {
+            for (Router r: routers) {
+                for (String actionPath : paths) {
+                    if (!actionPath.startsWith("/")) {
+                        String ctxPath = classInfo.contextPath();
+                        if (!(S.blank(ctxPath) || "/".equals(ctxPath))) {
+                            if (ctxPath.endsWith("/")) {
+                                ctxPath = ctxPath.substring(0, ctxPath.length() - 1);
+                            }
+                            StringBuilder sb = new StringBuilder(ctxPath);
+                            if (!actionPath.startsWith("/")) {
+                                sb.append("/");
+                            }
+                            sb.append(actionPath);
+                            actionPath = sb.toString();
+                        }
+                    }
+                    for (H.Method m : httpMethods) {
+                        r.addMapping(m, actionPath, action, RouteSource.ACTION_ANNOTATION);
+                    }
+                }
+            }
+        }
+    }
 }

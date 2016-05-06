@@ -3,6 +3,7 @@ package act.controller.meta;
 import act.app.App;
 import act.app.AppClassLoader;
 import act.asm.Type;
+import act.cli.meta.FieldOptionAnnoInfo;
 import act.handler.builtin.controller.ControllerAction;
 import act.handler.builtin.controller.Handler;
 import act.util.DestroyableBase;
@@ -38,6 +39,7 @@ public final class ControllerClassMetaInfo extends DestroyableBase {
     private C.Map<String, HandlerMethodMetaInfo> handlerLookup = null;
     private GroupInterceptorMetaInfo interceptors = new GroupInterceptorMetaInfo();
     private ControllerClassMetaInfo parent;
+    private C.Map<String, FieldPathVariableInfo> fieldPathVariableInfoMap = C.newMap();
     private boolean isController;
     private String contextPath;
 
@@ -88,6 +90,25 @@ public final class ControllerClassMetaInfo extends DestroyableBase {
     public List<String> withList() {
         return C.list(withList);
     }
+
+    public ControllerClassMetaInfo addFieldPathVariableInfo(FieldPathVariableInfo info) {
+        fieldPathVariableInfoMap.put(info.fieldName(), info);
+        return this;
+    }
+
+    public FieldPathVariableInfo fieldPathVariableInfo(String name) {
+        return fieldPathVariableInfoMap.get(name);
+    }
+
+    public List<FieldPathVariableInfo> fieldPathVariableInfos() {
+        C.List<FieldPathVariableInfo> list = C.list(fieldPathVariableInfoMap.values());
+        ControllerClassMetaInfo p = parent;
+        if (null != p) {
+            list = list.append(p.fieldPathVariableInfos());
+        }
+        return list;
+    }
+
 
     public ControllerClassMetaInfo setAbstract() {
         isAbstract = true;
@@ -268,6 +289,9 @@ public final class ControllerClassMetaInfo extends DestroyableBase {
     }
 
     public String contextPath() {
+        if (null != parent && (S.blank(contextPath) || "/".equals(contextPath))) {
+            return parent.contextPath();
+        }
         return contextPath;
     }
 

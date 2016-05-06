@@ -8,6 +8,7 @@ import act.app.AppClassLoader;
 import act.app.data.BinderManager;
 import act.app.data.StringValueResolverManager;
 import act.asm.Type;
+import act.cli.meta.FieldOptionAnnoInfo;
 import act.controller.ActionMethodParamAnnotationHandler;
 import act.controller.Controller;
 import act.controller.meta.*;
@@ -22,6 +23,7 @@ import com.esotericsoftware.reflectasm.FieldAccess;
 import com.esotericsoftware.reflectasm.MethodAccess;
 import org.osgl.$;
 import org.osgl.http.H;
+import org.osgl.mvc.result.BadRequest;
 import org.osgl.mvc.result.NotFound;
 import org.osgl.mvc.result.Result;
 import org.osgl.mvc.util.Binder;
@@ -178,11 +180,30 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
     }
 
     private Object controllerInstance(ActionContext context) {
-        String controller = controllerClass.getName();
-        Object inst = context.__controllerInstance(controller);
+        String controllerName = controllerClass.getName();
+        Object inst = context.__controllerInstance(controllerName);
         if (null == inst) {
             inst = context.newInstance(controllerClass);
-            context.__controllerInstance(controller, inst);
+            context.__controllerInstance(controllerName, inst);
+        }
+        List<FieldPathVariableInfo> list = controller.fieldPathVariableInfos();
+        for (FieldPathVariableInfo fieldPathVariableInfo : list) {
+            String fieldName = fieldPathVariableInfo.fieldName();
+            String pathVariable = fieldPathVariableInfo.pathVariable();
+            String pathVariableVal = context.paramVal(pathVariable);
+            boolean optional = fieldPathVariableInfo.optional();
+            if (null == pathVariableVal) {
+                if (optional) {
+                    continue;
+                }
+                throw new BadRequest("Cannot bind path variable %s", pathVariable);
+            }
+            Class<?> fieldType = fieldPathVariableInfo.fieldType();
+            Object fieldVal = app.resolverManager().resolve(pathVariableVal, fieldType);
+            if (null == fieldVal) {
+                throw new BindException("Cannot resolve path variable: %s into %s", pathVariable, fieldType);
+            }
+            $.setProperty(inst, pathVariableVal, fieldName);
         }
         return inst;
     }

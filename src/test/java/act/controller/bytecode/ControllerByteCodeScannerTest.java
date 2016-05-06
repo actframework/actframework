@@ -154,13 +154,6 @@ public class ControllerByteCodeScannerTest extends TestBase {
     }
 
     @Test
-    public void testWithAppContextController() throws Exception {
-        scan(WithAppContext.class);
-        verifyWithAppContextNoReturnNoParam();
-        verifyWithAppContextStaticNoReturnNoParam();
-    }
-
-    @Test
     public void testInheritedInterceptor() throws Exception {
         scan(ControllerWithInheritedInterceptor.class);
         assertNotNull(infoSrc.controllerMetaInfo(FilterA.class.getName()));
