@@ -7,6 +7,7 @@ import org.osgl.util.C;
 import org.osgl.util.E;
 import org.osgl.util.S;
 
+import java.io.*;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -18,17 +19,25 @@ import java.util.concurrent.atomic.AtomicLong;
 /**
  * A simple implementation of {@link MetricStore}
  */
-public class SimpleMetricStore implements MetricStore {
+public class SimpleMetricStore implements MetricStore, Serializable {
 
-    private static final Logger defLogger = LogManager.get("metric.default");
+    private transient static final Logger defLogger = LogManager.get("metric.default");
 
     private ConcurrentMap<String, AtomicLong> counters = new ConcurrentHashMap<String, AtomicLong>();
     private ConcurrentMap<String, AtomicLong> timers = new ConcurrentHashMap<String, AtomicLong>();
 
-    private SimpleMetricPlugin plugin;
+    private transient SimpleMetricPlugin plugin;
+
+    private transient FileSynchronizer synchronizer;
 
     public SimpleMetricStore(SimpleMetricPlugin plugin) {
         this.plugin = $.notNull(plugin);
+        synchronizer = new FileSynchronizer();
+        SimpleMetricStore persisted = synchronizer.read();
+        if (null != persisted) {
+            counters = persisted.counters;
+            timers = persisted.timers;
+        }
     }
 
     @Override
@@ -106,6 +115,10 @@ public class SimpleMetricStore implements MetricStore {
         return C.list(set);
     }
 
+    public void takeSnapshot() {
+        synchronizer.write(this);
+    }
+
     private Logger logger(String name) {
         Logger logger = plugin.logger(name);
         return null == logger ? defLogger : logger;
@@ -113,6 +126,45 @@ public class SimpleMetricStore implements MetricStore {
 
     private String getParent(String name) {
         return S.beforeLast(name, ":");
+    }
+
+    private static class FileSynchronizer {
+        private static final String FILE_NAME = "_sys_metric.do.not.delete";
+        private boolean ioError = false;
+
+        void write(SimpleMetricStore store) {
+            if (ioError) {
+                return;
+            }
+            try {
+                File file = new File(FILE_NAME);
+                ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(file));
+                oos.writeObject(store);
+            } catch (IOException e) {
+                ioError = true;
+                throw E.ioException(e);
+            }
+        }
+
+        SimpleMetricStore read() {
+            File file = new File(FILE_NAME);
+            if (file.exists() && file.canRead()) {
+                try {
+                    ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file));
+                    SimpleMetricStore store = $.cast(ois.readObject());
+                    return store;
+                } catch (IOException e) {
+                    ioError = true;
+                    throw E.ioException(e);
+                } catch (ClassNotFoundException e) {
+                    throw E.unexpected(e);
+                }
+            } else {
+                return null;
+            }
+        }
+
+
     }
 
 }

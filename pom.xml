@@ -281,6 +281,35 @@
     </dependency>
 
     <dependency>
+      <groupId>com.atlassian.commonmark</groupId>
+      <artifactId>commonmark</artifactId>
+      <version>0.5.0</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.atlassian.commonmark</groupId>
+      <artifactId>commonmark-ext-autolink</artifactId>
+      <version>0.5.0</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.atlassian.commonmark</groupId>
+      <artifactId>commonmark-ext-gfm-strikethrough</artifactId>
+      <version>0.5.0</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.atlassian.commonmark</groupId>
+      <artifactId>commonmark-ext-gfm-tables</artifactId>
+      <version>0.5.0</version>
+    </dependency>
+    <dependency>
+      <groupId>com.atlassian.commonmark</groupId>
+      <artifactId>commonmark-ext-yaml-front-matter</artifactId>
+      <version>0.5.0</version>
+    </dependency>
+
+    <dependency>
       <groupId>org.osgl</groupId>
       <artifactId>osgl-mvc</artifactId>
       <version>0.4.2-SNAPSHOT</version>
@@ -349,7 +378,7 @@
             <version>2.9</version>
             <configuration>
               <stylesheetfile>src/etc/javadoc.css</stylesheetfile>
-              <quiet />
+              <quiet/>
             </configuration>
             <executions>
               <execution>
