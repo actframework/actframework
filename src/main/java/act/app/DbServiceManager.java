@@ -37,7 +37,7 @@ public class DbServiceManager extends AppServiceBase<DbServiceManager> implement
         super(app, true);
         initServices(app.config());
         configureSequenceGenerator(app);
-        app.eventBus().bind(AppEventId.DEPENDENCY_INJECTOR_PROVISIONED, new AppEventListenerBase() {
+        app.eventBus().bind(AppEventId.SINGLETON_PROVISIONED, new AppEventListenerBase() {
             @Override
             public void on(EventObject event) throws Exception {
                 ClassNode node = app.classLoader().classInfoRepository().node(Dao.class.getName());
@@ -66,7 +66,6 @@ public class DbServiceManager extends AppServiceBase<DbServiceManager> implement
                             DbService dbService = dbService(svcId);
                             E.invalidConfigurationIf(null == dbService, "cannot find db service by id: %s", svcId);
                             dao = dbService.newDaoInstance(daoType);
-                            app.registerSingleton(dao);
                             modelDaoMap.put(modelType, dao);
                         } catch (Exception e) {
                             logger.warn(e, "error loading DAO: %s", daoType);
