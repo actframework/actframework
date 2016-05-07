@@ -195,7 +195,7 @@ public enum CliView {
                 // Note: we can't check DisableFastJsonCircularReferenceDetect here because if
                 // that option is set, then FastJson will skip the JsonSerializer.context setting
                 // and there is property filter mechanism will break
-                MappedFastJsonNameFilter nameFilter = new MappedFastJsonNameFilter(spec.labelMapping());
+                MappedFastJsonNameFilter nameFilter = new MappedFastJsonNameFilter(spec.labelMapping(context));
 
                 SerializerFeature[] featureArray = new SerializerFeature[featureList.size()];
                 featureArray = featureList.toArray(featureArray);
