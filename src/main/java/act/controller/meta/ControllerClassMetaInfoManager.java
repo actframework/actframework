@@ -43,6 +43,7 @@ public class ControllerClassMetaInfoManager extends DestroyableBase {
                     List<ControllerClassMetaInfo> subTypes = subTypeInfo.get(superType);
                     if (null == subTypes) {
                         subTypes = C.newList();
+                        subTypeInfo.put(superType, subTypes);
                     }
                     subTypes.add(metaInfo);
                 }

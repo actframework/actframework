@@ -1,6 +1,7 @@
 package act.db.util;
 
 import act.cli.Command;
+import act.cli.Required;
 import org.osgl.$;
 import org.osgl.util.S;
 
@@ -28,12 +29,16 @@ public class SequenceNumberGenerator {
     public static class SequenceAdmin {
 
         @Command(name = "act.seq.next", help = "display the next number in the sequence specified")
-        public long generateNext(String sequence) {
+        public long generateNext(
+                @Required("specify sequence name") String sequence
+        ) {
             return next(sequence);
         }
 
         @Command(name = "act.seq.get", help = "display the current number in the sequence specified")
-        public long getCurrent(String sequence) {
+        public long getCurrent(
+                @Required("Specify sequence name") String sequence
+        ) {
             return get(sequence);
         }
 
