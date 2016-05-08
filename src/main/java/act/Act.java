@@ -106,8 +106,6 @@ public final class Act {
     }
 
     public static final String VERSION = Version.fullVersion();
-    public static String APP_NAME;
-    public static String APP_VERSION;
     private static Logger logger = L.get(Act.class);
     private static ActConfig conf;
     private static Mode mode = Mode.PROD;
@@ -122,7 +120,6 @@ public final class Act {
     private static DbManager dbManager;
     private static GenericPluginManager pluginManager;
     private static AppServicePluginManager appPluginManager;
-    private static IdGenerator idGenerator = new IdGenerator();
     private static Map<String, Plugin> genericPluginRegistry = C.newMap();
     private static Map<Class<? extends ActEvent>, List<ActEventListener>> listeners = C.newMap();
 
@@ -221,9 +218,12 @@ public final class Act {
         start(true, appName, appVersion);
     }
 
+    public static void shutdownApp(App app) {
+        shutdownNetworkLayer();
+        app.shutdown();
+    }
+
     private static void start(boolean singleAppServer, String appName, String appVersion) {
-        APP_NAME = appName;
-        APP_VERSION = appVersion;
         Banner.print(appName, appVersion);
         loadConfig();
         initMetricPlugin();
@@ -460,8 +460,16 @@ public final class Act {
     }
 
     private static void startNetworkLayer() {
+        if (network.isDestroyed()) {
+            return;
+        }
         logger.info("starting network layer ...");
         network.start();
+    }
+
+    private static void shutdownNetworkLayer() {
+        logger.info("shutting down network layer ...");
+        network.destroy();
     }
 
     public enum F {

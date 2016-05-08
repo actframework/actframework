@@ -288,8 +288,20 @@ public final class ControllerClassMetaInfo extends DestroyableBase {
     }
 
     public String contextPath() {
-        if (null != parent && (S.blank(contextPath) || "/".equals(contextPath))) {
-            return parent.contextPath();
+        if (null != parent) {
+            if (S.notBlank(contextPath) && contextPath.length() > 1 && contextPath.startsWith("/")) {
+                return contextPath;
+            }
+            String parentContextPath = parent.contextPath();
+            StringBuilder sb = S.builder(parentContextPath);
+            if (parentContextPath.endsWith("/")) {
+                sb.deleteCharAt(sb.length() - 1);
+            }
+            if (!contextPath.startsWith("/")) {
+                sb.append("/");
+            }
+            sb.append(contextPath);
+            return sb.toString();
         }
         return contextPath;
     }

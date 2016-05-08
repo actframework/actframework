@@ -1,11 +1,15 @@
 package act.job;
 
+import act.Act;
 import act.app.App;
 import act.app.event.AppEventId;
 import act.event.AppEventListenerBase;
+import act.route.DuplicateRouteMappingException;
 import act.util.DestroyableBase;
 import org.osgl.$;
+import org.osgl.exception.ConfigurationException;
 import org.osgl.exception.NotAppliedException;
+import org.osgl.exception.UnexpectedException;
 import org.osgl.util.C;
 import org.osgl.util.E;
 import org.osgl.util.S;
@@ -19,6 +23,11 @@ class _Job extends DestroyableBase implements Runnable {
 
     static final String BRIEF_VIEW = "id,oneTime,executed,trigger";
     static final String DETAIL_VIEW = "id,oneTime,executed,trigger,worker";
+
+    private static final C.Set<Class<? extends UnexpectedException>> FATAL_EXCEPTIONS = C.set(
+            DuplicateRouteMappingException.class,
+            ConfigurationException.class
+    );
 
     private String id;
     private boolean oneTime;
@@ -146,21 +155,33 @@ class _Job extends DestroyableBase implements Runnable {
         try {
             doJob();
         } catch (RuntimeException e) {
+            if (FATAL_EXCEPTIONS.contains(e.getClass())) {
+                Act.shutdownApp(App.instance());
+                destroy();
+                if (App.instance().isMainThread()) {
+                    throw e;
+                } else {
+                    logger.fatal(e, "Fatal error executing job %s", id());
+                }
+                return;
+            }
             // TODO inject Job Exception Handling mechanism here
             logger.warn(e, "error executing job %s", id());
         } finally {
-            executed = true;
-            if (isOneTime()) {
-                App app = manager().app();
-                if (AppEventId.POST_START == app.currentState()) {
-                    manager().removeJob(this);
-                } else {
-                    app.eventBus().bind(AppEventId.POST_START, new AppEventListenerBase() {
-                        @Override
-                        public void on(EventObject event) throws Exception {
-                            manager().removeJob(_Job.this);
-                        }
-                    });
+            if (!isDestroyed()) {
+                executed = true;
+                if (isOneTime()) {
+                    App app = App.instance();
+                    if (AppEventId.POST_START == app.currentState()) {
+                        manager.removeJob(this);
+                    } else {
+                        app.eventBus().bind(AppEventId.POST_START, new AppEventListenerBase() {
+                            @Override
+                            public void on(EventObject event) throws Exception {
+                                manager.removeJob(_Job.this);
+                            }
+                        });
+                    }
                 }
             }
         }

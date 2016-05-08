@@ -15,7 +15,7 @@ import java.util.Map;
 public interface Daemon extends Runnable {
 
     public static enum State {
-        STOPPING, STOPPED, STARTING, STARTED, ERROR
+        STOPPING, STOPPED, STARTING, STARTED, ERROR, FATAL
     }
 
     /**

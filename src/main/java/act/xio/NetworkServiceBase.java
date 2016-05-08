@@ -1,5 +1,7 @@
 package act.xio;
 
+import act.Destroyable;
+import act.util.DestroyableBase;
 import org.osgl.logging.LogManager;
 import org.osgl.logging.Logger;
 import org.osgl.util.C;
@@ -11,7 +13,7 @@ import java.util.Map;
 /**
  * The base implementation of {@link NetworkService}
  */
-public abstract class NetworkServiceBase implements NetworkService {
+public abstract class NetworkServiceBase  extends DestroyableBase implements NetworkService {
 
     protected final static Logger logger = LogManager.get(NetworkService.class);
 
@@ -45,6 +47,7 @@ public abstract class NetworkServiceBase implements NetworkService {
     @Override
     public void shutdown() {
         close();
+        Destroyable.Util.destroyAll(registry.values());
         registry.clear();
     }
 
@@ -63,4 +66,10 @@ public abstract class NetworkServiceBase implements NetworkService {
     protected abstract void bootUp();
 
     protected abstract void close();
+
+    @Override
+    protected void releaseResources() {
+        super.releaseResources();
+        shutdown();
+    }
 }

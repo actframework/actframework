@@ -59,6 +59,9 @@ class CliServer extends AppServiceBase<CliServer> implements Runnable {
                 sessions.put(session.id(), session);
                 executor.submit(session);
             } catch (Exception e) {
+                if (isDestroyed()) {
+                    return;
+                }
                 log.error(e, "Error processing CLI session");
                 stop();
                 return;

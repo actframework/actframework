@@ -76,13 +76,15 @@ public class UndertowService extends NetworkServiceBase {
 
     @Override
     protected void close() {
+        if (null == channels) {
+            // not booted yet
+            return;
+        }
         for (AcceptingChannel<? extends StreamConnection> channel : channels) {
             IO.close(channel);
         }
-        channels = null;
+        channels.clear();
         worker.shutdownNow();
-        worker = null;
-        xnio = null;
     }
 
     private XnioWorker createWorker() throws IOException {

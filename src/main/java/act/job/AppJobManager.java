@@ -1,6 +1,7 @@
 package act.job;
 
 import act.ActComponent;
+import act.Destroyable;
 import act.app.App;
 import act.app.AppServiceBase;
 import act.app.AppThreadFactory;
@@ -240,6 +241,13 @@ public class AppJobManager extends AppServiceBase<AppJobManager> {
         @Override
         public void on(EventObject event) throws Exception {
             worker.run();
+        }
+
+        @Override
+        protected void releaseResources() {
+            if (null != worker && worker instanceof Destroyable) {
+                ((Destroyable) worker).destroy();
+            }
         }
     }
 

@@ -13,6 +13,7 @@ import act.metric.Metric;
 import act.metric.MetricInfo;
 import act.metric.Timer;
 import act.route.Router;
+import act.util.DestroyableBase;
 import act.view.ActServerError;
 import org.osgl.$;
 import org.osgl.exception.NotAppliedException;
@@ -23,7 +24,7 @@ import org.osgl.mvc.result.Result;
 import org.osgl.util.E;
 import org.osgl.util.S;
 
-public class NetworkClient extends $.F1<ActionContext, Void> {
+public class NetworkClient extends DestroyableBase implements  $.Func1<ActionContext, Void> {
 
     private static Logger logger = LogManager.get(NetworkClient.class);
 
@@ -47,7 +48,10 @@ public class NetworkClient extends $.F1<ActionContext, Void> {
         return app;
     }
 
-    public void handle(ActionContext ctx) {
+    public synchronized void handle(ActionContext ctx) {
+        if (isDestroyed()) {
+            return;
+        }
         H.Request req = ctx.req();
         String url = req.url();
         H.Method method = req.method();

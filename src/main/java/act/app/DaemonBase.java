@@ -2,6 +2,7 @@ package act.app;
 
 import act.util.SingletonBase;
 import org.joda.time.DateTime;
+import org.osgl.exception.ConfigurationException;
 import org.osgl.util.C;
 
 import java.util.Map;
@@ -148,8 +149,16 @@ public abstract class DaemonBase extends SingletonBase implements Daemon {
 
     protected synchronized void onException(Exception e, String message, Object... args) {
         this.lastError = e;
-        setState(State.ERROR);
+        setState(errorState(e));
         logger.error(e, message, args);
+    }
+
+    private State errorState(Exception e) {
+        return isFatal(e) ? State.FATAL : State.ERROR;
+    }
+
+    protected boolean isFatal(Exception e) {
+        return e instanceof ConfigurationException;
     }
 
     /**

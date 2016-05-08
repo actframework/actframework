@@ -17,7 +17,7 @@ public abstract class DestroyableBase implements Destroyable {
     private List<Destroyable> subResources = C.newList();
 
     @Override
-    public final void destroy() {
+    public synchronized final void destroy() {
         if (destroyed) {
             return;
         }
@@ -33,7 +33,7 @@ public abstract class DestroyableBase implements Destroyable {
 
     protected void releaseResources() {}
 
-    public void addSubResource(Destroyable object) {
+    public synchronized void addSubResource(Destroyable object) {
         subResources.add(object);
     }
 

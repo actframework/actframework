@@ -100,6 +100,7 @@ public class App {
     private CompilationException compilationException;
     private AppEventId currentState;
     private Set<AppEventId> eventEmitted;
+    private Thread mainThread;
 
     protected App() {
         INST = this;
@@ -237,11 +238,30 @@ public class App {
         return currentState == POST_START;
     }
 
+    public boolean isMainThread() {
+        return Thread.currentThread() == mainThread;
+    }
+
+    public void shutdown() {
+        mainThread.interrupt();
+        logger.info("App shutting down ....");
+
+        for (Daemon d : daemonRegistry.values()) {
+            stopDaemon(d);
+        }
+        shutdownCliServer();
+        shutdownEventBus();
+        shutdownJobManager();
+        clearServiceResourceManager();
+        classLoader = null;
+    }
+
     public synchronized void refresh() {
         logger.info("App starting ....");
         profile = null;
 
         initServiceResourceManager();
+        mainThread = Thread.currentThread();
         eventEmitted = C.newSet();
 
         initSingletonRegistry();
@@ -667,7 +687,16 @@ public class App {
         });
     }
 
+    private void stopDaemon(final Daemon daemon) {
+        daemon.stop();
+    }
+
     private void initServiceResourceManager() {
+        clearServiceResourceManager();
+        appServiceRegistry = new AppServiceRegistry();
+    }
+
+    private void clearServiceResourceManager() {
         if (null != appServiceRegistry) {
             eventBus().emit(STOP);
             appServiceRegistry.destroy();
@@ -676,7 +705,6 @@ public class App {
                 cache.shutdown();
             }
         }
-        appServiceRegistry = new AppServiceRegistry();
     }
 
     private void initUploadFileStorageService() {
@@ -695,6 +723,12 @@ public class App {
         }
     }
 
+    private void shutdownCliServer() {
+        if (null != cliServer) {
+            cliServer.destroy();
+        }
+    }
+
     private void initRouters() {
         router = new Router(this);
         moreRouters = C.newMap();
@@ -706,6 +740,12 @@ public class App {
 
     private void initEventBus() {
         eventBus = new EventBus(this);
+    }
+
+    public void shutdownEventBus() {
+        if (null != eventBus) {
+            eventBus.destroy();
+        }
     }
 
     private void initCache() {
@@ -730,6 +770,12 @@ public class App {
 
     private void initJobManager() {
         jobManager = new AppJobManager(this);
+    }
+
+    private void shutdownJobManager() {
+        if (null != jobManager) {
+            jobManager.destroy();
+        }
     }
 
     private void initInterceptorManager() {

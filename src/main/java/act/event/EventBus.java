@@ -12,6 +12,7 @@ import act.di.DependencyInjector;
 import act.job.AppJobManager;
 import org.osgl.mvc.result.Result;
 import org.osgl.util.C;
+import org.osgl.util.E;
 
 import java.lang.annotation.Annotation;
 import java.util.EventObject;
@@ -131,8 +132,10 @@ public class EventBus extends AppServiceBase<EventBus> {
         } catch (Result r) {
             // in case event listener needs to return a result back
             throw r;
+        } catch (RuntimeException x) {
+            throw x;
         } catch (Exception x) {
-            logger.error(x, "Error executing job");
+            throw E.unexpected(x, x.getMessage());
         }
     }
 
@@ -181,6 +184,9 @@ public class EventBus extends AppServiceBase<EventBus> {
     }
 
     public synchronized EventBus emit(final AppEvent event) {
+        if (isDestroyed()) {
+            return this;
+        }
         callOn(event, asyncAppEventListeners, true);
         callOn(event, appEventListeners, false);
         return this;
@@ -195,6 +201,9 @@ public class EventBus extends AppServiceBase<EventBus> {
     }
 
     public synchronized EventBus emitAsync(final AppEvent event) {
+        if (isDestroyed()) {
+            return this;
+        }
         callOn(event, asyncAppEventListeners, true);
         callOn(event, appEventListeners, true);
         return this;
@@ -213,6 +222,9 @@ public class EventBus extends AppServiceBase<EventBus> {
     }
 
     public synchronized EventBus emitSync(AppEvent event) {
+        if (isDestroyed()) {
+            return this;
+        }
         callOn(event, asyncAppEventListeners, false);
         callOn(event, appEventListeners, false);
         return this;
@@ -234,6 +246,9 @@ public class EventBus extends AppServiceBase<EventBus> {
 
     @SuppressWarnings("unchecked")
     public synchronized EventBus emit(final ActEvent event) {
+        if (isDestroyed()) {
+            return this;
+        }
         callOn(event, asyncActEventListeners, true);
         callOn(event, actEventListeners, false);
         return this;
@@ -244,6 +259,9 @@ public class EventBus extends AppServiceBase<EventBus> {
     }
 
     public synchronized EventBus emitAsync(final ActEvent event) {
+        if (isDestroyed()) {
+            return this;
+        }
         callOn(event, asyncActEventListeners, true);
         callOn(event, actEventListeners, true);
         return this;
