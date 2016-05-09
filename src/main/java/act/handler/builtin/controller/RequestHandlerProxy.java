@@ -287,7 +287,7 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
             requireContextLocal = true;
         }
         App app = this.app;
-        for (InterceptorMethodMetaInfo info : ctrlInfo.beforeInterceptors(app)) {
+        for (InterceptorMethodMetaInfo info : ctrlInfo.beforeInterceptors()) {
             if (!applied(info)) {
                 continue;
             }
@@ -296,7 +296,7 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
                 requireContextLocal = true;
             }
         }
-        for (InterceptorMethodMetaInfo info : ctrlInfo.afterInterceptors(app)) {
+        for (InterceptorMethodMetaInfo info : ctrlInfo.afterInterceptors()) {
             if (!applied(info)) {
                 continue;
             }
@@ -305,7 +305,7 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
                 requireContextLocal = true;
             }
         }
-        for (CatchMethodMetaInfo info : ctrlInfo.exceptionInterceptors(app)) {
+        for (CatchMethodMetaInfo info : ctrlInfo.exceptionInterceptors()) {
             if (!applied(info)) {
                 continue;
             }
@@ -314,7 +314,7 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
                 requireContextLocal = true;
             }
         }
-        for (InterceptorMethodMetaInfo info : ctrlInfo.finallyInterceptors(app)) {
+        for (InterceptorMethodMetaInfo info : ctrlInfo.finallyInterceptors()) {
             if (!applied(info)) {
                 continue;
             }

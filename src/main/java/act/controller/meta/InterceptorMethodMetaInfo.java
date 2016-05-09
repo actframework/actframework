@@ -22,6 +22,13 @@ public class InterceptorMethodMetaInfo extends HandlerMethodMetaInfo<Interceptor
     private Set<String> blackList = C.newSet();
     private int priority;
 
+    protected InterceptorMethodMetaInfo(InterceptorMethodMetaInfo copy, ControllerClassMetaInfo clsInfo) {
+        super(copy, clsInfo);
+        this.whiteList = copy.whiteList();
+        this.blackList = copy.blackList;
+        this.priority = copy.priority;
+    }
+
     public InterceptorMethodMetaInfo(ControllerClassMetaInfo clsInfo) {
         super(clsInfo);
     }
@@ -109,5 +116,13 @@ public class InterceptorMethodMetaInfo extends HandlerMethodMetaInfo<Interceptor
     @Override
     public int compareTo(InterceptorMethodMetaInfo o) {
         return o.priority - priority;
+    }
+
+    public InterceptorMethodMetaInfo extended(ControllerClassMetaInfo clsInfo) {
+        if (clsInfo.isMyAncestor(this.classInfo())) {
+            return new InterceptorMethodMetaInfo(this, clsInfo);
+        } else {
+            return this;
+        }
     }
 }

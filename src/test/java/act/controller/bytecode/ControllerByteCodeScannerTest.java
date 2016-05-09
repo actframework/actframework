@@ -164,7 +164,7 @@ public class ControllerByteCodeScannerTest extends TestBase {
         assertNotNull(infoSrc.controllerMetaInfo(FilterA.class.getName()));
         assertNotNull(infoSrc.controllerMetaInfo(FilterB.class.getName()));
         ControllerClassMetaInfo info = infoSrc.controllerMetaInfo(ControllerWithInheritedInterceptor.class.getName());
-        assertHasInterceptor("FilterA", "afterP10", info.afterInterceptors(mockApp));
+        assertHasInterceptor("ControllerWithInheritedInterceptor", "afterP10", info.afterInterceptors());
     }
 
     @Test

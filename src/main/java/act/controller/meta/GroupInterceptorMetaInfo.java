@@ -87,11 +87,18 @@ public class GroupInterceptorMetaInfo extends DestroyableBase {
         return null;
     }
 
+    public void mergeFrom(GroupInterceptorMetaInfo info, ControllerClassMetaInfo targetController) {
+        mergeList(beforeList, targetController.convertDerived(info.beforeList));
+        mergeList(afterList, targetController.convertDerived(info.afterList));
+        mergeList(catchList, targetController.convertDerived(info.catchList));
+        mergeList(finallyList, targetController.convertDerived(info.catchList));
+    }
+
     public void mergeFrom(GroupInterceptorMetaInfo info) {
         mergeList(beforeList, info.beforeList);
         mergeList(afterList, info.afterList);
         mergeList(catchList, info.catchList);
-        mergeList(finallyList, info.finallyList);
+        mergeList(finallyList, info.catchList);
     }
 
     public void mergeFrom(GroupInterceptorMetaInfo classInterceptors, String actionName) {

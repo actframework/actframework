@@ -15,6 +15,11 @@ public class CatchMethodMetaInfo extends InterceptorMethodMetaInfo {
     private static final List<String> CATCH_THROWABLE = C.list(Throwable.class.getName());
     private List<String> targetExceptionClassNames = CATCH_THROWABLE;
 
+    protected CatchMethodMetaInfo(CatchMethodMetaInfo copy, ControllerClassMetaInfo clsInfo) {
+        super(copy, clsInfo);
+        this.targetExceptionClassNames = copy.targetExceptionClassNames;
+    }
+
     public CatchMethodMetaInfo(ControllerClassMetaInfo clsInfo) {
         super(clsInfo);
     }
@@ -40,4 +45,8 @@ public class CatchMethodMetaInfo extends InterceptorMethodMetaInfo {
         return sb.toString();
     }
 
+    @Override
+    public InterceptorMethodMetaInfo extended(ControllerClassMetaInfo clsInfo) {
+        return new CatchMethodMetaInfo(this, clsInfo);
+    }
 }

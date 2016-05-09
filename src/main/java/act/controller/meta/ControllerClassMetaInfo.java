@@ -108,7 +108,6 @@ public final class ControllerClassMetaInfo extends DestroyableBase {
         return list;
     }
 
-
     public ControllerClassMetaInfo setAbstract() {
         isAbstract = true;
         return this;
@@ -125,6 +124,16 @@ public final class ControllerClassMetaInfo extends DestroyableBase {
     public ControllerClassMetaInfo isController(boolean b) {
         isController = b;
         return this;
+    }
+
+    boolean isMyAncestor(ControllerClassMetaInfo clsInfo) {
+        if (parent == null) {
+            return false;
+        }
+        if (parent.equals(clsInfo)) {
+            return true;
+        }
+        return parent.isMyAncestor(clsInfo);
     }
 
     public ControllerClassMetaInfo parent(ControllerClassMetaInfo parentInfo) {
@@ -227,56 +236,28 @@ public final class ControllerClassMetaInfo extends DestroyableBase {
         return handlerLookup.get(className() + "." + name);
     }
 
-    public List<InterceptorMethodMetaInfo> beforeInterceptors(App app) {
-        C.List<InterceptorMethodMetaInfo> list = C.newList();
-        AppClassLoader cl = app.classLoader();
-        for (String with : withList) {
-            ControllerClassMetaInfo withInfo = cl.controllerClassMetaInfo(with);
-            if (null != withInfo) {
-                list.addAll(withInfo.beforeInterceptors(app));
-            }
+    <T extends InterceptorMethodMetaInfo> List<T> convertDerived(List<T> interceptors) {
+        C.List<T> list = C.newSizedList(interceptors.size());
+        for (InterceptorMethodMetaInfo derived : interceptors) {
+            list.add((T)derived.extended(this));
         }
-        list.addAll(interceptors.beforeList());
         return list;
     }
 
-    public List<InterceptorMethodMetaInfo> afterInterceptors(App app) {
-        C.List<InterceptorMethodMetaInfo> list = C.newList();
-        AppClassLoader cl = app.classLoader();
-        for (String with : withList) {
-            ControllerClassMetaInfo withInfo = cl.controllerClassMetaInfo(with);
-            if (null != withInfo) {
-                list.addAll(withInfo.afterInterceptors(app));
-            }
-        }
-        list.addAll(interceptors.afterList());
-        return list;
+    public List<InterceptorMethodMetaInfo> beforeInterceptors() {
+        return interceptors.beforeList();
     }
 
-    public List<CatchMethodMetaInfo> exceptionInterceptors(App app) {
-        C.List<CatchMethodMetaInfo> list = C.newList();
-        AppClassLoader cl = app.classLoader();
-        for (String with : withList) {
-            ControllerClassMetaInfo withInfo = cl.controllerClassMetaInfo(with);
-            if (null != withInfo) {
-                list.addAll(withInfo.exceptionInterceptors(app));
-            }
-        }
-        list.addAll(interceptors.catchList());
-        return list;
+    public List<InterceptorMethodMetaInfo> afterInterceptors() {
+        return interceptors.afterList();
     }
 
-    public List<InterceptorMethodMetaInfo> finallyInterceptors(App app) {
-        C.List<InterceptorMethodMetaInfo> list = C.newList();
-        AppClassLoader cl = app.classLoader();
-        for (String with : withList) {
-            ControllerClassMetaInfo withInfo = cl.controllerClassMetaInfo(with);
-            if (null != withInfo) {
-                list.addAll(withInfo.finallyInterceptors(app));
-            }
-        }
-        list.addAll(interceptors.finallyList());
-        return list;
+    public List<CatchMethodMetaInfo> exceptionInterceptors() {
+        return interceptors.catchList();
+    }
+
+    public List<InterceptorMethodMetaInfo> finallyInterceptors() {
+        return interceptors.finallyList();
     }
 
     public ControllerClassMetaInfo merge(ControllerClassMetaInfoManager infoBase, App app) {
@@ -296,6 +277,9 @@ public final class ControllerClassMetaInfo extends DestroyableBase {
             StringBuilder sb = S.builder(parentContextPath);
             if (parentContextPath.endsWith("/")) {
                 sb.deleteCharAt(sb.length() - 1);
+            }
+            if (null == contextPath) {
+                return "/";
             }
             if (!contextPath.startsWith("/")) {
                 sb.append("/");
@@ -338,7 +322,11 @@ public final class ControllerClassMetaInfo extends DestroyableBase {
             ControllerClassMetaInfo withClassInfo = infoBase.controllerMetaInfo(withClass);
             if (null != withClassInfo) {
                 withClassInfo.merge(infoBase, app);
-                interceptors.mergeFrom(withClassInfo.interceptors);
+                if (isMyAncestor(withClassInfo)) {
+                    interceptors.mergeFrom(withClassInfo.interceptors, this);
+                } else {
+                    interceptors.mergeFrom(withClassInfo.interceptors);
+                }
             } else {
                 logger.warn("Cannot find class info for @With class: %s", withClass);
             }
@@ -362,16 +350,16 @@ public final class ControllerClassMetaInfo extends DestroyableBase {
     private void buildHandlerLookup(App app) {
         C.Map<String, HandlerMethodMetaInfo> lookup = C.newMap();
         lookup.putAll(actionLookup);
-        for (InterceptorMethodMetaInfo info : beforeInterceptors(app)) {
+        for (InterceptorMethodMetaInfo info : beforeInterceptors()) {
             lookup.put(info.fullName(), info);
         }
-        for (InterceptorMethodMetaInfo info : afterInterceptors(app)) {
+        for (InterceptorMethodMetaInfo info : afterInterceptors()) {
             lookup.put(info.fullName(), info);
         }
-        for (InterceptorMethodMetaInfo info : exceptionInterceptors(app)) {
+        for (InterceptorMethodMetaInfo info : exceptionInterceptors()) {
             lookup.put(info.fullName(), info);
         }
-        for (InterceptorMethodMetaInfo info : finallyInterceptors(app)) {
+        for (InterceptorMethodMetaInfo info : finallyInterceptors()) {
             lookup.put(info.fullName(), info);
         }
         handlerLookup = lookup;

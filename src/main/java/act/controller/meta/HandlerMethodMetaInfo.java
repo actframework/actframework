@@ -33,6 +33,28 @@ public abstract class HandlerMethodMetaInfo<T extends HandlerMethodMetaInfo> ext
     private int appCtxLVT_id = -1;
     private int ctxParamCnt = -1;
 
+    /**
+     * Construct a `HandlerMethodMetaInfo` from a copy with a different class info. This could be used
+     * to get Interceptors from parent controller
+     *
+     * @param copy an existing HandlerMethodMetaInfo
+     * @param clsInfo the new class info, usually a extended controller class
+     */
+    protected HandlerMethodMetaInfo(HandlerMethodMetaInfo copy, ControllerClassMetaInfo clsInfo) {
+        E.illegalArgumentIf(!clsInfo.isMyAncestor(copy.classInfo()));
+        this.clsInfo = $.notNull(clsInfo);
+        this.name = copy.name;
+        this.invokeType = copy.invokeType;
+        this.actContextInjection = copy.actContextInjection;
+        this.params = copy.params;
+        this.returnType = copy.returnType;
+        this.propertySpec = copy.propertySpec;
+        this.disableJsonCircularRefDetect = copy.disableJsonCircularRefDetect;
+        this.locals = copy.locals;
+        this.appCtxLVT_id = copy.appCtxLVT_id;
+        this.ctxParamCnt = copy.ctxParamCnt;
+    }
+
     public HandlerMethodMetaInfo(ControllerClassMetaInfo clsInfo) {
         this.clsInfo = clsInfo;
     }
