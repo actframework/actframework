@@ -274,12 +274,12 @@ public final class ControllerClassMetaInfo extends DestroyableBase {
                 return contextPath;
             }
             String parentContextPath = parent.contextPath();
+            if (null == contextPath) {
+                return parentContextPath;
+            }
             StringBuilder sb = S.builder(parentContextPath);
             if (parentContextPath.endsWith("/")) {
                 sb.deleteCharAt(sb.length() - 1);
-            }
-            if (null == contextPath) {
-                return "/";
             }
             if (!contextPath.startsWith("/")) {
                 sb.append("/");

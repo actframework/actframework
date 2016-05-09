@@ -299,7 +299,7 @@ public class Router extends AppServiceBase<Router> {
     public List<RouteInfo> debug() {
         List<RouteInfo> info = C.newList();
         debug(info);
-        return info;
+        return C.list(info).sorted();
     }
 
     public void debug(List<RouteInfo> routes) {

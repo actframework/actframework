@@ -11,7 +11,7 @@ import org.osgl.util.S;
 /**
  * Used to expose Router table for debugging purpose
  */
-public class RouteInfo extends $.T3<String, String, String> {
+public class RouteInfo extends $.T3<String, String, String> implements Comparable<RouteInfo> {
     public RouteInfo(H.Method method, String path, RequestHandler handler) {
         super(method.name(), path, handler.toString());
     }
@@ -28,6 +28,19 @@ public class RouteInfo extends $.T3<String, String, String> {
     @Override
     public String toString() {
         return S.fmt("[%s %s] -> [%s]", method(), path(), handler());
+    }
+
+    @Override
+    public int compareTo(RouteInfo routeInfo) {
+        int n = path().compareTo(routeInfo.path());
+        if (n != 0) {
+            return n;
+        }
+        n = method().compareTo(routeInfo.method());
+        if (n != 0) {
+            return n;
+        }
+        return handler().compareTo(routeInfo.handler());
     }
 
     public static RouteInfo of(ActionContext context) {

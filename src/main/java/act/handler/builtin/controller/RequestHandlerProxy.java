@@ -182,6 +182,8 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
                 handleFinally(context);
             } catch (Exception e) {
                 logger.error(e, "Error invoking final handler");
+            } finally {
+                context.destroy();
             }
         }
     }
@@ -226,7 +228,6 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
             context.cacheTemplate(null);
             throw e;
         }
-        context.destroy();
     }
 
     private void ensureAgentsReady() {
