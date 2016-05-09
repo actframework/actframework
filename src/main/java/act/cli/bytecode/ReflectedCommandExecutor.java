@@ -10,6 +10,7 @@ import act.cli.util.CommandLineParser;
 import act.sys.meta.SessionVariableAnnoInfo;
 import com.esotericsoftware.reflectasm.MethodAccess;
 import org.osgl.$;
+import org.osgl.util.C;
 import org.osgl.util.E;
 import org.osgl.util.IO;
 import org.osgl.util.S;
@@ -56,8 +57,9 @@ public class ReflectedCommandExecutor extends CommandExecutor {
 
     @Override
     public Object execute(CliContext context) {
-        Object cmd = commanderInstance(context);
-        Object[] params = params(context);
+        List<FieldOptionAnnoInfo> list = classMetaInfo.fieldOptionAnnoInfoList(app.classLoader());
+        Object cmd = commanderInstance(list, context);
+        Object[] params = params(list.size(), context);
         return invoke(cmd, params);
     }
 
@@ -73,7 +75,7 @@ public class ReflectedCommandExecutor extends CommandExecutor {
         super.releaseResources();
     }
 
-    private Object commanderInstance(CliContext context) {
+    private Object commanderInstance(List<FieldOptionAnnoInfo> list, CliContext context) {
         String commander = commanderClass.getName();
         Object inst = context.__commanderInstance(commander);
         if (null == inst) {
@@ -81,7 +83,7 @@ public class ReflectedCommandExecutor extends CommandExecutor {
             context.__commanderInstance(commander, inst);
         }
         $.Var<Integer> argIdx = $.var(0);
-        List<FieldOptionAnnoInfo> list = classMetaInfo.fieldOptionAnnoInfoList(app.classLoader());
+        List<FieldOptionAnnoInfo> unresolved = C.newList();
         for (FieldOptionAnnoInfo fieldOptionAnnoInfo : list) {
             String fieldName = fieldOptionAnnoInfo.fieldName();
             Object sessionVal = null;
@@ -93,7 +95,17 @@ public class ReflectedCommandExecutor extends CommandExecutor {
             if (null == sessionVal) {
                 sessionVal = context.attribute(fieldName);
             }
-            Object val = optionVal(fieldOptionAnnoInfo.fieldType(), fieldOptionAnnoInfo, argIdx, false, fieldOptionAnnoInfo.readFileContent(), sessionVal, context);
+            if (null == sessionVal) {
+                unresolved.add(fieldOptionAnnoInfo);
+            } else {
+                Object val = optionVal(fieldOptionAnnoInfo.fieldType(), fieldOptionAnnoInfo, argIdx, false, fieldOptionAnnoInfo.readFileContent(), sessionVal, context);
+                $.setProperty(inst, val, fieldName);
+            }
+        }
+        boolean one = unresolved.size() == 1 && methodMetaInfo.paramCount() == methodMetaInfo.ctxParamCount();
+        for (FieldOptionAnnoInfo fieldOptionAnnoInfo : unresolved) {
+            String fieldName = fieldOptionAnnoInfo.fieldName();
+            Object val = optionVal(fieldOptionAnnoInfo.fieldType(), fieldOptionAnnoInfo, argIdx, one, fieldOptionAnnoInfo.readFileContent(), null, context);
             $.setProperty(inst, val, fieldName);
         }
         return inst;
@@ -113,7 +125,7 @@ public class ReflectedCommandExecutor extends CommandExecutor {
         return ca;
     }
 
-    private Object[] params(CliContext ctx) {
+    private Object[] params(int fieldOptionCount, CliContext ctx) {
         int paramCount = methodMetaInfo.paramCount();
         int ctxParamCount = methodMetaInfo.ctxParamCount();
         Object[] oa = new Object[paramCount];
@@ -135,7 +147,7 @@ public class ReflectedCommandExecutor extends CommandExecutor {
                 if (null == sessionVal) {
                     sessionVal = ctx.attribute(param.name());
                 }
-                oa[i] = optionVal(paramType, param.optionInfo(), argIdx, (paramCount - ctxParamCount) == 1, param.readFileContent(), sessionVal, ctx);
+                oa[i] = optionVal(paramType, param.optionInfo(), argIdx, (paramCount - ctxParamCount - fieldOptionCount) == 1, param.readFileContent(), sessionVal, ctx);
             }
         }
         return oa;
