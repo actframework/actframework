@@ -98,7 +98,11 @@ public class CliSession extends DestroyableBase implements Runnable {
             console = new ConsoleReader(socket.getInputStream(), os);
             String banner = Banner.cachedBanner();
             printBanner(banner, console);
-            console.setPrompt("act[" + id + "]>");
+            String appName = App.instance().name();
+            if (S.blank(appName)) {
+                appName = "act";
+            }
+            console.setPrompt(S.fmt("%s[%s]>", appName, id));
             console.addCompleter(commandNameCompleter);
 
             while (!exit) {
