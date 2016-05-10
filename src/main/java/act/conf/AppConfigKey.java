@@ -256,6 +256,13 @@ public enum AppConfigKey implements ConfigKey {
     ID_GEN_SEQ_ID_PROVIDER("idgen.seq_id.provider.impl"),
 
     /**
+     * {@code act.idgen.encoder.impl} specifies the {@link act.util.IdGenerator.LongEncoder}
+     * implementation for {@link App#idGenerator}
+     * <p>Default value: {@link act.util.IdGenerator.SafeLongEncoder}</p>
+     */
+    ID_GEN_LONG_ENCODER("idgen.encoder.impl"),
+
+    /**
      * {@code act.locale} specifies the application default locale
      * <p>Default value: {@link java.util.Locale#getDefault}</p>
      */

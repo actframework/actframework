@@ -1,5 +1,6 @@
 package act.metric;
 
+import act.app.App;
 import org.osgl.$;
 import org.osgl.logging.LogManager;
 import org.osgl.logging.Logger;
@@ -155,7 +156,8 @@ public class SimpleMetricStore implements MetricStore, Serializable {
                     return store;
                 } catch (IOException e) {
                     ioError = true;
-                    throw E.ioException(e);
+                    App.logger.error(e, "Error reading simple metric store persisted file");
+                    return null;
                 } catch (ClassNotFoundException e) {
                     throw E.unexpected(e);
                 }

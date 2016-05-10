@@ -24,22 +24,22 @@ public class IdGenerator {
          * between System starts, but it shall remaining the same value
          * within one system life time
          */
-        String startId();
+        long startId();
 
         /**
          * Generate system start ID based on timestamp
          */
         public static class Timestamp implements StartIdProvider {
-            private final String id;
+            private final long id;
             public Timestamp() {
-                long origin = DateTime.parse("2016-03-04").getMillis();
+                long origin = DateTime.parse("2016-05-10").getMillis();
                 // let's assume the system cannot be restart within 10 seconds
                 long l = ($.ms() - origin) / 1000 / 10;
-                id = longToStr(l);
+                id = l;
             }
 
             @Override
-            public String startId() {
+            public long startId() {
                 return id;
             }
         }
@@ -49,7 +49,7 @@ public class IdGenerator {
          * will be write to a File
          */
         public static class FileBasedStartCounter implements StartIdProvider {
-            private final String id;
+            private final long id;
 
             public FileBasedStartCounter() {
                 this(".global.id.do-not-delete");
@@ -62,15 +62,15 @@ public class IdGenerator {
                     long seq = Long.parseLong(s);
                     seq = seq + 1;
                     IO.writeContent(S.str(seq), file);
-                    id = longToStr(seq);
+                    id = (seq);
                 } else {
-                    id = "0";
-                    IO.writeContent(id, file);
+                    id = 0;
+                    IO.writeContent(Long.toString(id), file);
                 }
             }
 
             @Override
-            public String startId() {
+            public long startId() {
                 return id;
             }
         }
@@ -97,7 +97,7 @@ public class IdGenerator {
             }
 
             @Override
-            public String startId() {
+            public long startId() {
                 return delegate.startId();
             }
         }
@@ -108,20 +108,20 @@ public class IdGenerator {
      * one JVM per each call
      */
     public static interface SequenceProvider {
-        String seqId();
+        long seqId();
 
         public static class AtomicLongSeq implements SequenceProvider {
             private final AtomicLong seq = new AtomicLong(0);
 
             @Override
-            public String seqId() {
-                return longToStr(seq.incrementAndGet());
+            public long seqId() {
+                return (seq.incrementAndGet());
             }
         }
     }
 
     public static interface NodeIdProvider {
-        String nodeId();
+        long nodeId();
 
         public static class IpProvider implements NodeIdProvider {
 
@@ -144,7 +144,7 @@ public class IdGenerator {
             }
 
             private final EffectiveBytes effectiveBytes;
-            private final String id;
+            private final long id;
 
             public IpProvider() {
                 this(4);
@@ -164,19 +164,121 @@ public class IdGenerator {
                     }
                     l += Long.valueOf(b) * factor;
                 }
-                id = longToStr(l);
+                id = (l);
             }
 
-            public String nodeId() {
+            public long nodeId() {
                 return id;
             }
 
         }
     }
 
+    public static interface LongEncoder {
+
+        String longToStr(long l);
+
+        public abstract static class LongEncoderBase implements LongEncoder {
+
+            private final char[] digits;
+            private final int MAX_RADIX;
+            public LongEncoderBase(char[] digits) {
+                this.digits = digits;
+                this.MAX_RADIX = digits.length;
+            }
+            /**
+             * Code copied from JDK Long.toString(long, String)
+             */
+            public String longToStr(long l) {
+                int radix = MAX_RADIX;
+                char[] buf = new char[65];
+                int charPos = 64;
+                boolean negative = (l < 0);
+
+                if (!negative) {
+                    l = -l;
+                }
+
+                while (l <= -radix) {
+                    buf[charPos--] = digits[(int)(-(l % radix))];
+                    l = l / radix;
+                }
+                buf[charPos] = digits[(int)(-l)];
+
+                if (negative) {
+                    buf[--charPos] = '-';
+                }
+
+                return new String(buf, charPos, (65 - charPos));
+            }
+        }
+    }
+
+    public static class UnsafeLongEncoder extends LongEncoder.LongEncoderBase {
+
+        /**
+         * Extended char table for representing a number as a String
+         */
+        private final static char[] digits = {
+                '0', '1', '2', '3', '4', '5',
+                '6', '7', '8', '9', 'a', 'b',
+                'c', 'd', 'e', 'f', 'g', 'h',
+                'i', 'j', 'k', 'l', 'm', 'n',
+                'o', 'p', 'q', 'r', 's', 't',
+                'u', 'v', 'w', 'x', 'y', 'z',
+                'A', 'B', 'C', 'D', 'E', 'F',
+                'G', 'H', 'I', 'J', 'K', 'L',
+                'M', 'N', 'O', 'P', 'Q', 'R',
+                'S', 'T', 'U', 'V', 'W', 'X',
+                'Y', 'Z', '!', '$', '%', '&',
+                '.', ',', ';', ':', '=', '?',
+                '+', '-', '*', '/', '<', '>',
+                '_', '~', '#', '^', '@', '|',
+                '(', ')', '[', ']', '{', '}'
+        };
+
+        public UnsafeLongEncoder() {
+            super(digits);
+        }
+
+    }
+
+    public static class SafeLongEncoder extends LongEncoder.LongEncoderBase {
+        /**
+         * Extended char table for representing a number as a String
+         */
+        private final static char[] digits = {
+                '0', '1', '2', '3', '4', '5',
+                '6', '7', '8', '9', 'a', 'b',
+                'c', 'd', 'e', 'f', 'g', 'h',
+                'i', 'j', 'k', 'l', 'm', 'n',
+                'o', 'p', 'q', 'r', 's', 't',
+                'u', 'v', 'w', 'x', 'y', 'z',
+                'A', 'B', 'C', 'D', 'E', 'F',
+                'G', 'H', 'I', 'J', 'K', 'L',
+                'M', 'N', 'O', 'P', 'Q', 'R',
+                'S', 'T', 'U', 'V', 'W', 'X',
+                'Y', 'Z', '.', '-', '_', '~',
+        };
+
+        public SafeLongEncoder() {
+            super(digits);
+        }
+
+        public static void main(String[] args) {
+            System.out.println(new SafeLongEncoder().longToStr(Long.MAX_VALUE));
+            System.out.println(new UnsafeLongEncoder().longToStr(Long.MAX_VALUE));
+            System.out.println(Long.MAX_VALUE);
+        }
+    }
+
+    public static final LongEncoder SAFE_ENCODER = new SafeLongEncoder();
+    public static final LongEncoder UNSAFE_ENCODER = new UnsafeLongEncoder();
+
     private final NodeIdProvider nodeIdProvider;
     private final StartIdProvider startIdProvider;
     private final SequenceProvider sequenceProvider;
+    private LongEncoder longEncoder;
 
     /**
      * Create a default IdGenerator with following configuration:
@@ -184,21 +286,40 @@ public class IdGenerator {
      *     <li>Node ID provider: four byte IP address</li>
      *     <li>Start ID provider: stored in <code>.global.id.do-not-delete</code> file</li>
      *     <li>Sequence ID provider: Atomic Long sequence</li>
+     *     <li>Long Encoder: {@link SafeLongEncoder}</li>
      * </ul>
      */
     public IdGenerator() {
-        nodeIdProvider = new NodeIdProvider.IpProvider();
-        startIdProvider = new StartIdProvider.DefaultStartIdProvider();
-        sequenceProvider = new SequenceProvider.AtomicLongSeq();
+        this(new NodeIdProvider.IpProvider(), new StartIdProvider.DefaultStartIdProvider(),
+                new SequenceProvider.AtomicLongSeq(), SAFE_ENCODER);
+    }
+
+    /**
+     * Create a default IdGenerator with following configuration:
+     * <ul>
+     *     <li>Node ID provider: four byte IP address</li>
+     *     <li>Start ID provider: stored in <code>.global.id.do-not-delete</code> file</li>
+     *     <li>Sequence ID provider: Atomic Long sequence</li>
+     *     <li>
+     *         Long Encoder: {@link UnsafeLongEncoder} when `useUnsafeLongEncoder` is set to
+     *         `true` or {@link SafeLongEncoder} otherwise
+     *     </li>
+     * </ul>
+     * @param useUnsafeLongEncoder indicate use safe or unsafe long encoder
+     */
+    public IdGenerator(boolean useUnsafeLongEncoder) {
+        this(new NodeIdProvider.IpProvider(), new StartIdProvider.DefaultStartIdProvider(),
+                new SequenceProvider.AtomicLongSeq(), useUnsafeLongEncoder ? UNSAFE_ENCODER : SAFE_ENCODER);
     }
 
     /**
      * Create a default IdGenerator with specified node id provider, start id provider and sequence provider:
      */
-    public IdGenerator(NodeIdProvider nodeIdProvider, StartIdProvider startIdProvider, SequenceProvider sequenceProvider) {
-        this.nodeIdProvider = Objects.requireNonNull(nodeIdProvider);
-        this.startIdProvider = Objects.requireNonNull(startIdProvider);
-        this.sequenceProvider = Objects.requireNonNull(sequenceProvider);
+    public IdGenerator(NodeIdProvider nodeIdProvider, StartIdProvider startIdProvider, SequenceProvider sequenceProvider, LongEncoder longEncoder) {
+        this.nodeIdProvider = $.notNull(nodeIdProvider);
+        this.startIdProvider = $.notNull(startIdProvider);
+        this.sequenceProvider = $.notNull(sequenceProvider);
+        this.longEncoder = $.notNull(longEncoder);
     }
 
     /**
@@ -213,6 +334,7 @@ public class IdGenerator {
         this.nodeIdProvider = new NodeIdProvider.IpProvider(effectiveIpBytes);
         this.startIdProvider = new StartIdProvider.DefaultStartIdProvider();
         this.sequenceProvider = new SequenceProvider.AtomicLongSeq();
+        this.longEncoder = SAFE_ENCODER;
     }
 
     /**
@@ -227,6 +349,7 @@ public class IdGenerator {
         this.nodeIdProvider = new NodeIdProvider.IpProvider(effectiveIpBytes);
         this.startIdProvider = new StartIdProvider.DefaultStartIdProvider(startIdFile);
         this.sequenceProvider = new SequenceProvider.AtomicLongSeq();
+        this.longEncoder = SAFE_ENCODER;
     }
 
     /**
@@ -241,6 +364,7 @@ public class IdGenerator {
         this.nodeIdProvider = new NodeIdProvider.IpProvider();
         this.startIdProvider = new StartIdProvider.DefaultStartIdProvider(startIdFile);
         this.sequenceProvider = new SequenceProvider.AtomicLongSeq();
+        this.longEncoder = SAFE_ENCODER;
     }
 
     /**
@@ -249,7 +373,9 @@ public class IdGenerator {
      */
     public String genId() {
         StringBuilder sb = S.builder();
-        sb.append(nodeIdProvider.nodeId()).append(startIdProvider.startId()).append(sequenceProvider.seqId());
+        sb.append(longEncoder.longToStr(nodeIdProvider.nodeId()))
+                .append(longEncoder.longToStr(startIdProvider.startId()))
+                .append(longEncoder.longToStr(sequenceProvider.seqId()));
         return sb.toString();
     }
 
@@ -262,53 +388,6 @@ public class IdGenerator {
         for (int i = 0; i < 10; ++i) {
             System.out.println(idGen.genId());
         }
-    }
-
-    /**
-     * Extended char table for representing a number as a String
-     */
-    private final static char[] digits = {
-            '0' , '1' , '2' , '3' , '4' , '5' ,
-            '6' , '7' , '8' , '9' , 'a' , 'b' ,
-            'c' , 'd' , 'e' , 'f' , 'g' , 'h' ,
-            'i' , 'j' , 'k' , 'm' , 'n' ,
-            'o' , 'p' , 'q' , 'r' , 's' , 't' ,
-            'u' , 'v' , 'w' , 'x' , 'y' , 'z' ,
-            'A' , 'B' , 'C' , 'D' , 'E' , 'F' ,
-            'G' , 'H' , 'J' , 'K' , 'L' ,
-            'M' , 'N' , 'P' , 'Q' , 'R' ,
-            'S' , 'T' , 'U' , 'V' , 'W' , 'X' ,
-            'Y' , 'Z' , '!' , '$' , '%' , '&' ,
-            '.' , ',' , ';' , ':' , '=' , '?' ,
-            '+' , '-' , '*' , '/' , '<' , '>' ,
-    };
-
-    private final static int MAX_RADIX = digits.length;
-
-    /**
-     * Code copied from JDK Long.toString(long, String)
-     */
-    private static String longToStr(long l) {
-        int radix = MAX_RADIX;
-        char[] buf = new char[65];
-        int charPos = 64;
-        boolean negative = (l < 0);
-
-        if (!negative) {
-            l = -l;
-        }
-
-        while (l <= -radix) {
-            buf[charPos--] = digits[(int)(-(l % radix))];
-            l = l / radix;
-        }
-        buf[charPos] = digits[(int)(-l)];
-
-        if (negative) {
-            buf[--charPos] = '-';
-        }
-
-        return new String(buf, charPos, (65 - charPos));
     }
 
 }

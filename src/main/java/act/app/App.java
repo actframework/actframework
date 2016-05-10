@@ -405,7 +405,9 @@ public class App {
         return resolverManager;
     }
 
-    public BinderManager binderManager() {return binderManager;}
+    public BinderManager binderManager() {
+        return binderManager;
+    }
 
     public CacheService cache() {
         return cache;
@@ -456,12 +458,12 @@ public class App {
 
     /**
      * Get/Create new instance of a class specified by the className
-     *
+     * <p/>
      * **Note** if the class is a singleton class, then the singleton instance
      * will be returned
      *
      * @param className the className of the instance to be returned
-     * @param <T> the generic type of the class
+     * @param <T>       the generic type of the class
      * @return the instance of the class
      */
     public <T> T newInstance(String className) {
@@ -535,6 +537,7 @@ public class App {
 
     /**
      * Return an ID in string that is unique across the cluster
+     *
      * @return
      */
     public String cuid() {
@@ -610,7 +613,8 @@ public class App {
         idGenerator = new IdGenerator(
                 config().nodeIdProvider(),
                 config().startIdProvider(),
-                config().sequenceProvider()
+                config().sequenceProvider(),
+                config().longEncoder()
         );
     }
 
@@ -733,7 +737,7 @@ public class App {
         router = new Router(this);
         moreRouters = C.newMap();
         List<NamedPort> ports = config().namedPorts();
-        for (NamedPort port: ports) {
+        for (NamedPort port : ports) {
             moreRouters.put(port, new Router(this, port.name()));
         }
     }
@@ -845,6 +849,7 @@ public class App {
         resolverManager = new StringValueResolverManager(this);
         Osgl.propertyHandlerFactory = new ActPropertyHandlerFactory(this);
     }
+
     private void initBinderManager() {
         binderManager = new BinderManager(this);
     }

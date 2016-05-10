@@ -428,6 +428,27 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         }
     }
 
+
+    private IdGenerator.LongEncoder longEncoder;
+    protected T longEncoder(IdGenerator.LongEncoder longEncoder) {
+        this.longEncoder = $.NPE(longEncoder);
+        return me();
+    }
+    public IdGenerator.LongEncoder longEncoder() {
+        if (null == longEncoder) {
+            longEncoder = get(ID_GEN_LONG_ENCODER);
+            if (null == longEncoder) {
+                longEncoder = IdGenerator.SAFE_ENCODER;
+            }
+        }
+        return longEncoder;
+    }
+    private void _mergeLongEncoder(AppConfig conf) {
+        if (null == get(ID_GEN_LONG_ENCODER)) {
+            longEncoder = conf.longEncoder;
+        }
+    }
+
     private String loginUrl = null;
     protected T loginUrl(String url) {
         E.illegalArgumentIf(!url.startsWith("/"), "login URL shall start with '/'");
@@ -1362,6 +1383,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         _mergeStartIdFile(conf);
         _mergeStartIdProvider(conf);
         _mergeSequenceProvider(conf);
+        _mergeLongEncoder(conf);
         _mergeLocale(conf);
         _mergeLocaleResolver(conf);
         _mergeSourceVersion(conf);
