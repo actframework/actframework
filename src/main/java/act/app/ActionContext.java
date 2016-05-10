@@ -224,8 +224,8 @@ public class ActionContext extends ActContext.ActContextBase<ActionContext> impl
                     o = new Object[]{};
                 }
 
-                paramCount = paramCount - extraParams.size();
-                boolean singleParam = paramCount == 1;
+                // the extra params might already been consumed in field setting
+                boolean singleParam = paramCount == 1 || (paramCount - extraParams.size() == 1) ;
                 return singleParam ? JSON.parseObject(jsonObject.toJSONString(), paramType) : o;
             }
         } else if (null != jsonArray) {

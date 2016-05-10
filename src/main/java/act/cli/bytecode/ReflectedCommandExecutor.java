@@ -2,6 +2,7 @@ package act.cli.bytecode;
 
 import act.app.App;
 import act.app.CliContext;
+import act.app.RuntimeDirs;
 import act.app.data.StringValueResolverManager;
 import act.cli.CliError;
 import act.cli.CommandExecutor;
@@ -16,6 +17,7 @@ import org.osgl.util.IO;
 import org.osgl.util.S;
 
 import java.io.File;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.List;
 
@@ -178,6 +180,9 @@ public class ReflectedCommandExecutor extends CommandExecutor {
                 }
                 if (option.required()) {
                     throw new CliError("Missing required option [%s]", option);
+                } else {
+                    String s = option.defVal();
+                    return resolverManager.resolve(s, optionType);
                 }
             }
         }
@@ -210,12 +215,16 @@ public class ReflectedCommandExecutor extends CommandExecutor {
         if (null != methodAccess) {
             try {
                 result = methodAccess.invoke(commander, commandIndex, params);
+            } catch (RuntimeException e) {
+                throw e;
             } catch (Exception e) {
                 throw E.unexpected(e);
             }
         } else {
             try {
                 result = method.invoke(null, params);
+            } catch (RuntimeException e) {
+                throw e;
             } catch (Exception e) {
                 throw E.unexpected(e);
             }
