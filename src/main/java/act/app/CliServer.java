@@ -52,7 +52,7 @@ class CliServer extends AppServiceBase<CliServer> implements Runnable {
     @Override
     public void run() {
         while (running()) {
-            Socket socket = null;
+            Socket socket;
             try {
                 socket = serverSocket.accept();
                 CliSession session = new CliSession(socket, this);

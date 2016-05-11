@@ -24,6 +24,8 @@ public class CommanderClassMetaInfo extends DestroyableBase {
         }
     };
 
+    public static final String NAME_SEPARATOR = S.COMMON_SEP;
+
     private Type type;
     private Type superType;
     private boolean isAbstract = false;
@@ -149,7 +151,7 @@ public class CommanderClassMetaInfo extends DestroyableBase {
         return this;
     }
 
-    public CommandMethodMetaInfo command(String name) {
+    public CommandMethodMetaInfo test_command(String name) {
         if (null == commandLookup) {
             buildCommandLookup();
         }
@@ -180,9 +182,13 @@ public class CommanderClassMetaInfo extends DestroyableBase {
     private void buildCommandLookup() {
         C.Map<String, CommandMethodMetaInfo> lookup = C.newMap();
         for (CommandMethodMetaInfo command : commands) {
-            lookup.put(command.commandName(), command);
+            String[] commandNames = command.commandName().split(NAME_SEPARATOR);
+            for (String commandName : commandNames) {
+                lookup.put(commandName, command);
+            }
         }
         commandLookup = lookup;
     }
+
 
 }

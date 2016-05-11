@@ -14,9 +14,11 @@ import org.osgl.logging.LogManager;
 import org.osgl.logging.Logger;
 import org.osgl.util.C;
 import org.osgl.util.E;
+import org.osgl.util.S;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Dispatch console command to CLI command handler
@@ -26,6 +28,8 @@ public class CliDispatcher extends AppServiceBase<CliDispatcher> {
     private static Logger logger = LogManager.get(CliDispatcher.class);
 
     private Map<String, CliHandler> registry = C.newMap();
+    private Map<String, String> shortCuts = C.newMap();
+    private Set<String> ambiguiousShortCuts = C.newSet();
 
     public CliDispatcher(App app) {
         super(app);
@@ -33,11 +37,14 @@ public class CliDispatcher extends AppServiceBase<CliDispatcher> {
     }
 
     public CliDispatcher registerCommandHandler(String command, CommandMethodMetaInfo methodMetaInfo, CommanderClassMetaInfo classMetaInfo) {
-        if (registry.containsKey(command)) {
-            throw E.invalidConfiguration("Command %s already registered", command);
+        String sa[] = command.split(CommanderClassMetaInfo.NAME_SEPARATOR);
+        for (String s : sa) {
+            if (registry.containsKey(s)) {
+                throw E.invalidConfiguration("Command %s already registered", command);
+            }
+            addToRegistry(s, new CliHandlerProxy(classMetaInfo, methodMetaInfo, app()));
+            logger.debug("Command registered: %s", s);
         }
-        addToRegistry(command, new CliHandlerProxy(classMetaInfo, methodMetaInfo, app()));
-        logger.debug("Command registered: %s", command);
         return this;
     }
 
@@ -46,6 +53,11 @@ public class CliDispatcher extends AppServiceBase<CliDispatcher> {
     }
 
     public CliHandler handler(String command) {
+        String command0 = command;
+        command = shortCuts.get(command);
+        if (null == command) {
+            command = command0;
+        }
         CliHandler handler = registry.get(command);
         if (null == handler && !command.startsWith("act.")) {
             handler = registry.get("act." + command);
@@ -61,6 +73,7 @@ public class CliDispatcher extends AppServiceBase<CliDispatcher> {
 
     /**
      * Returns all commands in alphabetic order
+     *
      * @return the list of commands
      */
     public List<String> commands(boolean sys, boolean app) {
@@ -104,6 +117,65 @@ public class CliDispatcher extends AppServiceBase<CliDispatcher> {
     private void addToRegistry(String name, CliHandler handler) {
         registry.put(name, handler);
         Help.updateMaxWidth(name.length());
+        registerShortCut(name);
+    }
+
+    private void registerShortCut(String name) {
+        for (int i = 0; i < 3; ++i) {
+            String shortCut = shortCut(name, i);
+            if (null == shortCut) {
+                return;
+            }
+            if (ambiguiousShortCuts.contains(shortCut)) {
+                return;
+            }
+            if (shortCuts.containsKey(shortCut)) {
+                ambiguiousShortCuts.add(shortCut);
+                shortCuts.remove(shortCut);
+            }
+            shortCuts.put(shortCut, name);
+        }
+    }
+
+    /**
+     * level's definition:
+     *
+     * 0 - "foo.bar.zee" -> ".fbz"
+     * 1 - "foo.bar.zee" -> "f.b.z"
+     * 2 = "foo.bar.zee" -> "fo.ba.ze"
+     */
+    private static String shortCut(String name, int level) {
+        String sa[] = name.split("\\.");
+        if (sa.length < 2) {
+            return null;
+        }
+        StringBuilder sb = S.builder();
+        switch (level) {
+            case 0:
+                sb.append(".");
+                for (String s : sa) {
+                    sb.append(s.charAt(0));
+                }
+                return sb.toString();
+            case 1:
+                for (String s : sa) {
+                    sb.append(s.charAt(0)).append(".");
+                }
+                sb.deleteCharAt(sb.length() - 1);
+                return sb.toString();
+            case 2:
+                for (String s : sa) {
+                    sb.append(s.charAt(0));
+                    if (s.length() > 1) {
+                        sb.append(s.charAt(1));
+                    }
+                    sb.append(".");
+                }
+                sb.deleteCharAt(sb.length() - 1);
+                return sb.toString();
+            default:
+                throw E.unsupport();
+        }
     }
 
     private void registerBuiltInHandlers() {

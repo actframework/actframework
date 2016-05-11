@@ -7,7 +7,6 @@ import act.app.TestingAppClassLoader;
 import act.asm.Type;
 import act.cli.CliDispatcher;
 import act.cli.meta.*;
-import act.controller.meta.HandlerMethodMetaInfo;
 import act.handler.CliHandler;
 import act.job.AppJobManager;
 import act.util.AsmTypes;
@@ -64,7 +63,7 @@ public class CommanderByteCodeScannerTest extends TestBase {
     public void staticWithoutReturnValue() {
         scan(StaticWithoutReturnType.class);
         CommanderClassMetaInfo classMetaInfo = infoSrc.commanderMetaInfo(StaticWithoutReturnType.class.getName());
-        CommandMethodMetaInfo methodMetaInfo = classMetaInfo.command("foo.bar");
+        CommandMethodMetaInfo methodMetaInfo = classMetaInfo.test_command("foo.bar");
         eq("doIt", methodMetaInfo.methodName());
         eq(StaticWithoutReturnType.class.getName() + ".doIt", methodMetaInfo.fullName());
         eq("help", methodMetaInfo.helpMsg());
@@ -94,7 +93,7 @@ public class CommanderByteCodeScannerTest extends TestBase {
         assertNotNull(handler);
 
         CommanderClassMetaInfo classMetaInfo = infoSrc.commanderMetaInfo(InstanceWithReturnType.class.getName());
-        CommandMethodMetaInfo methodMetaInfo = classMetaInfo.command("user.list");
+        CommandMethodMetaInfo methodMetaInfo = classMetaInfo.test_command("user.list");
         eq("getUserList", methodMetaInfo.methodName());
         eq(InstanceWithReturnType.class.getName() + ".getUserList", methodMetaInfo.fullName());
 
@@ -141,36 +140,4 @@ public class CommanderByteCodeScannerTest extends TestBase {
         classLoader.scan();
     }
 
-    private CommanderClassMetaInfo commander(String className) {
-        return infoSrc.commanderMetaInfo("testapp.cli." + className);
-    }
-
-    private CommanderClassMetaInfo commander(Class<?> c) {
-        return infoSrc.commanderMetaInfo(c.getName());
-    }
-
-    private CommandMethodMetaInfo command(String commander, String command) {
-        CommanderClassMetaInfo cinfo = commander(commander);
-        return null == cinfo ? null : cinfo.command(command);
-    }
-
-    private CommandMethodMetaInfo command(Class<?> c, String action) {
-        CommanderClassMetaInfo cinfo = commander(c);
-        return null == cinfo ? null : cinfo.command(action);
-    }
-
-    private void assertNoParam(HandlerMethodMetaInfo action) {
-        same(0, action.paramCount());
-    }
-
-    private static enum _F {
-        ;
-        static $.Predicate<String> SYS_CLASS_NAME = new $.Predicate<String>() {
-            @Override
-            public boolean test(String s) {
-                return s.startsWith("java") || s.startsWith("org.osgl.");
-            }
-        };
-        static $.Predicate<String> SAFE_CLASS = S.F.endsWith(".class").and(SYS_CLASS_NAME.negate());
-    }
 }

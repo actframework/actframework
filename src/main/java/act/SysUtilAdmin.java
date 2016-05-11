@@ -22,7 +22,7 @@ public class SysUtilAdmin {
         context = CliContext.current();
     }
 
-    @Command(name = "act.version", help = "Print actframework version")
+    @Command(name = "act.version, act.ver", help = "Print actframework version")
     public String version() {
         return Version.fullVersion().replace("-S-", "-SNAPSHOT-");
     }
@@ -32,7 +32,7 @@ public class SysUtilAdmin {
         return pwd(context).getAbsolutePath();
     }
 
-    @Command(name = "act.ls", help = "List files in the current working directory")
+    @Command(name = "act.ls, act.dir", help = "List files in the current working directory")
     @PropertySpec("context,path,size")
     public List<FileInfo> ls(
             @Optional String path,
@@ -56,7 +56,11 @@ public class SysUtilAdmin {
     }
 
     @Command(name = "act.cd", help = "Change working directory")
-    public void cd(String path) {
+    public void cd(@Optional String path) {
+        if (S.blank(path)) {
+            context.println(pwd());
+            return;
+        }
         File file = getFile(path);
         if (path.contains("..")) {
             try {

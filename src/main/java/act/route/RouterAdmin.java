@@ -29,7 +29,7 @@ public class RouterAdmin {
         this.context = CliContext.current();
     }
 
-    @Command(name = "act.route.list", help = "list routes")
+    @Command(name = "act.route.list, act.route.print", help = "list routes")
     @PropertySpec("method,path,handler")
     public Object listRoutes(
             @Optional("list routes in tree view") boolean tree,
