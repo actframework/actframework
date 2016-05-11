@@ -3,7 +3,7 @@ package act.handler.builtin.cli;
 import act.Act;
 import act.app.App;
 import act.app.CliContext;
-import act.cli.CliError;
+import act.cli.CliException;
 import act.cli.CommandExecutor;
 import act.cli.bytecode.ReflectedCommandExecutor;
 import act.cli.meta.CommandMethodMetaInfo;
@@ -53,7 +53,7 @@ public final class CliHandlerProxy extends CliHandlerBase {
             saveCommandPath(context);
             Object result = _handle(context);
             onResult(result, context);
-        } catch (CliError error) {
+        } catch (CliException error) {
             context.println(error.getMessage());
         } catch (Exception e) {
             context.println("Error processing command: " + e.getMessage());
