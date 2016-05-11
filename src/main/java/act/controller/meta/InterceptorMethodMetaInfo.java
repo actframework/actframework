@@ -24,7 +24,7 @@ public class InterceptorMethodMetaInfo extends HandlerMethodMetaInfo<Interceptor
 
     protected InterceptorMethodMetaInfo(InterceptorMethodMetaInfo copy, ControllerClassMetaInfo clsInfo) {
         super(copy, clsInfo);
-        this.whiteList = copy.whiteList();
+        this.whiteList = copy.whiteList;
         this.blackList = copy.blackList;
         this.priority = copy.priority;
     }
