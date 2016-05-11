@@ -159,6 +159,27 @@ public interface Dao<ID_TYPE, MODEL_TYPE, QUERY_TYPE extends Dao.Query<MODEL_TYP
     void deleteById(ID_TYPE id);
 
     /**
+     * Delete a collection of entities by fields and values.
+     * <p>The fields is specified in a {@code String} separated by any
+     * combination of the following separators</p>
+     * <ul>
+     *     <li>comma: {@code ,}</li>
+     *     <li>[space characters]</li>
+     *     <li>semi colon: {@code ;}</li>
+     *     <li>colon: {@code :}</li>
+     * </ul>
+     * <p>The values are specified in an object array. The number of values
+     * must match the number of fields specified. Otherwise {@link IllegalArgumentException}
+     * will be thrown out</p>
+     * <p>If entities found then they are returned in an {@link Iterable}. Otherwise
+     * an empty {@link Iterable} will be returned</p>
+     * @param fields the fields specification in {@code String}
+     * @param values the value array corresponding to the fields specification
+     * @throws IllegalArgumentException if fields number and value number doesn't match
+     */
+    void deleteBy(String fields, Object... values) throws IllegalArgumentException;
+
+    /**
      * Drop all entities from persistent storage
      */
     void drop();
