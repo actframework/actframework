@@ -46,7 +46,7 @@ public class CatchMethodMetaInfo extends InterceptorMethodMetaInfo {
     }
 
     @Override
-    public InterceptorMethodMetaInfo extended(ControllerClassMetaInfo clsInfo) {
+    protected InterceptorMethodMetaInfo doExtend(ControllerClassMetaInfo clsInfo) {
         return new CatchMethodMetaInfo(this, clsInfo);
     }
 }

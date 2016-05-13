@@ -59,7 +59,7 @@ public class ReflectedCommandExecutor extends CommandExecutor {
     public Object execute(CliContext context) {
         List<FieldOptionAnnoInfo> list = classMetaInfo.fieldOptionAnnoInfoList(app.classLoader());
         Object cmd = commanderInstance(list, context);
-        Object[] params = params(list.size(), context);
+        Object[] params = params(context);
         return invoke(cmd, params);
     }
 
@@ -125,7 +125,7 @@ public class ReflectedCommandExecutor extends CommandExecutor {
         return ca;
     }
 
-    private Object[] params(int fieldOptionCount, CliContext ctx) {
+    private Object[] params(CliContext ctx) {
         int paramCount = methodMetaInfo.paramCount();
         int ctxParamCount = methodMetaInfo.ctxParamCount();
         Object[] oa = new Object[paramCount];
@@ -147,7 +147,7 @@ public class ReflectedCommandExecutor extends CommandExecutor {
                 if (null == sessionVal) {
                     sessionVal = ctx.attribute(param.name());
                 }
-                oa[i] = optionVal(paramType, param.optionInfo(), argIdx, (paramCount - ctxParamCount - fieldOptionCount) == 1, param.readFileContent(), sessionVal, ctx);
+                oa[i] = optionVal(paramType, param.optionInfo(), argIdx, (paramCount - ctxParamCount) == 1, param.readFileContent(), sessionVal, ctx);
             }
         }
         return oa;

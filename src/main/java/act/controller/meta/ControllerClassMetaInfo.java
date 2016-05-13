@@ -40,6 +40,7 @@ public final class ControllerClassMetaInfo extends DestroyableBase {
     private ControllerClassMetaInfo parent;
     private C.Map<String, FieldPathVariableInfo> fieldPathVariableInfoMap = C.newMap();
     private boolean isController;
+    private boolean possibleController;
     private String contextPath;
 
     public ControllerClassMetaInfo className(String name) {
@@ -123,6 +124,15 @@ public final class ControllerClassMetaInfo extends DestroyableBase {
 
     public ControllerClassMetaInfo isController(boolean b) {
         isController = b;
+        return this;
+    }
+
+    public boolean possibleController() {
+        return possibleController;
+    }
+
+    public ControllerClassMetaInfo possibleController(boolean b) {
+        possibleController = b;
         return this;
     }
 
@@ -309,7 +319,7 @@ public final class ControllerClassMetaInfo extends DestroyableBase {
             String superClass = superType.getClassName();
             ControllerClassMetaInfo info = infoBase.controllerMetaInfo(superClass);
             if (null != info) {
-                info.getAllWithList(withList, infoBase);
+//                info.getAllWithList(withList, infoBase);
                 withList.add(superClass);
             }
         }

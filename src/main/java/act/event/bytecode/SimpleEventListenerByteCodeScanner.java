@@ -113,8 +113,7 @@ public class SimpleEventListenerByteCodeScanner extends AppByteCodeScannerBase {
                                 }
                             }
                         };
-                    } else {
-                        if (Async.class.getName().equals(className)) {
+                    } else if (Async.class.getName().equals(className)) {
                             if (!isVoid) {
                                 logger.warn("Error found in method %s.%s: @Async annotation cannot be used with method that has return type", className, methodName);
                             } else if (!isPublicNotAbstract) {
@@ -122,8 +121,34 @@ public class SimpleEventListenerByteCodeScanner extends AppByteCodeScannerBase {
                             } else {
                                 asyncMethodName = Async.MethodNameTransformer.transform(methodName);
                             }
-                        }
                         return av;
+                    } else {
+                        return new AnnotationVisitor(ASM5, av) {
+                            @Override
+                            public void visit(String name, Object value) {
+                                super.visit(name, value);
+                            }
+
+                            @Override
+                            public void visitEnd() {
+                                super.visitEnd();
+                            }
+
+                            @Override
+                            public void visitEnum(String name, String desc, String value) {
+                                super.visitEnum(name, desc, value);
+                            }
+
+                            @Override
+                            public AnnotationVisitor visitAnnotation(String name, String desc) {
+                                return super.visitAnnotation(name, desc);
+                            }
+
+                            @Override
+                            public AnnotationVisitor visitArray(String name) {
+                                return super.visitArray(name);
+                            }
+                        };
                     }
                 }
 

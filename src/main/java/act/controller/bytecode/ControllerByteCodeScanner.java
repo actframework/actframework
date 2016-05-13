@@ -47,9 +47,9 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
 
     @Override
     protected boolean shouldScan(String className) {
-        boolean isController = config().possibleControllerClass(className);
-        classInfo = new ControllerClassMetaInfo().isController(isController);
-        return isController;
+        boolean possibleController = config().possibleControllerClass(className);
+        classInfo = new ControllerClassMetaInfo().possibleController(possibleController);
+        return possibleController;
     }
 
     @Override
@@ -64,7 +64,9 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
 
     @Override
     public void scanFinished(String className) {
-        classInfoBase().registerControllerMetaInfo(classInfo);
+        if (classInfo.isController()) {
+            classInfoBase().registerControllerMetaInfo(classInfo);
+        }
     }
 
     private ControllerClassMetaInfoManager classInfoBase() {
@@ -100,7 +102,7 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
         @Override
         public FieldVisitor visitField(int access, String name, String desc, String signature, Object value) {
             FieldVisitor fv = super.visitField(access, name, desc, signature, value);
-            if (classInfo.isController()) {
+            if (classInfo.possibleController()) {
                 if (!isStatic(access)) {
                     Type type = Type.getType(desc);
                     return new ControllerFieldVisitor(fv, name, type);
@@ -117,6 +119,7 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
                 return new ControllerAnnotationVisitor(av);
             }
             if (Type.getType(With.class).getDescriptor().equals(desc)) {
+                classInfo.isController(true);
                 return new WithAnnotationVisitor(av);
             }
             return super.visitAnnotation(desc, visible);
@@ -125,7 +128,7 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
         @Override
         public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
             MethodVisitor mv = super.visitMethod(access, name, desc, signature, exceptions);
-            if (!classInfo.isController() || !isEligibleMethod(access, name, desc)) {
+            if (!classInfo.possibleController() || !isEligibleMethod(access, name, desc)) {
                 return mv;
             }
             String className = classInfo.className();
@@ -154,6 +157,11 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
         private class WithAnnotationVisitor extends AnnotationVisitor {
             public WithAnnotationVisitor(AnnotationVisitor av) {
                 super(ASM5, av);
+            }
+
+            @Override
+            public void visit(String name, Object value) {
+                super.visit(name, value);
             }
 
             @Override
@@ -384,6 +392,7 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
                     super.visitEnd();
                     return;
                 }
+                classInfo.isController(true);
                 if (null == methodInfo) {
                     ActionMethodMetaInfo action = new ActionMethodMetaInfo(classInfo);
                     methodInfo = action;

@@ -118,11 +118,15 @@ public class InterceptorMethodMetaInfo extends HandlerMethodMetaInfo<Interceptor
         return o.priority - priority;
     }
 
-    public InterceptorMethodMetaInfo extended(ControllerClassMetaInfo clsInfo) {
-        if (clsInfo.isMyAncestor(this.classInfo())) {
-            return new InterceptorMethodMetaInfo(this, clsInfo);
+    public final InterceptorMethodMetaInfo extended(ControllerClassMetaInfo clsInfo) {
+        if (clsInfo.isMyAncestor(this.classInfo()) && !this.isStatic()) {
+            return doExtend(clsInfo);
         } else {
             return this;
         }
+    }
+
+    protected InterceptorMethodMetaInfo doExtend(ControllerClassMetaInfo clsInfo) {
+        return new InterceptorMethodMetaInfo(this, clsInfo);
     }
 }

@@ -71,7 +71,7 @@ public class ControllerByteCodeScannerTest extends TestBase {
 
     @Test
     @Ignore
-    // TODO: route registration is no moved to a job, need new test case for that
+    // TODO: route registration is now moved to a job, need new test case for that
     public void specificHttpMethodAnnotationShallNotRegisterOtherHttpMethodsInRouteTable() {
         scan(WithAppContext.class);
         String url = "/static_no_ret_no_param";
@@ -161,8 +161,11 @@ public class ControllerByteCodeScannerTest extends TestBase {
     @Test
     public void testInheritedInterceptor() throws Exception {
         scan(ControllerWithInheritedInterceptor.class);
+
         assertNotNull(infoSrc.controllerMetaInfo(FilterA.class.getName()));
         assertNotNull(infoSrc.controllerMetaInfo(FilterB.class.getName()));
+        assertNotNull(infoSrc.controllerMetaInfo(FilterAB.class.getName()));
+
         ControllerClassMetaInfo info = infoSrc.controllerMetaInfo(ControllerWithInheritedInterceptor.class.getName());
         assertHasInterceptor("ControllerWithInheritedInterceptor", "afterP10", info.afterInterceptors());
     }
