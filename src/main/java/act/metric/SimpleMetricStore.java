@@ -116,6 +116,12 @@ public class SimpleMetricStore implements MetricStore, Serializable {
         return C.list(set);
     }
 
+    @Override
+    public void clear() {
+        timers.clear();
+        counters.clear();
+    }
+
     public void takeSnapshot() {
         synchronizer.write(this);
     }

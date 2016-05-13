@@ -45,4 +45,9 @@ public interface MetricStore {
      * @return timer names in a list
      */
     List<MetricInfo> timers();
+
+    /**
+     * Clear metric data
+     */
+    void clear();
 }

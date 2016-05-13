@@ -40,6 +40,11 @@ public class MetricAdmin {
         return process(list, limit, q, tree, depth, MetricInfo.Comparator.TIMER, MetricInfoTree.TIMER);
     }
 
+    @Command(name = "act.metric.clear", help = "clear existing metric data")
+    public void clearMetricData() {
+        Act.metricPlugin().metricStore().clear();
+    }
+
     private Object process(List<MetricInfo> list, Integer max, final String q,
                            boolean asTree, final Integer level, Comparator<MetricInfo> comp,
                            MetricInfoTree.NodeDecorator decorator) {
