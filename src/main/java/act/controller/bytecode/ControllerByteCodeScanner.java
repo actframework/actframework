@@ -160,11 +160,6 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
             }
 
             @Override
-            public void visit(String name, Object value) {
-                super.visit(name, value);
-            }
-
-            @Override
             public AnnotationVisitor visitArray(String name) {
                 AnnotationVisitor av = super.visitArray(name);
                 if ("value".equals(name)) {
