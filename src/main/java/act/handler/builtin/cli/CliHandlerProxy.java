@@ -8,6 +8,7 @@ import act.cli.CommandExecutor;
 import act.cli.bytecode.ReflectedCommandExecutor;
 import act.cli.meta.CommandMethodMetaInfo;
 import act.cli.meta.CommanderClassMetaInfo;
+import act.handler.CliHandler;
 import act.handler.CliHandlerBase;
 import act.util.PropertySpec;
 import org.osgl.$;
@@ -111,4 +112,20 @@ public final class CliHandlerProxy extends CliHandlerBase {
         return methodMetaInfo.fullName();
     }
 
+    @Override
+    public int hashCode() {
+        return $.hc(methodMetaInfo);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == this) {
+            return true;
+        }
+        if (obj instanceof CliHandlerProxy) {
+            CliHandlerProxy that = (CliHandlerProxy)obj;
+            return $.eq(that.methodMetaInfo, this.methodMetaInfo);
+        }
+        return false;
+    }
 }

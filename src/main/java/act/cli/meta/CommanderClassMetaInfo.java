@@ -4,6 +4,7 @@ import act.app.AppClassLoader;
 import act.asm.Type;
 import act.sys.meta.SessionVariableAnnoInfo;
 import act.util.DestroyableBase;
+import org.osgl.$;
 import org.osgl.util.C;
 import org.osgl.util.S;
 
@@ -177,6 +178,23 @@ public class CommanderClassMetaInfo extends DestroyableBase {
             contextPath = path;
         }
         return this;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == this) {
+            return true;
+        }
+        if (obj instanceof CommanderClassMetaInfo) {
+            CommanderClassMetaInfo that = $.cast(obj);
+            return $.eq(that.type, this.type);
+        }
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return $.hc(type);
     }
 
     private void buildCommandLookup() {

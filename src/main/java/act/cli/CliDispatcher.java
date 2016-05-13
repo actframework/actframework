@@ -26,10 +26,13 @@ import java.util.Set;
 public class CliDispatcher extends AppServiceBase<CliDispatcher> {
 
     private static Logger logger = LogManager.get(CliDispatcher.class);
+    private static final String NAME_PART_SEPARATOR = "[\\.\\-_]+";
 
     private Map<String, CliHandler> registry = C.newMap();
     private Map<String, String> shortCuts = C.newMap();
     private Set<String> ambiguiousShortCuts = C.newSet();
+    private Map<CliHandler, List<String>> nameMap = C.newMap();
+    private Map<CliHandler, List<String>> shortCutMap = C.newMap();
 
     public CliDispatcher(App app) {
         super(app);
@@ -109,6 +112,14 @@ public class CliDispatcher extends AppServiceBase<CliDispatcher> {
         });
     }
 
+    public List<String> names(CliHandler handler) {
+        return nameMap.get(handler);
+    }
+
+    public List<String> shortCuts(CliHandler handler) {
+        return shortCutMap.get(handler);
+    }
+
     @Override
     protected void releaseResources() {
         registry.clear();
@@ -117,10 +128,25 @@ public class CliDispatcher extends AppServiceBase<CliDispatcher> {
     private void addToRegistry(String name, CliHandler handler) {
         registry.put(name, handler);
         Help.updateMaxWidth(name.length());
-        registerShortCut(name);
+        updateNameIndex(name, handler);
+        registerShortCut(name, handler);
     }
 
-    private void registerShortCut(String name) {
+    private void updateNameIndex(String name, CliHandler handler) {
+        List<String> nameList = nameMap.get(handler);
+        if (null == nameList) {
+            nameList = C.newList();
+            nameMap.put(handler, nameList);
+        }
+        nameList.add(name);
+    }
+
+    private void registerShortCut(String name, CliHandler handler) {
+        List<String> shortCutNames = shortCutMap.get(handler);
+        if (null == shortCutNames) {
+            shortCutNames = C.newList();
+            shortCutMap.put(handler, shortCutNames);
+        }
         for (int i = 0; i < 3; ++i) {
             String shortCut = shortCut(name, i);
             if (null == shortCut) {
@@ -132,20 +158,22 @@ public class CliDispatcher extends AppServiceBase<CliDispatcher> {
             if (shortCuts.containsKey(shortCut)) {
                 ambiguiousShortCuts.add(shortCut);
                 shortCuts.remove(shortCut);
+                shortCutNames.remove(shortCut);
             }
             shortCuts.put(shortCut, name);
+            shortCutNames.add(shortCut);
         }
     }
 
     /**
-     * level's definition:
+     * level:
      *
      * 0 - "foo.bar.zee" -> ".fbz"
      * 1 - "foo.bar.zee" -> "f.b.z"
-     * 2 = "foo.bar.zee" -> "fo.ba.ze"
+     * 2 - "foo.bar.zee" -> "fo.ba.ze"
      */
     private static String shortCut(String name, int level) {
-        String sa[] = name.split("\\.");
+        String sa[] = name.split(NAME_PART_SEPARATOR);
         if (sa.length < 2) {
             return null;
         }

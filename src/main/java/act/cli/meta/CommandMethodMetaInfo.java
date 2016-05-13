@@ -230,6 +230,26 @@ public class CommandMethodMetaInfo extends DestroyableBase {
     }
 
     @Override
+    public int hashCode() {
+        return $.hc(methodName, invokeType, clsInfo, params);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == this) {
+            return true;
+        }
+        if (obj instanceof CommandMethodMetaInfo) {
+            CommandMethodMetaInfo that = $.cast(obj);
+            return $.eq(that.methodName, this.methodName)
+                    && $.eq(that.invokeType, this.invokeType)
+                    && $.eq(that.params, this.params)
+                    && $.eq(that.clsInfo, this.clsInfo);
+        }
+        return false;
+    }
+
+    @Override
     protected void releaseResources() {
         super.releaseResources();
         clsInfo.destroy();

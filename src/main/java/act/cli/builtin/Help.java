@@ -87,15 +87,17 @@ public class Help extends CliHandlerBase {
     }
 
     public boolean showHelp(String command, CliContext context) {
-        CliHandler handler = context.app().cliDispatcher().handler(command);
+        CliDispatcher dispatcher = context.app().cliDispatcher();
+        CliHandler handler = dispatcher.handler(command);
         if (null == handler) {
             // context.println("Unrecongized command: %s", command);
             return false;
         }
         List<String> lines = C.newList();
 
+        List<String> names = dispatcher.names(handler);
         T2<String, String> commandLine = handler.commandLine(command);
-        lines.add("Usage: " + commandLine._1);
+        lines.add("Usage: " + names.get(0));
         lines.add(commandLine._2);
 
         String summary = handler.summary();
@@ -116,6 +118,17 @@ public class Help extends CliHandlerBase {
             for (T2<String, String> t2: options) {
                 lines.add(S.fmt(fmt, t2._1, t2._2));
             }
+        }
+
+        if (names.size() > 1) {
+            lines.add("");
+            lines.add("Aliases: " + S.join(", ", C.list(names).tail()));
+        }
+
+        List<String> shortCuts = dispatcher.shortCuts(handler);
+        if (shortCuts.size() > 0) {
+            lines.add("");
+            lines.add("Shortcuts: " + S.join(", ", shortCuts));
         }
 
         context.println(S.join("\n", lines));
