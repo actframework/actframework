@@ -19,6 +19,7 @@ import java.util.EventObject;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
+import java.util.concurrent.TimeUnit;
 
 @ActComponent
 public class EventBus extends AppServiceBase<EventBus> {
@@ -88,6 +89,9 @@ public class EventBus extends AppServiceBase<EventBus> {
     }
 
     @SuppressWarnings("unused")
+    /**
+     * Alias of {@link #bind(AppEventId, AppEventListener)}
+     */
     public synchronized EventBus bindSync(AppEventId appEventId, AppEventListener l) {
         return bind(appEventId, l);
     }
@@ -102,27 +106,68 @@ public class EventBus extends AppServiceBase<EventBus> {
         return false;
     }
 
-    private EventBus _bind(Map<Class<? extends EventObject>, List<ActEventListener>> listeners, Class<? extends EventObject> c, ActEventListener l) {
+    private EventBus _bind(final Map<Class<? extends EventObject>, List<ActEventListener>> listeners, final Class<? extends EventObject> c, final ActEventListener l, int ttl) {
         List<ActEventListener> list = listeners.get(c);
         if (null == list) {
             list = C.newList();
             listeners.put(c, list);
         }
-        if (!list.contains(l)) list.add(l);
+        if (!list.contains(l)) {
+            list.add(l);
+            E.illegalArgumentIf(ttl < 0);
+            if (ttl > 0) {
+                app().jobManager().delay(new Runnable() {
+                    @Override
+                    public void run() {
+                        synchronized (EventBus.this) {
+                            _unbind(listeners, c, l);
+                        }
+                    }
+                }, ttl, TimeUnit.SECONDS);
+            }
+        }
+        return this;
+    }
+
+    private EventBus _unbind(Map<Class<? extends EventObject>, List<ActEventListener>> listeners, Class<? extends EventObject> c, ActEventListener l) {
+        List<ActEventListener> list = listeners.get(c);
+        if (null != list) {
+            list.remove(l);
+        }
         return this;
     }
 
     public synchronized EventBus bind(Class<? extends EventObject> c, ActEventListener l) {
         Map<Class<? extends EventObject>, List<ActEventListener>> listeners = isAsync(l.getClass()) ? asyncActEventListeners : actEventListeners;
-        return _bind(listeners, c, l);
+        return _bind(listeners, c, l, 0);
+    }
+
+    /**
+     * Bind a transient event list to event with type `c`
+     * @param c the target event type
+     * @param l the listener
+     * @param ttl the number of seconds the listener should live
+     * @return this event bus instance
+     */
+    public EventBus bind(Class<? extends EventObject> c, ActEventListener l, int ttl) {
+        Map<Class<? extends EventObject>, List<ActEventListener>> listeners = isAsync(l.getClass()) ? asyncActEventListeners : actEventListeners;
+        return _bind(listeners, c, l, ttl);
     }
 
     public synchronized EventBus bindSync(Class<? extends EventObject> c, ActEventListener l) {
-        return _bind(actEventListeners, c, l);
+        return _bind(actEventListeners, c, l, 0);
+    }
+
+    public synchronized EventBus bindSync(final Class<? extends EventObject> c, final ActEventListener l, int ttl) {
+        return _bind(actEventListeners, c, l, ttl);
     }
 
     public synchronized EventBus bindAsync(Class<? extends EventObject> c, ActEventListener l) {
-        return _bind(asyncActEventListeners, c, l);
+        return _bind(asyncActEventListeners, c, l, 0);
+    }
+
+    public synchronized EventBus bindAsync(Class<? extends EventObject> c, ActEventListener l, int ttl) {
+        return _bind(asyncActEventListeners, c, l, ttl);
     }
 
     @SuppressWarnings("unchecked")
