@@ -7,6 +7,7 @@ import act.event.AppEventListenerBase;
 import act.route.DuplicateRouteMappingException;
 import act.util.DestroyableBase;
 import org.osgl.$;
+import org.osgl.Osgl;
 import org.osgl.exception.ConfigurationException;
 import org.osgl.exception.NotAppliedException;
 import org.osgl.exception.UnexpectedException;
@@ -40,7 +41,7 @@ class _Job extends DestroyableBase implements Runnable {
     private List<_Job> precedenceJobs = C.newList();
 
     _Job(AppJobManager manager) {
-        this(uuid(), manager);
+        this(Act.cuid(), manager);
     }
 
     _Job(String id, AppJobManager manager) {

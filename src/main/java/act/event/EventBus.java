@@ -198,11 +198,10 @@ public class EventBus extends AppServiceBase<EventBus> {
             if (!async) {
                 callOn(event, l);
             } else {
-                jobManager.now(new Callable<Object>() {
+                jobManager.now(new Runnable() {
                     @Override
-                    public Object call() throws Exception {
+                    public void run() {
                         callOn(event, l);
-                        return null;
                     }
                 });
             }

@@ -51,7 +51,7 @@ public class AppJobManager extends AppServiceBase<AppJobManager> {
     }
 
     public void now(Runnable runnable) {
-        executor().submit(runnable);
+        executor().submit(wrap(runnable));
     }
 
     public <T> Future<T> delay(Callable<T> callable, long delay, TimeUnit timeUnit) {
@@ -59,7 +59,7 @@ public class AppJobManager extends AppServiceBase<AppJobManager> {
     }
 
     public void delay(Runnable runnable, long delay, TimeUnit timeUnit) {
-        executor().schedule(runnable, delay, timeUnit);
+        executor().schedule(wrap(runnable), delay, timeUnit);
     }
 
     public <T> Future<T> delay(Callable<T> callable, String delay) {
@@ -69,7 +69,7 @@ public class AppJobManager extends AppServiceBase<AppJobManager> {
 
     public void delay(Runnable runnable, String delay) {
         int seconds = parseTime(delay);
-        executor().schedule(runnable, seconds, TimeUnit.SECONDS);
+        executor().schedule(wrap(runnable), seconds, TimeUnit.SECONDS);
     }
 
     public void every(String id, Runnable runnable, String interval) {
@@ -115,7 +115,7 @@ public class AppJobManager extends AppServiceBase<AppJobManager> {
         DateTime now = DateTime.now();
         E.illegalArgumentIf(instant.isBefore(now));
         Seconds seconds = Seconds.secondsBetween(now, instant);
-        executor().schedule(runnable, seconds.getSeconds(), TimeUnit.SECONDS);
+        executor().schedule(wrap(runnable), seconds.getSeconds(), TimeUnit.SECONDS);
     }
 
     public <T> Future<T> on(DateTime instant, Callable<T> callable) {
@@ -132,7 +132,7 @@ public class AppJobManager extends AppServiceBase<AppJobManager> {
     public void on(AppEventId appEvent, final Runnable runnable, boolean runImmediatelyIfEventDispatched) {
         _Job job = jobById(appEventJobId(appEvent));
         if (null == job) {
-            processDelayedJob(runnable, runImmediatelyIfEventDispatched);
+            processDelayedJob(wrap(runnable), runImmediatelyIfEventDispatched);
         } else {
             job.addPrecedenceJob(_Job.once(runnable, this));
         }
@@ -145,7 +145,7 @@ public class AppJobManager extends AppServiceBase<AppJobManager> {
     public void post(AppEventId appEvent, final Runnable runnable, boolean runImmediatelyIfEventDispatched) {
         _Job job = jobById(appEventJobId(appEvent));
         if (null == job) {
-            processDelayedJob(runnable, runImmediatelyIfEventDispatched);
+            processDelayedJob(wrap(runnable), runImmediatelyIfEventDispatched);
         } else {
             job.addFollowingJob(_Job.once(runnable, this));
         }
@@ -158,7 +158,7 @@ public class AppJobManager extends AppServiceBase<AppJobManager> {
     public void on(AppEventId appEvent, String jobId, final Runnable runnable, boolean runImmediatelyIfEventDispatched) {
         _Job job = jobById(appEventJobId(appEvent));
         if (null == job) {
-            processDelayedJob(runnable, runImmediatelyIfEventDispatched);
+            processDelayedJob(wrap(runnable), runImmediatelyIfEventDispatched);
         } else {
             job.addPrecedenceJob(_Job.once(jobId, runnable, this));
         }
@@ -171,7 +171,7 @@ public class AppJobManager extends AppServiceBase<AppJobManager> {
     public void post(AppEventId appEvent, String jobId, final Runnable runnable, boolean runImmediatelyIfEventDispatched) {
         _Job job = jobById(appEventJobId(appEvent));
         if (null == job) {
-            processDelayedJob(runnable, runImmediatelyIfEventDispatched);
+            processDelayedJob(wrap(runnable), runImmediatelyIfEventDispatched);
         } else {
             job.addFollowingJob(_Job.once(jobId, runnable, this));
         }
@@ -231,6 +231,13 @@ public class AppJobManager extends AppServiceBase<AppJobManager> {
         executor.setRemoveOnCancelPolicy(true);
     }
 
+    private void createAppEventListener(AppEventId appEventId) {
+        String jobId = appEventJobId(appEventId);
+        _Job job = new _Job(jobId, this);
+        addJob(job);
+        app().eventBus().bind(appEventId, new _AppEventListener(jobId, job));
+    }
+
     private static class _AppEventListener extends AppEventListenerBase {
         private Runnable worker;
         _AppEventListener(String id, Runnable worker) {
@@ -251,10 +258,11 @@ public class AppJobManager extends AppServiceBase<AppJobManager> {
         }
     }
 
-    private void createAppEventListener(AppEventId appEventId) {
-        String jobId = appEventJobId(appEventId);
-        _Job job = new _Job(jobId, this);
-        addJob(job);
-        app().eventBus().bind(appEventId, new _AppEventListener(jobId, job));
+    private Runnable wrap(Runnable runnable) {
+        if (runnable instanceof _Job) {
+            return runnable;
+        } else {
+            return _Job.once(runnable, this);
+        }
     }
 }
