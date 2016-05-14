@@ -150,15 +150,18 @@ public class CliDispatcher extends AppServiceBase<CliDispatcher> {
         for (int i = 0; i < 3; ++i) {
             String shortCut = shortCut(name, i);
             if (null == shortCut) {
-                return;
+                continue;
             }
             if (ambiguiousShortCuts.contains(shortCut)) {
-                return;
+                continue;
             }
             if (shortCuts.containsKey(shortCut)) {
                 ambiguiousShortCuts.add(shortCut);
                 shortCuts.remove(shortCut);
-                shortCutNames.remove(shortCut);
+                for (List<String> ls : shortCutMap.values()) {
+                    ls.remove(shortCut);
+                }
+                continue;
             }
             shortCuts.put(shortCut, name);
             shortCutNames.add(shortCut);
