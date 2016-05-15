@@ -5,10 +5,12 @@ import act.cli.ascii_table.impl.CollectionASCIITableAware;
 import act.cli.tree.TreeNode;
 import act.cli.util.MappedFastJsonNameFilter;
 import act.data.DataPropertyRepository;
-import act.util.*;
+import act.util.ActContext;
+import act.util.DisableFastJsonCircularReferenceDetect;
+import act.util.FastJsonPropertyPreFilter;
+import act.util.PropertySpec;
 import com.alibaba.fastjson.serializer.SerializeFilter;
 import com.alibaba.fastjson.serializer.SerializerFeature;
-import com.thoughtworks.xstream.XStream;
 import org.osgl.$;
 import org.osgl.util.C;
 import org.osgl.util.E;
@@ -112,28 +114,7 @@ public enum CliView {
     XML() {
         @Override
         public String render(Object result, PropertySpec.MetaInfo spec, ActContext context) {
-            if (null == result) {
-                return "<result></result>";
-            }
-            List dataList = toList(result);
-            if (dataList.isEmpty()) {
-                return "<result></result>";
-            }
-            boolean isList = dataList.get(0) != result;
-            XStream xStream = new XStream();
-            xStream.registerConverter(new XstreamOsglCollectionConverter(xStream.getMapper()));
-            xStream.registerConverter(new XstreamOsglMapConverter(xStream.getMapper()));
-            Class c = dataList.get(0).getClass();
-            if (isList) {
-                xStream.alias("result", List.class);
-                xStream.alias(c.getSimpleName(), c);
-            } else {
-                xStream.alias("result", c);
-            }
-            if (null == spec) {
-                return xStream.toXML(result);
-            }
-            return xStream.toXML(result);
+            throw E.unsupport();
         }
     },
 
