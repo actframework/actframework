@@ -338,6 +338,14 @@ public class Router extends AppServiceBase<Router> {
 
     private Node search(H.Method method, Iterator<CharSequence> path, ActionContext context) {
         Node node = root(method);
+        if (node.terminateRouteSearch()) {
+            StringBuilder sb = new StringBuilder();
+            while (path.hasNext()) {
+                sb.append('/').append(path.next());
+            }
+            context.param(ParamNames.PATH, sb.toString());
+            return node;
+        }
         while (null != node && path.hasNext()) {
             CharSequence nodeName = path.next();
             node = node.child(nodeName, context);
