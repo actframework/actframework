@@ -22,7 +22,10 @@ import java.util.concurrent.atomic.AtomicLong;
  */
 public class SimpleMetricStore implements MetricStore, Serializable {
 
+
     private transient static final Logger defLogger = LogManager.get("metric.default");
+
+    private static final long serialVersionUID = 7357409264403928225L;
 
     private ConcurrentMap<String, AtomicLong> counters = new ConcurrentHashMap<String, AtomicLong>();
     private ConcurrentMap<String, AtomicLong> timers = new ConcurrentHashMap<String, AtomicLong>();
