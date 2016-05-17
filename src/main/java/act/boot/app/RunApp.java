@@ -19,6 +19,10 @@ public class RunApp {
 
     private static final Logger logger = L.get(RunApp.class);
 
+    public static void start() throws Exception {
+        start(null, null, "");
+    }
+
     public static void start(Class<?> anyController) throws Exception {
         start(null, null, anyController);
     }
@@ -63,5 +67,9 @@ public class RunApp {
             }
         }
         System.out.printf("it talks %sms to start the app\n", $.ms() - ts);
+    }
+
+    public static void main(String[] args) throws Exception {
+        start();
     }
 }
