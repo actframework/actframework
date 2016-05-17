@@ -11,6 +11,8 @@ import org.osgl.Osgl;
 import org.osgl.exception.ConfigurationException;
 import org.osgl.exception.NotAppliedException;
 import org.osgl.exception.UnexpectedException;
+import org.osgl.logging.LogManager;
+import org.osgl.logging.Logger;
 import org.osgl.util.C;
 import org.osgl.util.E;
 import org.osgl.util.S;
@@ -21,6 +23,8 @@ import java.util.List;
 import java.util.UUID;
 
 class _Job extends DestroyableBase implements Runnable {
+
+    private static final Logger logger = LogManager.get(_Job.class);
 
     static final String BRIEF_VIEW = "id,oneTime,executed,trigger";
     static final String DETAIL_VIEW = "id,oneTime,executed,trigger,worker";
