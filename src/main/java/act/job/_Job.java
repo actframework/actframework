@@ -17,6 +17,7 @@ import org.osgl.util.C;
 import org.osgl.util.E;
 import org.osgl.util.S;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
 import java.util.EventObject;
 import java.util.List;

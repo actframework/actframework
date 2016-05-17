@@ -64,6 +64,7 @@ public enum Jars {
     }
 
     public static void scan(File file, F.JarEntryVisitor... visitors) {
+        file = file.getAbsoluteFile();
         if (file.isDirectory()) {
             scanDir(file, visitors);
         } else {
@@ -105,23 +106,27 @@ public enum Jars {
     }
 
     private static void scanFile(File file, F.JarEntryVisitor... visitors) throws IOException {
-        JarFile jar = new JarFile(file);
         try {
-            Enumeration<JarEntry> entries = jar.entries();
-            while (entries.hasMoreElements()) {
-                JarEntry entry = entries.nextElement();
-                String name = entry.getName();
-                if (entry.isDirectory()) {
-                    continue;
-                }
-                for (F.JarEntryVisitor visitor : visitors) {
-                    if (name.endsWith(visitor.suffixRequired())) {
-                        visitor.apply(jar, entry);
+            JarFile jar = new JarFile(file);
+            try {
+                Enumeration<JarEntry> entries = jar.entries();
+                while (entries.hasMoreElements()) {
+                    JarEntry entry = entries.nextElement();
+                    String name = entry.getName();
+                    if (entry.isDirectory()) {
+                        continue;
+                    }
+                    for (F.JarEntryVisitor visitor : visitors) {
+                        if (name.endsWith(visitor.suffixRequired())) {
+                            visitor.apply(jar, entry);
+                        }
                     }
                 }
+            } finally {
+                jar.close();
             }
-        } finally {
-            jar.close();
+        } catch (IOException e) {
+            logger.error(e, "error scan file: %s", file.getAbsolutePath());
         }
     }
 

@@ -307,13 +307,9 @@ public class AppClassLoader
         final $.Function<String, Boolean> ignoredClassNames = app().config().appClassTester().negate();
         Jars.F.JarEntryVisitor classNameIndexBuilder = Jars.F.classNameIndexBuilder(bytecodeIdx, ignoredClassNames);
         Jars.F.JarEntryVisitor confIndexBuilder = Jars.F.appConfigFileIndexBuilder(jarConf);
-        Jars.scan(RuntimeDirs.lib(app), classNameIndexBuilder, confIndexBuilder);
-        if (Act.isDev()) {
-            // need to load maven jars
-            List<File> jars = FullStackAppBootstrapClassLoader.jars(AppClassLoader.class.getClassLoader());
-            for (File jar: jars) {
-                Jars.scan(jar, classNameIndexBuilder, confIndexBuilder);
-            }
+        List<File> jars = FullStackAppBootstrapClassLoader.jars(AppClassLoader.class.getClassLoader());
+        for (File jar: jars) {
+            Jars.scan(jar, classNameIndexBuilder, confIndexBuilder);
         }
         libClsCache.putAll(bytecodeIdx);
         AppConfig config = app().config();
@@ -358,18 +354,23 @@ public class AppClassLoader
         return null;
     }
 
-    private Class<?> loadAppClass(String name, boolean resolve) {
+    private Class<?> loadAppClass(String name, boolean resolve) throws ClassNotFoundException {
         byte[] bytecode = appBytecode(name);
         if (null == bytecode) {
             bytecode = loadAppClassFromDisk(name);
             if (null == bytecode) return null;
         }
         if (!app().config().needEnhancement(name)) {
-            Class<?> c = super.defineClass(name, bytecode, 0, bytecode.length, DOMAIN);
-            if (resolve) {
-                super.resolveClass(c);
+            Class<?> c;
+            if (name.contains("$")) {
+                return super.loadClass(name, resolve);
+            } else {
+                c = super.defineClass(name, bytecode, 0, bytecode.length, DOMAIN);
+                if (resolve) {
+                    super.resolveClass(c);
+                }
+                return c;
             }
-            return c;
         }
         try {
             byte[] baNew = enhance(name, bytecode);

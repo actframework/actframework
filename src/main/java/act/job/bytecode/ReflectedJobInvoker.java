@@ -12,6 +12,7 @@ import org.osgl.util.C;
 import org.osgl.util.E;
 import org.osgl.util.S;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Map;
 
@@ -80,6 +81,8 @@ public class ReflectedJobInvoker<M extends JobMethodMetaInfo> extends $.F0<Objec
         } else {
             try {
                 result = method.invoke(null, params);
+            } catch (InvocationTargetException e) {
+                throw E.unexpected(e.getCause());
             } catch (Exception e) {
                 throw E.unexpected(e);
             }
