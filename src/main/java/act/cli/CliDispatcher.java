@@ -30,7 +30,7 @@ public class CliDispatcher extends AppServiceBase<CliDispatcher> {
 
     private Map<String, CliHandler> registry = C.newMap();
     private Map<String, String> shortCuts = C.newMap();
-    private Set<String> ambiguiousShortCuts = C.newSet();
+    private Map<String, List<CliHandler>> ambiguiousShortCuts = C.newMap();
     private Map<CliHandler, List<String>> nameMap = C.newMap();
     private Map<CliHandler, List<String>> shortCutMap = C.newMap();
 
@@ -147,24 +147,25 @@ public class CliDispatcher extends AppServiceBase<CliDispatcher> {
             shortCutNames = C.newList();
             shortCutMap.put(handler, shortCutNames);
         }
-        for (int i = 0; i < 3; ++i) {
+        for (int i = 0; i < 5; ++i) {
             String shortCut = shortCut(name, i);
             if (null == shortCut) {
                 continue;
             }
-            if (ambiguiousShortCuts.contains(shortCut)) {
-                continue;
-            }
-            if (shortCuts.containsKey(shortCut)) {
-                ambiguiousShortCuts.add(shortCut);
+            if (ambiguiousShortCuts.containsKey(shortCut)) {
+                List<CliHandler> list = ambiguiousShortCuts.get(shortCut);
+                list.add(handler);
+            } else if (shortCuts.containsKey(shortCut)) {
                 shortCuts.remove(shortCut);
+                List<CliHandler> list = C.newList();
+                ambiguiousShortCuts.put(shortCut, list);
                 for (List<String> ls : shortCutMap.values()) {
                     ls.remove(shortCut);
                 }
-                continue;
+            } else {
+                shortCuts.put(shortCut, name);
+                shortCutNames.add(shortCut);
             }
-            shortCuts.put(shortCut, name);
-            shortCutNames.add(shortCut);
         }
     }
 
@@ -173,7 +174,9 @@ public class CliDispatcher extends AppServiceBase<CliDispatcher> {
      *
      * 0 - "foo.bar.zee" -> ".fbz"
      * 1 - "foo.bar.zee" -> "f.b.z"
-     * 2 - "foo.bar.zee" -> "fo.ba.ze"
+     * 2 - "foo.bar.zee" -> "f.b.zee"
+     * 3 - "foo.bar.zee" -> "f.bar.z"
+     * 4 - "foo.bar.zee" -> "fo.ba.ze"
      */
     private static String shortCut(String name, int level) {
         String sa[] = name.split(NAME_PART_SEPARATOR);
@@ -195,6 +198,19 @@ public class CliDispatcher extends AppServiceBase<CliDispatcher> {
                 sb.deleteCharAt(sb.length() - 1);
                 return sb.toString();
             case 2:
+                for (int i = 0; i < sa.length - 1; ++i) {
+                    sb.append(sa[i].charAt(0)).append(".");
+                }
+                sb.append(sa[sa.length - 1]);
+                return sb.toString();
+            case 3:
+                for (int i = 0; i < sa.length - 2; ++i) {
+                    sb.append(sa[i].charAt(0)).append(".");
+                }
+                sb.append(sa[sa.length - 2]).append(".");
+                sb.append(sa[sa.length - 1].charAt(0));
+                return sb.toString();
+            case 4:
                 for (String s : sa) {
                     sb.append(s.charAt(0));
                     if (s.length() > 1) {
