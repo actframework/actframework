@@ -216,7 +216,7 @@
     <dependency>
       <groupId>com.alibaba</groupId>
       <artifactId>fastjson</artifactId>
-      <version>1.2.11</version>
+      <version>1.2.12</version>
     </dependency>
 
     <dependency>
@@ -289,7 +289,7 @@
     <dependency>
       <groupId>org.rythmengine</groupId>
       <artifactId>rythm-engine</artifactId>
-      <version>1.1.5-SNAPSHOT</version>
+      <version>1.1.6-SNAPSHOT</version>
     </dependency>
 
   </dependencies>

@@ -18,7 +18,6 @@ import org.osgl.util.S;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * Dispatch console command to CLI command handler
@@ -30,7 +29,7 @@ public class CliDispatcher extends AppServiceBase<CliDispatcher> {
 
     private Map<String, CliHandler> registry = C.newMap();
     private Map<String, String> shortCuts = C.newMap();
-    private Map<String, List<CliHandler>> ambiguiousShortCuts = C.newMap();
+    private Map<String, List<CliHandler>> ambiguousShortCuts = C.newMap();
     private Map<CliHandler, List<String>> nameMap = C.newMap();
     private Map<CliHandler, List<String>> shortCutMap = C.newMap();
 
@@ -152,13 +151,13 @@ public class CliDispatcher extends AppServiceBase<CliDispatcher> {
             if (null == shortCut) {
                 continue;
             }
-            if (ambiguiousShortCuts.containsKey(shortCut)) {
-                List<CliHandler> list = ambiguiousShortCuts.get(shortCut);
+            if (ambiguousShortCuts.containsKey(shortCut)) {
+                List<CliHandler> list = ambiguousShortCuts.get(shortCut);
                 list.add(handler);
             } else if (shortCuts.containsKey(shortCut)) {
                 shortCuts.remove(shortCut);
                 List<CliHandler> list = C.newList();
-                ambiguiousShortCuts.put(shortCut, list);
+                ambiguousShortCuts.put(shortCut, list);
                 for (List<String> ls : shortCutMap.values()) {
                     ls.remove(shortCut);
                 }
