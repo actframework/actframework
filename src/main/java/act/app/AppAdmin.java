@@ -14,4 +14,11 @@ public class AppAdmin {
         context.app().restart();
     }
 
+    @Command(value = "act.app.shutdown", help = "shutdown application node")
+    public void shutdown(CliContext context) {
+        context.println("About to shutdown app. Your telnet session will be terminated. Please reconnect in a few seconds ...");
+        context.flush();
+        context.app().shutdown();
+    }
+
 }
