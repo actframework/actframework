@@ -56,7 +56,7 @@ public class ControllerClassMetaInfoManager extends DestroyableBase {
             }
             subTypeInfo.remove(metaInfo.type());
         }
-        logger.trace("Controller meta info registered for: %s", className);
+        App.logger.trace("Controller meta info registered for: %s", className);
     }
 
     public ControllerClassMetaInfo controllerMetaInfo(String className) {

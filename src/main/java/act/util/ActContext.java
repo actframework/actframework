@@ -12,6 +12,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import static act.app.App.logger;
+
 public interface ActContext<CTX_TYPE extends ActContext> {
     App app();
     AppConfig config();

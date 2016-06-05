@@ -35,8 +35,6 @@ import static org.eclipse.jdt.internal.compiler.impl.CompilerOptions.*;
  */
 class AppCompiler extends DestroyableBase {
 
-    static final Logger logger = L.get(AppCompiler.class);
-
     Map<String, Boolean> packagesCache = C.newMap();
     private DevModeClassLoader classLoader;
     private App app;

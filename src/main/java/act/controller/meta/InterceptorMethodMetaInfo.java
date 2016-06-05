@@ -1,6 +1,7 @@
 package act.controller.meta;
 
 import act.Constants;
+import act.app.App;
 import act.handler.builtin.controller.Handler;
 import org.osgl.logging.L;
 import org.osgl.logging.Logger;
@@ -9,14 +10,14 @@ import org.osgl.util.S;
 
 import java.util.Set;
 
+import static act.app.App.logger;
+
 /**
  * Stores all method level information needed to generate
  * {@link Handler interceptors}
  */
 public class InterceptorMethodMetaInfo extends HandlerMethodMetaInfo<InterceptorMethodMetaInfo>
         implements Comparable<InterceptorMethodMetaInfo> {
-
-    protected static final Logger logger = L.get(InterceptorMethodMetaInfo.class);
 
     private Set<String> whiteList = C.newSet();
     private Set<String> blackList = C.newSet();

@@ -338,7 +338,7 @@ public final class ControllerClassMetaInfo extends DestroyableBase {
                     interceptors.mergeFrom(withClassInfo.interceptors);
                 }
             } else {
-                logger.warn("Cannot find class info for @With class: %s", withClass);
+                App.logger.warn("Cannot find class info for @With class: %s", withClass);
             }
         }
     }

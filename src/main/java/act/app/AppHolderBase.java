@@ -8,8 +8,6 @@ import org.osgl.logging.Logger;
 
 public abstract class AppHolderBase<T extends AppHolderBase> extends DestroyableBase implements AppHolder<T>, Destroyable {
 
-    protected static final Logger logger = L.get(App.class);
-
     private App app;
 
     protected AppHolderBase() {

@@ -19,6 +19,8 @@ import javax.mail.internet.*;
 import java.io.File;
 import java.util.*;
 
+import static act.app.App.logger;
+
 public class MailerContext extends ActContext.ActContextBase<MailerContext> {
 
     private H.Format fmt = H.Format.HTML;

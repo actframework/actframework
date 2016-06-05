@@ -10,8 +10,6 @@ import java.util.List;
 
 public abstract class DestroyableBase implements Destroyable {
 
-    protected static final Logger logger = L.get(Act.class);
-
     private boolean destroyed;
 
     private List<Destroyable> subResources = C.newList();

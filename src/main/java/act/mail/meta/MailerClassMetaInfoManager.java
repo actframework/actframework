@@ -1,5 +1,6 @@
 package act.mail.meta;
 
+import act.app.App;
 import act.asm.Type;
 import act.util.DestroyableBase;
 import org.osgl.util.C;
@@ -7,6 +8,7 @@ import org.osgl.util.C;
 import java.util.Map;
 
 import static act.Destroyable.Util.destroyAll;
+import static act.app.App.logger;
 
 public class MailerClassMetaInfoManager extends DestroyableBase {
 

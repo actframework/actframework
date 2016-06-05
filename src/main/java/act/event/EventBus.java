@@ -21,6 +21,8 @@ import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
+import static act.app.App.logger;
+
 @ActComponent
 public class EventBus extends AppServiceBase<EventBus> {
 

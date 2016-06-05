@@ -13,6 +13,8 @@ import act.util.ClassNode;
 import act.util.General;
 import org.osgl.$;
 import org.osgl.exception.ConfigurationException;
+import org.osgl.logging.LogManager;
+import org.osgl.logging.Logger;
 import org.osgl.util.C;
 import org.osgl.util.E;
 import org.rythmengine.utils.S;
@@ -24,6 +26,8 @@ import java.util.Map;
 
 @ActComponent
 public class DbServiceManager extends AppServiceBase<DbServiceManager> implements DaoLocator {
+
+    private static Logger logger = LogManager.get(DbServiceManager.class);
 
     public static final String DEFAULT = "default";
 

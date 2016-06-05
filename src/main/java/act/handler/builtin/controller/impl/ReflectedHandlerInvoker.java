@@ -336,7 +336,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
                                 Object entity = newInstance(paramType);
                                 o = autoBinder.resolve(entity, bindName, ctx);
                             } catch (Exception e) {
-                                logger.warn(e, "Error binding parameter %s", bindName);
+                                App.logger.warn(e, "Error binding parameter %s", bindName);
                             }
                         }
                         oa[i] = o;

@@ -22,6 +22,8 @@ import java.lang.reflect.Array;
 import java.lang.reflect.Modifier;
 import java.util.*;
 
+import static act.app.App.logger;
+
 @ActComponent
 public class BinderManager extends AppServiceBase<BinderManager> {
 

@@ -7,6 +7,8 @@ import org.osgl.util.C;
 
 import java.util.Map;
 
+import static act.app.App.logger;
+
 /**
  * The base implementation of {@link Daemon}
  */

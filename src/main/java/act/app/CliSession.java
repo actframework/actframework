@@ -25,6 +25,8 @@ import java.net.Socket;
 import java.net.SocketException;
 import java.util.Map;
 
+import static act.app.App.logger;
+
 public class CliSession extends DestroyableBase implements Runnable {
 
     private String id;

@@ -18,6 +18,8 @@ import org.rythmengine.utils.Time;
 import java.util.EventObject;
 import java.util.concurrent.*;
 
+import static act.app.App.logger;
+
 @ActComponent
 public class AppJobManager extends AppServiceBase<AppJobManager> {
 
