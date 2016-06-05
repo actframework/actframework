@@ -11,12 +11,16 @@ import org.osgl.$;
 import org.osgl.util.E;
 import org.osgl.util.IO;
 import org.osgl.util.S;
+import testapp.model.Person2;
 
 import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.lang.reflect.Method;
+
+import static testapp.model.Person2.Gender.F;
+import static testapp.model.Person2.Gender.M;
 
 public class DataObjectEnhancerTest extends TestBase {
 
@@ -31,6 +35,8 @@ public class DataObjectEnhancerTest extends TestBase {
     Object student2;
     Object teacher1;
     Object teacher2;
+    Object male;
+    Object female;
     private String streetNo = "5";
     private String streetName = "George St";
     private String city = "Sydney";
@@ -47,18 +53,21 @@ public class DataObjectEnhancerTest extends TestBase {
     public void setup() throws Exception {
         super.setup();
         classLoader = new TestAppClassLoader();
+        Class<? extends Enum> genderCls = $.cast(load("Person2$Gender"));
+        male = Enum.valueOf(genderCls, "M");
+        female = Enum.valueOf(genderCls, "F");
         Class<?> addrCls = load("Address2");
         addr1 = $.newInstance(addrCls, streetNo, streetName, city);
         addr2 = $.newInstance(addrCls, streetNo, streetName, city);
         Class<?> personCls = load("Person2");
-        person1 = $.newInstance(personCls, firstName, lastName, addr1, age);
-        person2 = $.newInstance(personCls, firstName, lastName, addr2, age);
+        person1 = $.newInstance(personCls, firstName, lastName, addr1, age, male);
+        person2 = $.newInstance(personCls, firstName, lastName, addr2, age, male);
         Class<?> studentCls = load("Student2");
-        student1 = $.newInstance(studentCls, firstName, lastName, addr1, age, clazz, studentId, score);
-        student2 = $.newInstance(studentCls, firstName, lastName, addr1, age, clazz, studentId, score);
+        student1 = $.newInstance(studentCls, firstName, lastName, addr1, age, female, clazz, studentId, score);
+        student2 = $.newInstance(studentCls, firstName, lastName, addr1, age, female, clazz, studentId, score);
         Class<?> teacherCls = load("Teacher2");
-        teacher1 = $.newInstance(teacherCls, firstName, lastName, addr1, age, teacherId);
-        teacher2 = $.newInstance(teacherCls, firstName, lastName, addr1, age, teacherId);
+        teacher1 = $.newInstance(teacherCls, firstName, lastName, addr1, age, female, teacherId);
+        teacher2 = $.newInstance(teacherCls, firstName, lastName, addr1, age, female, teacherId);
         happyBirthday = personCls.getDeclaredMethod("happyBirthday");
     }
 

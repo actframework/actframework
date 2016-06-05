@@ -5,6 +5,7 @@ import com.github.lalyos.jfiglet.FigletFont;
 import org.osgl.util.E;
 import org.osgl.util.S;
 
+import java.io.File;
 import java.io.IOException;
 
 /**
@@ -43,6 +44,9 @@ public class Banner {
             sb.append(" App: ").append(appVersion);
             sb.append("\n Act: ").append(actVersion);
         }
+        sb.append("\n");
+        File aFile = new File("");
+        sb.append("current dir: ").append(aFile.getAbsolutePath());
         sb.append("\n");
         return sb.toString();
     }

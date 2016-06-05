@@ -598,7 +598,7 @@ public class App {
     private void loadConfig() {
         JsonUtilConfig.configure(this);
         File conf = RuntimeDirs.conf(this);
-        logger.debug("loading app configuration: %s ...", appBase.getPath());
+        logger.debug("loading app configuration: %s ...", appBase.getAbsolutePath());
         config = new AppConfLoader().load(conf);
         config.app(this);
         registerValueObjectCodec();

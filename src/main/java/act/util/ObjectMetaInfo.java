@@ -101,7 +101,7 @@ class ObjectMetaInfo implements Opcodes {
                     // do nothing
             }
         }
-        private boolean eligible() {
+        boolean eligible() {
             return !equalIgnore && (!isTransient || equalForce);
         }
     }

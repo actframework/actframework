@@ -8,6 +8,8 @@ import org.osgl.util.C;
 import org.osgl.util.FastStr;
 import org.osgl.util.S;
 
+import java.util.List;
+
 /**
  * A tool to enhance a object by generating common {@link Object}
  * methods, e.g. {@link Object#equals(Object)}
@@ -158,24 +160,62 @@ public class DataObjectEnhancer extends AppByteCodeEnhancer<DataObjectEnhancer> 
         equalsMethodEnd(mv);
     }
 
+    private int fieldCount(List<ObjectMetaInfo.FieldMetaInfo> fields) {
+        int cnt = 0;
+        for (ObjectMetaInfo.FieldMetaInfo field : fields) {
+            if (field.eligible()) {
+                cnt++;
+            }
+        }
+        return cnt;
+    }
+
     private void generateHashCodeMethod() {
         MethodVisitor mv = hashCodeMethodBegin(this);
         Type host = metaInfo.type();
         C.List<ObjectMetaInfo.FieldMetaInfo> fields = metaInfo.fields();
-        int cnt = 0;
-        for (ObjectMetaInfo.FieldMetaInfo fi : fields) {
-            boolean added = fi.addHashCodeInstruction(host, mv);
-            if (added) {
+        int fieldCount = fieldCount(fields);
+        if (fieldCount < 6) {
+            int cnt = 0;
+            for (ObjectMetaInfo.FieldMetaInfo fi : fields) {
+                boolean added = fi.addHashCodeInstruction(host, mv);
+                if (added) {
+                    cnt++;
+                }
+            }
+            if (metaInfo.shouldCallSuper()) {
+                mv.visitVarInsn(ALOAD, 0);
+                mv.visitMethodInsn(INVOKESPECIAL, metaInfo.superType().getInternalName(), "hashCode", "()I", false);
+                mv.visitMethodInsn(INVOKESTATIC, "java/lang/Integer", "valueOf", "(I)Ljava/lang/Integer;", false);
                 cnt++;
             }
+            hashCodeMethodEnd(mv, cnt);
+        } else {
+            mv.visitTypeInsn(NEW, "java/util/ArrayList");
+            mv.visitInsn(DUP);
+            mv.visitIntInsn(BIPUSH, fieldCount);
+            mv.visitMethodInsn(INVOKESPECIAL, "java/util/ArrayList", "<init>", "(I)V", false);
+            mv.visitVarInsn(ASTORE, 1);
+            for (ObjectMetaInfo.FieldMetaInfo fi : fields) {
+                if (!fi.eligible()) {
+                    continue;
+                }
+                mv.visitVarInsn(ALOAD, 1);
+                fi.addHashCodeInstruction(host, mv);
+                mv.visitMethodInsn(INVOKEINTERFACE, "java/util/List", "add", "(Ljava/lang/Object;)Z", true);
+                mv.visitInsn(POP);
+            }
+            if (metaInfo.shouldCallSuper()) {
+                mv.visitVarInsn(ALOAD, 0);
+                mv.visitMethodInsn(INVOKESPECIAL, metaInfo.superType().getInternalName(), "hashCode", "()I", false);
+                mv.visitMethodInsn(INVOKESTATIC, "java/lang/Integer", "valueOf", "(I)Ljava/lang/Integer;", false);
+            }
+            mv.visitVarInsn(ALOAD, 1);
+            mv.visitMethodInsn(INVOKESTATIC, "org/osgl/$", "hc", "(Ljava/lang/Object;)I", false);
+            mv.visitInsn(IRETURN);
+            mv.visitMaxs(0, 0);
+            mv.visitEnd();
         }
-        if (metaInfo.shouldCallSuper()) {
-            mv.visitVarInsn(ALOAD, 0);
-            mv.visitMethodInsn(INVOKESPECIAL, metaInfo.superType().getInternalName(), "hashCode", "()I", false);
-            mv.visitMethodInsn(INVOKESTATIC, "java/lang/Integer", "valueOf", "(I)Ljava/lang/Integer;", false);
-            cnt++;
-        }
-        hashCodeMethodEnd(mv, cnt);
     }
 
     static MethodVisitor equalsMethodBegin(ClassVisitor cw) {

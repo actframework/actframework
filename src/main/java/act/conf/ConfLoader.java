@@ -136,6 +136,7 @@ public abstract class ConfLoader<T extends Config> {
          * ${conf_root}/dev etc
          */
         String profile = confSetName();
+        logger.info("Loading conf profile: %s", profile);
         File taggedConfDir = new File(confDir, profile);
         if (taggedConfDir.exists() && taggedConfDir.isDirectory()) {
             map.putAll(loadConfFromDir_(taggedConfDir));

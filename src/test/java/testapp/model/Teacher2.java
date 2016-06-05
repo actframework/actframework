@@ -8,8 +8,10 @@ import act.data.Data;
 @Data(callSuper = false)
 public class Teacher2 extends Person2 {
     private String teacherId;
-    public Teacher2(String fn, String ln, Address2 addr, Integer age, String teacherId) {
-        super(fn, ln, addr, age);
+    public Teacher2(
+            String fn, String ln, Address2 addr, Integer age,
+            Gender gender, String teacherId) {
+        super(fn, ln, addr, age, gender);
         this.teacherId = teacherId;
     }
 
