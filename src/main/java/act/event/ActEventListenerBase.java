@@ -1,5 +1,6 @@
 package act.event;
 
+import act.Act;
 import act.app.event.AppEventListener;
 import act.util.DestroyableBase;
 import org.osgl.util.S;
@@ -10,7 +11,7 @@ public abstract class ActEventListenerBase<EVENT_TYPE extends EventObject> exten
     private String id;
     public ActEventListenerBase(CharSequence id) {
         if (null == id) {
-            id = S.uuid();
+            id = Act.cuid();
         }
         this.id = id.toString();
     }
@@ -30,7 +31,7 @@ public abstract class ActEventListenerBase<EVENT_TYPE extends EventObject> exten
     }
 
     @Override
-    public boolean equals(Object obj) {
+    public final boolean equals(Object obj) {
         if (this == obj) {
             return true;
         }
