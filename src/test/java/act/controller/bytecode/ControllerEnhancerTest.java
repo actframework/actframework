@@ -12,6 +12,8 @@ import act.asm.util.TraceClassVisitor;
 import act.controller.meta.ControllerClassMetaInfo;
 import act.controller.meta.ControllerClassMetaInfoHolder;
 import act.controller.meta.ControllerClassMetaInfoManager;
+import act.event.EventBus;
+import act.util.ClassInfoRepository;
 import act.util.Files;
 import org.junit.Before;
 import org.junit.Test;
@@ -47,8 +49,10 @@ public class ControllerEnhancerTest extends TestBase implements ControllerClassM
     protected InvokeLog invokeLog;
     protected ActionContext ctx;
     private TestingAppClassLoader classLoader;
+    private ClassInfoRepository classInfoRepository;
     private AppCodeScannerManager scannerManager;
     private AppByteCodeScanner scanner;
+    private EventBus eventBus;
     protected ControllerClassMetaInfoManager infoSrc;
     private File base;
 
@@ -63,11 +67,15 @@ public class ControllerEnhancerTest extends TestBase implements ControllerClassM
         invokeLog = mock(InvokeLog.class);
         scanner = new ControllerByteCodeScanner();
         scanner.setApp(mockApp);
+        eventBus = mock(EventBus.class);
         classLoader = new TestingAppClassLoader(mockApp);
+        classInfoRepository = mock(ClassInfoRepository.class);
+        $.setProperty(classLoader, classInfoRepository, "classInfoRepository");
         infoSrc = classLoader.controllerClassMetaInfoManager();
         scannerManager = mock(AppCodeScannerManager.class);
         when(mockApp.classLoader()).thenReturn(classLoader);
         when(mockApp.scannerManager()).thenReturn(scannerManager);
+        when(mockApp.eventBus()).thenReturn(eventBus);
         when(mockAppConfig.possibleControllerClass(anyString())).thenReturn(true);
         when(mockRouter.isActionMethod(anyString(), anyString())).thenReturn(false);
         C.List<AppByteCodeScanner> scanners = C.list(scanner);

@@ -49,7 +49,7 @@ public class AppClassLoader
     private Map<String, byte[]> libClsCache = C.newMap();
     private ClassInfoRepository classInfoRepository;
     private boolean destroyed;
-    protected ControllerClassMetaInfoManager controllerInfo = new ControllerClassMetaInfoManager();
+    protected ControllerClassMetaInfoManager controllerInfo;
     protected MailerClassMetaInfoManager mailerInfo = new MailerClassMetaInfoManager();
     protected CommanderClassMetaInfoManager commanderInfo = new CommanderClassMetaInfoManager();
     protected JobClassMetaInfoManager jobInfo = new JobClassMetaInfoManager();
@@ -62,6 +62,7 @@ public class AppClassLoader
         if (null != actClassInfoRepository) {
             this.classInfoRepository = new AppClassInfoRepository(app, actClassInfoRepository);
         }
+        controllerInfo = new ControllerClassMetaInfoManager(app);
         if (null == app.eventBus()) {
             return; // for unit test only
         }

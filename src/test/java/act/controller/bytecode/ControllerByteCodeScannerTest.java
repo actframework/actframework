@@ -10,6 +10,7 @@ import act.event.EventBus;
 import act.job.AppJobManager;
 import act.job.bytecode.JobByteCodeScanner;
 import act.route.RouteSource;
+import act.util.ClassInfoRepository;
 import act.util.Files;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -36,6 +37,7 @@ import static org.osgl.http.H.Method.*;
 public class ControllerByteCodeScannerTest extends TestBase {
 
     private ControllerClassMetaInfoManager infoSrc;
+    private ClassInfoRepository classInfoRepository;
     private TestingAppClassLoader classLoader;
     private AppCodeScannerManager scannerManager;
     private AppJobManager jobManager;
@@ -50,10 +52,12 @@ public class ControllerByteCodeScannerTest extends TestBase {
         controllerScanner = new ControllerByteCodeScanner();
         jobScanner = new JobByteCodeScanner();
         scannerManager = mock(AppCodeScannerManager.class);
+        classInfoRepository = mock(ClassInfoRepository.class);
         eventBus = mock(EventBus.class);
         when(mockApp.eventBus()).thenReturn(eventBus);
         jobManager = new AppJobManager(mockApp);
         classLoader = new TestingAppClassLoader(mockApp);
+        $.setProperty(classLoader, classInfoRepository, "classInfoRepository");
         when(mockApp.classLoader()).thenReturn(classLoader);
         infoSrc = classLoader.controllerClassMetaInfoManager();
         when(mockApp.classLoader()).thenReturn(classLoader);

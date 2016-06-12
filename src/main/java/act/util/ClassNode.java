@@ -66,6 +66,10 @@ public class ClassNode {
         return isPublic() && !isAbstract();
     }
 
+    public ClassNode parent() {
+        return parent;
+    }
+
     public ClassNode parent(String name) {
         this.parent = infoBase.node(name);
         this.parent.addChild(this);

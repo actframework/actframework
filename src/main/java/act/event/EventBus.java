@@ -18,6 +18,7 @@ import java.lang.annotation.Annotation;
 import java.util.EventObject;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
@@ -25,6 +26,8 @@ import static act.app.App.logger;
 
 @ActComponent
 public class EventBus extends AppServiceBase<EventBus> {
+
+    private boolean once;
 
     private final List[] appEventListeners;
     private final List[] asyncAppEventListeners;
@@ -34,7 +37,9 @@ public class EventBus extends AppServiceBase<EventBus> {
     private final Map<Object, List<SimpleEventListener>> adhocEventListeners;
     private final Map<Object, List<SimpleEventListener>> asyncAdhocEventListeners;
 
-    public EventBus(App app) {
+    private EventBus onceBus;
+
+    private EventBus(App app, boolean once) {
         super(app);
         appEventListeners = initAppListenerArray();
         asyncAppEventListeners = initAppListenerArray();
@@ -44,6 +49,14 @@ public class EventBus extends AppServiceBase<EventBus> {
         adhocEventListeners = C.newMap();
         asyncAdhocEventListeners = C.newMap();
         loadDefaultEventListeners();
+        if (!once) {
+            onceBus = new EventBus(app, true);
+            onceBus.once = true;
+        }
+    }
+
+    public EventBus(App app) {
+        this(app, false);
     }
 
     @Override
@@ -144,6 +157,15 @@ public class EventBus extends AppServiceBase<EventBus> {
         return _bind(listeners, c, l, 0);
     }
 
+    public synchronized EventBus once(Class<? extends EventObject> c, OnceEventListenerBase l) {
+        if (null != onceBus) {
+            onceBus.bind(c, l);
+        } else {
+            bind(c, l);
+        }
+        return this;
+    }
+
     /**
      * Bind a transient event list to event with type `c`
      * @param c the target event type
@@ -173,9 +195,14 @@ public class EventBus extends AppServiceBase<EventBus> {
     }
 
     @SuppressWarnings("unchecked")
-    private void callOn(ActEvent e, ActEventListener l) {
+    private boolean callOn(ActEvent e, ActEventListener l) {
         try {
-            l.on(e);
+            if (l instanceof OnceEventListener) {
+                return ((OnceEventListener) l).tryHandle(e);
+            } else {
+                l.on(e);
+                return true;
+            }
         } catch (Result r) {
             // in case event listener needs to return a result back
             throw r;
@@ -194,11 +221,13 @@ public class EventBus extends AppServiceBase<EventBus> {
         if (async) {
             jobManager = app().jobManager();
         }
-        // copy the list to avoid ConcurrentModificationException
-        listeners = C.list(listeners);
+        Set<ActEventListener> toBeRemoved = C.newSet();
         for (final ActEventListener l : listeners) {
             if (!async) {
-                callOn(event, l);
+                boolean result = callOn(event, l);
+                if (result && once) {
+                    toBeRemoved.add(l);
+                }
             } else {
                 jobManager.now(new Runnable() {
                     @Override
@@ -207,6 +236,9 @@ public class EventBus extends AppServiceBase<EventBus> {
                     }
                 });
             }
+        }
+        if (once && !toBeRemoved.isEmpty()) {
+            listeners.removeAll(toBeRemoved);
         }
     }
 
@@ -297,6 +329,9 @@ public class EventBus extends AppServiceBase<EventBus> {
         }
         callOn(event, asyncActEventListeners, true);
         callOn(event, actEventListeners, false);
+        if (null != onceBus) {
+            onceBus.trigger(event);
+        }
         return this;
     }
 

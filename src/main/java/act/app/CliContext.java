@@ -354,6 +354,15 @@ public class CliContext extends ActContext.ActContextBase<CliContext> implements
         return tbl().getTable(asciiTableAware);
     }
 
+    public File getFile(String path) {
+        File file = new File(path);
+        if (file.isAbsolute()) {
+            return file;
+        }
+        file = new File(curDir(), path);
+        return new File(file.getAbsolutePath());
+    }
+
     public static CliContext current() {
         return _local.get();
     }

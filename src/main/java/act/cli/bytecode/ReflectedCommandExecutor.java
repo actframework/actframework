@@ -185,18 +185,9 @@ public class ReflectedCommandExecutor extends CommandExecutor {
             }
         }
         if (File.class.isAssignableFrom(optionType)) {
-            if (argStr.startsWith(File.separator) || argStr.startsWith("/")) {
-                return new File(argStr);
-            } else {
-                return new File(ctx.curDir(), argStr);
-            }
+            return ctx.getFile(argStr);
         } else if (readFileContent) {
-            File file;
-            if (argStr.startsWith(File.separator) || argStr.startsWith("/")) {
-                file = new File(argStr).getAbsoluteFile();
-            } else {
-                file = new File(ctx.curDir(), argStr);
-            }
+            File file = ctx.getFile(argStr);
             if (file.exists()) {
                 if (List.class.isAssignableFrom(optionType)) {
                     return IO.readLines(file);

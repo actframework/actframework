@@ -1,5 +1,6 @@
 package act.controller.meta;
 
+import act.Act;
 import act.app.App;
 import act.asm.Type;
 import act.util.AsmTypes;
@@ -15,8 +16,10 @@ public class ControllerClassMetaInfoManager extends DestroyableBase {
 
     private Map<String, ControllerClassMetaInfo> controllers = C.newMap();
     private Map<Type, List<ControllerClassMetaInfo>> subTypeInfo = C.newMap();
+    private App app;
 
-    public ControllerClassMetaInfoManager() {
+    public ControllerClassMetaInfoManager(App app) {
+        this.app = app;
     }
 
     @Override
@@ -56,6 +59,7 @@ public class ControllerClassMetaInfoManager extends DestroyableBase {
             }
             subTypeInfo.remove(metaInfo.type());
         }
+        app.eventBus().trigger(new ControllerMetaInfoRegistered(metaInfo));
         App.logger.trace("Controller meta info registered for: %s", className);
     }
 

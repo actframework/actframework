@@ -11,7 +11,7 @@ public abstract class ActEventListenerBase<EVENT_TYPE extends EventObject> exten
     private String id;
     public ActEventListenerBase(CharSequence id) {
         if (null == id) {
-            id = Act.cuid();
+            id = S.uuid();
         }
         this.id = id.toString();
     }

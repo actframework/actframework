@@ -78,7 +78,7 @@ public class SysUtilAdmin {
     }
 
     private File getFile(String path) {
-        return (path.startsWith("/") || path.startsWith("\\")) ? new File(path) :new File(pwd(context), path);
+        return context.getFile(path);
     }
 
     private File curDir() {

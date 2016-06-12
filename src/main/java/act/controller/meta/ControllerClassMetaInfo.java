@@ -1,10 +1,14 @@
 package act.controller.meta;
 
+import act.Act;
 import act.app.App;
 import act.app.AppClassLoader;
 import act.asm.Type;
+import act.event.OnceEventListenerBase;
 import act.handler.builtin.controller.ControllerAction;
 import act.handler.builtin.controller.Handler;
+import act.util.ClassInfoRepository;
+import act.util.ClassNode;
 import act.util.DestroyableBase;
 import org.osgl.http.H;
 import org.osgl.mvc.annotation.*;
@@ -12,6 +16,7 @@ import org.osgl.util.C;
 import org.osgl.util.S;
 
 import java.lang.annotation.Annotation;
+import java.util.EventObject;
 import java.util.List;
 import java.util.Set;
 
@@ -313,32 +318,57 @@ public final class ControllerClassMetaInfo extends DestroyableBase {
         withList.add(Type.getType(clsName).getClassName());
     }
 
-    private void getAllWithList(Set<String> withList, ControllerClassMetaInfoManager infoBase) {
+    private void getAllWithList(final Set<String> withList, final ControllerClassMetaInfoManager infoBase) {
         withList.addAll(this.withList);
         if (null != superType) {
-            String superClass = superType.getClassName();
+            final String superClass = superType.getClassName();
+            App app = App.instance();
+            ClassInfoRepository repo = app.classLoader().classInfoRepository();
             ControllerClassMetaInfo info = infoBase.controllerMetaInfo(superClass);
+            String curSuperClass = superClass;
+            while (null == info && !"java.lang.Object".equals(curSuperClass)) {
+                ClassNode node = repo.node(curSuperClass);
+                if (null != node) {
+                    node = node.parent();
+                }
+                if (null == node) {
+                    break;
+                }
+                curSuperClass = node.name();
+                info = infoBase.controllerMetaInfo(curSuperClass);
+            }
             if (null != info) {
-//                info.getAllWithList(withList, infoBase);
                 withList.add(superClass);
             }
         }
     }
 
-    private void mergeFromWithList(ControllerClassMetaInfoManager infoBase, App app) {
+    private void mergeFromWithList(final ControllerClassMetaInfoManager infoBase, final App app) {
         C.Set<String> withClasses = C.newSet();
         getAllWithList(withClasses, infoBase);
-        for (String withClass : withClasses) {
-            ControllerClassMetaInfo withClassInfo = infoBase.controllerMetaInfo(withClass);
+        final ControllerClassMetaInfo me = this;
+        ClassInfoRepository repo = app.classLoader().classInfoRepository();
+        for (final String withClass : withClasses) {
+            String curWithClass = withClass;
+            ControllerClassMetaInfo withClassInfo = infoBase.controllerMetaInfo(curWithClass);
+            while (null == withClassInfo && !"java.lang.Object".equals(curWithClass)) {
+                ClassNode node = repo.node(curWithClass);
+                if (null != node) {
+                    node = node.parent();
+                }
+                if (null == node) {
+                    break;
+                }
+                curWithClass = node.name();
+                withClassInfo = infoBase.controllerMetaInfo(curWithClass);
+            }
             if (null != withClassInfo) {
                 withClassInfo.merge(infoBase, app);
                 if (isMyAncestor(withClassInfo)) {
-                    interceptors.mergeFrom(withClassInfo.interceptors, this);
+                    interceptors.mergeFrom(withClassInfo.interceptors, me);
                 } else {
                     interceptors.mergeFrom(withClassInfo.interceptors);
                 }
-            } else {
-                App.logger.warn("Cannot find class info for @With class: %s", withClass);
             }
         }
     }
