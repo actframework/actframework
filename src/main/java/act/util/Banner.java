@@ -1,6 +1,7 @@
 package act.util;
 
 import act.Act;
+import act.conf.ConfLoader;
 import com.github.lalyos.jfiglet.FigletFont;
 import org.osgl.util.E;
 import org.osgl.util.S;
@@ -48,6 +49,9 @@ public class Banner {
         File aFile = new File("");
         sb.append("current dir: ").append(aFile.getAbsolutePath());
         sb.append("\n");
+        sb.append("config profile: ").append(ConfLoader.confSetName());
+        sb.append("\n");
+        sb.append("running mode: ").append(Act.mode()).append("\n");
         return sb.toString();
     }
 

@@ -155,7 +155,7 @@ public class CliSession extends DestroyableBase implements Runnable {
             logger.info("session thread interrupted");
         } catch (SocketException e) {
             logger.error(e.getMessage());
-        } catch (Throwable e) {
+        } catch (Exception e) {
             logger.error(e, "Error processing cli session");
         } finally {
             if (null != server) {
