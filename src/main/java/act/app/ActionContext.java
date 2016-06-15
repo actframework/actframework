@@ -213,6 +213,8 @@ public class ActionContext extends ActContext.ActContextBase<ActionContext> impl
                 for (int i = 0; i < len; ++i) {
                     sa[i] = S.string(jsonArray.get(i));
                 }
+            } else if (null != jsonObject) {
+
             } else {
                 sa = body.get(REQ_BODY);
             }
@@ -285,7 +287,7 @@ public class ActionContext extends ActContext.ActContextBase<ActionContext> impl
                     if (bodyParams.size() == 1) {
                         String[] sa = bodyParams.get(REQ_BODY);
                         if (null != sa && sa.length == 1) {
-                            String s = sa[0];
+                            String s = sa[0].trim();
                             if (s.startsWith("{") && s.endsWith("}")) {
                                 jsonObject = (JSONObject) JSON.parse(s);
                             } else if (s.startsWith("[") && s.endsWith("]")) {

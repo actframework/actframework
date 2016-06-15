@@ -18,6 +18,7 @@ import act.util.DestroyableBase;
 import act.util.GeneralAnnoInfo;
 import act.view.Template;
 import act.view.TemplatePathResolver;
+import com.alibaba.fastjson.JSON;
 import com.esotericsoftware.reflectasm.FieldAccess;
 import com.esotericsoftware.reflectasm.MethodAccess;
 import org.osgl.$;
@@ -32,8 +33,10 @@ import org.osgl.util.S;
 import org.osgl.util.StringValueResolver;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -300,37 +303,68 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
                     if (param.resolverDefined()) {
                         resolver = param.resolver(app);
                     }
-                    String reqVal = ctx.paramVal(bindName);
-                    if (null == reqVal) {
-                        Object o = ctx.tryParseJson(bindName, paramType, paramComponentType, paramCount - ctxParamCount);
-                        if (null != o) {
-                            if (paramType != String.class && o instanceof String) {
-                                oa[i] = resolverManager.resolve((String) o, paramType);
-                            } else if (paramType.isAssignableFrom(o.getClass())) {
-                                oa[i] = o;
-                            } else {
-                                // try primitive wrapper juggling
-                                if (paramType.isPrimitive()) {
-                                    if ($.wrapperClassOf(paramType).isAssignableFrom(o.getClass())) {
-                                        oa[i] = o;
-                                        continue;
-                                    }
-                                } else if (paramType == String.class) {
-                                    oa[i] = S.string(o);
+                    String[] reqVals = ctx.paramVals(bindName);
+                    Object o = null;
+                    if (null == reqVals || reqVals.length == 1) {
+                        o = ctx.tryParseJson(bindName, paramType, paramComponentType, paramCount - ctxParamCount);
+                    }
+                    if (null != o) {
+                        if (paramType != String.class && o instanceof String) {
+                            oa[i] = resolverManager.resolve((String) o, paramType);
+                        } else if (paramType.isAssignableFrom(o.getClass())) {
+                            oa[i] = o;
+                        } else {
+                            // try primitive wrapper juggling
+                            if (paramType.isPrimitive()) {
+                                if ($.wrapperClassOf(paramType).isAssignableFrom(o.getClass())) {
+                                    oa[i] = o;
                                     continue;
                                 }
-                                throw new BindException("Cannot resolve parameter[%s] from %s", bindName, o);
+                            } else if (paramType == String.class) {
+                                oa[i] = S.string(o);
+                                continue;
                             }
-                            continue;
+                            throw new BindException("Cannot resolve parameter[%s] from %s", bindName, o);
                         }
-                        o = param.defVal(paramType);
-                        if (null != o) {
-                            oa[i] = o;
-                            continue;
-                        }
+                        continue;
                     }
-                    if (null == resolver) {
-                        Object o = resolverManager.resolve(reqVal, paramType);
+                    if (paramType.isArray() || Iterable.class.isAssignableFrom(paramType)) {
+                        int len = reqVals.length;
+                        if (paramType.isArray()) {
+                            o = Array.newInstance(paramComponentType, len);
+                            for (int j = 0; j < len; ++j) {
+                                String s = reqVals[j];
+                                Object e = null == resolver ? resolver.resolve(s) : resolverManager.resolve(s, paramComponentType);
+                                if (null == e) {
+                                    e = JSON.parseObject(s, paramComponentType);
+                                }
+                                Array.set(o, j, e);
+                            }
+                        } else {
+                            Collection c = null;
+                            if (List.class.isAssignableFrom(paramType)) {
+                                c = C.newList();
+                            } else if (Set.class.isAssignableFrom(paramType)) {
+                                c = C.newSet();
+                            }
+                            if (null != c) {
+                                o = c;
+                                for (String s : reqVals) {
+                                    Object e = null != resolver ? resolver.resolve(s) : resolverManager.resolve(s, paramComponentType);
+                                    if (null == e) {
+                                        e = JSON.parseObject(s, paramComponentType);
+                                    }
+                                    c.add(e);
+                                }
+                            }
+                        }
+                    } else {
+                        String reqVal = null == reqVals ? null : reqVals[0];
+                        if (null == resolver) {
+                            o = resolverManager.resolve(reqVal, paramType);
+                        } else {
+                            o = resolver.resolve(reqVal);
+                        }
                         if (null == o) {
                             try {
                                 Object entity = newInstance(paramType);
@@ -339,9 +373,13 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
                                 App.logger.warn(e, "Error binding parameter %s", bindName);
                             }
                         }
+                    }
+                    if (null == o) {
+                        o = param.defVal(paramType);
+                    }
+                    if (null != o) {
                         oa[i] = o;
-                    } else {
-                        oa[i] = resolver.resolve(reqVal);
+                        continue;
                     }
                     List<ActionMethodParamAnnotationHandler> annotationHandlers = paramAnnoHandlers.get(i);
                     if (null != annotationHandlers) {
