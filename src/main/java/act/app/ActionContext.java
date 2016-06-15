@@ -180,7 +180,11 @@ public class ActionContext extends ActContext.ActContextBase<ActionContext> impl
         }
         val = request.paramVal(name);
         if (null == val) {
-            String[] sa = bodyParams().get(name);
+            Map<String, String[]> body = bodyParams();
+            String[] sa = body.get(name);
+            if (null == sa && body.size() == 1) {
+                sa = getBody();
+            }
             if (null != sa && sa.length > 0) {
                 val = sa[0];
             }
@@ -195,7 +199,24 @@ public class ActionContext extends ActContext.ActContextBase<ActionContext> impl
         }
         String[] sa = request.paramVals(name);
         if (null == sa) {
-            sa = bodyParams().get(name);
+            sa = getBody();
+        }
+        return sa;
+    }
+
+    private String[] getBody() {
+        Map<String, String[]> body = bodyParams();
+        String[] sa = null;
+        if (body.size() == 1 && body.containsKey(REQ_BODY)) {
+            if (null != jsonArray) {
+                int len = jsonArray.size();
+                sa = new String[len];
+                for (int i = 0; i < len; ++i) {
+                    sa[i] = S.string(jsonArray.get(i));
+                }
+            } else {
+                sa = body.get(REQ_BODY);
+            }
         }
         return sa;
     }
