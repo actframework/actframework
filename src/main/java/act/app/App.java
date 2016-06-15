@@ -243,17 +243,21 @@ public class App {
     }
 
     public void shutdown() {
-        mainThread.interrupt();
+        //mainThread.interrupt();
         logger.info("App shutting down ....");
 
-        for (Daemon d : daemonRegistry.values()) {
-            stopDaemon(d);
+        try {
+            for (Daemon d : daemonRegistry.values()) {
+                stopDaemon(d);
+            }
+            shutdownCliServer();
+            shutdownEventBus();
+            shutdownJobManager();
+            clearServiceResourceManager();
+            classLoader = null;
+        } finally {
+            Act.shutdown();
         }
-        shutdownCliServer();
-        shutdownEventBus();
-        shutdownJobManager();
-        clearServiceResourceManager();
-        classLoader = null;
     }
 
     public synchronized void refresh() {

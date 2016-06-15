@@ -254,6 +254,12 @@ public final class Act {
         Thread.currentThread().setContextClassLoader(Act.class.getClassLoader());
     }
 
+    public static void shutdown() {
+        if (null != network) {
+            network.shutdown();
+        }
+    }
+
     public static RequestServerRestart requestRestart() {
         E.illegalStateIf(!isDev());
         throw new RequestServerRestart();
