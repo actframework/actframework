@@ -70,9 +70,12 @@ public class UndertowRequest extends RequestImplBase<UndertowRequest> {
         if (null == queryParams) {
             queryParams = hse.getQueryParameters();
         }
-        Deque<String> dq = queryParams.get(name);
-        String[] sa = new String[dq.size()];
-        sa = dq.toArray(sa);
+        Deque<String> deque = queryParams.get(name);
+        if (null == deque) {
+            return null;
+        }
+        String[] sa = new String[deque.size()];
+        sa = deque.toArray(sa);
         return sa;
     }
 
