@@ -1,6 +1,8 @@
 package testapp.endpoint;
 
+import act.Act;
 import act.app.App;
+import act.di.Context;
 import org.osgl.mvc.annotation.GetAction;
 import org.osgl.mvc.result.Ok;
 import org.osgl.mvc.result.Result;
@@ -8,9 +10,13 @@ import org.osgl.mvc.result.Result;
 public class SysController {
 
     @GetAction("/shutdown")
-    public void shutdown() {
-        System.out.print("received shutdown command...");
-        App.instance().shutdown();
+    public void shutdown(final @Context App app) {
+        app.jobManager().now(new Runnable() {
+            @Override
+            public void run() {
+                Act.shutdownApp(app);
+            }
+        });
     }
 
     @GetAction("/ping")

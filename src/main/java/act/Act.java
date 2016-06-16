@@ -40,6 +40,8 @@ import org.osgl.util.E;
 import java.util.List;
 import java.util.Map;
 
+import static act.Destroyable.Util.tryDestroy;
+
 /**
  * The Act server
  */
@@ -219,8 +221,7 @@ public final class Act {
     }
 
     public static void shutdownApp(App app) {
-        shutdownNetworkLayer();
-        app.shutdown();
+        appManager.unload(app);
     }
 
     private static void start(boolean singleAppServer, String appName, String appVersion) {
@@ -255,9 +256,19 @@ public final class Act {
     }
 
     public static void shutdown() {
-        if (null != network) {
-            network.shutdown();
-        }
+        shutdownNetworkLayer();
+        destroyApplicationManager();
+        unloadPlugins();
+        destroyAppCodeScannerPluginManager();
+        destroySessionManager();
+        destroyViewManager();
+        destroyEnhancerManager();
+        destroyDbManager();
+        destroyAppServicePluginManager();
+        destroyPluginManager();
+        destroyMetricPlugin();
+        unloadConfig();
+        destroyNetworkLayer();
     }
 
     public static RequestServerRestart requestRestart() {
@@ -410,9 +421,17 @@ public final class Act {
         conf = new ActConfLoader().load(null);
     }
 
+    private static void unloadConfig() {
+        conf = null;
+    }
+
     private static void loadPlugins() {
         logger.info("scanning plugins ...");
         new PluginScanner().scan();
+    }
+
+    private static void unloadPlugins() {
+        new PluginScanner().unload();
     }
 
     private static void initViewManager() {
@@ -420,9 +439,23 @@ public final class Act {
         viewManager = new ViewManager();
     }
 
+    private static void destroyViewManager() {
+        if (null != viewManager) {
+            viewManager.destroy();
+            viewManager = null;
+        }
+    }
+
     private static void initMetricPlugin() {
         logger.info("initializing metric plugin ...");
         metricPlugin = new SimpleMetricPlugin();
+    }
+
+    private static void destroyMetricPlugin() {
+        if (null != metricPlugin) {
+            tryDestroy(metricPlugin);
+            metricPlugin = null;
+        }
     }
 
     private static void initPluginManager() {
@@ -430,9 +463,23 @@ public final class Act {
         pluginManager = new GenericPluginManager();
     }
 
+    private static void destroyPluginManager() {
+        if (null != pluginManager) {
+            pluginManager.destroy();
+            pluginManager = null;
+        }
+    }
+
     private static void initAppServicePluginManager() {
         logger.info("initializing app service plugin manager ...");
         appPluginManager = new AppServicePluginManager();
+    }
+
+    private static void destroyAppServicePluginManager() {
+        if (null != appPluginManager) {
+            appPluginManager.destroy();
+            appPluginManager = null;
+        }
     }
 
     private static void initSessionManager() {
@@ -440,9 +487,23 @@ public final class Act {
         sessionManager = new SessionManager();
     }
 
+    private static void destroySessionManager() {
+        if (null != sessionManager) {
+            sessionManager.destroy();
+            sessionManager = null;
+        }
+    }
+
     private static void initDbManager() {
         logger.info("initializing db manager ...");
         dbManager = new DbManager();
+    }
+
+    private static void destroyDbManager() {
+        if (null != dbManager) {
+            dbManager.destroy();
+            dbManager = null;
+        }
     }
 
     private static void initAppCodeScannerPluginManager() {
@@ -450,9 +511,23 @@ public final class Act {
         scannerPluginManager = new AppCodeScannerPluginManager();
     }
 
+    private static void destroyAppCodeScannerPluginManager() {
+        if (null != scannerPluginManager) {
+            scannerPluginManager.destroy();
+            scannerPluginManager = null;
+        }
+    }
+
     static void initEnhancerManager() {
         logger.info("initializing byte code enhancer manager ...");
         enhancerManager = new BytecodeEnhancerManager();
+    }
+
+    private static void destroyEnhancerManager() {
+        if (null != enhancerManager) {
+            enhancerManager.destroy();
+            enhancerManager = null;
+        }
     }
 
     private static void initNetworkLayer() {
@@ -460,9 +535,11 @@ public final class Act {
         network = new UndertowService();
     }
 
-    protected static void initApplicationManager() {
-        logger.info("initializing application manager ...");
-        appManager = AppManager.create();
+    private static void destroyNetworkLayer() {
+        if (null != network) {
+            network.destroy();
+            network = null;
+        }
     }
 
     private static void startNetworkLayer() {
@@ -475,7 +552,19 @@ public final class Act {
 
     private static void shutdownNetworkLayer() {
         logger.info("shutting down network layer ...");
-        network.destroy();
+        network.shutdown();
+    }
+
+    protected static void initApplicationManager() {
+        logger.info("initializing application manager ...");
+        appManager = AppManager.create();
+    }
+
+    private static void destroyApplicationManager() {
+        if (null != appManager) {
+            appManager.destroy();
+            appManager = null;
+        }
     }
 
     public enum F {

@@ -15,7 +15,7 @@ public interface Plugin {
 
         private static Set<String> plugins = C.newSet();
 
-        public static void register(Plugin plugin) {
+        public static synchronized void register(Plugin plugin) {
             boolean added = plugins.add(plugin.getClass().getName());
             if (added) {
                 plugin.register();

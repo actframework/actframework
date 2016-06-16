@@ -1,5 +1,6 @@
 package act.util;
 
+import act.Destroyable;
 import act.app.App;
 import act.app.AppByteCodeScanner;
 import act.app.AppCodeScannerManager;
@@ -10,7 +11,7 @@ import org.osgl.util.C;
 
 import java.util.Map;
 
-public class AppCodeScannerPluginManager {
+public class AppCodeScannerPluginManager extends DestroyableBase {
 
     private static final Logger logger = L.get(AppCodeScannerPluginManager.class);
 
@@ -37,5 +38,11 @@ public class AppCodeScannerPluginManager {
                 manager.register(byteCodeScanner);
             }
         }
+    }
+
+    @Override
+    protected void releaseResources() {
+        Destroyable.Util.tryDestroyAll(registry.values());
+        registry.clear();
     }
 }

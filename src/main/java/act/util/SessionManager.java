@@ -1,6 +1,7 @@
 package act.util;
 
 import act.Act;
+import act.Destroyable;
 import act.app.ActionContext;
 import act.app.App;
 import act.conf.AppConfig;
@@ -21,13 +22,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
+import static act.Destroyable.Util.tryDestroyAll;
 import static org.osgl.http.H.Session.KEY_EXPIRATION;
 import static org.osgl.http.H.Session.KEY_EXPIRE_INDICATOR;
 
 /**
  * Resolve/Persist session/flash
  */
-public class SessionManager {
+public class SessionManager extends DestroyableBase {
 
     private static Logger logger = L.get(SessionManager.class);
 
@@ -36,7 +38,17 @@ public class SessionManager {
     private CookieResolver theResolver = null;
 
     public SessionManager() {
+    }
 
+    @Override
+    protected void releaseResources() {
+        tryDestroyAll(registry);
+        registry = null;
+
+        tryDestroyAll(resolvers.values());
+        resolvers = null;
+
+        theResolver = null;
     }
 
     public void register(Listener listener) {

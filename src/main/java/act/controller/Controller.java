@@ -630,7 +630,7 @@ public @interface Controller {
                 if (hasTemplate) {
                     return inferToTemplate((Map) v, actionContext);
                 }
-                return inferResult((Map) v, actionContext);
+                return new RenderJSON(v);
             } else if (v instanceof Object[]) {
                 if (hasTemplate) {
                     throw E.tbd("Render template with array");

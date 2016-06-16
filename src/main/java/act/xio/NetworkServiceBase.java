@@ -47,8 +47,6 @@ public abstract class NetworkServiceBase  extends DestroyableBase implements Net
     @Override
     public void shutdown() {
         close();
-        Destroyable.Util.destroyAll(registry.values());
-        registry.clear();
     }
 
     private boolean trySetUpClient(NetworkClient client, int port) {
@@ -70,6 +68,7 @@ public abstract class NetworkServiceBase  extends DestroyableBase implements Net
     @Override
     protected void releaseResources() {
         super.releaseResources();
-        shutdown();
+        Destroyable.Util.destroyAll(registry.values());
+        registry.clear();
     }
 }

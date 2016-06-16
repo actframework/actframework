@@ -54,7 +54,7 @@ import static act.app.event.AppEventId.*;
 /**
  * {@code App} represents an application that is deployed in a Act container
  */
-public class App {
+public class App extends DestroyableBase {
 
     public static Logger logger = L.get(App.class);
 
@@ -243,21 +243,22 @@ public class App {
     }
 
     public void shutdown() {
-        //mainThread.interrupt();
+        Act.shutdownApp(this);
+    }
+
+    @Override
+    protected void releaseResources() {
+        mainThread.interrupt();
         logger.info("App shutting down ....");
 
-        try {
-            for (Daemon d : daemonRegistry.values()) {
-                stopDaemon(d);
-            }
-            shutdownCliServer();
-            shutdownEventBus();
-            shutdownJobManager();
-            clearServiceResourceManager();
-            classLoader = null;
-        } finally {
-            Act.shutdown();
+        for (Daemon d : daemonRegistry.values()) {
+            stopDaemon(d);
         }
+        shutdownCliServer();
+        shutdownEventBus();
+        shutdownJobManager();
+        clearServiceResourceManager();
+        classLoader = null;
     }
 
     public synchronized void refresh() {

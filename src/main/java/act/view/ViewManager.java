@@ -3,6 +3,7 @@ package act.view;
 import act.app.App;
 import act.conf.AppConfig;
 import act.util.ActContext;
+import act.util.DestroyableBase;
 import org.osgl.$;
 import org.osgl.exception.UnexpectedException;
 import org.osgl.util.C;
@@ -10,10 +11,12 @@ import org.osgl.util.E;
 
 import java.util.List;
 
+import static act.Destroyable.Util.tryDestroyAll;
+
 /**
  * Manage different view solutions
  */
-public class ViewManager {
+public class ViewManager extends DestroyableBase {
 
     private C.List<View> viewList = C.newList();
     private C.List<ActionViewVarDef> implicitActionViewVariables = C.newList();
@@ -37,7 +40,7 @@ public class ViewManager {
             implicitActionViewVariables.add(var);
         }
         List<MailerViewVarDef> l1 = implicitVariableProvider.implicitMailerViewVariables();
-        for (MailerViewVarDef var: l1) {
+        for (MailerViewVarDef var : l1) {
             if (implicitMailerViewVariables.contains(var)) {
                 throw new UnexpectedException("Implicit variable[%s] has already been registered", var.name());
             }
@@ -82,6 +85,18 @@ public class ViewManager {
 
     public List<MailerViewVarDef> implicitMailerViewVariables() {
         return C.list(implicitMailerViewVariables);
+    }
+
+    @Override
+    protected void releaseResources() {
+        tryDestroyAll(viewList);
+        viewList = null;
+
+        implicitActionViewVariables.clear();
+        implicitActionViewVariables = null;
+
+        implicitMailerViewVariables.clear();
+        implicitMailerViewVariables = null;
     }
 
     private boolean registered(View view) {

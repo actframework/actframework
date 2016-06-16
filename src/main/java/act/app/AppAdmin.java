@@ -1,5 +1,6 @@
 package act.app;
 
+import act.Act;
 import act.cli.Command;
 
 /**
@@ -18,7 +19,7 @@ public class AppAdmin {
     public void shutdown(CliContext context) {
         context.println("About to shutdown app. Your telnet session will be terminated. Please reconnect in a few seconds ...");
         context.flush();
-        context.app().shutdown();
+        Act.shutdownApp(context.app());
     }
 
 }

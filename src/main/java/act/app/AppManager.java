@@ -1,6 +1,8 @@
 package act.app;
 
 import act.Act;
+import act.Destroyable;
+import act.util.DestroyableBase;
 import org.osgl.$;
 import org.osgl.util.C;
 import org.osgl.util.E;
@@ -8,15 +10,26 @@ import org.osgl.util.E;
 import java.util.Iterator;
 import java.util.Map;
 
+import static act.Destroyable.Util.tryDestroyAll;
+
 /**
  * Manage applications deployed on Act
  */
-public class AppManager {
+public class AppManager extends DestroyableBase {
 
     private Map<Integer, App> byPort = C.newMap();
     private Map<String, App> byContextPath = C.newMap();
 
     private AppManager() {
+    }
+
+    @Override
+    protected void releaseResources() {
+        tryDestroyAll(byPort.values());
+        byPort = null;
+
+        tryDestroyAll(byContextPath.values());
+        byPort = null;
     }
 
     public AppManager scan() {
@@ -55,6 +68,28 @@ public class AppManager {
             loadIntoPortMap(port, app);
         }
         app.hook();
+    }
+
+    public boolean unload(App app) {
+        boolean b = unloadApp(app, byPort);
+        if (!b) {
+            b = unloadApp(app, byContextPath);
+        }
+        if (byPort.isEmpty() && byContextPath.isEmpty()) {
+            Act.shutdown();
+        }
+        return b;
+    }
+
+    private boolean unloadApp(App app, Map<?, App> map) {
+        for (Map.Entry<?, App> entry : map.entrySet()) {
+            if (app == entry.getValue()) {
+                app.destroy();
+                map.remove(entry.getKey());
+                return true;
+            }
+        }
+        return false;
     }
 
     private void loadIntoPortMap(int port, App app) {

@@ -5,12 +5,15 @@ import act.asm.ClassWriter;
 import act.util.AppByteCodeEnhancer;
 import act.util.AsmByteCodeEnhancer;
 import act.util.ByteCodeVisitor;
+import act.util.DestroyableBase;
 import org.osgl.$;
 import org.osgl.util.C;
 
 import java.util.List;
 
-public class BytecodeEnhancerManager {
+import static act.Destroyable.Util.tryDestroyAll;
+
+public class BytecodeEnhancerManager extends DestroyableBase {
     private List<AppByteCodeEnhancer> appEnhancers = C.newList();
     private List<AsmByteCodeEnhancer> generalEnhancers = C.newList();
 
@@ -60,5 +63,13 @@ public class BytecodeEnhancerManager {
             }
         }
         return l;
+    }
+
+    @Override
+    protected void releaseResources() {
+        tryDestroyAll(appEnhancers);
+        appEnhancers.clear();
+        tryDestroyAll(generalEnhancers);
+        generalEnhancers.clear();
     }
 }

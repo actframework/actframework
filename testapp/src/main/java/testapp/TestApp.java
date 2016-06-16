@@ -17,7 +17,6 @@ public class TestApp extends AppConfigurator<TestApp> {
     public static void main(String[] args) throws Exception {
         System.setProperty("act.http.port", "6111");
         System.setProperty("act.cli.port", "6222");
-        //System.setProperty("app.mode", "prod");
         RunApp.start("ACTEST", "0.1", TestApp.class);
     }
 }

@@ -1,11 +1,13 @@
 package act.plugin;
 
+import act.Destroyable;
 import act.app.App;
+import act.util.DestroyableBase;
 import org.osgl.util.C;
 
 import java.util.List;
 
-public class AppServicePluginManager {
+public class AppServicePluginManager extends DestroyableBase {
 
     private List<AppServicePlugin> registry = C.newList();
 
@@ -19,5 +21,11 @@ public class AppServicePluginManager {
         for (AppServicePlugin plugin : registry) {
             plugin.applyTo(app);
         }
+    }
+
+    @Override
+    protected void releaseResources() {
+        Destroyable.Util.tryDestroyAll(registry);
+        registry = null;
     }
 }

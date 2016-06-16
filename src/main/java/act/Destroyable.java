@@ -29,6 +29,9 @@ public interface Destroyable {
          *            {@link Closeable} elements
          */
         public static void tryDestroyAll(Collection<?> col) {
+            if (null == col) {
+                return;
+            }
             for (Object o: col) {
                 if (o instanceof Destroyable) {
                     ((Destroyable) o).destroy();
@@ -36,6 +39,17 @@ public interface Destroyable {
                 if (o instanceof Closeable) {
                     IO.close((Closeable) o);
                 }
+            }
+
+            col.clear();
+        }
+
+        public static void tryDestroy(Object o) {
+            if (o instanceof Destroyable) {
+                ((Destroyable) o).destroy();
+            }
+            if (o instanceof Closeable) {
+                IO.close((Closeable) o);
             }
         }
     }

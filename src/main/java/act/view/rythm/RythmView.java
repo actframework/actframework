@@ -64,6 +64,7 @@ public class RythmView extends View {
         p.put(ENGINE_MODE.getKey(), Act.mode().isDev() ? Rythm.Mode.dev : Rythm.Mode.prod);
         p.put(ENGINE_PLUGIN_VERSION.getKey(), "0.0.1"); // TODO: implementing versioning
         p.put(ENGINE_CLASS_LOADER_PARENT_IMPL.getKey(), app.classLoader());
+        p.put(HOME_TMP.getKey(), createTempHome(app));
 
         Map map = config.rawConfiguration();
         for (Object k : map.keySet()) {
@@ -120,5 +121,14 @@ public class RythmView extends View {
     protected void reload(App app) {
         engines.remove(app);
         super.reload(app);
+    }
+
+    private File createTempHome(App app) {
+        String tmp = System.getProperty("java.io.tmpdir");
+        File f =  new File(tmp, "__rythm_" + app.name());
+        if (!f.exists() && !f.mkdirs()) {
+            f = new File(tmp);
+        }
+        return f;
     }
 }

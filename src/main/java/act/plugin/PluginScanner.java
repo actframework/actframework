@@ -42,4 +42,8 @@ public class PluginScanner {
         }
     }
 
+    public void unload() {
+        Plugin.InfoRepo.clear();
+    }
+
 }
