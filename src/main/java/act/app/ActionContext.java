@@ -233,7 +233,7 @@ public class ActionContext extends ActContext.ActContextBase<ActionContext> impl
                 } else {
                     return o;
                 }
-            } else {
+            } else if (!$.isSimpleType(paramType)) {
                 if (Iterable.class.isAssignableFrom(paramType)) {
                     if (List.class.equals(paramType)) {
                         o = C.list();
@@ -245,7 +245,6 @@ public class ActionContext extends ActContext.ActContextBase<ActionContext> impl
                 } else if (paramType.isArray()) {
                     o = new Object[]{};
                 }
-
                 // the extra params might already been consumed in field setting
                 boolean singleParam = paramCount == 1 || (paramCount - extraParams.size() == 1) ;
                 return singleParam ? JSON.parseObject(jsonObject.toJSONString(), paramType) : o;

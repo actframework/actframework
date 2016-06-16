@@ -6,6 +6,7 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.osgl.http.H;
+import org.osgl.mvc.result.Result;
 import org.osgl.storage.ISObject;
 import org.osgl.util.C;
 import org.osgl.util.Codec;
@@ -70,11 +71,18 @@ public class EndpointTester extends TestBase {
     }
 
     protected void bodyEq(String s) throws IOException {
-        eq(s, resp().body().string());
+        final Response resp = resp();
+        eq(200, resp.code());
+        eq(s, S.string(resp.body().string()).trim());
     }
 
     protected void bodyEq(Object obj) throws IOException {
         bodyEq(JSON.toJSONString(obj));
+    }
+
+    protected void notFound() throws IOException {
+        final Response resp = resp();
+        eq(404, resp.code());
     }
 
     private void execute() throws IOException {
@@ -209,6 +217,7 @@ public class EndpointTester extends TestBase {
         }
 
         public ReqBuilder post(String content) {
+            this.post();
             this.postStr = content;
             return this;
         }
@@ -217,16 +226,19 @@ public class EndpointTester extends TestBase {
             this.postParams.clear();
             this.postBytes = null;
             this.format = H.Format.JSON;
+            this.post();
             post(JSON.toJSONString(content));
             return this;
         }
 
         public ReqBuilder post(byte[] content) {
+            this.post();
             this.postBytes = content;
             return this;
         }
 
         public ReqBuilder post(ISObject content) {
+            this.post();
             this.postAttachment = content;
             return this;
         }
