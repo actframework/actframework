@@ -73,23 +73,19 @@ public class AutoConfigPlugin extends AnnotatedTypeFinder {
         private AppConfig conf;
         private Class<?> autoConfigClass;
         private String ns;
-        private static boolean setModifierField = false;
 
         AutoConfigLoader(App app, Class<?> autoConfigClass) {
             this.conf = app.config();
             this.autoConfigClass = autoConfigClass;
             this.ns = (autoConfigClass.getAnnotation(AutoConfig.class)).value();
             synchronized (AutoConfigLoader.class) {
-                if (!setModifierField) {
-                    allowChangeFinalField();
-                    app.jobManager().on(AppEventId.START, new Runnable() {
-                        @Override
-                        public void run() {
-                            resetFinalFieldUpdate();
-                        }
-                    });
-                    setModifierField = true;
-                }
+                allowChangeFinalField();
+                app.jobManager().on(AppEventId.START, new Runnable() {
+                    @Override
+                    public void run() {
+                        resetFinalFieldUpdate();
+                    }
+                });
             }
         }
 
@@ -151,7 +147,7 @@ public class AutoConfigPlugin extends AnnotatedTypeFinder {
                 isFinal = turnOffFinal(f);
                 setField(f, null, key, val, type);
             } catch (Exception e) {
-                throw E.invalidConfiguration("Error get configuration " + key + ": " + e.getMessage());
+                throw E.invalidConfiguration(e, "Error get configuration " + key + ": " + e.getMessage());
             } finally {
                 if (isFinal) {
                     turnOnFinal(f);
