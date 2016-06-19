@@ -4,7 +4,7 @@ import org.osgl.util.C;
 
 import java.util.List;
 
-public class SimpleByteArrayParameterResolverTest extends SimpleTypeArrayParameterResolverTestBase<Byte> {
+public class ByteArrayParameterResolverTest extends SimpleTypeArrayParameterResolverTestBase<Byte> {
 
     @Override
     protected String listPath() {

@@ -57,7 +57,6 @@ public abstract class SimpleTypeArrayParameterResolverTestBase<T> extends Parame
     }
 
     private void _verify(String expected, String urlPath, List data, ListEncoding listEncoding, RequestMethod method) throws Exception {
-        setup();
         context
                 .expected(expected)
                 .url(processUrl(urlPath))

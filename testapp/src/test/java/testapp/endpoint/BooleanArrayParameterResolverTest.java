@@ -4,7 +4,7 @@ import org.osgl.util.C;
 
 import java.util.List;
 
-public class SimpleBooleanArrayParameterResolverTest extends SimpleTypeArrayParameterResolverTestBase<Boolean> {
+public class BooleanArrayParameterResolverTest extends SimpleTypeArrayParameterResolverTestBase<Boolean> {
 
     @Override
     protected String listPath() {
