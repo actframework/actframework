@@ -6,8 +6,9 @@ import org.osgl.util.C;
 import testapp.endpoint.EndPointTestContext.RequestMethod;
 
 import java.util.List;
+import java.util.TreeSet;
 
-public abstract class SimpleTypeArrayParameterResolverTestBase<T> extends ParameterResolverTestBase {
+public abstract class SimpleTypeArrayActionParameterBindingTestBase<T> extends ActionParameterBindingTestBase {
 
     protected static final String PARAM = "v";
 
@@ -17,7 +18,7 @@ public abstract class SimpleTypeArrayParameterResolverTestBase<T> extends Parame
     private String pathSet;
     private EndPointTestContext context;
 
-    public SimpleTypeArrayParameterResolverTestBase() {
+    public SimpleTypeArrayActionParameterBindingTestBase() {
         this.pathPrimitive = primitiveArrayPath();
         this.pathWrap = wrapperArrayPath();
         this.pathList = listPath();
@@ -34,9 +35,13 @@ public abstract class SimpleTypeArrayParameterResolverTestBase<T> extends Parame
 
     protected abstract List<T> nonEmptyList();
 
-    protected abstract String expectedRespForNonEmptyList();
+    protected String expectedRespForNonEmptyList() {
+        return nonEmptyList().toString();
+    }
 
-    protected abstract String expectedRespForNonEmptySet();
+    protected String expectedRespForNonEmptySet() {
+        return new TreeSet<T>(nonEmptyList()).toString();
+    }
 
     private String e() {
         return expectedRespForNonEmptyList();

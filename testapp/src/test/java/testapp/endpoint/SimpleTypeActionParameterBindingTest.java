@@ -9,7 +9,7 @@ import java.lang.annotation.ElementType;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
-public class SimpleParameterResolverTest extends ParameterResolverTestBase {
+public class SimpleTypeActionParameterBindingTest extends ActionParameterBindingTestBase {
 
     private static final String PARAM = "v";
 

@@ -404,7 +404,11 @@ public class EndpointTester extends TestBase {
         private RequestBody buildFormEncoded() {
             FormBody.Builder builder = new FormBody.Builder();
             for ($.T2<String, Object> entry : postParams) {
-                builder.add(entry._1, S.string(entry._2));
+                String val = S.string(entry._2);
+                if (this.method == H.Method.GET) {
+                    val = Codec.encodeUrl(val);
+                }
+                builder.add(entry._1, val);
             }
             return builder.build();
         }

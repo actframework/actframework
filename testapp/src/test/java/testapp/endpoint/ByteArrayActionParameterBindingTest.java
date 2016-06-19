@@ -4,7 +4,7 @@ import org.osgl.util.C;
 
 import java.util.List;
 
-public class ByteArrayParameterResolverTest extends SimpleTypeArrayParameterResolverTestBase<Byte> {
+public class ByteArrayActionParameterBindingTest extends SimpleTypeArrayActionParameterBindingTestBase<Byte> {
 
     @Override
     protected String listPath() {
@@ -18,27 +18,17 @@ public class ByteArrayParameterResolverTest extends SimpleTypeArrayParameterReso
 
     @Override
     protected String wrapperArrayPath() {
-        return "byte";
+        return "byte_wa";
     }
 
     @Override
     protected String primitiveArrayPath() {
-        return "byte_p";
+        return "byte_pa";
     }
 
     @Override
     protected List<Byte> nonEmptyList() {
         return C.list(b(-1), b(0), b(-1), b(126));
-    }
-
-    @Override
-    protected String expectedRespForNonEmptyList() {
-        return "[-1, 0, -1, 126]";
-    }
-
-    @Override
-    protected String expectedRespForNonEmptySet() {
-        return "[0, 126, -1]";
     }
 
     private byte b(int i) {

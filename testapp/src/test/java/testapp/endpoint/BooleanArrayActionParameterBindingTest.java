@@ -4,7 +4,7 @@ import org.osgl.util.C;
 
 import java.util.List;
 
-public class BooleanArrayParameterResolverTest extends SimpleTypeArrayParameterResolverTestBase<Boolean> {
+public class BooleanArrayActionParameterBindingTest extends SimpleTypeArrayActionParameterBindingTestBase<Boolean> {
 
     @Override
     protected String listPath() {
@@ -18,26 +18,16 @@ public class BooleanArrayParameterResolverTest extends SimpleTypeArrayParameterR
 
     @Override
     protected String wrapperArrayPath() {
-        return "bool";
+        return "bool_wa";
     }
 
     @Override
     protected String primitiveArrayPath() {
-        return "bool_p";
+        return "bool_pa";
     }
 
     @Override
     protected List<Boolean> nonEmptyList() {
         return C.list(true, false, true, true);
-    }
-
-    @Override
-    protected String expectedRespForNonEmptyList() {
-        return "[true, false, true, true]";
-    }
-
-    @Override
-    protected String expectedRespForNonEmptySet() {
-        return "[false, true]";
     }
 }

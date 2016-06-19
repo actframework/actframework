@@ -4,7 +4,7 @@ import org.osgl.mvc.result.BadRequest;
 import org.osgl.mvc.result.NotFound;
 import org.osgl.util.S;
 
-abstract class ParameterResolverTestBase extends EndpointTester {
+abstract class ActionParameterBindingTestBase extends EndpointTester {
 
     protected abstract String urlContext();
 
