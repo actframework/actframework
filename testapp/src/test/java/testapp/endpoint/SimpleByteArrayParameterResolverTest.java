@@ -4,40 +4,44 @@ import org.osgl.util.C;
 
 import java.util.List;
 
-public class SimpleBooleanArrayParameterResolverTest extends SimpleTypeArrayParameterResolverTestBase<Boolean> {
+public class SimpleByteArrayParameterResolverTest extends SimpleTypeArrayParameterResolverTestBase<Byte> {
 
     @Override
     protected String listPath() {
-        return "bool_list";
+        return "byte_list";
     }
 
     @Override
     protected String setPath() {
-        return "bool_set";
+        return "byte_set";
     }
 
     @Override
     protected String wrapperArrayPath() {
-        return "bool";
+        return "byte";
     }
 
     @Override
     protected String primitiveArrayPath() {
-        return "bool_p";
+        return "byte_p";
     }
 
     @Override
-    protected List<Boolean> nonEmptyList() {
-        return C.list(true, false, true, true);
+    protected List<Byte> nonEmptyList() {
+        return C.list(b(-1), b(0), b(-1), b(126));
     }
 
     @Override
     protected String expectedRespForNonEmptyList() {
-        return "[true, false, true, true]";
+        return "[-1, 0, -1, 126]";
     }
 
     @Override
     protected String expectedRespForNonEmptySet() {
-        return "[false, true]";
+        return "[0, 126, -1]";
+    }
+
+    private byte b(int i) {
+        return (byte) i;
     }
 }

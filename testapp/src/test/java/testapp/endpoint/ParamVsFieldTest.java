@@ -1,7 +1,6 @@
 package testapp.endpoint;
 
 import org.junit.Test;
-import testapp.EndpointTester;
 
 public class ParamVsFieldTest extends EndpointTester {
 

@@ -349,6 +349,13 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
                                 oa[i] = array;
                                 continue;
                             }
+                        } else if (Set.class.isAssignableFrom(paramType)) {
+                            if (o instanceof Collection) {
+                                Set set = $.cast(newInstance(paramType));
+                                set.addAll((Collection) o);
+                                oa[i] = set;
+                                continue;
+                            }
                         }
                         throw new BindException("Cannot resolve parameter[%s] from %s", bindName, o);
                     }

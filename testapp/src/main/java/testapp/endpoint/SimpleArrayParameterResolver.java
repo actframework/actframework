@@ -6,6 +6,8 @@ import org.osgl.mvc.annotation.Action;
 import java.lang.annotation.ElementType;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Used to test simple array type parameter resolving
@@ -22,6 +24,16 @@ public class SimpleArrayParameterResolver extends Controller.Util {
         return v;
     }
 
+    @Action("bool_list")
+    public List<Boolean> boolList(List<Boolean> v) {
+        return v;
+    }
+
+    @Action("bool_set")
+    public Set<Boolean> boolSet(Set<Boolean> v) {
+        return v;
+    }
+
     @Action("byte_p")
     public byte[] byteP(byte[] v) {
         return v;
@@ -29,6 +41,16 @@ public class SimpleArrayParameterResolver extends Controller.Util {
 
     @Action("byte")
     public Byte[] takeByte(Byte[] v) {
+        return v;
+    }
+
+    @Action("byte_list")
+    public List<Byte> byteList(List<Byte> v) {
+        return v;
+    }
+
+    @Action("byte_set")
+    public Set<Byte> byteSet(Set<Byte> v) {
         return v;
     }
 

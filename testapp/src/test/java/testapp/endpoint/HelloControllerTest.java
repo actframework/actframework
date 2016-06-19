@@ -2,7 +2,6 @@ package testapp.endpoint;
 
 import org.junit.Test;
 import org.osgl.util.C;
-import testapp.EndpointTester;
 
 public class HelloControllerTest extends EndpointTester {
 

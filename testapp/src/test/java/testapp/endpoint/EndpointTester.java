@@ -1,21 +1,30 @@
-package testapp;
+package testapp.endpoint;
 
 import com.alibaba.fastjson.JSON;
 import okhttp3.*;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.osgl.$;
+import org.osgl.Osgl;
 import org.osgl.http.H;
+import org.osgl.mvc.result.BadRequest;
+import org.osgl.mvc.result.ErrorResult;
+import org.osgl.mvc.result.Forbidden;
+import org.osgl.mvc.result.NotFound;
 import org.osgl.storage.ISObject;
 import org.osgl.util.C;
 import org.osgl.util.Codec;
 import org.osgl.util.E;
 import org.osgl.util.S;
+import testapp.TestBase;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -89,6 +98,10 @@ public class EndpointTester extends TestBase {
         return resp;
     }
 
+    protected void verify(EndPointTestContext context) throws Exception {
+        context.applyTo(this);
+    }
+
     protected void verifyAllMethods(String expected, String url, String key, Object val, Object ... otherPairs) throws Exception {
         verifyGet(expected, url, key, val, otherPairs);
         verifyPostFormData(expected, url, key, val, otherPairs);
@@ -114,56 +127,6 @@ public class EndpointTester extends TestBase {
         bodyEq(expected);
     }
 
-    protected void notFoundByAllMethods(String url, String key, Object val, Object ... otherPairs) throws Exception {
-        notFoundByGet(url, key, val, otherPairs);
-        notFoundByPostFormData(url, key, val, otherPairs);
-        notFoundByPostJsonBody(url, key, val, otherPairs);
-    }
-
-    protected void notFoundByGet(String url, String key, Object val, Object ... otherPairs) throws Exception {
-        setup();
-        url(url).get(key, val, otherPairs);
-        notFound();
-    }
-
-    protected void notFoundByPostFormData(String url, String key, Object val, Object ... otherPairs) throws Exception {
-        setup();
-        url(url).post(key, val, otherPairs);
-        notFound();
-    }
-
-    protected void notFoundByPostJsonBody(String url, String key, Object val, Object ... otherPairs) throws Exception {
-        setup();
-        Map<String, Object> params = prepareJsonData(key, val, otherPairs);
-        url(url).postJSON(params);
-        notFound();
-    }
-
-    protected void badRequestByAllMethods(String url, String key, Object val, Object ... otherPairs) throws Exception {
-        badRequestByGet(url, key, val, otherPairs);
-        badRequestByPostFormData(url, key, val, otherPairs);
-        badRequestByPostJsonBody(url, key, val, otherPairs);
-    }
-
-    protected void badRequestByGet(String url, String key, Object val, Object ... otherPairs) throws Exception {
-        setup();
-        url(url).get(key, val, otherPairs);
-        badRequest();
-    }
-
-    protected void badRequestByPostFormData(String url, String key, Object val, Object ... otherPairs) throws Exception {
-        setup();
-        url(url).post(key, val, otherPairs);
-        badRequest();
-    }
-
-    protected void badRequestByPostJsonBody(String url, String key, Object val, Object ... otherPairs) throws Exception {
-        setup();
-        Map<String, Object> params = prepareJsonData(key, val, otherPairs);
-        url(url).postJSON(params);
-        badRequest();
-    }
-
     protected ReqBuilder url(String pathTmpl, Object ... args) {
         reqBuilder = new ReqBuilder(pathTmpl, args);
         return reqBuilder;
@@ -175,7 +138,7 @@ public class EndpointTester extends TestBase {
 
     protected void bodyEq(String s) throws IOException {
         final Response resp = resp();
-        eq(200, resp.code());
+        checkResponseCode(resp);
         eq(s, S.string(resp.body().string()));
     }
 
@@ -193,21 +156,34 @@ public class EndpointTester extends TestBase {
         bodyEqIgnoreSpace(JSON.toJSONString(obj));
     }
 
-    protected void notFound() throws IOException {
-        final Response resp = resp();
-        eq(404, resp.code());
-    }
 
-    protected void badRequest() throws IOException {
-        final Response resp = resp();
-        eq(400, resp.code());
-    }
-
-    private Map<String, Object> prepareJsonData(String key, Object val, Object ... otherPairs) {
+    protected Map<String, Object> prepareJsonData(String key, Object val, Object ... otherPairs) {
         Map<String, Object> params = C.newMap(key, val);
         Map<String, Object> otherParams = C.map(otherPairs);
         params.putAll(otherParams);
         return params;
+    }
+
+    protected Map<String, Object> prepareJsonData(List<$.T2<String, Object>> params) {
+        Map<String, Object> map = C.newMap();
+        for ($.T2<String, Object> pair : params) {
+            String key = pair._1;
+            Object val = pair._2;
+            if (map.containsKey(key)) {
+                List list;
+                Object x = map.get(key);
+                if (x instanceof List) {
+                    list = $.cast(x);
+                } else {
+                    list = C.newList(x);
+                    map.put(key, list);
+                }
+                list.add(val);
+            } else {
+                map.put(key, val);
+            }
+        }
+        return map;
     }
 
     private static void shutdownApp() throws Exception {
@@ -237,6 +213,22 @@ public class EndpointTester extends TestBase {
         return S.fmt(END_POINT + tmpl0, args);
     }
 
+    private void checkResponseCode(Response resp) {
+        if (resp.code() < 300 && resp.code() > 199) {
+            return;
+        }
+        switch (resp.code()) {
+            case HttpURLConnection.HTTP_NOT_FOUND:
+                throw NotFound.INSTANCE;
+            case HttpURLConnection.HTTP_BAD_REQUEST:
+                throw BadRequest.INSTANCE;
+            case HttpURLConnection.HTTP_FORBIDDEN:
+                throw Forbidden.INSTANCE;
+            default:
+                throw new ErrorResult(H.Status.of(resp.code()));
+        }
+    }
+
     protected static class ReqBuilder {
         StringBuilder sb;
         boolean paramAttached;
@@ -246,7 +238,8 @@ public class EndpointTester extends TestBase {
         private String postStr;
         private byte[] postBytes;
         private ISObject postAttachment;
-        private Map<String, Object> postParams = C.newMap();
+        private List<$.T2<String, Object>> postParams = C.newList();
+
         public ReqBuilder(String pathTmpl, Object ... args) {
             String s = fullUrl(pathTmpl, args);
             sb = S.builder(s);
@@ -262,13 +255,25 @@ public class EndpointTester extends TestBase {
             return get();
         }
 
+        public ReqBuilder get(List<$.T2<String, Object>> pairs) {
+            params(pairs);
+            return get();
+        }
+
         public ReqBuilder post() {
             return method(H.Method.POST);
         }
 
         public ReqBuilder post(String key, Object val, Object... morePairs) {
-            params(key, val, morePairs);
-            return post();
+            format(H.Format.FORM_URL_ENCODED);
+            post();
+            return params(key, val, morePairs);
+        }
+
+        public ReqBuilder post(List<$.T2<String, Object>> pairs) {
+            format(H.Format.FORM_URL_ENCODED);
+            post();
+            return params(pairs);
         }
 
         public ReqBuilder put() {
@@ -301,7 +306,7 @@ public class EndpointTester extends TestBase {
                 paramAttached = true;
                 sb.append(key).append("=").append(Codec.encodeUrl(S.string(val)));
             } else {
-                postParams.put(key, val);
+                postParams.add($.T2(key, val));
             }
             return this;
         }
@@ -313,6 +318,13 @@ public class EndpointTester extends TestBase {
             for (int i = 0; i < len - 1; i += 2) {
                 String key0 = S.string(otherPairs[i]);
                 param(key0, otherPairs[i + 1]);
+            }
+            return this;
+        }
+
+        public ReqBuilder params(List<$.T2<String, Object>> pairs) {
+            for ($.T2<String, Object> pair : pairs) {
+                param(pair._1, pair._2);
             }
             return this;
         }
@@ -391,8 +403,8 @@ public class EndpointTester extends TestBase {
 
         private RequestBody buildFormEncoded() {
             FormBody.Builder builder = new FormBody.Builder();
-            for (Map.Entry<String, Object> entry : postParams.entrySet()) {
-                builder.add(entry.getKey(), S.string(entry.getValue()));
+            for ($.T2<String, Object> entry : postParams) {
+                builder.add(entry._1, S.string(entry._2));
             }
             return builder.build();
         }

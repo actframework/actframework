@@ -34,7 +34,9 @@ public class AutoBinder {
         ActionContext ctx = $.cast(paramValueProvider);
         $.T2<Set<String>, Integer> t2 = prepare(bindName, paramValueProvider);
         if (null == t2) {
-            return null;
+            // ActFramework pass zero length array or container
+            // to action method even if the parameter not found
+            return container;
         }
         Set<String> relevantParams = t2._1;
         int prefixLen = t2._2;
