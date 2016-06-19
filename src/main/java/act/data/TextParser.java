@@ -25,7 +25,7 @@ public class TextParser extends RequestBodyParser {
                 os.write(b);
             }
             byte[] data = os.toByteArray();
-            params.put(ActionContext.REQ_BODY, new String[] {new String(data, req.characterEncoding())});
+            params.put(ActionContext.REQ_BODY, data.length == 0 ? null : new String[] {new String(data, req.characterEncoding())});
             return params;
         } catch (Exception e) {
             throw new UnexpectedException(e);

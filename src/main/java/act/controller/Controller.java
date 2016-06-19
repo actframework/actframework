@@ -7,6 +7,7 @@ import act.util.DisableFastJsonCircularReferenceDetect;
 import act.util.FastJsonIterable;
 import act.util.PropertySpec;
 import act.view.*;
+import org.osgl.$;
 import org.osgl.http.H;
 import org.osgl.mvc.result.*;
 import org.osgl.storage.ISObject;
@@ -88,7 +89,7 @@ public @interface Controller {
             return NotModified.INSTANCE;
         }
 
-        public static Result notModified(String etag, Object ... args) {
+        public static Result notModified(String etag, Object... args) {
             return new NotModified(etag, args);
         }
 
@@ -328,8 +329,9 @@ public @interface Controller {
 
         /**
          * Throws a {@link Forbidden} result if test condition is {@code true}
+         *
          * @param test the test condition
-         * @param msg the message format template
+         * @param msg  the message format template
          * @param args the message format arguments
          */
         public static void forbiddenIf(boolean test, String msg, Object... args) {
@@ -342,7 +344,7 @@ public @interface Controller {
          * Throws a {@link Forbidden} result if the test condition is {@code false}
          *
          * @param test the test condition
-         * @param msg the message format template
+         * @param msg  the message format template
          * @param args the message format arguments
          */
         public static void forbiddenIfNot(boolean test, String msg, Object... args) {
@@ -358,7 +360,7 @@ public @interface Controller {
          * and args. The final message is rendered with the template and arguments using
          * {@link String#format(String, Object...)}
          *
-         * @param msg the message format template
+         * @param msg  the message format template
          * @param args the message format arguments
          */
         public static Result text(String msg, Object... args) {
@@ -370,7 +372,7 @@ public @interface Controller {
          * and args. The final message is rendered with the template and arguments using
          * {@link String#format(String, Object...)}
          *
-         * @param msg the message format template
+         * @param msg  the message format template
          * @param args the message format arguments
          */
         public static Result html(String msg, Object... args) {
@@ -382,7 +384,7 @@ public @interface Controller {
          * and args. The final message is rendered with the template and arguments using
          * {@link String#format(String, Object...)}
          *
-         * @param msg the message format template
+         * @param msg  the message format template
          * @param args the message format arguments
          */
         public static Result json(String msg, Object... args) {
@@ -606,7 +608,7 @@ public @interface Controller {
          * to infer the {@code Result}</li>
          * </ul>
          *
-         * @param v the value to be rendered
+         * @param v             the value to be rendered
          * @param actionContext the action context
          * @return the rendered result
          */
@@ -631,11 +633,8 @@ public @interface Controller {
                     return inferToTemplate((Map) v, actionContext);
                 }
                 return new RenderJSON(v);
-            } else if (v instanceof Object[]) {
-                if (hasTemplate) {
-                    throw E.tbd("Render template with array");
-                }
-                return inferResult((Object[]) v, actionContext);
+            } else if (hasTemplate && v instanceof Object[]) {
+                throw E.tbd("Render template with array");
             } else {
                 if (hasTemplate) {
                     return inferToTemplate(v, actionContext);
@@ -666,7 +665,8 @@ public @interface Controller {
                     PropertySpec.MetaInfo propertySpec = (null == meta) ? null : meta.propertySpec();
                     return new RenderCSV(v, propertySpec, actionContext);
                 } else {
-                    return inferResult(v.toString(), actionContext);
+                    String s = meta.returnType().getDescriptor().startsWith("[") ? $.toString2(v) : v.toString();
+                    return inferResult(s, actionContext);
                 }
             }
         }

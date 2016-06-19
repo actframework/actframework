@@ -6,7 +6,6 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.osgl.http.H;
-import org.osgl.mvc.result.Result;
 import org.osgl.storage.ISObject;
 import org.osgl.util.C;
 import org.osgl.util.Codec;
@@ -18,6 +17,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 public class EndpointTester extends TestBase {
 
@@ -60,30 +60,15 @@ public class EndpointTester extends TestBase {
 
     @Before
     public void setup() {
-        http = new OkHttpClient();
+        http = new OkHttpClient.Builder()
+                .connectTimeout(60 * 10, TimeUnit.SECONDS)
+                .readTimeout(60 * 10, TimeUnit.SECONDS)
+                .writeTimeout(60 * 10, TimeUnit.SECONDS).build();
         req = null;
         resp = null;
         reqBuilder = null;
     }
 
-    protected void bodyContains(String s) throws IOException {
-        yes(resp().body().string().contains(s));
-    }
-
-    protected void bodyEq(String s) throws IOException {
-        final Response resp = resp();
-        eq(200, resp.code());
-        eq(s, S.string(resp.body().string()).trim());
-    }
-
-    protected void bodyEq(Object obj) throws IOException {
-        bodyEq(JSON.toJSONString(obj));
-    }
-
-    protected void notFound() throws IOException {
-        final Response resp = resp();
-        eq(404, resp.code());
-    }
 
     private void execute() throws IOException {
         resp = http.newCall(req().build()).execute();
@@ -104,9 +89,125 @@ public class EndpointTester extends TestBase {
         return resp;
     }
 
+    protected void verifyAllMethods(String expected, String url, String key, Object val, Object ... otherPairs) throws Exception {
+        verifyGet(expected, url, key, val, otherPairs);
+        verifyPostFormData(expected, url, key, val, otherPairs);
+        verifyPostJsonBody(expected, url, key, val, otherPairs);
+    }
+
+    protected void verifyGet(String expected, String url, String key, Object val, Object ... otherPairs) throws Exception {
+        setup();
+        url(url).get(key, val, otherPairs);
+        bodyEq(expected);
+    }
+
+    protected void verifyPostFormData(String expected, String url, String key, Object val, Object ... otherPairs) throws Exception {
+        setup();
+        url(url).post(key, val, otherPairs);
+        bodyEq(expected);
+    }
+
+    protected void verifyPostJsonBody(String expected, String url, String key, Object val, Object ... otherPairs) throws Exception {
+        setup();
+        Map<String, Object> params = prepareJsonData(key, val, otherPairs);
+        url(url).postJSON(params);
+        bodyEq(expected);
+    }
+
+    protected void notFoundByAllMethods(String url, String key, Object val, Object ... otherPairs) throws Exception {
+        notFoundByGet(url, key, val, otherPairs);
+        notFoundByPostFormData(url, key, val, otherPairs);
+        notFoundByPostJsonBody(url, key, val, otherPairs);
+    }
+
+    protected void notFoundByGet(String url, String key, Object val, Object ... otherPairs) throws Exception {
+        setup();
+        url(url).get(key, val, otherPairs);
+        notFound();
+    }
+
+    protected void notFoundByPostFormData(String url, String key, Object val, Object ... otherPairs) throws Exception {
+        setup();
+        url(url).post(key, val, otherPairs);
+        notFound();
+    }
+
+    protected void notFoundByPostJsonBody(String url, String key, Object val, Object ... otherPairs) throws Exception {
+        setup();
+        Map<String, Object> params = prepareJsonData(key, val, otherPairs);
+        url(url).postJSON(params);
+        notFound();
+    }
+
+    protected void badRequestByAllMethods(String url, String key, Object val, Object ... otherPairs) throws Exception {
+        badRequestByGet(url, key, val, otherPairs);
+        badRequestByPostFormData(url, key, val, otherPairs);
+        badRequestByPostJsonBody(url, key, val, otherPairs);
+    }
+
+    protected void badRequestByGet(String url, String key, Object val, Object ... otherPairs) throws Exception {
+        setup();
+        url(url).get(key, val, otherPairs);
+        badRequest();
+    }
+
+    protected void badRequestByPostFormData(String url, String key, Object val, Object ... otherPairs) throws Exception {
+        setup();
+        url(url).post(key, val, otherPairs);
+        badRequest();
+    }
+
+    protected void badRequestByPostJsonBody(String url, String key, Object val, Object ... otherPairs) throws Exception {
+        setup();
+        Map<String, Object> params = prepareJsonData(key, val, otherPairs);
+        url(url).postJSON(params);
+        badRequest();
+    }
+
     protected ReqBuilder url(String pathTmpl, Object ... args) {
         reqBuilder = new ReqBuilder(pathTmpl, args);
         return reqBuilder;
+    }
+
+    protected void bodyContains(String s) throws IOException {
+        yes(resp().body().string().contains(s));
+    }
+
+    protected void bodyEq(String s) throws IOException {
+        final Response resp = resp();
+        eq(200, resp.code());
+        eq(s, S.string(resp.body().string()));
+    }
+
+    protected void bodyEqIgnoreSpace(String s) throws IOException {
+        final Response resp = resp();
+        eq(200, resp.code());
+        eq(s.trim(), S.string(resp.body().string()).trim());
+    }
+
+    protected void bodyEq(Object obj) throws IOException {
+        bodyEq(JSON.toJSONString(obj));
+    }
+
+    protected void bodyEqIgnoreSpace(Object obj) throws IOException {
+        bodyEqIgnoreSpace(JSON.toJSONString(obj));
+    }
+
+    protected void notFound() throws IOException {
+        final Response resp = resp();
+        eq(404, resp.code());
+    }
+
+    protected void badRequest() throws IOException {
+        final Response resp = resp();
+        eq(400, resp.code());
+    }
+
+    private Map<String, Object> prepareJsonData(String key, Object val, Object ... otherPairs) {
+        Map<String, Object> params = C.newMap(key, val);
+        Map<String, Object> otherParams = C.map(otherPairs);
+        params.putAll(otherParams);
+        return params;
     }
 
     private static void shutdownApp() throws Exception {

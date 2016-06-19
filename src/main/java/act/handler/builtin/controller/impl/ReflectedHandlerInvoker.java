@@ -280,6 +280,9 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
                 continue;
             }
             Class<?> paramComponentType = paramComponentTypes[i];
+            if (null == paramComponentType) {
+                paramComponentType = paramType.getComponentType();
+            }
             try {
                 BindAnnoInfo bindInfo = param.bindAnnoInfo();
                 Binder<?> binder = null;
@@ -296,103 +299,144 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
                         }
                     }
                 }
+                Object o = null;
                 if (null != binder) {
-                    oa[i] = binder.resolve(bindName, ctx);
-                } else {
-                    StringValueResolver resolver = null;
-                    if (param.resolverDefined()) {
-                        resolver = param.resolver(app);
-                    }
-                    String[] reqVals = ctx.paramVals(bindName);
-                    Object o = null;
-                    if (null == reqVals || reqVals.length == 1) {
-                        if (String.class.equals(paramType)) {
-                            o = reqVals[0];
-                        } else {
-                            o = ctx.tryParseJson(bindName, paramType, paramComponentType, paramCount - ctxParamCount);
-                        }
-                    }
-                    if (null != o) {
-                        if (paramType != String.class && o instanceof String) {
-                            oa[i] = resolverManager.resolve((String) o, paramType);
-                        } else if (paramType.isAssignableFrom(o.getClass())) {
-                            oa[i] = o;
-                        } else {
-                            // try primitive wrapper juggling
-                            if (paramType.isPrimitive()) {
-                                if ($.wrapperClassOf(paramType).isAssignableFrom(o.getClass())) {
-                                    oa[i] = o;
-                                    continue;
-                                }
-                            } else if (paramType == String.class) {
-                                oa[i] = S.string(o);
-                                continue;
-                            }
-                            throw new BindException("Cannot resolve parameter[%s] from %s", bindName, o);
-                        }
-                        continue;
-                    }
-                    if (paramType.isArray() || Iterable.class.isAssignableFrom(paramType)) {
-                        int len = reqVals.length;
-                        if (paramType.isArray()) {
-                            o = Array.newInstance(paramComponentType, len);
-                            for (int j = 0; j < len; ++j) {
-                                String s = reqVals[j];
-                                Object e = null == resolver ? resolver.resolve(s) : resolverManager.resolve(s, paramComponentType);
-                                if (null == e) {
-                                    e = JSON.parseObject(s, paramComponentType);
-                                }
-                                Array.set(o, j, e);
-                            }
-                        } else {
-                            Collection c = null;
-                            if (List.class.isAssignableFrom(paramType)) {
-                                c = C.newList();
-                            } else if (Set.class.isAssignableFrom(paramType)) {
-                                c = C.newSet();
-                            }
-                            if (null != c) {
-                                o = c;
-                                for (String s : reqVals) {
-                                    Object e = null != resolver ? resolver.resolve(s) : resolverManager.resolve(s, paramComponentType);
-                                    if (null == e) {
-                                        e = JSON.parseObject(s, paramComponentType);
-                                    }
-                                    c.add(e);
-                                }
-                            }
-                        }
-                    } else {
-                        String reqVal = null == reqVals ? null : reqVals[0];
-                        if (null == resolver) {
-                            o = resolverManager.resolve(reqVal, paramType);
-                        } else {
-                            o = resolver.resolve(reqVal);
-                        }
-                        if (null == o) {
-                            try {
-                                Object entity = newInstance(paramType);
-                                o = autoBinder.resolve(entity, bindName, ctx);
-                            } catch (Exception e) {
-                                App.logger.warn(e, "Error binding parameter %s", bindName);
-                            }
-                        }
-                    }
-                    if (null == o) {
-                        o = param.defVal(paramType);
-                    }
+                    o = binder.resolve(bindName, ctx);
                     if (null != o) {
                         oa[i] = o;
                         continue;
                     }
-                    List<ActionMethodParamAnnotationHandler> annotationHandlers = paramAnnoHandlers.get(i);
-                    if (null != annotationHandlers) {
-                        String paraName = param.name();
-                        Object val = oa[i];
-                        for (ActionMethodParamAnnotationHandler annotationHandler : annotationHandlers) {
-                            for (Annotation annotation : paramAnnotationList(i)) {
-                                annotationHandler.handle(paraName, val, annotation, ctx);
+                }
+                StringValueResolver resolver = null;
+                if (param.resolverDefined()) {
+                    resolver = param.resolver(app);
+                }
+                String[] reqVals = ctx.paramVals(bindName);
+                if (null == reqVals || reqVals.length == 1) {
+                    if (null != reqVals && String.class.equals(paramType)) {
+                        o = reqVals[0];
+                    } else {
+                        o = ctx.tryParseJson(bindName, paramType, paramComponentType, paramCount - ctxParamCount);
+                    }
+                }
+                if (null != o) {
+                    if (paramType != String.class && o instanceof String) {
+                        oa[i] = resolverManager.resolve((String) o, paramType);
+                    } else if (paramType.isAssignableFrom(o.getClass())) {
+                        oa[i] = o;
+                    } else {
+
+                        // try primitive wrapper juggling
+                        if (paramType.isPrimitive()) {
+                            if ($.wrapperClassOf(paramType).isAssignableFrom(o.getClass())) {
+                                oa[i] = o;
+                                continue;
                             }
+                        } else if (paramType == String.class) {
+                            oa[i] = S.string(o);
+                            continue;
+                        } else if (paramType.isArray()) {
+                            if (o instanceof List) {
+                                List list = (List) o;
+                                Object array = Array.newInstance(paramComponentType, list.size());
+                                for (int ai = 0; ai < list.size(); ++ai) {
+                                    Object e = list.get(ai);
+                                    if (null == e) {
+                                        continue;
+                                    }
+                                    Array.set(array, ai, list.get(ai));
+                                }
+                                oa[i] = array;
+                                continue;
+                            }
+                        }
+                        throw new BindException("Cannot resolve parameter[%s] from %s", bindName, o);
+                    }
+                    continue;
+                }
+                if (null != reqVals && (paramType.isArray() || Iterable.class.isAssignableFrom(paramType))) {
+                    int len = reqVals.length;
+                    if (paramType.isArray()) {
+                        o = Array.newInstance(paramComponentType, len);
+                        for (int j = 0; j < len; ++j) {
+                            String s = reqVals[j];
+                            Object e = null == resolver ? resolver.resolve(s) : resolverManager.resolve(s, paramComponentType);
+                            if (null == e) {
+                                e = JSON.parseObject(s, paramComponentType);
+                            }
+                            Array.set(o, j, e);
+                        }
+                    } else {
+                        Collection c = null;
+                        if (List.class.isAssignableFrom(paramType)) {
+                            c = C.newList();
+                        } else if (Set.class.isAssignableFrom(paramType)) {
+                            c = C.newSet();
+                        }
+                        if (null != c) {
+                            o = c;
+                            for (String s : reqVals) {
+                                Object e = null != resolver ? resolver.resolve(s) : resolverManager.resolve(s, paramComponentType);
+                                if (null == e) {
+                                    e = JSON.parseObject(s, paramComponentType);
+                                }
+                                c.add(e);
+                            }
+                        }
+                    }
+                } else {
+                    String reqVal = null == reqVals ? null : reqVals[0];
+                    if (null == resolver) {
+                        o = resolverManager.resolve(reqVal, paramType);
+                    } else {
+                        o = resolver.resolve(reqVal);
+                    }
+                    if (null == o) {
+                        try {
+                            if (paramType.isArray()) {
+                                List list = C.newList();
+                                paramComponentType = paramType.getComponentType();
+                                list = (List) autoBinder.resolveSimpleTypeContainer(list, bindName, ctx, paramComponentType);
+                                if (null != list) {
+                                    o = Array.newInstance(paramComponentType, list.size());
+                                    for (int ai = 0; ai < list.size(); ++ai) {
+                                        Object e = list.get(ai);
+                                        if (null == e) {
+                                            continue;
+                                        }
+                                        Array.set(o, ai, e);
+                                    }
+                                }
+                            } else if (Collection.class.isAssignableFrom(paramType)) {
+                                List list = C.newList();
+                                list = (List) autoBinder.resolveSimpleTypeContainer(list, bindName, ctx, paramComponentType);
+                                if (null != list) {
+                                    o = newInstance(paramType);
+                                    ((Collection) o).addAll(list);
+                                }
+                            } else {
+                                Object entity = newInstance(paramType);
+                                o = autoBinder.resolve(entity, bindName, ctx);
+                            }
+                        } catch (Exception e) {
+                            App.logger.warn(e, "Error binding parameter %s", bindName);
+                        }
+                    }
+                }
+                if (null == o) {
+                    o = param.defVal(paramType);
+                }
+                if (null != o) {
+                    oa[i] = o;
+                    continue;
+                }
+                List<ActionMethodParamAnnotationHandler> annotationHandlers = paramAnnoHandlers.get(i);
+                if (null != annotationHandlers) {
+                    String paraName = param.name();
+                    Object val = oa[i];
+                    for (ActionMethodParamAnnotationHandler annotationHandler : annotationHandlers) {
+                        for (Annotation annotation : paramAnnotationList(i)) {
+                            annotationHandler.handle(paraName, val, annotation, ctx);
                         }
                     }
                 }
@@ -404,7 +448,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
     }
 
     private Object newInstance(Class c) {
-        if (List.class.equals(c)) {
+        if (Iterable.class.equals(c) || List.class.equals(c)) {
             return C.newList();
         } else if (Map.class.equals(c)) {
             return C.newMap();

@@ -7,6 +7,7 @@ import act.app.data.StringValueResolverManager;
 import act.app.event.AppEventId;
 import act.app.util.AppCrypto;
 import act.app.util.NamedPort;
+import act.app.util.SimpleTypeInstanceFactory;
 import act.cli.CliDispatcher;
 import act.cli.bytecode.CommanderByteCodeScanner;
 import act.conf.AppConfLoader;
@@ -383,7 +384,9 @@ public class App extends DestroyableBase {
     }
 
     public <T> void registerSingleton(Class<? extends T> cls, T instance) {
-        singletonRegistry.register(cls, instance);
+        if (null != singletonRegistry) {
+            singletonRegistry.register(cls, instance);
+        }
     }
 
     public void registerSingletonClass(Class<?> aClass) {
@@ -481,15 +484,12 @@ public class App extends DestroyableBase {
         return newInstance(c, context);
     }
 
-
     public <T> T newInstance(Class<T> clz) {
-        if (App.class == clz) return $.cast(this);
-        if (AppConfig.class == clz) return $.cast(config());
-        if (AppCrypto.class == clz) return $.cast(crypto());
-        if (AppJobManager.class == clz) return $.cast(jobManager());
-        if (EventBus.class == clz) return $.cast(eventBus());
-        if (CacheService.class == clz) return $.cast(cache());
         T t = singleton(clz);
+        if (null != t) {
+            return t;
+        }
+        t = SimpleTypeInstanceFactory.newInstance(clz);
         if (null != t) {
             return t;
         }
@@ -501,21 +501,16 @@ public class App extends DestroyableBase {
     }
 
     <T> T newInstance(Class<T> clz, ActContext context) {
-        if (App.class == clz) return $.cast(this);
-        if (AppConfig.class == clz) return $.cast(config());
-        if (ActionContext.class == clz) return $.cast(context);
-        if (CliContext.class == clz) return $.cast(context);
-        if (MailerContext.class == clz) return $.cast(context);
-        if (AppCrypto.class == clz) return $.cast(crypto());
-        T t = singleton(clz);
-        if (null != t) {
-            return t;
+        if (ActionContext.class == clz) {
+            return $.cast(context);
         }
-        if (null != dependencyInjector) {
-            return dependencyInjector.createContextAwareInjector(context).create(clz);
-        } else {
-            return $.newInstance(clz);
+        if (CliContext.class == clz) {
+            return $.cast(context);
         }
+        if (MailerContext.class == clz) {
+            return $.cast(context);
+        }
+        return newInstance(clz);
     }
 
     @Override
@@ -606,6 +601,7 @@ public class App extends DestroyableBase {
         logger.debug("loading app configuration: %s ...", appBase.getAbsolutePath());
         config = new AppConfLoader().load(conf);
         config.app(this);
+        registerSingleton(AppConfig.class, config);
         registerValueObjectCodec();
     }
 
@@ -702,7 +698,7 @@ public class App extends DestroyableBase {
 
     private void initServiceResourceManager() {
         clearServiceResourceManager();
-        appServiceRegistry = new AppServiceRegistry();
+        appServiceRegistry = new AppServiceRegistry(this);
     }
 
     private void clearServiceResourceManager() {
@@ -775,6 +771,7 @@ public class App extends DestroyableBase {
 
     private void initCrypto() {
         crypto = new AppCrypto(config());
+        registerSingleton(AppCrypto.class, crypto);
     }
 
     private void initJobManager() {
@@ -861,6 +858,8 @@ public class App extends DestroyableBase {
 
     private void initSingletonRegistry() {
         singletonRegistry = new SingletonRegistry(this);
+        singletonRegistry.register(App.class, this);
+        appServiceRegistry.bulkRegisterSingleton();
     }
 
     private void loadPlugins() {

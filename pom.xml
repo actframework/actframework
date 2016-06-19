@@ -18,7 +18,8 @@
 ********************************************
 *            version history
 ********************************************
-0.1.2 - support websocket
+0.1.3 - testapp to implement integration test of ActFramework
+0.1.2 - misc bug fixes
 0.1.1 - baseline version
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
@@ -29,7 +30,7 @@
   <groupId>org.actframework</groupId>
   <artifactId>act</artifactId>
   <packaging>jar</packaging>
-  <version>0.1.2-SNAPSHOT</version>
+  <version>0.1.3-SNAPSHOT</version>
 
   <name>ACT Framework</name>
   <description>The ACT full stack MVC framework</description>
