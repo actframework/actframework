@@ -62,10 +62,15 @@ public abstract class SimpleTypeArrayActionParameterBindingTestBase<T> extends A
     }
 
     private void _verify(String expected, String urlPath, List data, ListEncoding listEncoding, RequestMethod method) throws Exception {
+        if (null == urlPath) {
+            // for some type like String,
+            // we don't have the primitive array endpoint path
+            return;
+        }
         context
                 .expected(expected)
                 .url(processUrl(urlPath))
-                .params(listEncoding.encode(PARAM, data))
+                .params(listEncoding.encode(null == data ? "foo" : PARAM, null == data ? C.list() : data))
                 .method(method)
                 .applyTo(this);
     }
@@ -74,10 +79,34 @@ public abstract class SimpleTypeArrayActionParameterBindingTestBase<T> extends A
      * Test configuration items
      *
      *  1. primitive|wrap
-     *  2. empty|non-empty
+     *  2. empty|non-empty|null
      *  3. get|post-form|post-json
      *  4. e-one|e-two|e-json
      */
+    @Test
+    public void testPrimitiveNullArrayGetEncodeOne() throws Exception {
+        _verify("[]", pathPrimitive, null, ListEncoding.ONE, RequestMethod.GET);
+    }
+
+    @Test
+    public void testPrimitiveNullArrayGetEncodeTwo() throws Exception {
+        _verify("[]", pathPrimitive, null, ListEncoding.TWO, RequestMethod.GET);
+    }
+
+    @Test
+    public void testPrimitiveNullArrayFormDataEncodeOne() throws Exception {
+        _verify("[]", pathPrimitive, null, ListEncoding.ONE, RequestMethod.POST_FORM_DATA);
+    }
+
+    @Test
+    public void testPrimitiveNullArrayFormDataEncodeTwo() throws Exception {
+        _verify("[]", pathPrimitive, null, ListEncoding.TWO, RequestMethod.POST_FORM_DATA);
+    }
+
+    @Test
+    public void testPrimitiveNullArrayJSON() throws Exception {
+        _verify("[]", pathPrimitive, null, ListEncoding.JSON, RequestMethod.POST_JSON);
+    }
 
     @Test
     public void testPrimitiveEmptyArrayGetEncodeOne() throws Exception {
@@ -132,6 +161,32 @@ public abstract class SimpleTypeArrayActionParameterBindingTestBase<T> extends A
     // ------------ Wrap array -------------
 
     @Test
+    public void testWrapNullArrayGetEncodeOne() throws Exception {
+        _verify("[]", pathWrap, null, ListEncoding.ONE, RequestMethod.GET);
+    }
+
+    @Test
+    public void testWrapNullArrayGetEncodeTwo() throws Exception {
+        _verify("[]", pathWrap, null, ListEncoding.TWO, RequestMethod.GET);
+    }
+
+    @Test
+    public void testWrapNullArrayFormDataEncodeOne() throws Exception {
+        _verify("[]", pathWrap, null, ListEncoding.ONE, RequestMethod.POST_FORM_DATA);
+    }
+
+    @Test
+    public void testWrapNullArrayFormDataEncodeTwo() throws Exception {
+        _verify("[]", pathWrap, null, ListEncoding.TWO, RequestMethod.POST_FORM_DATA);
+    }
+
+    @Test
+    public void testWrapNullArrayJSON() throws Exception {
+        _verify("[]", pathWrap, null, ListEncoding.JSON, RequestMethod.POST_JSON);
+    }
+
+
+    @Test
     public void testWrapEmptyArrayGetEncodeOne() throws Exception {
         _verify("[]", pathWrap, C.list(), ListEncoding.ONE, RequestMethod.GET);
     }
@@ -184,6 +239,31 @@ public abstract class SimpleTypeArrayActionParameterBindingTestBase<T> extends A
     // ------------ List -------------
 
     @Test
+    public void testNullListGetEncodeOne() throws Exception {
+        _verify("[]", pathList, null, ListEncoding.ONE, RequestMethod.GET);
+    }
+
+    @Test
+    public void testNullListGetEncodeTwo() throws Exception {
+        _verify("[]", pathList, null, ListEncoding.TWO, RequestMethod.GET);
+    }
+
+    @Test
+    public void testNullListFormDataEncodeOne() throws Exception {
+        _verify("[]", pathList, null, ListEncoding.ONE, RequestMethod.POST_FORM_DATA);
+    }
+
+    @Test
+    public void testNullListFormDataEncodeTwo() throws Exception {
+        _verify("[]", pathList, null, ListEncoding.TWO, RequestMethod.POST_FORM_DATA);
+    }
+
+    @Test
+    public void testNullListJSON() throws Exception {
+        _verify("[]", pathList, null, ListEncoding.JSON, RequestMethod.POST_JSON);
+    }
+
+    @Test
     public void testEmptyListGetEncodeOne() throws Exception {
         _verify("[]", pathList, C.list(), ListEncoding.ONE, RequestMethod.GET);
     }
@@ -234,6 +314,31 @@ public abstract class SimpleTypeArrayActionParameterBindingTestBase<T> extends A
     }
 
     // ------------ Set -------------
+
+    @Test
+    public void testNullSetGetEncodeOne() throws Exception {
+        _verify("[]", pathSet, null, ListEncoding.ONE, RequestMethod.GET);
+    }
+
+    @Test
+    public void testNullSetGetEncodeTwo() throws Exception {
+        _verify("[]", pathSet, null, ListEncoding.TWO, RequestMethod.GET);
+    }
+
+    @Test
+    public void testNullSetFormDataEncodeOne() throws Exception {
+        _verify("[]", pathSet, null, ListEncoding.ONE, RequestMethod.POST_FORM_DATA);
+    }
+
+    @Test
+    public void testNullSetFormDataEncodeTwo() throws Exception {
+        _verify("[]", pathSet, null, ListEncoding.TWO, RequestMethod.POST_FORM_DATA);
+    }
+
+    @Test
+    public void testNullSetJSON() throws Exception {
+        _verify("[]", pathSet, null, ListEncoding.JSON, RequestMethod.POST_JSON);
+    }
 
     @Test
     public void testEmptySetGetEncodeOne() throws Exception {
