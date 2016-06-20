@@ -1,4 +1,4 @@
-package testapp.endpoint;
+package testapp.endpoint.binding.collection;
 
 import org.osgl.util.C;
 
@@ -19,11 +19,6 @@ public class StringArrayActionParameterBindingTest extends SimpleTypeArrayAction
     @Override
     protected String wrapperArrayPath() {
         return "string_wa";
-    }
-
-    @Override
-    protected String primitiveArrayPath() {
-        return null;
     }
 
     @Override

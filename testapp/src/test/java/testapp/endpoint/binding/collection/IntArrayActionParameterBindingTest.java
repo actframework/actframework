@@ -1,10 +1,10 @@
-package testapp.endpoint;
+package testapp.endpoint.binding.collection;
 
 import org.osgl.util.C;
 
 import java.util.List;
 
-public class IntArrayActionParameterBindingTest extends SimpleTypeArrayActionParameterBindingTestBase<Integer> {
+public class IntArrayActionParameterBindingTest extends PrimitiveTypeArrayActionParameterBindingTestBase<Integer> {
 
     @Override
     protected String listPath() {

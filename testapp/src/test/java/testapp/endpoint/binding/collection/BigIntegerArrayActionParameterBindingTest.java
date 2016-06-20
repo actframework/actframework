@@ -1,4 +1,4 @@
-package testapp.endpoint;
+package testapp.endpoint.binding.collection;
 
 import org.osgl.util.C;
 
@@ -20,11 +20,6 @@ public class BigIntegerArrayActionParameterBindingTest extends SimpleTypeArrayAc
     @Override
     protected String wrapperArrayPath() {
         return "b_int_wa";
-    }
-
-    @Override
-    protected String primitiveArrayPath() {
-        return null;
     }
 
     @Override

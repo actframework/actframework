@@ -1,13 +1,10 @@
 package testapp.endpoint;
 
-import act.app.ActionContext;
 import act.controller.Controller;
 import org.osgl.mvc.annotation.Action;
-import org.osgl.util.S;
+import testapp.model.RGB;
 
 import javax.validation.constraints.NotNull;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Target;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
@@ -22,7 +19,7 @@ public class SimpleParameterResolver extends Controller.Util {
         return v;
     }
 
-    @Action("bool")
+    @Action("bool_w")
     public Boolean bool(Boolean v) {
         return v;
     }
@@ -32,7 +29,7 @@ public class SimpleParameterResolver extends Controller.Util {
         return v;
     }
 
-    @Action("byte")
+    @Action("byte_w")
     public Byte takeByte(Byte v) {
         return v;
     }
@@ -46,7 +43,7 @@ public class SimpleParameterResolver extends Controller.Util {
     public void foo(@NotNull int v) {
     }
 
-    @Action("char")
+    @Action("char_w")
     public Character takeChar(Character v) {
         return v;
     }
@@ -56,7 +53,7 @@ public class SimpleParameterResolver extends Controller.Util {
         return v;
     }
 
-    @Action("short")
+    @Action("short_w")
     public Short takeShort(Short v) {
         return v;
     }
@@ -66,7 +63,7 @@ public class SimpleParameterResolver extends Controller.Util {
         return v;
     }
 
-    @Action("int")
+    @Action("int_w")
     public Integer takeInt(Integer v) {
         return v;
     }
@@ -76,7 +73,7 @@ public class SimpleParameterResolver extends Controller.Util {
         return v;
     }
 
-    @Action("float")
+    @Action("float_w")
     public Float takeFloat(Float v) {
         return v;
     }
@@ -86,7 +83,7 @@ public class SimpleParameterResolver extends Controller.Util {
         return v;
     }
 
-    @Action("long")
+    @Action("long_w")
     public Long takeLong(Long v) {
         return v;
     }
@@ -96,7 +93,7 @@ public class SimpleParameterResolver extends Controller.Util {
         return v;
     }
 
-    @Action("double")
+    @Action("double_w")
     public Double takeDouble(Double v) {
         return v;
     }
@@ -117,7 +114,7 @@ public class SimpleParameterResolver extends Controller.Util {
     }
 
     @Action("enum")
-    public ElementType elementType(ElementType v) {
+    public RGB elementType(RGB v) {
         return v;
     }
 

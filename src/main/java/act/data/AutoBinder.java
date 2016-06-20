@@ -41,31 +41,36 @@ public class AutoBinder {
         Set<String> relevantParams = t2._1;
         int prefixLen = t2._2;
         for (String s : relevantParams) {
-            String v = ctx.paramVal(s);
-            if (S.blank(v)) {
+            String[] va = ctx.paramVals(s);
+            if (null == va) {
                 continue;
             }
-            String propertyPath = s.substring(prefixLen);
-            if (propertyPath.contains("]")) {
-                propertyPath = propertyPath.replace('[', '.').replace("]", "");
-            }
-
-            Object o = resolverManager.resolve(v, componentType);
-            if (S.blank(propertyPath)) {
-                container.add(o);
-            } else if (NumberUtils.isDigits(propertyPath)) {
-                if (container instanceof List) {
-                    List list = (List)container;
-                    int index = Integer.parseInt(propertyPath);
-                    while (list.size() < index + 1) {
-                        list.add(null);
-                    }
-                    ((List) container).set(Integer.parseInt(propertyPath), o);
-                } else {
-                    container.add(o);
+            for (String v: va) {
+                if (S.blank(v)) {
+                    continue;
                 }
-            } else {
-                return null;
+                String propertyPath = s.substring(prefixLen);
+                if (propertyPath.contains("]")) {
+                    propertyPath = propertyPath.replace('[', '.').replace("]", "");
+                }
+
+                Object o = resolverManager.resolve(v, componentType);
+                if (S.blank(propertyPath)) {
+                    container.add(o);
+                } else if (NumberUtils.isDigits(propertyPath)) {
+                    if (container instanceof List) {
+                        List list = (List) container;
+                        int index = Integer.parseInt(propertyPath);
+                        while (list.size() < index + 1) {
+                            list.add(null);
+                        }
+                        ((List) container).set(Integer.parseInt(propertyPath), o);
+                    } else {
+                        container.add(o);
+                    }
+                } else {
+                    return null;
+                }
             }
         }
         return container;

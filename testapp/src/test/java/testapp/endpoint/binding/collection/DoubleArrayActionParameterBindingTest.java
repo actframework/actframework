@@ -1,10 +1,10 @@
-package testapp.endpoint;
+package testapp.endpoint.binding.collection;
 
 import org.osgl.util.C;
 
 import java.util.List;
 
-public class DoubleArrayActionParameterBindingTest extends SimpleTypeArrayActionParameterBindingTestBase<Double> {
+public class DoubleArrayActionParameterBindingTest extends PrimitiveTypeArrayActionParameterBindingTestBase<Double> {
 
     @Override
     protected String listPath() {

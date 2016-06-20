@@ -1,10 +1,11 @@
-package testapp.endpoint;
+package testapp.endpoint.binding;
 
 import org.osgl.mvc.result.BadRequest;
 import org.osgl.mvc.result.NotFound;
 import org.osgl.util.S;
+import testapp.endpoint.EndpointTester;
 
-abstract class ActionParameterBindingTestBase extends EndpointTester {
+public abstract class ActionParameterBindingTestBase extends EndpointTester {
 
     protected abstract String urlContext();
 

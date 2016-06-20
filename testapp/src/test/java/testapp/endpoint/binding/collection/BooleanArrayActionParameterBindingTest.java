@@ -1,10 +1,10 @@
-package testapp.endpoint;
+package testapp.endpoint.binding.collection;
 
 import org.osgl.util.C;
 
 import java.util.List;
 
-public class BooleanArrayActionParameterBindingTest extends SimpleTypeArrayActionParameterBindingTestBase<Boolean> {
+public class BooleanArrayActionParameterBindingTest extends PrimitiveTypeArrayActionParameterBindingTestBase<Boolean> {
 
     @Override
     protected String listPath() {

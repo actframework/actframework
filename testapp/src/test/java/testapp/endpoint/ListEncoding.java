@@ -1,6 +1,7 @@
 package testapp.endpoint;
 
 import org.osgl.$;
+import org.osgl.Osgl;
 import org.osgl.util.C;
 import org.osgl.util.S;
 
@@ -54,7 +55,39 @@ public enum ListEncoding {
             }
             return retList;
         }
-    };
+    },
+
+    /**
+     * The third style:
+     * `name[]=Actor&name[]=Actor2&name[]=Actor3`
+     */
+    THREE() {
+        @Override
+        public List<$.T2<String, Object>> encode(String paramName, List<?> elements) {
+            List<$.T2<String, Object>> retList = C.newSizedList(elements.size());
+            for (int i = 0; i < elements.size(); ++i) {
+                retList.add($.T2(S.fmt("%s[]", paramName, i), elements.get(i)));
+            }
+            return retList;
+        }
+    },
+
+    /**
+     * The fourth style:
+     * `name.1=Actor&name.2=Actor2&name.3=Actor3`
+     */
+    FOUR() {
+        @Override
+        public List<$.T2<String, Object>> encode(String paramName, List<?> elements) {
+            List<$.T2<String, Object>> retList = C.newSizedList(elements.size());
+            for (int i = 0; i < elements.size(); ++i) {
+                retList.add($.T2(S.fmt("%s.%d", paramName, i), elements.get(i)));
+            }
+            return retList;
+        }
+    }
+
+    ;
 
     /**
      * Returns the list of (k,v) pairs to be fed into GET/POST request

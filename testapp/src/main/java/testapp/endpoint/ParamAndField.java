@@ -6,7 +6,7 @@ import org.osgl.mvc.annotation.Action;
  * This is to test controller request param binding to
  * both parameter and field
  */
-public class ParamVsField {
+public class ParamAndField {
 
     public static final String PATH = "param_vs_field";
 

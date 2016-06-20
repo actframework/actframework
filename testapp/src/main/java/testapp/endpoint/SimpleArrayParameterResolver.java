@@ -3,6 +3,7 @@ package testapp.endpoint;
 import act.controller.Controller;
 import org.osgl.http.H;
 import org.osgl.mvc.annotation.Action;
+import testapp.model.RGB;
 
 import java.lang.annotation.ElementType;
 import java.math.BigDecimal;
@@ -223,18 +224,18 @@ public class SimpleArrayParameterResolver extends Controller.Util {
     }
 
     @Action("enum_wa")
-    public ElementType[] elementType(ElementType[] v) {
+    public RGB[] elementType(RGB[] v) {
         return v;
     }
 
 
     @Action("enum_list")
-    public List<H.Method> enumList(List<H.Method> v) {
+    public List<RGB> enumList(List<RGB> v) {
         return v;
     }
 
     @Action("enum_set")
-    public Set<H.Method> enumSet(Set<H.Method> v) {
-        return new TreeSet<H.Method>(v);
+    public Set<RGB> enumSet(Set<RGB> v) {
+        return new TreeSet<RGB>(v);
     }
 }
