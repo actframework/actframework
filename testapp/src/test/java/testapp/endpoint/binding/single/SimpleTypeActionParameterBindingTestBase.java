@@ -12,7 +12,6 @@ public abstract class SimpleTypeActionParameterBindingTestBase<T> extends Action
     protected static final String PARAM = "v";
 
     protected String path;
-    private EndPointTestContext context;
 
     public SimpleTypeActionParameterBindingTestBase() {
         this.path = urlPath();
@@ -29,11 +28,6 @@ public abstract class SimpleTypeActionParameterBindingTestBase<T> extends Action
 
     protected final String e() {
         return expectedRespForNonNullValue();
-    }
-
-    @Before
-    public void initContext() {
-        context = new EndPointTestContext();
     }
 
     @Override

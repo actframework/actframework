@@ -1,12 +1,10 @@
 package testapp.endpoint.binding.collection;
 
-import org.junit.Before;
 import org.junit.Test;
 import org.osgl.util.C;
 import testapp.endpoint.binding.ActionParameterBindingTestBase;
-import testapp.endpoint.EndPointTestContext;
 import testapp.endpoint.EndPointTestContext.RequestMethod;
-import testapp.endpoint.ListEncoding;
+import testapp.endpoint.ParamEncoding;
 
 import java.util.List;
 import java.util.TreeSet;
@@ -18,7 +16,6 @@ public abstract class SimpleTypeArrayActionParameterBindingTestBase<T> extends A
     private String pathWrap;
     private String pathList;
     private String pathSet;
-    private EndPointTestContext context;
 
     public SimpleTypeArrayActionParameterBindingTestBase() {
         this.pathWrap = wrapperArrayPath();
@@ -51,21 +48,16 @@ public abstract class SimpleTypeArrayActionParameterBindingTestBase<T> extends A
         return expectedRespForNonEmptySet();
     }
 
-    @Before
-    public void initContext() {
-        context = new EndPointTestContext();
-    }
-
     @Override
     protected String urlContext() {
         return "/sapr";
     }
 
-    protected final void _verify(String expected, String urlPath, List data, ListEncoding listEncoding, RequestMethod method) throws Exception {
+    protected final void _verify(String expected, String urlPath, List data, ParamEncoding paramEncoding, RequestMethod method) throws Exception {
         context
                 .expected(expected)
                 .url(processUrl(urlPath))
-                .params(listEncoding.encode(null == data ? "foo" : PARAM, null == data ? C.list() : data))
+                .params(paramEncoding.encode(null == data ? "foo" : PARAM, null == data ? C.list() : data))
                 .method(method)
                 .applyTo(this);
     }
@@ -82,411 +74,411 @@ public abstract class SimpleTypeArrayActionParameterBindingTestBase<T> extends A
 
     @Test
     public void testWrapNullArrayGetEncodeOne() throws Exception {
-        _verify("[]", pathWrap, null, ListEncoding.ONE, RequestMethod.GET);
+        _verify("[]", pathWrap, null, ParamEncoding.ONE, RequestMethod.GET);
     }
 
     @Test
     public void testWrapNullArrayGetEncodeTwo() throws Exception {
-        _verify("[]", pathWrap, null, ListEncoding.TWO, RequestMethod.GET);
+        _verify("[]", pathWrap, null, ParamEncoding.TWO, RequestMethod.GET);
     }
 
     @Test
     public void testWrapNullArrayGetEncodeThree() throws Exception {
-        _verify("[]", pathWrap, null, ListEncoding.THREE, RequestMethod.GET);
+        _verify("[]", pathWrap, null, ParamEncoding.THREE, RequestMethod.GET);
     }
 
     @Test
     public void testWrapNullArrayGetEncodeFour() throws Exception {
-        _verify("[]", pathWrap, null, ListEncoding.FOUR, RequestMethod.GET);
+        _verify("[]", pathWrap, null, ParamEncoding.FOUR, RequestMethod.GET);
     }
 
     @Test
     public void testWrapNullArrayFormDataEncodeOne() throws Exception {
-        _verify("[]", pathWrap, null, ListEncoding.ONE, RequestMethod.POST_FORM_DATA);
+        _verify("[]", pathWrap, null, ParamEncoding.ONE, RequestMethod.POST_FORM_DATA);
     }
 
     @Test
     public void testWrapNullArrayFormDataEncodeTwo() throws Exception {
-        _verify("[]", pathWrap, null, ListEncoding.TWO, RequestMethod.POST_FORM_DATA);
+        _verify("[]", pathWrap, null, ParamEncoding.TWO, RequestMethod.POST_FORM_DATA);
     }
 
     @Test
     public void testWrapNullArrayFormDataEncodeThree() throws Exception {
-        _verify("[]", pathWrap, null, ListEncoding.THREE, RequestMethod.POST_FORM_DATA);
+        _verify("[]", pathWrap, null, ParamEncoding.THREE, RequestMethod.POST_FORM_DATA);
     }
 
     @Test
     public void testWrapNullArrayFormDataEncodeFour() throws Exception {
-        _verify("[]", pathWrap, null, ListEncoding.FOUR, RequestMethod.POST_FORM_DATA);
+        _verify("[]", pathWrap, null, ParamEncoding.FOUR, RequestMethod.POST_FORM_DATA);
     }
 
     @Test
     public void testWrapNullArrayJSON() throws Exception {
-        _verify("[]", pathWrap, null, ListEncoding.JSON, RequestMethod.POST_JSON);
+        _verify("[]", pathWrap, null, ParamEncoding.JSON, RequestMethod.POST_JSON);
     }
 
     @Test
     public void testWrapEmptyArrayGetEncodeOne() throws Exception {
-        _verify("[]", pathWrap, C.list(), ListEncoding.ONE, RequestMethod.GET);
+        _verify("[]", pathWrap, C.list(), ParamEncoding.ONE, RequestMethod.GET);
     }
 
     @Test
     public void testWrapEmptyArrayGetEncodeTwo() throws Exception {
-        _verify("[]", pathWrap, C.list(), ListEncoding.TWO, RequestMethod.GET);
+        _verify("[]", pathWrap, C.list(), ParamEncoding.TWO, RequestMethod.GET);
     }
 
     @Test
     public void testWrapEmptyArrayGetEncodeThree() throws Exception {
-        _verify("[]", pathWrap, C.list(), ListEncoding.THREE, RequestMethod.GET);
+        _verify("[]", pathWrap, C.list(), ParamEncoding.THREE, RequestMethod.GET);
     }
 
     @Test
     public void testWrapEmptyArrayGetEncodeFour() throws Exception {
-        _verify("[]", pathWrap, C.list(), ListEncoding.FOUR, RequestMethod.GET);
+        _verify("[]", pathWrap, C.list(), ParamEncoding.FOUR, RequestMethod.GET);
     }
 
     @Test
     public void testWrapEmptyArrayFormDataEncodeOne() throws Exception {
-        _verify("[]", pathWrap, C.list(), ListEncoding.ONE, RequestMethod.POST_FORM_DATA);
+        _verify("[]", pathWrap, C.list(), ParamEncoding.ONE, RequestMethod.POST_FORM_DATA);
     }
 
     @Test
     public void testWrapEmptyArrayFormDataEncodeTwo() throws Exception {
-        _verify("[]", pathWrap, C.list(), ListEncoding.TWO, RequestMethod.POST_FORM_DATA);
+        _verify("[]", pathWrap, C.list(), ParamEncoding.TWO, RequestMethod.POST_FORM_DATA);
     }
 
     @Test
     public void testWrapEmptyArrayFormDataEncodeThree() throws Exception {
-        _verify("[]", pathWrap, C.list(), ListEncoding.THREE, RequestMethod.POST_FORM_DATA);
+        _verify("[]", pathWrap, C.list(), ParamEncoding.THREE, RequestMethod.POST_FORM_DATA);
     }
 
     @Test
     public void testWrapEmptyArrayFormDataEncodeFour() throws Exception {
-        _verify("[]", pathWrap, C.list(), ListEncoding.FOUR, RequestMethod.POST_FORM_DATA);
+        _verify("[]", pathWrap, C.list(), ParamEncoding.FOUR, RequestMethod.POST_FORM_DATA);
     }
 
     @Test
     public void testWrapEmptyArrayJSON() throws Exception {
-        _verify("[]", pathWrap, C.list(), ListEncoding.JSON, RequestMethod.POST_JSON);
+        _verify("[]", pathWrap, C.list(), ParamEncoding.JSON, RequestMethod.POST_JSON);
     }
 
     @Test
     public void testWrapNonEmptyArrayGetEncodeOne() throws Exception {
-        _verify(e(), pathWrap, nonEmptyList(), ListEncoding.ONE, RequestMethod.GET);
+        _verify(e(), pathWrap, nonEmptyList(), ParamEncoding.ONE, RequestMethod.GET);
     }
 
     @Test
     public void testWrapNonEmptyArrayGetEncodeTwo() throws Exception {
-        _verify(e(), pathWrap, nonEmptyList(), ListEncoding.TWO, RequestMethod.GET);
+        _verify(e(), pathWrap, nonEmptyList(), ParamEncoding.TWO, RequestMethod.GET);
     }
 
     @Test
     public void testWrapNonEmptyArrayGetEncodeThree() throws Exception {
-        _verify(e(), pathWrap, nonEmptyList(), ListEncoding.THREE, RequestMethod.GET);
+        _verify(e(), pathWrap, nonEmptyList(), ParamEncoding.THREE, RequestMethod.GET);
     }
 
     @Test
     public void testWrapNonEmptyArrayGetEncodeFour() throws Exception {
-        _verify(e(), pathWrap, nonEmptyList(), ListEncoding.FOUR, RequestMethod.GET);
+        _verify(e(), pathWrap, nonEmptyList(), ParamEncoding.FOUR, RequestMethod.GET);
     }
 
     @Test
     public void testWrapNonEmptyArrayFormDataEncodeOne() throws Exception {
-        _verify(e(), pathWrap, nonEmptyList(), ListEncoding.ONE, RequestMethod.POST_FORM_DATA);
+        _verify(e(), pathWrap, nonEmptyList(), ParamEncoding.ONE, RequestMethod.POST_FORM_DATA);
     }
 
     @Test
     public void testWrapNonEmptyArrayFormDataEncodeTwo() throws Exception {
-        _verify(e(), pathWrap, nonEmptyList(), ListEncoding.TWO, RequestMethod.POST_FORM_DATA);
+        _verify(e(), pathWrap, nonEmptyList(), ParamEncoding.TWO, RequestMethod.POST_FORM_DATA);
     }
 
     @Test
     public void testWrapNonEmptyArrayFormDataEncodeThree() throws Exception {
-        _verify(e(), pathWrap, nonEmptyList(), ListEncoding.THREE, RequestMethod.POST_FORM_DATA);
+        _verify(e(), pathWrap, nonEmptyList(), ParamEncoding.THREE, RequestMethod.POST_FORM_DATA);
     }
 
     @Test
     public void testWrapNonEmptyArrayFormDataEncodeFour() throws Exception {
-        _verify(e(), pathWrap, nonEmptyList(), ListEncoding.FOUR, RequestMethod.POST_FORM_DATA);
+        _verify(e(), pathWrap, nonEmptyList(), ParamEncoding.FOUR, RequestMethod.POST_FORM_DATA);
     }
 
     @Test
     public void testWrapNonEmptyArrayFormDataEncodeJSON() throws Exception {
-        _verify(e(), pathWrap, nonEmptyList(), ListEncoding.JSON, RequestMethod.POST_JSON);
+        _verify(e(), pathWrap, nonEmptyList(), ParamEncoding.JSON, RequestMethod.POST_JSON);
     }
 
     // ------------ List -------------
 
     @Test
     public void testNullListGetEncodeOne() throws Exception {
-        _verify("[]", pathList, null, ListEncoding.ONE, RequestMethod.GET);
+        _verify("[]", pathList, null, ParamEncoding.ONE, RequestMethod.GET);
     }
 
     @Test
     public void testNullListGetEncodeTwo() throws Exception {
-        _verify("[]", pathList, null, ListEncoding.TWO, RequestMethod.GET);
+        _verify("[]", pathList, null, ParamEncoding.TWO, RequestMethod.GET);
     }
 
     @Test
     public void testNullListGetEncodeThree() throws Exception {
-        _verify("[]", pathList, null, ListEncoding.THREE, RequestMethod.GET);
+        _verify("[]", pathList, null, ParamEncoding.THREE, RequestMethod.GET);
     }
 
     @Test
     public void testNullListGetEncodeFour() throws Exception {
-        _verify("[]", pathList, null, ListEncoding.FOUR, RequestMethod.GET);
+        _verify("[]", pathList, null, ParamEncoding.FOUR, RequestMethod.GET);
     }
 
     @Test
     public void testNullListFormDataEncodeOne() throws Exception {
-        _verify("[]", pathList, null, ListEncoding.ONE, RequestMethod.POST_FORM_DATA);
+        _verify("[]", pathList, null, ParamEncoding.ONE, RequestMethod.POST_FORM_DATA);
     }
 
     @Test
     public void testNullListFormDataEncodeTwo() throws Exception {
-        _verify("[]", pathList, null, ListEncoding.TWO, RequestMethod.POST_FORM_DATA);
+        _verify("[]", pathList, null, ParamEncoding.TWO, RequestMethod.POST_FORM_DATA);
     }
 
     @Test
     public void testNullListFormDataEncodeThree() throws Exception {
-        _verify("[]", pathList, null, ListEncoding.THREE, RequestMethod.POST_FORM_DATA);
+        _verify("[]", pathList, null, ParamEncoding.THREE, RequestMethod.POST_FORM_DATA);
     }
 
     @Test
     public void testNullListFormDataEncodeFour() throws Exception {
-        _verify("[]", pathList, null, ListEncoding.FOUR, RequestMethod.POST_FORM_DATA);
+        _verify("[]", pathList, null, ParamEncoding.FOUR, RequestMethod.POST_FORM_DATA);
     }
 
     @Test
     public void testNullListJSON() throws Exception {
-        _verify("[]", pathList, null, ListEncoding.JSON, RequestMethod.POST_JSON);
+        _verify("[]", pathList, null, ParamEncoding.JSON, RequestMethod.POST_JSON);
     }
 
     @Test
     public void testEmptyListGetEncodeOne() throws Exception {
-        _verify("[]", pathList, C.list(), ListEncoding.ONE, RequestMethod.GET);
+        _verify("[]", pathList, C.list(), ParamEncoding.ONE, RequestMethod.GET);
     }
 
     @Test
     public void testEmptyListGetEncodeTwo() throws Exception {
-        _verify("[]", pathList, C.list(), ListEncoding.TWO, RequestMethod.GET);
+        _verify("[]", pathList, C.list(), ParamEncoding.TWO, RequestMethod.GET);
     }
 
     @Test
     public void testEmptyListGetEncodeThree() throws Exception {
-        _verify("[]", pathList, C.list(), ListEncoding.THREE, RequestMethod.GET);
+        _verify("[]", pathList, C.list(), ParamEncoding.THREE, RequestMethod.GET);
     }
 
     @Test
     public void testEmptyListGetEncodeFour() throws Exception {
-        _verify("[]", pathList, C.list(), ListEncoding.FOUR, RequestMethod.GET);
+        _verify("[]", pathList, C.list(), ParamEncoding.FOUR, RequestMethod.GET);
     }
 
     @Test
     public void testEmptyListFormDataEncodeOne() throws Exception {
-        _verify("[]", pathList, C.list(), ListEncoding.ONE, RequestMethod.POST_FORM_DATA);
+        _verify("[]", pathList, C.list(), ParamEncoding.ONE, RequestMethod.POST_FORM_DATA);
     }
 
     @Test
     public void testEmptyListFormDataEncodeTwo() throws Exception {
-        _verify("[]", pathList, C.list(), ListEncoding.TWO, RequestMethod.POST_FORM_DATA);
+        _verify("[]", pathList, C.list(), ParamEncoding.TWO, RequestMethod.POST_FORM_DATA);
     }
 
     @Test
     public void testEmptyListFormDataEncodeThree() throws Exception {
-        _verify("[]", pathList, C.list(), ListEncoding.THREE, RequestMethod.POST_FORM_DATA);
+        _verify("[]", pathList, C.list(), ParamEncoding.THREE, RequestMethod.POST_FORM_DATA);
     }
 
     @Test
     public void testEmptyListFormDataEncodeFour() throws Exception {
-        _verify("[]", pathList, C.list(), ListEncoding.FOUR, RequestMethod.POST_FORM_DATA);
+        _verify("[]", pathList, C.list(), ParamEncoding.FOUR, RequestMethod.POST_FORM_DATA);
     }
 
     @Test
     public void testEmptyListJSON() throws Exception {
-        _verify("[]", pathList, C.list(), ListEncoding.JSON, RequestMethod.POST_JSON);
+        _verify("[]", pathList, C.list(), ParamEncoding.JSON, RequestMethod.POST_JSON);
     }
 
     @Test
     public void testNonEmptyListGetEncodeOne() throws Exception {
-        _verify(e(), pathList, nonEmptyList(), ListEncoding.ONE, RequestMethod.GET);
+        _verify(e(), pathList, nonEmptyList(), ParamEncoding.ONE, RequestMethod.GET);
     }
 
     @Test
     public void testNonEmptyListGetEncodeTwo() throws Exception {
-        _verify(e(), pathList, nonEmptyList(), ListEncoding.TWO, RequestMethod.GET);
+        _verify(e(), pathList, nonEmptyList(), ParamEncoding.TWO, RequestMethod.GET);
     }
 
     @Test
     public void testNonEmptyListGetEncodeThree() throws Exception {
-        _verify(e(), pathList, nonEmptyList(), ListEncoding.THREE, RequestMethod.GET);
+        _verify(e(), pathList, nonEmptyList(), ParamEncoding.THREE, RequestMethod.GET);
     }
 
     @Test
     public void testNonEmptyListGetEncodeFour() throws Exception {
-        _verify(e(), pathList, nonEmptyList(), ListEncoding.FOUR, RequestMethod.GET);
+        _verify(e(), pathList, nonEmptyList(), ParamEncoding.FOUR, RequestMethod.GET);
     }
 
     @Test
     public void testNonEmptyListFormDataEncodeOne() throws Exception {
-        _verify(e(), pathList, nonEmptyList(), ListEncoding.ONE, RequestMethod.POST_FORM_DATA);
+        _verify(e(), pathList, nonEmptyList(), ParamEncoding.ONE, RequestMethod.POST_FORM_DATA);
     }
 
     @Test
     public void testNonEmptyListFormDataEncodeTwo() throws Exception {
-        _verify(e(), pathList, nonEmptyList(), ListEncoding.TWO, RequestMethod.POST_FORM_DATA);
+        _verify(e(), pathList, nonEmptyList(), ParamEncoding.TWO, RequestMethod.POST_FORM_DATA);
     }
 
     @Test
     public void testNonEmptyListFormDataEncodeThree() throws Exception {
-        _verify(e(), pathList, nonEmptyList(), ListEncoding.THREE, RequestMethod.POST_FORM_DATA);
+        _verify(e(), pathList, nonEmptyList(), ParamEncoding.THREE, RequestMethod.POST_FORM_DATA);
     }
 
     @Test
     public void testNonEmptyListFormDataEncodeFour() throws Exception {
-        _verify(e(), pathList, nonEmptyList(), ListEncoding.FOUR, RequestMethod.POST_FORM_DATA);
+        _verify(e(), pathList, nonEmptyList(), ParamEncoding.FOUR, RequestMethod.POST_FORM_DATA);
     }
 
     @Test
     public void testNonEmptyListFormDataEncodeJSON() throws Exception {
-        _verify(e(), pathList, nonEmptyList(), ListEncoding.JSON, RequestMethod.POST_JSON);
+        _verify(e(), pathList, nonEmptyList(), ParamEncoding.JSON, RequestMethod.POST_JSON);
     }
 
     // ------------ Set -------------
 
     @Test
     public void testNullSetGetEncodeOne() throws Exception {
-        _verify("[]", pathSet, null, ListEncoding.ONE, RequestMethod.GET);
+        _verify("[]", pathSet, null, ParamEncoding.ONE, RequestMethod.GET);
     }
 
     @Test
     public void testNullSetGetEncodeTwo() throws Exception {
-        _verify("[]", pathSet, null, ListEncoding.TWO, RequestMethod.GET);
+        _verify("[]", pathSet, null, ParamEncoding.TWO, RequestMethod.GET);
     }
 
     @Test
     public void testNullSetGetEncodeThree() throws Exception {
-        _verify("[]", pathSet, null, ListEncoding.THREE, RequestMethod.GET);
+        _verify("[]", pathSet, null, ParamEncoding.THREE, RequestMethod.GET);
     }
 
     @Test
     public void testNullSetGetEncodeFour() throws Exception {
-        _verify("[]", pathSet, null, ListEncoding.FOUR, RequestMethod.GET);
+        _verify("[]", pathSet, null, ParamEncoding.FOUR, RequestMethod.GET);
     }
 
     @Test
     public void testNullSetFormDataEncodeOne() throws Exception {
-        _verify("[]", pathSet, null, ListEncoding.ONE, RequestMethod.POST_FORM_DATA);
+        _verify("[]", pathSet, null, ParamEncoding.ONE, RequestMethod.POST_FORM_DATA);
     }
 
     @Test
     public void testNullSetFormDataEncodeTwo() throws Exception {
-        _verify("[]", pathSet, null, ListEncoding.TWO, RequestMethod.POST_FORM_DATA);
+        _verify("[]", pathSet, null, ParamEncoding.TWO, RequestMethod.POST_FORM_DATA);
     }
 
     @Test
     public void testNullSetFormDataEncodeThree() throws Exception {
-        _verify("[]", pathSet, null, ListEncoding.THREE, RequestMethod.POST_FORM_DATA);
+        _verify("[]", pathSet, null, ParamEncoding.THREE, RequestMethod.POST_FORM_DATA);
     }
 
     @Test
     public void testNullSetFormDataEncodeFour() throws Exception {
-        _verify("[]", pathSet, null, ListEncoding.FOUR, RequestMethod.POST_FORM_DATA);
+        _verify("[]", pathSet, null, ParamEncoding.FOUR, RequestMethod.POST_FORM_DATA);
     }
 
     @Test
     public void testNullSetJSON() throws Exception {
-        _verify("[]", pathSet, null, ListEncoding.JSON, RequestMethod.POST_JSON);
+        _verify("[]", pathSet, null, ParamEncoding.JSON, RequestMethod.POST_JSON);
     }
 
     @Test
     public void testEmptySetGetEncodeOne() throws Exception {
-        _verify("[]", pathSet, C.list(), ListEncoding.ONE, RequestMethod.GET);
+        _verify("[]", pathSet, C.list(), ParamEncoding.ONE, RequestMethod.GET);
     }
 
     @Test
     public void testEmptySetGetEncodeTwo() throws Exception {
-        _verify("[]", pathSet, C.list(), ListEncoding.TWO, RequestMethod.GET);
+        _verify("[]", pathSet, C.list(), ParamEncoding.TWO, RequestMethod.GET);
     }
 
     @Test
     public void testEmptySetGetEncodeThree() throws Exception {
-        _verify("[]", pathSet, C.list(), ListEncoding.THREE, RequestMethod.GET);
+        _verify("[]", pathSet, C.list(), ParamEncoding.THREE, RequestMethod.GET);
     }
 
     @Test
     public void testEmptySetGetEncodeFour() throws Exception {
-        _verify("[]", pathSet, C.list(), ListEncoding.FOUR, RequestMethod.GET);
+        _verify("[]", pathSet, C.list(), ParamEncoding.FOUR, RequestMethod.GET);
     }
 
     @Test
     public void testEmptySetFormDataEncodeOne() throws Exception {
-        _verify("[]", pathSet, C.list(), ListEncoding.ONE, RequestMethod.POST_FORM_DATA);
+        _verify("[]", pathSet, C.list(), ParamEncoding.ONE, RequestMethod.POST_FORM_DATA);
     }
 
     @Test
     public void testEmptySetFormDataEncodeTwo() throws Exception {
-        _verify("[]", pathSet, C.list(), ListEncoding.TWO, RequestMethod.POST_FORM_DATA);
+        _verify("[]", pathSet, C.list(), ParamEncoding.TWO, RequestMethod.POST_FORM_DATA);
     }
 
     @Test
     public void testEmptySetFormDataEncodeThree() throws Exception {
-        _verify("[]", pathSet, C.list(), ListEncoding.THREE, RequestMethod.POST_FORM_DATA);
+        _verify("[]", pathSet, C.list(), ParamEncoding.THREE, RequestMethod.POST_FORM_DATA);
     }
 
     @Test
     public void testEmptySetFormDataEncodeFour() throws Exception {
-        _verify("[]", pathSet, C.list(), ListEncoding.FOUR, RequestMethod.POST_FORM_DATA);
+        _verify("[]", pathSet, C.list(), ParamEncoding.FOUR, RequestMethod.POST_FORM_DATA);
     }
 
     @Test
     public void testEmptySetJSON() throws Exception {
-        _verify("[]", pathSet, C.list(), ListEncoding.JSON, RequestMethod.POST_JSON);
+        _verify("[]", pathSet, C.list(), ParamEncoding.JSON, RequestMethod.POST_JSON);
     }
 
     @Test
     public void testNonEmptySetGetEncodeOne() throws Exception {
-        _verify(es(), pathSet, nonEmptyList(), ListEncoding.ONE, RequestMethod.GET);
+        _verify(es(), pathSet, nonEmptyList(), ParamEncoding.ONE, RequestMethod.GET);
     }
 
     @Test
     public void testNonEmptySetGetEncodeTwo() throws Exception {
-        _verify(es(), pathSet, nonEmptyList(), ListEncoding.TWO, RequestMethod.GET);
+        _verify(es(), pathSet, nonEmptyList(), ParamEncoding.TWO, RequestMethod.GET);
     }
 
     @Test
     public void testNonEmptySetGetEncodeThree() throws Exception {
-        _verify(es(), pathSet, nonEmptyList(), ListEncoding.THREE, RequestMethod.GET);
+        _verify(es(), pathSet, nonEmptyList(), ParamEncoding.THREE, RequestMethod.GET);
     }
 
     @Test
     public void testNonEmptySetGetEncodeFour() throws Exception {
-        _verify(es(), pathSet, nonEmptyList(), ListEncoding.FOUR, RequestMethod.GET);
+        _verify(es(), pathSet, nonEmptyList(), ParamEncoding.FOUR, RequestMethod.GET);
     }
 
     @Test
     public void testNonEmptySetFormDataEncodeOne() throws Exception {
-        _verify(es(), pathSet, nonEmptyList(), ListEncoding.ONE, RequestMethod.POST_FORM_DATA);
+        _verify(es(), pathSet, nonEmptyList(), ParamEncoding.ONE, RequestMethod.POST_FORM_DATA);
     }
 
     @Test
     public void testNonEmptySetFormDataEncodeTwo() throws Exception {
-        _verify(es(), pathSet, nonEmptyList(), ListEncoding.TWO, RequestMethod.POST_FORM_DATA);
+        _verify(es(), pathSet, nonEmptyList(), ParamEncoding.TWO, RequestMethod.POST_FORM_DATA);
     }
 
     @Test
     public void testNonEmptySetFormDataEncodeThree() throws Exception {
-        _verify(es(), pathSet, nonEmptyList(), ListEncoding.THREE, RequestMethod.POST_FORM_DATA);
+        _verify(es(), pathSet, nonEmptyList(), ParamEncoding.THREE, RequestMethod.POST_FORM_DATA);
     }
 
     @Test
     public void testNonEmptySetFormDataEncodeFour() throws Exception {
-        _verify(es(), pathSet, nonEmptyList(), ListEncoding.FOUR, RequestMethod.POST_FORM_DATA);
+        _verify(es(), pathSet, nonEmptyList(), ParamEncoding.FOUR, RequestMethod.POST_FORM_DATA);
     }
 
     @Test
     public void testNonEmptySetFormDataEncodeJSON() throws Exception {
-        _verify(es(), pathSet, nonEmptyList(), ListEncoding.JSON, RequestMethod.POST_JSON);
+        _verify(es(), pathSet, nonEmptyList(), ParamEncoding.JSON, RequestMethod.POST_JSON);
     }
 
 }
