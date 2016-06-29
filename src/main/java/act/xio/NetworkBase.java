@@ -11,17 +11,17 @@ import java.io.IOException;
 import java.util.Map;
 
 /**
- * The base implementation of {@link NetworkService}
+ * The base implementation of {@link Network}
  */
-public abstract class NetworkServiceBase  extends DestroyableBase implements NetworkService {
+public abstract class NetworkBase extends DestroyableBase implements Network {
 
-    protected final static Logger logger = LogManager.get(NetworkService.class);
+    protected final static Logger logger = LogManager.get(Network.class);
 
     private volatile boolean started;
-    private Map<Integer, NetworkClient> registry = C.newMap();
-    private Map<Integer, NetworkClient> failed = C.newMap();
+    private Map<Integer, NetworkHandler> registry = C.newMap();
+    private Map<Integer, NetworkHandler> failed = C.newMap();
 
-    public synchronized void register(int port, NetworkClient client) {
+    public synchronized void register(int port, NetworkHandler client) {
         E.NPE(client);
         E.illegalArgumentIf(registry.containsKey(port), "Port %s has been registered already", port);
         registry.put(port, client);
@@ -36,7 +36,7 @@ public abstract class NetworkServiceBase  extends DestroyableBase implements Net
     public void start() {
         bootUp();
         for (int port : registry.keySet()) {
-            NetworkClient client = registry.get(port);
+            NetworkHandler client = registry.get(port);
             if (!trySetUpClient(client, port)) {
                 failed.put(port, client);
             }
@@ -49,7 +49,7 @@ public abstract class NetworkServiceBase  extends DestroyableBase implements Net
         close();
     }
 
-    private boolean trySetUpClient(NetworkClient client, int port) {
+    private boolean trySetUpClient(NetworkHandler client, int port) {
         try {
             setUpClient(client, port);
             return true;
@@ -59,7 +59,7 @@ public abstract class NetworkServiceBase  extends DestroyableBase implements Net
         }
     }
 
-    protected abstract void setUpClient(NetworkClient client, int port) throws IOException;
+    protected abstract void setUpClient(NetworkHandler client, int port) throws IOException;
 
     protected abstract void bootUp();
 

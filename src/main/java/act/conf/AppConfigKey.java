@@ -141,7 +141,7 @@ public enum AppConfigKey implements ConfigKey {
 
     /**
      * {@code act.fmt.date} specifies the default date format used to
-     * parse/output the date string
+     * lookup/output the date string
      * <p>Default value: the pattern of {@code java.text.DateFormat.getDateInstance()}</p>
      */
     FORMAT_DATE("fmt.date"),
@@ -149,14 +149,14 @@ public enum AppConfigKey implements ConfigKey {
 
     /**
      * {@code act.fmt.date} specifies the default date and time format used to
-     * parse/output the date string
+     * lookup/output the date string
      * <p>Default value: the pattern of {@code java.text.DateFormat.getDateTimeInstance()}</p>
      */
     FORMAT_DATE_TIME("fmt.date_time"),
 
     /**
      * {@code act.fmt.time} specifies the default time format used to
-     * parse/output the date time string
+     * lookup/output the date time string
      * <p>Default value: the pattern of {@code java.text.DateFormat.getTimeInstance()}</p>
      */
     FORMAT_TIME("fmt.time"),

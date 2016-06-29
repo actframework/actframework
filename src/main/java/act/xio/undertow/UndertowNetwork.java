@@ -2,9 +2,9 @@ package act.xio.undertow;
 
 import act.app.App;
 import act.conf.AppConfig;
-import act.xio.NetworkClient;
-import act.xio.NetworkService;
-import act.xio.NetworkServiceBase;
+import act.xio.NetworkHandler;
+import act.xio.Network;
+import act.xio.NetworkBase;
 import io.undertow.UndertowOptions;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.protocol.http.HttpOpenListener;
@@ -22,11 +22,11 @@ import java.nio.ByteBuffer;
 import java.util.List;
 
 /**
- * Implement {@link NetworkService} using undertow
+ * Implement {@link Network} using undertow
  */
-public class UndertowService extends NetworkServiceBase {
+public class UndertowNetwork extends NetworkBase {
 
-    private static final Logger logger = L.get(UndertowService.class);
+    private static final Logger logger = L.get(UndertowNetwork.class);
 
     private Xnio xnio;
     private int ioThreads;
@@ -53,7 +53,7 @@ public class UndertowService extends NetworkServiceBase {
     }
 
     @Override
-    protected void setUpClient(NetworkClient client, int port) throws IOException {
+    protected void setUpClient(NetworkHandler client, int port) throws IOException {
         App app = client.app();
         AppConfig config = app.config();
 //        InetAddress addr;

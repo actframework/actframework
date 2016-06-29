@@ -3,7 +3,7 @@ package act.xio.undertow;
 import act.app.ActionContext;
 import act.app.App;
 import act.conf.AppConfig;
-import act.xio.NetworkClient;
+import act.xio.NetworkHandler;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
 import org.osgl.http.H;
@@ -14,9 +14,9 @@ import org.osgl.util.E;
  */
 public class ActHttpHandler implements HttpHandler {
 
-    private final NetworkClient client;
+    private final NetworkHandler client;
 
-    public ActHttpHandler(NetworkClient client) {
+    public ActHttpHandler(NetworkHandler client) {
         E.NPE(client);
         this.client = client;
     }
@@ -26,18 +26,17 @@ public class ActHttpHandler implements HttpHandler {
         if (exchange.isInIoThread()) {
             exchange.dispatch(this);
         } else {
-            ActionContext ctx = createAppContext(exchange);
+            ActionContext ctx = createActionContext(exchange);
             client.handle(ctx);
         }
     }
 
-    private ActionContext createAppContext(HttpServerExchange exchange) {
+    private ActionContext createActionContext(HttpServerExchange exchange) {
         App app = client.app();
         AppConfig config = app.config();
         ActionContext ctx = ActionContext.create(app, req(exchange, config), resp(exchange, config));
         exchange.putAttachment(ActBlockingExchange.KEY_APP_CTX, ctx);
         exchange.startBlocking(new ActBlockingExchange(exchange));
-        //ctx.saveLocal();
         return ctx;
     }
 

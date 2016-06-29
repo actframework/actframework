@@ -26,9 +26,9 @@ import act.plugin.Plugin;
 import act.plugin.PluginScanner;
 import act.util.*;
 import act.view.ViewManager;
-import act.xio.NetworkClient;
-import act.xio.NetworkService;
-import act.xio.undertow.UndertowService;
+import act.xio.NetworkHandler;
+import act.xio.Network;
+import act.xio.undertow.UndertowNetwork;
 import org.osgl.$;
 import org.osgl.cache.CacheService;
 import org.osgl.exception.NotAppliedException;
@@ -114,7 +114,7 @@ public final class Act {
     private static boolean multiTenant = false;
     private static AppManager appManager;
     private static ViewManager viewManager;
-    private static NetworkService network;
+    private static Network network;
     private static MetricPlugin metricPlugin;
     private static BytecodeEnhancerManager enhancerManager;
     private static SessionManager sessionManager;
@@ -283,10 +283,10 @@ public final class Act {
 
     public static void hook(App app) {
         int port = app.config().httpPort();
-        network.register(port, new NetworkClient(app));
+        network.register(port, new NetworkHandler(app));
         List<NamedPort> portList = app.config().namedPorts();
         for (NamedPort np : portList) {
-            network.register(np.port(), new NetworkClient(app, np));
+            network.register(np.port(), new NetworkHandler(app, np));
         }
     }
 
@@ -532,7 +532,7 @@ public final class Act {
 
     private static void initNetworkLayer() {
         logger.info("initializing network layer ...");
-        network = new UndertowService();
+        network = new UndertowNetwork();
     }
 
     private static void destroyNetworkLayer() {

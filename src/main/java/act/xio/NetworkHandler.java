@@ -24,21 +24,25 @@ import org.osgl.mvc.result.Result;
 import org.osgl.util.E;
 import org.osgl.util.S;
 
-public class NetworkClient extends DestroyableBase implements  $.Func1<ActionContext, Void> {
+/**
+ * A `NetworkHandler` can be registered to an {@link Network} and get invoked when
+ * there are network event (e.g. an HTTP request) incoming
+ */
+public class NetworkHandler extends DestroyableBase implements  $.Func1<ActionContext, Void> {
 
-    private static Logger logger = LogManager.get(NetworkClient.class);
+    private static Logger logger = LogManager.get(NetworkHandler.class);
 
     final private App app;
     private NamedPort port;
     private Metric metric;
 
-    public NetworkClient(App app) {
+    public NetworkHandler(App app) {
         E.NPE(app);
         this.app = app;
         this.metric = Act.metricPlugin().metric("act.http");
     }
 
-    public NetworkClient(App app, NamedPort port) {
+    public NetworkHandler(App app, NamedPort port) {
         this(app);
         this.port = port;
         this.metric = Act.metricPlugin().metric("act.http");

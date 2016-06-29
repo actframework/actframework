@@ -14,9 +14,9 @@ import act.handler.builtin.Redirect;
 import act.handler.builtin.StaticFileGetter;
 import act.route.Router;
 import act.view.ActServerError;
-import act.xio.NetworkClient;
-import act.xio.NetworkService;
-import act.xio.undertow.UndertowService;
+import act.xio.NetworkHandler;
+import act.xio.Network;
+import act.xio.undertow.UndertowNetwork;
 import org.osgl.http.H;
 import org.osgl.logging.L;
 import org.osgl.logging.Logger;
@@ -43,8 +43,8 @@ public final class SparkApp extends App {
 
     private static volatile SparkApp app;
     private static volatile boolean started;
-    private static NetworkService service;
-    private static NetworkClient client;
+    private static Network service;
+    private static NetworkHandler client;
     private static Map<String, List<RequestHandler>> beforeHandlers = C.newMap();
     private static Map<String, List<RequestHandler>> afterHandlers = C.newMap();
     private static List<Filter> patternMatchedBeforeHandlers = C.newList();
@@ -99,8 +99,8 @@ public final class SparkApp extends App {
     }
 
     private static void _startAct() {
-        service = new UndertowService();
-        client = new NetworkClient(_app());
+        service = new UndertowNetwork();
+        client = new NetworkHandler(_app());
         service.register(_app().config().httpPort(), client);
         service.start();
     }

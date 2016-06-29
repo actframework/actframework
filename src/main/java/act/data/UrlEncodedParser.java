@@ -48,7 +48,7 @@ public class UrlEncodedParser extends RequestBodyParser {
             // data is o the form:
             // a=b&b=c%12...
 
-            // Let us parse in two phases - we wait until everything is parsed before
+            // Let us lookup in two phases - we wait until everything is parsed before
             // we decoded it - this makes it possible for use to look for the
             // special _charset_ param which can hold the charset the form is encoded in.
             //
@@ -61,7 +61,7 @@ public class UrlEncodedParser extends RequestBodyParser {
 
             int httpMaxParams = context.app().config().httpMaxParams();
             // to prevent the server from being vulnerable to POST hash collision DOS-attack (Denial of Service through hash table multi-collisions),
-            // we should by default not parse the params into HashMap if the count exceeds a maximum limit
+            // we should by default not lookup the params into HashMap if the count exceeds a maximum limit
             if (httpMaxParams != 0 && keyValues.length > httpMaxParams) {
                 logger.warn("Number of request parameters %d is higher than maximum of %d, aborting. Can be configured using 'act.http.params.max'", keyValues.length, httpMaxParams);
                 throw new ErrorResult(H.Status.valueOf(413)); //413 Request Entity Too Large
