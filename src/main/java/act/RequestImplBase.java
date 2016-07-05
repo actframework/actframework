@@ -23,10 +23,6 @@ public abstract class RequestImplBase<T extends H.Request> extends H.Request<T> 
 
     protected abstract H.Method _method();
 
-    protected final T me() {
-        return (T) this;
-    }
-
     @Override
     public String contextPath() {
         return cfg.urlContext();
@@ -38,9 +34,9 @@ public abstract class RequestImplBase<T extends H.Request> extends H.Request<T> 
     }
 
     @Override
-    public H.Request method(H.Method method) {
+    public T method(H.Method method) {
         this.method = $.NPE(method);
-        return this;
+        return me();
     }
 
     @Override

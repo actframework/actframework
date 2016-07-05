@@ -9,7 +9,7 @@ public class ValueObjectCodecFinder extends SubTypeFinder<ValueObject.Codec> {
     }
 
     @Override
-    protected void found(Class<ValueObject.Codec> target, App app) {
+    protected void found(Class<? extends ValueObject.Codec> target, App app) {
         ValueObject.register(app.newInstance(target));
     }
 }

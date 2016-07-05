@@ -35,7 +35,7 @@ public abstract class SubTypeFinder<T> extends AppServicePlugin {
         this.bindingEvent = $.notNull(bindingEvent);
     }
 
-    protected abstract void found(Class<T> target, App app);
+    protected abstract void found(Class<? extends T> target, App app);
 
     @Override
     final protected void applyTo(final App app) {

@@ -24,10 +24,23 @@ public class RouteInfo extends $.T3<String, String, String> implements Comparabl
     public String handler() {
         return _3;
     }
+    public String compactHandler() {
+        String[] sa = _3.split("\\.");
+        int len = sa.length;
+        if (len == 1) {
+            return _3;
+        }
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < len - 2; ++i) {
+            sb.append(sa[i].charAt(0)).append('.');
+        }
+        sb.append(sa[len - 2]).append('.').append(sa[len - 1]);
+        return sb.toString();
+    }
 
     @Override
     public String toString() {
-        return S.fmt("[%s %s] -> [%s]", method(), path(), handler());
+        return S.fmt("[%s %s] -> [%s]", method(), path(), compactHandler());
     }
 
     @Override

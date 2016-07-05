@@ -30,7 +30,7 @@ public class RouterAdmin {
     }
 
     @Command(name = "act.route.list, act.route.print", help = "list routes")
-    @PropertySpec("method,path,handler")
+    @PropertySpec("method,path,compactHandler")
     public Object listRoutes(
             @Optional("list routes in tree view") boolean tree,
             @Optional("specify the port name") String name,

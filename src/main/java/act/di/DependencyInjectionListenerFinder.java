@@ -10,7 +10,7 @@ public class DependencyInjectionListenerFinder extends SubTypeFinder<DependencyI
     }
 
     @Override
-    protected void found(final Class<DependencyInjectionListener> target, final App app) {
+    protected void found(final Class<? extends DependencyInjectionListener> target, final App app) {
         app.jobManager().on(AppEventId.DEPENDENCY_INJECTOR_LOADED, new Runnable() {
             @Override
             public void run() {

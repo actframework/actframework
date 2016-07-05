@@ -20,7 +20,7 @@ public class EventListenerClassFinder extends SubTypeFinder<ActEventListener> {
     }
 
     @Override
-    protected void found(final Class<ActEventListener> target, final App app) {
+    protected void found(final Class<? extends ActEventListener> target, final App app) {
         final EventBus bus = app.eventBus();
         ParameterizedType ptype = null;
         Type superType = target.getGenericSuperclass();

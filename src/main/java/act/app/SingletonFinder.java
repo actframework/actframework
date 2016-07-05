@@ -35,7 +35,7 @@ public class SingletonFinder {
         }
 
         @Override
-        protected void found(Class<SingletonBase> target, App app) {
+        protected void found(Class<? extends SingletonBase> target, App app) {
             app.registerSingletonClass(target);
         }
     }
