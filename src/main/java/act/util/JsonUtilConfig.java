@@ -13,6 +13,7 @@ import org.osgl.$;
 import org.osgl.Osgl;
 import org.osgl.exception.NotAppliedException;
 import org.osgl.mvc.MvcConfig;
+import org.osgl.util.Keyword;
 import org.osgl.util.ValueObject;
 
 public class JsonUtilConfig {
@@ -27,18 +28,21 @@ public class JsonUtilConfig {
 
         FastJsonValueObjectSerializer valueObjectSerializer = new FastJsonValueObjectSerializer();
         app.registerSingleton(FastJsonValueObjectSerializer.class, valueObjectSerializer);
+        FastJsonKeywordCodec keywordCodec = FastJsonKeywordCodec.instance();
 
         config.put(DateTime.class, jodaDateCodec);
         config.put(LocalDate.class, jodaDateCodec);
         config.put(LocalTime.class, jodaDateCodec);
         config.put(LocalDateTime.class, jodaDateCodec);
         config.put(ValueObject.class, valueObjectSerializer);
+        config.put(Keyword.class, keywordCodec);
 
         ParserConfig parserConfig = ParserConfig.getGlobalInstance();
         parserConfig.putDeserializer(DateTime.class, jodaDateCodec);
         parserConfig.putDeserializer(LocalDate.class, jodaDateCodec);
         parserConfig.putDeserializer(LocalTime.class, jodaDateCodec);
         parserConfig.putDeserializer(LocalDateTime.class, jodaDateCodec);
+        parserConfig.putDeserializer(Keyword.class, keywordCodec);
 
         MvcConfig.jsonSerializer(new $.F1<Object, String>() {
             @Override
