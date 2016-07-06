@@ -16,7 +16,7 @@ public class MockRequest extends H.Request<MockRequest> {
     }
 
     @Override
-    public H.Request method(H.Method method) {
+    public MockRequest method(H.Method method) {
         return this;
     }
 
