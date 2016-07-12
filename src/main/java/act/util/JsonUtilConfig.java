@@ -28,7 +28,7 @@ public class JsonUtilConfig {
 
         FastJsonValueObjectSerializer valueObjectSerializer = new FastJsonValueObjectSerializer();
         app.registerSingleton(FastJsonValueObjectSerializer.class, valueObjectSerializer);
-        FastJsonKeywordCodec keywordCodec = FastJsonKeywordCodec.instance();
+        FastJsonKeywordCodec keywordCodec = new FastJsonKeywordCodec();
 
         config.put(DateTime.class, jodaDateCodec);
         config.put(LocalDate.class, jodaDateCodec);

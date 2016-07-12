@@ -54,6 +54,9 @@ public enum CliView {
             componentType = dataList.get(0).getClass();
             DataPropertyRepository repo = context.app().service(DataPropertyRepository.class);
             List<String> outputFields = repo.outputFields(spec, componentType, context);
+            if (outputFields.isEmpty()) {
+                outputFields = C.list("this as Item");
+            }
             String tableString = cliContext.getTable(new CollectionASCIITableAware(dataList, outputFields, spec.labels(outputFields, context)));
             return S.builder(tableString).append("Items found: ").append(dataList.size()).toString();
         }

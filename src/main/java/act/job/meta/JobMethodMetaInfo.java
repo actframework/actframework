@@ -122,7 +122,7 @@ public class JobMethodMetaInfo extends DestroyableBase {
             return list;
         }
         final JobMethodMetaInfo me = this;
-        node.accept(new Osgl.Visitor<ClassNode>() {
+        node.visitTree(new Osgl.Visitor<ClassNode>() {
             @Override
             public void visit(ClassNode classNode) throws Osgl.Break {
                 if (!classNode.isAbstract() && classNode.isPublic()) {

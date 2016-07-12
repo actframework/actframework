@@ -3,6 +3,7 @@ package act.util;
 import act.ActComponent;
 import act.app.AppByteCodeScannerBase;
 import act.app.event.AppEventId;
+import act.asm.AnnotationVisitor;
 import act.asm.Type;
 import act.event.AppEventListenerBase;
 
@@ -38,11 +39,14 @@ public class ClassInfoByteCodeScanner extends AppByteCodeScannerBase {
     }
 
     private class _ByteCodeVisitor extends ByteCodeVisitor {
+
+        ClassNode me;
+
         @Override
         public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
             super.visit(version, access, name, signature, superName, interfaces);
             String myName = Type.getObjectType(name).getClassName();
-            ClassNode me = classInfoRepository.node(myName);
+            me = classInfoRepository.node(myName);
             me.modifiers(access);
             String superType = Type.getObjectType(superName).getClassName();
             if (!Object.class.getName().equals(superType)) {
@@ -53,6 +57,13 @@ public class ClassInfoByteCodeScanner extends AppByteCodeScannerBase {
                     me.parent(intf);
                 }
             }
+        }
+
+        @Override
+        public AnnotationVisitor visitAnnotation(String desc, boolean visible) {
+            String annotationType = Type.getType(desc).getClassName();
+            me.annotatedWith(annotationType);
+            return super.visitAnnotation(desc, visible);
         }
     }
 }

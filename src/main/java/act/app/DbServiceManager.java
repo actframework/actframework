@@ -45,7 +45,7 @@ public class DbServiceManager extends AppServiceBase<DbServiceManager> implement
             @Override
             public void on(EventObject event) throws Exception {
                 ClassNode node = app.classLoader().classInfoRepository().node(Dao.class.getName());
-                node.findPublicNotAbstract(new $.Visitor<ClassNode>() {
+                node.visitPublicNotAbstractTreeNodes(new $.Visitor<ClassNode>() {
                     private boolean isGeneral(Class c) {
                         Annotation[] aa = c.getDeclaredAnnotations();
                         for (Annotation a : aa) {

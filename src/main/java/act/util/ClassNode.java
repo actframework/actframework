@@ -7,7 +7,7 @@ import org.osgl.util.E;
 import java.lang.reflect.Modifier;
 import java.util.Set;
 
-public class ClassNode {
+public class ClassNode extends DestroyableBase {
 
     private ClassInfoRepository infoBase;
     private String name;
@@ -16,6 +16,8 @@ public class ClassNode {
     private ClassNode parent;
     private Set<ClassNode> children = C.newSet();
     private Set<ClassNode> interfaces = C.newSet();
+    private Set<ClassNode> annotations = C.newSet();
+    private Set<ClassNode> annotated = C.newSet();
 
     ClassNode(String name, int modifiers, ClassInfoRepository infoBase) {
         this(name, name.replace('$', '.'), modifiers, infoBase);
@@ -70,12 +72,25 @@ public class ClassNode {
         return parent;
     }
 
+    /**
+     * Specify the class represented by this `ClassNode` extends
+     * a class with the name specified
+     * @param name the name of the parent class
+     * @return this `ClassNode` instance
+     */
     public ClassNode parent(String name) {
         this.parent = infoBase.node(name);
         this.parent.addChild(this);
         return this;
     }
 
+    /**
+     * Specify the class represented by this `ClassNode` implements
+     * an interface specified by the given name
+     *
+     * @param name the name of the interface class
+     * @return this `ClassNode` instance
+     */
     public ClassNode addInterface(String name) {
         ClassNode intf = infoBase.node(name);
         this.interfaces.add(intf);
@@ -83,21 +98,172 @@ public class ClassNode {
         return this;
     }
 
-    public ClassNode accept($.Function<ClassNode, ?> treeVisitor) {
-        for (ClassNode child : children) {
-            child.accept(treeVisitor);
-        }
-        treeVisitor.apply(this);
+    /**
+     * Specify the class represented by this `ClassNode` is annotated
+     * by an annotation class specified by the name
+     * @param name the name of the annotation class
+     * @return this `ClassNode` instance
+     */
+    public ClassNode annotatedWith(String name) {
+        ClassNode anno = infoBase.node(name);
+        this.annotations.add(anno);
+        anno.annotated.add(this);
         return this;
     }
 
-    public ClassNode findPublicNotAbstract($.Function<ClassNode, ?> treeVisitor) {
-        return accept($.guardedVisitor(new $.Predicate<ClassNode>() {
+    /**
+     * Accept a visitor that visit all descendants of the class represented
+     * by this `ClassNode` including this `ClassNode` itself
+     * @param visitor the function that take `ClassNode` as argument
+     * @return this `ClassNode` instance
+     */
+    public ClassNode visitTree($.Function<ClassNode, ?> visitor) {
+        visitSubTree(visitor);
+        visitor.apply(this);
+        return this;
+    }
+
+    /**
+     * Accept a visitor that visit all descendants of the class represented
+     * by this `ClassNode` NOT including this `ClassNode` itself
+     * @param visitor the function that take `ClassNode` as argument
+     * @return this `ClassNode` instance
+     */
+    public ClassNode visitSubTree($.Function<ClassNode, ?> visitor) {
+        for (ClassNode child : children) {
+            child.visitTree(visitor);
+        }
+        return this;
+    }
+
+    /**
+     * Accept a visitor that visit all public and non-abstract descendants of the
+     * class represented by this `ClassNode` including this `ClassNode` itself
+     * @param visitor the function that take `ClassNode` as argument
+     * @return this `ClassNode` instance
+     */
+    public ClassNode visitPublicTreeNodes($.Function<ClassNode, ?> visitor) {
+        return visitTree($.guardedVisitor(new $.Predicate<ClassNode>() {
+            @Override
+            public boolean test(ClassNode classNode) {
+                return classNode.isPublic();
+            }
+        }, visitor));
+    }
+
+    /**
+     * Accept a visitor that visit all public and non-abstract descendants of the
+     * class represented by this `ClassNode` NOT including this `ClassNode` itself
+     * @param visitor the function that take `ClassNode` as argument
+     * @return this `ClassNode` instance
+     */
+    public ClassNode visitPublicSubTreeNodes($.Function<ClassNode, ?> visitor) {
+        return visitSubTree($.guardedVisitor(new $.Predicate<ClassNode>() {
+            @Override
+            public boolean test(ClassNode classNode) {
+                return classNode.isPublic();
+            }
+        }, visitor));
+    }
+
+    /**
+     * Accept a visitor that visit all public descendants of the
+     * class represented by this `ClassNode` NOT including this `ClassNode` itself
+     * @param visitor the function that take `ClassNode` as argument
+     * @return this `ClassNode` instance
+     */
+    public ClassNode visitPublicNotAbstractSubTreeNodes($.Function<ClassNode, ?> visitor) {
+        return visitSubTree($.guardedVisitor(new $.Predicate<ClassNode>() {
             @Override
             public boolean test(ClassNode classNode) {
                 return classNode.publicNotAbstract();
             }
-        }, treeVisitor));
+        }, visitor));
+    }
+
+    /**
+     * Accept a visitor that visit all public descendants of the
+     * class represented by this `ClassNode` including this `ClassNode` itself
+     * @param visitor the function that take `ClassNode` as argument
+     * @return this `ClassNode` instance
+     */
+    public ClassNode visitPublicNotAbstractTreeNodes($.Function<ClassNode, ?> visitor) {
+        return visitTree($.guardedVisitor(new $.Predicate<ClassNode>() {
+            @Override
+            public boolean test(ClassNode classNode) {
+                return classNode.publicNotAbstract();
+            }
+        }, visitor));
+    }
+
+    /**
+     * Returns a set of `ClassNode` that has been annotated by the annotation
+     * class represented by this `ClassNode`
+     * @return the annotated class node set
+     */
+    public Set<ClassNode> annotatedClasses() {
+        return C.set(annotated);
+    }
+
+    /**
+     * Accept a visitor that visit all class node that has been annotated by the
+     * class represented by this `ClassNode`
+     * @param visitor the function that take `ClassNode` as argument
+     * @return this `ClassNode` instance
+     */
+    public ClassNode visitAnnotatedClasses($.Function<ClassNode, ?> visitor) {
+        for (ClassNode annotated : this.annotated) {
+            visitor.apply(annotated);
+        }
+        return this;
+    }
+
+    /**
+     * Accept a visitor that visit all public class node
+     * that has been annotated by the class represented by this `ClassNode`
+     * @param visitor the function that take `ClassNode` as argument
+     * @return this `ClassNode` instance
+     */
+    public ClassNode visitPublicAnnotatedClasses($.Function<ClassNode, ?> visitor) {
+        return visitAnnotatedClasses($.guardedVisitor(new $.Predicate<ClassNode>() {
+            @Override
+            public boolean test(ClassNode classNode) {
+                return classNode.isPublic();
+            }
+        }, visitor));
+    }
+
+    /**
+     * Accept a visitor that visit all public and non-abstract class node
+     * that has been annotated by the class represented by this `ClassNode`
+     * @param visitor the function that take `ClassNode` as argument
+     * @return this `ClassNode` instance
+     */
+    public ClassNode visitPublicNotAbstractAnnotatedClasses($.Function<ClassNode, ?> visitor) {
+        return visitAnnotatedClasses($.guardedVisitor(new $.Predicate<ClassNode>() {
+            @Override
+            public boolean test(ClassNode classNode) {
+                return classNode.publicNotAbstract();
+            }
+        }, visitor));
+    }
+
+    /**
+     * Returns a set of class node that annotated the class represented by this
+     * `ClassNode`
+     * @return the annotation class node set
+     */
+    public Set<ClassNode> annotations() {
+        return C.set(annotations);
+    }
+
+    @Override
+    protected void releaseResources() {
+        children.clear();
+        interfaces.clear();
+        annotated.clear();
+        annotations.clear();
+        infoBase = null;
     }
 
     @Override

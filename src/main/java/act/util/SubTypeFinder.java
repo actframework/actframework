@@ -8,8 +8,10 @@ import act.plugin.AppServicePlugin;
 import org.osgl.$;
 import org.osgl.logging.L;
 import org.osgl.logging.Logger;
+import org.osgl.mvc.annotation.GetAction;
 import org.osgl.util.E;
 
+import java.lang.annotation.Annotation;
 import java.util.EventObject;
 
 /**
@@ -38,13 +40,13 @@ public abstract class SubTypeFinder<T> extends AppServicePlugin {
     protected abstract void found(Class<? extends T> target, App app);
 
     @Override
-    final protected void applyTo(final App app) {
+    public final void applyTo(final App app) {
         app.eventBus().bind(bindingEvent, new AppEventListenerBase() {
             @Override
             public void on(EventObject event) throws Exception {
                 ClassInfoRepository repo = app.classLoader().classInfoRepository();
                 ClassNode parent = repo.node(targetType.getName());
-                parent.findPublicNotAbstract(new $.Visitor<ClassNode>() {
+                parent.visitPublicNotAbstractTreeNodes(new $.Visitor<ClassNode>() {
                     @Override
                     public void visit(ClassNode classNode) throws $.Break {
                         final Class<T> c = $.classForName(classNode.name(), app.classLoader());

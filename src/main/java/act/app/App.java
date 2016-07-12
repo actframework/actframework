@@ -19,6 +19,7 @@ import act.data.JodaDateTimeCodec;
 import act.data.util.ActPropertyHandlerFactory;
 import act.di.DependencyInjectionBinder;
 import act.di.DependencyInjector;
+import act.di.feather.FeatherInjector;
 import act.event.AppEventListenerBase;
 import act.event.EventBus;
 import act.event.bytecode.SimpleEventListenerByteCodeScanner;
@@ -318,6 +319,8 @@ public class App extends DestroyableBase {
         //classLoader().loadClasses();
         emit(APP_CODE_SCANNED);
         emit(CLASS_LOADED);
+
+        loadDependencyInjector();
 
         initMailerConfigManager();
 
@@ -814,11 +817,19 @@ public class App extends DestroyableBase {
 
     private void loadBuiltInScanners() {
         scannerManager.register(new ClassInfoByteCodeScanner());
+        scannerManager.register(new ClassFinderByteCodeScanner());
         scannerManager.register(new ControllerByteCodeScanner());
         scannerManager.register(new MailerByteCodeScanner());
         scannerManager.register(new JobByteCodeScanner());
         scannerManager.register(new SimpleEventListenerByteCodeScanner());
         scannerManager.register(new CommanderByteCodeScanner());
+    }
+
+    private void loadDependencyInjector() {
+        DependencyInjector di = injector();
+        if (null == di) {
+            new FeatherInjector(this);
+        }
     }
 
     private void loadRoutes() {

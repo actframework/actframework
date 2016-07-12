@@ -1,5 +1,6 @@
 package act.util;
 
+import act.Destroyable;
 import org.osgl.util.C;
 
 import java.util.Map;
@@ -45,6 +46,7 @@ public class ClassInfoRepository extends DestroyableBase {
 
     @Override
     protected void releaseResources() {
+        Destroyable.Util.destroyAll(classes.values());
         classes.clear();
     }
 
