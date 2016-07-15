@@ -1,12 +1,11 @@
-package act.di.builder;
+package act.di.air.builder;
 
+import act.di.air.Builder;
 import org.osgl.util.C;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
-import java.util.ArrayList;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Set;
 
 public class LinkedListBuilder extends CollectionBuilder<LinkedList> {
@@ -16,14 +15,19 @@ public class LinkedListBuilder extends CollectionBuilder<LinkedList> {
     }
 
     @Override
-    public Set<Class<? extends LinkedList>> supportedClasses() {
-        Set<Class<? extends LinkedList>> set = C.newSet();
-        set.add(LinkedList.class);
-        return set;
-    }
-
-    @Override
     protected LinkedList createInstance() {
         return new LinkedList();
+    }
+
+    public static class Factory implements Builder.Factory<LinkedList> {
+        @Override
+        public Builder<LinkedList> createBuilder(Class<LinkedList> targetClass, Annotation[] annotations, Type[] typeParams) {
+            return new LinkedListBuilder(targetClass, annotations, typeParams);
+        }
+
+        @Override
+        public Class<LinkedList> targetClass() {
+            return LinkedList.class;
+        }
     }
 }

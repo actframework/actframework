@@ -1,6 +1,6 @@
-package act.di.builder;
+package act.di.air.builder;
 
-import act.di.Builder;
+import act.di.air.Builder;
 import act.di.loader.BeanLoaderHelper;
 
 import java.lang.annotation.Annotation;
@@ -14,7 +14,7 @@ public abstract class CollectionBuilder<T extends Collection> extends Builder<T>
 
     private BeanLoaderHelper helper;
 
-    public CollectionBuilder(Class<T> targetClass, Annotation[] annotations, Type[]typeParameters) {
+    public CollectionBuilder(Class<? extends T> targetClass, Annotation[] annotations, Type[]typeParameters) {
         super(targetClass, annotations, typeParameters);
         helper = new BeanLoaderHelper(annotations, typeParameters);
     }

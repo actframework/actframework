@@ -2,7 +2,7 @@ package act.di.loader;
 
 import act.Act;
 import act.di.BeanLoader;
-import act.di.BeanLoaderTag;
+import act.di.DI;
 import org.osgl.$;
 import org.osgl.util.C;
 
@@ -38,6 +38,10 @@ public class BeanLoaderHelper {
         return beanLoader.loadMultiple(hint, options);
     }
 
+    public Object loadOne() {
+        return beanLoader.load(hint, options);
+    }
+
     public $.Function<?, Boolean> filter() {
         return beanLoader.filter(hint, options);
     }
@@ -47,10 +51,17 @@ public class BeanLoaderHelper {
             return;
         }
         for (Annotation anno : annotations) {
+            DI.Loader loaderTag = anno.getClass().getAnnotation(DI.Loader.class);
+            if (null == loaderTag) {
+                continue;
+            }
+            if (anno.getClass().isAnnotationPresent(DI.Loader.class)) {
+
+            }
             Annotation[] metaAnnotations = anno.getClass().getAnnotations();
             for (Annotation metaAnno : metaAnnotations) {
-                if (metaAnno instanceof BeanLoaderTag) {
-                    BeanLoaderTag tag = (BeanLoaderTag) metaAnno;
+                if (metaAnno instanceof DI.Loader) {
+                    DI.Loader tag = (DI.Loader) metaAnno;
                     beanLoader = Act.newInstance(tag.value());
                     Class<? extends Annotation> annoClass = anno.getClass();
                     Method[] ma = annoClass.getMethods();
@@ -60,9 +71,9 @@ public class BeanLoaderHelper {
                             continue;
                         }
                         if ("value".equals(m.getName())) {
-                            hint = $.invokeInstanceMethod(anno, m.getName());
+                            hint = $.invokeVirtual(anno, m.getName());
                         } else {
-                            optionList.add($.invokeInstanceMethod(anno, m.getName()));
+                            optionList.add($.invokeVirtual(anno, m.getName()));
                         }
                     }
                     options = optionList.toArray(new Object[optionList.size()]);

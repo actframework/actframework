@@ -1,76 +1,92 @@
 package act.di.feather;
 
-import javax.inject.Named;
+import act.di.loader.BeanLoaderHelper;
+import org.osgl.$;
+import org.osgl.util.C;
+import org.osgl.util.S;
+
+import javax.inject.Provider;
 import java.lang.annotation.Annotation;
+import java.util.List;
 
-public class Key<T> {
-    final Class<T> type;
-    final Object qualifier;
-    final String name;
+public class Key<T> { //implements Provider<T> {
 
-    private Key(Class<T> type, Object qualifier, String name) {
-        this.type = type;
-        this.qualifier = qualifier;
-        this.name = name;
-    }
 
-    /**
-     * @return Key for a given type
-     */
-    public static <T> Key<T> of(Class<T> type) {
-        return new Key<T>(type, null, null);
-    }
-
-    /**
-     * @return Key for a given type and qualifier annotation type
-     */
-    public static <T> Key<T> of(Class<T> type, Object qualifier) {
-        return new Key<T>(type, qualifier, null);
-    }
-
-    /**
-     * @return Key for a given type and name (@Named value)
-     */
-    public static <T> Key<T> of(Class<T> type, String name) {
-        return new Key<T>(type, Named.class, name);
-    }
-
-    static <T> Key<T> of(Class<T> type, Annotation qualifier) {
-        if(qualifier == null) {
-            return Key.of(type);
-        } else {
-            return qualifier.annotationType().equals(Named.class) ?
-                    Key.of(type, ((Named) qualifier).value()) :
-                    Key.of(type, qualifier.annotationType());
-        }
-    }
-
-    @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        Key<?> key = (Key<?>) o;
-
-        if (!type.equals(key.type)) return false;
-        if (qualifier != null ? !qualifier.equals(key.qualifier) : key.qualifier != null) return false;
-        return !(name != null ? !name.equals(key.name) : key.name != null);
-
-    }
-
-    @Override
-    public int hashCode() {
-        int result = type.hashCode();
-        result = 31 * result + (qualifier != null ? qualifier.hashCode() : 0);
-        result = 31 * result + (name != null ? name.hashCode() : 0);
-        return result;
-    }
-
-    @Override
-    public String toString() {
-        String suffix = name != null ? "@\"" + name + "\"" : qualifier != null ? "@" + qualifier.toString() : "";
-        return type.getName() + suffix;
-    }
+//    final Class<T> type;
+//    final Provider<T> provider;
+//    final List<Annotation> annotations;
+//    final List<Class> typeParameters;
+//
+//    private transient volatile BeanLoaderHelper beanLoader;
+//
+//    private Key(Class<T> type, Provider<T> provider) {
+//        this.type = type;
+//        this.provider = provider;
+//    }
+//
+//    private Key(Class<T> type, List<Annotation> annotations, List<Class> typeParameters) {
+//        this.type = type;
+//        this.annotations = annotations;
+//        this.typeParameters = typeParameters;
+//    }
+//
+//    public T get() {
+//        return provider.get();
+//    }
+//
+//    /**
+//     * @return Key for a given type
+//     */
+//    public static <T> Key<T> of(Class<T> type) {
+//        return new Key<T>(type, null, null);
+//    }
+//
+//    /**
+//     * @return Key for a given type and provider
+//     */
+//    public static <T> Key<T> of(Class<T> type, Provider<T> provider) {
+//        return new Key(type, provider);
+//    }
+//
+//    /**
+//     * @return Key for a given type and qualifier annotations
+//     */
+//    public static <T> Key<T> of(Class<T> type, List<Annotation> annotations) {
+//        return new Key<T>(type, annotations, C.<Class>list());
+//    }
+//
+//    /**
+//     * @return Key for a given type, qualifier annotations and type parameters
+//     */
+//    public static <T> Key<T> of(Class<T> type, List<Annotation> annotations, List<Class> typeParameters) {
+//        return new Key(type, annotations, typeParameters);
+//    }
+//
+//    @Override
+//    public boolean equals(Object o) {
+//        if (this == o) return true;
+//        if (o == null || getClass() != o.getClass()) return false;
+//
+//        Key<?> that = (Key<?>) o;
+//        return $.eq(type, that.type) && $.eq2(annotations, that.annotations) && $.eq2(typeParameters, that.typeParameters);
+//    }
+//
+//    @Override
+//    public int hashCode() {
+//        return $.hc(type, annotations, typeParameters);
+//    }
+//
+//    @Override
+//    public String toString() {
+//        StringBuilder sb = S.builder(type);
+//        if (!annotations.isEmpty()) {
+//            sb.append("@").append(S.join(",", annotations));
+//        }
+//        if (!typeParameters.isEmpty()) {
+//            sb.append("<").append(S.join(",", typeParameters)).append(">");
+//        }
+//        return sb.toString();
+//    }
 
 
 }

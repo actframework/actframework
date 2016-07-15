@@ -12,6 +12,7 @@ import act.event.EventBus;
 import act.mail.MailerContext;
 import act.util.ActContext;
 import org.osgl.$;
+import org.osgl.util.E;
 
 import java.util.Map;
 
@@ -24,12 +25,13 @@ public class FeatherInjector extends DependencyInjectorBase<FeatherInjector> {
 
     @Override
     public <T> T create(Class<T> clazz) {
-        Feather feather = feather();
-        if (null == feather) {
-            return $.newInstance(clazz);
-        } else {
-            return feather.instance(clazz);
-        }
+        throw E.unsupport();
+//        Feather feather = feather();
+//        if (null == feather) {
+//            return $.newInstance(clazz);
+//        } else {
+//            return feather.instance(clazz);
+//        }
     }
 
     @Override
@@ -38,17 +40,18 @@ public class FeatherInjector extends DependencyInjectorBase<FeatherInjector> {
     }
 
     private Feather feather() {
-        if (null == feather) {
-            synchronized (this) {
-                if (null == feather) {
-                    feather = Feather.with(this).dependencyInjector(this);
-                    for (Map.Entry<Class, DependencyInjectionBinder> entry : binders.entrySet()) {
-                        feather.registerProvider(entry.getKey(), entry.getValue());
-                    }
-                }
-            }
-        }
-        return feather;
+//        if (null == feather) {
+//            synchronized (this) {
+//                if (null == feather) {
+//                    feather = Feather.with(this).dependencyInjector(this);
+//                    for (Map.Entry<Class, DependencyInjectionBinder> entry : binders.entrySet()) {
+//                        feather.registerProvider(entry.getKey(), entry.getValue());
+//                    }
+//                }
+//            }
+//        }
+//        return feather;
+        throw E.tbd();
     }
 
     @Override
