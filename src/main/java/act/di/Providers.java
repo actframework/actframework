@@ -23,72 +23,6 @@ import java.lang.reflect.ParameterizedType;
  */
 public final class Providers {
 
-    private static ScopeCache.SingletonScope _SINGLETON_SCOPE = new ScopeCache.SingletonScope() {
-        @Override
-        public <T> T get(Class<T> aClass) {
-            return app().singleton(aClass);
-        }
-
-        @Override
-        public <T> void put(Class<T> aClass, T t) {
-            app().registerSingleton(aClass, t);
-        }
-    };
-
-    private static ScopeCache.RequestScope _REQ_SCOPE = new ScopeCache.RequestScope() {
-        @Override
-        public <T> T get(Class<T> aClass) {
-            ActContext ctx = context();
-            return null == ctx ? null : (T) ctx.attribute(aClass.getName());
-        }
-
-        @Override
-        public <T> void put(Class<T> aClass, T t) {
-            ActContext ctx = context();
-            E.illegalStateIf(null == ctx);
-            ctx.attribute(aClass.getName(), t);
-        }
-    };
-
-    private static ScopeCache.SessionScope _SESS_SCOPE = new ScopeCache.SessionScope() {
-        @Override
-        public <T> T get(Class<T> aClass) {
-            ActionContext actionContext = ActionContext.current();
-            if (null != actionContext) {
-                H.Session sess = actionContext.session();
-                String key = aClass.getName();
-                T t = sess.cached(key);
-                if (null != t) {
-                    sess.cache(key, t, ttl());
-                }
-                return t;
-            }
-            CliContext cliContext = CliContext.current();
-            if (null != cliContext) {
-                CliSession sess = cliContext.session();
-                return sess.attribute(aClass.getName());
-            }
-            return null;
-        }
-
-        @Override
-        public <T> void put(Class<T> aClass, T t) {
-            ActionContext actionContext = ActionContext.current();
-            if (null != actionContext) {
-                H.Session sess = actionContext.session();
-                sess.cache(aClass.getName(), t, ttl());
-            }
-            CliContext cliContext = CliContext.current();
-            if (null != cliContext) {
-                CliSession sess = cliContext.session();
-                sess.attribute(aClass.getName(), t);
-            }
-        }
-
-        private int ttl() {
-            return (int)app().config().sessionTtl();
-        }
-    };
 
 
     private Providers() {}
@@ -142,29 +76,8 @@ public final class Providers {
         }
     };
 
-    public static final Provider<ScopeCache.SingletonScope> SINGLETON_SCOPE = new Provider<ScopeCache.SingletonScope>() {
-        @Override
-        public ScopeCache.SingletonScope get() {
-            return _SINGLETON_SCOPE;
-        }
-    };
-
-    public static final Provider<ScopeCache.RequestScope> REQ_SCOPE = new Provider<ScopeCache.RequestScope>() {
-        @Override
-        public ScopeCache.RequestScope get() {
-            return _REQ_SCOPE;
-        }
-    };
-
-    public static final Provider<ScopeCache.SessionScope> SESSION_SCOPE = new Provider<ScopeCache.SessionScope>() {
-        @Override
-        public ScopeCache.SessionScope get() {
-            return _SESS_SCOPE;
-        }
-    };
-
-    public static void registerBuiltInProviders($.Func2<Class, Provider, ?> register) {
-        for (Field field : Providers.class.getDeclaredFields()) {
+    public static void registerBuiltInProviders(Class<?> providersClass, $.Func2<Class, Provider, ?> register) {
+        for (Field field : providersClass.getDeclaredFields()) {
             try {
                 if (Provider.class.isAssignableFrom(field.getType())) {
                     ParameterizedType type = $.cast(field.getGenericType());
@@ -179,17 +92,6 @@ public final class Providers {
 
     private static App app() {
         return App.instance();
-    }
-
-    private static ActContext context() {
-        ActContext context = ActionContext.current();
-        if (null == context) {
-            context = CliContext.current();
-            if (null == context) {
-                context = MailerContext.current();
-            }
-        }
-        return context;
     }
 
 }

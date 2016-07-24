@@ -75,13 +75,15 @@ public class GenieInjector extends DependencyInjectorBase<GenieInjector> {
                     for (Map.Entry<Class, DependencyInjectionBinder> entry : binders.entrySet()) {
                         genie.registerProvider(entry.getKey(), entry.getValue());
                     }
-                    Providers.registerBuiltInProviders(new $.F2<Class, Provider, Void>() {
+                    $.F2<Class, Provider, Void> register = new $.F2<Class, Provider, Void>() {
                         @Override
                         public Void apply(Class aClass, Provider provider) throws NotAppliedException, Osgl.Break {
                             genie.registerProvider(aClass, provider);
                             return null;
                         }
-                    });
+                    };
+                    Providers.registerBuiltInProviders(Providers.class, register);
+                    Providers.registerBuiltInProviders(GenieProviders.class, register);
                 }
             }
         }
