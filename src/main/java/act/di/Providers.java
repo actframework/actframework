@@ -80,6 +80,7 @@ public final class Providers {
         for (Field field : providersClass.getDeclaredFields()) {
             try {
                 if (Provider.class.isAssignableFrom(field.getType())) {
+                    field.setAccessible(true);
                     ParameterizedType type = $.cast(field.getGenericType());
                     Provider<?> provider = $.cast(field.get(null));
                     register.apply((Class) type.getActualTypeArguments()[0], provider);

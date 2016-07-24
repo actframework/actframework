@@ -168,6 +168,20 @@ class GenieProviders {
         }
     };
 
+    public static final Provider<TypedElementLoader> TYPED_ELEMENT_LOADER = new Provider<TypedElementLoader>() {
+        @Override
+        public TypedElementLoader get() {
+            return _TYPED_ELEMENT_LOADER;
+        }
+    };
+
+    public static final Provider<AnnotatedElementLoader> ANNOTATED_ELEMENT_LOADER = new Provider<AnnotatedElementLoader>() {
+        @Override
+        public AnnotatedElementLoader get() {
+            return _ANNO_ELEMENT_LOADER;
+        }
+    };
+
     private static App app() {
         return App.instance();
     }
