@@ -19,7 +19,7 @@ import act.data.JodaDateTimeCodec;
 import act.data.util.ActPropertyHandlerFactory;
 import act.di.DependencyInjectionBinder;
 import act.di.DependencyInjector;
-import act.di.feather.FeatherInjector;
+import act.di.genie.GenieInjector;
 import act.event.AppEventListenerBase;
 import act.event.EventBus;
 import act.event.bytecode.SimpleEventListenerByteCodeScanner;
@@ -436,15 +436,15 @@ public class App extends DestroyableBase {
         return jobManager;
     }
 
-    public App injector(DependencyInjector<?> dependencyInjector) {
+    public <DI extends DependencyInjector> App injector(DI dependencyInjector) {
         E.NPE(dependencyInjector);
         E.illegalStateIf(null != this.dependencyInjector, "Dependency injection factory already set");
         this.dependencyInjector = dependencyInjector;
         return this;
     }
 
-    public <T extends DependencyInjector<T>> T injector() {
-        return (T) dependencyInjector;
+    public <DI extends DependencyInjector> DI injector() {
+        return (DI) dependencyInjector;
     }
 
     public IStorageService uploadFileStorageService() {
@@ -488,19 +488,23 @@ public class App extends DestroyableBase {
     }
 
     public <T> T newInstance(Class<T> clz) {
-        T t = singleton(clz);
-        if (null != t) {
-            return t;
-        }
-        t = SimpleTypeInstanceFactory.newInstance(clz);
-        if (null != t) {
-            return t;
-        }
-        if (null != dependencyInjector) {
-            return dependencyInjector.create(clz);
-        } else {
+        if (null == dependencyInjector) {
             return $.newInstance(clz);
         }
+        return dependencyInjector.get(clz);
+//        T t = singleton(clz);
+//        if (null != t) {
+//            return t;
+//        }
+//        t = SimpleTypeInstanceFactory.newInstance(clz);
+//        if (null != t) {
+//            return t;
+//        }
+//        if (null != dependencyInjector) {
+//            return dependencyInjector.get(clz);
+//        } else {
+//            return $.newInstance(clz);
+//        }
     }
 
     <T> T newInstance(Class<T> clz, ActContext context) {
@@ -828,7 +832,9 @@ public class App extends DestroyableBase {
     private void loadDependencyInjector() {
         DependencyInjector di = injector();
         if (null == di) {
-            new FeatherInjector(this);
+            new GenieInjector(this);
+        } else {
+            logger.warn("Third party injector[%s] loaded. Please consider using Act air injection instead", di.getClass());
         }
     }
 

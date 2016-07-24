@@ -46,7 +46,6 @@ public class ActionContext extends ActContext.ActContextBase<ActionContext> impl
     private volatile JSONArray jsonArray;
     private Map<String, String[]> allParams;
     private String actionPath; // e.g. com.mycorp.myapp.controller.AbcController.foo
-    private Map<String, Object> attributes;
     private State state;
     private Map<String, Object> controllerInstances;
     private Map<String, ISObject> uploads;
@@ -340,22 +339,6 @@ public class ActionContext extends ActContext.ActContextBase<ActionContext> impl
         return null == controllerInstances ? null : controllerInstances.get(className);
     }
 
-    /**
-     * Associate a user attribute to the context. Could be used by third party
-     * libraries or user application
-     *
-     * @param name the className used to reference the attribute
-     * @param attr the attribute object
-     * @return this context
-     */
-    public ActionContext attribute(String name, Object attr) {
-        attributes.put(name, attr);
-        return this;
-    }
-
-    public <T> T attribute(String name) {
-        return $.cast(attributes.get(name));
-    }
 
     public <T> T newIntance(String className) {
         return app().newInstance(className, this);
@@ -597,7 +580,6 @@ public class ActionContext extends ActContext.ActContextBase<ActionContext> impl
             this.allParams = null;
             this.extraParams = null;
             this.requestParamCache = null;
-            this.attributes.clear();
             this.router = null;
             this.handler = null;
             // xio impl might need this this.request = null;
@@ -608,12 +590,6 @@ public class ActionContext extends ActContext.ActContextBase<ActionContext> impl
             this.violations.clear();
             clearLocal();
             this.uploads.clear();
-            for (Object o : this.attributes.values()) {
-                if (o instanceof Destroyable) {
-                    ((Destroyable) o).destroy();
-                }
-            }
-            this.attributes.clear();
         }
         this.state = State.DESTROYED;
     }
@@ -655,7 +631,6 @@ public class ActionContext extends ActContext.ActContextBase<ActionContext> impl
         uploads = C.newMap();
         extraParams = C.newMap();
         violations = C.newSet();
-        attributes = C.newMap();
         final Set<Map.Entry<String, String[]>> paramEntrySet = new AbstractSet<Map.Entry<String, String[]>>() {
             @Override
             public Iterator<Map.Entry<String, String[]>> iterator() {

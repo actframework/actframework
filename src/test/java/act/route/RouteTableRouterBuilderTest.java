@@ -7,6 +7,7 @@ import act.handler.RequestHandlerResolver;
 import act.handler.builtin.Echo;
 import act.handler.builtin.StaticFileGetter;
 import org.junit.Test;
+import org.mockito.Matchers;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
@@ -86,6 +87,7 @@ public class RouteTableRouterBuilderTest extends RouterTestBase {
     private void verify(String expected, H.Method method, String url) {
         H.Request req = Mockito.mock(H.Request.class);
         Mockito.when(ctx.req()).thenReturn(req);
+        Mockito.when(ctx.attribute(anyString(), Matchers.any())).thenReturn(ctx);
         Mockito.when(req.path()).thenReturn(url);
         router.getInvoker(method, url, ctx).handle(ctx);
         controllerInvoked(expected);

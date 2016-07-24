@@ -1,28 +1,12 @@
 package act.di;
 
 import act.app.AppService;
-import act.util.ActContext;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 
-public interface DependencyInjector<DI extends DependencyInjector> extends AppService<DI> {
-    /**
-     * Create an instance of type T using the class of type T
-     * @param clazz
-     * @param <T>
-     * @return the injector instance
-     */
-    <T> T create(Class<T> clazz);
-
-    /**
-     * Create an injector that is able to inject {@link ActContext} instance if the type
-     * is required
-     * @param context
-     * @return a injector instance support injecting app context
-     */
-    DependencyInjector<DI> createContextAwareInjector(ActContext context);
+public interface DependencyInjector<DI extends DependencyInjector<DI>> extends AppService<DI> {
 
     /**
      * Register a {@link DependencyInjectionBinder} to the injector
@@ -48,4 +32,13 @@ public interface DependencyInjector<DI extends DependencyInjector> extends AppSe
      *                       will be passed to the listener
      */
     void fireInjectedEvent(Object injectee, Type[] typeParameters);
+
+    /**
+     * Get a bean instance by class
+     * @param clazz the class of the bean instance to be returned
+     * @param <T> the generic type of the bean instance
+     * @return the bean instance
+     */
+    <T> T get(Class<T> clazz);
+
 }

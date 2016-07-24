@@ -62,15 +62,17 @@ public class CliSession extends DestroyableBase implements Runnable {
         return id;
     }
 
-    void setAttribute(String key, Object val) {
+    public CliSession attribute(String key, Object val) {
         attributes.put(key, val);
+        return this;
     }
 
-    void removeAttribute(String key) {
+    public CliSession removeAttribute(String key) {
         attributes.remove(key);
+        return this;
     }
 
-    <T> T getAttribute(String key) {
+    public <T> T attribute(String key) {
         return $.cast(attributes.get(key));
     }
 

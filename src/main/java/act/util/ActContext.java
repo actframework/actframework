@@ -1,9 +1,11 @@
 package act.util;
 
 import act.Destroyable;
+import act.app.ActionContext;
 import act.app.App;
 import act.conf.AppConfig;
 import act.view.Template;
+import org.osgl.$;
 import org.osgl.http.H;
 import org.osgl.util.C;
 import org.osgl.util.E;
@@ -41,6 +43,9 @@ public interface ActContext<CTX_TYPE extends ActContext> {
     CTX_TYPE renderArg(String name, Object val);
     CTX_TYPE addListener(Listener listener);
     CTX_TYPE addDestroyable(Destroyable resource);
+    CTX_TYPE attribute(String name, Object attr);
+    <T> T attribute(String name);
+    CTX_TYPE removeAttribute(String name);
 
     public static interface Listener {
         void onDestroy(ActContext context);
@@ -51,13 +56,17 @@ public interface ActContext<CTX_TYPE extends ActContext> {
         private String templatePath;
         private Template template;
         private Map<String, Object> renderArgs;
-        private List<Listener> listenerList = C.newList();
-        private List<Destroyable> destroyableList = C.newList();
+        private List<Listener> listenerList;
+        private List<Destroyable> destroyableList;
+        private Map<String, Object> attributes;
 
         public ActContextBase(App app) {
             E.NPE(app);
             this.app = app;
             renderArgs = C.newMap();
+            attributes = C.newMap();
+            listenerList = C.newList();
+            destroyableList = C.newList();
         }
 
         @Override
@@ -70,6 +79,8 @@ public interface ActContext<CTX_TYPE extends ActContext> {
                 }
             }
             Destroyable.Util.destroyAll(destroyableList);
+            Destroyable.Util.tryDestroyAll(attributes.values());
+            this.attributes.clear();
             this.renderArgs.clear();
             this.template = null;
             this.app = null;
@@ -128,6 +139,28 @@ public interface ActContext<CTX_TYPE extends ActContext> {
         @Override
         public Map<String, Object> renderArgs() {
             return C.newMap(renderArgs);
+        }
+
+        /**
+         * Associate a user attribute to the context. Could be used by third party
+         * libraries or user application
+         *
+         * @param name the className used to reference the attribute
+         * @param attr the attribute object
+         * @return this context
+         */
+        public VC_TYPE attribute(String name, Object attr) {
+            attributes.put(name, attr);
+            return me();
+        }
+
+        public <T> T attribute(String name) {
+            return $.cast(attributes.get(name));
+        }
+
+        public VC_TYPE removeAttribute(String name) {
+            attributes.remove(name);
+            return me();
         }
 
         @Override

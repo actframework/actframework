@@ -7,8 +7,8 @@ import act.app.AppServiceBase;
 import act.app.event.AppEvent;
 import act.app.event.AppEventId;
 import act.app.event.AppEventListener;
-import act.di.DependencyInjectionBinder;
 import act.di.DependencyInjector;
+import act.di.DependencyInjectionBinder;
 import act.job.AppJobManager;
 import org.osgl.mvc.result.Result;
 import org.osgl.util.C;
@@ -19,7 +19,6 @@ import java.util.EventObject;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 
 import static act.app.App.logger;

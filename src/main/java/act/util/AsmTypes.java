@@ -12,6 +12,7 @@ import act.di.OptionalPathVariable;
 import act.di.PathVariable;
 import act.di.SessionVariable;
 import act.mail.MailerContext;
+import org.osgl.genie.annotation.Provides;
 import org.osgl.mvc.annotation.Bind;
 import org.osgl.mvc.annotation.Param;
 import org.osgl.mvc.result.Result;
@@ -54,6 +55,8 @@ public enum AsmTypes implements Opcodes {
 
     public static AsmType<SubClassFinder> SUB_CLASS_FINDER = new AsmType<>(SubClassFinder.class);
     public static AsmType<AnnotatedClassFinder> ANN_CLASS_FINDER = new AsmType<>(AnnotatedClassFinder.class);
+
+    public static AsmType<Provides> PROVIDES = new AsmType<>(Provides.class);
 
 
     public static final Type RETURN_VOID = Type.VOID_TYPE;

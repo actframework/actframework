@@ -1,9 +1,6 @@
 package act.util;
 
-import act.app.App;
 import act.app.event.AppEventId;
-import org.osgl.$;
-import org.osgl.util.S;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;

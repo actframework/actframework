@@ -93,30 +93,8 @@ public class CliContext extends ActContext.ActContextBase<CliContext> implements
         return parser.arguments();
     }
 
-    /**
-     * Associate a value to a key in this context
-     * @param key the key
-     * @param val the value
-     */
-    public CliContext attribute(String key, Object val) {
-        session.setAttribute(key, val);
-        return this;
-    }
-
-    /**
-     * Fetch the value {@link #attribute(String, Object) attributed} with
-     * the key specified in this context
-     * @param key the key
-     * @param <T> the generic type of the value
-     * @return the value object associated with the key
-     */
-    public <T> T attribute(String key) {
-        return session.getAttribute(key);
-    }
-
-    public CliContext removeAttribute(String key) {
-        session.removeAttribute(key);
-        return this;
+    public CliSession session() {
+        return session;
     }
 
     /**

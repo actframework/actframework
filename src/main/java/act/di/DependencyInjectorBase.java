@@ -9,7 +9,7 @@ import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Map;
 
-public abstract class DependencyInjectorBase<DI extends DependencyInjectorBase> extends AppServiceBase<DI> implements DependencyInjector<DI>{
+public abstract class DependencyInjectorBase<DI extends DependencyInjectorBase<DI>> extends AppServiceBase<DI> implements DependencyInjector<DI> {
 
     protected Map<Class, DependencyInjectionBinder> binders = C.newMap();
     protected Map<Class, List<DependencyInjectionListener>> listeners = C.newMap();
