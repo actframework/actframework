@@ -1,13 +1,11 @@
 package act.di.genie;
 
 import act.app.*;
-import act.app.event.AppClassLoaded;
 import act.mail.MailerContext;
 import act.util.ActContext;
 import act.util.ClassNode;
 import org.osgl.$;
 import org.osgl.Osgl;
-import org.osgl.genie.Genie;
 import org.osgl.genie.ScopeCache;
 import org.osgl.genie.loader.AnnotatedElementLoader;
 import org.osgl.genie.loader.ConfigurationValueLoader;
@@ -87,7 +85,7 @@ class GenieProviders {
         }
 
         private int ttl() {
-            return (int)app().config().sessionTtl();
+            return (int) app().config().sessionTtl();
         }
     };
 
@@ -100,45 +98,74 @@ class GenieProviders {
 
     private static final TypedElementLoader _TYPED_ELEMENT_LOADER = new TypedElementLoader() {
         @Override
-        protected List<Class> load(Class aClass) {
+        protected List<Class> load(Class aClass, final boolean loadNonPublic, final boolean loadAbstract, final boolean loadRoot) {
             final AppClassLoader cl = app().classLoader();
-            ClassNode root = cl.classInfoRepository().node(aClass.getName());
+            final ClassNode root = cl.classInfoRepository().node(aClass.getName());
             if (null == root) {
                 return C.list();
             }
             final List<Class> list = C.newList();
-            root.visitPublicNotAbstractSubTreeNodes(new Osgl.Visitor<ClassNode>() {
+            Osgl.Visitor<ClassNode> visitor = new Osgl.Visitor<ClassNode>() {
                 @Override
                 public void visit(ClassNode classNode) throws Osgl.Break {
                     Class c = $.classForName(classNode.name(), cl);
                     list.add(c);
                 }
-            });
+            };
+            root.visitTree($.guardedVisitor(new $.Predicate<ClassNode>() {
+                @Override
+                public boolean test(ClassNode classNode) {
+                    if (!loadNonPublic && !classNode.isPublic()) {
+                        return false;
+                    }
+                    if (!loadAbstract && classNode.isAbstract()) {
+                        return false;
+                    }
+                    if (!loadRoot && root == classNode) {
+                        return false;
+                    }
+                    return true;
+                }
+            }, visitor));
             return list;
         }
+
     };
 
     private static final AnnotatedElementLoader _ANNO_ELEMENT_LOADER = new AnnotatedElementLoader() {
         @Override
-        protected List<Class<?>> load(Class<? extends Annotation> aClass, Genie genie) {
+        protected List<Class<?>> load(Class<? extends Annotation> aClass, final boolean loadNonPublic, final boolean loadAbstract) {
             final AppClassLoader cl = app().classLoader();
             ClassNode root = cl.classInfoRepository().node(aClass.getName());
             if (null == root) {
                 return C.list();
             }
             final List<Class<?>> list = C.newList();
-            root.visitPublicNotAbstractAnnotatedClasses(new Osgl.Visitor<ClassNode>() {
+            Osgl.Visitor<ClassNode> visitor = new Osgl.Visitor<ClassNode>() {
                 @Override
                 public void visit(ClassNode classNode) throws Osgl.Break {
                     Class c = $.classForName(classNode.name(), cl);
                     list.add(c);
                 }
-            });
+            };
+            root.visitTree($.guardedVisitor(new $.Predicate<ClassNode>() {
+                @Override
+                public boolean test(ClassNode classNode) {
+                    if (!loadNonPublic && !classNode.isPublic()) {
+                        return false;
+                    }
+                    if (!loadAbstract && classNode.isAbstract()) {
+                        return false;
+                    }
+                    return true;
+                }
+            }, visitor));
             return list;
         }
     };
 
-    private GenieProviders() {}
+    private GenieProviders() {
+    }
 
     public static final Provider<ScopeCache.SingletonScope> SINGLETON_SCOPE = new Provider<ScopeCache.SingletonScope>() {
         @Override
