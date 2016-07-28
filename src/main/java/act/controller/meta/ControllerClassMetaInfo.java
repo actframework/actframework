@@ -1,10 +1,7 @@
 package act.controller.meta;
 
-import act.Act;
 import act.app.App;
-import act.app.AppClassLoader;
 import act.asm.Type;
-import act.event.OnceEventListenerBase;
 import act.handler.builtin.controller.ControllerAction;
 import act.handler.builtin.controller.Handler;
 import act.util.ClassInfoRepository;
@@ -15,8 +12,8 @@ import org.osgl.mvc.annotation.*;
 import org.osgl.util.C;
 import org.osgl.util.S;
 
+import javax.enterprise.context.ApplicationScoped;
 import java.lang.annotation.Annotation;
-import java.util.EventObject;
 import java.util.List;
 import java.util.Set;
 
@@ -27,6 +24,7 @@ import static act.Destroyable.Util.destroyAll;
  * {@link ControllerAction request dispatcher}
  * and {@link Handler interceptors}
  */
+@ApplicationScoped
 public final class ControllerClassMetaInfo extends DestroyableBase {
 
     private Type type;
@@ -56,14 +54,14 @@ public final class ControllerClassMetaInfo extends DestroyableBase {
     @Override
     protected void releaseResources() {
         withList.clear();
-        destroyAll(actions);
+        destroyAll(actions, ApplicationScoped.class);
         actions.clear();
         if (null != actionLookup) {
-            destroyAll(actionLookup.values());
+            destroyAll(actionLookup.values(), ApplicationScoped.class);
             actionLookup.clear();
         }
         if (null != handlerLookup) {
-            destroyAll(handlerLookup.values());
+            destroyAll(handlerLookup.values(), ApplicationScoped.class);
             handlerLookup.clear();
         }
         interceptors.destroy();

@@ -6,6 +6,7 @@ import act.util.DestroyableBase;
 import org.osgl.util.C;
 import org.osgl.util.S;
 
+import javax.enterprise.context.ApplicationScoped;
 import java.lang.annotation.Annotation;
 
 import static act.Destroyable.Util.destroyAll;
@@ -14,6 +15,7 @@ import static act.Destroyable.Util.destroyAll;
  * Stores all class level information to support generating of
  * Job worker class that wrap the annotated Job action method
  */
+@ApplicationScoped
 public final class JobClassMetaInfo extends DestroyableBase {
 
     private Type type;
@@ -36,9 +38,9 @@ public final class JobClassMetaInfo extends DestroyableBase {
 
     @Override
     protected void releaseResources() {
-        destroyAll(actions);
+        destroyAll(actions, ApplicationScoped.class);
         actions.clear();
-        destroyAll(actionLookup.values());
+        destroyAll(actionLookup.values(), ApplicationScoped.class);
         actionLookup.clear();
         super.releaseResources();
     }

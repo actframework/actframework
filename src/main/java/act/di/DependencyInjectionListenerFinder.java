@@ -15,7 +15,7 @@ public class DependencyInjectionListenerFinder extends SubTypeFinder<DependencyI
             @Override
             public void run() {
                 DependencyInjector di = app.injector();
-                di.registerDiListener(app.newInstance(target));
+                di.registerDiListener(app.getInstance(target));
             }
         });
     }

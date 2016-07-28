@@ -41,7 +41,7 @@ public class ClassFinderData {
                         Class<?> host = $.classForName(data.className, app.classLoader());
                         $.invokeStatic(host, data.methodName, targetClass);
                     } else {
-                        Object host = app.newInstance(data.className);
+                        Object host = app.getInstance(data.className);
                         $.invokeVirtual(host, data.methodName, targetClass);
                     }
                 }

@@ -53,7 +53,7 @@ class ReflectedSimpleEventListener implements SimpleEventListener {
                 synchronized (this) {
                     if (null == host) {
                         App app = App.instance();
-                        host = app.newInstance($.classForName(className, app.classLoader()));
+                        host = app.getInstance($.classForName(className, app.classLoader()));
                     }
                 }
             }

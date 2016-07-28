@@ -7,6 +7,7 @@ import org.osgl.logging.Logger;
 import org.osgl.util.C;
 import org.osgl.util.E;
 
+import javax.enterprise.context.ApplicationScoped;
 import java.io.IOException;
 import java.util.Map;
 
@@ -28,6 +29,8 @@ public abstract class NetworkBase extends DestroyableBase implements Network {
         if (started) {
             if (!trySetUpClient(client, port)) {
                 failed.put(port, client);
+            } else {
+                logger.info("network client hooked on port: %s", port);
             }
         }
     }
@@ -39,6 +42,8 @@ public abstract class NetworkBase extends DestroyableBase implements Network {
             NetworkHandler client = registry.get(port);
             if (!trySetUpClient(client, port)) {
                 failed.put(port, client);
+            } else {
+                logger.info("network client hooked on port: %s", port);
             }
         }
         started = true;
@@ -68,7 +73,7 @@ public abstract class NetworkBase extends DestroyableBase implements Network {
     @Override
     protected void releaseResources() {
         super.releaseResources();
-        Destroyable.Util.destroyAll(registry.values());
+        Destroyable.Util.destroyAll(registry.values(), ApplicationScoped.class);
         registry.clear();
     }
 }

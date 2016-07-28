@@ -6,6 +6,8 @@ import org.osgl.logging.LogManager;
 import org.osgl.logging.Logger;
 import org.osgl.util.C;
 
+import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -19,6 +21,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 /**
  * Servicing CLI session
  */
+@ApplicationScoped
 class CliServer extends AppServiceBase<CliServer> implements Runnable {
 
     private static final Logger log = LogManager.get(CliServer.class);
@@ -30,6 +33,7 @@ class CliServer extends AppServiceBase<CliServer> implements Runnable {
     private ServerSocket serverSocket;
     private Thread monitorThread;
 
+    @Inject
     CliServer(App app) {
         super(app);
         port = app.config().cliPort();
@@ -41,7 +45,7 @@ class CliServer extends AppServiceBase<CliServer> implements Runnable {
     protected void releaseResources() {
         stop();
         executor.shutdown();
-        Destroyable.Util.destroyAll(sessions.values());
+        Destroyable.Util.destroyAll(sessions.values(), ApplicationScoped.class);
         sessions.clear();
     }
 

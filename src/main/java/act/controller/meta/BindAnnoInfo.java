@@ -13,7 +13,7 @@ public class BindAnnoInfo extends ParamAnnoInfoTraitBase {
     }
 
     @Override
-    public void attachTo(ParamMetaInfo param) {
+    public void attachTo(HandlerParamMetaInfo param) {
         param.bindAnno(this);
     }
 

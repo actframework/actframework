@@ -8,7 +8,7 @@ import act.asm.Type;
 import act.asm.tree.*;
 import act.controller.meta.HandlerMethodMetaInfo;
 import act.controller.meta.LocalVariableMetaInfo;
-import act.controller.meta.ParamMetaInfo;
+import act.controller.meta.HandlerParamMetaInfo;
 import act.util.AsmTypes;
 import org.osgl.logging.LogManager;
 import org.osgl.logging.Logger;
@@ -46,7 +46,7 @@ public class HandlerEnhancer extends MethodVisitor implements Opcodes {
             }
             paramId -= paramIdShift;
             if (paramId < info.paramCount()) {
-                ParamMetaInfo param = info.param(paramId);
+                HandlerParamMetaInfo param = info.param(paramId);
                 param.name(name);
                 if (AsmTypes.ACTION_CONTEXT_TYPE.equals(param.type())) {
                     info.appCtxLocalVariableTableIndex(index);

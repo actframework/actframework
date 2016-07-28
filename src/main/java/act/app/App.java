@@ -7,7 +7,6 @@ import act.app.data.StringValueResolverManager;
 import act.app.event.AppEventId;
 import act.app.util.AppCrypto;
 import act.app.util.NamedPort;
-import act.app.util.SimpleTypeInstanceFactory;
 import act.cli.CliDispatcher;
 import act.cli.bytecode.CommanderByteCodeScanner;
 import act.conf.AppConfLoader;
@@ -477,17 +476,17 @@ public class App extends DestroyableBase {
      * @param <T>       the generic type of the class
      * @return the instance of the class
      */
-    public <T> T newInstance(String className) {
+    public <T> T getInstance(String className) {
         Class<T> c = $.classForName(className, classLoader());
-        return newInstance(c);
+        return getInstance(c);
     }
 
-    public <T> T newInstance(String className, ActContext context) {
+    public <T> T getInstance(String className, ActContext context) {
         Class<T> c = $.classForName(className, classLoader());
-        return newInstance(c, context);
+        return getInstance(c, context);
     }
 
-    public <T> T newInstance(Class<T> clz) {
+    public <T> T getInstance(Class<T> clz) {
         if (null == dependencyInjector) {
             return $.newInstance(clz);
         }
@@ -496,18 +495,18 @@ public class App extends DestroyableBase {
 //        if (null != t) {
 //            return t;
 //        }
-//        t = SimpleTypeInstanceFactory.newInstance(clz);
+//        t = SimpleTypeInstanceFactory.getInstance(clz);
 //        if (null != t) {
 //            return t;
 //        }
 //        if (null != dependencyInjector) {
 //            return dependencyInjector.get(clz);
 //        } else {
-//            return $.newInstance(clz);
+//            return $.getInstance(clz);
 //        }
     }
 
-    <T> T newInstance(Class<T> clz, ActContext context) {
+    <T> T getInstance(Class<T> clz, ActContext context) {
         if (ActionContext.class == clz) {
             return $.cast(context);
         }
@@ -517,7 +516,7 @@ public class App extends DestroyableBase {
         if (MailerContext.class == clz) {
             return $.cast(context);
         }
-        return newInstance(clz);
+        return getInstance(clz);
     }
 
     @Override

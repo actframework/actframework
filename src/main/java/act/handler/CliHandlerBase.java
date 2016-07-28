@@ -5,6 +5,9 @@ import act.app.CliContext;
 import org.osgl.$;
 import org.osgl.exception.NotAppliedException;
 
+import javax.enterprise.context.ApplicationScoped;
+import java.lang.annotation.Annotation;
+
 public abstract class CliHandlerBase extends $.F1<CliContext, Void> implements CliHandler {
 
     private boolean destroyed;
@@ -25,6 +28,11 @@ public abstract class CliHandlerBase extends $.F1<CliContext, Void> implements C
         if (destroyed) return;
         destroyed = true;
         releaseResources();
+    }
+
+    @Override
+    public Class<? extends Annotation> scope() {
+        return ApplicationScoped.class;
     }
 
     public String summary() {

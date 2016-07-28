@@ -4,6 +4,9 @@ import act.app.App;
 import org.osgl.$;
 import org.osgl.exception.NotAppliedException;
 
+import javax.enterprise.context.ApplicationScoped;
+import java.lang.annotation.Annotation;
+
 public abstract class RequestHandlerResolverBase extends $.F2<String, App, RequestHandler> implements RequestHandlerResolver {
 
     private boolean destroyed;
@@ -17,6 +20,11 @@ public abstract class RequestHandlerResolverBase extends $.F2<String, App, Reque
     public void destroy() {
         if (destroyed) return;
         releaseResources();
+    }
+
+    @Override
+    public Class<? extends Annotation> scope() {
+        return ApplicationScoped.class;
     }
 
     @Override

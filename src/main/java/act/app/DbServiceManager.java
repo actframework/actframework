@@ -63,7 +63,7 @@ public class DbServiceManager extends AppServiceBase<DbServiceManager> implement
                             return;
                         }
                         try {
-                            Dao dao = $.cast(app.newInstance(daoType));
+                            Dao dao = $.cast(app.getInstance(daoType));
                             Class<?> modelType = dao.modelType();
                             DB db = modelType.getAnnotation(DB.class);
                             String svcId = null == db ? DEFAULT : db.value();

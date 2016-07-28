@@ -11,7 +11,7 @@ import org.osgl.util.StringValueResolver;
 
 import java.util.List;
 
-public class ParamMetaInfo {
+public class HandlerParamMetaInfo {
     private String name;
     private Type type;
     private Type componentType;
@@ -20,7 +20,7 @@ public class ParamMetaInfo {
     private BindAnnoInfo bindAnno;
     private List<GeneralAnnoInfo> generalAnnoInfoList = C.newList();
 
-    public ParamMetaInfo type(Type type) {
+    public HandlerParamMetaInfo type(Type type) {
         this.type = type;
         if (AsmTypes.isContextType(type)) {
             this.context = true;
@@ -32,7 +32,7 @@ public class ParamMetaInfo {
         return type;
     }
 
-    public ParamMetaInfo componentType(Type type) {
+    public HandlerParamMetaInfo componentType(Type type) {
         this.componentType = type;
         return this;
     }
@@ -41,7 +41,7 @@ public class ParamMetaInfo {
         return this.componentType;
     }
 
-    public ParamMetaInfo name(String newName) {
+    public HandlerParamMetaInfo name(String newName) {
         this.name = newName;
         return this;
     }
@@ -60,7 +60,7 @@ public class ParamMetaInfo {
         return bindName;
     }
 
-    public ParamMetaInfo setContext() {
+    public HandlerParamMetaInfo setContext() {
         this.context = true;
         return this;
     }
@@ -82,14 +82,14 @@ public class ParamMetaInfo {
         if (null == paramAnno) return null;
         Class<? extends StringValueResolver> c = paramAnno.resolver();
         if (null == c) return null;
-        return app.newInstance(c);
+        return app.getInstance(c);
     }
 
     public ParamAnnoInfo paramAnnoInfo() {
         return paramAnno;
     }
 
-    ParamMetaInfo paramAnno(ParamAnnoInfo anno) {
+    HandlerParamMetaInfo paramAnno(ParamAnnoInfo anno) {
         paramAnno = anno;
         return this;
     }
@@ -98,17 +98,17 @@ public class ParamMetaInfo {
         return bindAnno;
     }
 
-    ParamMetaInfo bindAnno(BindAnnoInfo anno) {
+    HandlerParamMetaInfo bindAnno(BindAnnoInfo anno) {
         bindAnno = anno;
         return this;
     }
 
-    public ParamMetaInfo addGeneralAnnotation(GeneralAnnoInfo anno) {
+    public HandlerParamMetaInfo addGeneralAnnotation(GeneralAnnoInfo anno) {
         generalAnnoInfoList.add(anno);
         return this;
     }
 
-    public ParamMetaInfo addGeneralAnnotations(List<GeneralAnnoInfo> list) {
+    public HandlerParamMetaInfo addGeneralAnnotations(List<GeneralAnnoInfo> list) {
         generalAnnoInfoList.addAll(list);
         return this;
     }
@@ -127,8 +127,8 @@ public class ParamMetaInfo {
         if (obj == this) {
             return true;
         }
-        if (obj instanceof ParamMetaInfo) {
-            ParamMetaInfo that = (ParamMetaInfo)obj;
+        if (obj instanceof HandlerParamMetaInfo) {
+            HandlerParamMetaInfo that = (HandlerParamMetaInfo)obj;
             return $.eq(that.name, this.name) && $.eq(that.type, this.type);
         }
         return false;

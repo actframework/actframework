@@ -23,11 +23,14 @@ import org.osgl.util.C;
 import org.osgl.util.E;
 import org.osgl.util.S;
 
+import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
 import java.util.Collection;
 import java.util.ListIterator;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+@ApplicationScoped
 public final class RequestHandlerProxy extends RequestHandlerBase {
 
     private static Logger logger = L.get(RequestHandlerProxy.class);
@@ -91,6 +94,7 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
     final GroupFinallyInterceptor FINALLY_INTERCEPTOR = new GroupFinallyInterceptor(finallyInterceptors);
     final GroupExceptionInterceptor EXCEPTION_INTERCEPTOR = new GroupExceptionInterceptor(exceptionInterceptors);
 
+    @Inject
     public RequestHandlerProxy(String actionMethodName, App app) {
         int pos = actionMethodName.lastIndexOf('.');
         final String ERR = "Invalid controller action: %s";
@@ -124,7 +128,7 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
     }
 
     private static void _releaseResourceCollections(Collection<? extends Destroyable> col) {
-        Destroyable.Util.destroyAll(col);
+        Destroyable.Util.destroyAll(col, null);
     }
 
     public String controller() {

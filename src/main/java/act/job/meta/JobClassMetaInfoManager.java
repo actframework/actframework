@@ -6,11 +6,13 @@ import act.util.AsmTypes;
 import act.util.DestroyableBase;
 import org.osgl.util.C;
 
+import javax.enterprise.context.ApplicationScoped;
 import java.util.List;
 import java.util.Map;
 
 import static act.Destroyable.Util.destroyAll;
 
+@ApplicationScoped
 public class JobClassMetaInfoManager extends DestroyableBase {
 
     private Map<String, JobClassMetaInfo> jobs = C.newMap();
@@ -21,7 +23,7 @@ public class JobClassMetaInfoManager extends DestroyableBase {
 
     @Override
     protected void releaseResources() {
-        destroyAll(jobs.values());
+        destroyAll(jobs.values(), ApplicationScoped.class);
         jobs.clear();
         for (List<JobClassMetaInfo> l : subTypeInfo.values()) {
             destroyAll(l);

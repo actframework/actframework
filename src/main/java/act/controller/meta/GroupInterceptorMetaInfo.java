@@ -5,6 +5,7 @@ import org.osgl.$;
 import org.osgl.util.C;
 import org.osgl.util.S;
 
+import javax.enterprise.context.ApplicationScoped;
 import java.lang.annotation.Annotation;
 import java.util.List;
 
@@ -15,6 +16,7 @@ import static act.Destroyable.Util.destroyAll;
  * {@link ControllerClassMetaInfo} and
  * {@link ActionMethodMetaInfo}
  */
+@ApplicationScoped
 public class GroupInterceptorMetaInfo extends DestroyableBase {
 
     private C.List<InterceptorMethodMetaInfo> beforeList = C.newList();
@@ -24,10 +26,10 @@ public class GroupInterceptorMetaInfo extends DestroyableBase {
 
     @Override
     protected void releaseResources() {
-        destroyAll(beforeList);
-        destroyAll(afterList);
-        destroyAll(catchList);
-        destroyAll(finallyList);
+        destroyAll(beforeList, ApplicationScoped.class);
+        destroyAll(afterList, ApplicationScoped.class);
+        destroyAll(catchList, ApplicationScoped.class);
+        destroyAll(finallyList, ApplicationScoped.class);
         beforeList.clear();
         afterList.clear();
         catchList.clear();

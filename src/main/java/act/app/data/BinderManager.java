@@ -4,7 +4,7 @@ import act.ActComponent;
 import act.app.App;
 import act.app.AppServiceBase;
 import act.conf.AppConfig;
-import act.controller.meta.ParamMetaInfo;
+import act.controller.meta.HandlerParamMetaInfo;
 import act.data.FileBinder;
 import act.data.SObjectBinder;
 import org.osgl.$;
@@ -45,12 +45,12 @@ public class BinderManager extends AppServiceBase<BinderManager> {
         return this;
     }
 
-    public BinderManager register(ParamMetaInfo paramMetaInfo, Binder binder) {
+    public BinderManager register(HandlerParamMetaInfo paramMetaInfo, Binder binder) {
         binders.put(paramMetaInfo, binder);
         return this;
     }
 
-    public Binder binder(Class<?> clazz, Class<?> componentType, ParamMetaInfo paramMetaInfo) {
+    public Binder binder(Class<?> clazz, Class<?> componentType, HandlerParamMetaInfo paramMetaInfo) {
         Binder b = binders.get(clazz);
         if (null != b) {
             return b;
@@ -67,7 +67,7 @@ public class BinderManager extends AppServiceBase<BinderManager> {
         return null;
     }
 
-    public Binder binder(ParamMetaInfo paramMetaInfo) {
+    public Binder binder(HandlerParamMetaInfo paramMetaInfo) {
         return binders.get(paramMetaInfo);
     }
 
@@ -122,9 +122,9 @@ public class BinderManager extends AppServiceBase<BinderManager> {
     private class CollectionBinder<T> extends Binder<T> {
         private Class<?> componentType;
         private Class<?> containerType;
-        private ParamMetaInfo metaInfo;
+        private HandlerParamMetaInfo metaInfo;
 
-        CollectionBinder(Class<?> componentType, Class<?> containerType, ParamMetaInfo metaInfo) {
+        CollectionBinder(Class<?> componentType, Class<?> containerType, HandlerParamMetaInfo metaInfo) {
             this.componentType = componentType;
             this.containerType = containerType;
             this.metaInfo = metaInfo;

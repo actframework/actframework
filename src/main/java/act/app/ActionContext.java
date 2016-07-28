@@ -22,6 +22,8 @@ import org.osgl.util.C;
 import org.osgl.util.E;
 import org.osgl.util.S;
 
+import javax.enterprise.context.RequestScoped;
+import javax.inject.Inject;
 import javax.validation.ConstraintViolation;
 import java.util.*;
 
@@ -29,6 +31,7 @@ import java.util.*;
  * {@code AppContext} encapsulate contextual properties needed by
  * an application session
  */
+@RequestScoped
 public class ActionContext extends ActContext.ActContextBase<ActionContext> implements ActContext<ActionContext>, ParamValueProvider, Destroyable {
 
     public static final String ATTR_HANDLER = "__act_handler__";
@@ -53,6 +56,7 @@ public class ActionContext extends ActContext.ActContextBase<ActionContext> impl
     private Router router;
     private RequestHandler handler;
 
+    @Inject
     private ActionContext(App app, H.Request request, H.Response response) {
         super(app);
         E.NPE(app, request, response);
@@ -341,12 +345,12 @@ public class ActionContext extends ActContext.ActContextBase<ActionContext> impl
 
 
     public <T> T newIntance(String className) {
-        return app().newInstance(className, this);
+        return app().getInstance(className, this);
     }
 
     public <T> T newInstance(Class<? extends T> clazz) {
         if (clazz == ActionContext.class) return $.cast(this);
-        return app().newInstance(clazz, this);
+        return app().getInstance(clazz, this);
     }
 
     /**

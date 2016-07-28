@@ -5,11 +5,14 @@ import act.util.DestroyableBase;
 import org.osgl.util.C;
 import org.osgl.util.S;
 
+import javax.enterprise.context.ApplicationScoped;
+
 import static act.Destroyable.Util.destroyAll;
 
 /**
  * Stores all class level information to support generating of mailer method
  */
+@ApplicationScoped
 public final class MailerClassMetaInfo extends DestroyableBase {
 
     private Type type;
@@ -30,7 +33,7 @@ public final class MailerClassMetaInfo extends DestroyableBase {
 
     @Override
     protected void releaseResources() {
-        destroyAll(senders);
+        destroyAll(senders, ApplicationScoped.class);
         senders.clear();
         if (null != mailerLookup) {
             destroyAll(mailerLookup.values());

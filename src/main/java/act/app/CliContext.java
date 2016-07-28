@@ -198,12 +198,12 @@ public class CliContext extends ActContext.ActContextBase<CliContext> implements
     }
 
     public <T> T newInstance(String className) {
-        return app().newInstance(className, this);
+        return app().getInstance(className, this);
     }
 
     public <T> T newInstance(Class<? extends T> clazz) {
         if (clazz == CliContext.class) return $.cast(this);
-        return app().newInstance(clazz, this);
+        return app().getInstance(clazz, this);
     }
 
     public CliContext __commanderInstance(String className, Object instance) {

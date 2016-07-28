@@ -2,7 +2,7 @@ package act.job.meta;
 
 import act.app.App;
 import act.asm.Type;
-import act.controller.meta.ParamMetaInfo;
+import act.controller.meta.HandlerParamMetaInfo;
 import act.sys.meta.InvokeType;
 import act.sys.meta.ReturnTypeInfo;
 import act.util.ClassNode;
@@ -21,7 +21,7 @@ public class JobMethodMetaInfo extends DestroyableBase {
     private InvokeType invokeType;
     private JobClassMetaInfo clsInfo;
     private ReturnTypeInfo returnType = new ReturnTypeInfo();
-    private C.List<ParamMetaInfo> params = C.newList();
+    private C.List<HandlerParamMetaInfo> params = C.newList();
 
     public JobMethodMetaInfo(JobClassMetaInfo clsInfo) {
         this.clsInfo = clsInfo;

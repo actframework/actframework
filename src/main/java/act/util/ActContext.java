@@ -1,7 +1,6 @@
 package act.util;
 
 import act.Destroyable;
-import act.app.ActionContext;
 import act.app.App;
 import act.conf.AppConfig;
 import act.view.Template;
@@ -10,6 +9,7 @@ import org.osgl.http.H;
 import org.osgl.util.C;
 import org.osgl.util.E;
 
+import javax.enterprise.context.RequestScoped;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -78,8 +78,8 @@ public interface ActContext<CTX_TYPE extends ActContext> {
                     logger.warn(e, "error calling listener onDestroy method");
                 }
             }
-            Destroyable.Util.destroyAll(destroyableList);
-            Destroyable.Util.tryDestroyAll(attributes.values());
+            Destroyable.Util.destroyAll(destroyableList, RequestScoped.class);
+            Destroyable.Util.tryDestroyAll(attributes.values(), RequestScoped.class);
             this.attributes.clear();
             this.renderArgs.clear();
             this.template = null;

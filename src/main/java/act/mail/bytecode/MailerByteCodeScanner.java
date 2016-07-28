@@ -6,7 +6,7 @@ import act.asm.*;
 import act.asm.signature.SignatureReader;
 import act.asm.signature.SignatureVisitor;
 import act.controller.meta.ParamAnnoInfoTrait;
-import act.controller.meta.ParamMetaInfo;
+import act.controller.meta.HandlerParamMetaInfo;
 import act.mail.Mailer;
 import act.mail.meta.MailerClassMetaInfo;
 import act.mail.meta.MailerClassMetaInfoManager;
@@ -169,7 +169,7 @@ public class MailerByteCodeScanner extends AppByteCodeScannerBase {
                 boolean ctxByParam = false;
                 for (int i = 0; i < argTypes.length; ++i) {
                     Type type = argTypes[i];
-                    ParamMetaInfo param = new ParamMetaInfo().type(type);
+                    HandlerParamMetaInfo param = new HandlerParamMetaInfo().type(type);
                     List<ParamAnnoInfoTrait> paraAnnoList = paramAnnoInfoList.get(i);
                     if (null != paraAnnoList) {
                         for (ParamAnnoInfoTrait trait : paraAnnoList) {

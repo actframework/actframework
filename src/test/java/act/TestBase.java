@@ -127,7 +127,7 @@ public class TestBase extends Assert {
         when(mockApp.config()).thenReturn(mockAppConfig);
         when(mockApp.router()).thenReturn(mockRouter);
         when(mockApp.router(Matchers.same(""))).thenReturn(mockRouter);
-        when(mockApp.newInstance(any(Class.class))).thenAnswer(new Answer<Object>() {
+        when(mockApp.getInstance(any(Class.class))).thenAnswer(new Answer<Object>() {
             @Override
             public Object answer(InvocationOnMock invocation) throws Throwable {
                 Object[] args = invocation.getArguments();

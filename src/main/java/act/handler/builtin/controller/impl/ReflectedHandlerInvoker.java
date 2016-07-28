@@ -109,7 +109,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
             for (ActionMethodParamAnnotationHandler annotationHandler : availableHandlers) {
                 Set<Class<? extends Annotation>> listenTo = annotationHandler.listenTo();
                 for (int i = 0, j = paramTypes.length; i < j; ++i) {
-                    ParamMetaInfo paramMetaInfo = handlerMetaInfo.param(i);
+                    HandlerParamMetaInfo paramMetaInfo = handlerMetaInfo.param(i);
                     List<GeneralAnnoInfo> annoInfoList = paramMetaInfo.generalAnnoInfoList();
                     for (GeneralAnnoInfo annoInfo : annoInfoList) {
                         Class<? extends Annotation> annoClass = annoInfo.annotationClass(classLoader);
@@ -269,14 +269,14 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         BinderManager binderManager = app.binderManager();
 
         for (int i = 0; i < paramCount; ++i) {
-            ParamMetaInfo param = handler.param(i);
+            HandlerParamMetaInfo param = handler.param(i);
             Class<?> paramType = paramTypes[i];
             if (ActionContext.class.equals(paramType)) {
                 oa[i] = ctx;
                 continue;
             }
             if (param.isContext()) {
-                oa[i] = app.newInstance(paramType);
+                oa[i] = app.getInstance(paramType);
                 continue;
             }
             Class<?> paramComponentType = paramComponentTypes[i];
@@ -462,11 +462,11 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         } else if (Set.class.equals(c)) {
             return C.newSet();
         }
-        return app.newInstance(c);
+        return app.getInstance(c);
     }
 
     private List<Annotation> paramAnnotationList(int paramIndex) {
-        ParamMetaInfo paramMetaInfo = handler.param(paramIndex);
+        HandlerParamMetaInfo paramMetaInfo = handler.param(paramIndex);
         List<Annotation> retVal = C.newList();
         List<GeneralAnnoInfo> infoList = paramMetaInfo.generalAnnoInfoList();
         if (null == infoList) {
@@ -486,7 +486,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
             return $.T2(ca, ca2);
         }
         for (int i = 0; i < paramCount; ++i) {
-            ParamMetaInfo param = handler.param(i);
+            HandlerParamMetaInfo param = handler.param(i);
             String className = param.type().getClassName();
             ca[i] = $.classForName(className, cl);
             Type componentType = param.componentType();

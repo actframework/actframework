@@ -1,19 +1,20 @@
 package act.event;
 
-import act.ActComponent;
 import act.Destroyable;
 import act.app.App;
 import act.app.AppServiceBase;
 import act.app.event.AppEvent;
 import act.app.event.AppEventId;
 import act.app.event.AppEventListener;
-import act.di.DependencyInjector;
 import act.di.DependencyInjectionBinder;
+import act.di.DependencyInjector;
 import act.job.AppJobManager;
 import org.osgl.mvc.result.Result;
 import org.osgl.util.C;
 import org.osgl.util.E;
 
+import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
 import java.lang.annotation.Annotation;
 import java.util.EventObject;
 import java.util.List;
@@ -23,7 +24,7 @@ import java.util.concurrent.TimeUnit;
 
 import static act.app.App.logger;
 
-@ActComponent
+@ApplicationScoped
 public class EventBus extends AppServiceBase<EventBus> {
 
     private boolean once;
@@ -54,6 +55,7 @@ public class EventBus extends AppServiceBase<EventBus> {
         }
     }
 
+    @Inject
     public EventBus(App app) {
         this(app, false);
     }
@@ -450,7 +452,7 @@ public class EventBus extends AppServiceBase<EventBus> {
         int len = array.length;
         for (int i = 0; i < len; ++i) {
             List<AppEventListener> l = array[i];
-            Destroyable.Util.destroyAll(l);
+            Destroyable.Util.destroyAll(l, ApplicationScoped.class);
             l.clear();
         }
     }

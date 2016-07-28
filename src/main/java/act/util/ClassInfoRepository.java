@@ -3,6 +3,7 @@ package act.util;
 import act.Destroyable;
 import org.osgl.util.C;
 
+import javax.enterprise.context.ApplicationScoped;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -10,6 +11,7 @@ import java.util.concurrent.ConcurrentMap;
 /**
  * The repository to keep class information
  */
+@ApplicationScoped
 public class ClassInfoRepository extends DestroyableBase {
 
     protected ConcurrentMap<String, ClassNode> classes = new ConcurrentHashMap<>();
@@ -46,7 +48,7 @@ public class ClassInfoRepository extends DestroyableBase {
 
     @Override
     protected void releaseResources() {
-        Destroyable.Util.destroyAll(classes.values());
+        Destroyable.Util.destroyAll(classes.values(), ApplicationScoped.class);
         classes.clear();
     }
 

@@ -32,7 +32,7 @@ public class SingletonRegistry extends AppServiceBase<SingletonRegistry> {
             }
             preRegistry.put(singletonClass, singletonClass);
         } else {
-            register(singletonClass, app().newInstance(singletonClass));
+            register(singletonClass, app().getInstance(singletonClass));
         }
     }
 
@@ -53,7 +53,7 @@ public class SingletonRegistry extends AppServiceBase<SingletonRegistry> {
     private synchronized void doRegister() {
         batchRegistered = true;
         for (Class<?> c : preRegistry.keySet()) {
-            registry.put(c, app().newInstance(c));
+            registry.put(c, app().getInstance(c));
         }
         preRegistry.clear();
     }

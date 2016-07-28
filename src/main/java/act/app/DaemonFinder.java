@@ -12,6 +12,6 @@ public class DaemonFinder extends SubTypeFinder<Daemon> {
 
     @Override
     protected void found(final Class<? extends Daemon> target, final App app) {
-        app.registerDaemon(app.newInstance(target));
+        app.registerDaemon(app.getInstance(target));
     }
 }

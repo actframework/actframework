@@ -33,7 +33,7 @@ public abstract class AppSubTypeFinder<T> extends SubTypeFinder<T> {
 
         @Override
         protected void found(final Class<? extends AppSubTypeFinder> target, App app) {
-            AppSubTypeFinder finder = app.newInstance(target);
+            AppSubTypeFinder finder = app.getInstance(target);
             finder.applyTo(app);
         }
     }

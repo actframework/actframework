@@ -8,6 +8,7 @@ import org.osgl.$;
 import org.osgl.util.C;
 import org.osgl.util.S;
 
+import javax.enterprise.context.ApplicationScoped;
 import java.util.List;
 
 import static act.Destroyable.Util.destroyAll;
@@ -16,6 +17,7 @@ import static act.Destroyable.Util.destroyAll;
  * Stores all class level information to support generating of
  * {@link act.cli.CommandExecutor command executor}
  */
+@ApplicationScoped
 public class CommanderClassMetaInfo extends DestroyableBase {
 
     private static CommanderClassMetaInfo NULL = new CommanderClassMetaInfo() {
@@ -45,7 +47,7 @@ public class CommanderClassMetaInfo extends DestroyableBase {
 
     @Override
     protected void releaseResources() {
-        destroyAll(commands);
+        destroyAll(commands, ApplicationScoped.class);
         commands.clear();
         if (null != commandLookup) {
             destroyAll(commandLookup.values());

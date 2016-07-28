@@ -6,7 +6,7 @@ import act.asm.Opcodes;
 import act.asm.Type;
 import act.asm.tree.*;
 import act.controller.meta.LocalVariableMetaInfo;
-import act.controller.meta.ParamMetaInfo;
+import act.controller.meta.HandlerParamMetaInfo;
 import act.mail.MailerContext;
 import act.mail.meta.SenderMethodMetaInfo;
 import act.util.AsmTypes;
@@ -44,7 +44,7 @@ public class SenderEnhancer extends MethodVisitor implements Opcodes {
             }
             paramId -= paramIdShift;
             if (paramId < info.paramCount()) {
-                ParamMetaInfo param = info.param(paramId);
+                HandlerParamMetaInfo param = info.param(paramId);
                 param.name(name);
                 if (Type.getType(long.class).equals(param.type()) || Type.getType(double.class).equals(param.type())) {
                     paramIdShift++;

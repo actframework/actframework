@@ -396,7 +396,7 @@ public final class Act {
      * @return the instance of the class
      */
     public static <T> T newInstance(String className) {
-        return App.instance().newInstance(className);
+        return App.instance().getInstance(className);
     }
 
     /**
@@ -406,7 +406,7 @@ public final class Act {
      * @return the instance of the class
      */
     public static <T> T newInstance(Class<T> clz) {
-        return App.instance().newInstance(clz);
+        return App.instance().getInstance(clz);
     }
 
     private static void loadConfig() {

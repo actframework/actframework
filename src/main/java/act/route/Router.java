@@ -24,9 +24,11 @@ import org.osgl.mvc.result.NotFound;
 import org.osgl.mvc.result.Result;
 import org.osgl.util.*;
 
+import javax.enterprise.context.ApplicationScoped;
 import java.io.File;
 import java.io.PrintStream;
 import java.io.Serializable;
+import java.lang.annotation.Annotation;
 import java.util.*;
 import java.util.regex.Pattern;
 
@@ -57,6 +59,7 @@ public class Router extends AppServiceBase<Router> {
                 public RequestHandler resolve(CharSequence payload, App app) {
                     return new RequestHandlerProxy(payload.toString(), app);
                 }
+
             };
         }
         handlerLookup = lookup;
@@ -430,6 +433,7 @@ public class Router extends AppServiceBase<Router> {
      * The data structure support decision tree for
      * fast URL routing
      */
+    @ApplicationScoped
     private static class Node extends DestroyableBase implements Serializable, TreeNode {
         static Node newRoot(String name) {
             Node node = new Node(-1);
@@ -544,7 +548,7 @@ public class Router extends AppServiceBase<Router> {
                 dynamicChild.destroy();
                 dynamicChild = null;
             }
-            Destroyable.Util.destroyAll(staticChildren.values());
+            Destroyable.Util.destroyAll(staticChildren.values(), ApplicationScoped.class);
             staticChildren.clear();
         }
 
@@ -706,9 +710,16 @@ public class Router extends AppServiceBase<Router> {
         public void destroy() {
         }
 
+
+
         @Override
         public boolean isDestroyed() {
             return true;
+        }
+
+        @Override
+        public Class<? extends Annotation> scope() {
+            return ApplicationScoped.class;
         }
     }
 

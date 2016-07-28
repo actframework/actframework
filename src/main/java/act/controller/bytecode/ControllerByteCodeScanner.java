@@ -410,7 +410,7 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
                         ctxByParam = true;
                         info.appContextViaParam(i);
                     }
-                    ParamMetaInfo param = new ParamMetaInfo().type(type);
+                    HandlerParamMetaInfo param = new HandlerParamMetaInfo().type(type);
                     if (contextInfo.get(i)) {
                         param.setContext();
                     }

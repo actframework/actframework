@@ -71,7 +71,7 @@ public class ReflectedJobInvoker<M extends JobMethodMetaInfo> extends $.F0<Objec
         if (null == methodAccess) {
             return null;
         }
-        return app.newInstance(jobClass);
+        return app.getInstance(jobClass);
     }
 
     private Object invoke(Object jobClassInstance, Object[] params) {

@@ -137,7 +137,7 @@ public class ReflectedCommandExecutor extends CommandExecutor {
             CommandParamMetaInfo param = methodMetaInfo.param(i);
             Class<?> paramType = paramTypes[i];
             if (param.isContext()) {
-                oa[i] = app.newInstance(paramType);
+                oa[i] = app.getInstance(paramType);
             } else {
                 Object sessionVal = null;
                 String sessionVarName = param.cliSessionAttributeKey();

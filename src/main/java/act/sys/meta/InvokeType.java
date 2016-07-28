@@ -11,7 +11,7 @@ public enum InvokeType {
     }, VIRTUAL () {
         @Override
         public <T> T newInstance(Class<T> cls, App app) {
-            return app.newInstance(cls);
+            return app.getInstance(cls);
         }
     };
     public abstract <T> T newInstance(Class<T> cls, App app);

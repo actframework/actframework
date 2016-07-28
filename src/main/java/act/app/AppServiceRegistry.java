@@ -7,9 +7,12 @@ import org.osgl.logging.Logger;
 import org.osgl.util.C;
 import org.osgl.util.E;
 
+import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.util.Map;
 
+@ApplicationScoped
 class AppServiceRegistry {
 
     private static Logger logger = L.get(AppServiceRegistry.class);
@@ -18,6 +21,7 @@ class AppServiceRegistry {
     private C.List<AppService> appendix = C.newList();
     private App app;
 
+    @Inject
     AppServiceRegistry(App app) {
         this.app = $.notNull(app);
     }
@@ -49,8 +53,8 @@ class AppServiceRegistry {
     }
 
     void destroy() {
-        Destroyable.Util.destroyAll(C.<Destroyable>list(appendix));
-        Destroyable.Util.destroyAll(C.<Destroyable>list(registry.values()));
+        Destroyable.Util.destroyAll(C.<Destroyable>list(appendix), ApplicationScoped.class);
+        Destroyable.Util.destroyAll(C.<Destroyable>list(registry.values()), ApplicationScoped.class);
         appendix.clear();
         registry.clear();
     }

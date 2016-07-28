@@ -15,6 +15,8 @@ import org.osgl.util.C;
 import org.osgl.util.E;
 import org.osgl.util.S;
 
+import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
 import java.util.List;
 import java.util.Set;
 
@@ -27,6 +29,7 @@ import java.util.Set;
  *     <li>param info and associated annotation info</li>
  * </ul>
  */
+@ApplicationScoped
 public class CommandMethodMetaInfo extends DestroyableBase {
 
     private String methodName;
@@ -42,6 +45,7 @@ public class CommandMethodMetaInfo extends DestroyableBase {
     private Act.Mode mode = Act.Mode.PROD;
     private int ctxParamCnt = -1;
 
+    @Inject
     public CommandMethodMetaInfo(CommanderClassMetaInfo clsInfo) {
         this.clsInfo = $.NPE(clsInfo);
     }
@@ -253,6 +257,6 @@ public class CommandMethodMetaInfo extends DestroyableBase {
     protected void releaseResources() {
         super.releaseResources();
         clsInfo.destroy();
-        Destroyable.Util.destroyAll(params);
+        Destroyable.Util.destroyAll(params, ApplicationScoped.class);
     }
 }

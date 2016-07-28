@@ -181,7 +181,7 @@ public class ControllerByteCodeScannerTest extends TestBase {
         assertNotNull(info);
         ActionMethodMetaInfo bindNameChanged = info.action("bindNameChanged");
         assertNotNull(bindNameChanged);
-        ParamMetaInfo param = bindNameChanged.param(0);
+        HandlerParamMetaInfo param = bindNameChanged.param(0);
         assertNotNull(param);
         eq("bar", param.bindName());
 

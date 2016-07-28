@@ -4,7 +4,7 @@ import act.asm.Label;
 import act.asm.Type;
 import act.controller.meta.HandlerMethodMetaInfo;
 import act.controller.meta.LocalVariableMetaInfo;
-import act.controller.meta.ParamMetaInfo;
+import act.controller.meta.HandlerParamMetaInfo;
 import act.sys.meta.InvokeType;
 import act.sys.meta.ReturnTypeInfo;
 import act.util.AsmTypes;
@@ -21,7 +21,7 @@ public class SenderMethodMetaInfo extends DestroyableBase {
     private String configId;
     private InvokeType invokeType;
     private MailerClassMetaInfo clsInfo;
-    private C.List<ParamMetaInfo> params = C.newList();
+    private C.List<HandlerParamMetaInfo> params = C.newList();
     private ReturnTypeInfo returnType;
     private Map<Label, Map<Integer, LocalVariableMetaInfo>> locals = C.newMap();
     private int appCtxLVT_id = -1;
@@ -113,7 +113,7 @@ public class SenderMethodMetaInfo extends DestroyableBase {
         return !locals.isEmpty();
     }
 
-    public SenderMethodMetaInfo addParam(ParamMetaInfo param) {
+    public SenderMethodMetaInfo addParam(HandlerParamMetaInfo param) {
         params.add(param);
         if (AsmTypes.ACTION_CONTEXT.equals(param.type())) {
         }
@@ -139,7 +139,7 @@ public class SenderMethodMetaInfo extends DestroyableBase {
         return l.get(index);
     }
 
-    public ParamMetaInfo param(int id) {
+    public HandlerParamMetaInfo param(int id) {
         return params.get(id);
     }
 
@@ -203,9 +203,9 @@ public class SenderMethodMetaInfo extends DestroyableBase {
     }
 
     private String _params() {
-        return S.join(", ", params.map(new $.Transformer<ParamMetaInfo, String>() {
+        return S.join(", ", params.map(new $.Transformer<HandlerParamMetaInfo, String>() {
             @Override
-            public String transform(ParamMetaInfo paramMetaInfo) {
+            public String transform(HandlerParamMetaInfo paramMetaInfo) {
                 return paramMetaInfo.type().getClassName();
             }
         }));

@@ -6,11 +6,13 @@ import org.osgl.logging.LogManager;
 import org.osgl.logging.Logger;
 import org.osgl.util.C;
 
+import javax.enterprise.context.ApplicationScoped;
 import java.util.List;
 import java.util.Map;
 
 import static act.Destroyable.Util.destroyAll;
 
+@ApplicationScoped
 public class CommanderClassMetaInfoManager extends DestroyableBase {
 
     private static final Logger logger = LogManager.get(CommanderClassMetaInfoManager.class);
@@ -23,7 +25,7 @@ public class CommanderClassMetaInfoManager extends DestroyableBase {
 
     @Override
     protected void releaseResources() {
-        destroyAll(commands.values());
+        destroyAll(commands.values(), ApplicationScoped.class);
         commands.clear();
         for (List<CommanderClassMetaInfo> l : subTypeInfo.values()) {
             destroyAll(l);

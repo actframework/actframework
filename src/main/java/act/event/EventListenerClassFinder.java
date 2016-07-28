@@ -41,13 +41,13 @@ public class EventListenerClassFinder extends SubTypeFinder<ActEventListener> {
                 final Class tc = (Class) t;
                 if (AppEvent.class.isAssignableFrom(tc)) {
                     AppEvent prototype = $.cast($.newInstance(tc, app));
-                    AppEventListener listener = $.cast(app.newInstance(target));
+                    AppEventListener listener = $.cast(app.getInstance(target));
                     app.eventBus().bind(AppEventId.values()[prototype.id()], listener);
                 } else if (ActEvent.class.isAssignableFrom(tc)) {
                     app.eventBus().bind(AppEventId.START, new AppEventListenerBase() {
                         @Override
                         public void on(EventObject event) throws Exception {
-                            ActEventListener listener = app.newInstance(target);
+                            ActEventListener listener = app.getInstance(target);
                             bus.bind(tc, listener);
                         }
                     });

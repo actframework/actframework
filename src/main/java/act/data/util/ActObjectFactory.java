@@ -15,6 +15,6 @@ public class ActObjectFactory extends Osgl.F1<Class<?>, Object> {
 
     @Override
     public Object apply(Class<?> aClass) throws NotAppliedException, Osgl.Break {
-        return app.newInstance(aClass);
+        return app.getInstance(aClass);
     }
 }

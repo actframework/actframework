@@ -25,7 +25,7 @@ public abstract class HandlerMethodMetaInfo<T extends HandlerMethodMetaInfo> ext
     private InvokeType invokeType;
     private ActContextInjection actContextInjection;
     private ControllerClassMetaInfo clsInfo;
-    private C.List<ParamMetaInfo> params = C.newList();
+    private C.List<HandlerParamMetaInfo> params = C.newList();
     private ReturnTypeInfo returnType;
     private PropertySpec.MetaInfo propertySpec;
     private boolean disableJsonCircularRefDetect = false;
@@ -175,7 +175,7 @@ public abstract class HandlerMethodMetaInfo<T extends HandlerMethodMetaInfo> ext
         return !locals.isEmpty();
     }
 
-    public HandlerMethodMetaInfo addParam(ParamMetaInfo param) {
+    public HandlerMethodMetaInfo addParam(HandlerParamMetaInfo param) {
         params.add(param);
         return this;
     }
@@ -199,7 +199,7 @@ public abstract class HandlerMethodMetaInfo<T extends HandlerMethodMetaInfo> ext
         return l.get(index);
     }
 
-    public ParamMetaInfo param(int id) {
+    public HandlerParamMetaInfo param(int id) {
         return params.get(id);
     }
 
@@ -213,7 +213,7 @@ public abstract class HandlerMethodMetaInfo<T extends HandlerMethodMetaInfo> ext
                 ctxParamCnt = 0;
             } else {
                 ctxParamCnt = 0;
-                for (ParamMetaInfo param : params) {
+                for (HandlerParamMetaInfo param : params) {
                     if (param.isContext()) {
                         ctxParamCnt ++;
                     }
@@ -279,9 +279,9 @@ public abstract class HandlerMethodMetaInfo<T extends HandlerMethodMetaInfo> ext
     }
 
     private String _params() {
-        return S.join(", ", params.map(new $.Transformer<ParamMetaInfo, String>() {
+        return S.join(", ", params.map(new $.Transformer<HandlerParamMetaInfo, String>() {
             @Override
-            public String transform(ParamMetaInfo paramMetaInfo) {
+            public String transform(HandlerParamMetaInfo paramMetaInfo) {
                 return paramMetaInfo.type().getClassName();
             }
         }));

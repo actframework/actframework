@@ -1,30 +1,33 @@
 package act.controller.meta;
 
-import act.Act;
 import act.app.App;
 import act.asm.Type;
 import act.util.AsmTypes;
 import act.util.DestroyableBase;
 import org.osgl.util.C;
 
+import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
 import java.util.List;
 import java.util.Map;
 
 import static act.Destroyable.Util.destroyAll;
 
+@ApplicationScoped
 public class ControllerClassMetaInfoManager extends DestroyableBase {
 
     private Map<String, ControllerClassMetaInfo> controllers = C.newMap();
     private Map<Type, List<ControllerClassMetaInfo>> subTypeInfo = C.newMap();
     private App app;
 
+    @Inject
     public ControllerClassMetaInfoManager(App app) {
         this.app = app;
     }
 
     @Override
     protected void releaseResources() {
-        destroyAll(controllers.values());
+        destroyAll(controllers.values(), ApplicationScoped.class);
         controllers.clear();
         for (List<ControllerClassMetaInfo> l : subTypeInfo.values()) {
             destroyAll(l);

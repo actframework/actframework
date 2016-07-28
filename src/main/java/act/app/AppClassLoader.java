@@ -30,9 +30,11 @@ import org.osgl.util.E;
 import org.osgl.util.IO;
 import org.osgl.util.S;
 
+import javax.enterprise.context.ApplicationScoped;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.InputStream;
+import java.lang.annotation.Annotation;
 import java.util.*;
 
 import static act.util.ClassInfoRepository.canonicalName;
@@ -41,6 +43,7 @@ import static org.osgl.$.notNull;
 /**
  * The top level class loader to load a specific application classes into JVM
  */
+@ApplicationScoped
 public class AppClassLoader
         extends ClassLoader
         implements ControllerClassMetaInfoHolder, MailerClassMetaInfoHolder, AppService<AppClassLoader>, ActClassLoader {
@@ -83,6 +86,11 @@ public class AppClassLoader
     @Override
     public final boolean isDestroyed() {
         return destroyed;
+    }
+
+    @Override
+    public Class<? extends Annotation> scope() {
+        return ApplicationScoped.class;
     }
 
     @Override
@@ -160,7 +168,7 @@ public class AppClassLoader
         if (null == c) {
             ClassLoader p = getParent();
             if (null != p && (p instanceof ActClassLoader || p instanceof BootstrapClassLoader)) {
-                return ((ActClassLoader)p).loadedClass(name);
+                return ((ActClassLoader) p).loadedClass(name);
             }
         }
         return c;
@@ -194,9 +202,9 @@ public class AppClassLoader
     /**
      * This method implement a event listener based scan process:
      * <ol>
-     *     <li>First loop: through all cached bytecode. Chain all scanner's bytecode visitor</li>
-     *     <li>Rest loops: through dependencies. Thus if some bytecode missed by a certain scanner
-     *     due to the context is not established can be captured eventually</li>
+     * <li>First loop: through all cached bytecode. Chain all scanner's bytecode visitor</li>
+     * <li>Rest loops: through dependencies. Thus if some bytecode missed by a certain scanner
+     * due to the context is not established can be captured eventually</li>
      * </ol>
      */
     protected void scanByteCode(Iterable<String> classes, $.Function<String, byte[]> bytecodeProvider) {
@@ -264,7 +272,7 @@ public class AppClassLoader
             act.metric.Timer timer = metric.startTimer("act:classload:scan:bytecode:" + className);
             List<AppByteCodeScanner> scanners = dependencies.remove(className);
             List<ByteCodeVisitor> visitors = C.newList();
-            for (AppByteCodeScanner scanner: scanners) {
+            for (AppByteCodeScanner scanner : scanners) {
                 scanner.start(className);
                 visitors.add(scanner.byteCodeVisitor());
             }
@@ -309,7 +317,7 @@ public class AppClassLoader
         Jars.F.JarEntryVisitor classNameIndexBuilder = Jars.F.classNameIndexBuilder(bytecodeIdx, ignoredClassNames);
         Jars.F.JarEntryVisitor confIndexBuilder = Jars.F.appConfigFileIndexBuilder(jarConf);
         List<File> jars = FullStackAppBootstrapClassLoader.jars(AppClassLoader.class.getClassLoader());
-        for (File jar: jars) {
+        for (File jar : jars) {
             Jars.scan(jar, classNameIndexBuilder, confIndexBuilder);
         }
         libClsCache.putAll(bytecodeIdx);
@@ -386,7 +394,7 @@ public class AppClassLoader
                 File f = File.createTempFile(name, ".class");
                 IO.write(baNew, f);
                 System.out.println("Erroring byte code logged into " + f.getAbsolutePath());
-                throw  e;
+                throw e;
             }
         } catch (RuntimeException e) {
             throw e;
@@ -460,7 +468,7 @@ public class AppClassLoader
         ClassNode node = repo.node(name, cname);
         node.modifiers(c.getModifiers());
         Class[] ca = c.getInterfaces();
-        for (Class pc: ca) {
+        for (Class pc : ca) {
             if (pc == Object.class) continue;
             String pcname = canonicalName(pc);
             if (null != pcname) {
