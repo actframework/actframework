@@ -3,29 +3,40 @@ package act.di;
 import act.app.ActionContext;
 import act.app.App;
 import act.app.CliContext;
-import act.app.CliSession;
 import act.app.util.AppCrypto;
 import act.conf.AppConfig;
 import act.mail.MailerContext;
 import act.util.ActContext;
 import org.osgl.$;
+import org.osgl.Osgl;
 import org.osgl.cache.CacheService;
-import org.osgl.genie.ScopeCache;
-import org.osgl.http.H;
+import org.osgl.exception.NotAppliedException;
+import org.osgl.util.C;
 import org.osgl.util.E;
 
 import javax.inject.Provider;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
+import java.util.Set;
 
 /**
  * Name space of built in providers
  */
-public final class Providers {
+public final class ActProviders {
 
+    private ActProviders() {}
 
+    private static Set<Class> contextTypes = C.newSet();
 
-    private Providers() {}
+    static {
+        registerBuiltInProviders(ActProviders.class, new $.F2<Class, Provider, Void>() {
+            @Override
+            public Void apply(Class aClass, Provider provider) throws NotAppliedException, Osgl.Break {
+                contextTypes.add(aClass);
+                return null;
+            }
+        });
+    }
 
     public static final Provider<App> APP = new Provider<App>() {
         @Override
@@ -52,6 +63,21 @@ public final class Providers {
         @Override
         public MailerContext get() {
             return MailerContext.current();
+        }
+    };
+
+    public static final Provider<ActContext> ACT_CONTEXT = new Provider<ActContext>() {
+        @Override
+        public ActContext get() {
+            ActContext ctx = MailerContext.current();
+            if (null != ctx) {
+                return ctx;
+            }
+            ctx = ActionContext.current();
+            if (null != ctx) {
+                return ctx;
+            }
+            return CliContext.current();
         }
     };
 
@@ -91,8 +117,16 @@ public final class Providers {
         }
     }
 
+    public static boolean isContextType(Class<?> aClass) {
+        return contextTypes.contains(aClass);
+    }
+
     private static App app() {
         return App.instance();
+    }
+
+    static void addContextClass(Class<?> aClass) {
+        contextTypes.add(aClass);
     }
 
 }

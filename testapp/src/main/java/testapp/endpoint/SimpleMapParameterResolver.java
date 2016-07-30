@@ -14,6 +14,11 @@ import java.util.TreeMap;
 @SuppressWarnings("unused")
 public class SimpleMapParameterResolver {
 
+    @Action("xxx")
+    public Map<Map<String, Integer>, Map<Integer, String>> xxx(Map<Map<String, Integer>, Map<Integer, String>> xxx) {
+        return xxx;
+    }
+
     @Action("bool_v")
     public Map<String, Boolean> boolVal(Map<String, Boolean> v) {
         return new TreeMap<String, Boolean>(v);

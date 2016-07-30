@@ -6,7 +6,7 @@ import act.asm.MethodVisitor;
 import act.asm.Type;
 import act.util.AsmTypes;
 import act.util.ByteCodeVisitor;
-import org.osgl.genie.Module;
+import org.osgl.inject.Module;
 import org.osgl.util.C;
 
 import java.util.Set;

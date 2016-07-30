@@ -4,17 +4,19 @@ import act.app.App;
 import act.app.event.AppEventId;
 import act.di.DependencyInjectionBinder;
 import act.di.DependencyInjectorBase;
-import act.di.Providers;
+import act.di.ActProviders;
 import act.util.SubClassFinder;
 import org.osgl.$;
 import org.osgl.Osgl;
 import org.osgl.exception.NotAppliedException;
-import org.osgl.genie.Genie;
-import org.osgl.genie.Module;
+import org.osgl.inject.Genie;
+import org.osgl.inject.Module;
 import org.osgl.util.C;
 import org.osgl.util.E;
 
 import javax.inject.Provider;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -31,12 +33,12 @@ public class GenieInjector extends DependencyInjectorBase<GenieInjector> {
 
     @Override
     public <T> T get(Class<T> clazz) {
-        Genie genie = genie();
-        if (null == genie) {
-            return $.newInstance(clazz);
-        } else {
-            return genie.get(clazz);
-        }
+        return genie().get(clazz);
+    }
+
+    @Override
+    public Object get(Type type, Annotation[] annotations) {
+        return genie().get(type, annotations);
     }
 
     @Override
@@ -82,8 +84,8 @@ public class GenieInjector extends DependencyInjectorBase<GenieInjector> {
                             return null;
                         }
                     };
-                    Providers.registerBuiltInProviders(Providers.class, register);
-                    Providers.registerBuiltInProviders(GenieProviders.class, register);
+                    ActProviders.registerBuiltInProviders(ActProviders.class, register);
+                    ActProviders.registerBuiltInProviders(GenieProviders.class, register);
                 }
             }
         }

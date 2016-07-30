@@ -32,7 +32,7 @@ import java.util.*;
  * an application session
  */
 @RequestScoped
-public class ActionContext extends ActContext.ActContextBase<ActionContext> implements ActContext<ActionContext>, ParamValueProvider, Destroyable {
+public class ActionContext extends ActContext.ActContextBase<ActionContext> implements ActContext<ActionContext>, Destroyable {
 
     public static final String ATTR_HANDLER = "__act_handler__";
     public static final String REQ_BODY = "_body";

@@ -3,8 +3,11 @@ package act.di;
 import act.Destroyable;
 import act.app.App;
 import act.app.AppServiceBase;
+import act.app.event.AppEventId;
+import act.util.SubClassFinder;
 import org.osgl.util.C;
 
+import javax.enterprise.context.ApplicationScoped;
 import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Map;
@@ -27,7 +30,7 @@ public abstract class DependencyInjectorBase<DI extends DependencyInjectorBase<D
 
     @Override
     protected void releaseResources() {
-        Destroyable.Util.tryDestroyAll(binders.values());
+        Destroyable.Util.tryDestroyAll(binders.values(), ApplicationScoped.class);
         binders.clear();
     }
 
@@ -35,6 +38,7 @@ public abstract class DependencyInjectorBase<DI extends DependencyInjectorBase<D
     @Override
     public synchronized void registerDiBinder(DependencyInjectionBinder binder) {
         binders.put(binder.targetClass(), binder);
+        ActProviders.addContextClass(binder.targetClass());
     }
 
     @Override
@@ -61,5 +65,12 @@ public abstract class DependencyInjectorBase<DI extends DependencyInjectorBase<D
         }
     }
 
+
+    @SubClassFinder(value = DependencyInjectionListener.class, callOn = AppEventId.DEPENDENCY_INJECTOR_LOADED)
+    public static void discoverDiListener(final Class<? extends DependencyInjectionListener> target) {
+        App app = App.instance();
+        DependencyInjector di = app.injector();
+        di.registerDiListener(app.getInstance(target));
+    }
 
 }

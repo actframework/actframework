@@ -6,6 +6,7 @@ import act.conf.AppConfig;
 import act.view.Template;
 import org.osgl.$;
 import org.osgl.http.H;
+import org.osgl.mvc.util.ParamValueProvider;
 import org.osgl.util.C;
 import org.osgl.util.E;
 
@@ -16,7 +17,7 @@ import java.util.Map;
 
 import static act.app.App.logger;
 
-public interface ActContext<CTX_TYPE extends ActContext> {
+public interface ActContext<CTX_TYPE extends ActContext> extends ParamValueProvider {
     App app();
     AppConfig config();
     CTX_TYPE accept(H.Format fmt);

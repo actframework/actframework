@@ -2,6 +2,7 @@ package act.di;
 
 import act.app.AppService;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -41,4 +42,11 @@ public interface DependencyInjector<DI extends DependencyInjector<DI>> extends A
      */
     <T> T get(Class<T> clazz);
 
+    /**
+     * Get a parameter value by type and annotations
+     * @param type the type of the parameter
+     * @param annotations the annotations tagged on the parameter
+     * @return the bean instance
+     */
+    Object get(Type type, Annotation[] annotations);
 }

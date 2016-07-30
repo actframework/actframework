@@ -48,9 +48,6 @@ public class HandlerEnhancer extends MethodVisitor implements Opcodes {
             if (paramId < info.paramCount()) {
                 HandlerParamMetaInfo param = info.param(paramId);
                 param.name(name);
-                if (AsmTypes.ACTION_CONTEXT_TYPE.equals(param.type())) {
-                    info.appCtxLocalVariableTableIndex(index);
-                }
                 if (Type.getType(long.class).equals(param.type()) || Type.getType(double.class).equals(param.type())) {
                     paramIdShift++;
                 }
