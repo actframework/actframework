@@ -12,7 +12,7 @@ import act.di.OptionalPathVariable;
 import act.di.PathVariable;
 import act.di.SessionVariable;
 import act.mail.MailerContext;
-import org.osgl.genie.annotation.Provides;
+import org.osgl.inject.annotation.Provides;
 import org.osgl.mvc.annotation.Bind;
 import org.osgl.mvc.annotation.Param;
 import org.osgl.mvc.result.Result;

@@ -3,6 +3,7 @@ package act.di.param;
 import act.di.ActProviders;
 import act.di.Context;
 import act.di.DependencyInjector;
+import act.util.DestroyableBase;
 import org.osgl.$;
 import org.osgl.Osgl;
 import org.osgl.mvc.annotation.Bind;
@@ -13,6 +14,8 @@ import org.osgl.util.E;
 import org.osgl.util.S;
 import org.osgl.util.StringValueResolver;
 
+import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
 import javax.inject.Named;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.ParameterizedType;
@@ -24,9 +27,9 @@ import java.util.Arrays;
  */
 class ParamValueLoaderBuilder {
 
-    private final Type type;
-    private final Annotation[] annotations;
-    private final DependencyInjector<?> injector;
+    private Type type;
+    private Annotation[] annotations;
+    private DependencyInjector<?> injector;
 
     private boolean isContext;
     private Binder<?> binder;
@@ -34,6 +37,7 @@ class ParamValueLoaderBuilder {
     private StringValueResolver stringValueResolver;
     private Param paramAnnotation;
 
+    @Inject
     ParamValueLoaderBuilder(Type type, Annotation[] annotations, DependencyInjector<?> injector) {
         this.injector = injector;
         this.type = type;
@@ -60,6 +64,7 @@ class ParamValueLoaderBuilder {
         } else if (null != stringValueResolver) {
             return new StringValueResolverParamValueLoader(stringValueResolver, bindName, paramAnnotation, rawType);
         }
+        throw E.tbd();
     }
 
     static Class rawType(Type type) {

@@ -97,6 +97,16 @@ public class CliContext extends ActContext.ActContextBase<CliContext> implements
         return session;
     }
 
+    @Override
+    public String paramVal(String key) {
+        throw E.tbd();
+    }
+
+    @Override
+    public String[] paramVals(String key) {
+        throw E.tbd();
+    }
+
     /**
      * Return the current working directory
      * @return the current working directory

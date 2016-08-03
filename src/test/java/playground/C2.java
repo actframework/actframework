@@ -4,6 +4,8 @@ import act.app.ActionContext;
 import org.osgl.mvc.annotation.Before;
 import org.osgl.mvc.result.Result;
 
+import javax.inject.Named;
+
 public class C2 extends CBase {
 
     @Before(priority =  5, except = "doAnn")
@@ -29,6 +31,10 @@ public class C2 extends CBase {
 
     public Result bar() {
         return ok();
+    }
+
+    public void foo(@Named("abc") String x, @Named("xyz") int i) {
+
     }
 
     public static void main(String[] args) {

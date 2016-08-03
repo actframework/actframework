@@ -1,10 +1,7 @@
 package act.controller.bytecode;
 
 import act.app.ActionContext;
-import act.asm.Label;
-import act.asm.MethodVisitor;
-import act.asm.Opcodes;
-import act.asm.Type;
+import act.asm.*;
 import act.asm.tree.*;
 import act.controller.meta.HandlerMethodMetaInfo;
 import act.controller.meta.LocalVariableMetaInfo;
@@ -17,9 +14,7 @@ import org.osgl.util.C;
 import org.osgl.util.E;
 import org.osgl.util.S;
 
-import java.util.List;
-import java.util.ListIterator;
-import java.util.Map;
+import java.util.*;
 
 public class HandlerEnhancer extends MethodVisitor implements Opcodes {
 
@@ -30,11 +25,20 @@ public class HandlerEnhancer extends MethodVisitor implements Opcodes {
     private HandlerMethodMetaInfo info;
     private MethodVisitor next;
     private int paramIdShift = 0;
+    private Set<Integer> skipNaming = new HashSet<>();
 
     public HandlerEnhancer(final MethodVisitor mv, HandlerMethodMetaInfo meta, final int access, final String name, final String desc, final String signature, final String[] exceptions) {
         super(ASM5, new MethodNode(access, name, desc, signature, exceptions));
         this.info = meta;
         this.next = mv;
+    }
+
+    @Override
+    public AnnotationVisitor visitParameterAnnotation(int parameter, String desc, boolean visible) {
+        if ("Ljavax/inject/Named;".equals(desc)) {
+            skipNaming.add(parameter);
+        }
+        return super.visitParameterAnnotation(parameter, desc, visible);
     }
 
     @Override
@@ -61,8 +65,21 @@ public class HandlerEnhancer extends MethodVisitor implements Opcodes {
     @Override
     public void visitEnd() {
         MethodNode mn = (MethodNode) mv;
+        addParamNames();
         transform(mn);
         mn.accept(next);
+    }
+
+    private void addParamNames() {
+        int sz = info.paramCount();
+        for (int i = 0; i < sz; ++i) {
+            if (skipNaming.contains(i)) {
+                continue;
+            }
+            String name = info.param(i).name();
+            AnnotationVisitor av = mv.visitParameterAnnotation(i, "Ljavax/inject/Named;", true);
+            av.visit("value", name);
+        }
     }
 
     private void transform(MethodNode mn) {

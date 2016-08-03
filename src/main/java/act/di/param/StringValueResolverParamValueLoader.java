@@ -15,7 +15,7 @@ class StringValueResolverParamValueLoader implements ParamValueLoader {
     StringValueResolverParamValueLoader(StringValueResolver<?> resolver, String name, Param param, Type type) {
         this.stringValueResolver = resolver;
         this.bindName = name;
-        this.defVal = defVal(param, type);
+        this.defVal = defVal(param, (Class)type);
     }
 
     @Override

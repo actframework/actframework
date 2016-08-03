@@ -28,7 +28,9 @@ import org.osgl.util.S;
 import testapp.util.InvokeLog;
 import testapp.util.InvokeLogFactory;
 
+import javax.inject.Named;
 import java.io.*;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -296,6 +298,23 @@ public class ControllerEnhancerTest extends TestBase implements ControllerClassM
         yes(r instanceof Result);
         eq(100, ctx.renderArg("foo"));
         eq("foo", ctx.renderArg("bar"));
+    }
+
+    @Test
+    public void itShallAddNamedAnnotationToMethodParams() throws Exception {
+        prepare("ReturnResultWithParamCtxField");
+        m = method(int.class, String.class);
+        Annotation[][] aa = m.getParameterAnnotations();
+        Annotation[] fooAnnos = aa[0];
+        eq(1, fooAnnos.length);
+        yes(fooAnnos[0] instanceof Named);
+        Named fooName = (Named) fooAnnos[0];
+        eq("foo", fooName.value());
+        Annotation[] barAnnos = aa[1];
+        eq(1, barAnnos.length);
+        yes(barAnnos[0] instanceof Named);
+        Named barName = (Named) barAnnos[0];
+        eq("zoo", barName.value());
     }
 
     /**

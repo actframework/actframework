@@ -74,6 +74,16 @@ public class MailerContext extends ActContext.ActContextBase<MailerContext> {
     }
 
     @Override
+    public String paramVal(String key) {
+        throw E.tbd();
+    }
+
+    @Override
+    public String[] paramVals(String key) {
+        throw E.tbd();
+    }
+
+    @Override
     public MailerContext accept(H.Format fmt) {
         E.NPE(fmt);
         this.fmt = fmt;
