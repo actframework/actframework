@@ -4,6 +4,39 @@ Documentation is ready at
 
 * [English version](https://github.com/actframework/act-doc/blob/master/en/index.md)
 * [中文版](https://github.com/actframework/act-doc/blob/master/cn/index.md)
+* 
+
+Project status: 
+
+* Current stable version: 0.1.2-SNAPSHOT
+* Working on 0.2.0-SNAPSHOT
+
+Install:
+
+Add the following dependency into your `pom.xml` file
+
+```xml
+    <dependency>
+      <groupId>org.actframework</groupId>
+      <artifactId>act</artifactId>
+      <version>0.1.2-SNAPSHOT</version>
+    </dependency>
+    <dependency>
+      <groupId>org.actframework</groupId>
+      <artifactId>act-feather</artifactId>
+      <version>0.1.1-SNAPSHOT</version>
+    </dependency>
+```
+
+Add the following snippet into your `pom.xml` file to get SNAPSHOT version:
+
+```xml
+  <parent>
+    <groupId>org.sonatype.oss</groupId>
+    <artifactId>oss-parent</artifactId>
+    <version>7</version>
+  </parent>
+```
 
 
 ##### ACT Framework
