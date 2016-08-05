@@ -1,4 +1,4 @@
-# ACT Framework README
+# ACT Framework
 
 **Note**
 
@@ -13,7 +13,7 @@ Documentation is ready at
 * Current stable version: 0.1.2-SNAPSHOT
 * Working on 0.2.0-SNAPSHOT
 
-## Install:
+## Install
 
 Add the following dependency into your `pom.xml` file
 
