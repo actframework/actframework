@@ -1,3 +1,5 @@
+# ACT Framework README
+
 **Note**
 
 Documentation is ready at
@@ -6,12 +8,12 @@ Documentation is ready at
 * [中文版](https://github.com/actframework/act-doc/blob/master/cn/index.md)
 * 
 
-Project status: 
+## Project status
 
 * Current stable version: 0.1.2-SNAPSHOT
 * Working on 0.2.0-SNAPSHOT
 
-Install:
+## Install:
 
 Add the following dependency into your `pom.xml` file
 
@@ -38,8 +40,7 @@ Add the following snippet into your `pom.xml` file to get SNAPSHOT version:
   </parent>
 ```
 
-
-##### ACT Framework
+## Introduction
 
 [![Join the chat at https://gitter.im/actframework/actframework](https://badges.gitter.im/actframework/actframework.svg)](https://gitter.im/actframework/actframework?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
