@@ -26,13 +26,13 @@ public final class ActProviders {
 
     private ActProviders() {}
 
-    private static Set<Class> contextTypes = C.newSet();
+    private static Set<Class> providedTypes = C.newSet();
 
     static {
         registerBuiltInProviders(ActProviders.class, new $.F2<Class, Provider, Void>() {
             @Override
             public Void apply(Class aClass, Provider provider) throws NotAppliedException, Osgl.Break {
-                contextTypes.add(aClass);
+                providedTypes.add(aClass);
                 return null;
             }
         });
@@ -117,16 +117,16 @@ public final class ActProviders {
         }
     }
 
-    public static boolean isContextType(Class<?> aClass) {
-        return contextTypes.contains(aClass);
+    public static boolean isProvided(Class<?> aClass) {
+        return providedTypes.contains(aClass);
     }
 
     private static App app() {
         return App.instance();
     }
 
-    static void addContextClass(Class<?> aClass) {
-        contextTypes.add(aClass);
+    static void addProvidedType(Class<?> aClass) {
+        providedTypes.add(aClass);
     }
 
 }

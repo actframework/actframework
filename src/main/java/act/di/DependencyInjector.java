@@ -22,6 +22,13 @@ public interface DependencyInjector<DI extends DependencyInjector<DI>> extends A
     void registerDiListener(DependencyInjectionListener listener);
 
     /**
+     * Report if a given type is a provided type (e.g. ActContext, All application services etc, DAO)
+     * @param type the type to be checked
+     * @return `true` if the type is a provided type or `false` otherwise
+     */
+    boolean isProvided(Class<?> type);
+
+    /**
      * Once an object has been created and ready for injection, this method will be
      * called to call back to the {@link DependencyInjectionListener listeners} that has been
      * {@link #registerDiListener(DependencyInjectionListener) registered}
@@ -41,12 +48,4 @@ public interface DependencyInjector<DI extends DependencyInjector<DI>> extends A
      * @return the bean instance
      */
     <T> T get(Class<T> clazz);
-
-    /**
-     * Get a parameter value by type and annotations
-     * @param type the type of the parameter
-     * @param annotations the annotations tagged on the parameter
-     * @return the bean instance
-     */
-    Object get(Type type, Annotation[] annotations);
 }

@@ -38,7 +38,7 @@ public abstract class DependencyInjectorBase<DI extends DependencyInjectorBase<D
     @Override
     public synchronized void registerDiBinder(DependencyInjectionBinder binder) {
         binders.put(binder.targetClass(), binder);
-        ActProviders.addContextClass(binder.targetClass());
+        ActProviders.addProvidedType(binder.targetClass());
     }
 
     @Override

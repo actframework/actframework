@@ -21,7 +21,7 @@ import java.util.*;
 
 import static act.app.App.logger;
 
-public class MailerContext extends ActContext.ActContextBase<MailerContext> {
+public class MailerContext extends ActContext.Base<MailerContext> {
 
     private H.Format fmt = H.Format.HTML;
     private InternetAddress from;
@@ -71,6 +71,11 @@ public class MailerContext extends ActContext.ActContextBase<MailerContext> {
 
     public MailerConfig mailerConfig() {
         return app().mailerConfigManager().config(confId);
+    }
+
+    @Override
+    public Set<String> paramKeys() {
+        throw E.tbd();
     }
 
     @Override

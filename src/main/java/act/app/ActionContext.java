@@ -16,7 +16,6 @@ import org.osgl.$;
 import org.osgl.concurrent.ContextLocal;
 import org.osgl.http.H;
 import org.osgl.http.H.Cookie;
-import org.osgl.mvc.util.ParamValueProvider;
 import org.osgl.storage.ISObject;
 import org.osgl.util.C;
 import org.osgl.util.E;
@@ -32,7 +31,7 @@ import java.util.*;
  * an application session
  */
 @RequestScoped
-public class ActionContext extends ActContext.ActContextBase<ActionContext> implements ActContext<ActionContext>, Destroyable {
+public class ActionContext extends ActContext.Base<ActionContext> implements ActContext<ActionContext>, Destroyable {
 
     public static final String ATTR_HANDLER = "__act_handler__";
     public static final String REQ_BODY = "_body";
@@ -173,6 +172,14 @@ public class ActionContext extends ActContext.ActContextBase<ActionContext> impl
     public ActionContext param(String name, String value) {
         extraParams.put(name, value);
         return this;
+    }
+
+    @Override
+    public Set<String> paramKeys() {
+        Set<String> set = new HashSet<>();
+        set.addAll(C.<String>list(request.paramNames()));
+        set.addAll(extraParams.keySet());
+        return set;
     }
 
     @Override

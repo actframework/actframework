@@ -6,12 +6,12 @@ import org.osgl.mvc.util.Binder;
 /**
  * Use {@link org.osgl.mvc.util.Binder} to load param value
  */
-class BinderParamValueLoader implements ParamValueLoader {
+class BoundedValueLoader implements ParamValueLoader {
 
     private Binder<?> binder;
     private String bindModel;
 
-    BinderParamValueLoader(Binder<?> binder, String model) {
+    BoundedValueLoader(Binder<?> binder, String model) {
         this.binder = binder;
         this.bindModel = model;
     }

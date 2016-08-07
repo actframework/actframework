@@ -11,9 +11,15 @@ import org.osgl.Osgl;
 import org.osgl.exception.NotAppliedException;
 import org.osgl.inject.Genie;
 import org.osgl.inject.Module;
+import org.osgl.inject.annotation.Provided;
+import org.osgl.inject.annotation.Provides;
+import org.osgl.mvc.annotation.Bind;
+import org.osgl.mvc.annotation.Param;
+import org.osgl.mvc.util.Binder;
 import org.osgl.util.C;
 import org.osgl.util.E;
 
+import javax.inject.Inject;
 import javax.inject.Provider;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
@@ -37,17 +43,18 @@ public class GenieInjector extends DependencyInjectorBase<GenieInjector> {
     }
 
     @Override
-    public Object get(Type type, Annotation[] annotations) {
-        return genie().get(type, annotations);
+    public synchronized void registerDiBinder(DependencyInjectionBinder binder) {
+        super.registerDiBinder(binder);
+        if (null != genie) {
+            genie.registerProvider(binder.targetClass(), binder);
+        }
     }
 
     @Override
-    public synchronized void registerDiBinder(DependencyInjectionBinder binder) {
-        if (null != genie) {
-            genie.registerProvider(binder.targetClass(), binder);
-        } else {
-            super.registerDiBinder(binder);
-        }
+    public boolean isProvided(Class<?> type) {
+        return ActProviders.isProvided(type)
+                || type.isAnnotationPresent(Provided.class)
+                || type.isAnnotationPresent(Inject.class);
     }
 
     public void addModule(Object module) {
@@ -74,6 +81,7 @@ public class GenieInjector extends DependencyInjectorBase<GenieInjector> {
             synchronized (this) {
                 if (null == genie) {
                     genie = Genie.create(modules.toArray(new Object[modules.size()]));
+                    genie.registerQualifiers(Param.class, Bind.class);
                     for (Map.Entry<Class, DependencyInjectionBinder> entry : binders.entrySet()) {
                         genie.registerProvider(entry.getKey(), entry.getValue());
                     }

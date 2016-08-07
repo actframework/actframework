@@ -19,6 +19,7 @@ import act.data.util.ActPropertyHandlerFactory;
 import act.di.DependencyInjectionBinder;
 import act.di.DependencyInjector;
 import act.di.genie.GenieInjector;
+import act.di.param.ParamValueLoaderManager;
 import act.event.AppEventListenerBase;
 import act.event.EventBus;
 import act.event.bytecode.SimpleEventListenerByteCodeScanner;
@@ -288,6 +289,7 @@ public class App extends DestroyableBase {
         initInterceptorManager();
         initResolverManager();
         initBinderManager();
+        initParamValueLoaderManager();
         initUploadFileStorageService();
         initRouters();
         emit(ROUTER_INITIALIZED);
@@ -870,6 +872,10 @@ public class App extends DestroyableBase {
 
     private void initBinderManager() {
         binderManager = new BinderManager(this);
+    }
+
+    private void initParamValueLoaderManager() {
+        new ParamValueLoaderManager(this);
     }
 
     private void initSingletonRegistry() {

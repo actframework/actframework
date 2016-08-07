@@ -9,6 +9,8 @@ import org.joda.time.DateTime;
 import org.joda.time.LocalDate;
 import org.joda.time.LocalDateTime;
 import org.joda.time.LocalTime;
+import org.osgl.Osgl;
+import org.osgl.exception.NotAppliedException;
 import org.osgl.util.C;
 import org.osgl.util.S;
 import org.osgl.util.StringValueResolver;
@@ -38,14 +40,22 @@ public class StringValueResolverManager extends AppServiceBase<StringValueResolv
     }
 
     public Object resolve(String strVal, Class<?> targetType) {
+        StringValueResolver r = resolver(targetType);
+        return null != r ? r.resolve(strVal) : null;
+    }
+
+    public StringValueResolver resolver(final Class<?> targetType) {
         StringValueResolver r = resolvers.get(targetType);
-        if (null != r) {
-            return r.resolve(strVal);
+        if (null == r && Enum.class.isAssignableFrom(targetType)) {
+            r = new StringValueResolver() {
+                @Override
+                public Object resolve(String value) {
+                    return Enum.valueOf(((Class<Enum>) targetType), value);
+                }
+            };
+            resolvers.put(targetType, r);
         }
-        if (S.notBlank(strVal) && Enum.class.isAssignableFrom(targetType)) {
-            return Enum.valueOf(((Class<Enum>) targetType), strVal);
-        }
-        return null;
+        return r;
     }
 
     private void registerPredefinedResolvers() {

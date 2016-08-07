@@ -22,8 +22,9 @@ import java.io.PrintWriter;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
-public class CliContext extends ActContext.ActContextBase<CliContext> implements IASCIITable {
+public class CliContext extends ActContext.Base<CliContext> implements IASCIITable {
 
     public static final String ATTR_PWD = "__act_pwd__";
 
@@ -95,6 +96,11 @@ public class CliContext extends ActContext.ActContextBase<CliContext> implements
 
     public CliSession session() {
         return session;
+    }
+
+    @Override
+    public Set<String> paramKeys() {
+        throw E.tbd();
     }
 
     @Override

@@ -1,8 +1,11 @@
 package act.util;
 
 import act.Destroyable;
+import act.app.ActionContext;
 import act.app.App;
+import act.app.CliContext;
 import act.conf.AppConfig;
+import act.mail.MailerContext;
 import act.view.Template;
 import org.osgl.$;
 import org.osgl.http.H;
@@ -52,7 +55,7 @@ public interface ActContext<CTX_TYPE extends ActContext> extends ParamValueProvi
         void onDestroy(ActContext context);
     }
 
-    public static abstract class ActContextBase<VC_TYPE extends ActContextBase> extends DestroyableBase implements ActContext<VC_TYPE> {
+    public static abstract class Base<VC_TYPE extends Base> extends DestroyableBase implements ActContext<VC_TYPE> {
         private App app;
         private String templatePath;
         private Template template;
@@ -61,7 +64,7 @@ public interface ActContext<CTX_TYPE extends ActContext> extends ParamValueProvi
         private List<Destroyable> destroyableList;
         private Map<String, Object> attributes;
 
-        public ActContextBase(App app) {
+        public Base(App app) {
             E.NPE(app);
             this.app = app;
             renderArgs = C.newMap();
@@ -174,6 +177,27 @@ public interface ActContext<CTX_TYPE extends ActContext> extends ParamValueProvi
         public VC_TYPE addDestroyable(Destroyable resource) {
             destroyableList.add(resource);
             return me();
+        }
+
+        public static ActContext currentContext() {
+            ActContext ctx = ActionContext.current();
+            if (null != ctx) {
+                return ctx;
+            }
+            ctx = MailerContext.current();
+            if (null != ctx) {
+                return ctx;
+            }
+            ctx = CliContext.current();
+            if (null != ctx) {
+                return ctx;
+            }
+            return null;
+        }
+
+        public static Class<? extends ActContext> currentContextType() {
+            ActContext ctx = currentContext();
+            return null == ctx ? null : ctx.getClass();
         }
     }
 }

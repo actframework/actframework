@@ -12,6 +12,8 @@ import act.controller.ActionMethodParamAnnotationHandler;
 import act.controller.Controller;
 import act.controller.meta.*;
 import act.data.AutoBinder;
+import act.di.DependencyInjector;
+import act.di.param.ParamValueLoaderManager;
 import act.exception.BindException;
 import act.handler.builtin.controller.*;
 import act.util.DestroyableBase;
@@ -71,13 +73,17 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
     private Map<Integer, List<ActionMethodParamAnnotationHandler>> paramAnnoHandlers = null;
     protected Method method; //
     protected $.F2<ActionContext, Object, ?> fieldAppCtxHandler;
+    private ParamValueLoaderManager paramValueLoaderManager;
+    private DependencyInjector<?> injector;
 
     protected ReflectedHandlerInvoker(M handlerMetaInfo, App app) {
         this.app = app;
         this.cl = app.classLoader();
         this.handler = handlerMetaInfo;
         this.controller = handlerMetaInfo.classInfo();
-        controllerClass = $.classForName(controller.className(), cl);
+        this.controllerClass = $.classForName(controller.className(), cl);
+        this.paramValueLoaderManager = app.service(ParamValueLoaderManager.class);
+        this.injector = app.injector();
 
         this.ctxInjection = handlerMetaInfo.appContextInjection();
         if (ctxInjection.injectVia().isField()) {
@@ -161,7 +167,8 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
     public Result handle(ActionContext actionContext) throws Exception {
         Object ctrl = controllerInstance(actionContext);
         applyAppContext(actionContext, ctrl);
-        Object[] params = params(actionContext, null, null);
+        //Object[] params = params(actionContext, null, null);
+        Object[] params = params2(actionContext);
         return invoke(handler, actionContext, ctrl, params);
     }
 
@@ -256,6 +263,10 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
             templateCache.put(fmt, B);
         }
         return B;
+    }
+
+    private Object[] params2(ActionContext context) {
+        return paramValueLoaderManager.load(method, context, injector);
     }
 
     private Object[] params(ActionContext ctx, Result result, Exception exception) {
