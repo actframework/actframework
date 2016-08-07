@@ -3,6 +3,7 @@ package testapp.model;
 public class Foo {
     private String id;
     private Bar bar;
+    private Bar[] barArray;
 
     public String getId() {
         return id;
@@ -18,5 +19,13 @@ public class Foo {
 
     public void setBar(Bar bar) {
         this.bar = bar;
+    }
+
+    public Bar[] getBarArray() {
+        return barArray;
+    }
+
+    public void setBarArray(Bar[] barArray) {
+        this.barArray = barArray;
     }
 }

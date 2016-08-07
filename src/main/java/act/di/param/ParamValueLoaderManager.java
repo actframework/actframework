@@ -24,6 +24,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.*;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -36,6 +37,7 @@ import java.util.concurrent.ConcurrentMap;
 public class ParamValueLoaderManager extends AppServiceBase<ParamValueLoaderManager> {
 
     private static final ParamValueLoader[] NULL = new ParamValueLoader[0];
+    private static final ThreadLocal<ParamTree> PARAM_TREE = new ThreadLocal<>();
     private StringValueResolverManager resolverManager;
     private ConcurrentMap<Method, ParamValueLoader[]> registry = new ConcurrentHashMap<>();
 
@@ -133,9 +135,10 @@ public class ParamValueLoaderManager extends AppServiceBase<ParamValueLoaderMana
 
     private ParamValueLoader buildArrayLoader(
             final String[] path,
-            final Type type,
+            final Type elementType,
             DependencyInjector<?> injector
     ) {
+        List cache = new ArrayList();
         throw E.tbd();
     }
 
@@ -156,6 +159,20 @@ public class ParamValueLoaderManager extends AppServiceBase<ParamValueLoaderMana
             DependencyInjector<?> injector
     ) {
         throw E.tbd();
+    }
+
+    private static ParamTree paramTree() {
+        return PARAM_TREE.get();
+    }
+
+    private static ParamTree ensureParamTree(ActContext context) {
+        ParamTree tree = PARAM_TREE.get();
+        if (null == tree) {
+            tree = new ParamTree();
+            tree.build(context);
+            PARAM_TREE.set(tree);
+        }
+        return tree;
     }
 
     private ParamValueLoader buildPojoLoader(final String[] path, final Class type, DependencyInjector<?> injector) {
