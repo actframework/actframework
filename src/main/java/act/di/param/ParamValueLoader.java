@@ -19,4 +19,14 @@ public interface ParamValueLoader {
      * @return the value object
      */
     Object load(ActContext context);
+
+    /**
+     * Provide the value for a parameter from current execution context.
+     * @param context the current execution context
+     * @param noDefaultValue if `true` then it shall not load default value when not provided by request
+     * @return the value object
+     *
+     * @see #load(ActContext)
+     */
+    Object load(ActContext context, boolean noDefaultValue);
 }

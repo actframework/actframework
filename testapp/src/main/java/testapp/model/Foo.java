@@ -6,6 +6,7 @@ public class Foo {
     private String id;
     private Bar bar;
     private List<Bar> barArray;
+    private List<Integer> nl;
 
     public String getId() {
         return id;
@@ -29,5 +30,13 @@ public class Foo {
 
     public void setBarArray(List<Bar> barArray) {
         this.barArray = barArray;
+    }
+
+    public List<Integer> getNl() {
+        return nl;
+    }
+
+    public void setNl(List<Integer> nl) {
+        this.nl = nl;
     }
 }

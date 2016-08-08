@@ -44,6 +44,11 @@ class ProvidedValueLoader extends DestroyableBase implements ParamValueLoader {
     }
 
     @Override
+    public Object load(ActContext context, boolean noDefaultValue) {
+        return load(context);
+    }
+
+    @Override
     protected void releaseResources() {
         Destroyable.Util.tryDestroy(singleton);
         singleton = null;

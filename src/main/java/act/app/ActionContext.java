@@ -179,7 +179,7 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Act
         Set<String> set = new HashSet<>();
         set.addAll(C.<String>list(request.paramNames()));
         set.addAll(extraParams.keySet());
-        set.addAll(bodyParams.keySet());
+        set.addAll(bodyParams().keySet());
         return set;
     }
 

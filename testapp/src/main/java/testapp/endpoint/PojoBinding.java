@@ -6,6 +6,8 @@ import org.osgl.mvc.annotation.Action;
 import testapp.model.Contact;
 import testapp.model.Foo;
 
+import java.util.List;
+
 /**
  * Test binding to a POJO object
  */
@@ -20,6 +22,11 @@ public class PojoBinding {
     @Action(value = "foo", methods = {H.Method.POST, H.Method.PUT, H.Method.GET})
     public Foo foo(Foo foo) {
         return foo;
+    }
+
+    @Action(value = "fooList")
+    public List<Foo> fooList(List<Foo> fooList) {
+        return fooList;
     }
 
 }

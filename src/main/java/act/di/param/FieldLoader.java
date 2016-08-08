@@ -19,13 +19,13 @@ class FieldLoader {
         this.loader = $.notNull(loader);
     }
 
-    public void applyTo(Object bean, ActContext context) {
-        Object o = loader.load(context);
+    public void applyTo($.Func0<Object> beanSource, ActContext context) {
+        Object o = loader.load(context, true);
         if (null == o) {
             return;
         }
         try {
-            field.set(bean, o);
+            field.set(beanSource.apply(), o);
         } catch (Exception e) {
             throw new InjectException(e);
         }

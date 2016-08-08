@@ -2,6 +2,7 @@ package act.di.param;
 
 import act.util.ActContext;
 import org.osgl.mvc.annotation.Param;
+import org.osgl.util.E;
 import org.osgl.util.StringValueResolver;
 
 public class StringValueResolverValueLoader implements ParamValueLoader {
@@ -21,6 +22,15 @@ public class StringValueResolverValueLoader implements ParamValueLoader {
 
     @Override
     public Object load(ActContext context) {
+        return load(context, false);
+    }
+
+    @Override
+    public Object load(ActContext context, boolean noDefaultValue) {
+        ParamTree paramTree = ParamValueLoaderManager.paramTree();
+        if (null != paramTree) {
+            return load(paramTree);
+        }
         HttpRequestParamEncode encode = encodeShare.get();
         if (null == encode) {
             encode = this.encode;
@@ -39,12 +49,24 @@ public class StringValueResolverValueLoader implements ParamValueLoader {
                 save(encode0);
             }
         }
-        return null == obj ? defVal : obj;
+        return null == obj && !noDefaultValue ? defVal : obj;
     }
 
     private Object load(ActContext context, HttpRequestParamEncode encode) {
         String bindName = encode.concat(paramKey);
         String value = context.paramVal(bindName);
+        return (null == value) ? null : stringValueResolver.resolve(value);
+    }
+
+    private Object load(ParamTree tree) {
+        ParamTreeNode node = tree.node(paramKey);
+        if (null == node) {
+            return null;
+        }
+        if (!node.isLeaf()) {
+            throw E.unexpected("Expect leaf node, found: \n%s", node.debug());
+        }
+        String value = node.value();
         return (null == value) ? null : stringValueResolver.resolve(value);
     }
 

@@ -3,10 +3,7 @@ package act.di.param;
 import act.cli.tree.TreeNode;
 import act.cli.view.CliView;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 class ParamTreeNode implements TreeNode {
 
@@ -46,20 +43,40 @@ class ParamTreeNode implements TreeNode {
         return id();
     }
 
-    public String debug() {
+    String debug() {
         return CliView.TREE.render(this, null, null);
     }
 
-    public void print() {
+    void print() {
         System.out.println(debug());
+    }
+
+    ParamKey key() {
+        return key;
     }
 
     boolean isLeaf() {
         return null != leafVal;
     }
 
+    String value() {
+        return leafVal;
+    }
+
     boolean isMap() {
         return null != map;
+    }
+
+    Set<String> mapKeys() {
+        return map.keySet();
+    }
+
+    Collection<ParamTreeNode> mapValues() {
+        return map.values();
+    }
+
+    ParamTreeNode child(String name) {
+        return map.get(name);
     }
 
     boolean isList() {

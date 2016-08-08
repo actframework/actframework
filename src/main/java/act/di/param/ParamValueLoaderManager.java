@@ -7,6 +7,7 @@ import act.di.ActProviders;
 import act.di.DependencyInjector;
 import act.util.ActContext;
 import act.util.DestroyableBase;
+import org.osgl.$;
 import org.osgl.inject.BeanSpec;
 import org.osgl.inject.InjectException;
 import org.osgl.inject.annotation.Provided;
@@ -114,8 +115,7 @@ public class ParamValueLoaderManager extends AppServiceBase<ParamValueLoaderMana
         return buildLoader(ParamKey.of(name), type, injector);
     }
 
-    private ParamValueLoader buildLoader(final ParamKey key, final Type type, DependencyInjector<?> injector) {
-        System.out.println("dd");
+    ParamValueLoader buildLoader(final ParamKey key, final Type type, DependencyInjector<?> injector) {
         Class rawType = BeanSpec.rawTypeOf(type);
         if (rawType.isArray()) {
             return buildArrayLoader(key, rawType.getComponentType(), injector);
@@ -148,7 +148,7 @@ public class ParamValueLoaderManager extends AppServiceBase<ParamValueLoaderMana
             final Type elementType,
             DependencyInjector<?> injector
     ) {
-        return new CollectionLoader(key, injector.get(collectionClass), elementType, injector);
+        return new CollectionLoader(key, collectionClass, elementType, injector, this);
     }
 
     private ParamValueLoader buildMapLoader(
@@ -186,17 +186,33 @@ public class ParamValueLoaderManager extends AppServiceBase<ParamValueLoaderMana
             return new ParamValueLoader() {
                 @Override
                 public Object load(ActContext context) {
-                    try {
-                        Object bean = constructor.newInstance();
-                        for (FieldLoader fl : fieldLoaders) {
-                            fl.applyTo(bean, context);
+                    final $.Var<Object> beanBag = $.var();
+                    $.Factory<Object> beanSource = new $.Factory<Object>() {
+                        @Override
+                        public Object create() {
+                            Object bean = beanBag.get();
+                            if (null == bean) {
+                                try {
+                                    bean = constructor.newInstance();
+                                } catch (RuntimeException e) {
+                                    throw e;
+                                } catch (Exception e) {
+                                    throw new InjectException(e, "cannot instantiate %s", type);
+                                }
+                            }
+                            beanBag.set(bean);
+                            return bean;
                         }
-                        return bean;
-                    } catch (RuntimeException e) {
-                        throw e;
-                    } catch (Exception e) {
-                        throw new InjectException(e, "cannot instantiate %s", type);
+                    };
+                    for (FieldLoader fl : fieldLoaders) {
+                        fl.applyTo(beanSource, context);
                     }
+                    return beanBag.get();
+                }
+
+                @Override
+                public Object load(ActContext context, boolean noDefaultValue) {
+                    return load(context);
                 }
             };
         } catch (NoSuchMethodException e) {
