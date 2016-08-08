@@ -1,12 +1,14 @@
 package testapp.model;
 
 import java.util.List;
+import java.util.Map;
 
 public class Foo {
     private String id;
     private Bar bar;
     private Bar[] barArray;
     private List<Integer> nl;
+    private Map<String, Bar> barMap;
 
     public String getId() {
         return id;
@@ -38,5 +40,13 @@ public class Foo {
 
     public void setNl(List<Integer> nl) {
         this.nl = nl;
+    }
+
+    public Map<String, Bar> getBarMap() {
+        return barMap;
+    }
+
+    public void setBarMap(Map<String, Bar> barMap) {
+        this.barMap = barMap;
     }
 }

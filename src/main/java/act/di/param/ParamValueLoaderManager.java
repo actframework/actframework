@@ -16,7 +16,6 @@ import org.osgl.mvc.annotation.Bind;
 import org.osgl.mvc.annotation.Param;
 import org.osgl.mvc.util.Binder;
 import org.osgl.util.C;
-import org.osgl.util.E;
 import org.osgl.util.S;
 import org.osgl.util.StringValueResolver;
 
@@ -53,17 +52,21 @@ public class ParamValueLoaderManager extends AppServiceBase<ParamValueLoaderMana
     }
 
     public Object[] load(Method method, ActContext ctx, DependencyInjector<?> injector) {
-        ParamValueLoader[] loaders = registry.get(method);
-        if (null == loaders) {
-            loaders = findLoaders(method, injector);
-            registry.putIfAbsent(method, loaders);
+        try {
+            ParamValueLoader[] loaders = registry.get(method);
+            if (null == loaders) {
+                loaders = findLoaders(method, injector);
+                registry.putIfAbsent(method, loaders);
+            }
+            int sz = loaders.length;
+            Object[] params = new Object[sz];
+            for (int i = 0; i < sz; ++i) {
+                params[i] = loaders[i].load(ctx);
+            }
+            return params;
+        } finally {
+            PARAM_TREE.remove();
         }
-        int sz = loaders.length;
-        Object[] params = new Object[sz];
-        for (int i = 0; i < sz; ++i) {
-            params[i] = loaders[i].load(ctx);
-        }
-        return params;
     }
 
     private ParamValueLoader[] findLoaders(Method method, DependencyInjector<?> injector) {
@@ -165,12 +168,12 @@ public class ParamValueLoaderManager extends AppServiceBase<ParamValueLoaderMana
 
     private ParamValueLoader buildMapLoader(
             final ParamKey key,
-            final Class mapClass,
+            final Class<? extends Map> mapClass,
             final Type keyType,
             final Type valType,
             DependencyInjector<?> injector
     ) {
-        throw E.tbd();
+        return new MapLoader(key, mapClass, keyType, valType, injector, this);
     }
 
     static ParamTree paramTree() {

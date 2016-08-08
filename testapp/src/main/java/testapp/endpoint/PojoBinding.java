@@ -7,6 +7,7 @@ import testapp.model.Contact;
 import testapp.model.Foo;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * Test binding to a POJO object
@@ -32,6 +33,11 @@ public class PojoBinding {
     @Action(value = "fooArray")
     public Foo[] fooArray(Foo[] fooList) {
         return fooList;
+    }
+
+    @Action(value = "fooMap")
+    public Map<String, Foo> fooMap(Map<String, Foo> fooMap) {
+        return fooMap;
     }
 
 }

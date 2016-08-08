@@ -167,7 +167,6 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
     public Result handle(ActionContext actionContext) throws Exception {
         Object ctrl = controllerInstance(actionContext);
         applyAppContext(actionContext, ctrl);
-        //Object[] params = params(actionContext, null, null);
         Object[] params = params2(actionContext);
         return invoke(handler, actionContext, ctrl, params);
     }
@@ -176,7 +175,8 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
     public Result handle(Result result, ActionContext actionContext) throws Exception {
         Object ctrl = controllerInstance(actionContext);
         applyAppContext(actionContext, ctrl);
-        Object[] params = params(actionContext, result, null);
+        //Object[] params = params(actionContext, result, null);
+        Object[] params = params2(actionContext);
         return invoke(handler, actionContext, ctrl, params);
     }
 
@@ -184,7 +184,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
     public Result handle(Exception e, ActionContext actionContext) throws Exception {
         Object ctrl = handler.isStatic() ? null : controllerInstance(actionContext);
         applyAppContext(actionContext, ctrl);
-        Object[] params = params(actionContext, null, e);
+        Object[] params = params2(actionContext);
         return invoke(handler, actionContext, ctrl, params);
     }
 
