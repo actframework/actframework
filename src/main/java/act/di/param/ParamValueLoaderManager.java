@@ -7,7 +7,6 @@ import act.di.ActProviders;
 import act.di.DependencyInjector;
 import act.util.ActContext;
 import act.util.DestroyableBase;
-import org.osgl.$;
 import org.osgl.inject.BeanSpec;
 import org.osgl.inject.InjectException;
 import org.osgl.inject.annotation.Provided;
@@ -59,7 +58,7 @@ public class ParamValueLoaderManager extends AppServiceBase<ParamValueLoaderMana
         }
         int sz = loaders.length;
         Object[] params = new Object[sz];
-        for (int i = 0 ; i < sz; ++i) {
+        for (int i = 0; i < sz; ++i) {
             params[i] = loaders[i].load(ctx);
         }
         return params;
@@ -110,31 +109,32 @@ public class ParamValueLoaderManager extends AppServiceBase<ParamValueLoaderMana
             resolver = resolverManager.resolver(rawType);
         }
         if (null != resolver) {
-            return new StringValueResolverValueLoader(new String[]{name}, resolver, param, rawType);
+            return new StringValueResolverValueLoader(ParamKey.of(name), resolver, param, rawType);
         }
-        return buildLoader(new String[]{name}, type, injector);
+        return buildLoader(ParamKey.of(name), type, injector);
     }
 
-    private ParamValueLoader buildLoader(final String[] path, final Type type, DependencyInjector<?> injector) {
+    private ParamValueLoader buildLoader(final ParamKey key, final Type type, DependencyInjector<?> injector) {
+        System.out.println("dd");
         Class rawType = BeanSpec.rawTypeOf(type);
         if (rawType.isArray()) {
-            return buildArrayLoader(path, rawType.getComponentType(), injector);
+            return buildArrayLoader(key, rawType.getComponentType(), injector);
         }
         if (Collection.class.isAssignableFrom(rawType)) {
             Type elementType = ((ParameterizedType) type).getActualTypeArguments()[0];
-            return buildCollectionLoader(path, rawType, elementType, injector);
+            return buildCollectionLoader(key, rawType, elementType, injector);
         }
         if (Map.class.isAssignableFrom(rawType)) {
             Type[] typeParams = ((ParameterizedType) type).getActualTypeArguments();
             Type keyType = typeParams[0];
             Type valType = typeParams[1];
-            return buildMapLoader(path, rawType, keyType, valType, injector);
+            return buildMapLoader(key, rawType, keyType, valType, injector);
         }
-        return buildPojoLoader(path, rawType, injector);
+        return buildPojoLoader(key, rawType, injector);
     }
 
     private ParamValueLoader buildArrayLoader(
-            final String[] path,
+            final ParamKey key,
             final Type elementType,
             DependencyInjector<?> injector
     ) {
@@ -143,16 +143,16 @@ public class ParamValueLoaderManager extends AppServiceBase<ParamValueLoaderMana
     }
 
     private ParamValueLoader buildCollectionLoader(
-            final String[] path,
-            final Class collectionClass,
+            final ParamKey key,
+            final Class<? extends Collection> collectionClass,
             final Type elementType,
             DependencyInjector<?> injector
     ) {
-        throw E.tbd();
+        return new CollectionLoader(key, injector.get(collectionClass), elementType, injector);
     }
 
     private ParamValueLoader buildMapLoader(
-            final String[] path,
+            final ParamKey key,
             final Class mapClass,
             final Type keyType,
             final Type valType,
@@ -161,11 +161,11 @@ public class ParamValueLoaderManager extends AppServiceBase<ParamValueLoaderMana
         throw E.tbd();
     }
 
-    private static ParamTree paramTree() {
+    static ParamTree paramTree() {
         return PARAM_TREE.get();
     }
 
-    private static ParamTree ensureParamTree(ActContext context) {
+    static ParamTree ensureParamTree(ActContext context) {
         ParamTree tree = PARAM_TREE.get();
         if (null == tree) {
             tree = new ParamTree();
@@ -175,8 +175,8 @@ public class ParamValueLoaderManager extends AppServiceBase<ParamValueLoaderMana
         return tree;
     }
 
-    private ParamValueLoader buildPojoLoader(final String[] path, final Class type, DependencyInjector<?> injector) {
-        final List<FieldLoader> fieldLoaders = fieldLoaders(path, type, injector);
+    private ParamValueLoader buildPojoLoader(final ParamKey key, final Class type, DependencyInjector<?> injector) {
+        final List<FieldLoader> fieldLoaders = fieldLoaders(key, type, injector);
         try {
             final Constructor constructor = type.getDeclaredConstructor();
             if (null == constructor) {
@@ -204,7 +204,7 @@ public class ParamValueLoaderManager extends AppServiceBase<ParamValueLoaderMana
         }
     }
 
-    private ParamValueLoader findLoader(String[] path, Field field, DependencyInjector<?> injector) {
+    private ParamValueLoader findLoader(ParamKey paramKey, Field field, DependencyInjector<?> injector) {
         Class fieldType = field.getType();
         Annotation[] annotations = field.getDeclaredAnnotations();
         if (ActProviders.isProvided(fieldType) || null != filter(annotations, Inject.class)) {
@@ -218,17 +218,17 @@ public class ParamValueLoaderManager extends AppServiceBase<ParamValueLoaderMana
         if (S.blank(name)) {
             name = field.getName();
         }
-        String[] namePath = $.concat(path, new String[]{name});
+        ParamKey key = paramKey.child(name);
 
         StringValueResolver resolver = resolverManager.resolver(fieldType);
         if (null != resolver) {
-            return new StringValueResolverValueLoader(namePath, resolver, null, fieldType);
+            return new StringValueResolverValueLoader(key, resolver, null, fieldType);
         }
 
-        return buildLoader(namePath, field.getGenericType(), injector);
+        return buildLoader(key, field.getGenericType(), injector);
     }
 
-    private List<FieldLoader> fieldLoaders(String[] path, Class type, DependencyInjector<?> injector) {
+    private List<FieldLoader> fieldLoaders(ParamKey key, Class type, DependencyInjector<?> injector) {
         Class<?> current = type;
         List<FieldLoader> fieldLoaders = C.newList();
         while (null != current && !current.equals(Object.class)) {
@@ -237,15 +237,15 @@ public class ParamValueLoaderManager extends AppServiceBase<ParamValueLoaderMana
                     continue;
                 }
                 field.setAccessible(true);
-                fieldLoaders.add(fieldLoader(path, field, injector));
+                fieldLoaders.add(fieldLoader(key, field, injector));
             }
             current = current.getSuperclass();
         }
         return fieldLoaders;
     }
 
-    private FieldLoader fieldLoader(String[] path, Field field, DependencyInjector<?> injector) {
-        return new FieldLoader(field, findLoader(path, field, injector));
+    private FieldLoader fieldLoader(ParamKey key, Field field, DependencyInjector<?> injector) {
+        return new FieldLoader(field, findLoader(key, field, injector));
     }
 
     private <T extends Annotation> T filter(Annotation[] annotations, Class<T> annoType) {

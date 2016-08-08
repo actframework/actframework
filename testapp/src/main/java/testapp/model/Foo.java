@@ -1,9 +1,11 @@
 package testapp.model;
 
+import java.util.List;
+
 public class Foo {
     private String id;
     private Bar bar;
-    private Bar[] barArray;
+    private List<Bar> barArray;
 
     public String getId() {
         return id;
@@ -21,11 +23,11 @@ public class Foo {
         this.bar = bar;
     }
 
-    public Bar[] getBarArray() {
+    public List<Bar> getBarArray() {
         return barArray;
     }
 
-    public void setBarArray(Bar[] barArray) {
+    public void setBarArray(List<Bar> barArray) {
         this.barArray = barArray;
     }
 }

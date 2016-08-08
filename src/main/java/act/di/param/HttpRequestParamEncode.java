@@ -31,6 +31,10 @@ public enum HttpRequestParamEncode {
         }
     };
 
+    public final String concat(ParamKey key) {
+        return concat(key.seq());
+    }
+
     public final String concat(String[] path) {
         int len = path.length;
         E.illegalArgumentIf(len < 1);

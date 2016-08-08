@@ -2,7 +2,6 @@ package act.di.param;
 
 import act.util.ActContext;
 import org.osgl.mvc.annotation.Param;
-import org.osgl.util.E;
 import org.osgl.util.StringValueResolver;
 
 public class StringValueResolverValueLoader implements ParamValueLoader {
@@ -10,12 +9,12 @@ public class StringValueResolverValueLoader implements ParamValueLoader {
     private static final ThreadLocal<HttpRequestParamEncode> encodeShare = new ThreadLocal<>();
 
     private StringValueResolver<?> stringValueResolver;
-    private String[] namePath;
+    private ParamKey paramKey;
     private Object defVal;
     private HttpRequestParamEncode encode;
 
-    public StringValueResolverValueLoader(String[] path, StringValueResolver<?> resolver, Param param, Class<?> type) {
-        this.namePath = path;
+    public StringValueResolverValueLoader(ParamKey key, StringValueResolver<?> resolver, Param param, Class<?> type) {
+        this.paramKey = key;
         this.stringValueResolver = resolver;
         this.defVal = defVal(param, type);
     }
@@ -44,7 +43,7 @@ public class StringValueResolverValueLoader implements ParamValueLoader {
     }
 
     private Object load(ActContext context, HttpRequestParamEncode encode) {
-        String bindName = encode.concat(namePath);
+        String bindName = encode.concat(paramKey);
         String value = context.paramVal(bindName);
         return (null == value) ? null : stringValueResolver.resolve(value);
     }
