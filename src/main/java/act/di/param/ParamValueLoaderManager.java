@@ -11,6 +11,7 @@ import org.osgl.$;
 import org.osgl.inject.BeanSpec;
 import org.osgl.inject.InjectException;
 import org.osgl.inject.annotation.Provided;
+import org.osgl.inject.util.ArrayLoader;
 import org.osgl.mvc.annotation.Bind;
 import org.osgl.mvc.annotation.Param;
 import org.osgl.mvc.util.Binder;
@@ -138,8 +139,19 @@ public class ParamValueLoaderManager extends AppServiceBase<ParamValueLoaderMana
             final Type elementType,
             DependencyInjector<?> injector
     ) {
-        List cache = new ArrayList();
-        throw E.tbd();
+        final CollectionLoader collectionLoader = new CollectionLoader(key, ArrayList.class, elementType, injector, this);
+        return new ParamValueLoader() {
+            @Override
+            public Object load(ActContext context) {
+                List list = (List) collectionLoader.load(context);
+                return null == list ? null : ArrayLoader.listToArray(list, BeanSpec.rawTypeOf(elementType));
+            }
+
+            @Override
+            public Object load(ActContext context, boolean noDefaultValue) {
+                return load(context);
+            }
+        };
     }
 
     private ParamValueLoader buildCollectionLoader(

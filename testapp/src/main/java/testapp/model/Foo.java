@@ -5,7 +5,7 @@ import java.util.List;
 public class Foo {
     private String id;
     private Bar bar;
-    private List<Bar> barArray;
+    private Bar[] barArray;
     private List<Integer> nl;
 
     public String getId() {
@@ -24,11 +24,11 @@ public class Foo {
         this.bar = bar;
     }
 
-    public List<Bar> getBarArray() {
+    public Bar[] getBarArray() {
         return barArray;
     }
 
-    public void setBarArray(List<Bar> barArray) {
+    public void setBarArray(Bar[] barArray) {
         this.barArray = barArray;
     }
 

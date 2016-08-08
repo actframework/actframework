@@ -29,4 +29,9 @@ public class PojoBinding {
         return fooList;
     }
 
+    @Action(value = "fooArray")
+    public Foo[] fooArray(Foo[] fooList) {
+        return fooList;
+    }
+
 }
