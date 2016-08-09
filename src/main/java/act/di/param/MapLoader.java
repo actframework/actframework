@@ -1,6 +1,7 @@
 package act.di.param;
 
 import act.app.App;
+import act.app.data.StringValueResolverManager;
 import act.di.DependencyInjector;
 import act.util.ActContext;
 import org.osgl.inject.BeanSpec;
@@ -15,10 +16,11 @@ class MapLoader implements ParamValueLoader {
 
     private final ParamKey key;
     private final Class<? extends Map> mapClass;
-    private final Type keyType;
+    private final Class keyClass;
     private final Type valType;
     private final DependencyInjector<?> injector;
-    private final StringValueResolver resolver;
+    private final StringValueResolver keyResolver;
+    private final StringValueResolver valueResolver;
     private final Map<ParamKey, ParamValueLoader> childLoaders = new HashMap<>();
     private final ParamValueLoaderManager manager;
 
@@ -32,25 +34,34 @@ class MapLoader implements ParamValueLoader {
     ) {
         this.key = key;
         this.mapClass = mapClass;
-        this.keyType = keyType;
+        this.keyClass = BeanSpec.rawTypeOf(keyType);
         this.valType = valType;
         this.injector = injector;
         this.manager = manager;
-        this.resolver = App.instance().resolverManager().resolver(BeanSpec.rawTypeOf(valType));
+        StringValueResolverManager resolverManager = App.instance().resolverManager();
+        this.valueResolver = resolverManager.resolver(BeanSpec.rawTypeOf(valType));
+        this.keyResolver = resolverManager.resolver(this.keyClass);
+        if (null == keyResolver) {
+            throw new IllegalArgumentException("Map key type not resolvable: " + keyClass.getName());
+        }
     }
 
     @Override
     public Object load(ActContext context) {
-        Map map = injector.get(mapClass);
+        return load(context, false);
+    }
+
+    @Override
+    public Object load(ActContext context, boolean noDefaultValue) {
         ParamTree tree = ParamValueLoaderManager.ensureParamTree(context);
         ParamTreeNode node = tree.node(key);
         if (null == node) {
-            return null;
+            return noDefaultValue ? null : injector.get(mapClass);
         }
+        Map map = injector.get(mapClass);
         if (node.isList()) {
-            Class keyClass = BeanSpec.rawTypeOf(keyType);
             if (Integer.class != keyClass) {
-                throw new BadRequest("cannot load list into map with key type: %s", keyType);
+                throw new BadRequest("cannot load list into map with key type: %s", this.keyClass);
             }
             List<ParamTreeNode> list = node.list();
             for (int i = 0; i < list.size(); ++i) {
@@ -58,11 +69,11 @@ class MapLoader implements ParamValueLoader {
                 if (!elementNode.isLeaf()) {
                     throw new BadRequest("cannot parse param: expect leaf node, found: \n%s", node.debug());
                 }
-                if (null == resolver) {
+                if (null == valueResolver) {
                     throw E.unexpected("Component type not resolvable: %s", valType);
                 }
                 if (null != elementNode.value()) {
-                    map.put(i, resolver.resolve(elementNode.value()));
+                    map.put(i, valueResolver.resolve(elementNode.value()));
                 }
             }
         } else if (node.isMap()) {
@@ -70,8 +81,12 @@ class MapLoader implements ParamValueLoader {
             Class valClass = BeanSpec.rawTypeOf(valType);
             for (String s : childrenKeys) {
                 ParamTreeNode child = node.child(s);
+                Object key = s;
+                if (String.class != keyClass) {
+                    key = keyResolver.resolve(s);
+                }
                 if (child.isLeaf()) {
-                    if (null == resolver) {
+                    if (null == valueResolver) {
                         throw E.unexpected("Component type not resolvable: %s", valType);
                     }
                     Object value = child.value();
@@ -81,7 +96,7 @@ class MapLoader implements ParamValueLoader {
                     if (!valClass.isInstance(value)) {
                         throw new BadRequest("Cannot load parameter, expected type: %s, found: %s", valClass, value.getClass());
                     }
-                    map.put(s, value);
+                    map.put(key, value);
                 } else {
                     ParamValueLoader childLoader = childLoader(child.key());
                     Object value = childLoader.load(context);
@@ -89,7 +104,7 @@ class MapLoader implements ParamValueLoader {
                         if (!valClass.isInstance(value)) {
                             throw new BadRequest("Cannot load parameter, expected type: %s, found: %s", valClass, value.getClass());
                         }
-                        map.put(s, value);
+                        map.put(key, value);
                     }
                 }
             }
@@ -97,11 +112,6 @@ class MapLoader implements ParamValueLoader {
             throw new BadRequest("Cannot load parameter, expected map, found:%s", node.value());
         }
         return map;
-    }
-
-    @Override
-    public Object load(ActContext context, boolean noDefaultValue) {
-        return load(context);
     }
 
     private ParamValueLoader childLoader(ParamKey key) {

@@ -30,6 +30,7 @@ class ProvidedValueLoader extends DestroyableBase implements ParamValueLoader {
         } else {
             this.type = type;
         }
+        this.injector = injector;
     }
 
     @Override

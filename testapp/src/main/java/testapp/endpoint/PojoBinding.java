@@ -3,6 +3,7 @@ package testapp.endpoint;
 import act.controller.Controller;
 import org.osgl.http.H;
 import org.osgl.mvc.annotation.Action;
+import testapp.model.Bar;
 import testapp.model.Contact;
 import testapp.model.Foo;
 
@@ -38,6 +39,16 @@ public class PojoBinding {
     @Action(value = "fooMap")
     public Map<String, Foo> fooMap(Map<String, Foo> fooMap) {
         return fooMap;
+    }
+
+    @Action("barMap")
+    public Map<H.Method, Bar> barMap(Map<H.Method, Bar> barMap) {
+        return barMap;
+    }
+
+    @Action("barMap2")
+    public Map<Integer, Bar> barMapIntKey(Map<Integer, Bar> barMap) {
+        return barMap;
     }
 
 }
