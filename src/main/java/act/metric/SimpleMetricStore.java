@@ -139,7 +139,7 @@ public class SimpleMetricStore implements MetricStore, Serializable {
     }
 
     private static class FileSynchronizer {
-        private static final String FILE_NAME = "_sys_metric.do.not.delete";
+        private static final String FILE_NAME = ".act.metric";
         private boolean ioError = false;
 
         void write(SimpleMetricStore store) {
@@ -165,7 +165,7 @@ public class SimpleMetricStore implements MetricStore, Serializable {
                     return store;
                 } catch (IOException e) {
                     ioError = true;
-                    App.logger.error(e, "Error reading simple metric store persisted file");
+                    App.logger.error(e, "Error reading simple metric store persisted file:%s", file.getAbsolutePath());
                     return null;
                 } catch (ClassNotFoundException e) {
                     throw E.unexpected(e);

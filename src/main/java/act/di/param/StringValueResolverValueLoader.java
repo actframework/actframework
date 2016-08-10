@@ -21,12 +21,7 @@ public class StringValueResolverValueLoader implements ParamValueLoader {
     }
 
     @Override
-    public Object load(ActContext context) {
-        return load(context, false);
-    }
-
-    @Override
-    public Object load(ActContext context, boolean noDefaultValue) {
+    public Object load(Object bean, ActContext context, boolean noDefaultValue) {
         ParamTree paramTree = ParamValueLoaderManager.paramTree();
         if (null != paramTree) {
             return load(paramTree);

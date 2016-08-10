@@ -11,7 +11,7 @@ import org.osgl.storage.ISObject;
  */
 public class SObjectBinder extends Binder<ISObject> {
     @Override
-    public ISObject resolve(String s, ParamValueProvider paramValueProvider) {
+    public ISObject resolve(ISObject sobj, String s, ParamValueProvider paramValueProvider) {
         ActionContext ctx = $.cast(paramValueProvider);
         return ctx.upload(s);
     }

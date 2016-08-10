@@ -377,7 +377,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         if (null == startIdFile) {
             startIdFile = get(ID_GEN_START_ID_FILE);
             if (null == startIdFile) {
-                startIdFile = ".app.id.do-not-delete";
+                startIdFile = ".act.id-app";
             }
         }
         return startIdFile;

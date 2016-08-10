@@ -52,7 +52,7 @@ public class IdGenerator {
             private final long id;
 
             public FileBasedStartCounter() {
-                this(".global.id.do-not-delete");
+                this(".act.id-global");
             }
 
             public FileBasedStartCounter(String path) {
@@ -84,7 +84,7 @@ public class IdGenerator {
             private StartIdProvider delegate;
 
             public DefaultStartIdProvider() {
-                this(".global.id.do-not-delete");
+                this(".act.id-global");
             }
 
             public DefaultStartIdProvider(String path) {
@@ -284,7 +284,7 @@ public class IdGenerator {
      * Create a default IdGenerator with following configuration:
      * <ul>
      *     <li>Node ID provider: four byte IP address</li>
-     *     <li>Start ID provider: stored in <code>.global.id.do-not-delete</code> file</li>
+     *     <li>Start ID provider: stored in <code>.act.id-global</code> file</li>
      *     <li>Sequence ID provider: Atomic Long sequence</li>
      *     <li>Long Encoder: {@link SafeLongEncoder}</li>
      * </ul>
@@ -298,7 +298,7 @@ public class IdGenerator {
      * Create a default IdGenerator with following configuration:
      * <ul>
      *     <li>Node ID provider: four byte IP address</li>
-     *     <li>Start ID provider: stored in <code>.global.id.do-not-delete</code> file</li>
+     *     <li>Start ID provider: stored in <code>.act.id-global</code> file</li>
      *     <li>Sequence ID provider: Atomic Long sequence</li>
      *     <li>
      *         Long Encoder: {@link UnsafeLongEncoder} when `useUnsafeLongEncoder` is set to
@@ -326,7 +326,7 @@ public class IdGenerator {
      * Create a default IdGenerator with following configuration:
      * <ul>
      *     <li>Node ID provider: N byte IP address, where N is specified by effectiveIpBytes argument</li>
-     *     <li>Start ID provider: stored in <code>.global.id.do-not-delete</code> file</li>
+     *     <li>Start ID provider: stored in <code>.act.id-global</code> file</li>
      *     <li>Sequnce ID provider: Atomic Long sequence</li>
      * </ul>
      */

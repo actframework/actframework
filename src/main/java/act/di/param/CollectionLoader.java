@@ -37,18 +37,13 @@ class CollectionLoader implements ParamValueLoader {
     }
 
     @Override
-    public Object load(ActContext context) {
-        return load(context, false);
-    }
-
-    @Override
-    public Object load(ActContext context, boolean noDefaultValue) {
+    public Object load(Object bean, ActContext context, boolean noDefaultValue) {
         ParamTree tree = ParamValueLoaderManager.ensureParamTree(context);
         ParamTreeNode node = tree.node(key);
         if (null == node) {
             return noDefaultValue ? null : injector.get(collectionClass);
         }
-        Collection collection = injector.get(collectionClass);
+        Collection collection = null == bean ? injector.get(collectionClass) : (Collection) bean;
         if (node.isList()) {
             for (ParamTreeNode elementNode : node.list()) {
                 if (!elementNode.isLeaf()) {
@@ -80,7 +75,7 @@ class CollectionLoader implements ParamValueLoader {
                     }
                 } else {
                     ParamValueLoader childLoader = childLoader(child.key());
-                    addToCollection(collection, id, childLoader.load(context));
+                    addToCollection(collection, id, childLoader.load(null, context, false));
                 }
             }
         } else {

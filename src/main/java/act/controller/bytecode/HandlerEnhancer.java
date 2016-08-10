@@ -26,6 +26,7 @@ public class HandlerEnhancer extends MethodVisitor implements Opcodes {
     private MethodVisitor next;
     private int paramIdShift = 0;
     private Set<Integer> skipNaming = new HashSet<>();
+    private Set<Integer> skipScoping = new HashSet<>();
 
     public HandlerEnhancer(final MethodVisitor mv, HandlerMethodMetaInfo meta, final int access, final String name, final String desc, final String signature, final String[] exceptions) {
         super(ASM5, new MethodNode(access, name, desc, signature, exceptions));
@@ -37,6 +38,8 @@ public class HandlerEnhancer extends MethodVisitor implements Opcodes {
     public AnnotationVisitor visitParameterAnnotation(int parameter, String desc, boolean visible) {
         if ("Ljavax/inject/Named;".equals(desc)) {
             skipNaming.add(parameter);
+        } else if (desc.endsWith("Scoped;") || desc.equals("Ljavax/inject/Singleton;")) {
+            skipScoping.add(parameter);
         }
         return super.visitParameterAnnotation(parameter, desc, visible);
     }
@@ -65,20 +68,22 @@ public class HandlerEnhancer extends MethodVisitor implements Opcodes {
     @Override
     public void visitEnd() {
         MethodNode mn = (MethodNode) mv;
-        addParamNames();
+        addParamAnnotations();
         transform(mn);
         mn.accept(next);
     }
 
-    private void addParamNames() {
+    private void addParamAnnotations() {
         int sz = info.paramCount();
         for (int i = 0; i < sz; ++i) {
-            if (skipNaming.contains(i)) {
-                continue;
+            if (!skipNaming.contains(i)) {
+                String name = info.param(i).name();
+                AnnotationVisitor av = mv.visitParameterAnnotation(i, "Ljavax/inject/Named;", true);
+                av.visit("value", name);
             }
-            String name = info.param(i).name();
-            AnnotationVisitor av = mv.visitParameterAnnotation(i, "Ljavax/inject/Named;", true);
-            av.visit("value", name);
+            if (!skipScoping.contains(i)) {
+                mv.visitParameterAnnotation(i, "Ljavax/enterprise/context/RequestScoped;", true);
+            }
         }
     }
 

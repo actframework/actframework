@@ -11,6 +11,7 @@ import org.osgl.Osgl;
 import org.osgl.exception.NotAppliedException;
 import org.osgl.inject.Genie;
 import org.osgl.inject.Module;
+import org.osgl.inject.ScopeCache;
 import org.osgl.inject.annotation.Provided;
 import org.osgl.inject.annotation.Provides;
 import org.osgl.mvc.annotation.Bind;
@@ -29,12 +30,21 @@ import java.util.Set;
 
 public class GenieInjector extends DependencyInjectorBase<GenieInjector> {
 
+    private static final Module SCOPE_MODULE = new Module() {
+        @Override
+        protected void configure() {
+            bind(ScopeCache.SessionScope.class).to(new SessionScope());
+            bind(ScopeCache.RequestScope.class).to(new RequestScope());
+            bind(ScopeCache.SingletonScope.class).to(new SingletonScope());
+        }
+    };
+
     private volatile Genie genie;
     private List<Object> modules;
 
     public GenieInjector(App app) {
         super(app);
-        modules = factories();
+        modules = factories().append(SCOPE_MODULE);
     }
 
     @Override
@@ -57,15 +67,30 @@ public class GenieInjector extends DependencyInjectorBase<GenieInjector> {
                 || type.isAnnotationPresent(Inject.class);
     }
 
+    @Override
+    public boolean isQualifier(Class<? extends Annotation> aClass) {
+        return genie().isQualifier(aClass);
+    }
+
+    @Override
+    public boolean isPostConstructProcessor(Class<? extends Annotation> aClass) {
+        return genie().isPostConstructProcessor(aClass);
+    }
+
+    @Override
+    public boolean isScope(Class<? extends Annotation> aClass) {
+        return genie().isScope(aClass);
+    }
+
     public void addModule(Object module) {
         E.illegalStateIf(null != genie);
         modules.add(module);
     }
 
-    private List<Object> factories() {
+    private C.List<Object> factories() {
         Set<String> factories = GenieFactoryFinder.factories();
         int len = factories.size();
-        List<Object> list = C.newSizedList(factories.size());
+        C.List<Object> list = C.newSizedList(factories.size());
         if (0 == len) {
             return list;
         }
@@ -81,7 +106,6 @@ public class GenieInjector extends DependencyInjectorBase<GenieInjector> {
             synchronized (this) {
                 if (null == genie) {
                     genie = Genie.create(modules.toArray(new Object[modules.size()]));
-                    genie.registerQualifiers(Param.class, Bind.class);
                     for (Map.Entry<Class, DependencyInjectionBinder> entry : binders.entrySet()) {
                         genie.registerProvider(entry.getKey(), entry.getValue());
                     }
@@ -92,6 +116,7 @@ public class GenieInjector extends DependencyInjectorBase<GenieInjector> {
                             return null;
                         }
                     };
+                    genie.registerQualifiers(Bind.class, Param.class);
                     ActProviders.registerBuiltInProviders(ActProviders.class, register);
                     ActProviders.registerBuiltInProviders(GenieProviders.class, register);
                 }

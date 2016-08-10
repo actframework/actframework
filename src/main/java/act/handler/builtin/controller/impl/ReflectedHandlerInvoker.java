@@ -312,7 +312,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
                 }
                 Object o = null;
                 if (null != binder) {
-                    o = binder.resolve(bindName, ctx);
+                    o = binder.resolve(null, bindName, ctx);
                     if (null != o) {
                         oa[i] = o;
                         continue;

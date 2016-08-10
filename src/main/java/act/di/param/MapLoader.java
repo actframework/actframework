@@ -47,18 +47,13 @@ class MapLoader implements ParamValueLoader {
     }
 
     @Override
-    public Object load(ActContext context) {
-        return load(context, false);
-    }
-
-    @Override
-    public Object load(ActContext context, boolean noDefaultValue) {
+    public Object load(Object bean, ActContext context, boolean noDefaultValue) {
         ParamTree tree = ParamValueLoaderManager.ensureParamTree(context);
         ParamTreeNode node = tree.node(key);
         if (null == node) {
             return noDefaultValue ? null : injector.get(mapClass);
         }
-        Map map = injector.get(mapClass);
+        Map map = null == bean ? injector.get(mapClass) : (Map) bean;
         if (node.isList()) {
             if (Integer.class != keyClass) {
                 throw new BadRequest("cannot load list into map with key type: %s", this.keyClass);
@@ -89,17 +84,22 @@ class MapLoader implements ParamValueLoader {
                     if (null == valueResolver) {
                         throw E.unexpected("Component type not resolvable: %s", valType);
                     }
-                    Object value = child.value();
-                    if (null == value) {
+                    String sval = child.value();
+                    if (null == sval) {
                         continue;
                     }
-                    if (!valClass.isInstance(value)) {
-                        throw new BadRequest("Cannot load parameter, expected type: %s, found: %s", valClass, value.getClass());
+                    if (valClass != String.class) {
+                        Object value = valueResolver.resolve(sval);
+                        if (!valClass.isInstance(value)) {
+                            throw new BadRequest("Cannot load parameter, expected type: %s, found: %s", valClass, value.getClass());
+                        }
+                        map.put(key, sval);
+                    } else {
+                        map.put(key, sval);
                     }
-                    map.put(key, value);
                 } else {
                     ParamValueLoader childLoader = childLoader(child.key());
-                    Object value = childLoader.load(context);
+                    Object value = childLoader.load(null, context, false);
                     if (null != value) {
                         if (!valClass.isInstance(value)) {
                             throw new BadRequest("Cannot load parameter, expected type: %s, found: %s", valClass, value.getClass());

@@ -2,7 +2,9 @@ package testapp.endpoint;
 
 import act.controller.Controller;
 import org.osgl.http.H;
+import org.osgl.inject.annotation.SessionScoped;
 import org.osgl.mvc.annotation.Action;
+import org.osgl.mvc.annotation.Before;
 import testapp.model.Bar;
 import testapp.model.Contact;
 import testapp.model.Foo;
@@ -14,6 +16,7 @@ import java.util.Map;
  * Test binding to a POJO object
  */
 @Controller("/pojo")
+@SuppressWarnings("unused")
 public class PojoBinding {
 
     @Action(value = "ctct", methods = {H.Method.POST, H.Method.PUT})
@@ -26,9 +29,24 @@ public class PojoBinding {
         return foo;
     }
 
+    @Before(only = "fooList")
+    public void beforeFooList(List<Foo> fooList) {
+        System.out.println(fooList);
+    }
+
     @Action(value = "fooList")
     public List<Foo> fooList(List<Foo> fooList) {
         return fooList;
+    }
+
+    @Action("bar1")
+    public Bar bar1(@SessionScoped Bar bar) {
+        return bar;
+    }
+
+    @Action("bar0")
+    public Bar barIndependent(Bar bar) {
+        return bar;
     }
 
     @Action(value = "fooArray")

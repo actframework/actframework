@@ -12,7 +12,7 @@ import java.io.File;
  */
 public class FileBinder extends Binder<File> {
     @Override
-    public File resolve(String s, ParamValueProvider paramValueProvider) {
+    public File resolve(File file, String s, ParamValueProvider paramValueProvider) {
         ActionContext ctx = $.cast(paramValueProvider);
         return ctx.upload(s).asFile();
     }

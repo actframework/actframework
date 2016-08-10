@@ -34,7 +34,7 @@ class ProvidedValueLoader extends DestroyableBase implements ParamValueLoader {
     }
 
     @Override
-    public Object load(ActContext context) {
+    public Object load(Object bean, ActContext context, boolean noDefaultValue) {
         if (isContext) {
             return context;
         } else if (null != singleton) {
@@ -42,11 +42,6 @@ class ProvidedValueLoader extends DestroyableBase implements ParamValueLoader {
         } else {
             return injector.get(type);
         }
-    }
-
-    @Override
-    public Object load(ActContext context, boolean noDefaultValue) {
-        return load(context);
     }
 
     @Override

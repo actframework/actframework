@@ -8,21 +8,16 @@ import org.osgl.mvc.util.Binder;
  */
 class BoundedValueLoader implements ParamValueLoader {
 
-    private Binder<?> binder;
+    private Binder binder;
     private String bindModel;
 
-    BoundedValueLoader(Binder<?> binder, String model) {
+    BoundedValueLoader(Binder binder, String model) {
         this.binder = binder;
         this.bindModel = model;
     }
 
     @Override
-    public Object load(ActContext context) {
-        return binder.resolve(bindModel, context);
-    }
-
-    @Override
-    public Object load(ActContext context, boolean noDefaultValue) {
-        return load(context);
+    public Object load(Object bean, ActContext context, boolean noDefaultValue) {
+        return binder.resolve(bean, bindModel, context);
     }
 }

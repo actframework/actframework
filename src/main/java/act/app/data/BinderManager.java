@@ -51,20 +51,7 @@ public class BinderManager extends AppServiceBase<BinderManager> {
     }
 
     public Binder binder(Class<?> clazz, Class<?> componentType, HandlerParamMetaInfo paramMetaInfo) {
-        Binder b = binders.get(clazz);
-        if (null != b) {
-            return b;
-        }
-        if (clazz.isArray()) {
-            Class<?> elementClass = clazz.getComponentType();
-            if (Enum.class.isAssignableFrom(elementClass)) {
-                return new EnumArrayBinder<>(elementClass);
-            }
-        }
-        if (Collection.class.isAssignableFrom(clazz) && support(componentType)) {
-            return new CollectionBinder(componentType, clazz, paramMetaInfo);
-        }
-        return null;
+        return binders.get(clazz);
     }
 
     public Binder binder(HandlerParamMetaInfo paramMetaInfo) {
@@ -92,105 +79,5 @@ public class BinderManager extends AppServiceBase<BinderManager> {
             return true;
         }
         return (Enum.class.isAssignableFrom(type));
-    }
-
-    private static class EnumArrayBinder<T> extends Binder<T> {
-
-        private Class<?> enumClass;
-
-        EnumArrayBinder(Class<?> enumClass) {
-            this.enumClass = enumClass;
-        }
-
-        @Override
-        public T resolve(String model, ParamValueProvider params) {
-            String[] sa = params.paramVals(model);
-            if (null == sa) {
-                return (T)Array.newInstance(enumClass, 0);
-            }
-            int len = sa.length;
-            T t = (T) Array.newInstance(enumClass, len);
-            for (int i = 0; i < len; ++i) {
-                String s = sa[i];
-                Array.set(t, i, Enum.valueOf(((Class<Enum>) enumClass), s));
-            }
-            return t;
-        }
-
-    }
-
-    private class CollectionBinder<T> extends Binder<T> {
-        private Class<?> componentType;
-        private Class<?> containerType;
-        private HandlerParamMetaInfo metaInfo;
-
-        CollectionBinder(Class<?> componentType, Class<?> containerType, HandlerParamMetaInfo metaInfo) {
-            this.componentType = componentType;
-            this.containerType = containerType;
-            this.metaInfo = metaInfo;
-        }
-
-        @Override
-        public T resolve(String model, ParamValueProvider params) {
-            String[] sa = params.paramVals(model);
-            if (null == sa) {
-                return (T)Array.newInstance(componentType, 0);
-            }
-            int len = sa.length;
-            Collection retVal = container();
-            if (null == retVal) {
-                return null;
-            }
-            StringValueResolverManager resolverManager = app().resolverManager();
-            for (int i = 0; i < len; ++i) {
-                String s = sa[i];
-                retVal.add(resolve(s, resolverManager));
-            }
-            return (T)retVal;
-        }
-
-        private Collection container() {
-            int modifiers = containerType.getModifiers();
-            Collection<?> col = null;
-            if (Modifier.isAbstract(modifiers) || Modifier.isInterface(modifiers)) {
-                if (containerType.isAssignableFrom(AbstractList.class)) {
-                    return C.newList();
-                } else if (containerType.isAssignableFrom(AbstractSet.class)) {
-                    return C.newSet();
-                } else {
-                    logger.warn("Container type not supported: %s", containerType);
-                    return null;
-                }
-            } else {
-                try {
-                    return (Collection) $.newInstance(containerType);
-                } catch (Exception e) {
-                    try {
-                        return (Collection) $.newInstance(containerType, 100);
-                    } catch (Exception e2) {
-                        logger.warn("Cannot initialize container with type: %s", containerType);
-                        return null;
-                    }
-                }
-            }
-        }
-
-        private Object resolve(String reqVal, StringValueResolverManager resolverManager) {
-            StringValueResolver resolver = null;
-            if (metaInfo.resolverDefined()) {
-                resolver = metaInfo.resolver(app());
-            }
-            if (null == reqVal) {
-                Object ret = metaInfo.defVal(componentType);
-                if (null != ret) {
-                    return ret;
-                }
-            }
-            if (null == resolver) {
-                return resolverManager.resolve(reqVal, componentType);
-            } else {
-                return resolver.resolve(reqVal);
-            }
-        }
     }
 }

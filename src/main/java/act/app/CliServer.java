@@ -135,9 +135,9 @@ class CliServer extends AppServiceBase<CliServer> implements Runnable {
                     }
                 }
             });
-            log.info("CLI server started");
+            log.info("CLI server started on port: %s", port);
         } catch (IOException e) {
-            throw new ActException(e, "Cannot start CLI server");
+            throw new ActException(e, "Cannot start CLI server on port: %s", port);
         }
     }
 

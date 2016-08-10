@@ -4,7 +4,11 @@ import act.app.App;
 import act.app.AppServiceBase;
 import act.app.data.StringValueResolverManager;
 import act.di.ActProviders;
+import act.di.Context;
 import act.di.DependencyInjector;
+import act.di.genie.DependentScope;
+import act.di.genie.RequestScope;
+import act.di.genie.SessionScope;
 import act.util.ActContext;
 import act.util.DestroyableBase;
 import org.osgl.$;
@@ -20,14 +24,16 @@ import org.osgl.util.S;
 import org.osgl.util.StringValueResolver;
 
 import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.context.Dependent;
+import javax.enterprise.context.RequestScoped;
+import javax.enterprise.context.SessionScoped;
+import javax.enterprise.inject.New;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.inject.Singleton;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.*;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -40,6 +46,7 @@ public class ParamValueLoaderManager extends AppServiceBase<ParamValueLoaderMana
     private static final ThreadLocal<ParamTree> PARAM_TREE = new ThreadLocal<>();
     private StringValueResolverManager resolverManager;
     private ConcurrentMap<Method, ParamValueLoader[]> registry = new ConcurrentHashMap<>();
+    private ConcurrentMap<$.T2<Type, Annotation[]>, ParamValueLoader> paramRegistry = new ConcurrentHashMap<>();
 
     public ParamValueLoaderManager(App app) {
         super(app);
@@ -61,7 +68,7 @@ public class ParamValueLoaderManager extends AppServiceBase<ParamValueLoaderMana
             int sz = loaders.length;
             Object[] params = new Object[sz];
             for (int i = 0; i < sz; ++i) {
-                params[i] = loaders[i].load(ctx);
+                params[i] = loaders[i].load(null, ctx, false);
             }
             return params;
         } finally {
@@ -78,16 +85,34 @@ public class ParamValueLoaderManager extends AppServiceBase<ParamValueLoaderMana
         ParamValueLoader[] loaders = new ParamValueLoader[sz];
         Annotation[][] annotations = method.getParameterAnnotations();
         for (int i = 0; i < sz; ++i) {
-            loaders[i] = findLoader(types[i], annotations[i], injector);
+            BeanSpec spec = BeanSpec.of(types[i], annotations[i], injector);
+            ParamValueLoader loader = paramRegistry.get(spec);
+            if (null == loader) {
+                loader = findLoader(spec, types[i], annotations[i], injector);
+                // Cannot use spec as the key here because
+                // spec does not compare Scoped annotation
+                paramRegistry.putIfAbsent($.T2(types[i], annotations[i]), loader);
+            }
+            loaders[i] = loader;
         }
         return loaders;
     }
 
-    private ParamValueLoader findLoader(Type type, Annotation[] annotations, DependencyInjector<?> injector) {
+    private ParamValueLoader findLoader(
+            BeanSpec spec,
+            Type type,
+            Annotation[] annotations,
+            DependencyInjector<?> injector
+    ) {
         Class rawType = BeanSpec.rawTypeOf(type);
-        if (ActProviders.isProvided(rawType) || null != filter(annotations, Provided.class)) {
+        if (ActProviders.isProvided(rawType)
+                || null != filter(annotations, Provided.class)
+                || null != filter(annotations, Context.class)
+                || null != filter(annotations, Singleton.class)
+                || null != filter(annotations, ApplicationScoped.class)) {
             return ProvidedValueLoader.get(rawType, injector);
         }
+        ParamValueLoader loader;
         String name = filter(annotations, Named.class).value();
         Bind bind = filter(annotations, Bind.class);
         if (null != bind) {
@@ -96,27 +121,26 @@ public class ParamValueLoaderManager extends AppServiceBase<ParamValueLoaderMana
             if (S.blank(model)) {
                 model = name;
             }
-            return new BoundedValueLoader(binder, model);
-        }
-        Param param = filter(annotations, Param.class);
-        StringValueResolver resolver = null;
-        if (null != param) {
-            String paramName = param.value();
-            if (S.notBlank(paramName)) {
-                name = paramName;
+            loader = new BoundedValueLoader(binder, model);
+        } else {
+            Param param = filter(annotations, Param.class);
+            StringValueResolver resolver = null;
+            if (null != param) {
+                String paramName = param.value();
+                if (S.notBlank(paramName)) {
+                    name = paramName;
+                }
+                Class<? extends StringValueResolver> resolverClass = param.resolverClass();
+                if (Param.DEFAULT_RESOLVER.class != resolverClass) {
+                    resolver = injector.get(resolverClass);
+                }
             }
-            Class<? extends StringValueResolver> resolverClass = param.resolverClass();
-            if (Param.DEFAULT_RESOLVER.class != resolverClass) {
-                resolver = injector.get(resolverClass);
+            if (null == resolver) {
+                resolver = resolverManager.resolver(rawType);
             }
+            loader = (null != resolver) ? new StringValueResolverValueLoader(ParamKey.of(name), resolver, param, rawType) : buildLoader(ParamKey.of(name), type, injector);
         }
-        if (null == resolver) {
-            resolver = resolverManager.resolver(rawType);
-        }
-        if (null != resolver) {
-            return new StringValueResolverValueLoader(ParamKey.of(name), resolver, param, rawType);
-        }
-        return buildLoader(ParamKey.of(name), type, injector);
+        return decorate(loader, spec, annotations);
     }
 
     ParamValueLoader buildLoader(final ParamKey key, final Type type, DependencyInjector<?> injector) {
@@ -145,14 +169,16 @@ public class ParamValueLoaderManager extends AppServiceBase<ParamValueLoaderMana
         final CollectionLoader collectionLoader = new CollectionLoader(key, ArrayList.class, elementType, injector, this);
         return new ParamValueLoader() {
             @Override
-            public Object load(ActContext context) {
-                List list = (List) collectionLoader.load(context);
+            public Object load(Object bean, ActContext context, boolean noDefaultValue) {
+                List list = new ArrayList();
+                if (null != bean) {
+                    int len = Array.getLength(bean);
+                    for (int i = 0; i < len; ++i) {
+                        list.add(Array.get(bean, i));
+                    }
+                }
+                list = (List) collectionLoader.load(list, context, false);
                 return null == list ? null : ArrayLoader.listToArray(list, BeanSpec.rawTypeOf(elementType));
-            }
-
-            @Override
-            public Object load(ActContext context, boolean noDefaultValue) {
-                return load(context);
             }
         };
     }
@@ -200,8 +226,8 @@ public class ParamValueLoaderManager extends AppServiceBase<ParamValueLoaderMana
             constructor.setAccessible(true);
             return new ParamValueLoader() {
                 @Override
-                public Object load(ActContext context) {
-                    final $.Var<Object> beanBag = $.var();
+                public Object load(Object bean, ActContext context, boolean noDefaultValue) {
+                    final $.Var<Object> beanBag = $.var(bean);
                     $.Factory<Object> beanSource = new $.Factory<Object>() {
                         @Override
                         public Object create() {
@@ -223,11 +249,6 @@ public class ParamValueLoaderManager extends AppServiceBase<ParamValueLoaderMana
                         fl.applyTo(beanSource, context);
                     }
                     return beanBag.get();
-                }
-
-                @Override
-                public Object load(ActContext context, boolean noDefaultValue) {
-                    return load(context);
                 }
             };
         } catch (NoSuchMethodException e) {
@@ -279,13 +300,36 @@ public class ParamValueLoaderManager extends AppServiceBase<ParamValueLoaderMana
         return new FieldLoader(field, findLoader(key, field, injector));
     }
 
-    private <T extends Annotation> T filter(Annotation[] annotations, Class<T> annoType) {
+    private static <T extends Annotation> T filter(Annotation[] annotations, Class<T> annoType) {
         for (Annotation annotation : annotations) {
             if (annoType == annotation.annotationType()) {
                 return (T) annotation;
             }
         }
         return null;
+    }
+
+    private static ParamValueLoader decorate(
+            ParamValueLoader loader,
+            BeanSpec paramSpec,
+            Annotation[] annotations
+    ) {
+        return new ScopedParamValueLoader(loader, paramSpec, scopeCacheSupport(annotations));
+    }
+
+    private static ScopeCacheSupport scopeCacheSupport(Annotation[] annotations) {
+        if (null != filter(annotations, RequestScoped.class) ||
+                null != filter(annotations, org.osgl.inject.annotation.RequestScoped.class)) {
+            return RequestScope.INSTANCE;
+        } else if (null != filter(annotations, SessionScoped.class) ||
+                null != filter(annotations, org.osgl.inject.annotation.SessionScoped.class)) {
+            return SessionScope.INSTANCE;
+        } else if (null != filter(annotations, Dependent.class) ||
+                null != filter(annotations, New.class)) {
+            return DependentScope.INSTANCE;
+        }
+        // Default to Request Scope
+        return RequestScope.INSTANCE;
     }
 
 }

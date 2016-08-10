@@ -20,7 +20,7 @@ class FieldLoader {
     }
 
     public void applyTo($.Func0<Object> beanSource, ActContext context) {
-        Object o = loader.load(context, true);
+        Object o = loader.load(null, context, true);
         if (null == o) {
             return;
         }
