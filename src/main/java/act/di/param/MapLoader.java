@@ -93,7 +93,7 @@ class MapLoader implements ParamValueLoader {
                         if (!valClass.isInstance(value)) {
                             throw new BadRequest("Cannot load parameter, expected type: %s, found: %s", valClass, value.getClass());
                         }
-                        map.put(key, sval);
+                        map.put(key, value);
                     } else {
                         map.put(key, sval);
                     }

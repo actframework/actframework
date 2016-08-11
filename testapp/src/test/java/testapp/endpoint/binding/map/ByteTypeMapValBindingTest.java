@@ -6,7 +6,7 @@ import java.util.Map;
 
 public class ByteTypeMapValBindingTest extends SimpleTypeMapValBindingTestBase<Byte> {
     public ByteTypeMapValBindingTest() {
-        super("bool_v", "bool_k");
+        super("byte_v", "byte_k");
     }
 
     @Override
