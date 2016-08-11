@@ -34,7 +34,7 @@ public class StringValueResolverValueLoader implements ParamValueLoader {
             }
         }
         Object obj = load(context, encode);
-        if (null == obj) {
+        if (null == obj && !paramKey.isSimple()) {
             HttpRequestParamEncode encode0 = encode;
             do {
                 encode0 = HttpRequestParamEncode.next(encode0);

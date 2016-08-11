@@ -18,7 +18,7 @@ public class FloatActionParameterBindingTest extends PrimitiveTypeActionParamete
 
     @Override
     protected String primitiveDefValueStr() {
-        return "0";
+        return "0.0";
     }
 
     @Override

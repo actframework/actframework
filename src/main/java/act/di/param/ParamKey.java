@@ -51,6 +51,10 @@ class ParamKey {
         return size;
     }
 
+    boolean isSimple() {
+        return size == 1;
+    }
+
     String name() {
         return seq[size - 1];
     }

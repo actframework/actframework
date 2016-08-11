@@ -323,8 +323,10 @@ public class EndpointTester extends TestBase {
         }
 
         public ReqBuilder params(List<$.T2<String, Object>> pairs) {
-            for ($.T2<String, Object> pair : pairs) {
-                param(pair._1, pair._2);
+            if (null != pairs) {
+                for ($.T2<String, Object> pair : pairs) {
+                    param(pair._1, pair._2);
+                }
             }
             return this;
         }

@@ -85,4 +85,8 @@ public abstract class PrimitiveTypeActionParameterBindingTestBase<T> extends Sim
     public void testWrapOutOfScopePostJSON() throws Exception {
         _verify("", path, out(), EndPointTestContext.RequestMethod.POST_JSON);
     }
+
+    public static void main(String[] args) {
+        System.out.println(Integer.parseInt("127", 8));
+    }
 }

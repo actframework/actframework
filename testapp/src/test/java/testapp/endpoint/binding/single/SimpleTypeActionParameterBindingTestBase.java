@@ -1,9 +1,7 @@
 package testapp.endpoint.binding.single;
 
-import org.junit.Before;
 import org.junit.Test;
 import org.osgl.mvc.result.NotFound;
-import testapp.endpoint.EndPointTestContext;
 import testapp.endpoint.EndPointTestContext.RequestMethod;
 import testapp.endpoint.binding.ActionParameterBindingTestBase;
 
@@ -36,10 +34,12 @@ public abstract class SimpleTypeActionParameterBindingTestBase<T> extends Action
     }
 
     protected final void _verify(String expected, String urlPath, Object data, RequestMethod method) throws Exception {
+        if (null != data) {
+            context.params(PARAM, data);
+        }
         context
                 .expected(expected)
                 .url(processUrl(urlPath))
-                .params(PARAM, data)
                 .method(method)
                 .applyTo(this);
     }

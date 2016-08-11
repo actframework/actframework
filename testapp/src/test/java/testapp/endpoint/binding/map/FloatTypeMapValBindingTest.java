@@ -11,7 +11,7 @@ public class FloatTypeMapValBindingTest extends SimpleTypeMapValBindingTestBase<
 
     @Override
     public Map<String, Float> nonEmptyMap() {
-        return C.map("a", Float.MAX_VALUE, "b", Float.MIN_VALUE, "c", 0.02);
+        return C.map("a", Float.MAX_VALUE, "b", Float.MIN_VALUE, "c", 0.02f);
     }
 
 }
