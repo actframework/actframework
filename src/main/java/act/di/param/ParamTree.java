@@ -62,6 +62,14 @@ class ParamTree {
         }
     }
 
+    /*
+     * Parse string like `foo[bar][0][id]` into String array
+     * `foo, bar, 0, id`.
+     *
+     * It shall also support dot notation: `foo.bar.0.id`, or mixed:
+     * `foo.bar[0].id`. However things like `foo[0.05]` must be interpreted into
+     * `foo, 0.05`  instead of `foo, 0, 05`
+     */
     private static String[] parseRawParamKey(String rawKey) {
         List<String> list = new ArrayList<String>();
         int len = rawKey.length();
