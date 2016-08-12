@@ -98,6 +98,9 @@ public interface Destroyable {
         }
 
         private static boolean inScope(Object o, Class<? extends Annotation> scope) {
+            if (null == o) {
+                return false;
+            }
             if (null == scope || scope == ApplicationScoped.class) {
                 return true;
             }
@@ -106,6 +109,7 @@ public interface Destroyable {
                 return true;
             }
             if (scope == SessionScoped.class) {
+                // RequestScoped is always inside Session scope
                 return c.isAnnotationPresent(RequestScoped.class);
             }
             return false;

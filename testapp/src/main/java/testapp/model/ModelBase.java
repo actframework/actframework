@@ -3,6 +3,8 @@ package testapp.model;
 import act.Act;
 import org.osgl.util.KVStore;
 
+import java.util.UUID;
+
 public abstract class ModelBase {
 
     private String id;
@@ -10,7 +12,7 @@ public abstract class ModelBase {
     private KVStore kv;
 
     public ModelBase() {
-        id = Act.cuid();
+        id = UUID.randomUUID().toString();
         kv = new KVStore();
     }
 

@@ -112,6 +112,7 @@ public enum ParamEncoding {
     FOUR() {
         @Override
         public List<$.T2<String, Object>> encode(String paramName, List<?> elements) {
+            E.illegalStateIf(paramName.contains("."), "Param encoding four does not support param name with \".\" inside");
             List<$.T2<String, Object>> retList = C.newList();
             for (int i = 0; i < elements.size(); ++i) {
                 retList.add($.T2(S.fmt("%s.%d", paramName, i), elements.get(i)));
@@ -121,6 +122,7 @@ public enum ParamEncoding {
 
         @Override
         public List<$.T2<String, Object>> encode(String paramName, Map<?, ?> elements) {
+            E.illegalStateIf(paramName.contains("."), "Param encoding four does not support param name with \".\" inside");
             List<$.T2<String, Object>> retList = C.newList();
             if (null != elements) {
                 for (Map.Entry<?, ?> entry : elements.entrySet()) {

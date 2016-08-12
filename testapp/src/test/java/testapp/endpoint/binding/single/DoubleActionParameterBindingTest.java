@@ -20,13 +20,13 @@ public class DoubleActionParameterBindingTest extends PrimitiveTypeActionParamet
 
     @Override
     protected String primitiveDefValueStr() {
-        return "0";
+        return "0.0";
     }
 
     @Override
     protected Object outOfScopeValue() {
         BigDecimal dec = BigDecimal.valueOf(Double.MAX_VALUE);
-        dec = dec.add(BigDecimal.ONE);
+        dec = dec.add(dec);
         return dec;
     }
 }

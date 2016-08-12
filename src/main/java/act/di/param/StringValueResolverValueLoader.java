@@ -22,6 +22,11 @@ public class StringValueResolverValueLoader implements ParamValueLoader {
 
     @Override
     public Object load(Object bean, ActContext context, boolean noDefaultValue) {
+        if (paramKey.isSimple()) {
+            String value = context.paramVal(paramKey.name());
+            Object obj = (null == value) ? null : stringValueResolver.resolve(value);
+            return (null == obj) && !noDefaultValue ? defVal : obj;
+        }
         ParamTree paramTree = ParamValueLoaderManager.paramTree();
         if (null != paramTree) {
             return load(paramTree);
@@ -34,7 +39,7 @@ public class StringValueResolverValueLoader implements ParamValueLoader {
             }
         }
         Object obj = load(context, encode);
-        if (null == obj && !paramKey.isSimple()) {
+        if (null == obj) {
             HttpRequestParamEncode encode0 = encode;
             do {
                 encode0 = HttpRequestParamEncode.next(encode0);

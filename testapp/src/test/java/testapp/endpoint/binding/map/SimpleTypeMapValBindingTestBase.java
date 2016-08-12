@@ -173,7 +173,7 @@ public abstract class SimpleTypeMapValBindingTestBase<T> extends ActionParameter
     }
 
     @Test
-    public final void testKeyTypedNonEmptyMapGetFour() throws Exception {
+    public void testKeyTypedNonEmptyMapGetFour() throws Exception {
         _verify(ek(), path_k, keyTypedNonEmptyMap(), RequestMethod.GET, FOUR);
     }
 
@@ -183,7 +183,7 @@ public abstract class SimpleTypeMapValBindingTestBase<T> extends ActionParameter
     }
 
     @Test
-    public final void testKeyTypedNonEmptyMapPostFour() throws Exception {
+    public void testKeyTypedNonEmptyMapPostFour() throws Exception {
         _verify(ek(), path_k, keyTypedNonEmptyMap(), RequestMethod.POST_FORM_DATA, FOUR);
     }
 
