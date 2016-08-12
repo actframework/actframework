@@ -46,7 +46,8 @@ public class ParamValueLoaderManager extends AppServiceBase<ParamValueLoaderMana
     private static final ParamValueLoader[] NULL = new ParamValueLoader[0];
     private static final ThreadLocal<ParamTree> PARAM_TREE = new ThreadLocal<>();
     private StringValueResolverManager resolverManager;
-    private ConcurrentMap<Method, ParamValueLoader[]> registry = new ConcurrentHashMap<>();
+    private ConcurrentMap<Method, ParamValueLoader[]> methodRegistry = new ConcurrentHashMap<>();
+    private ConcurrentMap<Class, ParamValueLoader> classRegistry = new ConcurrentHashMap<>();
     private ConcurrentMap<$.T2<Type, Annotation[]>, ParamValueLoader> paramRegistry = new ConcurrentHashMap<>();
 
     public ParamValueLoaderManager(App app) {
@@ -56,15 +57,25 @@ public class ParamValueLoaderManager extends AppServiceBase<ParamValueLoaderMana
 
     @Override
     protected void releaseResources() {
-        DestroyableBase.Util.tryDestroyAll(registry.values(), ApplicationScoped.class);
+        DestroyableBase.Util.tryDestroyAll(classRegistry.values(), ApplicationScoped.class);
+        DestroyableBase.Util.tryDestroyAll(paramRegistry.values(), ApplicationScoped.class);
     }
 
-    public Object[] load(Method method, ActContext ctx, DependencyInjector<?> injector) {
+    public Object loadHostBean(Class beanClass, ActContext ctx, DependencyInjector<?> injector) {
+        ParamValueLoader loader = classRegistry.get(beanClass);
+        if (null == loader) {
+            loader = findBeanLoader(beanClass, injector);
+            classRegistry.putIfAbsent(beanClass, loader);
+        }
+        return loader.load(null, ctx, false);
+    }
+
+    public Object[] loadMethodParams(Method method, ActContext ctx, DependencyInjector<?> injector) {
         try {
-            ParamValueLoader[] loaders = registry.get(method);
+            ParamValueLoader[] loaders = methodRegistry.get(method);
             if (null == loaders) {
                 loaders = findLoaders(method, injector);
-                registry.putIfAbsent(method, loaders);
+                methodRegistry.putIfAbsent(method, loaders);
             }
             int sz = loaders.length;
             Object[] params = new Object[sz];
@@ -75,6 +86,35 @@ public class ParamValueLoaderManager extends AppServiceBase<ParamValueLoaderMana
         } finally {
             PARAM_TREE.remove();
         }
+    }
+
+    private <T> ParamValueLoader findBeanLoader(Class<T> beanClass, DependencyInjector<?> injector) {
+        final Provider<T> provider = injector.getProvider(beanClass);
+        final Map<Field, ParamValueLoader> loaders = new HashMap<>();
+        for (Field field: $.fieldsOf(beanClass, true)) {
+            Type type = field.getGenericType();
+            Annotation[] annotations = field.getAnnotations();
+            BeanSpec spec = BeanSpec.of(type, annotations, field.getName(), injector);
+            ParamValueLoader loader = findLoader(spec, type, annotations, injector);
+            loaders.put(field, loader);
+        }
+        ParamValueLoader loader = new ParamValueLoader() {
+            @Override
+            public Object load(Object bean, ActContext context, boolean noDefaultValue) {
+                if (null == bean) {
+                    bean = provider.get();
+                }
+                try {
+                    for (Map.Entry<Field, ParamValueLoader> entry : loaders.entrySet()) {
+                        entry.getKey().set(bean, entry.getValue().load(null, context, noDefaultValue));
+                    }
+                } catch (IllegalAccessException e) {
+                    throw new InjectException(e);
+                }
+                return bean;
+            }
+        };
+        return decorate(loader, BeanSpec.of(beanClass, injector), beanClass.getDeclaredAnnotations());
     }
 
     private ParamValueLoader[] findLoaders(Method method, DependencyInjector<?> injector) {
@@ -114,7 +154,8 @@ public class ParamValueLoaderManager extends AppServiceBase<ParamValueLoaderMana
             return ProvidedValueLoader.get(rawType, injector);
         }
         ParamValueLoader loader;
-        String name = filter(annotations, Named.class).value();
+        Named named = filter(annotations, Named.class);
+        String name = null != named ? named.value() : spec.name();
         Bind bind = filter(annotations, Bind.class);
         if (null != bind) {
             Binder binder = injector.get(bind.value());

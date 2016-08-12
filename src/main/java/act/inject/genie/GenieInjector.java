@@ -50,6 +50,11 @@ public class GenieInjector extends DependencyInjectorBase<GenieInjector> {
     }
 
     @Override
+    public <T> Provider<T> getProvider(Class<T> aClass) {
+        return genie().getProvider(aClass);
+    }
+
+    @Override
     public synchronized void registerDiBinder(DependencyInjectionBinder binder) {
         super.registerDiBinder(binder);
         if (null != genie) {

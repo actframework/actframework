@@ -192,28 +192,28 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         String controllerName = controllerClass.getName();
         Object inst = context.__controllerInstance(controllerName);
         if (null == inst) {
-            inst = context.newInstance(controllerClass);
+            inst = paramValueLoaderManager.loadHostBean(controllerClass, context, injector);
             context.__controllerInstance(controllerName, inst);
         }
-        List<FieldPathVariableInfo> list = controller.fieldPathVariableInfos();
-        for (FieldPathVariableInfo fieldPathVariableInfo : list) {
-            String fieldName = fieldPathVariableInfo.fieldName();
-            String pathVariable = fieldPathVariableInfo.pathVariable();
-            String pathVariableVal = context.paramVal(pathVariable);
-            boolean optional = fieldPathVariableInfo.optional();
-            if (null == pathVariableVal) {
-                if (optional) {
-                    continue;
-                }
-                throw new BadRequest("Cannot bind path variable %s", pathVariable);
-            }
-            Class<?> fieldType = fieldPathVariableInfo.fieldType();
-            Object fieldVal = app.resolverManager().resolve(pathVariableVal, fieldType);
-            if (null == fieldVal) {
-                throw new BindException("Cannot resolve path variable: %s into %s", pathVariable, fieldType);
-            }
-            $.setProperty(inst, pathVariableVal, fieldName);
-        }
+//        List<FieldPathVariableInfo> list = controller.fieldPathVariableInfos();
+//        for (FieldPathVariableInfo fieldPathVariableInfo : list) {
+//            String fieldName = fieldPathVariableInfo.fieldName();
+//            String pathVariable = fieldPathVariableInfo.pathVariable();
+//            String pathVariableVal = context.paramVal(pathVariable);
+//            boolean optional = fieldPathVariableInfo.optional();
+//            if (null == pathVariableVal) {
+//                if (optional) {
+//                    continue;
+//                }
+//                throw new BadRequest("Cannot bind path variable %s", pathVariable);
+//            }
+//            Class<?> fieldType = fieldPathVariableInfo.fieldType();
+//            Object fieldVal = app.resolverManager().resolve(pathVariableVal, fieldType);
+//            if (null == fieldVal) {
+//                throw new BindException("Cannot resolve path variable: %s into %s", pathVariable, fieldType);
+//            }
+//            $.setProperty(inst, pathVariableVal, fieldName);
+//        }
         return inst;
     }
 
@@ -266,7 +266,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
     }
 
     private Object[] params2(ActionContext context) {
-        return paramValueLoaderManager.load(method, context, injector);
+        return paramValueLoaderManager.loadMethodParams(method, context, injector);
     }
 
     private Object[] params(ActionContext ctx, Result result, Exception exception) {
