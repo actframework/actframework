@@ -31,7 +31,6 @@ public class BinderManager extends AppServiceBase<BinderManager> {
 
     public BinderManager(App app) {
         super(app);
-        registerPredefinedBinders();
         registerBuiltInBinders(app.config());
     }
 
@@ -50,16 +49,12 @@ public class BinderManager extends AppServiceBase<BinderManager> {
         return this;
     }
 
-    public Binder binder(Class<?> clazz, Class<?> componentType, HandlerParamMetaInfo paramMetaInfo) {
+    public Binder binder(Class<?> clazz) {
         return binders.get(clazz);
     }
 
     public Binder binder(HandlerParamMetaInfo paramMetaInfo) {
         return binders.get(paramMetaInfo);
-    }
-
-    private void registerPredefinedBinders() {
-        binders.putAll(Binder.predefined());
     }
 
     private void registerBuiltInBinders(AppConfig config) {
@@ -68,16 +63,4 @@ public class BinderManager extends AppServiceBase<BinderManager> {
         binders.put(SObject.class, new SObjectBinder());
     }
 
-    private static final Set<?> supportedComponentTypes = C.setOf(
-            String.class, Boolean.class, Byte.class, Character.class,
-            Short.class, Integer.class, Float.class, Long.class, Double.class,
-            Str.class, FastStr.class
-    );
-
-    private static boolean support(Class<?> type) {
-        if (supportedComponentTypes.contains(type)) {
-            return true;
-        }
-        return (Enum.class.isAssignableFrom(type));
-    }
 }

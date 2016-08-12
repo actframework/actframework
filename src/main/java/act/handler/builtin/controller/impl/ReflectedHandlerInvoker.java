@@ -50,15 +50,7 @@ import java.util.Set;
 public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends DestroyableBase
         implements ActionHandlerInvoker, AfterInterceptorInvoker, ExceptionInterceptorInvoker {
 
-    private static $.Visitor<ActionContext> STORE_APPCTX_TO_THREAD_LOCAL = new $.Visitor<ActionContext>() {
-        @Override
-        public void visit(ActionContext actionContext) throws $.Break {
-            //actionContext.saveLocal();
-        }
-    };
-
     private static Map<String, $.F2<ActionContext, Object, ?>> fieldName_appCtxHandler_lookup = C.newMap();
-    private App app;
     private ClassLoader cl;
     private ControllerClassMetaInfo controller;
     private Class<?> controllerClass;
@@ -77,7 +69,6 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
     private DependencyInjector<?> injector;
 
     protected ReflectedHandlerInvoker(M handlerMetaInfo, App app) {
-        this.app = app;
         this.cl = app.classLoader();
         this.handler = handlerMetaInfo;
         this.controller = handlerMetaInfo.classInfo();
@@ -135,7 +126,6 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
 
     @Override
     protected void releaseResources() {
-        app = null;
         cl = null;
         controller = null;
         controllerClass = null;
@@ -175,7 +165,6 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
     public Result handle(Result result, ActionContext actionContext) throws Exception {
         Object ctrl = controllerInstance(actionContext);
         applyAppContext(actionContext, ctrl);
-        //Object[] params = params(actionContext, result, null);
         Object[] params = params2(actionContext);
         return invoke(handler, actionContext, ctrl, params);
     }
@@ -195,25 +184,6 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
             inst = paramValueLoaderManager.loadHostBean(controllerClass, context, injector);
             context.__controllerInstance(controllerName, inst);
         }
-//        List<FieldPathVariableInfo> list = controller.fieldPathVariableInfos();
-//        for (FieldPathVariableInfo fieldPathVariableInfo : list) {
-//            String fieldName = fieldPathVariableInfo.fieldName();
-//            String pathVariable = fieldPathVariableInfo.pathVariable();
-//            String pathVariableVal = context.paramVal(pathVariable);
-//            boolean optional = fieldPathVariableInfo.optional();
-//            if (null == pathVariableVal) {
-//                if (optional) {
-//                    continue;
-//                }
-//                throw new BadRequest("Cannot bind path variable %s", pathVariable);
-//            }
-//            Class<?> fieldType = fieldPathVariableInfo.fieldType();
-//            Object fieldVal = app.resolverManager().resolve(pathVariableVal, fieldType);
-//            if (null == fieldVal) {
-//                throw new BindException("Cannot resolve path variable: %s into %s", pathVariable, fieldType);
-//            }
-//            $.setProperty(inst, pathVariableVal, fieldName);
-//        }
         return inst;
     }
 
@@ -267,226 +237,6 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
 
     private Object[] params2(ActionContext context) {
         return paramValueLoaderManager.loadMethodParams(method, context, injector);
-    }
-
-    private Object[] params(ActionContext ctx, Result result, Exception exception) {
-        int paramCount = handler.paramCount();
-        int ctxParamCount = handler.ctxParamCount();
-        Object[] oa = new Object[paramCount];
-        if (0 == paramCount) {
-            return oa;
-        }
-        StringValueResolverManager resolverManager = app.resolverManager();
-        BinderManager binderManager = app.binderManager();
-
-        for (int i = 0; i < paramCount; ++i) {
-            HandlerParamMetaInfo param = handler.param(i);
-            Class<?> paramType = paramTypes[i];
-            if (ActionContext.class.equals(paramType)) {
-                oa[i] = ctx;
-                continue;
-            }
-            if (param.isContext()) {
-                oa[i] = app.getInstance(paramType);
-                continue;
-            }
-            Class<?> paramComponentType = paramComponentTypes[i];
-            if (null == paramComponentType) {
-                paramComponentType = paramType.getComponentType();
-            }
-            try {
-                BindAnnoInfo bindInfo = param.bindAnnoInfo();
-                Binder<?> binder = null;
-                String bindName = param.bindName();
-                if (null != bindInfo) {
-                    binder = bindInfo.binder(ctx);
-                    bindName = bindInfo.model();
-                } else {
-                    Type type = param.type();
-                    if (null != type) {
-                        binder = binderManager.binder(paramType, $.classForName(type.getClassName(), cl), param);
-                        if (null == binder) {
-                            binder = binderManager.binder(param);
-                        }
-                    }
-                }
-                Object o = null;
-                if (null != binder) {
-                    o = binder.resolve(null, bindName, ctx);
-                    if (null != o) {
-                        oa[i] = o;
-                        continue;
-                    }
-                }
-                StringValueResolver resolver = null;
-                if (param.resolverDefined()) {
-                    resolver = param.resolver(app);
-                }
-                String[] reqVals = ctx.paramVals(bindName);
-                if (null == reqVals || reqVals.length == 1) {
-                    if (null != reqVals && String.class.equals(paramType)) {
-                        o = reqVals[0];
-                    } else {
-                        o = ctx.tryParseJson(bindName, paramType, paramComponentType, paramCount - ctxParamCount);
-                    }
-                }
-                if (null != o) {
-                    if (paramType != String.class && o instanceof String) {
-                        oa[i] = resolverManager.resolve((String) o, paramType);
-                    } else if (paramType.isAssignableFrom(o.getClass())) {
-                        oa[i] = o;
-                    } else {
-
-                        // try primitive wrapper juggling
-                        if (paramType.isPrimitive()) {
-                            if ($.wrapperClassOf(paramType).isAssignableFrom(o.getClass())) {
-                                oa[i] = o;
-                                continue;
-                            }
-                        } else if (paramType == String.class) {
-                            oa[i] = S.string(o);
-                            continue;
-                        } else if (paramType.isArray()) {
-                            if (o instanceof List) {
-                                List list = (List) o;
-                                Object array = Array.newInstance(paramComponentType, list.size());
-                                for (int ai = 0; ai < list.size(); ++ai) {
-                                    Object e = list.get(ai);
-                                    if (null == e) {
-                                        continue;
-                                    }
-                                    Array.set(array, ai, list.get(ai));
-                                }
-                                oa[i] = array;
-                                continue;
-                            }
-                        } else if (Set.class.isAssignableFrom(paramType)) {
-                            if (o instanceof Collection) {
-                                Set set = $.cast(newInstance(paramType));
-                                set.addAll((Collection) o);
-                                oa[i] = set;
-                                continue;
-                            }
-                        }
-                        throw new BindException("Cannot resolve parameter[%s] from %s", bindName, o);
-                    }
-                    continue;
-                }
-                if (null != reqVals && (paramType.isArray() || Iterable.class.isAssignableFrom(paramType))) {
-                    int len = reqVals.length;
-                    if (paramType.isArray()) {
-                        o = Array.newInstance(paramComponentType, len);
-                        for (int j = 0; j < len; ++j) {
-                            String s = reqVals[j];
-                            Object e = null == resolver ? resolver.resolve(s) : resolverManager.resolve(s, paramComponentType);
-                            if (null == e) {
-                                e = JSON.parseObject(s, paramComponentType);
-                            }
-                            Array.set(o, j, e);
-                        }
-                    } else {
-                        Collection c = null;
-                        if (List.class.isAssignableFrom(paramType)) {
-                            c = C.newList();
-                        } else if (Set.class.isAssignableFrom(paramType)) {
-                            c = C.newSet();
-                        }
-                        if (null != c) {
-                            o = c;
-                            for (String s : reqVals) {
-                                Object e = null != resolver ? resolver.resolve(s) : resolverManager.resolve(s, paramComponentType);
-                                if (null == e) {
-                                    e = JSON.parseObject(s, paramComponentType);
-                                }
-                                c.add(e);
-                            }
-                        }
-                    }
-                } else {
-                    String reqVal = null == reqVals ? null : reqVals[0];
-                    if (null == resolver) {
-                        o = resolverManager.resolve(reqVal, paramType);
-                    } else {
-                        o = resolver.resolve(reqVal);
-                    }
-                    if (null == o) {
-                        try {
-                            if (paramType.isArray()) {
-                                List list = C.newList();
-                                paramComponentType = paramType.getComponentType();
-                                list = (List) autoBinder.resolveSimpleTypeContainer(list, bindName, ctx, paramComponentType);
-                                if (null != list) {
-                                    o = Array.newInstance(paramComponentType, list.size());
-                                    for (int ai = 0; ai < list.size(); ++ai) {
-                                        Object e = list.get(ai);
-                                        if (null == e) {
-                                            continue;
-                                        }
-                                        Array.set(o, ai, e);
-                                    }
-                                }
-                            } else if (Collection.class.isAssignableFrom(paramType)) {
-                                List list = C.newList();
-                                list = (List) autoBinder.resolveSimpleTypeContainer(list, bindName, ctx, paramComponentType);
-                                if (null != list) {
-                                    o = newInstance(paramType);
-                                    ((Collection) o).addAll(list);
-                                }
-                            } else {
-                                Object entity = newInstance(paramType);
-                                o = autoBinder.resolve(entity, bindName, ctx);
-                            }
-                        } catch (Exception e) {
-                            App.logger.warn(e, "Error binding parameter %s", bindName);
-                        }
-                    }
-                }
-                if (null == o) {
-                    o = param.defVal(paramType);
-                }
-                if (null != o) {
-                    oa[i] = o;
-                    continue;
-                }
-                List<ActionMethodParamAnnotationHandler> annotationHandlers = paramAnnoHandlers.get(i);
-                if (null != annotationHandlers) {
-                    String paraName = param.name();
-                    Object val = oa[i];
-                    for (ActionMethodParamAnnotationHandler annotationHandler : annotationHandlers) {
-                        for (Annotation annotation : paramAnnotationList(i)) {
-                            annotationHandler.handle(paraName, val, annotation, ctx);
-                        }
-                    }
-                }
-            } catch (RuntimeException e) {
-                throw new BindException(e);
-            }
-        }
-        return oa;
-    }
-
-    private Object newInstance(Class c) {
-        if (Iterable.class.equals(c) || List.class.equals(c)) {
-            return C.newList();
-        } else if (Map.class.equals(c)) {
-            return C.newMap();
-        } else if (Set.class.equals(c)) {
-            return C.newSet();
-        }
-        return app.getInstance(c);
-    }
-
-    private List<Annotation> paramAnnotationList(int paramIndex) {
-        HandlerParamMetaInfo paramMetaInfo = handler.param(paramIndex);
-        List<Annotation> retVal = C.newList();
-        List<GeneralAnnoInfo> infoList = paramMetaInfo.generalAnnoInfoList();
-        if (null == infoList) {
-            return retVal;
-        }
-        for (GeneralAnnoInfo annoInfo : infoList) {
-            retVal.add(annoInfo.toAnnotation());
-        }
-        return retVal;
     }
 
     private $.T2<Class[], Class[]> paramTypes() {
@@ -706,12 +456,6 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         protected void releaseResources() {
             invoker.destroy();
             invoker = null;
-        }
-    }
-
-    private class _ExceptionHandlerInvoker extends ReflectedHandlerInvoker<CatchMethodMetaInfo> {
-        protected _ExceptionHandlerInvoker(CatchMethodMetaInfo handlerMetaInfo, App app) {
-            super(handlerMetaInfo, app);
         }
     }
 

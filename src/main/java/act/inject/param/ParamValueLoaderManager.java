@@ -2,6 +2,7 @@ package act.inject.param;
 
 import act.app.App;
 import act.app.AppServiceBase;
+import act.app.data.BinderManager;
 import act.app.data.StringValueResolverManager;
 import act.inject.ActProviders;
 import act.inject.Context;
@@ -46,6 +47,7 @@ public class ParamValueLoaderManager extends AppServiceBase<ParamValueLoaderMana
     private static final ParamValueLoader[] NULL = new ParamValueLoader[0];
     private static final ThreadLocal<ParamTree> PARAM_TREE = new ThreadLocal<>();
     private StringValueResolverManager resolverManager;
+    private BinderManager binderManager;
     private ConcurrentMap<Method, ParamValueLoader[]> methodRegistry = new ConcurrentHashMap<>();
     private ConcurrentMap<Class, ParamValueLoader> classRegistry = new ConcurrentHashMap<>();
     private ConcurrentMap<$.T2<Type, Annotation[]>, ParamValueLoader> paramRegistry = new ConcurrentHashMap<>();
@@ -53,6 +55,7 @@ public class ParamValueLoaderManager extends AppServiceBase<ParamValueLoaderMana
     public ParamValueLoaderManager(App app) {
         super(app);
         resolverManager = app.resolverManager();
+        binderManager = app.binderManager();
     }
 
     @Override
@@ -165,22 +168,27 @@ public class ParamValueLoaderManager extends AppServiceBase<ParamValueLoaderMana
             }
             loader = new BoundedValueLoader(binder, model);
         } else {
-            Param param = filter(annotations, Param.class);
-            StringValueResolver resolver = null;
-            if (null != param) {
-                String paramName = param.value();
-                if (S.notBlank(paramName)) {
-                    name = paramName;
+            Binder binder = binderManager.binder(rawType);
+            if (null != binder) {
+                loader = new BoundedValueLoader(binder, name);
+            } else {
+                Param param = filter(annotations, Param.class);
+                StringValueResolver resolver = null;
+                if (null != param) {
+                    String paramName = param.value();
+                    if (S.notBlank(paramName)) {
+                        name = paramName;
+                    }
+                    Class<? extends StringValueResolver> resolverClass = param.resolverClass();
+                    if (Param.DEFAULT_RESOLVER.class != resolverClass) {
+                        resolver = injector.get(resolverClass);
+                    }
                 }
-                Class<? extends StringValueResolver> resolverClass = param.resolverClass();
-                if (Param.DEFAULT_RESOLVER.class != resolverClass) {
-                    resolver = injector.get(resolverClass);
+                if (null == resolver) {
+                    resolver = resolverManager.resolver(rawType);
                 }
+                loader = (null != resolver) ? new StringValueResolverValueLoader(ParamKey.of(name), resolver, param, rawType) : buildLoader(ParamKey.of(name), type, injector);
             }
-            if (null == resolver) {
-                resolver = resolverManager.resolver(rawType);
-            }
-            loader = (null != resolver) ? new StringValueResolverValueLoader(ParamKey.of(name), resolver, param, rawType) : buildLoader(ParamKey.of(name), type, injector);
         }
         return decorate(loader, spec, annotations);
     }
