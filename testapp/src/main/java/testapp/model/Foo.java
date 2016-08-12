@@ -1,9 +1,18 @@
 package testapp.model;
 
+import act.app.App;
+
+import javax.inject.Inject;
 import java.util.List;
 import java.util.Map;
 
 public class Foo {
+
+    @Inject
+    public Foo(App app) {
+        App.logger.info(app.name());
+    }
+
     private String id;
     private Bar bar;
     private Bar[] barArray;

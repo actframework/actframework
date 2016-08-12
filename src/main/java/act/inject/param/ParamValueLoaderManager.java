@@ -30,6 +30,7 @@ import javax.enterprise.context.SessionScoped;
 import javax.enterprise.inject.New;
 import javax.inject.Inject;
 import javax.inject.Named;
+import javax.inject.Provider;
 import javax.inject.Singleton;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.*;
@@ -216,44 +217,35 @@ public class ParamValueLoaderManager extends AppServiceBase<ParamValueLoaderMana
         return tree;
     }
 
-    private ParamValueLoader buildPojoLoader(final ParamKey key, final Class type, DependencyInjector<?> injector) {
+    private ParamValueLoader buildPojoLoader(final ParamKey key, final Class type, final DependencyInjector<?> injector) {
         final List<FieldLoader> fieldLoaders = fieldLoaders(key, type, injector);
-        try {
-            final Constructor constructor = type.getDeclaredConstructor();
-            if (null == constructor) {
-                throw new InjectException("cannot instantiate %s: %s", type, "no default constructor found");
-            }
-            constructor.setAccessible(true);
-            return new ParamValueLoader() {
-                @Override
-                public Object load(Object bean, ActContext context, boolean noDefaultValue) {
-                    final $.Var<Object> beanBag = $.var(bean);
-                    $.Factory<Object> beanSource = new $.Factory<Object>() {
-                        @Override
-                        public Object create() {
-                            Object bean = beanBag.get();
-                            if (null == bean) {
-                                try {
-                                    bean = constructor.newInstance();
-                                } catch (RuntimeException e) {
-                                    throw e;
-                                } catch (Exception e) {
-                                    throw new InjectException(e, "cannot instantiate %s", type);
-                                }
+        return new ParamValueLoader() {
+            @Override
+            public Object load(Object bean, ActContext context, boolean noDefaultValue) {
+                final $.Var<Object> beanBag = $.var(bean);
+                $.Factory<Object> beanSource = new $.Factory<Object>() {
+                    @Override
+                    public Object create() {
+                        Object bean = beanBag.get();
+                        if (null == bean) {
+                            try {
+                                bean = injector.get(type);
+                            } catch (RuntimeException e) {
+                                throw e;
+                            } catch (Exception e) {
+                                throw new InjectException(e, "cannot instantiate %s", type);
                             }
-                            beanBag.set(bean);
-                            return bean;
                         }
-                    };
-                    for (FieldLoader fl : fieldLoaders) {
-                        fl.applyTo(beanSource, context);
+                        beanBag.set(bean);
+                        return bean;
                     }
-                    return beanBag.get();
+                };
+                for (FieldLoader fl : fieldLoaders) {
+                    fl.applyTo(beanSource, context);
                 }
-            };
-        } catch (NoSuchMethodException e) {
-            throw new InjectException("Cannot instantiate %s", type);
-        }
+                return beanBag.get();
+            }
+        };
     }
 
     private ParamValueLoader findLoader(ParamKey paramKey, Field field, DependencyInjector<?> injector) {
