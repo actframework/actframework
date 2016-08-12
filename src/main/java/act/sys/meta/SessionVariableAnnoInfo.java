@@ -1,6 +1,6 @@
 package act.sys.meta;
 
-import act.di.SessionVariable;
+import act.inject.SessionVariable;
 
 /**
  * Capture {@link SessionVariable} annotation data

@@ -1,6 +1,6 @@
 package act.db.di;
 
-import act.di.DependencyInjectionListener;
+import act.inject.DependencyInjectionListener;
 
 public interface DaoInjectionListener extends DependencyInjectionListener {
 

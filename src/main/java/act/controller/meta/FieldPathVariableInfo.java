@@ -5,7 +5,7 @@ import act.asm.Type;
 import org.osgl.$;
 
 /**
- * Stores field information when it is annotated with {@link act.di.PathVariable}
+ * Stores field information when it is annotated with {@link act.inject.PathVariable}
  */
 public class FieldPathVariableInfo {
     private String fieldName;

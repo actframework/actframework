@@ -3,7 +3,7 @@ package act;
 import act.app.CliContext;
 import act.cli.Command;
 import act.cli.Optional;
-import act.di.Context;
+import act.inject.Context;
 import act.util.PropertySpec;
 import org.osgl.util.C;
 import org.osgl.util.E;

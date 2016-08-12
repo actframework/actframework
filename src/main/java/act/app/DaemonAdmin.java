@@ -3,7 +3,7 @@ package act.app;
 import act.cli.Command;
 import act.cli.Required;
 import act.data.JodaDateTimeCodec;
-import act.di.Context;
+import act.inject.Context;
 import act.util.PropertySpec;
 import org.joda.time.DateTime;
 import org.osgl.util.E;

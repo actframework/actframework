@@ -2,7 +2,7 @@ package act.db.di;
 
 import act.app.DbServiceManager;
 import act.db.DB;
-import act.di.DependencyInjectionListener;
+import act.inject.DependencyInjectionListener;
 import act.util.AnnotationUtil;
 import act.util.DestroyableBase;
 import org.osgl.$;
