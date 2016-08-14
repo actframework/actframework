@@ -306,12 +306,12 @@ public class ControllerEnhancerTest extends TestBase implements ControllerClassM
         m = method(int.class, String.class);
         Annotation[][] aa = m.getParameterAnnotations();
         Annotation[] fooAnnos = aa[0];
-        eq(2, fooAnnos.length);
+        eq(1, fooAnnos.length);
         yes(fooAnnos[0] instanceof Named);
         Named fooName = (Named) fooAnnos[0];
         eq("foo", fooName.value());
         Annotation[] barAnnos = aa[1];
-        eq(2, barAnnos.length);
+        eq(1, barAnnos.length);
         yes(barAnnos[0] instanceof Named);
         Named barName = (Named) barAnnos[0];
         eq("zoo", barName.value());

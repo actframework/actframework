@@ -16,7 +16,6 @@ import act.view.Template;
 import act.view.TemplatePathResolver;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONException;
-import com.esotericsoftware.reflectasm.FieldAccess;
 import com.esotericsoftware.reflectasm.MethodAccess;
 import org.osgl.$;
 import org.osgl.http.H;
@@ -28,7 +27,6 @@ import org.osgl.util.C;
 import org.osgl.util.E;
 import org.osgl.util.S;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Map;
@@ -41,17 +39,14 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         implements ActionHandlerInvoker, AfterInterceptorInvoker, ExceptionInterceptorInvoker {
 
     private static final Object[] DUMP_PARAMS = new Object[0];
-    private static Map<String, $.F2<ActionContext, Object, ?>> fieldName_appCtxHandler_lookup = C.newMap();
     private ClassLoader cl;
     private ControllerClassMetaInfo controller;
     private Class<?> controllerClass;
     protected MethodAccess methodAccess;
     private M handler;
     protected int handlerIndex;
-    private ActContextInjection ctxInjection;
     private Map<H.Format, Boolean> templateCache = C.newMap();
     protected Method method; //
-    protected $.F2<ActionContext, Object, ?> fieldAppCtxHandler;
     private ParamValueLoaderManager paramValueLoaderManager;
     private JsonDTOClassManager jsonDTOClassManager;
     private int paramCount;
@@ -65,12 +60,6 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         this.controllerClass = $.classForName(controller.className(), cl);
         this.paramValueLoaderManager = app.service(ParamValueLoaderManager.class);
         this.jsonDTOClassManager = app.service(JsonDTOClassManager.class);
-
-        this.ctxInjection = handlerMetaInfo.appContextInjection();
-        if (ctxInjection.injectVia().isField()) {
-            ActContextInjection.FieldActContextInjection faci = (ActContextInjection.FieldActContextInjection) ctxInjection;
-            fieldAppCtxHandler = storeAppCtxToCtrlrField(faci.fieldName(), controllerClass);
-        }
 
         Class[] paramTypes = paramTypes(cl);
         try {
@@ -103,9 +92,6 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         methodAccess = null;
         handler.destroy();
         handler = null;
-        fieldAppCtxHandler = null;
-        fieldName_appCtxHandler_lookup.clear();
-        ctxInjection = null;
         super.releaseResources();
     }
 
@@ -126,7 +112,6 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
     public Result handle(ActionContext actionContext) throws Exception {
         ensureJsonDTOGenerated(actionContext);
         Object ctrl = controllerInstance(actionContext);
-        applyAppContext(actionContext, ctrl);
         Object[] params = params(actionContext);
         return invoke(handler, actionContext, ctrl, params);
     }
@@ -134,19 +119,13 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
     @Override
     public Result handle(Result result, ActionContext actionContext) throws Exception {
         actionContext.attribute(ActionContext.ATTR_RESULT, result);
-        Object ctrl = controllerInstance(actionContext);
-        applyAppContext(actionContext, ctrl);
-        Object[] params = params(actionContext);
-        return invoke(handler, actionContext, ctrl, params);
+        return handle(actionContext);
     }
 
     @Override
     public Result handle(Exception e, ActionContext actionContext) throws Exception {
         actionContext.attribute(ActionContext.ATTR_EXCEPTION, e);
-        Object ctrl = handler.isStatic() ? null : controllerInstance(actionContext);
-        applyAppContext(actionContext, ctrl);
-        Object[] params = params(actionContext);
-        return invoke(handler, actionContext, ctrl, params);
+        return handle(actionContext);
     }
 
     private void ensureJsonDTOGenerated(ActionContext context) {
@@ -171,6 +150,10 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         }
     }
 
+    /**
+     * Suppose method signature is: `public void foo(Foo foo)`, and a JSON content is
+     * not `{"foo": {foo-content}}`, then wrap it as `{"foo": body}`
+     */
     private String patchedJsonBody(ActionContext context) {
         String body = context.body();
         if (S.blank(body) || 1 < fieldsAndParamsCount) {
@@ -226,13 +209,6 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         return inst;
     }
 
-    private void applyAppContext(ActionContext actionContext, Object controller) {
-        if (null != fieldAppCtxHandler) {
-            fieldAppCtxHandler.apply(actionContext, controller);
-        }
-        // ignore ContextLocal save as it's processed for one time when RequestHandlerProxy is invoked
-    }
-
     private Result invoke(M handlerMetaInfo, ActionContext context, Object controller, Object[] params) throws Exception {
         Object result;
         if (null != methodAccess) {
@@ -279,59 +255,6 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
             return DUMP_PARAMS;
         }
         return paramValueLoaderManager.loadMethodParams(method, context);
-    }
-
-    private static $.F2<ActionContext, Object, ?> storeAppCtxToCtrlrField(final String fieldName, final Class<?> controllerClass) {
-        String key = S.builder(controllerClass.getName()).append(".").append(fieldName).toString();
-        $.F2<ActionContext, Object, ?> ctxHandler = fieldName_appCtxHandler_lookup.get(key);
-        if (null == ctxHandler) {
-            ctxHandler = new $.F2<ActionContext, Object, Void>() {
-                private FieldAccess fieldAccess = FieldAccess.get(controllerClass);
-                private int fieldIdx = getFieldIndex(fieldName, fieldAccess);
-                private Field field = getCtxField(fieldName);
-
-                @Override
-                public Void apply(ActionContext actionContext, Object controllerInstance) throws $.Break {
-                    if (fieldIdx >= 0) {
-                        fieldAccess.set(controllerInstance, fieldIdx, actionContext);
-                    } else {
-                        try {
-                            field.set(controllerInstance, actionContext);
-                        } catch (IllegalAccessException e) {
-                            throw E.unexpected(e);
-                        }
-                    }
-                    return null;
-                }
-
-                private int getFieldIndex(String fieldName, FieldAccess fieldAccess) {
-                    try {
-                        return fieldAccess.getIndex(fieldName);
-                    } catch (Exception e) {
-                        return -1;
-                    }
-                }
-
-                private Field getCtxField(String fieldName) {
-                    if (fieldIdx < 0) {
-                        Class c = controllerClass;
-                        while (!Object.class.equals(c)) {
-                            try {
-                                Field f = c.getDeclaredField(fieldName);
-                                f.setAccessible(true);
-                                return f;
-                            } catch (Exception e) {
-                                // ignore
-                            }
-                        }
-                        throw E.unexpected("Cannot find field %s in controller class %s", fieldName, controllerClass);
-                    }
-                    return null;
-                }
-            };
-            fieldName_appCtxHandler_lookup.put(key, ctxHandler);
-        }
-        return ctxHandler;
     }
 
     public static ControllerAction createControllerAction(ActionMethodMetaInfo meta, App app) {
