@@ -19,13 +19,15 @@ import java.util.Map;
 @SuppressWarnings("unused")
 public class PojoBinding {
 
+    private Foo foo;
+
     @Action(value = "ctct", methods = {H.Method.POST, H.Method.PUT})
     public Contact createContact(Contact contact) {
         return contact;
     }
 
     @Action(value = "foo", methods = {H.Method.POST, H.Method.PUT, H.Method.GET})
-    public Foo foo(Foo foo) {
+    public Foo foo() {
         return foo;
     }
 

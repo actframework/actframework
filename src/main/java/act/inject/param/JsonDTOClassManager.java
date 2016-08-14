@@ -76,7 +76,7 @@ public class JsonDTOClassManager extends AppServiceBase<JsonDTOClassManager> {
 
     private void extractBeanSpec(List<BeanSpec> beanSpecs, List<Field> fields) {
         for (Field field : fields) {
-            beanSpecs.add(BeanSpec.of(field.getDeclaringClass(), field.getDeclaredAnnotations(), field.getName(), injector));
+            beanSpecs.add(BeanSpec.of(field.getGenericType(), field.getDeclaredAnnotations(), field.getName(), injector));
         }
     }
 

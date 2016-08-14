@@ -52,7 +52,6 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
     private ClassLoader cl;
     private ControllerClassMetaInfo controller;
     private Class<?> controllerClass;
-    private AutoBinder autoBinder;
     protected MethodAccess methodAccess;
     private M handler;
     protected int handlerIndex;
@@ -63,7 +62,6 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
     protected Method method; //
     protected $.F2<ActionContext, Object, ?> fieldAppCtxHandler;
     private ParamValueLoaderManager paramValueLoaderManager;
-    private DependencyInjector<?> injector;
     private JsonDTOClassManager jsonDTOClassManager;
     private int paramCount;
     private int fieldsAndParamsCount;
@@ -75,7 +73,6 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         this.controller = handlerMetaInfo.classInfo();
         this.controllerClass = $.classForName(controller.className(), cl);
         this.paramValueLoaderManager = app.service(ParamValueLoaderManager.class);
-        this.injector = app.injector();
         this.jsonDTOClassManager = app.service(JsonDTOClassManager.class);
 
         this.ctxInjection = handlerMetaInfo.appContextInjection();
@@ -83,8 +80,6 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
             ActContextInjection.FieldActContextInjection faci = (ActContextInjection.FieldActContextInjection) ctxInjection;
             fieldAppCtxHandler = storeAppCtxToCtrlrField(faci.fieldName(), controllerClass);
         }
-
-        this.autoBinder = new AutoBinder(app);
 
         $.T2<Class[], Class[]> t2 = paramTypes();
         paramTypes = t2._1;
