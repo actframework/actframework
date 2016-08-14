@@ -11,4 +11,5 @@ public abstract class StringValueResolverPlugin<T> extends StringValueResolver<T
     public void register() {
         StringValueResolver.addPredefinedResolver(targetType(), this);
     }
+
 }

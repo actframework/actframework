@@ -57,8 +57,6 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
     protected int handlerIndex;
     private ActContextInjection ctxInjection;
     private Map<H.Format, Boolean> templateCache = C.newMap();
-    private Class[] paramTypes;
-    private Map<Integer, List<ActionMethodParamAnnotationHandler>> paramAnnoHandlers = null;
     protected Method method; //
     protected $.F2<ActionContext, Object, ?> fieldAppCtxHandler;
     private ParamValueLoaderManager paramValueLoaderManager;
@@ -81,20 +79,12 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
             fieldAppCtxHandler = storeAppCtxToCtrlrField(faci.fieldName(), controllerClass);
         }
 
-        $.T2<Class[], Class[]> t2 = paramTypes();
-        paramTypes = t2._1;
+        Class[] paramTypes = paramTypes(cl);
         try {
             method = controllerClass.getMethod(handlerMetaInfo.name(), paramTypes);
         } catch (NoSuchMethodException e) {
             throw E.unexpected(e);
         }
-        paramCount = method.getParameterTypes().length;
-        List<BeanSpec> list = jsonDTOClassManager.beanSpecs(controllerClass, method);
-        fieldsAndParamsCount = list.size();
-        if (fieldsAndParamsCount == 1) {
-            singleJsonFieldName = list.get(0).name();
-        }
-
         if (!handlerMetaInfo.isStatic()) {
             //constructorAccess = ConstructorAccess.get(controllerClass);
             methodAccess = MethodAccess.get(controllerClass);
@@ -102,28 +92,12 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         } else {
             method.setAccessible(true);
         }
-        paramAnnoHandlers = C.newMap();
-        if (paramTypes.length > 0) {
-            ClassLoader classLoader = cl;
-            List<ActionMethodParamAnnotationHandler> availableHandlers = Act.pluginManager().pluginList(ActionMethodParamAnnotationHandler.class);
-            for (ActionMethodParamAnnotationHandler annotationHandler : availableHandlers) {
-                Set<Class<? extends Annotation>> listenTo = annotationHandler.listenTo();
-                for (int i = 0, j = paramTypes.length; i < j; ++i) {
-                    HandlerParamMetaInfo paramMetaInfo = handlerMetaInfo.param(i);
-                    List<GeneralAnnoInfo> annoInfoList = paramMetaInfo.generalAnnoInfoList();
-                    for (GeneralAnnoInfo annoInfo : annoInfoList) {
-                        Class<? extends Annotation> annoClass = annoInfo.annotationClass(classLoader);
-                        if (listenTo.contains(annoClass)) {
-                            List<ActionMethodParamAnnotationHandler> handlerList = paramAnnoHandlers.get(i);
-                            if (null == handlerList) {
-                                handlerList = C.newList();
-                                paramAnnoHandlers.put(i, handlerList);
-                            }
-                            handlerList.add(annotationHandler);
-                        }
-                    }
-                }
-            }
+
+        paramCount = handler.paramCount();
+        List<BeanSpec> beanSpecs = jsonDTOClassManager.beanSpecs(controllerClass, method);
+        fieldsAndParamsCount = beanSpecs.size();
+        if (fieldsAndParamsCount == 1) {
+            singleJsonFieldName = beanSpecs.get(0).name();
         }
     }
 
@@ -136,7 +110,6 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         methodAccess = null;
         handler.destroy();
         handler = null;
-        paramTypes = null;
         fieldAppCtxHandler = null;
         fieldName_appCtxHandler_lookup.clear();
         ctxInjection = null;
@@ -238,6 +211,16 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         return needPatch ? S.fmt("{\"%s\": %s}", singleJsonFieldName, body) : body;
     }
 
+    private Class[] paramTypes(ClassLoader cl) {
+        int sz = handler.paramCount();
+        Class[] ca = new Class[sz];
+        for (int i = 0; i < sz; ++i) {
+            HandlerParamMetaInfo param = handler.param(i);
+            ca[i] = $.classForName(param.type().getClassName(), cl);
+        }
+        return ca;
+    }
+
     private Object controllerInstance(ActionContext context) {
         String controllerName = controllerClass.getName();
         Object inst = context.__controllerInstance(controllerName);
@@ -301,27 +284,6 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
             return DUMP_PARAMS;
         }
         return paramValueLoaderManager.loadMethodParams(method, context);
-    }
-
-    private $.T2<Class[], Class[]> paramTypes() {
-        int paramCount = handler.paramCount();
-        Class[] ca = new Class[paramCount];
-        Class[] ca2 = new Class[paramCount];
-        if (0 == paramCount) {
-            return $.T2(ca, ca2);
-        }
-        for (int i = 0; i < paramCount; ++i) {
-            HandlerParamMetaInfo param = handler.param(i);
-            String className = param.type().getClassName();
-            ca[i] = $.classForName(className, cl);
-            Type componentType = param.componentType();
-            if (null == componentType) {
-                ca2[i] = null;
-            } else {
-                ca2[i] = $.classForName(componentType.getClassName(), cl);
-            }
-        }
-        return $.T2(ca, ca2);
     }
 
     private static $.F2<ActionContext, Object, ?> storeAppCtxToCtrlrField(final String fieldName, final Class<?> controllerClass) {

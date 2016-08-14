@@ -1,9 +1,12 @@
 package act.inject.param;
 
+import act.Act;
+import act.app.ActionContext;
 import act.app.App;
 import act.app.AppServiceBase;
 import act.app.data.BinderManager;
 import act.app.data.StringValueResolverManager;
+import act.controller.ActionMethodParamAnnotationHandler;
 import act.inject.ActProviders;
 import act.inject.Context;
 import act.inject.DependencyInjector;
@@ -52,12 +55,22 @@ public class ParamValueLoaderManager extends AppServiceBase<ParamValueLoaderMana
     private ConcurrentMap<Method, ParamValueLoader[]> methodRegistry = new ConcurrentHashMap<>();
     private ConcurrentMap<Class, ParamValueLoader> classRegistry = new ConcurrentHashMap<>();
     private ConcurrentMap<$.T2<Type, Annotation[]>, ParamValueLoader> paramRegistry = new ConcurrentHashMap<>();
+    private ConcurrentMap<BeanSpec, Map<Class<? extends Annotation>, ActionMethodParamAnnotationHandler>> annoHandlers = new ConcurrentHashMap<>();
+    private Map<Class<? extends Annotation>, ActionMethodParamAnnotationHandler> allAnnotationHandlers;
 
     public ParamValueLoaderManager(App app) {
         super(app);
         resolverManager = app.resolverManager();
         binderManager = app.binderManager();
         injector = app.injector();
+        allAnnotationHandlers = new HashMap<>();
+        List<ActionMethodParamAnnotationHandler> list = Act.pluginManager().pluginList(ActionMethodParamAnnotationHandler.class);
+        for (ActionMethodParamAnnotationHandler h : list) {
+            Set<Class<? extends Annotation>> set = h.listenTo();
+            for (Class<? extends Annotation> c: set) {
+                allAnnotationHandlers.put(c, h);
+            }
+        }
     }
 
     @Override
@@ -357,13 +370,45 @@ public class ParamValueLoaderManager extends AppServiceBase<ParamValueLoaderMana
     }
 
     private ParamValueLoader decorate(
-            ParamValueLoader loader,
-            BeanSpec spec,
-            Annotation[] annotations,
+            final ParamValueLoader loader,
+            final BeanSpec spec,
+            final Annotation[] annotations,
             boolean useJsonDecorator
     ) {
-        loader = useJsonDecorator ? new JsonParamValueLoader(loader, spec, injector) : loader;
-        return new ScopedParamValueLoader(loader, spec, scopeCacheSupport(annotations));
+        final ParamValueLoader jsonDecorated = useJsonDecorator ? new JsonParamValueLoader(loader, spec, injector) : loader;
+        final Map<Class<? extends Annotation>, ActionMethodParamAnnotationHandler> handlers = paramAnnoHandlers(spec);
+        final ParamValueLoader annoHandlerDecorated = new ParamValueLoader() {
+            @Override
+            public Object load(Object bean, ActContext<?> context, boolean noDefaultValue) {
+                Object object = jsonDecorated.load(bean, context, noDefaultValue);
+                if (!(context instanceof ActionContext) || null == handlers) {
+                    return object;
+                }
+                for (Map.Entry<Class<? extends Annotation>, ActionMethodParamAnnotationHandler> entry : handlers.entrySet()) {
+                    Annotation ann = filter(annotations, entry.getKey());
+                    entry.getValue().handle(spec.name(), object, ann, (ActionContext) context);
+                }
+                return object;
+            }
+        };
+        return new ScopedParamValueLoader(annoHandlerDecorated, spec, scopeCacheSupport(annotations));
+    }
+
+    private Map<Class<? extends Annotation>, ActionMethodParamAnnotationHandler> paramAnnoHandlers(BeanSpec spec) {
+        Map<Class<? extends Annotation>, ActionMethodParamAnnotationHandler> handlers = annoHandlers.get(spec);
+        if (null != handlers) {
+            return handlers;
+        }
+        handlers = new HashMap<>();
+        for (Annotation annotation : spec.allAnnotations()) {
+            Class<? extends Annotation> c = annotation.annotationType();
+            ActionMethodParamAnnotationHandler h = allAnnotationHandlers.get(c);
+            if (null != h) {
+                handlers.put(c, h);
+            }
+        }
+        annoHandlers.putIfAbsent(spec, handlers);
+        return handlers;
     }
 
     private static ScopeCacheSupport scopeCacheSupport(Annotation[] annotations) {

@@ -1,7 +1,9 @@
 package act.inject.genie;
 
+import act.Act;
 import act.app.App;
 import act.app.event.AppEventId;
+import act.controller.ActionMethodParamAnnotationHandler;
 import act.inject.DependencyInjectionBinder;
 import act.inject.DependencyInjectorBase;
 import act.inject.ActProviders;
@@ -119,6 +121,14 @@ public class GenieInjector extends DependencyInjectorBase<GenieInjector> {
                         }
                     };
                     genie.registerQualifiers(Bind.class, Param.class);
+                    List<ActionMethodParamAnnotationHandler> list = Act.pluginManager().pluginList(ActionMethodParamAnnotationHandler.class);
+                    for (ActionMethodParamAnnotationHandler h : list) {
+                        Set<Class<? extends Annotation>> set = h.listenTo();
+                        for (Class<? extends Annotation> c: set) {
+                            genie.registerQualifiers(c);
+                        }
+                    }
+
                     ActProviders.registerBuiltInProviders(ActProviders.class, register);
                     ActProviders.registerBuiltInProviders(GenieProviders.class, register);
                 }
