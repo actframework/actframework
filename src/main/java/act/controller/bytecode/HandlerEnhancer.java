@@ -81,9 +81,9 @@ public class HandlerEnhancer extends MethodVisitor implements Opcodes {
                 AnnotationVisitor av = mv.visitParameterAnnotation(i, "Ljavax/inject/Named;", true);
                 av.visit("value", name);
             }
-            if (!skipScoping.contains(i)) {
-                mv.visitParameterAnnotation(i, "Ljavax/enterprise/context/RequestScoped;", true);
-            }
+//            if (!skipScoping.contains(i)) {
+//                mv.visitParameterAnnotation(i, "Ljavax/enterprise/context/RequestScoped;", true);
+//            }
         }
     }
 

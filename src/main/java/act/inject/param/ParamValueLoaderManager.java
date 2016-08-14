@@ -22,6 +22,7 @@ import org.osgl.inject.annotation.Provided;
 import org.osgl.inject.util.ArrayLoader;
 import org.osgl.mvc.annotation.Bind;
 import org.osgl.mvc.annotation.Param;
+import org.osgl.mvc.result.Result;
 import org.osgl.mvc.util.Binder;
 import org.osgl.util.C;
 import org.osgl.util.S;
@@ -47,8 +48,24 @@ import java.util.concurrent.ConcurrentMap;
  */
 public class ParamValueLoaderManager extends AppServiceBase<ParamValueLoaderManager> {
 
+    public static final String CTX_EXCEPTION = "__exception__";
+    public static final String CTX_RESULT = "__result__";
+
     private static final ParamValueLoader[] DUMB = new ParamValueLoader[0];
     private static final ThreadLocal<ParamTree> PARAM_TREE = new ThreadLocal<>();
+    private static final ParamValueLoader RESULT_LOADER = new ParamValueLoader() {
+        @Override
+        public Object load(Object bean, ActContext<?> context, boolean noDefaultValue) {
+            return context.attribute(ActionContext.ATTR_RESULT);
+        }
+    };
+    private static final ParamValueLoader EXCEPTION_LOADED = new ParamValueLoader() {
+        @Override
+        public Object load(Object bean, ActContext<?> context, boolean noDefaultValue) {
+            return context.attribute(ActionContext.ATTR_EXCEPTION);
+        }
+    };
+
     private StringValueResolverManager resolverManager;
     private BinderManager binderManager;
     private DependencyInjector<?> injector;
@@ -151,7 +168,13 @@ public class ParamValueLoaderManager extends AppServiceBase<ParamValueLoaderMana
             BeanSpec spec = BeanSpec.of(types[i], annotations[i], injector);
             ParamValueLoader loader = paramRegistry.get(spec);
             if (null == loader) {
-                loader = findLoader(spec, types[i], annotations[i], injector);
+                if (Result.class.isAssignableFrom(spec.rawType())) {
+                    loader = RESULT_LOADER;
+                } else if (Exception.class.isAssignableFrom(spec.rawType())) {
+                    loader = EXCEPTION_LOADED;
+                } else {
+                    loader = findLoader(spec, types[i], annotations[i], injector);
+                }
                 // Cannot use spec as the key here because
                 // spec does not compare Scoped annotation
                 paramRegistry.putIfAbsent($.T2(types[i], annotations[i]), loader);

@@ -5,18 +5,13 @@ import act.ActComponent;
 import act.app.ActionContext;
 import act.app.App;
 import act.app.AppClassLoader;
-import act.asm.Type;
-import act.controller.ActionMethodParamAnnotationHandler;
 import act.controller.Controller;
 import act.controller.meta.*;
-import act.data.AutoBinder;
 import act.handler.builtin.controller.*;
-import act.inject.DependencyInjector;
 import act.inject.param.JsonDTO;
 import act.inject.param.JsonDTOClassManager;
 import act.inject.param.ParamValueLoaderManager;
 import act.util.DestroyableBase;
-import act.util.GeneralAnnoInfo;
 import act.view.Template;
 import act.view.TemplatePathResolver;
 import com.alibaba.fastjson.JSON;
@@ -33,12 +28,10 @@ import org.osgl.util.C;
 import org.osgl.util.E;
 import org.osgl.util.S;
 
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * Implement handler using
@@ -140,6 +133,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
 
     @Override
     public Result handle(Result result, ActionContext actionContext) throws Exception {
+        actionContext.attribute(ActionContext.ATTR_RESULT, result);
         Object ctrl = controllerInstance(actionContext);
         applyAppContext(actionContext, ctrl);
         Object[] params = params(actionContext);
@@ -148,6 +142,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
 
     @Override
     public Result handle(Exception e, ActionContext actionContext) throws Exception {
+        actionContext.attribute(ActionContext.ATTR_EXCEPTION, e);
         Object ctrl = handler.isStatic() ? null : controllerInstance(actionContext);
         applyAppContext(actionContext, ctrl);
         Object[] params = params(actionContext);
