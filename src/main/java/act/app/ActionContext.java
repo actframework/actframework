@@ -20,6 +20,7 @@ import org.osgl.storage.ISObject;
 import org.osgl.util.C;
 import org.osgl.util.E;
 import org.osgl.util.S;
+import org.osgl.util.Str;
 
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
@@ -44,8 +45,6 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Act
     private Set<Map.Entry<String, String[]>> requestParamCache;
     private Map<String, String> extraParams;
     private volatile Map<String, String[]> bodyParams;
-    private volatile JSONObject jsonObject;
-    private volatile JSONArray jsonArray;
     private Map<String, String[]> allParams;
     private String actionPath; // e.g. com.mycorp.myapp.controller.AbcController.foo
     private State state;
@@ -157,7 +156,11 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Act
         return config().localeResolver().resolve(this);
     }
 
-    public boolean isJSON() {
+    public boolean jsonEncoded() {
+        return req().contentType() == H.Format.JSON;
+    }
+
+    public boolean acceptJson() {
         return accept() == H.Format.JSON;
     }
 
@@ -167,6 +170,10 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Act
 
     public boolean isAjax() {
         return req().isAjax();
+    }
+
+    public String body() {
+        return paramVal(REQ_BODY);
     }
 
     public ActionContext param(String name, String value) {
@@ -213,73 +220,7 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Act
 
     private String[] getBody(String name) {
         Map<String, String[]> body = bodyParams();
-        String[] sa = body.get(name);
-        if (null != sa) {
-            return sa;
-        }
-        if (body.size() == 1 && body.containsKey(REQ_BODY)) {
-            if (null != jsonArray) {
-                int len = jsonArray.size();
-                sa = new String[len];
-                for (int i = 0; i < len; ++i) {
-                    sa[i] = S.string(jsonArray.get(i));
-                }
-            } else if (null != jsonObject) {
-
-            } else {
-                sa = body.get(REQ_BODY);
-            }
-        }
-        return sa;
-    }
-
-    public Object tryParseJson(String name, Class<?> paramType, Class<?> paramComponentType, int paramCount) {
-        if (null != jsonObject) {
-            Object o = jsonObject.get(name);
-            if (null != o) {
-                if (o instanceof JSONObject) {
-                    return JSON.parseObject(((JSONObject) o).toJSONString(), paramType);
-                } else if (o instanceof JSONArray) {
-                    return JSON.parseArray(((JSONArray) o).toJSONString(), paramComponentType);
-                } else {
-                    return o;
-                }
-            } else if (!$.isSimpleType(paramType)) {
-                if (Iterable.class.isAssignableFrom(paramType)) {
-                    if (List.class.equals(paramType)) {
-                        o = C.list();
-                    } else if (Set.class.equals(paramType)) {
-                        o = C.newSet();
-                    }
-                } else if (Map.class.equals(paramType)) {
-                    o = C.map();
-                } else if (paramType.isArray()) {
-                    o = new Object[]{};
-                }
-                // the extra params might already been consumed in field setting
-                boolean singleParam = paramCount == 1 || (paramCount - extraParams.size() == 1) ;
-                return singleParam ? JSON.parseObject(jsonObject.toJSONString(), paramType) : o;
-            }
-        } else if (null != jsonArray) {
-            paramCount = paramCount - extraParams.size();
-            boolean singleParam = paramCount == 1;
-            if (!singleParam) {
-                return null;
-            }
-            List list = JSON.parseArray(jsonArray.toJSONString(), paramComponentType);
-            if (Iterable.class.isAssignableFrom(paramType)) {
-                if (List.class.equals(paramType)) {
-                    return list;
-                } else if (Set.class.equals(paramType)) {
-                    return C.newSet(list);
-                }
-            }
-        }
-        return null;
-    }
-
-    public JSONArray jsonArray() {
-        return jsonArray;
+        return body.get(name);
     }
 
     private Map<String, String[]> bodyParams() {
@@ -293,18 +234,6 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Act
                         map = parser.parse(this);
                     }
                     bodyParams = map;
-                    // try to check if the body is a JSON string
-                    if (bodyParams.size() == 1) {
-                        String[] sa = bodyParams.get(REQ_BODY);
-                        if (null != sa && sa.length == 1) {
-                            String s = sa[0].trim();
-                            if (s.startsWith("{") && s.endsWith("}")) {
-                                jsonObject = (JSONObject) JSON.parse(s);
-                            } else if (s.startsWith("[") && s.endsWith("]")) {
-                                jsonArray = (JSONArray) JSON.parse(s);
-                            }
-                        }
-                    }
                 }
             }
         }

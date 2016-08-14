@@ -20,5 +20,5 @@ interface ParamValueLoader {
      * @param noDefaultValue if `true` then it shall not load default value when not provided by request
      * @return the value object
      */
-    Object load(Object bean, ActContext context, boolean noDefaultValue);
+    Object load(Object bean, ActContext<?> context, boolean noDefaultValue);
 }

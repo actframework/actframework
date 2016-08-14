@@ -166,21 +166,23 @@ public class EndpointTester extends TestBase {
 
     protected Map<String, Object> prepareJsonData(List<$.T2<String, Object>> params) {
         Map<String, Object> map = C.newMap();
-        for ($.T2<String, Object> pair : params) {
-            String key = pair._1;
-            Object val = pair._2;
-            if (map.containsKey(key)) {
-                List list;
-                Object x = map.get(key);
-                if (x instanceof List) {
-                    list = $.cast(x);
+        if (null != params) {
+            for ($.T2<String, Object> pair : params) {
+                String key = pair._1;
+                Object val = pair._2;
+                if (map.containsKey(key)) {
+                    List list;
+                    Object x = map.get(key);
+                    if (x instanceof List) {
+                        list = $.cast(x);
+                    } else {
+                        list = C.newList(x);
+                        map.put(key, list);
+                    }
+                    list.add(val);
                 } else {
-                    list = C.newList(x);
-                    map.put(key, list);
+                    map.put(key, val);
                 }
-                list.add(val);
-            } else {
-                map.put(key, val);
             }
         }
         return map;
@@ -360,6 +362,9 @@ public class EndpointTester extends TestBase {
 
         public Request.Builder build() {
             Request.Builder builder = new Request.Builder().url(sb.toString());
+            if (this.format == H.Format.JSON) {
+                builder.addHeader("Content-Type", "application/json");
+            }
             switch (method) {
                 case GET:
                     return builder.get();

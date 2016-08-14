@@ -21,7 +21,7 @@ public class StringValueResolverValueLoader implements ParamValueLoader {
     }
 
     @Override
-    public Object load(Object bean, ActContext context, boolean noDefaultValue) {
+    public Object load(Object bean, ActContext<?> context, boolean noDefaultValue) {
         if (paramKey.isSimple()) {
             String value = context.paramVal(paramKey.name());
             Object obj = (null == value) ? null : stringValueResolver.resolve(value);

@@ -34,7 +34,7 @@ class ProvidedValueLoader extends DestroyableBase implements ParamValueLoader {
     }
 
     @Override
-    public Object load(Object bean, ActContext context, boolean noDefaultValue) {
+    public Object load(Object bean, ActContext<?> context, boolean noDefaultValue) {
         if (isContext) {
             return context;
         } else if (null != singleton) {

@@ -17,7 +17,7 @@ class ScopedParamValueLoader implements ParamValueLoader {
     }
 
     @Override
-    public Object load(Object bean, ActContext context, boolean noDefaultValue) {
+    public Object load(Object bean, ActContext<?> context, boolean noDefaultValue) {
         Object cached = scopeCache.get(key);
         boolean isSession = SessionScope.INSTANCE == scopeCache;
         if (null == cached || isSession) {

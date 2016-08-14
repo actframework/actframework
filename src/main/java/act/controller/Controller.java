@@ -506,7 +506,7 @@ public @interface Controller {
         }
 
         public static Result inferResult(String s, ActionContext actionContext) {
-            if (actionContext.isJSON()) {
+            if (actionContext.acceptJson()) {
                 s = s.trim();
                 if (!s.startsWith("[") && !s.startsWith("{")) {
                     s = S.fmt("{\"result\": \"%s\"}", s);
@@ -531,7 +531,7 @@ public @interface Controller {
         }
 
         public static Result inferResult(Map<String, Object> map, ActionContext actionContext) {
-            if (actionContext.isJSON()) {
+            if (actionContext.acceptJson()) {
                 return new RenderJSON(map);
             }
             return new RenderTemplate(map);
@@ -543,7 +543,7 @@ public @interface Controller {
          * @return
          */
         public static Result inferResult(Object[] array, ActionContext actionContext) {
-            if (actionContext.isJSON()) {
+            if (actionContext.acceptJson()) {
                 return new RenderJSON(array);
             }
             throw E.tbd("render template with render args in array");
@@ -559,7 +559,7 @@ public @interface Controller {
          * @return a Result inferred from the inputstream specified
          */
         public static Result inferResult(InputStream is, ActionContext actionContext) {
-            if (actionContext.isJSON()) {
+            if (actionContext.acceptJson()) {
                 return new RenderJSON(IO.readContentAsString(is));
             } else {
                 return new RenderBinary(is, null, true);
@@ -576,7 +576,7 @@ public @interface Controller {
          * @return a Result inferred from the file specified
          */
         public static Result inferResult(File file, ActionContext actionContext) {
-            if (actionContext.isJSON()) {
+            if (actionContext.acceptJson()) {
                 return new RenderJSON(IO.readContentAsString(file));
             } else {
                 return new RenderBinary(file);
@@ -584,7 +584,7 @@ public @interface Controller {
         }
 
         public static Result inferResult(ISObject sobj, ActionContext context) {
-            if (context.isJSON()) {
+            if (context.acceptJson()) {
                 return new RenderJSON(sobj.asString());
             } else {
                 return binary(sobj);
@@ -639,7 +639,7 @@ public @interface Controller {
                 if (hasTemplate) {
                     return inferToTemplate(v, actionContext);
                 }
-                if (actionContext.isJSON()) {
+                if (actionContext.acceptJson()) {
                     // patch https://github.com/alibaba/fastjson/issues/478
                     if (meta.disableJsonCircularRefDetect()) {
                         DisableFastJsonCircularReferenceDetect.option.set(true);

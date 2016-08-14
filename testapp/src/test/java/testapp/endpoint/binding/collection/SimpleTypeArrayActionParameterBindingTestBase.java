@@ -57,7 +57,7 @@ public abstract class SimpleTypeArrayActionParameterBindingTestBase<T> extends A
         context
                 .expected(expected)
                 .url(processUrl(urlPath))
-                .params(paramEncoding.encode(null == data ? "foo" : PARAM, null == data ? C.list() : data))
+                .params(paramEncoding.encode(null == data ? "v" : PARAM, null == data ? C.list() : data))
                 .method(method)
                 .applyTo(this);
     }

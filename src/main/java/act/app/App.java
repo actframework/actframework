@@ -19,6 +19,7 @@ import act.data.util.ActPropertyHandlerFactory;
 import act.inject.DependencyInjectionBinder;
 import act.inject.DependencyInjector;
 import act.inject.genie.GenieInjector;
+import act.inject.param.JsonDTOClassManager;
 import act.inject.param.ParamValueLoaderManager;
 import act.event.AppEventListenerBase;
 import act.event.EventBus;
@@ -289,7 +290,6 @@ public class App extends DestroyableBase {
         initInterceptorManager();
         initResolverManager();
         initBinderManager();
-        initParamValueLoaderManager();
         initUploadFileStorageService();
         initRouters();
         emit(ROUTER_INITIALIZED);
@@ -322,7 +322,8 @@ public class App extends DestroyableBase {
         emit(CLASS_LOADED);
 
         loadDependencyInjector();
-
+        initJsonDTOClassManager();
+        initParamValueLoaderManager();
         initMailerConfigManager();
 
         // setting context class loader here might lead to memory leaks
@@ -859,6 +860,10 @@ public class App extends DestroyableBase {
 
     private void initClassLoader() {
         classLoader = Act.mode().classLoader(this);
+    }
+
+    private void initJsonDTOClassManager() {
+        new JsonDTOClassManager(this);
     }
 
     private void preloadClasses() {

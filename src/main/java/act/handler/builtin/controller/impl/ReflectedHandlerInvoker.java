@@ -5,40 +5,37 @@ import act.ActComponent;
 import act.app.ActionContext;
 import act.app.App;
 import act.app.AppClassLoader;
-import act.app.data.BinderManager;
-import act.app.data.StringValueResolverManager;
 import act.asm.Type;
 import act.controller.ActionMethodParamAnnotationHandler;
 import act.controller.Controller;
 import act.controller.meta.*;
 import act.data.AutoBinder;
-import act.inject.DependencyInjector;
-import act.inject.param.ParamValueLoaderManager;
-import act.exception.BindException;
 import act.handler.builtin.controller.*;
+import act.inject.DependencyInjector;
+import act.inject.param.JsonDTO;
+import act.inject.param.JsonDTOClassManager;
+import act.inject.param.ParamValueLoaderManager;
 import act.util.DestroyableBase;
 import act.util.GeneralAnnoInfo;
 import act.view.Template;
 import act.view.TemplatePathResolver;
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONException;
 import com.esotericsoftware.reflectasm.FieldAccess;
 import com.esotericsoftware.reflectasm.MethodAccess;
 import org.osgl.$;
 import org.osgl.http.H;
+import org.osgl.inject.BeanSpec;
 import org.osgl.mvc.result.BadRequest;
 import org.osgl.mvc.result.NotFound;
 import org.osgl.mvc.result.Result;
-import org.osgl.mvc.util.Binder;
 import org.osgl.util.C;
 import org.osgl.util.E;
 import org.osgl.util.S;
-import org.osgl.util.StringValueResolver;
 
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -50,6 +47,7 @@ import java.util.Set;
 public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends DestroyableBase
         implements ActionHandlerInvoker, AfterInterceptorInvoker, ExceptionInterceptorInvoker {
 
+    private static final Object[] DUMP_PARAMS = new Object[0];
     private static Map<String, $.F2<ActionContext, Object, ?>> fieldName_appCtxHandler_lookup = C.newMap();
     private ClassLoader cl;
     private ControllerClassMetaInfo controller;
@@ -61,12 +59,15 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
     private ActContextInjection ctxInjection;
     private Map<H.Format, Boolean> templateCache = C.newMap();
     private Class[] paramTypes;
-    private Class[] paramComponentTypes; // in case there are generic container type in paramTypes
     private Map<Integer, List<ActionMethodParamAnnotationHandler>> paramAnnoHandlers = null;
     protected Method method; //
     protected $.F2<ActionContext, Object, ?> fieldAppCtxHandler;
     private ParamValueLoaderManager paramValueLoaderManager;
     private DependencyInjector<?> injector;
+    private JsonDTOClassManager jsonDTOClassManager;
+    private int paramCount;
+    private int fieldsAndParamsCount;
+    private String singleJsonFieldName;
 
     protected ReflectedHandlerInvoker(M handlerMetaInfo, App app) {
         this.cl = app.classLoader();
@@ -75,6 +76,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         this.controllerClass = $.classForName(controller.className(), cl);
         this.paramValueLoaderManager = app.service(ParamValueLoaderManager.class);
         this.injector = app.injector();
+        this.jsonDTOClassManager = app.service(JsonDTOClassManager.class);
 
         this.ctxInjection = handlerMetaInfo.appContextInjection();
         if (ctxInjection.injectVia().isField()) {
@@ -86,12 +88,18 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
 
         $.T2<Class[], Class[]> t2 = paramTypes();
         paramTypes = t2._1;
-        paramComponentTypes = t2._2;
         try {
             method = controllerClass.getMethod(handlerMetaInfo.name(), paramTypes);
         } catch (NoSuchMethodException e) {
             throw E.unexpected(e);
         }
+        paramCount = method.getParameterTypes().length;
+        List<BeanSpec> list = jsonDTOClassManager.beanSpecs(controllerClass, method);
+        fieldsAndParamsCount = list.size();
+        if (fieldsAndParamsCount == 1) {
+            singleJsonFieldName = list.get(0).name();
+        }
+
         if (!handlerMetaInfo.isStatic()) {
             //constructorAccess = ConstructorAccess.get(controllerClass);
             methodAccess = MethodAccess.get(controllerClass);
@@ -155,9 +163,10 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
     }
 
     public Result handle(ActionContext actionContext) throws Exception {
+        ensureJsonDTOGenerated(actionContext);
         Object ctrl = controllerInstance(actionContext);
         applyAppContext(actionContext, ctrl);
-        Object[] params = params2(actionContext);
+        Object[] params = params(actionContext);
         return invoke(handler, actionContext, ctrl, params);
     }
 
@@ -165,7 +174,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
     public Result handle(Result result, ActionContext actionContext) throws Exception {
         Object ctrl = controllerInstance(actionContext);
         applyAppContext(actionContext, ctrl);
-        Object[] params = params2(actionContext);
+        Object[] params = params(actionContext);
         return invoke(handler, actionContext, ctrl, params);
     }
 
@@ -173,15 +182,72 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
     public Result handle(Exception e, ActionContext actionContext) throws Exception {
         Object ctrl = handler.isStatic() ? null : controllerInstance(actionContext);
         applyAppContext(actionContext, ctrl);
-        Object[] params = params2(actionContext);
+        Object[] params = params(actionContext);
         return invoke(handler, actionContext, ctrl, params);
+    }
+
+    private void ensureJsonDTOGenerated(ActionContext context) {
+        if (0 == fieldsAndParamsCount || !context.jsonEncoded() || null != context.attribute(JsonDTO.CTX_KEY)) {
+            return;
+        }
+        Class<? extends JsonDTO> dtoClass = jsonDTOClassManager.get(controllerClass, method);
+        if (null == dtoClass) {
+            // there are neither fields nor params
+            return;
+        }
+        try {
+            JsonDTO dto = JSON.parseObject(patchedJsonBody(context), dtoClass);
+            context.attribute(JsonDTO.CTX_KEY, dto);
+        } catch (JSONException e) {
+            if (e.getCause() != null) {
+                App.logger.warn(e.getCause(), "error parsing JSON data");
+            } else {
+                App.logger.warn(e, "error parsing JSON data");
+            }
+            throw new BadRequest(e.getCause());
+        }
+    }
+
+    private String patchedJsonBody(ActionContext context) {
+        String body = context.body();
+        if (S.blank(body) || 1 < fieldsAndParamsCount) {
+            return body;
+        }
+        body = body.trim();
+        boolean needPatch = body.charAt(0) == '[';
+        if (!needPatch) {
+            if (body.charAt(0) != '{') {
+                throw new IllegalArgumentException("Cannot parse JSON string: " + body);
+            }
+            boolean startCheckName = false;
+            int nameStart = -1;
+            for (int i = 1; i < body.length(); ++i) {
+                char c = body.charAt(i);
+                if (c == ' ') {
+                    continue;
+                }
+                if (startCheckName) {
+                    if (c == '"') {
+                        break;
+                    }
+                    if (singleJsonFieldName.charAt(i - nameStart - 1) != c) {
+                        needPatch = true;
+                        break;
+                    }
+                } else if (c == '"') {
+                    startCheckName = true;
+                    nameStart = i;
+                }
+            }
+        }
+        return needPatch ? S.fmt("{\"%s\": %s}", singleJsonFieldName, body) : body;
     }
 
     private Object controllerInstance(ActionContext context) {
         String controllerName = controllerClass.getName();
         Object inst = context.__controllerInstance(controllerName);
         if (null == inst) {
-            inst = paramValueLoaderManager.loadHostBean(controllerClass, context, injector);
+            inst = paramValueLoaderManager.loadHostBean(controllerClass, context);
             context.__controllerInstance(controllerName, inst);
         }
         return inst;
@@ -235,8 +301,11 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         return B;
     }
 
-    private Object[] params2(ActionContext context) {
-        return paramValueLoaderManager.loadMethodParams(method, context, injector);
+    private Object[] params(ActionContext context) {
+        if (0 == paramCount) {
+            return DUMP_PARAMS;
+        }
+        return paramValueLoaderManager.loadMethodParams(method, context);
     }
 
     private $.T2<Class[], Class[]> paramTypes() {

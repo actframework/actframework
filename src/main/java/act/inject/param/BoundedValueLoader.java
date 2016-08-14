@@ -17,7 +17,7 @@ class BoundedValueLoader implements ParamValueLoader {
     }
 
     @Override
-    public Object load(Object bean, ActContext context, boolean noDefaultValue) {
+    public Object load(Object bean, ActContext<?> context, boolean noDefaultValue) {
         return binder.resolve(bean, bindModel, context);
     }
 }
