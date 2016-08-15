@@ -5,6 +5,7 @@ import org.osgl.http.H;
 import org.osgl.inject.annotation.SessionScoped;
 import org.osgl.mvc.annotation.Action;
 import org.osgl.mvc.annotation.Before;
+import org.osgl.util.C;
 import testapp.model.Bar;
 import testapp.model.Contact;
 import testapp.model.Foo;
@@ -29,6 +30,11 @@ public class PojoBinding {
     @Action(value = "foo", methods = {H.Method.POST, H.Method.PUT, H.Method.GET})
     public Foo foo() {
         return foo;
+    }
+
+    @Action("foobar")
+    public List<Object> fooBar(Bar bar) {
+        return C.list(foo, bar);
     }
 
     @Before(only = "fooList")

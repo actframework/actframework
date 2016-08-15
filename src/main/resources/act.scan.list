@@ -1,0 +1,2 @@
+# Put package/class names that needs Act to scan. It can be regular expressions
+act\..*Admin

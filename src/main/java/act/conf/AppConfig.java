@@ -875,18 +875,32 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     }
 
     private $.Predicate<String> APP_CLASS_TESTER = null;
+    private final $.Predicate<String> SYSTEM_SCAN_LIST = new $.Predicate<String>() {
+        @Override
+        public boolean test(String s) {
+            final Set<String> scanList = app().scanList();
+            if (scanList.contains(s)) {
+                return true;
+            }
+            for (String scan: scanList) {
+                if (s.matches(scan)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+    };
 
     public $.Predicate<String> appClassTester() {
         if (null == APP_CLASS_TESTER) {
             String scanPackage = get(AppConfigKey.SCAN_PACKAGE);
             if (S.isBlank(scanPackage)) {
-                APP_CLASS_TESTER = $.F.yes();
+                APP_CLASS_TESTER = SYSTEM_SCAN_LIST;
             } else {
                 final String[] sp = scanPackage.trim().split(Constants.LIST_SEPARATOR);
                 final int len = sp.length;
-                final $.Predicate<String> IS_ACT_ADMIN = S.F.startsWith("act").and(S.F.endsWith("Admin"));
                 if (1 == len) {
-                    APP_CLASS_TESTER = S.F.startsWith(sp[0]).or(IS_ACT_ADMIN);
+                    APP_CLASS_TESTER = S.F.startsWith(sp[0]).or(SYSTEM_SCAN_LIST);
                 } else {
                     APP_CLASS_TESTER = new $.Predicate<String>() {
                         @Override
@@ -898,7 +912,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
                             }
                             return false;
                         }
-                    }.or(IS_ACT_ADMIN);
+                    }.or(SYSTEM_SCAN_LIST);
                 }
             }
         }

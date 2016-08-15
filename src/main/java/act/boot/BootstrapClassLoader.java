@@ -14,14 +14,21 @@ import org.osgl.logging.L;
 import org.osgl.logging.Logger;
 import org.osgl.util.C;
 import org.osgl.util.E;
+import org.osgl.util.IO;
+import org.osgl.util.S;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
 import java.security.ProtectionDomain;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Base class for Act class loaders
  */
 public abstract class BootstrapClassLoader extends ClassLoader implements PluginClassProvider, ActClassLoader {
+
+    public static final String FILE_SCAN_LIST = "act.scan.list";
 
     protected static final Logger logger = L.get(BootstrapClassLoader.class);
 
@@ -128,5 +135,20 @@ public abstract class BootstrapClassLoader extends ClassLoader implements Plugin
             //Plugin.class.getName(),
             //ClassFilter.class.getName()
     );
+
+    public Set<String> scanList() {
+        Set<String> scanList = new HashSet<>();
+        try {
+            final Enumeration<URL> systemResources = this.getResources(FILE_SCAN_LIST);
+            while (systemResources.hasMoreElements()) {
+                InputStream is = systemResources.nextElement().openStream();
+                String s = IO.readContentAsString(is);
+                scanList.addAll(C.listOf(s.split("[\r\n]+")).filter(S.F.startsWith("#").negate()));
+            }
+        } catch (IOException e) {
+            throw E.ioException(e);
+        }
+        return scanList;
+    }
 
 }

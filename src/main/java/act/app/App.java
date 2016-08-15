@@ -7,6 +7,7 @@ import act.app.data.StringValueResolverManager;
 import act.app.event.AppEventId;
 import act.app.util.AppCrypto;
 import act.app.util.NamedPort;
+import act.boot.BootstrapClassLoader;
 import act.cli.CliDispatcher;
 import act.cli.bytecode.CommanderByteCodeScanner;
 import act.conf.AppConfLoader;
@@ -47,10 +48,7 @@ import org.osgl.storage.IStorageService;
 import org.osgl.util.*;
 
 import java.io.File;
-import java.util.EventObject;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import static act.app.event.AppEventId.*;
 
@@ -104,6 +102,7 @@ public class App extends DestroyableBase {
     private AppEventId currentState;
     private Set<AppEventId> eventEmitted;
     private Thread mainThread;
+    private Set<String> scanList;
 
     protected App() {
         INST = this;
@@ -268,6 +267,7 @@ public class App extends DestroyableBase {
         logger.info("App starting ....");
         profile = null;
 
+        initScanlist();
         initServiceResourceManager();
         mainThread = Thread.currentThread();
         eventEmitted = C.newSet();
@@ -494,19 +494,6 @@ public class App extends DestroyableBase {
             return $.newInstance(clz);
         }
         return dependencyInjector.get(clz);
-//        T t = singleton(clz);
-//        if (null != t) {
-//            return t;
-//        }
-//        t = SimpleTypeInstanceFactory.getInstance(clz);
-//        if (null != t) {
-//            return t;
-//        }
-//        if (null != dependencyInjector) {
-//            return dependencyInjector.get(clz);
-//        } else {
-//            return $.getInstance(clz);
-//        }
     }
 
     <T> T getInstance(Class<T> clz, ActContext context) {
@@ -590,6 +577,10 @@ public class App extends DestroyableBase {
         if (null != bus) {
             bus.emit(appEvent);
         }
+    }
+
+    public Set<String> scanList() {
+        return new HashSet<String>(scanList);
     }
 
     private Set<AppEventId> eventEmitted() {
@@ -790,6 +781,13 @@ public class App extends DestroyableBase {
     private void shutdownJobManager() {
         if (null != jobManager) {
             jobManager.destroy();
+        }
+    }
+
+    private void initScanlist() {
+        ClassLoader classLoader = getClass().getClassLoader();
+        if (classLoader instanceof BootstrapClassLoader) {
+            scanList = ((BootstrapClassLoader)classLoader).scanList();
         }
     }
 
