@@ -96,8 +96,8 @@ public class CliSession extends DestroyableBase implements Runnable {
     @Override
     public void run() {
         runningThread = Thread.currentThread();
-        app.eventBus().emitSync(new CliSessionStart(this));
         try {
+            app.eventBus().emitSync(new CliSessionStart(this));
             OutputStream os = socket.getOutputStream();
             console = new ConsoleReader(socket.getInputStream(), os);
             String banner = Banner.cachedBanner();

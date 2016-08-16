@@ -43,7 +43,7 @@ public class ClassFinderByteCodeScanner extends AppByteCodeScannerBase {
         }
 
         @Override
-        public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
+        public MethodVisitor visitMethod(int access, String name, String desc, final String signature, String[] exceptions) {
             MethodVisitor mv = super.visitMethod(access, name, desc, signature, exceptions);
             if (null == className || !AsmTypes.isPublicNotAbstract(access)) {
                 return mv;
@@ -52,7 +52,7 @@ public class ClassFinderByteCodeScanner extends AppByteCodeScannerBase {
             final boolean isStatic = AsmTypes.isStatic(access);
             return new MethodVisitor(ASM5, mv) {
                 @Override
-                public AnnotationVisitor visitAnnotation(String desc, boolean visible) {
+                public AnnotationVisitor visitAnnotation(final String desc, boolean visible) {
                     Type annoType = Type.getType(desc);
                     ClassFinderData.By by = null;
                     if (AsmTypes.SUB_CLASS_FINDER.asmType().equals(annoType)) {
@@ -68,11 +68,13 @@ public class ClassFinderByteCodeScanner extends AppByteCodeScannerBase {
                     return new AnnotationVisitor(ASM5, av) {
 
                         ClassFinderData finder = new ClassFinderData();
+                        String what = SubClassFinder.DEF_VALUE;
 
                         @Override
                         public void visit(String name, Object value) {
                             Type type = (Type)value;
-                            finder.what(type.getClassName());
+                            String className = type.getClassName();
+                            finder.what(className);
                             super.visit(name, value);
                         }
 
@@ -84,11 +86,27 @@ public class ClassFinderByteCodeScanner extends AppByteCodeScannerBase {
 
                         @Override
                         public void visitEnd() {
+                            if (SubClassFinder.DEF_VALUE.equals(what)) {
+                                what = classNameFromMethodSignature();
+                            }
+                            finder.what(what);
                             finder.how(how);
                             finder.callback(className, methodName, isStatic);
                             if (finder.isValid()) {
                                 finder.scheduleFind();
                             }
+                        }
+
+                        /*
+                         * Valid method signature should be something like
+                         * (Ljava/lang/Class<Lorg/osgl/aaa/AAAPersistentService;>;)V
+                         * And we need to get the type descriptor "Lorg/osgl/aaa/AAAPersistentService;"
+                         * from inside
+                         */
+                        private String classNameFromMethodSignature() {
+                            String descriptor = signature.substring(18);
+                            descriptor = descriptor.substring(0, descriptor.length() - 4);
+                            return Type.getType(descriptor).getClassName();
                         }
                     };
                 }
