@@ -36,12 +36,10 @@ public class FullStackAppBootstrapClassLoader extends BootstrapClassLoader imple
     private Map<String, byte[]> libBC = C.newMap();
     private List<Class<?>> actClasses = C.newList();
     private List<Class<?>> pluginClasses = new ArrayList<>();
-    private final Class<?> PLUGIN_CLASS;
 
     public FullStackAppBootstrapClassLoader(ClassLoader parent) {
         super(parent);
         preload();
-        PLUGIN_CLASS = $.classForName("act.plugin.Plugin", this);
     }
 
     @Override

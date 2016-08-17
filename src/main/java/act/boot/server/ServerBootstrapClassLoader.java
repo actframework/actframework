@@ -14,6 +14,7 @@ import org.osgl.util.C;
 import org.osgl.util.E;
 
 import java.io.File;
+import java.lang.reflect.Modifier;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -26,6 +27,7 @@ import static act.Constants.*;
 public class ServerBootstrapClassLoader extends ClassLoader implements PluginClassProvider {
 
     private static Logger logger = L.get(ServerBootstrapClassLoader.class);
+    protected final Class<?> PLUGIN_CLASS;
 
     private File lib;
     private File plugin;
@@ -37,6 +39,7 @@ public class ServerBootstrapClassLoader extends ClassLoader implements PluginCla
     public ServerBootstrapClassLoader(ClassLoader parent) {
         super(parent);
         preload();
+        PLUGIN_CLASS = $.classForName("act.plugin.Plugin", this);
     }
 
     public ServerBootstrapClassLoader() {
@@ -114,7 +117,13 @@ public class ServerBootstrapClassLoader extends ClassLoader implements PluginCla
             for (String className : C.list(pluginBC.keySet())) {
                 Class<?> c = loadActClass(className, true, true);
                 assert null != c;
-                pluginClasses.add(c);
+                int modifier = c.getModifiers();
+                if (Modifier.isAbstract(modifier) || !Modifier.isPublic(modifier) || c.isInterface()) {
+                    continue;
+                }
+                if (PLUGIN_CLASS.isAssignableFrom(c)) {
+                    pluginClasses.add(c);
+                }
             }
         }
         return C.list(pluginClasses);
@@ -178,9 +187,6 @@ public class ServerBootstrapClassLoader extends ClassLoader implements PluginCla
         }
         if (resolve) {
             super.resolveClass(c);
-        }
-        if (fromPlugin) {
-            pluginClasses.add(c);
         }
         return c;
     }
