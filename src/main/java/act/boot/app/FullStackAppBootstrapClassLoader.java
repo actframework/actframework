@@ -2,18 +2,23 @@ package act.boot.app;
 
 import act.Constants;
 import act.boot.BootstrapClassLoader;
+import act.plugin.Plugin;
 import act.util.ActClassLoader;
 import act.util.ClassInfoRepository;
 import act.util.ClassNode;
 import act.util.Jars;
 import org.osgl.$;
+import org.osgl.exception.UnexpectedException;
 import org.osgl.util.C;
 import org.osgl.util.E;
+import org.osgl.util.IO;
 import org.osgl.util.S;
 
 import java.io.File;
+import java.lang.reflect.Modifier;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -26,40 +31,62 @@ public class FullStackAppBootstrapClassLoader extends BootstrapClassLoader imple
 
     private static final String KEY_CLASSPATH = "java.class.path";
 
+    private List<File> jars;
+    private Long jarsChecksum;
     private Map<String, byte[]> libBC = C.newMap();
     private List<Class<?>> actClasses = C.newList();
+    private List<Class<?>> pluginClasses = new ArrayList<>();
 
     public FullStackAppBootstrapClassLoader(ClassLoader parent) {
         super(parent);
         preload();
     }
 
-    public FullStackAppBootstrapClassLoader() {
-    }
-
     @Override
     public List<Class<?>> pluginClasses() {
-        if (actClasses.isEmpty()) {
-            for (String className : C.list(libBC.keySet())) {
-                try {
-                    Class<?> c = loadClass(className, true);
-                    cache(c);
-                } catch (ClassNotFoundException e) {
-                    // ignore
-                } catch (NoClassDefFoundError e) {
-                    // ignore
+        if (classInfoRepository().isEmpty()) {
+            restoreClassInfoRegistry();
+            restorePluginClasses();
+            if (classInfoRepository.isEmpty()) {
+                for (String className : C.list(libBC.keySet())) {
+                    try {
+                        Class<?> c = loadClass(className, true);
+                        cache(c);
+                        int modifier = c.getModifiers();
+                        if (Modifier.isAbstract(modifier) || !Modifier.isPublic(modifier) || c.isInterface()) {
+                            continue;
+                        }
+                        if (Plugin.class.isAssignableFrom(c)) {
+                            pluginClasses.add(c);
+                        }
+                    } catch (ClassNotFoundException e) {
+                        // ignore
+                    } catch (NoClassDefFoundError e) {
+                        // ignore
+                    }
                 }
+                saveClassInfoRegistry();
+                savePluginClasses();
             }
         }
-        return C.list(actClasses);
+        return pluginClasses;
     }
 
     protected void preload() {
         buildIndex();
     }
 
-    private List<File> jars() {
-        return jars(FullStackAppBootstrapClassLoader.class.getClassLoader());
+    protected List<File> jars() {
+        if (null == jars) {
+            jars = jars(FullStackAppBootstrapClassLoader.class.getClassLoader());
+            jarsChecksum = calculateChecksum(jars);
+        }
+        return jars;
+    }
+
+    protected long jarsChecksum() {
+        jars();
+        return jarsChecksum;
     }
 
     public static List<File> jars(ClassLoader cl) {
@@ -83,7 +110,7 @@ public class FullStackAppBootstrapClassLoader extends BootstrapClassLoader imple
                             throw E.unexpected(e);
                         }
                     }
-                });
+                }).sorted();
             }
         }
         path = path.filter(S.F.contains("jre" + File.separator + "lib").negate().and(S.F.endsWith(".jar")));
@@ -92,7 +119,62 @@ public class FullStackAppBootstrapClassLoader extends BootstrapClassLoader imple
             public File transform(String s) {
                 return new File(s);
             }
-        });
+        }).sorted();
+    }
+
+    private void saveClassInfoRegistry() {
+        saveToFile(".act.class-registry", classInfoRepository().toJSON());
+    }
+
+    private void savePluginClasses() {
+        if (pluginClasses.isEmpty()) {
+            return;
+        }
+        StringBuilder sb = S.builder();
+        for (Class c : pluginClasses) {
+            sb.append(c.getName()).append("\n");
+        }
+        sb.deleteCharAt(sb.length() - 1);
+        saveToFile(".act.plugins", sb.toString());
+    }
+
+    private void saveToFile(String name, String content) {
+        StringBuilder sb = S.builder("#").append(jarsChecksum);
+        sb.append("\n").append(content);
+        File file = new File(name);
+        IO.writeContent(sb.toString(), file);
+    }
+
+    private void restoreClassInfoRegistry() {
+        List<String> list = restoreFromFile(".act.class-registry");
+        if (list.isEmpty()) {
+            return;
+        }
+        String json = S.join("\n", list);
+        classInfoRepository = ClassInfoRepository.parseJSON(json);
+    }
+
+    private void restorePluginClasses() {
+        List<String> list = restoreFromFile(".act.plugins");
+        if (list.isEmpty()) {
+            return;
+        }
+        for (String s : list) {
+            pluginClasses.add($.classForName(s));
+        }
+    }
+
+    private List<String> restoreFromFile(String name) {
+        File file = new File(name);
+        if (file.canRead()) {
+            String content = IO.readContentAsString(file);
+            String[] sa = content.split("\n");
+            long fileChecksum = Long.parseLong(sa[0].substring(1));
+            if (jarsChecksum.equals(fileChecksum)) {
+                return C.listOf(sa).head(-1);
+            }
+        }
+        return C.list();
     }
 
     private synchronized ClassNode cache(Class<?> c) {
@@ -190,6 +272,14 @@ public class FullStackAppBootstrapClassLoader extends BootstrapClassLoader imple
 
     public Class<?> createClass(String name, byte[] b) throws ClassFormatError {
         return super.defineClass(name, b, 0, b.length, DOMAIN);
+    }
+
+    public static long calculateChecksum(List<File> files) {
+        long l = 0;
+        for (File file : files) {
+            l += file.hashCode() + file.lastModified();
+        }
+        return l;
     }
 
 }

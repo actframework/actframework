@@ -4,23 +4,20 @@ import org.osgl.$;
 import org.osgl.util.C;
 import org.osgl.util.E;
 
-import java.io.Serializable;
 import java.lang.reflect.Modifier;
 import java.util.Set;
 
-public class ClassNode extends DestroyableBase implements Serializable {
-
-    private static final long serialVersionUID = 7726456123060854123L;
+public class ClassNode extends DestroyableBase {
 
     private transient ClassInfoRepository infoBase;
     private String name;
     private String canonicalName;
     private int modifiers;
-    private transient ClassNode parent;
-    private Set<ClassNode> children = C.newSet();
-    private Set<ClassNode> interfaces = C.newSet();
-    private Set<ClassNode> annotations = C.newSet();
-    private Set<ClassNode> annotated = C.newSet();
+    private ClassNode parent;
+    private transient Set<ClassNode> children = C.newSet();
+    Set<ClassNode> interfaces = C.newSet();
+    Set<ClassNode> annotations = C.newSet();
+    Set<ClassNode> annotated = C.newSet();
 
     ClassNode(String name, int modifiers, ClassInfoRepository infoBase) {
         this(name, name.replace('$', '.'), modifiers, infoBase);
@@ -101,6 +98,10 @@ public class ClassNode extends DestroyableBase implements Serializable {
         return this;
     }
 
+    void addInterface(ClassNode classNode) {
+        this.interfaces.add(classNode);
+    }
+
     /**
      * Specify the class represented by this `ClassNode` is annotated
      * by an annotation class specified by the name
@@ -112,6 +113,14 @@ public class ClassNode extends DestroyableBase implements Serializable {
         this.annotations.add(anno);
         anno.annotated.add(this);
         return this;
+    }
+
+    void addAnnotation(ClassNode classNode) {
+        this.annotations.add(classNode);
+    }
+
+    void addAnnontated(ClassNode classNode) {
+        this.annotated.add(classNode);
     }
 
     /**
@@ -291,7 +300,11 @@ public class ClassNode extends DestroyableBase implements Serializable {
         return false;
     }
 
-    private ClassNode addChild(ClassNode node) {
+    ClassNodeDTO toDTO() {
+        return new ClassNodeDTO(this);
+    }
+
+    ClassNode addChild(ClassNode node) {
         children.add(node);
         return this;
     }

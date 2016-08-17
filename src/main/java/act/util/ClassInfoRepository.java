@@ -1,9 +1,15 @@
 package act.util;
 
 import act.Destroyable;
+import act.app.App;
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.TypeReference;
+import org.osgl.$;
 import org.osgl.util.C;
 
 import javax.enterprise.context.ApplicationScoped;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -46,6 +52,10 @@ public class ClassInfoRepository extends DestroyableBase {
         return node;
     }
 
+    public boolean isEmpty() {
+        return classes.isEmpty();
+    }
+
     @Override
     protected void releaseResources() {
         Destroyable.Util.destroyAll(classes.values(), ApplicationScoped.class);
@@ -54,6 +64,20 @@ public class ClassInfoRepository extends DestroyableBase {
 
     public Map<String, ClassNode> classes() {
         return C.map(classes);
+    }
+
+    public String toJSON() {
+        List<ClassNodeDTO> list = new ArrayList<>();
+        for (ClassNode node : classes.values()) {
+            list.add(node.toDTO());
+        }
+        ClassLoader cl0 = Thread.currentThread().getContextClassLoader();
+        try {
+            Thread.currentThread().setContextClassLoader(ClassNodeDTO.class.getClassLoader());
+            return JSON.toJSONString(list);
+        } finally {
+            Thread.currentThread().setContextClassLoader(cl0);
+        }
     }
 
     /**
@@ -74,7 +98,76 @@ public class ClassInfoRepository extends DestroyableBase {
         }
     }
 
+    @Override
+    public int hashCode() {
+        return $.hc(classes);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == this) {
+            return true;
+        }
+        if (obj instanceof ClassInfoRepository) {
+            ClassInfoRepository that = $.cast(obj);
+            return $.eq(that.classes, this.classes);
+        }
+        return false;
+    }
+
     public static String canonicalName(String name) {
         return name.replace('/', '.').replace('$', '.');
+    }
+
+    public static ClassInfoRepository parseJSON(String json) {
+        ClassInfoRepository repo = new ClassInfoRepository();
+        List<ClassNodeDTO> list;
+        ClassLoader cl0 = Thread.currentThread().getContextClassLoader();
+        try {
+            Thread.currentThread().setContextClassLoader(ClassNodeDTO.class.getClassLoader());
+            list = JSON.parseObject(json, new TypeReference<List<ClassNodeDTO>>() {});
+        } finally {
+            Thread.currentThread().setContextClassLoader(cl0);
+        }
+        for (ClassNodeDTO dto: list) {
+            ClassNode classNode = dto.toClassNode(repo);
+            repo.classes.putIfAbsent(dto.getCanonicalName(), classNode);
+        }
+        for (ClassNodeDTO dto: list) {
+            ClassNode classNode = repo.classes.get(dto.getCanonicalName());
+            if (dto.parent != null) {
+                ClassNode parentNode = repo.classes.get(dto.parent);
+                if (null == parentNode) {
+                    App.logger.warn("Error deserializing ClassInfoRepository: parent[%s] not found for classNode[%s]", dto.parent, dto.canonicalName);
+                } else {
+                    parentNode.addChild(classNode);
+                }
+            }
+            for (String name : dto.annotated) {
+                ClassNode node = repo.classes.get(name);
+                if (null == node) {
+                    App.logger.warn("Error deserializing ClassInfoRepository: annotated[%s] not found for classNode[%s]", name, dto.canonicalName);
+                } else {
+                    classNode.addAnnontated(node);
+                }
+            }
+            for (String name : dto.annotations) {
+                ClassNode node = repo.classes.get(name);
+                if (null == node) {
+                    App.logger.warn("Error deserializing ClassInfoRepository: annotation[%s] not found for classNode[%s]", name, dto.canonicalName);
+                } else {
+                    classNode.addAnnotation(node);
+                }
+            }
+            for (String name : dto.interfaces) {
+                ClassNode node = repo.classes.get(name);
+                if (null == node) {
+                    App.logger.warn("Error deserializing ClassInfoRepository: interface[%s] not found for classNode[%s]", name, dto.canonicalName);
+                } else {
+                    classNode.addInterface(node);
+                }
+            }
+        }
+        return repo;
     }
 }

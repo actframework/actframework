@@ -33,7 +33,7 @@ public abstract class BootstrapClassLoader extends ClassLoader implements Plugin
     protected static final Logger logger = L.get(BootstrapClassLoader.class);
 
     private BytecodeEnhancerManager enhancerManager = new BytecodeEnhancerManager();
-    private ClassInfoRepository classInfoRepository = new ClassInfoRepository();
+    protected ClassInfoRepository classInfoRepository = new ClassInfoRepository();
 
     protected BootstrapClassLoader(ClassLoader parent) {
         super(parent);

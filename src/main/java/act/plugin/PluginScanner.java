@@ -6,7 +6,6 @@ import org.osgl.exception.UnexpectedException;
 import org.osgl.logging.L;
 import org.osgl.logging.Logger;
 
-import java.lang.reflect.Modifier;
 import java.util.List;
 
 /**
@@ -27,17 +26,11 @@ public class PluginScanner {
         int sz = pluginClasses.size();
         for (int i = 0; i < sz; ++i) {
             Class<?> c = pluginClasses.get(i);
-            int modifier = c.getModifiers();
-            if (Modifier.isAbstract(modifier) || !Modifier.isPublic(modifier) || c.isInterface()) {
-                continue;
-            }
-            if (Plugin.class.isAssignableFrom(c)) {
-                try {
-                    Plugin p = (Plugin) $.newInstance(c);
-                    Plugin.InfoRepo.register(p);
-                } catch (UnexpectedException e) {
-                    // ignore: some plugin does not provide default constructor
-                }
+            try {
+                Plugin p = (Plugin) $.newInstance(c);
+                Plugin.InfoRepo.register(p);
+            } catch (UnexpectedException e) {
+                // ignore: some plugin does not provide default constructor
             }
         }
     }
