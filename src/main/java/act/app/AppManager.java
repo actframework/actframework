@@ -4,6 +4,8 @@ import act.Act;
 import act.Destroyable;
 import act.util.DestroyableBase;
 import org.osgl.$;
+import org.osgl.logging.LogManager;
+import org.osgl.logging.Logger;
 import org.osgl.util.C;
 import org.osgl.util.E;
 
@@ -16,6 +18,8 @@ import static act.Destroyable.Util.tryDestroyAll;
  * Manage applications deployed on Act
  */
 public class AppManager extends DestroyableBase {
+
+    private static Logger logger = LogManager.get(AppManager.class);
 
     private Map<Integer, App> byPort = C.newMap();
     private Map<String, App> byContextPath = C.newMap();

@@ -36,10 +36,12 @@ public class FullStackAppBootstrapClassLoader extends BootstrapClassLoader imple
     private Map<String, byte[]> libBC = C.newMap();
     private List<Class<?>> actClasses = C.newList();
     private List<Class<?>> pluginClasses = new ArrayList<>();
+    private final Class<?> PLUGIN_CLASS;
 
     public FullStackAppBootstrapClassLoader(ClassLoader parent) {
         super(parent);
         preload();
+        PLUGIN_CLASS = $.classForName("act.plugin.Plugin", this);
     }
 
     @Override
@@ -56,7 +58,7 @@ public class FullStackAppBootstrapClassLoader extends BootstrapClassLoader imple
                         if (Modifier.isAbstract(modifier) || !Modifier.isPublic(modifier) || c.isInterface()) {
                             continue;
                         }
-                        if (Plugin.class.isAssignableFrom(c)) {
+                        if (PLUGIN_CLASS.isAssignableFrom(c)) {
                             pluginClasses.add(c);
                         }
                     } catch (ClassNotFoundException e) {
@@ -160,7 +162,7 @@ public class FullStackAppBootstrapClassLoader extends BootstrapClassLoader imple
             return;
         }
         for (String s : list) {
-            pluginClasses.add($.classForName(s));
+            pluginClasses.add($.classForName(s, this));
         }
     }
 
@@ -171,7 +173,7 @@ public class FullStackAppBootstrapClassLoader extends BootstrapClassLoader imple
             String[] sa = content.split("\n");
             long fileChecksum = Long.parseLong(sa[0].substring(1));
             if (jarsChecksum.equals(fileChecksum)) {
-                return C.listOf(sa).head(-1);
+                return C.listOf(sa).drop(1);
             }
         }
         return C.list();
