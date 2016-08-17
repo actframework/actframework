@@ -3,6 +3,7 @@ package act.app;
 import act.Act;
 import act.ActComponent;
 import act.controller.meta.ControllerClassMetaInfo;
+import act.metric.Timer;
 import act.util.Files;
 import act.util.FsChangeDetector;
 import act.util.FsEvent;
@@ -148,55 +149,60 @@ public class DevModeClassLoader extends AppClassLoader {
     }
 
     private void scanSources() {
-        logger.debug("start to scan sources...");
-        List<AppSourceCodeScanner> scanners = app().scannerManager().sourceCodeScanners();
-        if (scanners.isEmpty()) {
-            logger.warn("No source code scanner found");
-            return;
-        }
+        Timer timer = metric.startTimer("act:classload:scan:scanSources");
+        try {
+            logger.debug("start to scan sources...");
+            List<AppSourceCodeScanner> scanners = app().scannerManager().sourceCodeScanners();
+            if (scanners.isEmpty()) {
+                logger.warn("No source code scanner found");
+                return;
+            }
 
-        Set<String> classesNeedByteCodeScan = C.newSet();
-        for (String className : sources.keySet()) {
-            classesNeedByteCodeScan.add(className);
-            logger.debug("scanning %s ...", className);
-            List<AppSourceCodeScanner> l = C.newList();
-            for (AppSourceCodeScanner scanner : scanners) {
-                if (scanner.start(className)) {
-                    //logger.trace("scanner %s added to the list", scanner.getClass().getName());
-                    l.add(scanner);
+            Set<String> classesNeedByteCodeScan = C.newSet();
+            for (String className : sources.keySet()) {
+                classesNeedByteCodeScan.add(className);
+                logger.debug("scanning %s ...", className);
+                List<AppSourceCodeScanner> l = C.newList();
+                for (AppSourceCodeScanner scanner : scanners) {
+                    if (scanner.start(className)) {
+                        //logger.trace("scanner %s added to the list", scanner.getClass().getName());
+                        l.add(scanner);
+                    }
+                }
+                Source source = source(className);
+                String[] lines = source.code().split("[\\n\\r]+");
+                for (int i = 0, j = lines.length; i < j; ++i) {
+                    String line = lines[i];
+                    for (AppSourceCodeScanner scanner : l) {
+                        scanner.visit(i, line, className);
+                    }
                 }
             }
-            Source source = source(className);
-            String[] lines = source.code().split("[\\n\\r]+");
-            for (int i = 0, j = lines.length; i < j; ++i) {
-                String line = lines[i];
-                for (AppSourceCodeScanner scanner : l) {
-                    scanner.visit(i, line, className);
-                }
+
+            if (classesNeedByteCodeScan.isEmpty()) {
+                return;
             }
-        }
 
-        if (classesNeedByteCodeScan.isEmpty()) {
-            return;
-        }
-
-        final Set<String> embeddedClassNames = C.newSet();
-        scanByteCode(classesNeedByteCodeScan, new $.F1<String, byte[]>() {
-            @Override
-            public byte[] apply(String s) throws NotAppliedException, $.Break {
-                return bytecodeFromSource(s, embeddedClassNames);
-            }
-        });
-
-        while (!embeddedClassNames.isEmpty()) {
-            Set<String> embeddedClassNameCopy = C.newSet(embeddedClassNames);
-            scanByteCode(embeddedClassNameCopy, new $.F1<String, byte[]>() {
+            final Set<String> embeddedClassNames = C.newSet();
+            scanByteCode(classesNeedByteCodeScan, new $.F1<String, byte[]>() {
                 @Override
                 public byte[] apply(String s) throws NotAppliedException, $.Break {
                     return bytecodeFromSource(s, embeddedClassNames);
                 }
             });
-            embeddedClassNames.removeAll(embeddedClassNameCopy);
+
+            while (!embeddedClassNames.isEmpty()) {
+                Set<String> embeddedClassNameCopy = C.newSet(embeddedClassNames);
+                scanByteCode(embeddedClassNameCopy, new $.F1<String, byte[]>() {
+                    @Override
+                    public byte[] apply(String s) throws NotAppliedException, $.Break {
+                        return bytecodeFromSource(s, embeddedClassNames);
+                    }
+                });
+                embeddedClassNames.removeAll(embeddedClassNameCopy);
+            }
+        } finally {
+            timer.stop();
         }
     }
 

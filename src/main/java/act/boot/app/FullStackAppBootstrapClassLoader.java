@@ -30,6 +30,7 @@ import static act.util.ClassInfoRepository.canonicalName;
 public class FullStackAppBootstrapClassLoader extends BootstrapClassLoader implements ActClassLoader {
 
     private static final String KEY_CLASSPATH = "java.class.path";
+    private final Class<?> PLUGIN_CLASS;
 
     private List<File> jars;
     private Long jarsChecksum;
@@ -40,6 +41,7 @@ public class FullStackAppBootstrapClassLoader extends BootstrapClassLoader imple
     public FullStackAppBootstrapClassLoader(ClassLoader parent) {
         super(parent);
         preload();
+        PLUGIN_CLASS = $.classForName("act.plugin.Plugin", this);
     }
 
     @Override

@@ -29,7 +29,6 @@ import java.util.*;
 public abstract class BootstrapClassLoader extends ClassLoader implements PluginClassProvider, ActClassLoader {
 
     public static final String FILE_SCAN_LIST = "act.scan.list";
-    protected final Class<?> PLUGIN_CLASS;
 
     protected static final Logger logger = L.get(BootstrapClassLoader.class);
 
@@ -38,7 +37,6 @@ public abstract class BootstrapClassLoader extends ClassLoader implements Plugin
 
     protected BootstrapClassLoader(ClassLoader parent) {
         super(parent);
-        PLUGIN_CLASS = $.classForName("act.plugin.Plugin", this);
     }
 
     @Override
