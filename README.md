@@ -1,12 +1,46 @@
+# ACT Framework
+
 **Note**
 
 Documentation is ready at
 
 * [English version](https://github.com/actframework/act-doc/blob/master/en/index.md)
 * [中文版](https://github.com/actframework/act-doc/blob/master/cn/index.md)
+* 
 
+## Project status
 
-##### ACT Framework
+* Current stable version: 0.1.2-SNAPSHOT
+* Working on 0.2.0-SNAPSHOT
+
+## Install
+
+Add the following dependency into your `pom.xml` file
+
+```xml
+    <dependency>
+      <groupId>org.actframework</groupId>
+      <artifactId>act</artifactId>
+      <version>0.1.2-SNAPSHOT</version>
+    </dependency>
+    <dependency>
+      <groupId>org.actframework</groupId>
+      <artifactId>act-feather</artifactId>
+      <version>0.1.1-SNAPSHOT</version>
+    </dependency>
+```
+
+Add the following snippet into your `pom.xml` file to get SNAPSHOT version:
+
+```xml
+  <parent>
+    <groupId>org.sonatype.oss</groupId>
+    <artifactId>oss-parent</artifactId>
+    <version>7</version>
+  </parent>
+```
+
+## Introduction
 
 [![Join the chat at https://gitter.im/actframework/actframework](https://badges.gitter.im/actframework/actframework.svg)](https://gitter.im/actframework/actframework?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
