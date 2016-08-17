@@ -76,5 +76,10 @@ public class RouteInfo extends $.T3<String, String, String> implements Comparabl
         public String toString() {
             return "unknown";
         }
+
+        @Override
+        public boolean sessionFree() {
+            return true;
+        }
     };
 }

@@ -28,7 +28,9 @@ public class SessionScope implements ScopeCache.SessionScope, ScopeCacheSupport 
         if (null != actionContext) {
             H.Session session = actionContext.session();
             T t = session.cached(key);
-            session.cache(key, t, TTL);
+            if (null != t) {
+                session.cache(key, t, TTL);
+            }
             return t;
         }
         CliContext cliContext = CliContext.current();

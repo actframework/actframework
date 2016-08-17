@@ -3,6 +3,7 @@ package act.app.util;
 import org.osgl.$;
 import org.osgl.util.C;
 
+import java.lang.reflect.Type;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Map;
@@ -35,6 +36,10 @@ public class SimpleTypeInstanceFactory {
             BigDecimal.class, BigDecimal.valueOf(0L),
             String.class, ""
     );
+
+    public static boolean isSimpleType(Type type) {
+        return prototypes.containsKey(type);
+    }
 
     public static <T> T newInstance(Class<T> c) {
         return $.cast(prototypes.get(c));

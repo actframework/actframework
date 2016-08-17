@@ -6,6 +6,7 @@ import act.app.App;
 import act.app.AppServiceBase;
 import act.app.data.BinderManager;
 import act.app.data.StringValueResolverManager;
+import act.app.util.SimpleTypeInstanceFactory;
 import act.controller.ActionMethodParamAnnotationHandler;
 import act.inject.ActProviders;
 import act.inject.Context;

@@ -8,4 +8,5 @@ import org.osgl.mvc.result.Result;
 public interface ExceptionInterceptorInvoker extends Prioritised, Destroyable {
     Result handle(Exception e, ActionContext actionContext) throws Exception;
     void accept(ActionHandlerInvoker.Visitor visitor);
+    boolean sessionFree();
 }

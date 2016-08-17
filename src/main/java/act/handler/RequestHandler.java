@@ -49,4 +49,11 @@ public interface RequestHandler extends $.Function<ActionContext, Void>, Destroy
      */
     boolean requireResolveContext();
 
+    /**
+     * Returns if the handler is session free or not. If a handler is session free then
+     * the framework will NOT resolve session
+     * @return `true` if the handler is session free
+     */
+    boolean sessionFree();
+
 }

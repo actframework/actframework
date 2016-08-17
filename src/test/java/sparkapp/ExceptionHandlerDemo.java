@@ -42,6 +42,11 @@ public class ExceptionHandlerDemo {
                         throw new UnexpectedException();
                 }
             }
+
+            @Override
+            public boolean sessionFree() {
+                return true;
+            }
         });
 
         on(FragileMomentException.class, echo("fragile moment!"));
@@ -49,6 +54,11 @@ public class ExceptionHandlerDemo {
             @Override
             public void handle(ActionContext context) {
                 context.flash().error("super IO exception!!!");
+            }
+
+            @Override
+            public boolean sessionFree() {
+                return true;
             }
         });
         on(RuntimeException.class, new Handler() {
@@ -60,6 +70,11 @@ public class ExceptionHandlerDemo {
                 } else {
                     context.resp().writeContent("Unknown runtime exception!");
                 }
+            }
+
+            @Override
+            public boolean sessionFree() {
+                return true;
             }
         });
     }

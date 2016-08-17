@@ -222,6 +222,11 @@ public final class SparkApp extends App {
             public void handle(ActionContext context) {
                 throw result;
             }
+
+            @Override
+            public boolean sessionFree() {
+                return true;
+            }
         };
     }
 

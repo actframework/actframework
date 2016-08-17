@@ -49,6 +49,7 @@ import org.osgl.util.*;
 
 import java.io.File;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 import static act.app.event.AppEventId.*;
 
@@ -264,6 +265,7 @@ public class App extends DestroyableBase {
     }
 
     public synchronized void refresh() {
+        long ms = $.ms();
         logger.info("App starting ....");
         profile = null;
 
@@ -344,7 +346,7 @@ public class App extends DestroyableBase {
         emit(PRE_START);
         emit(START);
         daemonKeeper();
-        logger.info("App[%s] started", name());
+        logger.info("App[%s] loaded in %sms", name(), $.ms() - ms);
         emit(POST_START);
     }
 

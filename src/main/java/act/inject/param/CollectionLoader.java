@@ -6,6 +6,7 @@ import act.util.ActContext;
 import org.osgl.inject.BeanSpec;
 import org.osgl.mvc.result.BadRequest;
 import org.osgl.util.E;
+import org.osgl.util.S;
 import org.osgl.util.StringValueResolver;
 
 import java.lang.reflect.Type;
@@ -82,7 +83,7 @@ class CollectionLoader implements ParamValueLoader {
             if (null == resolver) {
                 throw E.unexpected("Component type not resolvable: %s", elementType);
             }
-            collection.add(resolver.resolve(node.value()));
+            resolveInto(collection, node.value());
         }
         return collection;
     }
@@ -113,5 +114,16 @@ class CollectionLoader implements ParamValueLoader {
             list.add(null);
         }
         list.set(index, bean);
+    }
+
+    private void resolveInto(Collection collection, String value) {
+        if (S.blank(value)) {
+            return;
+        }
+        // support multiple path variables like /foo/id1,id2
+        String[] sa = value.split("[,;]+");
+        for (String s : sa) {
+            collection.add(resolver.resolve(s));
+        }
     }
 }

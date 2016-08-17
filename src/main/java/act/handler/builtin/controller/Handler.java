@@ -39,6 +39,8 @@ public abstract class Handler<T extends Handler> extends DestroyableBase impleme
 
     public void accept(Visitor visitor) {}
 
+    public abstract boolean sessionFree();
+
     public interface Visitor {
         ActionHandlerInvoker.Visitor invokerVisitor();
     }

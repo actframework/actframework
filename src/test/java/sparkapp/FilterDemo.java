@@ -24,6 +24,11 @@ public class FilterDemo {
                 }
                 throw E.tbd();
             }
+
+            @Override
+            public boolean sessionFree() {
+                return true;
+            }
         });
 
         before("/protected(/.*|/?)", forbidden());

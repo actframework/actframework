@@ -11,4 +11,9 @@ public abstract class FastRequestHandler extends RequestHandlerBase {
     public boolean requireResolveContext() {
         return false;
     }
+
+    @Override
+    public boolean sessionFree() {
+        return true;
+    }
 }

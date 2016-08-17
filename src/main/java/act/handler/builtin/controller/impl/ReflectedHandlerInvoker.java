@@ -20,6 +20,7 @@ import com.esotericsoftware.reflectasm.MethodAccess;
 import org.osgl.$;
 import org.osgl.http.H;
 import org.osgl.inject.BeanSpec;
+import org.osgl.mvc.annotation.SessionFree;
 import org.osgl.mvc.result.BadRequest;
 import org.osgl.mvc.result.NotFound;
 import org.osgl.mvc.result.Result;
@@ -42,18 +43,19 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
     private ClassLoader cl;
     private ControllerClassMetaInfo controller;
     private Class<?> controllerClass;
-    protected MethodAccess methodAccess;
+    private MethodAccess methodAccess;
     private M handler;
-    protected int handlerIndex;
+    private int handlerIndex;
     private Map<H.Format, Boolean> templateCache = C.newMap();
     protected Method method; //
     private ParamValueLoaderManager paramValueLoaderManager;
     private JsonDTOClassManager jsonDTOClassManager;
-    private int paramCount;
-    private int fieldsAndParamsCount;
+    private final int paramCount;
+    private final int fieldsAndParamsCount;
     private String singleJsonFieldName;
+    private final boolean sessionFree;
 
-    protected ReflectedHandlerInvoker(M handlerMetaInfo, App app) {
+    private ReflectedHandlerInvoker(M handlerMetaInfo, App app) {
         this.cl = app.classLoader();
         this.handler = handlerMetaInfo;
         this.controller = handlerMetaInfo.classInfo();
@@ -74,6 +76,8 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         } else {
             method.setAccessible(true);
         }
+
+        sessionFree = method.isAnnotationPresent(SessionFree.class);
 
         paramCount = handler.paramCount();
         List<BeanSpec> beanSpecs = jsonDTOClassManager.beanSpecs(controllerClass, method);
@@ -126,6 +130,11 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
     public Result handle(Exception e, ActionContext actionContext) throws Exception {
         actionContext.attribute(ActionContext.ATTR_EXCEPTION, e);
         return handle(actionContext);
+    }
+
+    @Override
+    public boolean sessionFree() {
+        return sessionFree;
     }
 
     private void ensureJsonDTOGenerated(ActionContext context) {
@@ -292,6 +301,11 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         }
 
         @Override
+        public boolean sessionFree() {
+            return invoker.sessionFree();
+        }
+
+        @Override
         public void accept(Visitor visitor) {
             invoker.accept(visitor.invokerVisitor());
         }
@@ -315,6 +329,11 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         @Override
         public Result handle(Result result, ActionContext actionContext) throws Exception {
             return invoker.handle(result, actionContext);
+        }
+
+        @Override
+        public boolean sessionFree() {
+            return invoker.sessionFree();
         }
 
         @Override
@@ -361,6 +380,11 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         }
 
         @Override
+        public boolean sessionFree() {
+            return invoker.sessionFree();
+        }
+
+        @Override
         public void accept(ActionHandlerInvoker.Visitor visitor) {
             invoker.accept(visitor);
         }
@@ -389,6 +413,11 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         @Override
         public void handle(ActionContext actionContext) throws Exception {
             invoker.handle(actionContext);
+        }
+
+        @Override
+        public boolean sessionFree() {
+            return invoker.sessionFree();
         }
 
         @Override

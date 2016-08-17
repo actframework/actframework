@@ -33,6 +33,11 @@ public class DelegateRequestHandler extends RequestHandlerBase {
     }
 
     @Override
+    public boolean sessionFree() {
+        return handler_.sessionFree();
+    }
+
+    @Override
     public RequestHandlerBase realHandler() {
         return handler_.realHandler();
     }

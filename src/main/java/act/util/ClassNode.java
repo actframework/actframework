@@ -4,16 +4,19 @@ import org.osgl.$;
 import org.osgl.util.C;
 import org.osgl.util.E;
 
+import java.io.Serializable;
 import java.lang.reflect.Modifier;
 import java.util.Set;
 
-public class ClassNode extends DestroyableBase {
+public class ClassNode extends DestroyableBase implements Serializable {
 
-    private ClassInfoRepository infoBase;
+    private static final long serialVersionUID = 7726456123060854123L;
+
+    private transient ClassInfoRepository infoBase;
     private String name;
     private String canonicalName;
     private int modifiers;
-    private ClassNode parent;
+    private transient ClassNode parent;
     private Set<ClassNode> children = C.newSet();
     private Set<ClassNode> interfaces = C.newSet();
     private Set<ClassNode> annotations = C.newSet();

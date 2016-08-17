@@ -81,13 +81,14 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
     private CacheStrategy cacheStrategy = CacheStrategy.NO_CACHE;
     private String controllerClassName;
     private String actionMethodName;
-    private Boolean requireContextLocal = null;
 
     private volatile ControllerAction actionHandler = null;
     private C.List<BeforeInterceptor> beforeInterceptors = C.newList();
     private C.List<AfterInterceptor> afterInterceptors = C.newList();
     private C.List<ExceptionInterceptor> exceptionInterceptors = C.newList();
     private C.List<FinallyInterceptor> finallyInterceptors = C.newList();
+
+    private boolean sessionFree;
 
     final GroupInterceptorWithResult BEFORE_INTERCEPTOR = new GroupInterceptorWithResult(beforeInterceptors);
     final GroupAfterInterceptor AFTER_INTERCEPTOR = new GroupAfterInterceptor(afterInterceptors);
@@ -148,7 +149,6 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
                 return;
             }
             ensureAgentsReady();
-            ensureContextLocal(context);
             saveActionPath(context);
             context.startIntercepting();
             result = handleBefore(context);
@@ -190,6 +190,12 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
                 context.destroy();
             }
         }
+    }
+
+    @Override
+    public boolean sessionFree() {
+        ensureAgentsReady();
+        return sessionFree;
     }
 
     protected final void useSessionCache() {
@@ -244,12 +250,6 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
         }
     }
 
-    private void ensureContextLocal(ActionContext context) {
-//        if (requireContextLocal) {
-//            context.saveLocal();
-//        }
-    }
-
     // could be used by View to resolve default path to template
     private void saveActionPath(ActionContext context) {
         StringBuilder sb = S.builder(controllerClassName).append(".").append(actionMethodName);
@@ -287,47 +287,41 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
         ActionMethodMetaInfo actionInfo = ctrlInfo.action(actionMethodName);
         Act.Mode mode = Act.mode();
         actionHandler = mode.createRequestHandler(actionInfo, app);
-        requireContextLocal = false;
-        if (actionInfo.appContextInjection().injectVia().isLocal()) {
-            requireContextLocal = true;
-        }
+        sessionFree = actionHandler.sessionFree();
         App app = this.app;
         for (InterceptorMethodMetaInfo info : ctrlInfo.beforeInterceptors()) {
             if (!applied(info)) {
                 continue;
             }
-            beforeInterceptors.add(mode.createBeforeInterceptor(info, app));
-            if (info.appContextInjection().injectVia().isLocal()) {
-                requireContextLocal = true;
-            }
+            BeforeInterceptor interceptor = mode.createBeforeInterceptor(info, app);
+            beforeInterceptors.add(interceptor);
+            sessionFree = sessionFree && interceptor.sessionFree();
         }
         for (InterceptorMethodMetaInfo info : ctrlInfo.afterInterceptors()) {
             if (!applied(info)) {
                 continue;
             }
-            afterInterceptors.add(mode.createAfterInterceptor(info, app));
-            if (info.appContextInjection().injectVia().isLocal()) {
-                requireContextLocal = true;
-            }
+            AfterInterceptor interceptor = mode.createAfterInterceptor(info, app);
+            afterInterceptors.add(interceptor);
+            sessionFree = sessionFree && interceptor.sessionFree();
         }
         for (CatchMethodMetaInfo info : ctrlInfo.exceptionInterceptors()) {
             if (!applied(info)) {
                 continue;
             }
-            exceptionInterceptors.add(mode.createExceptionInterceptor(info, app));
-            if (info.appContextInjection().injectVia().isLocal()) {
-                requireContextLocal = true;
-            }
+            ExceptionInterceptor interceptor = mode.createExceptionInterceptor(info, app);
+            exceptionInterceptors.add(interceptor);
+            sessionFree = sessionFree && interceptor.sessionFree();
         }
         for (InterceptorMethodMetaInfo info : ctrlInfo.finallyInterceptors()) {
             if (!applied(info)) {
                 continue;
             }
-            finallyInterceptors.add(mode.createFinallyInterceptor(info, app));
-            if (info.appContextInjection().injectVia().isLocal()) {
-                requireContextLocal = true;
-            }
+            FinallyInterceptor interceptor = mode.createFinallyInterceptor(info, app);
+            finallyInterceptors.add(interceptor);
+            sessionFree = sessionFree && interceptor.sessionFree();
         }
+
     }
 
     public void accept(Handler.Visitor visitor) {

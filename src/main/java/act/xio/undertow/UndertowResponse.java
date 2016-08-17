@@ -13,6 +13,7 @@ import org.osgl.util.IO;
 
 import java.io.OutputStream;
 import java.io.Writer;
+import java.nio.charset.Charset;
 import java.util.Locale;
 
 public class UndertowResponse extends ResponseImplBase<UndertowResponse> {
@@ -52,6 +53,12 @@ public class UndertowResponse extends ResponseImplBase<UndertowResponse> {
     @Override
     public UndertowResponse contentLength(long len) {
         hse.setResponseContentLength(len);
+        return this;
+    }
+
+    @Override
+    public UndertowResponse writeContent(String s) {
+        hse.getResponseSender().send(s);
         return this;
     }
 
@@ -109,7 +116,7 @@ public class UndertowResponse extends ResponseImplBase<UndertowResponse> {
 
     @Override
     public UndertowResponse status(int sc) {
-        hse.setResponseCode(sc);
+        hse.setStatusCode(sc);
         return this;
     }
 

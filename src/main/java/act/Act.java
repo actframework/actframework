@@ -427,7 +427,9 @@ public final class Act {
 
     private static void loadPlugins() {
         logger.info("scanning plugins ...");
+        long ts = $.ms();
         new PluginScanner().scan();
+        logger.info("plugin scanning finished in %sms", $.ms() - ts);
     }
 
     private static void unloadPlugins() {

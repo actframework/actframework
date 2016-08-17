@@ -25,6 +25,7 @@ import org.osgl.mvc.result.Result;
 import org.osgl.util.*;
 
 import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
 import java.io.File;
 import java.io.PrintStream;
 import java.io.Serializable;
@@ -106,12 +107,6 @@ public class Router extends AppServiceBase<Router> {
         }
         context.router(this);
         Node node = search(method, Path.tokenizer(Unsafe.bufOf(path)), context);
-        return getInvokerFrom(node);
-    }
-
-    public RequestHandler getInvoker(H.Method method, List<CharSequence> path, ActionContext context) {
-        context.router(this);
-        Node node = search(method, path, context);
         return getInvokerFrom(node);
     }
 
@@ -433,8 +428,8 @@ public class Router extends AppServiceBase<Router> {
      * The data structure support decision tree for
      * fast URL routing
      */
-    @ApplicationScoped
     private static class Node extends DestroyableBase implements Serializable, TreeNode {
+
         static Node newRoot(String name) {
             Node node = new Node(-1);
             node.name = S.str(name);

@@ -483,13 +483,18 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Act
      */
     public void resolve() {
         E.illegalStateIf(state != State.CREATED);
-        resolveSession();
-        resolveFlash();
+        boolean sessionFree = handler.sessionFree();
+        if (!sessionFree) {
+            resolveSession();
+            resolveFlash();
+        }
         state = State.SESSION_RESOLVED;
-        EventBus eventBus = app().eventBus();
-        eventBus.emit(new PreFireSessionResolvedEvent(session, this));
-        Act.sessionManager().fireSessionResolved(this);
-        eventBus.emit(new SessionResolvedEvent(session, this));
+        if (!sessionFree) {
+            EventBus eventBus = app().eventBus();
+            eventBus.emit(new PreFireSessionResolvedEvent(session, this));
+            Act.sessionManager().fireSessionResolved(this);
+            eventBus.emit(new SessionResolvedEvent(session, this));
+        }
     }
 
     /**
@@ -500,6 +505,9 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Act
      */
     public void dissolve() {
         if (state == State.SESSION_DISSOLVED) {
+            return;
+        }
+        if (handler.sessionFree()) {
             return;
         }
         app().eventBus().emit(new SessionWillDissolveEvent(this));

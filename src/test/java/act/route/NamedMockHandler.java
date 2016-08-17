@@ -22,4 +22,9 @@ public class NamedMockHandler extends RequestHandlerBase {
     public static String getName() {
         return result.get();
     }
+
+    @Override
+    public boolean sessionFree() {
+        return true;
+    }
 }

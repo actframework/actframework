@@ -22,9 +22,9 @@ class ScopedParamValueLoader implements ParamValueLoader {
         boolean isSession = SessionScope.INSTANCE == scopeCache;
         if (null == cached || isSession) {
             if (isSession) {
-                cached = RequestScope.INSTANCE.get(key);
-                if (null != cached) {
-                    return cached;
+                Object requestScoped = RequestScope.INSTANCE.get(key);
+                if (null != requestScoped) {
+                    return requestScoped;
                 }
             }
             cached = realLoader.load(cached, context, noDefaultValue);
