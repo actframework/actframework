@@ -5,19 +5,14 @@ import org.osgl.mvc.annotation.Param;
 import org.osgl.util.E;
 import org.osgl.util.StringValueResolver;
 
-public class StringValueResolverValueLoader implements ParamValueLoader {
+public class StringValueResolverValueLoader extends StringValueResolverValueLoaderBase implements ParamValueLoader {
 
     private static final ThreadLocal<HttpRequestParamEncode> encodeShare = new ThreadLocal<>();
 
-    private StringValueResolver<?> stringValueResolver;
-    private ParamKey paramKey;
-    private Object defVal;
     private HttpRequestParamEncode encode;
 
     public StringValueResolverValueLoader(ParamKey key, StringValueResolver<?> resolver, Param param, Class<?> type) {
-        this.paramKey = key;
-        this.stringValueResolver = resolver;
-        this.defVal = defVal(param, type);
+        super(key, resolver, param, type, false);
     }
 
     @Override
@@ -76,24 +71,4 @@ public class StringValueResolverValueLoader implements ParamValueLoader {
         return encode;
     }
 
-    private static Object defVal(Param param, Class<?> rawType) {
-        if (boolean.class == rawType) {
-            return null != param && param.defBooleanVal();
-        } else if (int.class == rawType) {
-            return null != param ? param.defIntVal() : 0;
-        } else if (double.class == rawType) {
-            return null != param ? param.defDoubleVal() : 0d;
-        } else if (long.class == rawType) {
-            return null != param ? param.defLongVal() : 0L;
-        } else if (float.class == rawType) {
-            return null != param ? param.defFloatVal() : 0f;
-        } else if (char.class == rawType) {
-            return null != param ? param.defCharVal() : '\0';
-        } else if (byte.class == rawType) {
-            return null != param ? param.defByteVal() : 0;
-        } else if (short.class == rawType) {
-            return null != param ? param.defShortVal() : 0;
-        }
-        return null;
-    }
 }

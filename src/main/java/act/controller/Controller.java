@@ -401,6 +401,10 @@ public @interface Controller {
             return new RenderJSON(data);
         }
 
+        public static Result jsonMap(Object... data) {
+            return new RenderJsonMap();
+        }
+
 
         /**
          * Returns a {@link RenderBinary} result with an {@link ISObject} instance. The result will render

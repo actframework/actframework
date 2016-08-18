@@ -8,8 +8,6 @@ import act.asm.Type;
 import act.cli.*;
 import act.conf.AppConfig;
 import act.inject.Context;
-import act.inject.OptionalPathVariable;
-import act.inject.PathVariable;
 import act.inject.SessionVariable;
 import act.mail.MailerContext;
 import org.osgl.inject.annotation.Provides;
@@ -29,13 +27,10 @@ public enum AsmTypes implements Opcodes {
     public static AsmType<ActContext> ACT_CONTEXT = new AsmType<ActContext>(ActContext.class);
     public static AsmType<ActionContext> ACTION_CONTEXT = new AsmType<ActionContext>(ActionContext.class);
     public static AsmType<MailerContext> MAILER_CONTEXT = new AsmType<MailerContext>(MailerContext.class);
-    public static AsmType<CliContext> CLI_CONTEXT = new AsmType<CliContext>(CliContext.class);
     public static AsmType<App> APP = new AsmType<App>(App.class);
 
     public static AsmType<AppConfig> APP_CONFIG = new AsmType<AppConfig>(AppConfig.class);
     public static AsmType<Param> PARAM = new AsmType<Param>(Param.class);
-    public static AsmType<PathVariable> PATH_VARIABLE = new AsmType<PathVariable>(PathVariable.class);
-    public static AsmType<OptionalPathVariable> OPTIONAL_PATH_VARIABLE = new AsmType<OptionalPathVariable>(OptionalPathVariable.class);
     public static AsmType<SessionVariable> CLI_SESSION_ATTRIBUTE = new AsmType<SessionVariable>(SessionVariable.class);
     public static AsmType<Bind> BIND = new AsmType<Bind>(Bind.class);
     public static AsmType<Context> CONTEXT = new AsmType<Context>(Context.class);

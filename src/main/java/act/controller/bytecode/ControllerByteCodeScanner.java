@@ -100,18 +100,6 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
         }
 
         @Override
-        public FieldVisitor visitField(int access, String name, String desc, String signature, Object value) {
-            FieldVisitor fv = super.visitField(access, name, desc, signature, value);
-            if (classInfo.possibleController()) {
-                if (!isStatic(access)) {
-                    Type type = Type.getType(desc);
-                    return new ControllerFieldVisitor(fv, name, type);
-                }
-            }
-            return fv;
-        }
-
-        @Override
         public AnnotationVisitor visitAnnotation(String desc, boolean visible) {
             AnnotationVisitor av = super.visitAnnotation(desc, visible);
             if (Type.getType(Controller.class).getDescriptor().equals(desc)) {
@@ -128,7 +116,7 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
         @Override
         public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
             MethodVisitor mv = super.visitMethod(access, name, desc, signature, exceptions);
-            if (!classInfo.possibleController() || !isEligibleMethod(access, name, desc)) {
+            if (!classInfo.possibleController() || !isEligibleMethod(access, name)) {
                 return mv;
             }
             String className = classInfo.className();
@@ -136,7 +124,7 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
             return new ActionMethodVisitor(isRoutedMethod, mv, access, name, desc, signature, exceptions);
         }
 
-        private boolean isEligibleMethod(int access, String name, String desc) {
+        private boolean isEligibleMethod(int access, String name) {
             return isPublic(access) && !isAbstract(access) && !isConstructor(name);
         }
 
@@ -204,61 +192,6 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
                 }
                 return av;
             }
-        }
-
-        private class ControllerFieldVisitor extends FieldVisitor implements Opcodes {
-            private String fieldName;
-            private Type type;
-
-            public ControllerFieldVisitor(FieldVisitor fv, String fieldName, Type type) {
-                super(ASM5, fv);
-                this.fieldName = fieldName;
-                this.type = type;
-            }
-
-            @Override
-            public void visitAttribute(Attribute attr) {
-                super.visitAttribute(attr);
-            }
-
-            @Override
-            public AnnotationVisitor visitAnnotation(String desc, boolean visible) {
-                AnnotationVisitor av = super.visitAnnotation(desc, visible);
-                Type type = Type.getType(desc);
-                if ($.eq(type, AsmTypes.PATH_VARIABLE.asmType())) {
-                    return new FieldAnnotationVisitor(av, false);
-                } else if ($.eq(type, AsmTypes.OPTIONAL_PATH_VARIABLE.asmType())) {
-                    return new FieldAnnotationVisitor(av, true);
-                }
-                return av;
-            }
-
-            private class FieldAnnotationVisitor extends AnnotationVisitor implements Opcodes {
-                private String pathVariable;
-                private boolean optional;
-                public FieldAnnotationVisitor (AnnotationVisitor av, boolean optional) {
-                    super(ASM5, av);
-                    this.pathVariable = fieldName;
-                    this.optional = optional;
-                }
-
-                @Override
-                public void visit(String name, Object value) {
-                    if ("value".equals(name)) {
-                        pathVariable = S.string(value);
-                    } else if ("optional".equals(name)) {
-                        if (value instanceof Boolean) {
-                            optional = (Boolean) value;
-                        }
-                    }
-                    super.visit(name, value);
-                }
-
-                public void visitEnd() {
-                    classInfo.addFieldPathVariableInfo(new FieldPathVariableInfo(fieldName, type, pathVariable, optional));
-                }
-            }
-
         }
 
         private class ActionMethodVisitor extends MethodVisitor implements Opcodes {
@@ -361,7 +294,7 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
             public AnnotationVisitor visitParameterAnnotation(int parameter, String desc, boolean visible) {
                 AnnotationVisitor av = super.visitParameterAnnotation(parameter, desc, visible);
                 Type type = Type.getType(desc);
-                if ($.eq(type, AsmTypes.PARAM.asmType()) || $.eq(type, AsmTypes.PATH_VARIABLE.asmType())) {
+                if ($.eq(type, AsmTypes.PARAM.asmType())) {
                     return new ParamAnnotationVisitor(av, parameter);
                 } else if ($.eq(type, AsmTypes.BIND.asmType())) {
                     return new BindAnnotationVisitor(av, parameter);

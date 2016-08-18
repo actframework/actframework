@@ -8,9 +8,7 @@ import act.app.data.BinderManager;
 import act.app.data.StringValueResolverManager;
 import act.app.util.SimpleTypeInstanceFactory;
 import act.controller.ActionMethodParamAnnotationHandler;
-import act.inject.ActProviders;
-import act.inject.Context;
-import act.inject.DependencyInjector;
+import act.inject.*;
 import act.inject.genie.DependentScope;
 import act.inject.genie.RequestScope;
 import act.inject.genie.SessionScope;
@@ -48,9 +46,6 @@ import java.util.concurrent.ConcurrentMap;
  * Manage {@link ParamValueLoader} grouped by Method
  */
 public class ParamValueLoaderManager extends AppServiceBase<ParamValueLoaderManager> {
-
-    public static final String CTX_EXCEPTION = "__exception__";
-    public static final String CTX_RESULT = "__result__";
 
     private static final ParamValueLoader[] DUMB = new ParamValueLoader[0];
     private static final ThreadLocal<ParamTree> PARAM_TREE = new ThreadLocal<>();
@@ -198,6 +193,10 @@ public class ParamValueLoaderManager extends AppServiceBase<ParamValueLoaderMana
                 || null != filter(annotations, Singleton.class)
                 || null != filter(annotations, ApplicationScoped.class)) {
             return ProvidedValueLoader.get(rawType, injector);
+        }
+        HeaderVariable headerVariable = filter(annotations, HeaderVariable.class);
+        if (null != headerVariable) {
+            return new HeaderValueLoader(headerVariable.value(), spec);
         }
         ParamValueLoader loader;
         Named named = filter(annotations, Named.class);
@@ -440,7 +439,8 @@ public class ParamValueLoaderManager extends AppServiceBase<ParamValueLoaderMana
                 null != filter(annotations, org.osgl.inject.annotation.RequestScoped.class)) {
             return RequestScope.INSTANCE;
         } else if (null != filter(annotations, SessionScoped.class) ||
-                null != filter(annotations, org.osgl.inject.annotation.SessionScoped.class)) {
+                null != filter(annotations, org.osgl.inject.annotation.SessionScoped.class) ||
+                null != filter(annotations, SessionVariable.class)) {
             return SessionScope.INSTANCE;
         } else if (null != filter(annotations, Dependent.class) ||
                 null != filter(annotations, New.class)) {
