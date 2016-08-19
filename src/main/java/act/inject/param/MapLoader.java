@@ -124,21 +124,6 @@ class MapLoader implements ParamValueLoader {
     }
 
     private ParamValueLoader buildChildLoader(ParamKey key) {
-        return manager.buildLoader(key, valType, injector);
-    }
-
-    private static void addToCollection(Collection collection, int index, Object bean) {
-        if (collection instanceof List) {
-            addToList((List) collection, index, bean);
-        } else {
-            collection.add(bean);
-        }
-    }
-
-    private static void addToList(List list, int index, Object bean) {
-        while (list.size() < index + 1) {
-            list.add(null);
-        }
-        list.set(index, bean);
+        return manager.buildLoader(key, valType);
     }
 }

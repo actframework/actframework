@@ -21,6 +21,7 @@ import org.osgl.util.C;
 import org.osgl.util.E;
 import org.osgl.util.S;
 import org.osgl.util.Str;
+import org.osgl.web.util.UserAgent;
 
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
@@ -55,6 +56,7 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Act
     private Set<ConstraintViolation> violations;
     private Router router;
     private RequestHandler handler;
+    private UserAgent ua;
 
     @Inject
     private ActionContext(App app, H.Request request, H.Response response) {
@@ -156,6 +158,13 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Act
 
     public Locale locale() {
         return config().localeResolver().resolve(this);
+    }
+
+    public UserAgent userAgent() {
+        if (null == ua) {
+            ua = UserAgent.parse(req().header(H.Header.Names.USER_AGENT));
+        }
+        return ua;
     }
 
     public boolean jsonEncoded() {

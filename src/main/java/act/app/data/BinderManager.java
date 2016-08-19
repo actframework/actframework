@@ -7,24 +7,14 @@ import act.conf.AppConfig;
 import act.controller.meta.HandlerParamMetaInfo;
 import act.data.FileBinder;
 import act.data.SObjectBinder;
-import act.data.UserAgentBinder;
-import org.osgl.$;
 import org.osgl.mvc.util.Binder;
-import org.osgl.mvc.util.ParamValueProvider;
 import org.osgl.storage.ISObject;
 import org.osgl.storage.impl.SObject;
 import org.osgl.util.C;
-import org.osgl.util.FastStr;
-import org.osgl.util.Str;
-import org.osgl.util.StringValueResolver;
 import org.osgl.web.util.UserAgent;
 
 import java.io.File;
-import java.lang.reflect.Array;
-import java.lang.reflect.Modifier;
 import java.util.*;
-
-import static act.app.App.logger;
 
 @ActComponent
 public class BinderManager extends AppServiceBase<BinderManager> {
@@ -63,7 +53,6 @@ public class BinderManager extends AppServiceBase<BinderManager> {
         binders.put(File.class, new FileBinder());
         binders.put(ISObject.class, new SObjectBinder());
         binders.put(SObject.class, new SObjectBinder());
-        binders.put(UserAgent.class, new UserAgentBinder());
     }
 
 }

@@ -13,6 +13,7 @@ import org.osgl.cache.CacheService;
 import org.osgl.exception.NotAppliedException;
 import org.osgl.util.C;
 import org.osgl.util.E;
+import org.osgl.web.util.UserAgent;
 
 import javax.inject.Provider;
 import java.lang.reflect.Field;
@@ -78,6 +79,17 @@ public final class ActProviders {
                 return ctx;
             }
             return CliContext.current();
+        }
+    };
+
+    public static final Provider<UserAgent> USER_AGENT = new Provider<UserAgent>() {
+        @Override
+        public UserAgent get() {
+            ActionContext actionContext = ActionContext.current();
+            if (null == actionContext) {
+                throw new IllegalStateException();
+            }
+            return actionContext.userAgent();
         }
     };
 

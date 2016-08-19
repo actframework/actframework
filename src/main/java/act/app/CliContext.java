@@ -27,6 +27,11 @@ import java.util.Set;
 public class CliContext extends ActContext.Base<CliContext> implements IASCIITable {
 
     public static final String ATTR_PWD = "__act_pwd__";
+    /**
+     * Used to pass command line option and argument count for a specific
+     * method
+     */
+    public static final String ATTR_OPT_CNT = "__act_opt_cnt__";
 
     private static final ContextLocal<CliContext> _local = $.contextLocal();
 

@@ -8,7 +8,7 @@ import java.lang.annotation.Target;
 /**
  * Indicate a command argument is mandatory
  */
-@Retention(RetentionPolicy.CLASS)
+@Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.PARAMETER, ElementType.FIELD})
 public @interface Required {
 
@@ -29,9 +29,10 @@ public @interface Required {
      * </pre>
      * <p>If not specified, then the system will assume the argument lead to be follows</p>
      * <ul>
-     *     <li>{@code -o}, where "o" is the first char of the argument name</li>
-     *     <li>{@code --option}, where "option" is the full argument name</li>
+     * <li>{@code -o}, where "o" is the first char of the argument name</li>
+     * <li>{@code --option}, where "option" is the full argument name</li>
      * </ul>
+     *
      * @return the argument lead as described
      */
     String[] lead() default "";
@@ -56,6 +57,7 @@ public @interface Required {
      * before calling into the method</p>
      * <p>If not specified, then the marked argument must be provided in regarding to other
      * arguments</p>
+     *
      * @return the mutual exclusive group
      */
     String group() default "";
@@ -63,12 +65,14 @@ public @interface Required {
 
     /**
      * Alias of {@link #help()}
+     *
      * @return the help message
      */
     String value() default "";
 
     /**
      * Specify the help message for this option
+     *
      * @return the help message
      */
     String help() default "";

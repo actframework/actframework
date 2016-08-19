@@ -8,7 +8,7 @@ import java.lang.annotation.Target;
 /**
  * Indicate a command argument is optional
  */
-@Retention(RetentionPolicy.CLASS)
+@Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.PARAMETER, ElementType.FIELD})
 public @interface Optional {
 

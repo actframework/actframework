@@ -98,7 +98,7 @@ class CollectionLoader implements ParamValueLoader {
     }
 
     private ParamValueLoader buildChildLoader(ParamKey key) {
-        return manager.buildLoader(key, elementType, injector);
+        return manager.buildLoader(key, elementType);
     }
 
     private static void addToCollection(Collection collection, int index, Object bean) {

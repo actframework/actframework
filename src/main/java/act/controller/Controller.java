@@ -401,6 +401,13 @@ public @interface Controller {
             return new RenderJSON(data);
         }
 
+        /**
+         * Returns a {@link RenderJsonMap} result with any object. This method will
+         * generate a JSON object out from the {@link ActionContext#renderArgs}.
+         * The response is always in JSON format and ignores the HTTP `Accept`
+         * header setting
+         * @param data the varargs of Object to be put into the JSON map
+         */
         public static Result jsonMap(Object... data) {
             return new RenderJsonMap();
         }

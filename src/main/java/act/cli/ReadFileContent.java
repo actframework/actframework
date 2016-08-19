@@ -11,7 +11,7 @@ import java.lang.annotation.Target;
  *
  * Note this assumes the file be a ascii text file
  */
-@Retention(RetentionPolicy.CLASS)
+@Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.PARAMETER, ElementType.FIELD})
 public @interface ReadFileContent {
 }

@@ -7,7 +7,10 @@ import java.util.Map;
 
 /**
  * Render json Map using all {@link ActionContext#renderArgs}
- * by {@link ActionContext}
+ * by {@link ActionContext}.
+ *
+ * Note this will render the JSON result without regarding to
+ * the http `Accept` header
  */
 public class RenderJsonMap extends RenderAny {
 

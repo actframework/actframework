@@ -81,6 +81,6 @@ class HeaderValueLoader implements ParamValueLoader {
             return name;
         }
         name = spec.name();
-        return Keyword.of(name).header();
+        return Keyword.of(name).httpHeader();
     }
 }

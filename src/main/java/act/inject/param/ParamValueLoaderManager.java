@@ -95,7 +95,7 @@ public class ParamValueLoaderManager extends AppServiceBase<ParamValueLoaderMana
     public Object loadHostBean(Class beanClass, ActContext<?> ctx) {
         ParamValueLoader loader = classRegistry.get(beanClass);
         if (null == loader) {
-            loader = findBeanLoader(beanClass);
+            loader = findBeanLoader(beanClass, ctx);
             classRegistry.putIfAbsent(beanClass, loader);
         }
         return loader.load(null, ctx, false);
@@ -105,7 +105,7 @@ public class ParamValueLoaderManager extends AppServiceBase<ParamValueLoaderMana
         try {
             ParamValueLoader[] loaders = methodRegistry.get(method);
             if (null == loaders) {
-                loaders = findLoaders(method);
+                loaders = findLoaders(method, ctx);
                 methodRegistry.putIfAbsent(method, loaders);
             }
             int sz = loaders.length;
@@ -119,14 +119,14 @@ public class ParamValueLoaderManager extends AppServiceBase<ParamValueLoaderMana
         }
     }
 
-    private <T> ParamValueLoader findBeanLoader(Class<T> beanClass) {
+    private <T> ParamValueLoader findBeanLoader(Class<T> beanClass, ActContext ctx) {
         final Provider<T> provider = injector.getProvider(beanClass);
         final Map<Field, ParamValueLoader> loaders = new HashMap<>();
         for (Field field: $.fieldsOf(beanClass, true)) {
             Type type = field.getGenericType();
             Annotation[] annotations = field.getAnnotations();
             BeanSpec spec = BeanSpec.of(type, annotations, field.getName(), injector);
-            ParamValueLoader loader = findLoader(spec, type, annotations, injector);
+            ParamValueLoader loader = findLoader(spec, type, annotations, ctx);
             loaders.put(field, loader);
         }
         final boolean hasField = !loaders.isEmpty();
@@ -152,7 +152,7 @@ public class ParamValueLoaderManager extends AppServiceBase<ParamValueLoaderMana
         return decorate(loader, BeanSpec.of(beanClass, injector), beanClass.getDeclaredAnnotations(), false);
     }
 
-    private ParamValueLoader[] findLoaders(Method method) {
+    private ParamValueLoader[] findLoaders(Method method, ActContext ctx) {
         Type[] types = method.getGenericParameterTypes();
         int sz = types.length;
         if (0 == sz) {
@@ -169,7 +169,7 @@ public class ParamValueLoaderManager extends AppServiceBase<ParamValueLoaderMana
                 } else if (Exception.class.isAssignableFrom(spec.rawType())) {
                     loader = EXCEPTION_LOADED;
                 } else {
-                    loader = findLoader(spec, types[i], annotations[i], injector);
+                    loader = findLoader(spec, types[i], annotations[i], ctx);
                 }
                 // Cannot use spec as the key here because
                 // spec does not compare Scoped annotation
@@ -184,7 +184,7 @@ public class ParamValueLoaderManager extends AppServiceBase<ParamValueLoaderMana
             BeanSpec spec,
             Type type,
             Annotation[] annotations,
-            DependencyInjector<?> injector
+            ActContext ctx
     ) {
         Class rawType = BeanSpec.rawTypeOf(type);
         if (ActProviders.isProvided(rawType)
@@ -194,9 +194,11 @@ public class ParamValueLoaderManager extends AppServiceBase<ParamValueLoaderMana
                 || null != filter(annotations, ApplicationScoped.class)) {
             return ProvidedValueLoader.get(rawType, injector);
         }
-        HeaderVariable headerVariable = filter(annotations, HeaderVariable.class);
-        if (null != headerVariable) {
-            return new HeaderValueLoader(headerVariable.value(), spec);
+        if (ctx instanceof ActionContext) {
+            HeaderVariable headerVariable = filter(annotations, HeaderVariable.class);
+            if (null != headerVariable) {
+                return new HeaderValueLoader(headerVariable.value(), spec);
+            }
         }
         ParamValueLoader loader;
         Named named = filter(annotations, Named.class);
@@ -229,34 +231,33 @@ public class ParamValueLoaderManager extends AppServiceBase<ParamValueLoaderMana
                 if (null == resolver) {
                     resolver = resolverManager.resolver(rawType);
                 }
-                loader = (null != resolver) ? new StringValueResolverValueLoader(ParamKey.of(name), resolver, param, rawType) : buildLoader(ParamKey.of(name), type, injector);
+                loader = (null != resolver) ? new StringValueResolverValueLoader(ParamKey.of(name), resolver, param, rawType) : buildLoader(ParamKey.of(name), type);
             }
         }
         return decorate(loader, spec, annotations, true);
     }
 
-    ParamValueLoader buildLoader(final ParamKey key, final Type type, DependencyInjector<?> injector) {
+    ParamValueLoader buildLoader(final ParamKey key, final Type type) {
         Class rawType = BeanSpec.rawTypeOf(type);
         if (rawType.isArray()) {
-            return buildArrayLoader(key, rawType.getComponentType(), injector);
+            return buildArrayLoader(key, rawType.getComponentType());
         }
         if (Collection.class.isAssignableFrom(rawType)) {
             Type elementType = ((ParameterizedType) type).getActualTypeArguments()[0];
-            return buildCollectionLoader(key, rawType, elementType, injector);
+            return buildCollectionLoader(key, rawType, elementType);
         }
         if (Map.class.isAssignableFrom(rawType)) {
             Type[] typeParams = ((ParameterizedType) type).getActualTypeArguments();
             Type keyType = typeParams[0];
             Type valType = typeParams[1];
-            return buildMapLoader(key, rawType, keyType, valType, injector);
+            return buildMapLoader(key, rawType, keyType, valType);
         }
-        return buildPojoLoader(key, rawType, injector);
+        return buildPojoLoader(key, rawType);
     }
 
     private ParamValueLoader buildArrayLoader(
             final ParamKey key,
-            final Type elementType,
-            DependencyInjector<?> injector
+            final Type elementType
     ) {
         final CollectionLoader collectionLoader = new CollectionLoader(key, ArrayList.class, elementType, injector, this);
         return new ParamValueLoader() {
@@ -278,8 +279,7 @@ public class ParamValueLoaderManager extends AppServiceBase<ParamValueLoaderMana
     private ParamValueLoader buildCollectionLoader(
             final ParamKey key,
             final Class<? extends Collection> collectionClass,
-            final Type elementType,
-            DependencyInjector<?> injector
+            final Type elementType
     ) {
         return new CollectionLoader(key, collectionClass, elementType, injector, this);
     }
@@ -288,8 +288,7 @@ public class ParamValueLoaderManager extends AppServiceBase<ParamValueLoaderMana
             final ParamKey key,
             final Class<? extends Map> mapClass,
             final Type keyType,
-            final Type valType,
-            DependencyInjector<?> injector
+            final Type valType
     ) {
         return new MapLoader(key, mapClass, keyType, valType, injector, this);
     }
@@ -308,8 +307,8 @@ public class ParamValueLoaderManager extends AppServiceBase<ParamValueLoaderMana
         return tree;
     }
 
-    private ParamValueLoader buildPojoLoader(final ParamKey key, final Class type, final DependencyInjector<?> injector) {
-        final List<FieldLoader> fieldLoaders = fieldLoaders(key, type, injector);
+    private ParamValueLoader buildPojoLoader(final ParamKey key, final Class type) {
+        final List<FieldLoader> fieldLoaders = fieldLoaders(key, type);
         return new ParamValueLoader() {
             @Override
             public Object load(Object bean, ActContext<?> context, boolean noDefaultValue) {
@@ -339,7 +338,7 @@ public class ParamValueLoaderManager extends AppServiceBase<ParamValueLoaderMana
         };
     }
 
-    private ParamValueLoader findLoader(ParamKey paramKey, Field field, DependencyInjector<?> injector) {
+    private ParamValueLoader findLoader(ParamKey paramKey, Field field) {
         Class fieldType = field.getType();
         Annotation[] annotations = field.getDeclaredAnnotations();
         if (ActProviders.isProvided(fieldType) || null != filter(annotations, Inject.class)) {
@@ -360,10 +359,10 @@ public class ParamValueLoaderManager extends AppServiceBase<ParamValueLoaderMana
             return new StringValueResolverValueLoader(key, resolver, null, fieldType);
         }
 
-        return buildLoader(key, field.getGenericType(), injector);
+        return buildLoader(key, field.getGenericType());
     }
 
-    private List<FieldLoader> fieldLoaders(ParamKey key, Class type, DependencyInjector<?> injector) {
+    private List<FieldLoader> fieldLoaders(ParamKey key, Class type) {
         Class<?> current = type;
         List<FieldLoader> fieldLoaders = C.newList();
         while (null != current && !current.equals(Object.class)) {
@@ -372,15 +371,15 @@ public class ParamValueLoaderManager extends AppServiceBase<ParamValueLoaderMana
                     continue;
                 }
                 field.setAccessible(true);
-                fieldLoaders.add(fieldLoader(key, field, injector));
+                fieldLoaders.add(fieldLoader(key, field));
             }
             current = current.getSuperclass();
         }
         return fieldLoaders;
     }
 
-    private FieldLoader fieldLoader(ParamKey key, Field field, DependencyInjector<?> injector) {
-        return new FieldLoader(field, findLoader(key, field, injector));
+    private FieldLoader fieldLoader(ParamKey key, Field field) {
+        return new FieldLoader(field, findLoader(key, field));
     }
 
     private static <T extends Annotation> T filter(Annotation[] annotations, Class<T> annoType) {
