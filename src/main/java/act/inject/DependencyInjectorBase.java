@@ -57,7 +57,7 @@ public abstract class DependencyInjectorBase<DI extends DependencyInjectorBase<D
 
     @Override
     public void fireInjectedEvent(Object bean, BeanSpec spec) {
-        Class c = bean.getClass();
+        Class c = spec.rawType();
         List<DependencyInjectionListener> list = listeners.get(c);
         if (null != list) {
             for (DependencyInjectionListener listener : list) {
