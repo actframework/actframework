@@ -64,7 +64,7 @@ class OptionLoader extends CliParamValueLoader implements ParamValueLoader {
         }
         if (null == val) {
             if (!required) {
-                val = S.notBlank(defVal) ? resolver.resolve(defVal) : null;
+                val = S.notBlank(defVal) ? resolver.resolve(defVal) : resolver.resolve(null);
             }
         }
         if (null != val && required) {

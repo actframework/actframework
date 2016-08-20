@@ -5,6 +5,7 @@ import act.cli.ascii_table.ASCIITableHeader;
 import act.cli.ascii_table.impl.SimpleASCIITableImpl;
 import act.cli.ascii_table.spec.IASCIITable;
 import act.cli.ascii_table.spec.IASCIITableAware;
+import act.cli.meta.CommandMethodMetaInfo;
 import act.cli.util.CommandLineParser;
 import act.util.ActContext;
 import jline.Terminal2;
@@ -41,14 +42,6 @@ public class CliContext extends ActContext.Base<CliContext> implements IASCIITab
         Map<String, AtomicInteger> required;
 
         private ParsingContext() {}
-
-        public ParsingContext(int optionArgumentsCnt, Set<String> requiredGroups) {
-            this.optionArgumentsCnt = optionArgumentsCnt;
-            this.required = new HashMap<>();
-            for (String group : requiredGroups) {
-                this.required.put(group, new AtomicInteger(0));
-            }
-        }
 
         public AtomicInteger curArgId() {
             return curArgId;

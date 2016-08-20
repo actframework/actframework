@@ -18,6 +18,7 @@ class CliVarArgumentLoader extends CliParamValueLoader {
     CliVarArgumentLoader(Class componentType, StringValueResolver resolver) {
         this.componentType = componentType;
         this.resolver = resolver;
+        CliContext.ParsingContextBuilder.foundArgument();
     }
 
     @Override

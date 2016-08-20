@@ -5,6 +5,7 @@ import act.app.App;
 import act.app.CliContext;
 import act.cli.Optional;
 import act.cli.Required;
+import act.cli.meta.CommandMethodMetaInfo;
 import act.util.ActContext;
 import org.osgl.inject.BeanSpec;
 import org.osgl.util.E;
@@ -19,12 +20,15 @@ import java.lang.reflect.Type;
  */
 public class CliContextParamLoader extends ParamValueLoaderService {
 
+    private transient CommandMethodMetaInfo methodMetaInfo;
+
     CliContextParamLoader(App app) {
         super(app);
     }
 
-    public CliContext.ParsingContext buildParsingContext(Class commander, Method method) {
+    public CliContext.ParsingContext buildParsingContext(Class commander, Method method, CommandMethodMetaInfo methodMetaInfo) {
         CliContext.ParsingContextBuilder.start();
+        this.methodMetaInfo = methodMetaInfo;
         ParamValueLoader loader = findBeanLoader(commander);
         classRegistry.putIfAbsent(commander, loader);
         ParamValueLoader[] loaders = findMethodParamLoaders(method);
@@ -56,5 +60,10 @@ public class CliContextParamLoader extends ParamValueLoaderService {
             return new CliArgumentLoader(resolver);
         }
         return new CliVarArgumentLoader(rawType.getComponentType(), resolver);
+    }
+
+    @Override
+    protected String paramName(int i) {
+        return methodMetaInfo.param(i).name();
     }
 }

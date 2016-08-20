@@ -43,7 +43,7 @@ import java.util.concurrent.ConcurrentMap;
 /**
  * Manage {@link ParamValueLoader} grouped by Method
  */
-public class ParamValueLoaderService extends DestroyableBase {
+public abstract class ParamValueLoaderService extends DestroyableBase {
 
     private static final ParamValueLoader[] DUMB = new ParamValueLoader[0];
     private static final ThreadLocal<ParamTree> PARAM_TREE = new ThreadLocal<>();
@@ -158,7 +158,8 @@ public class ParamValueLoaderService extends DestroyableBase {
         ParamValueLoader[] loaders = new ParamValueLoader[sz];
         Annotation[][] annotations = method.getParameterAnnotations();
         for (int i = 0; i < sz; ++i) {
-            BeanSpec spec = BeanSpec.of(types[i], annotations[i], injector);
+            String name = paramName(i);
+            BeanSpec spec = BeanSpec.of(types[i], annotations[i], name, injector);
             ParamValueLoader loader = paramRegistry.get($.T2(types[i], annotations[i]));
             if (null == loader) {
                 if (Result.class.isAssignableFrom(spec.rawType())) {
@@ -177,14 +178,16 @@ public class ParamValueLoaderService extends DestroyableBase {
         return loaders;
     }
 
-    protected ParamValueLoader findContextSpecificLoader(
+    protected abstract ParamValueLoader findContextSpecificLoader(
             String bindName,
             Class rawType,
             BeanSpec spec,
             Type type,
             Annotation[] annotations
-    ) {
-        throw E.unsupport();
+    );
+
+    protected String paramName(int i) {
+        return null;
     }
 
     private ParamValueLoader findLoader(
