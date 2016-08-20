@@ -5,12 +5,14 @@ import act.app.App;
 import act.app.CliContext;
 import act.app.util.AppCrypto;
 import act.conf.AppConfig;
+import act.db.Dao;
 import act.mail.MailerContext;
 import act.util.ActContext;
 import org.osgl.$;
 import org.osgl.Osgl;
 import org.osgl.cache.CacheService;
 import org.osgl.exception.NotAppliedException;
+import org.osgl.logging.Logger;
 import org.osgl.util.C;
 import org.osgl.util.E;
 import org.osgl.web.util.UserAgent;
@@ -82,6 +84,13 @@ public final class ActProviders {
         }
     };
 
+    public static final Provider<Logger> LOGGER = new Provider<Logger>() {
+        @Override
+        public Logger get() {
+            return App.logger;
+        }
+    };
+
     public static final Provider<UserAgent> USER_AGENT = new Provider<UserAgent>() {
         @Override
         public UserAgent get() {
@@ -130,14 +139,14 @@ public final class ActProviders {
     }
 
     public static boolean isProvided(Class<?> aClass) {
-        return providedTypes.contains(aClass);
+        return providedTypes.contains(aClass) || Dao.class.isAssignableFrom(aClass);
     }
 
     private static App app() {
         return App.instance();
     }
 
-    static void addProvidedType(Class<?> aClass) {
+    public static void addProvidedType(Class<?> aClass) {
         providedTypes.add(aClass);
     }
 

@@ -1,6 +1,7 @@
 package act.inject;
 
 import act.app.AppService;
+import org.osgl.inject.BeanSpec;
 import org.osgl.inject.Injector;
 
 import java.lang.reflect.Field;
@@ -32,14 +33,10 @@ public interface DependencyInjector<DI extends DependencyInjector<DI>> extends A
      * Once an object has been created and ready for injection, this method will be
      * called to call back to the {@link DependencyInjectionListener listeners} that has been
      * {@link #registerDiListener(DependencyInjectionListener) registered}
-     * @param injectee the object to be injected
-     * @param typeParameters if the object is to be injected to a field, and the field's
-     *                       {@link Field#getGenericType() generic type} is kind of
-     *                       {@link java.lang.reflect.ParameterizedType} then the
-     *                       {@link ParameterizedType#getActualTypeArguments() type parameters}
-     *                       will be passed to the listener
+     * @param bean the object to be injected
+     * @param spec the spec about the bean instance
      */
-    void fireInjectedEvent(Object injectee, Type[] typeParameters);
+    void fireInjectedEvent(Object bean, BeanSpec spec);
 
     /**
      * Get a bean instance by class

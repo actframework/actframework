@@ -12,6 +12,7 @@ import org.osgl.$;
 import org.osgl.Osgl;
 import org.osgl.exception.NotAppliedException;
 import org.osgl.inject.Genie;
+import org.osgl.inject.InjectListener;
 import org.osgl.inject.Module;
 import org.osgl.inject.ScopeCache;
 import org.osgl.inject.annotation.Provided;
@@ -109,7 +110,8 @@ public class GenieInjector extends DependencyInjectorBase<GenieInjector> {
         if (null == genie) {
             synchronized (this) {
                 if (null == genie) {
-                    genie = Genie.create(modules.toArray(new Object[modules.size()]));
+                    InjectListener listener = new GenieListener(this);
+                    genie = Genie.create(listener, modules.toArray(new Object[modules.size()]));
                     for (Map.Entry<Class, DependencyInjectionBinder> entry : binders.entrySet()) {
                         genie.registerProvider(entry.getKey(), entry.getValue());
                     }
@@ -137,7 +139,7 @@ public class GenieInjector extends DependencyInjectorBase<GenieInjector> {
         return genie;
     }
 
-    @SubClassFinder(value = Module.class, callOn = AppEventId.APP_CODE_SCANNED)
+    @SubClassFinder(value = Module.class, callOn = AppEventId.DEPENDENCY_INJECTOR_LOADED)
     public static void foundModule(Class<? extends Module> moduleClass) {
         App app = App.instance();
         GenieInjector genieInjector = app.injector();

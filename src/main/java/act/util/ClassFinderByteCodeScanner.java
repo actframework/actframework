@@ -106,6 +106,10 @@ public class ClassFinderByteCodeScanner extends AppByteCodeScannerBase {
                         private String classNameFromMethodSignature() {
                             String descriptor = signature.substring(18);
                             descriptor = descriptor.substring(0, descriptor.length() - 4);
+                            if (descriptor.startsWith("+")) {
+                                // this is an interface?
+                                descriptor = descriptor.substring(1);
+                            }
                             return Type.getType(descriptor).getClassName();
                         }
                     };

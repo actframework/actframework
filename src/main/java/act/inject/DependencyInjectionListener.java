@@ -1,5 +1,7 @@
 package act.inject;
 
+import org.osgl.inject.BeanSpec;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.Type;
 
@@ -24,8 +26,8 @@ public interface DependencyInjectionListener {
      * generic type will be passed to the listener
      * </p>
      *
-     * @param injectee       instance to be returned by {@link DependencyInjector}
-     * @param typeParameters the type parameters or {@code null} if there is no {@link java.lang.reflect.ParameterizedType} context
+     * @param bean     instance to be returned by {@link DependencyInjector}
+     * @param beanSpec the spec about the bean instance
      */
-    void onInjection(Object injectee, Type[] typeParameters);
+    void onInjection(Object bean, BeanSpec beanSpec);
 }

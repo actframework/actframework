@@ -5,6 +5,7 @@ import act.app.App;
 import act.app.AppServiceBase;
 import act.app.event.AppEventId;
 import act.util.SubClassFinder;
+import org.osgl.inject.BeanSpec;
 import org.osgl.util.C;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -55,12 +56,12 @@ public abstract class DependencyInjectorBase<DI extends DependencyInjectorBase<D
     }
 
     @Override
-    public void fireInjectedEvent(Object injectee, Type[] typeParameters) {
-        Class c = injectee.getClass();
+    public void fireInjectedEvent(Object bean, BeanSpec spec) {
+        Class c = bean.getClass();
         List<DependencyInjectionListener> list = listeners.get(c);
         if (null != list) {
             for (DependencyInjectionListener listener : list) {
-                listener.onInjection(injectee, typeParameters);
+                listener.onInjection(bean, spec);
             }
         }
     }

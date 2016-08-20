@@ -60,4 +60,9 @@ class ActionContextParamLoader extends ParamValueLoaderService {
         }
         return loader;
     }
+
+    @Override
+    protected boolean supportJsonDecorator() {
+        return true;
+    }
 }

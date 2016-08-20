@@ -16,12 +16,7 @@ class ProvidedValueLoader extends DestroyableBase implements ParamValueLoader {
     private DependencyInjector<?> injector;
     private Class type;
     private Object singleton;
-    private boolean isContext;
     private ProvidedValueLoader(Class type, DependencyInjector<?> injector) {
-        isContext = ActContext.class.isAssignableFrom(type);
-        if (isContext) {
-            return;
-        }
         if (AppServiceBase.class.isAssignableFrom(type)
                 || SingletonBase.class.isAssignableFrom(type)
                 || type.isAnnotationPresent(Singleton.class)
@@ -35,7 +30,7 @@ class ProvidedValueLoader extends DestroyableBase implements ParamValueLoader {
 
     @Override
     public Object load(Object bean, ActContext<?> context, boolean noDefaultValue) {
-        if (isContext) {
+        if (context.getClass().equals(type)) {
             return context;
         } else if (null != singleton) {
             return singleton;

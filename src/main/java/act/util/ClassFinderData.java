@@ -36,9 +36,13 @@ public class ClassFinderData {
             $.Visitor<ClassNode> visitor = new $.Visitor<ClassNode>() {
                 @Override
                 public void visit(ClassNode classNode) throws Osgl.Break {
+                    ClassLoader cl = app.classLoader();
+                    if (data.className.startsWith("act.")) {
+                        cl = cl.getParent();
+                    }
                     Class<?> targetClass = $.classForName(classNode.name(), app.classLoader());
                     if (data.isStatic) {
-                        Class<?> host = $.classForName(data.className, app.classLoader());
+                        Class<?> host = $.classForName(data.className, cl);
                         $.invokeStatic(host, data.methodName, targetClass);
                     } else {
                         Object host = app.getInstance(data.className);

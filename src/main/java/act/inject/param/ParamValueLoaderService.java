@@ -138,7 +138,11 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
                 }
                 try {
                     for (Map.Entry<Field, ParamValueLoader> entry : loaders.entrySet()) {
-                        entry.getKey().set(bean, entry.getValue().load(null, context, noDefaultValue));
+                        Field field = entry.getKey();
+                        ParamValueLoader loader = entry.getValue();
+                        if (null == field.get(bean)) {
+                            field.set(bean, loader.load(null, context, noDefaultValue));
+                        }
                     }
                 } catch (IllegalAccessException e) {
                     throw new InjectException(e);
@@ -190,6 +194,10 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
         return null;
     }
 
+    protected boolean supportJsonDecorator() {
+        return false;
+    }
+
     private ParamValueLoader findLoader(
             BeanSpec spec,
             Type type,
@@ -205,7 +213,7 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
         }
         String bindName = bindName(annotations, spec.name());
         ParamValueLoader loader = findContextSpecificLoader(bindName, rawType, spec, type, annotations);
-        return decorate(loader, spec, annotations, true);
+        return decorate(loader, spec, annotations, supportJsonDecorator());
     }
 
     ParamValueLoader buildLoader(final ParamKey key, final Type type) {
