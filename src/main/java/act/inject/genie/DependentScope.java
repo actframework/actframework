@@ -1,9 +1,10 @@
 package act.inject.genie;
 
 import act.inject.param.ScopeCacheSupport;
+import org.osgl.inject.BeanSpec;
 import org.osgl.inject.ScopeCache;
 
-public class DependentScope implements ScopeCache, ScopeCacheSupport {
+public class DependentScope extends ScopeCacheSupport.Base implements ScopeCache, ScopeCacheSupport {
 
     public static final DependentScope INSTANCE = new DependentScope();
 

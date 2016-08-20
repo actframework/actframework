@@ -433,10 +433,6 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
     }
 
     private static String bindName(Annotation[] annotations, String defVal) {
-        SessionVariable sessionVariable = filter(annotations, SessionVariable.class);
-        if (null != sessionVariable && S.notBlank(sessionVariable.value())) {
-            return sessionVariable.value();
-        }
         Param param = filter(annotations, Param.class);
         if (null != param && S.notBlank(param.value())) {
             return param.value();

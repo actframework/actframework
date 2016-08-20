@@ -6,7 +6,7 @@ import act.app.CliSession;
 import act.inject.param.ScopeCacheSupport;
 import org.osgl.inject.ScopeCache;
 
-public class RequestScope implements ScopeCache.RequestScope, ScopeCacheSupport {
+public class RequestScope extends ScopeCacheSupport.Base implements ScopeCache.RequestScope, ScopeCacheSupport {
 
     public static final act.inject.genie.RequestScope INSTANCE = new act.inject.genie.RequestScope();
 

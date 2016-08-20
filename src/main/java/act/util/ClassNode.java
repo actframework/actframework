@@ -100,6 +100,7 @@ public class ClassNode extends DestroyableBase {
 
     void addInterface(ClassNode classNode) {
         this.interfaces.add(classNode);
+        classNode.addChild(this);
     }
 
     /**

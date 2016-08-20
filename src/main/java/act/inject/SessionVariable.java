@@ -17,11 +17,7 @@ import java.lang.annotation.Target;
 public @interface SessionVariable {
 
     /**
-     * The cli session attribute name or a http session variable name
-     *
-     * Default value: "", meaning it shall
-     * use the field name or parameter name to
-     * get the session attribute value
+     * Specifies the session attribute key
      */
-    String value() default "";
+    String value();
 }

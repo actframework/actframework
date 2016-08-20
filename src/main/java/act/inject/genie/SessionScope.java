@@ -4,11 +4,13 @@ import act.app.ActionContext;
 import act.app.App;
 import act.app.CliContext;
 import act.app.CliSession;
+import act.inject.SessionVariable;
 import act.inject.param.ScopeCacheSupport;
 import org.osgl.http.H;
+import org.osgl.inject.BeanSpec;
 import org.osgl.inject.ScopeCache;
 
-public class SessionScope implements ScopeCache.SessionScope, ScopeCacheSupport {
+public class SessionScope extends ScopeCacheSupport.Base implements ScopeCache.SessionScope, ScopeCacheSupport {
 
     public static final act.inject.genie.SessionScope INSTANCE = new act.inject.genie.SessionScope();
     private final int TTL;
@@ -57,5 +59,14 @@ public class SessionScope implements ScopeCache.SessionScope, ScopeCacheSupport 
             CliSession cliSession = cliContext.session();
             cliSession.attribute(key, t);
         }
+    }
+
+    @Override
+    public String key(BeanSpec spec) {
+        SessionVariable sessionVariable = spec.getAnnotation(SessionVariable.class);
+        if (null != sessionVariable) {
+            return sessionVariable.value();
+        }
+        return super.key(spec);
     }
 }

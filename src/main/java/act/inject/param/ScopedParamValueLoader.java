@@ -10,10 +10,11 @@ class ScopedParamValueLoader implements ParamValueLoader {
     private ParamValueLoader realLoader;
     private String key;
     private ScopeCacheSupport scopeCache;
+
     ScopedParamValueLoader(ParamValueLoader loader, BeanSpec beanSpec, ScopeCacheSupport scopeCache) {
         this.realLoader = loader;
-        this.key = beanSpec.toString();
         this.scopeCache = scopeCache;
+        this.key = scopeCache.key(beanSpec);
     }
 
     @Override
