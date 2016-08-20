@@ -163,8 +163,6 @@ public class Help extends CliHandlerBase {
         maxWidth = Math.max(maxWidth, width);
     }
 
-    public static void main(String[] args) {
-        System.out.println(S.fmt("%-18s %s", "acc.create", "create an account"));
-    }
 
 }
+

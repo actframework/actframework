@@ -80,6 +80,22 @@ public enum AppConfigKey implements ConfigKey {
     CACHE_IMPL("cache.impl"),
 
     /**
+     * {@code act.cli.table.page.size}
+     * Specify the maximum records in one page for table layout by CLI command
+     *
+     * Default value: 22
+     */
+    CLI_TABLE_PAGE_SIZE("cli.table.page.size"),
+
+    /**
+     * {@code act.cli.json.page.size}
+     * Specify the maximum records in one page for JSON layout by CLI command
+     *
+     * Default value: 10
+     */
+    CLI_JSON_PAGE_SIZE("cli.json.page.size"),
+
+    /**
      * {@code act.content_suffix.aware.enabled}
      * <p>
      *     Once enabled then the framework automatically recognize request with content suffix.

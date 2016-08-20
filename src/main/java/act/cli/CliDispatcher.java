@@ -5,6 +5,7 @@ import act.app.App;
 import act.app.AppServiceBase;
 import act.cli.builtin.Exit;
 import act.cli.builtin.Help;
+import act.cli.builtin.IterateCursor;
 import act.cli.meta.CommandMethodMetaInfo;
 import act.cli.meta.CommanderClassMetaInfo;
 import act.handler.CliHandler;
@@ -229,5 +230,6 @@ public class CliDispatcher extends AppServiceBase<CliDispatcher> {
         addToRegistry("act.quit", Exit.INSTANCE);
         addToRegistry("act.bye", Exit.INSTANCE);
         addToRegistry("act.help", Help.INSTANCE);
+        addToRegistry("act.it", IterateCursor.INSTANCE);
     }
 }

@@ -3,7 +3,9 @@ package act.cli.view;
 import act.app.CliContext;
 import act.cli.ascii_table.impl.CollectionASCIITableAware;
 import act.cli.tree.TreeNode;
+import act.cli.util.CliCursor;
 import act.cli.util.MappedFastJsonNameFilter;
+import act.cli.util.TableCursor;
 import act.data.DataPropertyRepository;
 import act.util.ActContext;
 import act.util.DisableFastJsonCircularReferenceDetect;
@@ -47,6 +49,13 @@ public enum CliView {
             CliContext cliContext = (CliContext) context;
 
             List dataList = toList(result);
+            int pageSize = context.config().cliTablePageSize();
+            if (dataList.size() > pageSize) {
+                TableCursor cursor = new TableCursor(dataList, pageSize, spec);
+                cliContext.session().cursor(cursor);
+                cursor.output(cliContext);
+                return "";
+            }
             Class<?> componentType;
             if (dataList.isEmpty()) {
                 return "no data";
@@ -64,7 +73,14 @@ public enum CliView {
                 outputFields = C.list("this as Item");
             }
             String tableString = cliContext.getTable(new CollectionASCIITableAware(dataList, outputFields, spec.labels(outputFields, context)));
-            return S.builder(tableString).append("Items found: ").append(dataList.size()).toString();
+            int itemsFound = dataList.size();
+            CliCursor cursor = cliContext.session().cursor();
+            String appendix = "";
+            if (null != cursor) {
+                itemsFound = cursor.records();
+                appendix = cursor.hasNext() ? "\nType \"it\" for more" : "";
+            }
+            return S.builder(tableString).append("Items found: ").append(itemsFound).append(appendix).toString();
         }
 
     },
@@ -309,7 +325,6 @@ public enum CliView {
 
     protected List toList(Object result) {
         List dataList;
-        Class<?> componentType;
         if (result instanceof Iterable) {
             dataList = C.list((Iterable) result);
         } else if (result instanceof Iterator) {

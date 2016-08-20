@@ -7,6 +7,7 @@ import act.cli.builtin.Exit;
 import act.cli.builtin.Help;
 import act.cli.event.CliSessionStart;
 import act.cli.event.CliSessionTerminate;
+import act.cli.util.CliCursor;
 import act.cli.util.CommandLineParser;
 import act.handler.CliHandler;
 import act.util.Banner;
@@ -38,6 +39,7 @@ public class CliSession extends DestroyableBase implements Runnable {
     private boolean exit;
     private Thread runningThread;
     private ConsoleReader console;
+    private CliCursor cursor;
     private CommandNameCompleter commandNameCompleter;
     /**
      * Allow user command to attach data to the context and fetched for later use.
@@ -70,6 +72,19 @@ public class CliSession extends DestroyableBase implements Runnable {
     public CliSession removeAttribute(String key) {
         attributes.remove(key);
         return this;
+    }
+
+    public CliCursor cursor() {
+        return cursor;
+    }
+
+    public CliSession cursor(CliCursor cursor) {
+        this.cursor = cursor;
+        return this;
+    }
+
+    public void removeCursor() {
+        cursor = null;
     }
 
     public <T> T attribute(String key) {

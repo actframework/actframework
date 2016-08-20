@@ -83,6 +83,56 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         return configurator;
     }
 
+    private int cliTablePageSz = -1;
+
+    protected T cliTablePageSz(int sz) {
+        E.illegalArgumentIf(sz < 1, "CLI table page size not valid: %s", sz);
+        this.cliTablePageSz = sz;
+        return me();
+    }
+
+    public int cliTablePageSize() {
+        if (-1 == cliTablePageSz) {
+            Integer I = get(CLI_TABLE_PAGE_SIZE);
+            if (null == I) {
+                I = 22;
+            }
+            cliTablePageSz = I;
+        }
+        return cliTablePageSz;
+    }
+
+    private void _mergeCliTablePageSz(AppConfig conf) {
+        if (null == get(CLI_TABLE_PAGE_SIZE)) {
+            cliTablePageSz = conf.cliTablePageSz;
+        }
+    }
+
+    private int cliJSONPageSz = -1;
+
+    protected T cliJSONPageSz(int sz) {
+        E.illegalArgumentIf(sz < 1, "CLI JSON page size not valid: %s", sz);
+        this.cliJSONPageSz = sz;
+        return me();
+    }
+
+    public int cliJSONPageSize() {
+        if (-1 == cliJSONPageSz) {
+            Integer I = get(CLI_TABLE_PAGE_SIZE);
+            if (null == I) {
+                I = 22;
+            }
+            cliJSONPageSz = I;
+        }
+        return cliJSONPageSz;
+    }
+
+    private void _mergeCliJSONPageSz(AppConfig conf) {
+        if (null == get(CLI_TABLE_PAGE_SIZE)) {
+            cliJSONPageSz = conf.cliJSONPageSz;
+        }
+    }
+
     private int cliPort = -1;
 
     protected T cliPort(int port) {
@@ -1369,6 +1419,8 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
             return;
         }
         mergeTracker.add(conf);
+        _mergeCliJSONPageSz(conf);
+        _mergeCliTablePageSz(conf);
         _mergeCliPort(conf);
         _mergeCliSessionExpiration(conf);
         _mergeMaxCliSession(conf);
