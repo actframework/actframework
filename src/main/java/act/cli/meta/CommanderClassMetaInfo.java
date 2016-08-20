@@ -154,7 +154,7 @@ public class CommanderClassMetaInfo extends DestroyableBase {
         return this;
     }
 
-    public CommandMethodMetaInfo test_command(String name) {
+    public CommandMethodMetaInfo command(String name) {
         if (null == commandLookup) {
             buildCommandLookup();
         }
@@ -206,6 +206,7 @@ public class CommanderClassMetaInfo extends DestroyableBase {
             for (String commandName : commandNames) {
                 lookup.put(commandName, command);
             }
+            lookup.put(command.methodName(), command);
         }
         commandLookup = lookup;
     }

@@ -22,6 +22,7 @@ import act.inject.DependencyInjector;
 import act.inject.genie.GenieInjector;
 import act.inject.param.JsonDTOClassManager;
 import act.inject.param.ParamValueLoaderManager;
+import act.inject.param.ParamValueLoaderService;
 import act.event.AppEventListenerBase;
 import act.event.EventBus;
 import act.event.bytecode.SimpleEventListenerByteCodeScanner;
@@ -49,7 +50,6 @@ import org.osgl.util.*;
 
 import java.io.File;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 
 import static act.app.event.AppEventId.*;
 
@@ -324,6 +324,7 @@ public class App extends DestroyableBase {
         emit(CLASS_LOADED);
 
         loadDependencyInjector();
+        emit(DEPENDENCY_INJECTOR_LOADED);
         initJsonDTOClassManager();
         initParamValueLoaderManager();
         initMailerConfigManager();
@@ -340,7 +341,6 @@ public class App extends DestroyableBase {
         // already, it doesn't matter we emit the event again
         // because once app event is consumed the event listeners
         // are cleared
-        emit(DEPENDENCY_INJECTOR_LOADED);
         emit(DEPENDENCY_INJECTOR_PROVISIONED);
         emit(SINGLETON_PROVISIONED);
         emit(PRE_START);

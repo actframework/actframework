@@ -2,22 +2,18 @@ package act.cli.bytecode;
 
 import act.app.App;
 import act.app.CliContext;
-import act.app.data.StringValueResolverManager;
-import act.cli.CliException;
 import act.cli.CommandExecutor;
-import act.cli.meta.*;
-import act.cli.util.CommandLineParser;
-import act.sys.meta.SessionVariableAnnoInfo;
+import act.cli.meta.CommandMethodMetaInfo;
+import act.cli.meta.CommandParamMetaInfo;
+import act.cli.meta.CommanderClassMetaInfo;
+import act.inject.param.CliContextParamLoader;
+import act.inject.param.ParamValueLoaderManager;
+import act.inject.param.ParamValueLoaderService;
 import com.esotericsoftware.reflectasm.MethodAccess;
 import org.osgl.$;
-import org.osgl.util.C;
 import org.osgl.util.E;
-import org.osgl.util.IO;
-import org.osgl.util.S;
 
-import java.io.File;
 import java.lang.reflect.Method;
-import java.util.List;
 
 /**
  * Implement {@link act.cli.CommandExecutor} using
@@ -25,41 +21,51 @@ import java.util.List;
  */
 public class ReflectedCommandExecutor extends CommandExecutor {
 
-    private CommanderClassMetaInfo classMetaInfo;
+    private static final Object[] DUMP_PARAMS = new Object[0];
+
     private CommandMethodMetaInfo methodMetaInfo;
     private App app;
+    private ParamValueLoaderService paramLoaderService;
     private ClassLoader cl;
     private Class[] paramTypes;
     private Class<?> commanderClass;
     private Method method;
     private MethodAccess methodAccess;
     private int commandIndex;
+    private int paramCount;
+    private CliContext.ParsingContext parsingContext;
 
-    public ReflectedCommandExecutor(CommanderClassMetaInfo classMetaInfo, CommandMethodMetaInfo methodMetaInfo, App app) {
-        this.classMetaInfo = $.notNull(classMetaInfo);
+    public ReflectedCommandExecutor(CommandMethodMetaInfo methodMetaInfo, App app) {
         this.methodMetaInfo = $.notNull(methodMetaInfo);
         this.app = $.NPE(app);
         this.cl = app.classLoader();
         this.paramTypes = paramTypes();
+        this.paramCount = methodMetaInfo.paramCount();
         this.commanderClass = $.classForName(methodMetaInfo.classInfo().className(), cl);
+        try {
+            this.method = commanderClass.getMethod(methodMetaInfo.methodName(), paramTypes);
+        } catch (NoSuchMethodException e) {
+            throw E.unexpected(e);
+        }
         if (!methodMetaInfo.isStatic()) {
             methodAccess = MethodAccess.get(commanderClass);
             commandIndex = methodAccess.getIndex(methodMetaInfo.methodName(), paramTypes);
         } else {
-            try {
-                method = commanderClass.getMethod(methodMetaInfo.methodName(), paramTypes);
-            } catch (NoSuchMethodException e) {
-                throw E.unexpected(e);
-            }
             method.setAccessible(true);
         }
+        this.paramLoaderService = app.service(ParamValueLoaderManager.class).get(CliContext.class);
+        this.buildParsingContext();
     }
 
     @Override
     public Object execute(CliContext context) {
-        List<FieldOptionAnnoInfo> list = classMetaInfo.fieldOptionAnnoInfoList(app.classLoader());
-        Object cmd = commanderInstance(list, context);
-        Object[] params = params(context);
+        //List<FieldOptionAnnoInfo> list = classMetaInfo.fieldOptionAnnoInfoList(app.classLoader());
+        //Object cmd = commanderInstance(list, context);
+        //Object[] params = params(context);
+        context.prepare(parsingContext);
+        Object cmd = commanderInstance(context);
+        Object[] params = params2(context);
+        context.parsingContext().raiseExceptionIfThereAreMissingOptions();
         return invoke(cmd, params);
     }
 
@@ -75,38 +81,12 @@ public class ReflectedCommandExecutor extends CommandExecutor {
         super.releaseResources();
     }
 
-    private Object commanderInstance(List<FieldOptionAnnoInfo> list, CliContext context) {
+    private Object commanderInstance(CliContext context) {
         String commander = commanderClass.getName();
         Object inst = context.__commanderInstance(commander);
         if (null == inst) {
-            inst = context.newInstance(commanderClass);
+            inst = paramLoaderService.loadHostBean(commanderClass, context);
             context.__commanderInstance(commander, inst);
-        }
-        $.Var<Integer> argIdx = $.var(0);
-        List<FieldOptionAnnoInfo> unresolved = C.newList();
-        for (FieldOptionAnnoInfo fieldOptionAnnoInfo : list) {
-            String fieldName = fieldOptionAnnoInfo.fieldName();
-            Object sessionVal = null;
-            SessionVariableAnnoInfo sessionAttributeAnnoInfo = classMetaInfo.fieldSessionVariableAnnoInfo(fieldName);
-            if (null != sessionAttributeAnnoInfo) {
-                String key = sessionAttributeAnnoInfo.name();
-                sessionVal = context.attribute(key);
-            }
-            if (null == sessionVal) {
-                sessionVal = context.attribute(fieldName);
-            }
-            if (null == sessionVal) {
-                unresolved.add(fieldOptionAnnoInfo);
-            } else {
-                Object val = optionVal(fieldOptionAnnoInfo.fieldType(), fieldOptionAnnoInfo, argIdx, false, fieldOptionAnnoInfo.readFileContent(), sessionVal, context);
-                $.setProperty(inst, val, fieldName);
-            }
-        }
-        boolean one = unresolved.size() == 1 && methodMetaInfo.paramCount() == methodMetaInfo.ctxParamCount();
-        for (FieldOptionAnnoInfo fieldOptionAnnoInfo : unresolved) {
-            String fieldName = fieldOptionAnnoInfo.fieldName();
-            Object val = optionVal(fieldOptionAnnoInfo.fieldType(), fieldOptionAnnoInfo, argIdx, one, fieldOptionAnnoInfo.readFileContent(), null, context);
-            $.setProperty(inst, val, fieldName);
         }
         return inst;
     }
@@ -125,78 +105,11 @@ public class ReflectedCommandExecutor extends CommandExecutor {
         return ca;
     }
 
-    private Object[] params(CliContext ctx) {
-        int paramCount = methodMetaInfo.paramCount();
-        int ctxParamCount = methodMetaInfo.ctxParamCount();
-        Object[] oa = new Object[paramCount];
+    private Object[] params2(CliContext ctx) {
         if (0 == paramCount) {
-            return oa;
+            return DUMP_PARAMS;
         }
-        $.Var<Integer> argIdx = $.var(0);
-        for (int i = 0; i < paramCount; ++i) {
-            CommandParamMetaInfo param = methodMetaInfo.param(i);
-            Class<?> paramType = paramTypes[i];
-            if (param.isContext()) {
-                oa[i] = app.getInstance(paramType);
-            } else {
-                Object sessionVal = null;
-                String sessionVarName = param.cliSessionAttributeKey();
-                if (null != sessionVarName) {
-                    sessionVal = ctx.attribute(sessionVarName);
-                }
-                if (null == sessionVal) {
-                    sessionVal = ctx.attribute(param.name());
-                }
-                oa[i] = optionVal(paramType, param.optionInfo(), argIdx, (paramCount - ctxParamCount) == 1, param.readFileContent(), sessionVal, ctx);
-            }
-        }
-        return oa;
-    }
-
-    private Object optionVal(Class<?> optionType, OptionAnnoInfoBase option, $.Var<Integer> argIdx,
-                             boolean useArgumentIfOptionNotFound, boolean readFileContent, Object cliSessionAttributeVal, CliContext ctx) {
-        StringValueResolverManager resolverManager = app.resolverManager();
-        CommandLineParser parser = ctx.commandLine();
-        List<String> args = ctx.arguments();
-        String argStr;
-        if (null == option) {
-            int i = argIdx.get();
-            argStr = args.get(i);
-            argIdx.set(i + 1);
-        } else {
-            argStr = parser.getString(option.lead1(), option.lead2());
-            if (S.blank(argStr)) {
-                if (useArgumentIfOptionNotFound) {
-                    // try to use the single param as the option
-                    List<String> args0 = parser.arguments();
-                    if (args0.size() == 1) {
-                        return resolverManager.resolve(args0.get(0), optionType);
-                    }
-                }
-                if (null != cliSessionAttributeVal) {
-                    return cliSessionAttributeVal;
-                }
-                if (option.required()) {
-                    throw new CliException("Missing required option [%s]", option);
-                } else {
-                    String s = option.defVal();
-                    return resolverManager.resolve(s, optionType);
-                }
-            }
-        }
-        if (File.class.isAssignableFrom(optionType)) {
-            return ctx.getFile(argStr);
-        } else if (readFileContent) {
-            File file = ctx.getFile(argStr);
-            if (file.exists()) {
-                if (List.class.isAssignableFrom(optionType)) {
-                    return IO.readLines(file);
-                } else {
-                    argStr = IO.readContentAsString(file);
-                }
-            }
-        }
-        return resolverManager.resolve(argStr, optionType);
+        return paramLoaderService.loadMethodParams(method, ctx);
     }
 
     private Object invoke(Object commander, Object[] params) {
@@ -221,5 +134,9 @@ public class ReflectedCommandExecutor extends CommandExecutor {
         return result;
     }
 
+    private void buildParsingContext() {
+        CliContextParamLoader loader = (CliContextParamLoader) app.service(ParamValueLoaderManager.class).get(CliContext.class);
+        this.parsingContext = loader.buildParsingContext(commanderClass, method);
+    }
 
 }

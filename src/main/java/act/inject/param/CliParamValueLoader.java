@@ -12,8 +12,7 @@ abstract class CliParamValueLoader implements ParamValueLoader {
     }
 
     final boolean multipleParams(CliContext context) {
-        int n = context.attribute(CliContext.ATTR_OPT_CNT);
-        return n > 1;
+        return context.parsingContext().hasMultipleOptionArguments();
     }
 
     protected final Object sessionVal(String bindName, CliContext context) {

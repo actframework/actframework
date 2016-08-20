@@ -74,8 +74,14 @@ public class CollectionASCIITableAware<T> implements IASCIITableAware {
 			
 			//Populate data
 			data = new ArrayList<List<Object>>();
-			List<Object> rowData = null;
-			Class<?> dataClazz = objList.get(0).getClass();
+			List<Object> rowData;
+			Class<?> dataClazz = Object.class;
+			for (Object o: objList) {
+				if (null != o) {
+					dataClazz = o.getClass();
+					break;
+				}
+			}
 			Map<String, Serializable> propertyExtractorMap = new HashMap<String, Serializable>();
 			CacheService cache = null;
 			CliContext ctx = CliContext.current();

@@ -1,5 +1,6 @@
 package act.app;
 
+import act.cli.CliException;
 import act.cli.ascii_table.ASCIITableHeader;
 import act.cli.ascii_table.impl.SimpleASCIITableImpl;
 import act.cli.ascii_table.spec.IASCIITable;
@@ -19,19 +20,113 @@ import org.osgl.util.S;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class CliContext extends ActContext.Base<CliContext> implements IASCIITable {
 
+    public static class ParsingContext {
+
+        // The number of options plus arguments in
+        // the command executor method params.
+        // This does not include the provided params (e.g. those
+        // params that should be injected by framework, like. App etc)
+        private int optionArgumentsCnt;
+
+        // mark the current loading argument
+        private AtomicInteger curArgId;
+
+        // Keep track the number of options provided
+        // for a specific required group
+        Map<String, AtomicInteger> required;
+
+        private ParsingContext() {}
+
+        public ParsingContext(int optionArgumentsCnt, Set<String> requiredGroups) {
+            this.optionArgumentsCnt = optionArgumentsCnt;
+            this.required = new HashMap<>();
+            for (String group : requiredGroups) {
+                this.required.put(group, new AtomicInteger(0));
+            }
+        }
+
+        public AtomicInteger curArgId() {
+            return curArgId;
+        }
+
+        public boolean hasArguments(CommandLineParser command) {
+            return curArgId.get() < command.argumentCount();
+        }
+
+        public void foundRequired(String group) {
+            required.get(group).incrementAndGet();
+        }
+
+        public boolean hasMultipleOptionArguments() {
+            return optionArgumentsCnt > 1;
+        }
+
+        public Set<String> missingOptions() {
+            Set<String> set = new HashSet<>();
+            for (Map.Entry<String, AtomicInteger> entry : required.entrySet()) {
+                if (entry.getValue().get() < 1) {
+                    set.add(entry.getKey());
+                }
+            }
+            return set;
+        }
+
+        public void raiseExceptionIfThereAreMissingOptions() {
+            Set<String> missings = missingOptions();
+            if (!missings.isEmpty()) {
+                throw new CliException("Missing required options: %s", missings);
+            }
+        }
+
+        public ParsingContext copy() {
+            ParsingContext ctx = new ParsingContext();
+            ctx.optionArgumentsCnt = optionArgumentsCnt;
+            ctx.required = new HashMap<>(required);
+            for (Map.Entry<String, AtomicInteger> entry : ctx.required.entrySet()) {
+                entry.setValue(new AtomicInteger(0));
+            }
+            ctx.curArgId = new AtomicInteger(0);
+            return ctx;
+        }
+    }
+
+    public static class ParsingContextBuilder {
+        private static final ThreadLocal<ParsingContext> ctx = new ThreadLocal<>();
+
+        public static void start() {
+            ParsingContext ctx0 = new ParsingContext();
+            ctx0.required = new HashMap<>();
+            ctx.set(ctx0);
+        }
+
+        public static void foundOptional() {
+            ctx.get().optionArgumentsCnt++;
+        }
+
+        public static void foundArgument() {
+            ctx.get().optionArgumentsCnt++;
+        }
+
+        public static void foundRequired(String group) {
+            ParsingContext ctx0 = ctx.get();
+            ctx0.optionArgumentsCnt++;
+            ctx0.required.put(group, new AtomicInteger(0));
+        }
+
+        public static ParsingContext finish() {
+            ParsingContext ctx0 = ctx.get();
+            ctx.remove();
+            return ctx0;
+        }
+
+    }
+
     public static final String ATTR_PWD = "__act_pwd__";
-    /**
-     * Used to pass command line option and argument count for a specific
-     * method
-     */
-    public static final String ATTR_OPT_CNT = "__act_opt_cnt__";
 
     private static final ContextLocal<CliContext> _local = $.contextLocal();
 
@@ -51,6 +146,8 @@ public class CliContext extends ActContext.Base<CliContext> implements IASCIITab
     private IASCIITable asciiTable;
 
     private CacheService evaluatorCache;
+
+    private ParsingContext parsingContext;
 
     private boolean rawPrint;
 
@@ -74,6 +171,14 @@ public class CliContext extends ActContext.Base<CliContext> implements IASCIITab
      */
     public void prompt(String prompt) {
         console.setPrompt(prompt);
+    }
+
+    public void prepare(ParsingContext ctx) {
+        this.parsingContext = ctx.copy();
+    }
+
+    public ParsingContext parsingContext() {
+        return this.parsingContext;
     }
 
     /**

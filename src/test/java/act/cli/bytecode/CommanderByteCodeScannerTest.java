@@ -63,7 +63,7 @@ public class CommanderByteCodeScannerTest extends TestBase {
     public void staticWithoutReturnValue() {
         scan(StaticWithoutReturnType.class);
         CommanderClassMetaInfo classMetaInfo = infoSrc.commanderMetaInfo(StaticWithoutReturnType.class.getName());
-        CommandMethodMetaInfo methodMetaInfo = classMetaInfo.test_command("foo.bar");
+        CommandMethodMetaInfo methodMetaInfo = classMetaInfo.command("foo.bar");
         eq("doIt", methodMetaInfo.methodName());
         eq(StaticWithoutReturnType.class.getName() + ".doIt", methodMetaInfo.fullName());
         eq("help", methodMetaInfo.helpMsg());
@@ -93,7 +93,7 @@ public class CommanderByteCodeScannerTest extends TestBase {
         assertNotNull(handler);
 
         CommanderClassMetaInfo classMetaInfo = infoSrc.commanderMetaInfo(InstanceWithReturnType.class.getName());
-        CommandMethodMetaInfo methodMetaInfo = classMetaInfo.test_command("user.list");
+        CommandMethodMetaInfo methodMetaInfo = classMetaInfo.command("user.list");
         eq("getUserList", methodMetaInfo.methodName());
         eq(InstanceWithReturnType.class.getName() + ".getUserList", methodMetaInfo.fullName());
 

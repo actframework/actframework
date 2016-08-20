@@ -20,14 +20,14 @@ class CollectionLoader implements ParamValueLoader {
     private final DependencyInjector<?> injector;
     private final StringValueResolver resolver;
     private final Map<ParamKey, ParamValueLoader> childLoaders = new HashMap<>();
-    private final ParamValueLoaderManager manager;
+    private final ParamValueLoaderService manager;
 
     CollectionLoader(
             ParamKey key,
             Class<? extends Collection> collection,
             Type elementType,
             DependencyInjector<?> injector,
-            ParamValueLoaderManager manager
+            ParamValueLoaderService manager
     ) {
         this.key = key;
         this.collectionClass = collection;
@@ -39,7 +39,7 @@ class CollectionLoader implements ParamValueLoader {
 
     @Override
     public Object load(Object bean, ActContext<?> context, boolean noDefaultValue) {
-        ParamTree tree = ParamValueLoaderManager.ensureParamTree(context);
+        ParamTree tree = ParamValueLoaderService.ensureParamTree(context);
         ParamTreeNode node = tree.node(key);
         if (null == node) {
             return noDefaultValue ? null : injector.get(collectionClass);

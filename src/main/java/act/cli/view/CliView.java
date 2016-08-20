@@ -51,7 +51,13 @@ public enum CliView {
             if (dataList.isEmpty()) {
                 return "no data";
             }
-            componentType = dataList.get(0).getClass();
+            componentType = Object.class;
+            for (Object o : dataList) {
+                if (null != o) {
+                    componentType = o.getClass();
+                    break;
+                }
+            }
             DataPropertyRepository repo = context.app().service(DataPropertyRepository.class);
             List<String> outputFields = repo.outputFields(spec, componentType, context);
             if (outputFields.isEmpty()) {

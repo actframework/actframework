@@ -11,6 +11,7 @@ import act.handler.builtin.controller.*;
 import act.inject.param.JsonDTO;
 import act.inject.param.JsonDTOClassManager;
 import act.inject.param.ParamValueLoaderManager;
+import act.inject.param.ParamValueLoaderService;
 import act.util.DestroyableBase;
 import act.view.Template;
 import act.view.TemplatePathResolver;
@@ -48,7 +49,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
     private int handlerIndex;
     private Map<H.Format, Boolean> templateCache = C.newMap();
     protected Method method; //
-    private ParamValueLoaderManager paramValueLoaderManager;
+    private ParamValueLoaderService paramLoaderService;
     private JsonDTOClassManager jsonDTOClassManager;
     private final int paramCount;
     private final int fieldsAndParamsCount;
@@ -60,7 +61,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         this.handler = handlerMetaInfo;
         this.controller = handlerMetaInfo.classInfo();
         this.controllerClass = $.classForName(controller.className(), cl);
-        this.paramValueLoaderManager = app.service(ParamValueLoaderManager.class);
+        this.paramLoaderService = app.service(ParamValueLoaderManager.class).get(ActionContext.class);
         this.jsonDTOClassManager = app.service(JsonDTOClassManager.class);
 
         Class[] paramTypes = paramTypes(cl);
@@ -212,7 +213,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         String controllerName = controllerClass.getName();
         Object inst = context.__controllerInstance(controllerName);
         if (null == inst) {
-            inst = paramValueLoaderManager.loadHostBean(controllerClass, context);
+            inst = paramLoaderService.loadHostBean(controllerClass, context);
             context.__controllerInstance(controllerName, inst);
         }
         return inst;
@@ -263,7 +264,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         if (0 == paramCount) {
             return DUMP_PARAMS;
         }
-        return paramValueLoaderManager.loadMethodParams(method, context);
+        return paramLoaderService.loadMethodParams(method, context);
     }
 
     public static ControllerAction createControllerAction(ActionMethodMetaInfo meta, App app) {

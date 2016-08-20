@@ -7,6 +7,7 @@ import act.asm.ClassWriter;
 import act.boot.BootstrapClassLoader;
 import act.boot.app.FullStackAppBootstrapClassLoader;
 import act.cli.meta.CommanderClassMetaInfo;
+import act.cli.meta.CommanderClassMetaInfoHolder;
 import act.cli.meta.CommanderClassMetaInfoManager;
 import act.conf.AppConfig;
 import act.controller.meta.ControllerClassMetaInfo;
@@ -31,6 +32,7 @@ import org.osgl.util.IO;
 import org.osgl.util.S;
 
 import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.InputStream;
@@ -46,7 +48,13 @@ import static org.osgl.$.notNull;
 @ApplicationScoped
 public class AppClassLoader
         extends ClassLoader
-        implements ControllerClassMetaInfoHolder, MailerClassMetaInfoHolder, AppService<AppClassLoader>, ActClassLoader {
+        implements
+            ControllerClassMetaInfoHolder,
+            CommanderClassMetaInfoHolder,
+            MailerClassMetaInfoHolder,
+            AppService<AppClassLoader>,
+            ActClassLoader {
+
     private final static Logger logger = L.get(AppClassLoader.class);
     private App app;
     private Map<String, byte[]> libClsCache = C.newMap();
@@ -58,6 +66,7 @@ public class AppClassLoader
     protected JobClassMetaInfoManager jobInfo = new JobClassMetaInfoManager();
     protected Metric metric = Act.metricPlugin().metric("act.classload");
 
+    @Inject
     public AppClassLoader(final App app) {
         super(Act.class.getClassLoader());
         this.app = notNull(app);

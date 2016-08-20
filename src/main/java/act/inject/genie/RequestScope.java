@@ -23,26 +23,30 @@ public class RequestScope implements ScopeCache.RequestScope, ScopeCacheSupport 
         }
         CliContext cliContext = CliContext.current();
         if (null != cliContext) {
-            CliSession cliSession = cliContext.session();
-            return cliSession.attribute(key);
+            return cliContext.attribute(key);
         }
         return null;
     }
 
     @Override
     public <T> void put(Class<T> aClass, T t) {
+        if (null == t) {
+            return;
+        }
         put(aClass.getName(), t);
     }
 
     public <T> void put(String key, T t) {
+        if (null == t) {
+            return;
+        }
         ActionContext actionContext = ActionContext.current();
         if (null != actionContext) {
             actionContext.attribute(key, t);
         }
         CliContext cliContext = CliContext.current();
         if (null != cliContext) {
-            CliSession cliSession = cliContext.session();
-            cliSession.attribute(key, t);
+            cliContext.attribute(key, t);
         }
     }
 }

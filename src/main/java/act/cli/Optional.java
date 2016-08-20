@@ -14,10 +14,13 @@ public @interface Optional {
 
     /**
      * Specify the argument lead, e.g.
-     * <pre>
+     *
+     * ```
      *     {@literal @}Command("account.show")
-     *     public List&lt;Account&gt; listAccount({@literal @}Optional({"-q", "--query"}) String q,
-     *                                      {@literal @}Optional(value = "-l, --limit", defVal = "-1") int limit) {
+     *     public List<Account> listAccount(
+     *         {@literal @}Optional({"-q", "--query"}) String q,
+     *         {@literal @}Optional(value = "-l, --limit", defVal = "-1") int limit
+     *     ) {
      *          Query query = new Query();
      *          if (null != q) {
      *              query.filter("text", q);
@@ -27,12 +30,13 @@ public @interface Optional {
      *          }
      *          return Account.find(query).asList();
      *      }
-     * </pre>
-     * <p>If not specified, then the system will assume the argument lead to be follows</p>
-     * <ul>
-     *     <li>{@code -o}, where "o" is the first char of the argument name</li>
-     *     <li>{@code --option}, where "option" is the full argument name</li>
-     * </ul>
+     * ```
+     *
+     * If not specified, then the system will assume the argument lead to be follows
+     *
+     * * {@code -o}, where "o" is the first char of the argument name
+     * * {@code --option}, where "option" is the full argument name
+     *
      * @return the argument lead as described
      */
     String[] lead() default "";

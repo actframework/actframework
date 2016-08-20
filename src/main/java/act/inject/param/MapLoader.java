@@ -22,7 +22,7 @@ class MapLoader implements ParamValueLoader {
     private final StringValueResolver keyResolver;
     private final StringValueResolver valueResolver;
     private final Map<ParamKey, ParamValueLoader> childLoaders = new HashMap<>();
-    private final ParamValueLoaderManager manager;
+    private final ParamValueLoaderService manager;
 
     MapLoader(
             ParamKey key,
@@ -30,7 +30,7 @@ class MapLoader implements ParamValueLoader {
             Type keyType,
             Type valType,
             DependencyInjector<?> injector,
-            ParamValueLoaderManager manager
+            ParamValueLoaderService manager
     ) {
         this.key = key;
         this.mapClass = mapClass;
@@ -48,7 +48,7 @@ class MapLoader implements ParamValueLoader {
 
     @Override
     public Object load(Object bean, ActContext<?> context, boolean noDefaultValue) {
-        ParamTree tree = ParamValueLoaderManager.ensureParamTree(context);
+        ParamTree tree = ParamValueLoaderService.ensureParamTree(context);
         ParamTreeNode node = tree.node(key);
         if (null == node) {
             return noDefaultValue ? null : injector.get(mapClass);

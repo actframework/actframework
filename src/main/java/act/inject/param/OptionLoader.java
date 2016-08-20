@@ -1,8 +1,11 @@
 package act.inject.param;
 
 import act.app.CliContext;
-import act.cli.CliException;
+import act.cli.Optional;
+import act.cli.Required;
 import act.util.ActContext;
+import org.osgl.util.E;
+import org.osgl.util.Keyword;
 import org.osgl.util.S;
 import org.osgl.util.StringValueResolver;
 
@@ -12,27 +15,36 @@ import org.osgl.util.StringValueResolver;
 class OptionLoader extends CliParamValueLoader implements ParamValueLoader {
 
     private final String bindName;
-    private final String lead1;
-    private final String lead2;
+    private String lead1;
+    private String lead2;
     private final String defVal;
-    private final String help;
+    private final String requiredGroup;
     private final boolean required;
-    private final boolean sessionScoped;
     private final StringValueResolver resolver;
 
-    OptionLoader(String bindName, String lead1, String lead2, String defVal, boolean required, String help, boolean sessionScoped, StringValueResolver resolver) {
+    OptionLoader(String bindName, Optional optional, StringValueResolver resolver) {
         this.bindName = bindName;
-        this.lead1 = lead1;
-        this.lead2 = lead2;
-        this.defVal = defVal;
-        this.help = help;
-        this.required = required;
-        this.sessionScoped = sessionScoped;
+        this.required = false;
+        this.parseLeads(optional.lead());
+        this.defVal = optional.defVal();
+        this.requiredGroup = null;
         this.resolver = resolver;
+        CliContext.ParsingContextBuilder.foundOptional();
+    }
+
+    OptionLoader(String bindName, Required required, StringValueResolver resolver) {
+        this.bindName = bindName;
+        this.required = true;
+        this.parseLeads(required.lead());
+        this.defVal = null;
+        String group = required.group();
+        this.requiredGroup = S.blank(group) ? bindName : group;
+        this.resolver = resolver;
+        CliContext.ParsingContextBuilder.foundRequired(this.requiredGroup);
     }
 
     @Override
-    public Object load(Object bean, ActContext<?> context, boolean noDefaultValue) {
+    public Object load(Object cachedBean, ActContext<?> context, boolean noDefaultValue) {
         CliContext ctx = (CliContext) context;
         String optVal = optionValue(lead1, lead2, ctx);
         if (S.blank(optVal)) {
@@ -40,33 +52,46 @@ class OptionLoader extends CliParamValueLoader implements ParamValueLoader {
                 optVal = getFirstArgument(ctx);
             }
         }
+        if (S.blank(optVal) && !multipleParams(ctx)) {
+            optVal = getFirstArgument(ctx);
+        }
         Object val = null;
         if (S.notBlank(optVal)) {
             val = resolver.resolve(optVal);
         }
-        if (null == val && sessionScoped) {
-            val = sessionVal(bindName, ctx);
+        if (null == val && null != cachedBean) {
+            val = cachedBean;
         }
         if (null == val) {
-            if (required) {
-                throw new CliException("Missing required option [%s %s]", leads(), help);
-            } else {
+            if (!required) {
                 val = S.notBlank(defVal) ? resolver.resolve(defVal) : null;
             }
+        }
+        if (null != val && required) {
+            ctx.parsingContext().foundRequired(requiredGroup);
         }
         return val;
     }
 
-    private String leads() {
-        if (null == lead1 && null == lead2) {
-            return "";
+    private void parseLeads(String[] specs) {
+        lead1 = specs[0];
+        if (specs.length > 1) {
+            lead2 = specs[1];
+        } else {
+            String[] sa = lead1.split("[,;\\s]+");
+            if (sa.length > 2) {
+                throw E.unexpected("Option cannot have more than two leads");
+            }
+            if (sa.length > 1) {
+                lead1 = sa[0];
+                lead2 = sa[1];
+            }
         }
-        if (null == lead1) {
-            return lead2;
-        } else if (null == lead2) {
-            return lead1;
+        if (S.blank(lead1)) {
+            lead1 = "-" + bindName.charAt(0);
+            lead2 = "--" + Keyword.of(bindName).dashed();
         }
-        return S.join(",", lead1, lead2);
     }
+
 
 }

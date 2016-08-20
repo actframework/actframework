@@ -22,7 +22,7 @@ public class StringValueResolverValueLoader extends StringValueResolverValueLoad
             Object obj = (null == value) ? null : stringValueResolver.resolve(value);
             return (null == obj) && !noDefaultValue ? defVal : obj;
         }
-        ParamTree paramTree = ParamValueLoaderManager.paramTree();
+        ParamTree paramTree = ParamValueLoaderService.paramTree();
         if (null != paramTree) {
             return load(paramTree);
         }

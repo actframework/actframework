@@ -20,18 +20,16 @@ class ScopedParamValueLoader implements ParamValueLoader {
     public Object load(Object bean, ActContext<?> context, boolean noDefaultValue) {
         Object cached = scopeCache.get(key);
         boolean isSession = SessionScope.INSTANCE == scopeCache;
-        if (null == cached || isSession) {
-            if (isSession) {
-                Object requestScoped = RequestScope.INSTANCE.get(key);
-                if (null != requestScoped) {
-                    return requestScoped;
-                }
+        if (isSession) {
+            Object requestScoped = RequestScope.INSTANCE.get(key);
+            if (null != requestScoped) {
+                return requestScoped;
             }
-            cached = realLoader.load(cached, context, noDefaultValue);
-            scopeCache.put(key, cached);
-            if (isSession) {
-                RequestScope.INSTANCE.put(key, cached);
-            }
+        }
+        cached = realLoader.load(cached, context, noDefaultValue);
+        scopeCache.put(key, cached);
+        if (isSession) {
+            RequestScope.INSTANCE.put(key, cached);
         }
         return cached;
     }

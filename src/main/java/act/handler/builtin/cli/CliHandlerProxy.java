@@ -57,7 +57,11 @@ public final class CliHandlerProxy extends CliHandlerBase {
         } catch (CliException error) {
             context.println(error.getMessage());
         } catch (Exception e) {
-            context.println("Error processing command: " + e.getMessage());
+            String msg = e.getMessage();
+            if (S.blank(msg)) {
+                msg = e.getClass().getName();
+            }
+            context.println("Error processing command: " + msg);
             logger.error(e, "Error handling request");
         }
     }
@@ -99,7 +103,7 @@ public final class CliHandlerProxy extends CliHandlerBase {
     }
 
     private void generateExecutor() {
-        executor = new ReflectedCommandExecutor(classMetaInfo, methodMetaInfo, app);
+        executor = new ReflectedCommandExecutor(methodMetaInfo, app);
     }
 
 

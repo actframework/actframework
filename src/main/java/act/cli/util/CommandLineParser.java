@@ -105,6 +105,14 @@ public class CommandLineParser {
         return C.list(arguments);
     }
 
+    public String argument(int id) {
+        return arguments.get(id);
+    }
+
+    public int argumentCount() {
+        return arguments.size();
+    }
+
     public boolean getBoolean(String lead1, String lead2) {
         String s = o(lead1, lead2);
         return "true" == s;

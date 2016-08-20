@@ -18,9 +18,7 @@ import org.osgl.util.C;
 import org.osgl.util.E;
 import org.osgl.util.S;
 
-import java.util.BitSet;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Scan Commander class bytecode
@@ -206,6 +204,7 @@ public class CommanderByteCodeScanner extends AppByteCodeScannerBase {
             private BitSet contextInfo = new BitSet();
             private boolean isStatic;
             private Map<Integer, Boolean> readFileContentFlags = C.newMap();
+            private Set<Integer> skipNaming = new HashSet<>();
 
             private int paramIdShift = 0;
 
@@ -378,6 +377,9 @@ public class CommanderByteCodeScanner extends AppByteCodeScannerBase {
                             super.visitEnd();
                         }
                     };
+                } else if ("Ljavax/inject/Named;".equals(desc)) {
+                    skipNaming.add(paramIndex);
+                    return av;
                 } else {
                     return av;
                 }
@@ -405,9 +407,10 @@ public class CommanderByteCodeScanner extends AppByteCodeScannerBase {
                     if (null != readFileContentFlags.get(i)) {
                         param.setReadFileContent();
                     }
-                    String attributeKey = cliSessionAttributeMap.get(i);
-                    if (null != attributeKey) {
-
+                    if (!skipNaming.contains(i)) {
+                        String name = param.name();
+                        //AnnotationVisitor av = visitParameterAnnotation(i, "Ljavax/inject/Named;", true);
+                        //av.visit("value", name);
                     }
                 }
                 super.visitEnd();

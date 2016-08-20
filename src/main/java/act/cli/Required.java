@@ -41,22 +41,26 @@ public @interface Required {
      * Specify the mutual exclusive group. If there are multiple {@code @Required} options found
      * in the command line with the same group then one and only one of them needs to be provided. If
      * more than one argument is provided then the application may choose anyone of the argument. E.g.
-     * <pre>
+     *
+     * ```
      *     {@literal @}Command("account.show")
-     *     public Account showAccount({@literal @}Required(value = {"-i", "--id"}, group = "id") String id,
-     *                                {@literal @}Required(value = "-e, --email", group = "id") String email) {
+     *     public Account showAccount(
+     *         {@literal @}Required(lead = "-i, --id", group = "id") String id,
+     *         {@literal @}Required(lead = "-e, --email", group = "id") String email
+     *     ) {
      *          if (null != id) {
      *              return Account.findById(id);
      *          } else {
      *              return Account.findByEmail(id);
      *          }
      *      }
-     * </pre>
-     * <p>In the above command, either {@code id} or {@code email} must be provided, otherwise
+     * ```
+     *
+     * In the above command, either {@code id} or {@code email} must be provided, otherwise
      * the framework will throw out {@code IllegalArgumentException}
-     * before calling into the method</p>
-     * <p>If not specified, then the marked argument must be provided in regarding to other
-     * arguments</p>
+     * before calling into the method
+     *
+     * If not specified, then the marked argument must be provided
      *
      * @return the mutual exclusive group
      */
