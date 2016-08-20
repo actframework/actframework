@@ -70,16 +70,6 @@ public class JobByteCodeScanner extends AppByteCodeScannerBase {
         }
 
         @Override
-        public FieldVisitor visitField(int access, String name, String desc, String signature, Object value) {
-            if (AsmTypes.APP_DESC.equals(desc)) {
-                classInfo.appField(name, isPrivate(access));
-            } else if (AsmTypes.APP_CONFIG_DESC.equals(desc)) {
-                classInfo.appConfigField(name, isPrivate(access));
-            }
-            return super.visitField(access, name, desc, signature, value);
-        }
-
-        @Override
         public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
             MethodVisitor mv = super.visitMethod(access, name, desc, signature, exceptions);
             if (!isEligibleMethod(access, name, desc)) {

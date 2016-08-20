@@ -39,9 +39,7 @@ public class JobClassMetaInfoManager extends DestroyableBase {
             Type superType = metaInfo.superType();
             if (!AsmTypes.OBJECT_TYPE.equals(superType)) {
                 JobClassMetaInfo superInfo = jobMetaInfo(superType.getClassName());
-                if (null != superInfo) {
-                    metaInfo.parent(superInfo);
-                } else {
+                if (null == superInfo) {
                     List<JobClassMetaInfo> subTypes = subTypeInfo.get(superType);
                     if (null == subTypes) {
                         subTypes = C.newList();
@@ -52,9 +50,6 @@ public class JobClassMetaInfoManager extends DestroyableBase {
         }
         List<JobClassMetaInfo> subTypes = subTypeInfo.get(metaInfo.type());
         if (null != subTypes) {
-            for (JobClassMetaInfo subTypeInfo : subTypes) {
-                subTypeInfo.parent(metaInfo);
-            }
             subTypeInfo.remove(metaInfo.type());
         }
         App.logger.trace("Job meta info registered for: %s", className);

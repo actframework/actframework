@@ -22,15 +22,13 @@ import java.util.Map;
  */
 public class ReflectedJobInvoker<M extends JobMethodMetaInfo> extends $.F0<Object> {
 
-    private static Map<String, $.F2<App, Object, ?>> fieldName_appHandler_lookup = C.newMap();
-    private static Map<String, $.F2<AppConfig, Object, ?>> fieldName_appConfigHandler_lookup = C.newMap();
     private App app;
     private ClassLoader cl;
     private JobClassMetaInfo classInfo;
     private Class<?> jobClass;
-    protected MethodAccess methodAccess;
+    private MethodAccess methodAccess;
     private M methodInfo;
-    protected int methodIndex;
+    private int methodIndex;
     protected Method method; //
 
     public ReflectedJobInvoker(M handlerMetaInfo, App app) {
@@ -44,15 +42,16 @@ public class ReflectedJobInvoker<M extends JobMethodMetaInfo> extends $.F0<Objec
         jobClass = $.classForName(classInfo.className(), cl);
 
         Class<?>[] paramTypes = new Class[0];
+        try {
+            method = jobClass.getMethod(methodInfo.name(), paramTypes);
+        } catch (NoSuchMethodException e) {
+            throw E.unexpected(e);
+        }
+
         if (!methodInfo.isStatic()) {
             methodAccess = MethodAccess.get(jobClass);
             methodIndex = methodAccess.getIndex(methodInfo.name(), paramTypes);
         } else {
-            try {
-                method = jobClass.getMethod(methodInfo.name(), paramTypes);
-            } catch (NoSuchMethodException e) {
-                throw E.unexpected(e);
-            }
             method.setAccessible(true);
         }
     }
@@ -88,29 +87,5 @@ public class ReflectedJobInvoker<M extends JobMethodMetaInfo> extends $.F0<Objec
             }
         }
         return result;
-    }
-
-    private static <T> $.F2<T, Object, ?> injectField(final String fieldName, final Class<?> controllerClass, final Map<String, $.F2<T, Object, ?>> cache) {
-        if (S.blank(fieldName)) return null;
-        String key = S.builder(controllerClass.getName()).append(".").append(fieldName).toString();
-        $.F2<T, Object, ?> injector = cache.get(key);
-        if (null == injector) {
-            injector = new $.F2<T, Object, Void>() {
-                private FieldAccess fieldAccess = FieldAccess.get(controllerClass);
-                private int fieldIdx = getFieldIndex(fieldName, fieldAccess);
-
-                @Override
-                public Void apply(T injectTarget, Object controllerInstance) throws $.Break {
-                    fieldAccess.set(controllerInstance, fieldIdx, injectTarget);
-                    return null;
-                }
-
-                private int getFieldIndex(String fieldName, FieldAccess fieldAccess) {
-                    return fieldAccess.getIndex(fieldName);
-                }
-            };
-            cache.put(key, injector);
-        }
-        return injector;
     }
 }

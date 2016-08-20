@@ -82,10 +82,6 @@ public class JobMethodMetaInfo extends DestroyableBase {
         return returnType.type();
     }
 
-    public boolean hasReturn() {
-        return returnType.hasReturn();
-    }
-
     @Override
     public int hashCode() {
         return $.hc(fullName());

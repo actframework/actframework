@@ -21,14 +21,9 @@ public final class JobClassMetaInfo extends DestroyableBase {
     private Type type;
     private Type superType;
     private boolean isAbstract = false;
-    private String appField = null;
-    private boolean appFieldIsPrivate = true;
-    private String appConfigField = null;
-    private boolean appConfigFieldIsPrivate = true;
     private C.List<JobMethodMetaInfo> actions = C.newList();
     // actionLookup index job method by method name
     private C.Map<String, JobMethodMetaInfo> actionLookup = null;
-    private JobClassMetaInfo parent;
     private boolean isJob;
 
     public JobClassMetaInfo className(String name) {
@@ -47,10 +42,6 @@ public final class JobClassMetaInfo extends DestroyableBase {
 
     public String className() {
         return type.getClassName();
-    }
-
-    public String internalName() {
-        return type.getInternalName();
     }
 
     public Type type() {
@@ -81,23 +72,6 @@ public final class JobClassMetaInfo extends DestroyableBase {
 
     public JobClassMetaInfo isJob(boolean b) {
         isJob = b;
-        return this;
-    }
-
-    public JobClassMetaInfo parent(JobClassMetaInfo parentInfo) {
-        parent = parentInfo;
-        return this;
-    }
-
-    public JobClassMetaInfo appField(String fieldName, boolean isPrivate) {
-        appField = fieldName;
-        appFieldIsPrivate = isPrivate;
-        return this;
-    }
-
-    public JobClassMetaInfo appConfigField(String fieldName, boolean isPrivate) {
-        appConfigField = fieldName;
-        appConfigFieldIsPrivate = isPrivate;
         return this;
     }
 
