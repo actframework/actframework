@@ -2,6 +2,7 @@ package act;
 
 import act.app.*;
 import act.app.event.AppEventId;
+import act.app.util.AppCrypto;
 import act.app.util.NamedPort;
 import act.boot.BootstrapClassLoader;
 import act.boot.PluginClassProvider;
@@ -35,6 +36,7 @@ import org.osgl.exception.NotAppliedException;
 import org.osgl.logging.L;
 import org.osgl.logging.Logger;
 import org.osgl.util.C;
+import org.osgl.util.Crypto;
 import org.osgl.util.E;
 
 import java.util.List;
@@ -321,6 +323,14 @@ public final class Act {
      */
     public static String cuid() {
         return App.instance().cuid();
+    }
+
+    /**
+     * Returns the current {@link App application's} crypto service
+     * @return an {@link AppCrypto} instance
+     */
+    public static AppCrypto crypto() {
+        return app().crypto();
     }
 
     /**

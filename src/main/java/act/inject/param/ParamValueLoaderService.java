@@ -124,7 +124,9 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
             Annotation[] annotations = field.getAnnotations();
             BeanSpec spec = BeanSpec.of(type, annotations, field.getName(), injector);
             ParamValueLoader loader = findLoader(spec, type, annotations);
-            loaders.put(field, loader);
+            if (null != loader && !(loader instanceof ProvidedValueLoader)) {
+                loaders.put(field, loader);
+            }
         }
         final boolean hasField = !loaders.isEmpty();
         ParamValueLoader loader = new ParamValueLoader() {
@@ -205,11 +207,15 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
     ) {
         Class rawType = BeanSpec.rawTypeOf(type);
         if (ActProviders.isProvided(rawType)
+                || null != filter(annotations, Inject.class)
                 || null != filter(annotations, Provided.class)
                 || null != filter(annotations, Context.class)
                 || null != filter(annotations, Singleton.class)
                 || null != filter(annotations, ApplicationScoped.class)) {
             return ProvidedValueLoader.get(rawType, injector);
+        }
+        if (null != filter(annotations, NoBind.class)) {
+            return null;
         }
         String bindName = bindName(annotations, spec.name());
         ParamValueLoader loader = findContextSpecificLoader(bindName, rawType, spec, type, annotations);
@@ -222,13 +228,20 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
             return buildArrayLoader(key, rawType.getComponentType());
         }
         if (Collection.class.isAssignableFrom(rawType)) {
-            Type elementType = ((ParameterizedType) type).getActualTypeArguments()[0];
+            Type elementType = Object.class;
+            if (type instanceof ParameterizedType) {
+                elementType = ((ParameterizedType) type).getActualTypeArguments()[0];
+            }
             return buildCollectionLoader(key, rawType, elementType);
         }
         if (Map.class.isAssignableFrom(rawType)) {
-            Type[] typeParams = ((ParameterizedType) type).getActualTypeArguments();
-            Type keyType = typeParams[0];
-            Type valType = typeParams[1];
+            Type keyType = Object.class;
+            Type valType = Object.class;
+            if (type instanceof ParameterizedType) {
+                Type[] typeParams = ((ParameterizedType) type).getActualTypeArguments();
+                keyType = typeParams[0];
+                valType = typeParams[1];
+            }
             return buildMapLoader(key, rawType, keyType, valType);
         }
         return buildPojoLoader(key, rawType);
@@ -432,7 +445,7 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
                 || null != filter(annotations, SessionVariable.class);
     }
 
-    private static String bindName(Annotation[] annotations, String defVal) {
+    public static String bindName(Annotation[] annotations, String defVal) {
         Param param = filter(annotations, Param.class);
         if (null != param && S.notBlank(param.value())) {
             return param.value();
@@ -449,6 +462,10 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
             return defVal;
         }
         throw new IllegalStateException("Cannot find bind name");
+    }
+
+    public static String bindName(BeanSpec beanSpec) {
+        return bindName(beanSpec.allAnnotations(), beanSpec.name());
     }
 
 }

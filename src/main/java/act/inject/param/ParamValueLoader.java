@@ -5,7 +5,7 @@ import act.util.ActContext;
 /**
  * Responsible for providing the value to a method parameter
  */
-interface ParamValueLoader {
+public interface ParamValueLoader {
 
     /**
      * Provide the value for a parameter from current execution context.

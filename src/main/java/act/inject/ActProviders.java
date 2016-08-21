@@ -20,6 +20,7 @@ import org.osgl.web.util.UserAgent;
 import javax.inject.Provider;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.Set;
 
 /**
@@ -128,9 +129,12 @@ public final class ActProviders {
             try {
                 if (Provider.class.isAssignableFrom(field.getType())) {
                     field.setAccessible(true);
-                    ParameterizedType type = $.cast(field.getGenericType());
-                    Provider<?> provider = $.cast(field.get(null));
-                    register.apply((Class) type.getActualTypeArguments()[0], provider);
+                    Type type = field.getGenericType();
+                    if (type instanceof ParameterizedType) {
+                        ParameterizedType ptype = $.cast(field.getGenericType());
+                        Provider<?> provider = $.cast(field.get(null));
+                        register.apply((Class) ptype.getActualTypeArguments()[0], provider);
+                    }
                 }
             } catch (Exception e) {
                 throw E.unexpected(e);

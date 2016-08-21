@@ -1,7 +1,7 @@
 package act.db;
 
-import act.app.ActionContext;
 import act.app.security.SecurityContext;
+import act.util.ActContext;
 
 import javax.enterprise.context.ApplicationScoped;
 import java.lang.annotation.Annotation;
@@ -9,13 +9,20 @@ import java.lang.annotation.Annotation;
 public abstract class DaoBase<ID_TYPE, MODEL_TYPE, QUERY_TYPE extends Dao.Query<MODEL_TYPE, QUERY_TYPE>>
         implements Dao<ID_TYPE, MODEL_TYPE, QUERY_TYPE> {
 
-    private ActionContext appCtx;
+    private ActContext appCtx;
     private SecurityContext secCtx;
     private boolean destroyed;
+    protected Class<MODEL_TYPE> modelType;
+    protected Class<ID_TYPE> idType;
+
+    public DaoBase(Class<ID_TYPE> idType, Class<MODEL_TYPE> modelType) {
+        this.idType = idType;
+        this.modelType = modelType;
+    }
 
 
     @Override
-    public void setAppContext(ActionContext context) {
+    public void setAppContext(ActContext context) {
         appCtx = context;
     }
 
@@ -26,6 +33,16 @@ public abstract class DaoBase<ID_TYPE, MODEL_TYPE, QUERY_TYPE extends Dao.Query<
         releaseResources();
         appCtx = null;
         secCtx = null;
+    }
+
+    @Override
+    public Class<ID_TYPE> idType() {
+        return idType;
+    }
+
+    @Override
+    public Class<MODEL_TYPE> modelType() {
+        return modelType;
     }
 
     @Override
@@ -45,7 +62,7 @@ public abstract class DaoBase<ID_TYPE, MODEL_TYPE, QUERY_TYPE extends Dao.Query<
         return ApplicationScoped.class;
     }
 
-    protected final ActionContext appContext() {
+    protected final ActContext appContext() {
         return appCtx;
     }
 

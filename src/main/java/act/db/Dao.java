@@ -15,6 +15,8 @@ import java.util.List;
 public interface Dao<ID_TYPE, MODEL_TYPE, QUERY_TYPE extends Dao.Query<MODEL_TYPE, QUERY_TYPE>>
         extends AppContextAware, SecurityContextAware, Destroyable {
 
+    Class<ID_TYPE> idType();
+
     /**
      * Returns the class of the Model entity this Dao operates on
      */

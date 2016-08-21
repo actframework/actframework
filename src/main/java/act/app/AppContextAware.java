@@ -1,5 +1,7 @@
 package act.app;
 
+import act.util.ActContext;
+
 public interface AppContextAware {
-    void setAppContext(ActionContext context);
+    void setAppContext(ActContext context);
 }
