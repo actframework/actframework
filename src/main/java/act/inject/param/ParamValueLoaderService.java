@@ -205,13 +205,8 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
             Type type,
             Annotation[] annotations
     ) {
-        Class rawType = BeanSpec.rawTypeOf(type);
-        if (ActProviders.isProvided(rawType)
-                || null != filter(annotations, Inject.class)
-                || null != filter(annotations, Provided.class)
-                || null != filter(annotations, Context.class)
-                || null != filter(annotations, Singleton.class)
-                || null != filter(annotations, ApplicationScoped.class)) {
+        Class rawType = spec.rawType();
+        if (provided(spec)) {
             return ProvidedValueLoader.get(rawType, injector);
         }
         if (null != filter(annotations, NoBind.class)) {
@@ -468,4 +463,13 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
         return bindName(beanSpec.allAnnotations(), beanSpec.name());
     }
 
+    public static boolean provided(BeanSpec beanSpec) {
+        Class rawType = beanSpec.rawType();
+        return (ActProviders.isProvided(rawType)
+                || null != beanSpec.getAnnotation(Inject.class)
+                || null != beanSpec.getAnnotation(Provided.class)
+                || null != beanSpec.getAnnotation(Context.class)
+                || null != beanSpec.getAnnotation(Singleton.class)
+                || null != beanSpec.getAnnotation(ApplicationScoped.class));
+    }
 }

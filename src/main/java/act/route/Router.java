@@ -585,7 +585,7 @@ public class Router extends AppServiceBase<Router> {
 
         Node handler(RequestHandler handler, RouteSource source) {
             this.routeSource = $.notNull(source);
-            this.handler = handler.requireResolveContext() ? new ContextualHandler((RequestHandlerBase)handler) : handler;
+            this.handler = handler.requireResolveContext() ? new ContextualHandler((RequestHandlerBase)handler, this) : handler;
             return this;
         }
 
@@ -719,12 +719,20 @@ public class Router extends AppServiceBase<Router> {
     }
 
     private static class ContextualHandler extends DelegateRequestHandler {
-        protected ContextualHandler(RequestHandlerBase next) {
+        private int pathVarCnt;
+        protected ContextualHandler(RequestHandlerBase next, Node node) {
             super(next);
+            while (node != null) {
+                if (node.isDynamic()) {
+                    pathVarCnt++;
+                }
+                node = node.parent;
+            }
         }
         @Override
         public void handle(ActionContext context) {
             context.attribute(ActionContext.ATTR_HANDLER, realHandler());
+            context.attribute(ActionContext.ATTR_PATH_VAR_CNT, pathVarCnt);
             context.resolve();
             super.handle(context);
         }

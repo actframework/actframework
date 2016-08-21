@@ -32,6 +32,7 @@ import org.osgl.util.S;
 import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Implement handler using
@@ -55,6 +56,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
     private final int fieldsAndParamsCount;
     private String singleJsonFieldName;
     private final boolean sessionFree;
+    private List<BeanSpec> paramSpecs;
 
     private ReflectedHandlerInvoker(M handlerMetaInfo, App app) {
         this.cl = app.classLoader();
@@ -81,10 +83,10 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         sessionFree = method.isAnnotationPresent(SessionFree.class);
 
         paramCount = handler.paramCount();
-        List<BeanSpec> beanSpecs = jsonDTOClassManager.beanSpecs(controllerClass, method);
-        fieldsAndParamsCount = beanSpecs.size();
+        paramSpecs = jsonDTOClassManager.beanSpecs(controllerClass, method);
+        fieldsAndParamsCount = paramSpecs.size();
         if (fieldsAndParamsCount == 1) {
-            singleJsonFieldName = beanSpecs.get(0).name();
+            singleJsonFieldName = paramSpecs.get(0).name();
         }
     }
 
@@ -160,13 +162,39 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         }
     }
 
+    private int fieldsAndParamsCount(ActionContext context) {
+        if (fieldsAndParamsCount < 2) {
+            return fieldsAndParamsCount;
+        }
+        int pathVarCnt = context.attribute(ActionContext.ATTR_PATH_VAR_CNT);
+        return fieldsAndParamsCount - pathVarCnt;
+    }
+
+    private String singleJsonFieldName(ActionContext context) {
+        if (null != singleJsonFieldName) {
+            return singleJsonFieldName;
+        }
+        Set<String> set = context.paramKeys();
+        for (BeanSpec spec: paramSpecs) {
+            String name = spec.name();
+            if (!set.contains(name)) {
+                return name;
+            }
+        }
+        return null;
+    }
+
     /**
      * Suppose method signature is: `public void foo(Foo foo)`, and a JSON content is
      * not `{"foo": {foo-content}}`, then wrap it as `{"foo": body}`
      */
     private String patchedJsonBody(ActionContext context) {
         String body = context.body();
-        if (S.blank(body) || 1 < fieldsAndParamsCount) {
+        if (S.blank(body) || 1 < fieldsAndParamsCount(context)) {
+            return body;
+        }
+        String theName = singleJsonFieldName(context);
+        if (null == theName) {
             return body;
         }
         body = body.trim();
@@ -186,7 +214,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
                     if (c == '"') {
                         break;
                     }
-                    if (singleJsonFieldName.charAt(i - nameStart - 1) != c) {
+                    if (theName.charAt(i - nameStart - 1) != c) {
                         needPatch = true;
                         break;
                     }
@@ -196,7 +224,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
                 }
             }
         }
-        return needPatch ? S.fmt("{\"%s\": %s}", singleJsonFieldName, body) : body;
+        return needPatch ? S.fmt("{\"%s\": %s}", theName, body) : body;
     }
 
     private Class[] paramTypes(ClassLoader cl) {
