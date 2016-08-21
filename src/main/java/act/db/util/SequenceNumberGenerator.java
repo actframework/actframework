@@ -3,7 +3,10 @@ package act.db.util;
 import act.cli.Command;
 import act.cli.Required;
 import org.osgl.$;
+import org.osgl.inject.annotation.TypeOf;
 import org.osgl.util.S;
+
+import javax.inject.Inject;
 
 /**
  * Sequence number manipulation utility class
@@ -23,6 +26,25 @@ public class SequenceNumberGenerator {
 
     public static long get(String name) {
         return impl.get(name);
+    }
+
+
+    public static class Provider implements javax.inject.Provider<_SequenceNumberGenerator> {
+        @Inject
+        @TypeOf
+        private java.util.List<_SequenceNumberGenerator> generators;
+
+        @Override
+        public _SequenceNumberGenerator get() {
+            if (generators.size() > 1) {
+                for (_SequenceNumberGenerator gen: generators) {
+                    if (!_SequenceNumberGenerator.InMemorySequenceNumberGenerator.class.isInstance(gen)) {
+                        return gen;
+                    }
+                }
+            }
+            return generators.get(0);
+        }
     }
 
     @SuppressWarnings("unused")

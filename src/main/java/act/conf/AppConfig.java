@@ -7,6 +7,7 @@ import act.app.App;
 import act.app.AppHolder;
 import act.app.conf.AppConfigurator;
 import act.app.util.NamedPort;
+import act.db.util.SequenceNumberGenerator;
 import act.db.util._SequenceNumberGenerator;
 import act.handler.UnknownHttpMethodProcessor;
 import act.util.*;
@@ -314,7 +315,8 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         if (null == seqGen) {
             seqGen = get(DB_SEQ_GENERATOR);
             if (null == seqGen) {
-                seqGen = new _SequenceNumberGenerator.InMemorySequenceNumberGenerator();
+                javax.inject.Provider<_SequenceNumberGenerator> provider = app().getInstance(SequenceNumberGenerator.Provider.class);
+                seqGen = provider.get();
                 logger.info("Sequence number generator loaded: %s", seqGen.getClass().getName());
             }
         }

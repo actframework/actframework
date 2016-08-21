@@ -2,7 +2,9 @@ package act.db.util;
 
 import act.app.DbServiceManager;
 import act.conf.AppConfig;
+import org.osgl.inject.annotation.TypeOf;
 
+import javax.inject.Inject;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicLong;
