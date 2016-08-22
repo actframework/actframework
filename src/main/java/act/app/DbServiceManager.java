@@ -38,7 +38,7 @@ public class DbServiceManager extends AppServiceBase<DbServiceManager> implement
     private Map<Class<?>, Dao> modelDaoMap = C.newMap();
 
     protected DbServiceManager(final App app) {
-        super(app, true);
+        super(app);
         initServices(app.config());
         configureSequenceGenerator(app);
         app.eventBus().bind(AppEventId.SINGLETON_PROVISIONED, new AppEventListenerBase() {

@@ -57,6 +57,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
     private String singleJsonFieldName;
     private final boolean sessionFree;
     private List<BeanSpec> paramSpecs;
+    private Set<String> pathVariables;
 
     private ReflectedHandlerInvoker(M handlerMetaInfo, App app) {
         this.cl = app.classLoader();
@@ -166,8 +167,14 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         if (fieldsAndParamsCount < 2) {
             return fieldsAndParamsCount;
         }
-        int pathVarCnt = context.attribute(ActionContext.ATTR_PATH_VAR_CNT);
-        return fieldsAndParamsCount - pathVarCnt;
+        return fieldsAndParamsCount - pathVariables(context).size();
+    }
+
+    private Set<String> pathVariables(ActionContext context) {
+        if (null == pathVariables) {
+            pathVariables = context.attribute(ActionContext.ATTR_PATH_VARS);
+        }
+        return pathVariables;
     }
 
     private String singleJsonFieldName(ActionContext context) {

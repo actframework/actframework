@@ -719,12 +719,13 @@ public class Router extends AppServiceBase<Router> {
     }
 
     private static class ContextualHandler extends DelegateRequestHandler {
-        private int pathVarCnt;
+        private Set<String> pathVariables;
         protected ContextualHandler(RequestHandlerBase next, Node node) {
             super(next);
+            pathVariables = new HashSet<>();
             while (node != null) {
                 if (node.isDynamic()) {
-                    pathVarCnt++;
+                    pathVariables.add(node.varName.toString());
                 }
                 node = node.parent;
             }
@@ -732,7 +733,7 @@ public class Router extends AppServiceBase<Router> {
         @Override
         public void handle(ActionContext context) {
             context.attribute(ActionContext.ATTR_HANDLER, realHandler());
-            context.attribute(ActionContext.ATTR_PATH_VAR_CNT, pathVarCnt);
+            context.attribute(ActionContext.ATTR_PATH_VARS, pathVariables);
             context.resolve();
             super.handle(context);
         }

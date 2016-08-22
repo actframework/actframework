@@ -36,7 +36,7 @@ import java.util.*;
 public class ActionContext extends ActContext.Base<ActionContext> implements ActContext<ActionContext>, Destroyable {
 
     public static final String ATTR_HANDLER = "__act_handler__";
-    public static final String ATTR_PATH_VAR_CNT = "__path_var_cnt__";
+    public static final String ATTR_PATH_VARS = "__path_vars__";
     public static final String ATTR_RESULT = "__result__";
     public static final String ATTR_EXCEPTION = "__exception__";
     public static final String REQ_BODY = "_body";
