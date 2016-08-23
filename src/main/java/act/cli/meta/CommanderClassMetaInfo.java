@@ -79,6 +79,7 @@ public class CommanderClassMetaInfo extends DestroyableBase {
     }
 
     public CommanderClassMetaInfo addFieldOptionAnnotationInfo(FieldOptionAnnoInfo info) {
+        info.paramName(info.fieldName());
         fieldOptionAnnoInfoMap.put(info.fieldName(), info);
         return this;
     }

@@ -285,13 +285,14 @@ public class CliContext extends ActContext.Base<CliContext> implements IASCIITab
         boolean help = parser.getBoolean("-h", "--help");
         if (help) {
             Help.INSTANCE.showHelp(parser.command(), this);
-        }
-        try {
-            handler.handle(this);
-        } catch ($.Break b) {
-            throw b;
-        } catch (Exception e) {
-            console.println("Error: " + e.getMessage());
+        } else {
+            try {
+                handler.handle(this);
+            } catch ($.Break b) {
+                throw b;
+            } catch (Exception e) {
+                console.println("Error: " + e.getMessage());
+            }
         }
     }
 
