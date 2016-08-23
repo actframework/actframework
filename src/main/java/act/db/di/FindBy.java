@@ -16,6 +16,7 @@ public class FindBy extends ValueLoader.Base {
     private StringValueResolver resolver;
     private boolean findOne;
     private boolean byId;
+    private String querySpec;
     private Class<?> rawType;
 
     @Override
@@ -31,9 +32,12 @@ public class FindBy extends ValueLoader.Base {
         if (null == resolver) {
             throw new IllegalArgumentException("Cannot find String value resolver for type: " + dao.idType());
         }
-        bindName = S.string(options.get("value"));
-        if (S.blank(bindName)) {
-            bindName = ParamValueLoaderService.bindName(spec);
+        bindName = ParamValueLoaderService.bindName(spec);
+        if (!byId) {
+            querySpec = S.string(options.get("value"));
+            if (S.blank(querySpec)) {
+                querySpec = bindName;
+            }
         }
     }
 
@@ -60,9 +64,9 @@ public class FindBy extends ValueLoader.Base {
             }
         } else {
             if (findOne) {
-                return dao.findOneBy(Keyword.of(bindName).javaVariable(), by);
+                return dao.findOneBy(Keyword.of(querySpec).javaVariable(), by);
             } else {
-                col.addAll(C.list(dao.findBy(Keyword.of(bindName).javaVariable(), by)));
+                col.addAll(C.list(dao.findBy(Keyword.of(querySpec).javaVariable(), by)));
                 return col;
             }
         }

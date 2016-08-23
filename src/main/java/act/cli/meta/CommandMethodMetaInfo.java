@@ -133,6 +133,15 @@ public class CommandMethodMetaInfo extends DestroyableBase {
                 }
             }
         }
+        for (FieldOptionAnnoInfo fieldOptionAnnoInfo : classMetaInfo.fieldOptionAnnoInfoList(classLoader)) {
+            hasOptions = true;
+            if (null == firstArg) {
+                firstArg = fieldOptionAnnoInfo.fieldName();
+            } else {
+                hasMoreArgs = true;
+            }
+        }
+
         StringBuilder sb = S.builder(commandName);
         if (hasOptions) {
             sb.append(" [options]");
@@ -204,22 +213,6 @@ public class CommandMethodMetaInfo extends DestroyableBase {
 
     public int paramCount() {
         return params.size();
-    }
-
-    public synchronized int ctxParamCount() {
-        if (ctxParamCnt < 0) {
-            if (paramCount() == 0) {
-                ctxParamCnt = 0;
-            } else {
-                ctxParamCnt = 0;
-                for (CommandParamMetaInfo param : params) {
-                    if (param.isContext()) {
-                        ctxParamCnt++;
-                    }
-                }
-            }
-        }
-        return ctxParamCnt;
     }
 
     public CommandMethodMetaInfo addLead(String lead) {

@@ -15,6 +15,7 @@ public class CommandParamMetaInfo extends DestroyableBase {
     private boolean readFileContent;
     private Type componentType;
     private boolean context;
+    @Deprecated
     private String cliSessionAttributeKey;
     private ParamOptionAnnoInfo optionInfo;
 

@@ -22,7 +22,7 @@ public class ClassFinderData {
         SUPER_TYPE() {
             @Override
             void tryFind(ClassNode startNode, $.Visitor<ClassNode> visitor) {
-                startNode.visitPublicSubTreeNodes(visitor);
+                startNode.visitPublicNotAbstractSubTreeNodes(visitor);
             }
         };
 
@@ -85,6 +85,10 @@ public class ClassFinderData {
     public ClassFinderData what(String targetClassName) {
         this.what = targetClassName;
         return this;
+    }
+
+    public boolean whatSpecified() {
+        return S.notBlank(this.what) && S.neq(SubClassFinder.DEF_VALUE, this.what);
     }
 
     public ClassFinderData when(String loadOn) {

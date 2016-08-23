@@ -5,8 +5,10 @@ import act.cli.ascii_table.ASCIITableHeader;
 import act.cli.ascii_table.impl.SimpleASCIITableImpl;
 import act.cli.ascii_table.spec.IASCIITable;
 import act.cli.ascii_table.spec.IASCIITableAware;
-import act.cli.meta.CommandMethodMetaInfo;
+import act.cli.builtin.Exit;
+import act.cli.builtin.Help;
 import act.cli.util.CommandLineParser;
+import act.handler.CliHandler;
 import act.util.ActContext;
 import jline.Terminal2;
 import jline.console.ConsoleReader;
@@ -120,6 +122,7 @@ public class CliContext extends ActContext.Base<CliContext> implements IASCIITab
     }
 
     public static final String ATTR_PWD = "__act_pwd__";
+    public static final String ATTR_METHOD = "__act_method__";
 
     private static final ContextLocal<CliContext> _local = $.contextLocal();
 
@@ -142,20 +145,26 @@ public class CliContext extends ActContext.Base<CliContext> implements IASCIITab
 
     private ParsingContext parsingContext;
 
+    private CliHandler handler;
+
     private boolean rawPrint;
+
+    private Map<String, String> preparsedOptionValues;
 
 
     public CliContext(String line, App app, ConsoleReader console, CliSession session) {
         super(app);
         this.session = session;
-        parser = new CommandLineParser(line);
-        evaluatorCache = app.cache();
+        this.parser = new CommandLineParser(line);
+        this.evaluatorCache = app.cache();
         this.console = $.NPE(console);
         Terminal2 t2 = $.cast(console.getTerminal());
         t2.setEchoEnabled(false);
         this.pw = new PrintWriter(console.getOutput());
         this.rawPrint = null == System.getenv("cli-no-raw-print");
-        saveLocal();
+        this.handler = app.cliDispatcher().handler(command());
+        this.preparsedOptionValues = new HashMap<>();
+        this.saveLocal();
     }
 
     /**
@@ -203,17 +212,21 @@ public class CliContext extends ActContext.Base<CliContext> implements IASCIITab
 
     @Override
     public Set<String> paramKeys() {
-        throw E.tbd();
+        return preparsedOptionValues.keySet();
+    }
+
+    public void param(String key, String val) {
+        this.preparsedOptionValues.put(key, val);
     }
 
     @Override
     public String paramVal(String key) {
-        throw E.tbd();
+        return this.preparsedOptionValues.get(key);
     }
 
     @Override
     public String[] paramVals(String key) {
-        throw E.tbd();
+        return new String[]{paramVal(key)};
     }
 
     /**
@@ -245,14 +258,6 @@ public class CliContext extends ActContext.Base<CliContext> implements IASCIITab
         throw E.unsupport();
     }
 
-    private void print0(String template, Object... args) {
-        try {
-            console.print(S.fmt(template, args));
-        } catch (IOException e) {
-            throw E.ioException(e);
-        }
-    }
-
     public void flush() {
         pw.flush();
     }
@@ -262,6 +267,39 @@ public class CliContext extends ActContext.Base<CliContext> implements IASCIITab
             print1(template, args);
         } else {
             print0(template, args);
+        }
+    }
+
+    /**
+     * Run handler and return `false` if it needs to exit the CLI or `true` otherwise
+     */
+    void handle() throws IOException {
+        if (null == handler) {
+            println("Command not recognized: %s", command());
+            return;
+        }
+        if (handler == Exit.INSTANCE) {
+            handler.handle(this);
+        }
+        CommandLineParser parser = commandLine();
+        boolean help = parser.getBoolean("-h", "--help");
+        if (help) {
+            Help.INSTANCE.showHelp(parser.command(), this);
+        }
+        try {
+            handler.handle(this);
+        } catch ($.Break b) {
+            throw b;
+        } catch (Exception e) {
+            console.println("Error: " + e.getMessage());
+        }
+    }
+
+    private void print0(String template, Object... args) {
+        try {
+            console.print(S.fmt(template, args));
+        } catch (IOException e) {
+            throw E.ioException(e);
         }
     }
 
@@ -377,16 +415,14 @@ public class CliContext extends ActContext.Base<CliContext> implements IASCIITab
      * @param names the render argument names separated by ","
      * @return this AppContext
      */
+    @SuppressWarnings("unused")
     public CliContext __appRenderArgNames(String names) {
         return renderArg("__arg_names__", C.listOf(names.split(",")));
     }
 
+    @SuppressWarnings("unused")
     public List<String> __appRenderArgNames() {
         return renderArg("__arg_names__");
-    }
-
-    public void saveLocal() {
-        _local.set(this);
     }
 
     @Override
@@ -473,5 +509,10 @@ public class CliContext extends ActContext.Base<CliContext> implements IASCIITab
         s = s.replace("\n", $.OS.lineSeparator());
         return s;
     }
+
+    private void saveLocal() {
+        _local.set(this);
+    }
+
 
 }

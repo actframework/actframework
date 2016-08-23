@@ -27,8 +27,8 @@ public class ParamValueLoaderManager  extends AppServiceBase<ParamValueLoaderMan
         loaderServices.put(CliContext.class, new CliContextParamLoader(app));
     }
 
-    public ParamValueLoaderService get(Class<? extends ActContext> contextClass) {
-        return loaderServices.get(contextClass);
+    public <T extends ParamValueLoaderService> T  get(Class<? extends ActContext> contextClass) {
+        return (T) loaderServices.get(contextClass);
     }
 
     @Override

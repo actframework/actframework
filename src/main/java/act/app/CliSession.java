@@ -142,30 +142,21 @@ public class CliSession extends DestroyableBase implements Runnable {
                     continue;
                 }
 
-                CliContext context = new CliContext(line, app, console, this);
-
-                //handle the command
-                final CliHandler handler = dispatcher.handler(context.command());
-                if (null == handler) {
-                    context.println("Command not recognized: %s", context.command());
-                    continue;
-                }
-                if (handler == Exit.INSTANCE) {
-                    console.println("bye");
-                    console.flush();
-                    exit = true;
-                    return;
-                }
-                CommandLineParser parser = context.commandLine();
-                boolean help = parser.getBoolean("-h", "--help");
-                if (help) {
-                    Help.INSTANCE.showHelp(parser.command(), context);
-                    continue;
-                }
                 try {
-                    handler.handle(context);
-                } catch (Exception e) {
-                    console.println("Error: " + e.getMessage());
+                    CliContext context = new CliContext(line, app, console, this);
+                    context.handle();
+                } catch ($.Break b) {
+                    Object payload = b.get();
+                    if (null == payload) {
+                        continue;
+                    }
+                    if (payload instanceof Boolean) {
+                        exit = b.get();
+                    } else if (payload instanceof String) {
+                        console.println((String) payload);
+                    } else {
+                        console.println(S.fmt("INTERNAL ERROR: unknown payload type: %s", payload.getClass()));
+                    }
                 }
             }
         } catch (InterruptedIOException e) {

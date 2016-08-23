@@ -18,14 +18,51 @@ import org.osgl.util.E;
 import org.osgl.util.S;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.Collection;
-import java.util.EventObject;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 class _Job extends DestroyableBase implements Runnable {
 
     private static final Logger logger = LogManager.get(_Job.class);
+
+    private static class LockableJobList {
+        boolean iterating;
+        List<_Job> jobList;
+        _Job parent;
+        LockableJobList(_Job parent) {
+            this.jobList = new ArrayList<>();
+            this.parent = parent;
+        }
+
+        synchronized void clear() {
+            jobList.clear();
+        }
+
+        synchronized _Job add(_Job thatJob) {
+            if (parent.isOneTime()) {
+                thatJob.setOneTime();
+            }
+            if (parent.done() || iterating) {
+                parent.manager.now(thatJob);
+                return parent;
+            }
+            jobList.add(thatJob);
+            return parent;
+        }
+
+        synchronized void runSubJobs() {
+            iterating = true;
+            try {
+                for (_Job subJob : jobList) {
+                    subJob.run();
+                }
+            } finally {
+                iterating = false;
+            }
+        }
+
+    }
 
     static final String BRIEF_VIEW = "id,oneTime,executed,trigger";
     static final String DETAIL_VIEW = "id,oneTime,executed,trigger,worker";
@@ -41,13 +78,9 @@ class _Job extends DestroyableBase implements Runnable {
     private AppJobManager manager;
     private JobTrigger trigger;
     private $.Func0<?> worker;
-    private List<_Job> parallelJobs = C.newList();
-    private List<_Job> followingJobs = C.newList();
-    private List<_Job> precedenceJobs = C.newList();
-
-    _Job(AppJobManager manager) {
-        this(Act.cuid(), manager);
-    }
+    private LockableJobList parallelJobs = new LockableJobList(this);
+    private LockableJobList followingJobs = new LockableJobList(this);
+    private LockableJobList precedenceJobs = new LockableJobList(this);
 
     _Job(String id, AppJobManager manager) {
         this(id, manager, null);
@@ -81,9 +114,9 @@ class _Job extends DestroyableBase implements Runnable {
     @Override
     public String toString() {
         StringBuilder sb = S.builder(brief());
-        printSubJobs(parallelJobs, "parallel jobs", sb);
-        printSubJobs(followingJobs, "following jobs", sb);
-        printSubJobs(precedenceJobs, "precedence jobs", sb);
+        printSubJobs(parallelJobs.jobList, "parallel jobs", sb);
+        printSubJobs(followingJobs.jobList, "following jobs", sb);
+        printSubJobs(precedenceJobs.jobList, "precedence jobs", sb);
         return sb.toString();
     }
 
@@ -119,39 +152,15 @@ class _Job extends DestroyableBase implements Runnable {
     }
 
     final _Job addParallelJob(_Job thatJob) {
-        if (done()) {
-            manager.now(thatJob);
-            return this;
-        }
-        parallelJobs.add(thatJob);
-        if (isOneTime()) {
-            thatJob.setOneTime();
-        }
-        return this;
+        return parallelJobs.add(thatJob);
     }
 
     final _Job addFollowingJob(_Job thatJob) {
-        if (done()) {
-            thatJob.run();
-            return this;
-        }
-        followingJobs.add(thatJob);
-        if (isOneTime()) {
-            thatJob.setOneTime();
-        }
-        return this;
+        return followingJobs.add(thatJob);
     }
 
     final _Job addPrecedenceJob(_Job thatJob) {
-        if (done()) {
-            thatJob.run();
-            return this;
-        }
-        precedenceJobs.add(thatJob);
-        if (isOneTime()) {
-            thatJob.setOneTime();
-        }
-        return this;
+        return precedenceJobs.add(thatJob);
     }
 
     @Override
@@ -205,21 +214,15 @@ class _Job extends DestroyableBase implements Runnable {
     }
 
     private void runPrecedenceJobs() {
-        for (_Job precedence : precedenceJobs) {
-            precedence.run();
-        }
+        precedenceJobs.runSubJobs();
     }
 
     private void runFollowingJobs() {
-        for (_Job post : followingJobs) {
-            post.run();
-        }
+        followingJobs.runSubJobs();
     }
 
     private void invokeParallelJobs() {
-        for (_Job alongWith : parallelJobs) {
-            manager.now(alongWith);
-        }
+        parallelJobs.runSubJobs();
     }
 
     protected final AppJobManager manager() {

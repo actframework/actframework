@@ -17,6 +17,7 @@ import org.osgl.logging.Logger;
 import org.osgl.util.S;
 
 import java.util.List;
+import java.util.Map;
 
 public final class CliHandlerProxy extends CliHandlerBase {
 
@@ -54,6 +55,8 @@ public final class CliHandlerProxy extends CliHandlerBase {
             saveCommandPath(context);
             Object result = _handle(context);
             onResult(result, context);
+        } catch ($.Break b) {
+            throw b;
         } catch (CliException error) {
             context.println(error.getMessage());
         } catch (Exception e) {

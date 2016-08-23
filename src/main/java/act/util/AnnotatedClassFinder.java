@@ -31,6 +31,6 @@ public @interface AnnotatedClassFinder {
      *
      * @return the "When" to execute the callback logic
      */
-    AppEventId loadOn() default AppEventId.DEPENDENCY_INJECTOR_PROVISIONED;
+    AppEventId callOn() default AppEventId.DEPENDENCY_INJECTOR_PROVISIONED;
 
 }

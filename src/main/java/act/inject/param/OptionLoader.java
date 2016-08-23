@@ -14,12 +14,12 @@ import org.osgl.util.StringValueResolver;
  */
 class OptionLoader extends CliParamValueLoader implements ParamValueLoader {
 
-    private final String bindName;
-    private String lead1;
-    private String lead2;
-    private final String defVal;
-    private final String requiredGroup;
-    private final boolean required;
+    final String bindName;
+    String lead1;
+    String lead2;
+    final String defVal;
+    final String requiredGroup;
+    final boolean required;
     private final StringValueResolver resolver;
 
     OptionLoader(String bindName, Optional optional, StringValueResolver resolver) {
@@ -46,7 +46,7 @@ class OptionLoader extends CliParamValueLoader implements ParamValueLoader {
     @Override
     public Object load(Object cachedBean, ActContext<?> context, boolean noDefaultValue) {
         CliContext ctx = (CliContext) context;
-        String optVal = optionValue(lead1, lead2, ctx);
+        String optVal = ctx.paramVal(bindName);
         if (S.blank(optVal)) {
             if (!multipleParams(ctx)) {
                 optVal = getFirstArgument(ctx);

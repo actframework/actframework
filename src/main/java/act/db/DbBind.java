@@ -18,10 +18,10 @@ import java.lang.annotation.Target;
 @Target({ElementType.PARAMETER, ElementType.FIELD})
 public @interface DbBind {
     /**
-     * Specifies the bind name. Default value is an empty string
-     * meaning the bind name should be inferred from the field
-     * or parameter name
-     * @return the bind name
+     * Specifies the db query field. Default value is an empty string
+     * meaning the bind name (from {@literal @}Named, or field name
+     * or param name) will be used as db query field
+     * @return the db query field spec
      */
     String value() default "";
 

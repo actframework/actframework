@@ -6,21 +6,32 @@ import act.app.CliContext;
 import act.cli.Optional;
 import act.cli.Required;
 import act.cli.meta.CommandMethodMetaInfo;
-import act.util.ActContext;
+import act.cli.util.CommandLineParser;
+import org.osgl.$;
 import org.osgl.inject.BeanSpec;
 import org.osgl.util.E;
+import org.osgl.util.S;
 import org.osgl.util.StringValueResolver;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 /**
  * Responsible for loading param value for {@link ActionContext}
  */
 public class CliContextParamLoader extends ParamValueLoaderService {
 
-    private transient CommandMethodMetaInfo methodMetaInfo;
+    private final static transient ThreadLocal<CommandMethodMetaInfo> methodMetaInfoHolder = new ThreadLocal<>();
+
+    private ConcurrentMap<Method, List<OptionLoader>> optionLoaderRegistry = new ConcurrentHashMap<>();
 
     CliContextParamLoader(App app) {
         super(app);
@@ -28,12 +39,30 @@ public class CliContextParamLoader extends ParamValueLoaderService {
 
     public CliContext.ParsingContext buildParsingContext(Class commander, Method method, CommandMethodMetaInfo methodMetaInfo) {
         CliContext.ParsingContextBuilder.start();
-        this.methodMetaInfo = methodMetaInfo;
+        ensureOptionLoaders(method);
+        methodMetaInfoHolder.set(methodMetaInfo);
         ParamValueLoader loader = findBeanLoader(commander);
         classRegistry.putIfAbsent(commander, loader);
         ParamValueLoader[] loaders = findMethodParamLoaders(method);
         methodRegistry.putIfAbsent(method, loaders);
         return CliContext.ParsingContextBuilder.finish();
+    }
+
+    public void preParseOptions(CliContext context) {
+        Method method = context.attribute(CliContext.ATTR_METHOD);
+        List<OptionLoader> optionLoaders = ensureOptionLoaders(method);
+        CommandLineParser commandLineParser = context.commandLine();
+        for (OptionLoader loader : optionLoaders) {
+            String bindName = loader.bindName;
+            String value = commandLineParser.getString(loader.lead1, loader.lead2);
+            if (S.notBlank(value)) {
+                if (loader.required) {
+                    context.parsingContext().foundRequired(loader.requiredGroup);
+                }
+                context.param(bindName, value);
+            }
+        }
+        context.parsingContext().raiseExceptionIfThereAreMissingOptions();
     }
 
     @Override
@@ -64,6 +93,56 @@ public class CliContextParamLoader extends ParamValueLoaderService {
 
     @Override
     protected String paramName(int i) {
-        return methodMetaInfo.param(i).name();
+        return methodMetaInfoHolder.get().param(i).name();
+    }
+
+    private List<OptionLoader> ensureOptionLoaders(Method method) {
+        List<OptionLoader> optionLoaders = optionLoaderRegistry.get(method);
+        if (null == optionLoaders) {
+            optionLoaders = findOptionLoaders(method);
+            optionLoaderRegistry.put(method, optionLoaders);
+        }
+        return optionLoaders;
+    }
+
+    private List<OptionLoader> findOptionLoaders(Method method) {
+        List<OptionLoader> optionLoaders = new ArrayList<>();
+
+        findFieldOptionLoaders(method.getDeclaringClass(), optionLoaders);
+        findParamOptionLoaders(method, optionLoaders);
+
+        return optionLoaders;
+    }
+
+    private void findFieldOptionLoaders(Class c, List<OptionLoader> optionLoaders) {
+        for (Field field : $.fieldsOf(c, true)) {
+            Type type = field.getGenericType();
+            Annotation[] annotations = field.getAnnotations();
+            String bindName = bindName(annotations, field.getName());
+            BeanSpec spec = BeanSpec.of(type, annotations, bindName, injector);
+            ParamValueLoader loader = findContextSpecificLoader(bindName, field.getDeclaringClass(), spec, type, annotations);
+            if (loader instanceof OptionLoader) {
+                optionLoaders.add((OptionLoader) loader);
+            }
+        }
+    }
+
+    private void findParamOptionLoaders(Method m, List<OptionLoader> optionLoaders) {
+        Type[] types = m.getGenericParameterTypes();
+        int len = types.length;
+        if (len == 0) {
+            return;
+        }
+        Annotation[][] allAnnotations = m.getParameterAnnotations();
+        for (int i = len - 1; i >= 0; --i) {
+            Type type = types[i];
+            Annotation[] annotations = allAnnotations[i];
+            BeanSpec spec = BeanSpec.of(type, annotations, null, injector);
+            String bindName = bindName(annotations, spec.name());
+            ParamValueLoader loader = findContextSpecificLoader(bindName, spec.rawType(), spec, type, annotations);
+            if (loader instanceof OptionLoader) {
+                optionLoaders.add((OptionLoader) loader);
+            }
+        }
     }
 }

@@ -64,6 +64,7 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
     BinderManager binderManager;
     DependencyInjector<?> injector;
     ConcurrentMap<Method, ParamValueLoader[]> methodRegistry = new ConcurrentHashMap<>();
+    ConcurrentMap<Class, Map<Field, ParamValueLoader>> fieldRegistry = new ConcurrentHashMap<>();
     ConcurrentMap<Class, ParamValueLoader> classRegistry = new ConcurrentHashMap<>();
     private ConcurrentMap<$.T2<Type, Annotation[]>, ParamValueLoader> paramRegistry = new ConcurrentHashMap<>();
     private ConcurrentMap<BeanSpec, Map<Class<? extends Annotation>, ActionMethodParamAnnotationHandler>> annoHandlers = new ConcurrentHashMap<>();
@@ -118,16 +119,7 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
 
     protected <T> ParamValueLoader findBeanLoader(Class<T> beanClass) {
         final Provider<T> provider = injector.getProvider(beanClass);
-        final Map<Field, ParamValueLoader> loaders = new HashMap<>();
-        for (Field field: $.fieldsOf(beanClass, true)) {
-            Type type = field.getGenericType();
-            Annotation[] annotations = field.getAnnotations();
-            BeanSpec spec = BeanSpec.of(type, annotations, field.getName(), injector);
-            ParamValueLoader loader = findLoader(spec, type, annotations);
-            if (null != loader && !(loader instanceof ProvidedValueLoader)) {
-                loaders.put(field, loader);
-            }
-        }
+        final Map<Field, ParamValueLoader> loaders = fieldLoaders(beanClass);
         final boolean hasField = !loaders.isEmpty();
         ParamValueLoader loader = new ParamValueLoader() {
             @Override
@@ -153,6 +145,24 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
             }
         };
         return decorate(loader, BeanSpec.of(beanClass, injector), beanClass.getDeclaredAnnotations(), false);
+    }
+
+    private <T> Map<Field, ParamValueLoader> fieldLoaders(Class<T> beanClass) {
+        Map<Field, ParamValueLoader> fieldLoaders = fieldRegistry.get(beanClass);
+        if (null == fieldLoaders) {
+            fieldLoaders = new HashMap<>();
+            for (Field field: $.fieldsOf(beanClass, true)) {
+                Type type = field.getGenericType();
+                Annotation[] annotations = field.getAnnotations();
+                BeanSpec spec = BeanSpec.of(type, annotations, field.getName(), injector);
+                ParamValueLoader loader = findLoader(spec, type, annotations);
+                if (null != loader && !(loader instanceof ProvidedValueLoader)) {
+                    fieldLoaders.put(field, loader);
+                }
+            }
+            fieldRegistry.putIfAbsent(beanClass, fieldLoaders);
+        }
+        return fieldLoaders;
     }
 
     protected ParamValueLoader[] findMethodParamLoaders(Method method) {

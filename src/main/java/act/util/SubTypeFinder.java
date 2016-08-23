@@ -8,10 +8,8 @@ import act.plugin.AppServicePlugin;
 import org.osgl.$;
 import org.osgl.logging.L;
 import org.osgl.logging.Logger;
-import org.osgl.mvc.annotation.GetAction;
 import org.osgl.util.E;
 
-import java.lang.annotation.Annotation;
 import java.util.EventObject;
 
 /**

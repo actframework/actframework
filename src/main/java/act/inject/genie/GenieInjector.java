@@ -2,11 +2,13 @@ package act.inject.genie;
 
 import act.Act;
 import act.app.App;
+import act.app.event.AppEvent;
 import act.app.event.AppEventId;
 import act.controller.ActionMethodParamAnnotationHandler;
 import act.inject.DependencyInjectionBinder;
 import act.inject.DependencyInjectorBase;
 import act.inject.ActProviders;
+import act.util.AnnotatedClassFinder;
 import act.util.SubClassFinder;
 import org.osgl.$;
 import org.osgl.Osgl;
@@ -15,6 +17,8 @@ import org.osgl.inject.Genie;
 import org.osgl.inject.InjectListener;
 import org.osgl.inject.Module;
 import org.osgl.inject.ScopeCache;
+import org.osgl.inject.annotation.AnnotatedWith;
+import org.osgl.inject.annotation.LoadValue;
 import org.osgl.inject.annotation.Provided;
 import org.osgl.mvc.annotation.Bind;
 import org.osgl.mvc.annotation.Param;
@@ -144,6 +148,13 @@ public class GenieInjector extends DependencyInjectorBase<GenieInjector> {
         App app = App.instance();
         GenieInjector genieInjector = app.injector();
         genieInjector.addModule($.newInstance(moduleClass));
+    }
+
+    @AnnotatedClassFinder(value = LoadValue.class)
+    public static void foundValueLoader(Class<? extends Annotation> valueLoader) {
+        App app = App.instance();
+        GenieInjector genieInjector = app.injector();
+        genieInjector.genie().registerInjectTag(valueLoader);
     }
 
 }

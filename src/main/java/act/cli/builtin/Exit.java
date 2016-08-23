@@ -4,19 +4,21 @@ import act.app.CliContext;
 import act.handler.CliHandlerBase;
 import org.osgl.$;
 import org.osgl.util.C;
-import org.osgl.util.E;
 
 import java.util.List;
 
 public class Exit extends CliHandlerBase {
 
     public static final Exit INSTANCE = new Exit();
+    public static final $.Break BREAK = new $.Break(true);
 
     private Exit() {}
 
     @Override
     public void handle(CliContext context) {
-        throw E.unsupport();
+        context.println("bye");
+        context.flush();
+        throw BREAK;
     }
 
     private Object readResolve() {

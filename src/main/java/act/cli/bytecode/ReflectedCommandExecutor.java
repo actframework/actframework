@@ -5,7 +5,6 @@ import act.app.CliContext;
 import act.cli.CommandExecutor;
 import act.cli.meta.CommandMethodMetaInfo;
 import act.cli.meta.CommandParamMetaInfo;
-import act.cli.meta.CommanderClassMetaInfo;
 import act.inject.param.CliContextParamLoader;
 import act.inject.param.ParamValueLoaderManager;
 import act.inject.param.ParamValueLoaderService;
@@ -14,6 +13,7 @@ import org.osgl.$;
 import org.osgl.util.E;
 
 import java.lang.reflect.Method;
+import java.util.Map;
 
 /**
  * Implement {@link act.cli.CommandExecutor} using
@@ -25,7 +25,7 @@ public class ReflectedCommandExecutor extends CommandExecutor {
 
     private CommandMethodMetaInfo methodMetaInfo;
     private App app;
-    private ParamValueLoaderService paramLoaderService;
+    private CliContextParamLoader paramLoaderService;
     private ClassLoader cl;
     private Class[] paramTypes;
     private Class<?> commanderClass;
@@ -59,13 +59,11 @@ public class ReflectedCommandExecutor extends CommandExecutor {
 
     @Override
     public Object execute(CliContext context) {
-        //List<FieldOptionAnnoInfo> list = classMetaInfo.fieldOptionAnnoInfoList(app.classLoader());
-        //Object cmd = commanderInstance(list, context);
-        //Object[] params = params(context);
+        context.attribute(CliContext.ATTR_METHOD, method);
         context.prepare(parsingContext);
+        paramLoaderService.preParseOptions(context);
         Object cmd = commanderInstance(context);
-        Object[] params = params2(context);
-        context.parsingContext().raiseExceptionIfThereAreMissingOptions();
+        Object[] params = params(context);
         return invoke(cmd, params);
     }
 
@@ -105,7 +103,7 @@ public class ReflectedCommandExecutor extends CommandExecutor {
         return ca;
     }
 
-    private Object[] params2(CliContext ctx) {
+    private Object[] params(CliContext ctx) {
         if (0 == paramCount) {
             return DUMP_PARAMS;
         }

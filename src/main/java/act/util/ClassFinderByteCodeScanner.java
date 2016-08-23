@@ -68,7 +68,6 @@ public class ClassFinderByteCodeScanner extends AppByteCodeScannerBase {
                     return new AnnotationVisitor(ASM5, av) {
 
                         ClassFinderData finder = new ClassFinderData();
-                        String what = SubClassFinder.DEF_VALUE;
 
                         @Override
                         public void visit(String name, Object value) {
@@ -86,10 +85,9 @@ public class ClassFinderByteCodeScanner extends AppByteCodeScannerBase {
 
                         @Override
                         public void visitEnd() {
-                            if (SubClassFinder.DEF_VALUE.equals(what)) {
-                                what = classNameFromMethodSignature();
+                            if (SUPER_TYPE == how && !finder.whatSpecified()) {
+                                finder.what(classNameFromMethodSignature());
                             }
-                            finder.what(what);
                             finder.how(how);
                             finder.callback(className, methodName, isStatic);
                             if (finder.isValid()) {

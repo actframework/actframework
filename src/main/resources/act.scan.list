@@ -1,3 +1,6 @@
 # Put package/class names that needs Act to scan. It can be regular expressions
 act\..*Admin
 act.inject.genie.GenieInjector
+act.app.SingletonFinder
+act.inject.genie.GenieInjector
+act.db.DbBind
