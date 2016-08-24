@@ -9,10 +9,7 @@ import act.util.ClassNode;
 import act.util.Jars;
 import org.osgl.$;
 import org.osgl.exception.UnexpectedException;
-import org.osgl.util.C;
-import org.osgl.util.E;
-import org.osgl.util.IO;
-import org.osgl.util.S;
+import org.osgl.util.*;
 
 import java.io.File;
 import java.lang.reflect.Modifier;
@@ -37,6 +34,7 @@ public class FullStackAppBootstrapClassLoader extends BootstrapClassLoader imple
     private Map<String, byte[]> libBC = C.newMap();
     private List<Class<?>> actClasses = C.newList();
     private List<Class<?>> pluginClasses = new ArrayList<>();
+    private String lineSeparator = OS.get().lineSeparator();
 
     public FullStackAppBootstrapClassLoader(ClassLoader parent) {
         super(parent);
@@ -134,7 +132,7 @@ public class FullStackAppBootstrapClassLoader extends BootstrapClassLoader imple
         }
         StringBuilder sb = S.builder();
         for (Class c : pluginClasses) {
-            sb.append(c.getName()).append("\n");
+            sb.append(c.getName()).append(lineSeparator);
         }
         sb.deleteCharAt(sb.length() - 1);
         saveToFile(".act.plugins", sb.toString());
@@ -142,7 +140,7 @@ public class FullStackAppBootstrapClassLoader extends BootstrapClassLoader imple
 
     private void saveToFile(String name, String content) {
         StringBuilder sb = S.builder("#").append(jarsChecksum);
-        sb.append("\n").append(content);
+        sb.append(lineSeparator).append(content);
         File file = new File(name);
         IO.writeContent(sb.toString(), file);
     }
@@ -152,7 +150,7 @@ public class FullStackAppBootstrapClassLoader extends BootstrapClassLoader imple
         if (list.isEmpty()) {
             return;
         }
-        String json = S.join("\n", list);
+        String json = S.join(lineSeparator, list);
         classInfoRepository = ClassInfoRepository.parseJSON(json);
     }
 
@@ -170,7 +168,7 @@ public class FullStackAppBootstrapClassLoader extends BootstrapClassLoader imple
         File file = new File(name);
         if (file.canRead()) {
             String content = IO.readContentAsString(file);
-            String[] sa = content.split("\n");
+            String[] sa = content.split(lineSeparator);
             long fileChecksum = Long.parseLong(sa[0].substring(1));
             if (jarsChecksum.equals(fileChecksum)) {
                 return C.listOf(sa).drop(1);

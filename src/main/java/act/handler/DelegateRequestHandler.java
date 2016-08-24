@@ -1,6 +1,7 @@
 package act.handler;
 
 import act.app.ActionContext;
+import act.util.CORS;
 import org.osgl.util.E;
 
 /**
@@ -30,6 +31,11 @@ public class DelegateRequestHandler extends RequestHandlerBase {
 
     protected RequestHandler handler() {
         return handler_;
+    }
+
+    @Override
+    public CORS.Handler corsHandler() {
+        return handler_.corsHandler();
     }
 
     @Override

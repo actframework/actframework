@@ -2,6 +2,7 @@ package act.handler.builtin.controller;
 
 import act.app.ActionContext;
 import act.plugin.Plugin;
+import act.util.CORS;
 import org.osgl.mvc.result.Result;
 import org.osgl.util.C;
 
@@ -44,6 +45,11 @@ public abstract class ExceptionInterceptor
             }
         }
         return null;
+    }
+
+    @Override
+    public CORS.Handler corsHandler() {
+        return CORS.Handler.DUMB;
     }
 
     protected abstract Result internalHandle(Exception e, ActionContext actionContext) throws Exception;

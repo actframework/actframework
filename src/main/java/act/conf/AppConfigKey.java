@@ -32,6 +32,74 @@ import java.util.Map;
 public enum AppConfigKey implements ConfigKey {
 
     /**
+     * {@code act.cors.enabled} turn on/off CORS in Act application
+     *
+     * Default value: `false`
+     */
+    CORS("cors.enabled"),
+
+    /**
+     * {@code act.cors.origin} specifies `Access-Control-Allow-Origin` header
+     * to be output
+     *
+     * Default value: `*`
+     */
+    CORS_ORIGIN("cors.origin"),
+
+    /**
+     * {@code act.cors.methods} specifies `Access-Control-Allow-Methods` header
+     *
+     * Default value: `GET, OPTION, POST`
+     */
+    CORS_METHODS("cors.methods"),
+
+    /**
+     * {@code act.cors.headers} specifies both `Access-Control-Expose-Headers`
+     * and `Access-Control-Allow-Headers`
+     *
+     * Default value: `Content-Type, X-HTTP-Method-Override`
+     */
+    CORS_HEADERS("cors.headers"),
+
+    /**
+     * {@code act.cors.headers.expose} specify `Access-Control-Expose-Headers`.
+     * Note this setting will overwrite the setting of {@link #CORS_HEADERS} if
+     * it is set
+     *
+     * Default value: empty
+     */
+    CORS_HEADERS_EXPOSE("cors.headers.expose"),
+
+    /**
+     * {@code act.cors.headers.expose} specify `Access-Control-Allow-Headers`.
+     * Note this setting will overwrite the setting of {@link #CORS_HEADERS} if
+     * it is set
+     *
+     * Default value: empty
+     */
+    CORS_HEADERS_ALLOWED("cors.headers.allowed"),
+
+    /**
+     * {@code act.cors.max_age} specifies `Access-Control-Max-Age`.
+     *
+     * Default value: 30*60 (seconds)
+     */
+    CORS_MAX_AGE("cors.max_age"),
+
+    /**
+     * {@code act.csrf} turn on/off global CSRF protect
+     *
+     * Default value: `false`
+     */
+    CSRF("csrf"),
+
+    /**
+     * {@code act.csf.param_name} specifies the http request param name
+     * used to convey the csrf token
+     */
+    CSRF_PARAM_NAME("csf.param_name"),
+
+    /**
      * {@code act.cli.port} specifies the default cli (telnet) port the application
      * listen to.
      * <p>Default value: {@code 5461}</p>

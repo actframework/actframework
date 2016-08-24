@@ -41,7 +41,7 @@ public class EndpointTester extends TestBase {
 
     @BeforeClass
     public static void bootup() throws Exception {
-        if (ping()) {
+        if (true) {
             return;
         }
         process = new ProcessBuilder(
@@ -130,6 +130,18 @@ public class EndpointTester extends TestBase {
     protected ReqBuilder url(String pathTmpl, Object ... args) {
         reqBuilder = new ReqBuilder(pathTmpl, args);
         return reqBuilder;
+    }
+
+    protected void assertNoHeader(String header) throws IOException {
+        assertNull(resp().header(header));
+    }
+
+    protected void checkHeader(String header, String expected) throws IOException {
+        checkHeaderStr(expected, resp().header(header));
+    }
+
+    private void checkHeaderStr(String s1, String s0) {
+        eq(C.setOf(S.string(s1).split("[,\\s+]")), C.setOf(S.string(s0).split("[,\\s+]")));
     }
 
     protected void bodyContains(String s) throws IOException {
@@ -286,9 +298,17 @@ public class EndpointTester extends TestBase {
             return method(H.Method.DELETE);
         }
 
+        public ReqBuilder options() {
+            return method(H.Method.OPTIONS);
+        }
+
         public ReqBuilder method(H.Method method) {
             this.method = method;
             return this;
+        }
+
+        public H.Method method() {
+            return this.method;
         }
 
         public ReqBuilder format(H.Format format) {
@@ -376,6 +396,8 @@ public class EndpointTester extends TestBase {
                     return builder.delete(body());
                 case PATCH:
                     return builder.patch(body());
+                case OPTIONS:
+                    return builder.method("OPTIONS", null);
                 default:
                     return builder;
             }

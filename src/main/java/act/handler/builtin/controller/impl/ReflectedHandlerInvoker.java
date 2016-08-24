@@ -12,6 +12,7 @@ import act.inject.param.JsonDTO;
 import act.inject.param.JsonDTOClassManager;
 import act.inject.param.ParamValueLoaderManager;
 import act.inject.param.ParamValueLoaderService;
+import act.util.CORS;
 import act.util.DestroyableBase;
 import act.view.Template;
 import act.view.TemplatePathResolver;
@@ -58,6 +59,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
     private final boolean sessionFree;
     private List<BeanSpec> paramSpecs;
     private Set<String> pathVariables;
+    private CORS.Handler corsHandler;
 
     private ReflectedHandlerInvoker(M handlerMetaInfo, App app) {
         this.cl = app.classLoader();
@@ -89,6 +91,9 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         if (fieldsAndParamsCount == 1) {
             singleJsonFieldName = paramSpecs.get(0).name();
         }
+
+        CORS.Handler corsHandler = CORS.handler(method).chain(CORS.handler(controllerClass));
+        this.corsHandler = corsHandler;
     }
 
     @Override
@@ -121,7 +126,11 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         ensureJsonDTOGenerated(actionContext);
         Object ctrl = controllerInstance(actionContext);
         Object[] params = params(actionContext);
-        return invoke(handler, actionContext, ctrl, params);
+        try {
+            return invoke(handler, actionContext, ctrl, params);
+        } finally {
+            corsHandler.apply(actionContext);
+        }
     }
 
     @Override
@@ -139,6 +148,10 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
     @Override
     public boolean sessionFree() {
         return sessionFree;
+    }
+
+    public CORS.Handler corsHandler() {
+        return corsHandler;
     }
 
     private void ensureJsonDTOGenerated(ActionContext context) {
@@ -347,6 +360,11 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         }
 
         @Override
+        public CORS.Handler corsHandler() {
+            return invoker.corsHandler();
+        }
+
+        @Override
         protected void releaseResources() {
             invoker.destroy();
             invoker = null;
@@ -365,6 +383,11 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         @Override
         public Result handle(Result result, ActionContext actionContext) throws Exception {
             return invoker.handle(result, actionContext);
+        }
+
+        @Override
+        public CORS.Handler corsHandler() {
+            return invoker.corsHandler();
         }
 
         @Override
@@ -401,7 +424,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         @SuppressWarnings("unchecked")
         private static List<Class<? extends Exception>> exceptionClassesOf(CatchMethodMetaInfo metaInfo) {
             List<String> classNames = metaInfo.exceptionClasses();
-            List<Class<? extends Exception>> clsList = C.newSizedList(classNames.size());
+            List<Class<? extends Exception>> clsList;
             clsList = C.newSizedList(classNames.size());
             AppClassLoader cl = App.instance().classLoader();
             for (String cn : classNames) {
@@ -431,6 +454,11 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         }
 
         @Override
+        public CORS.Handler corsHandler() {
+            return invoker.corsHandler();
+        }
+
+        @Override
         protected void releaseResources() {
             invoker.destroy();
             invoker = null;
@@ -449,6 +477,11 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         @Override
         public void handle(ActionContext actionContext) throws Exception {
             invoker.handle(actionContext);
+        }
+
+        @Override
+        public CORS.Handler corsHandler() {
+            return invoker.corsHandler();
         }
 
         @Override

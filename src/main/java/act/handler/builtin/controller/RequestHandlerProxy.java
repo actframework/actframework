@@ -11,6 +11,7 @@ import act.controller.meta.ControllerClassMetaInfo;
 import act.controller.meta.InterceptorMethodMetaInfo;
 import act.handler.RequestHandlerBase;
 import act.handler.event.BeforeCommit;
+import act.util.CORS;
 import act.view.ActServerError;
 import act.view.RenderAny;
 import org.osgl.cache.CacheService;
@@ -353,6 +354,11 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
         }
     }
 
+    @Override
+    public CORS.Handler corsHandler() {
+        ensureAgentsReady();
+        return actionHandler.corsHandler();
+    }
 
     private Result handleBefore(ActionContext actionContext) throws Exception {
         Result r = GLOBAL_BEFORE_INTERCEPTOR.apply(actionContext);
@@ -395,11 +401,6 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
             r = GLOBAL_EXCEPTION_INTERCEPTOR.apply(ex, actionContext);
         }
         return r;
-    }
-
-    private ActionMethodMetaInfo lookupAction() {
-        ControllerClassMetaInfo ctrl = app.classLoader().controllerClassMetaInfo(controllerClassName);
-        return ctrl.action(actionMethodName);
     }
 
     @Override

@@ -1,5 +1,6 @@
 package act.app.conf;
 
+import act.app.event.AppEventId;
 import act.conf.AppConfig;
 import act.route.RouteSource;
 import act.route.Router;
@@ -10,8 +11,7 @@ import org.osgl.util.*;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Base class for app developer implement source code based configuration
@@ -62,6 +62,10 @@ public abstract class AppConfigurator<T extends AppConfigurator> extends AppConf
         return me();
     }
 
+    protected CorsSetting cors() {
+        return new CorsSetting(this);
+    }
+
     protected RouteBuilder route(String path) {
         return new RouteBuilder(this).map(path);
     }
@@ -98,6 +102,97 @@ public abstract class AppConfigurator<T extends AppConfigurator> extends AppConf
 
     protected void releaseAppConfigResources() {}
 
+    protected static class CorsSetting {
+        private AppConfigurator conf;
+        private boolean enabled;
+        private String allowOrigin;
+        private int maxAge;
+        private List<String> methods = new ArrayList<>();
+        private List<String> headersBoth = new ArrayList<>();
+        private List<String> headersAllowed = new ArrayList<>();
+        private List<String> headersExpose = new ArrayList<>();
+
+        CorsSetting(AppConfigurator conf) {
+            this.conf = conf;
+            this.enabled = true;
+            conf.app().jobManager().on(AppEventId.CONFIG_PREMERGE, new Runnable() {
+                @Override
+                public void run() {
+                    checkAndCommit();
+                }
+            });
+        }
+
+        public CorsSetting enable() {
+            enabled = true;
+            return this;
+        }
+
+        public CorsSetting disable() {
+            enabled = false;
+            return this;
+        }
+
+        public CorsSetting allowOrigin(String allowOrigin) {
+            E.illegalArgumentIf(S.blank(allowOrigin), "allow origin cannot be empty");
+            this.allowOrigin = allowOrigin;
+            return this;
+        }
+
+        public CorsSetting allowMethods(String ... methods) {
+            this.methods.addAll(C.listOf(methods));
+            return this;
+        }
+
+        public CorsSetting maxAge(int maxAge) {
+            E.illegalArgumentIf(maxAge < 0);
+            this.maxAge = maxAge;
+            return this;
+        }
+
+        public CorsSetting allowHeaders(String ... headers) {
+            headersAllowed.addAll(C.listOf(headers));
+            return this;
+        }
+
+        public CorsSetting exposeHeaders(String ... headers) {
+            headersExpose.addAll(C.listOf(headers));
+            return this;
+        }
+
+        public CorsSetting allowAndExposeHeaders(String ... headers) {
+            headersBoth.addAll(C.listOf(headers));
+            return this;
+        }
+
+        private void checkAndCommit() {
+            if (!enabled) {
+                logger.info("Global CORS is disabled");
+                conf.enableCors(false);
+                return;
+            }
+            logger.info("Global CORS is enabled");
+            conf.enableCors(true);
+            conf.corsAllowOrigin(allowOrigin);
+            conf.corsHeaders(consolidate(headersBoth));
+            conf.corsAllowHeaders(consolidate(headersAllowed));
+            conf.corsHeadersExpose(consolidate(headersExpose));
+            conf.corsAllowMethods(consolidate(methods));
+            conf.corsMaxAge(maxAge);
+        }
+
+        private String consolidate(List<String> stringList) {
+            if (stringList.isEmpty()) {
+                return null;
+            }
+            Set<String> set = new HashSet<>();
+            for (String s : stringList) {
+                set.addAll(C.listOf(s.split(",")));
+            }
+            return S.join(", ", set);
+        }
+    }
+
     protected static class RouteBuilder {
 
         private AppConfigurator conf;
@@ -105,7 +200,6 @@ public abstract class AppConfigurator<T extends AppConfigurator> extends AppConf
         private C.List<H.Method> methods = C.newListOf(Router.supportedHttpMethods());
         private String path;
         private String action;
-        private Class<?> controller;
         RouteBuilder(AppConfigurator config) {
             router = config.app().router();
             E.illegalStateIf(null == router);

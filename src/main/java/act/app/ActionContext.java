@@ -2,16 +2,17 @@ package act.app;
 
 import act.Act;
 import act.Destroyable;
+import act.conf.AppConfig;
 import act.data.MapUtil;
 import act.data.RequestBodyParser;
 import act.event.ActEvent;
+import act.event.ActEventListenerBase;
 import act.event.EventBus;
+import act.event.OnceEventListenerBase;
 import act.handler.RequestHandler;
+import act.handler.event.BeforeCommit;
 import act.route.Router;
 import act.util.ActContext;
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
 import org.osgl.$;
 import org.osgl.concurrent.ContextLocal;
 import org.osgl.http.H;
@@ -20,13 +21,14 @@ import org.osgl.storage.ISObject;
 import org.osgl.util.C;
 import org.osgl.util.E;
 import org.osgl.util.S;
-import org.osgl.util.Str;
 import org.osgl.web.util.UserAgent;
 
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
 import javax.validation.ConstraintViolation;
 import java.util.*;
+
+import static org.osgl.http.H.Header.Names.*;
 
 /**
  * {@code AppContext} encapsulate contextual properties needed by
@@ -58,6 +60,7 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Act
     private Router router;
     private RequestHandler handler;
     private UserAgent ua;
+    private boolean disableCors;
 
     @Inject
     private ActionContext(App app, H.Request request, H.Response response) {
@@ -68,6 +71,13 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Act
         this._init();
         this.state = State.CREATED;
         this.saveLocal();
+        app.eventBus().once(BeforeCommit.class, new OnceEventListenerBase() {
+            @Override
+            public boolean tryHandle(EventObject event) throws Exception {
+                applyGlobalCorsSetting();
+                return true;
+            }
+        });
     }
 
     public State state() {
@@ -263,6 +273,28 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Act
     public ActionContext addUpload(String name, ISObject sobj) {
         uploads.put(name, sobj);
         return this;
+    }
+
+    public void disableCORS() {
+        this.disableCors = true;
+    }
+
+    public void applyGlobalCorsSetting() {
+        if (this.disableCors) {
+            return;
+        }
+        AppConfig conf = config();
+        if (!conf.corsEnabled()) {
+            return;
+        }
+        H.Response r = resp();
+        r.addHeaderIfNotAdded(ACCESS_CONTROL_ALLOW_ORIGIN, conf.corsAllowOrigin());
+        if (request.method() == H.Method.OPTIONS) {
+            r.addHeaderIfNotAdded(ACCESS_CONTROL_ALLOW_HEADERS, conf.corsAllowHeaders());
+            r.addHeaderIfNotAdded(ACCESS_CONTROL_ALLOW_METHODS, conf.corsAllowMethods());
+            r.addHeaderIfNotAdded(ACCESS_CONTROL_EXPOSE_HEADERS, conf.corsExposeHeaders());
+            r.addHeaderIfNotAdded(ACCESS_CONTROL_MAX_AGE, S.string(conf.corsMaxAge()));
+        }
     }
 
     /**

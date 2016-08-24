@@ -85,9 +85,13 @@ public class NetworkHandler extends DestroyableBase implements  $.Func1<ActionCo
                 }
             }
             timer = metric.startTimer(MetricInfo.ROUTING);
-            RequestHandler rh = router().getInvoker(method, url, ctx);
-            timer.stop();
-            ctx.handler(rh);
+            RequestHandler rh;
+            try {
+                rh = router().getInvoker(method, url, ctx);
+                ctx.handler(rh);
+            } finally {
+                timer.stop();
+            }
             timer = metric.startTimer(S.builder(MetricInfo.HTTP_HANDLER).append(":").append(rh).toString());
             rh.handle(ctx);
         } catch (Result r) {

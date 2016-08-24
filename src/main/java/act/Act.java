@@ -18,6 +18,7 @@ import act.event.ActEventListener;
 import act.event.EventBus;
 import act.handler.builtin.controller.*;
 import act.handler.builtin.controller.impl.ReflectedHandlerInvoker;
+import act.inject.DependencyInjector;
 import act.job.AppJobManager;
 import act.metric.MetricPlugin;
 import act.metric.SimpleMetricPlugin;
@@ -397,6 +398,15 @@ public final class Act {
      */
     public static AppJobManager jobManager() {
         return App.instance().jobManager();
+    }
+
+    /**
+     * Returns the {@link App app}'s {@link DependencyInjector}
+     * @param <DI> the generic type of injector
+     * @return the app's injector
+     */
+    public static <DI extends DependencyInjector> DI injector() {
+        return App.instance().injector();
     }
 
     /**

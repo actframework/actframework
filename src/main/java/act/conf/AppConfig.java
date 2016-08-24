@@ -6,6 +6,7 @@ import act.app.ActionContext;
 import act.app.App;
 import act.app.AppHolder;
 import act.app.conf.AppConfigurator;
+import act.app.event.AppEventId;
 import act.app.util.NamedPort;
 import act.db.util.SequenceNumberGenerator;
 import act.db.util._SequenceNumberGenerator;
@@ -84,6 +85,224 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         return configurator;
     }
 
+    private Boolean cors;
+
+    protected T enableCors(boolean b) {
+        this.cors = b;
+        return me();
+    }
+
+    public boolean corsEnabled() {
+        if (null == cors) {
+            Boolean B = get(CORS);
+            if (null == B) {
+                B = false;
+            }
+            this.cors = B;
+        }
+        return this.cors;
+    }
+
+    private void _mergeCors(AppConfig conf) {
+        if (null == get(CORS)) {
+            this.cors = conf.cors;
+        }
+    }
+
+    private String corsOrigin;
+
+    protected T corsAllowOrigin(String s) {
+        this.corsOrigin = s;
+        return me();
+    }
+
+    public String corsAllowOrigin() {
+        if (null == corsOrigin) {
+            String s = get(CORS_ORIGIN);
+            if (S.blank(s)) {
+                s = "*";
+            }
+            corsOrigin = s;
+        }
+        return corsOrigin;
+    }
+
+    private void _mergeCorsOrigin(AppConfig conf) {
+        if (null == get(CORS_ORIGIN)) {
+            corsOrigin = conf.corsOrigin;
+        }
+    }
+
+    private String corsMethods;
+
+    protected T corsAllowMethods(String s) {
+        this.corsMethods = s;
+        return me();
+    }
+
+    public String corsAllowMethods() {
+        if (null == this.corsMethods) {
+            String s = get(CORS_METHODS);
+            if (null == s) {
+                s = "GET, OPTION, POST";
+            }
+            this.corsMethods = s;
+        }
+        return this.corsMethods;
+    }
+
+    private void _mergeCorsMethods(AppConfig conf) {
+        if (null == get(CORS_METHODS)) {
+            corsMethods = conf.corsMethods;
+        }
+    }
+
+    private String corsHeaders;
+
+    protected T corsHeaders(String s) {
+        this.corsHeaders = s;
+        return me();
+    }
+
+    private String corsHeaders() {
+        if (null == corsHeaders) {
+            String s = get(CORS_HEADERS);
+            if (null == s) {
+                s = "Content-Type, X-HTTP-Method-Override";
+            }
+            corsHeaders = s;
+        }
+        return corsHeaders;
+    }
+
+    private void _mergeCorsHeaders(AppConfig conf) {
+        if (null == get(CORS_HEADERS)) {
+            corsHeaders = conf.corsHeaders;
+        }
+    }
+
+    private String corsHeadersExpose;
+
+    protected T corsHeadersExpose(String s) {
+        this.corsHeadersExpose = s;
+        return me();
+    }
+
+    public String corsExposeHeaders() {
+        if (null == corsHeadersExpose) {
+            String s = get(CORS_HEADERS_EXPOSE);
+            if (null == s) {
+                s = corsHeaders();
+            }
+            corsHeadersExpose = s;
+        }
+        return corsHeadersExpose;
+    }
+
+    private void _mergeCorsHeadersExpose(AppConfig conf) {
+        if (null == get(CORS_HEADERS_EXPOSE)) {
+            corsHeadersExpose = conf.corsHeadersExpose;
+        }
+    }
+
+    private String corsHeadersAllowed;
+
+    protected T corsAllowHeaders(String s) {
+        this.corsHeadersExpose = s;
+        return me();
+    }
+
+    public String corsAllowHeaders() {
+        if (null == corsHeadersAllowed) {
+            String s = get(CORS_HEADERS_ALLOWED);
+            if (null == s) {
+                s = corsHeaders();
+            }
+            corsHeadersAllowed = s;
+        }
+        return corsHeadersAllowed;
+    }
+
+    private void _mergeCorsHeadersAllowed(AppConfig conf) {
+        if (null == get(CORS_HEADERS_EXPOSE)) {
+            corsHeadersAllowed = conf.corsHeadersAllowed;
+        }
+    }
+
+
+    private Integer corsMaxAge;
+
+    protected T corsMaxAge(int corsMaxAge) {
+        this.corsMaxAge = corsMaxAge;
+        return me();
+    }
+
+    public int corsMaxAge() {
+        if (null == corsMaxAge) {
+            Integer I = get(CORS_MAX_AGE);
+            if (null == I) {
+                I = 30 * 60;
+            }
+            corsMaxAge = I;
+        }
+        return corsMaxAge;
+    }
+
+    private void _mergeCorsMaxAge(AppConfig conf) {
+        if (null == get(CORS_MAX_AGE)) {
+            corsMaxAge = conf.corsMaxAge;
+        }
+    }
+
+
+    private Boolean csrf;
+
+    protected T enableCsrf(boolean b) {
+        this.csrf = b;
+        return me();
+    }
+
+    public boolean csrfEnabled() {
+        if (null == csrf) {
+            Boolean B = get(CSRF);
+            if (null == B) {
+                B = false;
+            }
+            this.csrf = B;
+        }
+        return this.csrf;
+    }
+
+    private void _mergeCsrf(AppConfig conf) {
+        if (null == get(CSRF)) {
+            this.csrf = conf.csrf;
+        }
+    }
+
+    private String csrfParamName;
+
+    protected T csrfParamName(String s) {
+        this.csrfParamName = s;
+        return me();
+    }
+
+    public String csrfParamName() {
+        if (null == csrfParamName) {
+            String s = get(CSRF_PARAM_NAME);
+            if (S.blank(s)) {
+                s = "*";
+            }
+            csrfParamName = s;
+        }
+        return csrfParamName;
+    }
+
+    private void _mergeCsrfParamName(AppConfig conf) {
+        if (null == get(CSRF_PARAM_NAME)) {
+            csrfParamName = conf.csrfParamName;
+        }
+    }
+    
     private int cliTablePageSz = -1;
 
     protected T cliTablePageSz(int sz) {
@@ -1322,7 +1541,6 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         }
     }
 
-
     public boolean possibleControllerClass(String className) {
         return controllerNameTester().test(className);
     }
@@ -1417,14 +1635,24 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
      * @param conf the application configurator
      */
     public void _merge(AppConfigurator conf) {
+        app.eventBus().trigger(AppEventId.CONFIG_PREMERGE);
         if (mergeTracker.contains(conf)) {
             return;
         }
         mergeTracker.add(conf);
+        _mergeCors(conf);
+        _mergeCorsOrigin(conf);
+        _mergeCorsMethods(conf);
+        _mergeCorsHeaders(conf);
+        _mergeCorsHeadersExpose(conf);
+        _mergeCorsHeadersAllowed(conf);
+        _mergeCorsMaxAge(conf);
         _mergeCliJSONPageSz(conf);
         _mergeCliTablePageSz(conf);
         _mergeCliPort(conf);
         _mergeCliSessionExpiration(conf);
+        _mergeCsrf(conf);
+        _mergeCsrfParamName(conf);
         _mergeMaxCliSession(conf);
         _mergeUrlContext(conf);
         _mergeXForwardedProtocol(conf);

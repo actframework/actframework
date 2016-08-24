@@ -4,6 +4,7 @@ import act.app.ActionContext;
 import act.app.App;
 import act.app.SingletonRegistry;
 import act.conf.AppConfig;
+import act.event.EventBus;
 import act.job.AppJobManager;
 import act.metric.SimpleMetricPlugin;
 import act.route.Router;
@@ -98,6 +99,7 @@ public class TestBase extends Assert {
     protected AppJobManager mockJobManager;
     protected SingletonRegistry mockSingletonRegistry;
     protected App mockApp;
+    protected EventBus mockEventBus;
     protected H.Request mockReq;
     protected H.Response mockResp;
 
@@ -111,6 +113,8 @@ public class TestBase extends Assert {
         //when(mockApp.singletonRegistry()).thenReturn(mockSingletonRegistry);
         mockJobManager = mock(AppJobManager.class);
         when(mockApp.jobManager()).thenReturn(mockJobManager);
+        mockEventBus = mock(EventBus.class);
+        when(mockApp.eventBus()).thenReturn(mockEventBus);
         mockAppConfig = mock(AppConfig.class);
         when(mockAppConfig.possibleControllerClass(argThat(new StartsWith("testapp.controller.")))).thenReturn(true);
         mockActionContext = mock(ActionContext.class);

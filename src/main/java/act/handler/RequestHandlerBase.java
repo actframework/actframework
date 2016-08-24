@@ -1,6 +1,7 @@
 package act.handler;
 
 import act.app.ActionContext;
+import act.util.CORS;
 import org.osgl.$;
 import org.osgl.exception.NotAppliedException;
 
@@ -34,6 +35,11 @@ public abstract class RequestHandlerBase extends $.F1<ActionContext, Void> imple
 
     public RequestHandlerBase realHandler() {
         return this;
+    }
+
+    @Override
+    public CORS.Handler corsHandler() {
+        return CORS.Handler.DUMB;
     }
 
     @Override

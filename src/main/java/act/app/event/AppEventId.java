@@ -15,6 +15,12 @@ public enum AppEventId {
             return new AppConfigLoaded(app);
         }
     },
+    CONFIG_PREMERGE() {
+        @Override
+        public AppEvent of(App app) {
+            return new AppConfigPreMerge(app);
+        }
+    },
     DB_SVC_LOADED () {
         @Override
         public AppEvent of(App app) {

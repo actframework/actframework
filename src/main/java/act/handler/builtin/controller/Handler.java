@@ -1,5 +1,6 @@
 package act.handler.builtin.controller;
 
+import act.util.CORS;
 import act.util.DestroyableBase;
 import org.osgl.$;
 
@@ -48,4 +49,6 @@ public abstract class Handler<T extends Handler> extends DestroyableBase impleme
     @Override
     protected void releaseResources() {
     }
+
+    public abstract CORS.Handler corsHandler();
 }

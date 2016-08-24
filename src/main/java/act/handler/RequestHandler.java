@@ -3,6 +3,7 @@ package act.handler;
 import act.Destroyable;
 import act.app.ActionContext;
 import act.handler.builtin.StaticFileGetter;
+import act.util.CORS;
 import org.osgl.$;
 
 /**
@@ -55,5 +56,11 @@ public interface RequestHandler extends $.Function<ActionContext, Void>, Destroy
      * @return `true` if the handler is session free
      */
     boolean sessionFree();
+
+    /**
+     * Get CORS handler that specifically applied to this request handler
+     * @return the CORS handler or `null` if no CORS handler for this request handler
+     */
+    CORS.Handler corsHandler();
 
 }

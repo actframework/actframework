@@ -1,6 +1,7 @@
 package act.handler.builtin.controller;
 
 import act.app.ActionContext;
+import act.util.CORS;
 import org.osgl.mvc.result.Result;
 
 /**
@@ -18,6 +19,11 @@ public class ControllerAction extends ActionHandler<ControllerAction> {
     @Override
     public Result handle(ActionContext actionContext) throws Exception {
         return handlerInvoker.handle(actionContext);
+    }
+
+    @Override
+    public CORS.Handler corsHandler() {
+        return handlerInvoker.corsHandler();
     }
 
     @Override

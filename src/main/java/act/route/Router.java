@@ -25,7 +25,6 @@ import org.osgl.mvc.result.Result;
 import org.osgl.util.*;
 
 import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
 import java.io.File;
 import java.io.PrintStream;
 import java.io.Serializable;
@@ -52,6 +51,7 @@ public class Router extends AppServiceBase<Router> {
     private C.Set<String> actionNames = C.newSet();
     private AppConfig appConfig;
     private String portId;
+    private OptionsInfoBase optionHandlerFactory;
 
     private void initControllerLookup(RequestHandlerResolver lookup) {
         if (null == lookup) {
@@ -83,6 +83,7 @@ public class Router extends AppServiceBase<Router> {
         initControllerLookup(handlerLookup);
         this.appConfig = app.config();
         this.portId = portId;
+        this.optionHandlerFactory = new OptionsInfoBase(this);
     }
 
     @Override
@@ -102,6 +103,9 @@ public class Router extends AppServiceBase<Router> {
 
     // --- routing ---
     public RequestHandler getInvoker(H.Method method, CharSequence path, ActionContext context) {
+        if (method == H.Method.OPTIONS) {
+            return optionHandlerFactory.optionHandler(path, context);
+        }
         if (Arrays.binarySearch(targetMethods, method) < 0) {
             return UnknownHttpMethodHandler.INSTANCE;
         }
@@ -120,10 +124,15 @@ public class Router extends AppServiceBase<Router> {
                 node = node.dynamicChild;
                 if (null != node.pattern) {
                     if (node.pattern.matcher("").matches()) {
+                        if (null == node.handler) {
+                            throw notFound();
+                        }
                         return node.handler;
                     } else {
                         throw notFound();
                     }
+                } else if (null == node.handler) {
+                    throw notFound();
                 } else {
                     return node.handler;
                 }

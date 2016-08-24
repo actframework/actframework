@@ -18,7 +18,8 @@ public class ActionContextTest extends TestBase {
     protected ActionContext ctx;
 
     @Before
-    public void prepare() {
+    public void prepare() throws Exception {
+        setup();
         H.Request req = mock(H.Request.class);
         when(req.paramNames()).thenReturn(C.list("foo", "bar"));
         when(req.paramVal("foo")).thenReturn("FOO");
@@ -27,7 +28,7 @@ public class ActionContextTest extends TestBase {
         when(req.paramVals("bar")).thenReturn(new String[]{"BAR", "bar"});
 
         H.Response resp = mock(H.Response.class);
-        ctx = ActionContext.create(mock(App.class), req, resp);
+        ctx = ActionContext.create(mockApp, req, resp);
     }
 
     @Test
