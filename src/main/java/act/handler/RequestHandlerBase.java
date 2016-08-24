@@ -38,8 +38,8 @@ public abstract class RequestHandlerBase extends $.F1<ActionContext, Void> imple
     }
 
     @Override
-    public CORS.Handler corsHandler() {
-        return CORS.Handler.DUMB;
+    public CORS.Spec corsHandler() {
+        return CORS.Spec.DUMB;
     }
 
     @Override

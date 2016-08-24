@@ -6,21 +6,22 @@ import act.handler.event.BeforeCommit;
 import act.util.CORS;
 import org.osgl.mvc.result.Ok;
 
-public class OptionHandler extends FastRequestHandler {
-    private CORS.Handler corsHandler;
+public class OptionsRequestHandler extends FastRequestHandler {
 
-    public OptionHandler(CORS.Handler corsHandler) {
-        this.corsHandler = corsHandler;
+    private CORS.Spec corsSpec;
+
+    public OptionsRequestHandler(CORS.Spec corsSpec) {
+        this.corsSpec = corsSpec;
     }
 
     @Override
-    public CORS.Handler corsHandler() {
+    public CORS.Spec corsHandler() {
         return this.corsHandler();
     }
 
     @Override
     public void handle(ActionContext context) {
-        corsHandler.apply(context);
+        corsSpec.applyTo(context);
         context.app().eventBus().trigger(new BeforeCommit(Ok.INSTANCE, context));
     }
 }

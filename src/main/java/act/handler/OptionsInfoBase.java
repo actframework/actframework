@@ -39,7 +39,7 @@ public class OptionsInfoBase {
             return UnknownHttpMethodHandler.INSTANCE;
         }
         C.List<H.Method> allowMethods = C.newList();
-        C.List<CORS.Handler> corsHandlers = C.newList();
+        C.List<CORS.Spec> corsSpecs = C.newList();
         for (H.Method method: router.supportedHttpMethods()) {
             RequestHandler handler;
             try {
@@ -48,16 +48,16 @@ public class OptionsInfoBase {
                 continue;
             }
             allowMethods.add(method);
-            CORS.Handler corsHandler = handler.corsHandler();
-            if (corsHandler != CORS.Handler.DUMB) {
-                corsHandlers.add(corsHandler);
+            CORS.Spec corsSpec = handler.corsHandler();
+            if (corsSpec != CORS.Spec.DUMB) {
+                corsSpecs.add(corsSpec);
             }
         }
-        CORS.Handler corsHandler0 = CORS.handler(allowMethods);
-        for (CORS.Handler handler: corsHandlers) {
-            corsHandler0 = corsHandler0.chain(handler);
+        CORS.Spec corsSpec = CORS.spec(allowMethods);
+        for (CORS.Spec spec : corsSpecs) {
+            corsSpec = corsSpec.chain(spec);
         }
-        return new OptionHandler(corsHandler0);
+        return new OptionsRequestHandler(corsSpec);
     }
 
 }

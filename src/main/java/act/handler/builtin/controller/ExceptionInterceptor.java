@@ -48,8 +48,8 @@ public abstract class ExceptionInterceptor
     }
 
     @Override
-    public CORS.Handler corsHandler() {
-        return CORS.Handler.DUMB;
+    public CORS.Spec corsHandler() {
+        return CORS.Spec.DUMB;
     }
 
     protected abstract Result internalHandle(Exception e, ActionContext actionContext) throws Exception;

@@ -22,7 +22,7 @@ public class ControllerAction extends ActionHandler<ControllerAction> {
     }
 
     @Override
-    public CORS.Handler corsHandler() {
+    public CORS.Spec corsHandler() {
         return handlerInvoker.corsHandler();
     }
 

@@ -10,6 +10,6 @@ public interface AfterInterceptorInvoker extends Prioritised, Destroyable {
     Result handle(Result result, ActionContext actionContext) throws Exception;
     void accept(ActionHandlerInvoker.Visitor visitor);
 
-    CORS.Handler corsHandler();
+    CORS.Spec corsHandler();
     boolean sessionFree();
 }

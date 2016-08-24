@@ -59,7 +59,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
     private final boolean sessionFree;
     private List<BeanSpec> paramSpecs;
     private Set<String> pathVariables;
-    private CORS.Handler corsHandler;
+    private CORS.Spec corsSpec;
 
     private ReflectedHandlerInvoker(M handlerMetaInfo, App app) {
         this.cl = app.classLoader();
@@ -92,8 +92,8 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
             singleJsonFieldName = paramSpecs.get(0).name();
         }
 
-        CORS.Handler corsHandler = CORS.handler(method).chain(CORS.handler(controllerClass));
-        this.corsHandler = corsHandler;
+        CORS.Spec corsSpec = CORS.spec(method).chain(CORS.spec(controllerClass));
+        this.corsSpec = corsSpec;
     }
 
     @Override
@@ -129,7 +129,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         try {
             return invoke(handler, actionContext, ctrl, params);
         } finally {
-            corsHandler.apply(actionContext);
+            corsSpec.apply(actionContext);
         }
     }
 
@@ -150,8 +150,8 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         return sessionFree;
     }
 
-    public CORS.Handler corsHandler() {
-        return corsHandler;
+    public CORS.Spec corsHandler() {
+        return corsSpec;
     }
 
     private void ensureJsonDTOGenerated(ActionContext context) {
@@ -360,7 +360,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         }
 
         @Override
-        public CORS.Handler corsHandler() {
+        public CORS.Spec corsHandler() {
             return invoker.corsHandler();
         }
 
@@ -386,7 +386,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         }
 
         @Override
-        public CORS.Handler corsHandler() {
+        public CORS.Spec corsHandler() {
             return invoker.corsHandler();
         }
 
@@ -454,7 +454,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         }
 
         @Override
-        public CORS.Handler corsHandler() {
+        public CORS.Spec corsHandler() {
             return invoker.corsHandler();
         }
 
@@ -480,7 +480,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         }
 
         @Override
-        public CORS.Handler corsHandler() {
+        public CORS.Spec corsHandler() {
             return invoker.corsHandler();
         }
 

@@ -355,7 +355,7 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
     }
 
     @Override
-    public CORS.Handler corsHandler() {
+    public CORS.Spec corsHandler() {
         ensureAgentsReady();
         return actionHandler.corsHandler();
     }
