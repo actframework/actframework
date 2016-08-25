@@ -96,7 +96,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         if (null == basicAuth) {
             Boolean B = get(BASIC_AUTHENTICATION);
             if (null == B) {
-                B = false;
+                B = Act.isDev();
             }
             this.basicAuth = B;
         }

@@ -41,7 +41,7 @@ public enum AppConfigKey implements ConfigKey {
      * ActFramework. It is up to the security plugins like `act-aaa-plugin`
      * to favor the value of this setting
      */
-    BASIC_AUTHENTICATION("basic_authentication"),
+    BASIC_AUTHENTICATION("basic_authentication.enabled"),
 
     /**
      * {@code act.cors.enabled} turn on/off CORS in Act application
