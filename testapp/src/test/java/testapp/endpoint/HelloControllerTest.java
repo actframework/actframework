@@ -65,7 +65,7 @@ public class HelloControllerTest extends EndpointTester {
             checkHeader(ACCESS_CONTROL_ALLOW_HEADERS, ALLOW_EXPOSE_HEADER);
             checkHeader(ACCESS_CONTROL_EXPOSE_HEADERS, ALLOW_EXPOSE_HEADER);
             checkHeader(ACCESS_CONTROL_MAX_AGE, MAX_AGE);
-            checkHeader(ACCESS_CONTROL_ALLOW_METHODS, ALLOW_METHODS);
+            checkHeader(ACCESS_CONTROL_ALLOW_METHODS, "GET");
         }
     }
 

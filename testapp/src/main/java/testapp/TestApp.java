@@ -14,7 +14,6 @@ public class TestApp extends AppConfigurator<TestApp> {
     public static class GLOBAL_CORS {
         public static final String ALLOW_ORIGIN = "google.com";
         public static final String ALLOW_EXPOSE_HEADER = "X-Header-One";
-        public static final String ALLOW_METHODS = "GET, PUT";
         public static final String MAX_AGE = "100";
     }
 
@@ -24,7 +23,6 @@ public class TestApp extends AppConfigurator<TestApp> {
         cors()
                 .allowOrigin(ALLOW_ORIGIN)
                 .allowAndExposeHeaders(ALLOW_EXPOSE_HEADER)
-                .allowMethods(ALLOW_METHODS)
                 .maxAge(Integer.parseInt(MAX_AGE));
     }
 
