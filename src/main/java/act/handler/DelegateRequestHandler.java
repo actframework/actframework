@@ -1,7 +1,7 @@
 package act.handler;
 
 import act.app.ActionContext;
-import act.util.CORS;
+import act.security.CORS;
 import org.osgl.util.E;
 
 /**

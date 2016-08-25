@@ -3,7 +3,7 @@ package act.handler;
 import act.app.ActionContext;
 import act.handler.builtin.controller.FastRequestHandler;
 import act.handler.event.BeforeCommit;
-import act.util.CORS;
+import act.security.CORS;
 import org.osgl.mvc.result.Ok;
 
 public class OptionsRequestHandler extends FastRequestHandler {

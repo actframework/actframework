@@ -3,7 +3,7 @@ package act.handler;
 import act.app.ActionContext;
 import act.handler.builtin.UnknownHttpMethodHandler;
 import act.route.Router;
-import act.util.CORS;
+import act.security.CORS;
 import org.osgl.http.H;
 import org.osgl.mvc.result.NotFound;
 import org.osgl.util.C;

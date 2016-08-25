@@ -1,6 +1,6 @@
 package act.handler.builtin.controller;
 
-import act.util.CORS;
+import act.security.CORS;
 import act.util.DestroyableBase;
 import org.osgl.$;
 

@@ -11,7 +11,7 @@ import act.controller.meta.ControllerClassMetaInfo;
 import act.controller.meta.InterceptorMethodMetaInfo;
 import act.handler.RequestHandlerBase;
 import act.handler.event.BeforeCommit;
-import act.util.CORS;
+import act.security.CORS;
 import act.view.ActServerError;
 import act.view.RenderAny;
 import org.osgl.cache.CacheService;

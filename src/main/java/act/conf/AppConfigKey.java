@@ -32,6 +32,18 @@ import java.util.Map;
 public enum AppConfigKey implements ConfigKey {
 
     /**
+     * {@code act.basic_authentication.enabled} turn on/off Basic Authentication
+     * in Act application.
+     *
+     * Default value: `false`
+     *
+     * **Note** there is no logic around this configuration in the core
+     * ActFramework. It is up to the security plugins like `act-aaa-plugin`
+     * to favor the value of this setting
+     */
+    BASIC_AUTHENTICATION("basic_authentication"),
+
+    /**
      * {@code act.cors.enabled} turn on/off CORS in Act application
      *
      * Default value: `false`

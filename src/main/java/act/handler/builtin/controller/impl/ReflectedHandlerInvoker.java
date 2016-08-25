@@ -12,7 +12,7 @@ import act.inject.param.JsonDTO;
 import act.inject.param.JsonDTOClassManager;
 import act.inject.param.ParamValueLoaderManager;
 import act.inject.param.ParamValueLoaderService;
-import act.util.CORS;
+import act.security.CORS;
 import act.util.DestroyableBase;
 import act.view.Template;
 import act.view.TemplatePathResolver;

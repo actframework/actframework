@@ -3,7 +3,7 @@ package act.handler;
 import act.Destroyable;
 import act.app.ActionContext;
 import act.handler.builtin.StaticFileGetter;
-import act.util.CORS;
+import act.security.CORS;
 import org.osgl.$;
 
 /**

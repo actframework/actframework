@@ -2,7 +2,7 @@ package act.handler.builtin.controller;
 
 import act.app.ActionContext;
 import act.plugin.Plugin;
-import act.util.CORS;
+import act.security.CORS;
 import org.osgl.mvc.result.Result;
 import org.osgl.util.C;
 

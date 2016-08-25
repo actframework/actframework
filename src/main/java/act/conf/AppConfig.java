@@ -85,6 +85,30 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         return configurator;
     }
 
+    private Boolean basicAuth;
+
+    protected T enableBasicAuthentication(boolean b) {
+        this.basicAuth = b;
+        return me();
+    }
+
+    public boolean basicAuthenticationEnabled() {
+        if (null == basicAuth) {
+            Boolean B = get(BASIC_AUTHENTICATION);
+            if (null == B) {
+                B = false;
+            }
+            this.basicAuth = B;
+        }
+        return this.basicAuth;
+    }
+
+    private void _mergeBasicAuthentication(AppConfig conf) {
+        if (null == get(BASIC_AUTHENTICATION)) {
+            this.basicAuth = conf.basicAuth;
+        }
+    }
+
     private Boolean cors;
 
     protected T enableCors(boolean b) {
@@ -1640,6 +1664,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
             return;
         }
         mergeTracker.add(conf);
+        _mergeBasicAuthentication(conf);
         _mergeCors(conf);
         _mergeCorsOrigin(conf);
         _mergeCorsMethods(conf);
