@@ -59,13 +59,6 @@ public enum AppConfigKey implements ConfigKey {
     CORS_ORIGIN("cors.origin"),
 
     /**
-     * {@code act.cors.methods} specifies `Access-Control-Allow-Methods` header
-     *
-     * Default value: `GET, OPTION, POST`
-     */
-    CORS_METHODS("cors.methods"),
-
-    /**
      * {@code act.cors.headers} specifies both `Access-Control-Expose-Headers`
      * and `Access-Control-Allow-Headers`
      *

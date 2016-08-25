@@ -107,7 +107,6 @@ public abstract class AppConfigurator<T extends AppConfigurator> extends AppConf
         private boolean enabled;
         private String allowOrigin;
         private int maxAge;
-        private List<String> methods = new ArrayList<>();
         private List<String> headersBoth = new ArrayList<>();
         private List<String> headersAllowed = new ArrayList<>();
         private List<String> headersExpose = new ArrayList<>();
@@ -136,11 +135,6 @@ public abstract class AppConfigurator<T extends AppConfigurator> extends AppConf
         public CorsSetting allowOrigin(String allowOrigin) {
             E.illegalArgumentIf(S.blank(allowOrigin), "allow origin cannot be empty");
             this.allowOrigin = allowOrigin;
-            return this;
-        }
-
-        public CorsSetting allowMethods(String ... methods) {
-            this.methods.addAll(C.listOf(methods));
             return this;
         }
 
@@ -177,7 +171,6 @@ public abstract class AppConfigurator<T extends AppConfigurator> extends AppConf
             conf.corsHeaders(consolidate(headersBoth));
             conf.corsAllowHeaders(consolidate(headersAllowed));
             conf.corsHeadersExpose(consolidate(headersExpose));
-            conf.corsAllowMethods(consolidate(methods));
             conf.corsMaxAge(maxAge);
         }
 

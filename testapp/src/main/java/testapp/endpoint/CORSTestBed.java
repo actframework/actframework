@@ -21,7 +21,7 @@ public class CORSTestBed {
     public static void foo() {
     }
 
-    @CORS.DisableCORS
+    @CORS.Disable
     @PutAction("bar")
     public static void bar() {
     }

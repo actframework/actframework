@@ -30,7 +30,7 @@ public class CORS {
     @Documented
     @Retention(RetentionPolicy.RUNTIME)
     @Target({ElementType.METHOD, ElementType.TYPE})
-    public @interface DisableCORS {
+    public @interface Disable {
     }
 
 
@@ -110,7 +110,7 @@ public class CORS {
 
     private static Spec spec(BeanSpec beanSpec) {
         return new Spec()
-                .with(beanSpec.getAnnotation(DisableCORS.class))
+                .with(beanSpec.getAnnotation(Disable.class))
                 .with(beanSpec.getAnnotation(AllowOrigin.class))
                 .with(beanSpec.getAnnotation(ExposeHeaders.class))
                 .with(beanSpec.getAnnotation(AllowHeaders.class))
@@ -145,7 +145,7 @@ public class CORS {
             return disableCORS;
         }
 
-        public Spec with(DisableCORS disableCORS) {
+        public Spec with(Disable disableCORS) {
             if (null != disableCORS) {
                 this.effective = true;
                 this.disableCORS = true;

@@ -157,30 +157,6 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         }
     }
 
-    private String corsMethods;
-
-    protected T corsAllowMethods(String s) {
-        this.corsMethods = s;
-        return me();
-    }
-
-    public String corsAllowMethods() {
-        if (null == this.corsMethods) {
-            String s = get(CORS_METHODS);
-            if (null == s) {
-                s = "GET, OPTION, POST";
-            }
-            this.corsMethods = s;
-        }
-        return this.corsMethods;
-    }
-
-    private void _mergeCorsMethods(AppConfig conf) {
-        if (null == get(CORS_METHODS)) {
-            corsMethods = conf.corsMethods;
-        }
-    }
-
     private String corsHeaders;
 
     protected T corsHeaders(String s) {
@@ -1667,7 +1643,6 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         _mergeBasicAuthentication(conf);
         _mergeCors(conf);
         _mergeCorsOrigin(conf);
-        _mergeCorsMethods(conf);
         _mergeCorsHeaders(conf);
         _mergeCorsHeadersExpose(conf);
         _mergeCorsHeadersAllowed(conf);
