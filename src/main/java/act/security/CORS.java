@@ -236,10 +236,11 @@ public class CORS {
                 }
 
                 @Override
-                public void visit(ActionContext context) throws Osgl.Break {
+                public void applyTo(ActionContext context) throws Osgl.Break {
                     me.visit(context);
                     next.visit(context);
                 }
+
             };
         }
     }

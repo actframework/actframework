@@ -71,13 +71,17 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Act
         this._init();
         this.state = State.CREATED;
         this.saveLocal();
-        app.eventBus().once(BeforeCommit.class, new OnceEventListenerBase() {
-            @Override
-            public boolean tryHandle(EventObject event) throws Exception {
-                applyGlobalCorsSetting();
-                return true;
-            }
-        });
+        if (app.config().corsEnabled()) {
+            app.eventBus().once(BeforeCommit.class, new OnceEventListenerBase() {
+                @Override
+                public boolean tryHandle(EventObject event) throws Exception {
+                    applyGlobalCorsSetting();
+                    return true;
+                }
+            });
+        } else {
+            this.disableCors = true;
+        }
     }
 
     public State state() {

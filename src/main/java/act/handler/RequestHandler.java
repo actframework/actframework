@@ -61,6 +61,6 @@ public interface RequestHandler extends $.Function<ActionContext, Void>, Destroy
      * Get CORS handler that specifically applied to this request handler
      * @return the CORS handler or `null` if no CORS handler for this request handler
      */
-    CORS.Spec corsHandler();
+    CORS.Spec corsSpec();
 
 }

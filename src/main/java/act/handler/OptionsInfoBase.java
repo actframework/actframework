@@ -48,7 +48,7 @@ public class OptionsInfoBase {
                 continue;
             }
             allowMethods.add(method);
-            CORS.Spec corsSpec = handler.corsHandler();
+            CORS.Spec corsSpec = handler.corsSpec();
             if (corsSpec != CORS.Spec.DUMB) {
                 corsSpecs.add(corsSpec);
             }

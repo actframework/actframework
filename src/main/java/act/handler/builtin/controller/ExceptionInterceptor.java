@@ -48,7 +48,7 @@ public abstract class ExceptionInterceptor
     }
 
     @Override
-    public CORS.Spec corsHandler() {
+    public CORS.Spec corsSpec() {
         return CORS.Spec.DUMB;
     }
 

@@ -15,8 +15,8 @@ public class OptionsRequestHandler extends FastRequestHandler {
     }
 
     @Override
-    public CORS.Spec corsHandler() {
-        return this.corsHandler();
+    public CORS.Spec corsSpec() {
+        return this.corsSpec();
     }
 
     @Override

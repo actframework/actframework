@@ -50,5 +50,5 @@ public abstract class Handler<T extends Handler> extends DestroyableBase impleme
     protected void releaseResources() {
     }
 
-    public abstract CORS.Spec corsHandler();
+    public abstract CORS.Spec corsSpec();
 }

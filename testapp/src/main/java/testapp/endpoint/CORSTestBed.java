@@ -1,7 +1,7 @@
 package testapp.endpoint;
 
 import act.controller.Controller;
-import act.util.CORS;
+import act.security.CORS;
 import org.osgl.mvc.annotation.GetAction;
 import org.osgl.mvc.annotation.PutAction;
 

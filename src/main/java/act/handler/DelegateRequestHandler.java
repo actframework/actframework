@@ -34,8 +34,8 @@ public class DelegateRequestHandler extends RequestHandlerBase {
     }
 
     @Override
-    public CORS.Spec corsHandler() {
-        return handler_.corsHandler();
+    public CORS.Spec corsSpec() {
+        return handler_.corsSpec();
     }
 
     @Override

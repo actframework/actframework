@@ -41,7 +41,7 @@ public class EndpointTester extends TestBase {
 
     @BeforeClass
     public static void bootup() throws Exception {
-        if (true) {
+        if (ping()) {
             return;
         }
         process = new ProcessBuilder(

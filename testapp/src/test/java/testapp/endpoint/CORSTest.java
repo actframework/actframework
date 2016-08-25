@@ -1,11 +1,10 @@
 package testapp.endpoint;
 
 import org.junit.Test;
-import org.osgl.http.H;
-import org.osgl.util.C;
 
 import static org.osgl.http.H.Header.Names.*;
-import static testapp.TestApp.GLOBAL_CORS.*;
+import static testapp.TestApp.GLOBAL_CORS.ALLOW_EXPOSE_HEADER;
+import static testapp.TestApp.GLOBAL_CORS.MAX_AGE;
 
 public class CORSTest extends EndpointTester {
 
