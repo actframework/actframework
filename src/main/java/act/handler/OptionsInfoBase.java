@@ -4,6 +4,7 @@ import act.app.ActionContext;
 import act.handler.builtin.UnknownHttpMethodHandler;
 import act.route.Router;
 import act.security.CORS;
+import act.util.DestroyableBase;
 import org.osgl.http.H;
 import org.osgl.mvc.result.NotFound;
 import org.osgl.util.C;
@@ -15,7 +16,7 @@ import java.util.concurrent.ConcurrentMap;
 /**
  * Process HTTP OPTIONS request
  */
-public class OptionsInfoBase {
+public class OptionsInfoBase extends DestroyableBase {
 
     private Router router;
     private ConcurrentMap<String, RequestHandler> handlers = new ConcurrentHashMap<>();

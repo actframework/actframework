@@ -34,6 +34,7 @@ public class StaticFileGetter extends FastRequestHandler {
 
     @Override
     public void handle(ActionContext context) {
+        context.handler(this);
         File file = base;
         if (!file.exists()) {
             AlwaysNotFound.INSTANCE.handle(context);

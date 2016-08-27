@@ -15,6 +15,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 
 import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -39,6 +40,7 @@ public class StaticFileGetterTest extends TestBase {
         when(mockAppConfig.errorTemplatePathResolver()).thenCallRealMethod();
         RequestImplBase req = mock(RequestImplBase.class);
         ctx = ActionContext.create(mockApp, req, resp);
+        when(req.context()).thenReturn(ctx);
         pathHandler = new StaticFileGetter("/public", mockApp);
         fileHandler = new StaticFileGetter("/public/foo/bar.txt", mockApp);
     }

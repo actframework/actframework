@@ -3,7 +3,7 @@ package act.handler.builtin;
 import act.app.ActionContext;
 import act.handler.builtin.controller.FastRequestHandler;
 import act.handler.builtin.controller.RequestHandlerProxy;
-import act.handler.event.BeforeCommit;
+import act.handler.event.BeforeResultCommit;
 import act.view.ActServerError;
 import org.osgl.http.H;
 import org.osgl.logging.LogManager;
@@ -28,7 +28,6 @@ public class UnknownHttpMethodHandler extends FastRequestHandler implements Seri
             logger.error(e, "Error calling global after interceptor");
             result = ActServerError.of(e);
         }
-        context.app().eventBus().emit(new BeforeCommit(result, context));
         result.apply(context.req(), context.resp());
     }
 

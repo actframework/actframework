@@ -132,12 +132,7 @@ public class CliSession extends DestroyableBase implements Runnable {
                     return;
                 }
                 ts = $.ms();
-                try {
-                    app.detectChanges();
-                } catch (RequestRefreshClassLoader refreshRequest) {
-                    refreshRequest.doRefresh(app);
-                    return;
-                }
+                app.checkUpdates(true);
                 if (S.blank(line)) {
                     continue;
                 }

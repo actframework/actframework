@@ -11,6 +11,7 @@ import act.app.util.NamedPort;
 import act.db.util.SequenceNumberGenerator;
 import act.db.util._SequenceNumberGenerator;
 import act.handler.UnknownHttpMethodProcessor;
+import act.handler.event.ResultEvent;
 import act.util.*;
 import act.validation.ValidationMessageInterpolator;
 import act.view.TemplatePathResolver;
@@ -42,6 +43,8 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
 
     static {
         MvcConfig.errorPageRenderer(new ActErrorPageRender());
+        MvcConfig.beforeCommitResultHandler(ResultEvent.BEFORE_COMMIT_HANDLER);
+        MvcConfig.afterCommitResultHandler(ResultEvent.AFTER_COMMIT_HANDLER);
     }
 
     /**
@@ -300,6 +303,54 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     private void _mergeCsrfParamName(AppConfig conf) {
         if (null == get(CSRF_PARAM_NAME)) {
             csrfParamName = conf.csrfParamName;
+        }
+    }
+
+    private String csrfCookieName;
+
+    protected T csrfCookieName(String s) {
+        this.csrfCookieName = s;
+        return me();
+    }
+
+    public String csrfCookieName() {
+        if (null == csrfCookieName) {
+            String s = get(CSRF_COOKIE_NAME);
+            if (S.blank(s)) {
+                s = "*";
+            }
+            csrfCookieName = s;
+        }
+        return csrfCookieName;
+    }
+
+    private void _mergeCsrfCookieName(AppConfig conf) {
+        if (null == get(CSRF_COOKIE_NAME)) {
+            csrfCookieName = conf.csrfCookieName;
+        }
+    }
+
+    private String csrfHeaderName;
+
+    protected T csrfHeaderName(String s) {
+        this.csrfHeaderName = s;
+        return me();
+    }
+
+    public String csrfHeaderName() {
+        if (null == csrfHeaderName) {
+            String s = get(CSRF_HEADER_NAME);
+            if (S.blank(s)) {
+                s = "*";
+            }
+            csrfHeaderName = s;
+        }
+        return csrfHeaderName;
+    }
+
+    private void _mergeCsrfHeaderName(AppConfig conf) {
+        if (null == get(CSRF_HEADER_NAME)) {
+            csrfHeaderName = conf.csrfHeaderName;
         }
     }
     
@@ -1653,6 +1704,8 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         _mergeCliSessionExpiration(conf);
         _mergeCsrf(conf);
         _mergeCsrfParamName(conf);
+        _mergeCsrfHeaderName(conf);
+        _mergeCsrfCookieName(conf);
         _mergeMaxCliSession(conf);
         _mergeUrlContext(conf);
         _mergeXForwardedProtocol(conf);

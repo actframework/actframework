@@ -6,12 +6,12 @@ import act.conf.AppConfig;
 import act.data.MapUtil;
 import act.data.RequestBodyParser;
 import act.event.ActEvent;
-import act.event.ActEventListenerBase;
 import act.event.EventBus;
 import act.event.OnceEventListenerBase;
 import act.handler.RequestHandler;
-import act.handler.event.BeforeCommit;
+import act.handler.event.BeforeResultCommit;
 import act.route.Router;
+import act.security.CORS;
 import act.util.ActContext;
 import org.osgl.$;
 import org.osgl.concurrent.ContextLocal;
@@ -66,22 +66,14 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Act
     private ActionContext(App app, H.Request request, H.Response response) {
         super(app);
         E.NPE(app, request, response);
+        request.context(this);
+        response.context(this);
         this.request = request;
         this.response = response;
         this._init();
         this.state = State.CREATED;
+        this.disableCors = !app.config().corsEnabled();
         this.saveLocal();
-        if (app.config().corsEnabled()) {
-            app.eventBus().once(BeforeCommit.class, new OnceEventListenerBase() {
-                @Override
-                public boolean tryHandle(EventObject event) throws Exception {
-                    applyGlobalCorsSetting();
-                    return true;
-                }
-            });
-        } else {
-            this.disableCors = true;
-        }
     }
 
     public State state() {
@@ -198,6 +190,10 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Act
         return req().isAjax();
     }
 
+    public boolean isOptionsMethod() {
+        return req().method() == H.Method.OPTIONS;
+    }
+
     public String body() {
         return paramVal(REQ_BODY);
     }
@@ -283,7 +279,14 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Act
         this.disableCors = true;
     }
 
-    public void applyGlobalCorsSetting() {
+    public ActionContext applyCorsSpec() {
+        CORS.Spec spec = handler().corsSpec();
+        spec.applyTo(this);
+        applyGlobalCorsSetting();
+        return this;
+    }
+
+    private void applyGlobalCorsSetting() {
         if (this.disableCors) {
             return;
         }

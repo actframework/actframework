@@ -127,11 +127,7 @@ class CliServer extends AppServiceBase<CliServer> implements Runnable {
                         } catch (InterruptedException e) {
                             return;
                         }
-                        try {
-                            app().detectChanges();
-                        } catch (RequestRefreshClassLoader refreshRequest) {
-                            refreshRequest.doRefresh(app());
-                        }
+                        app().checkUpdates(false);
                     }
                 }
             });

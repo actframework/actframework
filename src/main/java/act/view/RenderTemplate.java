@@ -42,6 +42,10 @@ public class RenderTemplate extends RenderAny {
             throw new ActException("Render template[%s] not found", context.templatePath());
         }
         applyStatus(context.resp());
+        H.Request req = context.req();
+        H.Response resp = context.resp();
+        applyBeforeCommitHandler(req, resp);
         t.merge(context);
+        applyAfterCommitHandler(req, resp);
     }
 }

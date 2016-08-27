@@ -3,12 +3,10 @@ package act.xio;
 import act.Act;
 import act.app.ActionContext;
 import act.app.App;
-import act.app.RequestRefreshClassLoader;
-import act.app.RequestServerRestart;
 import act.app.util.NamedPort;
 import act.handler.RequestHandler;
 import act.handler.builtin.controller.RequestHandlerProxy;
-import act.handler.event.BeforeCommit;
+import act.handler.event.BeforeResultCommit;
 import act.metric.Metric;
 import act.metric.MetricInfo;
 import act.metric.Timer;
@@ -61,17 +59,7 @@ public class NetworkHandler extends DestroyableBase implements  $.Func1<ActionCo
         H.Method method = req.method();
         Timer timer = null;
         try {
-            if (Act.isDev()) {
-                synchronized (app) {
-                    try {
-                        app.detectChanges();
-                    } catch (RequestRefreshClassLoader refreshRequest) {
-                        app.refresh();
-                    } catch (RequestServerRestart requestServerRestart) {
-                        app.refresh();
-                    }
-                }
-            }
+            app.checkUpdates(false);
             if (app.config().contentSuffixAware()) {
                 if (url.endsWith("/json") || url.endsWith(".json")) {
                     url = url.substring(0, url.length() - 5);
@@ -101,7 +89,6 @@ public class NetworkHandler extends DestroyableBase implements  $.Func1<ActionCo
                 logger.error(e, "Error calling global after interceptor");
                 r = ActServerError.of(e);
             }
-            app.eventBus().emit(new BeforeCommit(r, ctx));
             r.apply(req, ctx.resp());
         } catch (Exception t) {
             logger.error(t, "Error handling network request");
@@ -115,7 +102,6 @@ public class NetworkHandler extends DestroyableBase implements  $.Func1<ActionCo
             if (null == r) {
                 r = ActServerError.of(t);
             }
-            app.eventBus().emit(new BeforeCommit(r, ctx));
             r.apply(req, ctx.resp());
         } finally {
             // we don't destroy ctx here in case it's been passed to

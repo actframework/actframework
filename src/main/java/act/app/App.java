@@ -211,6 +211,21 @@ public class App extends DestroyableBase {
         return layout;
     }
 
+    public void checkUpdates(boolean async) {
+        if (!Act.isDev()) {
+            return;
+        }
+        synchronized (this) {
+            try {
+                detectChanges();
+            } catch (RequestRefreshClassLoader refreshRequest) {
+                refresh(async);
+            } catch (RequestServerRestart requestServerRestart) {
+                refresh(async);
+            }
+        }
+    }
+
     public synchronized void detectChanges() {
         classLoader.detectChanges();
         if (null != compilationException) {
@@ -262,6 +277,13 @@ public class App extends DestroyableBase {
         shutdownJobManager();
         clearServiceResourceManager();
         classLoader = null;
+    }
+
+    public synchronized void refresh(boolean async) {
+        if (async) {
+            asyncRefresh();
+        }
+        refresh();
     }
 
     public synchronized void refresh() {

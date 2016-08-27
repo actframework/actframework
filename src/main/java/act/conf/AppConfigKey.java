@@ -105,6 +105,23 @@ public enum AppConfigKey implements ConfigKey {
     CSRF_PARAM_NAME("csf.param_name"),
 
     /**
+     * {@code act.csrf.header_name} specifies name of the http request
+     * header used to convey the csrf token sent from AJAX client.
+     *
+     * Default value: `X-Xsrf-Token` - the name used by AngularJs
+     */
+    CSRF_HEADER_NAME("csrf.header_name"),
+
+    /**
+     * {@code act.csrf.cookie_name} specify the name of the cookie used
+     * to convey the csrf token generated on the server for the first GET
+     * request coming from a client.
+     *
+     * Default value: `XSRF-TOKEN` - the name used by AngularJs
+     */
+    CSRF_COOKIE_NAME("csrf.cookie_name"),
+
+    /**
      * {@code act.cli.port} specifies the default cli (telnet) port the application
      * listen to.
      * <p>Default value: {@code 5461}</p>

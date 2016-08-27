@@ -19,6 +19,12 @@ public class CORSTest extends EndpointTester {
     }
 
     @Test
+    public void testFooWithGetRequest() throws Exception {
+        url("cors/foo");
+        checkHeader(ACCESS_CONTROL_ALLOW_ORIGIN, CORSTestBed.FOO_ALLOW_ORIGIN);
+    }
+
+    @Test
     public void testBar() throws Exception {
         url("cors/bar").options();
         assertNoHeader(ACCESS_CONTROL_ALLOW_ORIGIN);

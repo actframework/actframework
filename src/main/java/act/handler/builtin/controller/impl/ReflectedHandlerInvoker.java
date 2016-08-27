@@ -126,11 +126,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         ensureJsonDTOGenerated(actionContext);
         Object ctrl = controllerInstance(actionContext);
         Object[] params = params(actionContext);
-        try {
-            return invoke(handler, actionContext, ctrl, params);
-        } finally {
-            corsSpec.apply(actionContext);
-        }
+        return invoke(handler, actionContext, ctrl, params);
     }
 
     @Override

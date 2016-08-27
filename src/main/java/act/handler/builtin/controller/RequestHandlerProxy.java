@@ -10,7 +10,7 @@ import act.controller.meta.CatchMethodMetaInfo;
 import act.controller.meta.ControllerClassMetaInfo;
 import act.controller.meta.InterceptorMethodMetaInfo;
 import act.handler.RequestHandlerBase;
-import act.handler.event.BeforeCommit;
+import act.handler.event.BeforeResultCommit;
 import act.security.CORS;
 import act.view.ActServerError;
 import act.view.RenderAny;
@@ -225,7 +225,6 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
 
     private void onResult(Result result, ActionContext context) {
         context.dissolve();
-        app.eventBus().emit(new BeforeCommit(result, context));
         try {
             if (result instanceof RenderAny) {
                 RenderAny any = (RenderAny) result;

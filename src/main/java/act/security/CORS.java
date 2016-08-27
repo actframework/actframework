@@ -119,7 +119,18 @@ public class CORS {
 
     public static class Spec extends $.Visitor<ActionContext> {
 
-        public static final Spec DUMB = new Spec();
+        public static final Spec DUMB = new Spec() {
+
+            @Override
+            public void visit(ActionContext context) throws Osgl.Break {
+                // do nothing implementation
+            }
+
+            @Override
+            public void applyTo(ActionContext context) throws Osgl.Break {
+                // do nothing implementation
+            }
+        };
 
         private boolean disableCORS;
         private String origin;
@@ -202,17 +213,19 @@ public class CORS {
             if (null != origin) {
                 r.addHeaderIfNotAdded(ACCESS_CONTROL_ALLOW_ORIGIN, origin);
             }
-            if (null != methods) {
-                r.addHeaderIfNotAdded(ACCESS_CONTROL_ALLOW_METHODS, methods);
-            }
-            if (null != exposeHeaders) {
-                r.addHeaderIfNotAdded(ACCESS_CONTROL_EXPOSE_HEADERS, exposeHeaders);
-            }
-            if (null != allowHeaders) {
-                r.addHeaderIfNotAdded(ACCESS_CONTROL_ALLOW_HEADERS, allowHeaders);
-            }
-            if (-1 < maxAge) {
-                r.addHeaderIfNotAdded(ACCESS_CONTROL_MAX_AGE, S.string(maxAge));
+            if (context.isOptionsMethod()) {
+                if (null != methods) {
+                    r.addHeaderIfNotAdded(ACCESS_CONTROL_ALLOW_METHODS, methods);
+                }
+                if (null != exposeHeaders) {
+                    r.addHeaderIfNotAdded(ACCESS_CONTROL_EXPOSE_HEADERS, exposeHeaders);
+                }
+                if (null != allowHeaders) {
+                    r.addHeaderIfNotAdded(ACCESS_CONTROL_ALLOW_HEADERS, allowHeaders);
+                }
+                if (-1 < maxAge) {
+                    r.addHeaderIfNotAdded(ACCESS_CONTROL_MAX_AGE, S.string(maxAge));
+                }
             }
         }
         public Spec chain(final Spec next) {
