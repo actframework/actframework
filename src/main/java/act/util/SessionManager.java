@@ -17,6 +17,7 @@ import org.osgl.util.Codec;
 import org.osgl.util.E;
 import org.osgl.util.S;
 
+import javax.enterprise.context.ApplicationScoped;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -42,10 +43,10 @@ public class SessionManager extends DestroyableBase {
 
     @Override
     protected void releaseResources() {
-        tryDestroyAll(registry);
+        tryDestroyAll(registry, ApplicationScoped.class);
         registry = null;
 
-        tryDestroyAll(resolvers.values());
+        tryDestroyAll(resolvers.values(), ApplicationScoped.class);
         resolvers = null;
 
         theResolver = null;
@@ -155,6 +156,7 @@ public class SessionManager extends DestroyableBase {
         private SessionMapper sessionMapper;
         private String sessionCookieName;
         private String flashCookieName;
+        private String cookiDomain;
 
         CookieResolver(App app) {
             E.NPE(app);
@@ -165,6 +167,7 @@ public class SessionManager extends DestroyableBase {
             this.persistentSession = conf.persistSession();
             this.sessionHttpOnly = conf.sessionHttpOnly();
             this.sessionSecure = conf.sessionSecure();
+            this.cookiDomain = conf.cookieDomain();
             long ttl = conf.sessionTtl();
             this.ttl = ttl * 1000L;
             sessionWillExpire = ttl > 0;
@@ -175,6 +178,7 @@ public class SessionManager extends DestroyableBase {
 
         Session resolveSession(ActionContext context) {
             H.Request req = context.req();
+            context.preCheckCsrf();
             String val = sessionMapper.deserializeSession(context);
 
             Session session = new Session();
@@ -185,6 +189,7 @@ public class SessionManager extends DestroyableBase {
                 resolveFromCookieContent(session, val, true);
                 session = processExpiration(session, now, false, req);
             }
+            context.checkCsrf();
             return session;
         }
 
@@ -201,6 +206,7 @@ public class SessionManager extends DestroyableBase {
         }
 
         H.Cookie dissolveSession(ActionContext context) {
+            context.setCsrfCookieAndRenderArgs();
             Session session = context.session();
             if (null == session) {
                 return null;
@@ -246,17 +252,16 @@ public class SessionManager extends DestroyableBase {
                     } catch (Exception e) {
                         return;
                     }
-                } else {
-                    int firstDashIndex = content.indexOf("-");
-                    if (firstDashIndex < 0) {
-                        return;
-                    }
-                    String sign = content.substring(0, firstDashIndex);
-                    data = data.substring(firstDashIndex + 1);
-                    String sign1 = app.sign(data);
-                    if (!sign.equals(sign1)) {
-                        return;
-                    }
+                }
+                int firstDashIndex = data.indexOf("-");
+                if (firstDashIndex < 0) {
+                    return;
+                }
+                String sign = data.substring(0, firstDashIndex);
+                data = data.substring(firstDashIndex + 1);
+                String sign1 = app.sign(data);
+                if (!sign.equals(sign1)) {
+                    return;
                 }
             }
             List<char[]> pairs = split(data.toCharArray(), '\u0000');
@@ -321,11 +326,10 @@ public class SessionManager extends DestroyableBase {
             }
             String data = sb.toString();
             if (isSession) {
+                String sign = app.sign(data);
+                data = S.builder(sign).append("-").append(data).toString();
                 if (encryptSession) {
                     data = app.encrypt(data);
-                } else {
-                    String sign = app.sign(data);
-                    data = S.builder(sign).append("-").append(data).toString();
                 }
             }
             data = Codec.encodeUrl(data, Charsets.UTF_8);
@@ -367,8 +371,9 @@ public class SessionManager extends DestroyableBase {
         private H.Cookie createCookie(String name, String value) {
             H.Cookie cookie = new H.Cookie(name, value);
             cookie.path("/");
-            cookie.httpOnly(sessionHttpOnly);
-            cookie.secure(sessionSecure);
+            cookie.domain(cookiDomain);
+            cookie.httpOnly(false);
+            cookie.secure(!Act.isDev());
             if (sessionWillExpire && persistentSession) {
                 cookie.maxAge((int) (ttl / 1000));
             }

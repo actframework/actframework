@@ -140,6 +140,7 @@ public class TestBase extends Assert {
         });
         mockReq = mock(H.Request.class);
         mockResp = mock(H.Response.class);
+        when(mockReq.method()).thenReturn(H.Method.GET);
     }
 
     protected byte[] loadBytecode(String className) {

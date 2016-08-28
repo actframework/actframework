@@ -94,13 +94,15 @@ public enum AppConfigKey implements ConfigKey {
     /**
      * {@code act.csrf} turn on/off global CSRF protect
      *
-     * Default value: `false`
+     * Default value: `true`
      */
     CSRF("csrf"),
 
     /**
      * {@code act.csf.param_name} specifies the http request param name
      * used to convey the csrf token
+     *
+     * Default value: the value of {@link act.app.ActionContext#ATTR_CSRF_TOKEN}
      */
     CSRF_PARAM_NAME("csf.param_name"),
 
@@ -230,6 +232,14 @@ public enum AppConfigKey implements ConfigKey {
      * </table>
      */
     CONTROLLER_PACKAGE("controller_package"),
+
+    /**
+     * `act.cookie.domain` specify the domain that should be
+     * set on session cookie or csrf token cookie
+     *
+     * Default value: value of {@link #HOST}
+     */
+    COOKIE_DOMAIN("cookie.domain"),
 
     /**
      * `act.db.seq_gen.impl` specifies the implementation of
@@ -533,6 +543,13 @@ public enum AppConfigKey implements ConfigKey {
     SESSION_HTTP_ONLY_ENABLED("session.http_only.enabled"),
 
     /**
+     * `act.session.key.username` specifies the session key for username
+     *
+     * Default value: `username`
+     */
+    SESSION_KEY_USERNAME("session.key.username"),
+
+    /**
      * {@code session.mapper.impl} specify the implementation of {@link act.util.SessionMapper}
      *
      * <p>Default value: {@code act.util.SessionMapper.DefaultSessionMapper}</p>
@@ -626,12 +643,29 @@ public enum AppConfigKey implements ConfigKey {
     MISSING_AUTHENTICATION_HANDLER("handler.missing_authentication.impl"),
 
     /**
+     * `act.handler.csrf_check_failure.impl` specifies the implementation
+     * for {@link act.util.MissingAuthenticationHandler}
+     *
+     * Default value: {@link act.util.RedirectToLoginUrl}
+     */
+    CSRF_CHECK_FAILURE_HANDLER("handler.csrf_check_failure.impl"),
+
+    /**
      * {@code handler.missing_authentication.ajax.impl} specifies the implementation
      * for {@link act.util.MissingAuthenticationHandler} dealing with the case of AJAX
      * request
      * <p>Default value: the value of {@link #MISSING_AUTHENTICATION_HANDLER}</p>
      */
     AJAX_MISSING_AUTHENTICATION_HANDLER("handler.missing_authentication.ajax.impl"),
+
+    /**
+     * `act.handler.csrf_check_failure.ajax.impl` specifies the implementation for
+     * {@link act.util.MissingAuthenticationHandler} dealing with the case of AJAX
+     * request
+     *
+     * Default value: the value of {@link #CSRF_CHECK_FAILURE_HANDLER}
+     */
+    AJAX_CSRF_CHECK_FAILURE_HANDLER("handler.csrf_check_failure.ajax.impl"),
 
     /**
      * {@code act.view.default} specifies the default view solution. If there

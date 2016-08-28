@@ -21,6 +21,7 @@ public class ActionContextTest extends TestBase {
     public void prepare() throws Exception {
         setup();
         H.Request req = mock(H.Request.class);
+        when(req.method()).thenReturn(H.Method.GET);
         when(req.paramNames()).thenReturn(C.list("foo", "bar"));
         when(req.paramVal("foo")).thenReturn("FOO");
         when(req.paramVal("bar")).thenReturn("BAR");

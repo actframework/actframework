@@ -39,6 +39,7 @@ public class StaticFileGetterTest extends TestBase {
         });
         when(mockAppConfig.errorTemplatePathResolver()).thenCallRealMethod();
         RequestImplBase req = mock(RequestImplBase.class);
+        when(req.method()).thenReturn(H.Method.GET);
         ctx = ActionContext.create(mockApp, req, resp);
         when(req.context()).thenReturn(ctx);
         pathHandler = new StaticFileGetter("/public", mockApp);

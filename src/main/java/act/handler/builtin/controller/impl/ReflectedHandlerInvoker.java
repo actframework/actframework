@@ -13,6 +13,7 @@ import act.inject.param.JsonDTOClassManager;
 import act.inject.param.ParamValueLoaderManager;
 import act.inject.param.ParamValueLoaderService;
 import act.security.CORS;
+import act.security.CSRF;
 import act.util.DestroyableBase;
 import act.view.Template;
 import act.view.TemplatePathResolver;
@@ -60,6 +61,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
     private List<BeanSpec> paramSpecs;
     private Set<String> pathVariables;
     private CORS.Spec corsSpec;
+    private CSRF.Spec csrfSpec;
 
     private ReflectedHandlerInvoker(M handlerMetaInfo, App app) {
         this.cl = app.classLoader();
@@ -94,6 +96,9 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
 
         CORS.Spec corsSpec = CORS.spec(method).chain(CORS.spec(controllerClass));
         this.corsSpec = corsSpec;
+
+        CSRF.Spec csrfSpec = CSRF.spec(method).chain(CSRF.spec(controllerClass));
+        this.csrfSpec = csrfSpec;
     }
 
     @Override
@@ -148,6 +153,11 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
 
     public CORS.Spec corsSpec() {
         return corsSpec;
+    }
+
+    @Override
+    public CSRF.Spec csrfSpec() {
+        return csrfSpec;
     }
 
     private void ensureJsonDTOGenerated(ActionContext context) {

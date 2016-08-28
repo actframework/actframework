@@ -12,6 +12,7 @@ import act.controller.meta.InterceptorMethodMetaInfo;
 import act.handler.RequestHandlerBase;
 import act.handler.event.BeforeResultCommit;
 import act.security.CORS;
+import act.security.CSRF;
 import act.view.ActServerError;
 import act.view.RenderAny;
 import org.osgl.cache.CacheService;
@@ -351,6 +352,12 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
         for (ExceptionInterceptor i : globalExceptionInterceptors) {
             i.accept(visitor);
         }
+    }
+
+    @Override
+    public CSRF.Spec csrfSpec() {
+        ensureAgentsReady();
+        return actionHandler.csrfSpec();
     }
 
     @Override

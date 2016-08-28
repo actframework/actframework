@@ -1,6 +1,7 @@
 package act.handler.builtin.controller;
 
 import act.handler.RequestHandlerBase;
+import act.security.CSRF;
 
 /**
  * For any handler that does not require the framework to lookup incoming request
@@ -10,6 +11,11 @@ public abstract class FastRequestHandler extends RequestHandlerBase {
     @Override
     public boolean requireResolveContext() {
         return false;
+    }
+
+    @Override
+    public CSRF.Spec csrfSpec() {
+        return CSRF.Spec.DUMB;
     }
 
     @Override

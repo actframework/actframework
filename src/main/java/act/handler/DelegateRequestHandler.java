@@ -2,6 +2,7 @@ package act.handler;
 
 import act.app.ActionContext;
 import act.security.CORS;
+import act.security.CSRF;
 import org.osgl.util.E;
 
 /**
@@ -36,6 +37,11 @@ public class DelegateRequestHandler extends RequestHandlerBase {
     @Override
     public CORS.Spec corsSpec() {
         return handler_.corsSpec();
+    }
+
+    @Override
+    public CSRF.Spec csrfSpec() {
+        return handler_.csrfSpec();
     }
 
     @Override

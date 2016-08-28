@@ -2,6 +2,7 @@ package act.handler.builtin.controller;
 
 import act.app.ActionContext;
 import act.security.CORS;
+import act.security.CSRF;
 import org.osgl.mvc.result.Result;
 
 /**
@@ -24,6 +25,10 @@ public class ControllerAction extends ActionHandler<ControllerAction> {
     @Override
     public CORS.Spec corsSpec() {
         return handlerInvoker.corsSpec();
+    }
+
+    public CSRF.Spec csrfSpec() {
+        return handlerInvoker.csrfSpec();
     }
 
     @Override

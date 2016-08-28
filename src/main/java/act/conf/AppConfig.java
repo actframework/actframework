@@ -21,6 +21,7 @@ import org.osgl.$;
 import org.osgl.cache.CacheService;
 import org.osgl.cache.CacheServiceProvider;
 import org.osgl.exception.ConfigurationException;
+import org.osgl.http.H;
 import org.osgl.logging.L;
 import org.osgl.logging.Logger;
 import org.osgl.mvc.MvcConfig;
@@ -269,7 +270,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         if (null == csrf) {
             Boolean B = get(CSRF);
             if (null == B) {
-                B = false;
+                B = true;
             }
             this.csrf = B;
         }
@@ -293,7 +294,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         if (null == csrfParamName) {
             String s = get(CSRF_PARAM_NAME);
             if (S.blank(s)) {
-                s = "*";
+                s = ActionContext.ATTR_CSRF_TOKEN;
             }
             csrfParamName = s;
         }
@@ -317,7 +318,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         if (null == csrfCookieName) {
             String s = get(CSRF_COOKIE_NAME);
             if (S.blank(s)) {
-                s = "*";
+                s = "XSRF-TOKEN";
             }
             csrfCookieName = s;
         }
@@ -341,7 +342,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         if (null == csrfHeaderName) {
             String s = get(CSRF_HEADER_NAME);
             if (S.blank(s)) {
-                s = "*";
+                s = H.Header.Names.X_XSRF_TOKEN;
             }
             csrfHeaderName = s;
         }
@@ -451,6 +452,30 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     private void _mergeCliSessionExpiration(AppConfig conf) {
         if (null == get(CLI_SESSION_EXPIRATION)) {
             cliSessionExpiration = conf.cliSessionExpiration;
+        }
+    }
+
+    private String cookieDomain;
+
+    protected T cookieDomain(String domain) {
+        this.cookieDomain = domain;
+        return me();
+    }
+
+    public String cookieDomain() {
+        if (null == cookieDomain) {
+            String s = get(COOKIE_DOMAIN);
+            if (null == s) {
+                s = host();
+            }
+            cookieDomain = s;
+        }
+        return cookieDomain;
+    }
+
+    private void _mergeCookieDomain(AppConfig config) {
+        if (null == get(COOKIE_DOMAIN)) {
+            cookieDomain = config.cookieDomain;
         }
     }
 
@@ -959,6 +984,48 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         }
     }
 
+    private MissingAuthenticationHandler csrfCheckFailureHandler = null;
+    protected T csrfCheckFailureHandler(MissingAuthenticationHandler handler) {
+        E.NPE(handler);
+        csrfCheckFailureHandler = handler;
+        return me();
+    }
+    public MissingAuthenticationHandler csrfCheckFailureHandler() {
+        if (null == csrfCheckFailureHandler) {
+            csrfCheckFailureHandler = get(CSRF_CHECK_FAILURE_HANDLER);
+            if (null == csrfCheckFailureHandler) {
+                csrfCheckFailureHandler = new RedirectToLoginUrl();
+            }
+        }
+        return csrfCheckFailureHandler;
+    }
+    private void _mergeCsrfCheckFailureHandler(AppConfig config) {
+        if (null == get(CSRF_CHECK_FAILURE_HANDLER)) {
+            csrfCheckFailureHandler = config.csrfCheckFailureHandler;
+        }
+    }
+
+    private MissingAuthenticationHandler ajaxCsrfCheckFailureHandler = null;
+    protected T ajaxCsrfCheckFailureHandler(MissingAuthenticationHandler handler) {
+        E.NPE(handler);
+        ajaxCsrfCheckFailureHandler = handler;
+        return me();
+    }
+    public MissingAuthenticationHandler ajaxCsrfCheckFailureHandler() {
+        if (null == csrfCheckFailureHandler) {
+            csrfCheckFailureHandler = get(AJAX_CSRF_CHECK_FAILURE_HANDLER);
+            if (null == csrfCheckFailureHandler) {
+                csrfCheckFailureHandler = csrfCheckFailureHandler();
+            }
+        }
+        return csrfCheckFailureHandler;
+    }
+    private void _mergeAjaxCsrfCheckFailureHandler(AppConfig config) {
+        if (null == get(AJAX_CSRF_CHECK_FAILURE_HANDLER)) {
+            csrfCheckFailureHandler = config.csrfCheckFailureHandler;
+        }
+    }
+
     private List<NamedPort> namedPorts = null;
 
     protected T namedPorts(NamedPort... namedPorts) {
@@ -1362,6 +1429,32 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         }
     }
 
+    private String sessionKeyUsername = null;
+
+    protected T sessionKeyUsername(String name) {
+        name = name.trim().toLowerCase();
+        E.illegalArgumentIf(name.length() == 0, "session cookie name cannot be blank");
+        sessionKeyUsername = name;
+        return me();
+    }
+
+    public String sessionKeyUsername() {
+        if (null == sessionKeyUsername) {
+            String username = get(SESSION_KEY_USERNAME);
+            if (S.blank(username)) {
+                username = "username";
+            }
+            sessionKeyUsername = username;
+        }
+        return sessionKeyUsername;
+    }
+
+    private void _mergeSessionKeyUsername(AppConfig config) {
+        if (null == get(SESSION_KEY_USERNAME)) {
+            sessionKeyUsername = config.sessionKeyUsername;
+        }
+    }
+
     private String sessionCookieName = null;
 
     protected T sessionCookieName(String name) {
@@ -1706,6 +1799,9 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         _mergeCsrfParamName(conf);
         _mergeCsrfHeaderName(conf);
         _mergeCsrfCookieName(conf);
+        _mergeCsrfCheckFailureHandler(conf);
+        _mergeAjaxCsrfCheckFailureHandler(conf);
+        _mergeCookieDomain(conf);
         _mergeMaxCliSession(conf);
         _mergeUrlContext(conf);
         _mergeXForwardedProtocol(conf);
@@ -1747,6 +1843,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         _mergeSessionEncrpt(conf);
         _mergeSessionHttpOnly(conf);
         _mergeSessionSecure(conf);
+        _mergeSessionKeyUsername(conf);
         _mergeSessionMapper(conf);
         _mergeSecret(conf);
         _mergeCacheServiceProvider(conf);

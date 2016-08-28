@@ -12,6 +12,7 @@ import act.handler.RequestHandler;
 import act.handler.event.BeforeResultCommit;
 import act.route.Router;
 import act.security.CORS;
+import act.security.CSRF;
 import act.util.ActContext;
 import org.osgl.$;
 import org.osgl.concurrent.ContextLocal;
@@ -37,6 +38,9 @@ import static org.osgl.http.H.Header.Names.*;
 @RequestScoped
 public class ActionContext extends ActContext.Base<ActionContext> implements ActContext<ActionContext>, Destroyable {
 
+    public static final String ATTR_CSRF_TOKEN = "__csrf__";
+    public static final String ATTR_CSR_TOKEN_PREFETCH = "__csrf_prefetch__";
+    public static final String ATTR_WAS_UNAUTHENTICATED = "__was_unauthenticated__";
     public static final String ATTR_HANDLER = "__act_handler__";
     public static final String ATTR_PATH_VARS = "__path_vars__";
     public static final String ATTR_RESULT = "__result__";
@@ -60,7 +64,9 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Act
     private Router router;
     private RequestHandler handler;
     private UserAgent ua;
+    private String sessionKeyUsername;
     private boolean disableCors;
+    private boolean disableCsrf;
 
     @Inject
     private ActionContext(App app, H.Request request, H.Response response) {
@@ -72,7 +78,10 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Act
         this.response = response;
         this._init();
         this.state = State.CREATED;
-        this.disableCors = !app.config().corsEnabled();
+        AppConfig config = app.config();
+        this.disableCors = !config.corsEnabled();
+        this.disableCsrf = req().method().safe();
+        this.sessionKeyUsername = config.sessionKeyUsername();
         this.saveLocal();
     }
 
@@ -194,6 +203,14 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Act
         return req().method() == H.Method.OPTIONS;
     }
 
+    public String username() {
+        return session().get(sessionKeyUsername);
+    }
+
+    public boolean isLoggedIn() {
+        return S.notBlank(username());
+    }
+
     public String body() {
         return paramVal(REQ_BODY);
     }
@@ -273,6 +290,22 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Act
     public ActionContext addUpload(String name, ISObject sobj) {
         uploads.put(name, sobj);
         return this;
+    }
+
+    public void preCheckCsrf() {
+        if (!disableCsrf) {
+            handler().csrfSpec().preCheck(this);
+        }
+    }
+
+    public void checkCsrf() {
+        if (!disableCsrf) {
+            handler().csrfSpec().check(this);
+        }
+    }
+
+    public void setCsrfCookieAndRenderArgs() {
+        handler().csrfSpec().setCookieAndRenderArgs(this);
     }
 
     public void disableCORS() {
@@ -532,6 +565,7 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Act
     public void resolve() {
         E.illegalStateIf(state != State.CREATED);
         boolean sessionFree = handler.sessionFree();
+        attribute(ATTR_WAS_UNAUTHENTICATED, true);
         if (!sessionFree) {
             resolveSession();
             resolveFlash();
@@ -542,6 +576,9 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Act
             eventBus.emit(new PreFireSessionResolvedEvent(session, this));
             Act.sessionManager().fireSessionResolved(this);
             eventBus.emit(new SessionResolvedEvent(session, this));
+            if (isLoggedIn()) {
+                attribute(ATTR_WAS_UNAUTHENTICATED, false);
+            }
         }
     }
 

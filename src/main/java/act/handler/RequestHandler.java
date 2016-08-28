@@ -4,6 +4,7 @@ import act.Destroyable;
 import act.app.ActionContext;
 import act.handler.builtin.StaticFileGetter;
 import act.security.CORS;
+import act.security.CSRF;
 import org.osgl.$;
 
 /**
@@ -58,9 +59,16 @@ public interface RequestHandler extends $.Function<ActionContext, Void>, Destroy
     boolean sessionFree();
 
     /**
-     * Get CORS handler that specifically applied to this request handler
-     * @return the CORS handler or `null` if no CORS handler for this request handler
+     * Get CORS specification that specifically applied to this request handler
+     * @return the the CORS specification applied to this request handler
      */
     CORS.Spec corsSpec();
+
+    /**
+     * Get CSRF specification that applied to this request handler
+     *
+     * @return the CSRF specification applied to this requestion handler
+     */
+    CSRF.Spec csrfSpec();
 
 }

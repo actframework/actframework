@@ -2,6 +2,7 @@ package act.handler;
 
 import act.app.ActionContext;
 import act.security.CORS;
+import act.security.CSRF;
 import org.osgl.$;
 import org.osgl.exception.NotAppliedException;
 
@@ -40,6 +41,11 @@ public abstract class RequestHandlerBase extends $.F1<ActionContext, Void> imple
     @Override
     public CORS.Spec corsSpec() {
         return CORS.Spec.DUMB;
+    }
+
+    @Override
+    public CSRF.Spec csrfSpec() {
+        return CSRF.Spec.DUMB;
     }
 
     @Override

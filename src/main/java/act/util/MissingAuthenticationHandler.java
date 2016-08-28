@@ -5,7 +5,7 @@ import org.osgl.mvc.result.Result;
 
 /**
  * How the framework should respond to request missing authentication
- * while it is required
+ * while it is required or a request failure to pass CSRF checking
  */
 public interface MissingAuthenticationHandler {
     /**

@@ -3,6 +3,7 @@ package act.handler.builtin.controller;
 import act.Destroyable;
 import act.app.ActionContext;
 import act.security.CORS;
+import act.security.CSRF;
 import act.util.Prioritised;
 import org.osgl.mvc.result.Result;
 
@@ -16,4 +17,6 @@ public interface ActionHandlerInvoker extends Prioritised, Destroyable {
     boolean sessionFree();
 
     CORS.Spec corsSpec();
+
+    CSRF.Spec csrfSpec();
 }
