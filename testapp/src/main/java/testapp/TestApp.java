@@ -20,6 +20,7 @@ public class TestApp extends AppConfigurator<TestApp> {
     @Override
     public void configure() {
         httpPort(6111);
+        csrf().disable();
         cors()
                 .allowOrigin(ALLOW_ORIGIN)
                 .allowAndExposeHeaders(ALLOW_EXPOSE_HEADER)

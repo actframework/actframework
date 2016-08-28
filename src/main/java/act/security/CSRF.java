@@ -5,7 +5,9 @@ import act.app.ActionContext;
 import act.app.App;
 import act.conf.AppConfig;
 import act.util.MissingAuthenticationHandler;
+import org.osgl.$;
 import org.osgl.Osgl;
+import org.osgl.exception.UnexpectedException;
 import org.osgl.http.H;
 import org.osgl.inject.BeanSpec;
 import org.osgl.util.S;
@@ -45,7 +47,23 @@ public class CSRF {
     public @interface Disable {
     }
 
+    public static String token(ActionContext ctx) {
+        String paramName = ctx.config().csrfParamName();
+        return ctx.renderArg(paramName);
+    }
+
+    public static String formField(ActionContext ctx) {
+        String paramName = ctx.config().csrfParamName();
+        return S.fmt("<input type='hidden' name='%s' value='%s'>", paramName, ctx.renderArg(paramName));
+    }
+
     public static String calcCsrfToken(H.Session session) {
+        App app = App.instance();
+        String toBeEncrypted = calcCsrfTokenToBeEncrypted(session);
+        return app.encrypt(toBeEncrypted);
+    }
+
+    private static String calcCsrfTokenToBeEncrypted(H.Session session) {
         App app = App.instance();
         String id = session.id();
         String username = session.get(app.config().sessionKeyUsername());
@@ -55,8 +73,7 @@ public class CSRF {
         }
         String payload = sb.toString();
         String sign = app.sign(payload);
-        String toBeEncrypted = S.builder(payload).append("-").append(sign).toString();
-        return app.encrypt(toBeEncrypted);
+        return S.builder(payload).append("-").append(sign).toString();
     }
 
     public static Spec spec(Class controller) {
@@ -83,7 +100,7 @@ public class CSRF {
 
         public static final Spec DUMB = new Spec() {
             @Override
-            public void check(ActionContext context) {
+            public void check(ActionContext context, H.Session session) {
                 // do nothing implementation
             }
         };
@@ -137,9 +154,19 @@ public class CSRF {
          * Check CSRF token after session resolved
          * @param context the current context
          */
-        public void check(ActionContext context) {
+        public void check(ActionContext context, H.Session session) {
+            if (!enabled) {
+                return;
+            }
             String token = context.attribute(ATTR_CSR_TOKEN_PREFETCH);
-            if (S.neq(calcCsrfToken(context.session()), token)) {
+            try {
+                String decrypted = context.app().decrypt(token);
+
+                if (S.neq(calcCsrfTokenToBeEncrypted(session), decrypted)) {
+                    raiseCsrfNotVerified(context);
+                }
+            } catch (UnexpectedException e) {
+                App.logger.warn(e, "Error checking CSRF token");
                 raiseCsrfNotVerified(context);
             }
         }

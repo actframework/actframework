@@ -5,6 +5,7 @@ import act.app.ActionContext;
 import act.app.App;
 import act.app.util.NamedPort;
 import act.handler.RequestHandler;
+import act.handler.builtin.controller.FastRequestHandler;
 import act.handler.builtin.controller.RequestHandlerProxy;
 import act.handler.event.BeforeResultCommit;
 import act.metric.Metric;
@@ -89,6 +90,9 @@ public class NetworkHandler extends DestroyableBase implements  $.Func1<ActionCo
                 logger.error(e, "Error calling global after interceptor");
                 r = ActServerError.of(e);
             }
+            if (null == ctx.handler()) {
+                ctx.handler(FastRequestHandler.DUMB);
+            }
             r.apply(req, ctx.resp());
         } catch (Exception t) {
             logger.error(t, "Error handling network request");
@@ -101,6 +105,9 @@ public class NetworkHandler extends DestroyableBase implements  $.Func1<ActionCo
             }
             if (null == r) {
                 r = ActServerError.of(t);
+            }
+            if (null == ctx.handler()) {
+                ctx.handler(FastRequestHandler.DUMB);
             }
             r.apply(req, ctx.resp());
         } finally {

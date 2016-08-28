@@ -6,12 +6,8 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.osgl.$;
-import org.osgl.Osgl;
 import org.osgl.http.H;
-import org.osgl.mvc.result.BadRequest;
-import org.osgl.mvc.result.ErrorResult;
-import org.osgl.mvc.result.Forbidden;
-import org.osgl.mvc.result.NotFound;
+import org.osgl.mvc.result.*;
 import org.osgl.storage.ISObject;
 import org.osgl.util.C;
 import org.osgl.util.Codec;
@@ -24,6 +20,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -96,6 +93,10 @@ public class EndpointTester extends TestBase {
             execute();
         }
         return resp;
+    }
+
+    protected List<Cookie> cookies() throws IOException {
+        return Cookie.parseAll(HttpUrl.parse("http://localhost:6111"), resp().headers());
     }
 
     protected void verify(EndPointTestContext context) throws Exception {
@@ -241,6 +242,8 @@ public class EndpointTester extends TestBase {
                 throw BadRequest.INSTANCE;
             case HttpURLConnection.HTTP_FORBIDDEN:
                 throw Forbidden.INSTANCE;
+            case HttpURLConnection.HTTP_UNAUTHORIZED:
+                throw Unauthorized.INSTANCE;
             default:
                 throw new ErrorResult(H.Status.of(resp.code()));
         }
@@ -253,14 +256,28 @@ public class EndpointTester extends TestBase {
         private H.Format format = H.Format.JSON;
         private RequestBody body;
         private String postStr;
+        private String session;
+        private String csrf;
         private byte[] postBytes;
         private ISObject postAttachment;
+        private List<Cookie> cookies = C.newList();
+        private Map<String, String> headers = C.newMap();
         private List<$.T2<String, Object>> postParams = C.newList();
 
         public ReqBuilder(String pathTmpl, Object ... args) {
             String s = fullUrl(pathTmpl, args);
             sb = S.builder(s);
             paramAttached = s.contains("?");
+        }
+
+        public ReqBuilder cookies(List<Cookie> cookies) {
+            this.cookies.addAll(cookies);
+            return this;
+        }
+
+        public ReqBuilder header(String name, String value) {
+            this.headers.put(name, value);
+            return this;
         }
 
         public ReqBuilder get() {
@@ -388,6 +405,14 @@ public class EndpointTester extends TestBase {
             if (this.format == H.Format.JSON) {
                 builder.addHeader("Content-Type", "application/json");
             }
+            if (!this.headers.isEmpty()) {
+                for (Map.Entry<String, String> entry : headers.entrySet()) {
+                    builder.addHeader(entry.getKey(), entry.getValue());
+                }
+            }
+            if (!this.cookies.isEmpty()) {
+                builder.header("Cookie", cookieHeader());
+            }
             switch (method) {
                 case GET:
                     return builder.get();
@@ -404,6 +429,18 @@ public class EndpointTester extends TestBase {
                 default:
                     return builder;
             }
+        }
+
+        private String cookieHeader() {
+            StringBuilder cookieHeader = new StringBuilder();
+            for (int i = 0, size = cookies.size(); i < size; i++) {
+                if (i > 0) {
+                    cookieHeader.append("; ");
+                }
+                Cookie cookie = cookies.get(i);
+                cookieHeader.append(cookie.name()).append('=').append(cookie.value());
+            }
+            return cookieHeader.toString();
         }
 
         private RequestBody body() {
@@ -429,7 +466,11 @@ public class EndpointTester extends TestBase {
             if (S.notBlank(postStr)) {
                 return RequestBody.create(mediaType(), postStr);
             } else {
-                return RequestBody.create(mediaType(), JSON.toJSONString(postParams));
+                Map<String, Object> map = new HashMap<String, Object>();
+                for ($.T2<String, Object> entry : postParams) {
+                    map.put(entry._1, entry._2);
+                }
+                return RequestBody.create(mediaType(), JSON.toJSONString(map));
             }
         }
 

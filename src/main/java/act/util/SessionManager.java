@@ -189,7 +189,7 @@ public class SessionManager extends DestroyableBase {
                 resolveFromCookieContent(session, val, true);
                 session = processExpiration(session, now, false, req);
             }
-            context.checkCsrf();
+            context.checkCsrf(session);
             return session;
         }
 

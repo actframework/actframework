@@ -14,4 +14,8 @@ public class ReturnUnauthorized implements MissingAuthenticationHandler {
     public Result result(ActionContext context) {
         return R;
     }
+
+    static Result result() {
+        return R;
+    }
 }

@@ -298,9 +298,9 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Act
         }
     }
 
-    public void checkCsrf() {
+    public void checkCsrf(H.Session session) {
         if (!disableCsrf) {
-            handler().csrfSpec().check(this);
+            handler().csrfSpec().check(this, session);
         }
     }
 

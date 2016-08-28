@@ -66,6 +66,10 @@ public abstract class AppConfigurator<T extends AppConfigurator> extends AppConf
         return new CorsSetting(this);
     }
 
+    protected CsrfSetting csrf() {
+        return new CsrfSetting(this);
+    }
+
     protected RouteBuilder route(String path) {
         return new RouteBuilder(this).map(path);
     }
@@ -101,6 +105,63 @@ public abstract class AppConfigurator<T extends AppConfigurator> extends AppConf
     public abstract void configure();
 
     protected void releaseAppConfigResources() {}
+
+    protected static class CsrfSetting {
+        private AppConfigurator conf;
+        private boolean enabled;
+        private String headerName;
+        private String paramName;
+        private String cookieName;
+
+        CsrfSetting(AppConfigurator conf) {
+            this.conf = conf;
+            this.enabled = true;
+            conf.app().jobManager().on(AppEventId.CONFIG_PREMERGE, new Runnable() {
+                @Override
+                public void run() {
+                    checkAndCommit();
+                }
+            });
+        }
+
+
+        public CsrfSetting enable() {
+            enabled = true;
+            return this;
+        }
+
+        public CsrfSetting disable() {
+            enabled = false;
+            return this;
+        }
+
+        public CsrfSetting headerName(String name) {
+            this.headerName = name;
+            return this;
+        }
+
+        public CsrfSetting paramName(String name) {
+            this.paramName = name;
+            return this;
+        }
+
+        public CsrfSetting cookieName(String name) {
+            this.cookieName = name;
+            return this;
+        }
+
+        private void checkAndCommit() {
+            if (!enabled) {
+                logger.info("Global CSRF is disabled");
+                conf.enableCsrf(false);
+                return;
+            }
+            logger.info("Global CSRF is enabled");
+            conf.csrfCookieName(this.cookieName);
+            conf.csrfHeaderName(this.headerName);
+            conf.csrfParamName(this.paramName);
+        }
+    }
 
     protected static class CorsSetting {
         private AppConfigurator conf;

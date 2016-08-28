@@ -3,9 +3,12 @@ package act.view;
 import act.ActComponent;
 import act.app.ActionContext;
 import act.mail.MailerContext;
+import act.security.CSRF;
 import act.util.ActContext;
 import org.osgl.http.H;
 import org.osgl.util.C;
+import org.rythmengine.utils.RawData;
+import org.rythmengine.utils.S;
 
 import javax.mail.internet.InternetAddress;
 import java.util.List;
@@ -61,6 +64,18 @@ public class SystemImplicitVariableProvider extends ImplicitVariableProvider {
                 @Override
                 public Object eval(ActionContext context) {
                     return context.allParams();
+                }
+            },
+            new ActionViewVarDef("_csrf", String.class) {
+                @Override
+                public Object eval(ActionContext context) {
+                    return CSRF.token(context);
+                }
+            },
+            new ActionViewVarDef("_csrfField", RawData.class) {
+                @Override
+                public Object eval(ActionContext context) {
+                    return S.raw(CSRF.formField(context));
                 }
             }
     );

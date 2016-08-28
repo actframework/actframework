@@ -114,6 +114,19 @@ public class Router extends AppServiceBase<Router> {
         return getInvokerFrom(node);
     }
 
+    public RequestHandler findStaticGetHandler(String url) {
+        Iterator<CharSequence> path = Path.tokenizer(Unsafe.bufOf(url));
+        Node node = root(H.Method.GET);
+        while (null != node && path.hasNext()) {
+            CharSequence nodeName = path.next();
+            node = node.staticChildren.get(nodeName);
+            if (null == node || node.terminateRouteSearch()) {
+                break;
+            }
+        }
+        return null == node ? null : node.handler;
+    }
+
     private RequestHandler getInvokerFrom(Node node) {
         if (null == node) {
             throw notFound();
@@ -127,7 +140,7 @@ public class Router extends AppServiceBase<Router> {
                         if (null == node.handler) {
                             throw notFound();
                         }
-                        return node.handler;
+                        handler = node.handler;
                     } else {
                         throw notFound();
                     }
@@ -136,8 +149,9 @@ public class Router extends AppServiceBase<Router> {
                 } else {
                     return node.handler;
                 }
+            } else {
+                throw notFound();
             }
-            throw notFound();
         }
         return handler;
     }
