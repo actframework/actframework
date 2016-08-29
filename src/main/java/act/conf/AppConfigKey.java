@@ -124,6 +124,18 @@ public enum AppConfigKey implements ConfigKey {
     CSRF_COOKIE_NAME("csrf.cookie_name"),
 
     /**
+     * `act.csrf.protector` specifies the implementation of
+     * {@link act.security.CSRFProtector}.
+     *
+     * The value of this configuration could be either a name of
+     * the class that implements {@link act.security.CSRFProtector}
+     * interface, or the enum name of {@link act.security.CSRFProtector.Predefined}
+     *
+     * Default value: `HMAC` which specifies the {@link act.security.CSRFProtector.Predefined#HMAC}
+     */
+    CSRF_PROTECTOR("csrf.protector"),
+
+    /**
      * {@code act.cli.port} specifies the default cli (telnet) port the application
      * listen to.
      * <p>Default value: {@code 5461}</p>

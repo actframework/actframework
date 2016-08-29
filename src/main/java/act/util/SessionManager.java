@@ -1,7 +1,6 @@
 package act.util;
 
 import act.Act;
-import act.Destroyable;
 import act.app.ActionContext;
 import act.app.App;
 import act.conf.AppConfig;
@@ -156,7 +155,7 @@ public class SessionManager extends DestroyableBase {
         private SessionMapper sessionMapper;
         private String sessionCookieName;
         private String flashCookieName;
-        private String cookiDomain;
+        private String cookieDomain;
 
         CookieResolver(App app) {
             E.NPE(app);
@@ -167,7 +166,7 @@ public class SessionManager extends DestroyableBase {
             this.persistentSession = conf.persistSession();
             this.sessionHttpOnly = conf.sessionHttpOnly();
             this.sessionSecure = conf.sessionSecure();
-            this.cookiDomain = conf.cookieDomain();
+            this.cookieDomain = conf.cookieDomain();
             long ttl = conf.sessionTtl();
             this.ttl = ttl * 1000L;
             sessionWillExpire = ttl > 0;
@@ -371,8 +370,8 @@ public class SessionManager extends DestroyableBase {
         private H.Cookie createCookie(String name, String value) {
             H.Cookie cookie = new H.Cookie(name, value);
             cookie.path("/");
-            cookie.domain(cookiDomain);
-            cookie.httpOnly(false);
+            cookie.domain(cookieDomain);
+            cookie.httpOnly(true);
             cookie.secure(!Act.isDev());
             if (sessionWillExpire && persistentSession) {
                 cookie.maxAge((int) (ttl / 1000));

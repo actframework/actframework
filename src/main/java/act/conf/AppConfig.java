@@ -12,6 +12,7 @@ import act.db.util.SequenceNumberGenerator;
 import act.db.util._SequenceNumberGenerator;
 import act.handler.UnknownHttpMethodProcessor;
 import act.handler.event.ResultEvent;
+import act.security.CSRFProtector;
 import act.util.*;
 import act.validation.ValidationMessageInterpolator;
 import act.view.TemplatePathResolver;
@@ -304,6 +305,34 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     private void _mergeCsrfParamName(AppConfig conf) {
         if (null == get(CSRF_PARAM_NAME)) {
             csrfParamName = conf.csrfParamName;
+        }
+    }
+
+    private CSRFProtector csrfProtector;
+
+    protected T csrfProtector(CSRFProtector protector) {
+        this.csrfProtector = $.notNull(protector);
+        return me();
+    }
+
+    public CSRFProtector csrfProtector() {
+        if (null == csrfProtector) {
+            String s = get(CSRF_PROTECTOR);
+            if (S.blank(s)) {
+                s = "HMAC";
+            }
+            try {
+                csrfProtector = CSRFProtector.Predefined.valueOf(s);
+            } catch (Exception e) {
+                csrfProtector = app.getInstance(s);
+            }
+        }
+        return csrfProtector;
+    }
+
+    private void _mergeCsrfProtector(AppConfig config) {
+        if (null == get(CSRF_PROTECTOR)) {
+            csrfProtector = config.csrfProtector;
         }
     }
 
@@ -1799,6 +1828,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         _mergeCsrfParamName(conf);
         _mergeCsrfHeaderName(conf);
         _mergeCsrfCookieName(conf);
+        _mergeCsrfProtector(conf);
         _mergeCsrfCheckFailureHandler(conf);
         _mergeAjaxCsrfCheckFailureHandler(conf);
         _mergeCookieDomain(conf);

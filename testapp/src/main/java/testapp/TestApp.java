@@ -2,6 +2,7 @@ package testapp;
 
 import act.app.conf.AppConfigurator;
 import act.boot.app.RunApp;
+import act.security.CSRFProtector;
 
 import static testapp.TestApp.GLOBAL_CORS.*;
 
@@ -20,7 +21,7 @@ public class TestApp extends AppConfigurator<TestApp> {
     @Override
     public void configure() {
         httpPort(6111);
-        csrf().disable();
+        csrf().disable().protector(CSRFProtector.Predefined.RANDOM);
         cors()
                 .allowOrigin(ALLOW_ORIGIN)
                 .allowAndExposeHeaders(ALLOW_EXPOSE_HEADER)

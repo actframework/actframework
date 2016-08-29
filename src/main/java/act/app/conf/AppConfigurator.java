@@ -4,6 +4,7 @@ import act.app.event.AppEventId;
 import act.conf.AppConfig;
 import act.route.RouteSource;
 import act.route.Router;
+import act.security.CSRFProtector;
 import org.osgl.$;
 import org.osgl.http.H;
 import org.osgl.logging.Logger;
@@ -112,6 +113,7 @@ public abstract class AppConfigurator<T extends AppConfigurator> extends AppConf
         private String headerName;
         private String paramName;
         private String cookieName;
+        private CSRFProtector protector;
 
         CsrfSetting(AppConfigurator conf) {
             this.conf = conf;
@@ -150,6 +152,11 @@ public abstract class AppConfigurator<T extends AppConfigurator> extends AppConf
             return this;
         }
 
+        public CsrfSetting protector(CSRFProtector protector) {
+            this.protector = $.notNull(protector);
+            return this;
+        }
+
         private void checkAndCommit() {
             if (!enabled) {
                 logger.info("Global CSRF is disabled");
@@ -160,6 +167,7 @@ public abstract class AppConfigurator<T extends AppConfigurator> extends AppConf
             conf.csrfCookieName(this.cookieName);
             conf.csrfHeaderName(this.headerName);
             conf.csrfParamName(this.paramName);
+            conf.csrfProtector(this.protector);
         }
     }
 

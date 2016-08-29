@@ -5,8 +5,6 @@ import act.app.ActionContext;
 import act.app.App;
 import act.conf.AppConfig;
 import act.util.MissingAuthenticationHandler;
-import org.osgl.$;
-import org.osgl.Osgl;
 import org.osgl.exception.UnexpectedException;
 import org.osgl.http.H;
 import org.osgl.inject.BeanSpec;
@@ -57,25 +55,6 @@ public class CSRF {
         return S.fmt("<input type='hidden' name='%s' value='%s'>", paramName, ctx.renderArg(paramName));
     }
 
-    public static String calcCsrfToken(H.Session session) {
-        App app = App.instance();
-        String toBeEncrypted = calcCsrfTokenToBeEncrypted(session);
-        return app.encrypt(toBeEncrypted);
-    }
-
-    private static String calcCsrfTokenToBeEncrypted(H.Session session) {
-        App app = App.instance();
-        String id = session.id();
-        String username = session.get(app.config().sessionKeyUsername());
-        StringBuilder sb = new StringBuilder(id);
-        if (S.notBlank(username)) {
-            sb.append(username);
-        }
-        String payload = sb.toString();
-        String sign = app.sign(payload);
-        return S.builder(payload).append("-").append(sign).toString();
-    }
-
     public static Spec spec(Class controller) {
         return spec(BeanSpec.of(controller, Act.injector()));
     }
@@ -92,29 +71,46 @@ public class CSRF {
         } else if (null != beanSpec.getAnnotation(Disable.class)) {
             return new Spec(false);
         }
-        return Spec.DUMB;
+        return Spec.DEFAULT;
     }
 
 
     public static class Spec {
 
+        // The dumb spec does nothing
         public static final Spec DUMB = new Spec() {
+            @Override
+            public void preCheck(ActionContext context) {
+                // do nothing implementation
+            }
+
             @Override
             public void check(ActionContext context, H.Session session) {
                 // do nothing implementation
             }
+
+            @Override
+            public void setCookieAndRenderArgs(ActionContext context) {
+                // do nothing implementation
+            }
         };
 
+        // The default spec delegate to global App configuration
+        public static final Spec DEFAULT = new Spec();
+
+        private App app;
         private Boolean enabled;
         private String paramName;
         private String headerName;
         private String cookieName;
         private String cookieDomain;
+        private CSRFProtector csrfProtector;
 
         private Spec() {this(null);}
 
         private Spec(Boolean enabled) {
-            AppConfig config = Act.appConfig();
+            this.app = Act.app();
+            AppConfig config = app.config();
             boolean globalEnabled = config.csrfEnabled();
             this.enabled = null == enabled ? globalEnabled : enabled;
             if (!this.enabled) {
@@ -124,10 +120,11 @@ public class CSRF {
             this.headerName = config.csrfHeaderName();
             this.cookieName = config.csrfCookieName();
             this.cookieDomain = config.cookieDomain();
+            this.csrfProtector = config.csrfProtector();
         }
 
         private boolean effective() {
-            return this != DUMB;
+            return DUMB != this && DEFAULT != this;
         }
 
         /**
@@ -160,9 +157,7 @@ public class CSRF {
             }
             String token = context.attribute(ATTR_CSR_TOKEN_PREFETCH);
             try {
-                String decrypted = context.app().decrypt(token);
-
-                if (S.neq(calcCsrfTokenToBeEncrypted(session), decrypted)) {
+                if (!csrfProtector.verifyToken(token, session, app)) {
                     raiseCsrfNotVerified(context);
                 }
             } catch (UnexpectedException e) {
@@ -180,14 +175,20 @@ public class CSRF {
                 return;
             }
             String token = retrieveCsrfToken(context);
+            if (S.blank(token)) {
+                // this branch is for safe methods
+                H.Session session = context.session();
+                token = csrfProtector.retrieveToken(session, cookieName, app);
+            }
             if (S.blank(token) || justLoggedIn(context)) {
-                token = calcCsrfToken(context.session());
-                AppConfig config = context.config();
+                H.Session session = context.session();
+                csrfProtector.clearExistingToken(session, cookieName);
+                token = app.encrypt(csrfProtector.generateToken(session, app));
                 H.Cookie cookie = new H.Cookie(cookieName, token);
                 cookie.domain(cookieDomain);
                 cookie.path("/");
-                cookie.domain(config.host());
                 context.resp().addCookie(cookie);
+                csrfProtector.outputToken(token, cookieName, cookieDomain, context);
             }
             context.renderArg(paramName, token);
         }

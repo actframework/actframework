@@ -11,12 +11,15 @@ import org.osgl.util.Crypto;
 import org.osgl.util.Token;
 
 import java.security.InvalidKeyException;
+import java.security.SecureRandom;
 
 public class AppCrypto {
 
     private static Logger logger = App.logger;
     
     private String secret;
+
+    private SecureRandom secureRandom = new SecureRandom();
     
     public AppCrypto(AppConfig config) {
         secret = config.secret();
@@ -60,6 +63,14 @@ public class AppCrypto {
             }
             throw e;
         }
+    }
+
+    public int generateRandomInt(int max) {
+        return secureRandom.nextInt(max);
+    }
+
+    public int generateRandomInt() {
+        return secureRandom.nextInt(Integer.MAX_VALUE);
     }
 
     public String generateToken(String id, String... payload) {
