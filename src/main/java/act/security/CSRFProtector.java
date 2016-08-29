@@ -28,7 +28,7 @@ public interface CSRFProtector {
 
             @Override
             public String retrieveToken(H.Session session, String cookieName, App app) {
-                return generateToken(session, app);
+                return null;
             }
 
             @Override

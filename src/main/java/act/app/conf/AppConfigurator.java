@@ -161,7 +161,6 @@ public abstract class AppConfigurator<T extends AppConfigurator> extends AppConf
             if (!enabled) {
                 logger.info("Global CSRF is disabled");
                 conf.enableCsrf(false);
-                return;
             }
             logger.info("Global CSRF is enabled");
             conf.csrfCookieName(this.cookieName);
