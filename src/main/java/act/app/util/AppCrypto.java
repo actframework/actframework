@@ -1,12 +1,11 @@
 package act.app.util;
 
-import act.Act;
 import act.app.App;
 import act.conf.AppConfig;
 import org.apache.commons.codec.Charsets;
+import org.mindrot.jbcrypt.BCrypt;
 import org.osgl.exception.UnexpectedException;
 import org.osgl.logging.Logger;
-import org.osgl.util.Codec;
 import org.osgl.util.Crypto;
 import org.osgl.util.Token;
 
@@ -30,7 +29,11 @@ public class AppCrypto {
     }
 
     public String passwordHash(String message) {
-        return Crypto.passwordHash(message, Crypto.HashType.SHA256);
+        return BCrypt.hashpw(message, BCrypt.gensalt());
+    }
+
+    public boolean verifyPassword(String password, String hash) {
+        return BCrypt.checkpw(password, hash);
     }
 
     public String encrypt(String message) {
