@@ -1715,7 +1715,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     }
 
     public boolean possibleControllerClass(String className) {
-        return controllerNameTester().test(className);
+        return appClassTester().test(className);
     }
 
     private CacheServiceProvider csp = null;

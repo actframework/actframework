@@ -168,6 +168,12 @@
       <version>3.0.0</version>
     </dependency>
 
+    <dependency>
+      <groupId>org.mindrot</groupId>
+      <artifactId>jbcrypt</artifactId>
+      <version>0.3m</version>
+    </dependency>
+
     <!-- for BANNER font -->
     <dependency>
       <groupId>com.github.lalyos</groupId>

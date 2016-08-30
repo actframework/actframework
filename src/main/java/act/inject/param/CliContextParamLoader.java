@@ -39,7 +39,7 @@ public class CliContextParamLoader extends ParamValueLoaderService {
 
     public CliContext.ParsingContext buildParsingContext(Class commander, Method method, CommandMethodMetaInfo methodMetaInfo) {
         CliContext.ParsingContextBuilder.start();
-        ensureOptionLoaders(method);
+        ensureOptionLoaders(method, methodMetaInfo);
         methodMetaInfoHolder.set(methodMetaInfo);
         ParamValueLoader loader = findBeanLoader(commander);
         classRegistry.putIfAbsent(commander, loader);
@@ -48,9 +48,8 @@ public class CliContextParamLoader extends ParamValueLoaderService {
         return CliContext.ParsingContextBuilder.finish();
     }
 
-    public void preParseOptions(CliContext context) {
-        Method method = context.attribute(CliContext.ATTR_METHOD);
-        List<OptionLoader> optionLoaders = ensureOptionLoaders(method);
+    public void preParseOptions(Method method, CommandMethodMetaInfo methodMetaInfo, CliContext context) {
+        List<OptionLoader> optionLoaders = ensureOptionLoaders(method, methodMetaInfo);
         CommandLineParser commandLineParser = context.commandLine();
         for (OptionLoader loader : optionLoaders) {
             String bindName = loader.bindName;
@@ -96,20 +95,20 @@ public class CliContextParamLoader extends ParamValueLoaderService {
         return methodMetaInfoHolder.get().param(i).name();
     }
 
-    private List<OptionLoader> ensureOptionLoaders(Method method) {
+    private List<OptionLoader> ensureOptionLoaders(Method method, CommandMethodMetaInfo methodMetaInfo) {
         List<OptionLoader> optionLoaders = optionLoaderRegistry.get(method);
         if (null == optionLoaders) {
-            optionLoaders = findOptionLoaders(method);
+            optionLoaders = findOptionLoaders(method, methodMetaInfo);
             optionLoaderRegistry.put(method, optionLoaders);
         }
         return optionLoaders;
     }
 
-    private List<OptionLoader> findOptionLoaders(Method method) {
+    private List<OptionLoader> findOptionLoaders(Method method, CommandMethodMetaInfo methodMetaInfo) {
         List<OptionLoader> optionLoaders = new ArrayList<>();
 
         findFieldOptionLoaders(method.getDeclaringClass(), optionLoaders);
-        findParamOptionLoaders(method, optionLoaders);
+        findParamOptionLoaders(method, methodMetaInfo, optionLoaders);
 
         return optionLoaders;
     }
@@ -127,7 +126,7 @@ public class CliContextParamLoader extends ParamValueLoaderService {
         }
     }
 
-    private void findParamOptionLoaders(Method m, List<OptionLoader> optionLoaders) {
+    private void findParamOptionLoaders(Method m, CommandMethodMetaInfo methodMetaInfo, List<OptionLoader> optionLoaders) {
         Type[] types = m.getGenericParameterTypes();
         int len = types.length;
         if (len == 0) {
@@ -138,7 +137,10 @@ public class CliContextParamLoader extends ParamValueLoaderService {
             Type type = types[i];
             Annotation[] annotations = allAnnotations[i];
             BeanSpec spec = BeanSpec.of(type, annotations, null, injector);
-            String bindName = bindName(annotations, spec.name());
+            String bindName = tryFindBindName(annotations, spec.name());
+            if (null == bindName) {
+                bindName = methodMetaInfo.param(i).name();
+            }
             ParamValueLoader loader = findContextSpecificLoader(bindName, spec.rawType(), spec, type, annotations);
             if (loader instanceof OptionLoader) {
                 optionLoaders.add((OptionLoader) loader);

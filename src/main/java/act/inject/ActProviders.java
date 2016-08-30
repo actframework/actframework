@@ -12,6 +12,7 @@ import org.osgl.$;
 import org.osgl.Osgl;
 import org.osgl.cache.CacheService;
 import org.osgl.exception.NotAppliedException;
+import org.osgl.http.H;
 import org.osgl.logging.Logger;
 import org.osgl.util.C;
 import org.osgl.util.E;
@@ -53,6 +54,27 @@ public final class ActProviders {
         @Override
         public ActionContext get() {
             return ActionContext.current();
+        }
+    };
+
+    public static final Provider<H.Session> SESSION = new Provider<H.Session>() {
+        @Override
+        public H.Session get() {
+            return ActionContext.current().session();
+        }
+    };
+
+    public static final Provider<H.Request> REQUEST = new Provider<H.Request>() {
+        @Override
+        public H.Request get() {
+            return ActionContext.current().req();
+        }
+    };
+
+    public static final Provider<H.Response> RESPONSE = new Provider<H.Response>() {
+        @Override
+        public H.Response get() {
+            return ActionContext.current().resp();
         }
     };
 

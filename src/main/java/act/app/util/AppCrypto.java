@@ -40,10 +40,6 @@ public class AppCrypto {
             Throwable cause = e.getCause();
             if (cause instanceof InvalidKeyException) {
                 logger.error("Cannot encrypt/decrypt! Please download Java Crypto Extension pack from Oracle: http://www.oracle.com/technetwork/java/javase/tech/index-jsp-136007.html");
-                if (Act.isDev()) {
-                    logger.warn("Application will keep running with no encrypt/decrypt facilities in Dev mode");
-                    return Codec.encodeBase64(message);
-                }
             }
             throw e;
         }
@@ -56,10 +52,6 @@ public class AppCrypto {
             Throwable cause = e.getCause();
             if (cause instanceof InvalidKeyException) {
                 logger.error("Cannot encrypt/decrypt! Please download Java Crypto Extension pack from Oracle: http://www.oracle.com/technetwork/java/javase/tech/index-jsp-136007.html");
-                if (Act.isDev()) {
-                    logger.warn("Application will keep running with no encrypt/decrypt facilities in Dev mode");
-                    return new String(Codec.decodeBase64(message));
-                }
             }
             throw e;
         }

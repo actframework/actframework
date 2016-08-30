@@ -1,5 +1,6 @@
 # Put package/class names that needs Act to scan. It can be regular expressions
 act\..*Admin
+act.i18n.TimeZoneResolver
 act.inject.genie.GenieInjector
 act.app.SingletonFinder
 act.inject.genie.GenieInjector

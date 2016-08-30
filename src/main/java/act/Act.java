@@ -31,6 +31,7 @@ import act.view.ViewManager;
 import act.xio.NetworkHandler;
 import act.xio.Network;
 import act.xio.undertow.UndertowNetwork;
+import org.mindrot.jbcrypt.BCrypt;
 import org.osgl.$;
 import org.osgl.cache.CacheService;
 import org.osgl.exception.NotAppliedException;
@@ -39,6 +40,7 @@ import org.osgl.logging.Logger;
 import org.osgl.util.C;
 import org.osgl.util.Crypto;
 import org.osgl.util.E;
+import org.osgl.util.S;
 
 import java.util.List;
 import java.util.Map;
@@ -597,6 +599,18 @@ public final class Act {
                 return mode;
             }
         };
+    }
+
+    public static void main(String[] args) {
+        for (int i = 0; i < 20; ++i) {
+            String password = S.random(10);
+            String hash = BCrypt.hashpw(password, BCrypt.gensalt());
+            String hash2 = BCrypt.hashpw(password, BCrypt.gensalt());
+            System.out.printf("%s, %s, %s\n", password, hash, BCrypt.checkpw(password, hash));
+            System.out.printf("%s, %s, %s\n", password, hash2, BCrypt.checkpw(password, hash2));
+            System.out.printf("%s, %s, %s\n", password, hash2, BCrypt.checkpw(password, hash));
+            System.out.printf("%s, %s, %s\n\n", password, hash, BCrypt.checkpw(password, hash2));
+        }
     }
 
 }

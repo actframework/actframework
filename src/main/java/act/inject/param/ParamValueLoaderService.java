@@ -451,6 +451,12 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
     }
 
     public static String bindName(Annotation[] annotations, String defVal) {
+        String name = tryFindBindName(annotations, defVal);
+        E.illegalStateIf(null == name, "Cannot find bind name");
+        return name;
+    }
+
+    public static String tryFindBindName(Annotation[] annotations, String defVal) {
         Param param = filter(annotations, Param.class);
         if (null != param && S.notBlank(param.value())) {
             return param.value();
@@ -466,7 +472,7 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
         if (S.notBlank(defVal)) {
             return defVal;
         }
-        throw new IllegalStateException("Cannot find bind name");
+        return null;
     }
 
     public static String bindName(BeanSpec beanSpec) {

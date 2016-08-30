@@ -26,11 +26,20 @@ public class HandlerEnhancer extends MethodVisitor implements Opcodes {
     private MethodVisitor next;
     private int paramIdShift = 0;
     private Set<Integer> skipNaming = new HashSet<>();
+    private boolean notAction;
 
     public HandlerEnhancer(final MethodVisitor mv, HandlerMethodMetaInfo meta, final int access, final String name, final String desc, final String signature, final String[] exceptions) {
         super(ASM5, new MethodNode(access, name, desc, signature, exceptions));
         this.info = meta;
         this.next = mv;
+    }
+
+    @Override
+    public AnnotationVisitor visitAnnotation(String desc, boolean visible) {
+        if ("Lact/controller/NotAction;".equals(desc)) {
+            notAction = true;
+        }
+        return super.visitAnnotation(desc, visible);
     }
 
     @Override
@@ -64,6 +73,10 @@ public class HandlerEnhancer extends MethodVisitor implements Opcodes {
 
     @Override
     public void visitEnd() {
+        if (notAction) {
+            super.visitEnd();
+            return;
+        }
         MethodNode mn = (MethodNode) mv;
         addParamAnnotations();
         transform(mn);

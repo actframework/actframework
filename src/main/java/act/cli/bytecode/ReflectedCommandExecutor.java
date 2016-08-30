@@ -61,7 +61,7 @@ public class ReflectedCommandExecutor extends CommandExecutor {
     public Object execute(CliContext context) {
         context.attribute(CliContext.ATTR_METHOD, method);
         context.prepare(parsingContext);
-        paramLoaderService.preParseOptions(context);
+        paramLoaderService.preParseOptions(method, methodMetaInfo, context);
         Object cmd = commanderInstance(context);
         Object[] params = params(context);
         return invoke(cmd, params);
