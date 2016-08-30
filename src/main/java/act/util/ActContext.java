@@ -57,8 +57,6 @@ public interface ActContext<CTX_TYPE extends ActContext> extends ParamValueProvi
 
     abstract class Base<VC_TYPE extends Base> extends DestroyableBase implements ActContext<VC_TYPE> {
 
-        public static final String ATTR_LOCALE = "__locale__";
-
         private App app;
         private String templatePath;
         private Template template;

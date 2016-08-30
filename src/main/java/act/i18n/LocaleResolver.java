@@ -20,7 +20,7 @@ import java.util.Locale;
  */
 public class LocaleResolver {
 
-    private static final String KEY = ActionContext.ATTR_LOCALE;
+    private static final String KEY = "__locale__";
     private static final int COOKIE_TTL = 60 * 60 * 24 * 7;
 
     private ActionContext context;
@@ -62,7 +62,7 @@ public class LocaleResolver {
         if (null == locale) {
             locale = resolveFromServer();
         }
-        context.attribute(KEY, locale);
+        context.locale(locale);
         this.locale = locale;
     }
 
@@ -71,8 +71,8 @@ public class LocaleResolver {
             return;
         }
         String cookieName = config.localeCookieName();
-        if (forceWriteCookie || this.locale != context.attribute(KEY) || null == context.cookie(cookieName)) {
-            Locale locale = context.attribute(KEY);
+        if (forceWriteCookie || this.locale != context.locale() || null == context.cookie(cookieName)) {
+            Locale locale = context.locale();
             if (null == locale) {
                 locale = this.locale;
             }
