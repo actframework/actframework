@@ -31,6 +31,7 @@ import org.osgl.util.C;
 import org.osgl.util.E;
 import org.osgl.util.S;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Map;
@@ -286,6 +287,12 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
                 result = method.invoke(null, params);
             } catch (Result r) {
                 return r;
+            } catch (InvocationTargetException e) {
+                Throwable cause = e.getCause();
+                if (cause instanceof Result) {
+                    return (Result) cause;
+                }
+                throw (Exception) cause;
             }
         }
         if (null == result && handler.hasReturn()) {

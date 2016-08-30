@@ -2,8 +2,10 @@ package act.i18n;
 
 import act.app.ActionContext;
 import act.conf.AppConfig;
+import act.controller.Controller;
 import org.osgl.http.H;
 import org.osgl.mvc.annotation.PostAction;
+import org.osgl.util.S;
 
 import javax.inject.Inject;
 import java.util.Locale;
@@ -30,8 +32,12 @@ public class LocaleResolver {
     private boolean forceWriteCookie;
 
     @PostAction("~/i18n/locale")
-    public static void updateLocale() {
+    public static void updateLocale(H.Request request) {
         // there is no logic needed as locale has been processed built-in logic already
+        String s = request.header(H.Header.Names.REFERER);
+        if (S.notBlank(s)) {
+            throw Controller.Util.redirect(s);
+        }
     }
 
     @Inject
