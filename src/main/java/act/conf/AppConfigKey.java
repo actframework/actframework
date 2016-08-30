@@ -339,11 +339,32 @@ public enum AppConfigKey implements ConfigKey {
             Object v = configuration.get(key());
             if (null == v) return null;
             if (v instanceof Boolean) {
-                return (T) ((Boolean) v);
+                return (T) (v);
             }
             return (T) (Boolean.valueOf(v.toString()));
         }
     },
+
+    /**
+     * `act.i18n.enabled` turn on/off i18n tools, e.g. {@link act.i18n.LocaleResolver}
+     *
+     * Default value: `false`
+     */
+    I18N("i18n.enabled"),
+
+    /**
+     * `act.i18n.locale.param_name` specifies the param name to set client locale in http request
+     *
+     * Default value: `act_locale`
+     */
+    I18N_LOCALE_PARAM_NAME("i18n.locale.param_name"),
+
+    /**
+     * `act.i18n.locale.cookie_name` specifies the name for the locale cookie
+     *
+     * Default value: `act_locale`
+     */
+    I18N_LOCALE_COOKIE_NAME("i18n.locale.cookie_name"),
 
     /**
      * {@code act.idgen.node_id.provider.impl} specifies the {@link act.util.IdGenerator.NodeIdProvider}
@@ -458,12 +479,6 @@ public enum AppConfigKey implements ConfigKey {
      */
     PROFILE("profile"),
 
-
-    /**
-     * {@code act.locale.resolver} specifies the implementation of
-     * {@link act.util.LocaleResolver}
-     */
-    RESOLVER_LOCALE("resolver.locale.impl"),
 
     /**
      * {@code resolver.error_template_path.impl} specifies error page (template)

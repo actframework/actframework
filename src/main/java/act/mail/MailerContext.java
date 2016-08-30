@@ -162,11 +162,6 @@ public class MailerContext extends ActContext.Base<MailerContext> {
         return this;
     }
 
-    @Override
-    public Locale locale() {
-        return config().locale();
-    }
-
     public MailerContext attach(ISObject... sobjs) {
         attachments.addAll(C.listOf(sobjs));
         return this;

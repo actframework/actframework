@@ -10,6 +10,7 @@ import act.event.EventBus;
 import act.event.OnceEventListenerBase;
 import act.handler.RequestHandler;
 import act.handler.event.BeforeResultCommit;
+import act.i18n.LocaleResolver;
 import act.route.Router;
 import act.security.CORS;
 import act.security.CSRF;
@@ -65,6 +66,7 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Act
     private RequestHandler handler;
     private UserAgent ua;
     private String sessionKeyUsername;
+    private LocaleResolver localeResolver;
     private boolean disableCors;
     private boolean disableCsrf;
 
@@ -82,6 +84,7 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Act
         this.disableCors = !config.corsEnabled();
         this.disableCsrf = req().method().safe();
         this.sessionKeyUsername = config.sessionKeyUsername();
+        this.localeResolver = new LocaleResolver(this);
         this.saveLocal();
     }
 
@@ -170,10 +173,6 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Act
 
     public String portId() {
         return portId;
-    }
-
-    public Locale locale() {
-        return config().localeResolver().resolve(this);
     }
 
     public UserAgent userAgent() {
@@ -570,6 +569,7 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Act
             resolveSession();
             resolveFlash();
         }
+        localeResolver.resolve();
         state = State.SESSION_RESOLVED;
         if (!sessionFree) {
             EventBus eventBus = app().eventBus();
@@ -595,6 +595,7 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Act
         if (handler.sessionFree()) {
             return;
         }
+        localeResolver.dissolve();
         app().eventBus().emit(new SessionWillDissolveEvent(this));
         try {
             dissolveFlash();

@@ -426,11 +426,6 @@ public class CliContext extends ActContext.Base<CliContext> implements IASCIITab
         return renderArg("__arg_names__");
     }
 
-    @Override
-    public Locale locale() {
-        return config().locale();
-    }
-
     private synchronized IASCIITable tbl() {
         if (asciiTable == null) {
             asciiTable = new SimpleASCIITableImpl(new PrintWriter(console.getOutput()));

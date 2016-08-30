@@ -701,6 +701,72 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
             host = conf.host;
         }
     }
+    
+    private Boolean i18nEnabled;
+    protected T i18n(boolean enabled) {
+        i18nEnabled = enabled;
+        return me();
+    }
+    public boolean i18nEnabled() {
+        if (null == i18nEnabled) {
+            Boolean b = get(I18N);
+            if (null == b) {
+                b = false;
+            }
+            i18nEnabled = b;
+        }
+        return i18nEnabled;
+    }
+    private void _mergeI18nEnabled(AppConfig conf) {
+        if (null == get(I18N)) {
+            i18nEnabled = conf.i18nEnabled;
+        }
+    }
+    
+    private String localeParamName;
+    protected T localeParamName(String name) {
+        E.illegalArgumentIf(S.blank(name), "locale param name must not be empty");
+        localeParamName = name;
+        return me();
+    }
+    public String localeParamName() {
+        if (null == localeParamName) {
+            String s = get(I18N_LOCALE_PARAM_NAME);
+            if (S.blank(s)) {
+                s = "act_locale";
+            }
+            localeParamName = s;
+        }
+        return localeParamName;
+    }
+    private void _mergeLocaleParamName(AppConfig conf) {
+        if (null == get(I18N_LOCALE_PARAM_NAME)) {
+            localeParamName = conf.localeParamName;
+        }
+    }
+
+
+    private String localeCookieName;
+    protected T localeCookieName(String name) {
+        E.illegalArgumentIf(S.blank(name), "locale Cookie name must not be empty");
+        localeCookieName = name;
+        return me();
+    }
+    public String localeCookieName() {
+        if (null == localeCookieName) {
+            String s = get(I18N_LOCALE_COOKIE_NAME);
+            if (S.blank(s)) {
+                s = "act_locale";
+            }
+            localeCookieName = s;
+        }
+        return localeCookieName;
+    }
+    private void _mergeLocaleCookieName(AppConfig conf) {
+        if (null == get(I18N_LOCALE_COOKIE_NAME)) {
+            localeCookieName = conf.localeCookieName;
+        }
+    }
 
     Integer ipEffectiveBytes;
     protected T ipEffectiveBytes(int n) {
@@ -1215,30 +1281,6 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     private void _mergeLocale(AppConfig conf) {
         if (null == get(LOCALE)) {
             locale = conf.locale;
-        }
-    }
-
-    private LocaleResolver localeResolver = null;
-
-    protected T localeResolver(LocaleResolver resolver) {
-        E.NPE(resolver);
-        this.localeResolver = resolver;
-        return me();
-    }
-
-    public LocaleResolver localeResolver() {
-        if (null == localeResolver) {
-            localeResolver = get(RESOLVER_LOCALE);
-            if (null == localeResolver) {
-                localeResolver = LocaleResolver.impl.DEFAULT;
-            }
-        }
-        return localeResolver;
-    }
-
-    private void _mergeLocaleResolver(AppConfig conf) {
-        if (null == get(RESOLVER_LOCALE)) {
-            localeResolver = conf.localeResolver;
         }
     }
 
@@ -1854,13 +1896,15 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         _mergeTimeFmt(conf);
         _mergeEncoding(conf);
         _mergeNodeIdProvider(conf);
+        _mergeI18nEnabled(conf);
+        _mergeLocaleParamName(conf);
+        _mergeLocaleCookieName(conf);
         _mergeIpEffectiveBytes(conf);
         _mergeStartIdFile(conf);
         _mergeStartIdProvider(conf);
         _mergeSequenceProvider(conf);
         _mergeLongEncoder(conf);
         _mergeLocale(conf);
-        _mergeLocaleResolver(conf);
         _mergeSourceVersion(conf);
         _mergeTargetVersion(conf);
         _mergeTemplatePathResolver(conf);

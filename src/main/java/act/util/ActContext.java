@@ -51,11 +51,14 @@ public interface ActContext<CTX_TYPE extends ActContext> extends ParamValueProvi
     <T> T attribute(String name);
     CTX_TYPE removeAttribute(String name);
 
-    public static interface Listener {
+    interface Listener {
         void onDestroy(ActContext context);
     }
 
-    public static abstract class Base<VC_TYPE extends Base> extends DestroyableBase implements ActContext<VC_TYPE> {
+    abstract class Base<VC_TYPE extends Base> extends DestroyableBase implements ActContext<VC_TYPE> {
+
+        public static final String ATTR_LOCALE = "__locale__";
+
         private App app;
         private String templatePath;
         private Template template;
@@ -63,6 +66,7 @@ public interface ActContext<CTX_TYPE extends ActContext> extends ParamValueProvi
         private List<Listener> listenerList;
         private List<Destroyable> destroyableList;
         private Map<String, Object> attributes;
+        private Locale locale;
 
         public Base(App app) {
             E.NPE(app);
@@ -123,6 +127,15 @@ public interface ActContext<CTX_TYPE extends ActContext> extends ParamValueProvi
         public VC_TYPE cacheTemplate(Template template) {
             this.template = template;
             return me();
+        }
+
+        public final VC_TYPE locale(Locale locale) {
+            this.locale = locale;
+            return me();
+        }
+
+        public final Locale locale() {
+            return this.locale;
         }
 
         protected VC_TYPE me() {

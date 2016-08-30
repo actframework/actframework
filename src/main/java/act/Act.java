@@ -43,6 +43,7 @@ import org.osgl.util.E;
 import org.osgl.util.S;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import static act.Destroyable.Util.tryDestroy;
@@ -602,15 +603,8 @@ public final class Act {
     }
 
     public static void main(String[] args) {
-        for (int i = 0; i < 20; ++i) {
-            String password = S.random(10);
-            String hash = BCrypt.hashpw(password, BCrypt.gensalt());
-            String hash2 = BCrypt.hashpw(password, BCrypt.gensalt());
-            System.out.printf("%s, %s, %s\n", password, hash, BCrypt.checkpw(password, hash));
-            System.out.printf("%s, %s, %s\n", password, hash2, BCrypt.checkpw(password, hash2));
-            System.out.printf("%s, %s, %s\n", password, hash2, BCrypt.checkpw(password, hash));
-            System.out.printf("%s, %s, %s\n\n", password, hash, BCrypt.checkpw(password, hash2));
-        }
+        Locale locale = new Locale("zh", "tw");
+        System.out.println(locale);
     }
 
 }
