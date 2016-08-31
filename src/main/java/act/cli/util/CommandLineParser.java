@@ -113,6 +113,26 @@ public class CommandLineParser {
         return arguments.size();
     }
 
+    public int optionCount() {
+        return arguments.size();
+    }
+
+    /**
+     * When a command has only one option and no arguments the
+     * user can supply the option as argument to suppress leads typing.
+     *
+     * This method will return the single argument as an option with
+     * any leads. If the parser found there are more than one argument
+     * or there are options then this method will return `null`
+     * @return
+     */
+    public String argumentAsOption() {
+        if (1 == argumentCount() && 0 == options.size()) {
+            return argument(0);
+        }
+        return null;
+    }
+
     public boolean getBoolean(String lead1, String lead2) {
         String s = o(lead1, lead2);
         return "true" == s;

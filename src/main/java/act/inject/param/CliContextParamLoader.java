@@ -51,14 +51,28 @@ public class CliContextParamLoader extends ParamValueLoaderService {
     public void preParseOptions(Method method, CommandMethodMetaInfo methodMetaInfo, CliContext context) {
         List<OptionLoader> optionLoaders = ensureOptionLoaders(method, methodMetaInfo);
         CommandLineParser commandLineParser = context.commandLine();
-        for (OptionLoader loader : optionLoaders) {
-            String bindName = loader.bindName;
-            String value = commandLineParser.getString(loader.lead1, loader.lead2);
-            if (S.notBlank(value)) {
-                if (loader.required) {
+        boolean argumentAsOption = false;
+        if (1 == optionLoaders.size()) {
+            OptionLoader loader = optionLoaders.get(0);
+            if (loader.required) {
+                String theOptionVal = commandLineParser.argumentAsOption();
+                if (null != theOptionVal) {
+                    argumentAsOption = true;
                     context.parsingContext().foundRequired(loader.requiredGroup);
+                    context.param(loader.bindName, theOptionVal);
                 }
-                context.param(bindName, value);
+            }
+        }
+        if (!argumentAsOption) {
+            for (OptionLoader loader : optionLoaders) {
+                String bindName = loader.bindName;
+                String value = commandLineParser.getString(loader.lead1, loader.lead2);
+                if (S.notBlank(value)) {
+                    if (loader.required) {
+                        context.parsingContext().foundRequired(loader.requiredGroup);
+                    }
+                    context.param(bindName, value);
+                }
             }
         }
         context.parsingContext().raiseExceptionIfThereAreMissingOptions();
