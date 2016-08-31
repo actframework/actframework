@@ -15,8 +15,8 @@ import java.lang.annotation.Target;
  * The eligible method signature of sub class finder is
  *
  * ```java
- * @SubClassFinder
- * public void foo(Class&lt;TYPE&gt;) {...}
+ * {@literal @}SubClassFinder
+ * public void foo(Class<TYPE>) {...}
  * ```
  *
  * Where `foo` could be any valid Java method name

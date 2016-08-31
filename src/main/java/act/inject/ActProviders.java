@@ -27,6 +27,7 @@ import java.util.Set;
 /**
  * Name space of built in providers
  */
+@SuppressWarnings("unused")
 public final class ActProviders {
 
     private ActProviders() {}

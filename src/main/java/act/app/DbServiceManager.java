@@ -11,6 +11,7 @@ import act.db.util._SequenceNumberGenerator;
 import act.event.AppEventListenerBase;
 import act.util.ClassNode;
 import act.util.General;
+import act.util.SubClassFinder;
 import org.osgl.$;
 import org.osgl.exception.ConfigurationException;
 import org.osgl.logging.LogManager;
@@ -19,12 +20,14 @@ import org.osgl.util.C;
 import org.osgl.util.E;
 import org.rythmengine.utils.S;
 
+import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
 import java.lang.annotation.Annotation;
 import java.util.EventObject;
 import java.util.HashMap;
 import java.util.Map;
 
-@ActComponent
+@ApplicationScoped
 public class DbServiceManager extends AppServiceBase<DbServiceManager> implements DaoLocator {
 
     private static Logger logger = LogManager.get(DbServiceManager.class);
@@ -37,7 +40,8 @@ public class DbServiceManager extends AppServiceBase<DbServiceManager> implement
     // map model class to dao class
     private Map<Class<?>, Dao> modelDaoMap = C.newMap();
 
-    protected DbServiceManager(final App app) {
+    @Inject
+    public DbServiceManager(final App app) {
         super(app);
         initServices(app.config());
         configureSequenceGenerator(app);
@@ -93,9 +97,9 @@ public class DbServiceManager extends AppServiceBase<DbServiceManager> implement
 
     @Override
     protected void releaseResources() {
-        Destroyable.Util.tryDestroyAll(serviceMap.values());
+        Destroyable.Util.tryDestroyAll(serviceMap.values(), ApplicationScoped.class);
         serviceMap.clear();
-        Destroyable.Util.tryDestroyAll(modelDaoMap.values());
+        Destroyable.Util.tryDestroyAll(modelDaoMap.values(), ApplicationScoped.class);
         modelDaoMap.clear();
     }
 
