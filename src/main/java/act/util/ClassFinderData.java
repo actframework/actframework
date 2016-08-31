@@ -14,15 +14,25 @@ public class ClassFinderData {
     public enum By {
         ANNOTATION() {
             @Override
-            void tryFind(ClassNode startNode, $.Visitor<ClassNode> visitor) {
-                startNode.visitPublicAnnotatedClasses(visitor);
+            void tryFind(
+                    ClassNode startNode,
+                    boolean publicOnly,
+                    boolean noAbstract,
+                    $.Visitor<ClassNode> visitor
+            ) {
+                startNode.visitAnnotatedClasses(visitor, publicOnly, noAbstract);
             }
         },
 
         SUPER_TYPE() {
             @Override
-            void tryFind(ClassNode startNode, $.Visitor<ClassNode> visitor) {
-                startNode.visitPublicNotAbstractSubTreeNodes(visitor);
+            void tryFind(
+                    ClassNode startNode,
+                    boolean publicOnly,
+                    boolean noAbstract,
+                    $.Visitor<ClassNode> visitor
+            ) {
+                startNode.visitSubTree(visitor, publicOnly, noAbstract);
             }
         };
 
@@ -50,10 +60,14 @@ public class ClassFinderData {
                     }
                 }
             };
-            tryFind(theNode, visitor);
+            tryFind(theNode, data.publicOnly, data.noAbstract, visitor);
         }
 
-        abstract void tryFind(final ClassNode startNode, final $.Visitor<ClassNode> visitor);
+        abstract void tryFind(
+                ClassNode startNode,
+                boolean publicOnly,
+                boolean noAbstract,
+                $.Visitor<ClassNode> visitor);
     }
 
     /**
@@ -70,6 +84,14 @@ public class ClassFinderData {
      */
     private By how;
     /**
+     * Only scan public class?
+     */
+    private boolean publicOnly = true;
+    /**
+     * Do not scan abstract class?
+     */
+    private boolean noAbstract = true;
+    /**
      * The name of the class that host the found callback logic
      */
     private String className;
@@ -84,6 +106,16 @@ public class ClassFinderData {
 
     public ClassFinderData what(String targetClassName) {
         this.what = targetClassName;
+        return this;
+    }
+
+    public ClassFinderData publicOnly(boolean b) {
+        this.publicOnly = b;
+        return this;
+    }
+
+    public ClassFinderData noAbstract(boolean b) {
+        this.noAbstract = b;
         return this;
     }
 

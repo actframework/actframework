@@ -40,6 +40,24 @@ public @interface SubClassFinder {
     Class<?> value() default SubClassFinder.class;
 
     /**
+     * Should I collect only public classes?
+     *
+     * default value is `true`
+     *
+     * @return `true` if only public class shall be collected, `false` otherwise
+     */
+    boolean publicOnly() default true;
+
+    /**
+     * Should I collect abstract classes?
+     *
+     * default value is `false`
+     *
+     * @return `true` if abstract classes shall be excluded, `false` otherwise
+     */
+    boolean noAbstract() default true;
+
+    /**
      * Specify when to execute the call back for a certain found class.
      * <p>
      * By default the value of `callOn` is {@link AppEventId#DEPENDENCY_INJECTOR_PROVISIONED}

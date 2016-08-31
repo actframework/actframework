@@ -33,7 +33,11 @@ public class AppCrypto {
     }
 
     public boolean verifyPassword(String password, String hash) {
-        return BCrypt.checkpw(password, hash);
+        try {
+            return BCrypt.checkpw(password, hash);
+        } catch (Exception e) {
+            return false;
+        }
     }
 
     public String encrypt(String message) {

@@ -136,6 +136,33 @@ public class ClassNode extends DestroyableBase {
         return this;
     }
 
+    private static $.Predicate<ClassNode> classNodeFilter(final boolean publicOnly, final boolean noAbstract) {
+        return new $.Predicate<ClassNode>() {
+            @Override
+            public boolean test(ClassNode classNode) {
+                if (publicOnly && !classNode.isPublic()) {
+                    return false;
+                }
+                if (noAbstract && classNode.isAbstract()) {
+                    return false;
+                }
+                return true;
+            }
+        };
+    }
+
+    /**
+     * Accept a visitor that visit all descendants of the class represetned by
+     * this `ClassNode` including this `ClassNode` itself.
+     * @param visitor the visitor
+     * @param publicOnly specify if only public class shall be visited
+     * @param noAbstract specify if abstract class can be visited
+     * @return this `ClassNode` instance
+     */
+    public ClassNode visitTree($.Function<ClassNode, ?> visitor, final boolean publicOnly, final boolean noAbstract) {
+        return visitTree($.guardedVisitor(classNodeFilter(publicOnly, noAbstract), visitor));
+    }
+
     /**
      * Accept a visitor that visit all descendants of the class represented
      * by this `ClassNode` NOT including this `ClassNode` itself
@@ -147,6 +174,18 @@ public class ClassNode extends DestroyableBase {
             child.visitTree(visitor);
         }
         return this;
+    }
+
+    /**
+     * Accept a visitor that visit all descendants of the class represetned by
+     * this `ClassNode` NOT including this `ClassNode` itself.
+     * @param visitor the visitor
+     * @param publicOnly specify if only public class shall be visited
+     * @param noAbstract specify if abstract class can be visited
+     * @return this `ClassNode` instance
+     */
+    public ClassNode visitSubTree($.Function<ClassNode, ?> visitor, final boolean publicOnly, final boolean noAbstract) {
+        return visitSubTree($.guardedVisitor(classNodeFilter(publicOnly, noAbstract), visitor));
     }
 
     /**
@@ -229,6 +268,18 @@ public class ClassNode extends DestroyableBase {
             visitor.apply(annotated);
         }
         return this;
+    }
+
+    /**
+     * Accept a visitor that visit all class node that has been annotated by the
+     * class represented by this `ClassNode`
+     * @param visitor the function that take `ClassNode` as argument
+     * @param publicOnly specify whether non-public class shall be scanned
+     * @param noAbstract specify whether abstract class shall be scanned
+     * @return this `ClassNode` instance
+     */
+    public ClassNode visitAnnotatedClasses($.Function<ClassNode, ?> visitor, boolean publicOnly, boolean noAbstract) {
+        return visitAnnotatedClasses($.guardedVisitor(classNodeFilter(publicOnly, noAbstract), visitor));
     }
 
     /**

@@ -71,9 +71,15 @@ public class ClassFinderByteCodeScanner extends AppByteCodeScannerBase {
 
                         @Override
                         public void visit(String name, Object value) {
-                            Type type = (Type)value;
-                            String className = type.getClassName();
-                            finder.what(className);
+                            if ("value".equals(name)) {
+                                Type type = (Type) value;
+                                String className = type.getClassName();
+                                finder.what(className);
+                            } else if ("publicOnly".equals(name)) {
+                                finder.publicOnly((Boolean) value);
+                            } else if ("noAbstract".equals(name)) {
+                                finder.noAbstract((Boolean) value);
+                            }
                             super.visit(name, value);
                         }
 
