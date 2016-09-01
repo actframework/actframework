@@ -1,9 +1,20 @@
 package act.db;
 
-public abstract class TimeTrackingModelBase<TIMESTAMP_TYPE, ID_TYPE, MODEL_TYPE extends ModelBase>
-        extends ModelBase<ID_TYPE, MODEL_TYPE> implements TimeTrackingModel<TIMESTAMP_TYPE> {
+import act.data.Timestamped;
+import org.osgl.$;
+
+public abstract class TimeTrackingModelBase<
+        ID_TYPE, MODEL_TYPE extends ModelBase,
+        TIMESTAMP_TYPE, TIMESTAMP_TYPE_RESOLVER extends $.Function<TIMESTAMP_TYPE, Long>
+        > extends ModelBase<ID_TYPE, MODEL_TYPE>
+        implements TimeTrackingModel<TIMESTAMP_TYPE, TIMESTAMP_TYPE_RESOLVER>, Timestamped {
     @Override
     public boolean _isNew() {
         return null == _created();
+    }
+
+    @Override
+    public long _timestamp() {
+        return _timestampTypeResolver().apply(_lastModified());
     }
 }
