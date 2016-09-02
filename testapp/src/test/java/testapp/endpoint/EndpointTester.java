@@ -244,6 +244,8 @@ public class EndpointTester extends TestBase {
                 throw Forbidden.INSTANCE;
             case HttpURLConnection.HTTP_UNAUTHORIZED:
                 throw Unauthorized.INSTANCE;
+            case HttpURLConnection.HTTP_NOT_MODIFIED:
+                throw NotModified.INSTANCE;
             default:
                 throw new ErrorResult(H.Status.of(resp.code()));
         }

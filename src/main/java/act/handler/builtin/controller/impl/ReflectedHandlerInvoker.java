@@ -308,17 +308,17 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
             return false;
         }
         H.Format fmt = context.accept();
-        Boolean B = templateCache.get(fmt);
-        if (null == B || Act.isDev()) {
+        Boolean hasTemplate = templateCache.get(fmt);
+        if (null == hasTemplate || Act.isDev()) {
             if (!TemplatePathResolver.isAcceptFormatSupported(fmt)) {
-                B = false;
+                hasTemplate = false;
             } else {
                 Template t = Act.viewManager().load(context);
-                B = t != null;
+                hasTemplate = t != null;
             }
-            templateCache.put(fmt, B);
+            templateCache.put(fmt, hasTemplate);
         }
-        return B;
+        return hasTemplate;
     }
 
     private Object[] params(ActionContext context) {

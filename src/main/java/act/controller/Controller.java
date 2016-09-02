@@ -3,6 +3,7 @@ package act.controller;
 import act.app.ActionContext;
 import act.conf.AppConfigKey;
 import act.controller.meta.HandlerMethodMetaInfo;
+import act.data.Versioned;
 import act.util.DisableFastJsonCircularReferenceDetect;
 import act.util.FastJsonIterable;
 import act.util.PropertySpec;
@@ -620,37 +621,46 @@ public @interface Controller {
          * </ul>
          *
          * @param v             the value to be rendered
-         * @param actionContext the action context
+         * @param context the action context
          * @return the rendered result
          */
-        public static Result inferResult(HandlerMethodMetaInfo meta, Object v, ActionContext actionContext, boolean hasTemplate) {
+        public static Result inferResult(HandlerMethodMetaInfo meta, Object v, ActionContext context, boolean hasTemplate) {
             if (null == v && !hasTemplate) {
                 return null;
             } else if (v instanceof Result) {
                 return (Result) v;
             } else if (v instanceof String) {
                 if (hasTemplate) {
-                    return inferToTemplate(v, actionContext);
+                    return inferToTemplate(v, context);
                 }
-                return inferResult((String) v, actionContext);
+                return inferResult((String) v, context);
             } else if (v instanceof InputStream) {
-                return inferResult((InputStream) v, actionContext);
+                return inferResult((InputStream) v, context);
             } else if (v instanceof File) {
-                return inferResult((File) v, actionContext);
+                return inferResult((File) v, context);
             } else if (v instanceof ISObject) {
-                return inferResult((ISObject) v, actionContext);
+                return inferResult((ISObject) v, context);
             } else if (v instanceof Map) {
                 if (hasTemplate) {
-                    return inferToTemplate((Map) v, actionContext);
+                    return inferToTemplate((Map) v, context);
                 }
                 return new RenderJSON(v);
             } else if (hasTemplate && v instanceof Object[]) {
                 throw E.tbd("Render template with array");
             } else {
-                if (hasTemplate) {
-                    return inferToTemplate(v, actionContext);
+                H.Request req = context.req();
+                if (v instanceof Versioned && req.method().safe()) {
+                    String version = ((Versioned) v)._version();
+                    if (req.etagMatches(version)) {
+                        return NotModified.INSTANCE;
+                    } else {
+                        context.resp().etag(version);
+                    }
                 }
-                if (actionContext.acceptJson()) {
+                if (hasTemplate) {
+                    return inferToTemplate(v, context);
+                }
+                if (context.acceptJson()) {
                     // patch https://github.com/alibaba/fastjson/issues/478
                     if (meta.disableJsonCircularRefDetect()) {
                         DisableFastJsonCircularReferenceDetect.option.set(true);
@@ -663,21 +673,21 @@ public @interface Controller {
                         if (null == propertySpec) {
                             return new RenderJSON(v);
                         }
-                        return new FilteredRenderJSON(v, propertySpec, actionContext);
+                        return new FilteredRenderJSON(v, propertySpec, context);
                     } finally {
                         if (meta.disableJsonCircularRefDetect()) {
                             DisableFastJsonCircularReferenceDetect.option.set(false);
                         }
                     }
-                } else if (actionContext.isXML()) {
+                } else if (context.isXML()) {
                     PropertySpec.MetaInfo propertySpec = (null == meta) ? null : meta.propertySpec();
-                    return new FilteredRenderXML(v, propertySpec, actionContext);
-                } else if (actionContext.accept() == H.Format.CSV) {
+                    return new FilteredRenderXML(v, propertySpec, context);
+                } else if (context.accept() == H.Format.CSV) {
                     PropertySpec.MetaInfo propertySpec = (null == meta) ? null : meta.propertySpec();
-                    return new RenderCSV(v, propertySpec, actionContext);
+                    return new RenderCSV(v, propertySpec, context);
                 } else {
                     String s = meta.returnType().getDescriptor().startsWith("[") ? $.toString2(v) : v.toString();
-                    return inferResult(s, actionContext);
+                    return inferResult(s, context);
                 }
             }
         }
