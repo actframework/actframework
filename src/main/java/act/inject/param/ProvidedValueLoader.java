@@ -44,6 +44,7 @@ class ProvidedValueLoader extends DestroyableBase implements ParamValueLoader {
         Destroyable.Util.tryDestroy(singleton);
         singleton = null;
         injector = null;
+        lookup.clear();
     }
 
     private static ConcurrentMap<Class, ProvidedValueLoader> lookup = new ConcurrentHashMap<>();

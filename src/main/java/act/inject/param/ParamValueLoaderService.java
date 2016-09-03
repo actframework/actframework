@@ -156,7 +156,8 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
                 Annotation[] annotations = field.getAnnotations();
                 BeanSpec spec = BeanSpec.of(type, annotations, field.getName(), injector);
                 ParamValueLoader loader = findLoader(spec, type, annotations);
-                if (null != loader && !(loader instanceof ProvidedValueLoader)) {
+                boolean loadedByGenie = (loader instanceof ProvidedValueLoader && field.isAnnotationPresent(Inject.class));
+                if (null != loader && !loadedByGenie) {
                     fieldLoaders.put(field, loader);
                 }
             }
