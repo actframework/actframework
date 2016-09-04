@@ -5,6 +5,7 @@ import act.app.AppHolderBase;
 import org.osgl.util.E;
 
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Field;
 
 public abstract class DbService extends AppHolderBase<DbService> {
 
@@ -28,4 +29,17 @@ public abstract class DbService extends AppHolderBase<DbService> {
     public abstract <DAO extends Dao> DAO newDaoInstance(Class<DAO> daoType);
 
     public abstract Class<? extends Annotation> entityAnnotationType();
+
+    protected static Class<?> findModelIdTypeByAnnotation(Class<?> modelType, Class<? extends Annotation> idAnnotation) {
+        Class<?> curClass = modelType;
+        while (Object.class != curClass && null != curClass) {
+            for (Field f : curClass.getDeclaredFields()) {
+                if (f.isAnnotationPresent(idAnnotation)) {
+                    return f.getType();
+                }
+            }
+            curClass = curClass.getSuperclass();
+        }
+        return null;
+    }
 }
