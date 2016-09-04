@@ -926,7 +926,13 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         if (null == ajaxLoginUrl) {
             ajaxLoginUrl = get(AJAX_LOGIN_URL);
             if (null == ajaxLoginUrl) {
-                ajaxLoginUrl = loginUrl();
+                ajaxLoginUrl = loginUrl;
+            }
+            if (null == ajaxLoginUrl) {
+                ajaxLoginUrl = get(LOGIN_URL);
+            }
+            if (null == ajaxLoginUrl) {
+                ajaxLoginUrl = "/login";
             }
         }
         return ajaxLoginUrl;

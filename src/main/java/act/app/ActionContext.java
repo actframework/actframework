@@ -267,7 +267,7 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Act
                 if (null == bodyParams) {
                     Map<String, String[]> map = C.newMap();
                     H.Method method = request.method();
-                    if (H.Method.POST == method || H.Method.PUT == method) {
+                    if (H.Method.POST == method || H.Method.PUT == method || H.Method.DELETE == method) {
                         RequestBodyParser parser = RequestBodyParser.get(request);
                         map = parser.parse(this);
                     }
