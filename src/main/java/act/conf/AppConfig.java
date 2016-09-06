@@ -41,6 +41,8 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
 
     public static final String CONF_FILE_NAME = "app.conf";
 
+    public static final String PORT_CLI_OVER_HTTP = "__admin__";
+
     private App app;
 
     static {
@@ -434,7 +436,55 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         }
     }
 
-    private int cliPort = -1;
+    Boolean cliOverHttp;
+
+    protected T cliOverHttp(boolean enabled) {
+        this.cliOverHttp = enabled;
+        return me();
+    }
+
+    public boolean cliOverHttp() {
+        if (null == cliOverHttp) {
+            Boolean B = get(CLI_OVER_HTTP);
+            if (null == B) {
+                B = false;
+            }
+            cliOverHttp = B;
+        }
+        return cliOverHttp;
+    }
+
+    private void _mergeCliOverHttp(AppConfig config) {
+        if (null == get(CLI_OVER_HTTP)) {
+            cliOverHttp = config.cliOverHttp;
+        }
+    }
+
+    Integer cliOverHttpPort;
+
+    protected T cliOverHttpPort(int port) {
+        this.cliOverHttpPort = port;
+        return me();
+    }
+
+    public int cliOverHttpPort() {
+        if (null == cliOverHttpPort) {
+            Integer I = get(CLI_OVER_HTTP_PORT);
+            if (null == I) {
+                I = 5462;
+            }
+            cliOverHttpPort = I;
+        }
+        return cliOverHttpPort;
+    }
+
+    private void _mergeCliOverHttpPort(AppConfig config) {
+        if (null == get(CLI_OVER_HTTP_PORT)) {
+            cliOverHttpPort = config.cliOverHttpPort;
+        }
+    }
+
+    private Integer cliPort;
 
     protected T cliPort(int port) {
         E.illegalArgumentIf(port < 1, "port value not valid: %s", port);
@@ -443,10 +493,10 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     }
 
     public int cliPort() {
-        if (-1 == cliPort) {
+        if (null == cliPort) {
             Integer I = get(CLI_PORT);
             if (null == I) {
-                I = 5460;
+                I = 5461;
             }
             cliPort = I;
         }
@@ -1138,7 +1188,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         if (null == namedPorts) {
             String s = get(NAMED_PORTS);
             if (null == s) {
-                namedPorts = C.list();
+                namedPorts = cliOverHttp() ? C.list(new NamedPort(PORT_CLI_OVER_HTTP, cliOverHttpPort())) : C.<NamedPort>list();
             } else {
                 String[] sa = (s.split("[,;]+"));
                 ListBuilder<NamedPort> builder = ListBuilder.create();
@@ -1153,6 +1203,9 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
                     } else {
                         throw E.invalidConfiguration("port[%s] already configured", name);
                     }
+                }
+                if (cliOverHttp()) {
+                    builder.add(new NamedPort(PORT_CLI_OVER_HTTP, cliOverHttpPort()));
                 }
                 namedPorts = builder.toList();
             }
@@ -1580,18 +1633,18 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         }
     }
 
-    private Long sessionTtl = null;
+    private Integer sessionTtl = null;
 
-    protected T sessionTtl(long seconds) {
+    protected T sessionTtl(int seconds) {
         sessionTtl = seconds;
         return me();
     }
 
-    public long sessionTtl() {
+    public int sessionTtl() {
         if (null == sessionTtl) {
             sessionTtl = get(AppConfigKey.SESSION_TTL);
             if (null == sessionTtl) {
-                sessionTtl = (long) 60 * 30;
+                sessionTtl = 60 * 30;
             }
         }
         return sessionTtl;
@@ -1870,6 +1923,8 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         _mergeCorsMaxAge(conf);
         _mergeCliJSONPageSz(conf);
         _mergeCliTablePageSz(conf);
+        _mergeCliOverHttp(conf);
+        _mergeCliOverHttpPort(conf);
         _mergeCliPort(conf);
         _mergeCliSessionExpiration(conf);
         _mergeCsrf(conf);

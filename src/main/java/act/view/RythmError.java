@@ -35,7 +35,8 @@ public class RythmError extends ActServerError {
             fileName = e.templateName;
             if (javaSource) {
                 lineNumber = e.javaLineNumber;
-                lines = C.listOf(e.javaSource.split("[\n]"));
+                String jsrc = e.javaSource;
+                lines = null != jsrc ? C.listOf(jsrc.split("[\n]")) : C.<String>list();
             } else {
                 lineNumber = e.templateLineNumber;
                 lines = C.listOf(e.templateSource.split("[\n]"));

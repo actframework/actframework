@@ -765,6 +765,10 @@ public class App extends DestroyableBase {
         for (NamedPort port : ports) {
             moreRouters.put(port, new Router(this, port.name()));
         }
+        if (config.cliOverHttp()) {
+            NamedPort cliOverHttp = new NamedPort(AppConfig.PORT_CLI_OVER_HTTP, config.cliOverHttpPort());
+            moreRouters.put(cliOverHttp, new Router(this, AppConfig.PORT_CLI_OVER_HTTP));
+        }
     }
 
     private void initEventBus() {

@@ -75,6 +75,24 @@ public class CliDispatcher extends AppServiceBase<CliDispatcher> {
     }
 
     /**
+     * Returns a list of system commands in alphabetic order
+     *
+     * @return the system command list
+     */
+    public List<String> systemCommands() {
+        return commands(true, false);
+    }
+
+    /**
+     * Returns a list of application commands in alphabetic order
+     *
+     * @return the application command list
+     */
+    public List<String> applicationCommands() {
+        return commands(false, true);
+    }
+
+    /**
      * Returns all commands in alphabetic order
      *
      * @return the list of commands

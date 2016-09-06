@@ -92,11 +92,11 @@ public enum AppConfigKey implements ConfigKey {
     CORS_MAX_AGE("cors.max_age"),
 
     /**
-     * {@code act.csrf} turn on/off global CSRF protect
+     * {@code act.csrf.enabled} turn on/off global CSRF protect
      *
      * Default value: `true`
      */
-    CSRF("csrf"),
+    CSRF("csrf.enabled"),
 
     /**
      * {@code act.csf.param_name} specifies the http request param name
@@ -140,17 +140,24 @@ public enum AppConfigKey implements ConfigKey {
      * listen to.
      * <p>Default value: {@code 5461}</p>
      */
-    CLI_PORT("cli.port") {
-        @Override
-        public <T> T val(Map<String, ?> configuration) {
-            Object v = configuration.get(key());
-            if (null == v) return (T) (Number) 5461;
-            if (v instanceof Number) {
-                return (T) v;
-            }
-            return (T) (Integer.valueOf(v.toString()));
-        }
-    },
+    CLI_PORT("cli.port"),
+
+    /**
+     * `act.cli_over_http.enabled` turn on/off CLI over http feature, which
+     * allows ActFramework to handle http request sent through to the  {@link #CLI_OVER_HTTP_PORT}
+     * as a way to invoke CLI commands and inspect results
+     *
+     * Default value: `false`
+     */
+    CLI_OVER_HTTP("cli_over_http.enabled"),
+
+    /**
+     * `act.cli_over_http.port` specifies the default cli over http port the application
+     * listen to.
+     *
+     * Default value: `5462`
+     */
+    CLI_OVER_HTTP_PORT("cli_over_http.port"),
 
     /**
      * {@code cli.session.expiration} specifies the number of seconds
@@ -311,17 +318,7 @@ public enum AppConfigKey implements ConfigKey {
      * <p/>
      * <p>Default value: {@code 5460}</p>
      */
-    HTTP_PORT("http.port") {
-        @Override
-        public <T> T val(Map<String, ?> configuration) {
-            Object v = configuration.get(key());
-            if (null == v) return null;
-            if (v instanceof Number) {
-                return (T) v;
-            }
-            return (T) (Integer.valueOf(v.toString()));
-        }
-    },
+    HTTP_PORT("http.port"),
 
     /**
      * {@code act.http.secure} specifies whether the default http port is

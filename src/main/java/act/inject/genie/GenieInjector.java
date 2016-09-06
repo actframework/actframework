@@ -12,10 +12,7 @@ import act.util.SubClassFinder;
 import org.osgl.$;
 import org.osgl.Osgl;
 import org.osgl.exception.NotAppliedException;
-import org.osgl.inject.Genie;
-import org.osgl.inject.InjectListener;
-import org.osgl.inject.Module;
-import org.osgl.inject.ScopeCache;
+import org.osgl.inject.*;
 import org.osgl.inject.annotation.LoadValue;
 import org.osgl.inject.annotation.Provided;
 import org.osgl.mvc.annotation.Bind;
@@ -26,9 +23,7 @@ import org.osgl.util.E;
 import javax.inject.Inject;
 import javax.inject.Provider;
 import java.lang.annotation.Annotation;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class GenieInjector extends DependencyInjectorBase<GenieInjector> {
 
@@ -43,6 +38,7 @@ public class GenieInjector extends DependencyInjectorBase<GenieInjector> {
 
     private volatile Genie genie;
     private List<Object> modules;
+    private Set<Class<? extends Annotation>> injectTags = new HashSet<>();
 
     public GenieInjector(App app) {
         super(app);
@@ -94,6 +90,18 @@ public class GenieInjector extends DependencyInjectorBase<GenieInjector> {
         modules.add(module);
     }
 
+    public boolean hasInjectTag(BeanSpec spec) {
+        if(spec.hasAnnotation(Inject.class)) {
+            return true;
+        }
+        for (Class<? extends Annotation> tag : injectTags) {
+            if (spec.hasAnnotation(tag)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     private C.List<Object> factories() {
         Set<String> factories = GenieFactoryFinder.factories();
         int len = factories.size();
@@ -135,6 +143,9 @@ public class GenieInjector extends DependencyInjectorBase<GenieInjector> {
 
                     ActProviders.registerBuiltInProviders(ActProviders.class, register);
                     ActProviders.registerBuiltInProviders(GenieProviders.class, register);
+                    for (Class<? extends Annotation> injectTag: injectTags) {
+                        genie.registerInjectTag(injectTag);
+                    }
                 }
             }
         }
@@ -148,11 +159,11 @@ public class GenieInjector extends DependencyInjectorBase<GenieInjector> {
         genieInjector.addModule($.newInstance(moduleClass));
     }
 
-    @AnnotatedClassFinder(value = LoadValue.class, noAbstract = false)
+    @AnnotatedClassFinder(value = LoadValue.class, noAbstract = false, callOn = AppEventId.DEPENDENCY_INJECTOR_LOADED)
     public static void foundValueLoader(Class<? extends Annotation> valueLoader) {
         App app = App.instance();
         GenieInjector genieInjector = app.injector();
-        genieInjector.genie().registerInjectTag(valueLoader);
+        genieInjector.injectTags.add(valueLoader);
     }
 
 }

@@ -8,6 +8,7 @@ import act.app.data.StringValueResolverManager;
 import act.controller.ActionMethodParamAnnotationHandler;
 import act.inject.*;
 import act.inject.genie.DependentScope;
+import act.inject.genie.GenieInjector;
 import act.inject.genie.RequestScope;
 import act.inject.genie.SessionScope;
 import act.util.ActContext;
@@ -217,7 +218,7 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
             Annotation[] annotations
     ) {
         Class rawType = spec.rawType();
-        if (provided(spec)) {
+        if (provided(spec, injector)) {
             return ProvidedValueLoader.get(rawType, injector);
         }
         if (null != filter(annotations, NoBind.class)) {
@@ -480,13 +481,17 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
         return bindName(beanSpec.allAnnotations(), beanSpec.name());
     }
 
-    public static boolean provided(BeanSpec beanSpec) {
+    public static boolean provided(BeanSpec beanSpec, DependencyInjector<?> injector) {
         Class rawType = beanSpec.rawType();
+        GenieInjector genieInjector = $.cast(injector);
         return (ActProviders.isProvided(rawType)
                 || null != beanSpec.getAnnotation(Inject.class)
                 || null != beanSpec.getAnnotation(Provided.class)
                 || null != beanSpec.getAnnotation(Context.class)
                 || null != beanSpec.getAnnotation(Singleton.class)
-                || null != beanSpec.getAnnotation(ApplicationScoped.class));
+                || null != beanSpec.getAnnotation(ApplicationScoped.class)
+                || genieInjector.hasInjectTag(beanSpec)
+        );
     }
+
 }

@@ -1,0 +1,35 @@
+@extends(_base, header: "CLI Over HTTP")
+@import org.osgl.Osgl
+@section(head) {
+<style>
+    ul.command-list {list-style: none;}
+    ul.command-list li {}
+</style>
+}
+@args act.cli.CliDispatcher dispatcher
+
+@def commandList(List<String> commandList) {
+    <ul class="command-list">
+        @for(String cmd: commandList) {
+        <li>
+            @{
+            act.handler.CliHandler handler = dispatcher.handler(cmd);
+            Osgl.T2<String, String> commandLine = handler.commandLine(cmd);
+            }
+            @cmd - @commandLine._2
+        </li>
+        } else {
+        <li>No command found ...</li>
+        }
+    </ul>
+    }
+
+    <div id="app-commands">
+        <h2>Application commands</h2>
+        @commandList(dispatcher.applicationCommands())
+    </div>
+
+    <div id="sys-commands">
+        <h2>System commands</h2>
+        @commandList(dispatcher.systemCommands())
+    </div>

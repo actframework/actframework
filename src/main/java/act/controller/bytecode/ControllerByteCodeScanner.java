@@ -7,6 +7,7 @@ import act.app.event.AppEventId;
 import act.asm.*;
 import act.asm.signature.SignatureReader;
 import act.asm.signature.SignatureVisitor;
+import act.conf.AppConfig;
 import act.controller.Controller;
 import act.controller.meta.*;
 import act.route.RouteSource;
@@ -538,6 +539,7 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
 
                 @Override
                 public void visitEnd() {
+                    super.visitEnd();
                     if (httpMethods.isEmpty()) {
                         // start(*) match
                         httpMethods.addAll(H.Method.actionMethods());
@@ -552,6 +554,10 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
                         for (String portName : ports) {
                             Router r = app.router(portName);
                             if (null == r) {
+                                if (S.eq(AppConfig.PORT_CLI_OVER_HTTP, portName)) {
+                                    // cli over http is disabled
+                                    return;
+                                }
                                 throw E.invalidConfiguration("Cannot find configuration for named port[%s]", portName);
                             }
                             routers.add(r);
