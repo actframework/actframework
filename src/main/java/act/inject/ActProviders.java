@@ -65,6 +65,13 @@ public final class ActProviders {
         }
     };
 
+    public static final Provider<H.Flash> FLASH = new Provider<H.Flash>() {
+        @Override
+        public H.Flash get() {
+            return ActionContext.current().flash();
+        }
+    };
+
     public static final Provider<H.Request> REQUEST = new Provider<H.Request>() {
         @Override
         public H.Request get() {
