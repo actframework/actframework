@@ -6,6 +6,7 @@ import act.app.CliContext;
 import act.app.util.AppCrypto;
 import act.conf.AppConfig;
 import act.db.Dao;
+import act.event.EventBus;
 import act.mail.MailerContext;
 import act.util.ActContext;
 import org.osgl.$;
@@ -50,6 +51,8 @@ public final class ActProviders {
             return app();
         }
     };
+
+
 
     public static final Provider<ActionContext> ACTION_CONTEXT = new Provider<ActionContext>() {
         @Override
@@ -151,6 +154,13 @@ public final class ActProviders {
         @Override
         public CacheService get() {
             return app().cache();
+        }
+    };
+
+    public static final Provider<EventBus> EVENT_BUS = new Provider<EventBus>() {
+        @Override
+        public EventBus get() {
+            return app().eventBus();
         }
     };
 
