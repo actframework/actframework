@@ -368,7 +368,7 @@ public class SessionManager extends DestroyableBase {
             H.Cookie cookie = new H.Cookie(name, value);
             cookie.path("/");
             cookie.domain(cookieDomain);
-            cookie.httpOnly(sessionHttpOnly);
+            cookie.httpOnly(true);
             cookie.secure(sessionSecure);
             if (sessionWillExpire && persistentSession) {
                 cookie.maxAge((int) (ttl / 1000));
