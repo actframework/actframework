@@ -158,6 +158,7 @@ public class CSRF {
             String token = context.attribute(ATTR_CSR_TOKEN_PREFETCH);
             try {
                 if (!csrfProtector.verifyToken(token, session, app)) {
+                    context.removeAttribute(ATTR_CSR_TOKEN_PREFETCH);
                     raiseCsrfNotVerified(context);
                 }
             } catch (UnexpectedException e) {

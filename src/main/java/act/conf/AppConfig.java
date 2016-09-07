@@ -1760,7 +1760,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         if (null == sessionSecure) {
             sessionSecure = get(AppConfigKey.SESSION_SECURE);
             if (null == sessionSecure) {
-                sessionSecure = true;
+                sessionSecure = httpSecure();
             }
         }
         return sessionSecure;
