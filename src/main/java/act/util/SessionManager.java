@@ -142,13 +142,11 @@ public class SessionManager extends DestroyableBase {
     }
 
     static class CookieResolver {
-        static final Pattern COOKIE_PARSER = Pattern.compile("\u0000([^:]*):([^\u0000]*)\u0000");
 
         private App app;
         private AppConfig conf;
         private boolean encryptSession;
         private boolean persistentSession;
-        private boolean sessionHttpOnly;
         private boolean sessionSecure;
         private long ttl;
         private boolean sessionWillExpire;
@@ -164,7 +162,6 @@ public class SessionManager extends DestroyableBase {
 
             this.encryptSession = conf.encryptSession();
             this.persistentSession = conf.persistSession();
-            this.sessionHttpOnly = conf.sessionHttpOnly();
             this.sessionSecure = conf.sessionSecure();
             this.cookieDomain = conf.cookieDomain();
             long ttl = conf.sessionTtl();
