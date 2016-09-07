@@ -558,15 +558,6 @@ public enum AppConfigKey implements ConfigKey {
     SESSION_ENCRYPT_ENABLED("session.encrypt.enabled"),
 
     /**
-     * {@code session.http_only.enabled} specifies whether the session cookie should
-     * be set as http-only. Enable http only session will cause session cookie only
-     * not be accessible via JavaScript.
-     *
-     * <p>Default value: {@code true}</p>
-     */
-    SESSION_HTTP_ONLY_ENABLED("session.http_only.enabled"),
-
-    /**
      * `act.session.key.username` specifies the session key for username
      *
      * Default value: `username`

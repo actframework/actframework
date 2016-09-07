@@ -1702,29 +1702,6 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         }
     }
 
-    private Boolean sessionHttpOnly = null;
-
-    protected T sessionHttpOnly(boolean httpOnly) {
-        sessionHttpOnly = httpOnly;
-        return me();
-    }
-
-    public boolean sessionHttpOnly() {
-        if (null == sessionHttpOnly) {
-            sessionHttpOnly = get(AppConfigKey.SESSION_HTTP_ONLY_ENABLED);
-            if (null == sessionHttpOnly) {
-                sessionHttpOnly = true;
-            }
-        }
-        return sessionHttpOnly;
-    }
-
-    private void _mergeSessionHttpOnly(AppConfig config) {
-        if (null == get(AppConfigKey.SESSION_HTTP_ONLY_ENABLED)) {
-            sessionHttpOnly = config.sessionHttpOnly;
-        }
-    }
-
     private SessionMapper sessionMapper = null;
 
     protected T sessionMapper(SessionMapper sessionMapper) {
@@ -1976,7 +1953,6 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         _mergeSessionTtl(conf);
         _mergeSessionPersistent(conf);
         _mergeSessionEncrpt(conf);
-        _mergeSessionHttpOnly(conf);
         _mergeSessionSecure(conf);
         _mergeSessionKeyUsername(conf);
         _mergeSessionMapper(conf);
