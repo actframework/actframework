@@ -4,8 +4,8 @@ import act.app.ActionContext;
 import act.asm.*;
 import act.asm.tree.*;
 import act.controller.meta.HandlerMethodMetaInfo;
-import act.controller.meta.LocalVariableMetaInfo;
 import act.controller.meta.HandlerParamMetaInfo;
+import act.controller.meta.LocalVariableMetaInfo;
 import act.util.AsmTypes;
 import org.osgl.logging.LogManager;
 import org.osgl.logging.Logger;
@@ -15,6 +15,8 @@ import org.osgl.util.E;
 import org.osgl.util.S;
 
 import java.util.*;
+
+import static act.asm.tree.AbstractInsnNode.*;
 
 public class HandlerEnhancer extends MethodVisitor implements Opcodes {
 
@@ -115,7 +117,7 @@ public class HandlerEnhancer extends MethodVisitor implements Opcodes {
             Segment cur = null;
             while (itr.hasNext()) {
                 AbstractInsnNode insn = itr.next();
-                if (insn.getType() == AbstractInsnNode.LABEL) {
+                if (insn.getType() == LABEL) {
                     cur = new Segment(((LabelNode) insn).getLabel(), meta, instructions, itr, this);
                 } else if (null != cur) {
                     cur.handle(insn);
@@ -159,7 +161,25 @@ public class HandlerEnhancer extends MethodVisitor implements Opcodes {
                 trans.lblList.add(start);
             }
 
-            protected void handle(AbstractInsnNode node) {
+            String varName(int index) {
+                Label lbl = startLabel;
+                int pos = -1;
+                List<Label> lblList = trans.lblList;
+                while (null != lbl) {
+                    LocalVariableMetaInfo var = meta.localVariable(index, lbl);
+                    if (null != var) return var.name();
+                    if (-1 == pos) {
+                        pos = lblList.indexOf(lbl);
+                        if (pos <= 0) {
+                            return null;
+                        }
+                    }
+                    lbl = lblList.get(--pos);
+                }
+                return null;
+            }
+
+            void handle(AbstractInsnNode node) {
                 InstructionHandler handler = handlers.get(node.getType());
                 if (null != handler) {
                     handler.handle(node);
@@ -202,29 +222,96 @@ public class HandlerEnhancer extends MethodVisitor implements Opcodes {
                 AbstractInsnNode node = invokeNode.getPrevious();
                 List<LoadInsnInfo> loadInsnInfoList = C.newList();
                 String templatePath = null;
+                String renderArgName = null;
+                InsnList nodeList = new InsnList();
+                boolean invalidParam = false;
                 while (null != node) {
                     int type = node.getType();
                     boolean breakWhile = false;
                     switch (type) {
-                        case AbstractInsnNode.LABEL:
-                        case AbstractInsnNode.FRAME:
+                        case LABEL:
+                        case FRAME:
                             node = node.getNext();
                             breakWhile = true;
+                            if (!invalidParam && null != renderArgName) {
+                                loadInsnInfoList.add(new LoadInsnInfo(renderArgName, nodeList));
+                            }
                             break;
-                        case AbstractInsnNode.VAR_INSN:
-                            VarInsnNode n = (VarInsnNode) node;
-                            if (0 == n.var && !segment.meta.isStatic()) {
-                                // skip "this"
+                        case INSN:
+                            switch (node.getOpcode()) {
+                                case ICONST_0:
+                                case ICONST_1:
+                                case ICONST_2:
+                                case ICONST_3:
+                                case ICONST_4:
+                                case ICONST_5:
+                                    if (!invalidParam && null != renderArgName) {
+                                        loadInsnInfoList.add(new LoadInsnInfo(renderArgName, nodeList));
+                                    }
+                                    renderArgName = null;
+                                    nodeList = new InsnList();
+                                    invalidParam = false;
+                                    break;
+                                case AASTORE:
+                                    renderArgName = null;
+                                    nodeList = new InsnList();
+                                    invalidParam = false;
+                            }
+                            break;
+                        case VAR_INSN:
+                            if (null == renderArgName) {
+                                VarInsnNode vn = (VarInsnNode) node;
+                                if (0 == vn.var && !segment.meta.isStatic()) {
+                                    // skip "this"
+                                } else {
+                                    renderArgName = segment.varName(vn.var);
+                                }
+                            }
+                            nodeList.insert(node.clone(C.<LabelNode, LabelNode>map()));
+                            break;
+                        case METHOD_INSN:
+                            if (invalidParam) {
                                 break;
                             }
-                            LoadInsn insn = LoadInsn.of(n.getOpcode());
-                            if (insn.isStoreInsn()) {
+                            if (null == renderArgName) {
+                                MethodInsnNode mn = (MethodInsnNode) node;
+                                if (mn.desc.startsWith("()")) {
+                                    // if method does not have parameter, e.g. `this.foo()` then
+                                    // we take it's name as render arg name
+                                    renderArgName = mn.name;
+                                } else if (!"valueOf".equals(mn.name)) {
+                                    // if method is not something like `Integer.valueOf` then
+                                    // we say it is an invalid render parameter
+                                    logger.warn("Invalid render argument found in %s: method with param is not supported", segment.meta.fullName());
+                                    invalidParam = true;
+                                }
+                            }
+                            nodeList.insert(node.clone(C.<LabelNode, LabelNode>map()));
+                            break;
+                        case INT_INSN:
+                            if (BIPUSH == node.getOpcode()) {
+                                if (!invalidParam && null != renderArgName) {
+                                    loadInsnInfoList.add(new LoadInsnInfo(renderArgName, nodeList));
+                                }
+                                renderArgName = null;
+                                nodeList = new InsnList();
+                                invalidParam = false;
+                            }
+                            break;
+                        case FIELD_INSN:
+                            if (invalidParam) {
                                 break;
                             }
-                            LoadInsnInfo info = new LoadInsnInfo(insn, n.var);
-                            loadInsnInfoList.add(info);
+                            if (null == renderArgName) {
+                                FieldInsnNode n = (FieldInsnNode) node;
+                                renderArgName = n.name;
+                            }
+                            nodeList.insert(node.clone(C.<LabelNode, LabelNode>map()));
                             break;
                         case AbstractInsnNode.LDC_INSN:
+                            if (invalidParam) {
+                                break;
+                            }
                             LdcInsnNode ldc = (LdcInsnNode) node;
                             if (null != templatePath) {
                                 logger.warn("Cannot have more than one template path parameter in the render call. Template path[%s] ignored", templatePath);
@@ -233,8 +320,6 @@ public class HandlerEnhancer extends MethodVisitor implements Opcodes {
                             } else {
                                 templatePath = ldc.cst.toString();
                             }
-                        default:
-                            //System.out.printf("type\n");
                     }
                     if (breakWhile) {
                         break;
@@ -269,7 +354,7 @@ public class HandlerEnhancer extends MethodVisitor implements Opcodes {
                 StringBuilder sb = S.builder();
                 for (int i = 0; i < len; ++i) {
                     LoadInsnInfo info = loadInsnInfoList.get(i);
-                    info.appendTo(list, segment, sb);
+                    info.appendTo(list, sb);
                 }
                 LdcInsnNode ldc = new LdcInsnNode(sb.toString());
                 list.add(ldc);
@@ -325,7 +410,7 @@ public class HandlerEnhancer extends MethodVisitor implements Opcodes {
                         boolean breakWhile = false;
                         int type = next.getType();
                         switch (type) {
-                            case AbstractInsnNode.LABEL:
+                            case LABEL:
                                 next = next.getNext();
                                 break;
                             case AbstractInsnNode.LINE:
@@ -337,7 +422,7 @@ public class HandlerEnhancer extends MethodVisitor implements Opcodes {
                                 instructions.remove(next);
                                 next = tmp;
                                 break;
-                            case AbstractInsnNode.INSN:
+                            case INSN:
                                 int op = next.getOpcode();
                                 if (op == RETURN) {
                                     tmp = next.getNext();
@@ -349,7 +434,7 @@ public class HandlerEnhancer extends MethodVisitor implements Opcodes {
                                     }
                                     break;
                                 }
-                            case AbstractInsnNode.FRAME:
+                            case FRAME:
                                 breakWhile = true;
                                 break;
                             default:
@@ -365,148 +450,30 @@ public class HandlerEnhancer extends MethodVisitor implements Opcodes {
             }
         }
 
-        private static final int _I = 'I';
-        private static final int _Z = 'Z';
-        private static final int _S = 'S';
-        private static final int _B = 'B';
-        private static final int _C = 'C';
-
-        private static enum LoadInsn {
-            I(ILOAD) {
-                void appendTo(InsnList list, int varIndex, String type) {
-                    super.appendTo(list, varIndex, type);
-                    String owner, desc;
-                    switch (type.hashCode()) {
-                        case _I:
-                            owner = "java/lang/Integer";
-                            desc = "(I)Ljava/lang/Integer;";
-                            break;
-                        case _Z:
-                            owner = "java/lang/Boolean";
-                            desc = "(Z)Ljava/lang/Boolean;";
-                            break;
-                        case _S:
-                            owner = "java/lang/Short";
-                            desc = "(S)Ljava/lang/Short";
-                            break;
-                        case _B:
-                            owner = "java/lang/Byte";
-                            desc = "(B)Ljava/lang/Byte;";
-                            break;
-                        case _C:
-                            owner = "java/lang/Character";
-                            desc = "(C)Ljava/lang/Character;";
-                            break;
-                        default:
-                            throw E.unexpected("int var type not recognized: %s", type);
-                    }
-                    MethodInsnNode method = new MethodInsnNode(INVOKESTATIC, owner, "valueOf", desc, false);
-                    list.add(method);
-                }
-            }, L(LLOAD) {
-                @Override
-                void appendTo(InsnList list, int varIndex, String type) {
-                    super.appendTo(list, varIndex, type);
-                    MethodInsnNode method = new MethodInsnNode(INVOKESTATIC, "java/lang/Long", "valueOf", "(J)Ljava/lang/Long;", false);
-                    list.add(method);
-                }
-            }, F(FLOAD) {
-                @Override
-                void appendTo(InsnList list, int varIndex, String type) {
-                    super.appendTo(list, varIndex, type);
-                    MethodInsnNode method = new MethodInsnNode(INVOKESTATIC, "java/lang/Float", "valueOf", "(F)Ljava/lang/Float;", false);
-                    list.add(method);
-                }
-            }, D(DLOAD) {
-                @Override
-                void appendTo(InsnList list, int varIndex, String type) {
-                    super.appendTo(list, varIndex, type);
-                    MethodInsnNode method = new MethodInsnNode(INVOKESTATIC, "java/lang/Double", "valueOf", "(D)Ljava/lang/Double;", false);
-                    list.add(method);
-                }
-            }, A(ALOAD), Store(-1) {
-                @Override
-                void appendTo(InsnList list, int varIndex, String type) {
-                    throw E.unsupport();
-                }
-            };
-            private int opcode;
-
-            LoadInsn(int opcode) {
-                this.opcode = opcode;
-            }
-
-            static LoadInsn of(int opcode) {
-                switch (opcode) {
-                    case ILOAD:
-                        return I;
-                    case LLOAD:
-                        return L;
-                    case FLOAD:
-                        return F;
-                    case DLOAD:
-                        return D;
-                    case ALOAD:
-                        return A;
-                    default:
-                        return Store;
-                }
-            }
-
-            boolean isStoreInsn() {
-                return this == Store;
-            }
-
-            void appendTo(InsnList list, int varIndex, String type) {
-                VarInsnNode load = new VarInsnNode(opcode, varIndex);
-                list.add(load);
-            }
-        }
-
         private static class LoadInsnInfo {
-            LoadInsn insn;
-            int index;
+            private String name;
+            private InsnList insnList;
 
-            LoadInsnInfo(LoadInsn insn, int index) {
-                this.insn = insn;
-                this.index = index;
+            LoadInsnInfo(String name, InsnList insnList) {
+                this.insnList = insnList;
+                this.name = name;
             }
 
-            void appendTo(InsnList list, Segment segment, StringBuilder paramNames) {
-                LocalVariableMetaInfo var = var(segment);
-                if (null == var) return;
-                LdcInsnNode ldc = new LdcInsnNode(var.name());
+            void appendTo(InsnList list, StringBuilder paramNames) {
+                LdcInsnNode ldc = new LdcInsnNode(name);
                 list.add(ldc);
-                insn.appendTo(list, index, var.type());
+                list.add(insnList);
                 MethodInsnNode invokeRenderArg = new MethodInsnNode(INVOKEVIRTUAL, AsmTypes.ACTION_CONTEXT_INTERNAL_NAME, RENDER_NM, RENDER_DESC, false);
                 list.add(invokeRenderArg);
                 if (paramNames.length() != 0) {
                     paramNames.append(',');
                 }
-                paramNames.append(var.name());
-            }
-
-            LocalVariableMetaInfo var(Segment segment) {
-                Label lbl = segment.startLabel;
-                int pos = -1;
-                List<Label> lblList = segment.trans.lblList;
-                while (null != lbl) {
-                    LocalVariableMetaInfo var = segment.meta.localVariable(index, lbl);
-                    if (null != var) return var;
-                    if (-1 == pos) {
-                        pos = lblList.indexOf(lbl);
-                        if (pos <= 0) {
-                            return null;
-                        }
-                    }
-                    lbl = lblList.get(--pos);
-                }
-                return null;
+                paramNames.append(name);
             }
 
             @Override
             public String toString() {
-                return S.fmt("%sLoad %s", insn, index);
+                return S.fmt("Load %s", name);
             }
         }
     }

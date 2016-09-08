@@ -1,5 +1,7 @@
 package act.controller.builtin;
 
+import act.Act;
+import act.app.ActionContext;
 import act.cli.CliDispatcher;
 import act.conf.AppConfig;
 import act.controller.Controller;
@@ -7,6 +9,7 @@ import org.osgl.http.H;
 import org.osgl.mvc.annotation.GetAction;
 import org.osgl.mvc.result.Result;
 import org.osgl.util.C;
+import org.osgl.util.S;
 
 import javax.inject.Inject;
 import java.util.List;
@@ -30,9 +33,9 @@ public class CliOverHttp {
 
     @GetAction
     public Result home() {
-        List<String> mru = mru();
-        return render(dispatcher, mru);
+        return render(dispatcher, mru());
     }
+
 
     private List<String> mru() {
         List<String> mru = session.cached("cli_over_http_mru");

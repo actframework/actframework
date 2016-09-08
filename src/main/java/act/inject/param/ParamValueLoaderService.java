@@ -136,7 +136,10 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
                         Field field = entry.getKey();
                         ParamValueLoader loader = entry.getValue();
                         if (null == field.get(bean)) {
-                            field.set(bean, loader.load(null, context, noDefaultValue));
+                            Object fieldValue = loader.load(null, context, noDefaultValue);
+                            field.set(bean, fieldValue);
+                            // preset the render args for fields
+                            context.renderArg(field.getName(), fieldValue);
                         }
                     }
                 } catch (IllegalAccessException e) {
