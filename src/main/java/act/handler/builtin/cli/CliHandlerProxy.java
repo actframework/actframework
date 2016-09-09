@@ -43,6 +43,14 @@ public final class CliHandlerProxy extends CliHandlerBase {
         }
     }
 
+    public CommandMethodMetaInfo methodMetaInfo() {
+        return methodMetaInfo;
+    }
+
+    public CommanderClassMetaInfo classMetaInfo() {
+        return classMetaInfo;
+    }
+
     @Override
     public boolean appliedIn(Act.Mode mode) {
         return mode == Act.Mode.DEV || mode == methodMetaInfo.mode();

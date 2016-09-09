@@ -35,9 +35,9 @@ public class SysUtilAdmin {
     @Command(name = "act.ls, act.dir", help = "List files in the current working directory")
     @PropertySpec("context,path,size")
     public List<FileInfo> ls(
-            @Optional String path,
-            @Context CliContext ctx
-            ) {
+            @Optional("specify the path to be listed") String path,
+            CliContext ctx
+    ) {
         if (S.blank(path)) {
             return dir(curDir(), context);
         } else {
@@ -56,7 +56,7 @@ public class SysUtilAdmin {
     }
 
     @Command(name = "act.cd", help = "Change working directory")
-    public void cd(@Optional String path) {
+    public void cd(@Optional("specify the path to which the working directory to be changed") String path) {
         if (S.blank(path)) {
             context.println(pwd());
             return;

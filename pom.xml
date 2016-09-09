@@ -77,6 +77,10 @@
           <include>**/*.xml</include>
           <include>**/*.csv</include>
           <include>**/*.txt</include>
+          <include>**/*.css</include>
+          <include>**/*.js</include>
+          <include>**/*.png</include>
+          <include>**/*.jpg</include>
           <include>**/*.gif</include>
           <include>**/*.json</include>
           <include>rythm/**</include>

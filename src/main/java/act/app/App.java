@@ -17,6 +17,7 @@ import act.controller.bytecode.ControllerByteCodeScanner;
 import act.data.DataPropertyRepository;
 import act.data.JodaDateTimeCodec;
 import act.data.util.ActPropertyHandlerFactory;
+import act.handler.builtin.StaticResourceGetter;
 import act.inject.DependencyInjectionBinder;
 import act.inject.DependencyInjector;
 import act.inject.genie.GenieInjector;
@@ -882,6 +883,10 @@ public class App extends DestroyableBase {
     private void loadBuiltInRoutes() {
         router().addMapping(H.Method.GET, "/asset/", new StaticFileGetter(layout().asset(base())), RouteSource.BUILD_IN);
         router().addMapping(H.Method.GET, "/~upload/{path}", new UploadFileStorageService.UploadFileGetter(), RouteSource.BUILD_IN);
+        if (config.cliOverHttp()) {
+            Router router = router(AppConfig.PORT_CLI_OVER_HTTP);
+            router.addMapping(H.Method.GET, "/asset/", new StaticResourceGetter("/asset"), RouteSource.BUILD_IN);
+        }
     }
 
     private void initClassLoader() {

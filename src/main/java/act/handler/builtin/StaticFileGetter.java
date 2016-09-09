@@ -13,6 +13,7 @@ import org.osgl.util.S;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.InputStream;
+import java.net.URL;
 
 public class StaticFileGetter extends FastRequestHandler {
     private File base;
@@ -37,6 +38,7 @@ public class StaticFileGetter extends FastRequestHandler {
         context.handler(this);
         File file = base;
         if (!file.exists()) {
+            // try load from resource
             AlwaysNotFound.INSTANCE.handle(context);
             return;
         }
@@ -73,13 +75,12 @@ public class StaticFileGetter extends FastRequestHandler {
         return base;
     }
 
-    private H.Format contentType(String path) {
-        FastStr s = FastStr.unsafeOf(path).afterLast('.');
-        return H.Format.of(s.toString());
-    }
-
-    protected InputStream inputStream(String path, ActionContext context) {
-        return context.app().classLoader().getResourceAsStream(path);
+    static H.Format contentType(String path) {
+        if (path.contains(".")) {
+            FastStr s = FastStr.unsafeOf(path).afterLast('.');
+            return H.Format.of(s.toString());
+        }
+        return H.Format.UNKNOWN;
     }
 
     @Override
