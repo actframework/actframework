@@ -28,6 +28,7 @@ import org.osgl.util.S;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.ListIterator;
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -314,6 +315,8 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
             exceptionInterceptors.add(interceptor);
             sessionFree = sessionFree && interceptor.sessionFree();
         }
+        Collections.sort(exceptionInterceptors);
+
         for (InterceptorMethodMetaInfo info : ctrlInfo.finallyInterceptors()) {
             if (!applied(info)) {
                 continue;
@@ -428,6 +431,7 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
 
     public static void registerGlobalInterceptor(ExceptionInterceptor interceptor) {
         insertInterceptor(globalExceptionInterceptors, interceptor);
+        Collections.sort(globalExceptionInterceptors);
     }
 
     public static <T extends Handler> void insertInterceptor(C.List<T> list, T i) {

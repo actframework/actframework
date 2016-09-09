@@ -469,11 +469,8 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
 
     public int cliOverHttpPort() {
         if (null == cliOverHttpPort) {
-            Integer I = get(CLI_OVER_HTTP_PORT);
-            if (null == I) {
-                I = 5462;
-            }
-            cliOverHttpPort = I;
+            String s = get(CLI_OVER_HTTP_PORT);
+            cliOverHttpPort = null == s ? 5462 : Integer.parseInt(s);
         }
         return cliOverHttpPort;
     }
@@ -494,11 +491,8 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
 
     public int cliPort() {
         if (null == cliPort) {
-            Integer I = get(CLI_PORT);
-            if (null == I) {
-                I = 5461;
-            }
-            cliPort = I;
+            String s = get(CLI_PORT);
+            cliPort = null == s ? 5461 : Integer.parseInt(s);
         }
         return cliPort;
     }
@@ -1054,11 +1048,8 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
 
     public int httpPort() {
         if (-1 == httpPort) {
-            Integer I = get(HTTP_PORT);
-            if (null == I) {
-                I = 5460;
-            }
-            httpPort = I;
+            String s = get(HTTP_PORT);
+            httpPort = null == s ? 5460 : Integer.parseInt(s);
         }
         return httpPort;
     }

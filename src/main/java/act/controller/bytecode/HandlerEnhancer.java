@@ -216,8 +216,7 @@ public class HandlerEnhancer extends MethodVisitor implements Opcodes {
 
             private void injectRenderArgSetCode(AbstractInsnNode invokeNode) {
                 if (!segment.meta.hasLocalVariableTable()) {
-                    logger.warn("local variable table info not found. ActionContext render args will not be automatically populated");
-                    return;
+                    logger.warn("local variable table info not found. ActionContext render args might not be automatically populated");
                 }
                 AbstractInsnNode node = invokeNode.getPrevious();
                 List<LoadInsnInfo> loadInsnInfoList = C.newList();
@@ -239,23 +238,40 @@ public class HandlerEnhancer extends MethodVisitor implements Opcodes {
                             break;
                         case INSN:
                             switch (node.getOpcode()) {
-                                case ICONST_0:
-                                case ICONST_1:
-                                case ICONST_2:
-                                case ICONST_3:
-                                case ICONST_4:
-                                case ICONST_5:
+                                case DUP:
+                                    // need to check if previous insn is NEW which is invalid in param list
+                                    AbstractInsnNode prev = node.getPrevious();
+                                    if (NEW == prev.getOpcode()) {
+                                        logger.warn("Invalid render argument found in %s: new object is not accepted", segment.meta.fullName());
+                                        renderArgName = null;
+                                        nodeList = new InsnList();
+                                        invalidParam = false;
+                                        node = prev.getPrevious();
+                                        continue;
+                                    }
                                     if (!invalidParam && null != renderArgName) {
                                         loadInsnInfoList.add(new LoadInsnInfo(renderArgName, nodeList));
                                     }
                                     renderArgName = null;
                                     nodeList = new InsnList();
                                     invalidParam = false;
-                                    break;
                                 case AASTORE:
-                                    renderArgName = null;
-                                    nodeList = new InsnList();
-                                    invalidParam = false;
+                                case ICONST_0:
+                                case ICONST_1:
+                                case ICONST_2:
+                                case ICONST_3:
+                                case ICONST_4:
+                                case ICONST_5:
+                                    break;
+                                default:
+                                    logger.warn("Invalid render argument found in %s: unknow opcode: %s", segment.meta.fullName(), node.getOpcode());
+                                    invalidParam = true;
+                            }
+                            break;
+                        case TYPE_INSN:
+                            if (NEW == node.getOpcode()) {
+                                logger.warn("Invalid render argument found in %s: new object is not accepted", segment.meta.fullName());
+                                invalidParam = true;
                             }
                             break;
                         case VAR_INSN:

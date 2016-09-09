@@ -14,6 +14,11 @@ import org.osgl.mvc.result.Result;
 @SuppressWarnings("unused")
 public class InterceptorTestController extends Controller.Util {
 
+    @Catch(Exception.class)
+    public Result handleException(Exception e) {
+        return text("bar-" + e.getMessage());
+    }
+
     @Before
     public void validate(int n) {
         if (n < 0) {
@@ -45,11 +50,6 @@ public class InterceptorTestController extends Controller.Util {
     @Catch(ArrayIndexOutOfBoundsException.class)
     public Result handleArrayIndexOutOfBoundsException(ArrayIndexOutOfBoundsException e) {
         return text(e.getMessage());
-    }
-
-    @Catch(Exception.class)
-    public Result handleException(Exception e) {
-        return text("bar-" + e.getMessage());
     }
 
     @After

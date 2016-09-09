@@ -330,17 +330,7 @@ public enum AppConfigKey implements ConfigKey {
      * </p>
      */
     @SuppressWarnings("unchecked")
-    HTTP_SECURE("http.secure") {
-        @Override
-        public <T> T val(Map<String, ?> configuration) {
-            Object v = configuration.get(key());
-            if (null == v) return null;
-            if (v instanceof Boolean) {
-                return (T) (v);
-            }
-            return (T) (Boolean.valueOf(v.toString()));
-        }
-    },
+    HTTP_SECURE("http.secure.enabled"),
 
     /**
      * `act.i18n.enabled` turn on/off i18n tools, e.g. {@link act.i18n.LocaleResolver}

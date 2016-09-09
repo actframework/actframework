@@ -12,6 +12,8 @@ import act.handler.builtin.controller.RequestHandlerProxy.GroupInterceptorWithRe
 import org.osgl.mvc.result.Result;
 import org.osgl.util.C;
 
+import java.util.Collections;
+
 import static act.handler.builtin.controller.RequestHandlerProxy.insertInterceptor;
 
 /**
@@ -64,6 +66,7 @@ public class AppInterceptorManager extends AppServiceBase<AppInterceptorManager>
 
     public void registerInterceptor(ExceptionInterceptor interceptor) {
         insertInterceptor(exceptionInterceptors, interceptor);
+        Collections.sort(exceptionInterceptors);
     }
 
     @Override
