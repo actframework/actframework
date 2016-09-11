@@ -201,7 +201,9 @@ public class HandlerEnhancer extends MethodVisitor implements Opcodes {
                 //String method = n.name;
                 //String owner = Type.getType(n.owner).toString();
                 if (RESULT_CLASS.equals(retType.getClassName())) {
-                    injectRenderArgSetCode(n);
+                    if ("([Ljava/lang/Object;)Lorg/osgl/mvc/result/Result;".equals(n.desc)) {
+                        injectRenderArgSetCode(n);
+                    }
                     injectThrowCode(n);
                 }
             }
