@@ -15,7 +15,7 @@
  */
 package act.cli.ascii_table.impl;
 
-import act.app.CliContext;
+import act.cli.CliContext;
 import act.cli.ascii_table.ASCIITableHeader;
 import act.cli.ascii_table.spec.IASCIITableAware;
 import org.osgl.$;

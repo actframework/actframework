@@ -1,7 +1,8 @@
 package act.util;
 
 import act.app.ActionContext;
-import act.app.CliContext;
+import act.cli.CliContext;
+import act.cli.CliSession;
 import org.osgl.$;
 import org.osgl.util.C;
 
@@ -34,7 +35,7 @@ import java.util.regex.Pattern;
  *     <li>email</li>
  * </ul>
  * <p>
- *     When the result is to be presented on a {@link act.app.CliSession} and
+ *     When the result is to be presented on a {@link CliSession} and
  *     {@code PropertySpec} annotation is presented, either {@link act.cli.TableView}
  *     or {@link act.cli.JsonView} can be used to define the presenting style.
  *     If both {@code TableView} and {@code JsonView} are found on the method

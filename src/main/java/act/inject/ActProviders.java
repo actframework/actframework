@@ -2,7 +2,7 @@ package act.inject;
 
 import act.app.ActionContext;
 import act.app.App;
-import act.app.CliContext;
+import act.cli.CliContext;
 import act.app.util.AppCrypto;
 import act.conf.AppConfig;
 import act.db.Dao;

@@ -1,6 +1,6 @@
 package act.inject.param;
 
-import act.app.CliContext;
+import act.cli.CliContext;
 import act.cli.Optional;
 import act.cli.Required;
 import act.util.ActContext;

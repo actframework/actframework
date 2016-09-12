@@ -2,7 +2,7 @@ package act.handler;
 
 import act.Act;
 import act.Destroyable;
-import act.app.CliContext;
+import act.cli.CliContext;
 import org.osgl.$;
 
 import java.util.List;

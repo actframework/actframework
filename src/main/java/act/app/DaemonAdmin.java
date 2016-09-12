@@ -1,5 +1,6 @@
 package act.app;
 
+import act.cli.CliContext;
 import act.cli.Command;
 import act.cli.Required;
 import act.data.JodaDateTimeCodec;

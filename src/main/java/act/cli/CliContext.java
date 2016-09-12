@@ -1,6 +1,7 @@
-package act.app;
+package act.cli;
 
-import act.cli.CliException;
+import act.app.ActionContext;
+import act.app.App;
 import act.cli.ascii_table.ASCIITableHeader;
 import act.cli.ascii_table.impl.SimpleASCIITableImpl;
 import act.cli.ascii_table.spec.IASCIITable;
@@ -10,7 +11,6 @@ import act.cli.builtin.Help;
 import act.cli.util.CommandLineParser;
 import act.handler.CliHandler;
 import act.util.ActContext;
-import jline.Terminal2;
 import jline.console.ConsoleReader;
 import org.osgl.$;
 import org.osgl.cache.CacheService;
@@ -151,17 +151,18 @@ public class CliContext extends ActContext.Base<CliContext> implements IASCIITab
 
     private Map<String, String> preparsedOptionValues;
 
-
     public CliContext(String line, App app, ConsoleReader console, CliSession session) {
+        this(line, app, console, session, null == System.getenv("cli-no-raw-print"));
+    }
+
+    protected CliContext(String line, App app, ConsoleReader console, CliSession session, boolean rawPrint) {
         super(app);
         this.session = session;
         this.parser = new CommandLineParser(line);
         this.evaluatorCache = app.cache();
         this.console = $.NPE(console);
-        Terminal2 t2 = $.cast(console.getTerminal());
-        t2.setEchoEnabled(false);
         this.pw = new PrintWriter(console.getOutput());
-        this.rawPrint = null == System.getenv("cli-no-raw-print");
+        this.rawPrint = rawPrint;
         this.handler = app.cliDispatcher().handler(command());
         this.preparsedOptionValues = new HashMap<>();
         this.saveLocal();
@@ -355,10 +356,12 @@ public class CliContext extends ActContext.Base<CliContext> implements IASCIITab
         return this;
     }
 
+    @Deprecated
     public <T> T newInstance(String className) {
         return app().getInstance(className, this);
     }
 
+    @Deprecated
     public <T> T newInstance(Class<? extends T> clazz) {
         if (clazz == CliContext.class) return $.cast(this);
         return app().getInstance(clazz, this);
@@ -492,6 +495,14 @@ public class CliContext extends ActContext.Base<CliContext> implements IASCIITab
         return new File(file.getAbsolutePath());
     }
 
+    private void saveLocal() {
+        _local.set(this);
+    }
+
+    private void initOverHttp(ActionContext actionContext) {
+
+    }
+
     public static CliContext current() {
         return _local.get();
     }
@@ -504,10 +515,6 @@ public class CliContext extends ActContext.Base<CliContext> implements IASCIITab
         }
         s = s.replace("\n", $.OS.lineSeparator());
         return s;
-    }
-
-    private void saveLocal() {
-        _local.set(this);
     }
 
 

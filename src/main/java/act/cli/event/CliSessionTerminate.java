@@ -1,6 +1,6 @@
 package act.cli.event;
 
-import act.app.CliSession;
+import act.cli.CliSession;
 import act.event.ActEvent;
 
 /**

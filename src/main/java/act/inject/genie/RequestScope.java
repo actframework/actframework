@@ -1,8 +1,7 @@
 package act.inject.genie;
 
 import act.app.ActionContext;
-import act.app.CliContext;
-import act.app.CliSession;
+import act.cli.CliContext;
 import act.inject.param.ScopeCacheSupport;
 import org.osgl.inject.ScopeCache;
 

@@ -1,19 +1,17 @@
 package act.cli.bytecode;
 
 import act.app.App;
-import act.app.CliContext;
+import act.cli.CliContext;
 import act.cli.CommandExecutor;
 import act.cli.meta.CommandMethodMetaInfo;
 import act.cli.meta.CommandParamMetaInfo;
 import act.inject.param.CliContextParamLoader;
 import act.inject.param.ParamValueLoaderManager;
-import act.inject.param.ParamValueLoaderService;
 import com.esotericsoftware.reflectasm.MethodAccess;
 import org.osgl.$;
 import org.osgl.util.E;
 
 import java.lang.reflect.Method;
-import java.util.Map;
 
 /**
  * Implement {@link act.cli.CommandExecutor} using

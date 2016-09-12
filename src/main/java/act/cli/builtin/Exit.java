@@ -1,6 +1,6 @@
 package act.cli.builtin;
 
-import act.app.CliContext;
+import act.cli.CliContext;
 import act.handler.CliHandlerBase;
 import org.osgl.$;
 import org.osgl.util.C;

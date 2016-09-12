@@ -1,6 +1,6 @@
 package act.cli.builtin;
 
-import act.app.CliContext;
+import act.cli.CliContext;
 import act.cli.CliDispatcher;
 import act.cli.util.CommandLineParser;
 import act.handler.CliHandler;

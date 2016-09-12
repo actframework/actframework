@@ -8,6 +8,7 @@ import act.app.event.AppEventId;
 import act.app.util.AppCrypto;
 import act.app.util.NamedPort;
 import act.boot.BootstrapClassLoader;
+import act.cli.CliContext;
 import act.cli.CliDispatcher;
 import act.cli.bytecode.CommanderByteCodeScanner;
 import act.conf.AppConfLoader;
@@ -23,7 +24,6 @@ import act.inject.DependencyInjector;
 import act.inject.genie.GenieInjector;
 import act.inject.param.JsonDTOClassManager;
 import act.inject.param.ParamValueLoaderManager;
-import act.inject.param.ParamValueLoaderService;
 import act.event.AppEventListenerBase;
 import act.event.EventBus;
 import act.event.bytecode.SimpleEventListenerByteCodeScanner;
@@ -358,6 +358,7 @@ public class App extends DestroyableBase {
         // old app class loader instance after the app been refreshed
         // - Thread.currentThread().setContextClassLoader(classLoader());
 
+        initHttpConfig();
         // let's any emit the dependency injector loaded event
         // in case some other service depend on this event.
         // If any DI plugin e.g. guice has emitted this event
@@ -509,6 +510,7 @@ public class App extends DestroyableBase {
         return getInstance(c);
     }
 
+    @Deprecated
     public <T> T getInstance(String className, ActContext context) {
         Class<T> c = $.classForName(className, classLoader());
         return getInstance(c, context);
@@ -521,7 +523,8 @@ public class App extends DestroyableBase {
         return dependencyInjector.get(clz);
     }
 
-    <T> T getInstance(Class<T> clz, ActContext context) {
+    @Deprecated
+    public <T> T getInstance(Class<T> clz, ActContext context) {
         if (ActionContext.class == clz) {
             return $.cast(context);
         }
@@ -628,6 +631,13 @@ public class App extends DestroyableBase {
         config.app(this);
         registerSingleton(AppConfig.class, config);
         registerValueObjectCodec();
+    }
+
+    private void initHttpConfig() {
+        HttpConfig.secure(config.httpSecure());
+        HttpConfig.securePort(config.httpExternalSecurePort());
+        HttpConfig.nonSecurePort(config.httpExternalPort());
+        HttpConfig.defaultLocale(config.locale());
     }
 
     // TODO: move this to somewhere that is more appropriate

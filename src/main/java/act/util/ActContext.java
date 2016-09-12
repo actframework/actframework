@@ -3,7 +3,7 @@ package act.util;
 import act.Destroyable;
 import act.app.ActionContext;
 import act.app.App;
-import act.app.CliContext;
+import act.cli.CliContext;
 import act.conf.AppConfig;
 import act.mail.MailerContext;
 import act.view.Template;

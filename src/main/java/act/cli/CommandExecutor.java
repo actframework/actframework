@@ -1,6 +1,5 @@
 package act.cli;
 
-import act.app.CliContext;
 import act.util.DestroyableBase;
 
 /**

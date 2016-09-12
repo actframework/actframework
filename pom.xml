@@ -18,6 +18,10 @@
 ********************************************
 *            version history
 ********************************************
+0.2.0 - Big refactoring on
+ * dependency injection now on Genie
+ * param loading mechanism
+ * render arg enhancement now support method call with params, and field
 0.1.3 - testapp to implement integration test of ActFramework
 0.1.2 - misc bug fixes
 0.1.1 - baseline version
@@ -308,7 +312,7 @@
     <dependency>
       <groupId>org.osgl</groupId>
       <artifactId>osgl-mvc</artifactId>
-      <version>0.5.0-SNAPSHOT</version>
+      <version>0.5.1-SNAPSHOT</version>
     </dependency>
 
     <dependency>

@@ -65,7 +65,7 @@ public class RedirectToLoginUrl implements MissingAuthenticationHandler {
         return S.blank(portId) ? R : resultMap.get(portId);
     }
 
-    private void findResults(String loginUrl, String ajaxLoginUrl, $.Var<Result> result, $.Var<Result> ajaxResult, Router router) {
+    protected void findResults(String loginUrl, String ajaxLoginUrl, $.Var<Result> result, $.Var<Result> ajaxResult, Router router) {
         result.set(hasRouteTo(loginUrl, router) ? new Redirect(loginUrl) : ReturnUnauthorized.result());
         ajaxResult.set(S.eq(ajaxLoginUrl, loginUrl) ? R : hasRouteTo(ajaxLoginUrl, router) ? new Redirect(ajaxLoginUrl) : ReturnUnauthorized.result());
     }

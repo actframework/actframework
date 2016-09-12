@@ -2,14 +2,13 @@ package act.inject.param;
 
 import act.app.ActionContext;
 import act.app.App;
-import act.app.CliContext;
+import act.cli.CliContext;
 import act.cli.Optional;
 import act.cli.Required;
 import act.cli.meta.CommandMethodMetaInfo;
 import act.cli.util.CommandLineParser;
 import org.osgl.$;
 import org.osgl.inject.BeanSpec;
-import org.osgl.util.E;
 import org.osgl.util.S;
 import org.osgl.util.StringValueResolver;
 
@@ -18,9 +17,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 

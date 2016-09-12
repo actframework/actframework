@@ -305,6 +305,34 @@ public enum AppConfigKey implements ConfigKey {
     HOST("host"),
 
     /**
+     * `act.http.external_server.enabled` specify if the app is running behind a front end
+     * http server
+     *
+     * Default value: `true` when running in PROD mode; `false` when running in DEV mode
+     */
+    HTTP_EXTERNAL_SERVER("http.external_server.enabled"),
+
+    /**
+     * `act.http.port.external` set the external port which is used to
+     * construct the full url.
+     *
+     * Note act does not listen to external port directly. The recommended
+     * pattern is to have a front end HTTP server (e.g. nginx) to handle
+     * the external request and forward to act
+     *
+     * Default value: `80`
+     */
+    HTTP_EXTERNAL_PORT("http.port.external"),
+
+    /**
+     * `act.http.port.external.secure` set the external secure port which is
+     * used to construct full url string when app is running secure mode
+     *
+     * @see #HTTP_EXTERNAL_PORT
+     */
+    HTTP_EXTERNAL_SECURE_PORT("http.port.external.secure"),
+
+    /**
      * {@code act.http.params.max} specifies the maximum number of http parameters
      * this is to prevent the hash collision DOS attack
      * <p>Default value: {@code 1000}</p>

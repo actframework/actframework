@@ -1,24 +1,28 @@
 package act.controller.builtin;
 
+import act.app.ActionContext;
+import act.cli.CliContext;
+import act.cli.CliOverHttpContext;
+import act.cli.CliSession;
 import act.cli.CliDispatcher;
-import act.cli.meta.CommandMethodMetaInfo;
-import act.cli.meta.CommandParamMetaInfo;
-import act.cli.meta.CommanderClassMetaInfo;
 import act.conf.AppConfig;
 import act.controller.Controller;
 import act.handler.CliHandler;
-import act.handler.builtin.cli.CliHandlerProxy;
-import org.osgl.$;
 import org.osgl.http.H;
 import org.osgl.mvc.annotation.GetAction;
+import org.osgl.mvc.annotation.PostAction;
 import org.osgl.mvc.result.Result;
 import org.osgl.util.C;
 
 import javax.inject.Inject;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.StringReader;
 import java.util.List;
 
 import static act.controller.Controller.Util.notFoundIfNull;
 import static act.controller.Controller.Util.render;
+import static act.controller.Controller.Util.text;
 
 /**
  * Handles CLI over http requests
@@ -44,19 +48,20 @@ public class CliOverHttp {
 
     @GetAction("cmd")
     public Result cmdPanel(String cmd) {
-        CliHandler handler = dispatcher.handler(cmd);
-        notFoundIfNull(handler);
+        CliHandler handler = handler(cmd);
+        return render(handler, dispatcher, cmd);
+    }
 
-        CommandMethodMetaInfo methodMetaInfo = null;
-        CommanderClassMetaInfo classMetaInfo = null;
-        if (handler instanceof CliHandlerProxy) {
-            CliHandlerProxy proxy = $.cast(handler);
-            methodMetaInfo = proxy.methodMetaInfo();
-            classMetaInfo = proxy.classMetaInfo();
-            List<CommandParamMetaInfo> params = methodMetaInfo.params();
-        }
-
-        return render(handler, dispatcher, cmd, methodMetaInfo, classMetaInfo);
+    @PostAction("cmd")
+    public Result run(String cmd, ActionContext context) throws IOException {
+        CliHandler handler = handler(cmd);
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        CliContext cliContext = new CliOverHttpContext(context, os);
+        handler.handle(cliContext);
+        cliContext.flush();
+        String txt = new String(os.toByteArray(), "UTF-8");
+        txt = txt.replace("^J", "\n");
+        return text(txt);
     }
 
     private List<String> mru() {
@@ -75,6 +80,12 @@ public class CliOverHttp {
         if (mru.size() > MRU_LIMIT) {
             mru.remove(mru.size() - 1);
         }
+    }
+
+    private CliHandler handler(String cmd) {
+        CliHandler handler = dispatcher.handler(cmd);
+        notFoundIfNull(handler);
+        return handler;
     }
 
 

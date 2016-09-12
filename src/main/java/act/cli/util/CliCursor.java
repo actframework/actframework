@@ -1,6 +1,6 @@
 package act.cli.util;
 
-import act.app.CliContext;
+import act.cli.CliContext;
 
 public interface CliCursor {
     void output(CliContext context);

@@ -1,5 +1,6 @@
 package act.inject.param;
 
+import act.cli.CliContext;
 import act.util.ActContext;
 
 /**
@@ -13,7 +14,7 @@ public interface ParamValueLoader {
      * The context could be one of
      *
      * * {@link act.app.ActionContext}
-     * * {@link act.app.CliContext}
+     * * {@link CliContext}
      *
      * @param bean    the bean that cached for current session or `null` if not applied
      * @param context the current execution context

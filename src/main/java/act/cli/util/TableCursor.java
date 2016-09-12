@@ -1,6 +1,6 @@
 package act.cli.util;
 
-import act.app.CliContext;
+import act.cli.CliContext;
 import act.cli.view.CliView;
 import act.util.PropertySpec;
 import org.osgl.util.C;

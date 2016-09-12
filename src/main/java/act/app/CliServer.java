@@ -1,6 +1,7 @@
 package act.app;
 
 import act.Destroyable;
+import act.cli.CliSession;
 import act.exception.ActException;
 import org.osgl.logging.LogManager;
 import org.osgl.logging.Logger;
@@ -22,7 +23,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
  * Servicing CLI session
  */
 @ApplicationScoped
-class CliServer extends AppServiceBase<CliServer> implements Runnable {
+public class CliServer extends AppServiceBase<CliServer> implements Runnable {
 
     private static final Logger log = LogManager.get(CliServer.class);
 
@@ -49,7 +50,7 @@ class CliServer extends AppServiceBase<CliServer> implements Runnable {
         sessions.clear();
     }
 
-    void remove(CliSession session) {
+    public void remove(CliSession session) {
         sessions.remove(session.id());
     }
 

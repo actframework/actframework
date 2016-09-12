@@ -1,0 +1,31 @@
+@import org.osgl.*, act.cli.meta.*
+@args() {
+    String cmd
+    act.handler.CliHandler handler
+    act.cli.CliDispatcher dispatcher
+}
+
+<h3>@cmd</h3>
+
+<p class="desc">
+    @handler.summary()
+</p>
+
+<form action="/cmd" method="post">
+@for ($.Tuple<String, String> option: handler.options()) {
+    <label>@option._1</label>
+    <input type="hidden" name="cmd" value="@cmd">
+    <input type="text" class="u-full-width" placeholder="@option._2" title="@option._2" name="@option._1">
+}
+    <button type="button">Submit</button>
+</form>
+
+<h3>Result</h3>
+<pre id="result"></pre>
+<script>
+    $('button').on('click', function() {
+        $.post('/cmd', $('form').serialize(), function (txt) {
+            $('#result').text(txt);
+        } )
+    })
+</script>

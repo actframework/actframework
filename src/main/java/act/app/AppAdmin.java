@@ -1,6 +1,7 @@
 package act.app;
 
 import act.Act;
+import act.cli.CliContext;
 import act.cli.Command;
 
 /**

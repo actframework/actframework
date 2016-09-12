@@ -1,6 +1,6 @@
 package act.cli.view;
 
-import act.app.CliContext;
+import act.cli.CliContext;
 import act.cli.ascii_table.impl.CollectionASCIITableAware;
 import act.cli.tree.TreeNode;
 import act.cli.util.CliCursor;

@@ -1037,6 +1037,71 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
             jobPoolSize = conf.jobPoolSize;
         }
     }
+    
+    private int httpExternalPort = -1;
+    
+    protected T httpExternalPort(int port) {
+        E.illegalArgumentIf(port < 1, "port value not valid: %s", port);
+        this.httpExternalPort = port;
+        return me();
+    }
+    
+    public int httpExternalPort() {
+        if (-1 == httpExternalPort) {
+            String s = get(HTTP_EXTERNAL_PORT);
+            httpExternalPort = null == s ? httpExternal() ? 80 : httpPort() : Integer.parseInt(s);
+        }
+        return httpExternalPort;
+    }
+    
+    private void _mergeHttpExternalPort(AppConfig conf) {
+        if (null == get(HTTP_EXTERNAL_PORT)) {
+            this.httpExternalPort = conf.httpExternalPort();
+        }
+    }
+
+    private Boolean httpExternal = null;
+
+    protected T httpExternal(boolean setting) {
+        this.httpExternal = setting;
+        return me();
+    }
+
+    public boolean httpExternal() {
+        if (null == httpExternal) {
+            String s = get(HTTP_EXTERNAL_SERVER);
+            httpExternal = Boolean.parseBoolean(s);
+        }
+        return httpExternal;
+    }
+
+    private void _mergeHttpExternal(AppConfig conf) {
+        if (null == get(HTTP_EXTERNAL_SERVER)) {
+            httpExternal = conf.httpExternal;
+        }
+    }
+
+    private int httpExternalSecurePort = -1;
+
+    protected T httpExternalSecurePort(int port) {
+        E.illegalArgumentIf(port < 1, "port value not valid: %s", port);
+        this.httpExternalSecurePort = port;
+        return me();
+    }
+
+    public int httpExternalSecurePort() {
+        if (-1 == httpExternalSecurePort) {
+            String s = get(HTTP_EXTERNAL_PORT);
+            httpExternalSecurePort = null == s ? httpExternal() ? 443 : httpPort() : Integer.parseInt(s);
+        }
+        return httpExternalSecurePort;
+    }
+
+    private void _mergeHttpExternalSecurePort(AppConfig conf) {
+        if (null == get(HTTP_EXTERNAL_PORT)) {
+            this.httpExternalSecurePort = conf.httpExternalSecurePort;
+        }
+    }
 
     private int httpPort = -1;
 
@@ -1105,24 +1170,24 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         }
     }
 
-    private MissingAuthenticationHandler aMah = null;
+    private MissingAuthenticationHandler ajaxMah = null;
     protected T ajaxMissingAuthenticationHandler(MissingAuthenticationHandler handler) {
         E.NPE(handler);
-        mah = handler;
+        ajaxMah = handler;
         return me();
     }
     public MissingAuthenticationHandler ajaxMissingAuthenticationHandler() {
-        if (null == mah) {
-            mah = get(AJAX_MISSING_AUTHENTICATION_HANDLER);
-            if (null == mah) {
-                mah = missingAuthenticationHandler();
+        if (null == ajaxMah) {
+            ajaxMah = get(AJAX_MISSING_AUTHENTICATION_HANDLER);
+            if (null == ajaxMah) {
+                ajaxMah = missingAuthenticationHandler();
             }
         }
-        return mah;
+        return ajaxMah;
     }
     private void _mergeAjaxMissingAuthenticationHandler(AppConfig config) {
         if (null == get(AJAX_MISSING_AUTHENTICATION_HANDLER)) {
-            mah = config.mah;
+            ajaxMah = config.ajaxMah;
         }
     }
 
@@ -1914,6 +1979,9 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         _mergeJobPoolSize(conf);
         _mergeMissingAuthenticationHandler(conf);
         _mergeAjaxMissingAuthenticationHandler(conf);
+        _mergeHttpExternal(conf);
+        _mergeHttpExternalPort(conf);
+        _mergeHttpExternalSecurePort(conf);
         _mergeHttpPort(conf);
         _mergeHttpSecure(conf);
         _mergePorts(conf);

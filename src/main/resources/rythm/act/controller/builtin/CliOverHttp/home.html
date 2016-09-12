@@ -1,35 +1,95 @@
-@extends(_base, header: "CLI Over HTTP")
+@extends(act.base, title: "CLI Over HTTP")
 @import org.osgl.Osgl
-@section(head) {
+@section(moreStyles) {
 <style>
-    ul.command-list {list-style: none;}
-    ul.command-list li {}
+    body {
+        background-color: #333;
+        color: #bbb;
+    }
+    #page-title {
+        padding-top: 50px;
+        padding-bottom: 20px;
+        border-bottom: 1px solid #777;
+    }
+    dt {
+        font-weight: bold;
+    }
+    dd {
+        margin: 0;
+        padding-left: 18px;
+    }
+    #command-nav {
+        border-right: 1px solid #777;
+    }
+    .command {
+        padding: 12px 10px 12px 20px;
+        cursor: pointer;
+    }
+    .command:hover {
+        background-color: #555;
+    }
+    .command.active {
+        background-color: #777;
+        color: #333
+    }
+    .hidden {display: none;}
 </style>
 }
 @args act.cli.CliDispatcher dispatcher
 
 @def commandList(List<String> commandList) {
-    <ul class="command-list">
-        @for(String cmd: commandList) {
-        <li>
-            @{
-            act.handler.CliHandler handler = dispatcher.handler(cmd);
-            Osgl.T2<String, String> commandLine = handler.commandLine(cmd);
-            }
-            @cmd - @commandLine._2
-        </li>
-        } else {
-        <li>No command found ...</li>
+    <dl class="command-list">
+    @for(String cmd: commandList) {
+        @{
+        act.handler.CliHandler handler = dispatcher.handler(cmd);
+        Osgl.T2<String, String> commandLine = handler.commandLine(cmd);
         }
-    </ul>
+        <div class="command" data-cmd="@cmd">
+            <dt>
+                <i class="fa fa-wrench" aria-hidden="true"></i>&nbsp;@cmd
+            </dt>
+            <dd>
+                @commandLine._2
+            </dd>
+        </div>
+    } else {
+        <span>No command found ...</span>
     }
+    </dl>
+}
 
-    <div id="app-commands">
-        <h2>Application commands</h2>
-        @commandList(dispatcher.applicationCommands())
+    <div class="row">
+        <h1 id="page-title">CLI Over HTTP</h1>
+    </div>
+    <div class="row">
+        <div class="four columns" id="command-nav">
+            <div id="app-commands">
+                <h5>Application commands</h5>
+                @commandList(dispatcher.applicationCommands())
+            </div>
+
+            <div id="sys-commands">
+                <h5>System commands</h5>
+                @commandList(dispatcher.systemCommands())
+            </div>
+        </div>
+        <div id="detail" class="eight columns">
+            <p>
+                Click on the command list in the left navigation column to load command panel
+            </p>
+        </div>
     </div>
 
-    <div id="sys-commands">
-        <h2>System commands</h2>
-        @commandList(dispatcher.systemCommands())
-    </div>
+@section(moreScripts){
+<script>
+    var curCmd;
+    $('div.command').click(function() {
+        curCmd = $(this).data('cmd');
+        $('div.command').removeClass('active');
+        $(this).addClass('active');
+        $.get('/cmd', {cmd: curCmd}, function(detail) {
+            $('#detail').html(detail).removeClass('hidden')
+        })
+    })
+</script>
+}

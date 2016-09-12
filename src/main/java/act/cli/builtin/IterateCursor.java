@@ -1,11 +1,10 @@
 package act.cli.builtin;
 
-import act.app.CliContext;
+import act.cli.CliContext;
 import act.cli.util.CliCursor;
 import act.handler.CliHandlerBase;
 import org.osgl.$;
 import org.osgl.util.C;
-import org.osgl.util.E;
 
 import java.util.List;
 

@@ -1,10 +1,9 @@
 package act.inject.param;
 
-import act.app.CliContext;
+import act.cli.CliContext;
 import act.cli.util.CommandLineParser;
 import act.util.ActContext;
 import org.osgl.inject.util.ArrayLoader;
-import org.osgl.util.S;
 import org.osgl.util.StringValueResolver;
 
 import java.util.ArrayList;

@@ -2,13 +2,12 @@ package act.handler.builtin.cli;
 
 import act.Act;
 import act.app.App;
-import act.app.CliContext;
+import act.cli.CliContext;
 import act.cli.CliException;
 import act.cli.CommandExecutor;
 import act.cli.bytecode.ReflectedCommandExecutor;
 import act.cli.meta.CommandMethodMetaInfo;
 import act.cli.meta.CommanderClassMetaInfo;
-import act.handler.CliHandler;
 import act.handler.CliHandlerBase;
 import act.util.PropertySpec;
 import org.osgl.$;
@@ -17,7 +16,6 @@ import org.osgl.logging.Logger;
 import org.osgl.util.S;
 
 import java.util.List;
-import java.util.Map;
 
 public final class CliHandlerProxy extends CliHandlerBase {
 

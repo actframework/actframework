@@ -4,7 +4,7 @@ import act.Destroyable;
 import act.app.ActionContext;
 import act.app.App;
 import act.app.AppServiceBase;
-import act.app.CliContext;
+import act.cli.CliContext;
 import act.util.ActContext;
 
 import javax.enterprise.context.ApplicationScoped;

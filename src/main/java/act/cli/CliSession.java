@@ -1,15 +1,12 @@
-package act.app;
+package act.cli;
 
 import act.Destroyable;
-import act.cli.CliDispatcher;
-import act.cli.CommandNameCompleter;
-import act.cli.builtin.Exit;
-import act.cli.builtin.Help;
+import act.app.ActionContext;
+import act.app.App;
+import act.app.CliServer;
 import act.cli.event.CliSessionStart;
 import act.cli.event.CliSessionTerminate;
 import act.cli.util.CliCursor;
-import act.cli.util.CommandLineParser;
-import act.handler.CliHandler;
 import act.util.Banner;
 import act.util.DestroyableBase;
 import jline.console.ConsoleReader;
@@ -18,6 +15,7 @@ import org.osgl.util.C;
 import org.osgl.util.IO;
 import org.osgl.util.S;
 
+import javax.enterprise.context.ApplicationScoped;
 import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.io.OutputStream;
@@ -33,7 +31,7 @@ public class CliSession extends DestroyableBase implements Runnable {
     private String id;
     private CliServer server;
     private CliDispatcher dispatcher;
-    private App app;
+    protected App app;
     private Socket socket;
     private long ts;
     private boolean exit;
@@ -50,7 +48,18 @@ public class CliSession extends DestroyableBase implements Runnable {
      */
     private Map<String, Object> attributes = C.newMap();
 
-    CliSession(Socket socket, CliServer server) {
+    /**
+     * Construct a CliOverHttp session
+     * @param context the ActionContext
+     */
+    protected CliSession(ActionContext context) {
+        this.app = context.app();
+        this.dispatcher = app.cliDispatcher();
+        this.id = context.session().id();
+        this.ts = $.ms();
+    }
+
+    public CliSession(Socket socket, CliServer server) {
         this.socket = $.NPE(socket);
         this.server = $.NPE(server);
         this.app = server.app();
@@ -96,7 +105,7 @@ public class CliSession extends DestroyableBase implements Runnable {
      * @param expiration the expiration in seconds
      * @return {@code true} if this session is expired
      */
-    boolean expired(int expiration) {
+    public boolean expired(int expiration) {
         long l = expiration * 1000;
         return l < ($.ms() - ts);
     }
@@ -105,7 +114,7 @@ public class CliSession extends DestroyableBase implements Runnable {
     protected void releaseResources() {
         stop();
         server = null;
-        Destroyable.Util.tryDestroyAll(attributes.values());
+        Destroyable.Util.tryDestroyAll(attributes.values(), ApplicationScoped.class);
     }
 
     @Override
@@ -123,6 +132,7 @@ public class CliSession extends DestroyableBase implements Runnable {
             }
             console.setPrompt(S.fmt("%s[%s]>", appName, id));
             console.addCompleter(commandNameCompleter);
+            console.getTerminal().setEchoEnabled(false);
 
             while (!exit) {
                 final String line = console.readLine();
@@ -169,7 +179,7 @@ public class CliSession extends DestroyableBase implements Runnable {
         }
     }
 
-    void stop() {
+    public void stop() {
         exit = true;
         if (null != runningThread) {
             runningThread.interrupt();
@@ -178,7 +188,7 @@ public class CliSession extends DestroyableBase implements Runnable {
         IO.close(socket);
     }
 
-    void stop(String message) {
+    public void stop(String message) {
         if (null != console) {
             PrintWriter pw = new PrintWriter(console.getOutput());
             pw.println(message);

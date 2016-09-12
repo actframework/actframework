@@ -1,6 +1,6 @@
 package act.inject.param;
 
-import act.app.CliContext;
+import act.cli.CliContext;
 import act.cli.util.CommandLineParser;
 
 import java.util.List;
