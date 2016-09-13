@@ -70,7 +70,7 @@ public class RedirectToLoginUrl implements MissingAuthenticationHandler {
         ajaxResult.set(S.eq(ajaxLoginUrl, loginUrl) ? R : hasRouteTo(ajaxLoginUrl, router) ? new Redirect(ajaxLoginUrl) : ReturnUnauthorized.result());
     }
 
-    private boolean hasRouteTo(String url, Router router) {
+    protected final boolean hasRouteTo(String url, Router router) {
         return null != router.findStaticGetHandler(url);
     }
 }

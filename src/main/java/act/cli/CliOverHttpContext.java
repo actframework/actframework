@@ -29,7 +29,7 @@ public class CliOverHttpContext extends CliContext {
                     s = S.before(s, ",");
                 }
                 if (S.notBlank(val)) {
-                    sb.append(s).append(" ").append(val);
+                    sb.append(s).append(" ").append(val).append(" ");
                 }
             }
         }

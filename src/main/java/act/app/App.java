@@ -638,6 +638,7 @@ public class App extends DestroyableBase {
         HttpConfig.securePort(config.httpExternalSecurePort());
         HttpConfig.nonSecurePort(config.httpExternalPort());
         HttpConfig.defaultLocale(config.locale());
+        HttpConfig.domain(config.host());
     }
 
     // TODO: move this to somewhere that is more appropriate
