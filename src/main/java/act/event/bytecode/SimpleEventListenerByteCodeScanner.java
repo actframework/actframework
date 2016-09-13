@@ -42,10 +42,11 @@ public class SimpleEventListenerByteCodeScanner extends AppByteCodeScannerBase {
             EventBus eventBus = app().eventBus();
             for (SimpleEventListenerMetaInfo metaInfo : metaInfoList) {
                 for (String event : metaInfo.events()) {
+                    boolean isStatic = metaInfo.isStatic();
                     if (metaInfo.isAsync()) {
-                        eventBus.bindAsync(event, new ReflectedSimpleEventListener(metaInfo.className(), metaInfo.methodName(), metaInfo.paramTypes()));
+                        eventBus.bindAsync(event, new ReflectedSimpleEventListener(metaInfo.className(), metaInfo.methodName(), metaInfo.paramTypes(), isStatic));
                     } else {
-                        eventBus.bind(event, new ReflectedSimpleEventListener(metaInfo.className(), metaInfo.methodName(), metaInfo.paramTypes()));
+                        eventBus.bind(event, new ReflectedSimpleEventListener(metaInfo.className(), metaInfo.methodName(), metaInfo.paramTypes(), isStatic));
                     }
                 }
             }
@@ -76,6 +77,7 @@ public class SimpleEventListenerByteCodeScanner extends AppByteCodeScannerBase {
                 }
             }
             final String methodName = name;
+            final boolean isStatic = AsmTypes.isStatic(access);
             return new MethodVisitor(ASM5, mv) {
 
                 private List<String> events = C.newList();
@@ -155,7 +157,7 @@ public class SimpleEventListenerByteCodeScanner extends AppByteCodeScannerBase {
                 @Override
                 public void visitEnd() {
                     if (!events.isEmpty()) {
-                        SimpleEventListenerMetaInfo metaInfo = new SimpleEventListenerMetaInfo(events, className, methodName, asyncMethodName, paramTypes, isAsync);
+                        SimpleEventListenerMetaInfo metaInfo = new SimpleEventListenerMetaInfo(events, className, methodName, asyncMethodName, paramTypes, isAsync, isStatic);
                         metaInfoList.add(metaInfo);
                     }
                     super.visitEnd();

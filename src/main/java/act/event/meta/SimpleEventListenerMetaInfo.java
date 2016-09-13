@@ -12,14 +12,16 @@ public class SimpleEventListenerMetaInfo {
     private String asyncMethodName;
     private List<String> paramTypes;
     private boolean async;
+    private boolean isStatic;
 
-    public SimpleEventListenerMetaInfo(List<String> events, String className, String methodName, String asyncMethodName, List<String> paramTypes, boolean async) {
+    public SimpleEventListenerMetaInfo(List<String> events, String className, String methodName, String asyncMethodName, List<String> paramTypes, boolean async, boolean isStatic) {
         this.events = C.list(events);
         this.className = $.notNull(className);
         this.methodName = $.notNull(methodName);
         this.asyncMethodName = asyncMethodName;
         this.paramTypes = C.list(paramTypes);
         this.async = async;
+        this.isStatic = isStatic;
     }
 
     public List<String> events() {
@@ -44,5 +46,9 @@ public class SimpleEventListenerMetaInfo {
 
     public boolean isAsync() {
         return async;
+    }
+
+    public boolean isStatic() {
+        return isStatic;
     }
 }

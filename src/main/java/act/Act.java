@@ -54,7 +54,12 @@ import static act.Destroyable.Util.tryDestroy;
 public final class Act {
 
     public enum Mode {
-        PROD, DEV() {
+        PROD,
+        /**
+         * DEV mode is special as Act might load classes
+         * directly from srccode code when running in this mode
+         */
+        DEV() {
             @Override
             public AppScanner appScanner() {
                 return AppScanner.SINGLE_APP_SCANNER;
@@ -69,11 +74,19 @@ public final class Act {
         private final String confPrefix = "%" + name().toLowerCase() + ".";
 
         /**
-         * DEV mode is special as Act might load classes
-         * directly from srccode code when running in this mode
+         * Returns if the current mode is {@link #DEV dev mode}
+         * @return `true` if the current mode is dev
          */
         public boolean isDev() {
             return DEV == this;
+        }
+
+        /**
+         * Returns if the current mode is {@link #PROD prod mode}
+         * @return `true` if the current mode is product mode
+         */
+        public boolean isProd() {
+            return PROD == this;
         }
 
         public String configKey(String key) {
@@ -153,6 +166,10 @@ public final class Act {
 
     public static Mode mode() {
         return mode;
+    }
+
+    public static boolean isProd() {
+        return mode.isProd();
     }
 
     public static boolean isDev() {

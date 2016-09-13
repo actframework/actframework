@@ -1070,7 +1070,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     public boolean httpExternal() {
         if (null == httpExternal) {
             String s = get(HTTP_EXTERNAL_SERVER);
-            httpExternal = Boolean.parseBoolean(s);
+            httpExternal = S.blank(s) ? Act.mode().isProd() : Boolean.parseBoolean(s);
         }
         return httpExternal;
     }

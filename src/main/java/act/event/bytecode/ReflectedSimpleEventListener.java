@@ -11,7 +11,6 @@ import java.util.List;
 
 class ReflectedSimpleEventListener implements SimpleEventListener {
 
-    private transient Method method;
     private transient volatile Object host;
 
     private String className;
@@ -19,10 +18,11 @@ class ReflectedSimpleEventListener implements SimpleEventListener {
     private List<String> paramTypes;
     private boolean isStatic;
 
-    ReflectedSimpleEventListener(String className, String methodName, List<String> paramTypes) {
+    ReflectedSimpleEventListener(String className, String methodName, List<String> paramTypes, boolean isStatic) {
         this.className = $.notNull(className);
         this.methodName = $.notNull(methodName);
         this.paramTypes = $.notNull(paramTypes);
+        this.isStatic = isStatic;
     }
 
     @Override
@@ -40,7 +40,7 @@ class ReflectedSimpleEventListener implements SimpleEventListener {
             throw E.unexpected(e);
         } catch (InvocationTargetException e) {
             Throwable t = e.getCause();
-            throw E.unexpected(t, "Error executing event listener method %s.%s", method.getDeclaringClass().getName(), method.getName());
+            throw E.unexpected(t, "Error executing event listener method %s.%s", className, methodName);
         }
     }
 
