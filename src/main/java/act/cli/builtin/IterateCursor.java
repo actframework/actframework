@@ -29,8 +29,8 @@ public class IterateCursor extends CliHandlerBase {
     }
 
     @Override
-    public $.T2<String, String> commandLine(String commandName) {
-        return $.T2(commandName, "iterate through cursor");
+    public $.T2<String, String> commandLine() {
+        return $.T2("it", "iterate through cursor");
     }
 
     @Override

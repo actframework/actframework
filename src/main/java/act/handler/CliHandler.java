@@ -31,12 +31,9 @@ public interface CliHandler extends $.Function<CliContext, Void>, Destroyable {
      * <p>
      *     <code>$.T2("help [options] [command]", "show help message")</code>
      * </p>
-     * @param commandName the command name of the command.
-     *                    This param is required because some command might be registered
-     *                    using different alias
      * @return the command line
      */
-    $.T2<String, String> commandLine(String commandName);
+    $.T2<String, String> commandLine();
 
     /**
      * Returns the summary of the command. This is used to display the help information

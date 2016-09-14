@@ -76,8 +76,8 @@ public final class CliHandlerProxy extends CliHandlerBase {
     }
 
     @Override
-    public $.T2<String, String> commandLine(String commandName) {
-        return methodMetaInfo.commandLine(commandName, classMetaInfo, app.classLoader());
+    public $.T2<String, String> commandLine() {
+        return methodMetaInfo.commandLine(classMetaInfo, app.classLoader());
     }
 
     @Override

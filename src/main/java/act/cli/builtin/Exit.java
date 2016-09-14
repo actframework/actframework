@@ -26,8 +26,8 @@ public class Exit extends CliHandlerBase {
     }
 
     @Override
-    public $.T2<String, String> commandLine(String commandName) {
-        return $.T2(commandName, "exit the console");
+    public $.T2<String, String> commandLine() {
+        return $.T2("exit", "exit the console");
     }
 
     @Override

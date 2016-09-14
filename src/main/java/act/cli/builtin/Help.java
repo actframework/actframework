@@ -70,7 +70,7 @@ public class Help extends CliHandlerBase {
         }
         for (String cmd : commands) {
             CliHandler handler = dispatcher.handler(cmd);
-            T2<String, String> commandLine = handler.commandLine(cmd);
+            T2<String, String> commandLine = handler.commandLine();
             if (noSearch || commandLine._1.contains(search)) {
                 lines.add(S.fmt(fmt, cmd, commandLine._2));
             }
@@ -96,7 +96,7 @@ public class Help extends CliHandlerBase {
         List<String> lines = C.newList();
 
         List<String> names = dispatcher.names(handler);
-        T2<String, String> commandLine = handler.commandLine(command);
+        T2<String, String> commandLine = handler.commandLine();
         lines.add("Usage: " + names.get(0));
         lines.add(commandLine._2);
 
@@ -136,7 +136,7 @@ public class Help extends CliHandlerBase {
     }
 
     @Override
-    public T2<String, String> commandLine(String commandName) {
+    public T2<String, String> commandLine() {
         return T2("help [options] [command]", "show help information");
     }
 
