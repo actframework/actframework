@@ -222,7 +222,7 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
     ) {
         Class rawType = spec.rawType();
         if (provided(spec, injector)) {
-            return ProvidedValueLoader.get(rawType, injector);
+            return ProvidedValueLoader.get(spec, injector);
         }
         if (null != filter(annotations, NoBind.class)) {
             return null;
@@ -341,10 +341,11 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
     }
 
     private ParamValueLoader findLoader(ParamKey paramKey, Field field) {
+        BeanSpec spec = BeanSpec.of(field.getGenericType(), field.getDeclaredAnnotations(), App.instance().injector());
         Class fieldType = field.getType();
         Annotation[] annotations = field.getDeclaredAnnotations();
         if (ActProviders.isProvided(fieldType) || null != filter(annotations, Inject.class)) {
-            return ProvidedValueLoader.get(fieldType, injector);
+            return ProvidedValueLoader.get(spec, injector);
         }
         String name = null;
         Named named = filter(annotations, Named.class);

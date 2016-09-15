@@ -23,6 +23,8 @@ import org.osgl.util.E;
 import javax.inject.Inject;
 import javax.inject.Provider;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.*;
 
 public class GenieInjector extends DependencyInjectorBase<GenieInjector> {
@@ -53,6 +55,10 @@ public class GenieInjector extends DependencyInjectorBase<GenieInjector> {
     @Override
     public <T> Provider<T> getProvider(Class<T> aClass) {
         return genie().getProvider(aClass);
+    }
+
+    public <T> T get(BeanSpec spec) {
+        return genie().get(spec);
     }
 
     @Override
@@ -164,6 +170,22 @@ public class GenieInjector extends DependencyInjectorBase<GenieInjector> {
         App app = App.instance();
         GenieInjector genieInjector = app.injector();
         genieInjector.injectTags.add(valueLoader);
+    }
+
+    @SubClassFinder(value = GenericTypedBeanLoader.class, callOn = AppEventId.DEPENDENCY_INJECTOR_PROVISIONED)
+    public static void foundGenericTypedBeanLoader(Class<? extends GenericTypedBeanLoader> loaderClass) {
+        App app = App.instance();
+        GenieInjector genieInjector = app.injector();
+        Type[] ta = loaderClass.getGenericInterfaces();
+        for (Type t: ta) {
+            if (t instanceof ParameterizedType) {
+                ParameterizedType pt = (ParameterizedType) t;
+                if (GenericTypedBeanLoader.class == pt.getRawType()) {
+                    Type compoentType = pt.getActualTypeArguments()[0];
+                    genieInjector.genie().registerGenericTypedBeanLoader((Class)compoentType, app.getInstance(loaderClass));
+                }
+            }
+        }
     }
 
 }
