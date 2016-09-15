@@ -81,9 +81,4 @@ public class StaticResourceGetter extends FastRequestHandler {
     public String toString() {
         return baseUrl.toString();
     }
-
-    public static void main(String[] args) {
-        URL url = StaticResourceGetter.class.getResource("/act/app");
-        System.out.println(url);
-    }
 }

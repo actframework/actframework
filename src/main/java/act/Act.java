@@ -619,9 +619,4 @@ public final class Act {
         };
     }
 
-    public static void main(String[] args) {
-        Locale locale = new Locale("zh", "tw");
-        System.out.println(locale);
-    }
-
 }

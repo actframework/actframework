@@ -68,7 +68,4 @@ class LocalIpAddressUtil {
         return false;
     }
 
-    public static void main(String[] args) {
-        System.out.println(LocalIpAddressUtil.resolveLocalAddress().getHostAddress());
-    }
 }

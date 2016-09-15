@@ -463,7 +463,6 @@ public class HandlerEnhancer extends MethodVisitor implements Opcodes {
                         }
                     }
                     refreshIteratorNext();
-                    //System.out.printf("ATHROW inserted\n");
                 }
             }
         }

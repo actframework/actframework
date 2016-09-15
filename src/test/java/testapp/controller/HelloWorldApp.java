@@ -21,7 +21,6 @@ public class HelloWorldApp {
     ActionContext context;
 
     public HelloWorldApp() {
-        System.out.println("The controller initialized");
     }
 
     @Before

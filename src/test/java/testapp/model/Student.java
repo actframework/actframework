@@ -53,13 +53,4 @@ public class Student extends Person {
         return $.hc(clazz, studentId, score, foo, bar, z, super.hashCode());
     }
 
-    public static void main(String[] args) {
-        Type type = Type.DOUBLE_TYPE;
-        System.out.println(type);
-        type = Type.getType(String.class);
-        System.out.println(type);
-        type = Type.getType(Student.class);
-        System.out.println(type);
-        System.out.println(type.getInternalName());
-    }
 }

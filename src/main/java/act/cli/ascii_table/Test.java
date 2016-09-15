@@ -71,7 +71,6 @@ public class Test {
 	    
 	    ASCIITable.getInstance().printTable(headerObjs, data);
 	    ASCIITable.getInstance().printTable(header, data);
-	    System.out.println(ASCIITable.getInstance().getTable(headerObjs, data));
 	}
 
 	private static void collectionTests() {

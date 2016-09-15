@@ -805,8 +805,4 @@ public enum AppConfigKey implements ConfigKey {
         return lookup.get(s.trim().toLowerCase());
     }
 
-    public static void main(String[] args) {
-        System.out.println(AppConfigKey.values().length);
-    }
-
 }

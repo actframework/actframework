@@ -114,9 +114,9 @@ public class CommandMethodMetaInfo extends DestroyableBase {
     }
 
     /**
-     * Returns {@link act.handler.CliHandler#commandLine(String)}
+     * Returns {@link act.handler.CliHandler#commandLine()}
      * @return the command line
-     * @see act.handler.CliHandler#commandLine(String)
+     * @see act.handler.CliHandler#commandLine()
      */
     public $.T2<String, String> commandLine(CommanderClassMetaInfo classMetaInfo, AppClassLoader classLoader) {
         boolean hasOptions = classMetaInfo.hasOption(classLoader);

@@ -6,7 +6,8 @@ import org.joda.time.DateTime;
 import org.osgl.mvc.annotation.GetAction;
 
 @Controller("/bwa")
-public class BindingWithAnnotation extends Controller.Util {
+@SuppressWarnings("unused")
+public class BindingWithAnnotationTestBed {
 
     @GetAction("datetime")
     public DateTime dateTime(@Pattern("yyyyMMdd") DateTime dateTime) {

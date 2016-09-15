@@ -125,7 +125,6 @@ public class ControllerByteCodeScannerTest extends TestBase {
         verifyRouting(url, "WithAppContext", "noReturnNoParam", GET, PUT);
 
         ActionMethodMetaInfo action = action("WithAppContext", "noReturnNoParam");
-        System.out.println(action);
 
         // verify app context injection
         assertFieldAppCtxInject(action, "ctx");

@@ -248,7 +248,6 @@ public class SenderEnhancer extends MethodVisitor implements Opcodes {
                                 templatePath = ldc.cst.toString();
                             }
                         default:
-                            //System.out.printf("type\n");
                     }
                     if (breakWhile) {
                         break;

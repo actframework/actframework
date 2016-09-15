@@ -66,7 +66,7 @@ public class RunApp {
                 throw E.unexpected(t, "Unknown error captured starting the application");
             }
         }
-        System.out.printf("it talks %sms to start the app\n", $.ms() - ts);
+        logger.debug("it talks %sms to start the app\n", $.ms() - ts);
     }
 
     public static void main(String[] args) throws Exception {

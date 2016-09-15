@@ -22,7 +22,6 @@ public class Bar extends CBase {
         if (b) {
             int i = 5;
             render(id, email, name, b, i);
-            //System.out.println("abc");
         } else {
             if (S.empty(id)) {
                 int i = 0;

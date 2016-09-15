@@ -47,10 +47,6 @@ class ParamTreeNode implements TreeNode {
         return CliView.TREE.render(this, null, null);
     }
 
-    void print() {
-        System.out.println(debug());
-    }
-
     ParamKey key() {
         return key;
     }

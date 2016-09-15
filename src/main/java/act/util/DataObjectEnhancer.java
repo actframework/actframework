@@ -64,12 +64,6 @@ public class DataObjectEnhancer extends AppByteCodeEnhancer<DataObjectEnhancer> 
                     }
                     return super.visitAnnotation(desc, visible);
                 }
-
-                @Override
-                public void visitAttribute(Attribute attr) {
-                    System.out.println("Found attribute: " + attr);
-                    super.visitAttribute(attr);
-                }
             };
         }
         return fv;

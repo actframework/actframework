@@ -402,7 +402,6 @@ public class AppClassLoader
             } catch (VerifyError e) {
                 File f = File.createTempFile(name, ".class");
                 IO.write(baNew, f);
-                System.out.println("Erroring byte code logged into " + f.getAbsolutePath());
                 throw e;
             }
         } catch (RuntimeException e) {

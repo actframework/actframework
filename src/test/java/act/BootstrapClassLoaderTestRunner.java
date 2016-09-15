@@ -75,12 +75,6 @@ public class BootstrapClassLoaderTestRunner extends BlockJUnit4ClassRunner {
             p.waitFor();
             String out = IO.readContentAsString(p.getInputStream());
             String err = IO.readContentAsString(p.getErrorStream());
-            if (S.notEmpty(out)) {
-                System.out.printf("%s\n", out);
-            }
-            if (S.notEmpty(err)) {
-                System.err.println(err);
-            }
         } catch (Exception e) {
             throw E.unexpected(e);
         }

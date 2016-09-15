@@ -72,10 +72,6 @@ public class C1 extends CBase {
     public static Result bar(String x) {
         return ok();
     }
-//
-//    public void echo() {
-//        System.out.println("C1 processed");
-//    }
 
     private ActionContext ctx;
 }

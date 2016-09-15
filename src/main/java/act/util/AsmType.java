@@ -29,7 +29,4 @@ public class AsmType<T> {
         return type.getDescriptor();
     }
 
-    public static void main(String[] args) {
-        System.out.println(Type.getDescriptor(String.class));
-    }
 }

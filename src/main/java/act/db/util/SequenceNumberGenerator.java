@@ -66,9 +66,4 @@ public class SequenceNumberGenerator {
 
     }
 
-    public static void main(String[] args) {
-        long l = 3;
-        System.out.println(S.fmt("%06d", l));
-    }
-
 }

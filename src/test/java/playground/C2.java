@@ -36,8 +36,4 @@ public class C2 extends CBase {
     public void foo(@Named("abc") String x, @Named("xyz") int i) {
 
     }
-
-    public static void main(String[] args) {
-        System.out.println(C2.class);
-    }
 }

@@ -265,11 +265,6 @@ public class IdGenerator {
             super(digits);
         }
 
-        public static void main(String[] args) {
-            System.out.println(new SafeLongEncoder().longToStr(Long.MAX_VALUE));
-            System.out.println(new UnsafeLongEncoder().longToStr(Long.MAX_VALUE));
-            System.out.println(Long.MAX_VALUE);
-        }
     }
 
     public static final LongEncoder SAFE_ENCODER = new SafeLongEncoder();
@@ -377,17 +372,6 @@ public class IdGenerator {
                 .append(longEncoder.longToStr(startIdProvider.startId()))
                 .append(longEncoder.longToStr(sequenceProvider.seqId()));
         return sb.toString();
-    }
-
-    public static void main(String[] args) {
-        IdGenerator idGen = new IdGenerator(1);
-        for (int i = 0; i < 10; ++i) {
-            System.out.println(idGen.genId());
-        }
-        idGen = new IdGenerator(4);
-        for (int i = 0; i < 10; ++i) {
-            System.out.println(idGen.genId());
-        }
     }
 
 }
