@@ -25,10 +25,18 @@ public class CliOverHttpContext extends CliContext {
                 cmd = actionContext.paramVal(s);
             } else if (s.startsWith("-")) {
                 String val = actionContext.paramVal(s);
-                if (s.contains(",")) {
-                    s = S.before(s, ",");
-                }
                 if (S.notBlank(val)) {
+                    val = val.replaceAll("[\n\r]+", "<br/>");
+                    if (val.contains(" ")) {
+                        if (val.contains("\"")) {
+                            val = S.builder("'").append(val).append("'").toString();
+                        } else {
+                            val = S.builder("\"").append(val).append("\"").toString();
+                        }
+                    }
+                    if (s.contains(",")) {
+                        s = S.before(s, ",");
+                    }
                     sb.append(s).append(" ").append(val).append(" ");
                 }
             }

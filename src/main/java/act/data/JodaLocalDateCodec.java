@@ -1,10 +1,13 @@
 package act.data;
 
 import act.conf.AppConfig;
+import act.data.annotation.Pattern;
 import org.joda.time.LocalDate;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
+import org.osgl.$;
+import org.osgl.util.AnnotationAware;
 import org.osgl.util.StringValueResolver;
 import org.osgl.util.ValueObject;
 
@@ -14,6 +17,16 @@ public class JodaLocalDateCodec extends StringValueResolver<LocalDate> implement
 
     private DateTimeFormatter dateFormat;
 
+    public JodaLocalDateCodec(DateTimeFormatter dateFormat) {
+        this.dateFormat = $.notNull(dateFormat);
+        verify();
+    }
+
+    public JodaLocalDateCodec(String pattern) {
+        this.dateFormat = DateTimeFormat.forPattern(pattern);
+        verify();
+    }
+
     @Inject
     public JodaLocalDateCodec(AppConfig config) {
         String patten = config.dateFormat();
@@ -22,6 +35,7 @@ public class JodaLocalDateCodec extends StringValueResolver<LocalDate> implement
         } else {
             dateFormat = DateTimeFormat.forPattern(patten);
         }
+        verify();
     }
 
     @Override
@@ -47,5 +61,19 @@ public class JodaLocalDateCodec extends StringValueResolver<LocalDate> implement
     @Override
     public String toJSONString(LocalDate localDate) {
         return null;
+    }
+
+    @Override
+    public StringValueResolver<LocalDate> amended(AnnotationAware beanSpec) {
+        Pattern pattern = beanSpec.getAnnotation(Pattern.class);
+        return null == pattern ? this : new JodaLocalDateCodec(pattern.value());
+    }
+
+    private void verify() {
+        LocalDate now = LocalDate.now();
+        String s = toString(now);
+        if (!s.equals(toString(parse(s)))) {
+            throw new IllegalArgumentException("Invalid date time pattern");
+        }
     }
 }

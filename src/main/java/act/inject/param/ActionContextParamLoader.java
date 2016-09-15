@@ -53,7 +53,7 @@ class ActionContextParamLoader extends ParamValueLoaderService {
                     }
                 }
                 if (null == resolver) {
-                    resolver = resolverManager.resolver(rawType);
+                    resolver = resolverManager.resolver(rawType, spec);
                 }
                 loader = (null != resolver) ? new StringValueResolverValueLoader(ParamKey.of(bindName), resolver, param, rawType) : buildLoader(ParamKey.of(bindName), type);
             }

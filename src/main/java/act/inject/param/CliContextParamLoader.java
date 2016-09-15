@@ -84,7 +84,7 @@ public class CliContextParamLoader extends ParamValueLoaderService {
             Annotation[] annotations
     ) {
         boolean isArray = rawType.isArray();
-        StringValueResolver resolver = isArray ? resolverManager.resolver(rawType.getComponentType()) : resolverManager.resolver(rawType);
+        StringValueResolver resolver = isArray ? resolverManager.resolver(rawType.getComponentType(), spec) : resolverManager.resolver(rawType, spec);
         Required required = filter(annotations, Required.class);
         Optional optional = null;
         if (null == required) {
@@ -95,10 +95,7 @@ public class CliContextParamLoader extends ParamValueLoaderService {
         } else if (null != optional) {
             return new OptionLoader(bindName, optional, resolver);
         }
-        if (!isArray) {
-            return new CliArgumentLoader(resolver);
-        }
-        return new CliVarArgumentLoader(rawType.getComponentType(), resolver);
+        return isArray ? new CliVarArgumentLoader(rawType.getComponentType(), resolver) : new CliArgumentLoader(resolver);
     }
 
     @Override

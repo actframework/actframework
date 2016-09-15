@@ -1,10 +1,13 @@
 package act.data;
 
 import act.conf.AppConfig;
+import act.data.annotation.Pattern;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
+import org.osgl.$;
+import org.osgl.util.AnnotationAware;
 import org.osgl.util.S;
 import org.osgl.util.StringValueResolver;
 import org.osgl.util.ValueObject;
@@ -17,6 +20,16 @@ public class JodaDateTimeCodec extends StringValueResolver<DateTime> implements 
 
     private DateTimeFormatter dateFormat;
 
+    public JodaDateTimeCodec(DateTimeFormatter dateFormat) {
+        this.dateFormat = $.notNull(dateFormat);
+        verify();
+    }
+
+    public JodaDateTimeCodec(String format) {
+        this.dateFormat = DateTimeFormat.forPattern(format);
+        verify();
+    }
+
     @Inject
     public JodaDateTimeCodec(AppConfig config) {
         String patten = config.dateTimeFormat();
@@ -25,6 +38,7 @@ public class JodaDateTimeCodec extends StringValueResolver<DateTime> implements 
         } else {
             dateFormat = DateTimeFormat.forPattern(patten);
         }
+        verify();
     }
 
     @Override
@@ -52,4 +66,17 @@ public class JodaDateTimeCodec extends StringValueResolver<DateTime> implements 
         return S.builder("\"").append(toString(o)).append("\"").toString();
     }
 
+    @Override
+    public StringValueResolver<DateTime> amended(AnnotationAware beanSpec) {
+        Pattern pattern = beanSpec.getAnnotation(Pattern.class);
+        return null == pattern ? this : new JodaDateTimeCodec(pattern.value());
+    }
+
+    private void verify() {
+        DateTime now = DateTime.now();
+        String s = toString(now);
+        if (!s.equals(toString(parse(s)))) {
+            throw new IllegalArgumentException("Invalid date time pattern");
+        }
+    }
 }

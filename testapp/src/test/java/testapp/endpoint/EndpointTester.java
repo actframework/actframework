@@ -169,6 +169,10 @@ public class EndpointTester extends TestBase {
         bodyEqIgnoreSpace(JSON.toJSONString(obj));
     }
 
+    protected void checkRespCode() throws IOException {
+        checkResponseCode(resp());
+    }
+
 
     protected Map<String, Object> prepareJsonData(String key, Object val, Object ... otherPairs) {
         Map<String, Object> params = C.newMap(key, val);
