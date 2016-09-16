@@ -7,7 +7,7 @@ import java.util.List;
 
 public class FsEvent {
 
-    public static enum Kind {
+    public enum Kind {
         CREATE, DELETE, MODIFY
     }
 

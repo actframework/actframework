@@ -9,6 +9,7 @@ import org.osgl.logging.Logger;
 import org.osgl.util.C;
 import org.osgl.util.E;
 
+import javax.enterprise.context.ApplicationScoped;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -29,10 +30,10 @@ public class AppManager extends DestroyableBase {
 
     @Override
     protected void releaseResources() {
-        tryDestroyAll(byPort.values());
+        tryDestroyAll(byPort.values(), ApplicationScoped.class);
         byPort = null;
 
-        tryDestroyAll(byContextPath.values());
+        tryDestroyAll(byContextPath.values(), ApplicationScoped.class);
         byPort = null;
     }
 

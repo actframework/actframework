@@ -14,7 +14,7 @@ public class ActContextInjection<T> {
      * Define how framework should inject AppContext to the
      * controller action handler
      */
-    public static enum InjectType {
+    public enum InjectType {
         /**
          * Inject AppContext into controller instance field. This injection
          * is used when both of the following requirements are met

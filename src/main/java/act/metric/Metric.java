@@ -51,12 +51,12 @@ public interface Metric {
     /**
      * {@code PATH_SEPARATOR} is provided to support hierarchical metric
      */
-    public static final String PATH_SEPARATOR = ":";
+    String PATH_SEPARATOR = ":";
 
     /**
      * The do-nothing metric instance
      */
-    public static final Metric NULL_METRIC = NullMetric.INSTANCE;
+    Metric NULL_METRIC = NullMetric.INSTANCE;
 
     /**
      * Call this method to increase one time for the counter specified

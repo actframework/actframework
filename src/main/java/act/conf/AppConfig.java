@@ -481,6 +481,52 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         }
     }
 
+    String cliOverHttpTitle;
+
+    protected T cliOverHttpTitle(String title) {
+        this.cliOverHttpTitle = title;
+        return me();
+    }
+
+    public String cliOverHttpTitle() {
+        if (null == cliOverHttpTitle) {
+            cliOverHttpTitle = get(CLI_OVER_HTTP_TITLE);
+            if (null == cliOverHttpTitle) {
+                cliOverHttpTitle = "Cli Over Http";
+            }
+        }
+        return cliOverHttpTitle;
+    }
+
+    private void _mergeCliOverHttpTitle(AppConfig config) {
+        if (null == get(CLI_OVER_HTTP_TITLE)) {
+            cliOverHttpTitle = config.cliOverHttpTitle;
+        }
+    }
+
+    Boolean cliOverHttpSysCmd;
+
+    protected T cliOverHttpSysCmd(boolean enabled) {
+        this.cliOverHttpSysCmd = enabled;
+        return me();
+    }
+
+    public boolean cliOverHttpSysCmdEnabled() {
+        if (null == cliOverHttpSysCmd) {
+            cliOverHttpSysCmd = get(CLI_OVER_HTTP_SYS_CMD);
+            if (null == cliOverHttpSysCmd) {
+                cliOverHttpSysCmd = true;
+            }
+        }
+        return cliOverHttpSysCmd;
+    }
+
+    private void _mergeCliOverHttpSysCmd(AppConfig config) {
+        if (null == get(CLI_OVER_HTTP_SYS_CMD)) {
+            cliOverHttpSysCmd = config.cliOverHttpSysCmd;
+        }
+    }
+
     private Integer cliPort;
 
     protected T cliPort(int port) {
@@ -1288,7 +1334,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         if (null == encoding) {
             encoding = get(ENCODING);
             if (null == encoding) {
-                encoding = Charsets.UTF_8.name().toLowerCase();
+                encoding = "utf8";
             }
         }
         return encoding;
@@ -1884,7 +1930,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     private UnknownHttpMethodProcessor _unknownHttpMethodProcessor = null;
 
     protected T unknownHttpMethodProcessor(UnknownHttpMethodProcessor handler) {
-        this._unknownHttpMethodProcessor = $.notNull(handler);;
+        this._unknownHttpMethodProcessor = $.notNull(handler);
         return me();
     }
 
@@ -1958,6 +2004,8 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         _mergeCliTablePageSz(conf);
         _mergeCliOverHttp(conf);
         _mergeCliOverHttpPort(conf);
+        _mergeCliOverHttpTitle(conf);
+        _mergeCliOverHttpSysCmd(conf);
         _mergeCliPort(conf);
         _mergeCliSessionExpiration(conf);
         _mergeCsrf(conf);
@@ -2021,9 +2069,11 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         _mergeUnknownHttpMethodHandler(conf);
 
         Set<String> keys = conf.propKeys();
-        for (String k : keys) {
-            if (!raw.containsKey(k)) {
-                raw.put(k, conf.propVal(k));
+        if (!keys.isEmpty()) {
+            for (String k : keys) {
+                if (!raw.containsKey(k)) {
+                    raw.put(k, conf.propVal(k));
+                }
             }
         }
     }

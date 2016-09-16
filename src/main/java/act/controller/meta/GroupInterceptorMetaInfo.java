@@ -142,7 +142,7 @@ public class GroupInterceptorMetaInfo extends DestroyableBase {
         sb.append(label).append("\n").append(S.join("\n", list));
     }
 
-    private static enum _F {
+    private enum _F {
         ;
 
         static $.Visitor<InterceptorMethodMetaInfo> mergeInto(final C.List<InterceptorMethodMetaInfo> toList, final String actionName) {

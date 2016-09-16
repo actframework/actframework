@@ -27,7 +27,7 @@ public @interface Mailer {
      */
     String value() default "default";
 
-    public static class Util {
+    class Util {
 
         protected static final Logger logger = L.get(Mailer.class);
 

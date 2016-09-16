@@ -14,9 +14,9 @@ public interface Destroyable {
 
     boolean isDestroyed();
 
-    public Class<? extends Annotation> scope();
+    Class<? extends Annotation> scope();
 
-    public enum Util {
+    enum Util {
         ;
 
         /**

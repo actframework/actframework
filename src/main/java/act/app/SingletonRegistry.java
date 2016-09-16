@@ -4,6 +4,7 @@ import act.Destroyable;
 import act.app.event.AppEventId;
 import org.osgl.$;
 
+import javax.enterprise.context.ApplicationScoped;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -46,7 +47,7 @@ public class SingletonRegistry extends AppServiceBase<SingletonRegistry> {
 
     @Override
     protected void releaseResources() {
-        Destroyable.Util.tryDestroyAll(registry.values());
+        Destroyable.Util.tryDestroyAll(registry.values(), ApplicationScoped.class);
         registry.clear();
     }
 

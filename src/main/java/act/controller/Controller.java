@@ -62,7 +62,7 @@ public @interface Controller {
     /**
      * Provides utilities for controller action methods to emit rendering results
      */
-    public static class Util {
+    class Util {
 
         private static final Ok OK = Ok.INSTANCE;
         private static final NotFound NOT_FOUND = NotFound.INSTANCE;

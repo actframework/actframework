@@ -23,7 +23,7 @@ public interface SessionMapper {
      * The default session mapper, do the mapping by adding/reading cookie information
      * directly to response/request
      */
-    public static class DefaultSessionMapper implements SessionMapper {
+    class DefaultSessionMapper implements SessionMapper {
 
         public static SessionMapper INSTANCE = new DefaultSessionMapper();
 
@@ -87,7 +87,7 @@ public interface SessionMapper {
     /**
      * The header session mapper do mapping through write/read the header of response/request
      */
-    public static class HeaderSessionMapper implements SessionMapper {
+    class HeaderSessionMapper implements SessionMapper {
 
         public static final String DEF_HEADER_PREFIX = "X-Act-";
 

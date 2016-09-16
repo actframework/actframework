@@ -157,7 +157,7 @@ public class Router extends AppServiceBase<Router> {
     }
 
     // --- route building ---
-    static enum ConflictResolver {
+    enum ConflictResolver {
         /**
          * Overwrite existing route
          */
@@ -685,7 +685,7 @@ public class Router extends AppServiceBase<Router> {
         }
     }
 
-    private static enum BuiltInHandlerResolver implements RequestHandlerResolver {
+    private enum BuiltInHandlerResolver implements RequestHandlerResolver {
         echo() {
             @Override
             public RequestHandler resolve(CharSequence msg, App app) {

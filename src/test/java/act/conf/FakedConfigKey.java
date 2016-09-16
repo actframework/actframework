@@ -41,11 +41,11 @@ public enum FakedConfigKey implements ConfigKey {
     private String key;
     private Object defVal;
 
-    private FakedConfigKey(String key) {
+    FakedConfigKey(String key) {
         this(key, null);
     }
 
-    private FakedConfigKey(String key, Object defVal) {
+    FakedConfigKey(String key, Object defVal) {
         this.key = key;
         this.defVal = defVal;
     }

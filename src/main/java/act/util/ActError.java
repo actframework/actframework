@@ -11,7 +11,7 @@ public interface ActError {
     SourceInfo sourceInfo();
     List<String> stackTrace();
 
-    public static class Util {
+    class Util {
         public static List<String> stackTraceOf(Throwable t, ActError root) {
             List<String> l = C.newList();
             while (null != t) {

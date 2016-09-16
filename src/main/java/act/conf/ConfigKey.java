@@ -8,7 +8,7 @@ import java.util.Map;
  */
 public interface ConfigKey {
 
-    public static final String KEY_COMMON_CONF_TAG = "commonConfTag";
+    String KEY_COMMON_CONF_TAG = "commonConfTag";
 
     String key();
 

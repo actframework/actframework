@@ -19,17 +19,17 @@ public interface TreeNode {
      * </p>
      * @return the node id
      */
-    public String id();
+    String id();
 
     /**
      * Returns the label on the current tree node
      * @return the label string
      */
-    public String label();
+    String label();
 
     /**
      * Returns a list of child tree node
      * @return the children list
      */
-    public List<TreeNode> children();
+    List<TreeNode> children();
 }

@@ -1,5 +1,6 @@
 @extends(act.base, title: "CLI Over HTTP")
 @import org.osgl.Osgl
+@args String title, boolean showSysCmd
 @section(moreStyles) {
 <style>
   body {
@@ -54,8 +55,7 @@
 }
 @args act.cli.CliDispatcher dispatcher
 
-@def commandList(List
-<String> commandList) {
+@def commandList(List<String> commandList) {
   <dl class="command-list">
     @for(String cmd: commandList) {
     @{
@@ -79,19 +79,23 @@
   }
 
   <div class="row">
-    <h1 id="page-title">CLI Over HTTP</h1>
+    <h1 id="page-title">@title</h1>
   </div>
   <div class="row">
     <div class="four columns" id="command-nav">
       <div id="app-commands">
+        @if(showSysCmd) {
         <h5>Application commands</h5>
+        }
         @commandList(dispatcher.applicationCommands())
       </div>
 
+      @if(showSysCmd) {
       <div id="sys-commands">
         <h5>System commands</h5>
         @commandList(dispatcher.systemCommands())
       </div>
+      }
     </div>
     <div id="detail" class="eight columns">
       <p>

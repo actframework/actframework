@@ -514,7 +514,7 @@ public class AppClassLoader
                         });
     }
 
-    private static enum _F {
+    private enum _F {
         ;
         static $.Predicate<String> SYS_CLASS_NAME = new $.Predicate<String>() {
             @Override

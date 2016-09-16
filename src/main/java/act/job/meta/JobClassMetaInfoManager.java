@@ -26,7 +26,7 @@ public class JobClassMetaInfoManager extends DestroyableBase {
         destroyAll(jobs.values(), ApplicationScoped.class);
         jobs.clear();
         for (List<JobClassMetaInfo> l : subTypeInfo.values()) {
-            destroyAll(l);
+            destroyAll(l, ApplicationScoped.class);
         }
         subTypeInfo.clear();
         super.releaseResources();

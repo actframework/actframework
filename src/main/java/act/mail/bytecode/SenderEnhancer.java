@@ -325,7 +325,7 @@ public class SenderEnhancer extends MethodVisitor implements Opcodes {
         private static final int _B = 'B';
         private static final int _C = 'C';
 
-        private static enum LoadInsn {
+        private enum LoadInsn {
             I(ILOAD) {
                 void appendTo(InsnList list, int varIndex, String type) {
                     super.appendTo(list, varIndex, type);

@@ -11,7 +11,7 @@ import java.util.Set;
 public interface Plugin {
     void register();
 
-    public static class InfoRepo {
+    class InfoRepo {
 
         private static Set<String> plugins = C.newSet();
 

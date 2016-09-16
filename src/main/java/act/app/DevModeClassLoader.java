@@ -153,28 +153,31 @@ public class DevModeClassLoader extends AppClassLoader {
         try {
             logger.debug("start to scan sources...");
             List<AppSourceCodeScanner> scanners = app().scannerManager().sourceCodeScanners();
-            if (scanners.isEmpty()) {
-                logger.warn("No source code scanner found");
-                return;
-            }
 
             Set<String> classesNeedByteCodeScan = C.newSet();
-            for (String className : sources.keySet()) {
-                classesNeedByteCodeScan.add(className);
-                logger.debug("scanning %s ...", className);
-                List<AppSourceCodeScanner> l = C.newList();
-                for (AppSourceCodeScanner scanner : scanners) {
-                    if (scanner.start(className)) {
-                        //logger.trace("scanner %s added to the list", scanner.getClass().getName());
-                        l.add(scanner);
-                    }
+            if (scanners.isEmpty()) {
+                logger.warn("No source code scanner found");
+                for (String className : sources.keySet()) {
+                    classesNeedByteCodeScan.add(className);
                 }
-                Source source = source(className);
-                String[] lines = source.code().split("[\\n\\r]+");
-                for (int i = 0, j = lines.length; i < j; ++i) {
-                    String line = lines[i];
-                    for (AppSourceCodeScanner scanner : l) {
-                        scanner.visit(i, line, className);
+            } else {
+                for (String className : sources.keySet()) {
+                    classesNeedByteCodeScan.add(className);
+                    logger.debug("scanning %s ...", className);
+                    List<AppSourceCodeScanner> l = C.newList();
+                    for (AppSourceCodeScanner scanner : scanners) {
+                        if (scanner.start(className)) {
+                            //logger.trace("scanner %s added to the list", scanner.getClass().getName());
+                            l.add(scanner);
+                        }
+                    }
+                    Source source = source(className);
+                    String[] lines = source.code().split("[\\n\\r]+");
+                    for (int i = 0, j = lines.length; i < j; ++i) {
+                        String line = lines[i];
+                        for (AppSourceCodeScanner scanner : l) {
+                            scanner.visit(i, line, className);
+                        }
                     }
                 }
             }

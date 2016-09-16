@@ -9,6 +9,7 @@ import act.util.DestroyableBase;
 import org.osgl.$;
 import org.osgl.util.C;
 
+import javax.enterprise.context.ApplicationScoped;
 import java.util.List;
 
 import static act.Destroyable.Util.tryDestroyAll;
@@ -67,9 +68,9 @@ public class BytecodeEnhancerManager extends DestroyableBase {
 
     @Override
     protected void releaseResources() {
-        tryDestroyAll(appEnhancers);
+        tryDestroyAll(appEnhancers, ApplicationScoped.class);
         appEnhancers.clear();
-        tryDestroyAll(generalEnhancers);
+        tryDestroyAll(generalEnhancers, ApplicationScoped.class);
         generalEnhancers.clear();
     }
 }

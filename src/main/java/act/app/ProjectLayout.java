@@ -28,9 +28,9 @@ public interface ProjectLayout {
      * <li>{@link ProjectLayout.PredefinedLayout#PLAY play}</li>
      * </ul>
      */
-    public static final String PROJ_LAYOUT_FILE = "proj.layout";
+    String PROJ_LAYOUT_FILE = "proj.layout";
 
-    public static enum PredefinedLayout implements ProjectLayout {
+    enum PredefinedLayout implements ProjectLayout {
         /**
          * The standard maven style project layout looks like:
          * <pre>
@@ -298,7 +298,7 @@ public interface ProjectLayout {
      */
     File conf(File appBase);
 
-    public static enum util {
+    enum util {
         ;
 
         /**
@@ -358,7 +358,7 @@ public interface ProjectLayout {
     }
 
     @ActComponent
-    public static class CustomizedProjectLayout implements ProjectLayout {
+    class CustomizedProjectLayout implements ProjectLayout {
         private String source;
         private String testSource;
         private String lib;
@@ -434,7 +434,7 @@ public interface ProjectLayout {
         }
     }
 
-    public enum Utils {
+    enum Utils {
         ;
         public static File file(File parent, String path) {
             try {

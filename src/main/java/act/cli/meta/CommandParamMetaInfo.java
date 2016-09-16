@@ -69,18 +69,6 @@ public class CommandParamMetaInfo extends DestroyableBase {
         return optionInfo;
     }
 
-    public CommandParamMetaInfo attributeKey(String cliSessionAttributeKey) {
-        if (S.blank(cliSessionAttributeKey)) {
-            cliSessionAttributeKey = name;
-        }
-        this.cliSessionAttributeKey = cliSessionAttributeKey;
-        return this;
-    }
-
-    public String cliSessionAttributeKey() {
-        return cliSessionAttributeKey;
-    }
-
     public void setReadFileContent() {
         readFileContent = true;
     }

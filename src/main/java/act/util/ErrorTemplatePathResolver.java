@@ -10,7 +10,7 @@ import static org.osgl.http.H.Format.*;
 public interface ErrorTemplatePathResolver {
     String resolve(ErrorResult result, ActionContext context);
 
-    public static class DefaultErrorTemplatePathResolver implements ErrorTemplatePathResolver {
+    class DefaultErrorTemplatePathResolver implements ErrorTemplatePathResolver {
         @Override
         public String resolve(ErrorResult result, ActionContext context) {
             int code = result.statusCode();

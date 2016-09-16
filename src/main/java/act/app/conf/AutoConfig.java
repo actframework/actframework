@@ -2,6 +2,50 @@ package act.app.conf;
 
 import java.lang.annotation.*;
 
+/**
+ * This annotation marks a class as auto configured class. E.g
+ *
+ * ```java
+ * {@literal @}AutoConfig("foo") class Foo {
+ *     public static final Const<String> name = $.constant("foo1");
+ *     public static class Bar {
+ *         public static final Const<Integer> limit = $.constant(100);
+ *     }
+ *     ...
+ *     public void x() {
+ *         System.out.println(Foo.name.get());
+ *         System.out.println(Foo.Bar.limit.get());
+ *     }
+ * }
+ * ```
+ *
+ * As the above classs `Foo` has been annotated with `AutoConfig("foo")`,
+ * ActFramework will automatically configure the class by setting the
+ * static field `name` and `Bar.limit` if the following configurations
+ * exists:
+ *
+ * 1. foo.name=foo2
+ * 2. foo.bar.limit=500
+ *
+ * With the above configuration, when calling new Foo().x(), it will print
+ * out:
+ *
+ * ```
+ * foo2
+ * 500
+ * ```
+ *
+ * instead of
+ *
+ * ```
+ * foo1
+ * 100
+ * ```
+ *
+ * *Note* the static fields are populated on {@link act.app.event.AppEventId#START event},
+ * meaning any logic in your application executed before app start shall NOT refer to
+ * auto config class's configurable fields
+ */
 @Documented
 @Inherited
 @Retention(RetentionPolicy.RUNTIME)

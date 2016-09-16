@@ -42,8 +42,10 @@ public class CliOverHttp {
     AppConfig config;
 
     @GetAction
-    public Result home() {
-        return render(dispatcher, mru());
+    public Result home(AppConfig config) {
+        String title = config.cliOverHttpTitle();
+        boolean showSysCmd = config.cliOverHttpSysCmdEnabled();
+        return render(dispatcher, mru(), title, showSysCmd);
     }
 
     @GetAction("cmd")

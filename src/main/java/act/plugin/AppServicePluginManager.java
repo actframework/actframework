@@ -5,6 +5,7 @@ import act.app.App;
 import act.util.DestroyableBase;
 import org.osgl.util.C;
 
+import javax.enterprise.context.ApplicationScoped;
 import java.util.List;
 
 public class AppServicePluginManager extends DestroyableBase {
@@ -25,7 +26,7 @@ public class AppServicePluginManager extends DestroyableBase {
 
     @Override
     protected void releaseResources() {
-        Destroyable.Util.tryDestroyAll(registry);
+        Destroyable.Util.tryDestroyAll(registry, ApplicationScoped.class);
         registry = null;
     }
 }

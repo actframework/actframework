@@ -28,7 +28,7 @@ public class CommanderClassMetaInfoManager extends DestroyableBase {
         destroyAll(commands.values(), ApplicationScoped.class);
         commands.clear();
         for (List<CommanderClassMetaInfo> l : subTypeInfo.values()) {
-            destroyAll(l);
+            destroyAll(l, ApplicationScoped.class);
         }
         subTypeInfo.clear();
         super.releaseResources();

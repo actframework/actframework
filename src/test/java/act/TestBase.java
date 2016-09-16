@@ -120,13 +120,6 @@ public class TestBase extends Assert {
         mockActionContext = mock(ActionContext.class);
         when(mockActionContext.app()).thenReturn(mockApp);
         when(mockActionContext.config()).thenReturn(mockAppConfig);
-        when(mockActionContext.newInstance(any(Class.class))).thenAnswer(new Answer<Object>() {
-            @Override
-            public Object answer(InvocationOnMock invocation) throws Throwable {
-                Object[] args = invocation.getArguments();
-                return $.newInstance((Class) args[0]);
-            }
-        });
         mockRouter = mock(Router.class);
         when(mockApp.config()).thenReturn(mockAppConfig);
         when(mockApp.router()).thenReturn(mockRouter);

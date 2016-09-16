@@ -1,6 +1,7 @@
 package act.controller.meta;
 
 import act.app.ActionContext;
+import act.app.App;
 import org.osgl.mvc.util.Binder;
 import org.osgl.util.E;
 
@@ -23,8 +24,8 @@ public class BindAnnoInfo extends ParamAnnoInfoTraitBase {
         return this;
     }
 
-    public Binder binder(ActionContext context) {
-        return context.newInstance(binder);
+    public Binder binder(App app) {
+        return app.getInstance(binder);
     }
 
     public BindAnnoInfo model(String model) {

@@ -396,7 +396,7 @@ class ConfigKeyHelper {
         }
     }
 
-    public static enum F {
+    public enum F {
         ;
         public static $.Func1<Object, Integer> TO_INT = new $.Transformer<Object, Integer>() {
             @Override

@@ -18,7 +18,7 @@ public @interface Async {
      * enhance the class by adding an new method as a copy of the original method, the name
      * of the new method will be the result of calling the original method.
      */
-    public static class MethodNameTransformer {
+    class MethodNameTransformer {
 
         /**
          * Returns the new async method's name based on the give name

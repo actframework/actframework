@@ -115,7 +115,7 @@ public @interface PropertySpec {
     /**
      * Capture the {@code PropertySpec} annotation meta info in bytecode scanning phase
      */
-    public static class MetaInfo {
+    class MetaInfo {
         // split "fn as firstName" into "fn" and "firstName"
         private static Pattern p = Pattern.compile("\\s+as\\s+", Pattern.CASE_INSENSITIVE);
 

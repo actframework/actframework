@@ -62,11 +62,11 @@ public enum ActConfigKey implements ConfigKey {
     private String key;
     private Object defVal;
 
-    private ActConfigKey(String key) {
+    ActConfigKey(String key) {
         this(key, null);
     }
 
-    private ActConfigKey(String key, Object defVal) {
+    ActConfigKey(String key, Object defVal) {
         this.key = key;
         this.defVal = defVal;
     }

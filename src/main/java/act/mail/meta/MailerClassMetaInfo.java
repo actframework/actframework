@@ -36,7 +36,7 @@ public final class MailerClassMetaInfo extends DestroyableBase {
         destroyAll(senders, ApplicationScoped.class);
         senders.clear();
         if (null != mailerLookup) {
-            destroyAll(mailerLookup.values());
+            destroyAll(mailerLookup.values(), ApplicationScoped.class);
             mailerLookup.clear();
         }
         super.releaseResources();

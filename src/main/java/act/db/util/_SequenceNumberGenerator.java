@@ -32,7 +32,7 @@ public interface _SequenceNumberGenerator {
      */
     void configure(AppConfig config, DbServiceManager dbManager);
 
-    public static class InMemorySequenceNumberGenerator implements _SequenceNumberGenerator {
+    class InMemorySequenceNumberGenerator implements _SequenceNumberGenerator {
 
         private ConcurrentMap<String, AtomicLong> seqs = new ConcurrentHashMap<String, AtomicLong>();
         @Override

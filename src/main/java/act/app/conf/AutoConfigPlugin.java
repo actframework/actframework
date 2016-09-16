@@ -29,7 +29,7 @@ public class AutoConfigPlugin extends AnnotatedTypeFinder {
         super(AutoConfig.class, new $.F2<App, String, Map<Class<? extends AppByteCodeScanner>, Set<String>>>() {
             @Override
             public Map<Class<? extends AppByteCodeScanner>, Set<String>> apply(final App app, final String className) throws NotAppliedException, $.Break {
-                app.eventBus().bind(AppEventId.APP_CODE_SCANNED, new AppEventListenerBase() {
+                app.eventBus().bind(AppEventId.PRE_START, new AppEventListenerBase() {
                     @Override
                     public void on(EventObject event) throws Exception {
                         Class<?> autoConfigClass = $.classForName(className, app.classLoader());

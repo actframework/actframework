@@ -15,7 +15,7 @@ import java.util.StringTokenizer;
  * A java srccode unit specifies a java class
  */
 public class Source {
-    public static enum State {
+    public enum State {
         /**
          * The Source instance has been created
          */
@@ -220,7 +220,7 @@ public class Source {
                 return ca;
             }
 
-            ;
+
 
             @Override
             public boolean ignoreOptionalProblems() {
@@ -249,7 +249,7 @@ public class Source {
         return compilationUnit;
     }
 
-    public static enum Util {
+    public enum Util {
         ;
 
         public static String className(File sourceRoot, File file) {

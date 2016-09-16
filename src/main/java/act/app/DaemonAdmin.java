@@ -4,9 +4,9 @@ import act.cli.CliContext;
 import act.cli.Command;
 import act.cli.Required;
 import act.data.JodaDateTimeCodec;
-import act.inject.Context;
 import act.util.PropertySpec;
 import org.joda.time.DateTime;
+import org.osgl.inject.annotation.Provided;
 import org.osgl.util.E;
 
 import java.util.Map;
@@ -26,7 +26,7 @@ public class DaemonAdmin {
     @Command(name = "act.daemon.start", help = "Start app daemon")
     public void start(
             @Required("specify daemon id") String id,
-            @Context CliContext context
+            CliContext context
     ) {
         Daemon daemon = get(id, context);
         daemon.start();
@@ -36,7 +36,7 @@ public class DaemonAdmin {
     @Command(name = "act.daemon.stop", help = "Stop app daemon")
     public void stop(
             @Required("specify daemon id") String id,
-            @Context CliContext context
+            CliContext context
     ) {
         Daemon daemon = get(id, context);
         daemon.stop();
@@ -46,7 +46,7 @@ public class DaemonAdmin {
     @Command(name = "act.daemon.restart", help = "Re-Start app daemon")
     public void restart(
             @Required("specify daemon id") String id,
-            @Context CliContext context
+            CliContext context
     ) {
         Daemon daemon = get(id, context);
         daemon.restart();
@@ -56,8 +56,8 @@ public class DaemonAdmin {
     @Command(name = "act.daemon.status", help = "Report app daemon status")
     public void status(
             @Required("specify daemon id") String id,
-            @Context CliContext context,
-            @Context JodaDateTimeCodec fmt
+            CliContext context,
+            @Provided JodaDateTimeCodec fmt
     ) {
         Daemon daemon = get(id, context);
         Daemon.State state = daemon.state();

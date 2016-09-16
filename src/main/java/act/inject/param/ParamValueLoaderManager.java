@@ -33,6 +33,6 @@ public class ParamValueLoaderManager  extends AppServiceBase<ParamValueLoaderMan
 
     @Override
     protected void releaseResources() {
-        Destroyable.Util.destroyAll(loaderServices.values());
+        Destroyable.Util.destroyAll(loaderServices.values(), ApplicationScoped.class);
     }
 }

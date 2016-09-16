@@ -235,7 +235,7 @@ public class CliContext extends ActContext.Base<CliContext> implements IASCIITab
      * @return the current working directory
      */
     public File curDir() {
-        File file = attribute(ATTR_PWD);;
+        File file = attribute(ATTR_PWD);
         if (null == file) {
             file = new File(System.getProperty("user.dir"));
             attribute(ATTR_PWD, file);
@@ -354,17 +354,6 @@ public class CliContext extends ActContext.Base<CliContext> implements IASCIITab
     public CliContext commandPath(String path) {
         commandPath = path;
         return this;
-    }
-
-    @Deprecated
-    public <T> T newInstance(String className) {
-        return app().getInstance(className, this);
-    }
-
-    @Deprecated
-    public <T> T newInstance(Class<? extends T> clazz) {
-        if (clazz == CliContext.class) return $.cast(this);
-        return app().getInstance(clazz, this);
     }
 
     public CliContext __commanderInstance(String className, Object instance) {

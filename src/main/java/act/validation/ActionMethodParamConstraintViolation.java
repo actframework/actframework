@@ -76,7 +76,7 @@ public class ActionMethodParamConstraintViolation<T> implements ConstraintViolat
 
     @Override
     public <U> U unwrap(Class<U> type) {
-        return context.newInstance(type);
+        return context.app().getInstance(type);
     }
 
     private MessageInterpolator.Context createContext(Object validatedValue, Annotation anno) {

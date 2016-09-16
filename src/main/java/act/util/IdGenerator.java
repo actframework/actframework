@@ -7,7 +7,6 @@ import org.osgl.util.IO;
 import org.osgl.util.S;
 
 import java.io.File;
-import java.util.Objects;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
@@ -18,7 +17,7 @@ public class IdGenerator {
      * Implementation of {@code StartIdProvider} shall return a
      * unique id per each system start
      */
-    public static interface StartIdProvider {
+    public interface StartIdProvider {
         /**
          * Returns the system start ID. The start ID shall be different
          * between System starts, but it shall remaining the same value
@@ -29,7 +28,7 @@ public class IdGenerator {
         /**
          * Generate system start ID based on timestamp
          */
-        public static class Timestamp implements StartIdProvider {
+        class Timestamp implements StartIdProvider {
             private final long id;
             public Timestamp() {
                 long origin = DateTime.parse("2016-05-10").getMillis();
@@ -48,7 +47,7 @@ public class IdGenerator {
          * Generate system start ID based on incremental sequence. The newly generated ID
          * will be write to a File
          */
-        public static class FileBasedStartCounter implements StartIdProvider {
+        class FileBasedStartCounter implements StartIdProvider {
             private final long id;
 
             public FileBasedStartCounter() {
@@ -79,7 +78,7 @@ public class IdGenerator {
          * Default start ID provider will try to use the {@link act.util.IdGenerator.StartIdProvider.FileBasedStartCounter}. In case
          * File IO is not allowed (e.g. in GAE), then it will use {@link act.util.IdGenerator.StartIdProvider.Timestamp}
          */
-        public static class DefaultStartIdProvider implements StartIdProvider {
+        class DefaultStartIdProvider implements StartIdProvider {
 
             private StartIdProvider delegate;
 
@@ -107,10 +106,10 @@ public class IdGenerator {
      * {@code SequenceProvider} shall generate unique ID within
      * one JVM per each call
      */
-    public static interface SequenceProvider {
+    public interface SequenceProvider {
         long seqId();
 
-        public static class AtomicLongSeq implements SequenceProvider {
+        class AtomicLongSeq implements SequenceProvider {
             private final AtomicLong seq = new AtomicLong(0);
 
             @Override
@@ -120,15 +119,15 @@ public class IdGenerator {
         }
     }
 
-    public static interface NodeIdProvider {
+    public interface NodeIdProvider {
         long nodeId();
 
-        public static class IpProvider implements NodeIdProvider {
+        class IpProvider implements NodeIdProvider {
 
-            private static enum EffectiveBytes {
+            private enum EffectiveBytes {
                 ONE(1), TWO(2), THREE(3), FOUR(4);
                 private int value;
-                private EffectiveBytes(int value) {
+                EffectiveBytes(int value) {
                     this.value = value;
                 }
                 public static EffectiveBytes valueOf(int n) {
@@ -174,11 +173,11 @@ public class IdGenerator {
         }
     }
 
-    public static interface LongEncoder {
+    public interface LongEncoder {
 
         String longToStr(long l);
 
-        public abstract static class LongEncoderBase implements LongEncoder {
+        abstract class LongEncoderBase implements LongEncoder {
 
             private final char[] digits;
             private final int MAX_RADIX;

@@ -40,7 +40,7 @@ public @interface Command {
      */
     Act.Mode mode() default Act.Mode.PROD;
 
-    public static class Util {
+    class Util {
 
     }
 }

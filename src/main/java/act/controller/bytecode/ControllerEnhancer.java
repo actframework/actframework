@@ -83,7 +83,7 @@ public class ControllerEnhancer extends AppByteCodeEnhancer<ControllerEnhancer> 
         return isPublic(access) && !isConstructor(name) && methodInfo(name, access) != null;
     }
 
-    private static enum _F {
+    private enum _F {
         ;
 
         private static final $.Predicate<String> isController(final ControllerClassMetaInfoHolder infoSrc) {

@@ -32,12 +32,12 @@ public interface IASCIITableAware {
 	/**
 	 * Returns the list of headers to render.
 	 */
-	public List<ASCIITableHeader> getHeaders();
+	List<ASCIITableHeader> getHeaders();
 	
 	/**
 	 * Returns the data items to render. 
 	 */
-	public List<List<Object>> getData();
+	List<List<Object>> getData();
 	
 	/**
 	 * Returns the formatted data item for a particular cell.
@@ -48,6 +48,6 @@ public interface IASCIITableAware {
 	 * @param data
 	 * @return
 	 */
-	public String formatData(ASCIITableHeader header, int row, int col, Object data);
+	String formatData(ASCIITableHeader header, int row, int col, Object data);
 	
 }

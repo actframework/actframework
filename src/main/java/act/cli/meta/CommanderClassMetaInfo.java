@@ -50,7 +50,7 @@ public class CommanderClassMetaInfo extends DestroyableBase {
         destroyAll(commands, ApplicationScoped.class);
         commands.clear();
         if (null != commandLookup) {
-            destroyAll(commandLookup.values());
+            destroyAll(commandLookup.values(), ApplicationScoped.class);
             commandLookup.clear();
         }
         if (null != parent) parent.destroy();

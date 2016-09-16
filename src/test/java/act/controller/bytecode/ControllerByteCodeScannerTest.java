@@ -195,7 +195,7 @@ public class ControllerByteCodeScannerTest extends TestBase {
         param = binderRequired.param(0);
         assertNotNull(param);
         assertNotNull(param.bindAnnoInfo());
-        eq(EmailBinder.class, param.bindAnnoInfo().binder(mockActionContext).getClass());
+        eq(EmailBinder.class, param.bindAnnoInfo().binder(mockApp).getClass());
     }
 
     @Test
@@ -301,7 +301,7 @@ public class ControllerByteCodeScannerTest extends TestBase {
         same(0, action.paramCount());
     }
 
-    private static enum _F {
+    private enum _F {
         ;
         static $.Predicate<String> SYS_CLASS_NAME = new $.Predicate<String>() {
             @Override

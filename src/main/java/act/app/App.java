@@ -49,6 +49,7 @@ import org.osgl.logging.Logger;
 import org.osgl.storage.IStorageService;
 import org.osgl.util.*;
 
+import javax.enterprise.context.ApplicationScoped;
 import java.io.File;
 import java.util.*;
 
@@ -510,31 +511,11 @@ public class App extends DestroyableBase {
         return getInstance(c);
     }
 
-    @Deprecated
-    public <T> T getInstance(String className, ActContext context) {
-        Class<T> c = $.classForName(className, classLoader());
-        return getInstance(c, context);
-    }
-
     public <T> T getInstance(Class<T> clz) {
         if (null == dependencyInjector) {
             return $.newInstance(clz);
         }
         return dependencyInjector.get(clz);
-    }
-
-    @Deprecated
-    public <T> T getInstance(Class<T> clz, ActContext context) {
-        if (ActionContext.class == clz) {
-            return $.cast(context);
-        }
-        if (CliContext.class == clz) {
-            return $.cast(context);
-        }
-        if (MailerContext.class == clz) {
-            return $.cast(context);
-        }
-        return getInstance(clz);
     }
 
     @Override
@@ -657,7 +638,7 @@ public class App extends DestroyableBase {
 
     private void initDaemonRegistry() {
         if (null != daemonRegistry) {
-            Destroyable.Util.tryDestroyAll(daemonRegistry.values());
+            Destroyable.Util.tryDestroyAll(daemonRegistry.values(), ApplicationScoped.class);
         }
         daemonRegistry = C.newMap();
         jobManager.on(AppEventId.START, new Runnable() {

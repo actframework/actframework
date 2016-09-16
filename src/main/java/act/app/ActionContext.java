@@ -363,15 +363,6 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Act
     }
 
 
-    public <T> T newIntance(String className) {
-        return app().getInstance(className, this);
-    }
-
-    public <T> T newInstance(Class<? extends T> clazz) {
-        if (clazz == ActionContext.class) return $.cast(this);
-        return app().getInstance(clazz, this);
-    }
-
     /**
      * Return cached object by key. The key will be concatenated with
      * current session id when fetching the cached object

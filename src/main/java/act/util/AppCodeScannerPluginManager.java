@@ -9,6 +9,7 @@ import org.osgl.logging.L;
 import org.osgl.logging.Logger;
 import org.osgl.util.C;
 
+import javax.enterprise.context.ApplicationScoped;
 import java.util.Map;
 
 public class AppCodeScannerPluginManager extends DestroyableBase {
@@ -42,7 +43,7 @@ public class AppCodeScannerPluginManager extends DestroyableBase {
 
     @Override
     protected void releaseResources() {
-        Destroyable.Util.tryDestroyAll(registry.values());
+        Destroyable.Util.tryDestroyAll(registry.values(), ApplicationScoped.class);
         registry.clear();
     }
 }

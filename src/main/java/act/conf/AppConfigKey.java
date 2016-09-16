@@ -160,6 +160,22 @@ public enum AppConfigKey implements ConfigKey {
     CLI_OVER_HTTP_PORT("cli_over_http.port"),
 
     /**
+     * `act.cli_over_http.port` specify the title to be displayed on the CLI Over Http
+     * page
+     *
+     * Default value: "Cli Over Http"
+     */
+    CLI_OVER_HTTP_TITLE("cli_over_http.title"),
+
+    /**
+     * `act.cli_over_http.syscmd.enabled` turn on/off system command on CLI Over Http
+     * page
+     *
+     * Default value: `true`
+     */
+    CLI_OVER_HTTP_SYS_CMD("cli_over_http.syscmd.enabled"),
+
+    /**
      * {@code cli.session.expiration} specifies the number of seconds
      * a cli session can exists after last user interaction
      * <p>Default value: {@code 300} seconds. e.g. 5 minutes</p>
@@ -716,11 +732,11 @@ public enum AppConfigKey implements ConfigKey {
     private Object defVal;
     static ConfigKeyHelper helper = new ConfigKeyHelper(Act.F.MODE_ACCESSOR);
 
-    private AppConfigKey(String key) {
+    AppConfigKey(String key) {
         this(key, null);
     }
 
-    private AppConfigKey(String key, Object defVal) {
+    AppConfigKey(String key, Object defVal) {
         this.key = key;
         this.defVal = defVal;
     }

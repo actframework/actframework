@@ -299,6 +299,7 @@ public abstract class AppConfigurator<T extends AppConfigurator> extends AppConf
         }
         private static Set<String> NON_ACTIONS = C.newSet(C.listOf("equals", "getClass", "hashCode", "notify", "notifyAll", "toString", "wait"));
         public RouteBuilder to(Class<?> controller) {
+            E.tbd("binding to controller class is NOT supported yet");
             E.illegalStateIf(S.blank(path), "route path not specified");
             String context = controller.getCanonicalName();
             logger.warn("wildcard matching %s's all public methods into router", context);

@@ -9,6 +9,7 @@ import org.osgl.exception.UnexpectedException;
 import org.osgl.util.C;
 import org.osgl.util.E;
 
+import javax.enterprise.context.ApplicationScoped;
 import java.util.List;
 
 import static act.Destroyable.Util.tryDestroyAll;
@@ -89,7 +90,7 @@ public class ViewManager extends DestroyableBase {
 
     @Override
     protected void releaseResources() {
-        tryDestroyAll(viewList);
+        tryDestroyAll(viewList, ApplicationScoped.class);
         viewList = null;
 
         implicitActionViewVariables.clear();

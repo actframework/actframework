@@ -81,7 +81,7 @@ public class MetricInfo {
         return false;
     }
 
-    public static enum Comparator {
+    public enum Comparator {
         ;
         public static $.Comparator<MetricInfo> COUNTER = new $.Comparator<MetricInfo>() {
             @Override

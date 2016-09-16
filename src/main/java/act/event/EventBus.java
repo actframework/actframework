@@ -459,7 +459,7 @@ public class EventBus extends AppServiceBase<EventBus> {
 
     private void releaseActEventListeners(Map<?, List<ActEventListener>> listeners) {
         for (List<ActEventListener> l : listeners.values()) {
-            Destroyable.Util.destroyAll(l);
+            Destroyable.Util.destroyAll(l, ApplicationScoped.class);
             l.clear();
         }
         listeners.clear();
@@ -467,7 +467,7 @@ public class EventBus extends AppServiceBase<EventBus> {
 
     private void releaseAdhocEventListeners(Map<Object, List<SimpleEventListener>> listeners) {
         for (List<SimpleEventListener> l : listeners.values()) {
-            Destroyable.Util.tryDestroyAll(l);
+            Destroyable.Util.tryDestroyAll(l, ApplicationScoped.class);
             l.clear();
         }
         listeners.clear();

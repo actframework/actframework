@@ -36,12 +36,12 @@ public class NettyRequest extends RequestImplBase<NettyRequest> {
 
     @Override
     protected H.Method _method() {
-        return MethodConverter.netty2osgl(nr.getMethod());
+        return MethodConverter.netty2osgl(nr.method());
     }
 
     @Override
     protected String _uri() {
-        return nr.getUri();
+        return nr.uri();
     }
 
     @Override

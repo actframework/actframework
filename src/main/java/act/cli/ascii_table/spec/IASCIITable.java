@@ -26,13 +26,13 @@ import act.cli.ascii_table.ASCIITableHeader;
  */
 public interface IASCIITable {
 	
-	public static final int ALIGN_LEFT = -1;
-	public static final int ALIGN_CENTER = 0;
-	public static final int ALIGN_RIGHT = 1;
-    public static final int ALIGN_AUTO = Integer.MAX_VALUE;
+	int ALIGN_LEFT = -1;
+	int ALIGN_CENTER = 0;
+	int ALIGN_RIGHT = 1;
+    int ALIGN_AUTO = Integer.MAX_VALUE;
 
-    public static final int DEFAULT_HEADER_ALIGN = ALIGN_CENTER;
-	public static final int DEFAULT_DATA_ALIGN = ALIGN_AUTO;
+    int DEFAULT_HEADER_ALIGN = ALIGN_CENTER;
+	int DEFAULT_DATA_ALIGN = ALIGN_AUTO;
 	
 	/**
 	 * Prints the ASCII table to console.
@@ -40,11 +40,11 @@ public interface IASCIITable {
 	 * @param header
 	 * @param data
 	 */
-	public void printTable(String[] header, String[][] data);
-	public void printTable(String[] header, String[][] data, int dataAlign);
-	public void printTable(String[] header, int headerAlign, String[][] data, int dataAlign);
-	public void printTable(ASCIITableHeader[] headerObjs, String[][] data);
-	public void printTable(IASCIITableAware asciiTableAware);
+	void printTable(String[] header, String[][] data);
+	void printTable(String[] header, String[][] data, int dataAlign);
+	void printTable(String[] header, int headerAlign, String[][] data, int dataAlign);
+	void printTable(ASCIITableHeader[] headerObjs, String[][] data);
+	void printTable(IASCIITableAware asciiTableAware);
 	
 	/**
 	 * Returns the ASCII table as string which can be rendered in console or JSP.
@@ -53,10 +53,10 @@ public interface IASCIITable {
 	 * @param data
 	 * @return
 	 */
-	public String getTable(String[] header, String[][] data);
-	public String getTable(String[] header, String[][] data, int dataAlign);
-	public String getTable(String[] header, int headerAlign, String[][] data, int dataAlign);
-	public String getTable(ASCIITableHeader[] headerObjs, String[][] data);
-	public String getTable(IASCIITableAware asciiTableAware);
+	String getTable(String[] header, String[][] data);
+	String getTable(String[] header, String[][] data, int dataAlign);
+	String getTable(String[] header, int headerAlign, String[][] data, int dataAlign);
+	String getTable(ASCIITableHeader[] headerObjs, String[][] data);
+	String getTable(IASCIITableAware asciiTableAware);
 	
 }
