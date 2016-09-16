@@ -4,7 +4,6 @@ import act.inject.genie.RequestScope;
 import act.inject.genie.SessionScope;
 import act.util.ActContext;
 import org.osgl.inject.BeanSpec;
-import org.osgl.inject.ScopeCache;
 
 class ScopedParamValueLoader implements ParamValueLoader {
     private ParamValueLoader realLoader;

@@ -1,20 +1,15 @@
 package act.job.bytecode;
 
 import act.app.App;
-import act.conf.AppConfig;
 import act.job.meta.JobClassMetaInfo;
 import act.job.meta.JobMethodMetaInfo;
-import com.esotericsoftware.reflectasm.FieldAccess;
 import com.esotericsoftware.reflectasm.MethodAccess;
 import org.osgl.$;
 import org.osgl.exception.NotAppliedException;
-import org.osgl.util.C;
 import org.osgl.util.E;
-import org.osgl.util.S;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.Map;
 
 /**
  * Implement handler using

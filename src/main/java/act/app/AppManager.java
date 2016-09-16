@@ -1,7 +1,6 @@
 package act.app;
 
 import act.Act;
-import act.Destroyable;
 import act.util.DestroyableBase;
 import org.osgl.$;
 import org.osgl.logging.LogManager;

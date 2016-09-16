@@ -1,6 +1,5 @@
 package act.inject.param;
 
-import act.app.AppClassLoader;
 import act.asm.*;
 import act.inject.param.JsonDTOClassManager.DynamicClassLoader;
 import org.osgl.$;

@@ -1,15 +1,10 @@
 package act.app;
 
 import act.util.AnnotatedClassFinder;
-import act.util.AnnotatedTypeFinder;
-import act.util.SubClassFinder;
 import act.util.SingletonBase;
-import org.osgl.$;
-import org.osgl.exception.NotAppliedException;
+import act.util.SubClassFinder;
 
 import javax.inject.Singleton;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * Find all classes annotated with {@link javax.inject.Singleton}

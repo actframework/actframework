@@ -10,7 +10,6 @@ import act.metric.Timer;
 import act.xio.NetworkHandler;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
-import io.undertow.util.Headers;
 import org.osgl.http.H;
 import org.osgl.util.E;
 

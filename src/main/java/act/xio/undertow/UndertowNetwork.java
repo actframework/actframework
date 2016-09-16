@@ -2,9 +2,9 @@ package act.xio.undertow;
 
 import act.app.App;
 import act.conf.AppConfig;
-import act.xio.NetworkHandler;
 import act.xio.Network;
 import act.xio.NetworkBase;
+import act.xio.NetworkHandler;
 import io.undertow.UndertowOptions;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.protocol.http.HttpOpenListener;

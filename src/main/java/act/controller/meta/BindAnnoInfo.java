@@ -1,6 +1,5 @@
 package act.controller.meta;
 
-import act.app.ActionContext;
 import act.app.App;
 import org.osgl.mvc.util.Binder;
 import org.osgl.util.E;

@@ -3,7 +3,6 @@ package act.handler.builtin;
 import act.app.ActionContext;
 import act.handler.builtin.controller.FastRequestHandler;
 import act.handler.builtin.controller.RequestHandlerProxy;
-import act.handler.event.BeforeResultCommit;
 import act.view.ActServerError;
 import org.osgl.http.H;
 import org.osgl.logging.LogManager;

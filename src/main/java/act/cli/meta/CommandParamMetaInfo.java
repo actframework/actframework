@@ -4,7 +4,6 @@ import act.asm.Type;
 import act.util.AsmTypes;
 import act.util.DestroyableBase;
 import org.osgl.$;
-import org.osgl.util.S;
 
 /**
  * Stores Command parameter meta info

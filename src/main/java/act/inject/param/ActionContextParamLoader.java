@@ -2,7 +2,6 @@ package act.inject.param;
 
 import act.app.App;
 import act.inject.HeaderVariable;
-import act.util.ActContext;
 import org.osgl.inject.BeanSpec;
 import org.osgl.mvc.annotation.Bind;
 import org.osgl.mvc.annotation.Param;

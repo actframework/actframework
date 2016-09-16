@@ -2,9 +2,8 @@ package act.controller.builtin;
 
 import act.app.ActionContext;
 import act.cli.CliContext;
-import act.cli.CliOverHttpContext;
-import act.cli.CliSession;
 import act.cli.CliDispatcher;
+import act.cli.CliOverHttpContext;
 import act.conf.AppConfig;
 import act.controller.Controller;
 import act.handler.CliHandler;
@@ -17,12 +16,9 @@ import org.osgl.util.C;
 import javax.inject.Inject;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.StringReader;
 import java.util.List;
 
-import static act.controller.Controller.Util.notFoundIfNull;
-import static act.controller.Controller.Util.render;
-import static act.controller.Controller.Util.text;
+import static act.controller.Controller.Util.*;
 
 /**
  * Handles CLI over http requests

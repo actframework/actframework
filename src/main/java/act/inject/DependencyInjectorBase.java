@@ -9,7 +9,6 @@ import org.osgl.inject.BeanSpec;
 import org.osgl.util.C;
 
 import javax.enterprise.context.ApplicationScoped;
-import java.lang.reflect.Type;
 import java.util.List;
 import java.util.Map;
 

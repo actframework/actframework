@@ -11,10 +11,9 @@ import org.osgl.mvc.util.Binder;
 import org.osgl.storage.ISObject;
 import org.osgl.storage.impl.SObject;
 import org.osgl.util.C;
-import org.osgl.web.util.UserAgent;
 
 import java.io.File;
-import java.util.*;
+import java.util.Map;
 
 @ActComponent
 public class BinderManager extends AppServiceBase<BinderManager> {

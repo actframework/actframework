@@ -10,7 +10,6 @@ import act.controller.meta.CatchMethodMetaInfo;
 import act.controller.meta.ControllerClassMetaInfo;
 import act.controller.meta.InterceptorMethodMetaInfo;
 import act.handler.RequestHandlerBase;
-import act.handler.event.BeforeResultCommit;
 import act.security.CORS;
 import act.security.CSRF;
 import act.view.ActServerError;

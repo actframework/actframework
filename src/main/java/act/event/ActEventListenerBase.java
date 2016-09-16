@@ -1,6 +1,5 @@
 package act.event;
 
-import act.Act;
 import act.app.event.AppEventListener;
 import act.util.DestroyableBase;
 import org.osgl.util.S;

@@ -6,7 +6,6 @@ import act.app.util.NamedPort;
 import act.conf.AppConfig;
 import act.route.Router;
 import org.osgl.$;
-import org.osgl.http.H;
 import org.osgl.mvc.result.Redirect;
 import org.osgl.mvc.result.Result;
 import org.osgl.util.S;

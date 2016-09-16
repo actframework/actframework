@@ -7,7 +7,6 @@ import act.event.AppEventListenerBase;
 import act.route.DuplicateRouteMappingException;
 import act.util.DestroyableBase;
 import org.osgl.$;
-import org.osgl.Osgl;
 import org.osgl.exception.ConfigurationException;
 import org.osgl.exception.NotAppliedException;
 import org.osgl.exception.UnexpectedException;
@@ -17,10 +16,7 @@ import org.osgl.util.C;
 import org.osgl.util.E;
 import org.osgl.util.S;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.*;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 
 class _Job extends DestroyableBase implements Runnable {
 

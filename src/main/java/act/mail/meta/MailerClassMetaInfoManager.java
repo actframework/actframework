@@ -1,6 +1,5 @@
 package act.mail.meta;
 
-import act.app.App;
 import act.asm.Type;
 import act.util.DestroyableBase;
 import org.osgl.util.C;

@@ -3,7 +3,6 @@ package act.inject;
 import org.osgl.inject.BeanSpec;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.Type;
 
 /**
  * Listens for injections into instances of type {@link #listenTo()}. Useful for performing further

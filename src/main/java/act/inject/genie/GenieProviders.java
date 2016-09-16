@@ -1,6 +1,7 @@
 package act.inject.genie;
 
-import act.app.*;
+import act.app.App;
+import act.app.AppClassLoader;
 import act.util.ClassNode;
 import org.osgl.$;
 import org.osgl.Osgl;

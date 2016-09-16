@@ -2,13 +2,11 @@ package act.boot.app;
 
 import act.Constants;
 import act.boot.BootstrapClassLoader;
-import act.plugin.Plugin;
 import act.util.ActClassLoader;
 import act.util.ClassInfoRepository;
 import act.util.ClassNode;
 import act.util.Jars;
 import org.osgl.$;
-import org.osgl.exception.UnexpectedException;
 import org.osgl.util.*;
 
 import java.io.File;

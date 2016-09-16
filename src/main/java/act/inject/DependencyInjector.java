@@ -4,10 +4,6 @@ import act.app.AppService;
 import org.osgl.inject.BeanSpec;
 import org.osgl.inject.Injector;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
-
 public interface DependencyInjector<DI extends DependencyInjector<DI>> extends AppService<DI>, Injector {
 
     /**

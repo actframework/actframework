@@ -1,7 +1,6 @@
 package act.inject.param;
 
 import act.app.App;
-import act.app.AppClassLoader;
 import act.app.AppServiceBase;
 import act.inject.DependencyInjector;
 import org.osgl.$;

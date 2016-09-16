@@ -17,7 +17,6 @@ import act.util.*;
 import act.validation.ValidationMessageInterpolator;
 import act.view.TemplatePathResolver;
 import act.view.View;
-import org.apache.commons.codec.Charsets;
 import org.osgl.$;
 import org.osgl.cache.CacheService;
 import org.osgl.cache.CacheServiceProvider;

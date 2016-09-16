@@ -7,7 +7,6 @@ import act.app.util.NamedPort;
 import act.handler.RequestHandler;
 import act.handler.builtin.controller.FastRequestHandler;
 import act.handler.builtin.controller.RequestHandlerProxy;
-import act.handler.event.BeforeResultCommit;
 import act.metric.Metric;
 import act.metric.MetricInfo;
 import act.metric.Timer;

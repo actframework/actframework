@@ -13,7 +13,6 @@ import org.osgl.util.S;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.InputStream;
-import java.net.URL;
 
 public class StaticFileGetter extends FastRequestHandler {
     private File base;

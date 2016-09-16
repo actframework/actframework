@@ -1,7 +1,6 @@
 package act.app;
 
 import act.Act;
-import act.ActComponent;
 import act.Destroyable;
 import act.app.event.AppEventId;
 import act.conf.AppConfig;
@@ -11,7 +10,6 @@ import act.db.util._SequenceNumberGenerator;
 import act.event.AppEventListenerBase;
 import act.util.ClassNode;
 import act.util.General;
-import act.util.SubClassFinder;
 import org.osgl.$;
 import org.osgl.exception.ConfigurationException;
 import org.osgl.logging.LogManager;

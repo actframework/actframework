@@ -20,7 +20,6 @@ import javax.enterprise.context.ApplicationScoped;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Pattern;
 
 import static act.Destroyable.Util.tryDestroyAll;
 import static org.osgl.http.H.Session.KEY_EXPIRATION;
