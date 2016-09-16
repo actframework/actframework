@@ -33,10 +33,11 @@ class ProvidedValueLoader extends DestroyableBase implements ParamValueLoader {
 
     @Override
     public Object load(Object bean, ActContext<?> context, boolean noDefaultValue) {
+        if (null != singleton) {
+            return singleton;
+        }
         if (context.getClass().equals(beanSpec.rawType())) {
             return context;
-        } else if (null != singleton) {
-            return singleton;
         } else {
             GenieInjector genieInjector = (GenieInjector) injector;
             return genieInjector.get(beanSpec);
