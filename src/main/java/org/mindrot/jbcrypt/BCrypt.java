@@ -13,7 +13,7 @@
 // OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 /*
- * Updated by Gelin Luo (@greenlaw110@gmail.com)
+ * Updated by Gelin Luo (@greenlaw110@gmail.com) based on jBcrypt-0.4
  * - Add method to generate password hash for `char[]` typed password
  * - Add method to verify password hash for `char[]` typed password
  * See http://stackoverflow.com/questions/8881291/why-is-char-preferred-over-string-for-passwords-in-java
