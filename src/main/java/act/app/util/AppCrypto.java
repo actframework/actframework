@@ -9,6 +9,7 @@ import org.osgl.logging.Logger;
 import org.osgl.util.Crypto;
 import org.osgl.util.Token;
 
+import java.io.UnsupportedEncodingException;
 import java.security.InvalidKeyException;
 import java.security.SecureRandom;
 
@@ -28,11 +29,37 @@ public class AppCrypto {
         return Crypto.sign(message, secret.getBytes(Charsets.UTF_8));
     }
 
-    public String passwordHash(String message) {
-        return BCrypt.hashpw(message, BCrypt.gensalt());
+    /**
+     * Generate crypted hash of given password. This method is more secure than
+     * {@link #passwordHash(String)} as it will fill the password char array
+     * with `\0` once used.
+     *
+     * See <a href="http://stackoverflow.com/questions/8881291/why-is-char-preferred-over-string-for-passwords-in-java">This SO for more detail</a>
+     * @param password the password
+     * @return the password hash
+     */
+    public String passwordHash(char[] password) {
+        return BCrypt.hashpw(password, BCrypt.gensalt());
+    }
+
+    /**
+     * Generate crypted hash of give password
+     * @param password the password
+     * @return the password hash
+     */
+    public String passwordHash(String password) {
+        return BCrypt.hashpw(password, BCrypt.gensalt());
     }
 
     public boolean verifyPassword(String password, String hash) {
+        try {
+            return BCrypt.checkpw(password, hash);
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    public boolean verifyPassword(char[] password, String hash) {
         try {
             return BCrypt.checkpw(password, hash);
         } catch (Exception e) {

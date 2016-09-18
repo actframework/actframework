@@ -176,12 +176,6 @@
       <version>3.0.0</version>
     </dependency>
 
-    <dependency>
-      <groupId>org.mindrot</groupId>
-      <artifactId>jbcrypt</artifactId>
-      <version>0.3m</version>
-    </dependency>
-
     <!-- for BANNER font -->
     <dependency>
       <groupId>com.github.lalyos</groupId>
@@ -239,7 +233,7 @@
     <dependency>
       <groupId>com.alibaba</groupId>
       <artifactId>fastjson</artifactId>
-      <version>1.2.14</version>
+      <version>1.2.17</version>
     </dependency>
 
     <dependency>
