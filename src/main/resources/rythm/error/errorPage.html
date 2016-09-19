@@ -15,8 +15,8 @@
 act.util.ActError actError = (act.util.ActError)_error;
 act.app.SourceInfo sourceInfo = actError.sourceInfo();
 act.app.SourceInfo templateSourceInfo = null;
-if (_error instanceof act.view.RythmError) {
-templateSourceInfo = ((act.view.RythmError) actError).templateSourceInfo();
+if (_error instanceof act.view.TemplateError) {
+templateSourceInfo = ((act.view.TemplateError) actError).templateSourceInfo();
 }
 act.route.RouteInfo routeInfo = null != _action ? act.route.RouteInfo.of(_action) : null;
 List<String> stackTrace = actError.stackTrace();
@@ -95,7 +95,7 @@ List<String> stackTrace = actError.stackTrace();
   }
 
   @if(templateSourceInfo) {
-  <div class="error-message">@(((org.rythmengine.exception.RythmException)getCauseOrThis(_error)).errorDesc().raw())</div>
+  <div class="error-message">@(((act.view.TemplateError) actError).errorMessage().raw())</div>
   }
 
   <div class="tabs">
@@ -143,6 +143,7 @@ List<String> stackTrace = actError.stackTrace();
 
   @returnIf(null == sourceInfo && null == templateSourceInfo)
 
+  @if(sourceInfo) {
   <div id="source" class="detail source-info">
     @for(String line: sourceInfo.lines()) {
     @{
@@ -154,6 +155,7 @@ List<String> stackTrace = actError.stackTrace();
     </div>
     }
   </div>
+  }
 
 
   <script>

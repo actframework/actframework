@@ -6,9 +6,7 @@ import org.rythmengine.exception.RythmException;
 
 import java.util.List;
 
-public class RythmError extends ActServerError {
-
-    private SourceInfo templateInfo;
+public class RythmError extends TemplateError {
 
     public RythmError(RythmException t) {
         super(t);
@@ -18,8 +16,9 @@ public class RythmError extends ActServerError {
         return (RythmException) getCause();
     }
 
-    public SourceInfo templateSourceInfo() {
-        return templateInfo;
+    @Override
+    public String errorMessage() {
+        return rythmException().errorDesc();
     }
 
     @Override

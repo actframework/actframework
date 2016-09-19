@@ -15,6 +15,7 @@
 package org.mindrot.jbcrypt;
 
 import junit.framework.TestCase;
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -22,6 +23,7 @@ import org.junit.Test;
  * @author Damien Miller
  * @version 0.2
  */
+@Ignore
 public class BCryptTest extends TestCase {
     String test_vectors[][] = {
             { "",

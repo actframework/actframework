@@ -21,6 +21,7 @@ class CollectionLoader implements ParamValueLoader {
     private final StringValueResolver resolver;
     private final Map<ParamKey, ParamValueLoader> childLoaders = new HashMap<>();
     private final ParamValueLoaderService manager;
+    private final boolean isChar;
 
     CollectionLoader(
             ParamKey key,
@@ -32,6 +33,7 @@ class CollectionLoader implements ParamValueLoader {
         this.key = key;
         this.collectionClass = collection;
         this.elementType = elementType;
+        this.isChar = char.class == elementType || Character.class == elementType;
         this.injector = injector;
         this.manager = manager;
         this.resolver = App.instance().resolverManager().resolver(BeanSpec.rawTypeOf(elementType));
@@ -122,8 +124,16 @@ class CollectionLoader implements ParamValueLoader {
         }
         // support multiple path variables like /foo/id1,id2
         String[] sa = value.split("[,;]+");
+        boolean isChar = this.isChar;
         for (String s : sa) {
-            collection.add(resolver.resolve(s));
+            if (isChar) {
+                char[] ca = s.toCharArray();
+                for (char c: ca) {
+                    collection.add(c);
+                }
+            } else {
+                collection.add(resolver.resolve(s));
+            }
         }
     }
 }

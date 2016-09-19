@@ -130,7 +130,9 @@ public class ActServerError extends ServerError implements ActError {
     }
 
     public static Result of(Throwable t) {
-        if (t instanceof RythmException) {
+        if (t instanceof Result) {
+            return (Result) t;
+        } else if (t instanceof RythmException) {
             return new RythmError((RythmException) t);
         } else {
             $.Function<Throwable, Result> transformer = transformerOf(t);
