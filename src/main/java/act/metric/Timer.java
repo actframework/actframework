@@ -22,7 +22,7 @@ public interface Timer {
     /**
      * Returns nanoseconds the time has elapsed since time being created till
      * {@link #stop()} method get called
-     * 
+     *
      * @return the duration time in nanoseconds
      */
     long ns();

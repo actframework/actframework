@@ -18,13 +18,21 @@
 ********************************************
 *            version history
 ********************************************
-0.2.0 - Big refactoring on
+0.2.0
+- Make act be java 1.6 compatible
+- Big refactoring on
  * dependency injection now on Genie
  * param loading mechanism
  * render arg enhancement now support method call with params, and field
-0.1.3 - testapp to implement integration test of ActFramework
-0.1.2 - misc bug fixes
-0.1.1 - baseline version
+
+0.1.3
+- testapp to implement integration test of ActFramework
+
+0.1.2
+- misc bug fixes
+
+0.1.1
+- baseline version
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
@@ -114,8 +122,8 @@
         <artifactId>maven-compiler-plugin</artifactId>
         <version>3.3</version>
         <configuration>
-          <source>1.7</source>
-          <target>1.7</target>
+          <source>1.6</source>
+          <target>1.6</target>
           <debug>true</debug>
           <debuglevel>lines,vars,source</debuglevel>
         </configuration>
@@ -324,9 +332,6 @@
   <profiles>
     <profile>
       <id>dist</id>
-      <activation>
-        <jdk>[1.8,)</jdk>
-      </activation>
       <properties>
         <additionalparam>-Xdoclint:none</additionalparam>
       </properties>
