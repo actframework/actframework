@@ -9,11 +9,9 @@ public interface MetricPlugin {
     /**
      * Returns a {@link Metric} instance by name
      *
-     * <p>
-     *     The plugin shall check if a {@link org.osgl.logging.Logger} get by name "{@code metric.$name}"
-     *     is {@link Logger#isTraceEnabled() trace enabled} to return the real Metric instance, otherwise
-     *     then it shall return the {@link Metric#NULL_METRIC the do-nothing metric instance}
-     * </p>
+     * The plugin shall check if a {@link org.osgl.logging.Logger} get by name `metric.$name`
+     * is {@link Logger#isTraceEnabled() trace enabled} to return the real Metric instance, otherwise
+     * then it shall return the {@link Metric#NULL_METRIC the do-nothing metric instance}
      *
      * @param name the name (could be the name of the metric root hierarchy)
      * @return the metric instance corresponding to the name
@@ -31,9 +29,9 @@ public interface MetricPlugin {
 
     /**
      * Returns a {@link MetricStore} instance.
-     * <p>
-     *     Note the plugin shall always returns the same instance
-     * </p>
+     *
+     * Note the plugin shall always returns the same instance
+     *
      * @return the metric store instance
      */
     MetricStore metricStore();
