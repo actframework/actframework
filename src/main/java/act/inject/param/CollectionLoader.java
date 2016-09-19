@@ -19,7 +19,7 @@ class CollectionLoader implements ParamValueLoader {
     private final Type elementType;
     private final DependencyInjector<?> injector;
     private final StringValueResolver resolver;
-    private final Map<ParamKey, ParamValueLoader> childLoaders = new HashMap<>();
+    private final Map<ParamKey, ParamValueLoader> childLoaders = new HashMap<ParamKey, ParamValueLoader>();
     private final ParamValueLoaderService manager;
     private final boolean isChar;
 

@@ -8,9 +8,9 @@ class ClassNodeDTO {
     String canonicalName;
     int modifiers;
     String parent;
-    Set<String> interfaces = new HashSet<>();
-    Set<String> annotations = new HashSet<>();
-    Set<String> annotated = new HashSet<>();
+    Set<String> interfaces = new HashSet<String>();
+    Set<String> annotations = new HashSet<String>();
+    Set<String> annotated = new HashSet<String>();
 
     // For JSON deserialization
     ClassNodeDTO() {}

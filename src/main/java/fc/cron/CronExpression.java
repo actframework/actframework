@@ -15,6 +15,8 @@
  */
 package fc.cron;
 
+import com.google.code.regexp.Matcher;
+import com.google.code.regexp.Pattern;
 import org.joda.time.DateTime;
 import org.joda.time.LocalDate;
 import org.joda.time.MutableDateTime;
@@ -23,8 +25,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import static org.joda.time.DateTimeConstants.DAYS_PER_WEEK;
 
@@ -287,7 +287,7 @@ public class CronExpression {
                         , Pattern.CASE_INSENSITIVE | Pattern.COMMENTS);
 
         final CronFieldType fieldType;
-        final List<FieldPart> parts = new ArrayList<>();
+        final List<FieldPart> parts = new ArrayList<FieldPart>();
 
         private BasicField(CronFieldType fieldType, String fieldExpr) {
             this.fieldType = fieldType;

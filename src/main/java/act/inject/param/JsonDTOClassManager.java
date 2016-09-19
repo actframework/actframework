@@ -30,7 +30,7 @@ public class JsonDTOClassManager extends AppServiceBase<JsonDTOClassManager> {
         }
     }
 
-    private ConcurrentMap<String, Class<? extends JsonDTO>> dtoClasses = new ConcurrentHashMap<>();
+    private ConcurrentMap<String, Class<? extends JsonDTO>> dtoClasses = new ConcurrentHashMap<String, Class<? extends JsonDTO>>();
 
     private DependencyInjector<?> injector;
     private DynamicClassLoader dynamicClassLoader;
@@ -66,7 +66,7 @@ public class JsonDTOClassManager extends AppServiceBase<JsonDTOClassManager> {
     }
 
     public List<BeanSpec> beanSpecs(Class<?> host, Method method) {
-        List<BeanSpec> list = new ArrayList<>();
+        List<BeanSpec> list = new ArrayList<BeanSpec>();
         extractBeanSpec(list, $.fieldsOf(host, true));
         extractBeanSpec(list, method);
         Collections.sort(list, CMP);

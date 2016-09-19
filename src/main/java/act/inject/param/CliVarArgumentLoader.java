@@ -23,7 +23,7 @@ class CliVarArgumentLoader extends CliParamValueLoader {
     @Override
     public Object load(Object cached, ActContext<?> context, boolean noDefaultValue) {
         CliContext ctx = (CliContext) context;
-        List list = new ArrayList<>();
+        List list = new ArrayList();
         CliContext.ParsingContext parsingContext = ctx.parsingContext();
         CommandLineParser parser = ctx.commandLine();
         while (parsingContext.hasArguments(parser)) {

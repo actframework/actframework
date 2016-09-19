@@ -27,7 +27,7 @@ class _Job extends DestroyableBase implements Runnable {
         List<_Job> jobList;
         _Job parent;
         LockableJobList(_Job parent) {
-            this.jobList = new ArrayList<>();
+            this.jobList = new ArrayList<_Job>();
             this.parent = parent;
         }
 

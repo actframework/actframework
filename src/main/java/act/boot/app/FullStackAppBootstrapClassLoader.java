@@ -31,7 +31,7 @@ public class FullStackAppBootstrapClassLoader extends BootstrapClassLoader imple
     private Long jarsChecksum;
     private Map<String, byte[]> libBC = C.newMap();
     private List<Class<?>> actClasses = C.newList();
-    private List<Class<?>> pluginClasses = new ArrayList<>();
+    private List<Class<?>> pluginClasses = new ArrayList<Class<?>>();
     private String lineSeparator = OS.get().lineSeparator();
 
     public FullStackAppBootstrapClassLoader(ClassLoader parent) {

@@ -372,7 +372,7 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
                 }
                 if (null != signature) {
                     SignatureReader sr = new SignatureReader(signature);
-                    final $.Var<Integer> id = new $.Var<>(-1);
+                    final $.Var<Integer> id = new $.Var<Integer>(-1);
                     sr.accept(new SignatureVisitor(ASM5) {
 
                         boolean startParsing;

@@ -20,7 +20,7 @@ import java.util.concurrent.ConcurrentMap;
 @ApplicationScoped
 public class ClassInfoRepository extends DestroyableBase {
 
-    protected ConcurrentMap<String, ClassNode> classes = new ConcurrentHashMap<>();
+    protected ConcurrentMap<String, ClassNode> classes = new ConcurrentHashMap<String, ClassNode>();
 
     public boolean has(String className) {
         return classes.containsKey(className);
@@ -67,7 +67,7 @@ public class ClassInfoRepository extends DestroyableBase {
     }
 
     public String toJSON() {
-        List<ClassNodeDTO> list = new ArrayList<>();
+        List<ClassNodeDTO> list = new ArrayList<ClassNodeDTO>();
         for (ClassNode node : classes.values()) {
             list.add(node.toDTO());
         }
@@ -83,7 +83,7 @@ public class ClassInfoRepository extends DestroyableBase {
     /**
      * Java {@code Class.getCanonicalName()} sometimes will throw out
      * {@code InternalError} with message: "{code Malformed class name}"
-     * We just ingore it
+     * We just ignore it
      * @param c the class on which canonical name is returned
      * @return the canonical name of the class specified or {@code null} if no
      * canonical name found or error returned canonical name on the class
@@ -138,7 +138,7 @@ public class ClassInfoRepository extends DestroyableBase {
             if (dto.parent != null) {
                 ClassNode parentNode = repo.classes.get(dto.parent);
                 if (null == parentNode) {
-                    App.logger.warn("Error deserializing ClassInfoRepository: parent[%s] not found for classNode[%s]", dto.parent, dto.canonicalName);
+                    App.logger.warn("Error de-serializing ClassInfoRepository: parent[%s] not found for classNode[%s]", dto.parent, dto.canonicalName);
                 } else {
                     parentNode.addChild(classNode);
                 }
@@ -146,7 +146,7 @@ public class ClassInfoRepository extends DestroyableBase {
             for (String name : dto.annotated) {
                 ClassNode node = repo.classes.get(name);
                 if (null == node) {
-                    App.logger.warn("Error deserializing ClassInfoRepository: annotated[%s] not found for classNode[%s]", name, dto.canonicalName);
+                    App.logger.warn("Error de-serializing ClassInfoRepository: annotated[%s] not found for classNode[%s]", name, dto.canonicalName);
                 } else {
                     classNode.addAnnontated(node);
                 }
@@ -154,7 +154,7 @@ public class ClassInfoRepository extends DestroyableBase {
             for (String name : dto.annotations) {
                 ClassNode node = repo.classes.get(name);
                 if (null == node) {
-                    App.logger.warn("Error deserializing ClassInfoRepository: annotation[%s] not found for classNode[%s]", name, dto.canonicalName);
+                    App.logger.warn("Error de-serializing ClassInfoRepository: annotation[%s] not found for classNode[%s]", name, dto.canonicalName);
                 } else {
                     classNode.addAnnotation(node);
                 }
@@ -162,7 +162,7 @@ public class ClassInfoRepository extends DestroyableBase {
             for (String name : dto.interfaces) {
                 ClassNode node = repo.classes.get(name);
                 if (null == node) {
-                    App.logger.warn("Error deserializing ClassInfoRepository: interface[%s] not found for classNode[%s]", name, dto.canonicalName);
+                    App.logger.warn("Error de-serializing ClassInfoRepository: interface[%s] not found for classNode[%s]", name, dto.canonicalName);
                 } else {
                     classNode.addInterface(node);
                 }

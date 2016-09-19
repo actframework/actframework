@@ -27,7 +27,7 @@ public class HandlerEnhancer extends MethodVisitor implements Opcodes {
     private HandlerMethodMetaInfo info;
     private MethodVisitor next;
     private int paramIdShift = 0;
-    private Set<Integer> skipNaming = new HashSet<>();
+    private Set<Integer> skipNaming = new HashSet<Integer>();
     private boolean notAction;
 
     public HandlerEnhancer(final MethodVisitor mv, HandlerMethodMetaInfo meta, final int access, final String name, final String desc, final String signature, final String[] exceptions) {

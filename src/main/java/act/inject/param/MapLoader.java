@@ -24,7 +24,7 @@ class MapLoader implements ParamValueLoader {
     private final DependencyInjector<?> injector;
     private final StringValueResolver keyResolver;
     private final StringValueResolver valueResolver;
-    private final Map<ParamKey, ParamValueLoader> childLoaders = new HashMap<>();
+    private final Map<ParamKey, ParamValueLoader> childLoaders = new HashMap<ParamKey, ParamValueLoader>();
     private final ParamValueLoaderService manager;
 
     MapLoader(

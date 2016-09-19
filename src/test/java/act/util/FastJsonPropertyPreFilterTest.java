@@ -106,11 +106,11 @@ public class FastJsonPropertyPreFilterTest extends TestBase {
                 };
             }
         };
-        List<Person> list = new ArrayList<>();
+        List<Person> list = new ArrayList<Person>();
         for (Person p : iterable) {
             list.add(p);
         }
-        iterable = new FastJsonIterable<>(iterable);
+        iterable = new FastJsonIterable(iterable);
         assertEquals("[{\"name\":\"fast\"},{\"name\":\"fast\"}]", JSON.toJSONString(list));
         assertEquals("[{\"name\":\"fast\"},{\"name\":\"fast\"}]", JSON.toJSONString(iterable));
     }

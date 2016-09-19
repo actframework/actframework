@@ -175,9 +175,9 @@ public abstract class AppConfigurator<T extends AppConfigurator> extends AppConf
         private boolean enabled;
         private String allowOrigin;
         private int maxAge;
-        private List<String> headersBoth = new ArrayList<>();
-        private List<String> headersAllowed = new ArrayList<>();
-        private List<String> headersExpose = new ArrayList<>();
+        private List<String> headersBoth = new ArrayList<String>();
+        private List<String> headersAllowed = new ArrayList<String>();
+        private List<String> headersExpose = new ArrayList<String>();
 
         CorsSetting(AppConfigurator conf) {
             this.conf = conf;
@@ -246,7 +246,7 @@ public abstract class AppConfigurator<T extends AppConfigurator> extends AppConf
             if (stringList.isEmpty()) {
                 return null;
             }
-            Set<String> set = new HashSet<>();
+            Set<String> set = new HashSet<String>();
             for (String s : stringList) {
                 set.addAll(C.listOf(s.split(",")));
             }

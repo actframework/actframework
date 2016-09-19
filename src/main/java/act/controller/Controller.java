@@ -666,7 +666,7 @@ public @interface Controller {
                         DisableFastJsonCircularReferenceDetect.option.set(true);
                     }
                     if (v instanceof Iterable && !(v instanceof Collection)) {
-                        v = new FastJsonIterable<>((Iterable) v);
+                        v = new FastJsonIterable((Iterable) v);
                     }
                     PropertySpec.MetaInfo propertySpec = (null == meta) ? null : meta.propertySpec();
                     try {

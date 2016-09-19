@@ -19,7 +19,7 @@ import java.util.concurrent.ConcurrentMap;
 public class OptionsInfoBase extends DestroyableBase {
 
     private Router router;
-    private ConcurrentMap<String, RequestHandler> handlers = new ConcurrentHashMap<>();
+    private ConcurrentMap<String, RequestHandler> handlers = new ConcurrentHashMap<String, RequestHandler>();
 
     public OptionsInfoBase(Router router) {
         this.router = router;

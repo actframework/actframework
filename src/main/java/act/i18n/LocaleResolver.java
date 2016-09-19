@@ -126,7 +126,7 @@ public class LocaleResolver {
         if (null == val) {
             return null;
         }
-        String[] sa = val.trim().split("_");
+        String[] sa = val.trim().split("[-_]");
         int len = sa.length;
         switch (len) {
             case 3:
@@ -136,6 +136,10 @@ public class LocaleResolver {
             default:
                 return new Locale(sa[0]);
         }
+    }
+
+    public static void main(String[] args) {
+        System.out.println(Locale.US.toLanguageTag());
     }
 
 }

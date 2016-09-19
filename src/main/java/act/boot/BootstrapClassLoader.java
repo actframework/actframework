@@ -135,7 +135,7 @@ public abstract class BootstrapClassLoader extends ClassLoader implements Plugin
     );
 
     public Set<String> scanList() {
-        Set<String> scanList = new HashSet<>();
+        Set<String> scanList = new HashSet<String>();
         try {
             final Enumeration<URL> systemResources = this.getResources(FILE_SCAN_LIST);
             while (systemResources.hasMoreElements()) {

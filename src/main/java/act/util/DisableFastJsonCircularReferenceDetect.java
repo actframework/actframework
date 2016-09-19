@@ -12,5 +12,5 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE, ElementType.METHOD})
 public @interface DisableFastJsonCircularReferenceDetect {
-    ThreadLocal<Boolean> option = new ThreadLocal<>();
+    ThreadLocal<Boolean> option = new ThreadLocal<Boolean>();
 }

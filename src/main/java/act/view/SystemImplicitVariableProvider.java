@@ -77,6 +77,12 @@ public class SystemImplicitVariableProvider extends ImplicitVariableProvider {
                 public Object eval(ActionContext context) {
                     return S.raw(CSRF.formField(context));
                 }
+            },
+            new ActionViewVarDef("_lang", String.class) {
+                @Override
+                public Object eval(ActionContext context) {
+                    return context.locale().toLanguageTag();
+                }
             }
     );
 

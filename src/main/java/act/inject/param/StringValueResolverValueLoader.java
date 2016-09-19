@@ -7,7 +7,7 @@ import org.osgl.util.StringValueResolver;
 
 public class StringValueResolverValueLoader extends StringValueResolverValueLoaderBase implements ParamValueLoader {
 
-    private static final ThreadLocal<HttpRequestParamEncode> encodeShare = new ThreadLocal<>();
+    private static final ThreadLocal<HttpRequestParamEncode> encodeShare = new ThreadLocal<HttpRequestParamEncode>();
 
     private HttpRequestParamEncode encode;
 

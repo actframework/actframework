@@ -54,7 +54,7 @@ public class CommanderEnhancer extends AppByteCodeEnhancer<CommanderEnhancer> {
         }
         if (isPublic(access) && !isConstructor(name)) {
             return new MethodVisitor(ASM5, mv) {
-                private Set<Integer> skipNaming = new HashSet<>();
+                private Set<Integer> skipNaming = new HashSet<Integer>();
                 @Override
                 public AnnotationVisitor visitParameterAnnotation(int parameter, String desc, boolean visible) {
                     if ("Ljavax/inject/Named;".equals(desc)) {

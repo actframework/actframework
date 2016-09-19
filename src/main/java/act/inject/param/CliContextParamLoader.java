@@ -26,9 +26,9 @@ import java.util.concurrent.ConcurrentMap;
  */
 public class CliContextParamLoader extends ParamValueLoaderService {
 
-    private final static transient ThreadLocal<CommandMethodMetaInfo> methodMetaInfoHolder = new ThreadLocal<>();
+    private final static transient ThreadLocal<CommandMethodMetaInfo> methodMetaInfoHolder = new ThreadLocal<CommandMethodMetaInfo>();
 
-    private ConcurrentMap<Method, List<OptionLoader>> optionLoaderRegistry = new ConcurrentHashMap<>();
+    private ConcurrentMap<Method, List<OptionLoader>> optionLoaderRegistry = new ConcurrentHashMap<Method, List<OptionLoader>>();
 
     CliContextParamLoader(App app) {
         super(app);
@@ -113,7 +113,7 @@ public class CliContextParamLoader extends ParamValueLoaderService {
     }
 
     private List<OptionLoader> findOptionLoaders(Method method, CommandMethodMetaInfo methodMetaInfo) {
-        List<OptionLoader> optionLoaders = new ArrayList<>();
+        List<OptionLoader> optionLoaders = new ArrayList<OptionLoader>();
 
         findFieldOptionLoaders(method.getDeclaringClass(), optionLoaders);
         findParamOptionLoaders(method, methodMetaInfo, optionLoaders);

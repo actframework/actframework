@@ -47,10 +47,10 @@ public enum AsmTypes implements Opcodes {
     public static AsmType<TreeView> TREE_VIEW = new AsmType<TreeView>(TreeView.class);
     public static AsmType<CsvView> CSV_VIEW = new AsmType<CsvView>(CsvView.class);
 
-    public static AsmType<SubClassFinder> SUB_CLASS_FINDER = new AsmType<>(SubClassFinder.class);
-    public static AsmType<AnnotatedClassFinder> ANN_CLASS_FINDER = new AsmType<>(AnnotatedClassFinder.class);
+    public static AsmType<SubClassFinder> SUB_CLASS_FINDER = new AsmType<SubClassFinder>(SubClassFinder.class);
+    public static AsmType<AnnotatedClassFinder> ANN_CLASS_FINDER = new AsmType<AnnotatedClassFinder>(AnnotatedClassFinder.class);
 
-    public static AsmType<Provides> PROVIDES = new AsmType<>(Provides.class);
+    public static AsmType<Provides> PROVIDES = new AsmType<Provides>(Provides.class);
 
 
     public static final Type RETURN_VOID = Type.VOID_TYPE;

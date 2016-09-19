@@ -43,7 +43,7 @@ public class GenieInjector extends DependencyInjectorBase<GenieInjector> {
 
     private volatile Genie genie;
     private List<Object> modules;
-    private Set<Class<? extends Annotation>> injectTags = new HashSet<>();
+    private Set<Class<? extends Annotation>> injectTags = new HashSet<Class<? extends Annotation>>();
 
     public GenieInjector(App app) {
         super(app);

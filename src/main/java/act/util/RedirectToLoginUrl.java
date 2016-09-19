@@ -21,8 +21,8 @@ public class RedirectToLoginUrl implements MissingAuthenticationHandler {
 
     private volatile Result R = null;
     private volatile Result R_AJAX = null;
-    private Map<String, Result> resultMap = new HashMap<>();
-    private Map<String, Result> ajaxResultMap = new HashMap<>();
+    private Map<String, Result> resultMap = new HashMap<String, Result>();
+    private Map<String, Result> ajaxResultMap = new HashMap<String, Result>();
 
     public RedirectToLoginUrl() {
         App app = App.instance();

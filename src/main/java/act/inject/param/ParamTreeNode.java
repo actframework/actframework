@@ -29,7 +29,7 @@ class ParamTreeNode implements TreeNode {
 
     @Override
     public List<TreeNode> children() {
-        List<TreeNode> list = new ArrayList<>();
+        List<TreeNode> list = new ArrayList<TreeNode>();
         if (isList()) {
             list.addAll(this.list);
         } else if (isMap()) {
@@ -99,13 +99,13 @@ class ParamTreeNode implements TreeNode {
 
     static ParamTreeNode map(ParamKey key) {
         ParamTreeNode node = new ParamTreeNode(key);
-        node.map = new HashMap<>();
+        node.map = new HashMap<String, ParamTreeNode>();
         return node;
     }
 
     static ParamTreeNode list(ParamKey key) {
         ParamTreeNode node = new ParamTreeNode(key);
-        node.list = new ArrayList<>();
+        node.list = new ArrayList<ParamTreeNode>();
         return node;
     }
 }

@@ -7,7 +7,7 @@ import java.util.*;
 
 class ParamTree {
 
-    private Map<ParamKey, ParamTreeNode> allNodes = new HashMap<>();
+    private Map<ParamKey, ParamTreeNode> allNodes = new HashMap<ParamKey, ParamTreeNode>();
 
     void build(ActContext context) {
         Set<String> paramKeys = context.paramKeys();

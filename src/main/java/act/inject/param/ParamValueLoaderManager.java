@@ -18,7 +18,7 @@ import java.util.Map;
 @ApplicationScoped
 public class ParamValueLoaderManager  extends AppServiceBase<ParamValueLoaderManager> {
 
-    private final Map<Class<? extends ActContext>, ParamValueLoaderService> loaderServices = new HashMap<>();
+    private final Map<Class<? extends ActContext>, ParamValueLoaderService> loaderServices = new HashMap<Class<? extends ActContext>, ParamValueLoaderService>();
 
     @Inject
     public ParamValueLoaderManager(App app) {

@@ -17,6 +17,7 @@ import act.inject.genie.SessionScope;
 import act.util.ActContext;
 import act.util.DestroyableBase;
 import org.osgl.$;
+import org.osgl.Osgl;
 import org.osgl.inject.BeanSpec;
 import org.osgl.inject.InjectException;
 import org.osgl.inject.annotation.Provided;
@@ -50,7 +51,7 @@ import java.util.concurrent.ConcurrentMap;
 public abstract class ParamValueLoaderService extends DestroyableBase {
 
     private static final ParamValueLoader[] DUMB = new ParamValueLoader[0];
-    private static final ThreadLocal<ParamTree> PARAM_TREE = new ThreadLocal<>();
+    private static final ThreadLocal<ParamTree> PARAM_TREE = new ThreadLocal<ParamTree>();
     private static final ParamValueLoader RESULT_LOADER = new ParamValueLoader() {
         @Override
         public Object load(Object bean, ActContext<?> context, boolean noDefaultValue) {
@@ -67,18 +68,18 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
     StringValueResolverManager resolverManager;
     BinderManager binderManager;
     DependencyInjector<?> injector;
-    ConcurrentMap<Method, ParamValueLoader[]> methodRegistry = new ConcurrentHashMap<>();
-    ConcurrentMap<Class, Map<Field, ParamValueLoader>> fieldRegistry = new ConcurrentHashMap<>();
-    ConcurrentMap<Class, ParamValueLoader> classRegistry = new ConcurrentHashMap<>();
-    private ConcurrentMap<$.T2<Type, Annotation[]>, ParamValueLoader> paramRegistry = new ConcurrentHashMap<>();
-    private ConcurrentMap<BeanSpec, Map<Class<? extends Annotation>, ActionMethodParamAnnotationHandler>> annoHandlers = new ConcurrentHashMap<>();
+    ConcurrentMap<Method, ParamValueLoader[]> methodRegistry = new ConcurrentHashMap<Method, ParamValueLoader[]>();
+    ConcurrentMap<Class, Map<Field, ParamValueLoader>> fieldRegistry = new ConcurrentHashMap<Class, Map<Field, ParamValueLoader>>();
+    ConcurrentMap<Class, ParamValueLoader> classRegistry = new ConcurrentHashMap<Class, ParamValueLoader>();
+    private ConcurrentMap<$.T2<Type, Annotation[]>, ParamValueLoader> paramRegistry = new ConcurrentHashMap<$.T2<Type, Annotation[]>, ParamValueLoader>();
+    private ConcurrentMap<BeanSpec, Map<Class<? extends Annotation>, ActionMethodParamAnnotationHandler>> annoHandlers = new ConcurrentHashMap<BeanSpec, Map<Class<? extends Annotation>, ActionMethodParamAnnotationHandler>>();
     private Map<Class<? extends Annotation>, ActionMethodParamAnnotationHandler> allAnnotationHandlers;
 
     public ParamValueLoaderService(App app) {
         resolverManager = app.resolverManager();
         binderManager = app.binderManager();
         injector = app.injector();
-        allAnnotationHandlers = new HashMap<>();
+        allAnnotationHandlers = new HashMap<Class<? extends Annotation>, ActionMethodParamAnnotationHandler>();
         List<ActionMethodParamAnnotationHandler> list = Act.pluginManager().pluginList(ActionMethodParamAnnotationHandler.class);
         for (ActionMethodParamAnnotationHandler h : list) {
             Set<Class<? extends Annotation>> set = h.listenTo();
@@ -161,7 +162,7 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
     private <T> Map<Field, ParamValueLoader> fieldLoaders(Class<T> beanClass) {
         Map<Field, ParamValueLoader> fieldLoaders = fieldRegistry.get(beanClass);
         if (null == fieldLoaders) {
-            fieldLoaders = new HashMap<>();
+            fieldLoaders = new HashMap<Field, ParamValueLoader>();
             for (Field field: $.fieldsOf(beanClass, true)) {
                 Type type = field.getGenericType();
                 Annotation[] annotations = field.getAnnotations();
@@ -431,7 +432,7 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
         if (null != handlers) {
             return handlers;
         }
-        handlers = new HashMap<>();
+        handlers = new HashMap<Class<? extends Annotation>, ActionMethodParamAnnotationHandler>();
         for (Annotation annotation : spec.allAnnotations()) {
             Class<? extends Annotation> c = annotation.annotationType();
             ActionMethodParamAnnotationHandler h = allAnnotationHandlers.get(c);

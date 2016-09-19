@@ -204,7 +204,7 @@ public class CommanderByteCodeScanner extends AppByteCodeScannerBase {
             private BitSet contextInfo = new BitSet();
             private boolean isStatic;
             private Map<Integer, Boolean> readFileContentFlags = C.newMap();
-            private Set<Integer> skipNaming = new HashSet<>();
+            private Set<Integer> skipNaming = new HashSet<Integer>();
 
             private int paramIdShift = 0;
 

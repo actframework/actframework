@@ -235,7 +235,7 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
                 H.Response resp = context.resp();
                 result.apply(req, resp);
             }
-        } catch (Exception e) {
+        } catch (RuntimeException e) {
             context.cacheTemplate(null);
             throw e;
         }

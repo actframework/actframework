@@ -14,7 +14,7 @@ import java.util.concurrent.ConcurrentMap;
 public class SingletonRegistry extends AppServiceBase<SingletonRegistry> {
 
     private ConcurrentMap<Class<?>, Object> registry = new ConcurrentHashMap<Class<?>, Object>();
-    private ConcurrentHashMap<Class<?>, Class<?>> preRegistry = new ConcurrentHashMap<>();
+    private ConcurrentHashMap<Class<?>, Class<?>> preRegistry = new ConcurrentHashMap<Class<?>, Class<?>>();
     private boolean batchRegistered = false;
 
     SingletonRegistry(App app) {

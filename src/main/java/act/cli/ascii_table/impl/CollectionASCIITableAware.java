@@ -52,7 +52,7 @@ public class CollectionASCIITableAware<T> implements IASCIITableAware {
 			String header;
 			headers = new ArrayList<ASCIITableHeader>(properties.size());
 			int titleSize = title.size();
-			properties = new ArrayList<>(properties);
+			properties = new ArrayList<String>(properties);
 			for (int i = 0 ; i < properties.size() ; i ++) {
 				String prop = properties.get(i);
 				header = prop;

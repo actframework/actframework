@@ -218,7 +218,7 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Act
 
     @Override
     public Set<String> paramKeys() {
-        Set<String> set = new HashSet<>();
+        Set<String> set = new HashSet<String>();
         set.addAll(C.<String>list(request.paramNames()));
         set.addAll(extraParams.keySet());
         set.addAll(bodyParams().keySet());

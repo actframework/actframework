@@ -62,7 +62,7 @@ public class CliContext extends ActContext.Base<CliContext> implements IASCIITab
         }
 
         public Set<String> missingOptions() {
-            Set<String> set = new HashSet<>();
+            Set<String> set = new HashSet<String>();
             for (Map.Entry<String, AtomicInteger> entry : required.entrySet()) {
                 if (entry.getValue().get() < 1) {
                     set.add(entry.getKey());
@@ -81,7 +81,7 @@ public class CliContext extends ActContext.Base<CliContext> implements IASCIITab
         public ParsingContext copy() {
             ParsingContext ctx = new ParsingContext();
             ctx.optionArgumentsCnt = optionArgumentsCnt;
-            ctx.required = new HashMap<>(required);
+            ctx.required = new HashMap<String, AtomicInteger>(required);
             for (Map.Entry<String, AtomicInteger> entry : ctx.required.entrySet()) {
                 entry.setValue(new AtomicInteger(0));
             }
@@ -91,11 +91,11 @@ public class CliContext extends ActContext.Base<CliContext> implements IASCIITab
     }
 
     public static class ParsingContextBuilder {
-        private static final ThreadLocal<ParsingContext> ctx = new ThreadLocal<>();
+        private static final ThreadLocal<ParsingContext> ctx = new ThreadLocal<ParsingContext>();
 
         public static void start() {
             ParsingContext ctx0 = new ParsingContext();
-            ctx0.required = new HashMap<>();
+            ctx0.required = new HashMap<String, AtomicInteger>();
             ctx.set(ctx0);
         }
 
@@ -164,7 +164,7 @@ public class CliContext extends ActContext.Base<CliContext> implements IASCIITab
         this.pw = new PrintWriter(console.getOutput());
         this.rawPrint = rawPrint;
         this.handler = app.cliDispatcher().handler(command());
-        this.preparsedOptionValues = new HashMap<>();
+        this.preparsedOptionValues = new HashMap<String, String>();
         this.saveLocal();
     }
 
