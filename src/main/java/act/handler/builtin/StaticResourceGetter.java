@@ -22,13 +22,15 @@ import static org.osgl.http.H.Format.UNKNOWN;
  */
 public class StaticResourceGetter extends FastRequestHandler {
 
+    private static final String SEP = "/";
+
     private String base;
     private URL baseUrl;
 
     public StaticResourceGetter(String base) {
         String path = base;
-        if (!base.startsWith(File.separator)) {
-            path = File.separator + base;
+        if (!base.startsWith(SEP)) {
+            path = SEP + base;
         }
         this.base = path;
         this.baseUrl = StaticFileGetter.class.getResource(path);
@@ -50,10 +52,10 @@ public class StaticResourceGetter extends FastRequestHandler {
                 target = baseUrl;
             } else {
                 StringBuilder sb = S.builder(base);
-                if (base.endsWith(File.separator) || path.startsWith(File.separator)) {
+                if (base.endsWith(SEP) || path.startsWith(SEP)) {
                     sb.append(path);
                 } else {
-                    sb.append(File.separator).append(path);
+                    sb.append(SEP).append(path);
                 }
                 target = StaticFileGetter.class.getResource(sb.toString());
                 if (null == target) {

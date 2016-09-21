@@ -875,7 +875,7 @@ public class App extends DestroyableBase {
         router().addMapping(H.Method.GET, "/~upload/{path}", new UploadFileStorageService.UploadFileGetter(), RouteSource.BUILD_IN);
         if (config.cliOverHttp()) {
             Router router = router(AppConfig.PORT_CLI_OVER_HTTP);
-            router.addMapping(H.Method.GET, "/asset/", new StaticResourceGetter("/asset"), RouteSource.BUILD_IN);
+            router.addMapping(H.Method.GET, "/asset/", new StaticResourceGetter("asset"), RouteSource.BUILD_IN);
         }
     }
 

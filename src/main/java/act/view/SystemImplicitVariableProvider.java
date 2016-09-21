@@ -12,6 +12,7 @@ import org.rythmengine.utils.S;
 
 import javax.mail.internet.InternetAddress;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 /**
@@ -81,7 +82,10 @@ public class SystemImplicitVariableProvider extends ImplicitVariableProvider {
             new ActionViewVarDef("_lang", String.class) {
                 @Override
                 public Object eval(ActionContext context) {
-                    return context.locale().toLanguageTag();
+                    // TODO fix me
+                    Locale locale = context.locale();
+                    locale = Locale.getDefault();
+                    return locale.toString().replace('_', '-');
                 }
             }
     );
