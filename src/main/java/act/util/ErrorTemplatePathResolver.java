@@ -1,5 +1,6 @@
 package act.util;
 
+import act.Act;
 import act.app.ActionContext;
 import org.osgl.http.H;
 import org.osgl.mvc.result.ErrorResult;
@@ -21,7 +22,7 @@ public interface ErrorTemplatePathResolver {
             } else {
                 suffix = TXT.name();
             }
-            return S.fmt("/error/e%s.%s", code, suffix);
+            return Act.isProd() || "json".equals(suffix) ? S.fmt("/error/e%s.%s", code, suffix) : S.fmt("/error/dev/e%s.%s", code, suffix);
         }
     }
 }

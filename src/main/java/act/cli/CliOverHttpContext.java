@@ -26,7 +26,7 @@ public class CliOverHttpContext extends CliContext {
             } else if (s.startsWith("-")) {
                 String val = actionContext.paramVal(s);
                 if (S.notBlank(val)) {
-                    val = val.replaceAll("[\n\r]+", "<br/>");
+                    val = val.replaceAll("[\n\r]+", "<br/>").trim();
                     if (val.contains(" ")) {
                         if (val.contains("\"")) {
                             val = S.builder("'").append(val).append("'").toString();

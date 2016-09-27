@@ -1,0 +1,10 @@
+@extends(errorPage, header: "400 Bad Request")
+
+@{
+act.route.RouteInfo routeInfo = act.route.RouteInfo.of(_action);
+}
+
+
+@section(description) {
+Error handling request <code>@routeInfo.method() @routeInfo.path()</code>:
+}

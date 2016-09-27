@@ -1,10 +1,1 @@
 @extends(errorPage, header: "405 Method not allowed")
-
-@{
-act.route.RouteInfo routeInfo = act.route.RouteInfo.of(_action);
-}
-
-
-@section(description) {
-Error handling request <code>@routeInfo.method() @routeInfo.path()</code>:
-}
