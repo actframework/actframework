@@ -17,6 +17,7 @@ import org.osgl.util.E;
 import org.osgl.util.S;
 
 import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Provider;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -152,7 +153,7 @@ public class SessionManager extends DestroyableBase {
         private SessionMapper sessionMapper;
         private String sessionCookieName;
         private String flashCookieName;
-        private String cookieDomain;
+        private Provider<String> cookieDomainProvider;
 
         CookieResolver(App app) {
             E.NPE(app);
@@ -162,7 +163,7 @@ public class SessionManager extends DestroyableBase {
             this.encryptSession = conf.encryptSession();
             this.persistentSession = conf.persistSession();
             this.sessionSecure = conf.sessionSecure();
-            this.cookieDomain = conf.cookieDomain();
+            this.cookieDomainProvider = conf.cookieDomainProvider();
             long ttl = conf.sessionTtl();
             this.ttl = ttl * 1000L;
             sessionWillExpire = ttl > 0;
@@ -366,7 +367,7 @@ public class SessionManager extends DestroyableBase {
         private H.Cookie createCookie(String name, String value) {
             H.Cookie cookie = new H.Cookie(name, value);
             cookie.path("/");
-            cookie.domain(cookieDomain);
+            cookie.domain(cookieDomainProvider.get());
             cookie.httpOnly(true);
             cookie.secure(sessionSecure);
             if (sessionWillExpire && persistentSession) {

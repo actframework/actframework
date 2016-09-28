@@ -269,12 +269,12 @@ public enum AppConfigKey implements ConfigKey {
     CONTROLLER_PACKAGE("controller_package"),
 
     /**
-     * `act.cookie.domain` specify the domain that should be
-     * set on session cookie or csrf token cookie
+     * `act.cookie.domain_provider` specify the provider
+     * that provides the cookie domain name
      *
      * Default value: value of {@link #HOST}
      */
-    COOKIE_DOMAIN("cookie.domain"),
+    COOKIE_DOMAIN_PROVIDER("cookie.domain_provider"),
 
     /**
      * `act.db.seq_gen.impl` specifies the implementation of

@@ -27,6 +27,7 @@ import org.osgl.logging.Logger;
 import org.osgl.mvc.MvcConfig;
 import org.osgl.util.*;
 
+import javax.inject.Provider;
 import javax.validation.MessageInterpolator;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -573,27 +574,57 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         }
     }
 
-    private String cookieDomain;
+    private Provider<String> cookieDomainProvider;
 
-    protected T cookieDomain(String domain) {
-        this.cookieDomain = domain;
+    protected T cookieDomain(final String domain) {
+        this.cookieDomainProvider = new Provider<String>() {
+            @Override
+            public String get() {
+                return domain;
+            }
+        };
+        return me();
+    }
+
+    protected T cookieDomainProvider(Provider<String> provider) {
+        this.cookieDomainProvider = $.notNull(provider);
         return me();
     }
 
     public String cookieDomain() {
-        if (null == cookieDomain) {
-            String s = get(COOKIE_DOMAIN);
+        return cookieDomainProvider().get();
+    }
+
+    public Provider<String> cookieDomainProvider() {
+        if (null == cookieDomainProvider) {
+            String s = get(COOKIE_DOMAIN_PROVIDER);
             if (null == s) {
-                s = host();
+                cookieDomainProvider = new Provider<String>() {
+                    @Override
+                    public String get() {
+                        return host();
+                    }
+                };
+            } else {
+                if (S.eq("dynamic", s) || S.eq("flexible", s) || S.eq("contextual", s)) {
+                    cookieDomainProvider = new Provider<String>() {
+                        @Override
+                        public String get() {
+                            H.Request req = ActionContext.current().req();
+                            return req.domain();
+                        }
+                    };
+                } else {
+                    cookieDomainProvider = Act.app().getInstance(s);
+                }
             }
-            cookieDomain = s;
         }
-        return cookieDomain;
+        return cookieDomainProvider;
     }
 
     private void _mergeCookieDomain(AppConfig config) {
-        if (null == get(COOKIE_DOMAIN)) {
-            cookieDomain = config.cookieDomain;
+        if (null == get(COOKIE_DOMAIN_PROVIDER)) {
+            cookieDomainProvider = config.cookieDomainProvider;
         }
     }
 
