@@ -43,7 +43,9 @@ public abstract class View implements Plugin {
         sb.append(path);
 
         Template template = loadTemplate(sb.toString(), context);
-        context.cacheTemplate(template);
+        if (null != template) {
+            context.cacheTemplate(template);
+        }
         return template;
     }
 
