@@ -109,7 +109,7 @@ public class ViewManager extends DestroyableBase {
         return viewList.findFirst(new $.Predicate<View>() {
             @Override
             public boolean test(View view) {
-                return view.name().toUpperCase().equals(name);
+                return view.name().toUpperCase().equals(name.toUpperCase());
             }
         });
     }

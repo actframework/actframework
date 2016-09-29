@@ -13,4 +13,30 @@ public interface SourceInfo {
     Integer lineNumber();
 
     boolean isSourceAvailable();
+
+    public static abstract class Base implements SourceInfo {
+        protected String fileName;
+        protected List<String> lines;
+        protected int lineNumber;
+
+        @Override
+        public String fileName() {
+            return fileName;
+        }
+
+        @Override
+        public List<String> lines() {
+            return lines;
+        }
+
+        @Override
+        public Integer lineNumber() {
+            return lineNumber;
+        }
+
+        @Override
+        public boolean isSourceAvailable() {
+            return true;
+        }
+    }
 }

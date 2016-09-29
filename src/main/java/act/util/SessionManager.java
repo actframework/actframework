@@ -190,8 +190,6 @@ public class SessionManager extends DestroyableBase {
         }
 
         H.Flash resolveFlash(ActionContext context) {
-            H.Request req = context.req();
-
             H.Flash flash = new H.Flash();
             String val = sessionMapper.deserializeFlash(context);
             if (null != val) {

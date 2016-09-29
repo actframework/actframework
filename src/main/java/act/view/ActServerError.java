@@ -14,7 +14,6 @@ import org.osgl.mvc.result.Result;
 import org.osgl.mvc.result.ServerError;
 import org.osgl.util.C;
 import org.osgl.util.E;
-import org.rythmengine.exception.RythmException;
 
 import javax.validation.ValidationException;
 import java.util.List;
@@ -44,7 +43,7 @@ public class ActServerError extends ServerError implements ActError {
 
     @Override
     public int statusCode() {
-        Throwable cause = getCause();
+        Throwable cause = super.getCause();
         int statusCode = userDefinedStatusCode(cause.getClass());
         return -1 == statusCode ? super.statusCode() : statusCode;
     }
@@ -132,8 +131,8 @@ public class ActServerError extends ServerError implements ActError {
     public static Result of(Throwable t) {
         if (t instanceof Result) {
             return (Result) t;
-        } else if (t instanceof RythmException) {
-            return new RythmError((RythmException) t);
+        } else if (t instanceof org.rythmengine.exception.RythmException) {
+            return new RythmException((org.rythmengine.exception.RythmException) t);
         } else {
             $.Function<Throwable, Result> transformer = transformerOf(t);
             return null == transformer ? new ActServerError(t) : transformer.apply(t);
@@ -158,8 +157,8 @@ public class ActServerError extends ServerError implements ActError {
         return new ActServerError(e);
     }
 
-    public static ActServerError of(RythmException e) {
-        return new RythmError(e);
+    public static ActServerError of(org.rythmengine.exception.RythmException e) {
+        return new RythmException(e);
     }
 
     public static Result of(int statusCode) {
