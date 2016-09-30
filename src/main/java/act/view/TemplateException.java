@@ -1,12 +1,17 @@
 package act.view;
 
 import act.app.SourceInfo;
+import org.osgl.util.S;
+
+import java.util.List;
 
 /**
  * Base class for Template error
  */
 public abstract class TemplateException extends ActServerError {
     protected SourceInfo templateInfo;
+
+    private String errorSpotTraceLine = null;
 
     public TemplateException(Exception t) {
         super(t);
@@ -19,6 +24,14 @@ public abstract class TemplateException extends ActServerError {
     public abstract String errorMessage();
 
     @Override
+    public boolean isErrorSpot(String traceLine, String nextTraceLine) {
+        if (null == errorSpotTraceLine) {
+            errorSpotTraceLine = findErrorSpotTraceLine(stackTrace());
+        }
+        return S.eq(traceLine, errorSpotTraceLine);
+    }
+
+    @Override
     public synchronized Throwable getCause() {
         Throwable t0 = super.getCause();
         Throwable t = t0.getCause();
@@ -28,5 +41,21 @@ public abstract class TemplateException extends ActServerError {
     public Throwable getDirectCause() {
         return super.getCause();
     }
+
+    protected String findErrorSpotTraceLine(List<String> stackTrace) {
+        String spotLine = null, lastLine = null;
+        for (String line: stackTrace) {
+            if (line.contains("sun.reflect.NativeMethodAccessorImpl.invoke0")) {
+                spotLine = lastLine;
+            }
+            if (isTemplateEngineInvokeLine(line)) {
+                return spotLine;
+            }
+            lastLine = line;
+        }
+        return null;
+    }
+
+    protected abstract boolean isTemplateEngineInvokeLine(String line);
 
 }

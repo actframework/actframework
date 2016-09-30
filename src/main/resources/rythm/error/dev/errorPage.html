@@ -138,8 +138,10 @@ List<String> stackTrace = actError.stackTrace();
         if (!traceErrorSet) {
           if (null != sourceInfo && trace.contains(sourceInfo.fileName() + ":" + sourceInfo.lineNumber())) {
             cls = "error";
+            traceErrorSet = true;
           } else if (actError.isErrorSpot(trace, nextTrace)) {
             cls = "error";
+            traceErrorSet = true;
           }
         }
         if (trace.contains("Caused by")) {

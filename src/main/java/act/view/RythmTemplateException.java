@@ -2,6 +2,7 @@ package act.view;
 
 import act.app.SourceInfo;
 import org.osgl.util.C;
+import org.osgl.util.E;
 
 import java.util.List;
 
@@ -41,6 +42,11 @@ public class RythmTemplateException extends TemplateException {
         at org.rythmengine.template.TemplateBase.__internalRender(TemplateBase.java:771)
          */
         return nextTraceLine.contains("__R_T_C__.build");
+    }
+
+    @Override
+    protected boolean isTemplateEngineInvokeLine(String line) {
+        throw E.unsupport();
     }
 
     @Override

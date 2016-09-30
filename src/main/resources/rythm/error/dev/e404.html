@@ -90,8 +90,8 @@
     if (_error instanceof act.util.ActError) {
     act.util.ActError actError = (act.util.ActError)_error;
       sourceInfo = actError.sourceInfo();
-      if (_error instanceof act.view.RythmError) {
-      templateSourceInfo = ((act.view.RythmError) actError).templateSourceInfo();
+      if (_error instanceof act.view.RythmTemplateException) {
+      templateSourceInfo = ((act.view.RythmTemplateException) actError).templateSourceInfo();
       }
     }
   }
