@@ -1,10 +1,8 @@
 package act.view;
 
-import act.app.SourceInfo;
+import act.app.*;
 import org.osgl.util.C;
 import org.osgl.util.E;
-
-import java.util.List;
 
 public class RythmTemplateException extends TemplateException {
 
@@ -52,8 +50,31 @@ public class RythmTemplateException extends TemplateException {
     @Override
     protected void populateSourceInfo(Throwable t) {
         org.rythmengine.exception.RythmException re = (org.rythmengine.exception.RythmException) t;
-        sourceInfo = new RythmSourceInfo(re, true);
-        templateInfo = new RythmSourceInfo(re, false);
+        sourceInfo = sourceInfo(re, true);
+        templateInfo = sourceInfo(re, false);
+    }
+
+    private static SourceInfo sourceInfo(org.rythmengine.exception.RythmException e, boolean javaSource) {
+        if (javaSource) {
+            Throwable t = e.getCause();
+            if (null != t && e.getClass().equals(org.rythmengine.exception.RythmException.class)) {
+                DevModeClassLoader cl = (DevModeClassLoader) App.instance().classLoader();
+                for (StackTraceElement stackTraceElement : t.getStackTrace()) {
+                    int line = stackTraceElement.getLineNumber();
+                    if (line <= 0) {
+                        continue;
+                    }
+                    Source source = cl.source(stackTraceElement.getClassName());
+                    if (null == source) {
+                        continue;
+                    }
+                    return new SourceInfoImpl(source, line);
+                }
+            }
+            return new RythmSourceInfo(e, true);
+        } else {
+            return new RythmSourceInfo(e, false);
+        }
     }
 
     private static class RythmSourceInfo extends SourceInfo.Base {
