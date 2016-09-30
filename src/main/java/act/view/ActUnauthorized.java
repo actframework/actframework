@@ -57,6 +57,11 @@ public class ActUnauthorized extends Unauthorized implements ActError {
         return Util.stackTraceOf(cause, root);
     }
 
+    @Override
+    public boolean isErrorSpot(String traceLine, String nextTraceLine) {
+        return false;
+    }
+
     public static Unauthorized create() {
         return Act.isDev() ? new ActUnauthorized() : Unauthorized.INSTANCE;
     }

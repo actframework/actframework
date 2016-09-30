@@ -102,7 +102,9 @@ List<String> stackTrace = actError.stackTrace();
     @if(templateSourceInfo) {
     <div id="tab-template" class="code tab active" onclick="showTemplate()">Template code</div>
     }
+    @if(stackTrace) {
     <div id="tab-stacktrace" class="stacktrace tab @ifNot(templateSourceInfo) {active}" onclick="showStacktrace()">Stack Trace</div>
+    }
     @if(sourceInfo) {
     <div id="tab-source" class="code tab" onclick="showSource()">Source code</div>
     }
@@ -121,23 +123,33 @@ List<String> stackTrace = actError.stackTrace();
     }
   </div>
   }
+  @if(stackTrace) {
   <div id="stacktrace" class="detail @ifNot(templateSourceInfo) {active}">
     <div class="exception">@actError.getCauseOrThis().toString()</div>
-    @for(String trace: stackTrace) {
-    @{
-    String cls = "";
-    if (null != sourceInfo && trace.contains(sourceInfo.fileName() + ":" + sourceInfo.lineNumber())) {
-    cls = "error";
-    }
-    if (trace.contains("Caused by")) {
-    cls = cls + " big-line";
-    }
-    }
-    <div class="trace-line line @cls">@trace</div>
-    } else {
-    <div>No stack trace info</div>
+    @{boolean traceErrorSet = false;}
+    @for(int i = 0; i < stackTrace.size(); ++i) {
+      @{
+        String trace = stackTrace.get(i);
+        String nextTrace = "";
+        if (i < stackTrace.size() - 1) {
+          nextTrace = stackTrace.get(i + 1);
+        }
+        String cls = "";
+        if (!traceErrorSet) {
+          if (null != sourceInfo && trace.contains(sourceInfo.fileName() + ":" + sourceInfo.lineNumber())) {
+            cls = "error";
+          } else if (actError.isErrorSpot(trace, nextTrace)) {
+            cls = "error";
+          }
+        }
+        if (trace.contains("Caused by")) {
+          cls = cls + " big-line";
+        }
+      }
+      <div class="trace-line line @cls">@trace</div>
     }
   </div>
+  }
 
   @returnIf(null == sourceInfo && null == templateSourceInfo)
 
@@ -158,42 +170,55 @@ List<String> stackTrace = actError.stackTrace();
 
   <script>
     function showSource() {
-    @if(templateSourceInfo) {
-      document.getElementById("template").className = "detail source-info";
-      document.getElementById("tab-template").className = "tab";
-    }
-      document.getElementById("stacktrace").className = "detail";
-      document.getElementById("tab-stacktrace").className = "tab";
+      @if (templateSourceInfo) {
+        document.getElementById("template").className = "detail source-info";
+        document.getElementById("tab-template").className = "tab";
+      }
 
-      document.getElementById("source").className = "detail source-info active";
-      document.getElementById("tab-source").className = "tab active";
-      var e = new Event('show-source');
-      window.dispatchEvent(e);
+      @if (stackTrace) {
+        document.getElementById("stacktrace").className = "detail";
+        document.getElementById("tab-stacktrace").className = "tab";
+      }
+
+      @if (sourceInfo) {
+        document.getElementById("source").className = "detail source-info active";
+        document.getElementById("tab-source").className = "tab active";
+        var e = new Event('show-source');
+        window.dispatchEvent(e);
+      }
     }
     function showTemplate() {
-    @if(templateSourceInfo) {
-      document.getElementById("template").className = "detail source-info active";
-      document.getElementById("tab-template").className = "tab active";
-    }
-      document.getElementById("stacktrace").className = "detail";
-      document.getElementById("tab-stacktrace").className = "tab";
+      @if(templateSourceInfo) {
+        document.getElementById("template").className = "detail source-info active";
+        document.getElementById("tab-template").className = "tab active";
+      }
+      @if (stackTrace) {
+        document.getElementById("stacktrace").className = "detail";
+        document.getElementById("tab-stacktrace").className = "tab";
+      }
 
-      document.getElementById("source").className = "detail source-info";
-      document.getElementById("tab-source").className = "tab";
+      @if (sourceInfo) {
+        document.getElementById("source").className = "detail source-info";
+        document.getElementById("tab-source").className = "tab";
+      }
       var e = new Event('show-template-source');
       window.dispatchEvent(e);
     }
     function showStacktrace() {
-    @if(templateSourceInfo) {
-      document.getElementById("template").className = "detail source-info";
-      document.getElementById("tab-template").className = "tab";
-    }
+      @if(templateSourceInfo) {
+        document.getElementById("template").className = "detail source-info";
+        document.getElementById("tab-template").className = "tab";
+      }
 
-      document.getElementById("stacktrace").className = "detail active";
-      document.getElementById("tab-stacktrace").className = "tab active";
+      @if (stackTrace) {
+        document.getElementById("stacktrace").className = "detail active";
+        document.getElementById("tab-stacktrace").className = "tab active";
+      }
 
-      document.getElementById("source").className = "detail source-info";
-      document.getElementById("tab-source").className = "tab";
+      @if (sourceInfo) {
+        document.getElementById("source").className = "detail source-info";
+        document.getElementById("tab-source").className = "tab";
+      }
     }
     @if (templateSourceInfo) {
       var templateSourceLoaded = false;

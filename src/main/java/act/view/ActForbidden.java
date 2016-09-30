@@ -66,6 +66,11 @@ public class ActForbidden extends Forbidden implements ActError {
         return Util.stackTraceOf(cause, root);
     }
 
+    @Override
+    public boolean isErrorSpot(String traceLine, String nextTraceLine) {
+        return false;
+    }
+
     public static Forbidden create() {
         return Act.isDev() ? new ActForbidden() : Forbidden.INSTANCE;
     }

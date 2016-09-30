@@ -66,6 +66,11 @@ public class ActNotImplemented extends NotImplemented implements ActError {
         return Util.stackTraceOf(cause, root);
     }
 
+    @Override
+    public boolean isErrorSpot(String traceLine, String nextTraceLine) {
+        return false;
+    }
+
     public static NotImplemented create() {
         return Act.isDev() ? new ActNotImplemented() : NotImplemented.INSTANCE;
     }

@@ -33,8 +33,13 @@ public class ActServerError extends ServerError implements ActError {
 
     @Override
     public Throwable getCauseOrThis() {
-        Throwable cause = super.getCause();
-        return null == cause ? this : cause;
+        Throwable t0 = this;
+        Throwable t = t0.getCause();
+        while (null != t) {
+            t0 = t;
+            t = t.getCause();
+        }
+        return t0;
     }
 
     public SourceInfo sourceInfo() {
@@ -50,7 +55,7 @@ public class ActServerError extends ServerError implements ActError {
 
     public List<String> stackTrace() {
         List<String> l = C.newList();
-        Throwable t = getCause();
+        Throwable t = getCauseOrThis();
         while (null != t) {
             StackTraceElement[] a = t.getStackTrace();
             for (StackTraceElement e : a) {
@@ -62,6 +67,11 @@ public class ActServerError extends ServerError implements ActError {
             }
         }
         return l;
+    }
+
+    @Override
+    public boolean isErrorSpot(String traceLine, String nextTraceLine) {
+        return false;
     }
 
     protected void populateSourceInfo(Throwable t) {
@@ -132,7 +142,7 @@ public class ActServerError extends ServerError implements ActError {
         if (t instanceof Result) {
             return (Result) t;
         } else if (t instanceof org.rythmengine.exception.RythmException) {
-            return new RythmException((org.rythmengine.exception.RythmException) t);
+            return new RythmTemplateException((org.rythmengine.exception.RythmException) t);
         } else {
             $.Function<Throwable, Result> transformer = transformerOf(t);
             return null == transformer ? new ActServerError(t) : transformer.apply(t);
@@ -158,7 +168,7 @@ public class ActServerError extends ServerError implements ActError {
     }
 
     public static ActServerError of(org.rythmengine.exception.RythmException e) {
-        return new RythmException(e);
+        return new RythmTemplateException(e);
     }
 
     public static Result of(int statusCode) {

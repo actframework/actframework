@@ -65,6 +65,10 @@ public class ActNotFound extends NotFound implements ActError {
         return Util.stackTraceOf(cause, root);
     }
 
+    @Override
+    public boolean isErrorSpot(String traceLine, String nextTraceLine) {
+        return false;
+    }
 
     public static NotFound create() {
         return Act.isDev() ? new ActNotFound() : NotFound.INSTANCE;

@@ -66,6 +66,11 @@ public class ActMethodNotAllowed extends MethodNotAllowed implements ActError {
         return Util.stackTraceOf(cause, root);
     }
 
+    @Override
+    public boolean isErrorSpot(String traceLine, String nextTraceLine) {
+        return false;
+    }
+
     public static MethodNotAllowed create() {
         return Act.isDev() ? new ActMethodNotAllowed() : MethodNotAllowed.INSTANCE;
     }

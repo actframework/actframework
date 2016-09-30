@@ -66,6 +66,11 @@ public class ActBadRequest extends BadRequest implements ActError {
         return Util.stackTraceOf(cause, root);
     }
 
+    @Override
+    public boolean isErrorSpot(String traceLine, String nextTraceLine) {
+        return false;
+    }
+
     public static BadRequest create() {
         return Act.isDev() ? new ActBadRequest() : BadRequest.INSTANCE;
     }

@@ -65,6 +65,11 @@ public class ActConflict extends Conflict implements ActError {
         return Util.stackTraceOf(cause, root);
     }
 
+    @Override
+    public boolean isErrorSpot(String traceLine, String nextTraceLine) {
+        return false;
+    }
+
     public static Conflict create() {
         return Act.isDev() ? new ActConflict() : Conflict.INSTANCE;
     }

@@ -10,6 +10,7 @@ public interface ActError {
     Throwable getCauseOrThis();
     SourceInfo sourceInfo();
     List<String> stackTrace();
+    boolean isErrorSpot(String traceLine, String nextTraceLine);
 
     class Util {
         public static List<String> stackTraceOf(Throwable t, ActError root) {
