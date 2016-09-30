@@ -25,4 +25,8 @@ public abstract class TemplateException extends ActServerError {
         return null == t ? t0 : t;
     }
 
+    public Throwable getDirectCause() {
+        return super.getCause();
+    }
+
 }
