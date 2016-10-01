@@ -31,11 +31,13 @@ import static org.rythmengine.conf.RythmConfigurationKey.*;
 @ActComponent
 public class RythmView extends View {
 
+    public static final String ID = "rythm";
+
     ConcurrentMap<App, RythmEngine> engines = new ConcurrentHashMap<App, RythmEngine>();
 
     @Override
     public String name() {
-        return "rythm";
+        return ID;
     }
 
     @Override

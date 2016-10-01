@@ -171,9 +171,6 @@ List<String> stackTrace = actError.stackTrace();
 
 
   <script>
-    Element.prototype.documentOffsetTop = function () {
-      return this.offsetTop + ( this.offsetParent ? this.offsetParent.documentOffsetTop() : 0 );
-    };
     function showSource() {
       @if (templateSourceInfo) {
         document.getElementById("template").className = "detail source-info";
@@ -230,13 +227,14 @@ List<String> stackTrace = actError.stackTrace();
       $('body').on('click', '.line.error', function() {
         $.getJSON('http://localhost:8091?message=@(templateSourceInfo.fileName()):@(templateSourceInfo.lineNumber())')
       });
-      var windowHeight = $(window).height(), maxDetailHeight = windowHeight - 180;
+      var windowHeight = $(window).height(), maxDetailHeight = windowHeight - 280;
       $('.detail').css({maxHeight: maxDetailHeight + 'px'});
       window.addEventListener('show-template-source', function() {
         if (templateSourceLoaded) return;
         templateSourceLoaded = true;
-        var top = document.getElementsByClassName('template-line line error nohighlight').documentOffsetTop() - (window.innerHeight / 2 );
-        window.scrollTo(0, top);
+        var element = document.getElementsByClassName('template-line line error nohighlight')[0];
+        element.scrollIntoView();
+        element.parentElement.scrollTop -= 100;
       }, false);
       $(document).ready(function() {
         $('.line-code').each(function(i, block) {
@@ -249,13 +247,14 @@ List<String> stackTrace = actError.stackTrace();
       $('body').on('click', '.line.error', function() {
         $.getJSON('http://localhost:8091?message=@(sourceInfo.fileName()):@(sourceInfo.lineNumber())')
       });
-      var windowHeight = $(window).height(), maxDetailHeight = windowHeight - 180;
+      var windowHeight = $(window).height(), maxDetailHeight = windowHeight - 280;
       $('.detail').css({maxHeight: maxDetailHeight + 'px'});
       window.addEventListener('show-source', function() {
         if (sourceLoaded) return;
         sourceLoaded = true;
-        var top = document.getElementsByClassName('source-line line error nohighlight').documentOffsetTop() - (window.innerHeight / 2 );
-        window.scrollTo(0, top);
+        var element = document.getElementsByClassName('source-line line error nohighlight')[0];
+        element.scrollIntoView();
+        element.parentElement.scrollTop -= 100;
       }, false);
       $(document).ready(function() {
         $('.line-code').each(function(i, block) {

@@ -1,5 +1,6 @@
 package act.view;
 
+import act.app.ActionContext;
 import act.util.ActContext;
 import org.osgl.$;
 import org.osgl.http.H;
@@ -23,9 +24,22 @@ public class TemplatePathResolver extends $.Transformer<ActContext, String> {
     }
 
     /**
-     * Sub class shall use this method to implement template path resolving logic
+     * Sub class shall use this method to implement template path resolving logic.
+     *
+     * The default implementation will append the template file suffix based on the
+     * {@link ActionContext#accept() accepted format}. E.g. if accepted format is
+     * `text/html`, then it will append `.html` to the path specified if suffix
+     * is not presented in the path
+     *
+     * @param path the template path string
+     * @param context the act context
+     * @return the template path amended by the logic described above
      */
     protected String resolveTemplatePath(String path, ActContext context) {
+        return amendSuffix(path, context);
+    }
+
+    protected String amendSuffix(String path, ActContext context) {
         if (path.contains(".")) {
             return path;
         }
