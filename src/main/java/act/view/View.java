@@ -3,14 +3,17 @@ package act.view;
 import act.Act;
 import act.app.App;
 import act.conf.AppConfig;
+import act.plugin.AppServicePlugin;
 import act.plugin.Plugin;
 import act.util.ActContext;
 import org.osgl.util.S;
 
+import java.io.File;
+
 /**
  * The base class that different View solution should extends
  */
-public abstract class View implements Plugin {
+public abstract class View extends AppServicePlugin {
 
     /**
      * Returns the View solution's name. Recommended name should
@@ -20,9 +23,9 @@ public abstract class View implements Plugin {
     public abstract String name();
 
     @Override
-    public void register() {
+    protected void applyTo(App app) {
         Act.viewManager().register(this);
-        init();
+        init(app);
     }
 
     public Template load(ActContext context) {
@@ -61,8 +64,23 @@ public abstract class View implements Plugin {
     /**
      * Sub class could use this method initialize the implementation
      */
-    protected void init() {
+    protected void init(App app) {
     }
 
-    protected void reload(App app) {}
+    protected void reload(App app) {
+        init(app);
+    }
+
+    protected final String templateHome() {
+        String templateHome = Act.appConfig().templateHome();
+        if (S.blank(templateHome) || "default".equals(templateHome)) {
+            templateHome = "/" + name();
+        }
+        return templateHome;
+    }
+
+    protected final File templateRootDir() {
+        App app = Act.app();
+        return new File(app.layout().resource(app.base()), templateHome());
+    }
 }

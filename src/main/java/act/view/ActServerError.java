@@ -25,6 +25,7 @@ public class ActServerError extends ServerError implements ActError {
 
     protected ActServerError(Throwable t) {
         super($.notNull(t));
+        init();
         if (Act.isDev()) {
             populateSourceInfo(t);
         }
@@ -73,6 +74,8 @@ public class ActServerError extends ServerError implements ActError {
     public boolean isErrorSpot(String traceLine, String nextTraceLine) {
         return false;
     }
+
+    protected void init() {}
 
     protected void populateSourceInfo(Throwable t) {
         if (t instanceof SourceInfo) {

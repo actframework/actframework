@@ -9,7 +9,6 @@ import act.view.Template;
 import act.view.VarDef;
 import act.view.View;
 import org.osgl.util.C;
-import org.osgl.util.S;
 import org.rythmengine.Rythm;
 import org.rythmengine.RythmEngine;
 import org.rythmengine.extension.ISourceCodeEnhancer;
@@ -80,12 +79,7 @@ public class RythmView extends View {
         appRestricted += ";act.*";
         p.put(SANDBOX_RESTRICTED_CLASS.getKey(), appRestricted);
 
-        String templateHome = config.templateHome();
-        if (S.blank(templateHome) || "default".equals(templateHome)) {
-            templateHome = "/" + name();
-        }
-
-        p.put(HOME_TEMPLATE.getKey(), new File(app.layout().resource(app.base()), templateHome));
+        p.put(HOME_TEMPLATE.getKey(), templateRootDir());
 
         p.put(CODEGEN_SOURCE_CODE_ENHANCER.getKey(), new ISourceCodeEnhancer() {
             @Override
