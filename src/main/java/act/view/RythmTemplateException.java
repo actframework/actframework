@@ -58,17 +58,9 @@ public class RythmTemplateException extends TemplateException {
         if (javaSource) {
             Throwable t = e.getCause();
             if (null != t && e.getClass().equals(org.rythmengine.exception.RythmException.class)) {
-                DevModeClassLoader cl = (DevModeClassLoader) App.instance().classLoader();
-                for (StackTraceElement stackTraceElement : t.getStackTrace()) {
-                    int line = stackTraceElement.getLineNumber();
-                    if (line <= 0) {
-                        continue;
-                    }
-                    Source source = cl.source(stackTraceElement.getClassName());
-                    if (null == source) {
-                        continue;
-                    }
-                    return new SourceInfoImpl(source, line);
+                SourceInfo javaSourceInfo = getJavaSourceInfo(t);
+                if (null != javaSourceInfo) {
+                    return javaSourceInfo;
                 }
             }
             return new RythmSourceInfo(e, true);

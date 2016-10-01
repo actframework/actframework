@@ -171,6 +171,9 @@ List<String> stackTrace = actError.stackTrace();
 
 
   <script>
+    Element.prototype.documentOffsetTop = function () {
+      return this.offsetTop + ( this.offsetParent ? this.offsetParent.documentOffsetTop() : 0 );
+    };
     function showSource() {
       @if (templateSourceInfo) {
         document.getElementById("template").className = "detail source-info";
@@ -232,7 +235,8 @@ List<String> stackTrace = actError.stackTrace();
       window.addEventListener('show-template-source', function() {
         if (templateSourceLoaded) return;
         templateSourceLoaded = true;
-        document.getElementsByClassName('template-line line error nohighlight')[0].scrollIntoView();
+        var top = document.getElementsByClassName('template-line line error nohighlight').documentOffsetTop() - (window.innerHeight / 2 );
+        window.scrollTo(0, top);
       }, false);
       $(document).ready(function() {
         $('.line-code').each(function(i, block) {
@@ -250,7 +254,8 @@ List<String> stackTrace = actError.stackTrace();
       window.addEventListener('show-source', function() {
         if (sourceLoaded) return;
         sourceLoaded = true;
-        document.getElementsByClassName('source-line line error nohighlight')[0].scrollIntoView();
+        var top = document.getElementsByClassName('source-line line error nohighlight').documentOffsetTop() - (window.innerHeight / 2 );
+        window.scrollTo(0, top);
       }, false);
       $(document).ready(function() {
         $('.line-code').each(function(i, block) {
