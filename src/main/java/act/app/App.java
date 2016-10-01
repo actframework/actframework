@@ -149,6 +149,18 @@ public class App extends DestroyableBase {
         return profile;
     }
 
+    public Act.Mode mode() {
+        return Act.mode();
+    }
+
+    public boolean isDev() {
+        return mode().isDev();
+    }
+
+    public boolean isProd() {
+        return mode().isProd();
+    }
+
     public AppConfig config() {
         return config;
     }
