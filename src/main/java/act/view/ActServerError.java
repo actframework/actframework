@@ -193,6 +193,9 @@ public class ActServerError extends ServerError implements ActError {
     }
 
     public static Throwable rootCauseOf(Throwable t) {
+        if (null == t) {
+            return null;
+        }
         Throwable cause;
         for (;;) {
             cause = t.getCause();

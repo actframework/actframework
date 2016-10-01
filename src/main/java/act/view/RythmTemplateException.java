@@ -1,8 +1,9 @@
 package act.view;
 
-import act.app.*;
+import act.app.SourceInfo;
 import org.osgl.util.C;
 import org.osgl.util.E;
+import org.rythmengine.exception.RythmException;
 
 public class RythmTemplateException extends TemplateException {
 
@@ -10,18 +11,13 @@ public class RythmTemplateException extends TemplateException {
         super(t);
     }
 
-    public org.rythmengine.exception.RythmException rythmException() {
-        return (org.rythmengine.exception.RythmException) getCause();
-    }
-
     @Override
     public String errorMessage() {
-        Throwable t = super.getCause();
-        if (t instanceof org.rythmengine.exception.RythmException) {
-            return ((org.rythmengine.exception.RythmException) t).errorDesc();
-        } else {
-            return t.getMessage();
+        Throwable t = rootCauseOf(this);
+        if (t instanceof RythmException) {
+            return ((RythmException) t).errorDesc();
         }
+        return t.toString();
     }
 
     @Override
