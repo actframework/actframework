@@ -8,9 +8,12 @@ import org.osgl.$;
 import org.osgl.exception.UnexpectedException;
 import org.osgl.util.C;
 import org.osgl.util.E;
+import org.osgl.util.S;
 
 import javax.enterprise.context.ApplicationScoped;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static act.Destroyable.Util.tryDestroyAll;
 
@@ -22,6 +25,7 @@ public class ViewManager extends DestroyableBase {
     private C.List<View> viewList = C.newList();
     private C.List<ActionViewVarDef> implicitActionViewVariables = C.newList();
     private C.List<MailerViewVarDef> implicitMailerViewVariables = C.newList();
+    private Map<String, View> preferredViews = new HashMap<String, View>();
 
     void register(View view) {
         E.NPE(view);
@@ -62,23 +66,55 @@ public class ViewManager extends DestroyableBase {
 
     public Template load(ActContext context) {
         AppConfig config = context.config();
+        Template cached = context.cachedTemplate();
+        if (null != cached) {
+            return cached;
+        }
+
+        TemplatePathResolver resolver = config.templatePathResolver();
+        String path = resolver.resolve(context);
+
+        StringBuilder sb = S.builder();
+        if (!path.startsWith("/")) {
+            sb.append("/");
+        }
+        sb.append(path);
+        String templatePath = sb.toString();
+
+        Template template = null;
+
+        View preferred = preferredViews.get(templatePath);
+        if (null != preferred) {
+            template = preferred.loadTemplate(templatePath, context);
+            if (null != template) {
+                context.cacheTemplate(template);
+                return template;
+            }
+        }
+
         View defView = config.defaultView();
-        Template template;
+
         if (null != defView) {
-            template = defView.load(context);
-            if (null != template) {
-                return template;
-            }
+            template = defView.loadTemplate(templatePath, context);
         }
-        for (View view : viewList) {
-            if (view == defView) continue;
-            template = view.load(context);
-            if (null != template) {
-                return template;
+        if (null == template) {
+            for (View view : viewList) {
+                if (view == defView) continue;
+                template = view.loadTemplate(templatePath, context);
+                if (null != template) {
+                    preferredViews.put(templatePath, view);
+                    break;
+                }
             }
+        } else {
+            preferredViews.put(templatePath, defView);
         }
-        return null;
+        if (null != template) {
+            context.cacheTemplate(template);
+        }
+        return template;
     }
+
 
     public List<ActionViewVarDef> implicitActionViewVariables() {
         return C.list(implicitActionViewVariables);
@@ -98,6 +134,9 @@ public class ViewManager extends DestroyableBase {
 
         implicitMailerViewVariables.clear();
         implicitMailerViewVariables = null;
+
+        preferredViews.clear();
+        preferredViews = null;
     }
 
     private boolean registered(View view) {

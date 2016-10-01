@@ -5,6 +5,7 @@ import act.app.App;
 import act.app.event.AppEventId;
 import act.conf.AppConfig;
 import act.plugin.AppServicePlugin;
+import act.plugin.Plugin;
 import act.util.ActContext;
 import org.osgl.util.S;
 
@@ -31,30 +32,6 @@ public abstract class View extends AppServicePlugin {
                 init(app);
             }
         });
-    }
-
-    public Template load(ActContext context) {
-        Template cached = context.cachedTemplate();
-        if (null != cached) {
-            return cached;
-        }
-
-        AppConfig config = context.config();
-
-        TemplatePathResolver resolver = config.templatePathResolver();
-        String path = resolver.resolve(context);
-
-        StringBuilder sb = S.builder();
-        if (!path.startsWith("/")) {
-            sb.append("/");
-        }
-        sb.append(path);
-
-        Template template = loadTemplate(sb.toString(), context);
-        if (null != template) {
-            context.cacheTemplate(template);
-        }
-        return template;
     }
 
     /**
