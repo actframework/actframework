@@ -34,13 +34,7 @@ public class ActServerError extends ServerError implements ActError {
 
     @Override
     public Throwable getCauseOrThis() {
-        Throwable t0 = this;
-        Throwable t = t0.getCause();
-        while (null != t) {
-            t0 = t;
-            t = t.getCause();
-        }
-        return t0;
+        return rootCauseOf(this);
     }
 
     public SourceInfo sourceInfo() {
@@ -196,6 +190,19 @@ public class ActServerError extends ServerError implements ActError {
             default:
                 return new ErrorResult(H.Status.of(statusCode));
         }
+    }
+
+    public static Throwable rootCauseOf(Throwable t) {
+        Throwable cause;
+        for (;;) {
+            cause = t.getCause();
+            if (null != cause) {
+                t = cause;
+            } else {
+                break;
+            }
+        }
+        return t;
     }
 
 }
