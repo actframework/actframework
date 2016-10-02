@@ -26,6 +26,7 @@ public class ViewManager extends DestroyableBase {
     private C.List<ActionViewVarDef> implicitActionViewVariables = C.newList();
     private C.List<MailerViewVarDef> implicitMailerViewVariables = C.newList();
     private Map<String, View> preferredViews = new HashMap<String, View>();
+    private boolean multiViews = false;
 
     void register(View view) {
         E.NPE(view);
@@ -51,6 +52,11 @@ public class ViewManager extends DestroyableBase {
             }
             implicitMailerViewVariables.add(var);
         }
+    }
+
+    public void onAppStart() {
+        int viewCount = viewList.size();
+        multiViews = viewCount > 1;
     }
 
     public void reload(App app) {
@@ -83,12 +89,14 @@ public class ViewManager extends DestroyableBase {
 
         Template template = null;
 
-        View preferred = preferredViews.get(templatePath);
-        if (null != preferred) {
-            template = preferred.loadTemplate(templatePath, context);
-            if (null != template) {
-                context.cacheTemplate(template);
-                return template;
+        if (multiViews) {
+            View preferred = preferredViews.get(templatePath);
+            if (null != preferred) {
+                template = preferred.loadTemplate(templatePath, context);
+                if (null != template) {
+                    context.cacheTemplate(template);
+                    return template;
+                }
             }
         }
 
@@ -97,16 +105,18 @@ public class ViewManager extends DestroyableBase {
         if (null != defView) {
             template = defView.loadTemplate(templatePath, context);
         }
-        if (null == template) {
+        if (null == template && multiViews) {
             for (View view : viewList) {
                 if (view == defView) continue;
                 template = view.loadTemplate(templatePath, context);
                 if (null != template) {
-                    preferredViews.put(templatePath, view);
+                    if (multiViews) {
+                        preferredViews.put(templatePath, view);
+                    }
                     break;
                 }
             }
-        } else {
+        } else if (multiViews) {
             preferredViews.put(templatePath, defView);
         }
         if (null != template) {

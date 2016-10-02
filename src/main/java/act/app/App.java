@@ -370,6 +370,8 @@ public class App extends DestroyableBase {
         // - Thread.currentThread().setContextClassLoader(classLoader());
 
         initHttpConfig();
+        Act.viewManager().onAppStart();
+
         // let's any emit the dependency injector loaded event
         // in case some other service depend on this event.
         // If any DI plugin e.g. guice has emitted this event
