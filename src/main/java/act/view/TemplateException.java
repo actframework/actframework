@@ -60,6 +60,7 @@ public abstract class TemplateException extends ActServerError {
         if (null == cause) {
             return null;
         }
+        cause = rootCauseOf(cause);
         DevModeClassLoader cl = (DevModeClassLoader) App.instance().classLoader();
         for (StackTraceElement stackTraceElement : cause.getStackTrace()) {
             int line = stackTraceElement.getLineNumber();
