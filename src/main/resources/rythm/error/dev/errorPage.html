@@ -95,7 +95,7 @@ List<String> stackTrace = actError.stackTrace();
   }
 
   @if(templateSourceInfo) {
-  <div class="error-message">@(((act.view.TemplateException) actError).errorMessage().raw())</div>
+  <pre class="error-message">@(((act.view.TemplateException) actError).errorMessage().raw())</pre>
   }
 
   <div class="tabs">
