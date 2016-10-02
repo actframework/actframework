@@ -71,7 +71,7 @@ public abstract class View extends AppServicePlugin {
      * @param template the template path
      * @return the template content in lines
      */
-    protected List<String> loadContent(String template) {
+    public List<String> loadContent(String template) {
         File file = new File(templateRootDir(), template);
         if (file.exists() && file.canRead()) {
             return IO.readLines(file);
