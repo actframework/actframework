@@ -14,6 +14,7 @@ import act.route.Router;
 import act.util.DestroyableBase;
 import act.view.ActServerError;
 import org.osgl.$;
+import org.osgl.Osgl;
 import org.osgl.exception.NotAppliedException;
 import org.osgl.http.H;
 import org.osgl.logging.LogManager;
@@ -33,17 +34,18 @@ public class NetworkHandler extends DestroyableBase implements  $.Func1<ActionCo
     final private App app;
     private NamedPort port;
     private Metric metric;
+    private $.Func2<H.Request, String, String> contentSuffixProcessor;
 
     public NetworkHandler(App app) {
         E.NPE(app);
         this.app = app;
         this.metric = Act.metricPlugin().metric("act.http");
+        this.contentSuffixProcessor = app.config().contentSuffixAware() ? new ContentSuffixSensor() : DUMB_CONTENT_SUFFIX_SENSOR;
     }
 
     public NetworkHandler(App app, NamedPort port) {
         this(app);
         this.port = port;
-        this.metric = Act.metricPlugin().metric("act.http");
     }
 
     public App app() {
@@ -60,18 +62,7 @@ public class NetworkHandler extends DestroyableBase implements  $.Func1<ActionCo
         Timer timer = null;
         try {
             app.checkUpdates(false);
-            if (app.config().contentSuffixAware()) {
-                if (url.endsWith("/json") || url.endsWith(".json")) {
-                    url = url.substring(0, url.length() - 5);
-                    req.accept(H.Format.JSON);
-                } else if (url.endsWith("/xml") || url.endsWith(".xml")) {
-                    url = url.substring(0, url.length() - 4);
-                    req.accept(H.Format.XML);
-                } else if (url.endsWith("/csv") || url.endsWith(".csv")) {
-                    url = url.substring(0, url.length() - 4);
-                    req.accept(H.Format.CSV);
-                }
-            }
+            url = contentSuffixProcessor.apply(req, url);
             timer = metric.startTimer(MetricInfo.ROUTING);
             RequestHandler rh;
             try {
@@ -132,5 +123,59 @@ public class NetworkHandler extends DestroyableBase implements  $.Func1<ActionCo
 
     private Router router() {
         return app.router(port);
+    }
+
+    private static $.Func2<H.Request, String, String> DUMB_CONTENT_SUFFIX_SENSOR = new $.Func2<H.Request, String, String>() {
+        @Override
+        public String apply(H.Request request, String s) throws NotAppliedException, Osgl.Break {
+            return s;
+        }
+    };
+
+    /**
+     * Process URL suffix based on suffix
+     */
+    private static class ContentSuffixSensor implements $.Func2<H.Request, String, String> {
+
+        private static final char[] json = {'j', 's', 'o'};
+        private static final char[] xml = {'x', 'm'};
+        private static final char[] csv = {'c', 's'};
+
+        @Override
+        public String apply(H.Request req, String url) throws NotAppliedException, Osgl.Break {
+            int sz = url.length();
+            int start = sz - 1;
+            char c = url.charAt(start);
+            char[] trait;
+            int sepPos = 3;
+            H.Format fmt = H.Format.JSON;
+            switch (c) {
+                case 'n':
+                    sepPos = 4;
+                    trait = json;
+                    break;
+                case 'l':
+                    trait = xml;
+                    fmt = H.Format.XML;
+                    break;
+                case 'v':
+                    trait = csv;
+                    fmt = H.Format.CSV;
+                    break;
+                default:
+                    return url;
+            }
+            char sep = url.charAt(start - sepPos);
+            if (sep != '.' && sep != '/') {
+                return url;
+            }
+            for (int i = 1; i < sepPos; ++i) {
+                if (url.charAt(start - i) != trait[sepPos - i - 1]) {
+                    return url;
+                }
+            }
+            req.accept(fmt);
+            return url.substring(0, sz - sepPos - 1);
+        }
     }
 }

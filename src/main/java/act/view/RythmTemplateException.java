@@ -68,7 +68,7 @@ public class RythmTemplateException extends TemplateException {
     private static class RythmSourceInfo extends SourceInfo.Base {
 
         RythmSourceInfo(org.rythmengine.exception.RythmException e, boolean javaSource) {
-            fileName = e.templateName;
+            fileName = e.getTemplateName();
             if (javaSource) {
                 lineNumber = e.javaLineNumber;
                 String jsrc = e.javaSource;

@@ -223,8 +223,13 @@ List<String> stackTrace = actError.stackTrace();
       }
     }
     @if (templateSourceInfo) {
+      function scrollTemplateSource() {
+        var element = document.getElementsByClassName('template-line line error nohighlight')[0];
+        element.scrollIntoView();
+        element.parentElement.scrollTop -= 100;
+      }
       var templateSourceLoaded = false;
-      $('body').on('click', '.line.error', function() {
+      $('body').on('click', '#template .line.error', function() {
         $.getJSON('http://localhost:8091?message=@(templateSourceInfo.fileName()):@(templateSourceInfo.lineNumber())')
       });
       var windowHeight = $(window).height(), maxDetailHeight = windowHeight - 280;
@@ -232,20 +237,25 @@ List<String> stackTrace = actError.stackTrace();
       window.addEventListener('show-template-source', function() {
         if (templateSourceLoaded) return;
         templateSourceLoaded = true;
-        var element = document.getElementsByClassName('template-line line error nohighlight')[0];
-        element.scrollIntoView();
-        element.parentElement.scrollTop -= 100;
+        scrollTemplateSource();
       }, false);
       $(document).ready(function() {
         $('.line-code').each(function(i, block) {
           hljs.highlightBlock(block);
         });
       });
+      setTimeout(scrollTemplateSource, 200);
     }
     @if (sourceInfo) {
       var sourceLoaded = false;
-      $('body').on('click', '.line.error', function() {
-        $.getJSON('http://localhost:8091?message=@(sourceInfo.fileName()):@(sourceInfo.lineNumber())')
+      @{
+        int linkedSourceLineNumber = sourceInfo.lineNumber();
+        if (null != templateSourceInfo & templateSourceInfo.fileName().equals(sourceInfo.fileName())) {
+          linkedSourceLineNumber = templateSourceInfo.lineNumber();
+        }
+      }
+      $('body').on('click', '#source .line.error', function() {
+        $.getJSON('http://localhost:8091?message=@(sourceInfo.fileName()):@linkedSourceLineNumber')
       });
       var windowHeight = $(window).height(), maxDetailHeight = windowHeight - 280;
       $('.detail').css({maxHeight: maxDetailHeight + 'px'});
