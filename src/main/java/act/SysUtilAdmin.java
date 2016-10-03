@@ -3,13 +3,22 @@ package act;
 import act.cli.CliContext;
 import act.cli.Command;
 import act.cli.Optional;
+import act.cli.Required;
 import act.util.PropertySpec;
+import org.joda.time.DateTime;
+import org.joda.time.LocalDateTime;
+import org.osgl.storage.ISObject;
+import org.osgl.storage.impl.SObject;
 import org.osgl.util.C;
 import org.osgl.util.E;
+import org.osgl.util.IO;
 import org.osgl.util.S;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.util.Date;
 import java.util.List;
 
 @SuppressWarnings("unused")
@@ -32,21 +41,28 @@ public class SysUtilAdmin {
     }
 
     @Command(name = "act.ls, act.dir", help = "List files in the current working directory")
-    @PropertySpec("context,path,size")
+    @PropertySpec("path as name,size,timestamp")
     public List<FileInfo> ls(
             @Optional("specify the path to be listed") String path,
+            @Optional(lead = "-a", help = "display hidden files") boolean showHidden,
+            String path2,
             CliContext ctx
     ) {
+        if (S.blank(path) && S.notBlank(path2)) {
+            path = path2;
+        }
         if (S.blank(path)) {
-            return dir(curDir(), context);
+            ctx.println(pwd());
+            return dir(curDir(), showHidden, context);
         } else {
+            ctx.println(path);
             File file = getFile(path);
             if (!file.exists()) {
                 ctx.println("%s is not a file or directory", path);
                 return null;
             } else {
                 if (file.isDirectory()) {
-                    return dir(file, context);
+                    return dir(file, showHidden, context);
                 } else {
                     return C.list(new FileInfo(file.getParentFile(), file));
                 }
@@ -76,6 +92,30 @@ public class SysUtilAdmin {
         context.println("current working directory changed to %s", file.getAbsolutePath());
     }
 
+    @Command(name = "act.cat", help = "print file content")
+    public void cat(
+            @Required("specify the file to be printed out") File file,
+            @Optional(help = "specify the maximum lines to be printed out", defVal = "20") int limit,
+            @Optional(lead = "-n,--line-number", help = "print line number") boolean printLineNumber,
+            CliContext context
+    ) {
+        if (isBinary(IO.is(file))) {
+            context.println("binary file found");
+            return;
+        }
+        context.println("");
+        List<String> lines = IO.readLines(file, limit);
+        int len = lines.size();
+        for (int i = 0; i < len; ++i) {
+            String line = lines.get(i);
+            if (printLineNumber) {
+                context.print("%5s | ", i + 1);
+            }
+            context.println(line);
+        }
+    }
+
+
     private File getFile(String path) {
         return context.getFile(path);
     }
@@ -88,7 +128,7 @@ public class SysUtilAdmin {
         return context.curDir();
     }
 
-    private static List<FileInfo> dir(File file, CliContext context) {
+    private static List<FileInfo> dir(File file, boolean showHidden, CliContext context) {
         C.List<FileInfo> list = C.newList();
         File[] files = file.listFiles();
         if (null == files) {
@@ -97,6 +137,9 @@ public class SysUtilAdmin {
         }
         File parent = file.getAbsoluteFile();
         for (File f0 : files) {
+            if (!showHidden && f0.isHidden()) {
+                continue;
+            }
             list.add(new FileInfo(parent, f0));
         }
         list = list.sorted();
@@ -107,12 +150,16 @@ public class SysUtilAdmin {
         String context;
         String path;
         String size;
+        boolean hidden;
+        LocalDateTime timestamp;
         boolean isDir;
         private FileInfo(File parent, File file) {
             this.isDir = file.isDirectory();
             this.context = null == parent ? "/" : parent.getAbsolutePath();
             this.path = printPath(file);
             this.size = printSize(file);
+            this.timestamp = LocalDateTime.fromDateFields(new Date(file.lastModified()));
+            this.hidden = file.isHidden();
         }
 
         public String getContext() {
@@ -125,6 +172,14 @@ public class SysUtilAdmin {
 
         public String getSize() {
             return size;
+        }
+
+        public LocalDateTime getTimestamp() {
+            return timestamp;
+        }
+
+        public boolean isHidden() {
+            return hidden;
         }
 
         @Override
@@ -169,6 +224,36 @@ public class SysUtilAdmin {
                 }
             }
             return S.builder().append(len).append(unit).toString();
+        }
+    }
+
+    /**
+     *  Guess whether given file is binary. Just checks for anything under 0x09.
+     */
+    private static boolean isBinary(InputStream in) {
+        try {
+            int size = in.available();
+            if (size > 1024) size = 1024;
+            byte[] data = new byte[size];
+            in.read(data);
+            in.close();
+
+            int ascii = 0;
+            int other = 0;
+
+            for (int i = 0; i < data.length; i++) {
+                byte b = data[i];
+                if (b < 0x09) return true;
+
+                if (b == 0x09 || b == 0x0A || b == 0x0C || b == 0x0D) ascii++;
+                else if (b >= 0x20 && b <= 0x7E) ascii++;
+                else other++;
+            }
+
+            return other != 0 && 100 * other / (ascii + other) > 95;
+
+        } catch (IOException e) {
+            throw E.ioException(e);
         }
     }
 }

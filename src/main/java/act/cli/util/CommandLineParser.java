@@ -106,6 +106,9 @@ public class CommandLineParser {
     }
 
     public String argument(int id) {
+        if (id >= arguments.size()) {
+            return null;
+        }
         return arguments.get(id);
     }
 

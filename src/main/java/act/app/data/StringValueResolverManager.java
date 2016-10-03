@@ -9,10 +9,13 @@ import org.joda.time.DateTime;
 import org.joda.time.LocalDate;
 import org.joda.time.LocalDateTime;
 import org.joda.time.LocalTime;
+import org.osgl.storage.ISObject;
+import org.osgl.storage.impl.SObject;
 import org.osgl.util.AnnotationAware;
 import org.osgl.util.C;
 import org.osgl.util.StringValueResolver;
 
+import java.io.File;
 import java.util.Date;
 import java.util.Map;
 
@@ -74,6 +77,9 @@ public class StringValueResolverManager extends AppServiceBase<StringValueResolv
         put(LocalDateTime.class, new JodaLocalDateTimeCodec(config));
         put(LocalTime.class, new JodaLocalTimeCodec(config));
         put(DateTime.class, new JodaDateTimeCodec(config));
+        put(File.class, FileResolver.INSTANCE);
+        put(ISObject.class, SObjectResolver.INSTANCE);
+        put(SObject.class, SObjectResolver.INSTANCE);
     }
 
     private void put(Class type, StringValueResolver resolver) {

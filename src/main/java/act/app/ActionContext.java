@@ -280,6 +280,8 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Act
     }
 
     public ISObject upload(String name) {
+        // ensure body get parsed
+        body();
         return uploads.get(name);
     }
 

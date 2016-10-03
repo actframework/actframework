@@ -134,6 +134,11 @@ public class ViewManager extends DestroyableBase {
         return C.list(implicitMailerViewVariables);
     }
 
+    public void reset() {
+        viewList.clear();
+        preferredViews.clear();
+    }
+
     @Override
     protected void releaseResources() {
         tryDestroyAll(viewList, ApplicationScoped.class);

@@ -2,12 +2,12 @@ package act.inject.param;
 
 import act.cli.CliContext;
 import act.cli.Optional;
+import act.cli.ReadFileContent;
 import act.cli.Required;
+import act.data.FileResolver;
 import act.util.ActContext;
-import org.osgl.util.E;
-import org.osgl.util.Keyword;
-import org.osgl.util.S;
-import org.osgl.util.StringValueResolver;
+import org.osgl.inject.BeanSpec;
+import org.osgl.util.*;
 
 /**
  * Load command line options
@@ -20,19 +20,23 @@ class OptionLoader extends CliParamValueLoader implements ParamValueLoader {
     final String defVal;
     final String requiredGroup;
     final boolean required;
+    final BeanSpec beanSpec;
+    final boolean readFile;
     private final StringValueResolver resolver;
 
-    OptionLoader(String bindName, Optional optional, StringValueResolver resolver) {
+    OptionLoader(String bindName, Optional optional, StringValueResolver resolver, BeanSpec beanSpec) {
         this.bindName = bindName;
         this.required = false;
         this.parseLeads(optional.lead());
         this.defVal = optional.defVal();
         this.requiredGroup = null;
         this.resolver = resolver;
+        this.beanSpec = beanSpec;
+        this.readFile = beanSpec.rawType() == String.class && beanSpec.hasAnnotation(ReadFileContent.class);
         CliContext.ParsingContextBuilder.foundOptional();
     }
 
-    OptionLoader(String bindName, Required required, StringValueResolver resolver) {
+    OptionLoader(String bindName, Required required, StringValueResolver resolver, BeanSpec beanSpec) {
         this.bindName = bindName;
         this.required = true;
         this.parseLeads(required.lead());
@@ -40,6 +44,8 @@ class OptionLoader extends CliParamValueLoader implements ParamValueLoader {
         String group = required.group();
         this.requiredGroup = S.blank(group) ? bindName : group;
         this.resolver = resolver;
+        this.beanSpec = beanSpec;
+        this.readFile = beanSpec.rawType() == String.class && beanSpec.hasAnnotation(ReadFileContent.class);
         CliContext.ParsingContextBuilder.foundRequired(this.requiredGroup);
     }
 
@@ -47,17 +53,15 @@ class OptionLoader extends CliParamValueLoader implements ParamValueLoader {
     public Object load(Object cachedBean, ActContext<?> context, boolean noDefaultValue) {
         CliContext ctx = (CliContext) context;
         String optVal = ctx.paramVal(bindName);
-        if (S.blank(optVal)) {
-            if (!multipleParams(ctx)) {
-                optVal = getFirstArgument(ctx);
-            }
-        }
-        if (S.blank(optVal) && !multipleParams(ctx)) {
+        if (S.blank(optVal) && required) {
             optVal = getFirstArgument(ctx);
         }
         Object val = null;
         if (S.notBlank(optVal)) {
             val = resolver.resolve(optVal);
+        }
+        if (readFile) {
+            val = IO.readContentAsString(FileResolver.INSTANCE.resolve(S.string(val)));
         }
         if (null == val && null != cachedBean) {
             val = cachedBean;

@@ -18,6 +18,7 @@ import org.osgl.concurrent.ContextLocal;
 import org.osgl.http.H;
 import org.osgl.util.C;
 import org.osgl.util.E;
+import org.osgl.util.OS;
 import org.osgl.util.S;
 
 import java.io.File;
@@ -71,10 +72,19 @@ public class CliContext extends ActContext.Base<CliContext> implements IASCIITab
             return set;
         }
 
-        public void raiseExceptionIfThereAreMissingOptions() {
+        public void raiseExceptionIfThereAreMissingOptions(CliContext context) {
             Set<String> missings = missingOptions();
-            if (!missings.isEmpty()) {
-                throw new CliException("Missing required options: %s", missings);
+            int missing = missings.size();
+            switch (missing) {
+                case 0:
+                    return;
+                case 1:
+                    // check if there are command argument
+                    if (!context.arguments().isEmpty()) {
+                        return;
+                    }
+                default:
+                    throw new CliException("Missing required options: %s", missings);
             }
         }
 
@@ -476,6 +486,9 @@ public class CliContext extends ActContext.Base<CliContext> implements IASCIITab
     }
 
     public File getFile(String path) {
+        if (path.startsWith("~/")) {
+            path = System.getProperty("user.home") + path.substring(1);
+        }
         File file = new File(path);
         if (file.isAbsolute()) {
             return file;

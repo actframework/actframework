@@ -239,6 +239,9 @@ public class App extends DestroyableBase {
     }
 
     public synchronized void detectChanges() {
+        if (null == classLoader) {
+            throw new RequestServerRestart();
+        }
         classLoader.detectChanges();
         if (null != compilationException) {
             throw ActServerError.of(compilationException);
@@ -337,6 +340,7 @@ public class App extends DestroyableBase {
         initDbServiceManager();
         emit(DB_SVC_LOADED);
 
+        Act.viewManager().reset();
         loadGlobalPlugin();
         initScannerManager();
         loadActScanners();

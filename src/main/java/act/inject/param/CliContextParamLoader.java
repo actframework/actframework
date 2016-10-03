@@ -72,7 +72,7 @@ public class CliContextParamLoader extends ParamValueLoaderService {
                 }
             }
         }
-        context.parsingContext().raiseExceptionIfThereAreMissingOptions();
+        context.parsingContext().raiseExceptionIfThereAreMissingOptions(context);
     }
 
     @Override
@@ -91,9 +91,9 @@ public class CliContextParamLoader extends ParamValueLoaderService {
             optional = filter(annotations, Optional.class);
         }
         if (null != required) {
-            return new OptionLoader(bindName, required, resolver);
+            return new OptionLoader(bindName, required, resolver, spec);
         } else if (null != optional) {
-            return new OptionLoader(bindName, optional, resolver);
+            return new OptionLoader(bindName, optional, resolver, spec);
         }
         return isArray ? new CliVarArgumentLoader(rawType.getComponentType(), resolver) : new CliArgumentLoader(resolver);
     }

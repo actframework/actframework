@@ -250,7 +250,7 @@ List<String> stackTrace = actError.stackTrace();
       var sourceLoaded = false;
       @{
         int linkedSourceLineNumber = sourceInfo.lineNumber();
-        if (null != templateSourceInfo & templateSourceInfo.fileName().equals(sourceInfo.fileName())) {
+        if (null != templateSourceInfo && templateSourceInfo.fileName().equals(sourceInfo.fileName())) {
           linkedSourceLineNumber = templateSourceInfo.lineNumber();
         }
       }
