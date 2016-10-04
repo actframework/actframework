@@ -2,11 +2,12 @@ package act.inject.param;
 
 import act.cli.CliContext;
 import act.cli.Optional;
-import act.cli.ReadFileContent;
+import act.cli.ReadContent;
 import act.cli.Required;
-import act.data.FileResolver;
+import act.data.SObjectResolver;
 import act.util.ActContext;
 import org.osgl.inject.BeanSpec;
+import org.osgl.storage.ISObject;
 import org.osgl.util.*;
 
 /**
@@ -22,6 +23,9 @@ class OptionLoader extends CliParamValueLoader implements ParamValueLoader {
     final boolean required;
     final BeanSpec beanSpec;
     final boolean readFile;
+    final boolean reportReadFileFailure;
+    final SObjectResolver sObjectResolver = SObjectResolver.INSTANCE;
+    final String errorTemplate;
     private final StringValueResolver resolver;
 
     OptionLoader(String bindName, Optional optional, StringValueResolver resolver, BeanSpec beanSpec) {
@@ -32,7 +36,9 @@ class OptionLoader extends CliParamValueLoader implements ParamValueLoader {
         this.requiredGroup = null;
         this.resolver = resolver;
         this.beanSpec = beanSpec;
-        this.readFile = beanSpec.rawType() == String.class && beanSpec.hasAnnotation(ReadFileContent.class);
+        this.readFile = beanSpec.rawType() == String.class && beanSpec.hasAnnotation(ReadContent.class);
+        this.reportReadFileFailure = this.readFile && beanSpec.getAnnotation(ReadContent.class).reportError();
+        this.errorTemplate = errorTemplate(optional);
         CliContext.ParsingContextBuilder.foundOptional();
     }
 
@@ -45,7 +51,9 @@ class OptionLoader extends CliParamValueLoader implements ParamValueLoader {
         this.requiredGroup = S.blank(group) ? bindName : group;
         this.resolver = resolver;
         this.beanSpec = beanSpec;
-        this.readFile = beanSpec.rawType() == String.class && beanSpec.hasAnnotation(ReadFileContent.class);
+        this.readFile = beanSpec.rawType() == String.class && beanSpec.hasAnnotation(ReadContent.class);
+        this.reportReadFileFailure = this.readFile && beanSpec.getAnnotation(ReadContent.class).reportError();
+        this.errorTemplate = errorTemplate(required);
         CliContext.ParsingContextBuilder.foundRequired(this.requiredGroup);
     }
 
@@ -58,23 +66,70 @@ class OptionLoader extends CliParamValueLoader implements ParamValueLoader {
         }
         Object val = null;
         if (S.notBlank(optVal)) {
-            val = resolver.resolve(optVal);
+            val = resolve(optVal);
         }
         if (readFile) {
-            val = IO.readContentAsString(FileResolver.INSTANCE.resolve(S.string(val)));
+            try {
+                ISObject sobj = resolve(S.string(val), sObjectResolver);
+                if (null != sobj) {
+                    val = IO.readContentAsString(sobj.asInputStream());
+                } else if (reportReadFileFailure) {
+                    throw E.unexpected("Error reading content from %s", val);
+                }
+            } catch (Exception e) {
+                if (reportReadFileFailure) {
+                    throw E.unexpected("Error reading content from %s", val);
+                }
+            }
         }
         if (null == val && null != cachedBean) {
             val = cachedBean;
         }
         if (null == val) {
             if (!required) {
-                val = S.notBlank(defVal) ? resolver.resolve(defVal) : resolver.resolve(null);
+                val = S.notBlank(defVal) ? resolve(defVal) : resolve(null);
             }
         }
         if (null != val && required) {
             ctx.parsingContext().foundRequired(requiredGroup);
         }
         return val;
+    }
+
+    private Object resolve(String val) {
+        return resolve(val, resolver);
+    }
+
+    private <T> T resolve(String val, StringValueResolver<T> resolver) {
+        if (null == errorTemplate) {
+            return resolver.resolve(val);
+        }
+        try {
+            return resolver.resolve(val);
+        } catch (Exception e) {
+            throw E.unexpected(errorTemplate, val);
+        }
+    }
+
+    private String errorTemplate(Optional optional) {
+        return verifyErrorTemplate(optional.errorTemplate());
+    }
+
+    private String errorTemplate(Required required) {
+        return verifyErrorTemplate(required.errorTemplate());
+    }
+
+    private String verifyErrorTemplate(String s) {
+        if (S.blank(s)) {
+            return null;
+        }
+        if (!s.contains("%")) {
+            throw E.invalidConfiguration("Error template must have format argument placeholder, e.g. %s inside it: " + s);
+        }
+        if (s.split("%").length > 2) {
+            throw E.invalidConfiguration("Error template must not have  more than one format argument placeholder, e.g. %s inside it: " + s);
+        }
+        return s;
     }
 
     private void parseLeads(String[] specs) {

@@ -80,4 +80,15 @@ public @interface Required {
      * @return the help message
      */
     String help() default "";
+
+    /**
+     * Specify the error message template when it failed to resolve option
+     * value to the required argument.
+     *
+     * The template must have one `%s` template variable to put in the invalid
+     * value
+     *
+     * @return the error message template
+     */
+    String errorTemplate() default "";
 }

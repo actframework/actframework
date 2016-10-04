@@ -1,6 +1,7 @@
 package act.cli.view;
 
 import act.cli.CliContext;
+import act.cli.CliOverHttpContext;
 import act.cli.ascii_table.impl.CollectionASCIITableAware;
 import act.cli.tree.TreeNode;
 import act.cli.util.CliCursor;
@@ -49,7 +50,7 @@ public enum CliView {
             CliContext cliContext = (CliContext) context;
 
             List dataList = toList(result);
-            int pageSize = context.config().cliTablePageSize();
+            int pageSize = context instanceof CliOverHttpContext ? dataList.size() : context.config().cliTablePageSize();
             if (dataList.size() > pageSize) {
                 TableCursor cursor = new TableCursor(dataList, pageSize, spec);
                 cliContext.session().cursor(cursor);

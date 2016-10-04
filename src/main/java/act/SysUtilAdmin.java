@@ -4,8 +4,10 @@ import act.cli.CliContext;
 import act.cli.Command;
 import act.cli.Optional;
 import act.cli.Required;
+import act.data.SObjectResolver;
 import act.util.PropertySpec;
 import org.joda.time.DateTime;
+import org.joda.time.Interval;
 import org.joda.time.LocalDateTime;
 import org.osgl.storage.ISObject;
 import org.osgl.storage.impl.SObject;
@@ -14,6 +16,7 @@ import org.osgl.util.E;
 import org.osgl.util.IO;
 import org.osgl.util.S;
 
+import javax.validation.constraints.Min;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -94,25 +97,43 @@ public class SysUtilAdmin {
 
     @Command(name = "act.cat", help = "print file content")
     public void cat(
-            @Required("specify the file to be printed out") File file,
-            @Optional(help = "specify the maximum lines to be printed out", defVal = "20") int limit,
+            @Required(lead = "-f --url", help = "specify the file/resource URL to be printed out", errorTemplate = "error accessing file/resource at %s") SObject sobj,
+            @Optional(help = "specify the maximum lines to be printed out") int limit,
+            @Optional(help = "specify the begin line to be printed out", defVal = "0") @Min(0) int begin,
+            @Optional(help = "specify the end line to be printed out") int end,
+            @Optional(help = "specify begin end as range, e.g. 5-8") String range,
             @Optional(lead = "-n,--line-number", help = "print line number") boolean printLineNumber,
             CliContext context
     ) {
-        if (isBinary(IO.is(file))) {
-            context.println("binary file found");
-            return;
+        if (S.notBlank(range)) {
+            range = range.trim();
+            String[] sa = range.split("[\\s,\\-:]+");
+            try {
+                begin = Integer.parseInt(sa[0]);
+                end = Integer.parseInt(sa[1]);
+            } catch (Exception e) {
+                context.println("Invalid range: %s. Try something like '3-6'", range);
+                return;
+            }
+        } else {
+            if (begin <= 0) {
+                begin = 1;
+            }
+            if (end <= 0) {
+                end = begin + (limit <= 0 ? 20 : limit) - 1;
+            }
         }
-        context.println("");
-        List<String> lines = IO.readLines(file, limit);
+        List<String> lines = IO.readLines(sobj.asInputStream(), end);
         int len = lines.size();
-        for (int i = 0; i < len; ++i) {
+        context.println("");
+        for (int i = begin - 1; i < len; ++i) {
             String line = lines.get(i);
             if (printLineNumber) {
                 context.print("%5s | ", i + 1);
             }
             context.println(line);
         }
+        context.println("");
     }
 
 

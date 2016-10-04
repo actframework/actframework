@@ -40,7 +40,7 @@ public enum AsmTypes implements Opcodes {
 
     public static AsmType<Command> COMMAND = new AsmType<Command>(Command.class);
     public static AsmType<Optional> OPTIONAL = new AsmType<Optional>(Optional.class);
-    public static AsmType<ReadFileContent> READ_FILE_CONTENT = new AsmType<ReadFileContent>(ReadFileContent.class);
+    public static AsmType<ReadContent> READ_FILE_CONTENT = new AsmType<ReadContent>(ReadContent.class);
     public static AsmType<Required> REQUIRED = new AsmType<Required>(Required.class);
     public static AsmType<TableView> TABLE_VIEW = new AsmType<TableView>(TableView.class);
     public static AsmType<JsonView> JSON_VIEW = new AsmType<JsonView>(JsonView.class);

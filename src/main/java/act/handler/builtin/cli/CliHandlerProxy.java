@@ -68,9 +68,9 @@ public final class CliHandlerProxy extends CliHandlerBase {
         } catch (Exception e) {
             String msg = e.getMessage();
             if (S.blank(msg)) {
-                msg = e.getClass().getName();
+                msg = S.fmt("Error processing command: %s", e);
             }
-            context.println("Error processing command: " + msg);
+            context.println(msg);
             logger.error(e, "Error handling request");
         }
     }
