@@ -3,6 +3,7 @@ package act.view;
 import act.ActComponent;
 import act.app.ActionContext;
 import act.app.App;
+import act.conf.AppConfig;
 import act.mail.MailerContext;
 import act.security.CSRF;
 import act.util.ActContext;
@@ -36,6 +37,12 @@ public class SystemImplicitVariableProvider extends ImplicitVariableProvider {
                 @Override
                 public Object eval(ActionContext context) {
                     return context.app();
+                }
+            },
+            new ActionViewVarDef("_conf", AppConfig.class) {
+                @Override
+                public Object eval(ActionContext context) {
+                    return context.config();
                 }
             },
             new ActionViewVarDef("_ctx", ActContext.class) {
@@ -102,6 +109,12 @@ public class SystemImplicitVariableProvider extends ImplicitVariableProvider {
                 @Override
                 public Object eval(MailerContext context) {
                     return context.app();
+                }
+            },
+            new MailerViewVarDef("_conf", AppConfig.class) {
+                @Override
+                public Object eval(MailerContext context) {
+                    return context.config();
                 }
             },
             new MailerViewVarDef("_ctx", ActContext.class) {
