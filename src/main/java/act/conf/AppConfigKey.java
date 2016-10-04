@@ -152,6 +152,11 @@ public enum AppConfigKey implements ConfigKey {
     CLI_OVER_HTTP("cli_over_http.enabled"),
 
     /**
+     * `act.cli_over_http.authority` specifies the {@link act.cli.CliOverHttpAuthority} implementation
+     */
+    CLI_OVER_HTTP_AUTHORITY("cli_over_http.authority.impl"),
+
+    /**
      * `act.cli_over_http.port` specifies the default cli over http port the application
      * listen to.
      *

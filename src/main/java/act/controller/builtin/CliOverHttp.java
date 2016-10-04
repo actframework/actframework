@@ -3,11 +3,13 @@ package act.controller.builtin;
 import act.app.ActionContext;
 import act.cli.CliContext;
 import act.cli.CliDispatcher;
+import act.cli.CliOverHttpAuthority;
 import act.cli.CliOverHttpContext;
 import act.conf.AppConfig;
 import act.controller.Controller;
 import act.handler.CliHandler;
 import org.osgl.http.H;
+import org.osgl.mvc.annotation.Before;
 import org.osgl.mvc.annotation.GetAction;
 import org.osgl.mvc.annotation.PostAction;
 import org.osgl.mvc.result.Result;
@@ -36,6 +38,12 @@ public class CliOverHttp {
 
     @Inject
     AppConfig config;
+
+    @Before
+    public void before(AppConfig config) {
+        CliOverHttpAuthority authority = config.cliOverHttpAuthority();
+        authority.authorize();
+    }
 
     @GetAction
     public Result home(AppConfig config) {

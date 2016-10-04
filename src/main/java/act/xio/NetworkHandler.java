@@ -19,6 +19,7 @@ import org.osgl.exception.NotAppliedException;
 import org.osgl.http.H;
 import org.osgl.logging.LogManager;
 import org.osgl.logging.Logger;
+import org.osgl.mvc.result.ErrorResult;
 import org.osgl.mvc.result.Result;
 import org.osgl.util.E;
 import org.osgl.util.S;
@@ -95,6 +96,8 @@ public class NetworkHandler extends DestroyableBase implements  $.Func1<ActionCo
             }
             if (null == r) {
                 r = ActServerError.of(t);
+            } else if (r instanceof ErrorResult) {
+                r = ActServerError.of(r);
             }
             if (null == ctx.handler()) {
                 ctx.handler(FastRequestHandler.DUMB);

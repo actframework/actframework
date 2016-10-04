@@ -8,6 +8,7 @@ import act.app.AppHolder;
 import act.app.conf.AppConfigurator;
 import act.app.event.AppEventId;
 import act.app.util.NamedPort;
+import act.cli.CliOverHttpAuthority;
 import act.db.util.SequenceNumberGenerator;
 import act.db.util._SequenceNumberGenerator;
 import act.handler.UnknownHttpMethodProcessor;
@@ -436,7 +437,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         }
     }
 
-    Boolean cliOverHttp;
+    private Boolean cliOverHttp;
 
     protected T cliOverHttp(boolean enabled) {
         this.cliOverHttp = enabled;
@@ -457,6 +458,29 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     private void _mergeCliOverHttp(AppConfig config) {
         if (null == get(CLI_OVER_HTTP)) {
             cliOverHttp = config.cliOverHttp;
+        }
+    }
+
+    private CliOverHttpAuthority cliOverHttpAuthority;
+
+    protected T cliOverHttpAuthority(CliOverHttpAuthority authority) {
+        this.cliOverHttpAuthority = authority;
+        return me();
+    }
+
+    public CliOverHttpAuthority cliOverHttpAuthority() {
+        if (null == cliOverHttpAuthority) {
+            cliOverHttpAuthority = get(CLI_OVER_HTTP_AUTHORITY);
+            if (null == cliOverHttpAuthority) {
+                cliOverHttpAuthority = new CliOverHttpAuthority.AllowAll();
+            }
+        }
+        return cliOverHttpAuthority;
+    }
+
+    private void _mergeCliOverHttpAuthority(AppConfig config) {
+        if (null == get(CLI_OVER_HTTP_AUTHORITY)) {
+            cliOverHttpAuthority = config.cliOverHttpAuthority;
         }
     }
 
@@ -2033,6 +2057,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         _mergeCliJSONPageSz(conf);
         _mergeCliTablePageSz(conf);
         _mergeCliOverHttp(conf);
+        _mergeCliOverHttpAuthority(conf);
         _mergeCliOverHttpPort(conf);
         _mergeCliOverHttpTitle(conf);
         _mergeCliOverHttpSysCmd(conf);
