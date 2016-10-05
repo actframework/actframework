@@ -1,4 +1,4 @@
-package act.data;
+package act.data.annotation;
 
 import act.util.EqualField;
 import act.util.EqualIgnore;

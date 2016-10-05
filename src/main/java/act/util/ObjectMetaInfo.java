@@ -4,7 +4,7 @@ import act.asm.Label;
 import act.asm.MethodVisitor;
 import act.asm.Opcodes;
 import act.asm.Type;
-import act.data.Data;
+import act.data.annotation.Data;
 import org.osgl.$;
 import org.osgl.util.C;
 import org.osgl.util.S;

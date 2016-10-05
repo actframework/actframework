@@ -1,7 +1,6 @@
 package testapp.model;
 
-import act.asm.Type;
-import act.data.Data;
+import act.data.annotation.Data;
 import org.osgl.$;
 
 @Data(callSuper = true)

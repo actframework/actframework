@@ -6,6 +6,7 @@ import act.asm.Opcodes;
 import act.asm.Type;
 import act.cli.*;
 import act.conf.AppConfig;
+import act.data.annotation.ReadContent;
 import act.inject.Context;
 import act.inject.SessionVariable;
 import act.mail.MailerContext;

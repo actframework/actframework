@@ -1,14 +1,8 @@
 package testapp.model;
 
-import act.data.Data;
+import act.data.annotation.Data;
 import act.util.EqualIgnore;
-import org.osgl.$;
-import org.osgl.util.C;
-import org.osgl.util.N;
 import org.osgl.util.S;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @Data
 public class Person2 {

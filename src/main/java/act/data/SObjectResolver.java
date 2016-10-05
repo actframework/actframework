@@ -3,11 +3,9 @@ package act.data;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
-import org.osgl.storage.ISObject;
 import org.osgl.storage.impl.SObject;
 import org.osgl.util.Codec;
 import org.osgl.util.E;
-import org.osgl.util.StringValueResolver;
 
 import java.io.File;
 import java.io.IOException;
@@ -16,7 +14,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * Resolver String value into SObject
  */
-public class SObjectResolver extends StringValueResolver<ISObject> {
+public class SObjectResolver extends StringValueResolverPlugin<SObject> {
 
     public static final SObjectResolver INSTANCE = new SObjectResolver();
 
@@ -30,7 +28,7 @@ public class SObjectResolver extends StringValueResolver<ISObject> {
     }
 
     @Override
-    public ISObject resolve(String value) {
+    public SObject resolve(String value) {
         if (value.startsWith("http://") || value.startsWith("https://")) {
             return resolveFromURL(value);
         } else if (value.startsWith("data:")) {
@@ -54,7 +52,7 @@ public class SObjectResolver extends StringValueResolver<ISObject> {
         }
     }
 
-    private ISObject resolveFromURL(String url) {
+    private SObject resolveFromURL(String url) {
         try {
             Response resp = http.newCall(new Request.Builder().url(url).build()).execute();
             return SObject.of(resp.body().byteStream());
@@ -63,7 +61,7 @@ public class SObjectResolver extends StringValueResolver<ISObject> {
         }
     }
 
-    private ISObject resolveFromBase64(String encoded) {
+    private SObject resolveFromBase64(String encoded) {
         return SObject.of(Codec.decodeBase64(encoded));
     }
 

@@ -7,7 +7,7 @@ import java.io.File;
 /**
  * Resolver File from path
  */
-public class FileResolver extends StringValueResolver<File> {
+public class FileResolver extends StringValueResolverPlugin<File> {
 
     public static final FileResolver INSTANCE = new FileResolver();
 

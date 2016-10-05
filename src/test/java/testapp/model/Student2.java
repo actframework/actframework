@@ -1,6 +1,6 @@
 package testapp.model;
 
-import act.data.Data;
+import act.data.annotation.Data;
 
 /**
  * Created by luog on 28/11/15.

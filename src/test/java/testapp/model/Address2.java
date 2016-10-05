@@ -1,6 +1,6 @@
 package testapp.model;
 
-import act.data.Data;
+import act.data.annotation.Data;
 
 @Data
 public class Address2 {

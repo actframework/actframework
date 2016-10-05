@@ -1,4 +1,4 @@
-package act.cli;
+package act.data.annotation;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -11,6 +11,7 @@ import java.lang.annotation.Target;
  *
  * Note this assumes the file or URL resource is a text file
  */
+@ResolveStringValue({})
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.PARAMETER, ElementType.FIELD})
 public @interface ReadContent {

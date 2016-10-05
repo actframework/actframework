@@ -33,7 +33,7 @@ public class JodaDateTimeCodec extends StringValueResolver<DateTime> implements 
     @Inject
     public JodaDateTimeCodec(AppConfig config) {
         String patten = config.dateTimeFormat();
-        if (patten.contains("8601")) {
+        if (patten.contains("8601") || patten.contains("iso")) {
             dateFormat = ISODateTimeFormat.dateTime();
         } else {
             dateFormat = DateTimeFormat.forPattern(patten);

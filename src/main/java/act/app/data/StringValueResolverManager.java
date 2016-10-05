@@ -77,9 +77,8 @@ public class StringValueResolverManager extends AppServiceBase<StringValueResolv
         put(LocalDateTime.class, new JodaLocalDateTimeCodec(config));
         put(LocalTime.class, new JodaLocalTimeCodec(config));
         put(DateTime.class, new JodaDateTimeCodec(config));
-        put(File.class, FileResolver.INSTANCE);
+        // rebind SObjectResolver to ISObject.class in addition to SObject.class
         put(ISObject.class, SObjectResolver.INSTANCE);
-        put(SObject.class, SObjectResolver.INSTANCE);
     }
 
     private void put(Class type, StringValueResolver resolver) {
