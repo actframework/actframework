@@ -64,6 +64,11 @@ public class MailerContext extends ActContext.Base<MailerContext> {
         return this;
     }
 
+    @Override
+    public String methodPath() {
+        return senderPath;
+    }
+
     public MailerContext senderPath(String className, String methodName) {
         senderPath = S.builder(className).append(".").append(methodName).toString();
         return this;

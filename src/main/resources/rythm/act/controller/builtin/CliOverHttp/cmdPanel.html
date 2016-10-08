@@ -34,6 +34,7 @@ act.cli.CliDispatcher dispatcher
 <pre id="result"></pre>
 <script>
   $('button').on('click', function () {
+    $('#result').text("");
     $.post('/cmd', $('form').serialize(), function (txt) {
       $('#result').text(txt);
     })

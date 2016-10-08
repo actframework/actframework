@@ -78,8 +78,23 @@ public class ViewManager extends DestroyableBase {
         }
 
         TemplatePathResolver resolver = config.templatePathResolver();
-        String path = resolver.resolve(context);
 
+        String path = resolver.resolve(context);
+        Template template = getTemplate(context, config, path);
+        if (null == template) {
+            String amendedPath = resolver.resolveWithContextMethodPath(context);
+            if (S.neq(amendedPath, path)) {
+                template = getTemplate(context, config, amendedPath);
+            }
+        }
+
+        if (null != template) {
+            context.cacheTemplate(template);
+        }
+        return template;
+    }
+
+    private Template getTemplate(ActContext context, AppConfig config, String path) {
         StringBuilder sb = S.builder();
         if (!path.startsWith("/")) {
             sb.append("/");
@@ -118,9 +133,6 @@ public class ViewManager extends DestroyableBase {
             }
         } else if (multiViews) {
             preferredViews.put(templatePath, defView);
-        }
-        if (null != template) {
-            context.cacheTemplate(template);
         }
         return template;
     }

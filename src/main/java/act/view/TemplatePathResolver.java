@@ -12,14 +12,22 @@ import static org.osgl.http.H.Format.*;
 /**
  * Resolve template path for {@link ActContext}
  */
-public class TemplatePathResolver extends $.Transformer<ActContext, String> {
-    @Override
-    public final String transform(ActContext context) {
-        return resolve(context);
-    }
+public class TemplatePathResolver {
 
     public final String resolve(ActContext context) {
         String path = context.templatePath();
+        return resolveTemplatePath(path, context);
+    }
+
+    public final String resolveWithContextMethodPath(ActContext context) {
+        String methodPath = context.methodPath();
+        String path = context.templatePath();
+        String[] sa = path.split("\\.");
+        int level = sa.length + 1;
+        while (--level > 0) {
+            methodPath = S.beforeLast(methodPath, ".");
+        }
+        path = S.builder(methodPath).append("/").append(path).toString().replace('.', '/');
         return resolveTemplatePath(path, context);
     }
 

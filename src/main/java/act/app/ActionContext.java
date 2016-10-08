@@ -34,7 +34,7 @@ import static org.osgl.http.H.Header.Names.*;
  * an application session
  */
 @RequestScoped
-public class ActionContext extends ActContext.Base<ActionContext> implements ActContext<ActionContext>, Destroyable {
+public class ActionContext extends ActContext.Base<ActionContext> implements Destroyable {
 
     public static final String ATTR_CSRF_TOKEN = "__csrf__";
     public static final String ATTR_CSR_TOKEN_PREFETCH = "__csrf_prefetch__";
@@ -522,6 +522,11 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Act
     public ActionContext actionPath(String path) {
         actionPath = path;
         return this;
+    }
+
+    @Override
+    public String methodPath() {
+        return actionPath;
     }
 
     /**

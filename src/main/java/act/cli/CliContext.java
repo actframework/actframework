@@ -366,6 +366,11 @@ public class CliContext extends ActContext.Base<CliContext> implements IASCIITab
         return this;
     }
 
+    @Override
+    public String methodPath() {
+        return commandPath;
+    }
+
     public CliContext __commanderInstance(String className, Object instance) {
         if (null == commanderInstances) {
             commanderInstances = C.newMap();

@@ -51,6 +51,8 @@ public interface ActContext<CTX_TYPE extends ActContext> extends ParamValueProvi
     <T> T attribute(String name);
     CTX_TYPE removeAttribute(String name);
 
+    String methodPath();
+
     interface Listener {
         void onDestroy(ActContext context);
     }
