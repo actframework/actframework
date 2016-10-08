@@ -1,6 +1,7 @@
 package act.sys.meta;
 
 import act.asm.Type;
+import act.util.AsmTypes;
 
 public class ReturnTypeInfo {
     private Type type;
@@ -29,6 +30,10 @@ public class ReturnTypeInfo {
 
     public boolean hasReturn() {
         return type != Type.VOID_TYPE;
+    }
+
+    public boolean isResult() {
+        return AsmTypes.RESULT_TYPE.equals(type);
     }
 
     public static ReturnTypeInfo of(Type type) {

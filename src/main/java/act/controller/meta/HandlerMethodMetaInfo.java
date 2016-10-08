@@ -158,6 +158,10 @@ public abstract class HandlerMethodMetaInfo<T extends HandlerMethodMetaInfo> ext
         return returnType.type();
     }
 
+    public ReturnTypeInfo returnTypeInfo() {
+        return returnType;
+    }
+
     public Type returnComponentType() {
         return returnType.componentType();
     }

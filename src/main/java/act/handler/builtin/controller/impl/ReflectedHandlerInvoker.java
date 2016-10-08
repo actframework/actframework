@@ -295,7 +295,11 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
                 throw (Exception) cause;
             }
         }
-        if (null == result && handler.hasReturn()) {
+        if (null == result && handler.hasReturn() && !handler.returnTypeInfo().isResult()) {
+            // ActFramework respond 404 Not Found when
+            // handler invoker return `null`
+            // and there are return type of the action method signature
+            // and the return type is **NOT** Result
             return NotFound.INSTANCE;
         }
         boolean hasTemplate = checkTemplate(context);
