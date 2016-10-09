@@ -15,12 +15,20 @@ import java.util.List;
 public interface Dao<ID_TYPE, MODEL_TYPE, QUERY_TYPE extends Dao.Query<MODEL_TYPE, QUERY_TYPE>>
         extends AppContextAware, SecurityContextAware, Destroyable {
 
+    /**
+     * Returns the identifier type
+     */
     Class<ID_TYPE> idType();
 
     /**
      * Returns the class of the Model entity this Dao operates on
      */
     Class<MODEL_TYPE> modelType();
+
+    /**
+     * Returns the class of the bounded query type
+     */
+    Class<QUERY_TYPE> queryType();
 
     /**
      * Find an entity by id, the primary key

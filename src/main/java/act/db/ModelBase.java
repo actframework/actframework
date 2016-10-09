@@ -2,6 +2,9 @@ package act.db;
 
 import act.app.App;
 import org.osgl.$;
+import org.osgl.util.Generics;
+
+import java.util.List;
 
 /**
  * The model base class
@@ -11,6 +14,13 @@ import org.osgl.$;
 public abstract class ModelBase<ID_TYPE, MODEL_TYPE extends ModelBase>
 implements Model<ID_TYPE, MODEL_TYPE> {
 
+    protected Class<ID_TYPE> idType;
+    protected Class<MODEL_TYPE> modelType;
+
+    public ModelBase() {
+        exploreTypes();
+    }
+
     // for JSON deserialization
     public ID_TYPE getId() {
         return _id();
@@ -19,6 +29,14 @@ implements Model<ID_TYPE, MODEL_TYPE> {
     // for JSON deserialization
     public void setId(ID_TYPE id) {
         _id(id);
+    }
+
+    protected Class<ID_TYPE> idType() {
+        return idType;
+    }
+
+    protected Class<MODEL_TYPE> modelType() {
+        return modelType;
     }
 
     /**
@@ -68,7 +86,15 @@ implements Model<ID_TYPE, MODEL_TYPE> {
         return (MODEL_TYPE)this;
     }
 
-    public static void main(String[] args) {
-        ModelBase.dao();
+    private void exploreTypes() {
+        List<Class> types = Generics.typeParamImplementations(getClass(), ModelBase.class);
+        int sz = types.size();
+        if (sz < 1) {
+            return;
+        }
+        if (sz > 1) {
+            modelType = $.cast(types.get(1));
+        }
+        idType = $.cast(types.get(0));
     }
 }
