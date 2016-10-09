@@ -4,6 +4,7 @@ import act.app.App;
 import org.osgl.$;
 import org.osgl.util.Generics;
 
+import java.lang.reflect.Type;
 import java.util.List;
 
 /**
@@ -87,7 +88,7 @@ implements Model<ID_TYPE, MODEL_TYPE> {
     }
 
     private void exploreTypes() {
-        List<Class> types = Generics.typeParamImplementations(getClass(), ModelBase.class);
+        List<Type> types = Generics.typeParamImplementations(getClass(), ModelBase.class);
         int sz = types.size();
         if (sz < 1) {
             return;

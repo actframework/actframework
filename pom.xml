@@ -18,6 +18,9 @@
 ********************************************
 *            version history
 ********************************************
+0.3.0
+- Catch up update to osgl-mvc 0.6.0: Bind annotation now support specifying multiple Binder implementations
+
 0.2.0
 - Make act be java 1.6 compatible
 - Big refactoring on
@@ -42,7 +45,7 @@
   <groupId>org.actframework</groupId>
   <artifactId>act</artifactId>
   <packaging>jar</packaging>
-  <version>0.2.0-SNAPSHOT</version>
+  <version>0.3.0-SNAPSHOT</version>
 
   <name>ACT Framework</name>
   <description>The ACT full stack MVC framework</description>
@@ -312,7 +315,7 @@
     <dependency>
       <groupId>org.osgl</groupId>
       <artifactId>osgl-mvc</artifactId>
-      <version>0.5.1-SNAPSHOT</version>
+      <version>0.6.0-SNAPSHOT</version>
     </dependency>
 
     <dependency>

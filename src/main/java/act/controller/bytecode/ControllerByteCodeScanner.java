@@ -665,11 +665,23 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
                 public void visit(String name, Object value) {
                     if ("model".endsWith(name)) {
                         info.model((String) value);
-                    } else if ("value".endsWith(name)) {
-                        Type type = (Type) value;
-                        Class<? extends Binder> c = $.classForName(type.getClassName(), getClass().getClassLoader());
-                        info.binder(c);
                     }
+                }
+
+                @Override
+                public AnnotationVisitor visitArray(String name) {
+                    AnnotationVisitor av = super.visitArray(name);
+                    if ("value".equals(name)) {
+                        return new AnnotationVisitor(ASM5, av) {
+                            @Override
+                            public void visit(String name, Object value) {
+                                Type type = (Type) value;
+                                Class<? extends Binder> c = $.classForName(type.getClassName(), getClass().getClassLoader());
+                                info.binder(c);
+                            }
+                        };
+                    }
+                    return av;
                 }
             }
         }
