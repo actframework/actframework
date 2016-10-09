@@ -23,7 +23,6 @@ public abstract class DaoBase<ID_TYPE, MODEL_TYPE, QUERY_TYPE extends Dao.Query<
         exploreTypes();
     }
 
-    @Deprecated
     public DaoBase(Class<ID_TYPE> idType, Class<MODEL_TYPE> modelType) {
         this.idType = idType;
         this.modelType = modelType;
