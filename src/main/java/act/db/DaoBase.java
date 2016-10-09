@@ -7,6 +7,7 @@ import org.osgl.util.Generics;
 
 import javax.enterprise.context.ApplicationScoped;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Type;
 import java.util.List;
 
 public abstract class DaoBase<ID_TYPE, MODEL_TYPE, QUERY_TYPE extends Dao.Query<MODEL_TYPE, QUERY_TYPE>>
@@ -84,7 +85,7 @@ public abstract class DaoBase<ID_TYPE, MODEL_TYPE, QUERY_TYPE extends Dao.Query<
     }
 
     private void exploreTypes() {
-        List<Class> types = Generics.typeParamImplementations(getClass(), DaoBase.class);
+        List<Type> types = Generics.typeParamImplementations(getClass(), DaoBase.class);
         int sz = types.size();
         if (sz < 1) {
             return;
