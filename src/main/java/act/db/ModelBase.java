@@ -15,8 +15,8 @@ import java.util.List;
 public abstract class ModelBase<ID_TYPE, MODEL_TYPE extends ModelBase>
 implements Model<ID_TYPE, MODEL_TYPE> {
 
-    protected Class<ID_TYPE> idType;
-    protected Class<MODEL_TYPE> modelType;
+    protected Type idType;
+    protected Type modelType;
 
     public ModelBase() {
         exploreTypes();
@@ -33,11 +33,11 @@ implements Model<ID_TYPE, MODEL_TYPE> {
     }
 
     protected Class<ID_TYPE> idType() {
-        return idType;
+        return Generics.classOf(idType);
     }
 
     protected Class<MODEL_TYPE> modelType() {
-        return modelType;
+        return Generics.classOf(modelType);
     }
 
     /**
@@ -94,8 +94,8 @@ implements Model<ID_TYPE, MODEL_TYPE> {
             return;
         }
         if (sz > 1) {
-            modelType = $.cast(types.get(1));
+            modelType = types.get(1);
         }
-        idType = $.cast(types.get(0));
+        idType = types.get(0);
     }
 }
