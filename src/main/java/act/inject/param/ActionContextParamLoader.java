@@ -1,8 +1,11 @@
 package act.inject.param;
 
 import act.app.App;
+import act.data.annotation.ResolveStringValue;
 import act.inject.HeaderVariable;
+import org.osgl.$;
 import org.osgl.inject.BeanSpec;
+import org.osgl.inject.util.AnnotationUtil;
 import org.osgl.mvc.annotation.Bind;
 import org.osgl.mvc.annotation.Param;
 import org.osgl.mvc.util.Binder;
@@ -34,13 +37,31 @@ class ActionContextParamLoader extends ParamValueLoaderService {
         }
 
         ParamValueLoader loader = null;
-        Bind bind = filter(annotations, Bind.class);
-        if (null != bind) {
-            for (Class<? extends Binder> binderClass : bind.value()) {
-                Binder binder = injector.get(binderClass);
-                if (rawType.isAssignableFrom(binder.targetType())) {
-                    loader = new BoundedValueLoader(binder, bindName);
-                    break;
+        {
+            Bind bind = spec.getAnnotation(Bind.class);
+            if (null != bind) {
+                for (Class<? extends Binder> binderClass : bind.value()) {
+                    Binder binder = injector.get(binderClass);
+                    if (rawType.isAssignableFrom(binder.targetType())) {
+                        loader = new BoundedValueLoader(binder, bindName);
+                        break;
+                    }
+                }
+            }
+        }
+        if (null == loader) {
+            Annotation[] aa = spec.allAnnotations();
+            for (Annotation a : aa) {
+                Bind bind = AnnotationUtil.tagAnnotation(a, Bind.class);
+                if (null != bind) {
+                    for (Class<? extends Binder> binderClass : bind.value()) {
+                        Binder binder = injector.get(binderClass);
+                        binder.attributes($.evaluate(a));
+                        if (rawType.isAssignableFrom(binder.targetType())) {
+                            loader = new BoundedValueLoader(binder, bindName);
+                            break;
+                        }
+                    }
                 }
             }
         }
@@ -49,19 +70,24 @@ class ActionContextParamLoader extends ParamValueLoaderService {
             if (null != binder) {
                 loader = new BoundedValueLoader(binder, bindName);
             } else {
-                Param param = filter(annotations, Param.class);
-                StringValueResolver resolver = null;
-                if (null != param) {
-                    Class<? extends StringValueResolver> resolverClass = param.resolverClass();
-                    if (Param.DEFAULT_RESOLVER.class != resolverClass) {
-                        resolver = injector.get(resolverClass);
-                    }
-                }
-                if (null == resolver) {
-                    resolver = resolverManager.resolver(rawType, spec);
-                }
-                loader = (null != resolver) ? new StringValueResolverValueLoader(ParamKey.of(bindName), resolver, param, rawType) : buildLoader(ParamKey.of(bindName), type);
             }
+        }
+        if (null == loader) {
+            StringValueResolver resolver = null;
+            // TODO
+
+            Param param = spec.getAnnotation(Param.class);
+            if (null != param) {
+                Class<? extends StringValueResolver> resolverClass = param.resolverClass();
+                if (Param.DEFAULT_RESOLVER.class != resolverClass) {
+                    resolver = injector.get(resolverClass);
+                }
+            }
+
+            if (null == resolver) {
+                resolver = resolverManager.resolver(rawType, spec);
+            }
+            loader = (null != resolver) ? new StringValueResolverValueLoader(ParamKey.of(bindName), resolver, param, rawType) : buildLoader(ParamKey.of(bindName), type);
         }
         return loader;
     }
