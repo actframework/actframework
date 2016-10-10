@@ -195,7 +195,7 @@ public class ControllerByteCodeScannerTest extends TestBase {
         param = binderRequired.param(0);
         assertNotNull(param);
         assertNotNull(param.bindAnnoInfo());
-        eq(EmailBinder.class, param.bindAnnoInfo().binder(mockApp).getClass());
+        eq(EmailBinder.class, param.bindAnnoInfo().binder(mockApp).get(0).getClass());
     }
 
     @Test

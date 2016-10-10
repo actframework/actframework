@@ -33,12 +33,18 @@ class ActionContextParamLoader extends ParamValueLoaderService {
             return new HeaderValueLoader(headerVariable.value(), spec);
         }
 
-        ParamValueLoader loader;
+        ParamValueLoader loader = null;
         Bind bind = filter(annotations, Bind.class);
         if (null != bind) {
-            Binder binder = injector.get(bind.value());
-            loader = new BoundedValueLoader(binder, bindName);
-        } else {
+            for (Class<? extends Binder> binderClass : bind.value()) {
+                Binder binder = injector.get(binderClass);
+                if (rawType.isAssignableFrom(binder.targetType())) {
+                    loader = new BoundedValueLoader(binder, bindName);
+                    break;
+                }
+            }
+        }
+        if (null == loader) {
             Binder binder = binderManager.binder(rawType);
             if (null != binder) {
                 loader = new BoundedValueLoader(binder, bindName);
