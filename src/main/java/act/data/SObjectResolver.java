@@ -1,5 +1,6 @@
 package act.data;
 
+import act.cli.CliContext;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -39,7 +40,13 @@ public class SObjectResolver extends StringValueResolverPlugin<SObject> {
             String encoded = value.substring(pos + "base64,".length());
             return resolveFromBase64(encoded);
         } else {
-            File file = new File(value);
+            File file;
+            CliContext cli = CliContext.current();
+            if (null != cli) {
+                file = cli.getFile(value);
+            } else {
+                file = new File(value);
+            }
             if (file.exists() && file.canRead()) {
                 return SObject.of(file);
             }

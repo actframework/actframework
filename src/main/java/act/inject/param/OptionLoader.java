@@ -2,17 +2,13 @@ package act.inject.param;
 
 import act.cli.CliContext;
 import act.cli.Optional;
-import act.data.annotation.ReadContent;
 import act.cli.Required;
-import act.data.ContentLinesResolver;
-import act.data.SObjectResolver;
 import act.util.ActContext;
 import org.osgl.inject.BeanSpec;
-import org.osgl.storage.ISObject;
-import org.osgl.util.*;
-
-import java.lang.reflect.Type;
-import java.util.List;
+import org.osgl.util.E;
+import org.osgl.util.Keyword;
+import org.osgl.util.S;
+import org.osgl.util.StringValueResolver;
 
 /**
  * Load command line options
@@ -26,9 +22,6 @@ class OptionLoader extends CliParamValueLoader implements ParamValueLoader {
     final String requiredGroup;
     final boolean required;
     final BeanSpec beanSpec;
-    final boolean readFile;
-    final boolean reportReadFileFailure;
-    final SObjectResolver sObjectResolver = SObjectResolver.INSTANCE;
     final String errorTemplate;
     private final StringValueResolver resolver;
 
@@ -39,17 +32,8 @@ class OptionLoader extends CliParamValueLoader implements ParamValueLoader {
         this.defVal = optional.defVal();
         this.requiredGroup = null;
         this.beanSpec = beanSpec;
-        Class rawType = beanSpec.rawType();
-        List<Type> typeParams = beanSpec.typeParams();
-        this.readFile = beanSpec.hasAnnotation(ReadContent.class) && (rawType == String.class || (rawType == List.class && !typeParams.isEmpty() && String.class == typeParams.get(0)));
-        this.reportReadFileFailure = this.readFile && beanSpec.getAnnotation(ReadContent.class).reportError();
         this.errorTemplate = errorTemplate(optional);
-        if (null == resolver) {
-            E.illegalArgumentIf(!readFile, "Cannot find resolver for %s", beanSpec);
-            this.resolver = ContentLinesResolver.INSTANCE;
-        } else {
-            this.resolver = resolver;
-        }
+        this.resolver = resolver;
         CliContext.ParsingContextBuilder.foundOptional();
     }
 
@@ -61,17 +45,8 @@ class OptionLoader extends CliParamValueLoader implements ParamValueLoader {
         String group = required.group();
         this.requiredGroup = S.blank(group) ? bindName : group;
         this.beanSpec = beanSpec;
-        Class rawType = beanSpec.rawType();
-        List<Type> typeParams = beanSpec.typeParams();
-        this.readFile = beanSpec.hasAnnotation(ReadContent.class) && (rawType == String.class || (rawType == List.class && !typeParams.isEmpty() && String.class == typeParams.get(0)));
-        this.reportReadFileFailure = this.readFile && beanSpec.getAnnotation(ReadContent.class).reportError();
         this.errorTemplate = errorTemplate(required);
-        if (null == resolver) {
-            E.illegalArgumentIf(!readFile, "Cannot find resolver for %s", beanSpec);
-            this.resolver = ContentLinesResolver.INSTANCE;
-        } else {
-            this.resolver = resolver;
-        }
+        this.resolver = resolver;
         CliContext.ParsingContextBuilder.foundRequired(this.requiredGroup);
     }
 
@@ -85,20 +60,6 @@ class OptionLoader extends CliParamValueLoader implements ParamValueLoader {
         Object val = null;
         if (S.notBlank(optVal)) {
             val = resolve(optVal);
-        }
-        if (readFile && val instanceof String) {
-            try {
-                ISObject sobj = resolve(S.string(val), sObjectResolver);
-                if (null != sobj) {
-                    val = IO.readContentAsString(sobj.asInputStream());
-                } else if (reportReadFileFailure) {
-                    throw E.unexpected("Error reading content from %s", val);
-                }
-            } catch (Exception e) {
-                if (reportReadFileFailure) {
-                    throw E.unexpected(e, "Error reading content from %s", val);
-                }
-            }
         }
         if (null == val && null != cachedBean) {
             val = cachedBean;

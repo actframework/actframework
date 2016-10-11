@@ -74,21 +74,6 @@ public class HandlerParamMetaInfo {
         return null;
     }
 
-    public boolean resolverDefined() {
-        return null != paramAnno && null != paramAnno.resolver();
-    }
-
-    public StringValueResolver resolver(App app) {
-        if (null == paramAnno) return null;
-        Class<? extends StringValueResolver> c = paramAnno.resolver();
-        if (null == c) return null;
-        return app.getInstance(c);
-    }
-
-    public ParamAnnoInfo paramAnnoInfo() {
-        return paramAnno;
-    }
-
     HandlerParamMetaInfo paramAnno(ParamAnnoInfo anno) {
         paramAnno = anno;
         return this;

@@ -9,6 +9,8 @@ import act.cli.meta.CommandMethodMetaInfo;
 import act.cli.util.CommandLineParser;
 import org.osgl.$;
 import org.osgl.inject.BeanSpec;
+import org.osgl.inject.util.AnnotationUtil;
+import org.osgl.mvc.annotation.Resolve;
 import org.osgl.util.S;
 import org.osgl.util.StringValueResolver;
 
@@ -84,18 +86,62 @@ public class CliContextParamLoader extends ParamValueLoaderService {
             Annotation[] annotations
     ) {
         boolean isArray = rawType.isArray();
-        StringValueResolver resolver = isArray ? resolverManager.resolver(rawType.getComponentType(), spec) : resolverManager.resolver(rawType, spec);
+        StringValueResolver resolver = findResolver(spec, rawType, isArray); //= isArray ? resolverManager.resolver(rawType.getComponentType(), spec) : resolverManager.resolver(rawType, spec);
+
         Required required = filter(annotations, Required.class);
-        Optional optional = null;
-        if (null == required) {
-            optional = filter(annotations, Optional.class);
-        }
+        Optional optional = null == required ? filter(annotations, Optional.class) : null;
         if (null != required) {
             return new OptionLoader(bindName, required, resolver, spec);
         } else if (null != optional) {
             return new OptionLoader(bindName, optional, resolver, spec);
         }
         return isArray ? new CliVarArgumentLoader(rawType.getComponentType(), resolver) : new CliArgumentLoader(resolver);
+    }
+
+    private StringValueResolver findResolver(BeanSpec spec, Class rawType, boolean isArray) {
+        StringValueResolver resolver = findAnnotatedResolver(spec, rawType);
+        return null == resolver ? findImplictResolver(spec, rawType, isArray) : resolver;
+    }
+
+    private StringValueResolver findAnnotatedResolver(BeanSpec spec, Class rawType) {
+        StringValueResolver resolver = findDirectAnnotatedResolver(spec, rawType);
+        return null == resolver ? findIndirectAnnotatedResolver(spec, rawType) : resolver;
+    }
+
+    private StringValueResolver findDirectAnnotatedResolver(BeanSpec spec, Class rawType) {
+        Resolve resolve = spec.getAnnotation(Resolve.class);
+        if (null != resolve) {
+            Class<? extends StringValueResolver>[] resolvers = resolve.value();
+            for (Class<? extends StringValueResolver> resolverClass : resolvers) {
+                StringValueResolver resolver = injector.get(resolverClass);
+                if (rawType.isAssignableFrom(resolver.targetType())) {
+                    return resolver;
+                }
+            }
+        }
+        return null;
+    }
+
+    private StringValueResolver findIndirectAnnotatedResolver(BeanSpec spec, Class rawType) {
+        Annotation[] aa = spec.allAnnotations();
+        for (Annotation a : aa) {
+            Resolve resolve = AnnotationUtil.tagAnnotation(a, Resolve.class);
+            if (null != resolve) {
+                Class<? extends StringValueResolver>[] resolvers = resolve.value();
+                for (Class<? extends StringValueResolver> resolverClass : resolvers) {
+                    StringValueResolver resolver = injector.get(resolverClass);
+                    resolver.attributes($.evaluate(a));
+                    if (rawType.isAssignableFrom(resolver.targetType())) {
+                        return resolver;
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    private StringValueResolver findImplictResolver(BeanSpec spec, Class rawType, boolean isArray) {
+        return isArray ? resolverManager.resolver(rawType.getComponentType(), spec) : resolverManager.resolver(rawType, spec);
     }
 
     @Override

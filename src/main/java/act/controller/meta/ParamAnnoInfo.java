@@ -5,11 +5,11 @@ import org.osgl.mvc.annotation.Param;
 import org.osgl.util.C;
 import org.osgl.util.StringValueResolver;
 
+import java.util.List;
 import java.util.Map;
 
 public class ParamAnnoInfo extends ParamAnnoInfoTraitBase {
     private String bindName = "";
-    private Class<? extends StringValueResolver> resolver = Param.DEFAULT_RESOLVER.class;
     private Map<Class, Object> defValMap = C.newMap();
 
     public ParamAnnoInfo(int index) {
@@ -27,13 +27,6 @@ public class ParamAnnoInfo extends ParamAnnoInfoTraitBase {
     }
     public String bindName() {
         return bindName;
-    }
-    public ParamAnnoInfo resolver(Class<? extends StringValueResolver> resolver) {
-        this.resolver = resolver;
-        return this;
-    }
-    public Class<? extends StringValueResolver> resolver() {
-        return resolver;
     }
     public ParamAnnoInfo defVal(Class<?> type, Object val) {
         defValMap.put(type, val);

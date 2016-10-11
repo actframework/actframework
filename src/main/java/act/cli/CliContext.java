@@ -245,17 +245,17 @@ public class CliContext extends ActContext.Base<CliContext> implements IASCIITab
      * @return the current working directory
      */
     public File curDir() {
-        File file = attribute(ATTR_PWD);
+        File file = session().attribute(ATTR_PWD);
         if (null == file) {
             file = new File(System.getProperty("user.dir"));
-            attribute(ATTR_PWD, file);
+            session().attribute(ATTR_PWD, file);
         }
         return file;
     }
 
     public CliContext chDir(File dir) {
         E.illegalArgumentIf(!dir.isDirectory());
-        attribute(ATTR_PWD, dir);
+        session().attribute(ATTR_PWD, dir);
         return this;
     }
 

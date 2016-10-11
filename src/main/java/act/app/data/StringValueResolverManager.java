@@ -45,13 +45,13 @@ public class StringValueResolverManager extends AppServiceBase<StringValueResolv
         return null != r ? r.resolve(strVal) : null;
     }
 
-    public StringValueResolver resolver(final Class<?> targetType) {
-        StringValueResolver r = resolvers.get(targetType);
+    public <T> StringValueResolver<T> resolver(final Class<T> targetType) {
+        StringValueResolver<T> r = resolvers.get(targetType);
         if (null == r && Enum.class.isAssignableFrom(targetType)) {
-            r = new StringValueResolver() {
+            r = new StringValueResolver<T>(targetType) {
                 @Override
-                public Object resolve(String value) {
-                    return Enum.valueOf(((Class<Enum>) targetType), value);
+                public T resolve(String value) {
+                    return (T) Enum.valueOf(((Class<Enum>) targetType), value);
                 }
             };
             resolvers.put(targetType, r);
@@ -59,8 +59,8 @@ public class StringValueResolverManager extends AppServiceBase<StringValueResolv
         return r;
     }
 
-    public StringValueResolver resolver(Class<?> targetType, AnnotationAware annotationAware) {
-        StringValueResolver resolver = resolver(targetType);
+    public <T> StringValueResolver<T> resolver(Class<T> targetType, AnnotationAware annotationAware) {
+        StringValueResolver<T> resolver = resolver(targetType);
         if (null != resolver) {
             resolver = resolver.amended(annotationAware);
         }

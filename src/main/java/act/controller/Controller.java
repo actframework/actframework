@@ -521,7 +521,7 @@ public @interface Controller {
             if (actionContext.acceptJson()) {
                 s = s.trim();
                 if (!s.startsWith("[") && !s.startsWith("{")) {
-                    s = S.fmt("{\"result\": \"%s\"}", s);
+                    s = S.fmt("{\"result\": \"%s\"}", org.rythmengine.utils.S.escapeJSON(s));
                 }
                 return new RenderJSON(s);
             }

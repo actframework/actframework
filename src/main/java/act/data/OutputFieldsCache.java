@@ -62,6 +62,10 @@ class OutputFieldsCache {
     }
 
     List<String> calculateOutputs(K k) {
+        Class<?> type = k.componentType;
+        if ($.isSimpleType(type) && k.excluded.isEmpty() && k.outputs.isEmpty()) {
+            return C.list();
+        }
         C.List<StringOrPattern> outputs = C.newList();
         boolean hasPattern = hasPattern(k.outputs, outputs);
         Set<String> excluded = k.excluded;

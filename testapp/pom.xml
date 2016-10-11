@@ -18,6 +18,9 @@
 ********************************************
 *            version history
 ********************************************
+0.0.2
+  - update to ActFramework 0.3
+
 0.0.1
   - baseline version
 -->
@@ -112,16 +115,9 @@
     </dependency>
 
     <dependency>
-      <groupId>com.squareup.okhttp3</groupId>
-      <artifactId>okhttp</artifactId>
-      <version>3.4.1</version>
-      <scope>test</scope>
-    </dependency>
-
-    <dependency>
       <groupId>org.actframework</groupId>
       <artifactId>act</artifactId>
-      <version>0.2.0-SNAPSHOT</version>
+      <version>0.3.0-SNAPSHOT</version>
     </dependency>
 
     <dependency>

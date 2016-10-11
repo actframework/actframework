@@ -624,8 +624,6 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
                 public void visit(String name, Object value) {
                     if (S.eq("value", name)) {
                         info.bindName((String) value);
-                    } else if (S.eq("resolveClass", name)) {
-                        info.resolver((Class) value);
                     } else if (S.eq("defVal", name)) {
                         info.defVal(String.class, value);
                     } else if (S.eq("defIntVal", name)) {

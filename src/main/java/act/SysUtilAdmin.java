@@ -74,7 +74,7 @@ public class SysUtilAdmin {
     }
 
     @Command(name = "act.cd", help = "Change working directory")
-    public void cd(@Optional("specify the path to which the working directory to be changed") String path) {
+    public void cd(@Required("specify the path to which the working directory to be changed") String path) {
         if (S.blank(path)) {
             context.println(pwd());
             return;

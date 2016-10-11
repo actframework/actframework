@@ -1,6 +1,6 @@
 package testapp.model;
 
-import act.data.Data;
+import act.data.annotation.Data;
 import org.osgl.util.C;
 
 import java.util.Collection;
