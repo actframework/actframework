@@ -15,8 +15,8 @@ import java.util.List;
 public abstract class ModelBase<ID_TYPE, MODEL_TYPE extends ModelBase>
 implements Model<ID_TYPE, MODEL_TYPE> {
 
-    protected Type idType;
-    protected Type modelType;
+    protected transient Type idType;
+    protected transient Type modelType;
 
     public ModelBase() {
         exploreTypes();

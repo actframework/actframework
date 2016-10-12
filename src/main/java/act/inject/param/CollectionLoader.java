@@ -1,10 +1,13 @@
 package act.inject.param;
 
+import act.Act;
+import act.app.ActionContext;
 import act.app.App;
 import act.inject.DependencyInjector;
 import act.util.ActContext;
 import org.osgl.inject.BeanSpec;
 import org.osgl.mvc.result.BadRequest;
+import org.osgl.mvc.util.Binder;
 import org.osgl.util.E;
 import org.osgl.util.S;
 import org.osgl.util.StringValueResolver;
@@ -19,6 +22,7 @@ class CollectionLoader implements ParamValueLoader {
     private final Type elementType;
     private final DependencyInjector<?> injector;
     private final StringValueResolver resolver;
+    private final Binder binder;
     private final Map<ParamKey, ParamValueLoader> childLoaders = new HashMap<ParamKey, ParamValueLoader>();
     private final ParamValueLoaderService manager;
     private final boolean isChar;
@@ -36,7 +40,17 @@ class CollectionLoader implements ParamValueLoader {
         this.isChar = char.class == elementType || Character.class == elementType;
         this.injector = injector;
         this.manager = manager;
-        this.resolver = App.instance().resolverManager().resolver(BeanSpec.rawTypeOf(elementType));
+        App app = Act.app();
+        Class<?> rawType = BeanSpec.rawTypeOf(elementType);
+        this.binder = app.binderManager().binder(rawType);
+        if (null == binder) {
+            this.resolver = App.instance().resolverManager().resolver(rawType);
+        } else {
+            this.resolver = null;
+        }
+        if (null == this.binder && null == this.resolver) {
+            throw new IllegalArgumentException(S.fmt("Cannot find binder and resolver for %s", elementType));
+        }
     }
 
     @Override
@@ -48,15 +62,22 @@ class CollectionLoader implements ParamValueLoader {
         }
         Collection collection = null == bean ? injector.get(collectionClass) : (Collection) bean;
         if (node.isList()) {
-            for (ParamTreeNode elementNode : node.list()) {
-                if (!elementNode.isLeaf()) {
-                    throw new BadRequest("cannot parse param: expect leaf node, found: \n%s", node.debug());
-                }
-                if (null == resolver) {
-                    throw E.unexpected("Component type not resolvable: %s", elementType);
-                }
-                if (null != elementNode.value()) {
-                    collection.add(resolver.resolve(elementNode.value()));
+            List<ParamTreeNode> nodes = node.list();
+            if (nodes.size() > 0) {
+                String value = nodes.get(0).value();
+                if (S.notBlank(value)) {
+                    for (int i = 0; i < nodes.size(); ++i) {
+                        ParamTreeNode elementNode = nodes.get(i);
+                        if (!elementNode.isLeaf()) {
+                            throw new BadRequest("cannot parse param: expect leaf node, found: \n%s", node.debug());
+                        }
+                        context.attribute(ActionContext.ATTR_CURRENT_FILE_INDEX, i);
+                        if (null != binder) {
+                            collection.add(binder.resolve(null, elementNode.value(), context));
+                        } else {
+                            collection.add(resolver.resolve(elementNode.value()));
+                        }
+                    }
                 }
             }
         } else if (node.isMap()) {
@@ -70,11 +91,12 @@ class CollectionLoader implements ParamValueLoader {
                 }
                 ParamTreeNode child = node.child(s);
                 if (child.isLeaf()) {
-                    if (null == resolver) {
-                        throw E.unexpected("Component type not resolvable: %s", elementType);
-                    }
                     if (null != child.value()) {
-                        addToCollection(collection, id, resolver.resolve(child.value()));
+                        if (null != binder) {
+                            addToCollection(collection, id, binder.resolve(null, child.value(), context));
+                        } else {
+                            addToCollection(collection, id, resolver.resolve(child.value()));
+                        }
                     }
                 } else {
                     ParamValueLoader childLoader = childLoader(child.key());
@@ -82,10 +104,7 @@ class CollectionLoader implements ParamValueLoader {
                 }
             }
         } else {
-            if (null == resolver) {
-                throw E.unexpected("Component type not resolvable: %s", elementType);
-            }
-            resolveInto(collection, node.value());
+            resolveInto(collection, node.value(), context);
         }
         return collection;
     }
@@ -118,7 +137,7 @@ class CollectionLoader implements ParamValueLoader {
         list.set(index, bean);
     }
 
-    private void resolveInto(Collection collection, String value) {
+    private void resolveInto(Collection collection, String value, ActContext context) {
         if (S.blank(value)) {
             return;
         }
@@ -132,7 +151,11 @@ class CollectionLoader implements ParamValueLoader {
                     collection.add(c);
                 }
             } else {
-                collection.add(resolver.resolve(s));
+                if (null != binder) {
+                    collection.add(binder.resolve(null, s, context));
+                } else {
+                    collection.add(resolver.resolve(s));
+                }
             }
         }
     }

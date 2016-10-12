@@ -11,6 +11,7 @@ import java.io.File;
  * Resolve file uploads
  */
 public class FileBinder extends Binder<File> {
+
     @Override
     public File resolve(File file, String s, ParamValueProvider paramValueProvider) {
         ActionContext ctx = $.cast(paramValueProvider);

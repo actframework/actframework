@@ -11,6 +11,7 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.output.DeferredFileOutputStream;
 import org.osgl.exception.UnexpectedException;
 import org.osgl.http.H;
+import org.osgl.storage.ISObject;
 import org.osgl.util.IO;
 
 import java.io.*;
@@ -579,7 +580,8 @@ public class ApacheMultipartParser extends RequestBodyParser {
 
                     MapUtil.mergeValueInMap(result, fileItem.getFieldName(), fileItem.getString(_encoding));
                 } else {
-                    context.addUpload(fileItem.getFieldName(), UploadFileStorageService.store(fileItem, context.app()));
+                    ISObject obj = UploadFileStorageService.store(fileItem, context.app());
+                    context.addUpload(fileItem.getFieldName(), obj);
                     MapUtil.mergeValueInMap(result, fileItem.getFieldName(), fileItem.getFieldName());
                 }
             }

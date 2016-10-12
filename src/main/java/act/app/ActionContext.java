@@ -43,6 +43,7 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
     public static final String ATTR_PATH_VARS = "__path_vars__";
     public static final String ATTR_RESULT = "__result__";
     public static final String ATTR_EXCEPTION = "__exception__";
+    public static final String ATTR_CURRENT_FILE_INDEX = "__file_id__";
     public static final String REQ_BODY = "_body";
 
     private String portId;
@@ -57,7 +58,7 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
     private String actionPath; // e.g. com.mycorp.myapp.controller.AbcController.foo
     private State state;
     private Map<String, Object> controllerInstances;
-    private Map<String, ISObject> uploads;
+    private Map<String, ISObject[]> uploads;
     private Set<ConstraintViolation> violations;
     private Router router;
     private RequestHandler handler;
@@ -280,13 +281,31 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
     }
 
     public ISObject upload(String name) {
-        // ensure body get parsed
+        Integer index = attribute(ATTR_CURRENT_FILE_INDEX);
+        if (null == index) {
+            index = 0;
+        }
+        return upload(name, index);
+    }
+
+    public ISObject upload(String name, int index) {
         body();
-        return uploads.get(name);
+        ISObject[] a = uploads.get(name);
+        return null != a && a.length > index ? a[index] : null;
     }
 
     public ActionContext addUpload(String name, ISObject sobj) {
-        uploads.put(name, sobj);
+        ISObject[] a = uploads.get(name);
+        if (null == a) {
+            a = new ISObject[1];
+            a[0] = sobj;
+        } else {
+            ISObject[] newA = new ISObject[a.length + 1];
+            System.arraycopy(a, 0, newA, 0, a.length);
+            newA[a.length] = sobj;
+            a = newA;
+        }
+        uploads.put(name, a);
         return this;
     }
 
