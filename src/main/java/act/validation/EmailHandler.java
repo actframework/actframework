@@ -14,7 +14,7 @@ public class EmailHandler extends ActionMethodParamAnnotationHandlerPlugin {
     @Override
     public Set<Class<? extends Annotation>> listenTo() {
         Set<Class<? extends Annotation>> set = C.newSet();
-        set.add(NotBlank.class);
+        set.add(Email.class);
         return set;
     }
 
