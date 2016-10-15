@@ -67,15 +67,22 @@ public class MailerConfig extends AppHolderBase {
         this.locale = getLocaleConfig(properties);
         this.subject = getProperty(SUBJECT, properties);
         this.host = getProperty(SMTP_HOST, properties);
+        if ("gmail".equals(this.host)) {
+            this.host = "smtp.gmail.com";
+        }
+        this.username = getProperty(SMTP_USERNAME, properties);
         if (null == host) {
-            logger.warn("smtp host configuration not found, will use mock smtp to send email");
-            mock = true;
-        } else {
-            mock = false;
-            this.useTls = getBooleanConfig(SMTP_TLS, properties);
-            this.useSsl = getBooleanConfig(SMTP_SSL, properties);
+            if (S.notBlank(this.username) && this.username.endsWith("gmail.com")) {
+                this.host = "smtp.gmail.com";
+            } else {
+                logger.warn("smtp host configuration not found, will use mock smtp to send email");
+                mock = true;
+            }
+        }
+        if (!mock) {
+            this.useTls = getBooleanConfig(SMTP_TLS, properties) || S.eq("smtp.gmail.com", this.host);
+            this.useSsl = !this.useTls && getBooleanConfig(SMTP_SSL, properties);
             this.port = getPortConfig(properties);
-            this.username = getProperty(SMTP_USERNAME, properties);
             this.password = getProperty(SMTP_PASSWORD, properties);
             if (null == username || null == password) {
                 logger.warn("Either smtp.username or smtp.password is not configured for mailer[%s]", id);

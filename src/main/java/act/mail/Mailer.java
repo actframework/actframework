@@ -9,6 +9,7 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 
@@ -43,8 +44,12 @@ public @interface Mailer {
             ctx().from = from;
         }
 
-        public static void to(String ... to) {
-            ctx().to = S.join(",", to);
+        public static void to(List<String> recipients) {
+            ctx().to = S.join(",", recipients);
+        }
+
+        public static void to(String ... recipients) {
+            ctx().to = S.join(",", recipients);
         }
 
         public static void cc(String ... cc) {

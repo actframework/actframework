@@ -17,6 +17,7 @@ import javax.inject.Inject;
 public class JodaLocalTimeCodec extends JodaDateTimeCodecBase<LocalTime> {
 
     private DateTimeFormatter dateFormat;
+    private boolean isIso;
 
     public JodaLocalTimeCodec(DateTimeFormatter dateFormat) {
         this.dateFormat = $.notNull(dateFormat);
@@ -26,6 +27,7 @@ public class JodaLocalTimeCodec extends JodaDateTimeCodecBase<LocalTime> {
     public JodaLocalTimeCodec(String pattern) {
         if (isIsoStandard(pattern)) {
             dateFormat = ISODateTimeFormat.timeNoMillis();
+            isIso = true;
         } else {
             dateFormat = DateTimeFormat.forPattern(pattern);
         }
@@ -41,7 +43,7 @@ public class JodaLocalTimeCodec extends JodaDateTimeCodecBase<LocalTime> {
     public LocalTime resolve(String value) {
         if (S.notBlank(value)) {
             // See http://stackoverflow.com/questions/15642053/joda-time-parsing-string-throws-java-lang-illegalargumentexception/15642797#15642797
-            if (!value.contains("Z")) {
+            if (isIso && !value.contains("Z")) {
                 value += "Z";
             }
             return dateFormat.parseLocalTime(value);
