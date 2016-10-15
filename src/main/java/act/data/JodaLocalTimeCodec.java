@@ -8,12 +8,13 @@ import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
 import org.osgl.$;
 import org.osgl.util.AnnotationAware;
+import org.osgl.util.S;
 import org.osgl.util.StringValueResolver;
 import org.osgl.util.ValueObject;
 
 import javax.inject.Inject;
 
-public class JodaLocalTimeCodec extends StringValueResolver<LocalTime> implements ValueObject.Codec<LocalTime> {
+public class JodaLocalTimeCodec extends JodaDateTimeCodecBase<LocalTime> {
 
     private DateTimeFormatter dateFormat;
 
@@ -23,29 +24,29 @@ public class JodaLocalTimeCodec extends StringValueResolver<LocalTime> implement
     }
 
     public JodaLocalTimeCodec(String pattern) {
-        this.dateFormat = DateTimeFormat.forPattern(pattern);
+        if (isIsoStandard(pattern)) {
+            dateFormat = ISODateTimeFormat.timeNoMillis();
+        } else {
+            dateFormat = DateTimeFormat.forPattern(pattern);
+        }
         verify();
     }
 
-
     @Inject
     public JodaLocalTimeCodec(AppConfig config) {
-        String patten = config.timeFormat();
-        if (patten.contains("8601")) {
-            dateFormat = ISODateTimeFormat.time();
-        } else {
-            dateFormat = DateTimeFormat.forPattern(patten);
-        }
+        this(config.timeFormat());
     }
 
     @Override
     public LocalTime resolve(String value) {
-        return null == value ? null : dateFormat.parseLocalTime(value);
-    }
-
-    @Override
-    public Class<LocalTime> targetClass() {
-        return LocalTime.class;
+        if (S.notBlank(value)) {
+            // See http://stackoverflow.com/questions/15642053/joda-time-parsing-string-throws-java-lang-illegalargumentexception/15642797#15642797
+            if (!value.contains("Z")) {
+                value += "Z";
+            }
+            return dateFormat.parseLocalTime(value);
+        }
+        return null;
     }
 
     @Override

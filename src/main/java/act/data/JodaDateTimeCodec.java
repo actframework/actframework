@@ -16,7 +16,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 @Singleton
-public class JodaDateTimeCodec extends StringValueResolver<DateTime> implements ValueObject.Codec<DateTime> {
+public class JodaDateTimeCodec extends JodaDateTimeCodecBase<DateTime> {
 
     private DateTimeFormatter dateFormat;
 
@@ -25,20 +25,18 @@ public class JodaDateTimeCodec extends StringValueResolver<DateTime> implements 
         verify();
     }
 
-    public JodaDateTimeCodec(String format) {
-        this.dateFormat = DateTimeFormat.forPattern(format);
+    public JodaDateTimeCodec(String pattern) {
+        if (isIsoStandard(pattern)) {
+            dateFormat = ISODateTimeFormat.dateTime();
+        } else {
+            dateFormat = DateTimeFormat.forPattern(pattern);
+        }
         verify();
     }
 
     @Inject
     public JodaDateTimeCodec(AppConfig config) {
-        String patten = config.dateTimeFormat();
-        if (patten.contains("8601") || patten.contains("iso")) {
-            dateFormat = ISODateTimeFormat.dateTime();
-        } else {
-            dateFormat = DateTimeFormat.forPattern(patten);
-        }
-        verify();
+        this(config.dateTimeFormat());
     }
 
     @Override

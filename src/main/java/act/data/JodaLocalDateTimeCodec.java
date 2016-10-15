@@ -8,12 +8,13 @@ import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
 import org.osgl.$;
 import org.osgl.util.AnnotationAware;
+import org.osgl.util.S;
 import org.osgl.util.StringValueResolver;
 import org.osgl.util.ValueObject;
 
 import javax.inject.Inject;
 
-public class JodaLocalDateTimeCodec extends StringValueResolver<LocalDateTime> implements ValueObject.Codec<LocalDateTime> {
+public class JodaLocalDateTimeCodec extends JodaDateTimeCodecBase<LocalDateTime> {
 
     private DateTimeFormatter dateFormat;
 
@@ -23,30 +24,29 @@ public class JodaLocalDateTimeCodec extends StringValueResolver<LocalDateTime> i
     }
 
     public JodaLocalDateTimeCodec(String pattern) {
-        this.dateFormat = DateTimeFormat.forPattern(pattern);
-        verify();
-    }
-
-
-    @Inject
-    public JodaLocalDateTimeCodec(AppConfig config) {
-        String patten = config.dateFormat();
-        if (patten.contains("8601")) {
+        if (isIsoStandard(pattern)) {
             dateFormat = ISODateTimeFormat.dateTimeNoMillis();
         } else {
-            dateFormat = DateTimeFormat.forPattern(patten);
+            this.dateFormat = DateTimeFormat.forPattern(pattern);
         }
         verify();
     }
 
-    @Override
-    public LocalDateTime resolve(String value) {
-        return null == value ? null : dateFormat.parseLocalDateTime(value);
+    @Inject
+    public JodaLocalDateTimeCodec(AppConfig config) {
+        this(config.dateFormat());
     }
 
     @Override
-    public Class<LocalDateTime> targetClass() {
-        return LocalDateTime.class;
+    public LocalDateTime resolve(String value) {
+        if (S.notBlank(value)) {
+            // See http://stackoverflow.com/questions/15642053/joda-time-parsing-string-throws-java-lang-illegalargumentexception/15642797#15642797
+            if (!value.contains("Z")) {
+                value += "Z";
+            }
+            return dateFormat.parseLocalDateTime(value);
+        }
+        return null;
     }
 
     @Override

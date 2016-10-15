@@ -12,7 +12,7 @@ import org.osgl.util.IO;
 
 import javax.inject.Named;
 import java.io.File;
-import java.util.List;
+import java.util.*;
 
 @Controller("/misc")
 @SuppressWarnings("unused")
@@ -33,8 +33,8 @@ public class MiscsTestBed extends Controller.Util {
 
     @PostAction("readLine")
     @Command("misc.catLine")
-    public List<String> testReadLinesMercy(
-            @ReadContent(mercy = true) List<String> lines
+    public Collection<String> testReadLinesMercy(
+            @ReadContent(mercy = true) @Named("files") Collection<String> lines
     ) {
         return lines;
     }

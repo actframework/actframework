@@ -304,6 +304,9 @@ public class MailerContext extends ActContext.Base<MailerContext> {
             throw E.unexpected("Cannot find mailer config for %s", confId);
         }
         Session session = mailerConfig().session();
+        if (Act.isDev()) {
+            session.setDebug(true);
+        }
         MimeMessage msg = new MimeMessage(session);
 
         msg.setFrom(from());

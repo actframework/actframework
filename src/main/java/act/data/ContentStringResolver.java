@@ -1,11 +1,8 @@
 package act.data;
 
 import org.osgl.storage.ISObject;
-import org.osgl.util.C;
 import org.osgl.util.IO;
 import org.osgl.util.StringValueResolver;
-
-import java.util.List;
 
 import static act.data.annotation.ReadContent.ATTR_MERCY;
 

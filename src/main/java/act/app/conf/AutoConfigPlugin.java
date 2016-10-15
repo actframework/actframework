@@ -1,20 +1,27 @@
 package act.app.conf;
 
+import act.Act;
 import act.ActComponent;
 import act.app.App;
 import act.app.AppByteCodeScanner;
+import act.app.data.StringValueResolverManager;
 import act.app.event.AppEventId;
 import act.conf.AppConfig;
 import act.event.AppEventListenerBase;
 import act.util.AnnotatedTypeFinder;
 import org.osgl.$;
 import org.osgl.exception.NotAppliedException;
+import org.osgl.inject.BeanSpec;
+import org.osgl.inject.Injector;
 import org.osgl.util.Const;
 import org.osgl.util.E;
+import org.osgl.util.S;
+import org.osgl.util.StringValueResolver;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
+import java.util.Collection;
 import java.util.EventObject;
 import java.util.Map;
 import java.util.Set;
@@ -72,11 +79,15 @@ public class AutoConfigPlugin extends AnnotatedTypeFinder {
         private AppConfig conf;
         private Class<?> autoConfigClass;
         private String ns;
+        private StringValueResolverManager resolverManager;
+        private Injector injector;
 
         AutoConfigLoader(App app, Class<?> autoConfigClass) {
             this.conf = app.config();
             this.autoConfigClass = autoConfigClass;
             this.ns = (autoConfigClass.getAnnotation(AutoConfig.class)).value();
+            this.resolverManager = app.resolverManager();
+            this.injector = app.injector();
             synchronized (AutoConfigLoader.class) {
                 allowChangeFinalField();
                 app.jobManager().on(AppEventId.START, new Runnable() {
@@ -140,11 +151,11 @@ public class AutoConfigPlugin extends AnnotatedTypeFinder {
                     return;
                 }
             }
-            Class<?> type = f.getType();
+            BeanSpec spec = BeanSpec.of(f, injector);
             boolean isFinal = false;
             try {
                 isFinal = turnOffFinal(f);
-                setField(f, null, key, val, type);
+                setField(f, null, key, val, spec);
             } catch (Exception e) {
                 throw E.invalidConfiguration(e, "Error get configuration " + key + ": " + e.getMessage());
             } finally {
@@ -154,41 +165,41 @@ public class AutoConfigPlugin extends AnnotatedTypeFinder {
             }
         }
 
-        private void setField(Field f, Object host, String key, Object val, Class<?> type) throws Exception {
-            if ($.Val.class.isAssignableFrom(type)) {
+        private void setField(Field f, Object host, String key, Object val, BeanSpec spec) throws Exception {
+            if (spec.isInstanceOf($.Val.class)) {
                 $.Val value = $.cast(f.get(host));
-                ParameterizedType type0 = $.cast(f.getGenericType());
                 Field fVal = $.Var.class.getDeclaredField("v");
                 fVal.setAccessible(true);
-                setField(fVal, value, key, val, (Class<?>) type0.getActualTypeArguments()[0]);
+                BeanSpec spec0 = BeanSpec.of(spec.typeParams().get(0), null, injector);
+                setField(fVal, value, key, val, spec0);
                 fVal.setAccessible(false);
-            } else if (Const.class.isAssignableFrom(type)) {
+            } else if (spec.isInstanceOf(Const.class)) {
                 Const value = $.cast(f.get(host));
-                ParameterizedType type0 = $.cast(f.getGenericType());
                 Field fConst = Const.class.getDeclaredField("v");
                 fConst.setAccessible(true);
-                setField(fConst, value, key, val, (Class<?>) type0.getActualTypeArguments()[0]);
+                BeanSpec spec0 = BeanSpec.of(spec.typeParams().get(0), null, injector);
+                setField(fConst, value, key, val, spec0);
                 fConst.setAccessible(false);
-            } else if (String.class.equals(type)) {
-                f.set(host, val);
-            } else if (Integer.TYPE.equals(type) || Integer.class.equals(type)) {
-                f.set(host, Integer.parseInt(val.toString()));
-            } else if (Boolean.TYPE.equals(type) || Boolean.class.equals(type)) {
-                f.set(host, Boolean.parseBoolean(val.toString()));
-            } else if (Character.TYPE.equals(type) || Character.class.equals(type)) {
-                f.set(host, val.toString().charAt(0));
-            } else if (Byte.TYPE.equals(type) || Byte.class.equals(type)) {
-                f.set(host, Byte.parseByte(val.toString()));
-            } else if (Long.TYPE.equals(type) || Long.class.equals(type)) {
-                f.set(host, Long.parseLong(val.toString()));
-            } else if (Float.TYPE.equals(type) || Float.class.equals(type)) {
-                f.set(host, Float.parseFloat(val.toString()));
-            } else if (Double.TYPE.equals(type) || Double.class.equals(type)) {
-                f.set(host, Double.parseDouble(val.toString()));
-            } else if (Enum.class.isAssignableFrom(type)) {
-                f.set(host, Enum.valueOf(((Class<Enum>) type), val.toString()));
+            } else if (spec.isInstanceOf(Collection.class)) {
+                BeanSpec spec0 = BeanSpec.of(spec.typeParams().get(0), null, injector);
+                StringValueResolver resolver = resolverManager.resolver(spec0.rawType());
+                if (null == resolver) {
+                    logger.warn("Config[%s] field type[%s] not recognized", key, spec);
+                } else {
+                    Collection col = (Collection) injector.get(spec.rawType());
+                    String[] sa = val.toString().split(",");
+                    for (String s : sa) {
+                        col.add(resolver.resolve(s));
+                    }
+                    f.set(host, col);
+                }
             } else {
-                logger.warn("Config[%s] field type[%s] not recognized", key, type);
+                StringValueResolver resolver = resolverManager.resolver(spec.rawType());
+                if (null == resolver) {
+                    logger.warn("Config[%s] field type[%s] not recognized", key, spec.rawType());
+                } else {
+                    f.set(host, resolver.resolve(val.toString()));
+                }
             }
         }
     }

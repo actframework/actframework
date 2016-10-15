@@ -20,11 +20,11 @@ public class DateResolver extends StringValueResolver<Date> {
 
     @Inject
     public DateResolver(AppConfig config) {
-        String patten = config.dateTimeFormat();
-        if (patten.contains("8601")) {
+        String pattern = config.dateTimeFormat();
+        if (null == pattern || pattern.contains("8601") || pattern.contains("iso")) {
             dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssX");
         } else {
-            dateFormat = new SimpleDateFormat(patten);
+            dateFormat = new SimpleDateFormat(pattern);
         }
     }
 

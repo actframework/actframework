@@ -13,7 +13,7 @@ import org.osgl.util.ValueObject;
 
 import javax.inject.Inject;
 
-public class JodaLocalDateCodec extends StringValueResolver<LocalDate> implements ValueObject.Codec<LocalDate> {
+public class JodaLocalDateCodec extends JodaDateTimeCodecBase<LocalDate> {
 
     private DateTimeFormatter dateFormat;
 
@@ -23,29 +23,22 @@ public class JodaLocalDateCodec extends StringValueResolver<LocalDate> implement
     }
 
     public JodaLocalDateCodec(String pattern) {
-        this.dateFormat = DateTimeFormat.forPattern(pattern);
+        if (isIsoStandard(pattern)) {
+            dateFormat = ISODateTimeFormat.date();
+        } else {
+            dateFormat = DateTimeFormat.forPattern(pattern);
+        }
         verify();
     }
 
     @Inject
     public JodaLocalDateCodec(AppConfig config) {
-        String patten = config.dateFormat();
-        if (patten.contains("8601")) {
-            dateFormat = ISODateTimeFormat.date();
-        } else {
-            dateFormat = DateTimeFormat.forPattern(patten);
-        }
-        verify();
+        this(config.dateFormat());
     }
 
     @Override
     public LocalDate resolve(String value) {
         return null == value ? null : dateFormat.parseLocalDate(value);
-    }
-
-    @Override
-    public Class<LocalDate> targetClass() {
-        return LocalDate.class;
     }
 
     @Override
