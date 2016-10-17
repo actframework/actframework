@@ -16,6 +16,7 @@ import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Pattern;
 
 import static act.util.ClassInfoRepository.canonicalName;
 
@@ -25,6 +26,12 @@ import static act.util.ClassInfoRepository.canonicalName;
 public class FullStackAppBootstrapClassLoader extends BootstrapClassLoader implements ActClassLoader {
 
     private static final String KEY_CLASSPATH = "java.class.path";
+    /**
+     * the {@link System#getProperty(String) system property} key to get
+     * the ignored jar file name pattern; multiple patterns can be specified
+     * with comma `,`
+     */
+    private static final String KEY_JAR_IGNORE = "act.jar.ignore";
     private final Class<?> PLUGIN_CLASS;
 
     private List<File> jars;
@@ -33,6 +40,7 @@ public class FullStackAppBootstrapClassLoader extends BootstrapClassLoader imple
     private List<Class<?>> actClasses = C.newList();
     private List<Class<?>> pluginClasses = new ArrayList<Class<?>>();
     private String lineSeparator = OS.get().lineSeparator();
+    private static final $.Predicate<File> jarFilter = jarFilter();
 
     public FullStackAppBootstrapClassLoader(ClassLoader parent) {
         super(parent);
@@ -87,7 +95,35 @@ public class FullStackAppBootstrapClassLoader extends BootstrapClassLoader imple
         return jarsChecksum;
     }
 
+    private static $.Predicate<File> jarFilter() {
+        String ignorePatterns = System.getProperty(KEY_JAR_IGNORE);
+        if (null == ignorePatterns) {
+            ignorePatterns = "ecj,mvel,rythm-engine,undertow,xnio,okhttp,antlr,logback,pat-,jline,okio-,cglib,mongo-java,snakeyaml,proxytoys";
+        }
+        final String[] sa = ignorePatterns.split(",");
+        return new $.Predicate<File>() {
+            @Override
+            public boolean test(File file) {
+                String name = file.getName();
+                for (String prefix : sa) {
+                    if (name.startsWith(prefix)) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+        };
+    }
+
+    private static List<File> filterJars(List<File> jars) {
+        if (null == jarFilter) {
+            return null;
+        }
+        return C.list(jars).filter(jarFilter);
+    }
+
     public static List<File> jars(ClassLoader cl) {
+        List<File> jars = null;
         C.List<String> path = C.listOf(System.getProperty(KEY_CLASSPATH).split(File.pathSeparator));
         if (path.size() < 10) {
             if (cl instanceof URLClassLoader) {
@@ -99,7 +135,7 @@ public class FullStackAppBootstrapClassLoader extends BootstrapClassLoader imple
                         return url.getFile().endsWith(".jar");
                     }
                 });
-                return urlList.map(new $.Transformer<URL, File>() {
+                jars = urlList.map(new $.Transformer<URL, File>() {
                     @Override
                     public File transform(URL url) {
                         try {
@@ -111,13 +147,16 @@ public class FullStackAppBootstrapClassLoader extends BootstrapClassLoader imple
                 }).sorted();
             }
         }
-        path = path.filter(S.F.contains("jre" + File.separator + "lib").negate().and(S.F.endsWith(".jar")));
-        return path.map(new $.Transformer<String, File>() {
-            @Override
-            public File transform(String s) {
-                return new File(s);
-            }
-        }).sorted();
+        if (null == jars) {
+            path = path.filter(S.F.contains("jre" + File.separator + "lib").negate().and(S.F.endsWith(".jar")));
+            jars = path.map(new $.Transformer<String, File>() {
+                @Override
+                public File transform(String s) {
+                    return new File(s);
+                }
+            }).sorted();
+        }
+        return filterJars(jars);
     }
 
     private void saveClassInfoRegistry() {
