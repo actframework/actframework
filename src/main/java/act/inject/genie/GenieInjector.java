@@ -7,6 +7,8 @@ import act.controller.ActionMethodParamAnnotationHandler;
 import act.inject.ActProviders;
 import act.inject.DependencyInjectionBinder;
 import act.inject.DependencyInjectorBase;
+import act.inject.ModuleTag;
+import act.sys.Env;
 import act.util.AnnotatedClassFinder;
 import act.util.SubClassFinder;
 import org.osgl.$;
@@ -19,6 +21,7 @@ import org.osgl.mvc.annotation.Bind;
 import org.osgl.mvc.annotation.Param;
 import org.osgl.util.C;
 import org.osgl.util.E;
+import org.osgl.util.S;
 
 import javax.inject.Inject;
 import javax.inject.Provider;
@@ -163,9 +166,22 @@ public class GenieInjector extends DependencyInjectorBase<GenieInjector> {
 
     @SubClassFinder(value = Module.class, callOn = AppEventId.DEPENDENCY_INJECTOR_LOADED)
     public static void foundModule(Class<? extends Module> moduleClass) {
+        if (!isModuleAllowed(moduleClass)) {
+            return;
+        }
         App app = App.instance();
         GenieInjector genieInjector = app.injector();
         genieInjector.addModule($.newInstance(moduleClass));
+    }
+
+    @AnnotatedClassFinder(value = ModuleTag.class, callOn = AppEventId.DEPENDENCY_INJECTOR_LOADED, noAbstract = false)
+    public static void foundTaggedModule(Class<?> taggedModuleClass) {
+        if (!isModuleAllowed(taggedModuleClass)) {
+            return;
+        }
+        App app = App.instance();
+        GenieInjector genieInjector = app.injector();
+        genieInjector.addModule(taggedModuleClass);
     }
 
     @AnnotatedClassFinder(value = LoadValue.class, noAbstract = false, callOn = AppEventId.DEPENDENCY_INJECTOR_LOADED)
@@ -189,6 +205,30 @@ public class GenieInjector extends DependencyInjectorBase<GenieInjector> {
                 }
             }
         }
+    }
+
+    private static boolean isModuleAllowed(Class<?> moduleClass) {
+        Env.Profile profile = moduleClass.getAnnotation(Env.Profile.class);
+        if (null != profile) {
+            return isProfileMatched(profile);
+        }
+        Env.Mode mode = moduleClass.getAnnotation(Env.Mode.class);
+        if (null != mode) {
+            return isModeMatched(mode);
+        }
+        return true;
+    }
+
+    private static boolean isProfileMatched(Env.Profile profile) {
+        boolean unless = profile.unless();
+        String required = profile.value();
+        return unless ^ S.eq(required, Act.profile());
+    }
+
+    private static boolean isModeMatched(Env.Mode mode) {
+        boolean unless = mode.unless();
+        Act.Mode required = mode.value();
+        return unless ^ (required == Act.mode());
     }
 
 }

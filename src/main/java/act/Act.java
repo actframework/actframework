@@ -9,6 +9,7 @@ import act.boot.PluginClassProvider;
 import act.conf.ActConfLoader;
 import act.conf.ActConfig;
 import act.conf.AppConfig;
+import act.conf.ConfLoader;
 import act.controller.meta.ActionMethodMetaInfo;
 import act.controller.meta.CatchMethodMetaInfo;
 import act.controller.meta.InterceptorMethodMetaInfo;
@@ -170,6 +171,13 @@ public final class Act {
 
     public static boolean isDev() {
         return mode.isDev();
+    }
+
+    /**
+     * Return the current profile name
+     */
+    public static String profile() {
+        return ConfLoader.confSetName();
     }
 
     public static ActConfig conf() {
