@@ -26,12 +26,26 @@ import static act.util.ClassInfoRepository.canonicalName;
 public class FullStackAppBootstrapClassLoader extends BootstrapClassLoader implements ActClassLoader {
 
     private static final String KEY_CLASSPATH = "java.class.path";
+
     /**
      * the {@link System#getProperty(String) system property} key to get
-     * the ignored jar file name pattern; multiple patterns can be specified
+     * the ignored jar file name prefix; multiple prefixes can be specified
+     * with comma `,`
+     *
+     * The default value is defined in {@link #DEF_JAR_IGNORE}
+     * ``
+     */
+    private static final String KEY_SYS_JAR_IGNORE = "act.jar.sys.ignore";
+
+    /**
+     * the {@link System#getProperty(String) system property} key to get
+     * the ignored jar file name prefix; multiple prefixes can be specified
      * with comma `,`
      */
-    private static final String KEY_JAR_IGNORE = "act.jar.ignore";
+    private static final String KEY_APP_JAR_IGNORE = "act.jar.app.ignore";
+
+    private static final String DEF_JAR_IGNORE = "ecj-,mvel,rythm-engine,undertow,xnio,okhttp,antlr,logback-,pat-,jline-,okio-,cglib,mongo-java-,snakeyaml,proxytoys";
+
     private final Class<?> PLUGIN_CLASS;
 
     private List<File> jars;
@@ -96,17 +110,21 @@ public class FullStackAppBootstrapClassLoader extends BootstrapClassLoader imple
     }
 
     private static $.Predicate<File> jarFilter() {
-        String ignorePatterns = System.getProperty(KEY_JAR_IGNORE);
-        if (null == ignorePatterns) {
-            ignorePatterns = "ecj,mvel,rythm-engine,undertow,xnio,okhttp,antlr,logback,pat-,jline,okio-,cglib,mongo-java,snakeyaml,proxytoys";
+        String ignores = System.getProperty(KEY_SYS_JAR_IGNORE);
+        if (null == ignores) {
+            ignores = DEF_JAR_IGNORE;
         }
-        final String[] sa = ignorePatterns.split(",");
+        String appIgnores = System.getProperty(KEY_APP_JAR_IGNORE);
+        if (null != appIgnores) {
+            ignores += ("," + appIgnores);
+        }
+        final String[] sa = ignores.split(",");
         return new $.Predicate<File>() {
             @Override
             public boolean test(File file) {
                 String name = file.getName();
                 for (String prefix : sa) {
-                    if (name.startsWith(prefix)) {
+                    if (S.notBlank(prefix) && name.startsWith(prefix)) {
                         return false;
                     }
                 }
