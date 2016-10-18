@@ -44,7 +44,7 @@ public class FullStackAppBootstrapClassLoader extends BootstrapClassLoader imple
      */
     private static final String KEY_APP_JAR_IGNORE = "act.jar.app.ignore";
 
-    private static final String DEF_JAR_IGNORE = "ecj-,mvel,rythm-engine,undertow,xnio,okhttp,antlr,logback-,pat-,jline-,okio-,cglib,mongo-java-,snakeyaml,proxytoys";
+    private static final String DEF_JAR_IGNORE = "ecj-,mvel,rythm-engine,undertow,xnio,okhttp,antlr,logback-,pat-,jline-,okio-,cglib,mongo-java-,snakeyaml,proxytoys,newrelic";
 
     private final Class<?> PLUGIN_CLASS;
 
