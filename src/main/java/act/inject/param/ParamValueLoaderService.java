@@ -17,7 +17,6 @@ import act.inject.genie.SessionScope;
 import act.util.ActContext;
 import act.util.DestroyableBase;
 import org.osgl.$;
-import org.osgl.Osgl;
 import org.osgl.inject.BeanSpec;
 import org.osgl.inject.InjectException;
 import org.osgl.inject.annotation.Provided;
@@ -502,7 +501,7 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
                 || null != beanSpec.getAnnotation(Context.class)
                 || null != beanSpec.getAnnotation(Singleton.class)
                 || null != beanSpec.getAnnotation(ApplicationScoped.class)
-                || genieInjector.hasInjectTag(beanSpec)
+                || genieInjector.subjectToInject(beanSpec)
         );
     }
 

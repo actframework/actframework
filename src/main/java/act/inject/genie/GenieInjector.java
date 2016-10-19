@@ -102,16 +102,8 @@ public class GenieInjector extends DependencyInjectorBase<GenieInjector> {
         modules.add(module);
     }
 
-    public boolean hasInjectTag(BeanSpec spec) {
-        if(spec.hasAnnotation(Inject.class)) {
-            return true;
-        }
-        for (Class<? extends Annotation> tag : injectTags) {
-            if (spec.hasAnnotation(tag)) {
-                return true;
-            }
-        }
-        return false;
+    public boolean subjectToInject(BeanSpec spec) {
+        return genie().subjectToInject(spec);
     }
 
     private C.List<Object> factories() {
@@ -164,7 +156,7 @@ public class GenieInjector extends DependencyInjectorBase<GenieInjector> {
         return genie;
     }
 
-    @SubClassFinder(value = Module.class, callOn = AppEventId.DEPENDENCY_INJECTOR_LOADED)
+    @SubClassFinder(callOn = AppEventId.DEPENDENCY_INJECTOR_LOADED)
     public static void foundModule(Class<? extends Module> moduleClass) {
         if (!isModuleAllowed(moduleClass)) {
             return;
@@ -191,7 +183,7 @@ public class GenieInjector extends DependencyInjectorBase<GenieInjector> {
         genieInjector.injectTags.add(valueLoader);
     }
 
-    @SubClassFinder(value = GenericTypedBeanLoader.class, callOn = AppEventId.DEPENDENCY_INJECTOR_PROVISIONED)
+    @SubClassFinder(callOn = AppEventId.DEPENDENCY_INJECTOR_PROVISIONED)
     public static void foundGenericTypedBeanLoader(Class<? extends GenericTypedBeanLoader> loaderClass) {
         App app = App.instance();
         GenieInjector genieInjector = app.injector();
