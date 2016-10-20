@@ -9,6 +9,7 @@ import org.osgl.mvc.result.BadRequest;
 import org.osgl.util.E;
 import org.osgl.util.StringValueResolver;
 
+import java.beans.Beans;
 import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.List;
@@ -26,12 +27,14 @@ class MapLoader implements ParamValueLoader {
     private final StringValueResolver valueResolver;
     private final Map<ParamKey, ParamValueLoader> childLoaders = new HashMap<ParamKey, ParamValueLoader>();
     private final ParamValueLoaderService manager;
+    private final BeanSpec targetSpec;
 
     MapLoader(
             ParamKey key,
             Class<? extends Map> mapClass,
             Type keyType,
             Type valType,
+            BeanSpec targetSpec,
             DependencyInjector<?> injector,
             ParamValueLoaderService manager
     ) {
@@ -41,9 +44,11 @@ class MapLoader implements ParamValueLoader {
         this.valType = valType;
         this.injector = injector;
         this.manager = manager;
+        this.targetSpec = targetSpec;
         StringValueResolverManager resolverManager = App.instance().resolverManager();
-        this.valueResolver = resolverManager.resolver(BeanSpec.rawTypeOf(valType));
-        this.keyResolver = resolverManager.resolver(this.keyClass);
+        Class<?> valClass = BeanSpec.rawTypeOf(valType);
+        this.valueResolver = resolverManager.resolver(valClass, BeanSpec.of(valClass, injector));
+        this.keyResolver = resolverManager.resolver(this.keyClass, BeanSpec.of(this.keyClass, injector));
         if (null == keyResolver) {
             throw new IllegalArgumentException("Map key type not resolvable: " + keyClass.getName());
         }
@@ -127,6 +132,6 @@ class MapLoader implements ParamValueLoader {
     }
 
     private ParamValueLoader buildChildLoader(ParamKey key) {
-        return manager.buildLoader(key, valType);
+        return manager.buildLoader(key, valType, targetSpec);
     }
 }

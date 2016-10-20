@@ -182,7 +182,7 @@ public class AutoConfigPlugin extends AnnotatedTypeFinder {
                 fConst.setAccessible(false);
             } else if (spec.isInstanceOf(Collection.class)) {
                 BeanSpec spec0 = BeanSpec.of(spec.typeParams().get(0), null, injector);
-                StringValueResolver resolver = resolverManager.resolver(spec0.rawType());
+                StringValueResolver resolver = resolverManager.resolver(spec0.rawType(), spec);
                 if (null == resolver) {
                     logger.warn("Config[%s] field type[%s] not recognized", key, spec);
                 } else {

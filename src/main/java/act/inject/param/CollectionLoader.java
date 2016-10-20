@@ -26,11 +26,13 @@ class CollectionLoader implements ParamValueLoader {
     private final Map<ParamKey, ParamValueLoader> childLoaders = new HashMap<ParamKey, ParamValueLoader>();
     private final ParamValueLoaderService manager;
     private final boolean isChar;
+    private final BeanSpec targetSpec;
 
     CollectionLoader(
             ParamKey key,
             Class<? extends Collection> collection,
             Type elementType,
+            BeanSpec targetSpec,
             DependencyInjector<?> injector,
             ParamValueLoaderService manager
     ) {
@@ -43,8 +45,9 @@ class CollectionLoader implements ParamValueLoader {
         App app = Act.app();
         Class<?> rawType = BeanSpec.rawTypeOf(elementType);
         this.binder = app.binderManager().binder(rawType);
+        this.targetSpec = targetSpec;
         if (null == binder) {
-            this.resolver = App.instance().resolverManager().resolver(rawType);
+            this.resolver = App.instance().resolverManager().resolver(rawType, targetSpec);
         } else {
             this.resolver = null;
         }
@@ -119,7 +122,7 @@ class CollectionLoader implements ParamValueLoader {
     }
 
     private ParamValueLoader buildChildLoader(ParamKey key) {
-        return manager.buildLoader(key, elementType);
+        return manager.buildLoader(key, elementType, targetSpec);
     }
 
     private static void addToCollection(Collection collection, int index, Object bean) {

@@ -116,7 +116,7 @@ class ActionContextParamLoader extends ParamValueLoaderService {
                 resolver = resolverManager.resolver(rawType, spec);
             }
 
-            loader = (null != resolver) ? new StringValueResolverValueLoader(ParamKey.of(bindName), resolver, param, rawType) : buildLoader(ParamKey.of(bindName), type);
+            loader = (null != resolver) ? new StringValueResolverValueLoader(ParamKey.of(bindName), resolver, param, rawType) : buildLoader(ParamKey.of(bindName), type, spec);
         }
 
         return loader;

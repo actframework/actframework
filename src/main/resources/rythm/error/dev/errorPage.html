@@ -19,17 +19,25 @@ if (_error instanceof act.view.TemplateException) {
 templateSourceInfo = ((act.view.TemplateException) actError).templateSourceInfo();
 }
 act.route.RouteInfo routeInfo = null != _action ? act.route.RouteInfo.of(_action) : null;
-List<String> stackTrace = actError.stackTrace();
+boolean isCompileError = actError.getCauseOrThis() instanceof act.app.CompilationException;
+List<String> stackTrace;
+if (isCompileError || null != templateSourceInfo) {stackTrace = null;}
+else {stackTrace = actError.stackTrace();}
+
+  boolean activeSource = null == templateSourceInfo && (null == stackTrace || stackTrace.isEmpty());
+
   }
+
 
   @section(head){
   <style>
+    body {background-color: #232323; color: #f1f1f1;}
     .detail {
-      font-family: "Envy Code R", "Consolas", "Lucida Console", "Droid Sans Mono", "Andale Mono", "Monaco", "Lucida Sans Typewriter", "monospace";
+      font-family:  Courier, Monaco, monospace;
       font-size: 9pt;
       padding: 20px;
       padding-top: 8px;
-      border: 1px solid #efefef;
+      border: 1px solid #888;
       display: none;
       overflow: auto;
     }
@@ -38,15 +46,13 @@ List<String> stackTrace = actError.stackTrace();
     }
     .error-message {
       padding: 8px;
-      border: 1px solid #efefef;
-      font-family: "Envy Code R", "Consolas", "Lucida Console", "Droid Sans Mono", "Andale Mono", "Monaco", "Lucida Sans Typewriter", "monospace";
+      border: 1px solid #888;
       font-size: 9pt;
       margin-bottom: 20px;
-      color: red;
+      color: #f54400;
     }
     .source-info .hljs {
       padding: 0;
-      background-color: #fff;
     }
     .source-info .line.error, .trace-line.error {
       background-color: #e00;
@@ -59,15 +65,27 @@ List<String> stackTrace = actError.stackTrace();
     .source-info .line span.line-number {
       min-width: 20px;
       text-align: right;
+      color: #eee;
     }
     .source-info .line.big-line, .trace-line.big-line {
       padding-top: 0.5em;
       font-weight: bold;
     }
+    .source-info.active {
+      background-color: #000;
+      color: #aaa;
+    }
     #stacktrace .exception {
       font-size: 9pt;
       font-weight: bold;
       padding-bottom: 5px;;
+    }
+    #stacktrace.active {
+      background-color: #000;
+      color: #aaa;
+    }
+    .trace-line, .template-line, .source-line {
+      padding: 2px 5px;
     }
     .tabs .tab {
       display: inline-block;
@@ -78,25 +96,28 @@ List<String> stackTrace = actError.stackTrace();
     }
     .tabs .tab.active {
       background: #efefef;
+      color: #333;
     }
   </style>
   @render(moreStyles)
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.6/styles/default.min.css">
-  <script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.6/highlight.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.6/languages/java.min.js"></script>
+  <link rel="stylesheet" href="/asset/act/css/highlight.min.css">
+  <script src="/asset/act/js/jquery-1.11.3.min.js"></script>
+  <script src="/asset/act/js/highlight.min.js"></script>
+  <script src="/asset/act/js/highlight.java.min.js"></script>
   }
-
-  <p>@render(description)</p>
 
   @def Throwable getCauseOrThis(Throwable t) {
     Throwable cause = t.getCause();
     return null == cause ? t : cause;
   }
 
+  <pre class="error-message">
   @if(templateSourceInfo) {
-  <pre class="error-message">@(((act.view.TemplateException) actError).errorMessage().raw())</pre>
+  @(((act.view.TemplateException) actError).errorMessage().raw())
+  } else {
+    @actError.getCauseOrThis().getClass(): <b>@actError.getCauseOrThis().getMessage()</b>
   }
+  </pre>
 
   <div class="tabs">
     @if(templateSourceInfo) {
@@ -106,7 +127,7 @@ List<String> stackTrace = actError.stackTrace();
     <div id="tab-stacktrace" class="stacktrace tab @ifNot(templateSourceInfo) {active}" onclick="showStacktrace()">Stack Trace</div>
     }
     @if(sourceInfo) {
-    <div id="tab-source" class="code tab" onclick="showSource()">Source code</div>
+    <div id="tab-source" class="code tab @if(activeSource){active}" onclick="showSource()">Source code</div>
     }
   </div>
 
@@ -125,7 +146,6 @@ List<String> stackTrace = actError.stackTrace();
   }
   @if(stackTrace) {
   <div id="stacktrace" class="detail @ifNot(templateSourceInfo) {active}">
-    <div class="exception">@actError.getCauseOrThis().toString()</div>
     @{boolean traceErrorSet = false;}
     @for(int i = 0; i < stackTrace.size(); ++i) {
       @{
@@ -156,7 +176,7 @@ List<String> stackTrace = actError.stackTrace();
   @returnIf(null == sourceInfo && null == templateSourceInfo)
 
   @if(sourceInfo) {
-  <div id="source" class="detail source-info">
+  <div id="source" class="detail source-info @if(activeSource){active}">
     @for(String line: sourceInfo.lines()) {
     @{
     String cls = line_index == sourceInfo.lineNumber() ? "error nohighlight" : ""
@@ -247,6 +267,13 @@ List<String> stackTrace = actError.stackTrace();
       setTimeout(scrollTemplateSource, 200);
     }
     @if (sourceInfo) {
+      function scrollJavaSource() {
+        if (sourceLoaded) return;
+        sourceLoaded = true;
+        var element = document.getElementsByClassName('source-line line error nohighlight')[0];
+        element.scrollIntoView();
+        element.parentElement.scrollTop -= 100;
+      }
       var sourceLoaded = false;
       @{
         int linkedSourceLineNumber = sourceInfo.lineNumber();
@@ -259,17 +286,14 @@ List<String> stackTrace = actError.stackTrace();
       });
       var windowHeight = $(window).height(), maxDetailHeight = windowHeight - 280;
       $('.detail').css({maxHeight: maxDetailHeight + 'px'});
-      window.addEventListener('show-source', function() {
-        if (sourceLoaded) return;
-        sourceLoaded = true;
-        var element = document.getElementsByClassName('source-line line error nohighlight')[0];
-        element.scrollIntoView();
-        element.parentElement.scrollTop -= 100;
-      }, false);
+      window.addEventListener('show-source', scrollJavaSource, false);
       $(document).ready(function() {
         $('.line-code').each(function(i, block) {
           hljs.highlightBlock(block);
         });
       });
+      @if(activeSource) {
+        setTimeout(scrollJavaSource, 200);
+      }
     }
   </script>

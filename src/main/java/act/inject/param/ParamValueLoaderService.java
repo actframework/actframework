@@ -239,17 +239,17 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
         return decorate(loader, spec, annotations, supportJsonDecorator());
     }
 
-    ParamValueLoader buildLoader(final ParamKey key, final Type type) {
+    ParamValueLoader buildLoader(final ParamKey key, final Type type, BeanSpec targetSpec) {
         Class rawType = BeanSpec.rawTypeOf(type);
         if (rawType.isArray()) {
-            return buildArrayLoader(key, rawType.getComponentType());
+            return buildArrayLoader(key, rawType.getComponentType(), targetSpec);
         }
         if (Collection.class.isAssignableFrom(rawType)) {
             Type elementType = Object.class;
             if (type instanceof ParameterizedType) {
                 elementType = ((ParameterizedType) type).getActualTypeArguments()[0];
             }
-            return buildCollectionLoader(key, rawType, elementType);
+            return buildCollectionLoader(key, rawType, elementType, targetSpec);
         }
         if (Map.class.isAssignableFrom(rawType)) {
             Type keyType = Object.class;
@@ -259,16 +259,17 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
                 keyType = typeParams[0];
                 valType = typeParams[1];
             }
-            return buildMapLoader(key, rawType, keyType, valType);
+            return buildMapLoader(key, rawType, keyType, valType, targetSpec);
         }
         return buildPojoLoader(key, rawType);
     }
 
     private ParamValueLoader buildArrayLoader(
             final ParamKey key,
-            final Type elementType
+            final Type elementType,
+            final BeanSpec targetSpec
     ) {
-        final CollectionLoader collectionLoader = new CollectionLoader(key, ArrayList.class, elementType, injector, this);
+        final CollectionLoader collectionLoader = new CollectionLoader(key, ArrayList.class, elementType, targetSpec, injector, this);
         return new ParamValueLoader() {
             @Override
             public Object load(Object bean, ActContext<?> context, boolean noDefaultValue) {
@@ -288,18 +289,20 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
     private ParamValueLoader buildCollectionLoader(
             final ParamKey key,
             final Class<? extends Collection> collectionClass,
-            final Type elementType
+            final Type elementType,
+            BeanSpec targetSpec
     ) {
-        return new CollectionLoader(key, collectionClass, elementType, injector, this);
+        return new CollectionLoader(key, collectionClass, elementType, targetSpec, injector, this);
     }
 
     private ParamValueLoader buildMapLoader(
             final ParamKey key,
             final Class<? extends Map> mapClass,
             final Type keyType,
-            final Type valType
+            final Type valType,
+            final BeanSpec targetSpec
     ) {
-        return new MapLoader(key, mapClass, keyType, valType, injector, this);
+        return new MapLoader(key, mapClass, keyType, valType, targetSpec, injector, this);
     }
 
     static ParamTree paramTree() {
@@ -364,12 +367,12 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
         }
         ParamKey key = paramKey.child(name);
 
-        StringValueResolver resolver = resolverManager.resolver(fieldType);
+        StringValueResolver resolver = resolverManager.resolver(fieldType, spec);
         if (null != resolver) {
             return new StringValueResolverValueLoader(key, resolver, null, fieldType);
         }
 
-        return buildLoader(key, field.getGenericType());
+        return buildLoader(key, field.getGenericType(), spec);
     }
 
     private List<FieldLoader> fieldLoaders(ParamKey key, Class type) {

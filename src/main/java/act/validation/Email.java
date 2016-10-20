@@ -12,8 +12,6 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 /**
  * The annotated element must be a valid email
  * Accepts any type.
- *
- * @author Emmanuel Bernard
  */
 @Target({ METHOD, FIELD, ANNOTATION_TYPE, CONSTRUCTOR, PARAMETER })
 @Retention(RUNTIME)
@@ -30,7 +28,7 @@ public @interface Email {
     /**
      * Defines several {@link Email} annotations on the same element.
      *
-     * @see javax.validation.constraints.NotNull
+     * @see Email
      */
     @Target({ METHOD, FIELD, ANNOTATION_TYPE, CONSTRUCTOR, PARAMETER })
     @Retention(RUNTIME)

@@ -37,7 +37,7 @@ class HeaderValueLoader implements ParamValueLoader {
             this.elementType = null;
         }
         Class effectiveType = null != elementType ? elementType : targetType;
-        this.stringValueResolver = App.instance().resolverManager().resolver(effectiveType);
+        this.stringValueResolver = App.instance().resolverManager().resolver(effectiveType, beanSpec);
         E.illegalArgumentIf(null == this.stringValueResolver, "Cannot find out StringValueResolver for %s", beanSpec);
         this.defVal = StringValueResolverValueLoaderBase.defVal(null, effectiveType);
     }

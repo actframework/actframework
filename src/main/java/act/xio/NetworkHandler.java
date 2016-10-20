@@ -62,7 +62,9 @@ public class NetworkHandler extends DestroyableBase implements  $.Func1<ActionCo
         H.Method method = req.method();
         Timer timer = null;
         try {
-            app.checkUpdates(false);
+            if (Act.isDev() && !url.startsWith("/asset/")) {
+                app.checkUpdates(false);
+            }
             url = contentSuffixProcessor.apply(req, url);
             timer = metric.startTimer(MetricInfo.ROUTING);
             RequestHandler rh;
