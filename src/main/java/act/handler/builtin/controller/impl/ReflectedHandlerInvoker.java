@@ -15,6 +15,7 @@ import act.inject.param.ParamValueLoaderService;
 import act.security.CORS;
 import act.security.CSRF;
 import act.util.DestroyableBase;
+import act.view.ActNotFound;
 import act.view.Template;
 import act.view.TemplatePathResolver;
 import com.alibaba.fastjson.JSON;
@@ -300,7 +301,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
             // handler invoker return `null`
             // and there are return type of the action method signature
             // and the return type is **NOT** Result
-            return NotFound.INSTANCE;
+            return ActNotFound.create(method);
         }
         boolean hasTemplate = checkTemplate(context);
         return Controller.Util.inferResult(handlerMetaInfo, result, context, hasTemplate);

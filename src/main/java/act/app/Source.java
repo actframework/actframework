@@ -6,6 +6,7 @@ import org.osgl.$;
 import org.osgl.util.*;
 
 import java.io.File;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
@@ -98,6 +99,10 @@ public class Source {
             load();
         }
         return code;
+    }
+
+    public List<String> lines() {
+        return C.listOf(code.split("\n"));
     }
 
     public byte[] bytes() {

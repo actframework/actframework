@@ -22,7 +22,7 @@ public class SourceInfoImpl implements SourceInfo {
 
     @Override
     public List<String> lines() {
-        return C.listOf(source.code().split("\n"));
+        return source.lines();
     }
 
     @Override

@@ -82,5 +82,10 @@ public class UploadFileStorageService extends FileSystemService {
             }
             IO.copy(is, context.resp().outputStream());
         }
+
+        @Override
+        public String toString() {
+            return "Upload file getter";
+        }
     }
 }

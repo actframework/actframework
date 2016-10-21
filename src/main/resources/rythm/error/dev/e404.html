@@ -5,13 +5,17 @@
 @section(moreStyles){
 <style>
   code, table {
-    font-family: "Envy Code R", "Consolas", "Lucida Console", "Droid Sans Mono", "Andale Mono", "Monaco", "Lucida Sans Typewriter", "monospace";
-    font-size: 9pt;
+    font-family:  Courier, Monaco, monospace;
+    font-size: 10pt;
+  }
+  #route-table {
+    background-color: #000;
+    padding: 1px 6px;
   }
   table.hide {display: none;}
-  code {background-color: #efefef; padding: 0 4px; font-weight: bold;}
+  code {background-color: #444; padding: 0 4px; font-weight: bold;}
   td.m, td.p, td.h, th.m, th.p, th.h  {
-    padding: 2px 20px;
+    padding: 3px 20px;
     text-align: left;
     max-width: 40%;
     white-space: nowrap;
@@ -22,15 +26,15 @@
     text-decoration: none;
   }
   tr.odd {
-    background-color: #efefef;
+    background-color: #444;
   }
   tbody tr:hover, tbody tr.even:hover {
-    background-color: #a3e0f3;
+    background-color: #883810;
     cursor: default;
   }
   #toggle-routetable {
     cursor: pointer;
-    color: blue;
+    color: #00b8b6;
   }
 </style>
 }
@@ -54,8 +58,23 @@
     <td class="h" title="@r.handler()">@r.compactHandler()</td>
   </tr>
 }
+  @{
+    act.app.SourceInfo sourceInfo = null;
+    act.app.SourceInfo templateSourceInfo = null;
+    if (_error instanceof act.util.ActError) {
+      act.util.ActError actError = (act.util.ActError)_error;
+      sourceInfo = actError.sourceInfo();
+      if (_error instanceof act.view.RythmTemplateException) {
+        templateSourceInfo = ((act.view.RythmTemplateException) actError).templateSourceInfo();
+      }
+    }
+  }
 
-<p>Cannot find handler for the current request <code>@req.method() @req.path()</code> in the router table(<span id="toggle-routetable" class="expanded" onclick="toggleRouteTable()">hide</span>)</p>
+<p>
+  @if(null == sourceInfo && null == templateSourceInfo) {
+    Cannot find handler for the current request <code>@req.method() @req.path()</code> in the
+  }
+  router table(<span id="toggle-routetable" class="expanded" onclick="toggleRouteTable()">hide</span>)</p>
 
 <table id="route-table">
   <thead>
@@ -82,17 +101,6 @@
       tbl.className = '';
       btn.className = 'expanded';
       btn.innerText = 'hide';
-    }
-  }
-  @{
-    act.app.SourceInfo sourceInfo = null;
-    act.app.SourceInfo templateSourceInfo = null;
-    if (_error instanceof act.util.ActError) {
-    act.util.ActError actError = (act.util.ActError)_error;
-      sourceInfo = actError.sourceInfo();
-      if (_error instanceof act.view.RythmTemplateException) {
-      templateSourceInfo = ((act.view.RythmTemplateException) actError).templateSourceInfo();
-      }
     }
   }
   @if(null != sourceInfo || null != templateSourceInfo) {

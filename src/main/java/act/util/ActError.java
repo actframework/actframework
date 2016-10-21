@@ -4,6 +4,7 @@ import act.app.*;
 import org.osgl.util.C;
 import org.osgl.util.S;
 
+import java.lang.reflect.Method;
 import java.util.List;
 
 public interface ActError {
@@ -49,6 +50,23 @@ public interface ActError {
                 return new SourceInfoImpl(source, line);
             }
             return null;
+        }
+
+        public static SourceInfo loadSourceInfo(Method method) {
+            DevModeClassLoader cl = (DevModeClassLoader) App.instance().classLoader();
+            String className = method.getDeclaringClass().getName();
+            Source source = cl.source(className);
+            if (null == className) {
+                return null;
+            }
+            List<String> lines = source.lines();
+            for (int i = 0; i < lines.size(); ++i) {
+                String line = lines.get(i);
+                if (line.matches("^\\s*.*" + method.getName() + "\\s*\\(.*")) {
+                    return new SourceInfoImpl(source, i + 1);
+                }
+            }
+            return new SourceInfoImpl(source, 1);
         }
     }
 }

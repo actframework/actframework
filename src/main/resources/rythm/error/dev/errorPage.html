@@ -23,15 +23,13 @@ boolean isCompileError = actError.getCauseOrThis() instanceof act.app.Compilatio
 List<String> stackTrace;
 if (isCompileError || null != templateSourceInfo) {stackTrace = null;}
 else {stackTrace = actError.stackTrace();}
-
-  boolean activeSource = null == templateSourceInfo && (null == stackTrace || stackTrace.isEmpty());
-
+  boolean activeSource = null == templateSourceInfo && null != sourceInfo;
+  boolean activeStack = !activeSource && (null != stackTrace && !stackTrace.isEmpty());
   }
 
 
   @section(head){
   <style>
-    body {background-color: #232323; color: #f1f1f1;}
     .detail {
       font-family:  Courier, Monaco, monospace;
       font-size: 9pt;
@@ -84,8 +82,11 @@ else {stackTrace = actError.stackTrace();}
       background-color: #000;
       color: #aaa;
     }
-    .trace-line, .template-line, .source-line {
-      padding: 2px 5px;
+    .trace-line {
+      padding: 4px 5px;
+    }
+    .template-line, .source-line {
+      padding: 2px 0px;
     }
     .tabs .tab {
       display: inline-block;
@@ -115,7 +116,7 @@ else {stackTrace = actError.stackTrace();}
   @if(templateSourceInfo) {
   @(((act.view.TemplateException) actError).errorMessage().raw())
   } else {
-    @actError.getCauseOrThis().getClass(): <b>@actError.getCauseOrThis().getMessage()</b>
+    @actError.getCauseOrThis().getClass().getName(): <b>@actError.getCauseOrThis().getMessage()</b>
   }
   </pre>
 
@@ -123,11 +124,11 @@ else {stackTrace = actError.stackTrace();}
     @if(templateSourceInfo) {
     <div id="tab-template" class="code tab active" onclick="showTemplate()">Template code</div>
     }
-    @if(stackTrace) {
-    <div id="tab-stacktrace" class="stacktrace tab @ifNot(templateSourceInfo) {active}" onclick="showStacktrace()">Stack Trace</div>
-    }
     @if(sourceInfo) {
     <div id="tab-source" class="code tab @if(activeSource){active}" onclick="showSource()">Source code</div>
+    }
+    @if(stackTrace) {
+    <div id="tab-stacktrace" class="stacktrace tab @if(activeStack){active}"" onclick="showStacktrace()">Stack Trace</div>
     }
   </div>
 
@@ -145,7 +146,7 @@ else {stackTrace = actError.stackTrace();}
   </div>
   }
   @if(stackTrace) {
-  <div id="stacktrace" class="detail @ifNot(templateSourceInfo) {active}">
+  <div id="stacktrace" class="detail @if(activeStack) {active}">
     @{boolean traceErrorSet = false;}
     @for(int i = 0; i < stackTrace.size(); ++i) {
       @{
