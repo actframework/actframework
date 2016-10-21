@@ -11,7 +11,9 @@ import act.view.View;
 import org.osgl.util.C;
 import org.rythmengine.Rythm;
 import org.rythmengine.RythmEngine;
+import org.rythmengine.extension.IFormatter;
 import org.rythmengine.extension.ISourceCodeEnhancer;
+import org.rythmengine.extension.Transformer;
 import org.rythmengine.resource.ClasspathResourceLoader;
 import org.rythmengine.template.ITemplate;
 
@@ -45,7 +47,7 @@ public class RythmView extends View {
         return RythmTemplate.find(engine, resourcePath, context.app());
     }
 
-    private RythmEngine getEngine(App app) {
+    public RythmEngine getEngine(App app) {
         RythmEngine engine = engines.get(app);
         if (null == engine) {
             engine = createEngine(app);
@@ -111,6 +113,18 @@ public class RythmView extends View {
         RythmEngine engine = new RythmEngine(p);
         engine.resourceManager().addResourceLoader(new ClasspathResourceLoader(engine, "rythm"));
         return engine;
+    }
+
+    public void registerTransformer(App app, Class<?> clazz) {
+        getEngine(app).registerTransformer(clazz);
+    }
+
+    public void registerBuiltInTransformer(App app, Class<?> clazz) {
+        getEngine(app).registerTransformer("rythm", "([^a-zA-Z0-9_]s\\(\\)|^s\\(\\))", clazz);
+    }
+
+    public void registerFormatter(App app, IFormatter formatter) {
+        getEngine(app).extensionManager().registerFormatter(formatter);
     }
 
     @Override

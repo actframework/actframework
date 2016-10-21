@@ -36,6 +36,10 @@ import act.route.RouteTableRouterBuilder;
 import act.route.Router;
 import act.util.*;
 import act.view.ActServerError;
+import act.view.rythm.JodaDateTimeFormatter;
+import act.view.rythm.JodaTransformers;
+import act.view.rythm.RythmTransformerScanner;
+import act.view.rythm.RythmView;
 import org.osgl.$;
 import org.osgl.Osgl;
 import org.osgl.cache.CacheService;
@@ -46,6 +50,7 @@ import org.osgl.logging.L;
 import org.osgl.logging.Logger;
 import org.osgl.storage.IStorageService;
 import org.osgl.util.*;
+import org.rythmengine.RythmEngine;
 
 import javax.enterprise.context.ApplicationScoped;
 import java.io.File;
@@ -374,7 +379,7 @@ public class App extends DestroyableBase {
         // - Thread.currentThread().setContextClassLoader(classLoader());
 
         initHttpConfig();
-        Act.viewManager().onAppStart();
+        initViewManager();
 
         // let's any emit the dependency injector loaded event
         // in case some other service depend on this event.
@@ -864,6 +869,7 @@ public class App extends DestroyableBase {
         scannerManager.register(new JobByteCodeScanner());
         scannerManager.register(new SimpleEventListenerByteCodeScanner());
         scannerManager.register(new CommanderByteCodeScanner());
+        scannerManager.register(new RythmTransformerScanner());
     }
 
     private void loadDependencyInjector() {
@@ -931,6 +937,17 @@ public class App extends DestroyableBase {
 
     private void loadPlugins() {
         // TODO: load app level plugins
+    }
+
+    private void initViewManager() {
+        Act.viewManager().onAppStart();
+        registerBuiltInRythmTransformers();
+    }
+
+    private void registerBuiltInRythmTransformers() {
+        RythmView rythmView = (RythmView) Act.viewManager().view(RythmView.ID);
+        rythmView.registerBuiltInTransformer(this, JodaTransformers.class);
+        rythmView.registerFormatter(this, new JodaDateTimeFormatter());
     }
 
     private void scanAppCodes() {
