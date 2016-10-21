@@ -8,6 +8,9 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Properties;
 
+import static act.app.RuntimeDirs.CLASSES;
+import static act.app.RuntimeDirs.CONF;
+
 /**
  * Defines the project file structure supported by Act.
  * <p>Used ONLY at dev time for Act to decide where to pick up
@@ -207,11 +210,9 @@ public interface ProjectLayout {
 
         @Override
         public File conf(File appBase) {
-            File file = Utils.file(resource(appBase), "app.conf");
-            if (file.exists()) {
-                return file;
-            }
-            return Utils.file(resource(appBase), "app.conf");
+            File confBase = Act.isDev() ? resource(appBase) : new File(appBase, CLASSES);
+            File file = new File(confBase, CONF);
+            return file.exists() ? file : confBase;
         }
 
         @Override
