@@ -1,11 +1,14 @@
 package act.inject.param;
 
 import act.asm.*;
+import act.asm.Type;
 import act.inject.param.JsonDTOClassManager.DynamicClassLoader;
 import org.osgl.$;
 import org.osgl.inject.BeanSpec;
+import org.osgl.util.FastStr;
 import org.osgl.util.S;
 
+import java.lang.reflect.*;
 import java.util.List;
 
 class JsonDTOClassGenerator implements Opcodes {
@@ -55,7 +58,7 @@ class JsonDTOClassGenerator implements Opcodes {
 
     private void generateSetter(BeanSpec beanSpec) {
         String setterName = setterName(beanSpec);
-        mv = cw.visitMethod(ACC_PUBLIC, setterName, setterSignature(beanSpec), null, null);
+        mv = cw.visitMethod(ACC_PUBLIC, setterName, setterDescriptor(beanSpec), setterSignature(beanSpec), null);
         mv.visitCode();
         Label l0 = new Label();
         mv.visitLabel(l0);
@@ -69,17 +72,37 @@ class JsonDTOClassGenerator implements Opcodes {
         Label l2 = new Label();
         mv.visitLabel(l2);
         mv.visitLocalVariable("this", S.fmt("L%s;", className), null, l0, l2, 0);
-        mv.visitLocalVariable("v", classDesc(beanSpec), null, l0, l2, 1);
+        mv.visitLocalVariable("v", classDesc(beanSpec.rawType()), null, l0, l2, 1);
         mv.visitMaxs(3, 2);
         mv.visitEnd();
     }
 
-    private static String setterSignature(BeanSpec spec) {
-        return S.fmt("(%s)V", classDesc(spec));
+    private static String setterDescriptor(BeanSpec spec) {
+        return S.fmt("(%s)V", classDesc(spec.rawType()));
     }
 
-    private static String classDesc(BeanSpec spec) {
-        Class c = spec.rawType();
+    private static String setterSignature(BeanSpec spec) {
+        return S.fmt("(%s)V", typeDesc(spec));
+    }
+
+    private static String typeDesc(BeanSpec spec) {
+        String root = classDesc(spec.rawType());
+        List<java.lang.reflect.Type> typeParams = spec.typeParams();
+        if (typeParams.isEmpty()) {
+            return root;
+        }
+        StringBuilder sb = S.builder("<");
+        for (java.lang.reflect.Type type : typeParams) {
+            BeanSpec specx = BeanSpec.of(type, null, spec.injector());
+            sb.append(typeDesc(specx));
+        }
+        sb.append(">");
+        FastStr str = FastStr.of(root);
+        str = str.take(str.length() - 1).append(sb.toString()).append(";");
+        return str.toString();
+    }
+
+    private static String classDesc(Class c) {
         if (c.isPrimitive()) {
             c = $.wrapperClassOf(c);
         }

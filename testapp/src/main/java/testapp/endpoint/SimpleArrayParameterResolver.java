@@ -9,6 +9,7 @@ import java.lang.annotation.ElementType;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -238,4 +239,9 @@ public class SimpleArrayParameterResolver extends Controller.Util {
     public Set<RGB> enumSet(Set<RGB> v) {
         return new TreeSet<RGB>(v);
     }
+
+    public void x(Set v) {
+    }
+
+    public void y(Map<String, Integer> y) {}
 }

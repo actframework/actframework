@@ -2,16 +2,23 @@ package testapp.endpoint.binding.collection;
 
 import org.junit.Test;
 import org.osgl.util.C;
+import org.osgl.util.Generics;
 import testapp.endpoint.binding.ActionParameterBindingTestBase;
 import testapp.endpoint.EndPointTestContext.RequestMethod;
 import testapp.endpoint.ParamEncoding;
 
+import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.TreeSet;
 
 public abstract class SimpleTypeArrayActionParameterBindingTestBase<T> extends ActionParameterBindingTestBase {
 
     protected static final String PARAM = "v";
+
+    private static Class targetType;
+    private boolean isNumber;
 
     private String pathWrap;
     private String pathList;
@@ -21,6 +28,8 @@ public abstract class SimpleTypeArrayActionParameterBindingTestBase<T> extends A
         this.pathWrap = wrapperArrayPath();
         this.pathList = listPath();
         this.pathSet = setPath();
+        this.targetType = (Class<T>) Generics.typeParamImplementations(getClass(), SimpleTypeArrayActionParameterBindingTestBase.class).get(0);
+        this.isNumber = Number.class.isAssignableFrom(this.targetType);
     }
 
 
@@ -44,8 +53,32 @@ public abstract class SimpleTypeArrayActionParameterBindingTestBase<T> extends A
         return expectedRespForNonEmptyList();
     }
 
+    protected final String e2() {
+        if (isNumber) {
+            List<T> l = nonEmptyList();
+            List<BigDecimal> l2 = new ArrayList<>();
+            for (T t: l) {
+                l2.add(BigDecimal.valueOf(((Number) t).doubleValue()));
+            }
+            return l2.toString();
+        }
+        return null;
+    }
+
     private String es() {
         return expectedRespForNonEmptySet();
+    }
+
+    private String es2() {
+        if (isNumber) {
+            List<T> l = nonEmptyList();
+            Set<BigDecimal> l2 = new TreeSet<>();
+            for (T t: l) {
+                l2.add(BigDecimal.valueOf(((Number) t).doubleValue()));
+            }
+            return l2.toString();
+        }
+        return null;
     }
 
     @Override
@@ -55,7 +88,7 @@ public abstract class SimpleTypeArrayActionParameterBindingTestBase<T> extends A
 
     protected final void _verify(String expected, String urlPath, List data, ParamEncoding paramEncoding, RequestMethod method) throws Exception {
         context
-                .expected(expected)
+                .expected(expected, e2(), es2())
                 .url(processUrl(urlPath))
                 .params(paramEncoding.encode(null == data ? "v" : PARAM, null == data ? C.list() : data))
                 .method(method)

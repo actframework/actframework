@@ -68,7 +68,7 @@ class CollectionLoader implements ParamValueLoader {
             List<ParamTreeNode> nodes = node.list();
             if (nodes.size() > 0) {
                 String value = nodes.get(0).value();
-                if (S.notBlank(value)) {
+                //if (S.notBlank(value)) {
                     for (int i = 0; i < nodes.size(); ++i) {
                         ParamTreeNode elementNode = nodes.get(i);
                         if (!elementNode.isLeaf()) {
@@ -81,7 +81,7 @@ class CollectionLoader implements ParamValueLoader {
                             collection.add(resolver.resolve(elementNode.value()));
                         }
                     }
-                }
+                //}
             }
         } else if (node.isMap()) {
             Set<String> childrenKeys = node.mapKeys();

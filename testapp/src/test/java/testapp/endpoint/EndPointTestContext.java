@@ -32,7 +32,7 @@ public class EndPointTestContext {
                 tester.setup();
                 Map<String, Object> params = tester.prepareJsonData(context.params);
                 tester.url(context.url).postJSON(params);
-                tester.bodyEq(context.expected);
+                tester.bodyEq(context.expected, context.expected2, context.expected3);
             }
         };
 
@@ -41,6 +41,13 @@ public class EndPointTestContext {
 
     private String url;
     private String expected;
+    // Our JSON deserializer will convert double into BigDecimal, thus
+    // the output string will be different, which should be acceptable
+    // E.g. double value: "1.7976931348623157E308" should equals to
+    //      big decimal value: "1.7976931348623157E+308"
+    private String expected2;
+    // plus the Set of big decimals
+    private String expected3;
     private List<$.T2<String, Object>> params;
     private RequestMethod requestMethod;
 
@@ -53,6 +60,13 @@ public class EndPointTestContext {
 
     public EndPointTestContext expected(String expected) {
         this.expected = expected;
+        return this;
+    }
+
+    public EndPointTestContext expected(String expected, String expected2, String expected3) {
+        this.expected = expected;
+        this.expected2 = expected2;
+        this.expected3 = expected3;
         return this;
     }
 

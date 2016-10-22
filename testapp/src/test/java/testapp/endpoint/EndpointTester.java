@@ -162,6 +162,17 @@ public class EndpointTester extends TestBase {
         eq(s, S.string(resp.body().string()));
     }
 
+    protected void bodyEq(String s1, String s2, String s3) throws IOException {
+        final Response resp = resp();
+        checkResponseCode(resp);
+        String found = resp.body().string();
+        if (S.neq(s3, found)) {
+            if (S.neq(s2, found)) {
+                eq(s1, found);
+            }
+        }
+    }
+
     protected void bodyEqIgnoreSpace(String s) throws IOException {
         final Response resp = resp();
         eq(200, resp.code());

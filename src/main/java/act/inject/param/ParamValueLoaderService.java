@@ -235,7 +235,6 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
             Annotation[] annotations,
             String bindName
     ) {
-        Class rawType = spec.rawType();
         if (provided(spec, injector)) {
             return ProvidedValueLoader.get(spec, injector);
         }
@@ -245,6 +244,7 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
         if (null == bindName) {
             bindName = bindName(annotations, spec.name());
         }
+        Class rawType = spec.rawType();
         ParamValueLoader loader = findContextSpecificLoader(bindName, rawType, spec, type, annotations);
         return decorate(loader, spec, annotations, supportJsonDecorator());
     }
