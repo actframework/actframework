@@ -6,7 +6,7 @@ Documentation is ready at
 
 * [English version](https://github.com/actframework/act-doc/blob/master/en/index.md)
 * [中文版](https://github.com/actframework/act-doc/blob/master/cn/index.md)
-* 
+
 
 ## Project status
 
