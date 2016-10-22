@@ -11,7 +11,7 @@ Documentation is ready at
 ## Project status
 
 * Current stable version: 0.1.2-SNAPSHOT
-* Working on 0.2.0-SNAPSHOT
+* Working on 0.3.0-SNAPSHOT
 
 ## Install
 
@@ -21,12 +21,7 @@ Add the following dependency into your `pom.xml` file
     <dependency>
       <groupId>org.actframework</groupId>
       <artifactId>act</artifactId>
-      <version>0.1.2-SNAPSHOT</version>
-    </dependency>
-    <dependency>
-      <groupId>org.actframework</groupId>
-      <artifactId>act-feather</artifactId>
-      <version>0.1.1-SNAPSHOT</version>
+      <version>0.3.0-SNAPSHOT</version>
     </dependency>
 ```
 
