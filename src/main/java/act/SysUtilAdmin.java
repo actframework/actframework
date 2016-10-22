@@ -43,7 +43,7 @@ public class SysUtilAdmin {
         return pwd(context).getAbsolutePath();
     }
 
-    @Command(name = "act.ls, act.dir", help = "List files in the current working directory")
+    @Command(name = "act.ls, act.dir, act.ll", help = "List files in the current working directory")
     @PropertySpec("path as name,size,timestamp")
     public List<FileInfo> ls(
             @Optional("specify the path to be listed") String path,
@@ -103,6 +103,7 @@ public class SysUtilAdmin {
             @Optional(help = "specify the end line to be printed out") int end,
             @Optional(help = "specify begin end as range, e.g. 5-8") String range,
             @Optional(lead = "-n,--line-number", help = "print line number") boolean printLineNumber,
+            @Optional(lead = "-q,--grep", help = "specify search criteria") String q,
             CliContext context
     ) {
         if (S.notBlank(range)) {
@@ -116,11 +117,12 @@ public class SysUtilAdmin {
                 return;
             }
         } else {
+            final int defLimit = S.blank(q) ? 20 : Integer.MAX_VALUE;
             if (begin <= 0) {
                 begin = 1;
             }
             if (end <= 0) {
-                end = begin + (limit <= 0 ? 20 : limit) - 1;
+                end = begin + (limit <= 0 ? defLimit : limit) - 1;
             }
         }
         List<String> lines = IO.readLines(sobj.asInputStream(), end);
@@ -128,6 +130,9 @@ public class SysUtilAdmin {
         context.println("");
         for (int i = begin - 1; i < len; ++i) {
             String line = lines.get(i);
+            if (S.notBlank(q) && !line.contains(q)) {
+                continue;
+            }
             if (printLineNumber) {
                 context.print("%5s | ", i + 1);
             }

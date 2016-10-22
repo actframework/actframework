@@ -4,9 +4,11 @@ import act.Destroyable;
 import act.app.ActionContext;
 import act.app.App;
 import act.app.CliServer;
+import act.cli.builtin.IterateCursor;
 import act.cli.event.CliSessionStart;
 import act.cli.event.CliSessionTerminate;
 import act.cli.util.CliCursor;
+import act.handler.CliHandler;
 import act.util.Banner;
 import act.util.DestroyableBase;
 import jline.console.ConsoleReader;
@@ -30,7 +32,6 @@ public class CliSession extends DestroyableBase implements Runnable {
 
     private String id;
     private CliServer server;
-    private CliDispatcher dispatcher;
     protected App app;
     private Socket socket;
     private long ts;
@@ -39,6 +40,8 @@ public class CliSession extends DestroyableBase implements Runnable {
     private ConsoleReader console;
     private CliCursor cursor;
     private CommandNameCompleter commandNameCompleter;
+    // the current handler
+    private CliHandler handler;
     /**
      * Allow user command to attach data to the context and fetched for later use.
      * <p>
@@ -54,7 +57,6 @@ public class CliSession extends DestroyableBase implements Runnable {
      */
     protected CliSession(ActionContext context) {
         this.app = context.app();
-        this.dispatcher = app.cliDispatcher();
         this.id = context.session().id();
         this.ts = $.ms();
     }
@@ -63,7 +65,6 @@ public class CliSession extends DestroyableBase implements Runnable {
         this.socket = $.NPE(socket);
         this.server = $.NPE(server);
         this.app = server.app();
-        this.dispatcher = app.cliDispatcher();
         id = app.cuid();
         ts = $.ms();
         commandNameCompleter = new CommandNameCompleter(app);
@@ -195,6 +196,18 @@ public class CliSession extends DestroyableBase implements Runnable {
             pw.flush();
         }
         stop();
+    }
+
+    void handler(CliHandler handler) {
+        if (handler == IterateCursor.INSTANCE) {
+            return;
+        }
+        if (null == this.handler || S.string(this.handler).equals(S.string(handler))) {
+            this.handler = handler;
+            return;
+        }
+        this.handler = handler;
+        removeCursor();
     }
 
     private static void printBanner(String banner, ConsoleReader console) throws IOException {

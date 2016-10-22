@@ -552,7 +552,7 @@ public class Router extends AppServiceBase<Router> {
         public String label() {
             StringBuilder sb = S.builder(name);
             if (null != handler) {
-                sb.append(" -> ").append(handler);
+                sb.append(" -> ").append(RouteInfo.compactHandler(handler.toString()));
             }
             return sb.toString();
         }

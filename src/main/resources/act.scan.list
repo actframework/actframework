@@ -8,4 +8,3 @@ act.inject.genie.GenieInjector
 act.db.DbBind
 act.controller.builtin.CliOverHttp
 act.app.conf.AppConfigPlugin
-act.view.rythm.JodaTransformers

@@ -166,9 +166,9 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
                 Type type = field.getGenericType();
                 Annotation[] annotations = field.getAnnotations();
                 BeanSpec spec = BeanSpec.of(type, annotations, field.getName(), injector);
-                ParamValueLoader loader = findLoader(spec, type, annotations);
-                boolean loadedByGenie = (loader instanceof ProvidedValueLoader && field.isAnnotationPresent(Inject.class));
-                if (null != loader && !loadedByGenie) {
+                ParamValueLoader loader = paramValueLoaderOf(spec, null);
+                boolean provided = (loader instanceof ProvidedValueLoader);
+                if (null != loader && !provided) {
                     fieldLoaders.put(field, loader);
                 }
             }
@@ -188,22 +188,29 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
         for (int i = 0; i < sz; ++i) {
             String name = paramName(i);
             BeanSpec spec = BeanSpec.of(types[i], annotations[i], name, injector);
-            ParamValueLoader loader = paramRegistry.get($.T2(types[i], annotations[i]));
-            if (null == loader) {
-                if (Result.class.isAssignableFrom(spec.rawType())) {
-                    loader = RESULT_LOADER;
-                } else if (Exception.class.isAssignableFrom(spec.rawType())) {
-                    loader = EXCEPTION_LOADED;
-                } else {
-                    loader = findLoader(spec, types[i], annotations[i]);
-                }
-                // Cannot use spec as the key here because
-                // spec does not compare Scoped annotation
-                paramRegistry.putIfAbsent($.T2(types[i], annotations[i]), loader);
-            }
-            loaders[i] = loader;
+            loaders[i] = paramValueLoaderOf(spec, null);
         }
         return loaders;
+    }
+
+    private ParamValueLoader paramValueLoaderOf(BeanSpec spec, String bindName) {
+        Class<?> rawType = spec.rawType();
+        if (Result.class.isAssignableFrom(rawType)) {
+            return RESULT_LOADER;
+        } else if (Exception.class.isAssignableFrom(rawType)) {
+            return EXCEPTION_LOADED;
+        }
+        Type type = spec.type();
+        Annotation[] annotations = spec.allAnnotations();
+        $.T2<Type, Annotation[]> key = $.T2(type, annotations);
+        ParamValueLoader loader = paramRegistry.get(key);
+        if (null == loader) {
+            loader = findLoader(spec, type, annotations, bindName);
+            // Cannot use spec as the key here because
+            // spec does not compare Scoped annotation
+            paramRegistry.putIfAbsent(key, loader);
+        }
+        return loader;
     }
 
     protected abstract ParamValueLoader findContextSpecificLoader(
@@ -225,7 +232,8 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
     private ParamValueLoader findLoader(
             BeanSpec spec,
             Type type,
-            Annotation[] annotations
+            Annotation[] annotations,
+            String bindName
     ) {
         Class rawType = spec.rawType();
         if (provided(spec, injector)) {
@@ -234,7 +242,9 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
         if (null != filter(annotations, NoBind.class)) {
             return null;
         }
-        String bindName = bindName(annotations, spec.name());
+        if (null == bindName) {
+            bindName = bindName(annotations, spec.name());
+        }
         ParamValueLoader loader = findContextSpecificLoader(bindName, rawType, spec, type, annotations);
         return decorate(loader, spec, annotations, supportJsonDecorator());
     }
@@ -351,10 +361,9 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
     }
 
     private ParamValueLoader findLoader(ParamKey paramKey, Field field) {
-        BeanSpec spec = BeanSpec.of(field.getGenericType(), field.getDeclaredAnnotations(), App.instance().injector());
-        Class fieldType = field.getType();
+        BeanSpec spec = BeanSpec.of(field.getGenericType(), field.getDeclaredAnnotations(), injector);
         Annotation[] annotations = field.getDeclaredAnnotations();
-        if (ActProviders.isProvided(fieldType) || null != filter(annotations, Inject.class)) {
+        if (provided(spec, injector)) {
             return ProvidedValueLoader.get(spec, injector);
         }
         String name = null;
@@ -367,10 +376,16 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
         }
         ParamKey key = paramKey.child(name);
 
-        StringValueResolver resolver = resolverManager.resolver(fieldType, spec);
-        if (null != resolver) {
-            return new StringValueResolverValueLoader(key, resolver, null, fieldType);
+        ParamValueLoader loader = paramValueLoaderOf(spec, key.toString());
+        if (null != loader) {
+            return loader;
         }
+
+//        Class fieldType = field.getType();
+//        StringValueResolver resolver = resolverManager.resolver(fieldType, spec);
+//        if (null != resolver) {
+//            return new StringValueResolverValueLoader(key, resolver, null, fieldType);
+//        }
 
         return buildLoader(key, field.getGenericType(), spec);
     }

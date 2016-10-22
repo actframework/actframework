@@ -65,7 +65,12 @@ public class EndpointTester extends TestBase {
     }
 
     @Before
-    public void setup() {
+    public void setup() throws IOException {
+        reset();
+        _setup();
+    }
+
+    protected final void reset() {
         http = new OkHttpClient.Builder()
                 .connectTimeout(60 * 10, TimeUnit.SECONDS)
                 .readTimeout(60 * 10, TimeUnit.SECONDS)
@@ -74,6 +79,8 @@ public class EndpointTester extends TestBase {
         resp = null;
         reqBuilder = null;
     }
+
+    protected void _setup() throws IOException {}
 
 
     private void execute() throws IOException {
@@ -259,7 +266,8 @@ public class EndpointTester extends TestBase {
         StringBuilder sb;
         boolean paramAttached;
         private H.Method method = H.Method.GET;
-        private H.Format format = H.Format.JSON;
+        private H.Format format;
+        private H.Format accept;
         private RequestBody body;
         private String postStr;
         private String session;
@@ -288,6 +296,10 @@ public class EndpointTester extends TestBase {
 
         public ReqBuilder get() {
             return method(H.Method.GET);
+        }
+
+        public ReqBuilder getJSON() {
+            return method(H.Method.GET).format(H.Format.JSON).accept(H.Format.JSON);
         }
 
         public ReqBuilder get(String key, Object val, Object ... morePairs) {
@@ -339,6 +351,11 @@ public class EndpointTester extends TestBase {
 
         public ReqBuilder format(H.Format format) {
             this.format = format;
+            return this;
+        }
+
+        public ReqBuilder accept(H.Format format) {
+            this.accept = format;
             return this;
         }
 
@@ -410,6 +427,9 @@ public class EndpointTester extends TestBase {
             Request.Builder builder = new Request.Builder().url(sb.toString());
             if (this.format == H.Format.JSON) {
                 builder.addHeader("Content-Type", "application/json");
+            }
+            if (this.accept == H.Format.JSON) {
+                builder.addHeader("Accept", "application/json");
             }
             if (!this.headers.isEmpty()) {
                 for (Map.Entry<String, String> entry : headers.entrySet()) {

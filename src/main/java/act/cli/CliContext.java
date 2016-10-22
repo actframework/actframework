@@ -298,6 +298,7 @@ public class CliContext extends ActContext.Base<CliContext> implements IASCIITab
             Help.INSTANCE.showHelp(parser.command(), this);
         } else {
             try {
+                session.handler(handler);
                 handler.handle(this);
             } catch ($.Break b) {
                 throw b;

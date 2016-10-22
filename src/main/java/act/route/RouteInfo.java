@@ -25,10 +25,14 @@ public class RouteInfo extends $.T3<String, String, String> implements Comparabl
         return _3;
     }
     public String compactHandler() {
-        String[] sa = _3.split("\\.");
+        return compactHandler(_3);
+    }
+
+    public static String compactHandler(String handler) {
+        String[] sa = handler.split("\\.");
         int len = sa.length;
         if (len == 1) {
-            return _3;
+            return handler;
         }
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < len - 2; ++i) {
