@@ -33,25 +33,23 @@ public class Banner {
 
     public static String banner(String text, String actVersion, String appVersion) {
         String s = asciiArt(text);
+        int width = width(s);
         StringBuilder sb = S.builder(s);
         if (null == appVersion) {
             int n = actVersion.length();
-            int spaceLeft = (24 - n - 1) / 2;
+            int spaceLeft = (width - n + 1) / 2;
             for (int i = 0; i < spaceLeft; ++i) {
                 sb.append(" ");
             }
-            sb.append(actVersion);
+            sb.append(actVersion).append("\n");
         } else {
-            sb.append(" App: ").append(appVersion);
-            sb.append("\n Act: ").append(actVersion);
+            sb.append(poweredBy(width, actVersion));
+            sb.append("\n\n version: ").append(appVersion);
         }
-        sb.append("\n");
         File aFile = new File("");
-        sb.append("current dir: ").append(aFile.getAbsolutePath());
-        sb.append("\n");
-        sb.append("config profile: ").append(ConfLoader.confSetName());
-        sb.append("\n");
-        sb.append("running mode: ").append(Act.mode()).append("\n");
+        sb.append("\nbase dir: ").append(aFile.getAbsolutePath());
+        sb.append("\n profile: ").append(ConfLoader.confSetName());
+        sb.append("\n    mode: ").append(Act.mode()).append("\n");
         return sb.toString();
     }
 
@@ -61,6 +59,26 @@ public class Banner {
         } catch (IOException e) {
             throw E.ioException(e);
         }
+    }
+
+    private static int width(String banner) {
+        String[] lines = banner.split("\n");
+        int max = 0;
+        for (String s : lines) {
+            max = Math.max(max, s.length());
+        }
+        return max;
+    }
+
+    private static String poweredBy(int width, String actVersion) {
+        String poweredBy = "powered by ActFramework " + actVersion;
+        int pw = poweredBy.length();
+        int gap = width - pw;
+        gap = Math.max(gap, 0);
+        if (gap == 0) {
+            return poweredBy;
+        }
+        return S.builder(S.times(" ", gap)).append(poweredBy).toString();
     }
 
     public static void main(String[] args) {

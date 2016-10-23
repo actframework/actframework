@@ -6,10 +6,7 @@ import act.app.util.AppCrypto;
 import act.app.util.NamedPort;
 import act.boot.BootstrapClassLoader;
 import act.boot.PluginClassProvider;
-import act.conf.ActConfLoader;
-import act.conf.ActConfig;
-import act.conf.AppConfig;
-import act.conf.ConfLoader;
+import act.conf.*;
 import act.controller.meta.ActionMethodMetaInfo;
 import act.controller.meta.CatchMethodMetaInfo;
 import act.controller.meta.InterceptorMethodMetaInfo;
@@ -39,6 +36,7 @@ import org.osgl.logging.L;
 import org.osgl.logging.Logger;
 import org.osgl.util.C;
 import org.osgl.util.E;
+import org.osgl.util.S;
 
 import java.util.List;
 import java.util.Map;
@@ -242,7 +240,8 @@ public final class Act {
         if (null != s) {
             mode = Mode.valueOfIgnoreCase(s);
         } else {
-            mode = Mode.DEV;
+            String profile = SysProps.get(AppConfigKey.PROFILE.key());
+            mode = S.neq("prod", profile, S.IGNORECASE) ? Mode.DEV : Mode.PROD;
         }
         start(true, appName, appVersion);
     }

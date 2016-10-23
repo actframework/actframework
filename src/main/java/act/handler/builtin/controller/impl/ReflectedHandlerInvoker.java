@@ -14,6 +14,7 @@ import act.inject.param.ParamValueLoaderManager;
 import act.inject.param.ParamValueLoaderService;
 import act.security.CORS;
 import act.security.CSRF;
+import act.util.ActContext;
 import act.util.DestroyableBase;
 import act.view.ActNotFound;
 import act.view.Template;
@@ -64,6 +65,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
     private Set<String> pathVariables;
     private CORS.Spec corsSpec;
     private CSRF.Spec csrfSpec;
+    private String jsonDTOKey;
 
     private ReflectedHandlerInvoker(M handlerMetaInfo, App app) {
         this.cl = app.classLoader();
@@ -101,6 +103,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
 
         CSRF.Spec csrfSpec = CSRF.spec(method).chain(CSRF.spec(controllerClass));
         this.csrfSpec = csrfSpec;
+        this.jsonDTOKey = app.cuid();
     }
 
     @Override
@@ -130,6 +133,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
     }
 
     public Result handle(ActionContext actionContext) throws Exception {
+        actionContext.attribute("reflected_handler", this);
         ensureJsonDTOGenerated(actionContext);
         Object ctrl = controllerInstance(actionContext);
         Object[] params = params(actionContext);
@@ -162,8 +166,12 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         return csrfSpec;
     }
 
+    public JsonDTO cachedJsonDTO(ActContext<?> context) {
+        return context.attribute(jsonDTOKey);
+    }
+
     private void ensureJsonDTOGenerated(ActionContext context) {
-        if (0 == fieldsAndParamsCount || !context.jsonEncoded() || null != context.attribute(JsonDTO.CTX_KEY)) {
+        if (0 == fieldsAndParamsCount || !context.jsonEncoded() || null != context.attribute(jsonDTOKey)) {
             return;
         }
         Class<? extends JsonDTO> dtoClass = jsonDTOClassManager.get(controllerClass, method);
@@ -173,7 +181,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         }
         try {
             JsonDTO dto = JSON.parseObject(patchedJsonBody(context), dtoClass);
-            context.attribute(JsonDTO.CTX_KEY, dto);
+            context.attribute(jsonDTOKey, dto);
         } catch (JSONException e) {
             if (e.getCause() != null) {
                 App.logger.warn(e.getCause(), "error parsing JSON data");

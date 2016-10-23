@@ -9,10 +9,11 @@ import java.util.Properties;
 /**
  * Stores the act version and build number
  */
-class Version {
+public class Version {
     private static boolean snapshot;
     private static String version;
     private static String buildNumber;
+    private static String appVersion;
 
     static {
         Properties p = new Properties();
@@ -31,19 +32,33 @@ class Version {
         }
     }
 
-    static boolean snapshot() {
+    public static boolean snapshot() {
         return snapshot;
     }
 
-    static String version() {
+    public static String version() {
         return version;
     }
 
-    static String buildNumber() {
+    public static String buildNumber() {
         return buildNumber;
     }
 
-    static String fullVersion() {
+    public static String fullVersion() {
         return S.fmt("%s-%s", version, buildNumber);
+    }
+
+    public synchronized static String appVersion() {
+        if (null == appVersion) {
+            Properties p = new Properties();
+            try {
+                p.load(Version.class.getResourceAsStream("/app.version"));
+                appVersion = p.getProperty("app.version");
+            } catch (Exception e) {
+                // ignore
+                appVersion = "0.0.1";
+            }
+        }
+        return appVersion;
     }
 }

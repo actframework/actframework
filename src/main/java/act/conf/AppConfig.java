@@ -1236,7 +1236,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         if (null == httpSecure) {
             Boolean B = get(HTTP_SECURE);
             if (null == B) {
-                B = !Act.isDev();
+                B = !Act.isDev() && S.neq(Act.profile(), "dev", S.IGNORECASE);
             }
             httpSecure = B;
         }
@@ -1887,9 +1887,6 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     }
 
     public boolean sessionSecure() {
-        if (Act.isDev()) {
-            return false;
-        }
         if (null == sessionSecure) {
             sessionSecure = get(AppConfigKey.SESSION_SECURE);
             if (null == sessionSecure) {

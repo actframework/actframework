@@ -3,6 +3,7 @@ package act.inject.param;
 import act.app.ActionContext;
 import act.app.App;
 import act.app.data.StringValueResolverManager;
+import act.handler.builtin.controller.impl.ReflectedHandlerInvoker;
 import act.inject.DependencyInjector;
 import act.util.ActContext;
 import org.osgl.$;
@@ -45,7 +46,8 @@ class JsonParamValueLoader implements ParamValueLoader {
         if (isPathVariable) {
             return fallBack.load(bean, context, noDefaultValue);
         }
-        JsonDTO dto = context.attribute(KEY_JSON_DTO);
+        ReflectedHandlerInvoker reflectedHandlerInvoker = context.attribute("reflected_handler");
+        JsonDTO dto = null == reflectedHandlerInvoker ? null : reflectedHandlerInvoker.cachedJsonDTO(context);
         if (null == dto) {
             return this.fallBack.load(bean, context, noDefaultValue);
         } else {
