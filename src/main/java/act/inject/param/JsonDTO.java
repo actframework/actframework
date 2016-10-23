@@ -9,8 +9,6 @@ import java.util.Map;
  */
 public abstract class JsonDTO {
 
-    public static final String CTX_KEY = "__json_dto__";
-
     private Map<String, Object> beans = new HashMap<String, Object>();
 
     /**

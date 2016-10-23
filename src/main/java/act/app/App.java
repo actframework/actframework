@@ -25,6 +25,7 @@ import act.handler.builtin.StaticResourceGetter;
 import act.inject.DependencyInjectionBinder;
 import act.inject.DependencyInjector;
 import act.inject.genie.GenieInjector;
+import act.inject.genie.GenieModuleScanner;
 import act.inject.param.JsonDTOClassManager;
 import act.inject.param.ParamValueLoaderManager;
 import act.job.AppJobManager;
@@ -862,6 +863,7 @@ public class App extends DestroyableBase {
     }
 
     private void loadBuiltInScanners() {
+        scannerManager.register(new GenieModuleScanner());
         scannerManager.register(new ClassInfoByteCodeScanner());
         scannerManager.register(new ClassFinderByteCodeScanner());
         scannerManager.register(new ControllerByteCodeScanner());

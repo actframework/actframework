@@ -17,7 +17,6 @@ import java.util.Set;
 
 class JsonParamValueLoader implements ParamValueLoader {
 
-    private static final String KEY_JSON_DTO = JsonDTO.CTX_KEY;
     private static final Provider NULL_PROVIDER = new Provider() {
         @Override
         public Object get() {
@@ -51,7 +50,6 @@ class JsonParamValueLoader implements ParamValueLoader {
         if (null == dto) {
             return this.fallBack.load(bean, context, noDefaultValue);
         } else {
-            context.attribute(KEY_JSON_DTO, dto);
             Object o = dto.get(spec.name());
             return null != o ? o : defValProvider.get();
         }

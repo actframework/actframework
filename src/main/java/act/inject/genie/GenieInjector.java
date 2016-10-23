@@ -2,6 +2,7 @@ package act.inject.genie;
 
 import act.Act;
 import act.app.App;
+import act.app.conf.AppConfigurator;
 import act.app.event.AppEventId;
 import act.controller.ActionMethodParamAnnotationHandler;
 import act.inject.ActProviders;
@@ -45,12 +46,13 @@ public class GenieInjector extends DependencyInjectorBase<GenieInjector> {
     };
 
     private volatile Genie genie;
-    private List<Object> modules;
+    private Set<Object> modules;
     private Set<Class<? extends Annotation>> injectTags = new HashSet<Class<? extends Annotation>>();
 
     public GenieInjector(App app) {
         super(app);
-        modules = factories().append(SCOPE_MODULE);
+        modules = factories();
+        modules.add(SCOPE_MODULE);
     }
 
     @Override
@@ -106,18 +108,18 @@ public class GenieInjector extends DependencyInjectorBase<GenieInjector> {
         return genie().subjectToInject(spec);
     }
 
-    private C.List<Object> factories() {
+    private C.Set<Object> factories() {
         Set<String> factories = GenieFactoryFinder.factories();
         int len = factories.size();
-        C.List<Object> list = C.newSizedList(factories.size());
+        C.Set<Object> set = C.newSet();
         if (0 == len) {
-            return list;
+            return set;
         }
         ClassLoader cl = App.instance().classLoader();
         for (String className : factories) {
-            list.add($.classForName(className, cl));
+            set.add($.classForName(className, cl));
         }
-        return list;
+        return set;
     }
 
     private Genie genie() {
@@ -158,22 +160,26 @@ public class GenieInjector extends DependencyInjectorBase<GenieInjector> {
 
     @SubClassFinder(callOn = AppEventId.DEPENDENCY_INJECTOR_LOADED)
     public static void foundModule(Class<? extends Module> moduleClass) {
+        addModuleClass(moduleClass);
+    }
+
+    @SubClassFinder(callOn = AppEventId.DEPENDENCY_INJECTOR_LOADED)
+    public static void foundConfigurator(Class<? extends AppConfigurator> configurator) {
+        addModuleClass(configurator);
+    }
+
+    @AnnotatedClassFinder(value = ModuleTag.class, callOn = AppEventId.DEPENDENCY_INJECTOR_LOADED, noAbstract = false)
+    public static void foundTaggedModule(Class<?> taggedModuleClass) {
+        addModuleClass(taggedModuleClass);
+    }
+
+    public static void addModuleClass(Class<?> moduleClass) {
         if (!isModuleAllowed(moduleClass)) {
             return;
         }
         App app = App.instance();
         GenieInjector genieInjector = app.injector();
-        genieInjector.addModule($.newInstance(moduleClass));
-    }
-
-    @AnnotatedClassFinder(value = ModuleTag.class, callOn = AppEventId.DEPENDENCY_INJECTOR_LOADED, noAbstract = false)
-    public static void foundTaggedModule(Class<?> taggedModuleClass) {
-        if (!isModuleAllowed(taggedModuleClass)) {
-            return;
-        }
-        App app = App.instance();
-        GenieInjector genieInjector = app.injector();
-        genieInjector.addModule(taggedModuleClass);
+        genieInjector.addModule(moduleClass);
     }
 
     @AnnotatedClassFinder(value = LoadValue.class, noAbstract = false, callOn = AppEventId.DEPENDENCY_INJECTOR_LOADED)
