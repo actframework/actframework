@@ -106,7 +106,7 @@ public class ViewManager extends DestroyableBase {
 
         if (multiViews) {
             View preferred = preferredViews.get(templatePath);
-            if (null != preferred) {
+            if (null != preferred && preferred.appliedTo(context)) {
                 template = preferred.loadTemplate(templatePath, context);
                 if (null != template) {
                     context.cacheTemplate(template);
@@ -117,12 +117,12 @@ public class ViewManager extends DestroyableBase {
 
         View defView = config.defaultView();
 
-        if (null != defView) {
+        if (null != defView && defView.appliedTo(context)) {
             template = defView.loadTemplate(templatePath, context);
         }
         if (null == template && multiViews) {
             for (View view : viewList) {
-                if (view == defView) continue;
+                if (view == defView || !view.appliedTo(context)) continue;
                 template = view.loadTemplate(templatePath, context);
                 if (null != template) {
                     if (multiViews) {

@@ -7,6 +7,7 @@ import act.conf.AppConfig;
 import act.plugin.AppServicePlugin;
 import act.plugin.Plugin;
 import act.util.ActContext;
+import org.osgl.http.H;
 import org.osgl.util.C;
 import org.osgl.util.IO;
 import org.osgl.util.S;
@@ -35,6 +36,11 @@ public abstract class View extends AppServicePlugin {
                 init(app);
             }
         });
+    }
+
+    public boolean appliedTo(ActContext context) {
+        H.Format format = context.accept();
+        return format.isText();
     }
 
     /**

@@ -64,7 +64,7 @@ import static act.app.event.AppEventId.*;
  */
 public class App extends DestroyableBase {
 
-    public static Logger logger = L.get(App.class);
+    public static Logger logger = Act.logger;
 
     private static App INST;
 
@@ -887,7 +887,7 @@ public class App extends DestroyableBase {
         logger.debug("loading app routing table: %s ...", appBase.getPath());
         File routes = RuntimeDirs.routes(this);
         if (!(routes.isFile() && routes.canRead())) {
-            logger.warn("Cannot find routeTable file: %s", appBase.getPath());
+            logger.debug("No route table find found");
             // guess the app is purely using annotation based routes
             return;
         }

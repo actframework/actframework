@@ -1,5 +1,6 @@
 package act.xio;
 
+import act.Act;
 import act.Destroyable;
 import act.util.DestroyableBase;
 import org.osgl.logging.LogManager;
@@ -43,7 +44,7 @@ public abstract class NetworkBase extends DestroyableBase implements Network {
             if (!trySetUpClient(client, port)) {
                 failed.put(port, client);
             } else {
-                logger.info("network client hooked on port: %s", port);
+                Act.logger.info("network client hooked on port: %s", port);
             }
         }
         started = true;

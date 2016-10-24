@@ -5,6 +5,8 @@ import act.app.App;
 import act.app.AppHolderBase;
 import org.osgl.exception.ConfigurationException;
 import org.osgl.http.H;
+import org.osgl.logging.LogManager;
+import org.osgl.logging.Logger;
 import org.osgl.util.C;
 import org.osgl.util.E;
 import org.osgl.util.S;
@@ -23,6 +25,8 @@ import static act.app.App.logger;
 
 @ActComponent
 public class MailerConfig extends AppHolderBase {
+
+    public static final Logger logger = LogManager.get(MailerConfig.class);
 
     public static final String FROM = "from";
     public static final String CONTENT_TYPE = "content_type";

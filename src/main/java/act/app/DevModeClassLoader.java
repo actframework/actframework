@@ -156,7 +156,7 @@ public class DevModeClassLoader extends AppClassLoader {
 
             Set<String> classesNeedByteCodeScan = C.newSet();
             if (scanners.isEmpty()) {
-                logger.warn("No source code scanner found");
+                //logger.warn("No source code scanner found");
                 for (String className : sources.keySet()) {
                     classesNeedByteCodeScan.add(className);
                 }

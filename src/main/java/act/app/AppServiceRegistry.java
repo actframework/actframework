@@ -1,6 +1,7 @@
 package act.app;
 
 import act.Destroyable;
+import act.event.EventBus;
 import org.osgl.$;
 import org.osgl.logging.L;
 import org.osgl.logging.LogManager;
@@ -35,7 +36,10 @@ class AppServiceRegistry {
             tryRegisterSingletonService(c, service);
         } else {
             E.illegalStateIf(isSingletonService(c), "Singleton AppService[%s] cannot be re-registered", c);
-            logger.warn("Service type[%s] already registered", service.getClass());
+            // we know event bus will get registered twice for the `EventBus.onceBus`
+            if (!(service instanceof EventBus)) {
+                logger.warn("Service type[%s] already registered", service.getClass());
+            }
             appendix.add(service);
         }
     }

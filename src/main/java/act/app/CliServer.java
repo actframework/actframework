@@ -1,5 +1,6 @@
 package act.app;
 
+import act.Act;
 import act.Destroyable;
 import act.app.event.AppEventId;
 import act.cli.CliSession;
@@ -136,7 +137,7 @@ public class CliServer extends AppServiceBase<CliServer> implements Runnable {
             app().jobManager().on(AppEventId.POST_START, new Runnable() {
                 @Override
                 public void run() {
-                    logger.info("CLI server started on port: %s", port);
+                    Act.logger.info("CLI server started on port: %s", port);
                 }
             });
         } catch (IOException e) {
