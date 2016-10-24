@@ -1,18 +1,20 @@
 package testapp.benchmark;
 
 import act.util.IdGenerator;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.osgl.$;
 import testapp.TestBase;
 
 import java.util.UUID;
 
+@Ignore
 public class CuidBenchmark extends TestBase {
 
     @Test
     public void cuidVsUuid() {
-        final int TIMES = 1000;
-        IdGenerator idGenerator = new IdGenerator(1);
+        final int TIMES = 10000;
+        IdGenerator idGenerator = new IdGenerator(4);
         long ts1 = $.ns();
         for (int i = 0; i < TIMES; ++i) {
             idGenerator.genId();

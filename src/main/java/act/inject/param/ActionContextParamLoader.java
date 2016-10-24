@@ -36,41 +36,7 @@ class ActionContextParamLoader extends ParamValueLoaderService {
             return new HeaderValueLoader(headerVariable.value(), spec);
         }
 
-        ParamValueLoader loader = null;
-        {
-            Bind bind = spec.getAnnotation(Bind.class);
-            if (null != bind) {
-                for (Class<? extends Binder> binderClass : bind.value()) {
-                    Binder binder = injector.get(binderClass);
-                    if (rawType.isAssignableFrom(binder.targetType())) {
-                        loader = new BoundedValueLoader(binder, bindName);
-                        break;
-                    }
-                }
-            }
-        }
-        if (null == loader) {
-            Annotation[] aa = spec.allAnnotations();
-            for (Annotation a : aa) {
-                Bind bind = AnnotationUtil.tagAnnotation(a, Bind.class);
-                if (null != bind) {
-                    for (Class<? extends Binder> binderClass : bind.value()) {
-                        Binder binder = injector.get(binderClass);
-                        binder.attributes($.evaluate(a));
-                        if (rawType.isAssignableFrom(binder.targetType())) {
-                            loader = new BoundedValueLoader(binder, bindName);
-                            break;
-                        }
-                    }
-                }
-            }
-        }
-        if (null == loader) {
-            Binder binder = binderManager.binder(rawType);
-            if (null != binder) {
-                loader = new BoundedValueLoader(binder, bindName);
-            }
-        }
+        ParamValueLoader loader = binder(spec, bindName);
         if (null == loader) {
             Resolve resolve = spec.getAnnotation(Resolve.class);
             if (null != resolve) {

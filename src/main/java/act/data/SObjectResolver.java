@@ -1,9 +1,11 @@
 package act.data;
 
+import act.app.ActionContext;
 import act.cli.CliContext;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
+import org.osgl.storage.ISObject;
 import org.osgl.storage.impl.SObject;
 import org.osgl.util.Codec;
 import org.osgl.util.E;
@@ -44,11 +46,17 @@ public class SObjectResolver extends StringValueResolverPlugin<SObject> {
             CliContext cli = CliContext.current();
             if (null != cli) {
                 file = cli.getFile(value);
+                if (file.exists() && file.canRead()) {
+                    return SObject.of(file);
+                }
             } else {
-                file = new File(value);
-            }
-            if (file.exists() && file.canRead()) {
-                return SObject.of(file);
+                ActionContext act = ActionContext.current();
+                if (null != act) {
+                    ISObject sobj = act.upload(value);
+                    if (null != sobj) {
+                        return (SObject)sobj;
+                    }
+                }
             }
             // last try base64 decoder
             try {

@@ -1,6 +1,7 @@
 package act.db;
 
 import act.app.App;
+import act.inject.param.NoBind;
 import org.osgl.$;
 import org.osgl.util.Generics;
 
@@ -15,7 +16,10 @@ import java.util.List;
 public abstract class ModelBase<ID_TYPE, MODEL_TYPE extends ModelBase>
 implements Model<ID_TYPE, MODEL_TYPE> {
 
+    @NoBind
     protected transient Type idType;
+
+    @NoBind
     protected transient Type modelType;
 
     public ModelBase() {

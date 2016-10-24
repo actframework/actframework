@@ -51,9 +51,9 @@ class CollectionLoader implements ParamValueLoader {
         } else {
             this.resolver = null;
         }
-        if (null == this.binder && null == this.resolver) {
-            throw new IllegalArgumentException(S.fmt("Cannot find binder and resolver for %s", elementType));
-        }
+//        if (null == this.binder && null == this.resolver) {
+//            throw new IllegalArgumentException(S.fmt("Cannot find binder and resolver for %s", elementType));
+//        }
     }
 
     @Override

@@ -137,7 +137,7 @@ public class IdGenerator {
                         case 3: return THREE;
                         case 4: return FOUR;
                         default :
-                            throw E.unexpected("Invalid EffectiveByte value: %s", n);
+                            throw E.unexpected("Invalid EffectiveByte value: %s. Expected: 1 - 4", n);
                     }
                 }
             }

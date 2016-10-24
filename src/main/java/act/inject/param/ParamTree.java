@@ -13,11 +13,11 @@ class ParamTree {
         Set<String> paramKeys = context.paramKeys();
         for (String key : paramKeys) {
             String[] vals = context.paramVals(key);
-            buildNode(key, vals);
+            buildNode(key, vals, context);
         }
     }
 
-    private void buildNode(String rawKey, String[] vals) {
+    private void buildNode(String rawKey, String[] vals, ActContext<?> context) {
         ParamKey key = ParamKey.of(parseRawParamKey(rawKey));
         ParamTreeNode node;
         int len = vals.length;

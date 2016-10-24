@@ -20,10 +20,12 @@ import org.osgl.$;
 import org.osgl.inject.BeanSpec;
 import org.osgl.inject.InjectException;
 import org.osgl.inject.annotation.Provided;
+import org.osgl.inject.util.AnnotationUtil;
 import org.osgl.inject.util.ArrayLoader;
 import org.osgl.mvc.annotation.Bind;
 import org.osgl.mvc.annotation.Param;
 import org.osgl.mvc.result.Result;
+import org.osgl.mvc.util.Binder;
 import org.osgl.util.C;
 import org.osgl.util.E;
 import org.osgl.util.S;
@@ -166,7 +168,7 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
                 Type type = field.getGenericType();
                 Annotation[] annotations = field.getAnnotations();
                 BeanSpec spec = BeanSpec.of(type, annotations, field.getName(), injector);
-                ParamValueLoader loader = paramValueLoaderOf(spec, null);
+                ParamValueLoader loader = paramValueLoaderOf(spec);
                 boolean provided = (loader instanceof ProvidedValueLoader);
                 if (null != loader && !provided) {
                     fieldLoaders.put(field, loader);
@@ -188,9 +190,13 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
         for (int i = 0; i < sz; ++i) {
             String name = paramName(i);
             BeanSpec spec = BeanSpec.of(types[i], annotations[i], name, injector);
-            loaders[i] = paramValueLoaderOf(spec, null);
+            loaders[i] = paramValueLoaderOf(spec);
         }
         return loaders;
+    }
+
+    private ParamValueLoader paramValueLoaderOf(BeanSpec spec) {
+        return paramValueLoaderOf(spec, null);
     }
 
     private ParamValueLoader paramValueLoaderOf(BeanSpec spec, String bindName) {
@@ -220,6 +226,46 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
             Type type,
             Annotation[] annotations
     );
+
+    protected final ParamValueLoader binder(BeanSpec spec, String bindName) {
+        Class rawType = spec.rawType();
+        ParamValueLoader loader = null;
+        {
+            Bind bind = spec.getAnnotation(Bind.class);
+            if (null != bind) {
+                for (Class<? extends Binder> binderClass : bind.value()) {
+                    Binder binder = injector.get(binderClass);
+                    if (rawType.isAssignableFrom(binder.targetType())) {
+                        loader = new BoundedValueLoader(binder, bindName);
+                        break;
+                    }
+                }
+            }
+        }
+        if (null == loader) {
+            Annotation[] aa = spec.allAnnotations();
+            for (Annotation a : aa) {
+                Bind bind = AnnotationUtil.tagAnnotation(a, Bind.class);
+                if (null != bind) {
+                    for (Class<? extends Binder> binderClass : bind.value()) {
+                        Binder binder = injector.get(binderClass);
+                        binder.attributes($.evaluate(a));
+                        if (rawType.isAssignableFrom(binder.targetType())) {
+                            loader = new BoundedValueLoader(binder, bindName);
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+        if (null == loader) {
+            Binder binder = binderManager.binder(rawType);
+            if (null != binder) {
+                loader = new BoundedValueLoader(binder, bindName);
+            }
+        }
+        return loader;
+    }
 
     protected String paramName(int i) {
         return null;
@@ -376,16 +422,11 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
         }
         ParamKey key = paramKey.child(name);
 
-        ParamValueLoader loader = paramValueLoaderOf(spec, key.toString());
-        if (null != loader) {
-            return loader;
+        Class fieldType = field.getType();
+        StringValueResolver resolver = resolverManager.resolver(fieldType, spec);
+        if (null != resolver) {
+            return new StringValueResolverValueLoader(key, resolver, null, fieldType);
         }
-
-//        Class fieldType = field.getType();
-//        StringValueResolver resolver = resolverManager.resolver(fieldType, spec);
-//        if (null != resolver) {
-//            return new StringValueResolverValueLoader(key, resolver, null, fieldType);
-//        }
 
         return buildLoader(key, field.getGenericType(), spec);
     }

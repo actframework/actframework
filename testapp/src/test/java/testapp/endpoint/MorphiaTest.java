@@ -31,8 +31,10 @@ public class MorphiaTest extends EndpointTester {
 
     private void createUser(String name, SObject photo) throws Exception {
         RequestBody requestBody = new MultipartBody.Builder()
-                .addFormDataPart("person.name", name)
-                .addFormDataPart("person.photo", "photo.jpg", RequestBody.create(MediaType.parse("img/jpeg"), photo.asByteArray()))
+                .addFormDataPart("person[name]", name)
+                .addFormDataPart("person[photo]", "photo.jpg",
+                        RequestBody.create(MediaType.parse("img/jpeg"),
+                                photo.asByteArray()))
                 .build();
         url("/morphia/person").post().body(requestBody);
         eq(200, resp().code());
