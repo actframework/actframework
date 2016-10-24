@@ -62,6 +62,9 @@ public class EventBus extends AppServiceBase<EventBus> {
 
     @Override
     protected void releaseResources() {
+        if (null != onceBus) {
+            onceBus.releaseResources();
+        }
         releaseAppEventListeners(appEventListeners);
         releaseAppEventListeners(asyncAppEventListeners);
         releaseActEventListeners(actEventListeners);

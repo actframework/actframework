@@ -122,7 +122,7 @@ public final class Act {
     }
 
     public static final String VERSION = Version.fullVersion();
-    private static Logger logger = L.get(Act.class);
+    public static Logger logger = L.get(Act.class);
     private static ActConfig conf;
     private static Mode mode = Mode.PROD;
     private static boolean multiTenant = false;
@@ -279,6 +279,7 @@ public final class Act {
         startNetworkLayer();
 
         Thread.currentThread().setContextClassLoader(Act.class.getClassLoader());
+        emit(AppEventId.POST_START);
     }
 
     public static void shutdown() {
@@ -453,13 +454,13 @@ public final class Act {
     }
 
     private static void loadConfig() {
-        logger.info("loading configuration ...");
+        logger.debug("loading configuration ...");
 
         String s = SysProps.get("act.mode");
         if (null != s) {
             mode = Mode.valueOfIgnoreCase(s);
         }
-        logger.info("Act starts in %s mode", mode);
+        logger.debug("Act starts in %s mode", mode);
 
         conf = new ActConfLoader().load(null);
     }
@@ -469,10 +470,10 @@ public final class Act {
     }
 
     private static void loadPlugins() {
-        logger.info("scanning plugins ...");
+        logger.debug("scanning plugins ...");
         long ts = $.ms();
         new PluginScanner().scan();
-        logger.info("plugin scanning finished in %sms", $.ms() - ts);
+        logger.debug("plugin scanning finished in %sms", $.ms() - ts);
     }
 
     private static void unloadPlugins() {
@@ -480,7 +481,7 @@ public final class Act {
     }
 
     private static void initViewManager() {
-        logger.info("initializing view manager ...");
+        logger.debug("initializing view manager ...");
         viewManager = new ViewManager();
     }
 
@@ -492,7 +493,7 @@ public final class Act {
     }
 
     private static void initMetricPlugin() {
-        logger.info("initializing metric plugin ...");
+        logger.debug("initializing metric plugin ...");
         metricPlugin = new SimpleMetricPlugin();
     }
 
@@ -504,7 +505,7 @@ public final class Act {
     }
 
     private static void initPluginManager() {
-        logger.info("initializing generic plugin manager ...");
+        logger.debug("initializing generic plugin manager ...");
         pluginManager = new GenericPluginManager();
     }
 
@@ -516,7 +517,7 @@ public final class Act {
     }
 
     private static void initAppServicePluginManager() {
-        logger.info("initializing app service plugin manager ...");
+        logger.debug("initializing app service plugin manager ...");
         appPluginManager = new AppServicePluginManager();
     }
 
@@ -528,7 +529,7 @@ public final class Act {
     }
 
     private static void initSessionManager() {
-        logger.info("initializing session manager ...");
+        logger.debug("initializing session manager ...");
         sessionManager = new SessionManager();
     }
 
@@ -540,7 +541,7 @@ public final class Act {
     }
 
     private static void initDbManager() {
-        logger.info("initializing db manager ...");
+        logger.debug("initializing db manager ...");
         dbManager = new DbManager();
     }
 
@@ -552,7 +553,7 @@ public final class Act {
     }
 
     private static void initAppCodeScannerPluginManager() {
-        logger.info("initializing app code scanner plugin manager ...");
+        logger.debug("initializing app code scanner plugin manager ...");
         scannerPluginManager = new AppCodeScannerPluginManager();
     }
 
@@ -564,7 +565,7 @@ public final class Act {
     }
 
     static void initEnhancerManager() {
-        logger.info("initializing byte code enhancer manager ...");
+        logger.debug("initializing byte code enhancer manager ...");
         enhancerManager = new BytecodeEnhancerManager();
     }
 
@@ -576,7 +577,7 @@ public final class Act {
     }
 
     private static void initNetworkLayer() {
-        logger.info("initializing network layer ...");
+        logger.debug("initializing network layer ...");
         network = new UndertowNetwork();
     }
 
@@ -591,17 +592,17 @@ public final class Act {
         if (network.isDestroyed()) {
             return;
         }
-        logger.info("starting network layer ...");
+        logger.debug("starting network layer ...");
         network.start();
     }
 
     private static void shutdownNetworkLayer() {
-        logger.info("shutting down network layer ...");
+        logger.debug("shutting down network layer ...");
         network.shutdown();
     }
 
     protected static void initApplicationManager() {
-        logger.info("initializing application manager ...");
+        logger.debug("initializing application manager ...");
         appManager = AppManager.create();
     }
 

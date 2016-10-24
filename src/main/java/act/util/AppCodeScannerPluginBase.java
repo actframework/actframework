@@ -12,16 +12,14 @@ import org.osgl.logging.Logger;
 @ActComponent
 public abstract class AppCodeScannerPluginBase extends DestroyableBase implements Plugin {
 
-    protected final static Logger logger = L.get(AppCodeScannerPluginBase.class);
-
     @Override
     public void register() {
         if (!load()) {
-            logger.warn("Scanner plugin cannot be loaded: " + getClass().getName());
+            Act.logger.warn("Scanner plugin cannot be loaded: " + getClass().getName());
             return;
         }
         Act.scannerPluginManager().register(this);
-        logger.info("Plugin registered: %s", getClass().getName());
+        Act.logger.debug("Plugin registered: %s", getClass().getName());
     }
 
     public abstract AppSourceCodeScanner createAppSourceCodeScanner(App app);

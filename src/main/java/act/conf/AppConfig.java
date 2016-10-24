@@ -785,7 +785,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
             if (null == seqGen) {
                 javax.inject.Provider<_SequenceNumberGenerator> provider = app().getInstance(SequenceNumberGenerator.Provider.class);
                 seqGen = provider.get();
-                logger.info("Sequence number generator loaded: %s", seqGen.getClass().getName());
+                logger.debug("Sequence number generator loaded: %s", seqGen.getClass().getName());
             }
         }
         return seqGen;

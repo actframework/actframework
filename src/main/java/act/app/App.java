@@ -394,7 +394,6 @@ public class App extends DestroyableBase {
         emit(START);
         daemonKeeper();
         logger.info("App[%s] loaded in %sms", name(), $.ms() - ms);
-        emit(POST_START);
     }
 
     public AppBuilder builder() {

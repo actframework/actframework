@@ -40,7 +40,7 @@ public class RunApp {
         } else {
             profile = "using profile[" + profile + "]";
         }
-        logger.info("run fullstack application with controller package[%s] %s", packageName, profile);
+        logger.debug("run fullstack application with controller package[%s] %s", packageName, profile);
         System.setProperty(AppConfigKey.CONTROLLER_PACKAGE.key(), packageName);
         final String SCAN_KEY = AppConfigKey.SCAN_PACKAGE.key();
         if (!System.getProperties().containsKey(SCAN_KEY)) {
@@ -50,10 +50,8 @@ public class RunApp {
             }
             System.setProperty(AppConfigKey.SCAN_PACKAGE.key(), scan);
         }
-        logger.debug("loading bootstrap classloader...");
         FullStackAppBootstrapClassLoader classLoader = new FullStackAppBootstrapClassLoader(RunApp.class.getClassLoader());
         Thread.currentThread().setContextClassLoader(classLoader);
-        logger.debug("loading Act class...");
         Class<?> actClass = classLoader.loadClass("act.Act");
         Method m = actClass.getDeclaredMethod("startApp", String.class, String.class);
         try {
@@ -66,7 +64,7 @@ public class RunApp {
                 throw E.unexpected(t, "Unknown error captured starting the application");
             }
         }
-        logger.debug("it takes %sms to start the app\n", $.ms() - ts);
+        logger.info("it takes %sms to start the app\n", $.ms() - ts);
     }
 
     public static void main(String[] args) throws Exception {

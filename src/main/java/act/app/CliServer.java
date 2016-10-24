@@ -1,6 +1,7 @@
 package act.app;
 
 import act.Destroyable;
+import act.app.event.AppEventId;
 import act.cli.CliSession;
 import act.exception.ActException;
 import org.osgl.logging.LogManager;
@@ -25,7 +26,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @ApplicationScoped
 public class CliServer extends AppServiceBase<CliServer> implements Runnable {
 
-    private static final Logger log = LogManager.get(CliServer.class);
+    private static final Logger logger = LogManager.get(CliServer.class);
 
     private ScheduledThreadPoolExecutor executor;
     private AtomicBoolean running = new AtomicBoolean();
@@ -67,7 +68,7 @@ public class CliServer extends AppServiceBase<CliServer> implements Runnable {
                 if (isDestroyed()) {
                     return;
                 }
-                log.error(e, "Error processing CLI session");
+                logger.error(e, "Error processing CLI session");
                 stop();
                 return;
             } finally {
@@ -91,7 +92,7 @@ public class CliServer extends AppServiceBase<CliServer> implements Runnable {
         try {
             serverSocket.close();
         } catch (IOException e) {
-            log.warn(e, "error closing server socket");
+            logger.warn(e, "error closing server socket");
         } finally {
             serverSocket = null;
         }
@@ -132,7 +133,12 @@ public class CliServer extends AppServiceBase<CliServer> implements Runnable {
                     }
                 }
             });
-            log.info("CLI server started on port: %s", port);
+            app().jobManager().on(AppEventId.POST_START, new Runnable() {
+                @Override
+                public void run() {
+                    logger.info("CLI server started on port: %s", port);
+                }
+            });
         } catch (IOException e) {
             throw new ActException(e, "Cannot start CLI server on port: %s", port);
         }

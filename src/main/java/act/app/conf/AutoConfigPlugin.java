@@ -1,6 +1,5 @@
 package act.app.conf;
 
-import act.Act;
 import act.ActComponent;
 import act.app.App;
 import act.app.AppByteCodeScanner;
@@ -13,14 +12,14 @@ import org.osgl.$;
 import org.osgl.exception.NotAppliedException;
 import org.osgl.inject.BeanSpec;
 import org.osgl.inject.Injector;
+import org.osgl.logging.LogManager;
+import org.osgl.logging.Logger;
 import org.osgl.util.Const;
 import org.osgl.util.E;
-import org.osgl.util.S;
 import org.osgl.util.StringValueResolver;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
-import java.lang.reflect.ParameterizedType;
 import java.util.Collection;
 import java.util.EventObject;
 import java.util.Map;
@@ -28,6 +27,8 @@ import java.util.Set;
 
 @ActComponent
 public class AutoConfigPlugin extends AnnotatedTypeFinder {
+
+    private static final Logger logger = LogManager.get(AutoConfigPlugin.class);
 
     private static Field modifiersField;
 

@@ -20,7 +20,7 @@ import static act.conf.ConfigKey.KEY_COMMON_CONF_TAG;
  */
 public abstract class ConfLoader<T extends Config> {
 
-    private static Logger logger = L.get(Act.class);
+    private static Logger logger = L.get(ConfLoader.class);
 
     // trim "act." from conf keys
     private static Map<String, Object> processConf(Map<String, ?> conf) {
@@ -136,7 +136,7 @@ public abstract class ConfLoader<T extends Config> {
          * ${conf_root}/dev etc
          */
         String profile = confSetName();
-        logger.info("Loading conf profile: %s", profile);
+        logger.debug("Loading conf profile: %s", profile);
         File taggedConfDir = new File(confDir, profile);
         if (taggedConfDir.exists() && taggedConfDir.isDirectory()) {
             map.putAll(loadConfFromDir_(taggedConfDir));

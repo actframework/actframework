@@ -3,6 +3,7 @@ package act.app;
 import act.Destroyable;
 import org.osgl.$;
 import org.osgl.logging.L;
+import org.osgl.logging.LogManager;
 import org.osgl.logging.Logger;
 import org.osgl.util.C;
 import org.osgl.util.E;
@@ -15,7 +16,7 @@ import java.util.Map;
 @ApplicationScoped
 class AppServiceRegistry {
 
-    private static Logger logger = L.get(AppServiceRegistry.class);
+    private static Logger logger = LogManager.get(AppServiceRegistry.class);
 
     private Map<Class<? extends AppService>, AppService> registry = C.newMap();
     private C.List<AppService> appendix = C.newList();
