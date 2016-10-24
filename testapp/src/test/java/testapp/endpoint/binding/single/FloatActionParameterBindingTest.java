@@ -25,4 +25,5 @@ public class FloatActionParameterBindingTest extends PrimitiveTypeActionParamete
     protected Object outOfScopeValue() {
         return Double.MAX_VALUE;
     }
+
 }

@@ -2,22 +2,25 @@ package act.inject.genie;
 
 import act.Act;
 import act.app.App;
+import act.app.AppClassLoader;
 import act.app.conf.AppConfigurator;
+import act.app.event.AppEvent;
 import act.app.event.AppEventId;
 import act.controller.ActionMethodParamAnnotationHandler;
-import act.inject.ActProviders;
-import act.inject.DependencyInjectionBinder;
-import act.inject.DependencyInjectorBase;
-import act.inject.ModuleTag;
+import act.inject.*;
 import act.sys.Env;
 import act.util.AnnotatedClassFinder;
+import act.util.ClassInfoRepository;
+import act.util.ClassNode;
 import act.util.SubClassFinder;
 import org.osgl.$;
 import org.osgl.Osgl;
+import org.osgl.exception.ConfigurationException;
 import org.osgl.exception.NotAppliedException;
 import org.osgl.inject.*;
 import org.osgl.inject.annotation.LoadValue;
 import org.osgl.inject.annotation.Provided;
+import org.osgl.inject.provider.LazyProvider;
 import org.osgl.mvc.annotation.Bind;
 import org.osgl.mvc.annotation.Param;
 import org.osgl.util.C;
@@ -166,6 +169,82 @@ public class GenieInjector extends DependencyInjectorBase<GenieInjector> {
     @SubClassFinder(callOn = AppEventId.DEPENDENCY_INJECTOR_LOADED)
     public static void foundConfigurator(Class<? extends AppConfigurator> configurator) {
         addModuleClass(configurator);
+    }
+
+    private static boolean hasBinding(Class<?> clazz) {
+        GenieInjector gi = Act.injector();
+        Genie genie = gi.genie();
+        return (genie.hasProvider(clazz));
+    }
+
+    @AnnotatedClassFinder(value = AutoBind.class, callOn = AppEventId.DEPENDENCY_INJECTOR_PROVISIONED, noAbstract = false)
+    public static void foundAutoBinding(final Class<?> autoBinding) {
+        // check if there are manual binding (via modules) for the class already
+        if (hasBinding(autoBinding)) {
+            return;
+        }
+        final AppClassLoader cl = Act.app().classLoader();
+        ClassInfoRepository repo = cl.classInfoRepository();
+        ClassNode root = repo.node(autoBinding.getName());
+        E.invalidConfigurationIf(null == root, "Cannot find AutoBind root: %s", autoBinding.getName());
+        final List<Class<?>> candidates = C.newList();
+        final $.Var<Class<?>> priority = $.var();
+        root.visitPublicNotAbstractSubTreeNodes(new $.Visitor<ClassNode>() {
+
+            private void addToPriority(Class<?> clazz) {
+                if (priority.isNull()) {
+                    priority.set(clazz);
+                    return;
+                } else {
+                    throw new ConfigurationException("Unable to auto bind on %s: multiple candidates found", autoBinding);
+                }
+            }
+
+            @Override
+            public void visit(ClassNode classNode) throws Osgl.Break {
+                try {
+                    Class<?> clazz = $.classForName(classNode.name(), cl);
+                    Env.Profile profileSpec = clazz.getAnnotation(Env.Profile.class);
+                    if (null != profileSpec) {
+                        if (S.eq(Act.profile(), profileSpec.value(), S.IGNORECASE)) {
+                            addToPriority(clazz);
+                        } else {
+                            App.logger.debug("Ignore auto bind candidate [%s] for [%s]: profile mismatch", clazz.getName(), autoBinding.getName());
+                            return;
+                        }
+                    }
+                    Env.Mode modeSpec = clazz.getAnnotation(Env.Mode.class);
+                    if (null != modeSpec) {
+                        if (Act.mode() == modeSpec.value()) {
+                            addToPriority(clazz);
+                        } else {
+                            App.logger.debug("Ignore auto bind candidate [%s] for [%s]: mode mismatch", clazz.getName(), autoBinding.getName());
+                            return;
+                        }
+                    }
+                    candidates.add(clazz);
+                } catch (ConfigurationException e) {
+                    throw e;
+                } catch (RuntimeException e) {
+                    throw new ConfigurationException(e, "Unable to auto bind on %s", autoBinding.getName());
+                }
+            }
+        });
+
+        Class<?> winner = priority.get();
+        if (null == winner && candidates.isEmpty()) {
+            if (candidates.size() > 1) {
+                throw new ConfigurationException("Unable to auto bind on %s: multiple candidates found", autoBinding);
+            }
+            winner = candidates.get(0);
+        }
+
+        if (null != winner) {
+            GenieInjector injector = Act.app().injector();
+            injector.genie().registerProvider(autoBinding, new LazyProvider(winner, injector));
+        }
+
+        App.logger.warn("Unable to auto bind on %s: implementation not found", autoBinding);
     }
 
     @AnnotatedClassFinder(value = ModuleTag.class, callOn = AppEventId.DEPENDENCY_INJECTOR_LOADED, noAbstract = false)
