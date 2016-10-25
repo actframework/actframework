@@ -62,6 +62,6 @@ public class TemplatePathResolver {
     }
 
     public static boolean isAcceptFormatSupported(H.Format fmt) {
-        return (UNKNOWN == fmt || HTML == fmt || JSON == fmt || XML == fmt || TXT == fmt || CSV == fmt);
+        return (UNKNOWN == fmt || HTML == fmt || JSON == fmt || XML == fmt || TXT == fmt || CSV == fmt || XLS == fmt || XLSX == fmt);
     }
 }

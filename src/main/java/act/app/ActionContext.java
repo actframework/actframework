@@ -188,7 +188,7 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
         return accept() == H.Format.JSON;
     }
 
-    public boolean isXML() {
+    public boolean acceptXML() {
         return accept() == H.Format.XML;
     }
 

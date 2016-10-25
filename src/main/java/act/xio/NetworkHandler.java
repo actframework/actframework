@@ -145,6 +145,9 @@ public class NetworkHandler extends DestroyableBase implements  $.Func1<ActionCo
         private static final char[] json = {'j', 's', 'o'};
         private static final char[] xml = {'x', 'm'};
         private static final char[] csv = {'c', 's'};
+        private static final char[] xls = {'x', 'l', 's'};
+        private static final char[] xlsx = {'x', 'l', 's', 'x'};
+        private static final char[] pdf = {'p', 'd', 'f'};
 
         @Override
         public String apply(H.Request req, String url) throws NotAppliedException, Osgl.Break {
@@ -166,6 +169,19 @@ public class NetworkHandler extends DestroyableBase implements  $.Func1<ActionCo
                 case 'v':
                     trait = csv;
                     fmt = H.Format.CSV;
+                    break;
+                case 'f':
+                    trait = pdf;
+                    fmt = H.Format.PDF;
+                    break;
+                case 's':
+                    trait = xls;
+                    fmt = H.Format.XLS;
+                    break;
+                case 'x':
+                    sepPos = 4;
+                    trait = xlsx;
+                    fmt = H.Format.XLSX;
                     break;
                 default:
                     return url;

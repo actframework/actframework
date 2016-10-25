@@ -679,7 +679,7 @@ public @interface Controller {
                             DisableFastJsonCircularReferenceDetect.option.set(false);
                         }
                     }
-                } else if (context.isXML()) {
+                } else if (context.acceptXML()) {
                     PropertySpec.MetaInfo propertySpec = (null == meta) ? null : meta.propertySpec();
                     return new FilteredRenderXML(v, propertySpec, context);
                 } else if (context.accept() == H.Format.CSV) {

@@ -272,11 +272,11 @@ public class FullStackAppBootstrapClassLoader extends BootstrapClassLoader imple
     @Override
     protected Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
         Class<?> c = findLoadedClass(name);
-        if (c != null) {
+        if (null != c) {
             return c;
         }
 
-        if (name.startsWith("java") || name.startsWith("org.osgl")) {
+        if (name.startsWith("java") || name.startsWith("org.osgl") || name.startsWith("org.slf4j")) {
             return super.loadClass(name, resolve);
         }
 
