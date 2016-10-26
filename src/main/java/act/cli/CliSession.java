@@ -42,6 +42,7 @@ public class CliSession extends DestroyableBase implements Runnable {
     private CommandNameCompleter commandNameCompleter;
     // the current handler
     private CliHandler handler;
+    private boolean daemon;
     /**
      * Allow user command to attach data to the context and fetched for later use.
      * <p>
@@ -84,6 +85,11 @@ public class CliSession extends DestroyableBase implements Runnable {
         return this;
     }
 
+    public CliSession dameon(boolean daemon) {
+        this.daemon = daemon;
+        return this;
+    }
+
     public CliCursor cursor() {
         return cursor;
     }
@@ -107,6 +113,9 @@ public class CliSession extends DestroyableBase implements Runnable {
      * @return {@code true} if this session is expired
      */
     public boolean expired(int expiration) {
+        if (daemon) {
+            return false;
+        }
         long l = expiration * 1000;
         return l < ($.ms() - ts);
     }

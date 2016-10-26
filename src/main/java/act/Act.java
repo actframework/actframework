@@ -6,6 +6,7 @@ import act.app.util.AppCrypto;
 import act.app.util.NamedPort;
 import act.boot.BootstrapClassLoader;
 import act.boot.PluginClassProvider;
+import act.boot.app.FullStackAppBootstrapClassLoader;
 import act.conf.*;
 import act.controller.meta.ActionMethodMetaInfo;
 import act.controller.meta.CatchMethodMetaInfo;
@@ -454,6 +455,10 @@ public final class Act {
      */
     public static <T> T newInstance(Class<T> clz) {
         return App.instance().getInstance(clz);
+    }
+
+    public static int classCacheSize() {
+        return ((FullStackAppBootstrapClassLoader)Act.class.getClassLoader()).libBCSize();
     }
 
     private static void loadConfig() {

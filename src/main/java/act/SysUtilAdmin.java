@@ -43,12 +43,20 @@ public class SysUtilAdmin {
         Runtime runtime = Runtime.getRuntime();
 
         if (monitor) {
-            context.println("%12s%12s%12s", "total", "free", "used");
+            context.session().dameon(true);
+            context.println("%12s%12s%12s%15s", "total", "free", "used", "cached(cls#)");
+            int cnt = 0;
             while (true) {
+                if (cnt++ == 22) {
+                    context.println("");
+                    context.println("%12s%12s%12s%15s", "total", "free", "used", "cached(cls#)");
+                    cnt = 0;
+                }
                 long total = runtime.totalMemory() / factor;
                 long free = runtime.freeMemory() / factor;
                 long used = total - free;
-                context.println("%12d%12d%12d", total, free, used);
+                int cached = Act.classCacheSize();
+                context.println("%12d%12d%12d%15d", total, free, used, cached);
                 context.flush();
                 try {
                     Thread.sleep(2000);
@@ -59,9 +67,11 @@ public class SysUtilAdmin {
         } else {
             long total = runtime.totalMemory() / factor;
             long free = runtime.freeMemory() / factor;
-            context.println("total: " + total);
-            context.println(" free: " + free);
-            context.println(" used: " + (total - free));
+            int cached = Act.classCacheSize();
+            context.println(" total: " + total);
+            context.println("  free: " + free);
+            context.println("  used: " + (total - free));
+            context.println("cached: " + cached);
             context.flush();
         }
     }

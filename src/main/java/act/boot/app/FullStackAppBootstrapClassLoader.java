@@ -92,6 +92,10 @@ public class FullStackAppBootstrapClassLoader extends BootstrapClassLoader imple
         return pluginClasses;
     }
 
+    public int libBCSize() {
+        return libBC.size();
+    }
+
     protected void preload() {
         buildIndex();
     }
