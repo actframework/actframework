@@ -39,6 +39,9 @@ enum CountScale {
         }
         long l = count / (last.value / 100L);
         String s = S.str(l).insert(-2, '.').toString();
+        if (s.endsWith(".00")) {
+            s = s.substring(0, s.length() - 3);
+        }
         return S.fmt("%s%s", s, last.suffix());
     }
 

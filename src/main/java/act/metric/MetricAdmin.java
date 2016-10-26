@@ -22,9 +22,13 @@ public class MetricAdmin {
             @Optional("specify maximum items returned") Integer limit,
             @Optional("display in tree view") boolean tree,
             @Optional("specify depth of levels") Integer depth,
-            @Optional("specify search string") String q
+            @Optional("specify search string") String q,
+            @Optional("including classloading metric") boolean classLoading
     ) {
         List<MetricInfo> list = Act.metricPlugin().metricStore().timers();
+        if (!classLoading) {
+            list = withoutClassLoading(list);
+        }
         return process(list, limit, q, tree, depth, MetricInfo.Comparator.COUNTER, MetricInfoTree.COUNTER);
     }
 
@@ -34,10 +38,23 @@ public class MetricAdmin {
             @Optional("specify maximum items returned") Integer limit,
             @Optional("display in tree view") boolean tree,
             @Optional("specify depth of levels") Integer depth,
-            @Optional("specify search string") String q
+            @Optional("specify search string") String q,
+            @Optional("including classloading metric") boolean classLoading
     ) {
         List<MetricInfo> list = Act.metricPlugin().metricStore().timers();
+        if (!classLoading) {
+            list = withoutClassLoading(list);
+        }
         return process(list, limit, q, tree, depth, MetricInfo.Comparator.TIMER, MetricInfoTree.TIMER);
+    }
+
+    private List<MetricInfo> withoutClassLoading(List<MetricInfo> list) {
+        return C.list(list).remove(new $.Predicate<MetricInfo>() {
+            @Override
+            public boolean test(MetricInfo metricInfo) {
+                return metricInfo.getName().startsWith(MetricInfo.CLASS_LOADING);
+            }
+        });
     }
 
     @Command(name = "act.metric.clear", help = "clear existing metric data")

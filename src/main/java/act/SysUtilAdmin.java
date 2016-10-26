@@ -9,6 +9,7 @@ import act.util.PropertySpec;
 import org.joda.time.DateTime;
 import org.joda.time.Interval;
 import org.joda.time.LocalDateTime;
+import org.osgl.$;
 import org.osgl.storage.ISObject;
 import org.osgl.storage.impl.SObject;
 import org.osgl.util.C;
@@ -44,22 +45,28 @@ public class SysUtilAdmin {
 
         if (monitor) {
             context.session().dameon(true);
-            context.println("%12s%12s%12s%15s", "total", "free", "used", "cached(cls#)");
-            int cnt = 0;
+            long ts0 = $.ms();
+            long lastUsed = 0;
+            context.println();
+            context.println("                      ====== MEMORY INFO ======");
+            context.println();
+            context.flush();
             while (true) {
-                if (cnt++ == 22) {
+                long ts = ($.ms() - ts0) / 1000;
+                if (ts % 60 == 0L) {
                     context.println("");
-                    context.println("%12s%12s%12s%15s", "total", "free", "used", "cached(cls#)");
-                    cnt = 0;
+                    context.println("%7s%15s%12s%12s%12s%12s", "time(s)", "cached(cls#)", "total", "free", "used", "delta");
                 }
                 long total = runtime.totalMemory() / factor;
                 long free = runtime.freeMemory() / factor;
                 long used = total - free;
+                long delta = used - lastUsed;
+                lastUsed = used;
                 int cached = Act.classCacheSize();
-                context.println("%12d%12d%12d%15d", total, free, used, cached);
+                context.println("%7d%15d%12d%12d%12d%12d", ts, cached, total, free, used, delta);
                 context.flush();
                 try {
-                    Thread.sleep(2000);
+                    Thread.sleep(10000);
                 } catch (InterruptedException e) {
                     break;
                 }

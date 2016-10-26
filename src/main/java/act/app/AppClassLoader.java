@@ -20,6 +20,7 @@ import act.mail.meta.MailerClassMetaInfo;
 import act.mail.meta.MailerClassMetaInfoHolder;
 import act.mail.meta.MailerClassMetaInfoManager;
 import act.metric.Metric;
+import act.metric.MetricInfo;
 import act.util.*;
 import org.osgl.$;
 import org.osgl.exception.NotAppliedException;
@@ -64,7 +65,7 @@ public class AppClassLoader
     protected MailerClassMetaInfoManager mailerInfo = new MailerClassMetaInfoManager();
     protected CommanderClassMetaInfoManager commanderInfo = new CommanderClassMetaInfoManager();
     protected JobClassMetaInfoManager jobInfo = new JobClassMetaInfoManager();
-    protected Metric metric = Act.metricPlugin().metric("act.classload");
+    protected Metric metric = Act.metricPlugin().metric(MetricInfo.CLASS_LOADING);
 
     @Inject
     public AppClassLoader(final App app) {

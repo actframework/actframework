@@ -335,6 +335,14 @@ public class CliContext extends ActContext.Base<CliContext> implements IASCIITab
         }
     }
 
+    public void println() {
+        if (rawPrint) {
+            println1("");
+        } else {
+            println0("");
+        }
+    }
+
     public void println(String template, Object... args) {
         if (rawPrint) {
             println1(template, args);

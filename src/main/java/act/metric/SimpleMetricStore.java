@@ -6,6 +6,7 @@ import org.osgl.logging.LogManager;
 import org.osgl.logging.Logger;
 import org.osgl.util.C;
 import org.osgl.util.E;
+import org.osgl.util.IO;
 import org.osgl.util.S;
 
 import java.io.*;
@@ -146,21 +147,25 @@ public class SimpleMetricStore implements MetricStore, Serializable {
             if (ioError) {
                 return;
             }
+            ObjectOutputStream oos = null;
             try {
                 File file = new File(FILE_NAME);
-                ObjectOutputStream oos = new ObjectOutputStream(new FileOutputStream(file));
+                oos = new ObjectOutputStream(new FileOutputStream(file));
                 oos.writeObject(store);
             } catch (IOException e) {
                 ioError = true;
                 throw E.ioException(e);
+            } finally {
+                IO.close(oos);
             }
         }
 
         SimpleMetricStore read() {
             File file = new File(FILE_NAME);
             if (file.exists() && file.canRead()) {
+                ObjectInputStream ois = null;
                 try {
-                    ObjectInputStream ois = new ObjectInputStream(new FileInputStream(file));
+                    ois = new ObjectInputStream(new FileInputStream(file));
                     SimpleMetricStore store = $.cast(ois.readObject());
                     return store;
                 } catch (IOException e) {
@@ -172,6 +177,8 @@ public class SimpleMetricStore implements MetricStore, Serializable {
                     return null;
                 } catch (ClassNotFoundException e) {
                     throw E.unexpected(e);
+                } finally {
+                    IO.close(ois);
                 }
             } else {
                 return null;
