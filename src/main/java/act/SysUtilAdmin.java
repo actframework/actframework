@@ -65,6 +65,10 @@ public class SysUtilAdmin {
                 int cached = Act.classCacheSize();
                 context.println("%7d%15d%12d%12d%12d%12d", ts, cached, total, free, used, delta);
                 context.flush();
+                if (context.disconnected()) {
+                    context.session().dameon(false);
+                    break;
+                }
                 try {
                     Thread.sleep(10000);
                 } catch (InterruptedException e) {

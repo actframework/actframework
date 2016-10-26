@@ -273,6 +273,10 @@ public class CliContext extends ActContext.Base<CliContext> implements IASCIITab
         pw.flush();
     }
 
+    public boolean disconnected() {
+        return pw.checkError();
+    }
+
     public void print(String template, Object ... args) {
         if (rawPrint) {
             print1(template, args);
