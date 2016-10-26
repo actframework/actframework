@@ -33,6 +33,46 @@ public class SysUtilAdmin {
         context = CliContext.current();
     }
 
+    @Command(name = "act.meminfo, act.mi", help = "Print memory info")
+    public void memInfo(
+            @Optional("monitor memory usage") boolean monitor,
+            @Optional("human readable") boolean human,
+            CliContext context
+    ) {
+        final int factor = human ? 1024 * 1024 : 1;
+        Runtime runtime = Runtime.getRuntime();
+
+        if (monitor) {
+            context.println("%12s%12s%12s", "total", "free", "used");
+            while (true) {
+                long total = runtime.totalMemory() / factor;
+                long free = runtime.freeMemory() / factor;
+                long used = total - free;
+                context.println("%12d%12d%12d", total, free, used);
+                context.flush();
+                try {
+                    Thread.sleep(2000);
+                } catch (InterruptedException e) {
+                    break;
+                }
+            }
+        } else {
+            long total = runtime.totalMemory() / factor;
+            long free = runtime.freeMemory() / factor;
+            context.println("total: " + total);
+            context.println(" free: " + free);
+            context.println(" used: " + (total - free));
+            context.flush();
+        }
+    }
+
+    @Command(name = "gc", help = "Run GC")
+    public void gc(CliContext context) {
+        System.gc();
+        context.println("GC executed");
+        memInfo(false, false, context);
+    }
+
     @Command(name = "act.version, act.ver", help = "Print actframework version")
     public String version() {
         return Version.fullVersion().replace("-S-", "-SNAPSHOT-");

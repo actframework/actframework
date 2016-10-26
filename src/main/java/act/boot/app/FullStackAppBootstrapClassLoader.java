@@ -16,7 +16,6 @@ import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Pattern;
 
 import static act.util.ClassInfoRepository.canonicalName;
 
@@ -44,7 +43,8 @@ public class FullStackAppBootstrapClassLoader extends BootstrapClassLoader imple
      */
     private static final String KEY_APP_JAR_IGNORE = "act.jar.app.ignore";
 
-    private static final String DEF_JAR_IGNORE = "ecj-,mvel,rythm-engine,undertow,xnio,okhttp,antlr,logback-,pat-,jline-,okio-,cglib,mongo-java-,snakeyaml,proxytoys,newrelic";
+    private static final String DEF_JAR_IGNORE = "act-asm,antlr,ecj-,cglib,commons-,hibernate-,jline-,logback-," +
+            "mongo-java-,mvel,newrelic,okio-,okhttp,pat-,proxytoys,rythm-engine,snakeyaml,undertow,xnio";
 
     private final Class<?> PLUGIN_CLASS;
 
