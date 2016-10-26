@@ -31,7 +31,9 @@ import act.xio.NetworkHandler;
 import act.xio.undertow.UndertowNetwork;
 import org.osgl.$;
 import org.osgl.cache.CacheService;
+import org.osgl.exception.ConfigurationException;
 import org.osgl.exception.NotAppliedException;
+import org.osgl.exception.UnexpectedException;
 import org.osgl.logging.L;
 import org.osgl.logging.Logger;
 import org.osgl.util.C;
@@ -247,7 +249,9 @@ public final class Act {
     }
 
     public static void shutdownApp(App app) {
-        appManager.unload(app);
+        if (!appManager.unload(app)) {
+            app.destroy();
+        }
     }
 
     private static void start(boolean singleAppServer, String appName, String appVersion) {
@@ -265,20 +269,19 @@ public final class Act {
         loadPlugins();
         initNetworkLayer();
         initApplicationManager();
-        try {
-            logger.info("loading application(s) ...");
-            if (singleAppServer) {
-                appManager.loadSingleApp(appName);
-            } else {
-                appManager.scan();
-            }
-        } catch (ActAppException e) {
-            logger.fatal(e, "Error starting ACT");
-            return;
+        logger.info("loading application(s) ...");
+        if (singleAppServer) {
+            appManager.loadSingleApp(appName);
+        } else {
+            appManager.scan();
         }
         startNetworkLayer();
-
         Thread.currentThread().setContextClassLoader(Act.class.getClassLoader());
+        App app = app();
+        if (null == app) {
+            shutdownNetworkLayer();
+            throw new UnexpectedException("App not found. Please make sure your app start directory is correct");
+        }
         emit(AppEventId.POST_START);
     }
 

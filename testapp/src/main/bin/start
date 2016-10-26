@@ -1,0 +1,65 @@
+#!/bin/bash
+APP_ENTRY=${app.entry}
+
+DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
+BASE=$DIR/.
+CP=$BASE/classes:$BASE/lib/*
+CMD=$0
+DEBUG=0
+DEBUG_PORT=5005
+PROFILE=
+SYS_PROP=
+HELP=0
+
+# As long as there is at least one more argument, keep looping
+while [[ $# -gt 0 ]]; do
+    key="$1"
+    case "$key" in
+        # enable remote debugging with -d or --debug
+        -d|--debug)
+        DEBUG=1
+        ;;
+        # specify remote debug port with --debug-port=<port>
+        --debug-port)
+        shift # past the key and to the value
+        DEBUG_PORT="$1"
+        ;;
+        # specify the profile with -p or --profile
+        -p|--profile)
+        shift # past the key and to the value
+        PROFILE="$1"
+        ;;
+        # specify any java system property
+        -D*)
+        SYS_PROP="$SYSPROP $1"
+        ;;
+        # help ?
+        -h|--help)
+        echo $CMD start the app
+        echo ''
+        echo '     -d --debug:          enable remote debugging'
+        echo '     --debug-port <port>: specify debug port (if not specified then debug port is 5005)'
+        echo '     -p --profile:        specify the profile to start the app'
+        echo '     -D*:                 specify any JVM system properties'
+        echo '     -h --help:           display this help message'
+        HELP=1
+        ;;
+        *)
+        # Do whatever you want with extra options
+        echo "Unknown option '$key'"
+        ;;
+    esac
+    # Shift after checking all the cases to get the next option
+    shift
+done
+
+if [[ HELP -gt 0 ]]; then
+# don't run in help mode
+    echo ''
+else
+    if [[ DEBUG -gt 0 ]]; then
+        java -agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=$DEBUG_PORT $JAVA_OPTS -Dapp.mode=prod -Dprofile=$PROFILE $SYS_PROP -cp "$CP" $APP_ENTRY
+    else
+        java $JAVA_OPTS -Dapp.mode=prod -Dprofile=$PROFILE $SYS_PROP -cp "$CP" $APP_ENTRY
+    fi
+fi

@@ -5,6 +5,7 @@ import act.Destroyable;
 import act.app.event.AppEventId;
 import act.cli.CliSession;
 import act.exception.ActException;
+import org.osgl.exception.ConfigurationException;
 import org.osgl.logging.LogManager;
 import org.osgl.logging.Logger;
 import org.osgl.util.C;
@@ -141,7 +142,7 @@ public class CliServer extends AppServiceBase<CliServer> implements Runnable {
                 }
             });
         } catch (IOException e) {
-            throw new ActException(e, "Cannot start CLI server on port: %s", port);
+            throw new ConfigurationException(e, "Cannot start CLI server on port: %s", port);
         }
     }
 

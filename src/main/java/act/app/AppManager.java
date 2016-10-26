@@ -151,7 +151,12 @@ public class AppManager extends DestroyableBase {
             return new $.Visitor<App>() {
                 @Override
                 public void visit(App app) throws $.Break {
-                    mgr.load(app);
+                    try {
+                        mgr.load(app);
+                    } catch (RuntimeException e) {
+                        Act.shutdownApp(app);
+                        throw e;
+                    }
                 }
             };
         }

@@ -197,7 +197,7 @@ public class Router extends AppServiceBase<Router> {
             ConflictResolver resolving = source.onConflict(existing);
             switch (resolving) {
                 case OVERWRITE_WARN:
-                    logger.warn("Overwrite existing route \n\t%s\nwith new route\n\t%s",
+                    logger.warn("\n\tOverwrite existing route \n\t\t%s\n\twith new route\n\t\t%s",
                             routeInfo(method, path, node.handler()),
                             routeInfo(method, path, handler)
                     );

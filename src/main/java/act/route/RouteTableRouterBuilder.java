@@ -79,7 +79,7 @@ import java.util.List;
  */
 public class RouteTableRouterBuilder implements RouterBuilder {
 
-    public static final String ROUTES_FILE = "routes";
+    public static final String ROUTES_FILE = "routes.conf";
 
     private List<String> lines;
 

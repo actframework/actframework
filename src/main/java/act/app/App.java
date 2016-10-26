@@ -759,11 +759,7 @@ public class App extends DestroyableBase {
     }
 
     private void initCliServer() {
-        try {
-            cliServer = new CliServer(this);
-        } catch (Exception e) {
-            logger.error(e, "Error initializing CLI server");
-        }
+        cliServer = new CliServer(this);
     }
 
     private void shutdownCliServer() {
@@ -885,7 +881,12 @@ public class App extends DestroyableBase {
     private void loadRoutes() {
         loadBuiltInRoutes();
         logger.debug("loading app routing table: %s ...", appBase.getPath());
-        File routes = RuntimeDirs.routes(this);
+        File routes;
+        if (Act.isProd()) {
+            routes = RuntimeDirs.routes(this);
+        } else {
+            routes = layout().routeTable(base());
+        }
         if (!(routes.isFile() && routes.canRead())) {
             logger.debug("No route table find found");
             // guess the app is purely using annotation based routes

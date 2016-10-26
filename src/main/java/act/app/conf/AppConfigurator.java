@@ -2,16 +2,15 @@ package act.app.conf;
 
 import act.app.event.AppEventId;
 import act.conf.AppConfig;
-import act.route.RouteSource;
-import act.route.Router;
 import act.security.CSRFProtector;
 import org.osgl.$;
 import org.osgl.http.H;
 import org.osgl.logging.Logger;
-import org.osgl.util.*;
+import org.osgl.util.C;
+import org.osgl.util.E;
+import org.osgl.util.S;
+import org.osgl.util.StringValueResolver;
 
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.util.*;
 
 /**
@@ -69,14 +68,6 @@ public abstract class AppConfigurator<T extends AppConfigurator> extends AppConf
 
     protected CsrfSetting csrf() {
         return new CsrfSetting(this);
-    }
-
-    protected RouteBuilder route(String path) {
-        return new RouteBuilder(this).map(path);
-    }
-
-    protected RouteBuilder route(H.Method ... methods) {
-        return new RouteBuilder(this).on(methods);
     }
 
     public void onRouteAdded(String controllerClassName) {
@@ -251,95 +242,6 @@ public abstract class AppConfigurator<T extends AppConfigurator> extends AppConf
                 set.addAll(C.listOf(s.split(",")));
             }
             return S.join(", ", set);
-        }
-    }
-
-    protected static class RouteBuilder {
-
-        private AppConfigurator conf;
-        private Router router;
-        private C.List<H.Method> methods = C.newListOf(Router.supportedHttpMethods());
-        private String path;
-        private String action;
-        RouteBuilder(AppConfigurator config) {
-            router = config.app().router();
-            E.illegalStateIf(null == router);
-            conf = config;
-        }
-        public RouteBuilder on(H.Method ... methods) {
-            E.illegalArgumentIf(0 == methods.length, "Http method expected");
-            this.methods.clear();
-            this.methods.append(C.listOf(methods));
-            return this;
-        }
-        public RouteBuilder map(String path) {
-            E.illegalArgumentIf(S.blank(path), "path cannot be empty");
-            this.path = path.trim();
-            return this;
-        }
-        public RouteBuilder to(String action) {
-            E.illegalArgumentIf(S.blank(action), "action cannot be empty");
-            this.action = action;
-            checkAndCommit();
-            String controllerClass = FastStr.of(action).beforeLast('.').toString();
-            if (!controllerClass.contains(":")) {
-                // no directive so it's a real controller class
-                conf.onRouteAdded(controllerClass);
-            }
-            return this;
-        }
-        public RouteBuilder to(Class<?> controller, String actionMethod) {
-            E.NPE(controller);
-            E.illegalArgumentIf(S.blank(actionMethod), "action method cannot be empty");
-            E.illegalArgumentIf(actionMethod.contains("."), "action method cannot contain [.]");
-            this.action = S.builder(controller.getCanonicalName()).append(".").append(actionMethod.trim()).toString();
-            checkAndCommit();
-            conf.onRouteAdded(controller.getCanonicalName());
-            return this;
-        }
-        private static Set<String> NON_ACTIONS = C.newSet(C.listOf("equals", "getClass", "hashCode", "notify", "notifyAll", "toString", "wait"));
-        public RouteBuilder to(Class<?> controller) {
-            E.tbd("binding to controller class is NOT supported yet");
-            E.illegalStateIf(S.blank(path), "route path not specified");
-            String context = controller.getCanonicalName();
-            logger.warn("wildcard matching %s's all public methods into router", context);
-            Method[] methods = controller.getMethods();
-            boolean isAbstract = Modifier.isAbstract(controller.getModifiers());
-            boolean mapped = false;
-            for (Method m: methods) {
-                if (isAbstract && !Modifier.isStatic(m.getModifiers())) {
-                    continue;
-                }
-                String name = m.getName();
-                if (NON_ACTIONS.contains(name)) {
-                    continue;
-                }
-                CharSequence path = S.builder(this.path).append("/").append(name);
-                CharSequence action = S.builder(context).append(".").append(name);
-                for (H.Method method : this.methods) {
-                    router.addMapping(method, path, action, RouteSource.APP_CONFIG);
-                }
-                mapped = true;
-            }
-            if (!mapped) {
-                logger.warn("No public methods found in the class %s, route not added", context);
-            } else {
-                conf.onRouteAdded(controller.getCanonicalName());
-            }
-            this.methods.clear();
-            path = null;
-            action = null;
-            return this;
-        }
-
-        private void checkAndCommit() {
-            E.illegalStateIf(S.blank(path), "route path not specified");
-            for (H.Method method: methods) {
-                router.addMapping(method, path, action, RouteSource.APP_CONFIG);
-            }
-            methods.clear();
-            path = null;
-            action = null;
         }
     }
 

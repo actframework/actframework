@@ -2,6 +2,7 @@ package act.app;
 
 import act.Act;
 import act.ActComponent;
+import act.route.RouteTableRouterBuilder;
 import org.osgl.util.E;
 
 import java.io.File;
@@ -217,7 +218,7 @@ public interface ProjectLayout {
 
         @Override
         public File routeTable(File appBase) {
-            return Utils.file(resource(appBase), "routes");
+            return Utils.file(resource(appBase), RouteTableRouterBuilder.ROUTES_FILE);
         }
 
         public static ProjectLayout valueOfIgnoreCase(String s) {

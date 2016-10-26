@@ -274,13 +274,9 @@ public class DevModeClassLoader extends AppClassLoader {
             libChangeDetector = new FsChangeDetector(lib, App.F.JAR_FILE, libChangeListener);
         }
 
-        File conf = RuntimeDirs.conf(app());
-        if (null != conf && conf.canRead()) {
-            confChangeDetector = new FsChangeDetector(conf, App.F.CONF_FILE.or(App.F.ROUTES_FILE), confChangeListener);
-        }
-
         File rsrc = layout.resource(appBase);
         if (null != rsrc && rsrc.canRead()) {
+            confChangeDetector = new FsChangeDetector(rsrc, App.F.CONF_FILE.or(App.F.ROUTES_FILE), confChangeListener);
             resourceChangeDetector = new FsChangeDetector(rsrc, null, resourceChangeListener);
         }
     }
