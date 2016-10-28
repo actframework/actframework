@@ -1,6 +1,7 @@
 package act.metric;
 
 import act.Act;
+import act.cli.CliContext;
 import act.cli.Command;
 import act.cli.Optional;
 import act.util.PropertySpec;
@@ -15,6 +16,15 @@ import java.util.regex.Pattern;
  * Console app to access actframework metric data
  */
 public class MetricAdmin {
+
+    @Command(name = "act.metric.sync")
+    public void updateMetricDataSync(
+            @Optional("pause sync") boolean pause,
+            CliContext context
+    ) {
+        Act.metricPlugin().enableDataSync(!pause);
+        context.println(pause ? "metric data sync paused." : "metric data sync enabled");
+    }
 
     @Command(name = "act.metric.counter.list", help = "list all counters")
     @PropertySpec("name,count")

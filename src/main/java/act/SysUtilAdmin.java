@@ -51,16 +51,17 @@ public class SysUtilAdmin {
             context.println("                      ====== MEMORY INFO ======");
             context.println();
             context.flush();
+            int count = 0;
             while (true) {
                 long ts = ($.ms() - ts0) / 1000;
-                if (ts % 60 == 0L) {
+                if (count % 6 == 0) {
                     context.println("");
                     context.println("%7s%15s%12s%12s%12s%12s", "time(s)", "cached(cls#)", "total", "free", "used", "delta");
                 }
                 long total = runtime.totalMemory() / factor;
                 long free = runtime.freeMemory() / factor;
                 long used = total - free;
-                long delta = used - lastUsed;
+                long delta = 0 == count++ ? 0L : used - lastUsed;
                 lastUsed = used;
                 int cached = Act.classCacheSize();
                 context.println("%7d%15d%12d%12d%12d%12d", ts, cached, total, free, used, delta);
@@ -79,10 +80,11 @@ public class SysUtilAdmin {
             long total = runtime.totalMemory() / factor;
             long free = runtime.freeMemory() / factor;
             int cached = Act.classCacheSize();
-            context.println(" total: " + total);
-            context.println("  free: " + free);
-            context.println("  used: " + (total - free));
-            context.println("cached: " + cached);
+            context.println("====== MEMORY INFO ======");
+            context.println("%12s: %11d", "total", total);
+            context.println("%12s: %11d", "free", free);
+            context.println("%12s: %11d", "used", total - free);
+            context.println("%12s: %11d", "cached(cls#)", cached);
             context.flush();
         }
     }

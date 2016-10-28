@@ -32,8 +32,8 @@ public class SimpleMetricStore implements MetricStore, Serializable {
     private ConcurrentMap<String, AtomicLong> timers = new ConcurrentHashMap<String, AtomicLong>();
 
     private transient SimpleMetricPlugin plugin;
-
     private transient FileSynchronizer synchronizer;
+    private transient boolean dataSync = true;
 
     public SimpleMetricStore(SimpleMetricPlugin plugin) {
         this.plugin = $.notNull(plugin);
@@ -62,6 +62,10 @@ public class SimpleMetricStore implements MetricStore, Serializable {
         if (S.notBlank(name)) {
             countOnce_(name);
         }
+    }
+
+    public void enableDataSync(boolean enabled) {
+        dataSync = enabled;
     }
 
     @Override
@@ -127,7 +131,9 @@ public class SimpleMetricStore implements MetricStore, Serializable {
     }
 
     public void takeSnapshot() {
-        synchronizer.write(this);
+        if (dataSync) {
+            synchronizer.write(this);
+        }
     }
 
     private Logger logger(String name) {

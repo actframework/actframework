@@ -35,4 +35,10 @@ public interface MetricPlugin {
      * @return the metric store instance
      */
     MetricStore metricStore();
+
+    /**
+     * Enable/Disable metric data sync to persistent store
+     * @param sync `true` if enable sync data, `false` otherwise
+     */
+    void enableDataSync(boolean sync);
 }

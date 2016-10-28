@@ -17,7 +17,7 @@ public class RythmTemplate extends TemplateBase {
     private RythmEngine engine;
     private String path;
 
-    public RythmTemplate(RythmEngine engine, String path, App app) {
+    public RythmTemplate(RythmEngine engine, String path) {
         E.NPE(engine);
         this.engine = engine;
         this.path = path;
@@ -46,12 +46,12 @@ public class RythmTemplate extends TemplateBase {
         return engine.getTemplate(path, renderArgs);
     }
 
-    public static RythmTemplate find(RythmEngine engine, String path, App app) {
+    public static RythmTemplate find(RythmEngine engine, String path) {
         ITemplateResource resource = engine.resourceManager().getResource(path);
         if (!resource.isValid()) {
             return null;
         } else {
-            return new RythmTemplate(engine, path, app);
+            return new RythmTemplate(engine, path);
         }
     }
 }

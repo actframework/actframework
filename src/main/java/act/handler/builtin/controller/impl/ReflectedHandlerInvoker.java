@@ -33,6 +33,7 @@ import org.osgl.util.C;
 import org.osgl.util.E;
 import org.osgl.util.S;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.List;
@@ -66,6 +67,8 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
     private CORS.Spec corsSpec;
     private CSRF.Spec csrfSpec;
     private String jsonDTOKey;
+    private boolean isStatic;
+    private Object singleton;
 
     private ReflectedHandlerInvoker(M handlerMetaInfo, App app) {
         this.cl = app.classLoader();
@@ -81,7 +84,8 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         } catch (NoSuchMethodException e) {
             throw E.unexpected(e);
         }
-        if (!handlerMetaInfo.isStatic()) {
+        this.isStatic = handlerMetaInfo.isStatic();
+        if (!this.isStatic) {
             //constructorAccess = ConstructorAccess.get(controllerClass);
             methodAccess = MethodAccess.get(controllerClass);
             handlerIndex = methodAccess.getIndex(handlerMetaInfo.name(), paramTypes);
@@ -104,6 +108,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         CSRF.Spec csrfSpec = CSRF.spec(method).chain(CSRF.spec(controllerClass));
         this.csrfSpec = csrfSpec;
         this.jsonDTOKey = app.cuid();
+        this.singleton = singleton(app);
     }
 
     @Override
@@ -274,6 +279,12 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
     }
 
     private Object controllerInstance(ActionContext context) {
+        if (isStatic) {
+            return null;
+        }
+        if (null != singleton) {
+            return singleton;
+        }
         String controllerName = controllerClass.getName();
         Object inst = context.__controllerInstance(controllerName);
         if (null == inst) {
@@ -339,6 +350,18 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
             return DUMP_PARAMS;
         }
         return paramLoaderService.loadMethodParams(method, context);
+    }
+
+    private Object singleton(App app) {
+        Object singleton = app.singleton(controllerClass);
+        if (null == singleton) {
+            // check if there are fields
+            List<Field> fields = $.fieldsOf(controllerClass, true);
+            if (fields.isEmpty()) {
+                singleton = app.getInstance(controllerClass);
+            }
+        }
+        return singleton;
     }
 
     public static ControllerAction createControllerAction(ActionMethodMetaInfo meta, App app) {

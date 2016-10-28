@@ -230,7 +230,7 @@ public class AppJobManager extends AppServiceBase<AppJobManager> {
     private void initExecutor(App app) {
         int poolSize = app.config().jobPoolSize();
         executor = new ScheduledThreadPoolExecutor(poolSize, new AppThreadFactory("jobs"), new ThreadPoolExecutor.AbortPolicy());
-        executor.setRemoveOnCancelPolicy(true);
+        //JDK1.7 API: executor.setRemoveOnCancelPolicy(true);
     }
 
     private void createAppEventListener(AppEventId appEventId) {

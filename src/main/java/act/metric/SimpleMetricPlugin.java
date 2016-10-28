@@ -16,7 +16,7 @@ import java.util.Map;
 public class SimpleMetricPlugin implements MetricPlugin {
 
     private Map<String, Logger> enabledMap = C.newMap();
-    private MetricStore defaultMetricStore = new SimpleMetricStore(this);
+    private SimpleMetricStore defaultMetricStore = new SimpleMetricStore(this);
     private Metric defaultMetric = new SimpleMetric(defaultMetricStore);
 
     public SimpleMetricPlugin() {}
@@ -41,6 +41,11 @@ public class SimpleMetricPlugin implements MetricPlugin {
         return defaultMetricStore;
     }
 
+    @Override
+    public void enableDataSync(boolean sync) {
+        defaultMetricStore.enableDataSync(sync);
+    }
+
     Logger logger(String name) {
         return enabledMap.get(name);
     }
@@ -52,12 +57,13 @@ public class SimpleMetricPlugin implements MetricPlugin {
             if (plugin instanceof SimpleMetricPlugin) {
                 SimpleMetricPlugin smp = (SimpleMetricPlugin) plugin;
                 final SimpleMetricStore store = $.cast(smp.defaultMetricStore);
-                app.jobManager().every(new Runnable() {
+                final Runnable takeSnapshot = new Runnable() {
                     @Override
                     public void run() {
                         store.takeSnapshot();
                     }
-                }, "1mn");
+                };
+                app.jobManager().every("metric:snapshot", takeSnapshot, "1mn");
             }
         }
     }

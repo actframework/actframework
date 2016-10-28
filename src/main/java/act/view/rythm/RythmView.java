@@ -35,6 +35,13 @@ public class RythmView extends View {
     public static final String ID = "rythm";
 
     ConcurrentMap<App, RythmEngine> engines = new ConcurrentHashMap<App, RythmEngine>();
+    ConcurrentMap<String, Template> templates = new ConcurrentHashMap<String, Template>();
+
+    private boolean isDev;
+
+    public RythmView() {
+        isDev = Act.isDev();
+    }
 
     @Override
     public String name() {
@@ -43,8 +50,15 @@ public class RythmView extends View {
 
     @Override
     protected Template loadTemplate(String resourcePath, ActContext context) {
-        RythmEngine engine = getEngine(context.app());
-        return RythmTemplate.find(engine, resourcePath, context.app());
+        if (isDev) {
+            return loadTemplateFromResource(resourcePath, context.app());
+        }
+        Template template = templates.get(resourcePath);
+        if (null == template) {
+            template = loadTemplateFromResource(resourcePath, context.app());
+            templates.putIfAbsent(resourcePath, template);
+        }
+        return template;
     }
 
     public RythmEngine getEngine(App app) {
@@ -58,6 +72,11 @@ public class RythmView extends View {
             }
         }
         return engine;
+    }
+
+    private Template loadTemplateFromResource(String resourcePath, App app) {
+        RythmEngine engine = getEngine(app);
+        return RythmTemplate.find(engine, resourcePath);
     }
 
     private RythmEngine createEngine(App app) {
