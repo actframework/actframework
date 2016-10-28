@@ -3,15 +3,19 @@ package act.view;
 import act.Act;
 import act.app.ActionContext;
 import act.mail.MailerContext;
+import org.apache.commons.codec.Charsets;
 import org.osgl.http.H;
 import org.osgl.util.IO;
 
+import java.nio.charset.Charset;
 import java.util.Map;
 
 /**
  * Base class for {@link Template} implementations
  */
 public abstract class TemplateBase implements Template {
+
+    private static final Charset UTF8 = Charsets.UTF_8;
 
     @Override
     public void merge(ActionContext context) {
@@ -54,21 +58,29 @@ public abstract class TemplateBase implements Template {
     protected void beforeRender(MailerContext context) {}
 
     protected void merge(Map<String, Object> renderArgs, H.Response response) {
-        IO.writeContent(render(renderArgs), response.writer());
+        String result = render(renderArgs);
+        byte[] bytes = result.getBytes(UTF8);
+        IO.write(bytes, response.outputStream());
     }
 
     protected abstract String render(Map<String, Object> renderArgs);
 
     private void exposeImplicitVariables(Map<String, Object> renderArgs, ActionContext context) {
         for (ActionViewVarDef var : Act.viewManager().implicitActionViewVariables()) {
-            renderArgs.put(var.name(), var.eval(context));
+            Object val = var.eval(context);
+            if (null != val) {
+                renderArgs.put(var.name(), val);
+            }
         }
     }
 
 
     private void exposeImplicitVariables(Map<String, Object> renderArgs, MailerContext context) {
         for (MailerViewVarDef var : Act.viewManager().implicitMailerViewVariables()) {
-            renderArgs.put(var.name(), var.eval(context));
+            Object val = var.eval(context);
+            if (null != val) {
+                renderArgs.put(var.name(), val);
+            }
         }
     }
 }
