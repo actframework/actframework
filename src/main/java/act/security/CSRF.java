@@ -186,6 +186,7 @@ public class CSRF {
                 csrfProtector.clearExistingToken(session, cookieName);
                 token = app.encrypt(csrfProtector.generateToken(session, app));
                 H.Cookie cookie = new H.Cookie(cookieName, token);
+                cookie.secure(context.config().sessionSecure());
                 cookie.domain(cookieDomain);
                 cookie.path("/");
                 context.resp().addCookie(cookie);

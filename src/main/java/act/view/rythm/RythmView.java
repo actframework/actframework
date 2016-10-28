@@ -36,6 +36,7 @@ public class RythmView extends View {
 
     ConcurrentMap<App, RythmEngine> engines = new ConcurrentHashMap<App, RythmEngine>();
     ConcurrentMap<String, Template> templates = new ConcurrentHashMap<String, Template>();
+    ConcurrentMap<String, String> missings = new ConcurrentHashMap<String, String>();
 
     private boolean isDev;
 
@@ -53,10 +54,17 @@ public class RythmView extends View {
         if (isDev) {
             return loadTemplateFromResource(resourcePath, context.app());
         }
+        if (missings.containsKey(resourcePath)) {
+            return null;
+        }
         Template template = templates.get(resourcePath);
         if (null == template) {
             template = loadTemplateFromResource(resourcePath, context.app());
-            templates.putIfAbsent(resourcePath, template);
+            if (null != template) {
+                templates.putIfAbsent(resourcePath, template);
+            } else {
+                missings.put(resourcePath, resourcePath);
+            }
         }
         return template;
     }
