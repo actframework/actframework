@@ -17,16 +17,16 @@ public class AppCrypto {
 
     private static Logger logger = App.logger;
     
-    private String secret;
+    private byte[] secret;
 
     private SecureRandom secureRandom = new SecureRandom();
     
     public AppCrypto(AppConfig config) {
-        secret = config.secret();
+        secret = config.secret().getBytes(Charsets.UTF_8);
     }
 
     public String sign(String message) {
-        return Crypto.sign(message, secret.getBytes(Charsets.UTF_8));
+        return Crypto.sign(message, secret);
     }
 
     /**

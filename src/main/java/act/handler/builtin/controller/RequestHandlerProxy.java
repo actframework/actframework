@@ -413,7 +413,7 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
 
     @Override
     public String toString() {
-        return S.fmt("%s.%s", controllerClassName, actionMethodName);
+        return new StringBuilder(controllerClassName).append(".").append(actionMethodName).toString();
     }
 
     public static void registerGlobalInterceptor(BeforeInterceptor interceptor) {

@@ -18,6 +18,7 @@ import org.osgl.util.S;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Provider;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -281,7 +282,7 @@ public class SessionManager extends DestroyableBase {
             if (0 == len) {
                 return C.list();
             }
-            List<char[]> l = C.newList();
+            List<char[]> l = new ArrayList<char[]>();
             int start = 0;
             for (int i = 0; i < len; ++i) {
                 char c = content[i];
