@@ -274,7 +274,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         if (null == csrf) {
             Boolean B = get(CSRF);
             if (null == B) {
-                B = true;
+                B = false;
             }
             this.csrf = B;
         }
