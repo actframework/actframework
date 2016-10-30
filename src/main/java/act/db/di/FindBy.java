@@ -33,7 +33,10 @@ public class FindBy extends ValueLoader.Base {
         if (null == resolver) {
             throw new IllegalArgumentException("Cannot find String value resolver for type: " + dao.idType());
         }
-        bindName = ParamValueLoaderService.bindName(spec);
+        bindName = S.string(value());
+        if (S.blank(bindName)) {
+            bindName = ParamValueLoaderService.bindName(spec);
+        }
         if (!byId) {
             querySpec = S.string(options.get("value"));
             if (S.blank(querySpec)) {
