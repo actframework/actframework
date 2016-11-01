@@ -1,5 +1,6 @@
 package act.controller;
 
+import act.Act;
 import act.app.ActionContext;
 import act.conf.AppConfigKey;
 import act.controller.meta.HandlerMethodMetaInfo;
@@ -649,7 +650,7 @@ public @interface Controller {
                 throw E.tbd("Render template with array");
             } else {
                 H.Request req = context.req();
-                if (v instanceof Versioned && req.method().safe()) {
+                if (Act.isProd() && v instanceof Versioned && req.method().safe()) {
                     String version = ((Versioned) v)._version();
                     if (req.etagMatches(version)) {
                         return NotModified.INSTANCE;
