@@ -274,7 +274,7 @@ public class App extends DestroyableBase {
     }
 
     public boolean isStarted() {
-        return currentState == POST_START;
+        return currentState == POST_START || currentState == ACT_START;
     }
 
     public boolean isMainThread() {
@@ -303,11 +303,13 @@ public class App extends DestroyableBase {
     public synchronized void refresh(boolean async) {
         if (async) {
             asyncRefresh();
+        } else {
+            refresh();
         }
-        refresh();
     }
 
     public synchronized void refresh() {
+        currentState = null;
         long ms = $.ms();
         logger.info("App starting ....");
         profile = null;
@@ -348,6 +350,7 @@ public class App extends DestroyableBase {
 
         Act.viewManager().reset();
         loadGlobalPlugin();
+        emit(APP_ACT_PLUGIN_LOADED);
         initScannerManager();
         loadActScanners();
         loadBuiltInScanners();
@@ -394,6 +397,7 @@ public class App extends DestroyableBase {
         emit(START);
         daemonKeeper();
         logger.info("App[%s] loaded in %sms", name(), $.ms() - ms);
+        emit(POST_START);
     }
 
     public AppBuilder builder() {

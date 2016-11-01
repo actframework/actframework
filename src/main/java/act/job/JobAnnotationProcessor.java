@@ -132,6 +132,6 @@ public class JobAnnotationProcessor extends AppHolderBase<JobAnnotationProcessor
     
     private _Job createMethodJob(JobMethodMetaInfo method) {
         String id = method.id();
-        return new _Job(id, app().jobManager(), new ReflectedJobInvoker<JobMethodMetaInfo>(method, app()));
+        return new _Job(id, app().jobManager(), new ReflectedJobInvoker<JobMethodMetaInfo>(method, app()), false);
     }
 }

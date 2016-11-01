@@ -200,7 +200,7 @@ abstract class JobTrigger {
         @Override
         void schedule(final AppJobManager manager, final _Job job) {
             App app = manager.app();
-            if (AppEventId.POST_START != app.currentState()) {
+            if (!app.isStarted()) {
                 app.eventBus().bindAsync(AppEventId.POST_START, new AppEventListenerBase() {
                     @Override
                     public void on(EventObject event) throws Exception {
@@ -255,7 +255,7 @@ abstract class JobTrigger {
         @Override
         void schedule(final AppJobManager manager, final _Job job) {
             App app = manager.app();
-            if (AppEventId.POST_START != app.currentState()) {
+            if (!app.isStarted()) {
                 app.eventBus().bindAsync(AppEventId.POST_START, new AppEventListenerBase() {
                     @Override
                     public void on(EventObject event) throws Exception {
@@ -290,7 +290,7 @@ abstract class JobTrigger {
         @Override
         void schedule(final AppJobManager manager, final _Job job) {
             App app = manager.app();
-            if (AppEventId.POST_START != app.currentState()) {
+            if (!app.isStarted()) {
                 app.eventBus().bindAsync(AppEventId.POST_START, new AppEventListenerBase() {
                     @Override
                     public void on(EventObject event) throws Exception {

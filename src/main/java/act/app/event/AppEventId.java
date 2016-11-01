@@ -49,7 +49,7 @@ public enum AppEventId {
     }, APP_ACT_PLUGIN_LOADED {
         @Override
         public AppEvent of(App app) {
-            return new AppCodeScanned(app);
+            return new AppActPluginLoaded(app);
         }
     }, ROUTER_INITIALIZED {
         @Override
@@ -97,7 +97,14 @@ public enum AppEventId {
         public AppEvent of(App app) {
             return new AppPostStart(app);
         }
-    }, STOP () {
+    },
+    ACT_START() {
+        @Override
+        public AppEvent of(App app) {
+            return new ActStart(app);
+        }
+    },
+    STOP () {
         @Override
         public AppEvent of(App app) {
             return new AppStop(app);

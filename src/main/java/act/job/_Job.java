@@ -2,6 +2,7 @@ package act.job;
 
 import act.Act;
 import act.app.App;
+import act.app.event.AppEvent;
 import act.app.event.AppEventId;
 import act.event.AppEventListenerBase;
 import act.route.DuplicateRouteMappingException;
@@ -69,6 +70,7 @@ class _Job extends DestroyableBase implements Runnable {
     );
 
     private String id;
+    private App app;
     private boolean oneTime;
     private boolean executed;
     private AppJobManager manager;
@@ -91,6 +93,7 @@ class _Job extends DestroyableBase implements Runnable {
         this.manager = $.NPE(manager);
         this.worker = worker;
         this.oneTime = oneTime;
+        this.app = manager.app();
     }
 
     @Override
@@ -164,6 +167,9 @@ class _Job extends DestroyableBase implements Runnable {
         invokeParallelJobs();
         runPrecedenceJobs();
         try {
+            if (Act.isDev() && app.isStarted()) {
+                app.checkUpdates(false);
+            }
             doJob();
         } catch (RuntimeException e) {
             boolean isFatal = FATAL_EXCEPTIONS.contains(e.getClass());
@@ -198,7 +204,7 @@ class _Job extends DestroyableBase implements Runnable {
                 executed = true;
                 if (isOneTime()) {
                     App app = App.instance();
-                    if (AppEventId.POST_START == app.currentState()) {
+                    if (app.isStarted()) {
                         manager.removeJob(this);
                     } else {
                         app.eventBus().bind(AppEventId.POST_START, new AppEventListenerBase() {

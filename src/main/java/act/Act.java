@@ -283,7 +283,7 @@ public final class Act {
             shutdownNetworkLayer();
             throw new UnexpectedException("App not found. Please make sure your app start directory is correct");
         }
-        emit(AppEventId.POST_START);
+        emit(AppEventId.ACT_START);
     }
 
     public static void shutdown() {
