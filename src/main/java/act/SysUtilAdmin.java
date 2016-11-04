@@ -89,7 +89,7 @@ public class SysUtilAdmin {
         }
     }
 
-    @Command(name = "gc", help = "Run GC")
+    @Command(name = "act.gc", help = "Run GC")
     public void gc(CliContext context) {
         System.gc();
         context.println("GC executed");
