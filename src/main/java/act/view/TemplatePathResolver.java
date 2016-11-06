@@ -2,7 +2,6 @@ package act.view;
 
 import act.app.ActionContext;
 import act.util.ActContext;
-import org.osgl.$;
 import org.osgl.http.H;
 import org.osgl.util.E;
 import org.osgl.util.S;

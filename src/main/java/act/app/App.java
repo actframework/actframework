@@ -47,11 +47,9 @@ import org.osgl.cache.CacheService;
 import org.osgl.cache.CacheServiceProvider;
 import org.osgl.http.H;
 import org.osgl.http.HttpConfig;
-import org.osgl.logging.L;
 import org.osgl.logging.Logger;
 import org.osgl.storage.IStorageService;
 import org.osgl.util.*;
-import org.rythmengine.RythmEngine;
 
 import javax.enterprise.context.ApplicationScoped;
 import java.io.File;

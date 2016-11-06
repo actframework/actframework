@@ -21,8 +21,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
 
-import static act.app.App.logger;
-
 @ActComponent
 public class MailerConfig extends AppHolderBase {
 

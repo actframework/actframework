@@ -1,7 +1,6 @@
 package act.view.rythm;
 
 import act.app.ActionContext;
-import act.app.App;
 import act.mail.MailerContext;
 import act.view.TemplateBase;
 import org.osgl.util.E;

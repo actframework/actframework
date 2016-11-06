@@ -1,6 +1,5 @@
 package act.app;
 
-import org.osgl.util.C;
 import org.osgl.util.E;
 
 import java.util.List;

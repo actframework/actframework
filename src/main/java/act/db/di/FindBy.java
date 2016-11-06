@@ -5,7 +5,6 @@ import act.db.Dao;
 import act.inject.param.ParamValueLoaderService;
 import act.util.ActContext;
 import org.osgl.inject.ValueLoader;
-import org.osgl.inject.annotation.InjectTag;
 import org.osgl.util.*;
 
 import java.util.Collection;

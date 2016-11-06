@@ -9,7 +9,6 @@ import org.osgl.mvc.result.BadRequest;
 import org.osgl.util.E;
 import org.osgl.util.StringValueResolver;
 
-import java.beans.Beans;
 import java.lang.reflect.Type;
 import java.util.HashMap;
 import java.util.List;

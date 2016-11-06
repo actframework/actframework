@@ -2,7 +2,6 @@ package act.db;
 
 import act.app.security.SecurityContext;
 import act.util.ActContext;
-import org.osgl.$;
 import org.osgl.util.Generics;
 
 import javax.enterprise.context.ApplicationScoped;

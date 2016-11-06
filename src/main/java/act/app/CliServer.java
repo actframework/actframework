@@ -4,7 +4,6 @@ import act.Act;
 import act.Destroyable;
 import act.app.event.AppEventId;
 import act.cli.CliSession;
-import act.exception.ActException;
 import org.osgl.exception.ConfigurationException;
 import org.osgl.logging.LogManager;
 import org.osgl.logging.Logger;

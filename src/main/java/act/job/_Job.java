@@ -2,7 +2,6 @@ package act.job;
 
 import act.Act;
 import act.app.App;
-import act.app.event.AppEvent;
 import act.app.event.AppEventId;
 import act.event.AppEventListenerBase;
 import act.route.DuplicateRouteMappingException;

@@ -9,7 +9,6 @@ import org.osgl.logging.Logger;
 import org.osgl.util.Crypto;
 import org.osgl.util.Token;
 
-import java.io.UnsupportedEncodingException;
 import java.security.InvalidKeyException;
 import java.security.SecureRandom;
 

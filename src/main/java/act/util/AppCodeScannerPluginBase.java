@@ -6,8 +6,6 @@ import act.app.App;
 import act.app.AppByteCodeScanner;
 import act.app.AppSourceCodeScanner;
 import act.plugin.Plugin;
-import org.osgl.logging.L;
-import org.osgl.logging.Logger;
 
 @ActComponent
 public abstract class AppCodeScannerPluginBase extends DestroyableBase implements Plugin {

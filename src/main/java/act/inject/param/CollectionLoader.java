@@ -8,7 +8,6 @@ import act.util.ActContext;
 import org.osgl.inject.BeanSpec;
 import org.osgl.mvc.result.BadRequest;
 import org.osgl.mvc.util.Binder;
-import org.osgl.util.E;
 import org.osgl.util.S;
 import org.osgl.util.StringValueResolver;
 

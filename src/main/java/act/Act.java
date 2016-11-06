@@ -32,7 +32,6 @@ import act.xio.NetworkHandler;
 import act.xio.undertow.UndertowNetwork;
 import org.osgl.$;
 import org.osgl.cache.CacheService;
-import org.osgl.exception.ConfigurationException;
 import org.osgl.exception.NotAppliedException;
 import org.osgl.exception.UnexpectedException;
 import org.osgl.logging.L;

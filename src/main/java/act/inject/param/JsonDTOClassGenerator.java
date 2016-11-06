@@ -1,14 +1,12 @@
 package act.inject.param;
 
 import act.asm.*;
-import act.asm.Type;
 import act.inject.param.JsonDTOClassManager.DynamicClassLoader;
 import org.osgl.$;
 import org.osgl.inject.BeanSpec;
 import org.osgl.util.FastStr;
 import org.osgl.util.S;
 
-import java.lang.reflect.*;
 import java.util.List;
 
 class JsonDTOClassGenerator implements Opcodes {

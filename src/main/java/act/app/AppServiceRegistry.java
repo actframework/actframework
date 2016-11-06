@@ -3,7 +3,6 @@ package act.app;
 import act.Destroyable;
 import act.event.EventBus;
 import org.osgl.$;
-import org.osgl.logging.L;
 import org.osgl.logging.LogManager;
 import org.osgl.logging.Logger;
 import org.osgl.util.C;

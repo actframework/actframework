@@ -1,7 +1,5 @@
 package act.data;
 
-import org.osgl.util.StringValueResolver;
-
 import java.io.File;
 
 /**

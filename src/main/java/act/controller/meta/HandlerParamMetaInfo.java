@@ -1,13 +1,11 @@
 package act.controller.meta;
 
-import act.app.App;
 import act.asm.Type;
 import act.util.AsmTypes;
 import act.util.GeneralAnnoInfo;
 import org.osgl.$;
 import org.osgl.util.C;
 import org.osgl.util.S;
-import org.osgl.util.StringValueResolver;
 
 import java.util.List;
 

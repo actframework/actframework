@@ -13,7 +13,6 @@ import org.rythmengine.Rythm;
 import org.rythmengine.RythmEngine;
 import org.rythmengine.extension.IFormatter;
 import org.rythmengine.extension.ISourceCodeEnhancer;
-import org.rythmengine.extension.Transformer;
 import org.rythmengine.resource.ClasspathResourceLoader;
 import org.rythmengine.template.ITemplate;
 

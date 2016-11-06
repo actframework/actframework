@@ -5,10 +5,8 @@ import act.inject.HeaderVariable;
 import org.osgl.$;
 import org.osgl.inject.BeanSpec;
 import org.osgl.inject.util.AnnotationUtil;
-import org.osgl.mvc.annotation.Bind;
 import org.osgl.mvc.annotation.Param;
 import org.osgl.mvc.annotation.Resolve;
-import org.osgl.mvc.util.Binder;
 import org.osgl.util.StringValueResolver;
 
 import java.lang.annotation.Annotation;

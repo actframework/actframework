@@ -10,7 +10,6 @@ import org.osgl.$;
 import org.osgl.util.AnnotationAware;
 import org.osgl.util.S;
 import org.osgl.util.StringValueResolver;
-import org.osgl.util.ValueObject;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;

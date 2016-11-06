@@ -27,7 +27,6 @@ import org.osgl.http.H;
 import org.osgl.inject.BeanSpec;
 import org.osgl.mvc.annotation.SessionFree;
 import org.osgl.mvc.result.BadRequest;
-import org.osgl.mvc.result.NotFound;
 import org.osgl.mvc.result.Result;
 import org.osgl.util.C;
 import org.osgl.util.E;

@@ -10,7 +10,6 @@ import org.osgl.util.E;
 import org.osgl.util.IO;
 import org.osgl.util.S;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 

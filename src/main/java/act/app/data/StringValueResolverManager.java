@@ -10,12 +10,10 @@ import org.joda.time.LocalDate;
 import org.joda.time.LocalDateTime;
 import org.joda.time.LocalTime;
 import org.osgl.storage.ISObject;
-import org.osgl.storage.impl.SObject;
 import org.osgl.util.AnnotationAware;
 import org.osgl.util.C;
 import org.osgl.util.StringValueResolver;
 
-import java.io.File;
 import java.util.Date;
 import java.util.Map;
 
