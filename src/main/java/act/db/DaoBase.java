@@ -2,6 +2,7 @@ package act.db;
 
 import act.app.security.SecurityContext;
 import act.util.ActContext;
+import org.osgl.$;
 import org.osgl.util.Generics;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -24,8 +25,8 @@ public abstract class DaoBase<ID_TYPE, MODEL_TYPE, QUERY_TYPE extends Dao.Query<
     }
 
     public DaoBase(Class<ID_TYPE> idType, Class<MODEL_TYPE> modelType) {
-        this.idType = idType;
-        this.modelType = modelType;
+        this.idType = $.notNull(idType);
+        this.modelType = $.notNull(modelType);
     }
 
 
