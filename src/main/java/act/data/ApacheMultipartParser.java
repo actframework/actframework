@@ -567,6 +567,9 @@ public class ApacheMultipartParser extends RequestBodyParser {
                 } catch (IOException e) {
                     throw new IOFileUploadException("Processing of " + MULTIPART_FORM_DATA + " request failed. " + e.getMessage(), e);
                 }
+                if (fileItem.getSize() == 0) {
+                    continue;
+                }
                 if (fileItem.isFormField()) {
                     // must resolve encoding
                     String _encoding = request.characterEncoding(); // this is our default

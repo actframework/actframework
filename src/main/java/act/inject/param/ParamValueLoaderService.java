@@ -165,6 +165,9 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
         if (null == fieldLoaders) {
             fieldLoaders = new HashMap<Field, ParamValueLoader>();
             for (Field field: $.fieldsOf(beanClass, true)) {
+                if (field.isAnnotationPresent(NoBind.class)) {
+                    continue;
+                }
                 Type type = field.getGenericType();
                 Annotation[] annotations = field.getAnnotations();
                 BeanSpec spec = BeanSpec.of(type, annotations, field.getName(), injector);
@@ -436,7 +439,7 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
         List<FieldLoader> fieldLoaders = C.newList();
         while (null != current && !current.equals(Object.class)) {
             for (Field field : current.getDeclaredFields()) {
-                if (Modifier.isStatic(field.getModifiers())) {
+                if (Modifier.isStatic(field.getModifiers()) || field.isAnnotationPresent(NoBind.class)) {
                     continue;
                 }
                 field.setAccessible(true);
