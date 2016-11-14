@@ -29,4 +29,10 @@ public @interface FixedDelay {
      * <p>Default value: {@code 60s}</p>
      */
     String value() default "60s";
+
+    /**
+     * Specify the ID of the scheduled job. Default value: empty string
+     * @return the job id
+     */
+    String id() default "";
 }

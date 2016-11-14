@@ -17,4 +17,10 @@ public @interface InvokeAfter {
      * of the annotated method
      */
     String value();
+
+    /**
+     * Specify the ID of the scheduled job. Default value: empty string
+     * @return the job id
+     */
+    String id() default "";
 }

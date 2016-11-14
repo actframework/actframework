@@ -15,6 +15,7 @@ import act.util.AsmTypes;
 import act.util.ByteCodeVisitor;
 import org.osgl.$;
 import org.osgl.util.E;
+import org.osgl.util.S;
 
 import java.lang.annotation.Annotation;
 
@@ -173,9 +174,10 @@ public class JobByteCodeScanner extends AppByteCodeScannerBase {
                 public void visit(String name, Object value) {
                     if ("value".equals(name)) {
                         this.value = value;
-                    }
-                    if ("async".equals(name)) {
+                    } else if ("async".equals(name)) {
                         this.async = value;
+                    } else if ("id".equals(name)) {
+                        this.method.id(S.string(value));
                     }
                 }
 

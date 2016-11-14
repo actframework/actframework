@@ -17,4 +17,10 @@ public @interface Cron {
      * Specifies cron expression or a configuration key starts with {@code "cron."}
      */
     String value();
+
+    /**
+     * Specify the ID of the scheduled job. Default value: empty string
+     * @return the job id
+     */
+    String id() default "";
 }

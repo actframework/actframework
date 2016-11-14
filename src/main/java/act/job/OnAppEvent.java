@@ -32,4 +32,10 @@ public @interface OnAppEvent {
      *          or {@code false} if the method all be executed synchronously
      */
     boolean async() default false;
+
+    /**
+     * Specify the ID of the scheduled job. Default value: empty string
+     * @return the job id
+     */
+    String id() default "";
 }

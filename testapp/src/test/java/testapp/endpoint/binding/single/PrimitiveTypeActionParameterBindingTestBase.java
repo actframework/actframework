@@ -70,14 +70,6 @@ public abstract class PrimitiveTypeActionParameterBindingTestBase<T> extends Sim
 
     @Test(expected = BadRequest.class)
     public void testPrimitiveOutOfScopePostJSON() throws Exception {
-        if (this instanceof ByteActionParameterBindingTest ||
-                this instanceof DoubleActionParameterBindingTest ||
-                this instanceof FloatActionParameterBindingTest ||
-                this instanceof ShortActionParameterBindingTest) {
-            //TODO track fastjson issue #868
-            // Ignore see https://github.com/alibaba/fastjson/issues/868
-            throw new BadRequest();
-        }
         _verify("", primitiveUrlPath, out(), EndPointTestContext.RequestMethod.POST_JSON);
     }
 
@@ -93,14 +85,6 @@ public abstract class PrimitiveTypeActionParameterBindingTestBase<T> extends Sim
 
     @Test(expected = BadRequest.class)
     public void testWrapOutOfScopePostJSON() throws Exception {
-        if (this instanceof ByteActionParameterBindingTest ||
-                this instanceof DoubleActionParameterBindingTest ||
-                this instanceof FloatActionParameterBindingTest ||
-                this instanceof ShortActionParameterBindingTest) {
-            //TODO track fastjson issue #868
-            // Ignore see https://github.com/alibaba/fastjson/issues/868
-            throw new BadRequest();
-        }
         _verify("", path, out(), EndPointTestContext.RequestMethod.POST_JSON);
     }
 

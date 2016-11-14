@@ -16,4 +16,10 @@ public @interface InvokeBefore {
      * Specifies the ID of the Job before which the annotated method will be invoked
      */
     String value();
+
+    /**
+     * Specify the ID of the scheduled job. Default value: empty string
+     * @return the job id
+     */
+    String id() default "";
 }

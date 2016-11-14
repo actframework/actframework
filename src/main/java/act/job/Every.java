@@ -34,4 +34,10 @@ public @interface Every {
      * will be thrown out</p>
      */
     String value() default "1s";
+
+    /**
+     * Specify the ID of the scheduled job. Default value: empty string
+     * @return the job id
+     */
+    String id() default "";
 }

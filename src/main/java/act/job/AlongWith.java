@@ -16,4 +16,10 @@ public @interface AlongWith {
      * Specifies the ID of the Job with which the annotated method will be invoked together
      */
     String value();
+
+    /**
+     * Specify the ID of the scheduled job. Default value: empty string
+     * @return the job id
+     */
+    String id() default "";
 }
