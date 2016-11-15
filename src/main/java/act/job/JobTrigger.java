@@ -322,7 +322,11 @@ abstract class JobTrigger {
                 scheduleDelayedRegister(manager, job);
             } else {
                 _Job associateTarget = manager.jobById(id);
-                associate(job, associateTarget);
+                if (null == associateTarget) {
+                    logger.warn("Cannot find associated job: %s", id);
+                } else {
+                    associate(job, associateTarget);
+                }
             }
         }
 
@@ -332,10 +336,11 @@ abstract class JobTrigger {
                 @Override
                 public Void apply() throws NotAppliedException, $.Break {
                     _Job associateTo = manager.jobById(id);
-                    if (null == id) {
-                        throw E.invalidConfiguration("dependency job not found: %s", id);
+                    if (null == associateTo) {
+                        logger.warn("Cannot find associated job: %s", id);
+                    } else {
+                        associate(job, associateTo);
                     }
-                    associate(job, associateTo);
                     return null;
                 }
             }), manager);

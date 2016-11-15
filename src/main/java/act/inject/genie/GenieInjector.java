@@ -203,22 +203,35 @@ public class GenieInjector extends DependencyInjectorBase<GenieInjector> {
             public void visit(ClassNode classNode) throws Osgl.Break {
                 try {
                     Class<?> clazz = $.classForName(classNode.name(), cl);
-                    Env.Profile profileSpec = clazz.getAnnotation(Env.Profile.class);
-                    if (null != profileSpec) {
-                        if (S.eq(Act.profile(), profileSpec.value(), S.IGNORECASE)) {
-                            addToPriority(clazz);
-                        } else {
-                            App.logger.debug("Ignore auto bind candidate [%s] for [%s]: profile mismatch", clazz.getName(), autoBinding.getName());
-                            return;
+                    while (true) {
+                        Env.Profile profileSpec = clazz.getAnnotation(Env.Profile.class);
+                        if (null != profileSpec) {
+                            if (Env.matches(profileSpec)) {
+                                addToPriority(clazz);
+                                break;
+                            } else {
+                                App.logger.debug("Ignore auto bind candidate [%s] for [%s]: profile mismatch", clazz.getName(), autoBinding.getName());
+                                return;
+                            }
                         }
-                    }
-                    Env.Mode modeSpec = clazz.getAnnotation(Env.Mode.class);
-                    if (null != modeSpec) {
-                        if (Act.mode() == modeSpec.value()) {
-                            addToPriority(clazz);
-                        } else {
-                            App.logger.debug("Ignore auto bind candidate [%s] for [%s]: mode mismatch", clazz.getName(), autoBinding.getName());
-                            return;
+                        Env.Mode modeSpec = clazz.getAnnotation(Env.Mode.class);
+                        if (null != modeSpec) {
+                            if (Env.matches(modeSpec)) {
+                                addToPriority(clazz);
+                                break;
+                            } else {
+                                App.logger.debug("Ignore auto bind candidate [%s] for [%s]: mode mismatch", clazz.getName(), autoBinding.getName());
+                                return;
+                            }
+                        }
+                        Env.Group groupSpec = clazz.getAnnotation(Env.Group.class);
+                        if (null != groupSpec) {
+                            if (Env.matches(groupSpec)) {
+                                addToPriority(clazz);
+                                break;
+                            } else {
+                                App.logger.debug("Ignore auto bind candidate [%s] for [%s]: group mismatch", clazz.getName(), autoBinding.getName());
+                            }
                         }
                     }
                     candidates.add(clazz);
@@ -286,25 +299,17 @@ public class GenieInjector extends DependencyInjectorBase<GenieInjector> {
     private static boolean isModuleAllowed(Class<?> moduleClass) {
         Env.Profile profile = moduleClass.getAnnotation(Env.Profile.class);
         if (null != profile) {
-            return isProfileMatched(profile);
+            return Env.matches(profile);
         }
         Env.Mode mode = moduleClass.getAnnotation(Env.Mode.class);
         if (null != mode) {
-            return isModeMatched(mode);
+            return Env.matches(mode);
+        }
+        Env.Group group = moduleClass.getAnnotation(Env.Group.class);
+        if (null != group) {
+            return Env.matches(group);
         }
         return true;
-    }
-
-    private static boolean isProfileMatched(Env.Profile profile) {
-        boolean unless = profile.unless();
-        String required = profile.value();
-        return unless ^ S.eq(required, Act.profile());
-    }
-
-    private static boolean isModeMatched(Env.Mode mode) {
-        boolean unless = mode.unless();
-        Act.Mode required = mode.value();
-        return unless ^ (required == Act.mode());
     }
 
 }

@@ -2,6 +2,7 @@ package act.job.meta;
 
 import act.asm.Type;
 import act.job.*;
+import act.sys.Env;
 import act.util.DestroyableBase;
 import org.osgl.util.C;
 import org.osgl.util.S;

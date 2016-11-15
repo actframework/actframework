@@ -127,6 +127,7 @@ public final class Act {
     public static Logger logger = L.get(Act.class);
     private static ActConfig conf;
     private static Mode mode = Mode.PROD;
+    private static String nodeGroup = "";
     private static boolean multiTenant = false;
     private static AppManager appManager;
     private static ViewManager viewManager;
@@ -178,6 +179,10 @@ public final class Act {
      */
     public static String profile() {
         return ConfLoader.confSetName();
+    }
+
+    public static String nodeGroup() {
+        return nodeGroup;
     }
 
     public static ActConfig conf() {
@@ -244,6 +249,10 @@ public final class Act {
         } else {
             String profile = SysProps.get(AppConfigKey.PROFILE.key());
             mode = S.neq("prod", profile, S.IGNORECASE) ? Mode.DEV : Mode.PROD;
+        }
+        s = System.getProperty("app.nodeGroup");
+        if (null != s) {
+            nodeGroup = s;
         }
         start(true, appName, appVersion);
     }

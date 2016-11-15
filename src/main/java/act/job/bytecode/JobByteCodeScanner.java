@@ -11,6 +11,8 @@ import act.job.JobAnnotationProcessor;
 import act.job.meta.JobClassMetaInfo;
 import act.job.meta.JobClassMetaInfoManager;
 import act.job.meta.JobMethodMetaInfo;
+import act.sys.Env;
+import act.sys.meta.EnvAnnotationVisitor;
 import act.util.AsmTypes;
 import act.util.ByteCodeVisitor;
 import org.osgl.$;
@@ -93,7 +95,8 @@ public class JobByteCodeScanner extends AppByteCodeScannerBase {
             private int access;
             private boolean requireScan;
             private JobMethodMetaInfo methodInfo;
-            private ActionAnnotationVisitor av;
+            private ActionAnnotationVisitor aav;
+            private EnvAnnotationVisitor eav;
 
             JobMethodVisitor(MethodVisitor mv, int access, String methodName, String desc, String signature, String[] exceptions) {
                 super(ASM5, mv);
@@ -114,8 +117,12 @@ public class JobByteCodeScanner extends AppByteCodeScannerBase {
                         JobMethodMetaInfo tmp = new JobMethodMetaInfo(classInfo);
                         methodInfo = tmp;
                         classInfo.addAction(tmp);
-                        this.av = new ActionAnnotationVisitor(av, c, methodInfo);
-                        return this.av;
+                        this.aav = new ActionAnnotationVisitor(av, c, methodInfo);
+                        return this.aav;
+                    } else if (Env.isEnvAnnotation(c)) {
+                        markRequireScan();
+                        this.eav = new EnvAnnotationVisitor(av, c);
+                        return this.eav;
                     }
                 } catch (Exception e) {
                     throw E.unexpected(e);
@@ -138,7 +145,12 @@ public class JobByteCodeScanner extends AppByteCodeScannerBase {
                 } else {
                     info.invokeInstanceMethod();
                 }
-                if (null != av) av.doRegistration();
+
+                if (null != aav) {
+                    if (null == eav || eav.matched()) {
+                        aav.doRegistration();
+                    }
+                }
                 super.visitEnd();
             }
 
@@ -157,7 +169,7 @@ public class JobByteCodeScanner extends AppByteCodeScannerBase {
                 JobMethodMetaInfo method;
                 Class<? extends Annotation> c;
 
-                public ActionAnnotationVisitor(AnnotationVisitor av,Class<? extends Annotation> c, JobMethodMetaInfo methodMetaInfo) {
+                public ActionAnnotationVisitor(AnnotationVisitor av, Class<? extends Annotation> c, JobMethodMetaInfo methodMetaInfo) {
                     super(ASM5, av);
                     this.c = c;
                     this.method = methodMetaInfo;
@@ -168,6 +180,7 @@ public class JobByteCodeScanner extends AppByteCodeScannerBase {
                     if (desc.contains("AppEventId")) {
                         this.value = AppEventId.valueOf(value);
                     }
+                    super.visitEnum(name, desc, value);
                 }
 
                 @Override
@@ -179,6 +192,7 @@ public class JobByteCodeScanner extends AppByteCodeScannerBase {
                     } else if ("id".equals(name)) {
                         this.method.id(S.string(value));
                     }
+                    super.visit(name, value);
                 }
 
                 public void doRegistration() {
