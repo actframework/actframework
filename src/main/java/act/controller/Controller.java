@@ -669,7 +669,7 @@ public @interface Controller {
                     if (v instanceof Iterable && !(v instanceof Collection)) {
                         v = new FastJsonIterable((Iterable) v);
                     }
-                    PropertySpec.MetaInfo propertySpec = (null == meta) ? null : meta.propertySpec();
+                    PropertySpec.MetaInfo propertySpec = PropertySpec.MetaInfo.withCurrent(meta, context);
                     try {
                         if (null == propertySpec) {
                             return new RenderJSON(v);
@@ -681,10 +681,10 @@ public @interface Controller {
                         }
                     }
                 } else if (context.acceptXML()) {
-                    PropertySpec.MetaInfo propertySpec = (null == meta) ? null : meta.propertySpec();
+                    PropertySpec.MetaInfo propertySpec = PropertySpec.MetaInfo.withCurrent(meta, context);
                     return new FilteredRenderXML(v, propertySpec, context);
                 } else if (context.accept() == H.Format.CSV) {
-                    PropertySpec.MetaInfo propertySpec = (null == meta) ? null : meta.propertySpec();
+                    PropertySpec.MetaInfo propertySpec = PropertySpec.MetaInfo.withCurrent(meta, context);
                     return new RenderCSV(v, propertySpec, context);
                 } else {
                     String s = meta.returnType().getDescriptor().startsWith("[") ? $.toString2(v) : v.toString();

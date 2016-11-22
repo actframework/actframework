@@ -3,8 +3,10 @@ package act.util;
 import act.app.ActionContext;
 import act.cli.CliContext;
 import act.cli.CliSession;
+import act.controller.meta.HandlerMethodMetaInfo;
 import org.osgl.$;
 import org.osgl.util.C;
+import org.osgl.util.S;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -115,7 +117,7 @@ public @interface PropertySpec {
     /**
      * Capture the {@code PropertySpec} annotation meta info in bytecode scanning phase
      */
-    class MetaInfo {
+    public class MetaInfo {
         // split "fn as firstName" into "fn" and "firstName"
         private static Pattern p = Pattern.compile("\\s+as\\s+", Pattern.CASE_INSENSITIVE);
 
@@ -236,6 +238,27 @@ public @interface PropertySpec {
                 throw new IllegalStateException("context not applied: " + context);
             }
         }
+
+        public static MetaInfo withCurrent(MetaInfo builtIn, ActContext context) {
+            String s = PropertySpec.current.get();
+            if (S.notBlank(s)) {
+                PropertySpec.MetaInfo spec = new PropertySpec.MetaInfo();
+                if (context instanceof CliContext) {
+                    spec.onCli(s);
+                } else {
+                    spec.onHttp(s);
+                }
+                return spec;
+            }
+            return builtIn;
+        }
+
+        public static MetaInfo withCurrent(HandlerMethodMetaInfo methodMetaInfo, ActContext context) {
+            MetaInfo builtIn = null == methodMetaInfo ? null : methodMetaInfo.propertySpec();
+            return withCurrent(builtIn, context);
+        }
     }
+
+    ThreadLocal<String> current = new ThreadLocal<>();
 
 }

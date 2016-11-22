@@ -12,6 +12,7 @@ import act.i18n.LocaleResolver;
 import act.route.Router;
 import act.security.CORS;
 import act.util.ActContext;
+import act.util.PropertySpec;
 import org.osgl.$;
 import org.osgl.concurrent.ContextLocal;
 import org.osgl.http.H;
@@ -627,6 +628,7 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
     @Override
     protected void releaseResources() {
         super.releaseResources();
+        PropertySpec.current.remove();
         if (this.state != State.DESTROYED) {
             this.allParams = null;
             this.extraParams = null;

@@ -8,6 +8,7 @@ import act.cli.CliOverHttpContext;
 import act.conf.AppConfig;
 import act.controller.Controller;
 import act.handler.CliHandler;
+import act.util.PropertySpec;
 import org.osgl.http.H;
 import org.osgl.mvc.annotation.Before;
 import org.osgl.mvc.annotation.GetAction;

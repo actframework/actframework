@@ -72,6 +72,8 @@ public final class CliHandlerProxy extends CliHandlerBase {
             }
             context.println(msg);
             logger.error(e, "Error handling request");
+        } finally {
+            PropertySpec.current.remove();
         }
     }
 

@@ -11,6 +11,7 @@ import act.cli.builtin.Help;
 import act.cli.util.CommandLineParser;
 import act.handler.CliHandler;
 import act.util.ActContext;
+import act.util.PropertySpec;
 import jline.console.ConsoleReader;
 import org.osgl.$;
 import org.osgl.cache.CacheService;
@@ -367,6 +368,7 @@ public class CliContext extends ActContext.Base<CliContext> implements IASCIITab
     protected void releaseResources() {
         super.releaseResources();
         _local.remove();
+        PropertySpec.current.remove();
     }
 
     public String commandPath() {

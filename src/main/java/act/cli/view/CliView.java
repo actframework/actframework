@@ -39,6 +39,8 @@ public enum CliView {
                 return "no data";
             }
 
+            spec = PropertySpec.MetaInfo.withCurrent(spec, context);
+
             if (null == spec) {
                 spec = new PropertySpec.MetaInfo();
             }
@@ -156,6 +158,7 @@ public enum CliView {
         public String render(Object result, PropertySpec.MetaInfo spec, ActContext context, boolean format) {
             String json;
             FastJsonPropertyPreFilter propertyFilter;
+            spec = PropertySpec.MetaInfo.withCurrent(spec, context);
             if (null == spec) {
                 propertyFilter = null;
             } else {
@@ -262,6 +265,7 @@ public enum CliView {
             }
             componentType = dataList.get(0).getClass();
             DataPropertyRepository repo = context.app().service(DataPropertyRepository.class);
+            spec = PropertySpec.MetaInfo.withCurrent(spec, context);
             if (null == spec) {
                 spec = new PropertySpec.MetaInfo();
                 spec.onValue("-not_exists");
@@ -337,4 +341,5 @@ public enum CliView {
         }
         return dataList;
     }
+
 }

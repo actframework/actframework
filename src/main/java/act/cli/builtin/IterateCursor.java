@@ -3,6 +3,7 @@ package act.cli.builtin;
 import act.cli.CliContext;
 import act.cli.util.CliCursor;
 import act.handler.CliHandlerBase;
+import act.util.PropertySpec;
 import org.osgl.$;
 import org.osgl.util.C;
 
@@ -20,7 +21,11 @@ public class IterateCursor extends CliHandlerBase {
         if (null == cursor) {
             context.println("no cursor");
         } else {
-            cursor.output(context);
+            try {
+                cursor.output(context);
+            } finally {
+                PropertySpec.current.remove();
+            }
         }
     }
 
