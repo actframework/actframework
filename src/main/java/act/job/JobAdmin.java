@@ -24,9 +24,8 @@ public class JobAdmin {
     @Command(value = "act.job.list", help = "List jobs")
     @PropertySpec(_Job.BRIEF_VIEW)
     @TableView
-    public List<_Job> listJobs(@Optional(lead = "-q") final String q, App app) {
-        AppJobManager jobManager = app.jobManager();
-        C.List<_Job> jobs = jobManager.jobs();
+    public List<_Job> listJobs(@Optional(lead = "-q") final String q, AppJobManager jobManager) {
+        C.List<_Job> jobs = jobManager.jobs().append(jobManager.virtualJobs());
         if (S.notBlank(q)) {
             jobs = jobs.filter(new $.Predicate<_Job>() {
                 @Override
@@ -41,14 +40,17 @@ public class JobAdmin {
     @Command(value = "act.job.show", help = "Show job details")
     @JsonView
     @PropertySpec(_Job.DETAIL_VIEW)
-    public _Job getJob(@Required("specify the query string") final String id, App app) {
-        AppJobManager jobManager = app.jobManager();
+    public _Job getJob(@Required("specify job id") final String id, AppJobManager jobManager) {
         return jobManager.jobById(id);
     }
 
+    @Command(name = "act.job.cancel", help = "Cancel a job")
+    public void cancel(@Required("specify job id") String id, AppJobManager jobManager) {
+        jobManager.cancel(id);
+    }
+
     @Command(value = "act.job.scheduler", help = "Show Job manager scheduler status")
-    public String getSchedulerStatus(App app) {
-        AppJobManager jobManager = app.jobManager();
+    public String getSchedulerStatus(AppJobManager jobManager) {
         ScheduledThreadPoolExecutor executor = jobManager.executor();
         JSONObject json = new JSONObject();
         json.put("is terminating", executor.isTerminating());

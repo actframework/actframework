@@ -1,5 +1,6 @@
 package act.job;
 
+import act.Act;
 import act.ActComponent;
 import act.Destroyable;
 import act.app.App;
@@ -16,6 +17,7 @@ import org.osgl.util.S;
 import org.rythmengine.utils.Time;
 
 import java.util.EventObject;
+import java.util.Map;
 import java.util.concurrent.*;
 
 import static act.app.App.logger;
@@ -201,7 +203,7 @@ public class AppJobManager extends AppServiceBase<AppJobManager> {
         if (null != job) {
             removeJob(job);
         } else {
-            ScheduledFuture future = scheduled.get(jobId);
+            ScheduledFuture future = scheduled.remove(jobId);
             if (null != future) {
                 future.cancel(true);
             }
@@ -224,6 +226,16 @@ public class AppJobManager extends AppServiceBase<AppJobManager> {
         return C.list(jobs.values());
     }
 
+    C.List<_Job> virtualJobs() {
+        final AppJobManager jobManager = Act.jobManager();
+        return C.list(scheduled.entrySet()).map(new $.Transformer<Map.Entry<String, ScheduledFuture>, _Job>() {
+            @Override
+            public _Job transform(Map.Entry<String, ScheduledFuture> entry) {
+                return new _Job(entry.getKey(), jobManager);
+            }
+        });
+    }
+
     void futureScheduled(String id, ScheduledFuture future) {
         scheduled.putIfAbsent(id, future);
     }
@@ -231,6 +243,10 @@ public class AppJobManager extends AppServiceBase<AppJobManager> {
     _Job jobById(String id) {
         _Job job = jobs.get(id);
         if (null == job) {
+            ScheduledFuture future = scheduled.get(id);
+            if (null != future) {
+                return new _Job(id, Act.jobManager());
+            }
             logger.warn("cannot find job by id: %s", id);
         }
         return job;
@@ -243,7 +259,7 @@ public class AppJobManager extends AppServiceBase<AppJobManager> {
     void removeJob(_Job job) {
         String id = job.id();
         jobs.remove(id);
-        ScheduledFuture future = scheduled.get(id);
+        ScheduledFuture future = scheduled.remove(id);
         if (null != future) {
             future.cancel(true);
         }
@@ -291,6 +307,19 @@ public class AppJobManager extends AppServiceBase<AppJobManager> {
             return runnable;
         } else {
             return _Job.once(runnable, this);
+        }
+    }
+
+    private static class VirtualJob extends _Job {
+        private ScheduledFuture future;
+        VirtualJob(String id, ScheduledFuture future) {
+            super(id, Act.jobManager());
+            this.future = future;
+        }
+
+        @Override
+        protected void cancel() {
+            future.cancel(true);
         }
     }
 }

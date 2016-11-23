@@ -231,6 +231,10 @@ class _Job extends DestroyableBase implements Runnable {
         }
     }
 
+    protected void cancel() {
+        manager.cancel(id());
+    }
+
     private void runPrecedenceJobs() {
         precedenceJobs.runSubJobs();
     }
