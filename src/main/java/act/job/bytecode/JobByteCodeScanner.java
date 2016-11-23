@@ -120,7 +120,6 @@ public class JobByteCodeScanner extends AppByteCodeScannerBase {
                         this.aav = new ActionAnnotationVisitor(av, c, methodInfo);
                         return this.aav;
                     } else if (Env.isEnvAnnotation(c)) {
-                        markRequireScan();
                         this.eav = new EnvAnnotationVisitor(av, c);
                         return this.eav;
                     }

@@ -25,6 +25,7 @@ public class AppJobManager extends AppServiceBase<AppJobManager> {
 
     private ScheduledThreadPoolExecutor executor;
     private ConcurrentMap<String, _Job> jobs = new ConcurrentHashMap<String, _Job>();
+    private ConcurrentMap<String, ScheduledFuture> scheduled = new ConcurrentHashMap<>();
 
     static String appEventJobId(AppEventId eventId) {
         return S.builder("__act_app_").append(eventId.toString().toLowerCase()).toString();
@@ -191,6 +192,22 @@ public class AppJobManager extends AppServiceBase<AppJobManager> {
         }
     }
 
+    /**
+     * Cancel a scheduled Job by ID
+     * @param jobId the job Id
+     */
+    public void cancel(String jobId) {
+        _Job job = jobById(jobId);
+        if (null != job) {
+            removeJob(job);
+        } else {
+            ScheduledFuture future = scheduled.get(jobId);
+            if (null != future) {
+                future.cancel(true);
+            }
+        }
+    }
+
     public void beforeAppStart(final Runnable runnable) {
         on(AppEventId.START, runnable);
     }
@@ -207,6 +224,10 @@ public class AppJobManager extends AppServiceBase<AppJobManager> {
         return C.list(jobs.values());
     }
 
+    void futureScheduled(String id, ScheduledFuture future) {
+        scheduled.putIfAbsent(id, future);
+    }
+
     _Job jobById(String id) {
         _Job job = jobs.get(id);
         if (null == job) {
@@ -220,7 +241,12 @@ public class AppJobManager extends AppServiceBase<AppJobManager> {
     }
 
     void removeJob(_Job job) {
-        jobs.remove(job.id());
+        String id = job.id();
+        jobs.remove(id);
+        ScheduledFuture future = scheduled.get(id);
+        if (null != future) {
+            future.cancel(true);
+        }
     }
 
     ScheduledThreadPoolExecutor executor() {

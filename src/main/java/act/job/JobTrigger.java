@@ -16,6 +16,7 @@ import org.osgl.util.S;
 import org.rythmengine.utils.Time;
 
 import java.util.EventObject;
+import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
@@ -217,7 +218,8 @@ abstract class JobTrigger {
             // add one seconds to prevent the next time be the current time (now)
             DateTime next = cronExpr.nextTimeAfter(now.plusSeconds(1));
             Seconds seconds = Seconds.secondsBetween(now, next);
-            manager.executor().schedule(job, seconds.getSeconds(), TimeUnit.SECONDS);
+            ScheduledFuture future = manager.executor().schedule(job, seconds.getSeconds(), TimeUnit.SECONDS);
+            manager.futureScheduled(job.id(), future);
         }
 
         @Override
@@ -269,7 +271,8 @@ abstract class JobTrigger {
 
         private void delayedSchedule(AppJobManager manager, _Job job) {
             ScheduledThreadPoolExecutor executor = manager.executor();
-            executor.scheduleWithFixedDelay(job, seconds, seconds, TimeUnit.SECONDS);
+            ScheduledFuture future = executor.scheduleWithFixedDelay(job, seconds, seconds, TimeUnit.SECONDS);
+            manager.futureScheduled(job.id(), future);
         }
     }
 
@@ -304,7 +307,8 @@ abstract class JobTrigger {
 
         private void delayedSchedule(AppJobManager manager, _Job job) {
             ScheduledThreadPoolExecutor executor = manager.executor();
-            executor.scheduleAtFixedRate(job, seconds, seconds, TimeUnit.SECONDS);
+            ScheduledFuture future = executor.scheduleAtFixedRate(job, seconds, seconds, TimeUnit.SECONDS);
+            manager.futureScheduled(job.id(), future);
         }
     }
 
