@@ -1,11 +1,15 @@
 package act.inject.param;
 
 import act.util.ActContext;
+import org.osgl.logging.LogManager;
+import org.osgl.logging.Logger;
 import org.rythmengine.utils.S;
 
 import java.util.*;
 
 class ParamTree {
+
+    private static final Logger LOGGER = LogManager.get(ParamTree.class);
 
     private Map<ParamKey, ParamTreeNode> allNodes = new HashMap<ParamKey, ParamTreeNode>();
 
@@ -13,11 +17,11 @@ class ParamTree {
         Set<String> paramKeys = context.paramKeys();
         for (String key : paramKeys) {
             String[] vals = context.paramVals(key);
-            buildNode(key, vals, context);
+            buildNode(key, vals);
         }
     }
 
-    private void buildNode(String rawKey, String[] vals, ActContext<?> context) {
+    private void buildNode(String rawKey, String[] vals) {
         ParamKey key = ParamKey.of(parseRawParamKey(rawKey));
         ParamTreeNode node;
         int len = vals.length;
@@ -106,6 +110,8 @@ class ParamTree {
         String s = token.toString();
         if (S.notEmpty(s)) {
             list.add(s);
+        } else {
+            LOGGER.warn("empty index encountered");
         }
         token.delete(0, s.length() + 1);
     }

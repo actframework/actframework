@@ -89,7 +89,7 @@ class CollectionLoader implements ParamValueLoader {
                 try {
                     id = Integer.parseInt(s);
                 } catch (NumberFormatException e) {
-                    throw new BadRequest("cannot parse param: list index[%s] is not a number: %s", s);
+                    throw new BadRequest("cannot parse param: list index is not a number: %s", s);
                 }
                 ParamTreeNode child = node.child(s);
                 if (child.isLeaf()) {

@@ -27,6 +27,10 @@ public class RunApp {
         start(null, null, anyController);
     }
 
+    public static void start(String packageName) throws Exception {
+        start(null, null, packageName);
+    }
+
     public static void start(String appName, String appVersion, Class<?> anyController) throws Exception {
         String pkg = anyController.getPackage().getName();
         start(appName, appVersion, pkg);
