@@ -2,6 +2,7 @@ package act.util;
 
 import act.Act;
 import act.conf.ConfLoader;
+import act.sys.Env;
 import com.github.lalyos.jfiglet.FigletFont;
 import org.osgl.util.E;
 import org.osgl.util.S;
@@ -48,8 +49,12 @@ public class Banner {
         }
         File aFile = new File("");
         sb.append("\nbase dir: ").append(aFile.getAbsolutePath());
+        sb.append("\n     pid: ").append(Env.PID.get());
         sb.append("\n profile: ").append(ConfLoader.confSetName());
-        sb.append("\n    mode: ").append(Act.mode()).append("\n");
+        sb.append("\n    mode: ").append(Act.mode());
+        sb.append("\n   group: ").append(Act.nodeGroup());
+        sb.append("\n");
+
         return sb.toString();
     }
 
