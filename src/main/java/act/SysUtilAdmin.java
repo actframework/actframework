@@ -4,6 +4,7 @@ import act.cli.CliContext;
 import act.cli.Command;
 import act.cli.Optional;
 import act.cli.Required;
+import act.sys.Env;
 import act.util.PropertySpec;
 import org.joda.time.LocalDateTime;
 import org.osgl.$;
@@ -27,6 +28,11 @@ public class SysUtilAdmin {
 
     public SysUtilAdmin() {
         context = CliContext.current();
+    }
+
+    @Command(name = "act.pid", help = "Print current process ID")
+    public String pid() {
+        return Env.PID.get();
     }
 
     @Command(name = "act.meminfo, act.mi", help = "Print memory info")

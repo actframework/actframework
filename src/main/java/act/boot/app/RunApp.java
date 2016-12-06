@@ -19,6 +19,13 @@ public class RunApp {
 
     private static final Logger logger = L.get(RunApp.class);
 
+    /**
+     * Start the application.
+     *
+     * ActFramework will scan the package defined by system property `act.scan_package`
+     *
+     * @throws Exception
+     */
     public static void start() throws Exception {
         start(null, null, "");
     }
@@ -44,15 +51,11 @@ public class RunApp {
         } else {
             profile = "using profile[" + profile + "]";
         }
-        logger.debug("run fullstack application with controller package[%s] %s", packageName, profile);
-        System.setProperty(AppConfigKey.CONTROLLER_PACKAGE.key(), packageName);
-        final String SCAN_KEY = AppConfigKey.SCAN_PACKAGE.key();
-        if (!System.getProperties().containsKey(SCAN_KEY)) {
-            String scan = packageName;
-            if (FastStr.of(packageName).afterLast('.').startsWith("controller")) {
-                scan = FastStr.of(packageName).beforeLast('.').toString();
-            }
-            System.setProperty(AppConfigKey.SCAN_PACKAGE.key(), scan);
+        logger.debug("run fullstack application with package[%s] %s", packageName, profile);
+        //System.setProperty(AppConfigKey.CONTROLLER_PACKAGE.key(), packageName);
+        final String SCAN_PACKAGE = AppConfigKey.SCAN_PACKAGE.key();
+        if (S.notBlank(packageName)) {
+            System.setProperty(SCAN_PACKAGE, packageName);
         }
         FullStackAppBootstrapClassLoader classLoader = new FullStackAppBootstrapClassLoader(RunApp.class.getClassLoader());
         Thread.currentThread().setContextClassLoader(classLoader);

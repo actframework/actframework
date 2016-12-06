@@ -271,6 +271,7 @@ public enum AppConfigKey implements ConfigKey {
      * </tr>
      * </table>
      */
+    @Deprecated
     CONTROLLER_PACKAGE("controller_package"),
 
     /**

@@ -25,6 +25,7 @@ import act.plugin.AppServicePluginManager;
 import act.plugin.GenericPluginManager;
 import act.plugin.Plugin;
 import act.plugin.PluginScanner;
+import act.sys.Env;
 import act.util.*;
 import act.view.ViewManager;
 import act.xio.Network;
@@ -36,10 +37,9 @@ import org.osgl.exception.NotAppliedException;
 import org.osgl.exception.UnexpectedException;
 import org.osgl.logging.L;
 import org.osgl.logging.Logger;
-import org.osgl.util.C;
-import org.osgl.util.E;
-import org.osgl.util.S;
+import org.osgl.util.*;
 
+import java.io.File;
 import java.util.List;
 import java.util.Map;
 
@@ -292,9 +292,11 @@ public final class Act {
             throw new UnexpectedException("App not found. Please make sure your app start directory is correct");
         }
         emit(AppEventId.ACT_START);
+        writePidFile();
     }
 
     public static void shutdown() {
+        clearPidFile();
         shutdownNetworkLayer();
         destroyApplicationManager();
         unloadPlugins();
@@ -626,6 +628,39 @@ public final class Act {
         if (null != appManager) {
             appManager.destroy();
             appManager = null;
+        }
+    }
+
+    private static void writePidFile() {
+        String pidFile = System.getProperty("pidfile");
+        if (S.blank(pidFile)) {
+            return;
+        }
+        OS os = OS.get();
+        if (os.isLinux()) {
+            try {
+                String pid = Env.PID.get();
+                IO.writeContent(pid, new File(pidFile));
+            } catch (Exception e) {
+                logger.warn(e, "Error writing pid file: %s", e.getMessage());
+            }
+        } else {
+            logger.warn("Write pid file not supported on non-linux system");
+        }
+    }
+
+    private static void clearPidFile() {
+        String pidFile = System.getProperty("pidfile");
+        if (S.blank(pidFile)) {
+            return;
+        }
+        try {
+            File file = new File(pidFile);
+            if (!file.delete()) {
+                file.deleteOnExit();
+            }
+        } catch (Exception e) {
+            logger.warn(e, "Error delete pid file: %s", pidFile);
         }
     }
 
