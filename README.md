@@ -78,14 +78,14 @@ Controller sample code:
 
 There are a couple of ACT Demo applications could be found at https://github.com/actframework/act-demo-apps, these apps demonstrate the following features of ACT Framework:
 
-* Basic usage: https://github.com/actframework/act-demo-apps/tree/master/fullstack-app/helloworld
-* Dependency injection with Guice: https://github.com/actframework/act-demo-apps/tree/master/fullstack-app/guice
-* Configuration with code: https://github.com/actframework/act-demo-apps/tree/master/fullstack-app/app-config
-* Jobs: https://github.com/actframework/act-demo-apps/tree/master/fullstack-app/jobs
+* Basic usage: https://github.com/actframework/act-demo-apps/tree/master/helloworld
+* Dependency injection with Guice: https://github.com/actframework/act-demo-apps/tree/master/injection
+* Configuration with code: https://github.com/actframework/act-demo-apps/tree/master/config
+* Jobs: https://github.com/actframework/act-demo-apps/tree/master/jobs
 * Validation: https://github.com/actframework/act-demo-apps/tree/master/fullstack-app/validation
-* MongoDB with morphia: https://github.com/actframework/act-demo-apps/tree/master/fullstack-app/todo-morphia
-* SQL DB with Ebean: https://github.com/actframework/act-demo-apps/tree/master/fullstack-app/todo-ebean
-* Transactional support with Ebean: https://github.com/actframework/act-demo-apps/tree/master/fullstack-app/transaction-ebean
+* MongoDB with morphia: https://github.com/actframework/act-demo-apps/tree/master/todo-morphia
+* SQL DB with Ebean: https://github.com/actframework/act-demo-apps/tree/master/todo-ebean
+* Transactional support with Ebean: https://github.com/actframework/act-demo-apps/tree/master/transaction-ebean
 
 All the demo apps shall be able to run directly by `cd path/to/app` and `mvn clean compile exec:exec`. Then you can open your browser and navigate to `http://localhost:5460`. The demo apps are using default view based on [Rythm](http://rythmengine.org), which is my [another open source initiative](http://github.com/greenlaw110/rythm).
 
