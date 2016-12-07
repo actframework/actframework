@@ -25,7 +25,7 @@ public class Info {
             String group = Act.nodeGroup();
             return jsonMap(actVersion, appVersion, appName, pid, baseDir, mode, profile, group);
         }
-        return Banner.cachedBanner();
+        return text(Banner.cachedBanner());
     }
 
     @GetAction("/~pid")
