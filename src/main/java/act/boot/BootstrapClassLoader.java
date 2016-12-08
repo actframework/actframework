@@ -141,7 +141,10 @@ public abstract class BootstrapClassLoader extends ClassLoader implements Plugin
             while (systemResources.hasMoreElements()) {
                 InputStream is = systemResources.nextElement().openStream();
                 String s = IO.readContentAsString(is);
-                scanList.addAll(C.listOf(s.split("[\r\n]+")).filter(S.F.startsWith("#").negate()));
+                scanList.addAll(
+                        C.listOf(s.split("[\r\n]+"))
+                                .filter(S.F.startsWith("#").negate())
+                                .filter(S.F.IS_BLANK.negate()));
             }
         } catch (IOException e) {
             throw E.ioException(e);
