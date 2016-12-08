@@ -48,7 +48,10 @@ public class Router extends AppServiceBase<Router> {
     private Map<String, RequestHandlerResolver> resolvers = C.newMap();
 
     private RequestHandlerResolver handlerLookup;
-    private C.Set<String> actionNames = C.newSet();
+    // map action context to url context
+    // for example `act.` -> `/~`
+    private Map<CharSequence, String> urlContexts = new HashMap<>();
+    private Set<String> actionNames = new HashSet<>();
     private AppConfig appConfig;
     private String portId;
     private OptionsInfoBase optionHandlerFactory;
@@ -157,6 +160,10 @@ public class Router extends AppServiceBase<Router> {
     }
 
     // --- route building ---
+    public void addContext(String actionContext, String urlContext) {
+        urlContexts.put(actionContext, urlContext);
+    }
+
     enum ConflictResolver {
         /**
          * Overwrite existing route
@@ -179,12 +186,31 @@ public class Router extends AppServiceBase<Router> {
         EXIT
     }
 
+    private CharSequence withUrlContext(CharSequence path, CharSequence action) {
+        String sAction = action.toString();
+        String urlContext = null;
+        for (CharSequence key : urlContexts.keySet()) {
+            String sKey = key.toString();
+            if (sAction.startsWith(sKey)) {
+                urlContext = urlContexts.get(key);
+                break;
+            }
+        }
+        if (urlContext != null) {
+            if (urlContext.endsWith("/") && path.length() > 0 && path.charAt(0) == '/') {
+                urlContext = urlContext.substring(0, urlContext.length() - 1);
+            }
+            path = S.builder().append(urlContext).append(path);
+        }
+        return path;
+    }
+
     public void addMapping(H.Method method, CharSequence path, CharSequence action) {
-        addMapping(method, path, resolveActionHandler(action), RouteSource.ROUTE_TABLE);
+        addMapping(method, withUrlContext(path, action), resolveActionHandler(action), RouteSource.ROUTE_TABLE);
     }
 
     public void addMapping(H.Method method, CharSequence path, CharSequence action, RouteSource source) {
-        addMapping(method, path, resolveActionHandler(action), source);
+        addMapping(method, withUrlContext(path, action), resolveActionHandler(action), source);
     }
 
     public void addMapping(H.Method method, CharSequence path, RequestHandler handler, RouteSource source) {

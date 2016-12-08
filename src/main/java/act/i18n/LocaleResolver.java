@@ -31,7 +31,7 @@ public class LocaleResolver {
     private Locale locale;
     private boolean forceWriteCookie;
 
-    @PostAction("~/i18n/locale")
+    @PostAction("i18n/locale")
     public static void updateLocale(H.Request request) {
         // there is no logic needed as locale has been processed built-in logic already
         String s = request.header(H.Header.Names.REFERER);

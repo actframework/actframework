@@ -129,8 +129,13 @@ public class RouteTableRouterBuilder implements RouterBuilder {
                 router.addMapping(m, path, action, RouteSource.ROUTE_TABLE);
             }
         } else {
-            H.Method m = H.Method.valueOfIgnoreCase(method.toString());
-            router.addMapping(m, path, action, RouteSource.ROUTE_TABLE);
+            String s = method.toString();
+            if ("context".equalsIgnoreCase(s) || "ctx".equalsIgnoreCase(s)) {
+                router.addContext(action.toString(), path.toString());
+            } else {
+                H.Method m = H.Method.valueOfIgnoreCase(s);
+                router.addMapping(m, path, action, RouteSource.ROUTE_TABLE);
+            }
         }
     }
 

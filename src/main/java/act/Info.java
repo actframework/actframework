@@ -12,7 +12,7 @@ import static act.controller.Controller.Util.text;
 
 public class Info {
 
-    @GetAction("/~info")
+    @GetAction("info")
     public static Object show(ActionContext context, App app) {
         if (context.acceptJson()) {
             String actVersion = Version.version();
@@ -28,7 +28,7 @@ public class Info {
         return text(Banner.cachedBanner());
     }
 
-    @GetAction("/~pid")
+    @GetAction("pid")
     public static Object pid(ActionContext context) {
         if (context.acceptJson()) {
             String pid = Env.PID.get();

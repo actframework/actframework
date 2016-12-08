@@ -12,7 +12,7 @@ public class TimeZoneResolver extends Controller.Util {
 
     public static final String SESSION_KEY = "__tz__";
 
-    @PostAction("~/i18n/timezone")
+    @PostAction("i18n/timezone")
     public static void updateTimezoneOffset(int offset, H.Session session) {
         session.put(SESSION_KEY, offset);
     }
