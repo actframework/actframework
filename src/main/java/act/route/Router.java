@@ -303,6 +303,17 @@ public class Router extends AppServiceBase<Router> {
         }
     }
 
+    public String fullUrl(String path) {
+        if (path.startsWith("//") || path.startsWith("http")) {
+            return path;
+        }
+        StringBuilder sb = S.builder(urlBase());
+        if (!path.startsWith("/")) {
+            sb.append("/");
+        }
+        return sb.append(path).toString();
+    }
+
     public String urlBase(ActionContext context) {
         H.Request req = context.req();
         String scheme = req.secure() ? "https" : "http";
