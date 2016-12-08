@@ -1,0 +1,3 @@
+# By default waive authentication check on `act.Info.` and `act.i18n.`
+-act.Info.
+-act.i18n.

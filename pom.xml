@@ -87,6 +87,7 @@
         <filtering>true</filtering>
         <includes>
           <include>**/act.scan.list</include>
+          <include>**/aaa.authenticate.list</include>
           <include>**/*.version</include>
           <include>**/*.properties</include>
           <include>**/*.xml</include>
