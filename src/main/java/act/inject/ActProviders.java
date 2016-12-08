@@ -1,5 +1,6 @@
 package act.inject;
 
+import act.Act;
 import act.app.ActionContext;
 import act.app.App;
 import act.app.util.AppCrypto;
@@ -8,6 +9,7 @@ import act.conf.AppConfig;
 import act.db.Dao;
 import act.event.EventBus;
 import act.mail.MailerContext;
+import act.route.Router;
 import act.util.ActContext;
 import org.osgl.$;
 import org.osgl.Osgl;
@@ -100,6 +102,16 @@ public final class ActProviders {
         @Override
         public MailerContext get() {
             return MailerContext.current();
+        }
+    };
+
+    /**
+     * Inject the default router, i.e. the router that are not associated with any named port
+     */
+    public static final Provider<Router> ROUTER = new Provider<Router>() {
+        @Override
+        public Router get() {
+            return Act.app().router();
         }
     };
 
