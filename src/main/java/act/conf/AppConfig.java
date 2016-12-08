@@ -1369,6 +1369,15 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         return namedPorts;
     }
 
+    public NamedPort namedPort(String portId) {
+        for (NamedPort np : namedPorts()) {
+            if (np.name().equalsIgnoreCase(portId)) {
+                return np;
+            }
+        }
+        return null;
+    }
+
     private void _mergePorts(AppConfig config) {
         if (null == get(NAMED_PORTS)) {
             namedPorts = config.namedPorts;

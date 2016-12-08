@@ -1,5 +1,6 @@
 package act.route;
 
+import act.Act;
 import act.ActComponent;
 import act.Destroyable;
 import act.app.ActionContext;
@@ -25,6 +26,7 @@ import org.osgl.mvc.result.Result;
 import org.osgl.util.*;
 
 import javax.enterprise.context.ApplicationScoped;
+import javax.swing.*;
 import java.io.File;
 import java.io.PrintStream;
 import java.io.Serializable;
@@ -213,8 +215,19 @@ public class Router extends AppServiceBase<Router> {
         addMapping(method, withUrlContext(path, action), resolveActionHandler(action), source);
     }
 
+    public void addMapping(H.Method method, CharSequence path, RequestHandler handler) {
+        addMapping(method, path, handler, RouteSource.ROUTE_TABLE);
+    }
+
     public void addMapping(H.Method method, CharSequence path, RequestHandler handler, RouteSource source) {
         Node node = _locate(method, path);
+        if (handler instanceof RequestHandlerInfo) {
+            RequestHandlerInfo info = (RequestHandlerInfo) handler;
+            CharSequence action = info.action;
+            Node root = root(method);
+            root.reverseRoutes.put(action.toString(), path.toString());
+            handler = info.theHandler();
+        }
         if (null == node.handler) {
             logger.debug(routeInfo(method, path, handler));
             node.handler(handler, source);
@@ -242,12 +255,68 @@ public class Router extends AppServiceBase<Router> {
         }
     }
 
-    boolean isMapped(H.Method method, CharSequence path) {
-        return null != _search(method, path);
+    public String reverseRoute(String action) {
+        for (H.Method m : supportedHttpMethods()) {
+            String url = reverseRoute(action, m);
+            if (null != url) {
+                return url;
+            }
+        }
+        return null;
     }
 
-    public void addMapping(H.Method method, CharSequence path, RequestHandler handler) {
-        addMapping(method, path, handler, RouteSource.ROUTE_TABLE);
+    public String reverseRoute(String action, H.Method method) {
+        throw E.tbd();
+//        Node node = root(method);
+//        return node.reverseRoutes.get(action);
+    }
+
+    public String reverseFullUrl(String action) {
+        String url = reverseRoute(action);
+        if (null == url) {
+            return null;
+        }
+        StringBuilder sb = S.builder(urlBase());
+        if (!url.startsWith("/")) {
+            sb.append("/");
+        }
+        return sb.append(url).toString();
+    }
+
+    public String urlBase() {
+        ActionContext context = ActionContext.current();
+        if (null != context) {
+            return urlBase(context);
+        }
+        AppConfig<?> config = Act.appConfig();
+
+        boolean secure = config.httpSecure();
+        String scheme = secure ? "https" : "http";
+
+        int port = null == portId ? config.httpPort() : config.namedPort(portId).port();
+        String domain = config.host();
+
+        if (80 == port || 443 == port) {
+            return S.fmt("%s://%s", scheme, domain);
+        } else {
+            return S.fmt("%s://%s:%s", scheme, domain, port);
+        }
+    }
+
+    public String urlBase(ActionContext context) {
+        H.Request req = context.req();
+        String scheme = req.secure() ? "https" : "http";
+        int port = req.port();
+        String domain = req.domain();
+        if (80 == port || 443 == port) {
+            return S.fmt("%s://%s", scheme, domain);
+        } else {
+            return S.fmt("%s://%s:%s", scheme, domain, port);
+        }
+    }
+
+    boolean isMapped(H.Method method, CharSequence path) {
+        return null != _search(method, path);
     }
 
     private static String routeInfo(H.Method method, CharSequence path, Object handler) {
@@ -412,7 +481,18 @@ public class Router extends AppServiceBase<Router> {
         return node;
     }
 
-    private RequestHandler resolveActionHandler(CharSequence action) {
+    private static class RequestHandlerInfo extends DelegateRequestHandler {
+        private CharSequence action;
+        protected RequestHandlerInfo(RequestHandler handler, CharSequence action) {
+            super(handler);
+            this.action = action;
+        }
+        RequestHandler theHandler() {
+            return handler_;
+        }
+    }
+
+    private RequestHandlerInfo resolveActionHandler(CharSequence action) {
         $.T2<String, String> t2 = splitActionStr(action);
         String directive = t2._1, payload = t2._2;
 
@@ -422,12 +502,12 @@ public class Router extends AppServiceBase<Router> {
                     BuiltInHandlerResolver.tryResolve(directive, payload, app()) :
                     resolver.resolve(payload, app());
             E.unsupportedIf(null == handler, "cannot find action handler by directive: %s", directive);
-            return handler;
+            return new RequestHandlerInfo(handler, action);
         } else {
             RequestHandler handler = handlerLookup.resolve(payload, app());
             E.unsupportedIf(null == handler, "cannot find action handler: %s", action);
             actionNames.add(payload);
-            return handler;
+            return new RequestHandlerInfo(handler, action);
         }
     }
 
@@ -495,6 +575,7 @@ public class Router extends AppServiceBase<Router> {
         private C.Map<UrlPath, Node> dynamicAliases = C.newMap();
         private RequestHandler handler;
         private RouteSource routeSource;
+        private Map<String, String> reverseRoutes = new HashMap<>();
 
         private Node(int id) {
             this.id = id;

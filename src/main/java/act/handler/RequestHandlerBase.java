@@ -34,7 +34,7 @@ public abstract class RequestHandlerBase extends $.F1<ActionContext, Void> imple
         return true;
     }
 
-    public RequestHandlerBase realHandler() {
+    public RequestHandler realHandler() {
         return this;
     }
 

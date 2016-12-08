@@ -70,11 +70,12 @@ public class StringValueResolverManager extends AppServiceBase<StringValueResolv
     }
 
     private void registerBuiltInResolvers(AppConfig config) {
-        put(Date.class, new DateResolver(config));
-        put(LocalDate.class, new JodaLocalDateCodec(config));
-        put(LocalDateTime.class, new JodaLocalDateTimeCodec(config));
-        put(LocalTime.class, new JodaLocalTimeCodec(config));
-        put(DateTime.class, new JodaDateTimeCodec(config));
+// We have the StringValueResolverFinder to handle built in resolver registration
+//        put(Date.class, new DateResolver(config));
+//        put(LocalDate.class, new JodaLocalDateCodec(config));
+//        put(LocalDateTime.class, new JodaLocalDateTimeCodec(config));
+//        put(LocalTime.class, new JodaLocalTimeCodec(config));
+//        put(DateTime.class, new JodaDateTimeCodec(config));
         // rebind SObjectResolver to ISObject.class in addition to SObject.class
         put(ISObject.class, SObjectResolver.INSTANCE);
     }

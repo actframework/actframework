@@ -1,5 +1,6 @@
 package act.data;
 
+import act.util.NoAutoRegister;
 import org.osgl.storage.ISObject;
 import org.osgl.util.C;
 import org.osgl.util.IO;
@@ -12,6 +13,7 @@ import static act.data.annotation.ReadContent.ATTR_MERCY;
 /**
  * Read content lines from resource URL
  */
+@NoAutoRegister
 public class ContentLinesResolver extends StringValueResolver<List<String>> {
 
     public static final ContentLinesResolver INSTANCE = new ContentLinesResolver();
