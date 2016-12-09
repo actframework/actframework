@@ -12,6 +12,7 @@ import act.event.meta.SimpleEventListenerMetaInfo;
 import act.util.AsmTypes;
 import act.util.Async;
 import act.util.ByteCodeVisitor;
+import org.osgl.$;
 import org.osgl.util.C;
 import org.osgl.util.S;
 
@@ -106,7 +107,9 @@ public class SimpleEventListenerByteCodeScanner extends AppByteCodeScannerBase {
                                             if (isOn) {
                                                 events.add(S.string(value).intern());
                                             } else {
-                                                events.add(value);
+                                                Type type = (Type) value;
+                                                Class<?> c = $.classForName(type.getClassName(), app().classLoader());
+                                                events.add(c);
                                             }
                                         }
                                     };

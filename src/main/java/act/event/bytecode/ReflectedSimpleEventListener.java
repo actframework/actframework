@@ -40,6 +40,9 @@ class ReflectedSimpleEventListener implements SimpleEventListener {
             throw E.unexpected(e);
         } catch (InvocationTargetException e) {
             Throwable t = e.getCause();
+            if (t instanceof RuntimeException) {
+                throw (RuntimeException) t;
+            }
             throw E.unexpected(t, "Error executing event listener method %s.%s", className, methodName);
         }
     }
