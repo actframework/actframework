@@ -317,8 +317,19 @@ public class EventBus extends AppServiceBase<EventBus> {
     }
 
     public synchronized EventBus emitSync(final ActEvent event) {
+        if (isDestroyed()) {
+            return this;
+        }
         callOn(event, asyncActEventListeners, false);
         callOn(event, actEventListeners, false);
+
+        boolean isAppEvent = event instanceof AppEvent;
+        if (!isAppEvent) {
+            Object payload = event.source();
+            if (null != payload) {
+                emitSync(payload.getClass(), payload);
+            }
+        }
         return this;
     }
 
@@ -331,8 +342,18 @@ public class EventBus extends AppServiceBase<EventBus> {
         if (isDestroyed()) {
             return this;
         }
+
         callOn(event, asyncActEventListeners, true);
         callOn(event, actEventListeners, false);
+
+        boolean isAppEvent = event instanceof AppEvent;
+        if (!isAppEvent) {
+            Object payload = event.source();
+            if (null != payload) {
+                emit(payload.getClass(), payload);
+            }
+        }
+
         if (null != onceBus) {
             onceBus.trigger(event);
         }
@@ -349,6 +370,15 @@ public class EventBus extends AppServiceBase<EventBus> {
         }
         callOn(event, asyncActEventListeners, true);
         callOn(event, actEventListeners, true);
+
+        boolean isAppEvent = event instanceof AppEvent;
+        if (!isAppEvent) {
+            Object payload = event.source();
+            if (null != payload) {
+                emitAsync(payload.getClass(), payload);
+            }
+        }
+
         return this;
     }
 
@@ -415,6 +445,11 @@ public class EventBus extends AppServiceBase<EventBus> {
     public synchronized void emit(Object event, Object ... args) {
         callOn(event, adhocEventListeners.get(event), false, args);
         callOn(event, asyncAdhocEventListeners.get(event), true, args);
+    }
+
+    public synchronized void emitSync(Object event, Object ... args) {
+        callOn(event, adhocEventListeners.get(event), false, args);
+        callOn(event, asyncAdhocEventListeners.get(event), false, args);
     }
 
     public synchronized void emitAsync(Object event, Object ... args) {

@@ -6,7 +6,7 @@ import org.osgl.util.C;
 import java.util.List;
 
 public class SimpleEventListenerMetaInfo {
-    private List<String> events;
+    private List<Object> events;
     private String className;
     private String methodName;
     private String asyncMethodName;
@@ -14,7 +14,7 @@ public class SimpleEventListenerMetaInfo {
     private boolean async;
     private boolean isStatic;
 
-    public SimpleEventListenerMetaInfo(List<String> events, String className, String methodName, String asyncMethodName, List<String> paramTypes, boolean async, boolean isStatic) {
+    public SimpleEventListenerMetaInfo(List<Object> events, String className, String methodName, String asyncMethodName, List<String> paramTypes, boolean async, boolean isStatic) {
         this.events = C.list(events);
         this.className = $.notNull(className);
         this.methodName = $.notNull(methodName);
@@ -24,7 +24,7 @@ public class SimpleEventListenerMetaInfo {
         this.isStatic = isStatic;
     }
 
-    public List<String> events() {
+    public List<?> events() {
         return events;
     }
 

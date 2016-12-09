@@ -303,7 +303,7 @@ public class Router extends AppServiceBase<Router> {
         }
     }
 
-    public String fullUrl(String path) {
+    public String fullUrl(String path, String... args) {
         if (path.startsWith("//") || path.startsWith("http")) {
             return path;
         }
@@ -311,7 +311,7 @@ public class Router extends AppServiceBase<Router> {
         if (!path.startsWith("/")) {
             sb.append("/");
         }
-        return sb.append(path).toString();
+        return sb.append(S.fmt(path, args)).toString();
     }
 
     public String urlBase(ActionContext context) {

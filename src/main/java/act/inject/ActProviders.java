@@ -105,16 +105,6 @@ public final class ActProviders {
         }
     };
 
-    /**
-     * Inject the default router, i.e. the router that are not associated with any named port
-     */
-    public static final Provider<Router> ROUTER = new Provider<Router>() {
-        @Override
-        public Router get() {
-            return Act.app().router();
-        }
-    };
-
     public static final Provider<ActContext> ACT_CONTEXT = new Provider<ActContext>() {
         @Override
         public ActContext get() {

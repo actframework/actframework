@@ -7,6 +7,7 @@ import act.asm.MethodVisitor;
 import act.asm.Type;
 import act.event.EventBus;
 import act.event.On;
+import act.event.OnClass;
 import act.event.meta.SimpleEventListenerMetaInfo;
 import act.util.AsmTypes;
 import act.util.Async;
@@ -41,7 +42,7 @@ public class SimpleEventListenerByteCodeScanner extends AppByteCodeScannerBase {
         if (!metaInfoList.isEmpty()) {
             EventBus eventBus = app().eventBus();
             for (SimpleEventListenerMetaInfo metaInfo : metaInfoList) {
-                for (String event : metaInfo.events()) {
+                for (Object event : metaInfo.events()) {
                     boolean isStatic = metaInfo.isStatic();
                     if (metaInfo.isAsync()) {
                         eventBus.bindAsync(event, new ReflectedSimpleEventListener(metaInfo.className(), metaInfo.methodName(), metaInfo.paramTypes(), isStatic));
@@ -80,7 +81,7 @@ public class SimpleEventListenerByteCodeScanner extends AppByteCodeScannerBase {
             final boolean isStatic = AsmTypes.isStatic(access);
             return new MethodVisitor(ASM5, mv) {
 
-                private List<String> events = C.newList();
+                private List<Object> events = C.newList();
 
                 private boolean isAsync;
 
@@ -90,7 +91,9 @@ public class SimpleEventListenerByteCodeScanner extends AppByteCodeScannerBase {
                 public AnnotationVisitor visitAnnotation(String desc, boolean visible) {
                     AnnotationVisitor av = super.visitAnnotation(desc, visible);
                     String className = Type.getType(desc).getClassName();
-                    if (On.class.getName().equals(className)) {
+                    final boolean isOn = On.class.getName().equals(className);
+                    final boolean isOnC = OnClass.class.getName().equals(className);
+                    if (isOn || isOnC) {
                         return new AnnotationVisitor(ASM5, av) {
                             @Override
                             public AnnotationVisitor visitArray(String name) {
@@ -100,7 +103,11 @@ public class SimpleEventListenerByteCodeScanner extends AppByteCodeScannerBase {
                                         @Override
                                         public void visit(String name, Object value) {
                                             super.visit(name, value);
-                                            events.add(S.string(value).intern());
+                                            if (isOn) {
+                                                events.add(S.string(value).intern());
+                                            } else {
+                                                events.add(value);
+                                            }
                                         }
                                     };
                                 } else {
