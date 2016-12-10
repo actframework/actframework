@@ -10,6 +10,7 @@ import org.junit.Test;
 import org.mockito.Mockito;
 import org.osgl.http.H;
 import org.osgl.mvc.result.NotFound;
+import org.osgl.util.C;
 
 import java.io.File;
 import java.util.Map;
@@ -157,6 +158,20 @@ public class RouterTest extends RouterTestBase {
     public void itShallNotAllowAddingHandlersToSameRouteEndingWithDynamicPart() {
         router.addMapping(GET, "/foo/{id}", "Controller.foo", RouteSource.ACTION_ANNOTATION);
         router.addMapping(GET, "/foo/{id}", "Foo.bar", RouteSource.ACTION_ANNOTATION);
+    }
+
+    @Test
+    public void testReverseRoute() {
+        router.addMapping(GET, "/foo/bar", "Foo.bar");
+        eq(router.reverseRoute("Foo.bar"), "/foo/bar");
+        eq(router.reverseRoute("Foo.bar", C.<String, Object>map("foo", "bar")), "/foo/bar?foo=bar");
+    }
+
+    @Test
+    public void testReverseRouteWithPathVar() {
+        router.addMapping(GET, "/foo/{fooId}/bar/{barId}", "Foo.bar");
+        eq(router.reverseRoute("Foo.bar"), "/foo/{fooId}/bar/{barId}");
+        eq(router.reverseRoute("Foo.bar", C.<String, Object>map("fooId", 1, "barId", 3)), "/foo/1/bar/3");
     }
 
 }

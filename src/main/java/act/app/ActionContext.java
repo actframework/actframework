@@ -47,7 +47,6 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
     public static final String ATTR_CURRENT_FILE_INDEX = "__file_id__";
     public static final String REQ_BODY = "_body";
 
-    private String portId;
     private H.Request request;
     private H.Response response;
     private H.Session session;
@@ -125,7 +124,6 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
 
     public ActionContext router(Router router) {
         this.router = $.notNull(router);
-        this.portId = router.portId();
         return this;
     }
 
@@ -171,8 +169,10 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
     }
 
     public String portId() {
-        return portId;
+        return router().portId();
     }
+
+    public int port() {return router().port(); }
 
     public UserAgent userAgent() {
         if (null == ua) {

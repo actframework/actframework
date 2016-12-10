@@ -28,7 +28,6 @@ import static org.rythmengine.conf.RythmConfigurationKey.*;
 /**
  * Implement a view with Rythm Template Engine
  */
-@ActComponent
 public class RythmView extends View {
 
     public static final String ID = "rythm";
@@ -138,6 +137,10 @@ public class RythmView extends View {
 
         RythmEngine engine = new RythmEngine(p);
         engine.resourceManager().addResourceLoader(new ClasspathResourceLoader(engine, "rythm"));
+
+        Tags tags = app.getInstance(Tags.class);
+        tags.register(engine);
+
         return engine;
     }
 

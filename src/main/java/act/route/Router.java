@@ -31,6 +31,7 @@ import java.io.File;
 import java.io.PrintStream;
 import java.io.Serializable;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
 import java.util.*;
 import java.util.regex.Pattern;
 
@@ -56,6 +57,7 @@ public class Router extends AppServiceBase<Router> {
     private Set<String> actionNames = new HashSet<>();
     private AppConfig appConfig;
     private String portId;
+    private int port;
     private OptionsInfoBase optionHandlerFactory;
 
     private void initControllerLookup(RequestHandlerResolver lookup) {
@@ -88,6 +90,11 @@ public class Router extends AppServiceBase<Router> {
         initControllerLookup(handlerLookup);
         this.appConfig = app.config();
         this.portId = portId;
+        if (S.notBlank(portId)) {
+            this.port = appConfig.namedPort(portId).port();
+        } else {
+            this.port = appConfig.httpSecure() ? appConfig.httpExternalSecurePort() : appConfig.httpExternalPort();
+        }
         this.optionHandlerFactory = new OptionsInfoBase(this);
     }
 
@@ -104,6 +111,10 @@ public class Router extends AppServiceBase<Router> {
 
     public String portId() {
         return portId;
+    }
+
+    public int port() {
+        return port;
     }
 
     // --- routing ---
@@ -221,15 +232,8 @@ public class Router extends AppServiceBase<Router> {
 
     public void addMapping(H.Method method, CharSequence path, RequestHandler handler, RouteSource source) {
         Node node = _locate(method, path);
-        if (handler instanceof RequestHandlerInfo) {
-            RequestHandlerInfo info = (RequestHandlerInfo) handler;
-            CharSequence action = info.action;
-            Node root = root(method);
-            root.reverseRoutes.put(action.toString(), path.toString());
-            handler = info.theHandler();
-        }
         if (null == node.handler) {
-            logger.debug(routeInfo(method, path, handler));
+            handler = prepareReverseRoutes(handler, node);
             node.handler(handler, source);
         } else {
             RouteSource existing = node.routeSource();
@@ -241,6 +245,7 @@ public class Router extends AppServiceBase<Router> {
                             routeInfo(method, path, handler)
                     );
                 case OVERWRITE:
+                    handler = prepareReverseRoutes(handler, node);
                     node.handler(handler, source);
                 case SKIP:
                     break;
@@ -255,9 +260,28 @@ public class Router extends AppServiceBase<Router> {
         }
     }
 
+    private RequestHandler prepareReverseRoutes(RequestHandler handler, Node node) {
+        if (handler instanceof RequestHandlerInfo) {
+            RequestHandlerInfo info = (RequestHandlerInfo) handler;
+            CharSequence action = info.action;
+            Node root = node.root;
+            root.reverseRoutes.put(action.toString(), node);
+            handler = info.theHandler();
+        }
+        return handler;
+    }
+
+    public String reverseRoute(String action, boolean fullUrl) {
+        return reverseRoute(action, C.<String, Object>map(), fullUrl);
+    }
+
     public String reverseRoute(String action) {
+        return reverseRoute(action, C.<String, Object>map());
+    }
+
+    public String reverseRoute(String action, Map<String, Object> args) {
         for (H.Method m : supportedHttpMethods()) {
-            String url = reverseRoute(action, m);
+            String url = reverseRoute(action, m, args);
             if (null != url) {
                 return url;
             }
@@ -265,22 +289,57 @@ public class Router extends AppServiceBase<Router> {
         return null;
     }
 
-    public String reverseRoute(String action, H.Method method) {
-        throw E.tbd();
-//        Node node = root(method);
-//        return node.reverseRoutes.get(action);
-    }
-
-    public String reverseFullUrl(String action) {
-        String url = reverseRoute(action);
-        if (null == url) {
+    public String reverseRoute(String action, Map<String, Object> args, boolean fullUrl) {
+        String path = reverseRoute(action, args);
+        if (null == path) {
             return null;
         }
-        StringBuilder sb = S.builder(urlBase());
-        if (!url.startsWith("/")) {
-            sb.append("/");
+        return fullUrl ? fullUrl(path) : path;
+    }
+
+    public String reverseRoute(String action, H.Method method, Map<String, Object> args) {
+        Node root = root(method);
+        Node node = root.reverseRoutes.get(action);
+        C.List<String> elements = C.newList();
+        args = new HashMap<>(args);
+        while (root != node) {
+            if (node.isDynamic()) {
+                String s = node.varName.toString();
+                Object v = args.remove(s);
+                if (null != v) {
+                    elements.add(S.string(v));
+                } else {
+                    elements.add(S.builder("{").append(s).append("}").toString());
+                }
+            } else {
+                elements.add(node.name.toString());
+            }
+            node = node.parent;
         }
-        return sb.append(url).toString();
+        StringBuilder sb = S.builder();
+        Iterator<String> itr = elements.reverseIterator();
+        while (itr.hasNext()) {
+            sb.append("/").append(itr.next());
+        }
+        if (method == H.Method.GET && !args.isEmpty()) {
+            boolean first = true;
+            for (Map.Entry<String, Object> entry : args.entrySet()) {
+                Object v = entry.getValue();
+                if (null == v) {
+                    continue;
+                }
+                String k = entry.getKey();
+
+                if (first) {
+                    sb.append("?");
+                    first = false;
+                } else {
+                    sb.append("&");
+                }
+                sb.append(k).append("=").append(Codec.encodeUrl(v.toString()));
+            }
+        }
+        return sb.toString();
     }
 
     public String urlBase() {
@@ -290,10 +349,14 @@ public class Router extends AppServiceBase<Router> {
         }
         AppConfig<?> config = Act.appConfig();
 
-        boolean secure = config.httpSecure();
+        /*
+         * Note we support named port (restricted access) is running in the scope of
+         * the internal network, thus assume we do not have secure http channel on top
+         * of that
+         */
+        boolean secure = null != portId && config.httpSecure();
         String scheme = secure ? "https" : "http";
 
-        int port = null == portId ? config.httpPort() : config.namedPort(portId).port();
         String domain = config.host();
 
         if (80 == port || 443 == port) {
@@ -301,17 +364,6 @@ public class Router extends AppServiceBase<Router> {
         } else {
             return S.fmt("%s://%s:%s", scheme, domain, port);
         }
-    }
-
-    public String fullUrl(String path, String... args) {
-        if (path.startsWith("//") || path.startsWith("http")) {
-            return path;
-        }
-        StringBuilder sb = S.builder(urlBase());
-        if (!path.startsWith("/")) {
-            sb.append("/");
-        }
-        return sb.append(S.fmt(path, args)).toString();
     }
 
     public String urlBase(ActionContext context) {
@@ -324,6 +376,23 @@ public class Router extends AppServiceBase<Router> {
         } else {
             return S.fmt("%s://%s:%s", scheme, domain, port);
         }
+    }
+
+    public String fullUrl(String path, Object... args) {
+        if (path.startsWith("//") || path.startsWith("http")) {
+            return path;
+        }
+        StringBuilder sb = S.builder(urlBase());
+        if (!path.startsWith("/")) {
+            sb.append("/");
+        }
+        return sb.append(S.fmt(path, args)).toString();
+    }
+
+    private static final Method M_FULL_URL = $.getMethod(Router.class, "fullUrl", Object[].class);
+
+    public String _fullUrl(String path, Object[] args) {
+        return $.invokeVirtual(this, M_FULL_URL, args);
     }
 
     boolean isMapped(H.Method method, CharSequence path) {
@@ -580,17 +649,19 @@ public class Router extends AppServiceBase<Router> {
         private StrBase name;
         private Pattern pattern;
         private CharSequence varName;
+        private Node root;
         private Node parent;
         private Node dynamicChild;
         private C.Map<CharSequence, Node> staticChildren = C.newMap();
         private C.Map<UrlPath, Node> dynamicAliases = C.newMap();
         private RequestHandler handler;
         private RouteSource routeSource;
-        private Map<String, String> reverseRoutes = new HashMap<>();
+        private Map<String, Node> reverseRoutes = new HashMap<>();
 
         private Node(int id) {
             this.id = id;
             name = FastStr.EMPTY_STR;
+            root = this;
         }
 
         Node(StrBase name, Node parent) {
@@ -598,6 +669,7 @@ public class Router extends AppServiceBase<Router> {
             this.name = name;
             this.parent = parent;
             this.id = name.hashCode();
+            this.root = parent.root;
             parseDynaName(name);
         }
 
