@@ -3,7 +3,6 @@ package act.db.util;
 import act.cli.Command;
 import act.cli.Required;
 import org.osgl.$;
-import org.osgl.inject.annotation.TypeOf;
 
 import javax.inject.Inject;
 
@@ -29,8 +28,8 @@ public class SequenceNumberGenerator {
 
 
     public static class Provider implements javax.inject.Provider<_SequenceNumberGenerator> {
+
         @Inject
-        @TypeOf
         private java.util.List<_SequenceNumberGenerator> generators;
 
         @Override

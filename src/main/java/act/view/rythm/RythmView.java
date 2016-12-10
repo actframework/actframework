@@ -1,7 +1,6 @@
 package act.view.rythm;
 
 import act.Act;
-import act.ActComponent;
 import act.app.App;
 import act.conf.AppConfig;
 import act.util.ActContext;

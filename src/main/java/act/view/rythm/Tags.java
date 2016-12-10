@@ -18,7 +18,6 @@ import java.util.Map;
 public class Tags {
 
     @Inject
-    @TypeOf
     private List<JavaTagBase> fastTags;
 
     public void register(RythmEngine engine) {
