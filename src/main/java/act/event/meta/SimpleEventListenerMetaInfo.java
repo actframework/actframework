@@ -1,8 +1,18 @@
 package act.event.meta;
 
+import act.Act;
+import act.app.App;
+import act.app.event.AppEventId;
+import act.inject.DependencyInjector;
 import org.osgl.$;
+import org.osgl.http.H;
+import org.osgl.inject.BeanSpec;
 import org.osgl.util.C;
 
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
+import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.List;
 
 public class SimpleEventListenerMetaInfo {
@@ -10,18 +20,33 @@ public class SimpleEventListenerMetaInfo {
     private String className;
     private String methodName;
     private String asyncMethodName;
-    private List<String> paramTypes;
+    private List<BeanSpec> paramTypes;
     private boolean async;
     private boolean isStatic;
 
-    public SimpleEventListenerMetaInfo(List<Object> events, String className, String methodName, String asyncMethodName, List<String> paramTypes, boolean async, boolean isStatic) {
+    public SimpleEventListenerMetaInfo(
+            final List<Object> events,
+            final String className,
+            final String methodName,
+            final String asyncMethodName,
+            final List<String> paramTypes,
+            boolean async,
+            boolean isStatic,
+            App app
+    ) {
         this.events = C.list(events);
         this.className = $.notNull(className);
         this.methodName = $.notNull(methodName);
         this.asyncMethodName = asyncMethodName;
-        this.paramTypes = C.list(paramTypes);
+
         this.async = async;
         this.isStatic = isStatic;
+        app.jobManager().on(AppEventId.DEPENDENCY_INJECTOR_PROVISIONED, new Runnable() {
+            @Override
+            public void run() {
+                SimpleEventListenerMetaInfo.this.paramTypes = convert(paramTypes, className, methodName);
+            }
+        });
     }
 
     public List<?> events() {
@@ -40,7 +65,7 @@ public class SimpleEventListenerMetaInfo {
         return asyncMethodName;
     }
 
-    public List<String> paramTypes() {
+    public List<BeanSpec> paramTypes() {
         return paramTypes;
     }
 
@@ -50,5 +75,29 @@ public class SimpleEventListenerMetaInfo {
 
     public boolean isStatic() {
         return isStatic;
+    }
+
+    private List<BeanSpec> convert(List<String> paramTypes, String className, String methodName) {
+        int sz = paramTypes.size();
+        if (0 == sz) {
+            return C.list();
+        }
+        App app = Act.app();
+        ClassLoader cl = app.classLoader();
+        Class c = $.classForName(className, cl);
+        Class[] paramClasses = new Class[sz];
+        int i = 0;
+        for (String s : paramTypes) {
+            paramClasses[i++] = $.classForName(s, cl);
+        }
+        Method method = $.getMethod(c, methodName, paramClasses);
+        List<BeanSpec> retVal = new ArrayList<>(sz);
+        Type[] types = method.getGenericParameterTypes();
+        Annotation[][] annotations = method.getParameterAnnotations();
+        DependencyInjector injector = app.injector();
+        for (i = 0; i < types.length; ++i) {
+            retVal.add(BeanSpec.of(types[i], annotations[i], null, injector));
+        }
+        return C.list(retVal);
     }
 }

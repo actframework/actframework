@@ -2,6 +2,7 @@ package act.event.bytecode;
 
 import act.ActComponent;
 import act.app.AppByteCodeScannerBase;
+import act.app.event.AppEventId;
 import act.asm.AnnotationVisitor;
 import act.asm.MethodVisitor;
 import act.asm.Type;
@@ -9,6 +10,7 @@ import act.event.EventBus;
 import act.event.On;
 import act.event.OnClass;
 import act.event.meta.SimpleEventListenerMetaInfo;
+import act.job.AppJobManager;
 import act.util.AsmTypes;
 import act.util.Async;
 import act.util.ByteCodeVisitor;
@@ -41,15 +43,21 @@ public class SimpleEventListenerByteCodeScanner extends AppByteCodeScannerBase {
     @Override
     public void scanFinished(String className) {
         if (!metaInfoList.isEmpty()) {
-            EventBus eventBus = app().eventBus();
-            for (SimpleEventListenerMetaInfo metaInfo : metaInfoList) {
-                for (Object event : metaInfo.events()) {
-                    boolean isStatic = metaInfo.isStatic();
-                    if (metaInfo.isAsync()) {
-                        eventBus.bindAsync(event, new ReflectedSimpleEventListener(metaInfo.className(), metaInfo.methodName(), metaInfo.paramTypes(), isStatic));
-                    } else {
-                        eventBus.bind(event, new ReflectedSimpleEventListener(metaInfo.className(), metaInfo.methodName(), metaInfo.paramTypes(), isStatic));
-                    }
+            final EventBus eventBus = app().eventBus();
+            AppJobManager jobManager = app().jobManager();
+            for (final SimpleEventListenerMetaInfo metaInfo : metaInfoList) {
+                for (final Object event : metaInfo.events()) {
+                    final boolean isStatic = metaInfo.isStatic();
+                    jobManager.on(AppEventId.PRE_START, new Runnable() {
+                        @Override
+                        public void run() {
+                            if (metaInfo.isAsync()) {
+                                eventBus.bindAsync(event, new ReflectedSimpleEventListener(metaInfo.className(), metaInfo.methodName(), metaInfo.paramTypes(), isStatic));
+                            } else {
+                                eventBus.bind(event, new ReflectedSimpleEventListener(metaInfo.className(), metaInfo.methodName(), metaInfo.paramTypes(), isStatic));
+                            }
+                        }
+                    });
                 }
             }
         }
@@ -167,7 +175,7 @@ public class SimpleEventListenerByteCodeScanner extends AppByteCodeScannerBase {
                 @Override
                 public void visitEnd() {
                     if (!events.isEmpty()) {
-                        SimpleEventListenerMetaInfo metaInfo = new SimpleEventListenerMetaInfo(events, className, methodName, asyncMethodName, paramTypes, isAsync, isStatic);
+                        SimpleEventListenerMetaInfo metaInfo = new SimpleEventListenerMetaInfo(events, className, methodName, asyncMethodName, paramTypes, isAsync, isStatic, app());
                         metaInfoList.add(metaInfo);
                     }
                     super.visitEnd();
