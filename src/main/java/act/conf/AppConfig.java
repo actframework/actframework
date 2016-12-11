@@ -1169,8 +1169,8 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
 
     public boolean httpExternal() {
         if (null == httpExternal) {
-            String s = get(HTTP_EXTERNAL_SERVER);
-            httpExternal = S.blank(s) ? Act.mode().isProd() : Boolean.parseBoolean(s);
+            Boolean b = get(HTTP_EXTERNAL_SERVER);
+            httpExternal = null == b ? Act.mode().isProd() : b;
         }
         return httpExternal;
     }
