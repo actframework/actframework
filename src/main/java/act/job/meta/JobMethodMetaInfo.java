@@ -1,18 +1,24 @@
 package act.job.meta;
 
+import act.Act;
 import act.app.App;
+import act.app.event.AppEventId;
 import act.asm.Type;
 import act.controller.meta.HandlerParamMetaInfo;
+import act.event.meta.SimpleEventListenerMetaInfo;
 import act.sys.meta.InvokeType;
 import act.sys.meta.ReturnTypeInfo;
 import act.util.ClassNode;
 import act.util.DestroyableBase;
 import org.osgl.$;
 import org.osgl.Osgl;
+import org.osgl.inject.BeanSpec;
 import org.osgl.util.C;
 import org.osgl.util.E;
 import org.osgl.util.S;
 
+import javax.enterprise.inject.spi.Bean;
+import java.lang.reflect.Method;
 import java.util.List;
 
 public class JobMethodMetaInfo extends DestroyableBase {
@@ -21,10 +27,26 @@ public class JobMethodMetaInfo extends DestroyableBase {
     private InvokeType invokeType;
     private JobClassMetaInfo clsInfo;
     private ReturnTypeInfo returnType = new ReturnTypeInfo();
-    private C.List<HandlerParamMetaInfo> params = C.newList();
+    private List<BeanSpec> paramTypes;
+    private Method method;
 
-    public JobMethodMetaInfo(JobClassMetaInfo clsInfo) {
+    public JobMethodMetaInfo(final JobClassMetaInfo clsInfo, final List<String> paramTypes) {
         this.clsInfo = clsInfo;
+        final App app = Act.app();
+        app.jobManager().on(AppEventId.DEPENDENCY_INJECTOR_PROVISIONED, new Runnable() {
+            @Override
+            public void run() {
+                $.Var<Method> var = $.var();
+                JobMethodMetaInfo.this.paramTypes = SimpleEventListenerMetaInfo.convert(paramTypes, clsInfo.className(), name, var);
+                JobMethodMetaInfo.this.method = var.get();
+
+            }
+        });
+    }
+
+    private JobMethodMetaInfo(final JobClassMetaInfo clsInfo, JobMethodMetaInfo parent) {
+        this.clsInfo = clsInfo;
+        this.paramTypes = parent.paramTypes;
     }
 
     @Override
@@ -59,6 +81,10 @@ public class JobMethodMetaInfo extends DestroyableBase {
         return S.blank(id) ? fullName() : id;
     }
 
+    public Method method() {
+        return method;
+    }
+
     public JobMethodMetaInfo invokeStaticMethod() {
         invokeType = InvokeType.STATIC;
         return this;
@@ -80,6 +106,10 @@ public class JobMethodMetaInfo extends DestroyableBase {
 
     public Type returnType() {
         return returnType.type();
+    }
+
+    public List<BeanSpec> paramTypes() {
+        return paramTypes;
     }
 
     @Override
@@ -123,7 +153,7 @@ public class JobMethodMetaInfo extends DestroyableBase {
             public void visit(ClassNode classNode) throws Osgl.Break {
                 if (!classNode.isAbstract() && classNode.isPublic()) {
                     JobClassMetaInfo subClsInfo = new JobClassMetaInfo().className(classNode.name());
-                    JobMethodMetaInfo subMethodInfo = new JobMethodMetaInfo(subClsInfo);
+                    JobMethodMetaInfo subMethodInfo = new JobMethodMetaInfo(subClsInfo, JobMethodMetaInfo.this);
                     if (me.isStatic()) {
                         subMethodInfo.invokeStaticMethod();
                     } else {

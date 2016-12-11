@@ -16,10 +16,12 @@ import act.sys.meta.EnvAnnotationVisitor;
 import act.util.AsmTypes;
 import act.util.ByteCodeVisitor;
 import org.osgl.$;
+import org.osgl.util.C;
 import org.osgl.util.E;
 import org.osgl.util.S;
 
 import java.lang.annotation.Annotation;
+import java.util.List;
 
 /**
  * Scan class to collect Job class meta info
@@ -97,11 +99,19 @@ public class JobByteCodeScanner extends AppByteCodeScannerBase {
             private JobMethodMetaInfo methodInfo;
             private ActionAnnotationVisitor aav;
             private EnvAnnotationVisitor eav;
+            private List<String> paramTypes;
 
             JobMethodVisitor(MethodVisitor mv, int access, String methodName, String desc, String signature, String[] exceptions) {
                 super(ASM5, mv);
                 this.access = access;
                 this.methodName = methodName;
+                Type[] arguments = Type.getArgumentTypes(desc);
+                paramTypes = C.newList();
+                if (null != arguments) {
+                    for (Type type : arguments) {
+                        paramTypes.add(type.getClassName());
+                    }
+                }
             }
 
             @SuppressWarnings("unchecked")
@@ -114,7 +124,7 @@ public class JobByteCodeScanner extends AppByteCodeScannerBase {
                     Class<? extends Annotation> c = (Class<? extends Annotation>)Class.forName(className);
                     if (JobClassMetaInfo.isActionAnnotation(c)) {
                         markRequireScan();
-                        JobMethodMetaInfo tmp = new JobMethodMetaInfo(classInfo);
+                        JobMethodMetaInfo tmp = new JobMethodMetaInfo(classInfo, paramTypes);
                         methodInfo = tmp;
                         classInfo.addAction(tmp);
                         this.aav = new ActionAnnotationVisitor(av, c, methodInfo);

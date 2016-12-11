@@ -44,7 +44,7 @@ public class SimpleEventListenerMetaInfo {
         app.jobManager().on(AppEventId.DEPENDENCY_INJECTOR_PROVISIONED, new Runnable() {
             @Override
             public void run() {
-                SimpleEventListenerMetaInfo.this.paramTypes = convert(paramTypes, className, methodName);
+                SimpleEventListenerMetaInfo.this.paramTypes = convert(paramTypes, className, methodName, $.<Method>var());
             }
         });
     }
@@ -77,11 +77,8 @@ public class SimpleEventListenerMetaInfo {
         return isStatic;
     }
 
-    private List<BeanSpec> convert(List<String> paramTypes, String className, String methodName) {
+    public static List<BeanSpec> convert(List<String> paramTypes, String className, String methodName, $.Var<Method> methodHolder) {
         int sz = paramTypes.size();
-        if (0 == sz) {
-            return C.list();
-        }
         App app = Act.app();
         ClassLoader cl = app.classLoader();
         Class c = $.classForName(className, cl);
@@ -91,6 +88,11 @@ public class SimpleEventListenerMetaInfo {
             paramClasses[i++] = $.classForName(s, cl);
         }
         Method method = $.getMethod(c, methodName, paramClasses);
+        method.setAccessible(true);
+        methodHolder.set(method);
+        if (0 == sz) {
+            return C.list();
+        }
         List<BeanSpec> retVal = new ArrayList<>(sz);
         Type[] types = method.getGenericParameterTypes();
         Annotation[][] annotations = method.getParameterAnnotations();

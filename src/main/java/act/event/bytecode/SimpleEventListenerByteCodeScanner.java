@@ -76,11 +76,11 @@ public class SimpleEventListenerByteCodeScanner extends AppByteCodeScannerBase {
         @Override
         public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
             MethodVisitor mv = super.visitMethod(access, name, desc, signature, exceptions);
-            final List<String> paramTypes = C.newList();
             Type returnType = Type.getReturnType(desc);
             final boolean isVoid = "V".equals(returnType.toString());
             final boolean isPublicNotAbstract = AsmTypes.isPublicNotAbstract(access);
             Type[] arguments = Type.getArgumentTypes(desc);
+            final List<String> paramTypes = C.newList();
             if (null != arguments) {
                 for (Type type : arguments) {
                     paramTypes.add(type.getClassName());
