@@ -389,7 +389,7 @@ public class Router extends AppServiceBase<Router> {
         return sb.append(S.fmt(path, args)).toString();
     }
 
-    private static final Method M_FULL_URL = $.getMethod(Router.class, "fullUrl", Object[].class);
+    private static final Method M_FULL_URL = $.getMethod(Router.class, "fullUrl", String.class, Object[].class);
 
     public String _fullUrl(String path, Object[] args) {
         return $.invokeVirtual(this, M_FULL_URL, args);

@@ -573,6 +573,14 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
     }
 
     /**
+     * Update the context session to mark a user logged in
+     * @param username the username
+     */
+    public void login(String username) {
+        session().put(config().sessionKeyUsername(), username);
+    }
+
+    /**
      * Initialize params/renderArgs/attributes and then
      * resolve session and flash from cookies
      */
