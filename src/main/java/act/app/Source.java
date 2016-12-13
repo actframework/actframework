@@ -173,9 +173,9 @@ public class Source {
         return null == className ? null : new Source(file, className);
     }
 
-    public static Source ofClass(File sourceRoot, String className) {
-        File file = Util.sourceFile(sourceRoot, className);
-        if (file.exists() && file.canRead()) {
+    public static Source ofClass(List<File> sourceRoots, String className) {
+        File file = Util.sourceFile(sourceRoots, className);
+        if (null != file) {
             return new Source(file, className);
         }
         return null;
@@ -261,10 +261,16 @@ public class Source {
             return ClassNames.sourceFileNameToClassName(sourceRoot, file.getAbsolutePath());
         }
 
-        public static File sourceFile(File sourceRoot, String className) {
+        public static File sourceFile(List<File> sourceRoots, String className) {
             FastStr s = FastStr.of(className).beforeFirst('$');
             s = s.replace('.', File.separatorChar).append(".java");
-            return new File(sourceRoot, s.toString());
+            for (File sourceRoot : sourceRoots) {
+                File file = new File(sourceRoot, s.toString());
+                if (file.canRead()) {
+                    return file;
+                }
+            }
+            return null;
         }
 
         public static void main(String[] args) throws Exception {

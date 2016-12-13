@@ -81,7 +81,7 @@ public class App extends DestroyableBase {
     private Router router;
     private CliDispatcher cliDispatcher;
     private Map<NamedPort, Router> moreRouters;
-    private AppConfig config;
+    private AppConfig<?> config;
     private AppClassLoader classLoader;
     private ProjectLayout layout;
     private AppBuilder builder;
@@ -108,6 +108,7 @@ public class App extends DestroyableBase {
     private Set<AppEventId> eventEmitted;
     private Thread mainThread;
     private Set<String> scanList;
+    private List<File> baseDirs;
 
     protected App() {
         INST = this;
@@ -167,6 +168,76 @@ public class App extends DestroyableBase {
 
     public AppConfig<?> config() {
         return config;
+    }
+
+    public List<File> baseDirs() {
+        if (null == baseDirs) {
+            baseDirs = C.newList();
+            if (null != appBase && appBase.isDirectory()) {
+                baseDirs.add(appBase);
+            }
+            for (File baseDir: config.moduleBases()) {
+                if (null != baseDir && baseDir.isDirectory()) {
+                    baseDirs.add(baseDir);
+                }
+            }
+        }
+        return baseDirs;
+    }
+
+    public List<File> sourceDirs() {
+        return layoutDirs(ProjectLayout.F.SRC.curry(layout()));
+    }
+
+    public List<File> resourceDirs() {
+        return layoutDirs(ProjectLayout.F.RSRC.curry(layout()));
+    }
+
+    public List<File> libDirs() {
+        return layoutDirs(ProjectLayout.F.LIB.curry(layout()));
+    }
+
+    public List<File> testSourceDirs() {
+        return layoutDirs(ProjectLayout.F.TST_SRC.curry(layout()));
+    }
+
+    public List<File> testResourceDirs() {
+        return layoutDirs(ProjectLayout.F.TST_RSRC.curry(layout()));
+    }
+
+    public List<File> testLibDirs() {
+        return layoutDirs(ProjectLayout.F.TST_LIB.curry(layout()));
+    }
+
+    public List<File> allSourceDirs(boolean requireTestProfile) {
+        List<File> dirs = C.newList();
+        dirs.addAll(sourceDirs());
+        if (!requireTestProfile || "test".equals(Act.profile())) {
+            dirs.addAll(testSourceDirs());
+        }
+        return dirs;
+    }
+
+    public List<File> allResourceDirs (boolean requireTestProfile) {
+        List<File> dirs = C.newList();
+        dirs.addAll(resourceDirs());
+        if (!requireTestProfile || "test".equals(Act.profile())) {
+            dirs.addAll(testResourceDirs());
+        }
+        return dirs;
+    }
+
+    public List<File> allLibDirs(boolean requireTestProfile) {
+        List<File> dirs = C.newList();
+        dirs.addAll(libDirs());
+        if (!requireTestProfile || "test".equals(Act.profile())) {
+            dirs.addAll(testLibDirs());
+        }
+        return dirs;
+    }
+
+    private List<File> layoutDirs($.Function<File, File> transformer) {
+        return C.list(baseDirs()).map(transformer);
     }
 
     public CliDispatcher cliDispatcher() {

@@ -3,6 +3,9 @@ package act.app;
 import act.Act;
 import act.ActComponent;
 import act.route.RouteTableRouterBuilder;
+import org.osgl.$;
+import org.osgl.Osgl;
+import org.osgl.exception.NotAppliedException;
 import org.osgl.util.E;
 
 import java.io.File;
@@ -445,5 +448,46 @@ public interface ProjectLayout {
                 throw E.ioException(e);
             }
         }
+    }
+
+
+    public enum F {
+        ;
+        public static $.F2<File, ProjectLayout, File> SRC = new $.F2<File, ProjectLayout, File>() {
+            @Override
+            public File apply(File base, ProjectLayout layout) throws NotAppliedException, Osgl.Break {
+                return layout.source(base);
+            }
+        };
+        public static $.F2<File, ProjectLayout, File> RSRC = new $.F2<File, ProjectLayout, File>() {
+            @Override
+            public File apply(File base, ProjectLayout layout) throws NotAppliedException, Osgl.Break {
+                return layout.resource(base);
+            }
+        };
+        public static $.F2<File, ProjectLayout, File> LIB = new $.F2<File, ProjectLayout, File>() {
+            @Override
+            public File apply(File base, ProjectLayout layout) throws NotAppliedException, Osgl.Break {
+                return layout.lib(base);
+            }
+        };
+        public static $.F2<File, ProjectLayout, File> TST_SRC = new $.F2<File, ProjectLayout, File>() {
+            @Override
+            public File apply(File base, ProjectLayout layout) throws NotAppliedException, Osgl.Break {
+                return layout.testSource(base);
+            }
+        };
+        public static $.F2<File, ProjectLayout, File> TST_RSRC = new $.F2<File, ProjectLayout, File>() {
+            @Override
+            public File apply(File base, ProjectLayout layout) throws NotAppliedException, Osgl.Break {
+                return layout.testResource(base);
+            }
+        };
+        public static $.F2<File, ProjectLayout, File> TST_LIB = new $.F2<File, ProjectLayout, File>() {
+            @Override
+            public File apply(File base, ProjectLayout layout) throws NotAppliedException, Osgl.Break {
+                return layout.testLib(base);
+            }
+        };
     }
 }

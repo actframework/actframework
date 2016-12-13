@@ -38,6 +38,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.InputStream;
 import java.lang.annotation.Annotation;
+import java.security.ProtectionDomain;
 import java.util.*;
 
 import static act.util.ClassInfoRepository.canonicalName;
@@ -371,6 +372,14 @@ public class AppClassLoader
             }
         }
         return null;
+    }
+
+    public Class<?> defineClass(String name, byte[] b, int off, int len, boolean resolve) {
+        Class<?> c = super.defineClass(name, b, off, len, DOMAIN);
+        if (resolve) {
+            super.resolveClass(c);
+        }
+        return c;
     }
 
     private Class<?> loadAppClass(String name, boolean resolve) throws ClassNotFoundException {

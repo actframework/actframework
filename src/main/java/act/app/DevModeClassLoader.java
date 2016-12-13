@@ -77,9 +77,16 @@ public class DevModeClassLoader extends AppClassLoader {
 
     @Override
     protected byte[] loadAppClassFromDisk(String name) {
-        File srcRoot = app().layout().source(app().base());
-        preloadSource(srcRoot, name);
+        App app = app();
+        List<File> srcRoots = app.sourceDirs();
+        preloadSource(srcRoots, name);
         return bytecodeFromSource(name, true);
+    }
+
+    private void addSourceRoot(List<File> sourceRoots, File base, ProjectLayout layout) {
+        if (null != base && base.isDirectory()) {
+            sourceRoots.add(layout.source(base));
+        }
     }
 
     @Override
@@ -97,30 +104,12 @@ public class DevModeClassLoader extends AppClassLoader {
     }
 
     private void preloadSources() {
-        List<File> baseDirs = C.newList();
-        App app = app();
-        ProjectLayout layout = app.layout();
-        File file = layout.source(app.base());
-        if (file.isDirectory()) {
-            baseDirs.add(file);
-        }
-        for (File base: app().config().moduleBases()) {
-            baseDirs.add(layout.source(base));
-        }
-        if ("test".equals(app().profile())) {
-            file = layout.testSource(app.base());
-            if (file.isDirectory()) {
-                baseDirs.add(file);
-            }
-            for (File base : app().config().moduleBases()) {
-                baseDirs.add(layout.testSource(base));
-            }
-        }
-        for (final File base : baseDirs) {
-            Files.filter(base, JAVA_SOURCE, new $.Visitor<File>() {
+        List<File> sourceRoots = app().allSourceDirs(true);
+        for (final File sourceRoot : sourceRoots) {
+            Files.filter(sourceRoot, JAVA_SOURCE, new $.Visitor<File>() {
                 @Override
                 public void visit(File file) throws $.Break {
-                    Source source = Source.ofFile(base, file);
+                    Source source = Source.ofFile(sourceRoot, file);
                     if (null != source) {
                         if (null == sources) {
                             sources = C.newMap();
@@ -132,7 +121,7 @@ public class DevModeClassLoader extends AppClassLoader {
         }
     }
 
-    private void preloadSource(File sourceRoot, String className) {
+    private void preloadSource(List<File> sourceRoot, String className) {
         if (null != sources) {
             Source source = sources.get(className);
             if (null != source) {

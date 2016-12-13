@@ -1,6 +1,7 @@
 package act.inject.param;
 
 import act.app.App;
+import act.app.AppClassLoader;
 import act.app.AppServiceBase;
 import act.inject.DependencyInjector;
 import org.osgl.$;
@@ -21,12 +22,13 @@ import java.util.concurrent.ConcurrentMap;
 public class JsonDTOClassManager extends AppServiceBase<JsonDTOClassManager> {
 
     static class DynamicClassLoader extends ClassLoader {
-        private DynamicClassLoader(ClassLoader parent) {
+        private DynamicClassLoader(AppClassLoader parent) {
             super(parent);
         }
 
         Class<?> defineClass(String name, byte[] b) {
-            return defineClass(name, b, 0, b.length);
+            AppClassLoader loader = (AppClassLoader) getParent();
+            return loader.defineClass(name, b, 0, b.length, true);
         }
     }
 
