@@ -1,6 +1,5 @@
 package act.conf;
 
-import act.Act;
 import act.util.DestroyableBase;
 import org.osgl.util.C;
 
@@ -117,9 +116,17 @@ public abstract class Config<E extends ConfigKey> extends DestroyableBase {
         key = key.toLowerCase();
         for (Map.Entry<String, Object> entries: raw.entrySet()) {
             if (entries.getKey().toLowerCase().equals(key)) {
-                return (T) entries.getValue();
+                Object o = entries.getValue();
+                if (o instanceof String) {
+                    return (T) AppConfigKey.helper.evaluate(o.toString(), raw);
+                }
+                return (T) o;
             } else if (entries.getKey().replace('_', '.').equals(key.replace('_', '.'))) {
-                return (T) entries.getValue();
+                Object o = entries.getValue();
+                if (o instanceof String) {
+                    return (T) AppConfigKey.helper.evaluate(o.toString(), raw);
+                }
+                return (T) o;
             }
         }
         return null;

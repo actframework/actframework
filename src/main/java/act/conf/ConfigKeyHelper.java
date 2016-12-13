@@ -330,7 +330,7 @@ class ConfigKeyHelper {
     /*
      * Check if v has variable e.g. `${foo.bar` inside and expand it recursively
      */
-    private String evaluate(String s, Map<String, ?> map) {
+    public String evaluate(String s, Map<String, ?> map) {
         int n = 0, n0 = 0, len = s.length();
         StringBuilder sb = new StringBuilder();
         while (n > -1 && n < len) {
