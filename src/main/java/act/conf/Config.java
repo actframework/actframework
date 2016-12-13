@@ -1,5 +1,6 @@
 package act.conf;
 
+import act.Act;
 import act.util.DestroyableBase;
 import org.osgl.util.C;
 
@@ -101,7 +102,7 @@ public abstract class Config<E extends ConfigKey> extends DestroyableBase {
         if (null != rk) {
             return get(rk);
         } else {
-            return (T) raw.get(key);
+            return AppConfigKey.helper.getConfiguration(key, null, raw);
         }
     }
 
