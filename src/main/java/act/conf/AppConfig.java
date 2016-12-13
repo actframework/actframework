@@ -1935,25 +1935,16 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         }
     }
 
-    private List<File> extraSourceDirs;
-    public List<File> extraSourceDirs() {
-        if (null == extraSourceDirs) {
-            String v = get(AppConfigKey.SOURCE_DIR_EXTRA);
-            extraSourceDirs = processExtraSourceDirs(v);
+    private List<File> moduleBases;
+    public List<File> moduleBases() {
+        if (null == moduleBases) {
+            String v = get(AppConfigKey.MODULES);
+            moduleBases = processModules(v);
         }
-        return extraSourceDirs;
+        return moduleBases;
     }
 
-    private List<File> extraTestSourceDirs;
-    public List<File> extraTestSourceDirs() {
-        if (null == extraTestSourceDirs) {
-            String v = get(AppConfigKey.TEST_SOURCE_DIR_EXTRA);
-            extraTestSourceDirs = processExtraSourceDirs(v);
-        }
-        return extraTestSourceDirs;
-    }
-
-    private List<File> processExtraSourceDirs(String v) {
+    private List<File> processModules(String v) {
         if (S.blank(v)) {
             return C.list();
         } else {

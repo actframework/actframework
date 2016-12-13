@@ -16,9 +16,12 @@ import org.osgl.util.C;
 import org.osgl.util.S;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import static act.app.App.F.*;
 
 /**
  * Dev mode application class loader, which is able to
@@ -31,11 +34,7 @@ public class DevModeClassLoader extends AppClassLoader {
     private Map<String, Source> sources = C.newMap();
     private final AppCompiler compiler;
 
-    private FsChangeDetector confChangeDetector;
-    private FsChangeDetector libChangeDetector;
-    private FsChangeDetector resourceChangeDetector;
-    private FsChangeDetector sourceChangeDetector;
-    private List<FsChangeDetector> extraSourceChangeDetector;
+    private List<FsChangeDetector> detectors = new ArrayList<>();
 
     public DevModeClassLoader(App app) {
         super(app);
@@ -100,18 +99,25 @@ public class DevModeClassLoader extends AppClassLoader {
     private void preloadSources() {
         List<File> baseDirs = C.newList();
         App app = app();
-        baseDirs.add(app.layout().source(app.base()));
-        for (File file : app().config().extraSourceDirs()) {
+        ProjectLayout layout = app.layout();
+        File file = layout.source(app.base());
+        if (file.isDirectory()) {
             baseDirs.add(file);
         }
+        for (File base: app().config().moduleBases()) {
+            baseDirs.add(layout.source(base));
+        }
         if ("test".equals(app().profile())) {
-            baseDirs.add(app.layout().testSource(app.base()));
-            for (File file : app().config().extraTestSourceDirs()) {
+            file = layout.testSource(app.base());
+            if (file.isDirectory()) {
                 baseDirs.add(file);
+            }
+            for (File base : app().config().moduleBases()) {
+                baseDirs.add(layout.testSource(base));
             }
         }
         for (final File base : baseDirs) {
-            Files.filter(base, App.F.JAVA_SOURCE, new $.Visitor<File>() {
+            Files.filter(base, JAVA_SOURCE, new $.Visitor<File>() {
                 @Override
                 public void visit(File file) throws $.Break {
                     Source source = Source.ofFile(base, file);
@@ -246,11 +252,7 @@ public class DevModeClassLoader extends AppClassLoader {
 
     @Override
     public void detectChanges() {
-        detectChanges(confChangeDetector);
-        detectChanges(libChangeDetector);
-        detectChanges(resourceChangeDetector);
-        detectChanges(sourceChangeDetector);
-        for (FsChangeDetector detector : extraSourceChangeDetector) {
+        for (FsChangeDetector detector : detectors) {
             detectChanges(detector);
         }
         super.detectChanges();
@@ -265,35 +267,29 @@ public class DevModeClassLoader extends AppClassLoader {
     private void setupFsChangeDetectors() {
         ProjectLayout layout = app().layout();
         File appBase = app().base();
+        List<File> bases = C.newList(appBase);
+        bases.addAll(app().config().moduleBases());
+        boolean isTest = "test".equals(Act.profile());
+        for (File base : bases) {
+            addDetector(layout.source(base), JAVA_SOURCE, sourceChangeListener);
+            addDetector(layout.lib(base), JAR_FILE, libChangeListener);
+            File rsrc = layout.resource(base);
+            addDetector(rsrc, CONF_FILE.or(ROUTES_FILE), confChangeListener);
+            addDetector(rsrc, null, resourceChangeListener);
 
-        File src = layout.source(appBase);
-        if (null != src) {
-            sourceChangeDetector = new FsChangeDetector(src, App.F.JAVA_SOURCE, sourceChangeListener);
-        }
-
-        File lib = layout.lib(appBase);
-        if (null != lib && lib.canRead()) {
-            libChangeDetector = new FsChangeDetector(lib, App.F.JAR_FILE, libChangeListener);
-        }
-
-        File rsrc = layout.resource(appBase);
-        if (null != rsrc && rsrc.canRead()) {
-            confChangeDetector = new FsChangeDetector(rsrc, App.F.CONF_FILE.or(App.F.ROUTES_FILE), confChangeListener);
-            resourceChangeDetector = new FsChangeDetector(rsrc, null, resourceChangeListener);
-        }
-
-        extraSourceChangeDetector = C.newList();
-        for (File file : app().config().extraSourceDirs()) {
-            extraSourceChangeDetector.add(new FsChangeDetector(file, App.F.JAVA_SOURCE, sourceChangeListener));
-        }
-
-        if ("test".equals(Act.profile())) {
-            extraSourceChangeDetector.add(new FsChangeDetector(layout.testSource(appBase), App.F.JAVA_SOURCE, sourceChangeListener));
-            for (File file : app().config().extraTestSourceDirs()) {
-                extraSourceChangeDetector.add(new FsChangeDetector(file, App.F.JAVA_SOURCE, sourceChangeListener));
+            if (isTest) {
+                addDetector(layout.testSource(base), JAVA_SOURCE, sourceChangeListener);
+                addDetector(layout.testLib(base), JAR_FILE, libChangeListener);
+                File testRsrc = layout.testResource(base);
+                addDetector(testRsrc, CONF_FILE.or(ROUTES_FILE), confChangeListener);
+                addDetector(testRsrc, null, resourceChangeListener);
             }
+        }
+    }
 
-            extraSourceChangeDetector.add(new FsChangeDetector(layout.testResource(appBase), null, resourceChangeListener));
+    private void addDetector(File base, $.Predicate<String> predicate, FsEventListener listener) {
+        if (null != base && base.isDirectory()) {
+            detectors.add(new FsChangeDetector(base, predicate, listener));
         }
     }
 

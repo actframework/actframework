@@ -478,6 +478,15 @@ public enum AppConfigKey implements ConfigKey {
     JOB_POOL_SIZE("job.pool.siz"),
 
     /**
+     * {@code act.modules}
+     *
+     * Declare additional app base (for maven modules)
+     *
+     * Default value: `null`
+     */
+    MODULES("modules"),
+
+    /**
      * {@code act.namedPorts} specifies a list of port names this
      * application listen to. These are additional ports other than
      * the default {@link #HTTP_PORT}
@@ -624,20 +633,6 @@ public enum AppConfigKey implements ConfigKey {
      * setting</p>
      */
     SESSION_SECURE("session.secure.enabled"),
-
-    /**
-     * Specify extra source folder. Not used in PROD mode.
-     *
-     * Default value: null
-     */
-    SOURCE_DIR_EXTRA("source.dir.extra"),
-
-    /**
-     * Specify extra test source folder. Not used in PROD mode.
-     *
-     * Default value: null
-     */
-    TEST_SOURCE_DIR_EXTRA("test_source.dir.extra"),
 
     /**
      * {@code source_version} specifies the java version

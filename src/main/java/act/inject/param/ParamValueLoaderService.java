@@ -567,4 +567,8 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
         );
     }
 
+    public static boolean noBindOrProvided(BeanSpec beanSpec, DependencyInjector<?> injector) {
+        return null != beanSpec.getAnnotation(NoBind.class) || provided(beanSpec, injector);
+    }
+
 }

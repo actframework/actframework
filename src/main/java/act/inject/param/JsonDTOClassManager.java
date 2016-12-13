@@ -76,7 +76,7 @@ public class JsonDTOClassManager extends AppServiceBase<JsonDTOClassManager> {
     private void extractBeanSpec(List<BeanSpec> beanSpecs, List<Field> fields) {
         for (Field field : fields) {
             BeanSpec spec = BeanSpec.of(field.getGenericType(), field.getDeclaredAnnotations(), field.getName(), injector);
-            if (!ParamValueLoaderService.provided(spec, injector)) {
+            if (!ParamValueLoaderService.noBindOrProvided(spec, injector)) {
                 beanSpecs.add(spec);
             }
         }
@@ -93,7 +93,7 @@ public class JsonDTOClassManager extends AppServiceBase<JsonDTOClassManager> {
             Type type = paramTypes[i];
             Annotation[] anno = annotations[i];
             BeanSpec spec = BeanSpec.of(type, anno, injector);
-            if (!ParamValueLoaderService.provided(spec, injector)) {
+            if (!ParamValueLoaderService.noBindOrProvided(spec, injector)) {
                 beanSpecs.add(spec);
             }
         }
