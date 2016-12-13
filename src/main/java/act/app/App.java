@@ -165,7 +165,7 @@ public class App extends DestroyableBase {
         return mode().isProd();
     }
 
-    public AppConfig config() {
+    public AppConfig<?> config() {
         return config;
     }
 

@@ -40,6 +40,26 @@ public enum Files {
         }
     }
 
+    public static List<File> filter(List<File> baseDirs, $.F1<String, Boolean> filter) {
+        ListBuilder<File> list = ListBuilder.create(500);
+        filter(baseDirs, filter, C.F.addTo(list));
+        return list.toList();
+    }
+
+    public static void filter(List<File> baseDirs, $.F1<String, Boolean> filter, $.F1<File, ?> visitor) {
+        C.List<File> files = C.newList();
+        for (File baseDir : baseDirs) {
+            files.addAll(C.listOf(baseDir.listFiles()));
+        }
+        for (File file: files) {
+            if (isValidDir(file)) {
+                filter(file, filter, visitor);
+            } else {
+                visitor.apply(file);
+            }
+        }
+    }
+
     private static boolean isValidDir(File file) {
         return file.isDirectory() && !isHiddenDir(file);
     }

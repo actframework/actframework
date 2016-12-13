@@ -5,6 +5,7 @@ import act.Constants;
 import act.app.ActionContext;
 import act.app.App;
 import act.app.AppHolder;
+import act.app.ProjectLayout;
 import act.app.conf.AppConfigurator;
 import act.app.event.AppEventId;
 import act.app.util.NamedPort;
@@ -30,6 +31,7 @@ import org.osgl.util.*;
 
 import javax.inject.Provider;
 import javax.validation.MessageInterpolator;
+import java.io.File;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -701,6 +703,33 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     private void _mergeUrlContext(AppConfig conf) {
         if (null == get(URL_CONTEXT)) {
             urlContext = conf.urlContext;
+        }
+    }
+
+    private String defViewName = null;
+    private View defView = null;
+
+    protected T defaultView(View view) {
+        E.NPE(view);
+        defView = view;
+        return me();
+    }
+
+    public View defaultView() {
+        if (null == defViewName) {
+            defViewName = get(AppConfigKey.VIEW_DEFAULT);
+            if (null == defViewName) {
+                defViewName = "rythm";
+            }
+            defView = Act.viewManager().view(defViewName);
+        }
+        return defView;
+    }
+
+    private void _mergeDefaultView(AppConfig conf) {
+        if (null == get(AppConfigKey.VIEW_DEFAULT)) {
+            defViewName = conf.defViewName;
+            defView = conf.defView;
         }
     }
 
@@ -1673,33 +1702,6 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         }
     }
 
-    private String defViewName = null;
-    private View defView = null;
-
-    protected T defaultView(View view) {
-        E.NPE(view);
-        defView = view;
-        return me();
-    }
-
-    public View defaultView() {
-        if (null == defViewName) {
-            defViewName = get(AppConfigKey.VIEW_DEFAULT);
-            if (null == defViewName) {
-                defViewName = "rythm";
-            }
-            defView = Act.viewManager().view(defViewName);
-        }
-        return defView;
-    }
-
-    private void _mergeDefaultView(AppConfig conf) {
-        if (null == get(AppConfigKey.VIEW_DEFAULT)) {
-            defViewName = conf.defViewName;
-            defView = conf.defView;
-        }
-    }
-
     private boolean pingPathResolved = false;
     private String pingPath = null;
 
@@ -1930,6 +1932,48 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     private void _mergeSecret(AppConfig config) {
         if (null == get(AppConfigKey.SECRET)) {
             secret = config.secret;
+        }
+    }
+
+    private List<File> extraSourceDirs;
+    public List<File> extraSourceDirs() {
+        if (null == extraSourceDirs) {
+            String v = get(AppConfigKey.SOURCE_DIR_EXTRA);
+            extraSourceDirs = processExtraSourceDirs(v);
+        }
+        return extraSourceDirs;
+    }
+
+    private List<File> extraTestSourceDirs;
+    public List<File> extraTestSourceDirs() {
+        if (null == extraTestSourceDirs) {
+            String v = get(AppConfigKey.TEST_SOURCE_DIR_EXTRA);
+            extraTestSourceDirs = processExtraSourceDirs(v);
+        }
+        return extraTestSourceDirs;
+    }
+
+    private List<File> processExtraSourceDirs(String v) {
+        if (S.blank(v)) {
+            return C.list();
+        } else {
+            List<File> files = C.newList();
+            File base = app.base();
+            for (String s: v.trim().split("[;:]+")) {
+                s = s.trim();
+                File file;
+                if (s.startsWith("/") || s.startsWith("\\")) {
+                    file = new File(s);
+                } else {
+                    file = ProjectLayout.Utils.file(base, s);
+                }
+                if (!file.isDirectory()) {
+                    logger.warn("Cannot locate extra source dir: %s", s);
+                } else {
+                    files.add(file);
+                }
+            }
+            return C.list(files);
         }
     }
 

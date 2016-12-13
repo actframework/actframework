@@ -1,5 +1,6 @@
 package act.view.rythm;
 
+import act.Act;
 import act.app.ActionContext;
 import act.route.Router;
 import org.osgl.inject.annotation.TypeOf;
@@ -56,7 +57,7 @@ public class Tags {
             }
 
             ActionContext context = ActionContext.current();
-            Router router = context.router();
+            Router router = null == context ? Act.app().router() : context.router();
 
             if (value.contains("/") && fullUrl) {
                 int n = parameterList.size();

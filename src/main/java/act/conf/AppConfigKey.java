@@ -626,6 +626,20 @@ public enum AppConfigKey implements ConfigKey {
     SESSION_SECURE("session.secure.enabled"),
 
     /**
+     * Specify extra source folder. Not used in PROD mode.
+     *
+     * Default value: null
+     */
+    SOURCE_DIR_EXTRA("source.dir.extra"),
+
+    /**
+     * Specify extra test source folder. Not used in PROD mode.
+     *
+     * Default value: null
+     */
+    TEST_SOURCE_DIR_EXTRA("test_source.dir.extra"),
+
+    /**
      * {@code source_version} specifies the java version
      * of the src code. This configuration is used only
      * in dev mode.
