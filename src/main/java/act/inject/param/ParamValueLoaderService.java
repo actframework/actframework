@@ -65,6 +65,8 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
             return context.attribute(ActionContext.ATTR_EXCEPTION);
         }
     };
+    // contains field names that should be waived when looking for value loader
+    private static final Set<String> fieldBlackList = new HashSet<>();
 
     StringValueResolverManager resolverManager;
     BinderManager binderManager;
@@ -165,7 +167,7 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
         if (null == fieldLoaders) {
             fieldLoaders = new HashMap<Field, ParamValueLoader>();
             for (Field field: $.fieldsOf(beanClass, true)) {
-                if (field.isAnnotationPresent(NoBind.class)) {
+                if (field.isAnnotationPresent(NoBind.class) || fieldBlackList.contains(field.getName())) {
                     continue;
                 }
                 Type type = field.getGenericType();
@@ -439,7 +441,7 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
         List<FieldLoader> fieldLoaders = C.newList();
         while (null != current && !current.equals(Object.class)) {
             for (Field field : current.getDeclaredFields()) {
-                if (Modifier.isStatic(field.getModifiers()) || field.isAnnotationPresent(NoBind.class)) {
+                if (Modifier.isStatic(field.getModifiers()) || fieldBlackList.contains(field.getName()) || field.isAnnotationPresent(NoBind.class) || field.getDeclaringClass() == Object.class) {
                     continue;
                 }
                 field.setAccessible(true);
@@ -523,6 +525,10 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
         return null != filter(annotations, SessionScoped.class)
                 || null != filter(annotations, org.osgl.inject.annotation.SessionScoped.class)
                 || null != filter(annotations, SessionVariable.class);
+    }
+
+    public static void waiveFields(String... fieldNames) {
+        fieldBlackList.addAll(C.listOf(fieldNames));
     }
 
     public static String bindName(Annotation[] annotations, String defVal) {
