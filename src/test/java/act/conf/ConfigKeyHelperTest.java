@@ -11,6 +11,8 @@ import org.osgl.util.C;
 import org.osgl.util.E;
 import org.osgl.util.S;
 
+import java.util.Map;
+
 public class ConfigKeyHelperTest extends TestBase {
 
     ConfigKeyHelper helper = new ConfigKeyHelper(new $.F0<Act.Mode>() {
@@ -24,7 +26,8 @@ public class ConfigKeyHelperTest extends TestBase {
 
     @Before
     public void prepare() {
-        conf = C.newMap();
+        conf = C.newMap((Map)System.getProperties());
+        conf.putAll(System.getenv());
     }
 
     @Test
@@ -84,6 +87,14 @@ public class ConfigKeyHelperTest extends TestBase {
     public void fetchFromSysEnv() {
         put(FakedConfigKey.PATH, "${PATH}");
         eq(System.getenv("PATH"), helper.getConfiguration(FakedConfigKey.PATH, conf));
+    }
+
+    @Test
+    public void testVariableEvaluaation() {
+        put("foo.bar", "123");
+        put("xyz", "aaa");
+        put("p1", "abc${foo.bar}/xyz/${xyz}/ddd");
+        eq("abc123/xyz/aaa/ddd", helper.getConfiguration("p1", null, conf));
     }
 
     @Test

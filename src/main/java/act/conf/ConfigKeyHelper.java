@@ -7,6 +7,7 @@ import org.osgl.exception.NotAppliedException;
 import org.osgl.logging.L;
 import org.osgl.logging.Logger;
 import org.osgl.util.C;
+import org.osgl.util.E;
 import org.osgl.util.FastStr;
 import org.osgl.util.S;
 
@@ -319,21 +320,50 @@ class ConfigKeyHelper {
                 v = configuration.get(k0);
                 if (null != v) break;
             }
-        } else if (v instanceof String) {
-            String vs = v.toString();
-            if (vs.startsWith("$")) {
-                FastStr s = FastStr.of(v.toString());
-                String k = s.afterFirst("{").beforeFirst("}").toString();
-                String nv = System.getProperty(k);
-                if (null == nv) {
-                    nv = System.getenv(k);
-                }
-                if (null != nv) {
-                    v = nv;
-                }
-            }
+        }
+        if (null != v && v instanceof String) {
+            v = evaluate((String) v, configuration);
         }
         return v;
+    }
+
+    /*
+     * Check if v has variable e.g. `${foo.bar` inside and expand it recursively
+     */
+    private String evaluate(String s, Map<String, ?> map) {
+        int n = 0, n0 = 0, len = s.length();
+        StringBuilder sb = new StringBuilder();
+        while (n > -1 && n < len) {
+            n = s.indexOf("${", n);
+            if (n < 0) {
+                if (n0 == 0) {
+                    return s;
+                }
+                sb.append(s.substring(n0, len));
+                break;
+            }
+            sb.append(s.substring(n0, n));
+            // now search for "}"
+            n += 2;
+            n0 = n;
+            n = s.indexOf("}", n0 + 1);
+            if (n < 0) {
+                logger.warn("Invalid expression found in the configuration value: %s", s);
+                return s;
+            }
+            String expression = s.substring(n0, n);
+            if (S.notBlank(expression)) {
+                Object o = getConfiguration(expression, null, map);
+                if (null != o) {
+                    sb.append(o);
+                } else {
+                    logger.warn("Cannot find expression value for: %s", expression);
+                }
+            }
+            n += 1;
+            n0 = n;
+        }
+        return sb.toString();
     }
 
     private Object getValFromAliasesWithModelPrefix(Map<String, ?> configuration, String key, String suffix) {
@@ -350,7 +380,9 @@ class ConfigKeyHelper {
             return v;
         }
         // still not found, load default value
-        v = defVal.apply();
+        if (null != defVal) {
+            v = defVal.apply();
+        }
         return v;
     }
 
