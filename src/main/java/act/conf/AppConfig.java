@@ -215,6 +215,24 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         }
     }
 
+    private Boolean corsOptionCheck;
+    protected T corsOptionCheck(Boolean b) {
+        this.corsOptionCheck = b;
+        return me();
+    }
+    public Boolean corsOptionCheck() {
+        if (null == corsOptionCheck) {
+            Boolean b = get(CORS_CHECK_OPTION_METHOD);
+            corsOptionCheck = null == b ? true : b;
+        }
+        return corsOptionCheck;
+    }
+    private void _mergeCorsOptionCheck(AppConfig conf) {
+        if (null == get(CORS_CHECK_OPTION_METHOD)) {
+            corsOptionCheck = conf.corsOptionCheck;
+        }
+    }
+
     private String corsHeadersAllowed;
 
     protected T corsAllowHeaders(String s) {
@@ -2095,6 +2113,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         _mergeCorsHeadersExpose(conf);
         _mergeCorsHeadersAllowed(conf);
         _mergeCorsMaxAge(conf);
+        _mergeCorsOptionCheck(conf);
         _mergeCliJSONPageSz(conf);
         _mergeCliTablePageSz(conf);
         _mergeCliOverHttp(conf);

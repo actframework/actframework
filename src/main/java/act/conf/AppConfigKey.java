@@ -51,6 +51,15 @@ public enum AppConfigKey implements ConfigKey {
     CORS("cors.enabled"),
 
     /**
+     * `act.cors.option.check` specify whether the framework should
+     * check the current request is an HTTP OPTION method before applying
+     * controller headers or not
+     *
+     * default value: `true`
+     */
+    CORS_CHECK_OPTION_METHOD("cors.option.check.enabled"),
+
+    /**
      * {@code act.cors.origin} specifies `Access-Control-Allow-Origin` header
      * to be output
      *
