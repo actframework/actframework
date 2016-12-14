@@ -5,6 +5,7 @@ import act.app.ActionContext;
 import act.app.App;
 import act.cli.CliContext;
 import act.conf.AppConfig;
+import act.i18n.I18n;
 import act.mail.MailerContext;
 import act.view.Template;
 import org.osgl.$;
@@ -12,11 +13,13 @@ import org.osgl.http.H;
 import org.osgl.mvc.util.ParamValueProvider;
 import org.osgl.util.C;
 import org.osgl.util.E;
+import org.osgl.util.S;
 
 import javax.enterprise.context.RequestScoped;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.ResourceBundle;
 
 import static act.app.App.logger;
 
@@ -136,6 +139,16 @@ public interface ActContext<CTX_TYPE extends ActContext> extends ParamValueProvi
 
         public final Locale locale() {
             return this.locale;
+        }
+
+        public static final String DEF_RESOURCE_BUNDLE_NAME = I18n.DEF_RESOURCE_BUNDLE_NAME;
+
+        public String i18n(String msgId, Object ... args) {
+            return I18n.i18n(locale(), DEF_RESOURCE_BUNDLE_NAME, msgId, args);
+        }
+
+        public String i18n(Class<?> bundleSpec, String msgId, Object... args) {
+            return I18n.i18n(locale(), bundleSpec.getName(), msgId, args);
         }
 
         protected VC_TYPE me() {
