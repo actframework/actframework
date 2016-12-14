@@ -8,6 +8,8 @@ import act.view.ViewManager;
 import org.osgl.$;
 import org.osgl.concurrent.ContextLocal;
 import org.osgl.http.H;
+import org.osgl.logging.LogManager;
+import org.osgl.logging.Logger;
 import org.osgl.storage.ISObject;
 import org.osgl.storage.impl.SObject;
 import org.osgl.util.C;
@@ -22,6 +24,8 @@ import java.util.*;
 import static act.app.App.logger;
 
 public class MailerContext extends ActContext.Base<MailerContext> {
+
+    private static final Logger logger = LogManager.get(MailerContext.class);
 
     private H.Format fmt = H.Format.HTML;
     private InternetAddress from;
@@ -249,6 +253,9 @@ public class MailerContext extends ActContext.Base<MailerContext> {
         try {
             MimeMessage message = createMessage();
             if (!mailerConfig().mock()) {
+                if (logger.isDebugEnabled()) {
+                    logger.debug("Sending email\n%sEnd email\n", debug(message));
+                }
                 Transport.send(message);
             } else {
                 logger.info("Sending email\n%sEnd email\n", debug(message));
