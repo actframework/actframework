@@ -37,7 +37,7 @@ public abstract class ResultEvent extends ActEvent<Result> {
                 @Override
                 public Void apply(Result result, H.Request<?> request, H.Response<?> response) throws NotAppliedException, Osgl.Break {
                     ActionContext context = request.context();
-                    context.applyCorsSpec();
+                    context.applyCorsSpec().applyContentType();
                     context.app().eventBus().trigger(new BeforeResultCommit(result, request, response));
                     return null;
                 }

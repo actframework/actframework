@@ -225,6 +225,7 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
     }
 
     private void onResult(Result result, ActionContext context) {
+
         context.dissolve();
         try {
             if (result instanceof RenderAny) {

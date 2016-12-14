@@ -510,10 +510,6 @@ public @interface Controller {
             return new RenderTemplate();
         }
 
-        private static void setDefaultContextType(H.Request req, H.Response resp) {
-            resp.contentType(req.contentType().contentType());
-        }
-
         public static Result inferResult(Result r, ActionContext actionContext) {
             return r;
         }

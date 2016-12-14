@@ -330,6 +330,17 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
         this.disableCors = true;
     }
 
+    public ActionContext applyContentType() {
+        H.Request req = req();
+        H.Format fmt = req.accept();
+        if (H.Format.UNKNOWN == fmt) {
+            fmt = req.contentType();
+        }
+
+        resp().addHeaderIfNotAdded(H.Header.Names.CONTENT_TYPE, fmt.contentType());
+        return this;
+    }
+
     public ActionContext applyCorsSpec() {
         CORS.Spec spec = handler().corsSpec();
         spec.applyTo(this);

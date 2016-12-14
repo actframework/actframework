@@ -86,6 +86,13 @@ public class NetworkHandler extends DestroyableBase implements  $.Func1<ActionCo
             if (null == ctx.handler()) {
                 ctx.handler(FastRequestHandler.DUMB);
             }
+
+            H.Format fmt = req.accept();
+            if (H.Format.UNKNOWN == fmt) {
+                fmt = req.contentType();
+            }
+
+            ctx.resp().addHeaderIfNotAdded(H.Header.Names.CONTENT_TYPE, fmt.contentType());
             r.apply(req, ctx.resp());
         } catch (Exception t) {
             logger.error(t, "Error handling network request");
