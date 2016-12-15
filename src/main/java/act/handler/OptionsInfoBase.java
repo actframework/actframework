@@ -1,6 +1,7 @@
 package act.handler;
 
 import act.app.ActionContext;
+import act.handler.builtin.AlwaysNotFound;
 import act.handler.builtin.UnknownHttpMethodHandler;
 import act.route.Router;
 import act.security.CORS;
@@ -53,6 +54,9 @@ public class OptionsInfoBase extends DestroyableBase {
             if (corsSpec != CORS.Spec.DUMB) {
                 corsSpecs.add(corsSpec);
             }
+        }
+        if (allowMethods.isEmpty()) {
+            return AlwaysNotFound.INSTANCE;
         }
         CORS.Spec corsSpec = CORS.spec(allowMethods);
         for (CORS.Spec spec : corsSpecs) {
