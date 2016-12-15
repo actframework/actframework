@@ -1,10 +1,15 @@
 package act;
 
+import act.app.App;
+import act.app.event.AppEventId;
 import act.cli.CliContext;
 import act.cli.Command;
 import act.cli.Optional;
 import act.cli.Required;
+import act.handler.builtin.controller.*;
 import act.sys.Env;
+import act.util.AnnotatedClassFinder;
+import act.util.Global;
 import act.util.PropertySpec;
 import org.joda.time.LocalDateTime;
 import org.osgl.$;
@@ -20,6 +25,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Date;
 import java.util.List;
+
+import static act.handler.builtin.controller.RequestHandlerProxy.registerGlobalInterceptor;
 
 @SuppressWarnings("unused")
 public class SysUtilAdmin {
@@ -243,6 +250,7 @@ public class SysUtilAdmin {
         boolean hidden;
         LocalDateTime timestamp;
         boolean isDir;
+
         private FileInfo(File parent, File file) {
             this.isDir = file.isDirectory();
             this.context = null == parent ? "/" : parent.getAbsolutePath();
@@ -276,7 +284,7 @@ public class SysUtilAdmin {
         public int compareTo(FileInfo that) {
             if (this.isDir) {
                 return that.isDir ? this.path.compareTo(that.path) : -1;
-            }  else {
+            } else {
                 return that.isDir ? 1 : this.path.compareTo(that.path);
             }
         }
@@ -318,7 +326,7 @@ public class SysUtilAdmin {
     }
 
     /**
-     *  Guess whether given file is binary. Just checks for anything under 0x09.
+     * Guess whether given file is binary. Just checks for anything under 0x09.
      */
     private static boolean isBinary(InputStream in) {
         try {
@@ -346,4 +354,6 @@ public class SysUtilAdmin {
             throw E.ioException(e);
         }
     }
+
+
 }

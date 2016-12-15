@@ -437,24 +437,22 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
         insertInterceptor(globalExceptionInterceptors, interceptor);
         Collections.sort(globalExceptionInterceptors);
     }
-    
+
     @AnnotatedClassFinder(value = Global.class, callOn = AppEventId.PRE_START)
     public static void registerGlobalInterceptors(Class<?> interceptorClass) {
-        if (ActionHandler.class.isAssignableFrom(interceptorClass)) {
-            App app = Act.app();
-            if (BeforeInterceptor.class.isAssignableFrom(interceptorClass)) {
-                BeforeInterceptor interceptor = (BeforeInterceptor) app.getInstance(interceptorClass);
-                registerGlobalInterceptor(interceptor);
-            } else if (AfterInterceptor.class.isAssignableFrom(interceptorClass)) {
-                AfterInterceptor interceptor = (AfterInterceptor) app.getInstance(interceptorClass);
-                registerGlobalInterceptor(interceptor);
-            } else if (ExceptionInterceptor.class.isAssignableFrom(interceptorClass)) {
-                ExceptionInterceptor interceptor = (ExceptionInterceptor) app.getInstance(interceptorClass);
-                registerGlobalInterceptor(interceptor);
-            } else if (FinallyInterceptor.class.isAssignableFrom(interceptorClass)) {
-                FinallyInterceptor interceptor = (FinallyInterceptor) app.getInstance(interceptorClass);
-                registerGlobalInterceptor(interceptor);
-            }
+        App app = Act.app();
+        if (BeforeInterceptor.class.isAssignableFrom(interceptorClass)) {
+            BeforeInterceptor interceptor = (BeforeInterceptor) app.getInstance(interceptorClass);
+            registerGlobalInterceptor(interceptor);
+        } else if (AfterInterceptor.class.isAssignableFrom(interceptorClass)) {
+            AfterInterceptor interceptor = (AfterInterceptor) app.getInstance(interceptorClass);
+            registerGlobalInterceptor(interceptor);
+        } else if (ExceptionInterceptor.class.isAssignableFrom(interceptorClass)) {
+            ExceptionInterceptor interceptor = (ExceptionInterceptor) app.getInstance(interceptorClass);
+            registerGlobalInterceptor(interceptor);
+        } else if (FinallyInterceptor.class.isAssignableFrom(interceptorClass)) {
+            FinallyInterceptor interceptor = (FinallyInterceptor) app.getInstance(interceptorClass);
+            registerGlobalInterceptor(interceptor);
         }
     }
 
