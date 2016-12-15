@@ -5,6 +5,7 @@ import act.Destroyable;
 import act.app.ActionContext;
 import act.app.App;
 import act.app.AppInterceptorManager;
+import act.app.event.AppEventId;
 import act.controller.meta.ActionMethodMetaInfo;
 import act.controller.meta.CatchMethodMetaInfo;
 import act.controller.meta.ControllerClassMetaInfo;
@@ -12,10 +13,13 @@ import act.controller.meta.InterceptorMethodMetaInfo;
 import act.handler.RequestHandlerBase;
 import act.security.CORS;
 import act.security.CSRF;
+import act.util.AnnotatedClassFinder;
+import act.util.Global;
 import act.view.ActServerError;
 import act.view.RenderAny;
 import org.osgl.cache.CacheService;
 import org.osgl.http.H;
+import org.osgl.inject.annotation.AnnotatedWith;
 import org.osgl.logging.L;
 import org.osgl.logging.Logger;
 import org.osgl.mvc.result.NoResult;
@@ -432,6 +436,26 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
     public static void registerGlobalInterceptor(ExceptionInterceptor interceptor) {
         insertInterceptor(globalExceptionInterceptors, interceptor);
         Collections.sort(globalExceptionInterceptors);
+    }
+    
+    @AnnotatedClassFinder(value = Global.class, callOn = AppEventId.PRE_START)
+    public static void registerGlobalInterceptors(Class<?> interceptorClass) {
+        if (ActionHandler.class.isAssignableFrom(interceptorClass)) {
+            App app = Act.app();
+            if (BeforeInterceptor.class.isAssignableFrom(interceptorClass)) {
+                BeforeInterceptor interceptor = (BeforeInterceptor) app.getInstance(interceptorClass);
+                registerGlobalInterceptor(interceptor);
+            } else if (AfterInterceptor.class.isAssignableFrom(interceptorClass)) {
+                AfterInterceptor interceptor = (AfterInterceptor) app.getInstance(interceptorClass);
+                registerGlobalInterceptor(interceptor);
+            } else if (ExceptionInterceptor.class.isAssignableFrom(interceptorClass)) {
+                ExceptionInterceptor interceptor = (ExceptionInterceptor) app.getInstance(interceptorClass);
+                registerGlobalInterceptor(interceptor);
+            } else if (FinallyInterceptor.class.isAssignableFrom(interceptorClass)) {
+                FinallyInterceptor interceptor = (FinallyInterceptor) app.getInstance(interceptorClass);
+                registerGlobalInterceptor(interceptor);
+            }
+        }
     }
 
     public static <T extends Handler> void insertInterceptor(C.List<T> list, T i) {

@@ -43,6 +43,9 @@ public abstract class ExceptionInterceptor
 
     @Override
     public Result handle(Exception e, ActionContext actionContext) throws Exception {
+        if (exClasses.isEmpty()) {
+            return internalHandle(e, actionContext);
+        }
         for (Class<? extends Exception> c : exClasses) {
             if (c.isInstance(e)) {
                 return internalHandle(e, actionContext);
