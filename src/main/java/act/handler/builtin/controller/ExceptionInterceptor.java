@@ -25,13 +25,12 @@ public abstract class ExceptionInterceptor
         this(priority, new Class[]{});
     }
 
-    public ExceptionInterceptor(Class<? extends Exception> ... exClasses) {
+    public ExceptionInterceptor(Class<? extends Exception>... exClasses) {
         this(0, exClasses);
     }
 
-    public ExceptionInterceptor(int priority, Class<? extends Exception> ... exClasses) {
+    public ExceptionInterceptor(int priority, Class<? extends Exception>... exClasses) {
         super(priority);
-        E.illegalArgumentIf(exClasses.length == 0);
         this.exClasses = C.listOf(exClasses).sorted(EXCEPTION_WEIGHT_COMPARATOR);
     }
 
