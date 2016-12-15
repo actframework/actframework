@@ -151,6 +151,14 @@ public interface ActContext<CTX_TYPE extends ActContext> extends ParamValueProvi
             return I18n.i18n(locale(), bundleSpec.getName(), msgId, args);
         }
 
+        public String i18n(Enum<?> msgId, Object ... args) {
+            return I18n.i18n(locale(), DEF_RESOURCE_BUNDLE_NAME, msgId, args);
+        }
+
+        public String i18n(Class<?> bundleSpec, Enum<?> msgId, Object... args) {
+            return I18n.i18n(locale(), bundleSpec.getName(), msgId, args);
+        }
+
         protected VC_TYPE me() {
             return (VC_TYPE) this;
         }

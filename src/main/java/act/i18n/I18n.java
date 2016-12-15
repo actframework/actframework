@@ -37,4 +37,17 @@ public class I18n {
         return msg;
     }
 
+    public static String i18n(Enum<?> msgId, Object ... args) {
+        return i18n(Act.appConfig().locale(), DEF_RESOURCE_BUNDLE_NAME, msgId, args);
+    }
+
+    public static String i18n(Class<?> bundleSpec, Enum<?> msgId, Object... args) {
+        return i18n(Act.appConfig().locale(), bundleSpec.getName(), bundleSpec.getName(), msgId, args);
+    }
+
+    public static String i18n(Locale locale, String bundleName, Enum<?> msgId, Object... args) {
+        String key = S.builder("enum.").append(msgId.getClass().getSimpleName().toLowerCase()).append(".").append(msgId.name().toLowerCase()).toString();
+        return i18n(locale, bundleName, key, args);
+    }
+
 }
