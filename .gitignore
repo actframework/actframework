@@ -14,3 +14,5 @@ classes
 *.iml
 deploy
 **/.act*
+git.log
+
