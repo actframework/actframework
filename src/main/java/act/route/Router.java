@@ -119,13 +119,13 @@ public class Router extends AppServiceBase<Router> {
 
     // --- routing ---
     public RequestHandler getInvoker(H.Method method, CharSequence path, ActionContext context) {
+        context.router(this);
         if (method == H.Method.OPTIONS) {
             return optionHandlerFactory.optionHandler(path, context);
         }
         if (Arrays.binarySearch(targetMethods, method) < 0) {
             return UnknownHttpMethodHandler.INSTANCE;
         }
-        context.router(this);
         Node node = search(method, Path.tokenizer(Unsafe.bufOf(path)), context);
         return getInvokerFrom(node);
     }
