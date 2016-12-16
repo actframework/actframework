@@ -156,12 +156,20 @@ public interface ActContext<CTX_TYPE extends ActContext> extends ParamValueProvi
             return I18n.i18n(locale(true), bundleSpec.getName(), msgId, args);
         }
 
-        public String i18n(Enum<?> msgId, Object ... args) {
-            return I18n.i18n(locale(true), DEF_RESOURCE_BUNDLE_NAME, msgId, args);
+        public String i18n(Enum<?> msgId) {
+            return I18n.i18n(locale(true), DEF_RESOURCE_BUNDLE_NAME, msgId);
         }
 
-        public String i18n(Class<?> bundleSpec, Enum<?> msgId, Object... args) {
-            return I18n.i18n(locale(true), bundleSpec.getName(), msgId, args);
+        public String i18n(Class<?> bundleSpec, Enum<?> msgId) {
+            return I18n.i18n(locale(true), bundleSpec.getName(), msgId);
+        }
+
+        public Map<String, String> i18n(Class<? extends Enum> enumClass) {
+            return I18n.i18n(locale(true), enumClass);
+        }
+
+        public Map<String, String> i18n(Class<?> bundleSpec, Class<? extends Enum> enumClass) {
+            return I18n.i18n(locale(true), bundleSpec, enumClass);
         }
 
         protected VC_TYPE me() {
