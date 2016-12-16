@@ -129,6 +129,7 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
             actionHandler.destroy();
             actionHandler = null;
         }
+        releaseGlobalResources();
     }
 
     public static void releaseGlobalResources() {
@@ -140,6 +141,7 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
 
     private static void _releaseResourceCollections(Collection<? extends Destroyable> col) {
         Destroyable.Util.destroyAll(col, null);
+        col.clear();
     }
 
     public String controller() {
