@@ -141,22 +141,27 @@ public interface ActContext<CTX_TYPE extends ActContext> extends ParamValueProvi
             return this.locale;
         }
 
+        public final Locale locale(boolean required) {
+            E.illegalStateIf(null == this.locale, "Locale is null, make sure your `act.i18n` configuration is set to `true`");
+            return this.locale;
+        }
+
         public static final String DEF_RESOURCE_BUNDLE_NAME = I18n.DEF_RESOURCE_BUNDLE_NAME;
 
         public String i18n(String msgId, Object ... args) {
-            return I18n.i18n(locale(), DEF_RESOURCE_BUNDLE_NAME, msgId, args);
+            return I18n.i18n(locale(true), DEF_RESOURCE_BUNDLE_NAME, msgId, args);
         }
 
         public String i18n(Class<?> bundleSpec, String msgId, Object... args) {
-            return I18n.i18n(locale(), bundleSpec.getName(), msgId, args);
+            return I18n.i18n(locale(true), bundleSpec.getName(), msgId, args);
         }
 
         public String i18n(Enum<?> msgId, Object ... args) {
-            return I18n.i18n(locale(), DEF_RESOURCE_BUNDLE_NAME, msgId, args);
+            return I18n.i18n(locale(true), DEF_RESOURCE_BUNDLE_NAME, msgId, args);
         }
 
         public String i18n(Class<?> bundleSpec, Enum<?> msgId, Object... args) {
-            return I18n.i18n(locale(), bundleSpec.getName(), msgId, args);
+            return I18n.i18n(locale(true), bundleSpec.getName(), msgId, args);
         }
 
         protected VC_TYPE me() {
