@@ -46,7 +46,7 @@ public class I18n {
     }
 
     public static String i18n(Locale locale, String bundleName, Enum<?> msgId, Object... args) {
-        String key = S.builder("enum.").append(msgId.getClass().getSimpleName().toLowerCase()).append(".").append(msgId.name().toLowerCase()).toString();
+        String key = S.builder("enum.").append(msgId.getDeclaringClass().getSimpleName().toLowerCase()).append(".").append(msgId.name().toLowerCase()).toString();
         return i18n(locale, bundleName, key, args);
     }
 
