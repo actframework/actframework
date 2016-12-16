@@ -6,6 +6,7 @@ import act.app.ActionContext;
 import act.app.App;
 import act.app.AppInterceptorManager;
 import act.app.event.AppEventId;
+import act.controller.Controller;
 import act.controller.meta.ActionMethodMetaInfo;
 import act.controller.meta.CatchMethodMetaInfo;
 import act.controller.meta.ControllerClassMetaInfo;
@@ -35,6 +36,9 @@ import java.util.Collections;
 import java.util.ListIterator;
 import java.util.Set;
 import java.util.regex.Pattern;
+
+import static act.controller.Controller.Util.JSON_OK;
+import static act.controller.Controller.Util.NO_RESULT;
 
 @ApplicationScoped
 public final class RequestHandlerProxy extends RequestHandlerBase {
@@ -168,7 +172,7 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
                 result = afterResult;
             }
             if (null == result) {
-                result = new NoResult();
+                result = context.acceptJson() ? JSON_OK : NO_RESULT;
             }
             onResult(result, context);
         } catch (Exception e) {

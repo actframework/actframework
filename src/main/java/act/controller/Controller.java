@@ -65,16 +65,18 @@ public @interface Controller {
      */
     class Util {
 
-        private static final Ok OK = Ok.INSTANCE;
-        private static final NotFound NOT_FOUND = NotFound.INSTANCE;
-        private static final Forbidden FORBIDDEN = Forbidden.INSTANCE;
-        private static final BadRequest BAD_REQUEST = BadRequest.INSTANCE;
+        public static final Result NO_RESULT = new NoResult();
+        public static final Ok OK = Ok.INSTANCE;
+        public static final Result JSON_OK = new Result(H.Status.OK, "{}") {};
+        public static final NotFound NOT_FOUND = NotFound.INSTANCE;
+        public static final Forbidden FORBIDDEN = Forbidden.INSTANCE;
+        public static final BadRequest BAD_REQUEST = BadRequest.INSTANCE;
 
         /**
          * Returns an {@link Ok} result
          */
         public static Result ok() {
-            return OK;
+            return ActionContext.current().acceptJson() ? JSON_OK : OK;
         }
 
         /**

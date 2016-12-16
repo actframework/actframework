@@ -1770,6 +1770,32 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         }
     }
 
+    private String sessionCookiePrefix;
+
+    protected T sessionCookiePrefix(String prefix) {
+        prefix = prefix.trim().toLowerCase();
+        E.illegalArgumentIf(prefix.length() == 0, "session cookie prefix cannot be blank");
+        sessionCookiePrefix = prefix;
+        return me();
+    }
+
+    private String sessionCookiePrefix() {
+        if (null == sessionCookiePrefix) {
+            sessionCookiePrefix = get(SESSION_PREFIX);
+            if (null == sessionCookiePrefix) {
+                sessionCookiePrefix = "act";
+            }
+            sessionCookiePrefix = sessionCookiePrefix.trim().toLowerCase();
+        }
+        return sessionCookiePrefix;
+    }
+
+    private void _mergeSessionCookiePrefix(AppConfig config) {
+        if (null == get(SESSION_PREFIX)) {
+            sessionCookiePrefix = config.sessionCookiePrefix;
+        }
+    }
+
     private String sessionCookieName = null;
 
     protected T sessionCookieName(String name) {
@@ -1782,7 +1808,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
 
     public String sessionCookieName() {
         if (null == sessionCookieName) {
-            String sessionCookiePrefix = get(AppConfigKey.SESSION_PREFIX);
+            String sessionCookiePrefix = sessionCookiePrefix();
             sessionCookieName = S.builder(sessionCookiePrefix).append("_").append("session").toString();
         }
         return sessionCookieName;
@@ -1806,7 +1832,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
 
     public String flashCookieName() {
         if (null == flashCookieName) {
-            String sessionCookiePrefix = get(AppConfigKey.SESSION_PREFIX);
+            String sessionCookiePrefix = sessionCookiePrefix();
             flashCookieName = S.builder(sessionCookiePrefix).append("_").append("flash").toString();
         }
         return flashCookieName;
@@ -2170,6 +2196,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         _mergeTemplatePathResolver(conf);
         _mergeTemplateHome(conf);
         _mergeDefaultView(conf);
+        _mergeSessionCookiePrefix(conf);
         _mergeSessionCookieName(conf);
         _mergeFlashCookieName(conf);
         _mergeSessionTtl(conf);

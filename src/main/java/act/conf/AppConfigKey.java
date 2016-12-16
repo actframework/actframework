@@ -579,9 +579,9 @@ public enum AppConfigKey implements ConfigKey {
      * {@code act_session}, and user specifies the prefix {@code my_app}
      * then the session cookie name will be {@code my_app_session}.
      * <p>Note this setting also impact the {@link AppConfig#flashCookieName()}</p>
-     * <p>Default value: {@code Act}</p>
+     * <p>Default value: {@code act}</p>
      */
-    SESSION_PREFIX("session.prefix", "act"),
+    SESSION_PREFIX("session.prefix"),
 
     /**
      * {@code session.ttl} specifies the session duration in seconds.
