@@ -16,9 +16,7 @@ import act.security.CORS;
 import act.security.CSRF;
 import act.util.ActContext;
 import act.util.DestroyableBase;
-import act.view.ActNotFound;
-import act.view.Template;
-import act.view.TemplatePathResolver;
+import act.view.*;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONException;
 import com.esotericsoftware.reflectasm.MethodAccess;
@@ -322,6 +320,9 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
             return ActNotFound.create(method);
         }
         boolean hasTemplate = checkTemplate(context);
+        if (hasTemplate && result instanceof RenderAny) {
+            result = RenderTemplate.INSTANCE;
+        }
         return Controller.Util.inferResult(handlerMetaInfo, result, context, hasTemplate);
     }
 

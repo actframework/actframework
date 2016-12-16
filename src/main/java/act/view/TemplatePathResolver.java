@@ -3,8 +3,13 @@ package act.view;
 import act.app.ActionContext;
 import act.util.ActContext;
 import org.osgl.http.H;
+import org.osgl.util.C;
 import org.osgl.util.E;
 import org.osgl.util.S;
+
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 
 import static org.osgl.http.H.Format.*;
 
@@ -12,6 +17,8 @@ import static org.osgl.http.H.Format.*;
  * Resolve template path for {@link ActContext}
  */
 public class TemplatePathResolver {
+
+    private static final Set<H.Format> supportedFormats = new HashSet<>();
 
     public final String resolve(ActContext context) {
         String path = context.templatePath();
@@ -60,7 +67,15 @@ public class TemplatePathResolver {
         throw E.unsupport("Request accept not supported: %s", fmt);
     }
 
+    public static void registerSupportedFormats(H.Format ... fmts) {
+        supportedFormats.addAll(C.listOf(fmts));
+    }
+
+    public static void registerSupportedFormats(Collection<H.Format> fmts) {
+        supportedFormats.addAll(fmts);
+    }
+
     public static boolean isAcceptFormatSupported(H.Format fmt) {
-        return (UNKNOWN == fmt || HTML == fmt || JSON == fmt || XML == fmt || TXT == fmt || CSV == fmt || XLS == fmt || XLSX == fmt);
+        return (UNKNOWN == fmt || HTML == fmt || JSON == fmt || XML == fmt || TXT == fmt || CSV == fmt) || supportedFormats.contains(fmt);
     }
 }

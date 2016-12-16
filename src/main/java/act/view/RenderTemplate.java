@@ -14,6 +14,8 @@ import java.util.Map;
  */
 public class RenderTemplate extends RenderAny {
 
+    public static RenderTemplate INSTANCE = new RenderTemplate();
+
     private Map<String, Object> renderArgs;
 
     public RenderTemplate() {
