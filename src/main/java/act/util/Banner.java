@@ -1,6 +1,7 @@
 package act.util;
 
 import act.Act;
+import act.Zen;
 import act.conf.ConfLoader;
 import act.sys.Env;
 import com.github.lalyos.jfiglet.FigletFont;
@@ -53,6 +54,8 @@ public class Banner {
         sb.append("\n profile: ").append(ConfLoader.confSetName());
         sb.append("\n    mode: ").append(Act.mode());
         sb.append("\n   group: ").append(Act.nodeGroup());
+        sb.append("\n");
+        sb.append("\n     zen: ").append(Zen.wordsOfTheDay());
         sb.append("\n");
 
         return sb.toString();
