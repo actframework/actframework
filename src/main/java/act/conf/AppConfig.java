@@ -178,7 +178,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         if (null == corsHeaders) {
             String s = get(CORS_HEADERS);
             if (null == s) {
-                s = "Content-Type, X-HTTP-Method-Override";
+                s = "Content-Type, X-HTTP-Method-Override, X-Requested-With";
             }
             corsHeaders = s;
         }

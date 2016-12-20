@@ -38,8 +38,18 @@ public class I18n {
         } catch (MissingResourceException e) {
             logger.warn("Cannot find i18n message key: %s", msgId);
         }
-        if (args.length > 0) {
-            msg = S.fmt(msg, args);
+        int len = args.length;
+        if (len > 0) {
+            Object[] resolvedArgs = new Object[len];
+            for (int i = 0; i < len; ++i) {
+                Object arg = args[i];
+                if (arg instanceof String) {
+                    resolvedArgs[i] = i18n(locale, bundleName, (String) arg);
+                } else {
+                    resolvedArgs[i] = arg;
+                }
+            }
+            msg = S.fmt(msg, resolvedArgs);
         }
         return msg;
     }
