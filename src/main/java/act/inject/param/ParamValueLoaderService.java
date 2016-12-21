@@ -313,13 +313,20 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
             return buildCollectionLoader(key, rawType, elementType, targetSpec);
         }
         if (Map.class.isAssignableFrom(rawType)) {
-            Type keyType = Object.class;
-            Type valType = Object.class;
-            if (type instanceof ParameterizedType) {
-                Type[] typeParams = ((ParameterizedType) type).getActualTypeArguments();
-                keyType = typeParams[0];
-                valType = typeParams[1];
+            Class<?> mapClass = rawType;
+            Type mapType = type;
+            boolean canProceed = type instanceof ParameterizedType;
+            if (!canProceed) {
+                while (!Map.class.isAssignableFrom(mapClass) || !(mapType instanceof ParameterizedType)) {
+                    mapType = mapClass.getGenericSuperclass();
+                    mapClass = mapClass.getSuperclass();
+                }
+                canProceed = mapType instanceof ParameterizedType;
             }
+            E.unexpectedIf(!canProceed, "Cannot load Map type parameter loader: no generic type info available");
+            Type[] typeParams = ((ParameterizedType) mapType).getActualTypeArguments();
+            Type keyType = typeParams[0];
+            Type valType = typeParams[1];
             return buildMapLoader(key, rawType, keyType, valType, targetSpec);
         }
         return buildPojoLoader(key, rawType);
