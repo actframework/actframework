@@ -60,8 +60,9 @@ public @interface Mailer {
             ctx().bcc = S.join(",", bcc);
         }
 
-        public static void subject(String subject) {
+        public static void subject(String subject, Object ... args) {
             ctx().subject = subject;
+            ctx().subjectArgs = args;
         }
 
         private static SimpleContext ctx() {
@@ -93,7 +94,7 @@ public @interface Mailer {
                     context.bcc(ctx.bcc);
                 }
                 if (S.notBlank(ctx.subject)) {
-                    context.subject(ctx.subject);
+                    context.subject(ctx.subject, ctx.subjectArgs);
                 }
                 _ctx.remove();
             }
@@ -118,6 +119,7 @@ public @interface Mailer {
             String cc;
             String bcc;
             String subject;
+            Object[] subjectArgs;
         }
     }
 }

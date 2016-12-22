@@ -45,14 +45,13 @@ public class ControllerClassMetaInfoManager extends DestroyableBase {
                 ControllerClassMetaInfo superInfo = controllerMetaInfo(superType.getClassName());
                 if (null != superInfo) {
                     metaInfo.parent(superInfo);
-                } else {
-                    List<ControllerClassMetaInfo> subTypes = subTypeInfo.get(superType);
-                    if (null == subTypes) {
-                        subTypes = C.newList();
-                        subTypeInfo.put(superType, subTypes);
-                    }
-                    subTypes.add(metaInfo);
                 }
+                List<ControllerClassMetaInfo> subTypes = subTypeInfo.get(superType);
+                if (null == subTypes) {
+                    subTypes = C.newList();
+                    subTypeInfo.put(superType, subTypes);
+                }
+                subTypes.add(metaInfo);
             }
         }
         List<ControllerClassMetaInfo> subTypes = subTypeInfo.get(metaInfo.type());

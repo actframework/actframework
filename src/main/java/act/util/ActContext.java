@@ -28,6 +28,7 @@ public interface ActContext<CTX_TYPE extends ActContext> extends ParamValueProvi
     AppConfig config();
     CTX_TYPE accept(H.Format fmt);
     H.Format accept();
+    CTX_TYPE locale(Locale locale);
     Locale locale();
     /**
      * If {@link #templatePath(String) template path has been set before} then return
@@ -52,6 +53,7 @@ public interface ActContext<CTX_TYPE extends ActContext> extends ParamValueProvi
     CTX_TYPE addDestroyable(Destroyable resource);
     CTX_TYPE attribute(String name, Object attr);
     <T> T attribute(String name);
+    Map<String, Object> attributes();
     CTX_TYPE removeAttribute(String name);
 
     String methodPath();
@@ -212,6 +214,11 @@ public interface ActContext<CTX_TYPE extends ActContext> extends ParamValueProvi
         public VC_TYPE removeAttribute(String name) {
             attributes.remove(name);
             return me();
+        }
+
+        @Override
+        public Map<String, Object> attributes() {
+            return attributes;
         }
 
         @Override

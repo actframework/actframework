@@ -221,15 +221,21 @@ class _Job extends DestroyableBase implements Runnable {
         runFollowingJobs();
     }
 
+    protected void _before() {}
+
     protected void doJob() {
         try {
+            _before();
             if (null != worker) {
                 worker.apply();
             }
         } finally {
             scheduleNextInvocation();
+            _finally();
         }
     }
+
+    protected void _finally() {}
 
     protected void cancel() {
         manager.cancel(id());

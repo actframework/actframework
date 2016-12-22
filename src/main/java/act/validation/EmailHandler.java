@@ -1,6 +1,5 @@
 package act.validation;
 
-import act.ActComponent;
 import act.app.ActionContext;
 import act.controller.ActionMethodParamAnnotationHandlerPlugin;
 import org.osgl.util.C;
@@ -9,7 +8,6 @@ import org.osgl.util.S;
 import java.lang.annotation.Annotation;
 import java.util.Set;
 
-@ActComponent
 public class EmailHandler extends ActionMethodParamAnnotationHandlerPlugin {
     @Override
     public Set<Class<? extends Annotation>> listenTo() {
