@@ -32,14 +32,11 @@ public class ValidHandler extends ActionMethodParamAnnotationHandlerPlugin {
     }
 
     public void handle(String paramName, Object paramVal, Annotation annotation, ActionContext context) {
-        if (null == paramVal) {
-            return;
-        }
-
-        Set constraintViolations = validator.validate(paramVal);
-        if (!constraintViolations.isEmpty()) {
-            context.addViolations(constraintViolations);
+        if(paramVal != null) {
+            Set constraintViolations = validator.validate(paramVal);
+            if (!constraintViolations.isEmpty()) {
+                context.addViolations(constraintViolations);
+            }
         }
     }
-
 }
