@@ -5,18 +5,14 @@ import act.TestBase;
 import act.app.conf.AutoConfig;
 import act.app.conf.AutoConfigPlugin;
 import act.app.data.StringValueResolverManager;
-import act.inject.DependencyInjector;
 import act.inject.genie.GenieInjector;
 import act.plugin.GenericPluginManager;
 import org.hamcrest.Description;
-import org.hibernate.annotations.GenericGenerator;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentMatcher;
 import org.osgl.$;
 import org.osgl.http.H;
-import org.osgl.inject.Genie;
-import org.osgl.inject.Injector;
 import org.osgl.util.C;
 import org.osgl.util.Const;
 
