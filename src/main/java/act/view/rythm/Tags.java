@@ -9,6 +9,7 @@ import org.rythmengine.template.JavaTagBase;
 import org.rythmengine.utils.S;
 
 import javax.inject.Inject;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -18,8 +19,7 @@ import java.util.Map;
  */
 public class Tags {
 
-    @Inject
-    private List<JavaTagBase> fastTags;
+    private List<JavaTagBase> fastTags = new ArrayList<>();
 
     public void register(RythmEngine engine) {
         for (JavaTagBase tag : fastTags) {
