@@ -18,7 +18,7 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 @Target({ METHOD, FIELD, ANNOTATION_TYPE, CONSTRUCTOR, PARAMETER })
 @Retention(RUNTIME)
 @Documented
-@Constraint(validatedBy = { })
+@Constraint(validatedBy = { NotBlankHandler.class })
 public @interface NotBlank {
 
     String message() default "{act.validation.constraints.NotBlank.message}";
@@ -39,4 +39,5 @@ public @interface NotBlank {
 
         NotBlank[] value();
     }
+
 }
