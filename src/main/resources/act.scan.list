@@ -2,7 +2,6 @@
 act\..*Admin
 act.i18n.TimeZoneResolver
 act.i18n.LocaleResolver
-act.inject.genie.GenieInjector
 act.app.SingletonFinder
 act.inject.genie.GenieInjector
 act.db.DbBind

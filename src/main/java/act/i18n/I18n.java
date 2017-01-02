@@ -31,12 +31,22 @@ public class I18n {
     }
 
     public static String i18n(Locale locale, String bundleName, String msgId, Object... args) {
+        return i18n(false, locale, bundleName, msgId, args);
+    }
+
+    public static String i18n(boolean ignoreError, Locale locale, String bundleName, String msgId, Object... args) {
         ResourceBundle bundle = ResourceBundle.getBundle(bundleName, $.notNull(locale));
         String msg = msgId;
-        try {
-            msg = bundle.getString(msgId);
-        } catch (MissingResourceException e) {
-            logger.warn("Cannot find i18n message key: %s", msgId);
+        if (ignoreError) {
+            if (bundle.containsKey(msgId)) {
+                msg = bundle.getString(msgId);
+            }
+        } else {
+            try {
+                msg = bundle.getString(msgId);
+            } catch (MissingResourceException e) {
+                logger.warn("Cannot find i18n message key: %s", msgId);
+            }
         }
         int len = args.length;
         if (len > 0) {
@@ -44,7 +54,7 @@ public class I18n {
             for (int i = 0; i < len; ++i) {
                 Object arg = args[i];
                 if (arg instanceof String) {
-                    resolvedArgs[i] = i18n(locale, bundleName, (String) arg);
+                    resolvedArgs[i] = i18n(true, locale, bundleName, (String) arg);
                 } else {
                     resolvedArgs[i] = arg;
                 }
