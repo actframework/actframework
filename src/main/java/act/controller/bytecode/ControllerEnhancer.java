@@ -62,7 +62,7 @@ public class ControllerEnhancer extends AppByteCodeEnhancer<ControllerEnhancer> 
     }
 
     private HandlerMethodMetaInfo methodInfo(String name, int access) {
-        if (isPublic(access) && !isConstructor(name)) {
+        if (!isConstructor(name)) {
             ControllerClassMetaInfo ccInfo = classInfoHolder.controllerClassMetaInfo(className);
             if (null == ccInfo) {
                 return null;

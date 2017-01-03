@@ -129,7 +129,7 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
         }
 
         private boolean isEligibleMethod(int access, String name) {
-            return isPublic(access) && !isAbstract(access) && !isConstructor(name);
+            return !isAbstract(access) && !isConstructor(name);
         }
 
         private class StringArrayVisitor extends AnnotationVisitor {
