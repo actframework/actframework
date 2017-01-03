@@ -240,7 +240,7 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
                     if (null != propSpec) {
                         methodInfo.propertySpec(propSpec);
                     }
-                    return new ActionAnnotationVisitor(av, AnnotationMethodLookup.get(c));
+                    return new ActionAnnotationVisitor(av, AnnotationMethodLookup.get(c), ControllerClassMetaInfo.isActionUtilAnnotation(c));
                 } else if (ControllerClassMetaInfo.isInterceptorAnnotation(c)) {
                     markRequireScan();
                     InterceptorAnnotationVisitor visitor = new InterceptorAnnotationVisitor(av, c);
@@ -504,12 +504,14 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
 
                 List<H.Method> httpMethods = C.newList();
                 List<String> paths = C.newList();
+                boolean isUtil = false;
 
-                public ActionAnnotationVisitor(AnnotationVisitor av, H.Method method) {
+                public ActionAnnotationVisitor(AnnotationVisitor av, H.Method method, boolean isUtil) {
                     super(ASM5, av);
                     if (null != method) {
                         httpMethods.add(method);
                     }
+                    this.isUtil = isUtil;
                 }
 
                 @Override
@@ -543,6 +545,9 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
                 @Override
                 public void visitEnd() {
                     super.visitEnd();
+                    if (isUtil) {
+                        return;
+                    }
                     if (httpMethods.isEmpty()) {
                         // start(*) match
                         httpMethods.addAll(H.Method.actionMethods());
