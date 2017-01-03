@@ -174,7 +174,7 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
     }
 
     public ActionContext hasTemplate(boolean b) {
-        hasTemplate = true;
+        hasTemplate = b;
         return this;
     }
 
