@@ -86,7 +86,7 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
         List<ActionMethodParamAnnotationHandler> list = Act.pluginManager().pluginList(ActionMethodParamAnnotationHandler.class);
         for (ActionMethodParamAnnotationHandler h : list) {
             Set<Class<? extends Annotation>> set = h.listenTo();
-            for (Class<? extends Annotation> c: set) {
+            for (Class<? extends Annotation> c : set) {
                 allAnnotationHandlers.put(c, h);
             }
         }
@@ -166,7 +166,7 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
         Map<Field, ParamValueLoader> fieldLoaders = fieldRegistry.get(beanClass);
         if (null == fieldLoaders) {
             fieldLoaders = new HashMap<Field, ParamValueLoader>();
-            for (Field field: $.fieldsOf(beanClass, true)) {
+            for (Field field : $.fieldsOf(beanClass, true)) {
                 if (field.isAnnotationPresent(NoBind.class) || fieldBlackList.contains(field.getName())) {
                     continue;
                 }
@@ -315,16 +315,41 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
         if (Map.class.isAssignableFrom(rawType)) {
             Class<?> mapClass = rawType;
             Type mapType = type;
-            boolean canProceed = type instanceof ParameterizedType;
-            if (!canProceed) {
-                while (!Map.class.isAssignableFrom(mapClass) || !(mapType instanceof ParameterizedType)) {
+            boolean canProceed = false;
+            Type[] typeParams = null;
+            while (true) {
+                if (mapType instanceof ParameterizedType) {
+                    typeParams = ((ParameterizedType) mapType).getActualTypeArguments();
+                    if (typeParams.length == 2) {
+                        canProceed = true;
+                        break;
+                    }
+                }
+                boolean foundInInterfaces = false;
+                Type[] ta = mapClass.getGenericInterfaces();
+                if (ta.length > 0) {
+                    mapType = null;
+                    for (Type t : ta) {
+                        if (t instanceof ParameterizedType) {
+                            if (Map.class.isAssignableFrom((Class) ((ParameterizedType) t).getRawType())) {
+                                mapType = t;
+                                mapClass = mapClass.getSuperclass();
+                                foundInInterfaces = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+                if (!foundInInterfaces) {
                     mapType = mapClass.getGenericSuperclass();
                     mapClass = mapClass.getSuperclass();
                 }
-                canProceed = mapType instanceof ParameterizedType;
+                if (mapClass == Object.class) {
+                    break;
+                }
             }
             E.unexpectedIf(!canProceed, "Cannot load Map type parameter loader: no generic type info available");
-            Type[] typeParams = ((ParameterizedType) mapType).getActualTypeArguments();
+
             Type keyType = typeParams[0];
             Type valType = typeParams[1];
             return buildMapLoader(key, rawType, keyType, valType, targetSpec);

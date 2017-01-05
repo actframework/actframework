@@ -1,5 +1,6 @@
 package act.mail;
 
+import act.app.ActionContext;
 import org.osgl.logging.L;
 import org.osgl.logging.Logger;
 import org.osgl.util.E;
@@ -10,6 +11,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 
@@ -79,6 +81,7 @@ public @interface Mailer {
         }
 
         public static Future<Boolean> doSend(final MailerContext context) {
+            tryLoadLocale(context);
             SimpleContext ctx = _ctx.get();
             if (null != ctx) {
                 if (S.notBlank(ctx.from)) {
@@ -106,6 +109,28 @@ public @interface Mailer {
             });
         }
 
+
+        private static void tryLoadLocale(MailerContext context) {
+            if (!context.config().i18nEnabled() || context.locale() != null) {
+                // do nother if
+                // 1. i18n is not enabled
+                // 2. context locale has already loaded (via AppJobManager.ContextualJob)
+                return;
+            }
+            // check if there are ActionContext instance in the render args
+            for (Map.Entry<String, Object> entry : context.renderArgs().entrySet()) {
+                Object val = entry.getValue();
+                if (val instanceof ActionContext) {
+                    // load locale from action context
+                    context.locale(((ActionContext) val).locale());
+                    return;
+                }
+            }
+            // load locale from app config (default locale)
+            context.locale(context.config().locale());
+        }
+
+
         private static final ThreadLocal<SimpleContext> _ctx = new ThreadLocal<SimpleContext>() {
             @Override
             protected SimpleContext initialValue() {
@@ -121,5 +146,6 @@ public @interface Mailer {
             String subject;
             Object[] subjectArgs;
         }
+
     }
 }
