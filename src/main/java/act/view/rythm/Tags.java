@@ -19,7 +19,8 @@ import java.util.Map;
  */
 public class Tags {
 
-    private List<JavaTagBase> fastTags = new ArrayList<>();
+    @Inject
+    private List<JavaTagBase> fastTags;
 
     public void register(RythmEngine engine) {
         for (JavaTagBase tag : fastTags) {

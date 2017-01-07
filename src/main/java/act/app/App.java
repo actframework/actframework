@@ -937,6 +937,7 @@ public class App extends DestroyableBase {
         scannerManager.register(new ControllerByteCodeScanner());
         scannerManager.register(new MailerByteCodeScanner());
         scannerManager.register(new JobByteCodeScanner());
+        scannerManager.register(new SimpleBean.ByteCodeScanner());
         scannerManager.register(new SimpleEventListenerByteCodeScanner());
         scannerManager.register(new CommanderByteCodeScanner());
         scannerManager.register(new RythmTransformerScanner());
