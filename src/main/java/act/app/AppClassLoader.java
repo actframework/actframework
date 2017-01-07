@@ -38,7 +38,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.InputStream;
 import java.lang.annotation.Annotation;
-import java.security.ProtectionDomain;
 import java.util.*;
 
 import static act.util.ClassInfoRepository.canonicalName;

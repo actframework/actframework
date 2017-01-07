@@ -1,7 +1,6 @@
 package act.sys;
 
 import act.Act;
-import org.osgl.$;
 import org.osgl.util.C;
 import org.rythmengine.utils.S;
 

@@ -71,4 +71,10 @@ public class SimpleBeanTest extends EndpointTester {
         url("/sbean/setter/boolean_setter_exists").get();
         checkRespCode();
     }
+
+    @Test
+    public void itShallTreatClassAsSimpleBeanIfItImplementsInterfaceExtendsSimpleBean() throws IOException {
+        url("/sbean/intf_extends_sbean").get();
+        checkRespCode();
+    }
 }

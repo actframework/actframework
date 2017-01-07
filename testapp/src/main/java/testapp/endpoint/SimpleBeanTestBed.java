@@ -6,6 +6,7 @@ import org.osgl.$;
 import org.osgl.exception.UnexpectedException;
 import org.osgl.exception.UnexpectedNoSuchMethodException;
 import org.osgl.inject.InjectException;
+import org.osgl.inject.Injector;
 import org.osgl.mvc.annotation.GetAction;
 import testapp.sbean.*;
 
@@ -95,6 +96,11 @@ public class SimpleBeanTestBed extends Controller.Util {
         if (!bean.weirdFlag) {
             throw new UnexpectedException();
         }
+    }
+
+    @GetAction("intf_extends_sbean")
+    public void itShallTreatClassAsSimpleBeanIfItImplementsInterfaceExtendsSimpleBean(App app) {
+        app.getInstance(SimpleModel.SomeModel.class);
     }
 
 }

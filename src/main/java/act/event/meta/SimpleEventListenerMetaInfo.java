@@ -5,7 +5,6 @@ import act.app.App;
 import act.app.event.AppEventId;
 import act.inject.DependencyInjector;
 import org.osgl.$;
-import org.osgl.http.H;
 import org.osgl.inject.BeanSpec;
 import org.osgl.util.C;
 

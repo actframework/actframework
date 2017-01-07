@@ -4,7 +4,6 @@ import act.Act;
 import act.app.App;
 import act.app.event.AppEventId;
 import act.asm.Type;
-import act.controller.meta.HandlerParamMetaInfo;
 import act.event.meta.SimpleEventListenerMetaInfo;
 import act.sys.meta.InvokeType;
 import act.sys.meta.ReturnTypeInfo;
@@ -17,7 +16,6 @@ import org.osgl.util.C;
 import org.osgl.util.E;
 import org.osgl.util.S;
 
-import javax.enterprise.inject.spi.Bean;
 import java.lang.reflect.Method;
 import java.util.List;
 

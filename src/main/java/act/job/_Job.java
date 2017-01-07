@@ -17,7 +17,6 @@ import org.osgl.util.E;
 import org.osgl.util.S;
 
 import java.util.*;
-import java.util.concurrent.ScheduledFuture;
 
 class _Job extends DestroyableBase implements Runnable {
 

@@ -13,7 +13,10 @@ import org.osgl.$;
 import org.osgl.Osgl;
 import org.osgl.exception.NotAppliedException;
 import org.osgl.mvc.MvcConfig;
-import org.osgl.util.*;
+import org.osgl.util.KV;
+import org.osgl.util.KVStore;
+import org.osgl.util.Keyword;
+import org.osgl.util.ValueObject;
 
 public class JsonUtilConfig {
     public static void configure(App app) {

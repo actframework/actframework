@@ -22,8 +22,6 @@ import javax.mail.internet.*;
 import java.io.File;
 import java.util.*;
 
-import static act.app.App.logger;
-
 public class MailerContext extends ActContext.Base<MailerContext> {
 
     public static class InitEvent extends ActEvent<MailerContext> {
