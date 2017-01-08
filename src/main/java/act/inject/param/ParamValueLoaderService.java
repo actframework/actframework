@@ -162,12 +162,21 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
         return decorate(loader, BeanSpec.of(beanClass, injector), beanClass.getDeclaredAnnotations(), false);
     }
 
+    private boolean shouldWaive(Field field) {
+        int modifiers = field.getModifiers();
+        return Modifier.isStatic(modifiers)
+                || Modifier.isTransient(modifiers)
+                || field.isAnnotationPresent(NoBind.class)
+                || fieldBlackList.contains(field.getName())
+                || Object.class.equals(field.getDeclaringClass());
+    }
+
     private <T> Map<Field, ParamValueLoader> fieldLoaders(Class<T> beanClass) {
         Map<Field, ParamValueLoader> fieldLoaders = fieldRegistry.get(beanClass);
         if (null == fieldLoaders) {
             fieldLoaders = new HashMap<Field, ParamValueLoader>();
             for (Field field : $.fieldsOf(beanClass, true)) {
-                if (field.isAnnotationPresent(NoBind.class) || fieldBlackList.contains(field.getName())) {
+                if (shouldWaive(field)) {
                     continue;
                 }
                 Type type = field.getGenericType();
@@ -473,7 +482,7 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
         List<FieldLoader> fieldLoaders = C.newList();
         while (null != current && !current.equals(Object.class)) {
             for (Field field : current.getDeclaredFields()) {
-                if (Modifier.isStatic(field.getModifiers()) || fieldBlackList.contains(field.getName()) || field.isAnnotationPresent(NoBind.class) || field.getDeclaringClass() == Object.class) {
+                if (shouldWaive(field)) {
                     continue;
                 }
                 field.setAccessible(true);

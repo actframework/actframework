@@ -10,4 +10,5 @@ act.app.conf.AppConfigPlugin
 act.Info
 act.handler.builtin.controller.RequestHandlerProxy
 act.Zen
+act.util.ActiveRecordCodec
 org.osgl.util.FastJsonKvCodec
