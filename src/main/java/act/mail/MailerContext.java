@@ -1,6 +1,7 @@
 package act.mail;
 
 import act.Act;
+import act.app.ActionContext;
 import act.app.App;
 import act.event.ActEvent;
 import act.util.ActContext;
@@ -48,6 +49,10 @@ public class MailerContext extends ActContext.Base<MailerContext> {
         super(app);
         this.confId = confId;
         _local.set(this);
+        ActionContext actionContext = ActionContext.current();
+        if (null != actionContext) {
+            locale(actionContext.locale());
+        }
         app.eventBus().triggerSync(new InitEvent(this));
     }
 
