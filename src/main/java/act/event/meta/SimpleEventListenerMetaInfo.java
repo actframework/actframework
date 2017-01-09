@@ -7,6 +7,7 @@ import act.inject.DependencyInjector;
 import org.osgl.$;
 import org.osgl.inject.BeanSpec;
 import org.osgl.util.C;
+import org.osgl.util.E;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
@@ -16,6 +17,7 @@ import java.util.List;
 
 public class SimpleEventListenerMetaInfo {
     private List<Object> events;
+    private List<$.Func0> delayedEvents;
     private String className;
     private String methodName;
     private String asyncMethodName;
@@ -25,6 +27,7 @@ public class SimpleEventListenerMetaInfo {
 
     public SimpleEventListenerMetaInfo(
             final List<Object> events,
+            final List<$.Func0> delayedEvents,
             final String className,
             final String methodName,
             final String asyncMethodName,
@@ -33,7 +36,12 @@ public class SimpleEventListenerMetaInfo {
             boolean isStatic,
             App app
     ) {
-        this.events = C.list(events);
+        int eventCnt = null == events ? 0 : events.size();
+        int delayedEventCnt = null == delayedEvents ? 0 : delayedEvents.size();
+        E.illegalArgumentIf(eventCnt == 0 && delayedEventCnt == 0);
+        E.illegalArgumentIf(eventCnt > 0 & delayedEventCnt > 0);
+        this.events = events;
+        this.delayedEvents = delayedEvents;
         this.className = $.notNull(className);
         this.methodName = $.notNull(methodName);
         this.asyncMethodName = asyncMethodName;
@@ -49,6 +57,13 @@ public class SimpleEventListenerMetaInfo {
     }
 
     public List<?> events() {
+        if (!delayedEvents.isEmpty()) {
+            List list = new ArrayList();
+            for ($.Func0 func : delayedEvents) {
+                list.add(func.apply());
+            }
+            return list;
+        }
         return events;
     }
 

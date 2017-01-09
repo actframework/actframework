@@ -61,6 +61,7 @@ public class SenderEnhancer extends MethodVisitor implements Opcodes {
         MethodNode mn = (MethodNode) mv;
         transform(mn);
         mn.accept(next);
+        super.visitEnd();
     }
 
     private void transform(MethodNode mn) {
