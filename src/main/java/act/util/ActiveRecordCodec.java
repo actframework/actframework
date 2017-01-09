@@ -114,7 +114,7 @@ public class ActiveRecordCodec extends SerializeFilterable implements ObjectDese
                     value = null;
                     lexer.nextToken();
                 } else {
-                    value = parser.parseObject(Object.class, key);
+                    value = parser.parseObject(ar.metaInfo().fieldType(key), key);
                     if (value instanceof Map) {
                         Map tmp = (Map)value;
                         value = new KVStore(tmp);

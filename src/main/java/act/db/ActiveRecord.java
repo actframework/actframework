@@ -1,7 +1,22 @@
 package act.db;
 
-import java.util.Map;
-import java.util.Set;
+import act.app.App;
+import act.plugin.AppServicePlugin;
+import act.util.SimpleBean;
+import org.osgl.$;
+import org.osgl.Osgl;
+import org.osgl.exception.NotAppliedException;
+import org.osgl.util.E;
+import org.osgl.util.S;
+
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Type;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 /**
  * The `ActiveRecord` interface specifies a special {@link Model} in that
@@ -68,5 +83,139 @@ public interface ActiveRecord<ID_TYPE, MODEL_TYPE extends ActiveRecord> extends 
      * @return a Map backed by this active record
      */
     Map<String, Object> asMap();
+
+    /**
+     * Returns the meta info of this ActiveRecord
+     * @return
+     */
+    MetaInfo metaInfo();
+
+    class MetaInfo {
+        private Class<? extends ActiveRecord> arClass;
+        public String className;
+        private Class<? extends Annotation> transientAnnotationType;
+        public Set<Field> fields;
+        public Map<String, Type> fieldTypes;
+        public Map<String, $.Function> fieldGetters;
+        public Map<String, $.Func2> fieldSetters;
+
+        public MetaInfo(Class<? extends ActiveRecord> clazz, Class<? extends Annotation> transientAnnotationType) {
+            this.className = clazz.getName();
+            this.arClass = clazz;
+            this.transientAnnotationType = transientAnnotationType;
+            this.discoverFields(clazz);
+        }
+
+        public Type fieldType(String fieldName) {
+            return fieldTypes.get(fieldName);
+        }
+
+        private void discoverFields(Class<? extends ActiveRecord> clazz) {
+            List<Field> list = $.fieldsOf(arClass, $.F.NON_STATIC_FIELD.and($.F.fieldWithAnnotation(transientAnnotationType)).negate());
+            fields = new HashSet<Field>();
+            fieldTypes = new HashMap<String, Type>();
+            fieldGetters = new HashMap<String, Osgl.Function>();
+            fieldSetters = new HashMap<String, Osgl.Func2>();
+            for (Field f : list) {
+                if (!f.isAnnotationPresent(transientAnnotationType)) {
+                    fields.add(f);
+                    fieldTypes.put(f.getName(), f.getGenericType());
+                    fieldGetters.put(f.getName(), fieldGetter(f, clazz));
+                    fieldSetters.put(f.getName(), fieldSetter(f, clazz));
+                }
+            }
+        }
+
+        private $.Func2 fieldSetter(final Field f, final Class<?> clz) {
+            final String setterName = setterName(f);
+            try {
+                final Method m = clz.getMethod(setterName, f.getType());
+                return new $.Func2() {
+                    @Override
+                    public Object apply(Object host, Object value) throws NotAppliedException, Osgl.Break {
+                        try {
+                            m.invoke(host, value);
+                            return null;
+                        } catch (IllegalAccessException e) {
+                            throw E.unexpected("Class.getMethod(String) return a method[%s] that is not accessible?", m);
+                        } catch (InvocationTargetException e) {
+                            throw E.unexpected(e.getTargetException(), "Error invoke setter method on %s::%s", clz.getName(), setterName);
+                        }
+                    }
+                };
+            } catch (NoSuchMethodException e) {
+                f.setAccessible(true);
+                return new $.Func2() {
+                    @Override
+                    public Object apply(Object host, Object value) throws NotAppliedException, Osgl.Break {
+                        try {
+                            f.set(host, value);
+                            return null;
+                        } catch (IllegalAccessException e1) {
+                            throw E.unexpected("Field[%s] is not accessible?", f);
+                        }
+                    }
+                };
+            }
+        }
+
+
+        private $.Function fieldGetter(final Field f, final Class<?> clz) {
+            final String getterName = getterName(f);
+            try {
+                final Method m = clz.getMethod(getterName);
+                return new $.Function() {
+                    @Override
+                    public Object apply(Object o) throws NotAppliedException, Osgl.Break {
+                        try {
+                            return m.invoke(o);
+                        } catch (IllegalAccessException e) {
+                            throw E.unexpected("Class.getMethod(String) return a method[%s] that is not accessible?", m);
+                        } catch (InvocationTargetException e) {
+                            throw E.unexpected(e.getTargetException(), "Error invoke getter method on %s::%s", clz.getName(), getterName);
+                        }
+                    }
+                };
+            } catch (NoSuchMethodException e) {
+                f.setAccessible(true);
+                return new $.Function() {
+                    @Override
+                    public Object apply(Object o) throws NotAppliedException, Osgl.Break {
+                        try {
+                            return f.get(o);
+                        } catch (IllegalAccessException e1) {
+                            throw E.unexpected("Field[%s] is not accessible?", f);
+                        }
+                    }
+                };
+            }
+        }
+
+        private String getterName(Field field) {
+            boolean isBoolean = field.getType() == Boolean.class || field.getType() == boolean.class;
+            return (isBoolean ? "is" : "get") + S.capFirst(field.getName());
+        }
+
+        private String setterName(Field field) {
+            return "set" + S.capFirst(field.getName());
+        }
+
+        public static class Repository extends AppServicePlugin {
+            @Override
+            protected void applyTo(App app) {
+            }
+
+            private ConcurrentMap<Class<?>, MetaInfo> map = new ConcurrentHashMap<Class<?>, MetaInfo>();
+
+            public MetaInfo get(Class<? extends ActiveRecord> clazz, $.Function<Class<? extends ActiveRecord>, MetaInfo> factory) {
+                MetaInfo info = map.get(clazz);
+                if (null == info) {
+                    info = factory.apply(clazz);
+                    map.putIfAbsent(clazz, info);
+                }
+                return info;
+            }
+        }
+    }
 
 }
