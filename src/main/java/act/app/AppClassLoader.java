@@ -237,7 +237,8 @@ public class AppClassLoader
             dependencies.remove(className);
             byte[] ba = bytecodeProvider.apply(className);
             if (null == ba) {
-                throw new NullPointerException();
+                logger.warn("Cannot find any bytecode for class: %s. You might have an empty Java source file for that.", className);
+                continue;
             }
             libClsCache.put(className, ba);
             act.metric.Timer timer = metric.startTimer("act:classload:scan:bytecode:" + className);
