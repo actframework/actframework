@@ -48,6 +48,7 @@ import org.osgl.cache.CacheServiceProvider;
 import org.osgl.http.H;
 import org.osgl.http.HttpConfig;
 import org.osgl.logging.Logger;
+import org.osgl.mvc.MvcConfig;
 import org.osgl.storage.IStorageService;
 import org.osgl.util.*;
 
@@ -706,6 +707,9 @@ public class App extends DestroyableBase {
         config.app(this);
         registerSingleton(AppConfig.class, config);
         registerValueObjectCodec();
+        if (config.i18nEnabled()) {
+            MvcConfig.enableLocalizedErrorMsg();
+        }
     }
 
     private void initHttpConfig() {

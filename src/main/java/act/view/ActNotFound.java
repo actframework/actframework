@@ -83,15 +83,15 @@ public class ActNotFound extends NotFound implements ActError {
     }
 
     public static NotFound create() {
-        return Act.isDev() ? new ActNotFound() : NotFound.INSTANCE;
+        return Act.isDev() ? new ActNotFound() : NotFound.get();
     }
 
     public static NotFound create(String msg, Object... args) {
-        return Act.isDev() ? new ActNotFound(msg, args) : new NotFound(msg, args);
+        return Act.isDev() ? new ActNotFound(msg, args) : NotFound.get(msg, args);
     }
 
     public static NotFound create(Method method) {
-        return Act.isDev() ? new ActNotFound(method) : NotFound.INSTANCE;
+        return Act.isDev() ? new ActNotFound(method) : NotFound.get();
     }
 
     public static NotFound create(Throwable cause, String msg, Object ... args) {

@@ -9,14 +9,12 @@ import org.osgl.util.S;
 import static org.osgl.http.H.Format.*;
 
 public interface ErrorTemplatePathResolver {
-    String resolve(ErrorResult result, ActionContext context);
+    String resolve(int code, H.Format format);
 
     class DefaultErrorTemplatePathResolver implements ErrorTemplatePathResolver {
         @Override
-        public String resolve(ErrorResult result, ActionContext context) {
-            int code = result.statusCode();
+        public String resolve(int code, H.Format fmt) {
             String suffix;
-            H.Format fmt = context.accept();
             if (JSON == fmt || HTML == fmt || XML == fmt) {
                 suffix = fmt.name();
             } else {

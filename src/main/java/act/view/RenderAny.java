@@ -23,7 +23,7 @@ import static org.osgl.http.H.Format.*;
  */
 public class RenderAny extends Result {
 
-    private Map<String, Object> renderArgs;
+    public static final RenderAny INSTANCE = new RenderAny();
 
     public RenderAny() {
         super(H.Status.OK);
@@ -85,5 +85,9 @@ public class RenderAny extends Result {
             }
         }
         throw E.unexpected("Unknown accept content type: %s", fmt.contentType());
+    }
+
+    public static RenderAny get() {
+        return INSTANCE;
     }
 }

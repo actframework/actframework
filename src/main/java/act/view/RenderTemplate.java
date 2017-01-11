@@ -51,4 +51,8 @@ public class RenderTemplate extends RenderAny {
         t.merge(context);
         applyAfterCommitHandler(req, resp);
     }
+
+    public static RenderTemplate get() {
+        return INSTANCE;
+    }
 }

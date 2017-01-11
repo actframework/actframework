@@ -72,11 +72,11 @@ public class ActForbidden extends Forbidden implements ActError {
     }
 
     public static Forbidden create() {
-        return Act.isDev() ? new ActForbidden() : Forbidden.INSTANCE;
+        return Act.isDev() ? new ActForbidden() : Forbidden.get();
     }
 
     public static Forbidden create(String msg, Object... args) {
-        return Act.isDev() ? new ActForbidden(msg, args) : new Forbidden(msg, args);
+        return Act.isDev() ? new ActForbidden(msg, args) : Forbidden.get(msg, args);
     }
 
     public static Forbidden create(Throwable cause, String msg, Object ... args) {

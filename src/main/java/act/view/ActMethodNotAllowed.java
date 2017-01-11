@@ -72,11 +72,11 @@ public class ActMethodNotAllowed extends MethodNotAllowed implements ActError {
     }
 
     public static MethodNotAllowed create() {
-        return Act.isDev() ? new ActMethodNotAllowed() : MethodNotAllowed.INSTANCE;
+        return Act.isDev() ? new ActMethodNotAllowed() : MethodNotAllowed.get();
     }
 
     public static MethodNotAllowed create(String msg, Object... args) {
-        return Act.isDev() ? new ActMethodNotAllowed(msg, args) : new MethodNotAllowed(msg, args);
+        return Act.isDev() ? new ActMethodNotAllowed(msg, args) : MethodNotAllowed.get(msg, args);
     }
 
     public static MethodNotAllowed create(Throwable cause, String msg, Object ... args) {

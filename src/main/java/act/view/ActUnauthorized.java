@@ -63,11 +63,11 @@ public class ActUnauthorized extends Unauthorized implements ActError {
     }
 
     public static Unauthorized create() {
-        return Act.isDev() ? new ActUnauthorized() : Unauthorized.INSTANCE;
+        return Act.isDev() ? new ActUnauthorized() : Unauthorized.get();
     }
 
     public static Unauthorized create(String realm) {
-        return Act.isDev() ? new ActUnauthorized(realm) : new Unauthorized(realm);
+        return Act.isDev() ? new ActUnauthorized(realm) : Unauthorized.get(realm);
     }
 
     public static Unauthorized create(String realm, boolean digest) {

@@ -65,12 +65,9 @@ public @interface Controller {
      */
     class Util {
 
-        public static final Result NO_RESULT = new NoResult();
-        public static final Ok OK = Ok.INSTANCE;
+        public static final Result NO_RESULT = NoResult.get();
+        public static final Ok OK = Ok.get();
         public static final Result JSON_OK = new Result(H.Status.OK, "{}") {};
-        public static final NotFound NOT_FOUND = NotFound.INSTANCE;
-        public static final Forbidden FORBIDDEN = Forbidden.INSTANCE;
-        public static final BadRequest BAD_REQUEST = BadRequest.INSTANCE;
 
         /**
          * Returns an {@link Ok} result
@@ -90,11 +87,11 @@ public @interface Controller {
         }
 
         public static Result notModified() {
-            return NotModified.INSTANCE;
+            return NotModified.get();
         }
 
         public static Result notModified(String etag, Object... args) {
-            return new NotModified(etag, args);
+            return NotModified.get(etag, args);
         }
 
         /**
@@ -356,7 +353,7 @@ public @interface Controller {
         }
 
         public static Result redirect(String url, Object... args) {
-            return new Redirect(url, args);
+            return Redirect.get(url, args);
         }
 
         /**
@@ -380,7 +377,7 @@ public @interface Controller {
          * @param args the message format arguments
          */
         public static Result html(String msg, Object... args) {
-            return new RenderHtml(msg, args);
+            return RenderHtml.get(msg, args);
         }
 
         /**
@@ -392,7 +389,7 @@ public @interface Controller {
          * @param args the message format arguments
          */
         public static Result json(String msg, Object... args) {
-            return new RenderJSON(msg, args);
+            return RenderJSON.get(msg, args);
         }
 
         /**
@@ -402,7 +399,7 @@ public @interface Controller {
          * @param data the data to be rendered as JSON string
          */
         public static Result json(Object data) {
-            return new RenderJSON(data);
+            return RenderJSON.get(data);
         }
 
         /**
@@ -413,7 +410,7 @@ public @interface Controller {
          * @param data the varargs of Object to be put into the JSON map
          */
         public static Result jsonMap(Object... data) {
-            return new RenderJsonMap();
+            return RenderJsonMap.get();
         }
 
 
@@ -499,7 +496,7 @@ public @interface Controller {
          * @param args
          */
         public static Result render(Object... args) {
-            return new RenderAny();
+            return RenderAny.get();
         }
 
         /**
@@ -509,7 +506,7 @@ public @interface Controller {
          * @param args
          */
         public static Result renderTemplate(Object... args) {
-            return new RenderTemplate();
+            return RenderTemplate.get();
         }
 
         public static Result inferResult(Result r, ActionContext actionContext) {
@@ -522,7 +519,7 @@ public @interface Controller {
                 if (!s.startsWith("[") && !s.startsWith("{")) {
                     s = S.fmt("{\"result\": \"%s\"}", org.rythmengine.utils.S.escapeJSON(s));
                 }
-                return new RenderJSON(s);
+                return RenderJSON.get(s);
             }
             H.Format fmt = actionContext.accept();
             if (HTML == fmt || H.Format.UNKNOWN == fmt) {
@@ -543,7 +540,7 @@ public @interface Controller {
 
         public static Result inferResult(Map<String, Object> map, ActionContext actionContext) {
             if (actionContext.acceptJson()) {
-                return new RenderJSON(map);
+                return RenderJSON.get(map);
             }
             return new RenderTemplate(map);
         }
@@ -555,7 +552,7 @@ public @interface Controller {
          */
         public static Result inferResult(Object[] array, ActionContext actionContext) {
             if (actionContext.acceptJson()) {
-                return new RenderJSON(array);
+                return RenderJSON.get(array);
             }
             throw E.tbd("render template with render args in array");
         }
@@ -571,7 +568,7 @@ public @interface Controller {
          */
         public static Result inferResult(InputStream is, ActionContext actionContext) {
             if (actionContext.acceptJson()) {
-                return new RenderJSON(IO.readContentAsString(is));
+                return RenderJSON.get(IO.readContentAsString(is));
             } else {
                 return new RenderBinary(is, null, true);
             }
@@ -588,7 +585,7 @@ public @interface Controller {
          */
         public static Result inferResult(File file, ActionContext actionContext) {
             if (actionContext.acceptJson()) {
-                return new RenderJSON(IO.readContentAsString(file));
+                return RenderJSON.get(IO.readContentAsString(file));
             } else {
                 return new RenderBinary(file);
             }
@@ -596,7 +593,7 @@ public @interface Controller {
 
         public static Result inferResult(ISObject sobj, ActionContext context) {
             if (context.acceptJson()) {
-                return new RenderJSON(sobj.asString());
+                return RenderJSON.get(sobj.asString());
             } else {
                 return binary(sobj);
             }
@@ -643,7 +640,7 @@ public @interface Controller {
                 if (hasTemplate) {
                     return inferToTemplate((Map) v, context);
                 }
-                return new RenderJSON(v);
+                return RenderJSON.get(v);
             } else if (hasTemplate && v instanceof Object[]) {
                 throw E.tbd("Render template with array");
             } else {
@@ -651,7 +648,7 @@ public @interface Controller {
                 if (Act.isProd() && v instanceof Versioned && req.method().safe()) {
                     String version = ((Versioned) v)._version();
                     if (req.etagMatches(version)) {
-                        return NotModified.INSTANCE;
+                        return NotModified.get();
                     } else {
                         context.resp().etag(version);
                     }
@@ -670,9 +667,9 @@ public @interface Controller {
                     PropertySpec.MetaInfo propertySpec = PropertySpec.MetaInfo.withCurrent(meta, context);
                     try {
                         if (null == propertySpec) {
-                            return new RenderJSON(v);
+                            return RenderJSON.get(v);
                         }
-                        return new FilteredRenderJSON(v, propertySpec, context);
+                        return FilteredRenderJSON.get(v, propertySpec, context);
                     } finally {
                         if (meta.disableJsonCircularRefDetect()) {
                             DisableFastJsonCircularReferenceDetect.option.set(false);
@@ -683,7 +680,7 @@ public @interface Controller {
                     return new FilteredRenderXML(v, propertySpec, context);
                 } else if (context.accept() == H.Format.CSV) {
                     PropertySpec.MetaInfo propertySpec = PropertySpec.MetaInfo.withCurrent(meta, context);
-                    return new RenderCSV(v, propertySpec, context);
+                    return RenderCSV.get(v, propertySpec, context);
                 } else {
                     String s = meta.returnType().getDescriptor().startsWith("[") ? $.toString2(v) : v.toString();
                     return inferResult(s, context);
@@ -693,7 +690,7 @@ public @interface Controller {
 
         private static Result inferToTemplate(Object v, ActionContext actionContext) {
             actionContext.renderArg("result", v);
-            return new RenderTemplate();
+            return RenderTemplate.get();
         }
 
         private static Result inferToTemplate(Map map, ActionContext actionContext) {

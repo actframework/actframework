@@ -72,11 +72,11 @@ public class ActNotImplemented extends NotImplemented implements ActError {
     }
 
     public static NotImplemented create() {
-        return Act.isDev() ? new ActNotImplemented() : NotImplemented.INSTANCE;
+        return Act.isDev() ? new ActNotImplemented() : NotImplemented.get();
     }
 
     public static NotImplemented create(String msg, Object... args) {
-        return Act.isDev() ? new ActNotImplemented(msg, args) : new NotImplemented(msg, args);
+        return Act.isDev() ? new ActNotImplemented(msg, args) : NotImplemented.get(msg, args);
     }
 
     public static NotImplemented create(Throwable cause, String msg, Object ... args) {
