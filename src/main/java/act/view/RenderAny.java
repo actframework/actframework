@@ -62,7 +62,7 @@ public class RenderAny extends Result {
             new FilteredRenderXML(map, null, context).apply(context.req(), context.resp());
             return;
         } else if (HTML == fmt || TXT == fmt || CSV == fmt) {
-            new RenderTemplate().apply(context);
+            RenderTemplate.get().apply(context);
             return;
         } else if (PDF == fmt || XLS == fmt || XLSX == fmt || DOC == fmt || DOCX == fmt) {
             List<String> varNames = context.__appRenderArgNames();
@@ -90,4 +90,9 @@ public class RenderAny extends Result {
     public static RenderAny get() {
         return INSTANCE;
     }
+
+    public static void clearThreadLocals() {
+        RenderTemplate.renderArgsBag.remove();
+    }
+
 }

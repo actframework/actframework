@@ -16,8 +16,6 @@ public class RenderJsonMap extends RenderAny {
 
     public static final RenderJsonMap INSTANCE = new RenderJsonMap();
 
-    private Map<String, Object> renderArgs;
-
     public RenderJsonMap() {
     }
 

@@ -104,6 +104,14 @@ public @interface Controller {
             return new Accepted(statusMonitorUrl);
         }
 
+        public static Result notAcceptable() {
+            return NotAcceptable.get();
+        }
+
+        public static Result notAcceptable(String msg, Object... args) {
+            return NotAcceptable.get(msg, args);
+        }
+
         /**
          * Returns an {@link NotFound} result
          */
@@ -462,7 +470,7 @@ public @interface Controller {
          * @param args
          */
         public static Result template(Map<String, Object> args) {
-            return new RenderTemplate(args);
+            return RenderTemplate.get(args);
         }
 
         /**
@@ -526,14 +534,14 @@ public @interface Controller {
                 return html(s);
             }
             if (TXT == fmt || CSV == fmt) {
-                return new RenderText(fmt, s);
+                return RenderText.get(fmt, s);
             }
             if (XML == fmt) {
                 s = s.trim();
                 if (!s.startsWith("<") && !s.endsWith(">")) {
                     s = S.fmt("<result>%s</result>", s);
                 }
-                return new RenderText(fmt, s);
+                return RenderText.get(fmt, s);
             }
             throw E.unexpected("Cannot apply text result to format: %s", fmt);
         }
@@ -542,7 +550,7 @@ public @interface Controller {
             if (actionContext.acceptJson()) {
                 return RenderJSON.get(map);
             }
-            return new RenderTemplate(map);
+            return RenderTemplate.get(map);
         }
 
         /**
@@ -694,7 +702,7 @@ public @interface Controller {
         }
 
         private static Result inferToTemplate(Map map, ActionContext actionContext) {
-            return new RenderTemplate(map);
+            return RenderTemplate.get(map);
         }
     }
 

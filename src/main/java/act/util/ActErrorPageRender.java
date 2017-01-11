@@ -22,6 +22,8 @@ public class ActErrorPageRender extends ErrorPageRenderer {
 
     public static final String ARG_ERROR = "_error";
 
+    private volatile Boolean i18n;
+
     private Map<String, $.Var<Template>> templateCache = new HashMap<>();
 
     @Override
@@ -34,7 +36,11 @@ public class ActErrorPageRender extends ErrorPageRenderer {
         Template t = getTemplate(code, context);
         if (null == t) {
             if (context.acceptJson()) {
-                Map<String, Object> params = C.newMap("code", code, "message", error.getMessage());
+                String errorMsg = error.getMessage();
+                if (i18n()) {
+                    errorMsg = context.i18n(errorMsg);
+                }
+                Map<String, Object> params = C.newMap("code", code, "message", errorMsg);
                 return JSON.toJSONString(params);
             }
             return null;
@@ -67,5 +73,16 @@ public class ActErrorPageRender extends ErrorPageRenderer {
             templateCache.put(key, templateBag);
         }
         return templateBag.get();
+    }
+
+    private boolean i18n() {
+        if (null == i18n) {
+            synchronized (this) {
+                if (null == i18n) {
+                    i18n = Act.appConfig().i18nEnabled();
+                }
+            }
+        }
+        return i18n;
     }
 }

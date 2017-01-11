@@ -141,7 +141,7 @@ public interface ActContext<CTX_TYPE extends ActContext> extends ParamValueProvi
             return this.locale;
         }
 
-        public final Locale locale(boolean required) {
+        public Locale locale(boolean required) {
             E.illegalStateIf(null == this.locale, "Locale is null, make sure your `act.i18n` configuration is set to `true`");
             return this.locale;
         }

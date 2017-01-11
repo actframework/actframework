@@ -627,6 +627,21 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
         }
     }
 
+    @Override
+    public Locale locale(boolean required) {
+        if (required) {
+            if (null == locale()) {
+                localeResolver.resolve();
+            }
+        }
+        return super.locale(required);
+    }
+
+    @Override
+    public String i18n(String msgId, Object... args) {
+        return super.i18n(msgId, args);
+    }
+
     /**
      * Dissolve session and flash into cookies.
      * <p><b>Note</b> this method must be called

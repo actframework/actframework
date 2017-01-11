@@ -232,11 +232,12 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
     }
 
     private void onResult(Result result, ActionContext context) {
-
         context.dissolve();
+        boolean isRenderAny = false;
         try {
             if (result instanceof RenderAny) {
                 RenderAny any = (RenderAny) result;
+                isRenderAny = true;
                 any.apply(context);
             } else {
                 H.Request req = context.req();
@@ -246,6 +247,10 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
         } catch (RuntimeException e) {
             context.cacheTemplate(null);
             throw e;
+        } finally {
+            if (isRenderAny) {
+                RenderAny.clearThreadLocals();
+            }
         }
     }
 
