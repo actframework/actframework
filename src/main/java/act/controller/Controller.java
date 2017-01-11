@@ -365,7 +365,7 @@ public @interface Controller {
          * @param args the message format arguments
          */
         public static Result text(String msg, Object... args) {
-            return new RenderText(msg, args);
+            return RenderText.get(msg, args);
         }
 
         /**
