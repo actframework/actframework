@@ -20,7 +20,6 @@ import act.data.util.ActPropertyHandlerFactory;
 import act.event.AppEventListenerBase;
 import act.event.EventBus;
 import act.event.bytecode.SimpleEventListenerByteCodeScanner;
-import act.handler.builtin.StaticFileGetter;
 import act.handler.builtin.StaticResourceGetter;
 import act.inject.DependencyInjectionBinder;
 import act.inject.DependencyInjector;
@@ -970,7 +969,7 @@ public class App extends DestroyableBase {
     }
 
     private void loadBuiltInRoutes() {
-        router().addMapping(H.Method.GET, "/asset/", new StaticFileGetter(layout().asset(base())), RouteSource.BUILD_IN);
+        router().addMapping(H.Method.GET, "/asset/", new StaticResourceGetter("asset"), RouteSource.BUILD_IN);
         router().addMapping(H.Method.GET, "/asset/act/", new StaticResourceGetter("asset/act"), RouteSource.BUILD_IN);
         router().addMapping(H.Method.GET, "/~upload/{path}", new UploadFileStorageService.UploadFileGetter(), RouteSource.BUILD_IN);
         router().addContext("act.", "/~");
