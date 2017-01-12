@@ -10,7 +10,7 @@ public class AlwaysNotImplemented extends FastRequestHandler {
 
     @Override
     public void handle(ActionContext context) {
-        NotImplemented.INSTANCE.apply(context.req(), context.resp());
+        NotImplemented.get().apply(context.req(), context.resp());
     }
 
     @Override

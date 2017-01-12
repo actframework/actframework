@@ -10,10 +10,7 @@ import act.cli.tree.TreeNode;
 import act.conf.AppConfig;
 import act.controller.ParamNames;
 import act.handler.*;
-import act.handler.builtin.Echo;
-import act.handler.builtin.Redirect;
-import act.handler.builtin.StaticFileGetter;
-import act.handler.builtin.UnknownHttpMethodHandler;
+import act.handler.builtin.*;
 import act.handler.builtin.controller.RequestHandlerProxy;
 import act.util.DestroyableBase;
 import org.osgl.$;
@@ -34,10 +31,8 @@ import java.lang.reflect.Method;
 import java.util.*;
 import java.util.regex.Pattern;
 
-@ActComponent
 public class Router extends AppServiceBase<Router> {
 
-    private static final NotFound NOT_FOUND = NotFound.INSTANCE;
     private static final H.Method[] targetMethods = new H.Method[]{
             H.Method.GET, H.Method.POST, H.Method.DELETE, H.Method.PUT};
     private static final Logger logger = L.get(Router.class);
@@ -613,7 +608,7 @@ public class Router extends AppServiceBase<Router> {
     }
 
     private static Result notFound() {
-        throw NOT_FOUND;
+        throw NotFound.get();
     }
 
     public final class f {
@@ -891,6 +886,12 @@ public class Router extends AppServiceBase<Router> {
             @Override
             public RequestHandler resolve(CharSequence base, App app) {
                 return new StaticFileGetter(app.file(base.toString()));
+            }
+        },
+        resource() {
+            @Override
+            public RequestHandler resolve(CharSequence payload, App app) {
+                return new StaticResourceGetter(payload.toString());
             }
         },
         externalfile() {

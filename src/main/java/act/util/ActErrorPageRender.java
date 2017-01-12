@@ -40,8 +40,9 @@ public class ActErrorPageRender extends ErrorPageRenderer {
                 if (null == errorMsg) {
                     errorMsg = MvcConfig.errorMessage(error.status());
                 }
-                // we have to force to do i18n for error message without regarding to i18n setting
-                errorMsg = context.i18n(MvcConfig.class, errorMsg);
+                if (i18n()) {
+                    errorMsg = context.i18n(MvcConfig.class, errorMsg);
+                }
                 Map<String, Object> params = C.newMap("code", code, "message", errorMsg);
                 return JSON.toJSONString(params);
             }
