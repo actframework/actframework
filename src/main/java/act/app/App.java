@@ -53,6 +53,8 @@ import org.osgl.util.*;
 
 import javax.enterprise.context.ApplicationScoped;
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.*;
 import java.util.*;
 
 import static act.app.event.AppEventId.*;
@@ -109,6 +111,7 @@ public class App extends DestroyableBase {
     private Thread mainThread;
     private Set<String> scanList;
     private List<File> baseDirs;
+    private volatile File tmpDir;
 
     protected App() {
         INST = this;
@@ -482,11 +485,24 @@ public class App extends DestroyableBase {
     }
 
     public File tmpDir() {
-        return new File(this.layout().target(appBase), "tmp");
+        if (null == tmpDir) {
+            synchronized (this) {
+                if (Act.isDev()) {
+                    tmpDir = new File(this.layout().target(appBase), "tmp");
+                } else {
+                    try {
+                        tmpDir = java.nio.file.Files.createTempDirectory(name()).toFile();
+                    } catch (IOException e) {
+                        throw E.ioException(e);
+                    }
+                }
+            }
+        }
+        return tmpDir;
     }
 
     public File file(String path) {
-        return new File(home(), path);
+        return new File(base(), path);
     }
 
     public File resource(String path) {

@@ -34,10 +34,6 @@ public enum RuntimeDirs {
         return new File(classes(app), RouteTableRouterBuilder.ROUTES_FILE);
     }
 
-    public static File asset(App app) {
-        return new File(app.home(), ASSET);
-    }
-
     public static File classes(App app) {
         return new File(app.home(), CLASSES);
     }
