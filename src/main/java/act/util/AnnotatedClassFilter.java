@@ -8,7 +8,7 @@ public abstract class AnnotatedClassFilter<ANNOTATION_TYPE extends Annotation> e
         super(null, annotationType);
     }
 
-    public AnnotatedClassFilter(boolean noAbstract, boolean publicOnly, Class<ANNOTATION_TYPE> annotationType) {
+    public AnnotatedClassFilter(boolean publicOnly, boolean noAbstract, Class<ANNOTATION_TYPE> annotationType) {
         super(publicOnly, noAbstract, null, annotationType);
     }
 }

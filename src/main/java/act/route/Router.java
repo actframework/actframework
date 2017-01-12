@@ -26,7 +26,6 @@ import org.osgl.mvc.result.Result;
 import org.osgl.util.*;
 
 import javax.enterprise.context.ApplicationScoped;
-import javax.swing.*;
 import java.io.File;
 import java.io.PrintStream;
 import java.io.Serializable;

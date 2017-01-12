@@ -3,7 +3,6 @@ package act;
 import act.app.ActionContext;
 import act.app.App;
 import act.app.SingletonRegistry;
-import act.app.data.StringValueResolverManager;
 import act.conf.AppConfig;
 import act.event.EventBus;
 import act.job.AppJobManager;

@@ -138,7 +138,22 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         actionContext.attribute("reflected_handler", this);
         ensureJsonDTOGenerated(actionContext);
         Object ctrl = controllerInstance(actionContext);
+
+        /*
+         * We will send back response immediately when param validation
+         * failed in the following cases:
+         * a) this is a data endpoint and accept JSON data
+         * b) there is no template associated with the endpoint
+         */
+        boolean failOnViolation = actionContext.acceptJson() || checkTemplate(actionContext);
+
         Object[] params = params(actionContext);
+
+        if (failOnViolation && actionContext.hasViolation()) {
+            String msg = actionContext.violationMessage(";");
+            return new BadRequest(msg);
+        }
+
         return invoke(handler, actionContext, ctrl, params);
     }
 
@@ -331,8 +346,12 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
             // we don't check template on interceptors
             return false;
         }
+        Boolean hasTemplate = context.hasTemplate();
+        if (null != hasTemplate) {
+            return hasTemplate;
+        }
         H.Format fmt = context.accept();
-        Boolean hasTemplate = templateCache.get(fmt);
+        hasTemplate = templateCache.get(fmt);
         if (null == hasTemplate || Act.isDev()) {
             if (!TemplatePathResolver.isAcceptFormatSupported(fmt)) {
                 hasTemplate = false;
@@ -342,6 +361,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
             }
             templateCache.put(fmt, hasTemplate);
         }
+        context.hasTemplate(hasTemplate);
         return hasTemplate;
     }
 

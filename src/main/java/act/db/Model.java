@@ -1,6 +1,8 @@
 package act.db;
 
-public interface Model<ID_TYPE, MODEL_TYPE extends Model> {
+import act.util.SimpleBean;
+
+public interface Model<ID_TYPE, MODEL_TYPE extends Model> extends SimpleBean {
     /**
      * Returns the ID (key) of this entity
      *

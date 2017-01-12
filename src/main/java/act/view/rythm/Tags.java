@@ -3,7 +3,6 @@ package act.view.rythm;
 import act.Act;
 import act.app.ActionContext;
 import act.route.Router;
-import org.osgl.inject.annotation.TypeOf;
 import org.rythmengine.RythmEngine;
 import org.rythmengine.template.JavaTagBase;
 import org.rythmengine.utils.S;

@@ -1,2 +1,6 @@
-@args int code, String msg
+@args org.osgl.mvc.result.ErrorResult _error, int code, String msg
+@if(_error) {
+{"code": @_error.status(), "message": "@_error.getMessage()"}
+} else {
 {"code": @code, "message": "@msg"}
+}

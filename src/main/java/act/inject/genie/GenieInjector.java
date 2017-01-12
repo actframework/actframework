@@ -24,7 +24,6 @@ import org.osgl.mvc.annotation.Bind;
 import org.osgl.mvc.annotation.Param;
 import org.osgl.util.C;
 import org.osgl.util.E;
-import org.osgl.util.S;
 
 import javax.inject.Inject;
 import javax.inject.Provider;

@@ -159,6 +159,9 @@ public class NetworkHandler extends DestroyableBase implements  $.Func1<ActionCo
         @Override
         public String apply(H.Request req, String url) throws NotAppliedException, Osgl.Break {
             int sz = url.length();
+            if (sz < 4) {
+                return url;
+            }
             int start = sz - 1;
             char c = url.charAt(start);
             char[] trait;

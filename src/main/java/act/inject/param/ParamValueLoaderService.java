@@ -86,7 +86,7 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
         List<ActionMethodParamAnnotationHandler> list = Act.pluginManager().pluginList(ActionMethodParamAnnotationHandler.class);
         for (ActionMethodParamAnnotationHandler h : list) {
             Set<Class<? extends Annotation>> set = h.listenTo();
-            for (Class<? extends Annotation> c: set) {
+            for (Class<? extends Annotation> c : set) {
                 allAnnotationHandlers.put(c, h);
             }
         }
@@ -162,12 +162,21 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
         return decorate(loader, BeanSpec.of(beanClass, injector), beanClass.getDeclaredAnnotations(), false);
     }
 
+    private boolean shouldWaive(Field field) {
+        int modifiers = field.getModifiers();
+        return Modifier.isStatic(modifiers)
+                || Modifier.isTransient(modifiers)
+                || field.isAnnotationPresent(NoBind.class)
+                || fieldBlackList.contains(field.getName())
+                || Object.class.equals(field.getDeclaringClass());
+    }
+
     private <T> Map<Field, ParamValueLoader> fieldLoaders(Class<T> beanClass) {
         Map<Field, ParamValueLoader> fieldLoaders = fieldRegistry.get(beanClass);
         if (null == fieldLoaders) {
             fieldLoaders = new HashMap<Field, ParamValueLoader>();
-            for (Field field: $.fieldsOf(beanClass, true)) {
-                if (field.isAnnotationPresent(NoBind.class) || fieldBlackList.contains(field.getName())) {
+            for (Field field : $.fieldsOf(beanClass, true)) {
+                if (shouldWaive(field)) {
                     continue;
                 }
                 Type type = field.getGenericType();
@@ -313,13 +322,45 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
             return buildCollectionLoader(key, rawType, elementType, targetSpec);
         }
         if (Map.class.isAssignableFrom(rawType)) {
-            Type keyType = Object.class;
-            Type valType = Object.class;
-            if (type instanceof ParameterizedType) {
-                Type[] typeParams = ((ParameterizedType) type).getActualTypeArguments();
-                keyType = typeParams[0];
-                valType = typeParams[1];
+            Class<?> mapClass = rawType;
+            Type mapType = type;
+            boolean canProceed = false;
+            Type[] typeParams = null;
+            while (true) {
+                if (mapType instanceof ParameterizedType) {
+                    typeParams = ((ParameterizedType) mapType).getActualTypeArguments();
+                    if (typeParams.length == 2) {
+                        canProceed = true;
+                        break;
+                    }
+                }
+                boolean foundInInterfaces = false;
+                Type[] ta = mapClass.getGenericInterfaces();
+                if (ta.length > 0) {
+                    mapType = null;
+                    for (Type t : ta) {
+                        if (t instanceof ParameterizedType) {
+                            if (Map.class.isAssignableFrom((Class) ((ParameterizedType) t).getRawType())) {
+                                mapType = t;
+                                mapClass = mapClass.getSuperclass();
+                                foundInInterfaces = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+                if (!foundInInterfaces) {
+                    mapType = mapClass.getGenericSuperclass();
+                    mapClass = mapClass.getSuperclass();
+                }
+                if (mapClass == Object.class) {
+                    break;
+                }
             }
+            E.unexpectedIf(!canProceed, "Cannot load Map type parameter loader: no generic type info available");
+
+            Type keyType = typeParams[0];
+            Type valType = typeParams[1];
             return buildMapLoader(key, rawType, keyType, valType, targetSpec);
         }
         return buildPojoLoader(key, rawType);
@@ -441,7 +482,7 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
         List<FieldLoader> fieldLoaders = C.newList();
         while (null != current && !current.equals(Object.class)) {
             for (Field field : current.getDeclaredFields()) {
-                if (Modifier.isStatic(field.getModifiers()) || fieldBlackList.contains(field.getName()) || field.isAnnotationPresent(NoBind.class) || field.getDeclaringClass() == Object.class) {
+                if (shouldWaive(field)) {
                     continue;
                 }
                 field.setAccessible(true);

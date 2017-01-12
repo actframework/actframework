@@ -1,5 +1,6 @@
 package act.util;
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -22,7 +23,7 @@ class ClassNodeDTO {
         this.modifiers = node.modifiers();
         ClassNode parent = node.parent();
         this.parent = parent == null ? null : parent.canonicalName();
-        convert(node.interfaces, interfaces);
+        convert(node.interfaces.values(), interfaces);
         convert(node.annotations, annotations);
         convert(node.annotated, annotated);
     }
@@ -87,7 +88,7 @@ class ClassNodeDTO {
         return new ClassNode(name, canonicalName, modifiers, infoBase);
     }
 
-    private static void convert(Set<ClassNode> from, Set<String> to) {
+    private static void convert(Collection<ClassNode> from, Set<String> to) {
         for (ClassNode node : from) {
             to.add(node.canonicalName());
         }

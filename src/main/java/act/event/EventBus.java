@@ -330,6 +330,10 @@ public class EventBus extends AppServiceBase<EventBus> {
                 emitSync(payload.getClass(), payload);
             }
         }
+
+        if (null != onceBus) {
+            onceBus.triggerSync(event);
+        }
         return this;
     }
 
@@ -379,6 +383,9 @@ public class EventBus extends AppServiceBase<EventBus> {
             }
         }
 
+        if (null != onceBus) {
+            onceBus.triggerAsync(event);
+        }
         return this;
     }
 
@@ -442,19 +449,32 @@ public class EventBus extends AppServiceBase<EventBus> {
         }
     }
 
+    public synchronized void emit(Enum<?> event, Object... args) {
+        emit(event.name(), args);
+    }
+
     public synchronized void emit(Object event, Object ... args) {
         callOn(event, adhocEventListeners.get(event), false, args);
         callOn(event, asyncAdhocEventListeners.get(event), true, args);
+        if (null != onceBus) {
+            onceBus.emit(event, args);
+        }
     }
 
     public synchronized void emitSync(Object event, Object ... args) {
         callOn(event, adhocEventListeners.get(event), false, args);
         callOn(event, asyncAdhocEventListeners.get(event), false, args);
+        if (null != onceBus) {
+            onceBus.emitSync(event, args);
+        }
     }
 
     public synchronized void emitAsync(Object event, Object ... args) {
         callOn(event, adhocEventListeners.get(event), true, args);
         callOn(event, asyncAdhocEventListeners.get(event), true, args);
+        if (null != onceBus) {
+            onceBus.emitAsync(event);
+        }
     }
 
     public synchronized void trigger(Object event, Object ... args) {

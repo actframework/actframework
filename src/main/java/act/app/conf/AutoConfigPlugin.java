@@ -33,7 +33,7 @@ public class AutoConfigPlugin extends AnnotatedTypeFinder {
     private static Field modifiersField;
 
     public AutoConfigPlugin() {
-        super(AutoConfig.class, new $.F2<App, String, Map<Class<? extends AppByteCodeScanner>, Set<String>>>() {
+        super(true, false, AutoConfig.class, new $.F2<App, String, Map<Class<? extends AppByteCodeScanner>, Set<String>>>() {
             @Override
             public Map<Class<? extends AppByteCodeScanner>, Set<String>> apply(final App app, final String className) throws NotAppliedException, $.Break {
                 app.eventBus().bind(AppEventId.PRE_START, new AppEventListenerBase() {

@@ -2,6 +2,7 @@ package act.mail;
 
 import act.Act;
 import act.app.App;
+import act.event.ActEvent;
 import act.util.ActContext;
 import act.view.Template;
 import act.view.ViewManager;
@@ -21,9 +22,13 @@ import javax.mail.internet.*;
 import java.io.File;
 import java.util.*;
 
-import static act.app.App.logger;
-
 public class MailerContext extends ActContext.Base<MailerContext> {
+
+    public static class InitEvent extends ActEvent<MailerContext> {
+        public InitEvent(MailerContext source) {
+            super(source);
+        }
+    }
 
     private static final Logger logger = LogManager.get(MailerContext.class);
 
@@ -43,6 +48,7 @@ public class MailerContext extends ActContext.Base<MailerContext> {
         super(app);
         this.confId = confId;
         _local.set(this);
+        app.eventBus().triggerSync(new InitEvent(this));
     }
 
     @Override
@@ -166,8 +172,12 @@ public class MailerContext extends ActContext.Base<MailerContext> {
         return null != subject ? subject : mailerConfig().subject();
     }
 
-    public MailerContext subject(String subject) {
-        this.subject = subject;
+    public MailerContext subject(String subject, Object ... args) {
+        if (app().config().i18nEnabled()) {
+            this.subject = i18n(subject, args);
+        } else {
+            this.subject = S.fmt(subject, args);
+        }
         return this;
     }
 

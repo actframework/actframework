@@ -5,6 +5,8 @@ import org.osgl.util.C;
 import org.osgl.util.E;
 
 import java.lang.reflect.Modifier;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
 public class ClassNode extends DestroyableBase {
@@ -15,7 +17,7 @@ public class ClassNode extends DestroyableBase {
     private int modifiers;
     private ClassNode parent;
     private transient Set<ClassNode> children = C.newSet();
-    Set<ClassNode> interfaces = C.newSet();
+    Map<String, ClassNode> interfaces = new HashMap<>();
     Set<ClassNode> annotations = C.newSet();
     Set<ClassNode> annotated = C.newSet();
 
@@ -81,6 +83,9 @@ public class ClassNode extends DestroyableBase {
     public ClassNode parent(String name) {
         this.parent = infoBase.node(name);
         this.parent.addChild(this);
+        for (ClassNode intf : parent.interfaces.values()) {
+            addInterface(intf);
+        }
         return this;
     }
 
@@ -93,14 +98,20 @@ public class ClassNode extends DestroyableBase {
      */
     public ClassNode addInterface(String name) {
         ClassNode intf = infoBase.node(name);
-        this.interfaces.add(intf);
-        intf.addChild(this);
+        addInterface(intf);
         return this;
     }
 
     void addInterface(ClassNode classNode) {
-        this.interfaces.add(classNode);
+        this.interfaces.put(classNode.name(), classNode);
         classNode.addChild(this);
+        for (ClassNode child : children) {
+            child.addInterface(classNode);
+        }
+    }
+
+    public boolean hasInterface(String name) {
+        return interfaces.containsKey(name);
     }
 
     /**
@@ -358,6 +369,9 @@ public class ClassNode extends DestroyableBase {
 
     ClassNode addChild(ClassNode node) {
         children.add(node);
+        for (ClassNode intf : interfaces.values()) {
+            node.addInterface(intf);
+        }
         return this;
     }
 }

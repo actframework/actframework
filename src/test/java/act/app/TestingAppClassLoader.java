@@ -1,10 +1,7 @@
 package act.app;
 
-import act.ActComponent;
-
 import java.io.File;
 
-@ActComponent
 public class TestingAppClassLoader extends AppClassLoader {
     public TestingAppClassLoader(App app) {
         super(app);

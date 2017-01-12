@@ -1,6 +1,5 @@
 package act.job;
 
-import act.app.App;
 import act.cli.*;
 import act.util.PropertySpec;
 import com.alibaba.fastjson.JSONObject;

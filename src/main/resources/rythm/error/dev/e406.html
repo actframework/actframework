@@ -1,0 +1,9 @@
+@extends(errorPage, header: "406 Not Acceptable Response")
+
+@{
+act.route.RouteInfo routeInfo = act.route.RouteInfo.of(_action);
+}
+
+@section(description) {
+Error handling request <code>@routeInfo.method() @routeInfo.path()</code>:
+}

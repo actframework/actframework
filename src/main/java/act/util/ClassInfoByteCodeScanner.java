@@ -54,7 +54,7 @@ public class ClassInfoByteCodeScanner extends AppByteCodeScannerBase {
             }
             if (null != interfaces) {
                 for (String intf: interfaces) {
-                    me.parent(intf);
+                    me.addInterface(intf);
                 }
             }
         }
