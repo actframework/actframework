@@ -231,6 +231,30 @@ public @interface Controller {
             }
         }
 
+        public static void badRequestIfBlank(String test) {
+            if (S.blank(test)) {
+                throw ActBadRequest.create();
+            }
+        }
+
+        public static void badRequestIfBlank(String test, String msg, Object... args) {
+            if (S.blank(test)) {
+                throw ActBadRequest.create(msg, args);
+            }
+        }
+
+        public static void badRequestIfNull(Object test) {
+            if (null == test) {
+                throw ActBadRequest.create();
+            }
+        }
+
+        public static void badRequestIfNull(Object test, String msg, Object... args) {
+            if (null == test) {
+                throw ActBadRequest.create(msg, args);
+            }
+        }
+
         public static void badRequestIfNot(boolean test) {
             if (!test) {
                 throw ActBadRequest.create();
