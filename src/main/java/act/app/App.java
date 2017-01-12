@@ -20,7 +20,6 @@ import act.data.util.ActPropertyHandlerFactory;
 import act.event.AppEventListenerBase;
 import act.event.EventBus;
 import act.event.bytecode.SimpleEventListenerByteCodeScanner;
-import act.handler.builtin.StaticFileGetter;
 import act.handler.builtin.StaticResourceGetter;
 import act.inject.DependencyInjectionBinder;
 import act.inject.DependencyInjector;
@@ -177,7 +176,7 @@ public class App extends DestroyableBase {
             if (null != appBase && appBase.isDirectory()) {
                 baseDirs.add(appBase);
             }
-            for (File baseDir: config.moduleBases()) {
+            for (File baseDir : config.moduleBases()) {
                 if (null != baseDir && baseDir.isDirectory()) {
                     baseDirs.add(baseDir);
                 }
@@ -219,7 +218,7 @@ public class App extends DestroyableBase {
         return dirs;
     }
 
-    public List<File> allResourceDirs (boolean requireTestProfile) {
+    public List<File> allResourceDirs(boolean requireTestProfile) {
         List<File> dirs = C.newList();
         dirs.addAll(resourceDirs());
         if (!requireTestProfile || "test".equals(Act.profile())) {
@@ -902,7 +901,7 @@ public class App extends DestroyableBase {
     private void initScanlist() {
         ClassLoader classLoader = getClass().getClassLoader();
         if (classLoader instanceof BootstrapClassLoader) {
-            scanList = ((BootstrapClassLoader)classLoader).scanList();
+            scanList = ((BootstrapClassLoader) classLoader).scanList();
         }
     }
 
@@ -975,7 +974,7 @@ public class App extends DestroyableBase {
     }
 
     private void loadBuiltInRoutes() {
-        router().addMapping(H.Method.GET, "/asset/", new StaticFileGetter(layout().asset(base())), RouteSource.BUILD_IN);
+        router().addMapping(H.Method.GET, "/asset/", new StaticResourceGetter("asset"), RouteSource.BUILD_IN);
         router().addMapping(H.Method.GET, "/asset/act/", new StaticResourceGetter("asset/act"), RouteSource.BUILD_IN);
         router().addMapping(H.Method.GET, "/~upload/{path}", new UploadFileStorageService.UploadFileGetter(), RouteSource.BUILD_IN);
         router().addContext("act.", "/~");
