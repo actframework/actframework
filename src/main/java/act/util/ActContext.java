@@ -142,8 +142,14 @@ public interface ActContext<CTX_TYPE extends ActContext> extends ParamValueProvi
         }
 
         public Locale locale(boolean required) {
-            E.illegalStateIf(null == this.locale, "Locale is null, make sure your `act.i18n` configuration is set to `true`");
-            return this.locale;
+            Locale locale = this.locale;
+            if (null == locale) {
+                if (!required) {
+                    return null;
+                }
+                locale = config().locale();
+            }
+            return locale;
         }
 
         public static final String DEF_RESOURCE_BUNDLE_NAME = I18n.DEF_RESOURCE_BUNDLE_NAME;
