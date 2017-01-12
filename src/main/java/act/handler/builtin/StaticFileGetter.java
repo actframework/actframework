@@ -45,27 +45,25 @@ public class StaticFileGetter extends FastRequestHandler {
         if (base.isDirectory()) {
             String path = context.paramVal(ParamNames.PATH);
             if (S.blank(path)) {
-                AlwaysBadRequest.INSTANCE.handle(context);
+                AlwaysForbidden.INSTANCE.handle(context);
                 return;
             }
-            fmt = contentType(path);
             file = new File(base, path);
             if (!file.exists()) {
                 AlwaysNotFound.INSTANCE.handle(context);
                 return;
             }
-            if (!file.canRead()) {
+            if (file.isDirectory() || !file.canRead()) {
                 AlwaysForbidden.INSTANCE.handle(context);
                 return;
             }
-        } else {
-            fmt = contentType(file.getPath());
         }
-        InputStream is = new BufferedInputStream(IO.is(file));
         H.Response resp = context.resp();
+        fmt = contentType(file.getPath());
         if (null != fmt && H.Format.UNKNOWN != fmt) {
             resp.contentType(fmt.contentType());
         }
+        InputStream is = new BufferedInputStream(IO.is(file));
         IO.copy(is, context.resp().outputStream());
     }
 
