@@ -35,6 +35,9 @@ public class I18n {
     }
 
     public static String i18n(boolean ignoreError, Locale locale, String bundleName, String msgId, Object... args) {
+        if (null == msgId) {
+            return "";
+        }
         ResourceBundle bundle = ResourceBundle.getBundle(bundleName, $.notNull(locale));
         String msg = msgId;
         if (ignoreError) {
