@@ -3,11 +3,9 @@ package act.plugin;
 import act.Destroyable;
 import act.app.App;
 import act.util.DestroyableBase;
-import org.osgl.util.C;
 
 import javax.enterprise.context.ApplicationScoped;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 public class AppServicePluginManager extends DestroyableBase {

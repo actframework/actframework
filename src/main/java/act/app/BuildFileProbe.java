@@ -1,7 +1,6 @@
 package act.app;
 
 import act.Act;
-import act.ActComponent;
 import act.plugin.Plugin;
 import org.osgl.$;
 import org.osgl.exception.NotAppliedException;
@@ -15,7 +14,6 @@ import java.util.List;
  * by inspecting a certain application build file, e.g. pom.xml for maven
  * based application
  */
-@ActComponent
 public class BuildFileProbe extends ProjectLayoutProbe {
 
     public interface BuildFileNameProvider {
@@ -39,7 +37,6 @@ public class BuildFileProbe extends ProjectLayoutProbe {
         protected abstract ProjectLayout parse(File file);
     }
 
-    @ActComponent
     public static abstract class StringParser
             extends $.F1<String, ProjectLayout>
             implements BuildFileNameProvider, Plugin {

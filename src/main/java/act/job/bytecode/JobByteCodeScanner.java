@@ -1,6 +1,5 @@
 package act.job.bytecode;
 
-import act.ActComponent;
 import act.app.AppByteCodeScannerBase;
 import act.app.event.AppEventId;
 import act.asm.AnnotationVisitor;
@@ -26,7 +25,6 @@ import java.util.List;
 /**
  * Scan class to collect Job class meta info
  */
-@ActComponent
 public class JobByteCodeScanner extends AppByteCodeScannerBase {
 
     private JobAnnotationProcessor annotationProcessor;

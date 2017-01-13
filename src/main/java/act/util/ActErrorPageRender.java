@@ -6,14 +6,11 @@ import act.view.Template;
 import act.view.ViewManager;
 import com.alibaba.fastjson.JSON;
 import org.osgl.$;
-import org.osgl.Osgl;
-import org.osgl.exception.NotAppliedException;
 import org.osgl.http.H;
 import org.osgl.mvc.ErrorPageRenderer;
 import org.osgl.mvc.MvcConfig;
 import org.osgl.mvc.result.ErrorResult;
 import org.osgl.util.C;
-import org.osgl.util.IO;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -35,16 +32,32 @@ public class ActErrorPageRender extends ErrorPageRenderer {
         int code = error.statusCode();
         Template t = getTemplate(code, context);
         if (null == t) {
-            if (context.acceptJson()) {
-                String errorMsg = error.getMessage();
-                if (null == errorMsg) {
-                    errorMsg = MvcConfig.errorMessage(error.status());
-                }
-                if (i18n()) {
-                    errorMsg = context.i18n(MvcConfig.class, errorMsg);
-                }
+            String errorMsg = error.getMessage();
+            if (null == errorMsg) {
+                errorMsg = MvcConfig.errorMessage(error.status());
+            }
+            if (i18n()) {
+                errorMsg = context.i18n(MvcConfig.class, errorMsg);
+            }
+            H.Format accept = context.accept();
+            if (H.Format.JSON == accept) {
                 Map<String, Object> params = C.newMap("code", code, "message", errorMsg);
                 return JSON.toJSONString(params);
+            } else if (H.Format.HTML == accept) {
+                String header = code + " " + errorMsg;
+                String content = "<!DOCTYPE html><html><head><title>"
+                        + header
+                        + "</title></head><body><h1>"
+                        + header + "</h1></body></html>";
+                return content;
+            } else if (H.Format.XML == accept) {
+                String content = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><error><code>"
+                        + code + "</code><message>" + errorMsg + "</message></error>";
+                return content;
+            } else if (H.Format.CSV == accept) {
+                return "code,message\n" + code + "," + errorMsg;
+            } else if (H.Format.TXT == accept) {
+                return code + " " + errorMsg;
             }
             return null;
         }

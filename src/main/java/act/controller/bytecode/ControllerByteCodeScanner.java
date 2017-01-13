@@ -1,6 +1,5 @@
 package act.controller.bytecode;
 
-import act.ActComponent;
 import act.app.App;
 import act.app.AppByteCodeScannerBase;
 import act.app.event.AppEventId;
@@ -38,7 +37,6 @@ import java.util.Map;
 /**
  * New controller scanner implementation
  */
-@ActComponent
 public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
 
     private final static Logger logger = L.get(ControllerByteCodeScanner.class);

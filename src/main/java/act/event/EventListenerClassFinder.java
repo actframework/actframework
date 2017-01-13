@@ -1,6 +1,5 @@
 package act.event;
 
-import act.ActComponent;
 import act.app.App;
 import act.app.event.AppEvent;
 import act.app.event.AppEventId;
@@ -12,7 +11,6 @@ import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.EventObject;
 
-@ActComponent
 public class EventListenerClassFinder extends SubTypeFinder<ActEventListener> {
 
     public EventListenerClassFinder() {

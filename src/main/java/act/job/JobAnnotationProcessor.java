@@ -1,6 +1,5 @@
 package act.job;
 
-import act.ActComponent;
 import act.app.App;
 import act.app.AppHolderBase;
 import act.app.event.AppEventId;
@@ -14,7 +13,6 @@ import org.osgl.util.S;
 import java.lang.annotation.Annotation;
 import java.util.List;
 
-@ActComponent
 public class JobAnnotationProcessor extends AppHolderBase<JobAnnotationProcessor> {
 
     private AppJobManager manager;

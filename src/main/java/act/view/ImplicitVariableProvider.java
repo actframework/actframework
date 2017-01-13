@@ -1,7 +1,6 @@
 package act.view;
 
 import act.Act;
-import act.ActComponent;
 import act.plugin.Plugin;
 
 import java.util.List;
@@ -10,7 +9,6 @@ import java.util.List;
  * Plugin developer could extend this interface to inject
  * implicit variables to view template
  */
-@ActComponent
 public abstract class ImplicitVariableProvider implements Plugin {
 
     /**

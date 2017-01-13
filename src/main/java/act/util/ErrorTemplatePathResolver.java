@@ -1,9 +1,7 @@
 package act.util;
 
 import act.Act;
-import act.app.ActionContext;
 import org.osgl.http.H;
-import org.osgl.mvc.result.ErrorResult;
 import org.osgl.util.S;
 
 import static org.osgl.http.H.Format.*;

@@ -1,10 +1,8 @@
 package act.app;
 
-import act.ActComponent;
 import act.util.ClassInfoRepository;
 import org.osgl.util.E;
 
-@ActComponent
 public class AppClassInfoRepository extends ClassInfoRepository implements AppService {
 
     private App app;

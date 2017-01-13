@@ -1,6 +1,5 @@
 package act.util;
 
-import act.ActComponent;
 import act.app.App;
 import act.app.event.AppEventId;
 import act.event.AppEventListenerBase;
@@ -17,7 +16,6 @@ import java.util.EventObject;
  * or indirectly, or implement a specified type directly
  * or indirectly
  */
-@ActComponent
 public abstract class SubTypeFinder<T> extends AppServicePlugin {
 
     protected static Logger logger = L.get(SubTypeFinder.class);

@@ -1,6 +1,5 @@
 package act.app.data;
 
-import act.ActComponent;
 import act.app.App;
 import act.app.AppServiceBase;
 import act.conf.AppConfig;
@@ -12,7 +11,6 @@ import org.osgl.util.StringValueResolver;
 
 import java.util.Map;
 
-@ActComponent
 public class StringValueResolverManager extends AppServiceBase<StringValueResolverManager> {
 
     private Map<Class, StringValueResolver> resolvers = C.newMap();

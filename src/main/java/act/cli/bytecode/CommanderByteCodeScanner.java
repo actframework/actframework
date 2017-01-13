@@ -1,7 +1,6 @@
 package act.cli.bytecode;
 
 import act.Act;
-import act.ActComponent;
 import act.app.AppByteCodeScannerBase;
 import act.asm.*;
 import act.cli.CliDispatcher;
@@ -23,7 +22,6 @@ import java.util.*;
 /**
  * Scan Commander class bytecode
  */
-@ActComponent
 public class CommanderByteCodeScanner extends AppByteCodeScannerBase {
 
     private final static Logger logger = L.get(CommanderByteCodeScanner.class);

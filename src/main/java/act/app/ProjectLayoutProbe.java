@@ -1,7 +1,6 @@
 package act.app;
 
 import act.Act;
-import act.ActComponent;
 import act.plugin.Plugin;
 import act.util.DescendantClassFilter;
 import org.osgl.$;
@@ -12,7 +11,6 @@ import java.io.File;
  * Base class defines the application project layout probe contract
  * and utilities
  */
-@ActComponent
 public abstract class ProjectLayoutProbe implements Plugin {
 
     /**

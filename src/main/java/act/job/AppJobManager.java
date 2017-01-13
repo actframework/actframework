@@ -1,7 +1,6 @@
 package act.job;
 
 import act.Act;
-import act.ActComponent;
 import act.Destroyable;
 import act.app.App;
 import act.app.AppServiceBase;
@@ -25,7 +24,6 @@ import java.util.concurrent.*;
 
 import static act.app.App.logger;
 
-@ActComponent
 public class AppJobManager extends AppServiceBase<AppJobManager> {
 
     private ScheduledThreadPoolExecutor executor;

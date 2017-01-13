@@ -1,6 +1,5 @@
 package act.util;
 
-import act.ActComponent;
 import act.asm.*;
 import act.data.annotation.Data;
 import org.osgl.$;
@@ -14,7 +13,6 @@ import java.util.List;
  * A tool to enhance a object by generating common {@link Object}
  * methods, e.g. {@link Object#equals(Object)}
  */
-@ActComponent
 public class DataObjectEnhancer extends AppByteCodeEnhancer<DataObjectEnhancer> {
 
     private ObjectMetaInfo metaInfo;

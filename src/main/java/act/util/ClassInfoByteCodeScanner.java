@@ -1,6 +1,5 @@
 package act.util;
 
-import act.ActComponent;
 import act.app.AppByteCodeScannerBase;
 import act.app.event.AppEventId;
 import act.asm.AnnotationVisitor;
@@ -9,7 +8,6 @@ import act.event.AppEventListenerBase;
 
 import java.util.EventObject;
 
-@ActComponent
 public class ClassInfoByteCodeScanner extends AppByteCodeScannerBase {
 
     private ClassInfoRepository classInfoRepository;

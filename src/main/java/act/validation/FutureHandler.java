@@ -1,6 +1,5 @@
 package act.validation;
 
-import act.ActComponent;
 import act.app.ActionContext;
 import act.controller.ActionMethodParamAnnotationHandlerPlugin;
 import org.osgl.$;
@@ -11,7 +10,6 @@ import java.lang.annotation.Annotation;
 import java.util.Date;
 import java.util.Set;
 
-@ActComponent
 public class FutureHandler extends ActionMethodParamAnnotationHandlerPlugin {
 
     @Override

@@ -1,6 +1,5 @@
 package act.util;
 
-import act.ActComponent;
 import act.app.App;
 import act.app.AppByteCodeScanner;
 import act.app.AppByteCodeScannerBase;
@@ -13,7 +12,6 @@ import java.lang.annotation.Annotation;
 import java.util.Map;
 import java.util.Set;
 
-@ActComponent
 public abstract class AnnotatedTypeFinder extends AppCodeScannerPluginBase {
 
     private $.Func2<App, String, Map<Class<? extends AppByteCodeScanner>, Set<String>>> foundHandler;
@@ -59,7 +57,6 @@ public abstract class AnnotatedTypeFinder extends AppCodeScannerPluginBase {
         return true;
     }
 
-    @ActComponent
     private class ByteCodeSensor extends AppByteCodeScannerBase {
         private ClassDetector detector;
         private $.Func2<App, String, Map<Class<? extends AppByteCodeScanner>, Set<String>>> foundHandler = AnnotatedTypeFinder.this.foundHandler;

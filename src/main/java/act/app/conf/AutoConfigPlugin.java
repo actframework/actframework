@@ -1,6 +1,5 @@
 package act.app.conf;
 
-import act.ActComponent;
 import act.app.App;
 import act.app.AppByteCodeScanner;
 import act.app.data.StringValueResolverManager;
@@ -25,7 +24,6 @@ import java.util.EventObject;
 import java.util.Map;
 import java.util.Set;
 
-@ActComponent
 public class AutoConfigPlugin extends AnnotatedTypeFinder {
 
     private static final Logger logger = LogManager.get(AutoConfigPlugin.class);

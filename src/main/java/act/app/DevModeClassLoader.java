@@ -1,7 +1,6 @@
 package act.app;
 
 import act.Act;
-import act.ActComponent;
 import act.controller.meta.ControllerClassMetaInfo;
 import act.metric.Timer;
 import act.util.Files;
@@ -27,7 +26,6 @@ import static act.app.App.F.*;
  * Dev mode application class loader, which is able to
  * load classes directly from app src folder
  */
-@ActComponent
 public class DevModeClassLoader extends AppClassLoader {
     private final static Logger logger = L.get(DevModeClassLoader.class);
 

@@ -1,7 +1,6 @@
 package act.route;
 
 import act.Act;
-import act.ActComponent;
 import act.Destroyable;
 import act.app.ActionContext;
 import act.app.App;

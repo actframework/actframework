@@ -1,6 +1,5 @@
 package act.app;
 
-import act.ActComponent;
 import org.osgl.logging.L;
 import org.osgl.logging.Logger;
 import org.osgl.util.C;
@@ -11,7 +10,6 @@ import java.util.List;
  * Manage {@link AppSourceCodeScanner} and {@link AppByteCodeScanner}
  * for the application
  */
-@ActComponent
 public class AppCodeScannerManager extends AppServiceBase<AppCodeScannerManager> {
 
     private static final Logger logger = L.get(AppCodeScannerManager.class);

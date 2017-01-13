@@ -1,7 +1,6 @@
 package act.db;
 
 import act.Act;
-import act.ActComponent;
 import act.app.App;
 import act.plugin.Plugin;
 import act.util.DestroyableBase;
@@ -11,7 +10,6 @@ import java.util.Map;
 /**
  * The base class for Database Plugin
  */
-@ActComponent
 public abstract class DbPlugin extends DestroyableBase implements Plugin {
     @Override
     public void register() {

@@ -1,6 +1,5 @@
 package act.mail;
 
-import act.ActComponent;
 import act.app.App;
 import act.app.AppHolderBase;
 import org.osgl.exception.ConfigurationException;
@@ -21,7 +20,6 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Properties;
 
-@ActComponent
 public class MailerConfig extends AppHolderBase {
 
     public static final Logger logger = LogManager.get(MailerConfig.class);

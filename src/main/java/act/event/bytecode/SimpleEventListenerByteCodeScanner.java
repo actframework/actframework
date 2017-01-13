@@ -1,6 +1,5 @@
 package act.event.bytecode;
 
-import act.ActComponent;
 import act.app.AppByteCodeScannerBase;
 import act.app.event.AppEventId;
 import act.asm.AnnotationVisitor;
