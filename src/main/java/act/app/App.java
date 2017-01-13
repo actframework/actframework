@@ -360,6 +360,9 @@ public class App extends DestroyableBase {
     protected void releaseResources() {
         mainThread.interrupt();
         logger.info("App shutting down ....");
+        if (config().i18nEnabled()) {
+            ResourceBundle.clearCache(classLoader);
+        }
 
         for (Daemon d : daemonRegistry.values()) {
             stopDaemon(d);

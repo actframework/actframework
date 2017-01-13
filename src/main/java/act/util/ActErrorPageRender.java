@@ -2,6 +2,7 @@ package act.util;
 
 import act.Act;
 import act.app.ActionContext;
+import act.i18n.I18n;
 import act.view.Template;
 import act.view.ViewManager;
 import com.alibaba.fastjson.JSON;
@@ -37,7 +38,11 @@ public class ActErrorPageRender extends ErrorPageRenderer {
                 errorMsg = MvcConfig.errorMessage(error.status());
             }
             if (i18n()) {
-                errorMsg = context.i18n(MvcConfig.class, errorMsg);
+                String translated = context.i18n(true, errorMsg);
+                if (translated == errorMsg) {
+                    translated = context.i18n(true, MvcConfig.class, errorMsg);
+                }
+                errorMsg = translated;
             }
             H.Format accept = context.accept();
             if (H.Format.JSON == accept) {

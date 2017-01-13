@@ -38,7 +38,7 @@ public class I18n {
         if (null == msgId) {
             return "";
         }
-        ResourceBundle bundle = ResourceBundle.getBundle(bundleName, $.notNull(locale));
+        ResourceBundle bundle = ResourceBundle.getBundle(bundleName, $.notNull(locale), Act.app().classLoader());
         String msg = msgId;
         if (ignoreError) {
             if (bundle.containsKey(msgId)) {
@@ -64,6 +64,7 @@ public class I18n {
             }
             msg = S.fmt(msg, resolvedArgs);
         }
+
         return msg;
     }
 

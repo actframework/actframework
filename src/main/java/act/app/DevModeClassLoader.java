@@ -296,14 +296,17 @@ public class DevModeClassLoader extends AppClassLoader {
         }
     };
 
-    private final FsEventListener confChangeListener = new FsEventListener() {
+    private final FsEventListener confChangeListener = new ResourceChangeListener() {
         @Override
         public void on(FsEvent... events) {
+            super.on(events);
             throw Act.requestRestart();
         }
     };
 
-    private final FsEventListener resourceChangeListener = new FsEventListener() {
+    private final FsEventListener resourceChangeListener = new ResourceChangeListener();
+
+    private class ResourceChangeListener implements FsEventListener  {
         @Override
         public void on(FsEvent... events) {
             int len = events.length;
@@ -312,20 +315,13 @@ public class DevModeClassLoader extends AppClassLoader {
                 List<String> paths = e.paths();
                 File[] files = new File[paths.size()];
                 int idx = 0;
-                boolean routeChanged = false;
                 for (String path : paths) {
-                    if (path.endsWith("/routes") || path.endsWith("\\routes")) {
-                        routeChanged = true;
-                    }
                     files[idx++] = new File(path);
                 }
                 switch (e.kind()) {
                     case CREATE:
                     case MODIFY:
                         app().builder().copyResources(files);
-                        if (routeChanged) {
-                            throw Act.requestRestart();
-                        }
                         break;
                     case DELETE:
                         app().builder().removeResources(files);
@@ -335,6 +331,6 @@ public class DevModeClassLoader extends AppClassLoader {
                 }
             }
         }
-    };
+    }
 
 }
