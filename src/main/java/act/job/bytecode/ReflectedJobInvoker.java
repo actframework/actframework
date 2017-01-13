@@ -1,21 +1,16 @@
 package act.job.bytecode;
 
 import act.app.App;
-import act.inject.DependencyInjector;
 import act.job.meta.JobClassMetaInfo;
 import act.job.meta.JobMethodMetaInfo;
 import com.esotericsoftware.reflectasm.MethodAccess;
 import org.osgl.$;
 import org.osgl.exception.NotAppliedException;
 import org.osgl.inject.BeanSpec;
-import org.osgl.util.C;
 import org.osgl.util.E;
 
-import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.lang.reflect.Type;
-import java.util.ArrayList;
 import java.util.List;
 
 /**

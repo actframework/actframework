@@ -317,8 +317,6 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         } else {
             try {
                 result = method.invoke(null, params);
-            } catch (Result r) {
-                return r;
             } catch (InvocationTargetException e) {
                 Throwable cause = e.getCause();
                 if (cause instanceof Result) {

@@ -23,7 +23,7 @@ import static org.osgl.http.H.Format.*;
  */
 public class RenderAny extends Result {
 
-    private Map<String, Object> renderArgs;
+    public static final RenderAny INSTANCE = new RenderAny();
 
     public RenderAny() {
         super(H.Status.OK);
@@ -62,7 +62,7 @@ public class RenderAny extends Result {
             new FilteredRenderXML(map, null, context).apply(context.req(), context.resp());
             return;
         } else if (HTML == fmt || TXT == fmt || CSV == fmt) {
-            new RenderTemplate().apply(context);
+            RenderTemplate.get().apply(context);
             return;
         } else if (PDF == fmt || XLS == fmt || XLSX == fmt || DOC == fmt || DOCX == fmt) {
             List<String> varNames = context.__appRenderArgNames();
@@ -86,4 +86,13 @@ public class RenderAny extends Result {
         }
         throw E.unexpected("Unknown accept content type: %s", fmt.contentType());
     }
+
+    public static RenderAny get() {
+        return INSTANCE;
+    }
+
+    public static void clearThreadLocals() {
+        RenderTemplate.renderArgsBag.remove();
+    }
+
 }

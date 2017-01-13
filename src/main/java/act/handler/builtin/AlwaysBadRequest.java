@@ -10,7 +10,7 @@ public class AlwaysBadRequest extends FastRequestHandler {
 
     @Override
     public void handle(ActionContext context) {
-        BadRequest.INSTANCE.apply(context.req(), context.resp());
+        BadRequest.get().apply(context.req(), context.resp());
     }
 
     @Override

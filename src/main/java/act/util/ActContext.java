@@ -13,13 +13,11 @@ import org.osgl.http.H;
 import org.osgl.mvc.util.ParamValueProvider;
 import org.osgl.util.C;
 import org.osgl.util.E;
-import org.osgl.util.S;
 
 import javax.enterprise.context.RequestScoped;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.ResourceBundle;
 
 import static act.app.App.logger;
 
@@ -143,9 +141,15 @@ public interface ActContext<CTX_TYPE extends ActContext> extends ParamValueProvi
             return this.locale;
         }
 
-        public final Locale locale(boolean required) {
-            E.illegalStateIf(null == this.locale, "Locale is null, make sure your `act.i18n` configuration is set to `true`");
-            return this.locale;
+        public Locale locale(boolean required) {
+            Locale locale = this.locale;
+            if (null == locale) {
+                if (!required) {
+                    return null;
+                }
+                locale = config().locale();
+            }
+            return locale;
         }
 
         public static final String DEF_RESOURCE_BUNDLE_NAME = I18n.DEF_RESOURCE_BUNDLE_NAME;

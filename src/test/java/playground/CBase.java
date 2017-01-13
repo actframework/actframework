@@ -28,7 +28,7 @@ public class CBase {
     }
 
     public static Result ok() {
-        return new Ok();
+        return Ok.get();
     }
 
     public static Result notFound(String message, Object... args) {

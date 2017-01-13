@@ -48,7 +48,7 @@ public class WithAppContext extends Trackable {
     }
 
     public Result foo() {
-        return new Ok();
+        return Ok.get();
     }
 
     public static void bar() {}

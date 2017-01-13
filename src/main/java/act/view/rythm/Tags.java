@@ -3,13 +3,11 @@ package act.view.rythm;
 import act.Act;
 import act.app.ActionContext;
 import act.route.Router;
-import org.osgl.inject.annotation.TypeOf;
 import org.rythmengine.RythmEngine;
 import org.rythmengine.template.JavaTagBase;
 import org.rythmengine.utils.S;
 
 import javax.inject.Inject;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -19,7 +17,8 @@ import java.util.Map;
  */
 public class Tags {
 
-    private List<JavaTagBase> fastTags = new ArrayList<>();
+    @Inject
+    private List<JavaTagBase> fastTags;
 
     public void register(RythmEngine engine) {
         for (JavaTagBase tag : fastTags) {

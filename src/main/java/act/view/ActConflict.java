@@ -71,11 +71,11 @@ public class ActConflict extends Conflict implements ActError {
     }
 
     public static Conflict create() {
-        return Act.isDev() ? new ActConflict() : Conflict.INSTANCE;
+        return Act.isDev() ? new ActConflict() : Conflict.get();
     }
 
     public static Conflict create(String msg, Object... args) {
-        return Act.isDev() ? new ActConflict(msg, args) : new Conflict(msg, args);
+        return Act.isDev() ? new ActConflict(msg, args) : Conflict.get(msg, args);
     }
 
     public static Conflict create(Throwable cause, String msg, Object ... args) {

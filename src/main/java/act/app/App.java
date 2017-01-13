@@ -47,11 +47,14 @@ import org.osgl.cache.CacheServiceProvider;
 import org.osgl.http.H;
 import org.osgl.http.HttpConfig;
 import org.osgl.logging.Logger;
+import org.osgl.mvc.MvcConfig;
 import org.osgl.storage.IStorageService;
 import org.osgl.util.*;
 
 import javax.enterprise.context.ApplicationScoped;
 import java.io.File;
+import java.io.IOException;
+import java.nio.file.*;
 import java.util.*;
 
 import static act.app.event.AppEventId.*;
@@ -108,6 +111,7 @@ public class App extends DestroyableBase {
     private Thread mainThread;
     private Set<String> scanList;
     private List<File> baseDirs;
+    private volatile File tmpDir;
 
     protected App() {
         INST = this;
@@ -175,7 +179,7 @@ public class App extends DestroyableBase {
             if (null != appBase && appBase.isDirectory()) {
                 baseDirs.add(appBase);
             }
-            for (File baseDir: config.moduleBases()) {
+            for (File baseDir : config.moduleBases()) {
                 if (null != baseDir && baseDir.isDirectory()) {
                     baseDirs.add(baseDir);
                 }
@@ -217,7 +221,7 @@ public class App extends DestroyableBase {
         return dirs;
     }
 
-    public List<File> allResourceDirs (boolean requireTestProfile) {
+    public List<File> allResourceDirs(boolean requireTestProfile) {
         List<File> dirs = C.newList();
         dirs.addAll(resourceDirs());
         if (!requireTestProfile || "test".equals(Act.profile())) {
@@ -481,11 +485,24 @@ public class App extends DestroyableBase {
     }
 
     public File tmpDir() {
-        return new File(this.layout().target(appBase), "tmp");
+        if (null == tmpDir) {
+            synchronized (this) {
+                if (Act.isDev()) {
+                    tmpDir = new File(this.layout().target(appBase), "tmp");
+                } else {
+                    try {
+                        tmpDir = java.nio.file.Files.createTempDirectory(name()).toFile();
+                    } catch (IOException e) {
+                        throw E.ioException(e);
+                    }
+                }
+            }
+        }
+        return tmpDir;
     }
 
     public File file(String path) {
-        return new File(home(), path);
+        return new File(base(), path);
     }
 
     public File resource(String path) {
@@ -705,6 +722,9 @@ public class App extends DestroyableBase {
         config.app(this);
         registerSingleton(AppConfig.class, config);
         registerValueObjectCodec();
+        if (config.i18nEnabled()) {
+            MvcConfig.enableLocalizedErrorMsg();
+        }
     }
 
     private void initHttpConfig() {
@@ -897,7 +917,7 @@ public class App extends DestroyableBase {
     private void initScanlist() {
         ClassLoader classLoader = getClass().getClassLoader();
         if (classLoader instanceof BootstrapClassLoader) {
-            scanList = ((BootstrapClassLoader)classLoader).scanList();
+            scanList = ((BootstrapClassLoader) classLoader).scanList();
         }
     }
 
@@ -936,6 +956,7 @@ public class App extends DestroyableBase {
         scannerManager.register(new ControllerByteCodeScanner());
         scannerManager.register(new MailerByteCodeScanner());
         scannerManager.register(new JobByteCodeScanner());
+        scannerManager.register(new SimpleBean.ByteCodeScanner());
         scannerManager.register(new SimpleEventListenerByteCodeScanner());
         scannerManager.register(new CommanderByteCodeScanner());
         scannerManager.register(new RythmTransformerScanner());

@@ -449,6 +449,10 @@ public class EventBus extends AppServiceBase<EventBus> {
         }
     }
 
+    public synchronized void emit(Enum<?> event, Object... args) {
+        emit(event.name(), args);
+    }
+
     public synchronized void emit(Object event, Object ... args) {
         callOn(event, adhocEventListeners.get(event), false, args);
         callOn(event, asyncAdhocEventListeners.get(event), true, args);

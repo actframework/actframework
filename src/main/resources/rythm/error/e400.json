@@ -1,1 +1,0 @@
-@extends(_base, code: 400, msg: "Bad Request")

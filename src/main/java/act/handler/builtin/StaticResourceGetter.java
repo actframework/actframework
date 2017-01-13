@@ -10,8 +10,11 @@ import org.osgl.util.E;
 import org.osgl.util.IO;
 import org.osgl.util.S;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.util.HashSet;
+import java.util.Set;
 
 import static org.osgl.http.H.Format.UNKNOWN;
 
@@ -25,6 +28,8 @@ public class StaticResourceGetter extends FastRequestHandler {
 
     private String base;
     private URL baseUrl;
+
+    private Set<URL> folders = new HashSet<>();
 
     public StaticResourceGetter(String base) {
         String path = base;
@@ -46,7 +51,7 @@ public class StaticResourceGetter extends FastRequestHandler {
         String path = context.paramVal(ParamNames.PATH);
         try {
             URL target;
-            H.Format fmt = UNKNOWN;
+            H.Format fmt;
             if (S.blank(path)) {
                 target = baseUrl;
             } else {
@@ -58,19 +63,44 @@ public class StaticResourceGetter extends FastRequestHandler {
                 }
                 target = StaticFileGetter.class.getResource(sb.toString());
                 if (null == target) {
-                    throw NotFound.INSTANCE;
+                    throw NotFound.get();
                 }
+            }
+            if (preventFolderAccess(target, context)) {
+                return;
             }
             fmt = StaticFileGetter.contentType(base);
             H.Response resp = context.resp();
             if (UNKNOWN != fmt) {
                 resp.contentType(fmt.contentType());
             }
-            IO.copy(target.openStream(), resp.outputStream());
+            try {
+                IO.copy(target.openStream(), resp.outputStream());
+            } catch (NullPointerException e) {
+                // this is caused by accessing folder inside jar URL
+                folders.add(target);
+                AlwaysForbidden.INSTANCE.handle(context);
+            }
         } catch (IOException e) {
             App.logger.warn(e, "Error servicing static resource request");
-            throw NotFound.INSTANCE;
+            throw NotFound.get();
         }
+    }
+
+    private boolean preventFolderAccess(URL target, ActionContext context) {
+        if (folders.contains(target)) {
+            AlwaysForbidden.INSTANCE.handle(context);
+            return true;
+        }
+        if ("file".equals(target.getProtocol())) {
+            File file = new File(target.getFile());
+            if (file.isDirectory()) {
+                folders.add(target);
+                AlwaysForbidden.INSTANCE.handle(context);
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override

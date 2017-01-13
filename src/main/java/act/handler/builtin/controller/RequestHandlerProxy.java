@@ -6,7 +6,6 @@ import act.app.ActionContext;
 import act.app.App;
 import act.app.AppInterceptorManager;
 import act.app.event.AppEventId;
-import act.controller.Controller;
 import act.controller.meta.ActionMethodMetaInfo;
 import act.controller.meta.CatchMethodMetaInfo;
 import act.controller.meta.ControllerClassMetaInfo;
@@ -20,10 +19,8 @@ import act.view.ActServerError;
 import act.view.RenderAny;
 import org.osgl.cache.CacheService;
 import org.osgl.http.H;
-import org.osgl.inject.annotation.AnnotatedWith;
 import org.osgl.logging.L;
 import org.osgl.logging.Logger;
-import org.osgl.mvc.result.NoResult;
 import org.osgl.mvc.result.Result;
 import org.osgl.util.C;
 import org.osgl.util.E;
@@ -235,11 +232,12 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
     }
 
     private void onResult(Result result, ActionContext context) {
-
         context.dissolve();
+        boolean isRenderAny = false;
         try {
             if (result instanceof RenderAny) {
                 RenderAny any = (RenderAny) result;
+                isRenderAny = true;
                 any.apply(context);
             } else {
                 H.Request req = context.req();
@@ -249,6 +247,10 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
         } catch (RuntimeException e) {
             context.cacheTemplate(null);
             throw e;
+        } finally {
+            if (isRenderAny) {
+                RenderAny.clearThreadLocals();
+            }
         }
     }
 

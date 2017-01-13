@@ -15,7 +15,9 @@
  */
 package fc.cron;
 
-import static org.joda.time.DateTimeConstants.DAYS_PER_WEEK;
+import org.joda.time.DateTime;
+import org.joda.time.LocalDate;
+import org.joda.time.MutableDateTime;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -24,9 +26,7 @@ import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.joda.time.DateTime;
-import org.joda.time.LocalDate;
-import org.joda.time.MutableDateTime;
+import static org.joda.time.DateTimeConstants.DAYS_PER_WEEK;
 
 /**
  * Parser for unix-like cron expressions: Cron expressions allow specifying combinations of criteria for time

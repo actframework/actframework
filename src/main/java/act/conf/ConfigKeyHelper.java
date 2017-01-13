@@ -7,8 +7,6 @@ import org.osgl.exception.NotAppliedException;
 import org.osgl.logging.L;
 import org.osgl.logging.Logger;
 import org.osgl.util.C;
-import org.osgl.util.E;
-import org.osgl.util.FastStr;
 import org.osgl.util.S;
 
 import java.io.File;

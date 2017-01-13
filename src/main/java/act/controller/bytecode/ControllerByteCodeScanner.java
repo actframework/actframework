@@ -461,7 +461,6 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
                         sa = strings.toArray(sa);
                         info.addOnly(sa);
                         super.visitEnd();
-                        super.visitEnd();
                     }
                 }
 

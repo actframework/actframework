@@ -14,7 +14,7 @@ import java.util.Map;
  */
 public class RenderJsonMap extends RenderAny {
 
-    private Map<String, Object> renderArgs;
+    public static final RenderJsonMap INSTANCE = new RenderJsonMap();
 
     public RenderJsonMap() {
     }
@@ -22,5 +22,9 @@ public class RenderJsonMap extends RenderAny {
     public void apply(ActionContext context) {
         context.accept(H.Format.JSON);
         super.apply(context);
+    }
+
+    public static RenderJsonMap get() {
+        return INSTANCE;
     }
 }

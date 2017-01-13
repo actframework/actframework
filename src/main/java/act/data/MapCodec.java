@@ -1,23 +1,30 @@
 package act.data;
 
+import act.Act;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import org.osgl.$;
-import org.osgl.util.C;
 import org.osgl.util.ValueObject;
 
 import java.util.Map;
 
-public class MapCodec implements ValueObject.Codec<Map<String, Object>> {
-    @Override
-    public Class<Map<String, Object>> targetClass() {
-        return $.cast(Map.class);
+public abstract class MapCodec<T extends Map<String, Object>> implements ValueObject.Codec<T> {
+
+    private Class<T> targetClass;
+
+    public MapCodec(Class<T> targetClass) {
+        this.targetClass = $.notNull(targetClass);
     }
 
     @Override
-    public Map<String, Object> parse(String s) {
+    public Class<T> targetClass() {
+        return targetClass;
+    }
+
+    @Override
+    public T parse(String s) {
         JSONObject json = JSON.parseObject(s);
-        Map<String, Object> map = C.newMap();
+        T map = Act.app().getInstance(targetClass);
         for (Map.Entry<String, Object> entry : json.entrySet()) {
             map.put(entry.getKey(), ValueObject.of(entry.getValue()));
         }
@@ -25,12 +32,29 @@ public class MapCodec implements ValueObject.Codec<Map<String, Object>> {
     }
 
     @Override
-    public String toString(Map<String, Object> o) {
+    public String toString(T o) {
         return JSON.toJSONString(o);
     }
 
     @Override
-    public String toJSONString(Map<String, Object> o) {
+    public String toJSONString(T o) {
         return toString(o);
     }
+
+    public static class JsonObjectCodec extends MapCodec<JSONObject> {
+        public JsonObjectCodec() {
+            super(JSONObject.class);
+        }
+    }
+
+    public static class GenericMapCodec extends MapCodec<Map<String, Object>> {
+        public GenericMapCodec() {
+            super(target());
+        }
+
+        private static Class<Map<String, Object>> target() {
+            return $.cast(Map.class);
+        }
+    }
+
 }
