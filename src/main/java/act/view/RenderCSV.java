@@ -14,7 +14,7 @@ public class RenderCSV extends RenderContent {
     private static RenderCSV _INSTANCE = new RenderCSV() {
         @Override
         public String content() {
-            return messageBag.get();
+            return payload().message;
         }
     };
 
@@ -34,7 +34,7 @@ public class RenderCSV extends RenderContent {
     }
 
     public static RenderCSV get(Object v, PropertySpec.MetaInfo spec, ActContext context) {
-        messageBag.set(render(v, spec, context));
+        payload.get().message(render(v, spec, context));
         return _INSTANCE;
     }
 }

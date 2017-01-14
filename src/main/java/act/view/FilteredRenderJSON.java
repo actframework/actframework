@@ -17,7 +17,7 @@ public class FilteredRenderJSON extends RenderContent {
     public static final FilteredRenderJSON _INSTANCE = new FilteredRenderJSON() {
         @Override
         public String content() {
-            return messageBag.get();
+            return payload().message;
         }
     };
 
@@ -34,7 +34,7 @@ public class FilteredRenderJSON extends RenderContent {
     }
 
     public static FilteredRenderJSON get(Object v, PropertySpec.MetaInfo spec, ActionContext context) {
-        messageBag.set(render(v, spec, context));
+        payload.get().message(render(v, spec, context));
         return _INSTANCE;
     }
 }

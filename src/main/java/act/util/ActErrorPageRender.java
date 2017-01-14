@@ -30,8 +30,9 @@ public class ActErrorPageRender extends ErrorPageRenderer {
         if (null == context) {
             return null;
         }
-        int code = error.statusCode();
-        Template t = getTemplate(code, context);
+        Integer errorCode = error.errorCode();
+        int statusCode = error.statusCode();
+        Template t = getTemplate(error.statusCode(), context);
         if (null == t) {
             String errorMsg = error.getMessage();
             if (null == errorMsg) {
@@ -46,24 +47,33 @@ public class ActErrorPageRender extends ErrorPageRenderer {
             }
             H.Format accept = context.accept();
             if (H.Format.JSON == accept) {
-                Map<String, Object> params = C.newMap("code", code, "message", errorMsg);
+                Map<String, Object> params = C.newMap("code", errorCode, "message", errorMsg);
                 return JSON.toJSONString(params);
             } else if (H.Format.HTML == accept) {
-                String header = code + " " + errorMsg;
+                String header = "HTTP/1.1 " + statusCode + " " + errorMsg;
                 String content = "<!DOCTYPE html><html><head><title>"
                         + header
                         + "</title></head><body><h1>"
                         + header + "</h1></body></html>";
                 return content;
             } else if (H.Format.XML == accept) {
-                String content = "<?xml version=\"1.0\" encoding=\"UTF-8\"?><error><code>"
-                        + code + "</code><message>" + errorMsg + "</message></error>";
-                return content;
+                StringBuilder sb = new StringBuilder();
+                sb.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?><error>");
+                if (null != errorCode) {
+                    sb.append("<code>").append(errorCode).append("</code");
+                }
+                sb.append("<message>").append(errorMsg).append("</message></error>");
+                return sb.toString();
             } else if (H.Format.CSV == accept) {
-                return "code,message\n" + code + "," + errorMsg;
+                if (null == errorCode) {
+                    return "message\n" + errorMsg;
+                } else {
+                    return "code,message\n" + errorCode + "," + errorMsg;
+                }
             } else if (H.Format.TXT == accept) {
-                return code + " " + errorMsg;
+                return null == errorCode ? errorMsg : errorCode + " " + errorMsg;
             }
+            Act.logger.warn("Unsupported HTTP accept format[%s], cannot output error response: %s", accept, error);
             return null;
         }
         context.renderArg(ARG_ERROR, error);
@@ -78,9 +88,9 @@ public class ActErrorPageRender extends ErrorPageRenderer {
         return resolver.resolve(code, context.accept());
     }
 
-    private Template getTemplate(int code, ActionContext context) {
+    private Template getTemplate(int statusCode, ActionContext context) {
         H.Format format = context.accept();
-        String key = code + "" + format;
+        String key = statusCode + "" + format;
         $.Var<Template> templateBag = templateCache.get(key);
         if (null == templateBag) {
             ViewManager vm = Act.viewManager();
@@ -88,7 +98,7 @@ public class ActErrorPageRender extends ErrorPageRenderer {
                 // unit testing
                 return null;
             }
-            context.templatePath(templatePath(code, context));
+            context.templatePath(templatePath(statusCode, context));
             Template t = vm.load(context);
             templateBag = $.var(t);
             templateCache.put(key, templateBag);
