@@ -3,6 +3,7 @@ package act.i18n;
 import act.app.ActionContext;
 import act.conf.AppConfig;
 import act.controller.Controller;
+import org.joda.time.DateTime;
 import org.osgl.$;
 import org.osgl.http.H;
 import org.osgl.mvc.annotation.PostAction;
@@ -13,7 +14,7 @@ import java.util.Locale;
 
 /**
  * Responsible for setting up client Locale for the context
- *
+ * <p>
  * The client locale info is resolved in the following sequence:
  * 1. check the request parameter by configured name
  * 2. check the session variable
@@ -94,6 +95,9 @@ public class LocaleResolver {
         cookie.path("/");
         // in case we have resolved locale from cookie and we shouldn't write cookie anymore, we need to clear it
         cookie.maxAge(reset ? -1 : COOKIE_TTL);
+        if (reset) {
+            cookie.expires(DateTime.now().minusDays(1).toDate());
+        }
         context.resp().addCookie(cookie);
     }
 
