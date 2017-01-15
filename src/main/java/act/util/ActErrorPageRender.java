@@ -103,6 +103,11 @@ public class ActErrorPageRender extends ErrorPageRenderer {
             }
             context.templatePath(templatePath(statusCode, context));
             Template t = vm.load(context);
+            if (null == t && Act.isDev() && context.accept() == H.Format.HTML) {
+                // try default one
+                context.templatePath("/error/dev/errorPage.html");
+                t = vm.load(context);
+            }
             templateBag = $.var(t);
             templateCache.put(key, templateBag);
         }

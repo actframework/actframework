@@ -145,11 +145,6 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
         return super.renderArgs();
     }
 
-    @Override
-    public ActionContext templatePath(String templatePath) {
-        return super.templatePath(templatePath);
-    }
-
     public RequestHandler handler() {
         return handler;
     }
