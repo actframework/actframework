@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+@args org.osgl.mvc.result.ErrorResult _error
 <html>
 <head>
   <style>
@@ -9,6 +10,11 @@
 </head>
 <body>
 @args String header
+@{
+  if (s().empty(header)) {
+    header = _error.toString();
+  }
+}
 <h1>@header</h1>
 @render()
 </body>

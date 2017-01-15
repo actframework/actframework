@@ -67,7 +67,7 @@ public class ActUnauthorized extends Unauthorized implements ActError {
     }
 
     public static Unauthorized create(String realm) {
-        return Act.isDev() ? new ActUnauthorized(realm) : Unauthorized.get(realm);
+        return Act.isDev() ? new ActUnauthorized(realm) : Unauthorized.of(realm);
     }
 
     public static Unauthorized create(String realm, boolean digest) {

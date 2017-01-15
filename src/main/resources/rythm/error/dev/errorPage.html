@@ -4,7 +4,6 @@
 
 @render()
 
-@args org.osgl.mvc.result.ErrorResult _error
 @ifNot(_error instanceof act.util.ActError) {
 @section(head){
 @render(moreStyles)
@@ -116,7 +115,7 @@ else {stackTrace = actError.stackTrace();}
   @if(templateSourceInfo) {
   @(((act.view.TemplateException) actError).errorMessage().raw())
   } else {
-    @actError.getCauseOrThis().getClass().getName(): <b>@actError.getCauseOrThis().getMessage()</b>
+    @actError.getCauseOrThis().getClass().getName(): <b>@actError.getCauseOrThis().getLocalizedMessage()</b>
   }
   </pre>
 

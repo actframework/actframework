@@ -15,7 +15,7 @@ import act.security.CORS;
 import act.security.CSRF;
 import act.util.AnnotatedClassFinder;
 import act.util.Global;
-import act.view.ActServerError;
+import act.view.ActErrorResult;
 import act.view.RenderAny;
 import org.osgl.cache.CacheService;
 import org.osgl.http.H;
@@ -182,13 +182,13 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
                 logger.error(e0, "Error invoking exception handler");
             }
             if (null == result) {
-                result = ActServerError.of(e);
+                result = ActErrorResult.of(e);
             }
             try {
                 onResult(result, context);
             } catch (Exception e2) {
                 logger.error(e2, "error rendering exception handle  result");
-                onResult(ActServerError.of(e2), context);
+                onResult(ActErrorResult.of(e2), context);
             }
         } finally {
             try {

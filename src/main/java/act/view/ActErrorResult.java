@@ -3,15 +3,17 @@ package act.view;
 import act.Act;
 import act.app.*;
 import act.exception.BindException;
+import act.i18n.I18n;
+import act.util.ActContext;
 import act.util.ActError;
 import org.osgl.$;
 import org.osgl.exception.InvalidRangeException;
 import org.osgl.exception.UnsupportedException;
 import org.osgl.http.H;
+import org.osgl.mvc.MvcConfig;
 import org.osgl.mvc.annotation.ResponseStatus;
 import org.osgl.mvc.result.ErrorResult;
 import org.osgl.mvc.result.Result;
-import org.osgl.mvc.result.ServerError;
 import org.osgl.util.C;
 import org.osgl.util.E;
 
@@ -19,18 +21,63 @@ import javax.validation.ValidationException;
 import java.util.List;
 import java.util.Map;
 
-public class ActServerError extends ServerError implements ActError {
+public class ActErrorResult extends ErrorResult implements ActError {
 
     protected SourceInfo sourceInfo;
 
-    protected ActServerError(Throwable t) {
-        super($.notNull(t));
+    public ActErrorResult(H.Status status) {
+        super(status);
         init();
-        if (Act.isDev()) {
-            populateSourceInfo(t);
-        }
+        populateSourceInfo();
     }
 
+    public ActErrorResult(H.Status status, String message, Object ... args) {
+        super(status, message, args);
+        init();
+        populateSourceInfo();
+    }
+
+    public ActErrorResult(H.Status status, int errorCode) {
+        super(status, errorCode);
+        init();
+        populateSourceInfo();
+    }
+
+    public ActErrorResult(H.Status status, int errorCode, String message, Object... args) {
+        super(status, errorCode, message, args);
+        init();
+        populateSourceInfo();
+    }
+
+    public ActErrorResult(Throwable cause) {
+        super(H.Status.INTERNAL_SERVER_ERROR);
+        init();
+        populateSourceInfo(cause);
+    }
+
+    public ActErrorResult(H.Status status, Throwable cause) {
+        super(status, cause);
+        init();
+        populateSourceInfo(cause);
+    }
+
+    public ActErrorResult(H.Status status, Throwable cause, String message, Object... args) {
+        super(status, cause, message, args);
+        init();
+        populateSourceInfo(cause);
+    }
+
+    public ActErrorResult(H.Status status, int errorCode, Throwable cause, String message, Object ... args) {
+        super(status, errorCode, cause, message, args);
+        init();
+        populateSourceInfo(cause);
+    }
+
+    public ActErrorResult(H.Status status, int errorCode, Throwable cause) {
+        super(status, errorCode, cause);
+        init();
+        populateSourceInfo(cause);
+    }
 
     @Override
     public Throwable getCauseOrThis() {
@@ -44,8 +91,22 @@ public class ActServerError extends ServerError implements ActError {
     @Override
     public int statusCode() {
         Throwable cause = super.getCause();
-        int statusCode = userDefinedStatusCode(cause.getClass());
+        int statusCode = null == cause ? -1 : userDefinedStatusCode(cause.getClass());
         return -1 == statusCode ? super.statusCode() : statusCode;
+    }
+
+    @Override
+    public String getLocalizedMessage() {
+        if (Act.appConfig().i18nEnabled()) {
+            String message = getMessage();
+            String translated = I18n.i18n(true, I18n.locale(), I18n.DEF_RESOURCE_BUNDLE_NAME, message);
+            if (message == translated) {
+                translated = I18n.i18n(true, I18n.locale(), MvcConfig.class.getName(), message);
+                message = translated;
+            }
+            return message;
+        }
+        return super.getLocalizedMessage();
     }
 
     public List<String> stackTrace() {
@@ -72,6 +133,9 @@ public class ActServerError extends ServerError implements ActError {
     protected void init() {}
 
     protected void populateSourceInfo(Throwable t) {
+        if (!Act.isDev()) {
+            return;
+        }
         if (t instanceof SourceInfo) {
             this.sourceInfo = (SourceInfo)t;
         } else {
@@ -88,6 +152,10 @@ public class ActServerError extends ServerError implements ActError {
                 sourceInfo = new SourceInfoImpl(source, line);
             }
         }
+    }
+
+    private void populateSourceInfo() {
+        populateSourceInfo(new RuntimeException());
     }
 
     private static Map<Class<? extends Throwable>, $.Function<Throwable, Result>> x = C.newMap();
@@ -142,7 +210,7 @@ public class ActServerError extends ServerError implements ActError {
             return new RythmTemplateException((org.rythmengine.exception.RythmException) t);
         } else {
             $.Function<Throwable, Result> transformer = transformerOf(t);
-            return null == transformer ? new ActServerError(t) : transformer.apply(t);
+            return null == transformer ? new ActErrorResult(t) : transformer.apply(t);
         }
     }
 
@@ -160,14 +228,15 @@ public class ActServerError extends ServerError implements ActError {
         return null;
     }
 
-    public static ActServerError of(NullPointerException e) {
-        return new ActServerError(e);
+    public static ActErrorResult of(NullPointerException e) {
+        return new ActErrorResult(e);
     }
 
-    public static ActServerError of(org.rythmengine.exception.RythmException e) {
+    public static ActErrorResult of(org.rythmengine.exception.RythmException e) {
         return new RythmTemplateException(e);
     }
 
+    @Deprecated
     public static Result of(int statusCode) {
         E.illegalArgumentIf(statusCode < 400);
         switch (statusCode) {
@@ -183,12 +252,50 @@ public class ActServerError extends ServerError implements ActError {
                 return ActMethodNotAllowed.create();
             case 409:
                 return ActConflict.create();
-            case 500:
-                return new ActServerError(new RuntimeException());
             case 501:
                 return ActNotImplemented.create();
             default:
-                return new ErrorResult(H.Status.of(statusCode));
+                if (Act.isDev()) {
+                    return new ActErrorResult(new RuntimeException());
+                } else {
+                    return new ErrorResult(H.Status.of(statusCode));
+                }
+        }
+    }
+
+    public static ErrorResult of(H.Status status) {
+        E.illegalArgumentIf(!status.isClientError() && !status.isServerError());
+        if (Act.isDev()) {
+            return new ActErrorResult(status);
+        } else {
+            return ErrorResult.of(status);
+        }
+    }
+
+    public static ErrorResult of(H.Status status, String message, Object... args) {
+        E.illegalArgumentIf(!status.isClientError() && !status.isServerError());
+        if (Act.isDev()) {
+            return new ActErrorResult(status, message, args);
+        } else {
+            return ErrorResult.of(status, message, args);
+        }
+    }
+
+    public static ErrorResult of(H.Status status, int errorCode) {
+        E.illegalArgumentIf(!status.isClientError() && !status.isServerError());
+        if (Act.isDev()) {
+            return new ActErrorResult(status, errorCode);
+        } else {
+            return ErrorResult.of(status, errorCode);
+        }
+    }
+
+    public static ErrorResult of(H.Status status, int errorCode, String message, Object... args) {
+        E.illegalArgumentIf(!status.isClientError() && !status.isServerError());
+        if (Act.isDev()) {
+            return new ActErrorResult(status, errorCode, message, args);
+        } else {
+            return ErrorResult.of(status, errorCode, message, args);
         }
     }
 

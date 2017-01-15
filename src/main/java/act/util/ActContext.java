@@ -54,6 +54,22 @@ public interface ActContext<CTX_TYPE extends ActContext> extends ParamValueProvi
     Map<String, Object> attributes();
     CTX_TYPE removeAttribute(String name);
 
+    String i18n(boolean ignoreError, String msgId, Object... args);
+
+    String i18n(String msgId, Object ... args);
+
+    String i18n(Class<?> bundleSpec, String msgId, Object... args);
+
+    String i18n(boolean ignoreError, Class<?> bundleSpec, String msgId, Object... args);
+
+    String i18n(Enum<?> msgId);
+
+    String i18n(Class<?> bundleSpec, Enum<?> msgId);
+
+    Map<String, String> i18n(Class<? extends Enum> enumClass);
+
+    Map<String, String> i18n(Class<?> bundleSpec, Class<? extends Enum> enumClass);
+
     String methodPath();
 
     interface Listener {

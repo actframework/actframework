@@ -3,6 +3,7 @@ package act.i18n;
 import act.app.ActionContext;
 import act.conf.AppConfig;
 import act.controller.Controller;
+import org.osgl.$;
 import org.osgl.http.H;
 import org.osgl.mvc.annotation.PostAction;
 import org.osgl.util.S;
@@ -29,7 +30,8 @@ public class LocaleResolver {
     private AppConfig config;
     private boolean enabled;
     private Locale locale;
-    private boolean forceWriteCookie;
+    private boolean reset;
+    private boolean resolvedFromParam;
 
     @PostAction("i18n/locale")
     public static void updateLocale(H.Request request) {
@@ -56,11 +58,8 @@ public class LocaleResolver {
             return;
         }
         Locale locale = resolveFromParam();
-        if (null == locale) {
-            locale = resolveFromSession();
-        }
-        if (null == locale) {
-            locale = resolveFromCookie();
+        if (!reset && null == locale) {
+            locale = resolveFromSessionOrCookie();
         }
         if (null == locale) {
             locale = resolveFromHeader();
@@ -73,25 +72,50 @@ public class LocaleResolver {
     }
 
     public void dissolve() {
-        if (!enabled) {
+        if (!shouldWriteLocaleCookie()) {
             return;
         }
         String cookieName = config.localeCookieName();
-        if (forceWriteCookie || this.locale != context.locale() || null == context.cookie(cookieName)) {
-            Locale locale = context.locale();
-            if (null == locale) {
-                locale = this.locale;
-            }
-            String localeStr = locale.toString();
-            H.Session session = context.session();
-            if (null != session) {
+        Locale locale = context.locale();
+        if (null == locale) {
+            locale = this.locale;
+        }
+        String localeStr = locale.toString();
+        H.Session session = context.session();
+        if (null != session) {
+            if (reset) {
+                session.remove(KEY);
+            } else {
                 session.put(KEY, localeStr);
             }
-            H.Cookie cookie = new H.Cookie(cookieName, localeStr);
-            cookie.domain(config.cookieDomain());
-            cookie.path("/");
-            cookie.maxAge(COOKIE_TTL);
-            context.resp().addCookie(cookie);
+        }
+        H.Cookie cookie = new H.Cookie(cookieName, localeStr);
+        cookie.domain(config.cookieDomain());
+        cookie.path("/");
+        // in case we have resolved locale from cookie and we shouldn't write cookie anymore, we need to clear it
+        cookie.maxAge(reset ? -1 : COOKIE_TTL);
+        context.resp().addCookie(cookie);
+    }
+
+    private boolean shouldWriteLocaleCookie() {
+        /*
+         * 1. i18n must be enabled
+         * 2. anyone of the following condition is true
+         * 2.1 resolved from param
+         * 2.2 the current locale does not match the locale resolved originally (meaning programmatically updated locale)
+         * 2.3 reset is true (meaning session and cookie should be cleared)
+         */
+        return enabled && (reset || resolvedFromParam || locale != context.locale());
+    }
+
+    private Locale resolveFromSessionOrCookie() {
+        // if session exists then resolve from session, otherwise resolve from cookie
+        H.Session session = context.session();
+        if (null != session) {
+            return parseStr(session.get(KEY));
+        } else {
+            H.Cookie cookie = context.cookie(config.localeCookieName());
+            return null == cookie ? null : parseStr(cookie.value());
         }
     }
 
@@ -99,19 +123,9 @@ public class LocaleResolver {
         String s = context.paramVal(config.localeParamName());
         Locale locale = parseStr(s);
         if (null != locale) {
-            forceWriteCookie = true;
+            resolvedFromParam = true;
         }
         return locale;
-    }
-
-    private Locale resolveFromSession() {
-        H.Session session = context.session();
-        return null == session ? null : parseStr(session.get(KEY));
-    }
-
-    private Locale resolveFromCookie() {
-        H.Cookie cookie = context.cookie(config.localeCookieName());
-        return null == cookie ? null : parseStr(cookie.value());
     }
 
     private Locale resolveFromHeader() {
@@ -124,6 +138,10 @@ public class LocaleResolver {
 
     private Locale parseStr(String val) {
         if (null == val) {
+            return null;
+        }
+        if ("default".equals(val)) {
+            reset = true;
             return null;
         }
         String[] sa = val.trim().split("[-_]");

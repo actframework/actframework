@@ -1,6 +1,7 @@
 package act.i18n;
 
 import act.Act;
+import act.util.ActContext;
 import org.osgl.$;
 import org.osgl.logging.LogManager;
 import org.osgl.logging.Logger;
@@ -14,8 +15,13 @@ public class I18n {
 
     public static final String DEF_RESOURCE_BUNDLE_NAME = "messages";
 
+    public static Locale locale() {
+        ActContext context = ActContext.Base.currentContext();
+        return null != context ? context.locale() : Act.appConfig().locale();
+    }
+
     public static String i18n(String msgId, Object ... args) {
-        return i18n(Act.appConfig().locale(), msgId, args);
+        return i18n(locale(), msgId, args);
     }
 
     public static String i18n(Locale locale, String msgId, Object ... args) {
@@ -23,7 +29,7 @@ public class I18n {
     }
 
     public static String i18n(Class<?> bundleSpec, String msgId, Object... args) {
-        return i18n(Act.appConfig().locale(), bundleSpec.getName(), msgId, args);
+        return i18n(locale(), bundleSpec.getName(), msgId, args);
     }
 
     public static String i18n(Locale locale, Class<?> bundleSpec, String msgId, Object... args) {
@@ -69,7 +75,7 @@ public class I18n {
     }
 
     public static String i18n(Enum<?> msgId) {
-        return i18n(Act.appConfig().locale(), msgId);
+        return i18n(locale(), msgId);
     }
 
     public static String i18n(Locale locale, Enum<?> msgId) {
@@ -77,7 +83,7 @@ public class I18n {
     }
 
     public static String i18n(Class<?> bundleSpec, Enum<?> msgId) {
-        return i18n(Act.appConfig().locale(), bundleSpec, msgId);
+        return i18n(locale(), bundleSpec, msgId);
     }
 
     public static String i18n(Locale locale, Class<?> bundleSpec, Enum<?> msgId) {
@@ -90,7 +96,7 @@ public class I18n {
     }
 
     public static Map<String, String> i18n(Class<? extends Enum> enumClass) {
-        return i18n(Act.appConfig().locale(), enumClass);
+        return i18n(locale(), enumClass);
     }
 
     public static Map<String, String> i18n(Locale locale, Class<? extends Enum> enumClass) {
@@ -98,7 +104,7 @@ public class I18n {
     }
 
     public static Map<String, String> i18n(Class<?> bundleSpec, Class<? extends Enum> enumClass) {
-        return i18n(Act.appConfig().locale(), bundleSpec, enumClass);
+        return i18n(locale(), bundleSpec, enumClass);
     }
 
     public static Map<String, String> i18n(Locale locale, Class<?> bundleSpec, Class<? extends Enum> enumClass) {

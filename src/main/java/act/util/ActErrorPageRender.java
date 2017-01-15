@@ -32,7 +32,7 @@ public class ActErrorPageRender extends ErrorPageRenderer {
         }
         Integer errorCode = error.errorCode();
         int statusCode = error.statusCode();
-        Template t = getTemplate(error.statusCode(), context);
+        Template t = getTemplate(statusCode, context);
         if (null == t) {
             String errorMsg = error.getMessage();
             if (null == errorMsg) {
@@ -47,8 +47,11 @@ public class ActErrorPageRender extends ErrorPageRenderer {
             }
             H.Format accept = context.accept();
             if (H.Format.JSON == accept) {
-                Map<String, Object> params = C.newMap("code", errorCode, "message", errorMsg);
-                return JSON.toJSONString(params);
+                if (null == errorCode) {
+                    return new StringBuilder("{\"message\":\"").append(errorMsg).append("\"}").toString();
+                } else {
+                    return new StringBuilder("{\"code\":").append(errorCode).append(",\"message\":\"").append(errorMsg).append("\"}").toString();
+                }
             } else if (H.Format.HTML == accept) {
                 String header = "HTTP/1.1 " + statusCode + " " + errorMsg;
                 String content = "<!DOCTYPE html><html><head><title>"

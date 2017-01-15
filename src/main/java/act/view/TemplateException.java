@@ -8,7 +8,7 @@ import java.util.List;
 /**
  * Base class for Template error
  */
-public abstract class TemplateException extends ActServerError {
+public abstract class TemplateException extends ActErrorResult {
     protected SourceInfo templateInfo;
 
     private String errorSpotTraceLine = null;

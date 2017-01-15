@@ -35,7 +35,7 @@ import act.route.RouteSource;
 import act.route.RouteTableRouterBuilder;
 import act.route.Router;
 import act.util.*;
-import act.view.ActServerError;
+import act.view.ActErrorResult;
 import act.view.rythm.JodaDateTimeFormatter;
 import act.view.rythm.JodaTransformers;
 import act.view.rythm.RythmTransformerScanner;
@@ -321,7 +321,7 @@ public class App extends DestroyableBase {
         }
         classLoader.detectChanges();
         if (null != compilationException) {
-            throw ActServerError.of(compilationException);
+            throw ActErrorResult.of(compilationException);
         }
     }
 
@@ -438,7 +438,7 @@ public class App extends DestroyableBase {
             compilationException = null;
         } catch (CompilationException e) {
             compilationException = e;
-            throw ActServerError.of(e);
+            throw ActErrorResult.of(e);
         }
         //classLoader().loadClasses();
         emit(APP_CODE_SCANNED);

@@ -87,7 +87,7 @@ public class ActNotFound extends NotFound implements ActError {
     }
 
     public static NotFound create(String msg, Object... args) {
-        return Act.isDev() ? new ActNotFound(msg, args) : NotFound.get(msg, args);
+        return Act.isDev() ? new ActNotFound(msg, args) : NotFound.of(msg, args);
     }
 
     public static NotFound create(Method method) {
@@ -95,10 +95,10 @@ public class ActNotFound extends NotFound implements ActError {
     }
 
     public static NotFound create(Throwable cause, String msg, Object ... args) {
-        return Act.isDev() ? new ActNotFound(cause, msg, args) : new NotFound(cause, msg, args);
+        return Act.isDev() ? new ActNotFound(cause, msg, args) : NotFound.of(cause, msg, args);
     }
 
     public static NotFound create(Throwable cause) {
-        return Act.isDev() ? new ActNotFound(cause) : new NotFound(cause);
+        return Act.isDev() ? new ActNotFound(cause) : NotFound.of(cause);
     }
 }

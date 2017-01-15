@@ -76,7 +76,8 @@ public class ActBadRequest extends BadRequest implements ActError {
     }
 
     public static BadRequest create(String msg, Object... args) {
-        return Act.isDev() ? new ActBadRequest(msg, args) : BadRequest.get(msg, args);
+        return Act.isDev() ? new ActBadRequest(msg, args) : BadRequest.of
+                (msg, args);
     }
 
     public static BadRequest create(Throwable cause, String msg, Object ... args) {

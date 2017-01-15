@@ -53,7 +53,7 @@ public class RenderTemplate extends RenderAny {
         return INSTANCE;
     }
 
-    public static RenderTemplate get(Map<String, Object> args) {
+    public static RenderTemplate of(Map<String, Object> args) {
         renderArgsBag.set(args);
         return INSTANCE;
     }

@@ -75,14 +75,14 @@ public class ActConflict extends Conflict implements ActError {
     }
 
     public static Conflict create(String msg, Object... args) {
-        return Act.isDev() ? new ActConflict(msg, args) : Conflict.get(msg, args);
+        return Act.isDev() ? new ActConflict(msg, args) : Conflict.of(msg, args);
     }
 
     public static Conflict create(Throwable cause, String msg, Object ... args) {
-        return Act.isDev() ? new ActConflict(cause, msg, args) : new Conflict(cause, msg, args);
+        return Act.isDev() ? new ActConflict(cause, msg, args) : Conflict.of(cause, msg, args);
     }
 
     public static Conflict create(Throwable cause) {
-        return Act.isDev() ? new ActConflict(cause) : new Conflict(cause);
+        return Act.isDev() ? new ActConflict(cause) : Conflict.of(cause);
     }
 }

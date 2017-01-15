@@ -91,7 +91,7 @@ public @interface Controller {
         }
 
         public static Result notModified(String etag, Object... args) {
-            return NotModified.get(etag, args);
+            return NotModified.of(etag, args);
         }
 
         /**
@@ -109,7 +109,7 @@ public @interface Controller {
         }
 
         public static Result notAcceptable(String msg, Object... args) {
-            return NotAcceptable.get(msg, args);
+            return NotAcceptable.of(msg, args);
         }
 
         /**
@@ -385,7 +385,7 @@ public @interface Controller {
         }
 
         public static Result redirect(String url, Object... args) {
-            return Redirect.get(url, args);
+            return Redirect.of(url, args);
         }
 
         /**
@@ -397,7 +397,7 @@ public @interface Controller {
          * @param args the message format arguments
          */
         public static Result text(String msg, Object... args) {
-            return RenderText.get(msg, args);
+            return RenderText.of(msg, args);
         }
 
         /**
@@ -409,7 +409,7 @@ public @interface Controller {
          * @param args the message format arguments
          */
         public static Result html(String msg, Object... args) {
-            return RenderHtml.get(msg, args);
+            return RenderHtml.of(msg, args);
         }
 
         /**
@@ -421,7 +421,7 @@ public @interface Controller {
          * @param args the message format arguments
          */
         public static Result json(String msg, Object... args) {
-            return RenderJSON.get(msg, args);
+            return RenderJSON.of(msg, args);
         }
 
         /**
@@ -431,7 +431,7 @@ public @interface Controller {
          * @param data the data to be rendered as JSON string
          */
         public static Result json(Object data) {
-            return RenderJSON.get(data);
+            return RenderJSON.of(data);
         }
 
         /**
@@ -494,7 +494,7 @@ public @interface Controller {
          * @param args
          */
         public static Result template(Map<String, Object> args) {
-            return RenderTemplate.get(args);
+            return RenderTemplate.of(args);
         }
 
         /**
@@ -551,30 +551,30 @@ public @interface Controller {
                 if (!s.startsWith("[") && !s.startsWith("{")) {
                     s = S.fmt("{\"result\": \"%s\"}", org.rythmengine.utils.S.escapeJSON(s));
                 }
-                return RenderJSON.get(s);
+                return RenderJSON.of(s);
             }
             H.Format fmt = actionContext.accept();
             if (HTML == fmt || H.Format.UNKNOWN == fmt) {
                 return html(s);
             }
             if (TXT == fmt || CSV == fmt) {
-                return RenderText.get(fmt, s);
+                return RenderText.of(fmt, s);
             }
             if (XML == fmt) {
                 s = s.trim();
                 if (!s.startsWith("<") && !s.endsWith(">")) {
                     s = S.fmt("<result>%s</result>", s);
                 }
-                return RenderText.get(fmt, s);
+                return RenderText.of(fmt, s);
             }
             throw E.unexpected("Cannot apply text result to format: %s", fmt);
         }
 
         public static Result inferResult(Map<String, Object> map, ActionContext actionContext) {
             if (actionContext.acceptJson()) {
-                return RenderJSON.get(map);
+                return RenderJSON.of(map);
             }
-            return RenderTemplate.get(map);
+            return RenderTemplate.of(map);
         }
 
         /**
@@ -584,7 +584,7 @@ public @interface Controller {
          */
         public static Result inferResult(Object[] array, ActionContext actionContext) {
             if (actionContext.acceptJson()) {
-                return RenderJSON.get(array);
+                return RenderJSON.of(array);
             }
             throw E.tbd("render template with render args in array");
         }
@@ -600,7 +600,7 @@ public @interface Controller {
          */
         public static Result inferResult(InputStream is, ActionContext actionContext) {
             if (actionContext.acceptJson()) {
-                return RenderJSON.get(IO.readContentAsString(is));
+                return RenderJSON.of(IO.readContentAsString(is));
             } else {
                 return new RenderBinary(is, null, true);
             }
@@ -617,7 +617,7 @@ public @interface Controller {
          */
         public static Result inferResult(File file, ActionContext actionContext) {
             if (actionContext.acceptJson()) {
-                return RenderJSON.get(IO.readContentAsString(file));
+                return RenderJSON.of(IO.readContentAsString(file));
             } else {
                 return new RenderBinary(file);
             }
@@ -625,7 +625,7 @@ public @interface Controller {
 
         public static Result inferResult(ISObject sobj, ActionContext context) {
             if (context.acceptJson()) {
-                return RenderJSON.get(sobj.asString());
+                return RenderJSON.of(sobj.asString());
             } else {
                 return binary(sobj);
             }
@@ -672,7 +672,7 @@ public @interface Controller {
                 if (hasTemplate) {
                     return inferToTemplate((Map) v, context);
                 }
-                return RenderJSON.get(v);
+                return RenderJSON.of(v);
             } else if (hasTemplate && v instanceof Object[]) {
                 throw E.tbd("Render template with array");
             } else {
@@ -699,7 +699,7 @@ public @interface Controller {
                     PropertySpec.MetaInfo propertySpec = PropertySpec.MetaInfo.withCurrent(meta, context);
                     try {
                         if (null == propertySpec) {
-                            return RenderJSON.get(v);
+                            return RenderJSON.of(v);
                         }
                         return FilteredRenderJSON.get(v, propertySpec, context);
                     } finally {
@@ -726,7 +726,7 @@ public @interface Controller {
         }
 
         private static Result inferToTemplate(Map map, ActionContext actionContext) {
-            return RenderTemplate.get(map);
+            return RenderTemplate.of(map);
         }
     }
 
