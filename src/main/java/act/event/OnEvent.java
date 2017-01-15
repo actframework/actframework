@@ -6,20 +6,12 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Mark a method to be an adhoc event handler
- *
- * This annotation is deprecated, please use {@link OnEvent} instead
+ * Mark a method to be an adhoc event handler for a certain event type
+ * The event type is inferred from the method signature
  */
 @Retention(RetentionPolicy.CLASS)
 @Target(ElementType.METHOD)
-@Deprecated
-public @interface OnClass {
-
-    /**
-     * Specify classes as the event IDs
-     * @return the event IDs (in Class type)
-     */
-    Class[] value();
+public @interface OnEvent {
 
     /**
      * <p>Indicate if the handler should be run synchronously with application
@@ -32,4 +24,5 @@ public @interface OnClass {
      *          or {@code false} if the method all be executed synchronously
      */
     boolean async() default false;
+
 }

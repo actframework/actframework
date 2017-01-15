@@ -5,10 +5,7 @@ import act.app.event.AppEventId;
 import act.asm.AnnotationVisitor;
 import act.asm.MethodVisitor;
 import act.asm.Type;
-import act.event.EventBus;
-import act.event.On;
-import act.event.OnClass;
-import act.event.SimpleEventListener;
+import act.event.*;
 import act.event.meta.SimpleEventListenerMetaInfo;
 import act.job.AppJobManager;
 import act.util.AsmTypes;
@@ -94,10 +91,12 @@ public class SimpleEventListenerByteCodeScanner extends AppByteCodeScannerBase {
 
                 private List<Object> events = C.newList();
                 private List<$.Func0> delayedEvents = C.newList();
+                private boolean isOnEvent = false;
 
                 private boolean isAsync;
 
                 private String asyncMethodName = null;
+
 
                 @Override
                 public AnnotationVisitor visitAnnotation(String desc, boolean visible) {
@@ -105,8 +104,12 @@ public class SimpleEventListenerByteCodeScanner extends AppByteCodeScannerBase {
                     String className = Type.getType(desc).getClassName();
                     final boolean isOn = On.class.getName().equals(className);
                     final boolean isOnC = OnClass.class.getName().equals(className);
+                    final boolean isOnE = OnEvent.class.getName().equals(className);
+                    if (isOnE) {
+                        isOnEvent = true;
+                    }
                     boolean isCustomMarker = false;
-                    if (!isOn && !isOnC) {
+                    if (!isOn && !isOnC && !isOnE) {
                         Class<?> clz = $.classForName(className);
                         // note we can't use Class.isAnnotationPresent(Class) call here as the class loader might be different
                         // isCustomMarker = clz.isAnnotationPresent(SimpleEventListener.Marker.class);
@@ -119,7 +122,7 @@ public class SimpleEventListenerByteCodeScanner extends AppByteCodeScannerBase {
                         }
                     }
 
-                    if (isOn || isOnC || isCustomMarker) {
+                    if (isOnE || isOn || isOnC || isCustomMarker) {
                         return new AnnotationVisitor(ASM5, av) {
                             @Override
                             public AnnotationVisitor visitArray(String name) {
@@ -194,6 +197,14 @@ public class SimpleEventListenerByteCodeScanner extends AppByteCodeScannerBase {
 
                 @Override
                 public void visitEnd() {
+                    if (isOnEvent) {
+                        if (paramTypes.isEmpty()) {
+                            logger.warn("@OnEvent annotation shall be put on a method with exactly one event object (optionally with other injectable arguments");
+                        } else {
+                            String type = paramTypes.get(0);
+                            events.add($.classForName(type, app().classLoader()));
+                        }
+                    }
                     if (!events.isEmpty() || !delayedEvents.isEmpty()) {
                         SimpleEventListenerMetaInfo metaInfo = new SimpleEventListenerMetaInfo(
                                 events, delayedEvents, className, methodName, asyncMethodName, paramTypes, isAsync, isStatic, app());

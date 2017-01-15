@@ -329,6 +329,7 @@ public class EventBus extends AppServiceBase<EventBus> {
             if (null != payload) {
                 emitSync(payload.getClass(), payload);
             }
+            emitSync(event.getClass(), event);
         }
 
         if (null != onceBus) {
@@ -356,6 +357,7 @@ public class EventBus extends AppServiceBase<EventBus> {
             if (null != payload) {
                 emit(payload.getClass(), payload);
             }
+            emit(event.getClass(), event);
         }
 
         if (null != onceBus) {
@@ -381,6 +383,7 @@ public class EventBus extends AppServiceBase<EventBus> {
             if (null != payload) {
                 emitAsync(payload.getClass(), payload);
             }
+            emitAsync(event.getClass(), event);
         }
 
         if (null != onceBus) {
