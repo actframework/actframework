@@ -172,7 +172,7 @@ public interface ActContext<CTX_TYPE extends ActContext> extends ParamValueProvi
         public static final String DEF_RESOURCE_BUNDLE_NAME = I18n.DEF_RESOURCE_BUNDLE_NAME;
 
         public String i18n(boolean ignoreError, String msgId, Object... args) {
-            return I18n.i18n(ignoreError, locale(), I18n.DEF_RESOURCE_BUNDLE_NAME, msgId, args);
+            return I18n.i18n(ignoreError, locale(true), I18n.DEF_RESOURCE_BUNDLE_NAME, msgId, args);
         }
 
         public String i18n(String msgId, Object ... args) {
