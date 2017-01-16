@@ -17,7 +17,6 @@ import org.osgl.util.E;
 import org.osgl.util.S;
 
 import java.util.*;
-import java.util.concurrent.ScheduledFuture;
 
 class _Job extends DestroyableBase implements Runnable {
 
@@ -221,15 +220,21 @@ class _Job extends DestroyableBase implements Runnable {
         runFollowingJobs();
     }
 
+    protected void _before() {}
+
     protected void doJob() {
         try {
+            _before();
             if (null != worker) {
                 worker.apply();
             }
         } finally {
             scheduleNextInvocation();
+            _finally();
         }
     }
+
+    protected void _finally() {}
 
     protected void cancel() {
         manager.cancel(id());
@@ -266,7 +271,7 @@ class _Job extends DestroyableBase implements Runnable {
     }
 
     private static _Job of(final Runnable runnable, AppJobManager manager, boolean oneTime) {
-        return of(S.uuid(), runnable, manager, oneTime);
+        return of(Act.cuid(), runnable, manager, oneTime);
     }
 
     static _Job once(final Runnable runnable, AppJobManager manager) {

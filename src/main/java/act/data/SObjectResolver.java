@@ -21,13 +21,9 @@ public class SObjectResolver extends StringValueResolverPlugin<SObject> {
 
     public static final SObjectResolver INSTANCE = new SObjectResolver();
 
-    private OkHttpClient http;
+    private volatile transient OkHttpClient http;
 
     public SObjectResolver() {
-        http = new OkHttpClient.Builder()
-                .connectTimeout(5, TimeUnit.SECONDS)
-                .readTimeout(5, TimeUnit.SECONDS)
-                .writeTimeout(5, TimeUnit.SECONDS).build();
     }
 
     @Override
@@ -69,7 +65,7 @@ public class SObjectResolver extends StringValueResolverPlugin<SObject> {
 
     private SObject resolveFromURL(String url) {
         try {
-            Response resp = http.newCall(new Request.Builder().url(url).build()).execute();
+            Response resp = http().newCall(new Request.Builder().url(url).build()).execute();
             return SObject.of(resp.body().byteStream());
         } catch (IOException e) {
             throw E.ioException(e);
@@ -78,6 +74,20 @@ public class SObjectResolver extends StringValueResolverPlugin<SObject> {
 
     private SObject resolveFromBase64(String encoded) {
         return SObject.of(Codec.decodeBase64(encoded));
+    }
+
+    private OkHttpClient http() {
+        if (null == http) {
+            synchronized (this) {
+                if (null == http) {
+                    http = new OkHttpClient.Builder()
+                            .connectTimeout(5, TimeUnit.SECONDS)
+                            .readTimeout(5, TimeUnit.SECONDS)
+                            .writeTimeout(5, TimeUnit.SECONDS).build();
+                }
+            }
+        }
+        return http;
     }
 
 }

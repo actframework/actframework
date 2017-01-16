@@ -1,6 +1,5 @@
 package act.controller.bytecode;
 
-import act.ActComponent;
 import act.app.App;
 import act.asm.ClassVisitor;
 import act.asm.MethodVisitor;
@@ -15,7 +14,6 @@ import org.osgl.$;
  * Enhance controllers (classes with either request handler method or
  * interceptor methods)
  */
-@ActComponent
 public class ControllerEnhancer extends AppByteCodeEnhancer<ControllerEnhancer> {
     private ControllerClassMetaInfoHolder classInfoHolder;
     private String className;
@@ -64,7 +62,7 @@ public class ControllerEnhancer extends AppByteCodeEnhancer<ControllerEnhancer> 
     }
 
     private HandlerMethodMetaInfo methodInfo(String name, int access) {
-        if (isPublic(access) && !isConstructor(name)) {
+        if (!isConstructor(name)) {
             ControllerClassMetaInfo ccInfo = classInfoHolder.controllerClassMetaInfo(className);
             if (null == ccInfo) {
                 return null;

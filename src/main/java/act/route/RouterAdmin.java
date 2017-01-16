@@ -102,16 +102,31 @@ public class RouterAdmin {
         context.println("route entry has been added/overwritten");
     }
 
-    @Command(name = "act.route.add", help = "overwrite a route entry")
-    public void admin(
+    @Command(name = "act.route.add", help = "add a route entry")
+    public void add(
             @Required("specify http method") String method,
-            @Required("specify path") String path,
+            @Required("specify URL path") String path,
             @Required("specify handler") String handler,
             @Optional("specify the port name") String name
     ) {
         final Router router = S.blank(name) ? app.router() : app.router(name);
         try {
             router.addMapping(H.Method.valueOfIgnoreCase(method), path, handler, RouteSource.ADMIN_ADD);
+            context.println("route entry has been added");
+        } catch (DuplicateRouteMappingException e) {
+            context.println("Route entry already exist");
+        }
+    }
+
+    @Command(name = "act.route.echo", help = "Add a temporary echo route")
+    public void echo(
+            @Required("specify URL path") String path,
+            @Required("specify the code to echo back") String code,
+            @Optional("specify the port name") String name
+    ) {
+        final Router router = S.blank(name) ? app.router() : app.router(name);
+        try {
+            router.addMapping(H.Method.GET, path, "echo:" + code, RouteSource.ADMIN_ADD);
             context.println("route entry has been added");
         } catch (DuplicateRouteMappingException e) {
             context.println("Route entry already exist");

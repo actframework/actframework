@@ -38,7 +38,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.InputStream;
 import java.lang.annotation.Annotation;
-import java.security.ProtectionDomain;
 import java.util.*;
 
 import static act.util.ClassInfoRepository.canonicalName;
@@ -66,6 +65,7 @@ public class AppClassLoader
     protected MailerClassMetaInfoManager mailerInfo = new MailerClassMetaInfoManager();
     protected CommanderClassMetaInfoManager commanderInfo = new CommanderClassMetaInfoManager();
     protected JobClassMetaInfoManager jobInfo = new JobClassMetaInfoManager();
+    protected SimpleBean.MetaInfoManager simpleBeanInfo;
     protected Metric metric = Act.metricPlugin().metric(MetricInfo.CLASS_LOADING);
 
     @Inject
@@ -80,6 +80,7 @@ public class AppClassLoader
         if (null == app.eventBus()) {
             return; // for unit test only
         }
+        simpleBeanInfo  = new SimpleBean.MetaInfoManager(this);
         app.eventBus().bind(AppEventId.APP_CODE_SCANNED, new AppEventListenerBase() {
 
             @Override
@@ -120,6 +121,7 @@ public class AppClassLoader
         controllerInfo.destroy();
         mailerInfo.destroy();
         jobInfo.destroy();
+        simpleBeanInfo.destroy();
         releaseResources();
         destroyed = true;
     }
@@ -153,6 +155,10 @@ public class AppClassLoader
         return commanderInfo;
     }
 
+    public SimpleBean.MetaInfoManager simpleBeanInfoManager() {
+        return simpleBeanInfo;
+    }
+
     @Override
     public MailerClassMetaInfo mailerClassMetaInfo(String className) {
         return mailerInfo.mailerMetaInfo(className);
@@ -168,6 +174,10 @@ public class AppClassLoader
 
     public JobClassMetaInfoManager jobClassMetaInfoManager() {
         return jobInfo;
+    }
+
+    public SimpleBean.MetaInfo simpleBeanMetaInfo(String className) {
+        return simpleBeanInfo.get(className);
     }
 
     public boolean isSourceClass(String className) {
@@ -227,7 +237,8 @@ public class AppClassLoader
             dependencies.remove(className);
             byte[] ba = bytecodeProvider.apply(className);
             if (null == ba) {
-                throw new NullPointerException();
+                logger.warn("Cannot find any bytecode for class: %s. You might have an empty Java source file for that.", className);
+                continue;
             }
             libClsCache.put(className, ba);
             act.metric.Timer timer = metric.startTimer("act:classload:scan:bytecode:" + className);

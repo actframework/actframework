@@ -1,16 +1,18 @@
 package act.job;
 
 import act.Act;
-import act.ActComponent;
 import act.Destroyable;
 import act.app.App;
 import act.app.AppServiceBase;
 import act.app.AppThreadFactory;
 import act.app.event.AppEventId;
 import act.event.AppEventListenerBase;
+import act.event.OnceEventListenerBase;
+import act.mail.MailerContext;
 import org.joda.time.DateTime;
 import org.joda.time.Seconds;
 import org.osgl.$;
+import org.osgl.exception.NotAppliedException;
 import org.osgl.util.C;
 import org.osgl.util.E;
 import org.osgl.util.S;
@@ -22,7 +24,6 @@ import java.util.concurrent.*;
 
 import static act.app.App.logger;
 
-@ActComponent
 public class AppJobManager extends AppServiceBase<AppJobManager> {
 
     private ScheduledThreadPoolExecutor executor;
@@ -303,23 +304,60 @@ public class AppJobManager extends AppServiceBase<AppJobManager> {
     }
 
     private Runnable wrap(Runnable runnable) {
-        if (runnable instanceof _Job) {
-            return runnable;
-        } else {
-            return _Job.once(runnable, this);
-        }
+        return new ContextualJob(app().cuid(), runnable);
     }
 
-    private static class VirtualJob extends _Job {
-        private ScheduledFuture future;
-        VirtualJob(String id, ScheduledFuture future) {
-            super(id, Act.jobManager());
-            this.future = future;
+    private Runnable wrap(final Callable callable) {
+        return new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    callable.call();
+                } catch (Exception e) {
+                    if (e instanceof RuntimeException) {
+                        throw (RuntimeException) e;
+                    }
+                    throw E.unexpected(e);
+                }
+            }
+        };
+    }
+
+    private class ContextualJob extends _Job {
+
+        private JobContext origin_ = JobContext.copy();
+
+        ContextualJob(String id, final Runnable runnable) {
+            super(id, AppJobManager.this, new $.F0() {
+                @Override
+                public Object apply() throws NotAppliedException, $.Break {
+                    runnable.run();
+                    return null;
+                }
+            }, true);
+            app().eventBus().once(MailerContext.InitEvent.class, new OnceEventListenerBase<MailerContext.InitEvent>() {
+                @Override
+                public boolean tryHandle(MailerContext.InitEvent event) throws Exception {
+                    MailerContext mailerContext = MailerContext.current();
+                    if (null != mailerContext) {
+                        _before();
+                        return true;
+                    }
+                    return true;
+                }
+            });
         }
 
         @Override
-        protected void cancel() {
-            future.cancel(true);
+        protected void _before() {
+            // copy the JobContext of parent thread into the current thread
+            JobContext.init(origin_);
+        }
+
+        @Override
+        protected void _finally() {
+            JobContext.clear();
         }
     }
+
 }

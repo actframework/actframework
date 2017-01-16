@@ -7,9 +7,12 @@ import java.lang.annotation.Target;
 
 /**
  * Mark a method to be an adhoc event handler
+ *
+ * This annotation is deprecated, please use {@link OnEvent} instead
  */
 @Retention(RetentionPolicy.CLASS)
 @Target(ElementType.METHOD)
+@Deprecated
 public @interface OnClass {
 
     /**

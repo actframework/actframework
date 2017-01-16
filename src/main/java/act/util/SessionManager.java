@@ -206,8 +206,9 @@ public class SessionManager extends DestroyableBase {
             if (null == session) {
                 return null;
             }
-            if (!session.changed() && !sessionWillExpire) {
-                // Nothing changed and no cookie-expire, consequently send nothing back.
+            boolean sessionChanged = session.changed();
+            if (!sessionChanged && (session.empty() || !sessionWillExpire)) {
+                // Nothing changed and no cookie-expire or empty, consequently send nothing back.
                 return null;
             }
             H.Cookie cookie;
@@ -336,7 +337,9 @@ public class SessionManager extends DestroyableBase {
             long expiration = now + ttl;
             if (freshSession) {
                 // no previous cookie to restore; but we need to set the timestamp in the new cookie
-                session.put(KEY_EXPIRATION, expiration);
+                // note we use `load` API instead of `put` because we don't want to set the dirty flag
+                // in this case
+                session.load(KEY_EXPIRATION, String.valueOf(expiration));
             } else {
                 String s = session.get(KEY_EXPIRATION);
                 long oldTimestamp = null == s ? -1 : Long.parseLong(s);

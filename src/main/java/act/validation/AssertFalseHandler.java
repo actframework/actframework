@@ -1,6 +1,5 @@
 package act.validation;
 
-import act.ActComponent;
 import act.app.ActionContext;
 import act.controller.ActionMethodParamAnnotationHandlerPlugin;
 import org.osgl.util.C;
@@ -9,7 +8,6 @@ import javax.validation.constraints.AssertFalse;
 import java.lang.annotation.Annotation;
 import java.util.Set;
 
-@ActComponent
 public class AssertFalseHandler extends ActionMethodParamAnnotationHandlerPlugin {
 
     @Override

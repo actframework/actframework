@@ -14,6 +14,7 @@ import act.db.util.SequenceNumberGenerator;
 import act.db.util._SequenceNumberGenerator;
 import act.handler.UnknownHttpMethodProcessor;
 import act.handler.event.ResultEvent;
+import act.i18n.I18n;
 import act.security.CSRFProtector;
 import act.util.*;
 import act.validation.ValidationMessageInterpolator;
@@ -52,6 +53,20 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         MvcConfig.errorPageRenderer(new ActErrorPageRender());
         MvcConfig.beforeCommitResultHandler(ResultEvent.BEFORE_COMMIT_HANDLER);
         MvcConfig.afterCommitResultHandler(ResultEvent.AFTER_COMMIT_HANDLER);
+        MvcConfig.messageTranslater(new $.Transformer<String, String>() {
+            @Override
+            public String transform(String message) {
+                if (Act.appConfig().i18nEnabled()) {
+                    String translated = I18n.i18n(true, I18n.locale(), I18n.DEF_RESOURCE_BUNDLE_NAME, message);
+                    if (message == translated) {
+                        translated = I18n.i18n(true, I18n.locale(), MvcConfig.class.getName(), message);
+                        message = translated;
+                    }
+                    return message;
+                }
+                return message;
+            }
+        });
     }
 
     /**
@@ -178,7 +193,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         if (null == corsHeaders) {
             String s = get(CORS_HEADERS);
             if (null == s) {
-                s = "Content-Type, X-HTTP-Method-Override";
+                s = "Content-Type, X-HTTP-Method-Override, X-Requested-With";
             }
             corsHeaders = s;
         }

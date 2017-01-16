@@ -13,6 +13,8 @@ import org.osgl.$;
 import org.osgl.Osgl;
 import org.osgl.exception.NotAppliedException;
 import org.osgl.mvc.MvcConfig;
+import org.osgl.util.KV;
+import org.osgl.util.KVStore;
 import org.osgl.util.Keyword;
 import org.osgl.util.ValueObject;
 
@@ -36,6 +38,8 @@ public class JsonUtilConfig {
         config.put(LocalDateTime.class, jodaDateCodec);
         config.put(ValueObject.class, valueObjectSerializer);
         config.put(Keyword.class, keywordCodec);
+        config.put(KV.class, FastJsonKvCodec.INSTANCE);
+        config.put(KVStore.class, FastJsonKvCodec.INSTANCE);
 
         ParserConfig parserConfig = ParserConfig.getGlobalInstance();
         parserConfig.putDeserializer(DateTime.class, jodaDateCodec);
@@ -43,6 +47,8 @@ public class JsonUtilConfig {
         parserConfig.putDeserializer(LocalTime.class, jodaDateCodec);
         parserConfig.putDeserializer(LocalDateTime.class, jodaDateCodec);
         parserConfig.putDeserializer(Keyword.class, keywordCodec);
+        parserConfig.putDeserializer(KV.class, FastJsonKvCodec.INSTANCE);
+        parserConfig.putDeserializer(KVStore.class, FastJsonKvCodec.INSTANCE);
 
         MvcConfig.jsonSerializer(new $.F1<Object, String>() {
             @Override

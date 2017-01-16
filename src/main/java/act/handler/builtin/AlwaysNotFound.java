@@ -10,7 +10,7 @@ public class AlwaysNotFound extends FastRequestHandler {
 
     @Override
     public void handle(ActionContext context) {
-        NotFound.INSTANCE.apply(context.req(), context.resp());
+        NotFound.get().apply(context.req(), context.resp());
     }
 
     @Override

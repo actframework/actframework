@@ -2,9 +2,11 @@ package act.view.rythm;
 
 import act.Act;
 import act.app.ActionContext;
+import act.i18n.I18n;
 import act.route.Router;
-import org.osgl.inject.annotation.TypeOf;
+import org.osgl.util.E;
 import org.rythmengine.RythmEngine;
+import org.rythmengine.template.ITag;
 import org.rythmengine.template.JavaTagBase;
 import org.rythmengine.utils.S;
 
@@ -24,6 +26,38 @@ public class Tags {
     public void register(RythmEngine engine) {
         for (JavaTagBase tag : fastTags) {
             engine.registerFastTag(tag);
+        }
+    }
+
+    public static class ActMessage extends JavaTagBase {
+        @Override
+        public String __getName() {
+            return "actMsg";
+        }
+
+        @Override
+        protected void call(__ParameterList params, __Body body) {
+            int paramSize = params.size();
+            E.illegalArgumentIf(paramSize < 1);
+            String msg = params.get(0).value.toString();
+            Object[] args;
+            if (paramSize > 1) {
+                args = new Object[paramSize - 1];
+                for (int i = 1; i < paramSize; ++i) {
+                    args[i - 1] = params.get(i).value;
+                }
+            } else {
+                args = new Object[0];
+            }
+            if (Act.appConfig().i18nEnabled()) {
+                p(I18n.i18n(I18n.locale(), "act_message", msg, args));
+            } else {
+                if (args.length > 0) {
+                    p(org.osgl.util.S.fmt(msg, args));
+                } else {
+                    p(msg);
+                }
+            }
         }
     }
 

@@ -4,7 +4,6 @@
 
 @render()
 
-@args org.osgl.mvc.result.ErrorResult _error
 @ifNot(_error instanceof act.util.ActError) {
 @section(head){
 @render(moreStyles)
@@ -31,8 +30,8 @@ else {stackTrace = actError.stackTrace();}
   @section(head){
   <style>
     .detail {
-      font-family:  Courier, Monaco, monospace;
-      font-size: 9pt;
+      font-family: "Envy Code R", "Fira Code", "Source Code Pro Semibold",  Monaco, Courier, monospace;
+      font-size: 11pt;
       padding: 20px;
       padding-top: 8px;
       border: 1px solid #888;
@@ -45,7 +44,7 @@ else {stackTrace = actError.stackTrace();}
     .error-message {
       padding: 8px;
       border: 1px solid #888;
-      font-size: 9pt;
+      font-size: 11pt;
       margin-bottom: 20px;
       color: #f54400;
     }
@@ -116,19 +115,19 @@ else {stackTrace = actError.stackTrace();}
   @if(templateSourceInfo) {
   @(((act.view.TemplateException) actError).errorMessage().raw())
   } else {
-    @actError.getCauseOrThis().getClass().getName(): <b>@actError.getCauseOrThis().getMessage()</b>
+    @actError.getCauseOrThis().getClass().getName(): <b>@actError.getCauseOrThis().getLocalizedMessage()</b>
   }
   </pre>
 
   <div class="tabs">
     @if(templateSourceInfo) {
-    <div id="tab-template" class="code tab active" onclick="showTemplate()">Template code</div>
+    <div id="tab-template" class="code tab active" onclick="showTemplate()">@actMsg("error_page.template_code")</div>
     }
     @if(sourceInfo) {
-    <div id="tab-source" class="code tab @if(activeSource){active}" onclick="showSource()">Source code</div>
+    <div id="tab-source" class="code tab @if(activeSource){active}" onclick="showSource()">@actMsg("error_page.source_code")</div>
     }
     @if(stackTrace) {
-    <div id="tab-stacktrace" class="stacktrace tab @if(activeStack){active}"" onclick="showStacktrace()">Stack Trace</div>
+    <div id="tab-stacktrace" class="stacktrace tab @if(activeStack){active}"" onclick="showStacktrace()">@actMsg("error_page.stacktrace")</div>
     }
   </div>
 

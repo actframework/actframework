@@ -16,23 +16,20 @@ public class RenderTemplate extends RenderAny {
 
     public static RenderTemplate INSTANCE = new RenderTemplate();
 
-    private Map<String, Object> renderArgs;
+    static final ThreadLocal<Map<String, Object>> renderArgsBag = new ThreadLocal<>();
 
-    public RenderTemplate() {
-    }
-
-    public RenderTemplate(Map<String, Object> renderArgs) {
-        this();
-        this.renderArgs = renderArgs;
+    private RenderTemplate() {
     }
 
     @Override
     public void apply(H.Request req, H.Response resp) {
+        renderArgsBag.remove();
         throw E.unsupport("RenderTemplate does not support " +
                 "apply to request and response. Please use apply(AppContext) instead");
     }
 
     public void apply(ActionContext context) {
+        Map<String, Object> renderArgs = renderArgsBag.get();
         if (null != renderArgs && !renderArgs.isEmpty()) {
             for (String key : renderArgs.keySet()) {
                 context.renderArg(key, renderArgs.get(key));
@@ -51,4 +48,14 @@ public class RenderTemplate extends RenderAny {
         t.merge(context);
         applyAfterCommitHandler(req, resp);
     }
+
+    public static RenderTemplate get() {
+        return INSTANCE;
+    }
+
+    public static RenderTemplate of(Map<String, Object> args) {
+        renderArgsBag.set(args);
+        return INSTANCE;
+    }
+
 }

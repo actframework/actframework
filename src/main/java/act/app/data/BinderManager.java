@@ -1,6 +1,5 @@
 package act.app.data;
 
-import act.ActComponent;
 import act.app.App;
 import act.app.AppServiceBase;
 import act.conf.AppConfig;
@@ -15,7 +14,6 @@ import org.osgl.util.C;
 import java.io.File;
 import java.util.Map;
 
-@ActComponent
 public class BinderManager extends AppServiceBase<BinderManager> {
 
     private Map<Object, Binder> binders = C.newMap();

@@ -3,30 +3,34 @@ package act.plugin;
 import act.Destroyable;
 import act.app.App;
 import act.util.DestroyableBase;
-import org.osgl.util.C;
 
 import javax.enterprise.context.ApplicationScoped;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 public class AppServicePluginManager extends DestroyableBase {
 
-    private List<AppServicePlugin> registry = C.newList();
+    private Map<Class<? extends AppServicePlugin>, AppServicePlugin> registry = new HashMap<>();
 
     synchronized void register(AppServicePlugin plugin) {
-        if (!registry.contains(plugin)) {
-            registry.add(plugin);
+        if (!registry.containsKey(plugin.getClass())) {
+            registry.put(plugin.getClass(), plugin);
         }
     }
 
     public synchronized void applyTo(App app) {
-        for (AppServicePlugin plugin : registry) {
+        for (AppServicePlugin plugin : registry.values()) {
             plugin.applyTo(app);
         }
     }
 
+    public <T extends AppServicePlugin> T get(Class<T> key) {
+        return (T) registry.get(key);
+    }
+
     @Override
     protected void releaseResources() {
-        Destroyable.Util.tryDestroyAll(registry, ApplicationScoped.class);
+        Destroyable.Util.tryDestroyAll(registry.values(), ApplicationScoped.class);
         registry = null;
     }
 }

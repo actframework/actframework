@@ -1,13 +1,11 @@
 package act.util;
 
 import act.Act;
-import act.ActComponent;
 import act.app.App;
 import act.app.AppByteCodeScanner;
 import act.app.AppSourceCodeScanner;
 import act.plugin.Plugin;
 
-@ActComponent
 public abstract class AppCodeScannerPluginBase extends DestroyableBase implements Plugin {
 
     @Override

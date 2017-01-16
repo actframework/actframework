@@ -1,32 +1,26 @@
 package act.validation;
 
-import act.ActComponent;
 import act.app.ActionContext;
 import act.controller.ActionMethodParamAnnotationHandlerPlugin;
-import org.hibernate.validator.messageinterpolation.ResourceBundleMessageInterpolator;
-import org.hibernate.validator.resourceloading.AggregateResourceBundleLocator;
 import org.osgl.util.C;
 
+import javax.inject.Singleton;
 import javax.validation.Valid;
 import javax.validation.Validation;
 import javax.validation.Validator;
 import java.lang.annotation.Annotation;
-import java.util.Arrays;
 import java.util.Set;
 
 /**
  * @author Genko Lee
  */
-@ActComponent
+@Singleton
 public class ValidHandler extends ActionMethodParamAnnotationHandlerPlugin {
 
-    private static Validator validator;
+    private Validator validator;
 
-    static {
-//        ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
-        validator = Validation.byDefaultProvider().configure()
-                .messageInterpolator(new ResourceBundleMessageInterpolator(new AggregateResourceBundleLocator(Arrays.asList("messages", "ValidationMessages"))))
-                .buildValidatorFactory().getValidator();
+    public ValidHandler() {
+        this.validator = Validation.buildDefaultValidatorFactory().getValidator();
     }
 
     public Set<Class<? extends Annotation>> listenTo() {

@@ -3,8 +3,6 @@ package act.view;
 import act.app.ActionContext;
 import org.osgl.http.H;
 
-import java.util.Map;
-
 /**
  * Render json Map using all {@link ActionContext#renderArgs}
  * by {@link ActionContext}.
@@ -14,7 +12,7 @@ import java.util.Map;
  */
 public class RenderJsonMap extends RenderAny {
 
-    private Map<String, Object> renderArgs;
+    public static final RenderJsonMap INSTANCE = new RenderJsonMap();
 
     public RenderJsonMap() {
     }
@@ -22,5 +20,9 @@ public class RenderJsonMap extends RenderAny {
     public void apply(ActionContext context) {
         context.accept(H.Format.JSON);
         super.apply(context);
+    }
+
+    public static RenderJsonMap get() {
+        return INSTANCE;
     }
 }

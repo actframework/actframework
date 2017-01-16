@@ -13,13 +13,11 @@ import org.osgl.http.H;
 import org.osgl.mvc.util.ParamValueProvider;
 import org.osgl.util.C;
 import org.osgl.util.E;
-import org.osgl.util.S;
 
 import javax.enterprise.context.RequestScoped;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.ResourceBundle;
 
 import static act.app.App.logger;
 
@@ -28,7 +26,9 @@ public interface ActContext<CTX_TYPE extends ActContext> extends ParamValueProvi
     AppConfig config();
     CTX_TYPE accept(H.Format fmt);
     H.Format accept();
+    CTX_TYPE locale(Locale locale);
     Locale locale();
+    Locale locale(boolean required);
     /**
      * If {@link #templatePath(String) template path has been set before} then return
      * the template path
@@ -52,7 +52,24 @@ public interface ActContext<CTX_TYPE extends ActContext> extends ParamValueProvi
     CTX_TYPE addDestroyable(Destroyable resource);
     CTX_TYPE attribute(String name, Object attr);
     <T> T attribute(String name);
+    Map<String, Object> attributes();
     CTX_TYPE removeAttribute(String name);
+
+    String i18n(boolean ignoreError, String msgId, Object... args);
+
+    String i18n(String msgId, Object ... args);
+
+    String i18n(Class<?> bundleSpec, String msgId, Object... args);
+
+    String i18n(boolean ignoreError, Class<?> bundleSpec, String msgId, Object... args);
+
+    String i18n(Enum<?> msgId);
+
+    String i18n(Class<?> bundleSpec, Enum<?> msgId);
+
+    Map<String, String> i18n(Class<? extends Enum> enumClass);
+
+    Map<String, String> i18n(Class<?> bundleSpec, Class<? extends Enum> enumClass);
 
     String methodPath();
 
@@ -141,12 +158,22 @@ public interface ActContext<CTX_TYPE extends ActContext> extends ParamValueProvi
             return this.locale;
         }
 
-        public final Locale locale(boolean required) {
-            E.illegalStateIf(null == this.locale, "Locale is null, make sure your `act.i18n` configuration is set to `true`");
-            return this.locale;
+        public Locale locale(boolean required) {
+            Locale locale = this.locale;
+            if (null == locale) {
+                if (!required) {
+                    return null;
+                }
+                locale = config().locale();
+            }
+            return locale;
         }
 
         public static final String DEF_RESOURCE_BUNDLE_NAME = I18n.DEF_RESOURCE_BUNDLE_NAME;
+
+        public String i18n(boolean ignoreError, String msgId, Object... args) {
+            return I18n.i18n(ignoreError, locale(true), I18n.DEF_RESOURCE_BUNDLE_NAME, msgId, args);
+        }
 
         public String i18n(String msgId, Object ... args) {
             return I18n.i18n(locale(true), DEF_RESOURCE_BUNDLE_NAME, msgId, args);
@@ -154,6 +181,10 @@ public interface ActContext<CTX_TYPE extends ActContext> extends ParamValueProvi
 
         public String i18n(Class<?> bundleSpec, String msgId, Object... args) {
             return I18n.i18n(locale(true), bundleSpec.getName(), msgId, args);
+        }
+
+        public String i18n(boolean ignoreError, Class<?> bundleSpec, String msgId, Object... args) {
+            return I18n.i18n(ignoreError, locale(true), bundleSpec.getName(), msgId, args);
         }
 
         public String i18n(Enum<?> msgId) {
@@ -212,6 +243,11 @@ public interface ActContext<CTX_TYPE extends ActContext> extends ParamValueProvi
         public VC_TYPE removeAttribute(String name) {
             attributes.remove(name);
             return me();
+        }
+
+        @Override
+        public Map<String, Object> attributes() {
+            return attributes;
         }
 
         @Override

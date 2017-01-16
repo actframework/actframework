@@ -1,7 +1,6 @@
 package act.handler.builtin.controller.impl;
 
 import act.Act;
-import act.ActComponent;
 import act.app.ActionContext;
 import act.app.App;
 import act.app.AppClassLoader;
@@ -138,7 +137,22 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         actionContext.attribute("reflected_handler", this);
         ensureJsonDTOGenerated(actionContext);
         Object ctrl = controllerInstance(actionContext);
+
+        /*
+         * We will send back response immediately when param validation
+         * failed in the following cases:
+         * a) this is a data endpoint and accept JSON data
+         * b) there is no template associated with the endpoint
+         */
+        boolean failOnViolation = actionContext.acceptJson() || checkTemplate(actionContext);
+
         Object[] params = params(actionContext);
+
+        if (failOnViolation && actionContext.hasViolation()) {
+            String msg = actionContext.violationMessage(";");
+            return new BadRequest(msg);
+        }
+
         return invoke(handler, actionContext, ctrl, params);
     }
 
@@ -302,8 +316,6 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         } else {
             try {
                 result = method.invoke(null, params);
-            } catch (Result r) {
-                return r;
             } catch (InvocationTargetException e) {
                 Throwable cause = e.getCause();
                 if (cause instanceof Result) {
@@ -331,8 +343,12 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
             // we don't check template on interceptors
             return false;
         }
+        Boolean hasTemplate = context.hasTemplate();
+        if (null != hasTemplate) {
+            return hasTemplate;
+        }
         H.Format fmt = context.accept();
-        Boolean hasTemplate = templateCache.get(fmt);
+        hasTemplate = templateCache.get(fmt);
         if (null == hasTemplate || Act.isDev()) {
             if (!TemplatePathResolver.isAcceptFormatSupported(fmt)) {
                 hasTemplate = false;
@@ -342,6 +358,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
             }
             templateCache.put(fmt, hasTemplate);
         }
+        context.hasTemplate(hasTemplate);
         return hasTemplate;
     }
 
@@ -384,7 +401,6 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         return new _Finally(new ReflectedHandlerInvoker(meta, app));
     }
 
-    @ActComponent
     private static class _Before extends BeforeInterceptor {
         private ActionHandlerInvoker invoker;
 
@@ -420,7 +436,6 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         }
     }
 
-    @ActComponent
     private static class _After extends AfterInterceptor {
         private AfterInterceptorInvoker invoker;
 
@@ -461,7 +476,6 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         }
     }
 
-    @ActComponent
     private static class _Exception extends ExceptionInterceptor {
         private ExceptionInterceptorInvoker invoker;
 
@@ -514,7 +528,6 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         }
     }
 
-    @ActComponent
     private static class _Finally extends FinallyInterceptor {
         private ActionHandlerInvoker invoker;
 

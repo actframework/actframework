@@ -1,23 +1,16 @@
 package act.app.data;
 
-import act.ActComponent;
 import act.app.App;
 import act.app.AppServiceBase;
 import act.conf.AppConfig;
-import act.data.*;
-import org.joda.time.DateTime;
-import org.joda.time.LocalDate;
-import org.joda.time.LocalDateTime;
-import org.joda.time.LocalTime;
+import act.data.SObjectResolver;
 import org.osgl.storage.ISObject;
 import org.osgl.util.AnnotationAware;
 import org.osgl.util.C;
 import org.osgl.util.StringValueResolver;
 
-import java.util.Date;
 import java.util.Map;
 
-@ActComponent
 public class StringValueResolverManager extends AppServiceBase<StringValueResolverManager> {
 
     private Map<Class, StringValueResolver> resolvers = C.newMap();

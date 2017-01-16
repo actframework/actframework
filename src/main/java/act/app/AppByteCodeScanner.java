@@ -1,6 +1,5 @@
 package act.app;
 
-import act.ActComponent;
 import act.util.ByteCodeVisitor;
 
 import java.util.Map;
@@ -9,7 +8,6 @@ import java.util.Set;
 /**
  * A {@code AppByteCodeScanner} scans application bytecode
  */
-@ActComponent
 public interface AppByteCodeScanner extends AppCodeScanner {
     /**
      * Returns the {@link ByteCodeVisitor}

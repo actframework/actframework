@@ -67,6 +67,7 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
     private LocaleResolver localeResolver;
     private boolean disableCors;
     private boolean disableCsrf;
+    private Boolean hasTemplate;
 
     @Inject
     private ActionContext(App app, H.Request request, H.Response response) {
@@ -165,6 +166,15 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
 
     public ActionContext accept(H.Format fmt) {
         req().accept(fmt);
+        return this;
+    }
+
+    public Boolean hasTemplate() {
+        return hasTemplate;
+    }
+
+    public ActionContext hasTemplate(boolean b) {
+        hasTemplate = b;
         return this;
     }
 
@@ -615,6 +625,16 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
                 attribute(ATTR_WAS_UNAUTHENTICATED, false);
             }
         }
+    }
+
+    @Override
+    public Locale locale(boolean required) {
+        if (required) {
+            if (null == locale()) {
+                localeResolver.resolve();
+            }
+        }
+        return super.locale(required);
     }
 
     /**

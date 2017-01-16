@@ -386,7 +386,7 @@ public final class ControllerClassMetaInfo extends DestroyableBase {
 
     private static final C.Set<Class<? extends Annotation>> ACTION_ANNOTATION_TYPES = C.set(
             Action.class, GetAction.class, PostAction.class,
-            PutAction.class, DeleteAction.class);
+            PutAction.class, DeleteAction.class, ActionUtil.class);
 
     private static final C.Set<Class<? extends Annotation>> INTERCEPTOR_ANNOTATION_TYPES = C.set(
             Before.class, After.class, Catch.class, Finally.class);
@@ -395,6 +395,10 @@ public final class ControllerClassMetaInfo extends DestroyableBase {
 
     public static boolean isActionAnnotation(Class<? extends Annotation> type) {
         return ACTION_ANNOTATION_TYPES.contains(type);
+    }
+
+    public static boolean isActionUtilAnnotation(Class<? extends Annotation> type) {
+        return ActionUtil.class == type;
     }
 
     public static boolean isInterceptorAnnotation(Class<? extends Annotation> type) {

@@ -1,7 +1,6 @@
 package act.app;
 
 import act.Act;
-import act.ActComponent;
 import act.route.RouteTableRouterBuilder;
 import org.osgl.$;
 import org.osgl.Osgl;
@@ -20,7 +19,6 @@ import static act.app.RuntimeDirs.CONF;
  * <p>Used ONLY at dev time for Act to decide where to pick up
  * the application srccode files, configuration files etc</p>
  */
-@ActComponent
 public interface ProjectLayout {
 
     /**
@@ -362,7 +360,6 @@ public interface ProjectLayout {
         }
     }
 
-    @ActComponent
     class CustomizedProjectLayout implements ProjectLayout {
         private String source;
         private String testSource;

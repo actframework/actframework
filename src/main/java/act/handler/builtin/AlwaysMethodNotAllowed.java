@@ -10,7 +10,7 @@ public class AlwaysMethodNotAllowed extends FastRequestHandler {
 
     @Override
     public void handle(ActionContext context) {
-        MethodNotAllowed.INSTANCE.apply(context.req(), context.resp());
+        MethodNotAllowed.get().apply(context.req(), context.resp());
     }
 
     @Override

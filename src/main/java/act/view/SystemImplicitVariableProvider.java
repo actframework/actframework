@@ -1,6 +1,5 @@
 package act.view;
 
-import act.ActComponent;
 import act.app.ActionContext;
 import act.app.App;
 import act.conf.AppConfig;
@@ -20,7 +19,6 @@ import java.util.Map;
 /**
  * Define system implicit variables
  */
-@ActComponent
 public class SystemImplicitVariableProvider extends ImplicitVariableProvider {
     @Override
     public List<ActionViewVarDef> implicitActionViewVariables() {

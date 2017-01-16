@@ -1,6 +1,7 @@
 package act.i18n;
 
 import act.Act;
+import act.util.ActContext;
 import org.osgl.$;
 import org.osgl.logging.LogManager;
 import org.osgl.logging.Logger;
@@ -14,8 +15,13 @@ public class I18n {
 
     public static final String DEF_RESOURCE_BUNDLE_NAME = "messages";
 
+    public static Locale locale() {
+        ActContext context = ActContext.Base.currentContext();
+        return null != context ? context.locale(true) : Act.appConfig().locale();
+    }
+
     public static String i18n(String msgId, Object ... args) {
-        return i18n(Act.appConfig().locale(), msgId, args);
+        return i18n(locale(), msgId, args);
     }
 
     public static String i18n(Locale locale, String msgId, Object ... args) {
@@ -23,7 +29,7 @@ public class I18n {
     }
 
     public static String i18n(Class<?> bundleSpec, String msgId, Object... args) {
-        return i18n(Act.appConfig().locale(), bundleSpec.getName(), msgId, args);
+        return i18n(locale(), bundleSpec.getName(), msgId, args);
     }
 
     public static String i18n(Locale locale, Class<?> bundleSpec, String msgId, Object... args) {
@@ -31,21 +37,45 @@ public class I18n {
     }
 
     public static String i18n(Locale locale, String bundleName, String msgId, Object... args) {
-        ResourceBundle bundle = ResourceBundle.getBundle(bundleName, $.notNull(locale));
+        return i18n(false, locale, bundleName, msgId, args);
+    }
+
+    public static String i18n(boolean ignoreError, Locale locale, String bundleName, String msgId, Object... args) {
+        if (null == msgId) {
+            return "";
+        }
+        ResourceBundle bundle = ResourceBundle.getBundle(bundleName, $.notNull(locale), Act.app().classLoader());
         String msg = msgId;
-        try {
-            msg = bundle.getString(msgId);
-        } catch (MissingResourceException e) {
-            logger.warn("Cannot find i18n message key: %s", msgId);
+        if (ignoreError) {
+            if (bundle.containsKey(msgId)) {
+                msg = bundle.getString(msgId);
+            }
+        } else {
+            try {
+                msg = bundle.getString(msgId);
+            } catch (MissingResourceException e) {
+                logger.warn("Cannot find i18n message key: %s", msgId);
+            }
         }
-        if (args.length > 0) {
-            msg = S.fmt(msg, args);
+        int len = args.length;
+        if (len > 0) {
+            Object[] resolvedArgs = new Object[len];
+            for (int i = 0; i < len; ++i) {
+                Object arg = args[i];
+                if (arg instanceof String) {
+                    resolvedArgs[i] = i18n(true, locale, bundleName, (String) arg);
+                } else {
+                    resolvedArgs[i] = arg;
+                }
+            }
+            msg = S.fmt(msg, resolvedArgs);
         }
+
         return msg;
     }
 
     public static String i18n(Enum<?> msgId) {
-        return i18n(Act.appConfig().locale(), msgId);
+        return i18n(locale(), msgId);
     }
 
     public static String i18n(Locale locale, Enum<?> msgId) {
@@ -53,7 +83,7 @@ public class I18n {
     }
 
     public static String i18n(Class<?> bundleSpec, Enum<?> msgId) {
-        return i18n(Act.appConfig().locale(), bundleSpec, msgId);
+        return i18n(locale(), bundleSpec, msgId);
     }
 
     public static String i18n(Locale locale, Class<?> bundleSpec, Enum<?> msgId) {
@@ -66,7 +96,7 @@ public class I18n {
     }
 
     public static Map<String, String> i18n(Class<? extends Enum> enumClass) {
-        return i18n(Act.appConfig().locale(), enumClass);
+        return i18n(locale(), enumClass);
     }
 
     public static Map<String, String> i18n(Locale locale, Class<? extends Enum> enumClass) {
@@ -74,7 +104,7 @@ public class I18n {
     }
 
     public static Map<String, String> i18n(Class<?> bundleSpec, Class<? extends Enum> enumClass) {
-        return i18n(Act.appConfig().locale(), bundleSpec, enumClass);
+        return i18n(locale(), bundleSpec, enumClass);
     }
 
     public static Map<String, String> i18n(Locale locale, Class<?> bundleSpec, Class<? extends Enum> enumClass) {

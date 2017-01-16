@@ -4,7 +4,6 @@ import act.Act;
 import act.route.RouteTableRouterBuilder;
 
 import java.io.File;
-import java.util.List;
 
 /**
  * Define application dir structure at runtime
@@ -33,10 +32,6 @@ public enum RuntimeDirs {
 
     public static File routes(App app) {
         return new File(classes(app), RouteTableRouterBuilder.ROUTES_FILE);
-    }
-
-    public static File asset(App app) {
-        return new File(app.home(), ASSET);
     }
 
     public static File classes(App app) {

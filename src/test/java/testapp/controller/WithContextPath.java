@@ -12,7 +12,7 @@ public class WithContextPath {
 
     @GetAction("/bar")
     public void bar() {
-        throw new Ok();
+        throw Ok.get();
     }
 
 }

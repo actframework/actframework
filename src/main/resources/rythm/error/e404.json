@@ -1,1 +1,0 @@
-@extends(_base, code: 404, msg: "Not found")

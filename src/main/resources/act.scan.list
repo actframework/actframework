@@ -2,7 +2,6 @@
 act\..*Admin
 act.i18n.TimeZoneResolver
 act.i18n.LocaleResolver
-act.inject.genie.GenieInjector
 act.app.SingletonFinder
 act.inject.genie.GenieInjector
 act.db.DbBind
@@ -11,3 +10,5 @@ act.app.conf.AppConfigPlugin
 act.Info
 act.handler.builtin.controller.RequestHandlerProxy
 act.Zen
+act.util.ActiveRecordCodec
+org.osgl.util.FastJsonKvCodec

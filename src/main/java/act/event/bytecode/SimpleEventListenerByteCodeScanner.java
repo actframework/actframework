@@ -1,26 +1,25 @@
 package act.event.bytecode;
 
-import act.ActComponent;
 import act.app.AppByteCodeScannerBase;
 import act.app.event.AppEventId;
 import act.asm.AnnotationVisitor;
 import act.asm.MethodVisitor;
 import act.asm.Type;
-import act.event.EventBus;
-import act.event.On;
-import act.event.OnClass;
+import act.event.*;
 import act.event.meta.SimpleEventListenerMetaInfo;
 import act.job.AppJobManager;
 import act.util.AsmTypes;
 import act.util.Async;
 import act.util.ByteCodeVisitor;
 import org.osgl.$;
+import org.osgl.Osgl;
+import org.osgl.exception.NotAppliedException;
 import org.osgl.util.C;
 import org.osgl.util.S;
 
+import java.lang.annotation.Annotation;
 import java.util.List;
 
-@ActComponent
 public class SimpleEventListenerByteCodeScanner extends AppByteCodeScannerBase {
 
     private List<SimpleEventListenerMetaInfo> metaInfoList = C.newList();
@@ -46,19 +45,19 @@ public class SimpleEventListenerByteCodeScanner extends AppByteCodeScannerBase {
             final EventBus eventBus = app().eventBus();
             AppJobManager jobManager = app().jobManager();
             for (final SimpleEventListenerMetaInfo metaInfo : metaInfoList) {
-                for (final Object event : metaInfo.events()) {
-                    final boolean isStatic = metaInfo.isStatic();
-                    jobManager.on(AppEventId.PRE_START, new Runnable() {
-                        @Override
-                        public void run() {
+                jobManager.on(AppEventId.PRE_START, new Runnable() {
+                    @Override
+                    public void run() {
+                        for (final Object event : metaInfo.events()) {
+                            final boolean isStatic = metaInfo.isStatic();
                             if (metaInfo.isAsync()) {
                                 eventBus.bindAsync(event, new ReflectedSimpleEventListener(metaInfo.className(), metaInfo.methodName(), metaInfo.paramTypes(), isStatic));
                             } else {
                                 eventBus.bind(event, new ReflectedSimpleEventListener(metaInfo.className(), metaInfo.methodName(), metaInfo.paramTypes(), isStatic));
                             }
                         }
-                    });
-                }
+                    }
+                });
             }
         }
     }
@@ -91,10 +90,13 @@ public class SimpleEventListenerByteCodeScanner extends AppByteCodeScannerBase {
             return new MethodVisitor(ASM5, mv) {
 
                 private List<Object> events = C.newList();
+                private List<$.Func0> delayedEvents = C.newList();
+                private boolean isOnEvent = false;
 
                 private boolean isAsync;
 
                 private String asyncMethodName = null;
+
 
                 @Override
                 public AnnotationVisitor visitAnnotation(String desc, boolean visible) {
@@ -102,7 +104,25 @@ public class SimpleEventListenerByteCodeScanner extends AppByteCodeScannerBase {
                     String className = Type.getType(desc).getClassName();
                     final boolean isOn = On.class.getName().equals(className);
                     final boolean isOnC = OnClass.class.getName().equals(className);
-                    if (isOn || isOnC) {
+                    final boolean isOnE = OnEvent.class.getName().equals(className);
+                    if (isOnE) {
+                        isOnEvent = true;
+                    }
+                    boolean isCustomMarker = false;
+                    if (!isOn && !isOnC && !isOnE) {
+                        Class<?> clz = $.classForName(className);
+                        // note we can't use Class.isAnnotationPresent(Class) call here as the class loader might be different
+                        // isCustomMarker = clz.isAnnotationPresent(SimpleEventListener.Marker.class);
+                        Annotation[] annotations = clz.getAnnotations();
+                        for (Annotation annotation : annotations) {
+                            if (SimpleEventListener.Marker.class.getCanonicalName().equals(annotation.annotationType().getCanonicalName())) {
+                                isCustomMarker = true;
+                                break;
+                            }
+                        }
+                    }
+
+                    if (isOnE || isOn || isOnC || isCustomMarker) {
                         return new AnnotationVisitor(ASM5, av) {
                             @Override
                             public AnnotationVisitor visitArray(String name) {
@@ -120,6 +140,19 @@ public class SimpleEventListenerByteCodeScanner extends AppByteCodeScannerBase {
                                                 events.add(c);
                                             }
                                         }
+
+                                        @Override
+                                        public void visitEnum(String name, String desc, final String value) {
+                                            final String enumClassName = Type.getType(desc).getClassName();
+                                            delayedEvents.add(new $.Func0() {
+                                                @Override
+                                                public Object apply() throws NotAppliedException, Osgl.Break {
+                                                    Class<? extends Enum> enumClass = $.classForName(enumClassName, app().classLoader());
+                                                    return (Enum.valueOf(enumClass, value));
+                                                }
+                                            });
+                                            super.visitEnum(name, desc, value);
+                                        }
                                     };
                                 } else {
                                     return av0;
@@ -132,50 +165,49 @@ public class SimpleEventListenerByteCodeScanner extends AppByteCodeScannerBase {
                                     isAsync = Boolean.parseBoolean(S.string(value));
                                 }
                             }
-                        };
-                    } else if (Async.class.getName().equals(className)) {
-                            if (!isVoid) {
-                                logger.warn("Error found in method %s.%s: @Async annotation cannot be used with method that has return type", className, methodName);
-                            } else if (!isPublicNotAbstract) {
-                                logger.warn("Error found in method %s.%s: @Async annotation cannot be used with method that are not public or abstract method", className, methodName);
-                            } else {
-                                asyncMethodName = Async.MethodNameTransformer.transform(methodName);
-                            }
-                        return av;
-                    } else {
-                        return new AnnotationVisitor(ASM5, av) {
-                            @Override
-                            public void visit(String name, Object value) {
-                                super.visit(name, value);
-                            }
 
                             @Override
-                            public void visitEnd() {
-                                super.visitEnd();
-                            }
-
-                            @Override
-                            public void visitEnum(String name, String desc, String value) {
+                            public void visitEnum(String name, String desc, final String value) {
+                                if ("value".equals(name)) {
+                                    final String enumClassName = Type.getType(desc).getClassName();
+                                    delayedEvents.add(new $.Func0() {
+                                        @Override
+                                        public Object apply() throws NotAppliedException, Osgl.Break {
+                                            Class<? extends Enum> enumClass = $.classForName(enumClassName, app().classLoader());
+                                            return (Enum.valueOf(enumClass, value));
+                                        }
+                                    });
+                                }
                                 super.visitEnum(name, desc, value);
                             }
-
-                            @Override
-                            public AnnotationVisitor visitAnnotation(String name, String desc) {
-                                return super.visitAnnotation(name, desc);
-                            }
-
-                            @Override
-                            public AnnotationVisitor visitArray(String name) {
-                                return super.visitArray(name);
-                            }
                         };
+                    } else if (Async.class.getName().equals(className)) {
+                        if (!isVoid) {
+                            logger.warn("Error found in method %s.%s: @Async annotation cannot be used with method that has return type", className, methodName);
+                        } else if (!isPublicNotAbstract) {
+                            logger.warn("Error found in method %s.%s: @Async annotation cannot be used with method that are not public or abstract method", className, methodName);
+                        } else {
+                            asyncMethodName = Async.MethodNameTransformer.transform(methodName);
+                        }
+                        return av;
+                    } else {
+                        return av;
                     }
                 }
 
                 @Override
                 public void visitEnd() {
-                    if (!events.isEmpty()) {
-                        SimpleEventListenerMetaInfo metaInfo = new SimpleEventListenerMetaInfo(events, className, methodName, asyncMethodName, paramTypes, isAsync, isStatic, app());
+                    if (isOnEvent) {
+                        if (paramTypes.isEmpty()) {
+                            logger.warn("@OnEvent annotation shall be put on a method with exactly one event object (optionally with other injectable arguments");
+                        } else {
+                            String type = paramTypes.get(0);
+                            events.add($.classForName(type, app().classLoader()));
+                        }
+                    }
+                    if (!events.isEmpty() || !delayedEvents.isEmpty()) {
+                        SimpleEventListenerMetaInfo metaInfo = new SimpleEventListenerMetaInfo(
+                                events, delayedEvents, className, methodName, asyncMethodName, paramTypes, isAsync, isStatic, app());
                         metaInfoList.add(metaInfo);
                     }
                     super.visitEnd();

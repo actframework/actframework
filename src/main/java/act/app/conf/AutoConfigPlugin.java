@@ -1,6 +1,5 @@
 package act.app.conf;
 
-import act.ActComponent;
 import act.app.App;
 import act.app.AppByteCodeScanner;
 import act.app.data.StringValueResolverManager;
@@ -25,7 +24,6 @@ import java.util.EventObject;
 import java.util.Map;
 import java.util.Set;
 
-@ActComponent
 public class AutoConfigPlugin extends AnnotatedTypeFinder {
 
     private static final Logger logger = LogManager.get(AutoConfigPlugin.class);
@@ -33,7 +31,7 @@ public class AutoConfigPlugin extends AnnotatedTypeFinder {
     private static Field modifiersField;
 
     public AutoConfigPlugin() {
-        super(AutoConfig.class, new $.F2<App, String, Map<Class<? extends AppByteCodeScanner>, Set<String>>>() {
+        super(true, false, AutoConfig.class, new $.F2<App, String, Map<Class<? extends AppByteCodeScanner>, Set<String>>>() {
             @Override
             public Map<Class<? extends AppByteCodeScanner>, Set<String>> apply(final App app, final String className) throws NotAppliedException, $.Break {
                 app.eventBus().bind(AppEventId.PRE_START, new AppEventListenerBase() {

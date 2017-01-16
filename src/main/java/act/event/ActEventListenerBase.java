@@ -5,18 +5,22 @@ import act.util.DestroyableBase;
 import org.osgl.util.S;
 
 import java.util.EventObject;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public abstract class ActEventListenerBase<EVENT_TYPE extends EventObject> extends DestroyableBase implements ActEventListener<EVENT_TYPE> {
+
+    private static final AtomicInteger ID_ = new AtomicInteger();
+
     private String id;
     public ActEventListenerBase(CharSequence id) {
         if (null == id) {
-            id = S.uuid();
+            id = genId();
         }
         this.id = id.toString();
     }
 
     public ActEventListenerBase() {
-        this(S.uuid());
+        this(genId());
     }
 
     @Override
@@ -39,6 +43,10 @@ public abstract class ActEventListenerBase<EVENT_TYPE extends EventObject> exten
             return S.eq(that.id(), this.id());
         }
         return false;
+    }
+
+    private static String genId() {
+        return S.random(3) + ID_.getAndIncrement();
     }
 
 }

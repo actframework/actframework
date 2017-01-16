@@ -99,6 +99,7 @@ public class ClassFinderByteCodeScanner extends AppByteCodeScannerBase {
                             if (finder.isValid()) {
                                 finder.scheduleFind();
                             }
+                            super.visitEnd();
                         }
 
                         /*

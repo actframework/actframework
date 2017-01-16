@@ -1,6 +1,5 @@
 package testapp.model;
 
-import act.Act;
 import org.osgl.util.KVStore;
 
 import java.util.UUID;

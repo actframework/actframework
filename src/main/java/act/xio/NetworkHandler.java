@@ -12,7 +12,7 @@ import act.metric.MetricInfo;
 import act.metric.Timer;
 import act.route.Router;
 import act.util.DestroyableBase;
-import act.view.ActServerError;
+import act.view.ActErrorResult;
 import org.osgl.$;
 import org.osgl.Osgl;
 import org.osgl.exception.NotAppliedException;
@@ -81,7 +81,7 @@ public class NetworkHandler extends DestroyableBase implements  $.Func1<ActionCo
                 r = RequestHandlerProxy.GLOBAL_AFTER_INTERCEPTOR.apply(r, ctx);
             } catch (Exception e) {
                 logger.error(e, "Error calling global after interceptor");
-                r = ActServerError.of(e);
+                r = ActErrorResult.of(e);
             }
             if (null == ctx.handler()) {
                 ctx.handler(FastRequestHandler.DUMB);
@@ -101,12 +101,12 @@ public class NetworkHandler extends DestroyableBase implements  $.Func1<ActionCo
                 r = RequestHandlerProxy.GLOBAL_EXCEPTION_INTERCEPTOR.apply(t, ctx);
             } catch (Exception e) {
                 logger.error(e, "Error calling global exception interceptor");
-                r = ActServerError.of(e);
+                r = ActErrorResult.of(e);
             }
             if (null == r) {
-                r = ActServerError.of(t);
+                r = ActErrorResult.of(t);
             } else if (r instanceof ErrorResult) {
-                r = ActServerError.of(r);
+                r = ActErrorResult.of(r);
             }
             if (null == ctx.handler()) {
                 ctx.handler(FastRequestHandler.DUMB);
@@ -159,6 +159,9 @@ public class NetworkHandler extends DestroyableBase implements  $.Func1<ActionCo
         @Override
         public String apply(H.Request req, String url) throws NotAppliedException, Osgl.Break {
             int sz = url.length();
+            if (sz < 4) {
+                return url;
+            }
             int start = sz - 1;
             char c = url.charAt(start);
             char[] trait;

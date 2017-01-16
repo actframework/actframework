@@ -10,7 +10,7 @@ public class AlwaysForbidden extends FastRequestHandler {
 
     @Override
     public void handle(ActionContext context) {
-        Forbidden.INSTANCE.apply(context.req(), context.resp());
+        Forbidden.get().apply(context.req(), context.resp());
     }
 
     @Override
