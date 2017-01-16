@@ -81,7 +81,7 @@ Controller sample code:
 The easiest way to start your project is to copy one of the following ACT Demo applications which could be found at https://github.com/actframework/act-demo-apps
 
 * Basic usage: https://github.com/actframework/act-demo-apps/tree/master/helloworld
-* Dependency injection with Guice: https://github.com/actframework/act-demo-apps/tree/master/injection
+* Dependency injection: https://github.com/actframework/act-demo-apps/tree/master/injection
 * Configuration with code: https://github.com/actframework/act-demo-apps/tree/master/config
 * Jobs: https://github.com/actframework/act-demo-apps/tree/master/jobs
 * MongoDB with morphia: https://github.com/actframework/act-demo-apps/tree/master/todo-morphia
