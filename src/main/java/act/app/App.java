@@ -360,7 +360,7 @@ public class App extends DestroyableBase {
     protected void releaseResources() {
         mainThread.interrupt();
         logger.info("App shutting down ....");
-        if (config().i18nEnabled()) {
+        if (null != classLoader && config().i18nEnabled()) {
             ResourceBundle.clearCache(classLoader);
         }
 
