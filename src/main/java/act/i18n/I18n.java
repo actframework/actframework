@@ -17,7 +17,7 @@ public class I18n {
 
     public static Locale locale() {
         ActContext context = ActContext.Base.currentContext();
-        return null != context ? context.locale() : Act.appConfig().locale();
+        return null != context ? context.locale(true) : Act.appConfig().locale();
     }
 
     public static String i18n(String msgId, Object ... args) {

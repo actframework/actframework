@@ -72,16 +72,16 @@
 
 <p>
   @if(null == sourceInfo && null == templateSourceInfo) {
-    Cannot find handler for the current request <code>@req.method() @req.path()</code> in the
+    @actMsg("e404.cannot_find_handler_in_req", req.method(), req.path()).raw()
   }
-  router table(<span id="toggle-routetable" class="expanded" onclick="toggleRouteTable()">hide</span>)</p>
+  @actMsg("e404.route_table")(<span id="toggle-routetable" class="expanded" onclick="toggleRouteTable()">@actMsg("e404.hide")</span>)</p>
 
 <table id="route-table">
   <thead>
   <tr>
-    <th class="m">method</th>
-    <th class="p">path</th>
-    <th class="h">handler</th>
+    <th class="m">@actMsg("e404.method")</th>
+    <th class="p">@actMsg("e404.path")</th>
+    <th class="h">@actMsg("e404.handler")</th>
   </tr>
   </thead>
   <tbody>
@@ -109,5 +109,5 @@
 </script>
 
 @section(description) {
-  NotFound 404 thrown out from source code:
+  @actMsg("e404.desc")
 }

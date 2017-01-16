@@ -121,13 +121,13 @@ else {stackTrace = actError.stackTrace();}
 
   <div class="tabs">
     @if(templateSourceInfo) {
-    <div id="tab-template" class="code tab active" onclick="showTemplate()">Template code</div>
+    <div id="tab-template" class="code tab active" onclick="showTemplate()">@actMsg("error_page.template_code")</div>
     }
     @if(sourceInfo) {
-    <div id="tab-source" class="code tab @if(activeSource){active}" onclick="showSource()">Source code</div>
+    <div id="tab-source" class="code tab @if(activeSource){active}" onclick="showSource()">@actMsg("error_page.source_code")</div>
     }
     @if(stackTrace) {
-    <div id="tab-stacktrace" class="stacktrace tab @if(activeStack){active}"" onclick="showStacktrace()">Stack Trace</div>
+    <div id="tab-stacktrace" class="stacktrace tab @if(activeStack){active}"" onclick="showStacktrace()">@actMsg("error_page.stacktrace")</div>
     }
   </div>
 

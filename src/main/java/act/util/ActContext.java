@@ -28,6 +28,7 @@ public interface ActContext<CTX_TYPE extends ActContext> extends ParamValueProvi
     H.Format accept();
     CTX_TYPE locale(Locale locale);
     Locale locale();
+    Locale locale(boolean required);
     /**
      * If {@link #templatePath(String) template path has been set before} then return
      * the template path
