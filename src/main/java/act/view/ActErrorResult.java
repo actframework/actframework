@@ -95,20 +95,6 @@ public class ActErrorResult extends ErrorResult implements ActError {
         return -1 == statusCode ? super.statusCode() : statusCode;
     }
 
-    @Override
-    public String getLocalizedMessage() {
-        if (Act.appConfig().i18nEnabled()) {
-            String message = getMessage();
-            String translated = I18n.i18n(true, I18n.locale(), I18n.DEF_RESOURCE_BUNDLE_NAME, message);
-            if (message == translated) {
-                translated = I18n.i18n(true, I18n.locale(), MvcConfig.class.getName(), message);
-                message = translated;
-            }
-            return message;
-        }
-        return super.getLocalizedMessage();
-    }
-
     public List<String> stackTrace() {
         List<String> l = C.newList();
         Throwable t = getCauseOrThis();
