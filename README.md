@@ -10,8 +10,8 @@ Documentation is ready at
 
 ## Project status
 
-* Current stable version: 0.1.2-SNAPSHOT
-* Working on 0.3.0-SNAPSHOT
+* Current stable version: 0.3.0-SNAPSHOT
+* The first public release is target to March 2017
 
 ## Install
 
@@ -70,19 +70,20 @@ Controller sample code:
 
     @GetAction("/product/{catalog}/{prod}/price")
     public Result price(String catalog, String prod) {
-        int n = _.random(C.range(100, 400));
+        int n = $.random(C.range(100, 400));
         String price = n + ".99";
         return render(catalog, prod, price);
     }
 ```
 
-There are a couple of ACT Demo applications could be found at https://github.com/actframework/act-demo-apps, these apps demonstrate the following features of ACT Framework:
+## How to start
+
+The easiest way to start your project is to copy one of the following ACT Demo applications which could be found at https://github.com/actframework/act-demo-apps
 
 * Basic usage: https://github.com/actframework/act-demo-apps/tree/master/helloworld
 * Dependency injection with Guice: https://github.com/actframework/act-demo-apps/tree/master/injection
 * Configuration with code: https://github.com/actframework/act-demo-apps/tree/master/config
 * Jobs: https://github.com/actframework/act-demo-apps/tree/master/jobs
-* Validation: https://github.com/actframework/act-demo-apps/tree/master/fullstack-app/validation
 * MongoDB with morphia: https://github.com/actframework/act-demo-apps/tree/master/todo-morphia
 * SQL DB with Ebean: https://github.com/actframework/act-demo-apps/tree/master/todo-ebean
 * Transactional support with Ebean: https://github.com/actframework/act-demo-apps/tree/master/transaction-ebean
@@ -90,7 +91,5 @@ There are a couple of ACT Demo applications could be found at https://github.com
 All the demo apps shall be able to run directly by `cd path/to/app` and `mvn clean compile exec:exec`. Then you can open your browser and navigate to `http://localhost:5460`. The demo apps are using default view based on [Rythm](http://rythmengine.org), which is my [another open source initiative](http://github.com/greenlaw110/rythm).
 
 At the moment ACT framework is still under development and not ready for product use. But you are welcome to give it a try and send me feedback by [raising issues](/actframework/actframework/issues) or send email to actframework@googlegroup.com. 中国的朋友可以申请加入ＱＱ群：283919975.
-
-You can track ACT Framework development progress at https://trello.com/b/iMsldsST/actframework-0-1
 
 Happy coding!
