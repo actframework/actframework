@@ -258,6 +258,9 @@ public final class Act {
     }
 
     public static void shutdownApp(App app) {
+        if (null == appManager) {
+            return;
+        }
         if (!appManager.unload(app)) {
             app.destroy();
         }

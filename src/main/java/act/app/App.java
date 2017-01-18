@@ -359,6 +359,9 @@ public class App extends DestroyableBase {
     @Override
     protected void releaseResources() {
         mainThread.interrupt();
+        if (null == daemonRegistry) {
+            return;
+        }
         logger.info("App shutting down ....");
         if (null != classLoader && config().i18nEnabled()) {
             ResourceBundle.clearCache(classLoader);
@@ -563,6 +566,10 @@ public class App extends DestroyableBase {
 
     public CacheService cache() {
         return cache;
+    }
+
+    public CacheService cache(String name) {
+        return config().cacheService(name);
     }
 
     public MailerConfigManager mailerConfigManager() {
@@ -886,7 +893,7 @@ public class App extends DestroyableBase {
     }
 
     private void initCache() {
-        cache = CacheServiceProvider.Impl.Simple.get("_act_app_");
+        cache = cache("_act_app_");
         cache.startup();
         HttpConfig.setCacheServiceProvider(new CacheServiceProvider() {
             @Override
@@ -896,7 +903,7 @@ public class App extends DestroyableBase {
 
             @Override
             public CacheService get(String name) {
-                return CacheServiceProvider.Impl.Simple.get(name);
+                return config().cacheService(name);
             }
         });
     }

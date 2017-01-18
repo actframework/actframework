@@ -217,7 +217,7 @@ class ConfigKeyHelper {
         return classLoaderProvider.apply();
     }
 
-    private <T> T getImpl(Map<String, ?> configuration, String key, String suffix, $.F0<?> defVal) {
+    <T> T getImpl(Map<String, ?> configuration, String key, String suffix, $.F0<?> defVal) {
         Object v = getValFromAliases(configuration, key, "impl", defVal);
         if (null == v) return null;
         if (v instanceof Class) {

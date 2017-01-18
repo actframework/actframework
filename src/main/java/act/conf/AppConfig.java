@@ -24,6 +24,7 @@ import org.osgl.$;
 import org.osgl.cache.CacheService;
 import org.osgl.cache.CacheServiceProvider;
 import org.osgl.exception.ConfigurationException;
+import org.osgl.exception.UnexpectedNewInstanceException;
 import org.osgl.http.H;
 import org.osgl.logging.L;
 import org.osgl.logging.Logger;
@@ -97,17 +98,6 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     @Override
     protected ConfigKey keyOf(String s) {
         return AppConfigKey.valueOfIgnoreCase(s);
-    }
-
-    private AppConfigurator configurator;
-    private boolean configuratorLoaded = false;
-
-    public AppConfigurator appConfigurator() {
-        if (!configuratorLoaded) {
-            configurator = get(CONFIG_IMPL);
-            configuratorLoaded = true;
-        }
-        return configurator;
     }
 
     private Boolean basicAuth;
@@ -2067,9 +2057,19 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
 
     public CacheService cacheService(String name) {
         if (null == csp) {
-            csp = get(AppConfigKey.CACHE_IMPL);
+            try {
+                csp = get(AppConfigKey.CACHE_IMPL);
+            } catch (ConfigurationException e) {
+                Throwable cause = e.getCause();
+                if (cause instanceof UnexpectedNewInstanceException) {
+                    Object obj = helper.getValFromAliases(raw, AppConfigKey.CACHE_IMPL.toString(), "impl", null);
+                    csp = CacheServiceProvider.Impl.valueOfIgnoreCase(obj.toString());
+                } else {
+                    throw e;
+                }
+            }
             if (null == csp) {
-                csp = CacheServiceProvider.Impl.Simple;
+                csp = CacheServiceProvider.Impl.Auto;
             }
         }
         return csp.get(name);

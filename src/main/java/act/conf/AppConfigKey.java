@@ -108,12 +108,12 @@ public enum AppConfigKey implements ConfigKey {
     CSRF("csrf.enabled"),
 
     /**
-     * {@code act.csf.param_name} specifies the http request param name
+     * {@code act.csrf.param_name} specifies the http request param name
      * used to convey the csrf token
      *
      * Default value: the value of {@link act.app.ActionContext#ATTR_CSRF_TOKEN}
      */
-    CSRF_PARAM_NAME("csf.param_name"),
+    CSRF_PARAM_NAME("csrf.param_name"),
 
     /**
      * {@code act.csrf.header_name} specifies name of the http request
@@ -202,15 +202,6 @@ public enum AppConfigKey implements ConfigKey {
      * <p>Default value: {@code 3}</p>
      */
     CLI_SESSION_MAX("cli.session.max"),
-
-    /**
-     * {@code act.configure.impl}
-     * <p>Specifies the application configuration class which provides default configuration
-     * via source code. The settings provided by application configuration class might be
-     * overwritten by configuration file</p>
-     * <p>Default value: {@code null}</p>
-     */
-    CONFIG_IMPL("config.impl"),
 
     /**
      * {@code act.cache.impl}
