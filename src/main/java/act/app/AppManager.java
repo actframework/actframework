@@ -22,7 +22,6 @@ public class AppManager extends DestroyableBase {
     private static Logger logger = LogManager.get(AppManager.class);
 
     private Map<Integer, App> byPort = C.newMap();
-    private Map<String, App> byContextPath = C.newMap();
 
     private AppManager() {
     }
@@ -30,9 +29,6 @@ public class AppManager extends DestroyableBase {
     @Override
     protected void releaseResources() {
         tryDestroyAll(byPort.values(), ApplicationScoped.class);
-        byPort = null;
-
-        tryDestroyAll(byContextPath.values(), ApplicationScoped.class);
         byPort = null;
     }
 
@@ -66,20 +62,14 @@ public class AppManager extends DestroyableBase {
         app.build();
         app.refresh();
         int port = app.config().httpPort();
-        if (port < 0) {
-            loadIntoContextMap(app.config().urlContext(), app);
-        } else {
-            loadIntoPortMap(port, app);
-        }
+        E.invalidConfigurationIf(port < 0, "Invalid http.port configuration: %s", port);
+        loadIntoPortMap(port, app);
         app.hook();
     }
 
     public boolean unload(App app) {
         boolean b = unloadApp(app, byPort);
-        if (!b) {
-            b = unloadApp(app, byContextPath);
-        }
-        if (byPort.isEmpty() && byContextPath.isEmpty()) {
+        if (byPort.isEmpty()) {
             Act.shutdown();
         }
         return b;
@@ -105,18 +95,8 @@ public class AppManager extends DestroyableBase {
         }
     }
 
-    private void loadIntoContextMap(String context, App app) {
-        App app0 = byContextPath.get(context);
-        if (null != app0) {
-            E.invalidConfigurationIf(!app.equals(app0), "Another application has already been deployed using context %s", context);
-        } else {
-            byContextPath.put(context, app);
-        }
-    }
-
     private Iterator<App> appIterator() {
         final Iterator<App> itrByPort = byPort.values().iterator();
-        final Iterator<App> itrByContext = byContextPath.values().iterator();
         return new Iterator<App>() {
             boolean byPortFinished = !itrByPort.hasNext();
 
@@ -125,12 +105,12 @@ public class AppManager extends DestroyableBase {
                 if (!byPortFinished) {
                     byPortFinished = !itrByPort.hasNext();
                 }
-                return !byPortFinished || itrByContext.hasNext();
+                return !byPortFinished;
             }
 
             @Override
             public App next() {
-                return byPortFinished ? itrByContext.next() : itrByPort.next();
+                return byPortFinished ? null : itrByPort.next();
             }
 
             @Override

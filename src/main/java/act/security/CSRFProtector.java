@@ -83,6 +83,15 @@ public interface CSRFProtector {
             public void outputToken(String token, String cookieName, String cookieDomain, ActionContext context) {
                 context.session().put(cookieName, token);
             }
+        };
+
+        public static CSRFProtector valueOfIgnoreCase(String s) {
+            if (S.eq(HMAC.name(), s.toUpperCase())) {
+                return HMAC;
+            } else if (S.eq(RANDOM.name(), s.toUpperCase())) {
+                return RANDOM;
+            }
+            return null;
         }
 
     }

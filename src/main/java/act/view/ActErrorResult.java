@@ -222,6 +222,10 @@ public class ActErrorResult extends ErrorResult implements ActError {
         return new RythmTemplateException(e);
     }
 
+    public static Result ofStatus(int statusCode) {
+        return of(H.Status.of(statusCode));
+    }
+
     @Deprecated
     public static Result of(int statusCode) {
         E.illegalArgumentIf(statusCode < 400);

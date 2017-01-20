@@ -107,22 +107,6 @@ public class RouterTest extends RouterTestBase {
     }
 
     @Test
-    public void senseControllerMethodWithControllerPackage() {
-        Properties p = new Properties();
-        p.setProperty("controller_package", "foo.controller");
-        AppConfig appConfig = new AppConfig((Map) p);
-        App app = Mockito.mock(App.class);
-        Mockito.when(app.config()).thenReturn(appConfig);
-        router = new Router(controllerLookup, app);
-
-        router.addMapping(GET, "/foo", "Controller.foo");
-        yes(router.isActionMethod("foo.controller.Controller", "foo"));
-
-        router.addMapping(GET, "/bar", "com.newcontroller.Controller.bar");
-        yes(router.isActionMethod("com.newcontroller.Controller", "bar"));
-    }
-
-    @Test
     public void senseControllerMethodWithoutControllerPackage() {
         router.addMapping(GET, "/foo", "Controller.foo");
         no(router.isActionMethod("foo.controller.Controller", "foo"));

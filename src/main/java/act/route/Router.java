@@ -445,29 +445,11 @@ public class Router extends AppServiceBase<Router> {
     // -- action method sensor
     public boolean isActionMethod(String className, String methodName) {
         String action = new StringBuilder(className).append(".").append(methodName).toString();
-        String controllerPackage = appConfig.controllerPackage();
-        if (S.notEmpty(controllerPackage)) {
-            if (action.startsWith(controllerPackage)) {
-                String action2 = action.substring(controllerPackage.length() + 1);
-                if (actionNames.contains(action2)) {
-                    return true;
-                }
-            }
-        }
         return actionNames.contains(action);
     }
 
     // TODO: build controllerNames set to accelerate the process
     public boolean possibleController(String className) {
-        String controllerPackage = appConfig.controllerPackage();
-        if (S.notEmpty(controllerPackage)) {
-            if (className.startsWith(controllerPackage)) {
-                String class2 = className.substring(controllerPackage.length() + 1);
-                if (setContains(actionNames, class2)) {
-                    return true;
-                }
-            }
-        }
         return setContains(actionNames, className);
     }
 

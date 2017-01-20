@@ -18,10 +18,10 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 /**
- * The `ActiveRecord` interface specifies a special {@link Model} in that
+ * The `AdaptiveRecord` interface specifies a special {@link Model} in that
  * the fields/columns could be implicitly defined by database
  */
-public interface ActiveRecord<ID_TYPE, MODEL_TYPE extends ActiveRecord> extends Model<ID_TYPE, MODEL_TYPE> {
+public interface AdaptiveRecord<ID_TYPE, MODEL_TYPE extends AdaptiveRecord> extends Model<ID_TYPE, MODEL_TYPE> {
 
     /**
      * Add a key/val pair into the active record
@@ -84,13 +84,13 @@ public interface ActiveRecord<ID_TYPE, MODEL_TYPE extends ActiveRecord> extends 
     Map<String, Object> asMap();
 
     /**
-     * Returns the meta info of this ActiveRecord
+     * Returns the meta info of this AdaptiveRecord
      * @return
      */
     MetaInfo metaInfo();
 
     class MetaInfo {
-        private Class<? extends ActiveRecord> arClass;
+        private Class<? extends AdaptiveRecord> arClass;
         public String className;
         private Class<? extends Annotation> transientAnnotationType;
         public Set<Field> fields;
@@ -98,7 +98,7 @@ public interface ActiveRecord<ID_TYPE, MODEL_TYPE extends ActiveRecord> extends 
         public Map<String, $.Function> fieldGetters;
         public Map<String, $.Func2> fieldSetters;
 
-        public MetaInfo(Class<? extends ActiveRecord> clazz, Class<? extends Annotation> transientAnnotationType) {
+        public MetaInfo(Class<? extends AdaptiveRecord> clazz, Class<? extends Annotation> transientAnnotationType) {
             this.className = clazz.getName();
             this.arClass = clazz;
             this.transientAnnotationType = transientAnnotationType;
@@ -109,7 +109,7 @@ public interface ActiveRecord<ID_TYPE, MODEL_TYPE extends ActiveRecord> extends 
             return fieldTypes.get(fieldName);
         }
 
-        private void discoverFields(Class<? extends ActiveRecord> clazz) {
+        private void discoverFields(Class<? extends AdaptiveRecord> clazz) {
             List<Field> list = $.fieldsOf(arClass, $.F.NON_STATIC_FIELD.and($.F.fieldWithAnnotation(transientAnnotationType)).negate());
             fields = new HashSet<Field>();
             fieldTypes = new HashMap<String, Type>();
@@ -206,7 +206,7 @@ public interface ActiveRecord<ID_TYPE, MODEL_TYPE extends ActiveRecord> extends 
 
             private ConcurrentMap<Class<?>, MetaInfo> map = new ConcurrentHashMap<Class<?>, MetaInfo>();
 
-            public MetaInfo get(Class<? extends ActiveRecord> clazz, $.Function<Class<? extends ActiveRecord>, MetaInfo> factory) {
+            public MetaInfo get(Class<? extends AdaptiveRecord> clazz, $.Function<Class<? extends AdaptiveRecord>, MetaInfo> factory) {
                 MetaInfo info = map.get(clazz);
                 if (null == info) {
                     info = factory.apply(clazz);

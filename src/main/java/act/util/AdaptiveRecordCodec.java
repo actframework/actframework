@@ -2,7 +2,7 @@ package act.util;
 
 import act.Act;
 import act.app.event.AppEventId;
-import act.db.ActiveRecord;
+import act.db.AdaptiveRecord;
 import com.alibaba.fastjson.JSONException;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.parser.*;
@@ -17,7 +17,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-public class ActiveRecordCodec extends SerializeFilterable implements ObjectDeserializer, ObjectSerializer{
+public class AdaptiveRecordCodec extends SerializeFilterable implements ObjectDeserializer, ObjectSerializer{
 
     @Override
     public <T> T deserialze(DefaultJSONParser parser, Type type, Object fieldName) {
@@ -27,7 +27,7 @@ public class ActiveRecordCodec extends SerializeFilterable implements ObjectDese
             return null;
         }
 
-        ActiveRecord ar = Act.app().getInstance((Class<? extends ActiveRecord>) type);
+        AdaptiveRecord ar = Act.app().getInstance((Class<? extends AdaptiveRecord>) type);
 
         ParseContext context = parser.getContext();
 
@@ -40,7 +40,7 @@ public class ActiveRecordCodec extends SerializeFilterable implements ObjectDese
     }
 
     @SuppressWarnings("rawtypes")
-    public static ActiveRecord parseActiveRecord(DefaultJSONParser parser, ActiveRecord ar, Object fieldName) {
+    public static AdaptiveRecord parseActiveRecord(DefaultJSONParser parser, AdaptiveRecord ar, Object fieldName) {
         JSONLexer lexer = parser.lexer;
 
         if (lexer.token() != JSONToken.LBRACE) {
@@ -152,7 +152,7 @@ public class ActiveRecordCodec extends SerializeFilterable implements ObjectDese
             return;
         }
 
-        ActiveRecord<?, ?> ar = (ActiveRecord) object;
+        AdaptiveRecord<?, ?> ar = (AdaptiveRecord) object;
 
         if (serializer.containsReference(object)) {
             serializer.writeReference(object);
@@ -303,9 +303,9 @@ public class ActiveRecordCodec extends SerializeFilterable implements ObjectDese
     }
 
     @SubClassFinder(callOn = AppEventId.DEPENDENCY_INJECTOR_PROVISIONED)
-    public static void foundActiveRecordClass(Class<? extends ActiveRecord> clazz) {
+    public static void foundActiveRecordClass(Class<? extends AdaptiveRecord> clazz) {
 
-        ActiveRecordCodec codec = new ActiveRecordCodec();
+        AdaptiveRecordCodec codec = new AdaptiveRecordCodec();
 
         SerializeConfig config = SerializeConfig.getGlobalInstance();
         config.put(clazz, codec);

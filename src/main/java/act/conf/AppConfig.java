@@ -24,7 +24,6 @@ import org.osgl.$;
 import org.osgl.cache.CacheService;
 import org.osgl.cache.CacheServiceProvider;
 import org.osgl.exception.ConfigurationException;
-import org.osgl.exception.UnexpectedNewInstanceException;
 import org.osgl.http.H;
 import org.osgl.logging.L;
 import org.osgl.logging.Logger;
@@ -345,14 +344,17 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
 
     public CSRFProtector csrfProtector() {
         if (null == csrfProtector) {
-            String s = get(CSRF_PROTECTOR);
-            if (S.blank(s)) {
-                s = "HMAC";
-            }
             try {
-                csrfProtector = CSRFProtector.Predefined.valueOf(s);
-            } catch (Exception e) {
-                csrfProtector = app.getInstance(s);
+                this.csrfProtector = get(CSRF_PROTECTOR);
+            } catch (ConfigurationException e) {
+                Object obj = helper.getValFromAliases(raw, CSRF_PROTECTOR.key(), "impl", null);
+                if (null != obj) {
+                    this.csrfProtector = CSRFProtector.Predefined.valueOfIgnoreCase(obj.toString());
+                    if (null != csrfProtector) {
+                        return this.csrfProtector;
+                    }
+                }
+                throw e;
             }
         }
         return csrfProtector;
@@ -422,7 +424,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
 
     public int cliTablePageSize() {
         if (-1 == cliTablePageSz) {
-            Integer I = get(CLI_TABLE_PAGE_SIZE);
+            Integer I = get(CLI_PAGE_SIZE_TABLE);
             if (null == I) {
                 I = 22;
             }
@@ -432,7 +434,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     }
 
     private void _mergeCliTablePageSz(AppConfig conf) {
-        if (null == get(CLI_TABLE_PAGE_SIZE)) {
+        if (null == get(CLI_PAGE_SIZE_TABLE)) {
             cliTablePageSz = conf.cliTablePageSz;
         }
     }
@@ -447,7 +449,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
 
     public int cliJSONPageSize() {
         if (-1 == cliJSONPageSz) {
-            Integer I = get(CLI_TABLE_PAGE_SIZE);
+            Integer I = get(CLI_PAGE_SIZE_TABLE);
             if (null == I) {
                 I = 22;
             }
@@ -457,7 +459,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     }
 
     private void _mergeCliJSONPageSz(AppConfig conf) {
-        if (null == get(CLI_TABLE_PAGE_SIZE)) {
+        if (null == get(CLI_PAGE_SIZE_TABLE)) {
             cliJSONPageSz = conf.cliJSONPageSz;
         }
     }
@@ -646,16 +648,12 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
 
     public Provider<String> cookieDomainProvider() {
         if (null == cookieDomainProvider) {
-            String s = get(COOKIE_DOMAIN_PROVIDER);
-            if (null == s) {
-                cookieDomainProvider = new Provider<String>() {
-                    @Override
-                    public String get() {
-                        return host();
-                    }
-                };
-            } else {
-                if (S.eq("dynamic", s) || S.eq("flexible", s) || S.eq("contextual", s)) {
+            try {
+                cookieDomainProvider = get(COOKIE_DOMAIN_PROVIDER);
+            } catch (ConfigurationException e) {
+                Object obj = helper.getValFromAliases(raw, COOKIE_DOMAIN_PROVIDER.key(), "impl", null);
+                String s = obj.toString();
+                if ("dynamic".equalsIgnoreCase(s) || "flexible".equalsIgnoreCase(s) || "contextual".equalsIgnoreCase(s)) {
                     cookieDomainProvider = new Provider<String>() {
                         @Override
                         public String get() {
@@ -663,9 +661,17 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
                             return req.domain();
                         }
                     };
-                } else {
-                    cookieDomainProvider = Act.app().getInstance(s);
+                    return cookieDomainProvider;
                 }
+                throw e;
+            }
+            if (null == cookieDomainProvider) {
+                cookieDomainProvider = new Provider<String>() {
+                    @Override
+                    public String get() {
+                        return host();
+                    }
+                };
             }
         }
         return cookieDomainProvider;
@@ -699,33 +705,6 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     private void _mergeMaxCliSession(AppConfig conf) {
         if (null == get(CLI_SESSION_MAX)) {
             maxCliSession = conf.maxCliSession;
-        }
-    }
-
-    private String urlContext = null;
-
-    protected T urlContext(String context) {
-        if (S.blank(context)) {
-            urlContext = "/";
-        } else {
-            urlContext = context.trim();
-        }
-        return me();
-    }
-
-    public String urlContext() {
-        if (urlContext == null) {
-            urlContext = get(URL_CONTEXT);
-            if (null == urlContext) {
-                urlContext = "/";
-            }
-        }
-        return urlContext;
-    }
-
-    private void _mergeUrlContext(AppConfig conf) {
-        if (null == get(URL_CONTEXT)) {
-            urlContext = conf.urlContext;
         }
     }
 
@@ -779,27 +758,6 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         }
     }
 
-    private String controllerPackage = null;
-
-    protected T controllerPackage(String pkg) {
-        pkg = pkg.trim();
-        E.illegalArgumentIf(pkg.length() == 0, "package name cannot be empty");
-        controllerPackage = pkg;
-        return me();
-    }
-
-    public String controllerPackage() {
-        if (null == controllerPackage) {
-            controllerPackage = get(CONTROLLER_PACKAGE);
-        }
-        return controllerPackage;
-    }
-
-    private void _mergeControllerPackage(AppConfig conf) {
-        if (null == get(CONTROLLER_PACKAGE)) {
-            controllerPackage = conf.controllerPackage;
-        }
-    }
 
     private Boolean contentSuffixAware = null;
 
@@ -1663,15 +1621,8 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
 
     private $.Predicate<String> controllerNameTester() {
         if (null == CONTROLLER_CLASS_TESTER) {
-            String controllerPackage = get(CONTROLLER_PACKAGE);
-            if (S.isBlank(controllerPackage)) {
-                $.Predicate<String> f = $.F.no();
-                CONTROLLER_CLASS_TESTER = f.or(app().router().f.IS_CONTROLLER);
-            } else {
-                final String cp = controllerPackage.trim();
-                $.Predicate<String> f = S.F.startsWith(cp);
-                CONTROLLER_CLASS_TESTER = f.or(app().router().f.IS_CONTROLLER);
-            }
+            $.Predicate<String> f = $.F.no();
+            CONTROLLER_CLASS_TESTER = f.or(app().router().f.IS_CONTROLLER);
         }
         return CONTROLLER_CLASS_TESTER;
     }
@@ -2060,13 +2011,12 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
             try {
                 csp = get(AppConfigKey.CACHE_IMPL);
             } catch (ConfigurationException e) {
-                Throwable cause = e.getCause();
-                if (cause instanceof UnexpectedNewInstanceException) {
-                    Object obj = helper.getValFromAliases(raw, AppConfigKey.CACHE_IMPL.toString(), "impl", null);
-                    csp = CacheServiceProvider.Impl.valueOfIgnoreCase(obj.toString());
-                } else {
-                    throw e;
+                Object obj = helper.getValFromAliases(raw, AppConfigKey.CACHE_IMPL.toString(), "impl", null);
+                csp = CacheServiceProvider.Impl.valueOfIgnoreCase(obj.toString());
+                if (null != csp) {
+                    return csp.get(name);
                 }
+                throw e;
             }
             if (null == csp) {
                 csp = CacheServiceProvider.Impl.Auto;
@@ -2079,6 +2029,46 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         if (null == get(AppConfigKey.CACHE_IMPL)) {
             csp = config.csp;
         }
+    }
+
+    private String _cacheName;
+
+    protected T cacheName(String name) {
+        this._cacheName = name;
+        return me();
+    }
+
+    public String cacheName() {
+        if (null == _cacheName) {
+            _cacheName = get(AppConfigKey.SESSION_KEY_USERNAME);
+            if (null == _cacheName) {
+                _cacheName = "_act_app_";
+            }
+        }
+        return _cacheName;
+    }
+
+    private void _mergeCacheName(AppConfig config) {
+        if (null == get(AppConfigKey.CACHE_NAME)) {
+            _cacheName = config._cacheName;
+        }
+    }
+
+    private String _cacheNameSession;
+
+    protected T cacheNameSession(String name) {
+        this._cacheNameSession = name;
+        return me();
+    }
+
+    public String cacheNameSession() {
+        if (null == _cacheNameSession) {
+            _cacheNameSession = get(AppConfigKey.CACHE_NAME_SESSION);
+            if (null == _cacheNameSession) {
+                _cacheNameSession = cacheName();
+            }
+        }
+        return _cacheNameSession;
     }
 
     private UnknownHttpMethodProcessor _unknownHttpMethodProcessor = null;
@@ -2173,9 +2163,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         _mergeAjaxCsrfCheckFailureHandler(conf);
         _mergeCookieDomain(conf);
         _mergeMaxCliSession(conf);
-        _mergeUrlContext(conf);
         _mergeXForwardedProtocol(conf);
-        _mergeControllerPackage(conf);
         _mergeHost(conf);
         _mergeLoginUrl(conf);
         _mergeAjaxLoginUrl(conf);

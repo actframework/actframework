@@ -893,19 +893,13 @@ public class App extends DestroyableBase {
     }
 
     private void initCache() {
-        cache = cache("_act_app_");
+        cache = cache(config().cacheName());
         cache.startup();
-        HttpConfig.setCacheServiceProvider(new CacheServiceProvider() {
-            @Override
-            public CacheService get() {
-                return cache;
-            }
-
-            @Override
-            public CacheService get(String name) {
-                return config().cacheService(name);
-            }
-        });
+        CacheService sessionCache = cache(config().cacheNameSession());
+        if (cache != sessionCache) {
+            sessionCache.startup();
+        }
+        HttpConfig.setSessionCache(sessionCache);
     }
 
     private void initCrypto() {

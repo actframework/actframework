@@ -18,6 +18,9 @@
 ********************************************
 *            version history
 ********************************************
+0.3.1
+- ActiveRecord -> AdaptiveRecord
+
 0.3.0
 - Catch up update to osgl-mvc 0.6.0: Bind annotation now support specifying multiple Binder implementations
 
@@ -45,7 +48,7 @@
   <groupId>org.actframework</groupId>
   <artifactId>act</artifactId>
   <packaging>jar</packaging>
-  <version>0.3.0-SNAPSHOT</version>
+  <version>0.3.1-SNAPSHOT</version>
 
   <name>ACT Framework</name>
   <description>The ACT full stack MVC framework</description>
@@ -237,7 +240,7 @@
     <dependency>
       <groupId>com.alibaba</groupId>
       <artifactId>fastjson</artifactId>
-      <version>1.2.22</version>
+      <version>1.2.24</version>
     </dependency>
 
     <dependency>
@@ -316,7 +319,7 @@
     <dependency>
       <groupId>org.osgl</groupId>
       <artifactId>osgl-mvc</artifactId>
-      <version>0.6.0-SNAPSHOT</version>
+      <version>0.6.1-SNAPSHOT</version>
     </dependency>
 
     <dependency>

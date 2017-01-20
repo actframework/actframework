@@ -34,8 +34,6 @@ import static org.osgl.http.H.Format.*;
  * <li>Action handler method</li>
  * <li>Any one of Before/After/Exception/Finally interceptor</li>
  * </ul>
- * <p>The framework will scan all Classes under the {@link AppConfigKey#CONTROLLER_PACKAGE}
- * or any class outside of the package but with this annotation marked</p>
  */
 @Retention(RetentionPolicy.CLASS)
 @Target(ElementType.TYPE)
