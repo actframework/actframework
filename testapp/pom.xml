@@ -143,13 +143,13 @@
     <dependency>
       <groupId>org.actframework</groupId>
       <artifactId>act</artifactId>
-      <version>0.3.0-SNAPSHOT</version>
+      <version>0.3.1-SNAPSHOT</version>
     </dependency>
 
     <dependency>
       <groupId>org.actframework</groupId>
       <artifactId>act-morphia</artifactId>
-      <version>0.3.0-SNAPSHOT</version>
+      <version>0.4.1-SNAPSHOT</version>
     </dependency>
 
     <dependency>
