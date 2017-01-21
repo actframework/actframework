@@ -50,7 +50,7 @@ public class ActErrorResult extends ErrorResult implements ActError {
     }
 
     public ActErrorResult(Throwable cause) {
-        super(H.Status.INTERNAL_SERVER_ERROR);
+        super(H.Status.INTERNAL_SERVER_ERROR, cause);
         init();
         populateSourceInfo(cause);
     }
