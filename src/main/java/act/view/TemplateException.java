@@ -34,6 +34,9 @@ public abstract class TemplateException extends ActErrorResult {
     @Override
     public synchronized Throwable getCause() {
         Throwable t0 = super.getCause();
+        if (null == t0) {
+            return null;
+        }
         Throwable t = t0.getCause();
         return null == t ? t0 : t;
     }
