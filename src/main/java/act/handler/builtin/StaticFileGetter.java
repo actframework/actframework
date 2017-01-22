@@ -73,11 +73,12 @@ public class StaticFileGetter extends FastRequestHandler {
     }
 
     static H.Format contentType(String path) {
+        H.Format retVal = null;
         if (path.contains(".")) {
             FastStr s = FastStr.unsafeOf(path).afterLast('.');
-            return H.Format.of(s.toString());
+            retVal = H.Format.of(s.toString());
         }
-        return H.Format.UNKNOWN;
+        return null == retVal ? H.Format.UNKNOWN : retVal;
     }
 
     @Override

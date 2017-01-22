@@ -9,6 +9,7 @@ import act.util.DisableFastJsonCircularReferenceDetect;
 import act.util.FastJsonIterable;
 import act.util.PropertySpec;
 import act.view.*;
+import com.google.zxing.BarcodeFormat;
 import org.osgl.$;
 import org.osgl.http.H;
 import org.osgl.mvc.result.*;
@@ -482,6 +483,14 @@ public @interface Controller {
          */
         public static Result download(File file) {
             return new RenderBinary(file, file.getName(), false);
+        }
+
+        public static ZXingResult barcode(String content) {
+            return ZXingResult.barcode(content);
+        }
+
+        public static ZXingResult qrcode(String content) {
+            return ZXingResult.qrcode(content);
         }
 
         /**

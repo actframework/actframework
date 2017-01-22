@@ -69,7 +69,7 @@ public class StaticResourceGetter extends FastRequestHandler {
             if (preventFolderAccess(target, context)) {
                 return;
             }
-            fmt = StaticFileGetter.contentType(base);
+            fmt = StaticFileGetter.contentType(target.getPath());
             H.Response resp = context.resp();
             if (UNKNOWN != fmt) {
                 resp.contentType(fmt.contentType());

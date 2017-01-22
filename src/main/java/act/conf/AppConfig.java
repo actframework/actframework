@@ -33,6 +33,7 @@ import org.osgl.util.*;
 import javax.inject.Provider;
 import javax.validation.MessageInterpolator;
 import java.io.File;
+import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -1407,7 +1408,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         if (null == encoding) {
             encoding = get(ENCODING);
             if (null == encoding) {
-                encoding = "utf8";
+                encoding = StandardCharsets.UTF_8.name();
             }
         }
         return encoding;
