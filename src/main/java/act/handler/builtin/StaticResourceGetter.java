@@ -49,6 +49,10 @@ public class StaticResourceGetter extends FastRequestHandler {
     public void handle(ActionContext context) {
         context.handler(this);
         String path = context.paramVal(ParamNames.PATH);
+        handle(path);
+    }
+
+    protected void handle(String path) {
         try {
             URL target;
             H.Format fmt;
