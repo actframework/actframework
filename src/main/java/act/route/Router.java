@@ -552,11 +552,11 @@ public class Router extends AppServiceBase<Router> {
         String directive = t2._1, payload = t2._2;
 
         if (S.notEmpty(directive)) {
-            RequestHandlerResolver resolver = resolvers.get(action);
+            RequestHandlerResolver resolver = resolvers.get(directive);
             RequestHandler handler = null == resolver ?
                     BuiltInHandlerResolver.tryResolve(directive, payload, app()) :
                     resolver.resolve(payload, app());
-            E.unsupportedIf(null == handler, "cannot find action handler by directive: %s", directive);
+            E.unsupportedIf(null == handler, "cannot find action handler by directive %s on payload %s", directive, payload);
             return new RequestHandlerInfo(handler, action);
         } else {
             RequestHandler handler = handlerLookup.resolve(payload, app());

@@ -38,7 +38,7 @@ public class StaticResourceGetter extends FastRequestHandler {
         }
         this.base = path;
         this.baseUrl = StaticFileGetter.class.getResource(path);
-        E.illegalArgumentIf(null == this.baseUrl, "Cannot find base URL");
+        E.illegalArgumentIf(null == this.baseUrl, "Cannot find base URL: %s", base);
     }
 
     @Override
