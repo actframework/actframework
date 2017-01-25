@@ -190,22 +190,42 @@ public interface Dao<ID_TYPE, MODEL_TYPE, QUERY_TYPE extends Dao.Query<MODEL_TYP
     void deleteBy(String fields, Object... values) throws IllegalArgumentException;
 
     /**
+     * Delete all entities in the table/collection inferred by this DAO
+     */
+    void deleteAll();
+
+    /**
      * Drop all entities from persistent storage
      */
     void drop();
 
     /**
      * Return a {@link act.db.Dao.Query} bound to the {@code MODEL_TYPE}
+     * @return an new {@link Query} instance on this Dao
      */
     QUERY_TYPE q();
+
+    /**
+     * Alias of {@link #q()}
+     * @return an new {@link Query} instance on this Dao
+     */
+    QUERY_TYPE createQuery();
 
     /**
      * Return a {@link act.db.Dao.Query} bound to the {@code MODEL_TYPE} by fields and value arguments
      * @param fields the fields specification in {@code String}
      * @param values the value array corresponding to the fields specification
-     * @return the query instance
+     * @return the query instance as described above
      */
     QUERY_TYPE q(String fields, Object... values);
+
+    /**
+     * Alias of {@link #q(String, Object...)}
+     * @param fields the fields specification in {@code String}
+     * @param values the value array corresponding to the fields specification
+     * @return the query instance as described in {@link #q(String, Object...)}
+     */
+    QUERY_TYPE createQuery(String fields, Object... values);
 
     interface Query<MODEL_TYPE, QUERY_TYPE extends Query<MODEL_TYPE, QUERY_TYPE>> {
         QUERY_TYPE offset(int pos);
