@@ -1,5 +1,6 @@
 package act.db;
 
+import act.Act;
 import act.app.App;
 import act.plugin.AppServicePlugin;
 import org.osgl.$;
@@ -133,6 +134,12 @@ public interface AdaptiveRecord<ID_TYPE, MODEL_TYPE extends AdaptiveRecord> exte
                     @Override
                     public Object apply(Object host, Object value) throws NotAppliedException, Osgl.Break {
                         try {
+                            if (null != value && value instanceof String) {
+                                Class<?> ftype = f.getType();
+                                if (!ftype.isInstance(value)) {
+                                    value = Act.app().resolverManager().resolve((String) value, ftype);
+                                }
+                            }
                             m.invoke(host, value);
                             return null;
                         } catch (IllegalAccessException e) {
