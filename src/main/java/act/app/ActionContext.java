@@ -603,6 +603,14 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
     }
 
     /**
+     * Logout the current session. After calling this method,
+     * the session will be cleared
+     */
+    public void logout() {
+        session().clear();
+    }
+
+    /**
      * Initialize params/renderArgs/attributes and then
      * resolve session and flash from cookies
      */
