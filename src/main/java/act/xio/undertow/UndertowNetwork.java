@@ -54,15 +54,6 @@ public class UndertowNetwork extends NetworkBase {
 
     @Override
     protected void setUpClient(NetworkHandler client, int port) throws IOException {
-        App app = client.app();
-        AppConfig config = app.config();
-//        InetAddress addr;
-//        try {
-//            addr = Inet4Address.getByName("localhost");
-//        } catch (UnknownHostException e) {
-//            logger.error(e, "Cannot start app[%s]:", app.home());
-//            return;
-//        }
 
         HttpHandler handler = new ActHttpHandler(client);
         HttpOpenListener openListener = new HttpOpenListener(buffers, undertowOptions);
