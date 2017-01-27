@@ -325,7 +325,7 @@
     <dependency>
       <groupId>org.osgl</groupId>
       <artifactId>osgl-mvc</artifactId>
-      <version>0.6.1-SNAPSHOT</version>
+      <version>0.7.0-SNAPSHOT</version>
     </dependency>
 
     <dependency>

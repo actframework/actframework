@@ -53,7 +53,7 @@ public class NetworkHandler extends DestroyableBase implements  $.Func1<ActionCo
         return app;
     }
 
-    public synchronized void handle(ActionContext ctx) {
+    public void handle(ActionContext ctx) {
         if (isDestroyed()) {
             return;
         }
