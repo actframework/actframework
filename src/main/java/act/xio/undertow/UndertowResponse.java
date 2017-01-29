@@ -31,6 +31,7 @@ public class UndertowResponse extends ResponseImplBase<UndertowResponse> {
         super(config);
         E.NPE(exchange);
         hse = exchange;
+        header(H.Header.Names.SERVER, config.serverHeader());
     }
 
     @Override

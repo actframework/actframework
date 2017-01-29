@@ -549,6 +549,13 @@ public enum AppConfigKey implements ConfigKey {
     SECRET("secret"),
 
     /**
+     * {@code server.header}
+     * Specifies the server header to be output to the response
+     * <p>Default value: {@code act}</p>
+     */
+    SERVER_HEADER("server.header"),
+
+    /**
      * {@code session.prefix} specifies the prefix to be prepended
      * to the session cookie name. Let's say the default cookie name is
      * {@code act_session}, and user specifies the prefix {@code my_app}

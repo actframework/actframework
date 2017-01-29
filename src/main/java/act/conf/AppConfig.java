@@ -1701,6 +1701,29 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         }
     }
 
+    private String serverHeader;
+
+    protected T serverHeader(String header) {
+        serverHeader = header;
+        return me();
+    }
+
+    public String serverHeader() {
+        if (null == serverHeader) {
+            serverHeader = get(AppConfigKey.SERVER_HEADER);
+            if (null == serverHeader) {
+                serverHeader = "act";
+            }
+        }
+        return serverHeader;
+    }
+
+    private void _mergeServerHeader(AppConfig config) {
+        if (!hasConfiguration(AppConfigKey.SERVER_HEADER)) {
+            serverHeader = config.serverHeader;
+        }
+    }
+
     private String sessionKeyUsername = null;
 
     protected T sessionKeyUsername(String name) {
@@ -2200,6 +2223,8 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         _mergeTemplatePathResolver(conf);
         _mergeTemplateHome(conf);
         _mergeDefaultView(conf);
+        _mergePingPath(conf);
+        _mergeServerHeader(conf);
         _mergeSessionCookiePrefix(conf);
         _mergeSessionCookieName(conf);
         _mergeFlashCookieName(conf);
