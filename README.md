@@ -1,16 +1,13 @@
 # ACT Framework
 
-**Note**
+## News
 
-Documentation is ready at
-
-* [English version](https://github.com/actframework/act-doc/blob/master/en/index.md)
-* [中文版](https://github.com/actframework/act-doc/blob/master/cn/index.md)
-
+* [A simple helloworld benchmark set](https://github.com/greenlaw110/simple-webframework-benchmark/)
+* [A comprehensive TechEmpower benchmark set](https://github.com/greenlaw110/FrameworkBenchmarks/tree/actframework/frameworks/Java/act) has been [submitted](https://github.com/TechEmpower/FrameworkBenchmarks/pull/2525)
 
 ## Project status
 
-* Current stable version: 0.3.0-SNAPSHOT
+* Current stable version: 0.3.1-SNAPSHOT
 * The first public release is target to March 2017
 
 ## Install
