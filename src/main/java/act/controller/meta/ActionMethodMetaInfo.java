@@ -11,6 +11,10 @@ public class ActionMethodMetaInfo extends HandlerMethodMetaInfo<ActionMethodMeta
         super(classMetaInfo);
     }
 
+    public ActionMethodMetaInfo(ActionMethodMetaInfo parentAction, ControllerClassMetaInfo thisClass) {
+        super(parentAction, thisClass);
+    }
+
     @Override
     protected void releaseResources() {
         interceptors.destroy();

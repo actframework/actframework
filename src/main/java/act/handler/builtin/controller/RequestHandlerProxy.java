@@ -17,6 +17,7 @@ import act.util.AnnotatedClassFinder;
 import act.util.Global;
 import act.view.ActErrorResult;
 import act.view.RenderAny;
+import org.osgl.$;
 import org.osgl.cache.CacheService;
 import org.osgl.http.H;
 import org.osgl.logging.L;
@@ -296,9 +297,28 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
         }
     }
 
+    private ActionMethodMetaInfo findActionInfoFromParent(ControllerClassMetaInfo ctrlInfo, String methodName) {
+        ActionMethodMetaInfo actionInfo = null;
+        ControllerClassMetaInfo parent = ctrlInfo.parent(true);
+        while(true) {
+            actionInfo = parent.action(methodName);
+            if (null != actionInfo) {
+                break;
+            }
+            parent = parent.parent(true);
+            if (null == parent) {
+                break;
+            }
+        }
+        return new ActionMethodMetaInfo($.notNull(actionInfo), ctrlInfo);
+    }
+
     private void generateHandlers() {
         ControllerClassMetaInfo ctrlInfo = app.classLoader().controllerClassMetaInfo(controllerClassName);
         ActionMethodMetaInfo actionInfo = ctrlInfo.action(actionMethodName);
+        if (null == actionInfo) {
+            actionInfo = findActionInfoFromParent(ctrlInfo, actionMethodName);
+        }
         Act.Mode mode = Act.mode();
         actionHandler = mode.createRequestHandler(actionInfo, app);
         sessionFree = actionHandler.sessionFree();

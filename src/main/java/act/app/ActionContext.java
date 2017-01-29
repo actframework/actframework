@@ -7,6 +7,7 @@ import act.data.MapUtil;
 import act.data.RequestBodyParser;
 import act.event.ActEvent;
 import act.event.EventBus;
+import act.event.SystemEvent;
 import act.handler.RequestHandler;
 import act.i18n.LocaleResolver;
 import act.route.Router;
@@ -863,7 +864,7 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
         }
     }
 
-    public static class ActionContextEvent extends ActEvent<ActionContext> {
+    public static class ActionContextEvent extends ActEvent<ActionContext> implements SystemEvent {
         public ActionContextEvent(ActionContext source) {
             super(source);
         }

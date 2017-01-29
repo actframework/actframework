@@ -4,6 +4,7 @@ import act.Act;
 import act.app.ActionContext;
 import act.app.App;
 import act.event.ActEvent;
+import act.event.SystemEvent;
 import act.util.ActContext;
 import act.view.Template;
 import act.view.ViewManager;
@@ -25,7 +26,7 @@ import java.util.*;
 
 public class MailerContext extends ActContext.Base<MailerContext> {
 
-    public static class InitEvent extends ActEvent<MailerContext> {
+    public static class InitEvent extends ActEvent<MailerContext> implements SystemEvent {
         public InitEvent(MailerContext source) {
             super(source);
         }

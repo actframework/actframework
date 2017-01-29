@@ -1,7 +1,9 @@
 package act.controller.bytecode;
 
+import act.Act;
 import act.app.App;
 import act.app.AppByteCodeScannerBase;
+import act.app.AppClassLoader;
 import act.app.event.AppEventId;
 import act.asm.AnnotationVisitor;
 import act.asm.MethodVisitor;
@@ -14,11 +16,9 @@ import act.controller.Controller;
 import act.controller.meta.*;
 import act.route.RouteSource;
 import act.route.Router;
-import act.util.AsmTypes;
-import act.util.ByteCodeVisitor;
-import act.util.GeneralAnnoInfo;
-import act.util.PropertySpec;
+import act.util.*;
 import org.osgl.$;
+import org.osgl.Osgl;
 import org.osgl.http.H;
 import org.osgl.logging.L;
 import org.osgl.logging.Logger;
@@ -30,9 +30,7 @@ import org.osgl.util.ListBuilder;
 import org.osgl.util.S;
 
 import java.lang.annotation.Annotation;
-import java.util.BitSet;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * New controller scanner implementation
@@ -202,6 +200,7 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
             private int access;
             private String desc;
             private String signature;
+            private boolean isStatic;
             private String[] exceptions;
             private boolean requireScan;
             private boolean isRoutedMethod;
@@ -219,6 +218,7 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
                 this.desc = desc;
                 this.signature = signature;
                 this.exceptions = exceptions;
+                this.isStatic = isStatic(access);
                 if (isRoutedMethod) {
                     markRequireScan();
                 }
@@ -238,7 +238,7 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
                     if (null != propSpec) {
                         methodInfo.propertySpec(propSpec);
                     }
-                    return new ActionAnnotationVisitor(av, AnnotationMethodLookup.get(c), ControllerClassMetaInfo.isActionUtilAnnotation(c));
+                    return new ActionAnnotationVisitor(av, AnnotationMethodLookup.get(c), ControllerClassMetaInfo.isActionUtilAnnotation(c), isStatic);
                 } else if (ControllerClassMetaInfo.isInterceptorAnnotation(c)) {
                     markRequireScan();
                     InterceptorAnnotationVisitor visitor = new InterceptorAnnotationVisitor(av, c);
@@ -501,14 +501,16 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
 
                 List<H.Method> httpMethods = C.newList();
                 List<String> paths = C.newList();
-                boolean isUtil = false;
+                boolean isUtil;
+                boolean isStatic;
 
-                public ActionAnnotationVisitor(AnnotationVisitor av, H.Method method, boolean isUtil) {
+                public ActionAnnotationVisitor(AnnotationVisitor av, H.Method method, boolean isUtil, boolean staticMethod) {
                     super(ASM5, av);
                     if (null != method) {
                         httpMethods.add(method);
                     }
                     this.isUtil = isUtil;
+                    this.isStatic = staticMethod;
                 }
 
                 @Override
@@ -549,8 +551,6 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
                         // start(*) match
                         httpMethods.addAll(H.Method.actionMethods());
                     }
-                    StringBuilder sb = S.builder(classInfo.className().replace('/', '.')).append(".").append(methodName);
-                    final String action = sb.toString();
                     final List<Router> routers = C.newList();
                     if (null == ports || ports.length == 0) {
                         routers.add(app().router());
@@ -576,7 +576,7 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
                      * Note we need to schedule route registration after all app code scanned because we need the
                      * parent context information be set on class meta info, which is done after controller scanning
                      */
-                    app().jobManager().on(AppEventId.APP_CODE_SCANNED, new RouteRegister(httpMethods, paths, action, routers, classInfo));
+                    app().jobManager().on(AppEventId.APP_CODE_SCANNED, new RouteRegister(httpMethods, paths, methodName, routers, classInfo, classInfo.isAbstract() && !isStatic));
                 }
 
             }
@@ -690,24 +690,55 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
     private static class RouteRegister implements Runnable {
         List<Router> routers;
         List<String> paths;
-        String action;
+        String methodName;
         ControllerClassMetaInfo classInfo;
         List<H.Method> httpMethods;
+        boolean noRegister; // do not register virtual method of an abstract class
 
-        RouteRegister(List<H.Method> methods,  List<String> paths,  String action, List<Router> routers, ControllerClassMetaInfo classInfo) {
+        RouteRegister(List<H.Method> methods,  List<String> paths,  String methodName, List<Router> routers, ControllerClassMetaInfo classInfo, boolean noRegister) {
             this.routers = routers;
             this.paths = paths;
-            this.action = action;
+            this.methodName = methodName;
             this.classInfo = classInfo;
             this.httpMethods = methods;
+            this.noRegister = noRegister;
         }
 
         @Override
         public void run() {
+            final Set<String> contexts = new HashSet<>();
+            if (!noRegister) {
+                String contextPath = classInfo.contextPath();
+                registerOnContext(contextPath, S.builder(classInfo.className()).append(".").append(methodName).toString());
+                contexts.add(contextPath);
+            }
+
+            // now check on sub classes
+            App app = Act.app();
+            final AppClassLoader classLoader = app.classLoader();
+            ClassNode node = classLoader.classInfoRepository().node(classInfo.className());
+            node.visitSubTree(new $.Visitor<ClassNode>() {
+                @Override
+                public void visit(ClassNode classNode) throws Osgl.Break {
+                    String className = classNode.name();
+                    ControllerClassMetaInfo subClassInfo = classLoader.controllerClassMetaInfo(className);
+                    if (null != subClassInfo) {
+                        String subClassContextPath = subClassInfo.contextPath();
+                        if (!contexts.contains(subClassContextPath)) {
+                            registerOnContext(subClassContextPath, S.builder(subClassInfo.className()).append(".").append(methodName).toString());
+                            contexts.add(subClassContextPath);
+                        } else {
+                            throw E.invalidConfiguration("the context path of Sub controller %s has already been registered: %s", className, subClassContextPath);
+                        }
+                    }
+                }
+            }, true, true);
+        }
+
+        private void registerOnContext(String ctxPath, String action) {
             for (Router r: routers) {
                 for (String actionPath : paths) {
                     if (!actionPath.startsWith("/")) {
-                        String ctxPath = classInfo.contextPath();
                         if (!(S.blank(ctxPath) || "/".equals(ctxPath))) {
                             if (ctxPath.endsWith("/")) {
                                 ctxPath = ctxPath.substring(0, ctxPath.length() - 1);

@@ -2,13 +2,14 @@ package act.handler.event;
 
 import act.app.ActionContext;
 import act.event.ActEvent;
+import act.event.SystemEvent;
 import org.osgl.$;
 import org.osgl.Osgl;
 import org.osgl.exception.NotAppliedException;
 import org.osgl.http.H;
 import org.osgl.mvc.result.Result;
 
-public abstract class ResultEvent extends ActEvent<Result> {
+public abstract class ResultEvent extends ActEvent<Result> implements SystemEvent {
 
     private final H.Request req;
     private final H.Response resp;

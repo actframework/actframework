@@ -2,6 +2,7 @@ package act.inject;
 
 import act.app.App;
 import act.event.ActEvent;
+import act.event.SystemEvent;
 import org.osgl.util.E;
 
 import javax.inject.Provider;
@@ -9,7 +10,7 @@ import javax.inject.Provider;
 /**
  * Used to pass class binding resolution to DI plugin(s)
  */
-public abstract class DependencyInjectionBinder<T> extends ActEvent implements Provider<T> {
+public abstract class DependencyInjectionBinder<T> extends ActEvent implements Provider<T>, SystemEvent {
 
     private Class<T> targetClass;
 
