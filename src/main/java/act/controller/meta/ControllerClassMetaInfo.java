@@ -152,7 +152,7 @@ public final class ControllerClassMetaInfo extends DestroyableBase {
         AppClassLoader classLoader = Act.app().classLoader();
         ClassInfoRepository repo = classLoader.classInfoRepository();
         ClassNode parentNode = repo.node(superType.getClassName());
-        while(true) {
+        while(null != parentNode) {
             parentNode = parentNode.parent();
             if (null != parentNode) {
                 ControllerClassMetaInfo parentInfo = classLoader.controllerClassMetaInfo(parentNode.name());
@@ -163,6 +163,7 @@ public final class ControllerClassMetaInfo extends DestroyableBase {
                 return null;
             }
         }
+        return null;
     }
 
     public ControllerClassMetaInfo ctxField(String fieldName, boolean isPrivate) {
