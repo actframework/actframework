@@ -43,6 +43,117 @@ public enum AppConfigKey implements ConfigKey {
      */
     BASIC_AUTHENTICATION("basic_authentication.enabled"),
 
+
+    /**
+     * {@code act.cache.impl}
+     * Specify {@link org.osgl.cache.CacheServiceProvider Cache service provider}
+     * <p>Default value: {@link org.osgl.cache.CacheServiceProvider.Impl#Simple the simple
+     * in memory map based cache service implementation}</p>
+     */
+    CACHE_IMPL("cache.impl"),
+
+    /**
+     * {@code act.cache.name}
+     *
+     * Specify the default cache name
+     *
+     * Default value: `_act_app_`
+     */
+    CACHE_NAME("cache.name"),
+
+    /**
+     * {@code act.cache.name.session}
+     *
+     * Specify the session cache name
+     *
+     * Default value: the value configured by {@link #CACHE_NAME}
+     */
+    CACHE_NAME_SESSION("cache.name.session"),
+
+    /**
+     * {@code act.cli.port} specifies the default cli (telnet) port the application
+     * listen to.
+     * <p>Default value: {@code 5461}</p>
+     */
+    CLI_PORT("cli.port"),
+
+    /**
+     * {@code act.cli.json.page.size}
+     * Specify the maximum records in one page for JSON layout by CLI command
+     *
+     * Default value: 10
+     */
+    CLI_PAGE_SIZE_JSON("cli.page.size.json"),
+
+    /**
+     * {@code act.cli.table.page.size}
+     * Specify the maximum records in one page for table layout by CLI command
+     *
+     * Default value: 22
+     */
+    CLI_PAGE_SIZE_TABLE("cli.page.size.table"),
+
+    /**
+     * {@code cli.session.expiration} specifies the number of seconds
+     * a cli session can exists after last user interaction
+     * <p>Default value: {@code 300} seconds. e.g. 5 minutes</p>
+     */
+    CLI_SESSION_EXPIRATION("cli.session.expiration"),
+
+    /**
+     * {@code cli.session.max} specifies the maximum number of cli threads
+     * can exists concurrently
+     * <p>Default value: {@code 3}</p>
+     */
+    CLI_SESSION_MAX("cli.session.max"),
+
+
+    /**
+     * `act.cli_over_http.enabled` turn on/off CLI over http feature, which
+     * allows ActFramework to handle http request sent through to the  {@link #CLI_OVER_HTTP_PORT}
+     * as a way to invoke CLI commands and inspect results
+     *
+     * Default value: `false`
+     */
+    CLI_OVER_HTTP("cli_over_http.enabled"),
+
+    /**
+     * `act.cli_over_http.authority` specifies the {@link act.cli.CliOverHttpAuthority} implementation
+     */
+    CLI_OVER_HTTP_AUTHORITY("cli_over_http.authority.impl"),
+
+    /**
+     * `act.cli_over_http.port` specifies the default cli over http port the application
+     * listen to.
+     *
+     * Default value: `5462`
+     */
+    CLI_OVER_HTTP_PORT("cli_over_http.port"),
+
+    /**
+     * `act.cli_over_http.port` specify the title to be displayed on the CLI Over Http
+     * page
+     *
+     * Default value: "Cli Over Http"
+     */
+    CLI_OVER_HTTP_TITLE("cli_over_http.title"),
+
+    /**
+     * `act.cli_over_http.syscmd.enabled` turn on/off system command on CLI Over Http
+     * page
+     *
+     * Default value: `true`
+     */
+    CLI_OVER_HTTP_SYS_CMD("cli_over_http.syscmd.enabled"),
+
+    /**
+     * `act.cookie.domain_provider.impl` specify the provider
+     * that provides the cookie domain name
+     *
+     * Default value: value of {@link #HOST}
+     */
+    COOKIE_DOMAIN_PROVIDER("cookie.domain_provider.impl"),
+
     /**
      * {@code act.cors.enabled} turn on/off CORS in Act application
      *
@@ -101,6 +212,18 @@ public enum AppConfigKey implements ConfigKey {
     CORS_MAX_AGE("cors.max_age"),
 
     /**
+     * {@code act.content_suffix.aware.enabled}
+     * <p>
+     *     Once enabled then the framework automatically recognize request with content suffix.
+     *     E.g. {@code /customer/123/json} or {@code /customer/123.json} will match the
+     *     route {@code /customer/123} and set the request {@code Accept} header to
+     *     {@code application/json}
+     * </p>
+     * <p>Default value: {@code false}</p>
+     */
+    CONTENT_SUFFIX_AWARE("content_suffix.aware.enabled"),
+
+    /**
      * {@code act.csrf.enabled} turn on/off global CSRF protect
      *
      * Default value: `true`
@@ -108,12 +231,12 @@ public enum AppConfigKey implements ConfigKey {
     CSRF("csrf.enabled"),
 
     /**
-     * {@code act.csf.param_name} specifies the http request param name
+     * {@code act.csrf.param_name} specifies the http request param name
      * used to convey the csrf token
      *
      * Default value: the value of {@link act.app.ActionContext#ATTR_CSRF_TOKEN}
      */
-    CSRF_PARAM_NAME("csf.param_name"),
+    CSRF_PARAM_NAME("csrf.param_name"),
 
     /**
      * {@code act.csrf.header_name} specifies name of the http request
@@ -133,7 +256,7 @@ public enum AppConfigKey implements ConfigKey {
     CSRF_COOKIE_NAME("csrf.cookie_name"),
 
     /**
-     * `act.csrf.protector` specifies the implementation of
+     * `act.csrf.protector.impl` specifies the implementation of
      * {@link act.security.CSRFProtector}.
      *
      * The value of this configuration could be either a name of
@@ -142,154 +265,7 @@ public enum AppConfigKey implements ConfigKey {
      *
      * Default value: `HMAC` which specifies the {@link act.security.CSRFProtector.Predefined#HMAC}
      */
-    CSRF_PROTECTOR("csrf.protector"),
-
-    /**
-     * {@code act.cli.port} specifies the default cli (telnet) port the application
-     * listen to.
-     * <p>Default value: {@code 5461}</p>
-     */
-    CLI_PORT("cli.port"),
-
-    /**
-     * `act.cli_over_http.enabled` turn on/off CLI over http feature, which
-     * allows ActFramework to handle http request sent through to the  {@link #CLI_OVER_HTTP_PORT}
-     * as a way to invoke CLI commands and inspect results
-     *
-     * Default value: `false`
-     */
-    CLI_OVER_HTTP("cli_over_http.enabled"),
-
-    /**
-     * `act.cli_over_http.authority` specifies the {@link act.cli.CliOverHttpAuthority} implementation
-     */
-    CLI_OVER_HTTP_AUTHORITY("cli_over_http.authority.impl"),
-
-    /**
-     * `act.cli_over_http.port` specifies the default cli over http port the application
-     * listen to.
-     *
-     * Default value: `5462`
-     */
-    CLI_OVER_HTTP_PORT("cli_over_http.port"),
-
-    /**
-     * `act.cli_over_http.port` specify the title to be displayed on the CLI Over Http
-     * page
-     *
-     * Default value: "Cli Over Http"
-     */
-    CLI_OVER_HTTP_TITLE("cli_over_http.title"),
-
-    /**
-     * `act.cli_over_http.syscmd.enabled` turn on/off system command on CLI Over Http
-     * page
-     *
-     * Default value: `true`
-     */
-    CLI_OVER_HTTP_SYS_CMD("cli_over_http.syscmd.enabled"),
-
-    /**
-     * {@code cli.session.expiration} specifies the number of seconds
-     * a cli session can exists after last user interaction
-     * <p>Default value: {@code 300} seconds. e.g. 5 minutes</p>
-     */
-    CLI_SESSION_EXPIRATION("cli.session.expiration"),
-
-    /**
-     * {@code cli.session.max} specifies the maximum number of cli threads
-     * can exists concurrently
-     * <p>Default value: {@code 3}</p>
-     */
-    CLI_SESSION_MAX("cli.session.max"),
-
-    /**
-     * {@code act.configure.impl}
-     * <p>Specifies the application configuration class which provides default configuration
-     * via source code. The settings provided by application configuration class might be
-     * overwritten by configuration file</p>
-     * <p>Default value: {@code null}</p>
-     */
-    CONFIG_IMPL("config.impl"),
-
-    /**
-     * {@code act.cache.impl}
-     * Specify {@link org.osgl.cache.CacheServiceProvider Cache service provider}
-     * <p>Default value: {@link org.osgl.cache.CacheServiceProvider.Impl#Simple the simple
-     * in memory map based cache service implementation}</p>
-     */
-    CACHE_IMPL("cache.impl"),
-
-    /**
-     * {@code act.cli.table.page.size}
-     * Specify the maximum records in one page for table layout by CLI command
-     *
-     * Default value: 22
-     */
-    CLI_TABLE_PAGE_SIZE("cli.table.page.size"),
-
-    /**
-     * {@code act.cli.json.page.size}
-     * Specify the maximum records in one page for JSON layout by CLI command
-     *
-     * Default value: 10
-     */
-    CLI_JSON_PAGE_SIZE("cli.json.page.size"),
-
-    /**
-     * {@code act.content_suffix.aware.enabled}
-     * <p>
-     *     Once enabled then the framework automatically recognize request with content suffix.
-     *     E.g. {@code /customer/123/json} will match the route {@code /customer/123} and set the
-     *     request {@code Accept} header to {@code text/xml}
-     * </p>
-     * <p>Default value: {@code false}</p>
-     */
-    CONTENT_SUFFIX_AWARE("content_suffix.aware.enabled"),
-
-    /**
-     * {@code act.controller_package} specify the java
-     * package where controller classes are aggregated.
-     * <p>Once controller_package is specified then the application developer could
-     * write short request handler in the routing table. For example, suppose an original
-     * routing table is specified as</p>
-     * <table>
-     * <tr>
-     * <th>HTTP Method</th>
-     * <th>URL Path</th>
-     * <th>Action handler</th>
-     * </tr>
-     * <tr>
-     * <td>GET</td>
-     * <td>/users</td>
-     * <td>com.mycorp.myproj.controllers.UserController.list</td>
-     * </tr>
-     * </table>
-     * <p>If {@code act.controller_package} is specified as {@code com.mycorp.myproj.controllers}
-     * then the routing table could be simplified as:</p>
-     * <table>
-     * <tr>
-     * <th>HTTP Method</th>
-     * <th>URL Path</th>
-     * <th>Action handler</th>
-     * </tr>
-     * <tr>
-     * <td>GET</td>
-     * <td>/users</td>
-     * <td>UserController.list</td>
-     * </tr>
-     * </table>
-     */
-    @Deprecated
-    CONTROLLER_PACKAGE("controller_package"),
-
-    /**
-     * `act.cookie.domain_provider` specify the provider
-     * that provides the cookie domain name
-     *
-     * Default value: value of {@link #HOST}
-     */
-    COOKIE_DOMAIN_PROVIDER("cookie.domain_provider"),
+    CSRF_PROTECTOR("csrf.protector.impl"),
 
     /**
      * `act.db.seq_gen.impl` specifies the implementation of
@@ -372,8 +348,7 @@ public enum AppConfigKey implements ConfigKey {
 
     /**
      * {@code act.http.port} specifies the default http port the application
-     * listen to. This is preferred way to dispatch the http request to the
-     * application.
+     * listen to
      * <p/>
      * <p>Default value: {@code 5460}</p>
      */
@@ -439,7 +414,7 @@ public enum AppConfigKey implements ConfigKey {
     /**
      * {@code act.idgen.start_id.file} specifies the start id persistent file for
      * {@link act.util.IdGenerator.StartIdProvider.FileBasedStartCounter}
-     * <p>Default value: {@code act_start.id}</p>
+     * <p>Default value: {@code .act.id-app}</p>
      */
     ID_GEN_START_ID_FILE("idgen.start_id.file"),
 
@@ -484,7 +459,7 @@ public enum AppConfigKey implements ConfigKey {
      * can exists in the application's job manager's thread pool
      * <p>Default value: {@code 10}</p>
      */
-    JOB_POOL_SIZE("job.pool.siz"),
+    JOB_POOL_SIZE("job.pool.size"),
 
     /**
      * {@code act.modules}
@@ -574,6 +549,13 @@ public enum AppConfigKey implements ConfigKey {
     SECRET("secret"),
 
     /**
+     * {@code server.header}
+     * Specifies the server header to be output to the response
+     * <p>Default value: {@code act}</p>
+     */
+    SERVER_HEADER("server.header"),
+
+    /**
      * {@code session.prefix} specifies the prefix to be prepended
      * to the session cookie name. Let's say the default cookie name is
      * {@code act_session}, and user specifies the prefix {@code my_app}
@@ -593,7 +575,8 @@ public enum AppConfigKey implements ConfigKey {
     SESSION_TTL("session.ttl"),
 
     /**
-     * {@code session.persistent.enabled} specify whether the system
+     * {@code session.persistent.enabled}
+     * Specify whether the system
      * should treat session cookie as persistent cookie. If this setting
      * is enabled, then the user's session will not be destroyed after
      * browser closed.
@@ -644,20 +627,20 @@ public enum AppConfigKey implements ConfigKey {
     SESSION_SECURE("session.secure.enabled"),
 
     /**
-     * {@code source_version} specifies the java version
+     * {@code act.source.version} specifies the java version
      * of the src code. This configuration is used only
      * in dev mode.
      * <p>Default value: 1.7</p>
      */
-    SOURCE_VERSION("source_version"),
+    SOURCE_VERSION("source.version"),
 
     /**
-     * {@code act.source_version} specifies the java version
+     * {@code act.target.version} specifies the java version
      * of the compile target code. This configuration is used only
      * in dev mode.
      * <p>Default value: 1.7</p>
      */
-    TARGET_VERSION("target_version"),
+    TARGET_VERSION("target.version"),
 
     /**
      * {@code template.home} specifies where the view templates resides.
@@ -675,17 +658,6 @@ public enum AppConfigKey implements ConfigKey {
      * e.g. "OPTION", "PATCH" etc
      */
     UNKNOWN_HTTP_METHOD_HANDLER("unknown_http_method_handler.impl"),
-
-    /**
-     * {@code url_context} specifies the context part
-     * of the URL. This is used for Act to dispatch the
-     * incoming request to the application. Usually
-     * the {@link #HTTP_PORT port} configuration is preferred
-     * than this configuration
-     * <p/>
-     * <p>Default value is empty string</p>
-     */
-    URL_CONTEXT("url_context"),
 
     /**
      * {@code validation.message.interpolator.impl} specifies the

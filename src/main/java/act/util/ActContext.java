@@ -134,6 +134,7 @@ public interface ActContext<CTX_TYPE extends ActContext> extends ParamValueProvi
 
         @Override
         public VC_TYPE templatePath(String templatePath) {
+            template = null;
             this.templatePath = templatePath;
             return me();
         }

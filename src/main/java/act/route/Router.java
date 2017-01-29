@@ -445,29 +445,11 @@ public class Router extends AppServiceBase<Router> {
     // -- action method sensor
     public boolean isActionMethod(String className, String methodName) {
         String action = new StringBuilder(className).append(".").append(methodName).toString();
-        String controllerPackage = appConfig.controllerPackage();
-        if (S.notEmpty(controllerPackage)) {
-            if (action.startsWith(controllerPackage)) {
-                String action2 = action.substring(controllerPackage.length() + 1);
-                if (actionNames.contains(action2)) {
-                    return true;
-                }
-            }
-        }
         return actionNames.contains(action);
     }
 
     // TODO: build controllerNames set to accelerate the process
     public boolean possibleController(String className) {
-        String controllerPackage = appConfig.controllerPackage();
-        if (S.notEmpty(controllerPackage)) {
-            if (className.startsWith(controllerPackage)) {
-                String class2 = className.substring(controllerPackage.length() + 1);
-                if (setContains(actionNames, class2)) {
-                    return true;
-                }
-            }
-        }
         return setContains(actionNames, className);
     }
 
@@ -570,11 +552,11 @@ public class Router extends AppServiceBase<Router> {
         String directive = t2._1, payload = t2._2;
 
         if (S.notEmpty(directive)) {
-            RequestHandlerResolver resolver = resolvers.get(action);
+            RequestHandlerResolver resolver = resolvers.get(directive);
             RequestHandler handler = null == resolver ?
                     BuiltInHandlerResolver.tryResolve(directive, payload, app()) :
                     resolver.resolve(payload, app());
-            E.unsupportedIf(null == handler, "cannot find action handler by directive: %s", directive);
+            E.unsupportedIf(null == handler, "cannot find action handler by directive %s on payload %s", directive, payload);
             return new RequestHandlerInfo(handler, action);
         } else {
             RequestHandler handler = handlerLookup.resolve(payload, app());

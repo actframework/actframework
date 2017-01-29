@@ -6,6 +6,7 @@ import act.app.AppServiceBase;
 import act.app.event.AppEvent;
 import act.app.event.AppEventId;
 import act.app.event.AppEventListener;
+import act.handler.event.AfterResultCommit;
 import act.inject.DependencyInjectionBinder;
 import act.inject.DependencyInjector;
 import act.job.AppJobManager;
@@ -16,10 +17,9 @@ import org.osgl.util.E;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import java.lang.annotation.Annotation;
-import java.util.EventObject;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 
 import static act.app.App.logger;
@@ -31,11 +31,11 @@ public class EventBus extends AppServiceBase<EventBus> {
 
     private final List[] appEventListeners;
     private final List[] asyncAppEventListeners;
-    private final Map<Class<? extends EventObject>, List<ActEventListener>> actEventListeners;
-    private final Map<Class<? extends EventObject>, List<ActEventListener>> asyncActEventListeners;
-    private final Map<AppEventId, AppEvent> appEventLookup;
-    private final Map<Object, List<SimpleEventListener>> adhocEventListeners;
-    private final Map<Object, List<SimpleEventListener>> asyncAdhocEventListeners;
+    private final ConcurrentMap<Class<? extends EventObject>, List<ActEventListener>> actEventListeners;
+    private final ConcurrentMap<Class<? extends EventObject>, List<ActEventListener>> asyncActEventListeners;
+    private final ConcurrentMap<AppEventId, AppEvent> appEventLookup;
+    private final ConcurrentMap<Object, List<SimpleEventListener>> adhocEventListeners;
+    private final ConcurrentMap<Object, List<SimpleEventListener>> asyncAdhocEventListeners;
 
     private EventBus onceBus;
 
@@ -43,11 +43,11 @@ public class EventBus extends AppServiceBase<EventBus> {
         super(app);
         appEventListeners = initAppListenerArray();
         asyncAppEventListeners = initAppListenerArray();
-        actEventListeners = C.newMap();
-        asyncActEventListeners = C.newMap();
+        actEventListeners = new ConcurrentHashMap<>();
+        asyncActEventListeners = new ConcurrentHashMap<>();
         appEventLookup = initAppEventLookup(app);
-        adhocEventListeners = C.newMap();
-        asyncAdhocEventListeners = C.newMap();
+        adhocEventListeners = new ConcurrentHashMap<>();
+        asyncAdhocEventListeners = new ConcurrentHashMap<>();
         loadDefaultEventListeners();
         if (!once) {
             onceBus = new EventBus(app, true);
@@ -125,11 +125,11 @@ public class EventBus extends AppServiceBase<EventBus> {
         return false;
     }
 
-    private EventBus _bind(final Map<Class<? extends EventObject>, List<ActEventListener>> listeners, final Class<? extends EventObject> c, final ActEventListener l, int ttl) {
+    private synchronized EventBus _bind(final ConcurrentMap<Class<? extends EventObject>, List<ActEventListener>> listeners, final Class<? extends EventObject> c, final ActEventListener l, int ttl) {
         List<ActEventListener> list = listeners.get(c);
         if (null == list) {
             list = C.newList();
-            listeners.put(c, list);
+            listeners.putIfAbsent(c, list);
         }
         if (!list.contains(l)) {
             list.add(l);
@@ -148,7 +148,7 @@ public class EventBus extends AppServiceBase<EventBus> {
         return this;
     }
 
-    private EventBus _unbind(Map<Class<? extends EventObject>, List<ActEventListener>> listeners, Class<? extends EventObject> c, ActEventListener l) {
+    private synchronized EventBus _unbind(Map<Class<? extends EventObject>, List<ActEventListener>> listeners, Class<? extends EventObject> c, ActEventListener l) {
         List<ActEventListener> list = listeners.get(c);
         if (null != list) {
             list.remove(l);
@@ -156,8 +156,8 @@ public class EventBus extends AppServiceBase<EventBus> {
         return this;
     }
 
-    public synchronized EventBus bind(Class<? extends EventObject> c, ActEventListener l) {
-        Map<Class<? extends EventObject>, List<ActEventListener>> listeners = isAsync(l.getClass()) ? asyncActEventListeners : actEventListeners;
+    public EventBus bind(Class<? extends EventObject> c, ActEventListener l) {
+        ConcurrentMap<Class<? extends EventObject>, List<ActEventListener>> listeners = isAsync(l.getClass()) ? asyncActEventListeners : actEventListeners;
         return _bind(listeners, c, l, 0);
     }
 
@@ -178,23 +178,23 @@ public class EventBus extends AppServiceBase<EventBus> {
      * @return this event bus instance
      */
     public EventBus bind(Class<? extends EventObject> c, ActEventListener l, int ttl) {
-        Map<Class<? extends EventObject>, List<ActEventListener>> listeners = isAsync(l.getClass()) ? asyncActEventListeners : actEventListeners;
+        ConcurrentMap<Class<? extends EventObject>, List<ActEventListener>> listeners = isAsync(l.getClass()) ? asyncActEventListeners : actEventListeners;
         return _bind(listeners, c, l, ttl);
     }
 
-    public synchronized EventBus bindSync(Class<? extends EventObject> c, ActEventListener l) {
+    public EventBus bindSync(Class<? extends EventObject> c, ActEventListener l) {
         return _bind(actEventListeners, c, l, 0);
     }
 
-    public synchronized EventBus bindSync(final Class<? extends EventObject> c, final ActEventListener l, int ttl) {
+    public EventBus bindSync(final Class<? extends EventObject> c, final ActEventListener l, int ttl) {
         return _bind(actEventListeners, c, l, ttl);
     }
 
-    public synchronized EventBus bindAsync(Class<? extends EventObject> c, ActEventListener l) {
+    public EventBus bindAsync(Class<? extends EventObject> c, ActEventListener l) {
         return _bind(asyncActEventListeners, c, l, 0);
     }
 
-    public synchronized EventBus bindAsync(Class<? extends EventObject> c, ActEventListener l, int ttl) {
+    public EventBus bindAsync(Class<? extends EventObject> c, ActEventListener l, int ttl) {
         return _bind(asyncActEventListeners, c, l, ttl);
     }
 
@@ -323,8 +323,8 @@ public class EventBus extends AppServiceBase<EventBus> {
         callOn(event, asyncActEventListeners, false);
         callOn(event, actEventListeners, false);
 
-        boolean isAppEvent = event instanceof AppEvent;
-        if (!isAppEvent) {
+        boolean isSystemEvent = event instanceof SystemEvent;
+        if (!isSystemEvent) {
             Object payload = event.source();
             if (null != payload) {
                 emitSync(payload.getClass(), payload);
@@ -338,12 +338,12 @@ public class EventBus extends AppServiceBase<EventBus> {
         return this;
     }
 
-    public synchronized EventBus triggerSync(final ActEvent event) {
+    public EventBus triggerSync(final ActEvent event) {
         return emitSync(event);
     }
 
     @SuppressWarnings("unchecked")
-    public synchronized EventBus emit(final ActEvent event) {
+    public EventBus emit(final ActEvent event) {
         if (isDestroyed()) {
             return this;
         }
@@ -351,8 +351,8 @@ public class EventBus extends AppServiceBase<EventBus> {
         callOn(event, asyncActEventListeners, true);
         callOn(event, actEventListeners, false);
 
-        boolean isAppEvent = event instanceof AppEvent;
-        if (!isAppEvent) {
+        boolean isSystemEvent = event instanceof SystemEvent;
+        if (!isSystemEvent) {
             Object payload = event.source();
             if (null != payload) {
                 emit(payload.getClass(), payload);
@@ -366,19 +366,19 @@ public class EventBus extends AppServiceBase<EventBus> {
         return this;
     }
 
-    public synchronized EventBus trigger(final ActEvent event) {
+    public EventBus trigger(final ActEvent event) {
         return emit(event);
     }
 
-    public synchronized EventBus emitAsync(final ActEvent event) {
+    public EventBus emitAsync(final ActEvent event) {
         if (isDestroyed()) {
             return this;
         }
         callOn(event, asyncActEventListeners, true);
         callOn(event, actEventListeners, true);
 
-        boolean isAppEvent = event instanceof AppEvent;
-        if (!isAppEvent) {
+        boolean isSystemEvent = event instanceof SystemEvent;
+        if (!isSystemEvent) {
             Object payload = event.source();
             if (null != payload) {
                 emitAsync(payload.getClass(), payload);
@@ -392,15 +392,15 @@ public class EventBus extends AppServiceBase<EventBus> {
         return this;
     }
 
-    public synchronized EventBus triggerAsync(final ActEvent event) {
+    public EventBus triggerAsync(final ActEvent event) {
         return emitAsync(event);
     }
 
-    private EventBus _bind(Map<Object, List<SimpleEventListener>> listeners, Object event, SimpleEventListener l) {
+    private EventBus _bind(ConcurrentMap<Object, List<SimpleEventListener>> listeners, Object event, SimpleEventListener l) {
         List<SimpleEventListener> list = listeners.get(event);
         if (null == list) {
-            list = C.newList();
-            listeners.put(event, list);
+            list = new ArrayList<>();
+            listeners.putIfAbsent(event, list);
         }
         if (!list.contains(l)) {
             list.add(l);
@@ -408,11 +408,11 @@ public class EventBus extends AppServiceBase<EventBus> {
         return this;
     }
 
-    public synchronized EventBus bind(Object event, SimpleEventListener l) {
+    public EventBus bind(Object event, SimpleEventListener l) {
         return _bind(adhocEventListeners, event, l);
     }
 
-    public synchronized EventBus bindAsync(Object event, SimpleEventListener l) {
+    public EventBus bindAsync(Object event, SimpleEventListener l) {
         return _bind(asyncAdhocEventListeners, event, l);
     }
 
@@ -452,11 +452,11 @@ public class EventBus extends AppServiceBase<EventBus> {
         }
     }
 
-    public synchronized void emit(Enum<?> event, Object... args) {
+    public void emit(Enum<?> event, Object... args) {
         emit(event.name(), args);
     }
 
-    public synchronized void emit(Object event, Object ... args) {
+    public void emit(Object event, Object ... args) {
         callOn(event, adhocEventListeners.get(event), false, args);
         callOn(event, asyncAdhocEventListeners.get(event), true, args);
         if (null != onceBus) {
@@ -464,7 +464,7 @@ public class EventBus extends AppServiceBase<EventBus> {
         }
     }
 
-    public synchronized void emitSync(Object event, Object ... args) {
+    public void emitSync(Object event, Object ... args) {
         callOn(event, adhocEventListeners.get(event), false, args);
         callOn(event, asyncAdhocEventListeners.get(event), false, args);
         if (null != onceBus) {
@@ -472,7 +472,7 @@ public class EventBus extends AppServiceBase<EventBus> {
         }
     }
 
-    public synchronized void emitAsync(Object event, Object ... args) {
+    public void emitAsync(Object event, Object ... args) {
         callOn(event, adhocEventListeners.get(event), true, args);
         callOn(event, asyncAdhocEventListeners.get(event), true, args);
         if (null != onceBus) {
@@ -480,16 +480,16 @@ public class EventBus extends AppServiceBase<EventBus> {
         }
     }
 
-    public synchronized void trigger(Object event, Object ... args) {
+    public void trigger(Object event, Object ... args) {
         emit(event, args);
     }
 
-    public synchronized void triggerAsync(Object event, Object ... args) {
+    public void triggerAsync(Object event, Object ... args) {
         emitAsync(event, args);
     }
 
-    private Map<AppEventId, AppEvent> initAppEventLookup(App app) {
-        Map<AppEventId, AppEvent> map = C.newMap();
+    private ConcurrentMap<AppEventId, AppEvent> initAppEventLookup(App app) {
+        ConcurrentMap<AppEventId, AppEvent> map = new ConcurrentHashMap<>();
         AppEventId[] ids = AppEventId.values();
         int len = ids.length;
         for (int i = 0; i < len; ++i) {

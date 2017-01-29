@@ -23,6 +23,7 @@ import javax.inject.Provider;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.util.Locale;
 import java.util.Set;
 
 /**
@@ -161,6 +162,14 @@ public final class ActProviders {
         @Override
         public EventBus get() {
             return app().eventBus();
+        }
+    };
+
+    public static final Provider<Locale> LOCALE = new Provider<Locale>() {
+        @Override
+        public Locale get() {
+            ActContext context = ActContext.Base.currentContext();
+            return context.locale(true);
         }
     };
 

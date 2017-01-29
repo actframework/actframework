@@ -25,12 +25,7 @@ public abstract class RequestImplBase<T extends H.Request> extends H.Request<T> 
 
     @Override
     public String contextPath() {
-        return cfg.urlContext();
-    }
-
-    protected final boolean hasContextPath() {
-        String ctxPath = contextPath();
-        return S.notBlank(ctxPath) && !"/".equals(ctxPath);
+        return "";
     }
 
     @Override
@@ -92,9 +87,6 @@ public abstract class RequestImplBase<T extends H.Request> extends H.Request<T> 
             fs = fs.afterFirst("://"); // strip the scheme
             fs = fs.afterFirst('/'); // strip the domain className, port
             fs = fs.prepend('/'); // attach the '/' to the path
-        }
-        if (hasContextPath()) {
-            fs = fs.after(contextPath());
         }
         if (fs.contains('?')) {
             path = fs.beforeFirst('?').toString();

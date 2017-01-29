@@ -1,6 +1,8 @@
 package act.controller.meta;
 
+import act.Act;
 import act.app.App;
+import act.app.AppClassLoader;
 import act.asm.Type;
 import act.handler.builtin.controller.ControllerAction;
 import act.handler.builtin.controller.Handler;
@@ -121,18 +123,47 @@ public final class ControllerClassMetaInfo extends DestroyableBase {
     }
 
     boolean isMyAncestor(ControllerClassMetaInfo clsInfo) {
-        if (parent == null) {
+        ControllerClassMetaInfo parentInfo = parent(true);
+        if (null == parentInfo) {
             return false;
         }
-        if (parent.equals(clsInfo)) {
+        if (parentInfo.equals(clsInfo)) {
             return true;
         }
-        return parent.isMyAncestor(clsInfo);
+        return parentInfo.isMyAncestor(clsInfo);
     }
 
     public ControllerClassMetaInfo parent(ControllerClassMetaInfo parentInfo) {
         parent = parentInfo;
         return this;
+    }
+
+    public ControllerClassMetaInfo parent() {
+        return parent;
+    }
+
+    public ControllerClassMetaInfo parent(boolean checkClassInfoRepo) {
+        if (null != parent) {
+            return parent;
+        }
+        if (!checkClassInfoRepo) {
+            return null;
+        }
+        AppClassLoader classLoader = Act.app().classLoader();
+        ClassInfoRepository repo = classLoader.classInfoRepository();
+        ClassNode parentNode = repo.node(superType.getClassName());
+        while(null != parentNode) {
+            parentNode = parentNode.parent();
+            if (null != parentNode) {
+                ControllerClassMetaInfo parentInfo = classLoader.controllerClassMetaInfo(parentNode.name());
+                if (null != parentInfo) {
+                    return parentInfo;
+                }
+            } else {
+                return null;
+            }
+        }
+        return null;
     }
 
     public ControllerClassMetaInfo ctxField(String fieldName, boolean isPrivate) {
@@ -270,6 +301,9 @@ public final class ControllerClassMetaInfo extends DestroyableBase {
             String parentContextPath = parent.contextPath();
             if (null == contextPath) {
                 return parentContextPath;
+            }
+            if (null == parentContextPath) {
+                return contextPath;
             }
             StringBuilder sb = S.builder(parentContextPath);
             if (parentContextPath.endsWith("/")) {

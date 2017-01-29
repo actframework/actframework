@@ -33,6 +33,7 @@ import org.osgl.util.*;
 import javax.inject.Provider;
 import javax.validation.MessageInterpolator;
 import java.io.File;
+import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -99,17 +100,6 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         return AppConfigKey.valueOfIgnoreCase(s);
     }
 
-    private AppConfigurator configurator;
-    private boolean configuratorLoaded = false;
-
-    public AppConfigurator appConfigurator() {
-        if (!configuratorLoaded) {
-            configurator = get(CONFIG_IMPL);
-            configuratorLoaded = true;
-        }
-        return configurator;
-    }
-
     private Boolean basicAuth;
 
     protected T enableBasicAuthentication(boolean b) {
@@ -129,7 +119,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     }
 
     private void _mergeBasicAuthentication(AppConfig conf) {
-        if (null == get(BASIC_AUTHENTICATION)) {
+        if (!hasConfiguration(BASIC_AUTHENTICATION)) {
             this.basicAuth = conf.basicAuth;
         }
     }
@@ -153,7 +143,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     }
 
     private void _mergeCors(AppConfig conf) {
-        if (null == get(CORS)) {
+        if (!hasConfiguration(CORS)) {
             this.cors = conf.cors;
         }
     }
@@ -177,7 +167,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     }
 
     private void _mergeCorsOrigin(AppConfig conf) {
-        if (null == get(CORS_ORIGIN)) {
+        if (!hasConfiguration(CORS_ORIGIN)) {
             corsOrigin = conf.corsOrigin;
         }
     }
@@ -201,7 +191,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     }
 
     private void _mergeCorsHeaders(AppConfig conf) {
-        if (null == get(CORS_HEADERS)) {
+        if (!hasConfiguration(CORS_HEADERS)) {
             corsHeaders = conf.corsHeaders;
         }
     }
@@ -225,7 +215,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     }
 
     private void _mergeCorsHeadersExpose(AppConfig conf) {
-        if (null == get(CORS_HEADERS_EXPOSE)) {
+        if (!hasConfiguration(CORS_HEADERS_EXPOSE)) {
             corsHeadersExpose = conf.corsHeadersExpose;
         }
     }
@@ -243,7 +233,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         return corsOptionCheck;
     }
     private void _mergeCorsOptionCheck(AppConfig conf) {
-        if (null == get(CORS_CHECK_OPTION_METHOD)) {
+        if (!hasConfiguration(CORS_CHECK_OPTION_METHOD)) {
             corsOptionCheck = conf.corsOptionCheck;
         }
     }
@@ -267,7 +257,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     }
 
     private void _mergeCorsHeadersAllowed(AppConfig conf) {
-        if (null == get(CORS_HEADERS_EXPOSE)) {
+        if (!hasConfiguration(CORS_HEADERS_EXPOSE)) {
             corsHeadersAllowed = conf.corsHeadersAllowed;
         }
     }
@@ -292,7 +282,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     }
 
     private void _mergeCorsMaxAge(AppConfig conf) {
-        if (null == get(CORS_MAX_AGE)) {
+        if (!hasConfiguration(CORS_MAX_AGE)) {
             corsMaxAge = conf.corsMaxAge;
         }
     }
@@ -317,7 +307,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     }
 
     private void _mergeCsrf(AppConfig conf) {
-        if (null == get(CSRF)) {
+        if (!hasConfiguration(CSRF)) {
             this.csrf = conf.csrf;
         }
     }
@@ -341,7 +331,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     }
 
     private void _mergeCsrfParamName(AppConfig conf) {
-        if (null == get(CSRF_PARAM_NAME)) {
+        if (!hasConfiguration(CSRF_PARAM_NAME)) {
             csrfParamName = conf.csrfParamName;
         }
     }
@@ -355,21 +345,24 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
 
     public CSRFProtector csrfProtector() {
         if (null == csrfProtector) {
-            String s = get(CSRF_PROTECTOR);
-            if (S.blank(s)) {
-                s = "HMAC";
-            }
             try {
-                csrfProtector = CSRFProtector.Predefined.valueOf(s);
-            } catch (Exception e) {
-                csrfProtector = app.getInstance(s);
+                this.csrfProtector = get(CSRF_PROTECTOR);
+            } catch (ConfigurationException e) {
+                Object obj = helper.getValFromAliases(raw, CSRF_PROTECTOR.key(), "impl", null);
+                if (null != obj) {
+                    this.csrfProtector = CSRFProtector.Predefined.valueOfIgnoreCase(obj.toString());
+                    if (null != csrfProtector) {
+                        return this.csrfProtector;
+                    }
+                }
+                throw e;
             }
         }
         return csrfProtector;
     }
 
     private void _mergeCsrfProtector(AppConfig config) {
-        if (null == get(CSRF_PROTECTOR)) {
+        if (!hasConfiguration(CSRF_PROTECTOR)) {
             csrfProtector = config.csrfProtector;
         }
     }
@@ -393,7 +386,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     }
 
     private void _mergeCsrfCookieName(AppConfig conf) {
-        if (null == get(CSRF_COOKIE_NAME)) {
+        if (!hasConfiguration(CSRF_COOKIE_NAME)) {
             csrfCookieName = conf.csrfCookieName;
         }
     }
@@ -417,7 +410,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     }
 
     private void _mergeCsrfHeaderName(AppConfig conf) {
-        if (null == get(CSRF_HEADER_NAME)) {
+        if (!hasConfiguration(CSRF_HEADER_NAME)) {
             csrfHeaderName = conf.csrfHeaderName;
         }
     }
@@ -432,7 +425,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
 
     public int cliTablePageSize() {
         if (-1 == cliTablePageSz) {
-            Integer I = get(CLI_TABLE_PAGE_SIZE);
+            Integer I = get(CLI_PAGE_SIZE_TABLE);
             if (null == I) {
                 I = 22;
             }
@@ -442,7 +435,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     }
 
     private void _mergeCliTablePageSz(AppConfig conf) {
-        if (null == get(CLI_TABLE_PAGE_SIZE)) {
+        if (!hasConfiguration(CLI_PAGE_SIZE_TABLE)) {
             cliTablePageSz = conf.cliTablePageSz;
         }
     }
@@ -457,7 +450,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
 
     public int cliJSONPageSize() {
         if (-1 == cliJSONPageSz) {
-            Integer I = get(CLI_TABLE_PAGE_SIZE);
+            Integer I = get(CLI_PAGE_SIZE_TABLE);
             if (null == I) {
                 I = 22;
             }
@@ -467,7 +460,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     }
 
     private void _mergeCliJSONPageSz(AppConfig conf) {
-        if (null == get(CLI_TABLE_PAGE_SIZE)) {
+        if (!hasConfiguration(CLI_PAGE_SIZE_TABLE)) {
             cliJSONPageSz = conf.cliJSONPageSz;
         }
     }
@@ -491,7 +484,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     }
 
     private void _mergeCliOverHttp(AppConfig config) {
-        if (null == get(CLI_OVER_HTTP)) {
+        if (!hasConfiguration(CLI_OVER_HTTP)) {
             cliOverHttp = config.cliOverHttp;
         }
     }
@@ -514,7 +507,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     }
 
     private void _mergeCliOverHttpAuthority(AppConfig config) {
-        if (null == get(CLI_OVER_HTTP_AUTHORITY)) {
+        if (!hasConfiguration(CLI_OVER_HTTP_AUTHORITY)) {
             cliOverHttpAuthority = config.cliOverHttpAuthority;
         }
     }
@@ -535,7 +528,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     }
 
     private void _mergeCliOverHttpPort(AppConfig config) {
-        if (null == get(CLI_OVER_HTTP_PORT)) {
+        if (!hasConfiguration(CLI_OVER_HTTP_PORT)) {
             cliOverHttpPort = config.cliOverHttpPort;
         }
     }
@@ -558,7 +551,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     }
 
     private void _mergeCliOverHttpTitle(AppConfig config) {
-        if (null == get(CLI_OVER_HTTP_TITLE)) {
+        if (!hasConfiguration(CLI_OVER_HTTP_TITLE)) {
             cliOverHttpTitle = config.cliOverHttpTitle;
         }
     }
@@ -581,7 +574,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     }
 
     private void _mergeCliOverHttpSysCmd(AppConfig config) {
-        if (null == get(CLI_OVER_HTTP_SYS_CMD)) {
+        if (!hasConfiguration(CLI_OVER_HTTP_SYS_CMD)) {
             cliOverHttpSysCmd = config.cliOverHttpSysCmd;
         }
     }
@@ -603,7 +596,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     }
 
     private void _mergeCliPort(AppConfig conf) {
-        if (null == get(CLI_PORT)) {
+        if (!hasConfiguration(CLI_PORT)) {
             cliPort = conf.cliPort;
         }
     }
@@ -628,7 +621,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     }
 
     private void _mergeCliSessionExpiration(AppConfig conf) {
-        if (null == get(CLI_SESSION_EXPIRATION)) {
+        if (!hasConfiguration(CLI_SESSION_EXPIRATION)) {
             cliSessionExpiration = conf.cliSessionExpiration;
         }
     }
@@ -656,16 +649,12 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
 
     public Provider<String> cookieDomainProvider() {
         if (null == cookieDomainProvider) {
-            String s = get(COOKIE_DOMAIN_PROVIDER);
-            if (null == s) {
-                cookieDomainProvider = new Provider<String>() {
-                    @Override
-                    public String get() {
-                        return host();
-                    }
-                };
-            } else {
-                if (S.eq("dynamic", s) || S.eq("flexible", s) || S.eq("contextual", s)) {
+            try {
+                cookieDomainProvider = get(COOKIE_DOMAIN_PROVIDER);
+            } catch (ConfigurationException e) {
+                Object obj = helper.getValFromAliases(raw, COOKIE_DOMAIN_PROVIDER.key(), "impl", null);
+                String s = obj.toString();
+                if ("dynamic".equalsIgnoreCase(s) || "flexible".equalsIgnoreCase(s) || "contextual".equalsIgnoreCase(s)) {
                     cookieDomainProvider = new Provider<String>() {
                         @Override
                         public String get() {
@@ -673,16 +662,24 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
                             return req.domain();
                         }
                     };
-                } else {
-                    cookieDomainProvider = Act.app().getInstance(s);
+                    return cookieDomainProvider;
                 }
+                throw e;
+            }
+            if (null == cookieDomainProvider) {
+                cookieDomainProvider = new Provider<String>() {
+                    @Override
+                    public String get() {
+                        return host();
+                    }
+                };
             }
         }
         return cookieDomainProvider;
     }
 
     private void _mergeCookieDomain(AppConfig config) {
-        if (null == get(COOKIE_DOMAIN_PROVIDER)) {
+        if (!hasConfiguration(COOKIE_DOMAIN_PROVIDER)) {
             cookieDomainProvider = config.cookieDomainProvider;
         }
     }
@@ -707,35 +704,8 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     }
 
     private void _mergeMaxCliSession(AppConfig conf) {
-        if (null == get(CLI_SESSION_MAX)) {
+        if (!hasConfiguration(CLI_SESSION_MAX)) {
             maxCliSession = conf.maxCliSession;
-        }
-    }
-
-    private String urlContext = null;
-
-    protected T urlContext(String context) {
-        if (S.blank(context)) {
-            urlContext = "/";
-        } else {
-            urlContext = context.trim();
-        }
-        return me();
-    }
-
-    public String urlContext() {
-        if (urlContext == null) {
-            urlContext = get(URL_CONTEXT);
-            if (null == urlContext) {
-                urlContext = "/";
-            }
-        }
-        return urlContext;
-    }
-
-    private void _mergeUrlContext(AppConfig conf) {
-        if (null == get(URL_CONTEXT)) {
-            urlContext = conf.urlContext;
         }
     }
 
@@ -760,7 +730,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     }
 
     private void _mergeDefaultView(AppConfig conf) {
-        if (null == get(AppConfigKey.VIEW_DEFAULT)) {
+        if (!hasConfiguration(AppConfigKey.VIEW_DEFAULT)) {
             defViewName = conf.defViewName;
             defView = conf.defView;
         }
@@ -784,32 +754,11 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     }
 
     private void _mergeXForwardedProtocol(AppConfig conf) {
-        if (null == get(X_FORWARD_PROTOCOL)) {
+        if (!hasConfiguration(X_FORWARD_PROTOCOL)) {
             xForwardedProtocol = conf.xForwardedProtocol;
         }
     }
 
-    private String controllerPackage = null;
-
-    protected T controllerPackage(String pkg) {
-        pkg = pkg.trim();
-        E.illegalArgumentIf(pkg.length() == 0, "package name cannot be empty");
-        controllerPackage = pkg;
-        return me();
-    }
-
-    public String controllerPackage() {
-        if (null == controllerPackage) {
-            controllerPackage = get(CONTROLLER_PACKAGE);
-        }
-        return controllerPackage;
-    }
-
-    private void _mergeControllerPackage(AppConfig conf) {
-        if (null == get(CONTROLLER_PACKAGE)) {
-            controllerPackage = conf.controllerPackage;
-        }
-    }
 
     private Boolean contentSuffixAware = null;
 
@@ -829,7 +778,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     }
 
     private void _mergeContentSuffixAware(AppConfig conf) {
-        if (null == get(CONTENT_SUFFIX_AWARE)) {
+        if (!hasConfiguration(CONTENT_SUFFIX_AWARE)) {
             contentSuffixAware = conf.contentSuffixAware;
         }
     }
@@ -854,7 +803,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     }
 
     private void _mergeSequenceNumberGenerator(AppConfig conf) {
-        if (null == get(DB_SEQ_GENERATOR)) {
+        if (!hasConfiguration(DB_SEQ_GENERATOR)) {
             seqGen = conf.seqGen;
         }
     }
@@ -877,7 +826,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     }
 
     private void _mergeErrorTemplatePathResolver(AppConfig conf) {
-        if (null == get(RESOLVER_ERROR_TEMPLATE_PATH)) {
+        if (!hasConfiguration(RESOLVER_ERROR_TEMPLATE_PATH)) {
             errorTemplatePathResolver = conf.errorTemplatePathResolver;
         }
     }
@@ -903,7 +852,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     }
 
     private void _mergeHost(AppConfig conf) {
-        if (null == get(HOST)) {
+        if (!hasConfiguration(HOST)) {
             host = conf.host;
         }
     }
@@ -924,7 +873,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         return i18nEnabled;
     }
     private void _mergeI18nEnabled(AppConfig conf) {
-        if (null == get(I18N)) {
+        if (!hasConfiguration(I18N)) {
             i18nEnabled = conf.i18nEnabled;
         }
     }
@@ -946,7 +895,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         return localeParamName;
     }
     private void _mergeLocaleParamName(AppConfig conf) {
-        if (null == get(I18N_LOCALE_PARAM_NAME)) {
+        if (!hasConfiguration(I18N_LOCALE_PARAM_NAME)) {
             localeParamName = conf.localeParamName;
         }
     }
@@ -969,7 +918,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         return localeCookieName;
     }
     private void _mergeLocaleCookieName(AppConfig conf) {
-        if (null == get(I18N_LOCALE_COOKIE_NAME)) {
+        if (!hasConfiguration(I18N_LOCALE_COOKIE_NAME)) {
             localeCookieName = conf.localeCookieName;
         }
     }
@@ -990,7 +939,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         return ipEffectiveBytes;
     }
     private void _mergeIpEffectiveBytes(AppConfig conf) {
-        if (null == get(ID_GEN_NODE_ID_EFFECTIVE_IP_BYTES)) {
+        if (!hasConfiguration(ID_GEN_NODE_ID_EFFECTIVE_IP_BYTES)) {
             ipEffectiveBytes = conf.ipEffectiveBytes;
         }
     }
@@ -1010,7 +959,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         return nodeIdProvider;
     }
     private void _mergeNodeIdProvider(AppConfig conf) {
-        if (null == get(ID_GEN_NODE_ID_PROVIDER)) {
+        if (!hasConfiguration(ID_GEN_NODE_ID_PROVIDER)) {
             nodeIdProvider = conf.nodeIdProvider;
         }
     }
@@ -1031,7 +980,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         return startIdFile;
     }
     private void _mergeStartIdFile(AppConfig conf) {
-        if (null == get(ID_GEN_START_ID_FILE)) {
+        if (!hasConfiguration(ID_GEN_START_ID_FILE)) {
             startIdFile = conf.startIdFile;
         }
     }
@@ -1051,7 +1000,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         return startIdProvider;
     }
     private void _mergeStartIdProvider(AppConfig conf) {
-        if (null == get(ID_GEN_START_ID_PROVIDER)) {
+        if (!hasConfiguration(ID_GEN_START_ID_PROVIDER)) {
             startIdProvider = conf.startIdProvider;
         }
     }
@@ -1071,7 +1020,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         return sequenceProvider;
     }
     private void _mergeSequenceProvider(AppConfig conf) {
-        if (null == get(ID_GEN_SEQ_ID_PROVIDER)) {
+        if (!hasConfiguration(ID_GEN_SEQ_ID_PROVIDER)) {
             sequenceProvider = conf.sequenceProvider;
         }
     }
@@ -1092,7 +1041,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         return longEncoder;
     }
     private void _mergeLongEncoder(AppConfig conf) {
-        if (null == get(ID_GEN_LONG_ENCODER)) {
+        if (!hasConfiguration(ID_GEN_LONG_ENCODER)) {
             longEncoder = conf.longEncoder;
         }
     }
@@ -1117,7 +1066,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         return loginUrl;
     }
     private void _mergeLoginUrl(AppConfig conf) {
-        if (null == get(LOGIN_URL)) {
+        if (!hasConfiguration(LOGIN_URL)) {
             loginUrl = conf.loginUrl;
         }
     }
@@ -1144,7 +1093,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         return ajaxLoginUrl;
     }
     private void _mergeAjaxLoginUrl(AppConfig conf) {
-        if (null == get(AJAX_LOGIN_URL)) {
+        if (!hasConfiguration(AJAX_LOGIN_URL)) {
             ajaxLoginUrl = conf.ajaxLoginUrl;
         }
     }
@@ -1170,7 +1119,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         return httpMaxParams;
     }
     private void _mergeHttpMaxParams(AppConfig conf) {
-        if (null == get(HTTP_MAX_PARAMS)) {
+        if (!hasConfiguration(HTTP_MAX_PARAMS)) {
             httpMaxParams = conf.httpMaxParams;
         }
     }
@@ -1195,7 +1144,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     }
 
     private void _mergeJobPoolSize(AppConfig conf) {
-        if (null == get(JOB_POOL_SIZE)) {
+        if (!hasConfiguration(JOB_POOL_SIZE)) {
             jobPoolSize = conf.jobPoolSize;
         }
     }
@@ -1217,7 +1166,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     }
     
     private void _mergeHttpExternalPort(AppConfig conf) {
-        if (null == get(HTTP_EXTERNAL_PORT)) {
+        if (!hasConfiguration(HTTP_EXTERNAL_PORT)) {
             this.httpExternalPort = conf.httpExternalPort();
         }
     }
@@ -1238,7 +1187,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     }
 
     private void _mergeHttpExternal(AppConfig conf) {
-        if (null == get(HTTP_EXTERNAL_SERVER)) {
+        if (!hasConfiguration(HTTP_EXTERNAL_SERVER)) {
             httpExternal = conf.httpExternal;
         }
     }
@@ -1260,7 +1209,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     }
 
     private void _mergeHttpExternalSecurePort(AppConfig conf) {
-        if (null == get(HTTP_EXTERNAL_PORT)) {
+        if (!hasConfiguration(HTTP_EXTERNAL_PORT)) {
             this.httpExternalSecurePort = conf.httpExternalSecurePort;
         }
     }
@@ -1282,7 +1231,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     }
 
     private void _mergeHttpPort(AppConfig conf) {
-        if (null == get(HTTP_PORT)) {
+        if (!hasConfiguration(HTTP_PORT)) {
             httpPort = conf.httpPort;
         }
     }
@@ -1306,7 +1255,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     }
 
     private void _mergeHttpSecure(AppConfig conf) {
-        if (null == get(HTTP_SECURE)) {
+        if (!hasConfiguration(HTTP_SECURE)) {
             httpSecure = conf.httpSecure;
         }
     }
@@ -1327,7 +1276,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         return mah;
     }
     private void _mergeMissingAuthenticationHandler(AppConfig config) {
-        if (null == get(MISSING_AUTHENTICATION_HANDLER)) {
+        if (!hasConfiguration(MISSING_AUTHENTICATION_HANDLER)) {
             mah = config.mah;
         }
     }
@@ -1348,7 +1297,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         return ajaxMah;
     }
     private void _mergeAjaxMissingAuthenticationHandler(AppConfig config) {
-        if (null == get(AJAX_MISSING_AUTHENTICATION_HANDLER)) {
+        if (!hasConfiguration(AJAX_MISSING_AUTHENTICATION_HANDLER)) {
             ajaxMah = config.ajaxMah;
         }
     }
@@ -1369,7 +1318,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         return csrfCheckFailureHandler;
     }
     private void _mergeCsrfCheckFailureHandler(AppConfig config) {
-        if (null == get(CSRF_CHECK_FAILURE_HANDLER)) {
+        if (!hasConfiguration(CSRF_CHECK_FAILURE_HANDLER)) {
             csrfCheckFailureHandler = config.csrfCheckFailureHandler;
         }
     }
@@ -1390,7 +1339,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         return csrfCheckFailureHandler;
     }
     private void _mergeAjaxCsrfCheckFailureHandler(AppConfig config) {
-        if (null == get(AJAX_CSRF_CHECK_FAILURE_HANDLER)) {
+        if (!hasConfiguration(AJAX_CSRF_CHECK_FAILURE_HANDLER)) {
             csrfCheckFailureHandler = config.csrfCheckFailureHandler;
         }
     }
@@ -1441,7 +1390,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     }
 
     private void _mergePorts(AppConfig config) {
-        if (null == get(NAMED_PORTS)) {
+        if (!hasConfiguration(NAMED_PORTS)) {
             namedPorts = config.namedPorts;
         }
     }
@@ -1459,14 +1408,14 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         if (null == encoding) {
             encoding = get(ENCODING);
             if (null == encoding) {
-                encoding = "utf8";
+                encoding = StandardCharsets.UTF_8.name();
             }
         }
         return encoding;
     }
 
     private void _mergeEncoding(AppConfig conf) {
-        if (null == get(ENCODING)) {
+        if (!hasConfiguration(ENCODING)) {
             encoding = conf.encoding;
         }
     }
@@ -1491,7 +1440,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     }
 
     private void _mergeDateFmt(AppConfig conf) {
-        if (null == get(FORMAT_DATE)) {
+        if (!hasConfiguration(FORMAT_DATE)) {
             dateFmt = conf.dateFmt;
         }
     }
@@ -1516,7 +1465,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     }
 
     private void _mergeTimeFmt(AppConfig conf) {
-        if (null == get(FORMAT_TIME)) {
+        if (!hasConfiguration(FORMAT_TIME)) {
             timeFmt = conf.timeFmt;
         }
     }
@@ -1541,7 +1490,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     }
 
     private void _mergeDateTimeFmt(AppConfig conf) {
-        if (null == get(FORMAT_DATE_TIME)) {
+        if (!hasConfiguration(FORMAT_DATE_TIME)) {
             dateDateTimeFmt = conf.dateDateTimeFmt;
         }
     }
@@ -1565,7 +1514,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     }
 
     private void _mergeLocale(AppConfig conf) {
-        if (null == get(LOCALE)) {
+        if (!hasConfiguration(LOCALE)) {
             locale = conf.locale;
         }
     }
@@ -1590,7 +1539,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     }
 
     private void _mergeSourceVersion(AppConfig conf) {
-        if (null == get(SOURCE_VERSION)) {
+        if (!hasConfiguration(SOURCE_VERSION)) {
             sourceVersion = conf.sourceVersion;
         }
     }
@@ -1615,7 +1564,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     }
 
     private void _mergeTargetVersion(AppConfig conf) {
-        if (null == get(TARGET_VERSION)) {
+        if (!hasConfiguration(TARGET_VERSION)) {
             targetVersion = conf.targetVersion;
         }
     }
@@ -1673,15 +1622,8 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
 
     private $.Predicate<String> controllerNameTester() {
         if (null == CONTROLLER_CLASS_TESTER) {
-            String controllerPackage = get(CONTROLLER_PACKAGE);
-            if (S.isBlank(controllerPackage)) {
-                $.Predicate<String> f = $.F.no();
-                CONTROLLER_CLASS_TESTER = f.or(app().router().f.IS_CONTROLLER);
-            } else {
-                final String cp = controllerPackage.trim();
-                $.Predicate<String> f = S.F.startsWith(cp);
-                CONTROLLER_CLASS_TESTER = f.or(app().router().f.IS_CONTROLLER);
-            }
+            $.Predicate<String> f = $.F.no();
+            CONTROLLER_CLASS_TESTER = f.or(app().router().f.IS_CONTROLLER);
         }
         return CONTROLLER_CLASS_TESTER;
     }
@@ -1705,7 +1647,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     }
 
     private void _mergeTemplatePathResolver(AppConfig conf) {
-        if (null == get(AppConfigKey.RESOLVER_TEMPLATE_PATH)) {
+        if (!hasConfiguration(AppConfigKey.RESOLVER_TEMPLATE_PATH)) {
             templatePathResolver = conf.templatePathResolver;
         }
     }
@@ -1730,7 +1672,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     }
 
     private void _mergeTemplateHome(AppConfig conf) {
-        if (null == get(AppConfigKey.TEMPLATE_HOME)) {
+        if (!hasConfiguration(AppConfigKey.TEMPLATE_HOME)) {
             templateHome = conf.templateHome;
         }
     }
@@ -1753,9 +1695,32 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     }
 
     private void _mergePingPath(AppConfig config) {
-        if (null == get(AppConfigKey.PING_PATH)) {
+        if (!hasConfiguration(AppConfigKey.PING_PATH)) {
             pingPath = config.pingPath;
             pingPathResolved = config.pingPathResolved;
+        }
+    }
+
+    private String serverHeader;
+
+    protected T serverHeader(String header) {
+        serverHeader = header;
+        return me();
+    }
+
+    public String serverHeader() {
+        if (null == serverHeader) {
+            serverHeader = get(AppConfigKey.SERVER_HEADER);
+            if (null == serverHeader) {
+                serverHeader = "act";
+            }
+        }
+        return serverHeader;
+    }
+
+    private void _mergeServerHeader(AppConfig config) {
+        if (!hasConfiguration(AppConfigKey.SERVER_HEADER)) {
+            serverHeader = config.serverHeader;
         }
     }
 
@@ -1780,7 +1745,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     }
 
     private void _mergeSessionKeyUsername(AppConfig config) {
-        if (null == get(SESSION_KEY_USERNAME)) {
+        if (!hasConfiguration(SESSION_KEY_USERNAME)) {
             sessionKeyUsername = config.sessionKeyUsername;
         }
     }
@@ -1806,7 +1771,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     }
 
     private void _mergeSessionCookiePrefix(AppConfig config) {
-        if (null == get(SESSION_PREFIX)) {
+        if (!hasConfiguration(SESSION_PREFIX)) {
             sessionCookiePrefix = config.sessionCookiePrefix;
         }
     }
@@ -1877,7 +1842,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     }
 
     private void _mergeSessionTtl(AppConfig conf) {
-        if (null == get(AppConfigKey.SESSION_TTL)) {
+        if (!hasConfiguration(AppConfigKey.SESSION_TTL)) {
             sessionTtl = conf.sessionTtl;
         }
     }
@@ -1900,7 +1865,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     }
 
     private void _mergeSessionPersistent(AppConfig config) {
-        if (null == get(AppConfigKey.SESSION_PERSISTENT_ENABLED)) {
+        if (!hasConfiguration(AppConfigKey.SESSION_PERSISTENT_ENABLED)) {
             sessionPersistent = config.sessionPersistent;
         }
     }
@@ -1923,7 +1888,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     }
 
     private void _mergeSessionEncrpt(AppConfig config) {
-        if (null == get(AppConfigKey.SESSION_ENCRYPT_ENABLED)) {
+        if (!hasConfiguration(AppConfigKey.SESSION_ENCRYPT_ENABLED)) {
             sessionEncrypt = config.sessionEncrypt;
         }
     }
@@ -1944,7 +1909,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     }
 
     private void _mergeSessionMapper(AppConfig config) {
-        if (null == get(AppConfigKey.SESSION_MAPPER)) {
+        if (!hasConfiguration(AppConfigKey.SESSION_MAPPER)) {
             sessionMapper = config.sessionMapper;
         }
     }
@@ -1967,7 +1932,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     }
 
     private void _mergeSessionSecure(AppConfig config) {
-        if (null == get(AppConfigKey.SESSION_SECURE)) {
+        if (!hasConfiguration(AppConfigKey.SESSION_SECURE)) {
             sessionSecure = config.sessionSecure;
         }
     }
@@ -1989,7 +1954,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         return secret;
     }
     private void _mergeSecret(AppConfig config) {
-        if (null == get(AppConfigKey.SECRET)) {
+        if (!hasConfiguration(AppConfigKey.SECRET)) {
             secret = config.secret;
         }
     }
@@ -2043,7 +2008,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     }
 
     private void _mergeMessageInterpolator(AppConfig config) {
-        if (null == get(AppConfigKey.VALIDATION_MSG_INTERPOLATOR)) {
+        if (!hasConfiguration(AppConfigKey.VALIDATION_MSG_INTERPOLATOR)) {
             this._messageInterpolator = config._messageInterpolator;
         }
     }
@@ -2067,18 +2032,67 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
 
     public CacheService cacheService(String name) {
         if (null == csp) {
-            csp = get(AppConfigKey.CACHE_IMPL);
+            try {
+                csp = get(AppConfigKey.CACHE_IMPL);
+            } catch (ConfigurationException e) {
+                Object obj = helper.getValFromAliases(raw, AppConfigKey.CACHE_IMPL.toString(), "impl", null);
+                csp = CacheServiceProvider.Impl.valueOfIgnoreCase(obj.toString());
+                if (null != csp) {
+                    return csp.get(name);
+                }
+                throw e;
+            }
             if (null == csp) {
-                csp = CacheServiceProvider.Impl.Simple;
+                csp = CacheServiceProvider.Impl.Auto;
             }
         }
         return csp.get(name);
     }
 
     private void _mergeCacheServiceProvider(AppConfig config) {
-        if (null == get(AppConfigKey.CACHE_IMPL)) {
+        if (!hasConfiguration(AppConfigKey.CACHE_IMPL)) {
             csp = config.csp;
         }
+    }
+
+    private String _cacheName;
+
+    protected T cacheName(String name) {
+        this._cacheName = name;
+        return me();
+    }
+
+    public String cacheName() {
+        if (null == _cacheName) {
+            _cacheName = get(AppConfigKey.SESSION_KEY_USERNAME);
+            if (null == _cacheName) {
+                _cacheName = "_act_app_";
+            }
+        }
+        return _cacheName;
+    }
+
+    private void _mergeCacheName(AppConfig config) {
+        if (!hasConfiguration(AppConfigKey.CACHE_NAME)) {
+            _cacheName = config._cacheName;
+        }
+    }
+
+    private String _cacheNameSession;
+
+    protected T cacheNameSession(String name) {
+        this._cacheNameSession = name;
+        return me();
+    }
+
+    public String cacheNameSession() {
+        if (null == _cacheNameSession) {
+            _cacheNameSession = get(AppConfigKey.CACHE_NAME_SESSION);
+            if (null == _cacheNameSession) {
+                _cacheNameSession = cacheName();
+            }
+        }
+        return _cacheNameSession;
     }
 
     private UnknownHttpMethodProcessor _unknownHttpMethodProcessor = null;
@@ -2099,7 +2113,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     }
 
     private void _mergeUnknownHttpMethodHandler(AppConfig config) {
-        if (null == get(AppConfigKey.UNKNOWN_HTTP_METHOD_HANDLER)) {
+        if (!hasConfiguration(AppConfigKey.UNKNOWN_HTTP_METHOD_HANDLER)) {
             this._unknownHttpMethodProcessor = config._unknownHttpMethodProcessor;
         }
     }
@@ -2173,9 +2187,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         _mergeAjaxCsrfCheckFailureHandler(conf);
         _mergeCookieDomain(conf);
         _mergeMaxCliSession(conf);
-        _mergeUrlContext(conf);
         _mergeXForwardedProtocol(conf);
-        _mergeControllerPackage(conf);
         _mergeHost(conf);
         _mergeLoginUrl(conf);
         _mergeAjaxLoginUrl(conf);
@@ -2211,6 +2223,8 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         _mergeTemplatePathResolver(conf);
         _mergeTemplateHome(conf);
         _mergeDefaultView(conf);
+        _mergePingPath(conf);
+        _mergeServerHeader(conf);
         _mergeSessionCookiePrefix(conf);
         _mergeSessionCookieName(conf);
         _mergeFlashCookieName(conf);

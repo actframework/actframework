@@ -49,15 +49,7 @@ public class Tags {
             } else {
                 args = new Object[0];
             }
-            if (Act.appConfig().i18nEnabled()) {
-                p(I18n.i18n(I18n.locale(), "act_message", msg, args));
-            } else {
-                if (args.length > 0) {
-                    p(org.osgl.util.S.fmt(msg, args));
-                } else {
-                    p(msg);
-                }
-            }
+            p(I18n.i18n(I18n.locale(), "act_message", msg, args));
         }
     }
 

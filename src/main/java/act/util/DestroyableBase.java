@@ -29,7 +29,7 @@ public abstract class DestroyableBase implements Destroyable {
     }
 
     @Override
-    public final boolean isDestroyed() {
+    public final synchronized boolean isDestroyed() {
         return destroyed;
     }
 

@@ -9,6 +9,7 @@ import act.util.DisableFastJsonCircularReferenceDetect;
 import act.util.FastJsonIterable;
 import act.util.PropertySpec;
 import act.view.*;
+import com.google.zxing.BarcodeFormat;
 import org.osgl.$;
 import org.osgl.http.H;
 import org.osgl.mvc.result.*;
@@ -34,8 +35,6 @@ import static org.osgl.http.H.Format.*;
  * <li>Action handler method</li>
  * <li>Any one of Before/After/Exception/Finally interceptor</li>
  * </ul>
- * <p>The framework will scan all Classes under the {@link AppConfigKey#CONTROLLER_PACKAGE}
- * or any class outside of the package but with this annotation marked</p>
  */
 @Retention(RetentionPolicy.CLASS)
 @Target(ElementType.TYPE)
@@ -484,6 +483,14 @@ public @interface Controller {
          */
         public static Result download(File file) {
             return new RenderBinary(file, file.getName(), false);
+        }
+
+        public static ZXingResult barcode(String content) {
+            return ZXingResult.barcode(content);
+        }
+
+        public static ZXingResult qrcode(String content) {
+            return ZXingResult.qrcode(content);
         }
 
         /**

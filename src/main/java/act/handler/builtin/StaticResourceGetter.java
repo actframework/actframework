@@ -38,7 +38,7 @@ public class StaticResourceGetter extends FastRequestHandler {
         }
         this.base = path;
         this.baseUrl = StaticFileGetter.class.getResource(path);
-        E.illegalArgumentIf(null == this.baseUrl, "Cannot find base URL");
+        E.illegalArgumentIf(null == this.baseUrl, "Cannot find base URL: %s", base);
     }
 
     @Override
@@ -49,6 +49,10 @@ public class StaticResourceGetter extends FastRequestHandler {
     public void handle(ActionContext context) {
         context.handler(this);
         String path = context.paramVal(ParamNames.PATH);
+        handle(path, context);
+    }
+
+    protected void handle(String path, ActionContext context) {
         try {
             URL target;
             H.Format fmt;
@@ -69,7 +73,7 @@ public class StaticResourceGetter extends FastRequestHandler {
             if (preventFolderAccess(target, context)) {
                 return;
             }
-            fmt = StaticFileGetter.contentType(base);
+            fmt = StaticFileGetter.contentType(target.getPath());
             H.Response resp = context.resp();
             if (UNKNOWN != fmt) {
                 resp.contentType(fmt.contentType());

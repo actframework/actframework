@@ -1,6 +1,7 @@
 package testapp.endpoint.enhancement;
 
-import act.view.ActServerError;
+import act.view.ActErrorResult;
+import org.osgl.http.H;
 import org.osgl.mvc.annotation.GetAction;
 import org.osgl.mvc.result.Result;
 
@@ -12,7 +13,7 @@ public class Controler20160911 {
 
     @GetAction("/issue/enhancer/20160911")
     public Result test(int status) {
-        return ActServerError.of(status);
+        return ActErrorResult.of(H.Status.of(status));
     }
 
 }

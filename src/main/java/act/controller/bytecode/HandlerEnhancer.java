@@ -8,6 +8,7 @@ import act.controller.meta.HandlerMethodMetaInfo;
 import act.controller.meta.HandlerParamMetaInfo;
 import act.controller.meta.LocalVariableMetaInfo;
 import act.util.AsmTypes;
+import act.view.ZXingResult;
 import org.osgl.logging.LogManager;
 import org.osgl.logging.Logger;
 import org.osgl.mvc.result.Result;
@@ -205,6 +206,9 @@ public class HandlerEnhancer extends MethodVisitor implements Opcodes {
                     if ("([Ljava/lang/Object;)Lorg/osgl/mvc/result/Result;".equals(n.desc)) {
                         injectRenderArgSetCode(n);
                     }
+                    injectThrowCode(n);
+                }
+                if ("act.view.ZXingResult".equalsIgnoreCase(retType.getClassName())) {
                     injectThrowCode(n);
                 }
             }

@@ -6,12 +6,12 @@ import act.app.AppServiceBase;
 import act.inject.DependencyInjector;
 import org.osgl.$;
 import org.osgl.inject.BeanSpec;
+import org.osgl.util.E;
 import org.osgl.util.S;
 
+import javax.inject.Inject;
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.lang.reflect.Type;
+import java.lang.reflect.*;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -69,15 +69,49 @@ public class JsonDTOClassManager extends AppServiceBase<JsonDTOClassManager> {
 
     public List<BeanSpec> beanSpecs(Class<?> host, Method method) {
         List<BeanSpec> list = new ArrayList<BeanSpec>();
-        extractBeanSpec(list, $.fieldsOf(host, true));
+        extractBeanSpec(list, $.fieldsOf(host, true), host);
         extractBeanSpec(list, method);
         Collections.sort(list, CMP);
         return list;
     }
 
-    private void extractBeanSpec(List<BeanSpec> beanSpecs, List<Field> fields) {
+    private void extractBeanSpec(List<BeanSpec> beanSpecs, List<Field> fields, Class<?> host) {
         for (Field field : fields) {
-            BeanSpec spec = BeanSpec.of(field.getGenericType(), field.getDeclaredAnnotations(), field.getName(), injector);
+            BeanSpec spec = null;
+            Type genericType = field.getGenericType();
+            if (genericType instanceof Class || genericType instanceof ParameterizedType) {
+                spec = BeanSpec.of(field.getGenericType(), field.getDeclaredAnnotations(), field.getName(), injector);
+            } else if (genericType instanceof TypeVariable) {
+                // can determine type by field, check inject constructor parameter
+                TypeVariable tv = (TypeVariable)genericType;
+                Type[] bounds = tv.getBounds();
+                if (bounds != null && bounds.length == 1) {
+                    Type bound = bounds[0];
+                    if (bound instanceof ParameterizedType || bound instanceof Class) {
+                        Class<?> boundClass = BeanSpec.rawTypeOf(bound);
+                        Constructor<?>[] ca = host.getConstructors();
+                        CONSTRUCTORS:
+                        for (Constructor<?> c : ca) {
+                            if (c.getAnnotation(Inject.class) != null) {
+                                // check all param types
+                                Type[] constructorParams = c.getGenericParameterTypes();
+                                for (Type paramType : constructorParams) {
+                                    if (paramType instanceof ParameterizedType || paramType instanceof Class) {
+                                        Class<?> paramClass = BeanSpec.rawTypeOf(paramType);
+                                        if (boundClass.isAssignableFrom(paramClass)) {
+                                            spec = BeanSpec.of(paramType, field.getDeclaredAnnotations(), field.getName(), injector);
+                                            break CONSTRUCTORS;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            if (null == spec) {
+                throw E.unexpected("Cannot determine bean spec of field: %s", field);
+            }
             if (!ParamValueLoaderService.noBindOrProvided(spec, injector)) {
                 beanSpecs.add(spec);
             }

@@ -1,6 +1,8 @@
 package act.conf;
 
 import act.util.DestroyableBase;
+import org.osgl.exception.ConfigurationException;
+import org.osgl.exception.UnexpectedNewInstanceException;
 import org.osgl.util.C;
 
 import java.util.HashMap;
@@ -61,6 +63,29 @@ public abstract class Config<E extends ConfigKey> extends DestroyableBase {
             return null;
         } else {
             return (T) o;
+        }
+    }
+
+    boolean hasConfiguration(ConfigKey key) {
+        Object o = data.get(key);
+        if (null != o && NULL != o) {
+            return true;
+        }
+        try {
+            o = key.val(raw);
+            if (null == o) {
+                data.put(key, NULL);
+                return false;
+            }
+            return true;
+        } catch (ConfigurationException e) {
+            Throwable t = e.getCause();
+            if (t instanceof UnexpectedNewInstanceException) {
+                // assume this is caused by certain `.impl` setting which are not a class
+                return true;
+            }
+            // we don't know what it is so just rethrow it
+            throw e;
         }
     }
 
@@ -142,7 +167,15 @@ public abstract class Config<E extends ConfigKey> extends DestroyableBase {
         for (String key : raw.keySet()) {
             if (key.startsWith(prefix) || key.startsWith(prefix2)) {
                 Object o = data.get(key);
-                if (null == o) o = raw.get(key);
+                if (null == o) {
+                    o = raw.get(key);
+                    if (null == o) {
+                        continue;
+                    }
+                    if (o instanceof String) {
+                        o = AppConfigKey.helper.evaluate(o.toString(), raw);
+                    }
+                }
                 if (key.startsWith("act.")) {
                     key = key.substring(4);
                 }

@@ -130,16 +130,24 @@ public enum Jars {
         }
     }
 
-    private static byte[] getBytes(JarFile jar, JarEntry entry) throws IOException {
-        InputStream is = jar.getInputStream(entry);
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        IO.copy(is, baos);
-        return baos.toByteArray();
+    public static byte[] getBytes(JarFile jar, JarEntry entry) {
+        try {
+            InputStream is = jar.getInputStream(entry);
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            IO.copy(is, baos);
+            return baos.toByteArray();
+        } catch (IOException e) {
+            throw E.ioException(e);
+        }
     }
 
-    private static String readContent(JarFile jar, JarEntry entry) throws IOException {
-        InputStream is = jar.getInputStream(entry);
-        return IO.readContentAsString(is);
+    public static String readContent(JarFile jar, JarEntry entry) {
+        try {
+            InputStream is = jar.getInputStream(entry);
+            return IO.readContentAsString(is);
+        } catch (IOException e) {
+            throw E.ioException(e);
+        }
     }
 
     public enum F {
@@ -155,13 +163,9 @@ public enum Jars {
             return new F.JarEntryVisitor() {
                 @Override
                 public Void apply(JarFile jarFile, JarEntry entry) throws NotAppliedException, $.Break {
-                    try {
-                        String className = ClassNames.classFileNameToClassName(entry.getName());
-                        if (!ignoredClassNames.apply(className)) {
-                            map.put(className, getBytes(jarFile, entry));
-                        }
-                    } catch (IOException e) {
-                        throw E.ioException(e);
+                    String className = ClassNames.classFileNameToClassName(entry.getName());
+                    if (!ignoredClassNames.apply(className)) {
+                        map.put(className, getBytes(jarFile, entry));
                     }
                     return null;
                 }
@@ -173,6 +177,7 @@ public enum Jars {
          * For example, a jar entry named "conf/dev/abc.properties", the content will be loaded into a properties
          * instance and then put into an existing properties indexed by "dev" tag. If no env tag found
          * then the properties will be loaded into a properties instance indexed by "common"
+         *
          * @param map the map stores the properties mapped to a configure tag (e.g. common, dev, uat etc)
          * @return the visitor
          */

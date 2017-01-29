@@ -47,6 +47,10 @@ public class ActErrorPageRender extends ErrorPageRenderer {
             }
             H.Format accept = context.accept();
             if (H.Format.JSON == accept) {
+                Object payload = error.attachment();
+                if (null != payload) {
+                    return JSON.toJSONString(payload);
+                }
                 if (null == errorCode) {
                     return new StringBuilder("{\"message\":\"").append(errorMsg).append("\"}").toString();
                 } else {
