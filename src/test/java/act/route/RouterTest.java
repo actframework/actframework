@@ -4,6 +4,7 @@ import act.app.App;
 import act.conf.AppConfig;
 import act.controller.ParamNames;
 import act.handler.RequestHandler;
+import act.handler.builtin.AlwaysNotFound;
 import act.handler.builtin.StaticFileGetter;
 import org.junit.Before;
 import org.junit.Test;
@@ -46,9 +47,10 @@ public class RouterTest extends RouterTestBase {
         controllerInvoked();
     }
 
-    @Test(expected = NotFound.class)
+    @Test
     public void searchBadUrl() {
-        router.getInvoker(GET, "/nonexists", ctx);
+        RequestHandler handler = router.getInvoker(GET, "/nonexists", ctx);
+        same(handler, AlwaysNotFound.INSTANCE);
     }
 
     @Test

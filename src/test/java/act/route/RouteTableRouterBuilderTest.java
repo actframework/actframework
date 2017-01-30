@@ -4,6 +4,7 @@ import act.TestBase;
 import act.app.App;
 import act.handler.RequestHandler;
 import act.handler.RequestHandlerResolver;
+import act.handler.builtin.AlwaysNotFound;
 import act.handler.builtin.Echo;
 import act.handler.builtin.StaticFileGetter;
 import org.junit.Test;
@@ -89,7 +90,11 @@ public class RouteTableRouterBuilderTest extends RouterTestBase {
         Mockito.when(ctx.req()).thenReturn(req);
         Mockito.when(ctx.attribute(anyString(), Matchers.any())).thenReturn(ctx);
         Mockito.when(req.path()).thenReturn(url);
-        router.getInvoker(method, url, ctx).handle(ctx);
+        RequestHandler handler = router.getInvoker(method, url, ctx);
+        if (handler == AlwaysNotFound.INSTANCE) {
+            throw NotFound.get();
+        }
+        handler.handle(ctx);
         controllerInvoked(expected);
     }
 
