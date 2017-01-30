@@ -19,10 +19,14 @@ public class SimpleMetricPlugin implements MetricPlugin {
     private SimpleMetricStore defaultMetricStore = new SimpleMetricStore(this);
     private Metric defaultMetric = new SimpleMetric(defaultMetricStore);
 
-    public SimpleMetricPlugin() {}
+    public SimpleMetricPlugin() {
+    }
 
     @Override
     public Metric metric(String name) {
+        if (!Act.appConfig().metricEnabled()) {
+            return Metric.NULL_METRIC;
+        }
         Logger logger = enabledMap.get(name);
         if (null == logger) {
             logger = LogManager.get("metric." + name);
@@ -53,6 +57,9 @@ public class SimpleMetricPlugin implements MetricPlugin {
     public static class SimpleMetricPersistService extends AppServicePlugin {
         @Override
         protected void applyTo(App app) {
+            if (!app.config().metricEnabled()) {
+                return;
+            }
             MetricPlugin plugin = Act.metricPlugin();
             if (plugin instanceof SimpleMetricPlugin) {
                 SimpleMetricPlugin smp = (SimpleMetricPlugin) plugin;

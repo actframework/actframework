@@ -414,6 +414,29 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
             csrfHeaderName = conf.csrfHeaderName;
         }
     }
+
+    private Boolean cliEnabled;
+
+    protected T cliEnable(boolean enable) {
+        cliEnabled = enable;
+        return me();
+    }
+
+    public boolean cliEnabled() {
+        if (null == cliEnabled) {
+            cliEnabled = get(CLI_ENABLED);
+            if (null == cliEnabled) {
+                cliEnabled = true;
+            }
+        }
+        return cliEnabled;
+    }
+
+    private void _mergeCliEnabled(AppConfig conf) {
+        if (!hasConfiguration(CLI_ENABLED)) {
+            cliEnabled = conf.cliEnabled;
+        }
+    }
     
     private int cliTablePageSz = -1;
 
@@ -1992,6 +2015,29 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         }
     }
 
+    private Boolean metricEnabled;
+
+    protected T metricEnable(boolean enable) {
+        this.metricEnabled = enable;
+        return me();
+    }
+
+    public boolean metricEnabled() {
+        if (null == metricEnabled) {
+            metricEnabled = get(METRIC_ENABLED);
+            if (null == metricEnabled) {
+                metricEnabled = true;
+            }
+        }
+        return metricEnabled;
+    }
+
+    private void _mergeMetricEnabled(AppConfig conf) {
+        if (!hasConfiguration(METRIC_ENABLED)) {
+            metricEnabled = conf.metricEnabled;
+        }
+    }
+
     private MessageInterpolator _messageInterpolator = null;
     protected T messageInterpolator(MessageInterpolator messageInterpolator) {
         this._messageInterpolator = $.notNull(messageInterpolator);
@@ -2162,6 +2208,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         }
         mergeTracker.add(conf);
         _mergeBasicAuthentication(conf);
+        _mergeCacheName(conf);
         _mergeCors(conf);
         _mergeCorsOrigin(conf);
         _mergeCorsHeaders(conf);
@@ -2169,6 +2216,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         _mergeCorsHeadersAllowed(conf);
         _mergeCorsMaxAge(conf);
         _mergeCorsOptionCheck(conf);
+        _mergeCliEnabled(conf);
         _mergeCliJSONPageSz(conf);
         _mergeCliTablePageSz(conf);
         _mergeCliOverHttp(conf);
@@ -2206,6 +2254,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         _mergeErrorTemplatePathResolver(conf);
         _mergeDateFmt(conf);
         _mergeDateTimeFmt(conf);
+        _mergeMetricEnabled(conf);
         _mergeTimeFmt(conf);
         _mergeEncoding(conf);
         _mergeNodeIdProvider(conf);

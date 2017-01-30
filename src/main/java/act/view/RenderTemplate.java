@@ -5,6 +5,7 @@ import act.app.ActionContext;
 import act.exception.ActException;
 import org.osgl.http.H;
 import org.osgl.util.E;
+import org.osgl.util.S;
 
 import java.util.Map;
 
@@ -43,11 +44,23 @@ public class RenderTemplate extends RenderAny {
         applyStatus(context.resp());
         H.Request req = context.req();
         H.Response resp = context.resp();
-        resp.contentType(req.accept().contentType());
+        setContentType(req, resp);
         applyBeforeCommitHandler(req, resp);
         t.merge(context);
         applyAfterCommitHandler(req, resp);
     }
+
+    protected void setContentType(H.Request req, H.Response resp) {
+        String s = req.accept().contentType();
+        String encoding = resp.characterEncoding();
+        if(S.notBlank(encoding)) {
+            s = S.builder(s).append("; charset=").append(encoding.toLowerCase()).toString();
+        }
+
+        resp.initContentType(s);
+    }
+
+
 
     public static RenderTemplate get() {
         return INSTANCE;

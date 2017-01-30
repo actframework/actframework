@@ -856,11 +856,15 @@ public class App extends DestroyableBase {
     }
 
     private void initCliDispatcher() {
-        cliDispatcher = new CliDispatcher(this);
+        if (config().cliEnabled()) {
+            cliDispatcher = new CliDispatcher(this);
+        }
     }
 
     private void initCliServer() {
-        cliServer = new CliServer(this);
+        if (config().cliEnabled()) {
+            cliServer = new CliServer(this);
+        }
     }
 
     private void shutdownCliServer() {

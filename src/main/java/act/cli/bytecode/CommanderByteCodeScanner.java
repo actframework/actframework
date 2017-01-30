@@ -39,7 +39,7 @@ public class CommanderByteCodeScanner extends AppByteCodeScannerBase {
 
     @Override
     protected boolean shouldScan(String className) {
-        return true;
+        return null != dispatcher;
     }
 
     @Override

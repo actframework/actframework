@@ -71,6 +71,15 @@ public enum AppConfigKey implements ConfigKey {
     CACHE_NAME_SESSION("cache.name.session"),
 
     /**
+     * {@code act.cli.enabled}
+     *
+     * Turn on/off CLI server support
+     *
+     * Default value: {@code true}
+     */
+    CLI_ENABLED("cli.enabled"),
+
+    /**
      * {@code act.cli.port} specifies the default cli (telnet) port the application
      * listen to.
      * <p>Default value: {@code 5461}</p>
@@ -433,6 +442,13 @@ public enum AppConfigKey implements ConfigKey {
     ID_GEN_LONG_ENCODER("idgen.encoder.impl"),
 
     /**
+     * {@code job.pool.size} specifies the maximum number of threads
+     * can exists in the application's job manager's thread pool
+     * <p>Default value: {@code 10}</p>
+     */
+    JOB_POOL_SIZE("job.pool.size"),
+
+    /**
      * {@code act.locale} specifies the application default locale
      * <p>Default value: {@link java.util.Locale#getDefault}</p>
      */
@@ -455,11 +471,12 @@ public enum AppConfigKey implements ConfigKey {
     },
 
     /**
-     * {@code job.pool.size} specifies the maximum number of threads
-     * can exists in the application's job manager's thread pool
-     * <p>Default value: {@code 10}</p>
+     * {@code act.metric.enabled}
+     * Turn on/off metric in Act application
+     *
+     * Default value: {@code true}
      */
-    JOB_POOL_SIZE("job.pool.size"),
+    METRIC_ENABLED("metric.enabled"),
 
     /**
      * {@code act.modules}
