@@ -4,7 +4,7 @@ import act.app.ActionContext;
 import act.handler.builtin.controller.FastRequestHandler;
 import org.osgl.mvc.result.MethodNotAllowed;
 
-public class AlwaysMethodNotAllowed extends FastRequestHandler {
+public class AlwaysMethodNotAllowed extends FastRequestHandler implements DirectIO {
 
     public static AlwaysMethodNotAllowed INSTANCE = new AlwaysMethodNotAllowed();
 

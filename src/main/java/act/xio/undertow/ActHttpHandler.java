@@ -44,7 +44,7 @@ public class ActHttpHandler implements HttpHandler {
         AppConfig config = app.config();
         ActionContext ctx = ActionContext.create(app, req(exchange, config), resp(exchange, config));
         exchange.putAttachment(ActBlockingExchange.KEY_APP_CTX, ctx);
-        exchange.startBlocking(new ActBlockingExchange(exchange));
+        //exchange.startBlocking(new ActBlockingExchange(exchange));
         return ctx;
     }
 

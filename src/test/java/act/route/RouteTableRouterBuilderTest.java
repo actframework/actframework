@@ -81,7 +81,7 @@ public class RouteTableRouterBuilderTest extends RouterTestBase {
         addRouteMap("GET /magic_words echo: Hello world!");
         RequestHandler h = router.getInvoker(GET, "/magic_words", ctx);
         yes(h instanceof Echo);
-        eq("Hello world!", TestBase.fieldVal(h, "msg"));
+        eq("Hello world!", ((Echo)h).readContent());
     }
 
     private void verify(String expected, H.Method method, String url) {

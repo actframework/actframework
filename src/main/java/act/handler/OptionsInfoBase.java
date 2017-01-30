@@ -44,9 +44,8 @@ public class OptionsInfoBase extends DestroyableBase {
         C.List<CORS.Spec> corsSpecs = C.newList();
         for (H.Method method: router.supportedHttpMethods()) {
             RequestHandler handler;
-            try {
-                handler = router.getInvoker(method, path, context);
-            } catch (NotFound notFound) {
+            handler = router.getInvoker(method, path, context);
+            if (handler instanceof AlwaysNotFound) {
                 continue;
             }
             allowMethods.add(method);

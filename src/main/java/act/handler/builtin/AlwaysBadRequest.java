@@ -4,7 +4,7 @@ import act.app.ActionContext;
 import act.handler.builtin.controller.FastRequestHandler;
 import org.osgl.mvc.result.BadRequest;
 
-public class AlwaysBadRequest extends FastRequestHandler {
+public class AlwaysBadRequest extends FastRequestHandler implements DirectIO {
 
     public static AlwaysBadRequest INSTANCE = new AlwaysBadRequest();
 

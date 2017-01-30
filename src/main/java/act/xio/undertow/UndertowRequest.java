@@ -53,6 +53,9 @@ public class UndertowRequest extends RequestImplBase<UndertowRequest> {
 
     @Override
     public InputStream createInputStream() throws IllegalStateException {
+        if (!hse.isBlocking()) {
+            hse.startBlocking(new ActBlockingExchange(hse));
+        }
         return hse.getInputStream();
     }
 

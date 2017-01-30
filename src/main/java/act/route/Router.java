@@ -138,7 +138,7 @@ public class Router extends AppServiceBase<Router> {
 
     private RequestHandler getInvokerFrom(Node node) {
         if (null == node) {
-            throw notFound();
+            return notFound();
         }
         RequestHandler handler = node.handler;
         if (null == handler) {
@@ -147,19 +147,19 @@ public class Router extends AppServiceBase<Router> {
                 if (null != node.pattern) {
                     if (node.pattern.matcher("").matches()) {
                         if (null == node.handler) {
-                            throw notFound();
+                            return notFound();
                         }
                         handler = node.handler;
                     } else {
-                        throw notFound();
+                        return notFound();
                     }
                 } else if (null == node.handler) {
-                    throw notFound();
+                    return notFound();
                 } else {
                     return node.handler;
                 }
             } else {
-                throw notFound();
+                return notFound();
             }
         }
         return handler;
@@ -588,8 +588,8 @@ public class Router extends AppServiceBase<Router> {
         }
     }
 
-    private static Result notFound() {
-        throw NotFound.get();
+    private static AlwaysNotFound notFound() {
+        return AlwaysNotFound.INSTANCE;
     }
 
     public final class f {

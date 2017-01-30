@@ -7,12 +7,14 @@ import io.undertow.server.HttpServerExchange;
 import io.undertow.util.HeaderMap;
 import io.undertow.util.Headers;
 import io.undertow.util.HttpString;
+import org.osgl.exception.UnexpectedIOException;
 import org.osgl.http.H;
 import org.osgl.util.E;
 import org.osgl.util.IO;
 
 import java.io.OutputStream;
 import java.io.Writer;
+import java.nio.ByteBuffer;
 import java.util.Locale;
 
 public class UndertowResponse extends ResponseImplBase<UndertowResponse> {
@@ -22,9 +24,6 @@ public class UndertowResponse extends ResponseImplBase<UndertowResponse> {
     }
 
     private HttpServerExchange hse;
-    private ActionContext ctx;
-    private volatile OutputStream os;
-    private volatile Writer w;
 
 
     public UndertowResponse(HttpServerExchange exchange, AppConfig config) {
@@ -63,7 +62,14 @@ public class UndertowResponse extends ResponseImplBase<UndertowResponse> {
     }
 
     @Override
+    public UndertowResponse writeContent(ByteBuffer byteBuffer) {
+        hse.getResponseSender().send(byteBuffer);
+        return this;
+    }
+
+    @Override
     protected OutputStream createOutputStream() {
+        ensureBlocking();
         return hse.getOutputStream();
     }
 
@@ -73,14 +79,17 @@ public class UndertowResponse extends ResponseImplBase<UndertowResponse> {
     }
 
     @Override
+    public OutputStream outputStream() throws IllegalStateException, UnexpectedIOException {
+        return super.outputStream();
+    }
+
+    @Override
     protected void _setLocale(Locale loc) {
         if (responseStarted()) {
             return;
         }
         locale = loc;
         hse.getResponseHeaders().put(Headers.CONTENT_LANGUAGE, loc.getLanguage() + "-" + loc.getCountry());
-        if (null != charset && null == w) {
-        }
     }
 
     @Override
@@ -140,6 +149,12 @@ public class UndertowResponse extends ResponseImplBase<UndertowResponse> {
             IO.close(writer);
         } else if (outputStream != null) {
             IO.close(outputStream);
+        }
+    }
+
+    private void ensureBlocking() {
+        if (!hse.isBlocking()) {
+            hse.startBlocking(new ActBlockingExchange(hse));
         }
     }
 

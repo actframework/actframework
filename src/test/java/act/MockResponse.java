@@ -7,6 +7,7 @@ import org.osgl.util.E;
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
 import java.io.Writer;
+import java.nio.ByteBuffer;
 import java.util.Locale;
 
 public class MockResponse extends H.Response<MockResponse> {
@@ -48,6 +49,11 @@ public class MockResponse extends H.Response<MockResponse> {
     @Override
     public MockResponse contentLength(long len) {
         this.len = len;
+        return this;
+    }
+
+    @Override
+    public MockResponse writeContent(ByteBuffer byteBuffer) {
         return this;
     }
 

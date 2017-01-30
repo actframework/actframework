@@ -4,7 +4,7 @@ import act.app.ActionContext;
 import act.handler.builtin.controller.FastRequestHandler;
 import org.osgl.http.H;
 
-public class Redirect extends FastRequestHandler {
+public class Redirect extends FastRequestHandler implements DirectIO {
 
     private String url;
 

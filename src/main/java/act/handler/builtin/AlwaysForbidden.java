@@ -4,7 +4,7 @@ import act.app.ActionContext;
 import act.handler.builtin.controller.FastRequestHandler;
 import org.osgl.mvc.result.Forbidden;
 
-public class AlwaysForbidden extends FastRequestHandler {
+public class AlwaysForbidden extends FastRequestHandler implements DirectIO {
 
     public static AlwaysForbidden INSTANCE = new AlwaysForbidden();
 

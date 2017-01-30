@@ -2,12 +2,16 @@ package act.handler.builtin;
 
 import act.app.ActionContext;
 import act.handler.builtin.controller.FastRequestHandler;
+import org.apache.commons.codec.Charsets;
 import org.osgl.http.H;
 import org.osgl.util.S;
 
-public class Echo extends FastRequestHandler {
+import java.nio.ByteBuffer;
 
-    private String msg;
+public class Echo extends FastRequestHandler implements DirectIO {
+
+    private ByteBuffer buffer;
+    private String toString;
     private String contentType;
 
     public Echo(String msg) {
@@ -15,8 +19,9 @@ public class Echo extends FastRequestHandler {
     }
 
     public Echo(String msg, String contentType) {
-        this.msg = msg;
+        this.buffer = wrap(msg);
         this.contentType = contentType;
+        this.toString = "echo: " + msg;
     }
 
     @Override
@@ -25,11 +30,26 @@ public class Echo extends FastRequestHandler {
         if (S.notBlank(contentType)) {
             resp.contentType(contentType);
         }
-        resp.writeContent(msg);
+        resp.writeContent(buffer.duplicate());
+    }
+
+    public String readContent() {
+        ByteBuffer copy = buffer.duplicate();
+        byte[] bytes = new byte[copy.remaining()];
+        copy.get(bytes);
+        return new String(bytes);
     }
 
     @Override
     public String toString() {
-        return "echo: " + msg;
+        return toString;
+    }
+
+    private ByteBuffer wrap(String content) {
+        byte[] ba = content.getBytes(Charsets.UTF_8);
+        ByteBuffer buffer = ByteBuffer.allocateDirect(ba.length);
+        buffer.put(ba);
+        buffer.flip();
+        return buffer;
     }
 }

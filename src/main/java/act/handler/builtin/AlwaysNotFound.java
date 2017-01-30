@@ -4,7 +4,7 @@ import act.app.ActionContext;
 import act.handler.builtin.controller.FastRequestHandler;
 import org.osgl.mvc.result.NotFound;
 
-public class AlwaysNotFound extends FastRequestHandler {
+public class AlwaysNotFound extends FastRequestHandler implements DirectIO {
 
     public static AlwaysNotFound INSTANCE = new AlwaysNotFound();
 
