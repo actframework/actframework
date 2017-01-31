@@ -20,8 +20,9 @@ public class ActBlockingExchange implements BlockingHttpExchange {
     private OutputStream outputStream;
     private final HttpServerExchange exchange;
 
-    public ActBlockingExchange(final HttpServerExchange exchange) {
+    public ActBlockingExchange(HttpServerExchange exchange, ActionContext context) {
         this.exchange = exchange;
+        exchange.putAttachment(KEY_APP_CTX, context);
     }
 
     @Override

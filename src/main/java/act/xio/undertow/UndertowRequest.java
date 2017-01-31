@@ -1,6 +1,7 @@
 package act.xio.undertow;
 
 import act.RequestImplBase;
+import act.app.ActionContext;
 import act.conf.AppConfig;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.server.handlers.Cookie;
@@ -54,7 +55,7 @@ public class UndertowRequest extends RequestImplBase<UndertowRequest> {
     @Override
     public InputStream createInputStream() throws IllegalStateException {
         if (!hse.isBlocking()) {
-            hse.startBlocking(new ActBlockingExchange(hse));
+            hse.startBlocking(new ActBlockingExchange(hse, ActionContext.current()));
         }
         return hse.getInputStream();
     }

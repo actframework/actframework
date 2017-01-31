@@ -154,7 +154,7 @@ public class UndertowResponse extends ResponseImplBase<UndertowResponse> {
 
     private void ensureBlocking() {
         if (!hse.isBlocking()) {
-            hse.startBlocking(new ActBlockingExchange(hse));
+            hse.startBlocking(new ActBlockingExchange(hse, ActionContext.current()));
         }
     }
 
