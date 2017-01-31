@@ -14,6 +14,7 @@ import org.osgl.$;
 import org.osgl.http.H;
 import org.osgl.mvc.result.*;
 import org.osgl.storage.ISObject;
+import org.osgl.util.C;
 import org.osgl.util.E;
 import org.osgl.util.IO;
 import org.osgl.util.S;
@@ -539,12 +540,22 @@ public @interface Controller {
         }
 
         /**
+         * This method is deprecated, please use {@link #template(Object...)} instead
+         *
+         * @param args template argument list
+         */
+        @Deprecated
+        public static Result renderTemplate(Object... args) {
+            return RenderTemplate.get();
+        }
+
+        /**
          * Kind of like {@link #render(Object...)}, the only differences is this method force to render a template
          * without regarding to the request format
          *
-         * @param args
+         * @param args template argument list
          */
-        public static Result renderTemplate(Object... args) {
+        public static Result template(Object... args) {
             return RenderTemplate.get();
         }
 

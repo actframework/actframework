@@ -91,6 +91,11 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         // preload some common used configurations
         sessionCookieName();
         sessionCookiePrefix();
+        encryptSession();
+        sessionMapper();
+        sessionKeyUsername();
+        sessionSecure();
+        sessionTtl();
         return this;
     }
 

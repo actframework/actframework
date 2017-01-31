@@ -193,7 +193,7 @@ public class ActErrorResult extends ErrorResult implements ActError {
         if (t instanceof Result) {
             return (Result) t;
         } else if (t instanceof org.rythmengine.exception.RythmException) {
-            return new RythmTemplateException((org.rythmengine.exception.RythmException) t);
+            return Act.isDev() ? new RythmTemplateException((org.rythmengine.exception.RythmException) t) : ErrorResult.of(H.Status.INTERNAL_SERVER_ERROR);
         } else {
             $.Function<Throwable, Result> transformer = transformerOf(t);
             return null == transformer ? new ActErrorResult(t) : transformer.apply(t);
@@ -212,14 +212,6 @@ public class ActErrorResult extends ErrorResult implements ActError {
             }
         }
         return null;
-    }
-
-    public static ActErrorResult of(NullPointerException e) {
-        return new ActErrorResult(e);
-    }
-
-    public static ActErrorResult of(org.rythmengine.exception.RythmException e) {
-        return new RythmTemplateException(e);
     }
 
     public static Result ofStatus(int statusCode) {

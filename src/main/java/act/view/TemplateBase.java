@@ -5,7 +5,6 @@ import act.app.ActionContext;
 import act.mail.MailerContext;
 import org.apache.commons.codec.Charsets;
 import org.osgl.http.H;
-import org.osgl.util.IO;
 
 import java.nio.charset.Charset;
 import java.util.Map;
@@ -59,8 +58,7 @@ public abstract class TemplateBase implements Template {
 
     protected void merge(Map<String, Object> renderArgs, H.Response response) {
         String result = render(renderArgs);
-        byte[] bytes = result.getBytes(UTF8);
-        IO.write(bytes, response.outputStream());
+        response.writeContent(result);
     }
 
     protected abstract String render(Map<String, Object> renderArgs);
