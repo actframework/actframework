@@ -97,6 +97,7 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
     private C.List<FinallyInterceptor> finallyInterceptors = C.newList();
 
     private boolean sessionFree;
+    private boolean express;
 
     final GroupInterceptorWithResult BEFORE_INTERCEPTOR = new GroupInterceptorWithResult(beforeInterceptors);
     final GroupAfterInterceptor AFTER_INTERCEPTOR = new GroupAfterInterceptor(afterInterceptors);
@@ -206,6 +207,11 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
     public boolean sessionFree() {
         ensureAgentsReady();
         return sessionFree;
+    }
+
+    @Override
+    public boolean express() {
+        return express;
     }
 
     protected final void useSessionCache() {
@@ -322,6 +328,7 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
         Act.Mode mode = Act.mode();
         actionHandler = mode.createRequestHandler(actionInfo, app);
         sessionFree = actionHandler.sessionFree();
+        express = actionHandler.express();
         App app = this.app;
         for (InterceptorMethodMetaInfo info : ctrlInfo.beforeInterceptors()) {
             if (!applied(info)) {
@@ -330,6 +337,7 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
             BeforeInterceptor interceptor = mode.createBeforeInterceptor(info, app);
             beforeInterceptors.add(interceptor);
             sessionFree = sessionFree && interceptor.sessionFree();
+            express = express && interceptor.express();
         }
         for (InterceptorMethodMetaInfo info : ctrlInfo.afterInterceptors()) {
             if (!applied(info)) {
@@ -338,6 +346,7 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
             AfterInterceptor interceptor = mode.createAfterInterceptor(info, app);
             afterInterceptors.add(interceptor);
             sessionFree = sessionFree && interceptor.sessionFree();
+            express = express && interceptor.express();
         }
         for (CatchMethodMetaInfo info : ctrlInfo.exceptionInterceptors()) {
             if (!applied(info)) {
@@ -346,6 +355,7 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
             ExceptionInterceptor interceptor = mode.createExceptionInterceptor(info, app);
             exceptionInterceptors.add(interceptor);
             sessionFree = sessionFree && interceptor.sessionFree();
+            express = express && interceptor.express();
         }
         Collections.sort(exceptionInterceptors);
 
@@ -356,6 +366,7 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
             FinallyInterceptor interceptor = mode.createFinallyInterceptor(info, app);
             finallyInterceptors.add(interceptor);
             sessionFree = sessionFree && interceptor.sessionFree();
+            express = express && interceptor.express();
         }
 
     }
@@ -467,6 +478,7 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
     }
 
     @AnnotatedClassFinder(value = Global.class, callOn = AppEventId.PRE_START)
+    @SuppressWarnings("unused")
     public static void registerGlobalInterceptors(Class<?> interceptorClass) {
         App app = Act.app();
         if (BeforeInterceptor.class.isAssignableFrom(interceptorClass)) {

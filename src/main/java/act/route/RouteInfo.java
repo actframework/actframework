@@ -77,6 +77,11 @@ public class RouteInfo extends $.T3<String, String, String> implements Comparabl
         }
 
         @Override
+        public boolean express() {
+            return true;
+        }
+
+        @Override
         public String toString() {
             return "unknown";
         }

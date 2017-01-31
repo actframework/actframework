@@ -4,7 +4,7 @@ import act.app.ActionContext;
 import act.handler.builtin.controller.FastRequestHandler;
 import act.security.CORS;
 
-public class OptionsRequestHandler extends FastRequestHandler {
+public class OptionsRequestHandler extends FastRequestHandler implements ExpressHandler {
 
     private CORS.Spec corsSpec;
 

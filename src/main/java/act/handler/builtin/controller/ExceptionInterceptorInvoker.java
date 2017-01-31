@@ -11,4 +11,5 @@ public interface ExceptionInterceptorInvoker extends Prioritised, Destroyable {
     void accept(ActionHandlerInvoker.Visitor visitor);
     CORS.Spec corsSpec();
     boolean sessionFree();
+    boolean express();
 }

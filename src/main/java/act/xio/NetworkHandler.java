@@ -28,7 +28,7 @@ import org.osgl.util.S;
  * A `NetworkHandler` can be registered to an {@link Network} and get invoked when
  * there are network event (e.g. an HTTP request) incoming
  */
-public class NetworkHandler extends DestroyableBase implements  $.Func1<ActionContext, Void> {
+public class NetworkHandler extends DestroyableBase {
 
     private static Logger logger = LogManager.get(NetworkHandler.class);
 
@@ -53,79 +53,79 @@ public class NetworkHandler extends DestroyableBase implements  $.Func1<ActionCo
         return app;
     }
 
-    public void handle(ActionContext ctx) {
+    public void handle(final ActionContext ctx, NetworkDispatcher dispatcher) {
         if (isDestroyed()) {
             return;
         }
-        H.Request req = ctx.req();
+        final H.Request req = ctx.req();
         String url = req.url();
         H.Method method = req.method();
-        Timer timer = null;
-        try {
-            if (Act.isDev() && !url.startsWith("/asset/")) {
-                app.checkUpdates(false);
-            }
-            url = contentSuffixProcessor.apply(req, url);
-            timer = metric.startTimer(MetricInfo.ROUTING);
-            RequestHandler rh;
-            try {
-                rh = router().getInvoker(method, url, ctx);
-                ctx.handler(rh);
-            } finally {
-                timer.stop();
-            }
-            timer = metric.startTimer(S.builder(MetricInfo.HTTP_HANDLER).append(":").append(rh).toString());
-            rh.handle(ctx);
-        } catch (Result r) {
-            try {
-                r = RequestHandlerProxy.GLOBAL_AFTER_INTERCEPTOR.apply(r, ctx);
-            } catch (Exception e) {
-                logger.error(e, "Error calling global after interceptor");
-                r = ActErrorResult.of(e);
-            }
-            if (null == ctx.handler()) {
-                ctx.handler(FastRequestHandler.DUMB);
-            }
-
-            H.Format fmt = req.accept();
-            if (H.Format.UNKNOWN == fmt) {
-                fmt = req.contentType();
-            }
-
-            ctx.resp().addHeaderIfNotAdded(H.Header.Names.CONTENT_TYPE, fmt.contentType());
-            r.apply(req, ctx.resp());
-        } catch (Exception t) {
-            logger.error(t, "Error handling network request");
-            Result r;
-            try {
-                r = RequestHandlerProxy.GLOBAL_EXCEPTION_INTERCEPTOR.apply(t, ctx);
-            } catch (Exception e) {
-                logger.error(e, "Error calling global exception interceptor");
-                r = ActErrorResult.of(e);
-            }
-            if (null == r) {
-                r = ActErrorResult.of(t);
-            } else if (r instanceof ErrorResult) {
-                r = ActErrorResult.of(r);
-            }
-            if (null == ctx.handler()) {
-                ctx.handler(FastRequestHandler.DUMB);
-            }
-            r.apply(req, ctx.resp());
-        } finally {
-            // we don't destroy ctx here in case it's been passed to
-            // another thread
-            ActionContext.clearCurrent();
-            if (null != timer) {
-                timer.stop();
-            }
+        if (Act.isDev() && !url.startsWith("/asset/")) {
+            app.checkUpdates(false);
         }
-    }
+        url = contentSuffixProcessor.apply(req, url);
+        Timer timer = metric.startTimer(MetricInfo.ROUTING);
+        final RequestHandler requestHandler = router().getInvoker(method, url, ctx);
+        ctx.handler(requestHandler);
+        timer.stop();
+        NetworkJob job = new NetworkJob() {
+            @Override
+            public void run() {
+                Timer timer = metric.startTimer(S.builder(MetricInfo.HTTP_HANDLER).append(":").append(requestHandler).toString());
+                ctx.saveLocal();
+                try {
+                    requestHandler.handle(ctx);
+                } catch (Result r) {
+                    try {
+                        r = RequestHandlerProxy.GLOBAL_AFTER_INTERCEPTOR.apply(r, ctx);
+                    } catch (Exception e) {
+                        logger.error(e, "Error calling global after interceptor");
+                        r = ActErrorResult.of(e);
+                    }
+                    if (null == ctx.handler()) {
+                        ctx.handler(FastRequestHandler.DUMB);
+                    }
 
-    @Override
-    public Void apply(ActionContext ctx) throws NotAppliedException, $.Break {
-        handle(ctx);
-        return null;
+                    H.Format fmt = req.accept();
+                    if (H.Format.UNKNOWN == fmt) {
+                        fmt = req.contentType();
+                    }
+
+                    ctx.resp().addHeaderIfNotAdded(H.Header.Names.CONTENT_TYPE, fmt.contentType());
+                    r.apply(req, ctx.resp());
+                } catch (Exception t) {
+                    logger.error(t, "Error handling network request");
+                    Result r;
+                    try {
+                        r = RequestHandlerProxy.GLOBAL_EXCEPTION_INTERCEPTOR.apply(t, ctx);
+                    } catch (Exception e) {
+                        logger.error(e, "Error calling global exception interceptor");
+                        r = ActErrorResult.of(e);
+                    }
+                    if (null == r) {
+                        r = ActErrorResult.of(t);
+                    } else if (r instanceof ErrorResult) {
+                        r = ActErrorResult.of(r);
+                    }
+                    if (null == ctx.handler()) {
+                        ctx.handler(FastRequestHandler.DUMB);
+                    }
+                    r.apply(req, ctx.resp());
+                } finally {
+                    // we don't destroy ctx here in case it's been passed to
+                    // another thread
+                    ActionContext.clearCurrent();
+                    if (null != timer) {
+                        timer.stop();
+                    }
+                }
+            }
+        };
+        if (!requestHandler.express()) {
+            dispatcher.dispatch(job);
+        } else {
+            job.run();
+        }
     }
 
     @Override

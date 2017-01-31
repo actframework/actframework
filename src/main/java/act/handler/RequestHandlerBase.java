@@ -20,6 +20,11 @@ public abstract class RequestHandlerBase extends $.F1<ActionContext, Void> imple
     }
 
     @Override
+    public boolean express() {
+        return this instanceof ExpressHandler;
+    }
+
+    @Override
     public Class<? extends Annotation> scope() {
         return ApplicationScoped.class;
     }

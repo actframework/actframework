@@ -85,7 +85,6 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
         this.disableCsrf = req().method().safe();
         this.sessionKeyUsername = config.sessionKeyUsername();
         this.localeResolver = new LocaleResolver(this);
-        this.saveLocal();
     }
 
     public State state() {

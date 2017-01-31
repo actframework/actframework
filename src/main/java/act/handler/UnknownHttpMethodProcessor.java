@@ -14,7 +14,7 @@ public abstract class UnknownHttpMethodProcessor implements Serializable {
 
     public abstract Result handle(H.Method method);
 
-    private static class NotAllowed extends UnknownHttpMethodProcessor {
+    private static class NotAllowed extends UnknownHttpMethodProcessor implements ExpressHandler {
         @Override
         public Result handle(H.Method method) {
             return MethodNotAllowed.INSTANCE;
@@ -25,7 +25,7 @@ public abstract class UnknownHttpMethodProcessor implements Serializable {
         }
     }
 
-    private static class NotImplemented extends UnknownHttpMethodProcessor {
+    private static class NotImplemented extends UnknownHttpMethodProcessor implements ExpressHandler {
         @Override
         public Result handle(H.Method method) {
             return org.osgl.mvc.result.NotImplemented.INSTANCE;

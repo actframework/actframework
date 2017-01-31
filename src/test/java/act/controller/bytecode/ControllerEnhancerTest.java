@@ -85,6 +85,7 @@ public class ControllerEnhancerTest extends TestBase implements ControllerClassM
         InvokeLogFactory.set(invokeLog);
         ActionContext.clearCurrent();
         ctx = ActionContext.create(mockApp, mockReq, mockResp);
+        ctx.saveLocal();
         base = new File("./target/test-classes");
     }
 

@@ -7,7 +7,9 @@ import act.conf.AppConfig;
 import act.metric.Metric;
 import act.metric.MetricInfo;
 import act.metric.Timer;
+import act.xio.NetworkDispatcher;
 import act.xio.NetworkHandler;
+import act.xio.NetworkJob;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
 import org.osgl.http.H;
@@ -19,24 +21,21 @@ import org.osgl.util.E;
 public class ActHttpHandler implements HttpHandler {
 
     private final NetworkHandler client;
-    private Metric metric;
 
     public ActHttpHandler(NetworkHandler client) {
         E.NPE(client);
         this.client = client;
-        this.metric = Act.metricPlugin().metric("act.http");
     }
 
     @Override
-    public void handleRequest(HttpServerExchange exchange) throws Exception {
-        if (exchange.isInIoThread()) {
-            exchange.dispatch(this);
-        } else {
-            Timer timer = metric.startTimer(MetricInfo.CREATE_CONTEXT);
-            ActionContext ctx = createActionContext(exchange);
-            timer.stop();
-            client.handle(ctx);
-        }
+    public void handleRequest(final HttpServerExchange exchange) throws Exception {
+        ActionContext ctx = createActionContext(exchange);
+        client.handle(ctx, new NetworkDispatcher() {
+            @Override
+            public void dispatch(NetworkJob job) {
+                exchange.dispatch(job);
+            }
+        });
     }
 
     private ActionContext createActionContext(HttpServerExchange exchange) {
@@ -52,4 +51,5 @@ public class ActHttpHandler implements HttpHandler {
     private H.Response resp(HttpServerExchange exchange, AppConfig config) {
         return new UndertowResponse(exchange, config);
     }
+
 }

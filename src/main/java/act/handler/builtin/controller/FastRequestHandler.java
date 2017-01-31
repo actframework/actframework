@@ -14,7 +14,11 @@ public abstract class FastRequestHandler extends RequestHandlerBase {
     public static final RequestHandler DUMB = new FastRequestHandler() {
         @Override
         public void handle(ActionContext context) {
+        }
 
+        @Override
+        public boolean express() {
+            return true;
         }
     };
 

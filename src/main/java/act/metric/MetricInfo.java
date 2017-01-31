@@ -5,7 +5,6 @@ import org.osgl.$;
 public class MetricInfo {
 
     public static final String HTTP_HANDLER = "act:http";
-    public static final String CREATE_CONTEXT = "act:http:create-ctx";
     public static final String CLASS_LOADING = "act:classload";
     public static final String JOB_HANDLER = "act:job";
     public static final String CLI_HANDLER = "act:cli";

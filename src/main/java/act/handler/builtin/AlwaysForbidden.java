@@ -1,10 +1,11 @@
 package act.handler.builtin;
 
 import act.app.ActionContext;
+import act.handler.ExpressHandler;
 import act.handler.builtin.controller.FastRequestHandler;
 import org.osgl.mvc.result.Forbidden;
 
-public class AlwaysForbidden extends FastRequestHandler implements DirectIO {
+public class AlwaysForbidden extends FastRequestHandler implements ExpressHandler {
 
     public static AlwaysForbidden INSTANCE = new AlwaysForbidden();
 

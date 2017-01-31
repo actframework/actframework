@@ -37,6 +37,11 @@ public class ControllerAction extends ActionHandler<ControllerAction> {
     }
 
     @Override
+    public boolean express() {
+        return handlerInvoker.express();
+    }
+
+    @Override
     public void accept(Visitor visitor) {
         handlerInvoker.accept(visitor.invokerVisitor());
     }

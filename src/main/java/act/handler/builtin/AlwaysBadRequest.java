@@ -1,10 +1,11 @@
 package act.handler.builtin;
 
 import act.app.ActionContext;
+import act.handler.ExpressHandler;
 import act.handler.builtin.controller.FastRequestHandler;
 import org.osgl.mvc.result.BadRequest;
 
-public class AlwaysBadRequest extends FastRequestHandler implements DirectIO {
+public class AlwaysBadRequest extends FastRequestHandler implements ExpressHandler {
 
     public static AlwaysBadRequest INSTANCE = new AlwaysBadRequest();
 

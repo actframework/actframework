@@ -1,6 +1,11 @@
 package act.handler.builtin;
 
+import act.Act;
 import act.app.ActionContext;
+import act.conf.AppConfig;
+import act.handler.ExpressHandler;
+import act.handler.RequestHandler;
+import act.handler.UnknownHttpMethodProcessor;
 import act.handler.builtin.controller.FastRequestHandler;
 import act.handler.builtin.controller.RequestHandlerProxy;
 import act.view.ActErrorResult;
@@ -14,13 +19,14 @@ import java.io.Serializable;
 public class UnknownHttpMethodHandler extends FastRequestHandler implements Serializable {
 
     private static Logger logger = LogManager.get(UnknownHttpMethodHandler.class);
-
     public static final UnknownHttpMethodHandler INSTANCE = new UnknownHttpMethodHandler();
+
+    private volatile UnknownHttpMethodProcessor configured;
 
     @Override
     public void handle(ActionContext context) {
         H.Method method = context.req().method();
-        Result result = context.config().unknownHttpMethodProcessor().handle(method);
+        Result result = configured(context.config()).handle(method);
         try {
             result = RequestHandlerProxy.GLOBAL_AFTER_INTERCEPTOR.apply(result, context);
         } catch (Exception e) {
@@ -28,6 +34,25 @@ public class UnknownHttpMethodHandler extends FastRequestHandler implements Seri
             result = ActErrorResult.of(e);
         }
         result.apply(context.req(), context.resp());
+    }
+
+    @Override
+    public boolean express() {
+        return configured(null) instanceof ExpressHandler;
+    }
+
+    private UnknownHttpMethodProcessor configured(AppConfig config) {
+        if (null == configured) {
+            synchronized (this) {
+                if (null == configured) {
+                    if (null == config) {
+                        config = Act.appConfig();
+                    }
+                    configured = config.unknownHttpMethodProcessor();
+                }
+            }
+        }
+        return configured;
     }
 
     private Object readResolve() {

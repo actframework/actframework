@@ -1,10 +1,11 @@
 package act.handler.builtin;
 
 import act.app.ActionContext;
+import act.handler.ExpressHandler;
 import act.handler.builtin.controller.FastRequestHandler;
 import org.osgl.http.H;
 
-public class Redirect extends FastRequestHandler implements DirectIO {
+public class Redirect extends FastRequestHandler implements ExpressHandler {
 
     private String url;
 

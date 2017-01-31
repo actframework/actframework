@@ -6,6 +6,7 @@ import act.app.App;
 import act.app.AppClassLoader;
 import act.controller.Controller;
 import act.controller.meta.*;
+import act.handler.NonBlock;
 import act.handler.builtin.controller.*;
 import act.inject.param.JsonDTO;
 import act.inject.param.JsonDTOClassManager;
@@ -58,6 +59,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
     private final int fieldsAndParamsCount;
     private String singleJsonFieldName;
     private final boolean sessionFree;
+    private final boolean express;
     private List<BeanSpec> paramSpecs;
     private Set<String> pathVariables;
     private CORS.Spec corsSpec;
@@ -90,6 +92,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         }
 
         sessionFree = method.isAnnotationPresent(SessionFree.class);
+        express = method.isAnnotationPresent(NonBlock.class);
 
         paramCount = handler.paramCount();
         paramSpecs = jsonDTOClassManager.beanSpecs(controllerClass, method);
@@ -171,6 +174,11 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
     @Override
     public boolean sessionFree() {
         return sessionFree;
+    }
+
+    @Override
+    public boolean express() {
+        return express;
     }
 
     public CORS.Spec corsSpec() {
@@ -420,6 +428,11 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         }
 
         @Override
+        public boolean express() {
+            return invoker.express();
+        }
+
+        @Override
         public void accept(Visitor visitor) {
             invoker.accept(visitor.invokerVisitor());
         }
@@ -457,6 +470,11 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         @Override
         public boolean sessionFree() {
             return invoker.sessionFree();
+        }
+
+        @Override
+        public boolean express() {
+            return invoker.express();
         }
 
         @Override
@@ -507,6 +525,11 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         }
 
         @Override
+        public boolean express() {
+            return invoker.express();
+        }
+
+        @Override
         public void accept(ActionHandlerInvoker.Visitor visitor) {
             invoker.accept(visitor);
         }
@@ -549,6 +572,11 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         @Override
         public boolean sessionFree() {
             return invoker.sessionFree();
+        }
+
+        @Override
+        public boolean express() {
+            return invoker.express();
         }
 
         @Override

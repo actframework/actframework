@@ -24,6 +24,17 @@ public interface RequestHandler extends $.Function<ActionContext, Void>, Destroy
     void handle(ActionContext context);
 
     /**
+     * Indicate the handler logic is fast enough to be put into network layer's io thread and
+     * does not require to dispatch to worker thread.
+     *
+     * Note a handler that implements {@link ExpressHandler} should
+     * always return `true` for this method
+     *
+     * @return `true` if this handler support direct io thread processing
+     */
+    boolean express();
+
+    /**
      * Indicate if this request handler support partial path lookup.
      * Usually this method should return {@code false}. However for
      * certain request handler like {@link StaticFileGetter}

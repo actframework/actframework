@@ -916,7 +916,7 @@ public class Router extends AppServiceBase<Router> {
         private Set<String> pathVariables;
         protected ContextualHandler(RequestHandlerBase next, Node node) {
             super(next);
-            pathVariables = new HashSet<String>();
+            pathVariables = new HashSet<>();
             while (node != null) {
                 if (node.isDynamic()) {
                     pathVariables.add(node.varName.toString());

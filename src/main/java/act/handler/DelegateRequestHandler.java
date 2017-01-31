@@ -18,6 +18,11 @@ public class DelegateRequestHandler extends RequestHandlerBase {
     }
 
     @Override
+    public boolean express() {
+        return handler_.express();
+    }
+
+    @Override
     public void handle(ActionContext context) {
         handler_.handle(context);
     }
