@@ -724,11 +724,13 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
                     ControllerClassMetaInfo subClassInfo = classLoader.controllerClassMetaInfo(className);
                     if (null != subClassInfo) {
                         String subClassContextPath = subClassInfo.contextPath();
-                        if (!contexts.contains(subClassContextPath)) {
-                            registerOnContext(subClassContextPath, S.builder(subClassInfo.className()).append(".").append(methodName).toString());
-                            contexts.add(subClassContextPath);
-                        } else {
-                            throw E.invalidConfiguration("the context path of Sub controller %s has already been registered: %s", className, subClassContextPath);
+                        if (null != subClassContextPath) {
+                            if (!contexts.contains(subClassContextPath)) {
+                                registerOnContext(subClassContextPath, S.builder(subClassInfo.className()).append(".").append(methodName).toString());
+                                contexts.add(subClassContextPath);
+                            } else {
+                                throw E.invalidConfiguration("the context path of Sub controller %s has already been registered: %s", className, subClassContextPath);
+                            }
                         }
                     }
                 }

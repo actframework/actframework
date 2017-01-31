@@ -47,15 +47,7 @@ public class ActErrorPageRender extends ErrorPageRenderer {
             }
             H.Format accept = context.accept();
             if (H.Format.JSON == accept) {
-                Object payload = error.attachment();
-                if (null != payload) {
-                    return JSON.toJSONString(payload);
-                }
-                if (null == errorCode) {
-                    return new StringBuilder("{\"message\":\"").append(errorMsg).append("\"}").toString();
-                } else {
-                    return new StringBuilder("{\"code\":").append(errorCode).append(",\"message\":\"").append(errorMsg).append("\"}").toString();
-                }
+                return jsonContent(error, errorCode, errorMsg);
             } else if (H.Format.HTML == accept) {
                 String header = "HTTP/1.1 " + statusCode + " " + errorMsg;
                 String content = "<!DOCTYPE html><html><head><title>"
@@ -79,12 +71,25 @@ public class ActErrorPageRender extends ErrorPageRenderer {
                 }
             } else if (H.Format.TXT == accept) {
                 return null == errorCode ? errorMsg : errorCode + " " + errorMsg;
+            } else {
+                Act.logger.warn("Unsupported HTTP accept format[%s], will output error[%s] message using JSON format", accept, error);
+                return jsonContent(error, errorCode, errorMsg);
             }
-            Act.logger.warn("Unsupported HTTP accept format[%s], cannot output error response: %s", accept, error);
-            return null;
         }
         context.renderArg(ARG_ERROR, error);
         return t.render(context);
+    }
+
+    private String jsonContent(ErrorResult error, Integer errorCode, String errorMsg) {
+        Object payload = error.attachment();
+        if (null != payload) {
+            return JSON.toJSONString(payload);
+        }
+        if (null == errorCode) {
+            return new StringBuilder("{\"message\":\"").append(errorMsg).append("\"}").toString();
+        } else {
+            return new StringBuilder("{\"code\":").append(errorCode).append(",\"message\":\"").append(errorMsg).append("\"}").toString();
+        }
     }
 
     private String templatePath(int code, ActionContext context) {
