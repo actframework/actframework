@@ -470,6 +470,7 @@ public class App extends DestroyableBase {
         // are cleared
         emit(DEPENDENCY_INJECTOR_PROVISIONED);
         emit(SINGLETON_PROVISIONED);
+        config().preloadConfigurations();
         emit(PRE_START);
         emit(START);
         daemonKeeper();

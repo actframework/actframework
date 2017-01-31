@@ -88,7 +88,10 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         E.NPE(app);
         this.app = app;
         AppConfigKey.onApp(app);
-        // preload some common used configurations
+        return this;
+    }
+
+    public void preloadConfigurations() {
         sessionCookieName();
         sessionCookiePrefix();
         encryptSession();
@@ -96,7 +99,6 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         sessionKeyUsername();
         sessionSecure();
         sessionTtl();
-        return this;
     }
 
     public App app() {
