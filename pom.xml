@@ -18,6 +18,10 @@
 ********************************************
 *            version history
 ********************************************
+0.5.0
+- 0.4.0 reserved for TechEmpower benchmark set
+- update dependency versions
+
 0.4.0
 - Performance tuning: enable direct io thread processing handler
 
@@ -52,7 +56,7 @@
   <groupId>org.actframework</groupId>
   <artifactId>act</artifactId>
   <packaging>jar</packaging>
-  <version>0.4.0-SNAPSHOT</version>
+  <version>0.5.0-SNAPSHOT</version>
 
   <name>ACT Framework</name>
   <description>The ACT full stack MVC framework</description>
@@ -287,7 +291,7 @@
     <dependency>
       <groupId>org.eclipse.jdt.core.compiler</groupId>
       <artifactId>ecj</artifactId>
-      <version>4.5.1</version>
+      <version>4.6.1</version>
     </dependency>
 
     <dependency>
@@ -311,7 +315,7 @@
     <dependency>
       <groupId>joda-time</groupId>
       <artifactId>joda-time</artifactId>
-      <version>2.9.4</version>
+      <version>2.9.7</version>
     </dependency>
 
     <dependency>
