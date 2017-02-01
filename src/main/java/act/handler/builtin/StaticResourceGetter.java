@@ -28,6 +28,7 @@ public class StaticResourceGetter extends FastRequestHandler {
 
     private String base;
     private URL baseUrl;
+    private boolean isFolder;
 
     private Set<URL> folders = new HashSet<>();
 
@@ -38,6 +39,7 @@ public class StaticResourceGetter extends FastRequestHandler {
         }
         this.base = path;
         this.baseUrl = StaticFileGetter.class.getResource(path);
+        this.isFolder = isFolder(this.baseUrl);
         E.illegalArgumentIf(null == this.baseUrl, "Cannot find base URL: %s", base);
     }
 
@@ -96,20 +98,25 @@ public class StaticResourceGetter extends FastRequestHandler {
             AlwaysForbidden.INSTANCE.handle(context);
             return true;
         }
+        if (isFolder(target)) {
+            folders.add(target);
+            AlwaysForbidden.INSTANCE.handle(context);
+            return true;
+        }
+        return false;
+    }
+
+    private boolean isFolder(URL target) {
         if ("file".equals(target.getProtocol())) {
             File file = new File(target.getFile());
-            if (file.isDirectory()) {
-                folders.add(target);
-                AlwaysForbidden.INSTANCE.handle(context);
-                return true;
-            }
+            return file.isDirectory();
         }
         return false;
     }
 
     @Override
     public boolean supportPartialPath() {
-    return true;
+        return isFolder;
     }
 
     @Override

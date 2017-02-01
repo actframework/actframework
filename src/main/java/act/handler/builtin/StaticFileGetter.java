@@ -83,7 +83,7 @@ public class StaticFileGetter extends FastRequestHandler {
 
     @Override
     public boolean supportPartialPath() {
-    return base.isDirectory();
+        return base.isDirectory();
     }
 
     @Override
