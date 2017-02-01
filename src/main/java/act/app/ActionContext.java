@@ -707,8 +707,8 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
         if (null != requestParamCache) {
             return requestParamCache;
         }
-        requestParamCache = new HashSet<Map.Entry<String, String[]>>();
-        Map<String, String[]> map = C.newMap();
+        requestParamCache = new HashSet<>();
+        Map<String, String[]> map = new HashMap<>();
         // url queries
         Iterator<String> paramNames = request.paramNames().iterator();
         while (paramNames.hasNext()) {

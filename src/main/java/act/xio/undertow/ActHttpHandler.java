@@ -1,12 +1,8 @@
 package act.xio.undertow;
 
-import act.Act;
 import act.app.ActionContext;
 import act.app.App;
 import act.conf.AppConfig;
-import act.metric.Metric;
-import act.metric.MetricInfo;
-import act.metric.Timer;
 import act.xio.NetworkDispatcher;
 import act.xio.NetworkHandler;
 import act.xio.NetworkJob;

@@ -15,6 +15,9 @@ import act.db.DbManager;
 import act.event.ActEvent;
 import act.event.ActEventListener;
 import act.event.EventBus;
+import act.handler.RequestHandler;
+import act.handler.RequestHandlerBase;
+import act.handler.SimpleRequestHandler;
 import act.handler.builtin.controller.*;
 import act.handler.builtin.controller.impl.ReflectedHandlerInvoker;
 import act.inject.DependencyInjector;
@@ -25,6 +28,8 @@ import act.plugin.AppServicePluginManager;
 import act.plugin.GenericPluginManager;
 import act.plugin.Plugin;
 import act.plugin.PluginScanner;
+import act.route.RouteSource;
+import act.route.Router;
 import act.sys.Env;
 import act.util.*;
 import act.view.ViewManager;
@@ -35,6 +40,7 @@ import org.osgl.$;
 import org.osgl.cache.CacheService;
 import org.osgl.exception.NotAppliedException;
 import org.osgl.exception.UnexpectedException;
+import org.osgl.http.H;
 import org.osgl.logging.L;
 import org.osgl.logging.Logger;
 import org.osgl.util.*;
@@ -472,6 +478,40 @@ public final class Act {
 
     public static int classCacheSize() {
         return ((FullStackAppBootstrapClassLoader)Act.class.getClassLoader()).libBCSize();
+    }
+
+    // --- Spark style API for application to hook action handler to a certain http request endpoint
+
+    public static void get(String url, SimpleRequestHandler handler) {
+        get(url, RequestHandlerBase.wrap(handler));
+    }
+
+    public static void post(String url, SimpleRequestHandler handler) {
+        post(url, RequestHandlerBase.wrap(handler));
+    }
+
+    public static void put(String url, SimpleRequestHandler handler) {
+        put(url, RequestHandlerBase.wrap(handler));
+    }
+
+    public static void delete(String url, SimpleRequestHandler handler) {
+        delete(url, RequestHandlerBase.wrap(handler));
+    }
+
+    public static void get(String url, RequestHandlerBase handler) {
+        app().router().addMapping(H.Method.GET, url, handler, RouteSource.APP_CONFIG);
+    }
+
+    public static void post(String url, RequestHandlerBase handler) {
+        app().router().addMapping(H.Method.POST, url, handler, RouteSource.APP_CONFIG);
+    }
+
+    public static void put(String url, RequestHandlerBase handler) {
+        app().router().addMapping(H.Method.PUT, url, handler, RouteSource.APP_CONFIG);
+    }
+
+    public static void delete(String url, RequestHandlerBase handler) {
+        app().router().addMapping(H.Method.DELETE, url, handler, RouteSource.APP_CONFIG);
     }
 
     private static void loadConfig() {

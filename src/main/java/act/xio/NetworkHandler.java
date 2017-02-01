@@ -121,7 +121,7 @@ public class NetworkHandler extends DestroyableBase {
                 }
             }
         };
-        if (!requestHandler.express()) {
+        if (method.unsafe() || !requestHandler.express()) {
             dispatcher.dispatch(job);
         } else {
             job.run();

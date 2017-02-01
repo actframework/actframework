@@ -19,7 +19,7 @@ public interface RequestHandler extends $.Function<ActionContext, Void>, Destroy
     /**
      * Invoke handler upon an action context
      *
-     * @param context
+     * @param context the context data
      */
     void handle(ActionContext context);
 
