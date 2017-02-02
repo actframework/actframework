@@ -60,9 +60,7 @@ public class StaticFileGetter extends FastRequestHandler {
         }
         H.Response resp = context.resp();
         fmt = contentType(file.getPath());
-        if (null != fmt && H.Format.UNKNOWN != fmt) {
-            resp.contentType(fmt.contentType());
-        }
+        resp.contentType(fmt.contentType());
         InputStream is = new BufferedInputStream(IO.is(file));
         IO.copy(is, context.resp().outputStream());
     }
@@ -78,7 +76,7 @@ public class StaticFileGetter extends FastRequestHandler {
             FastStr s = FastStr.unsafeOf(path).afterLast('.');
             retVal = H.Format.of(s.toString());
         }
-        return null == retVal ? H.Format.UNKNOWN : retVal;
+        return null == retVal ? H.Format.BINARY : retVal;
     }
 
     @Override

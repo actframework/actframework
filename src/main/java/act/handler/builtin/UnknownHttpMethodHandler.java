@@ -37,7 +37,7 @@ public class UnknownHttpMethodHandler extends FastRequestHandler implements Seri
     }
 
     @Override
-    public boolean express() {
+    public boolean express(ActionContext context) {
         return configured(null) instanceof ExpressHandler;
     }
 

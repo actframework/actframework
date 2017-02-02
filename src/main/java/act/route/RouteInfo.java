@@ -77,7 +77,7 @@ public class RouteInfo extends $.T3<String, String, String> implements Comparabl
         }
 
         @Override
-        public boolean express() {
+        public boolean express(ActionContext context) {
             return true;
         }
 

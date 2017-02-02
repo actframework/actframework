@@ -210,7 +210,7 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
     }
 
     @Override
-    public boolean express() {
+    public boolean express(ActionContext context) {
         return express;
     }
 

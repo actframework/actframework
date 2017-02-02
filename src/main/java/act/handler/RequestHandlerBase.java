@@ -34,7 +34,7 @@ public abstract class RequestHandlerBase extends $.F1<ActionContext, Void> imple
     }
 
     @Override
-    public boolean express() {
+    public boolean express(ActionContext context) {
         return express;
     }
 

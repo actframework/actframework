@@ -547,6 +547,15 @@ public enum AppConfigKey implements ConfigKey {
     RESOLVER_TEMPLATE_PATH("resolver.template_path.impl"),
 
     /**
+     * `resource.preload.size.limit`
+     *
+     * Specifies the maximum number of bytes of a resource that can be preload into memory
+     *
+     * Default value: `1024 * 1024 * 5`, i.e. 5MB
+     */
+    RESOURCE_PRELOAD_SIZE_LIMIT("resource.preload.size.limit"),
+
+    /**
      * {@code scan_package}
      * Specify the app package in which all classes is subject
      * to bytecode processing, e.g enhancement and injection.

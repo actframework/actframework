@@ -17,7 +17,7 @@ public abstract class FastRequestHandler extends RequestHandlerBase {
         }
 
         @Override
-        public boolean express() {
+        public boolean express(ActionContext context) {
             return true;
         }
     };

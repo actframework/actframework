@@ -2174,6 +2174,28 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         }
     }
 
+    private Integer resourcePreloadSizeLimit;
+    protected T resourcePreloadSizeLimit(int limit) {
+        resourcePreloadSizeLimit = limit;
+        return me();
+    }
+    public int resourcePreloadSizeLimit() {
+        if (null == resourcePreloadSizeLimit) {
+            resourcePreloadSizeLimit = get(RESOURCE_PRELOAD_SIZE_LIMIT);
+            if (null == resourcePreloadSizeLimit) {
+                resourcePreloadSizeLimit = 1024 * 1024 * 5;
+            } else if (resourcePreloadSizeLimit <= 0) {
+                logger.warn("resource.preload.size.limit is set to zero or below, it will preload any resource!");
+            }
+        }
+        return resourcePreloadSizeLimit;
+    }
+    private void _mergeResourcePreloadSizeLimit(AppConfig conf) {
+        if (!hasConfiguration(RESOURCE_PRELOAD_SIZE_LIMIT)) {
+            this.resourcePreloadSizeLimit = conf.resourcePreloadSizeLimit;
+        }
+    }
+
 
     private Set<AppConfigurator> mergeTracker = C.newSet();
 
@@ -2277,6 +2299,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         _mergeSequenceProvider(conf);
         _mergeLongEncoder(conf);
         _mergeLocale(conf);
+        _mergeResourcePreloadSizeLimit(conf);
         _mergeSourceVersion(conf);
         _mergeTargetVersion(conf);
         _mergeTemplatePathResolver(conf);

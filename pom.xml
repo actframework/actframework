@@ -320,26 +320,20 @@
 
     <dependency>
       <groupId>org.osgl</groupId>
-      <artifactId>osgl-tool</artifactId>
-      <version>0.9.3-SNAPSHOT</version>
-    </dependency>
-
-    <dependency>
-      <groupId>org.osgl</groupId>
       <artifactId>genie</artifactId>
-      <version>0.2.0-SNAPSHOT</version>
+      <version>[0.3.0-SNAPSHOT,)</version>
     </dependency>
 
     <dependency>
       <groupId>org.osgl</groupId>
       <artifactId>osgl-mvc</artifactId>
-      <version>0.7.0-SNAPSHOT</version>
+      <version>[0.8.0-SNAPSHOT,)</version>
     </dependency>
 
     <dependency>
       <groupId>org.osgl</groupId>
       <artifactId>osgl-tool-ext</artifactId>
-      <version>0.0.2-SNAPSHOT</version>
+      <version>[0.1.0-SNAPSHOT,)</version>
     </dependency>
 
     <dependency>

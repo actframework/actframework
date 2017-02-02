@@ -6,7 +6,6 @@ import act.app.AppServiceBase;
 import act.app.event.AppEvent;
 import act.app.event.AppEventId;
 import act.app.event.AppEventListener;
-import act.handler.event.AfterResultCommit;
 import act.inject.DependencyInjectionBinder;
 import act.inject.DependencyInjector;
 import act.job.AppJobManager;

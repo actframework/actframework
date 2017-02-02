@@ -30,9 +30,10 @@ public interface RequestHandler extends $.Function<ActionContext, Void>, Destroy
      * Note a handler that implements {@link ExpressHandler} should
      * always return `true` for this method
      *
+     * @param context the action context
      * @return `true` if this handler support direct io thread processing
      */
-    boolean express();
+    boolean express(ActionContext context);
 
     /**
      * Indicate if this request handler support partial path lookup.
