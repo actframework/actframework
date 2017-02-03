@@ -46,6 +46,7 @@ import org.osgl.cache.CacheService;
 import org.osgl.cache.CacheServiceProvider;
 import org.osgl.http.H;
 import org.osgl.http.HttpConfig;
+import org.osgl.logging.LogManager;
 import org.osgl.logging.Logger;
 import org.osgl.mvc.MvcConfig;
 import org.osgl.storage.IStorageService;
@@ -730,6 +731,7 @@ public class App extends DestroyableBase {
         logger.debug("loading app configuration: %s ...", appBase.getAbsolutePath());
         config = new AppConfLoader().load(conf);
         config.app(this);
+        configureLoggingLevels();
         registerSingleton(AppConfig.class, config);
         registerValueObjectCodec();
         if (config.i18nEnabled()) {
@@ -1052,6 +1054,33 @@ public class App extends DestroyableBase {
         RythmView rythmView = (RythmView) Act.viewManager().view(RythmView.ID);
         rythmView.registerBuiltInTransformer(this, JodaTransformers.class);
         rythmView.registerFormatter(this, new JodaDateTimeFormatter());
+    }
+
+    private void configureLoggingLevels() {
+        Map map = config().subSet("log.level");
+        map.putAll(config().subSet("act.log.level"));
+        for (Object o : map.entrySet()) {
+            Map.Entry<String, String> entry = $.cast(o);
+            String key = entry.getKey();
+            if (key.startsWith("log.level")) {
+                key = key.substring("log.level.".length());
+            } else {
+                key = key.substring("act.log.level.".length());
+            }
+            Logger.Level level = loggerLevelOf(entry.getValue());
+            E.invalidConfigurationIf(null == level, "Unknown log level: %s", entry.getValue());
+            Logger logger = LogManager.get(key);
+            logger.setLevel(level);
+        }
+    }
+
+    private Logger.Level loggerLevelOf(String s) {
+        Map<String, Logger.Level> map = new HashMap<>();
+        for (Logger.Level level : Logger.Level.values()) {
+            map.put(level.name().toUpperCase(), level);
+        }
+        map.put("WARNING", Logger.Level.WARN);
+        return map.get(s.toUpperCase());
     }
 
     private void scanAppCodes() {
