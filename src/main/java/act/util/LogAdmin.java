@@ -28,7 +28,7 @@ public class LogAdmin {
 
     @Command(
             name = "act.log.level.update",
-            help = "Update logger level. Valid levels are:\n" +
+            help = "Update logger level. Valid levels are:\n\t" +
                     "5 - fatal\n\t" +
                     "4 - error\n\t" +
                     "3 - warn\n\t" +
