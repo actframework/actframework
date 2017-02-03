@@ -7,6 +7,7 @@ import act.app.util.NamedPort;
 import act.boot.BootstrapClassLoader;
 import act.boot.PluginClassProvider;
 import act.boot.app.FullStackAppBootstrapClassLoader;
+import act.boot.app.RunApp;
 import act.conf.*;
 import act.controller.meta.ActionMethodMetaInfo;
 import act.controller.meta.CatchMethodMetaInfo;
@@ -512,6 +513,23 @@ public final class Act {
 
     public static void delete(String url, RequestHandlerBase handler) {
         app().router().addMapping(H.Method.DELETE, url, handler, RouteSource.APP_CONFIG);
+    }
+
+    // New start entries
+    public static void start(String scanPackage) throws Exception {
+        RunApp.start(scanPackage);
+    }
+
+    public static void start(Class<?> anyController) throws Exception {
+        RunApp.start(anyController);
+    }
+
+    public static void start(String appName, String appVersion, Class<?> anyController) throws Exception {
+        RunApp.start(appName, appVersion, anyController);
+    }
+
+    public static void start(String appName, String appVersion, String packageName) throws Exception {
+        RunApp.start(appName, appVersion, packageName);
     }
 
     private static void loadConfig() {
