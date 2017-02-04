@@ -31,6 +31,7 @@ public class StaticResourceGetter extends FastRequestHandler {
 
     private String base;
     private URL baseUrl;
+    private int preloadSizeLimit;
     private boolean isFolder;
     private ByteBuffer buffer;
     private H.Format contentType;
@@ -61,6 +62,7 @@ public class StaticResourceGetter extends FastRequestHandler {
                 }
             });
         }
+        this.preloadSizeLimit = Act.appConfig().resourcePreloadSizeLimit();
     }
 
     @Override
@@ -227,11 +229,12 @@ public class StaticResourceGetter extends FastRequestHandler {
     }
 
     private boolean resourceSizeIsOkay() {
-        int limit = Act.appConfig().resourcePreloadSizeLimit();
-        if (limit <= 0) return true;
+        if (preloadSizeLimit <= 0) {
+            return false;
+        }
         if ("file".equals(baseUrl.getProtocol())) {
             File file = new File(baseUrl.getFile());
-            return file.length() < limit;
+            return file.length() < preloadSizeLimit;
         }
         return false;
     }

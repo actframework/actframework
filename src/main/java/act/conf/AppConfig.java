@@ -2183,9 +2183,9 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         if (null == resourcePreloadSizeLimit) {
             resourcePreloadSizeLimit = get(RESOURCE_PRELOAD_SIZE_LIMIT);
             if (null == resourcePreloadSizeLimit) {
-                resourcePreloadSizeLimit = 1024 * 1024 * 5;
+                resourcePreloadSizeLimit = 1024 * 10;
             } else if (resourcePreloadSizeLimit <= 0) {
-                logger.warn("resource.preload.size.limit is set to zero or below, it will preload any resource!");
+                logger.warn("resource.preload.size.limit is set to zero or below, resource preload is disabled!");
             }
         }
         return resourcePreloadSizeLimit;

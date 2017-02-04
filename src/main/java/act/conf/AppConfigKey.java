@@ -549,9 +549,10 @@ public enum AppConfigKey implements ConfigKey {
     /**
      * `resource.preload.size.limit`
      *
-     * Specifies the maximum number of bytes of a resource that can be preload into memory
+     * Specifies the maximum number of bytes of a resource that can be preload into memory.
+     * Specifies `0` or negative number to disable resource preload feature
      *
-     * Default value: `1024 * 1024 * 5`, i.e. 5MB
+     * Default value: `1024 * 10`, i.e. 10KB
      */
     RESOURCE_PRELOAD_SIZE_LIMIT("resource.preload.size.limit"),
 
