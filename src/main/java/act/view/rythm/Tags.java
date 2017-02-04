@@ -6,7 +6,6 @@ import act.i18n.I18n;
 import act.route.Router;
 import org.osgl.util.E;
 import org.rythmengine.RythmEngine;
-import org.rythmengine.template.ITag;
 import org.rythmengine.template.JavaTagBase;
 import org.rythmengine.utils.S;
 

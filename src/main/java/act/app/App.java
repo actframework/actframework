@@ -43,7 +43,6 @@ import act.view.rythm.RythmView;
 import org.osgl.$;
 import org.osgl.Osgl;
 import org.osgl.cache.CacheService;
-import org.osgl.cache.CacheServiceProvider;
 import org.osgl.http.H;
 import org.osgl.http.HttpConfig;
 import org.osgl.logging.LogManager;

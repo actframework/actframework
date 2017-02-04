@@ -4,7 +4,6 @@ import act.app.ActionContext;
 import act.conf.AppConfig;
 import act.controller.Controller;
 import org.joda.time.DateTime;
-import org.osgl.$;
 import org.osgl.http.H;
 import org.osgl.mvc.annotation.PostAction;
 import org.osgl.util.S;

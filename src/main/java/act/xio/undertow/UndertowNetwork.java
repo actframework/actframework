@@ -1,7 +1,5 @@
 package act.xio.undertow;
 
-import act.app.App;
-import act.conf.AppConfig;
 import act.xio.Network;
 import act.xio.NetworkBase;
 import act.xio.NetworkHandler;

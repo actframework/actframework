@@ -7,7 +7,6 @@ import act.route.Router;
 import act.security.CORS;
 import act.util.DestroyableBase;
 import org.osgl.http.H;
-import org.osgl.mvc.result.NotFound;
 import org.osgl.util.C;
 import org.osgl.util.S;
 

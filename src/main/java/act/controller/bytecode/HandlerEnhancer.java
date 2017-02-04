@@ -8,7 +8,6 @@ import act.controller.meta.HandlerMethodMetaInfo;
 import act.controller.meta.HandlerParamMetaInfo;
 import act.controller.meta.LocalVariableMetaInfo;
 import act.util.AsmTypes;
-import act.view.ZXingResult;
 import org.osgl.logging.LogManager;
 import org.osgl.logging.Logger;
 import org.osgl.mvc.result.Result;

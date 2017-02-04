@@ -17,8 +17,6 @@ import org.osgl.http.H;
 import org.osgl.http.util.Path;
 import org.osgl.logging.L;
 import org.osgl.logging.Logger;
-import org.osgl.mvc.result.NotFound;
-import org.osgl.mvc.result.Result;
 import org.osgl.util.*;
 
 import javax.enterprise.context.ApplicationScoped;

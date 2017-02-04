@@ -4,7 +4,6 @@ import act.Act;
 import act.app.ActionContext;
 import act.conf.AppConfig;
 import act.handler.ExpressHandler;
-import act.handler.RequestHandler;
 import act.handler.UnknownHttpMethodProcessor;
 import act.handler.builtin.controller.FastRequestHandler;
 import act.handler.builtin.controller.RequestHandlerProxy;

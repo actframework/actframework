@@ -13,7 +13,6 @@ import org.osgl.util.E;
 import org.osgl.util.IO;
 
 import java.io.OutputStream;
-import java.io.Writer;
 import java.nio.ByteBuffer;
 import java.util.Locale;
 

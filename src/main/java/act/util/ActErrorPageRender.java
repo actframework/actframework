@@ -2,7 +2,6 @@ package act.util;
 
 import act.Act;
 import act.app.ActionContext;
-import act.i18n.I18n;
 import act.view.Template;
 import act.view.ViewManager;
 import com.alibaba.fastjson.JSON;
@@ -11,7 +10,6 @@ import org.osgl.http.H;
 import org.osgl.mvc.ErrorPageRenderer;
 import org.osgl.mvc.MvcConfig;
 import org.osgl.mvc.result.ErrorResult;
-import org.osgl.util.C;
 
 import java.util.HashMap;
 import java.util.Map;
