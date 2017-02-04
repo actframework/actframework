@@ -70,7 +70,7 @@ public class ActErrorPageRender extends ErrorPageRenderer {
             } else if (H.Format.TXT == accept) {
                 return null == errorCode ? errorMsg : errorCode + " " + errorMsg;
             } else {
-                Act.logger.warn("Unsupported HTTP accept format[%s], will output error[%s] message using JSON format", accept, error);
+                Act.LOGGER.warn("Unsupported HTTP accept format[%s], will output error[%s] message using JSON format", accept, error);
                 return jsonContent(error, errorCode, errorMsg);
             }
         }

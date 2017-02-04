@@ -246,7 +246,7 @@ public class AppClassLoader
             List<AppByteCodeScanner> scanners = C.newList();
             for (AppByteCodeScanner scanner : scannerManager.byteCodeScanners()) {
                 if (scanner.start(className)) {
-                    //logger.trace("scanner %s added to the list", scanner.getClass().getName());
+                    //LOGGER.trace("scanner %s added to the list", scanner.getClass().getName());
                     visitors.add(scanner.byteCodeVisitor());
                     scanners.add(scanner);
                 }
@@ -270,7 +270,7 @@ public class AppClassLoader
                 scanner.scanFinished(className);
                 Map<Class<? extends AppByteCodeScanner>, Set<String>> ss = scanner.dependencyClasses();
                 if (ss.isEmpty()) {
-                    //logger.trace("no dependencies found for %s by scanner %s", className, scanner);
+                    //LOGGER.trace("no dependencies found for %s by scanner %s", className, scanner);
                     continue;
                 }
                 for (Class<? extends AppByteCodeScanner> scannerClass : ss.keySet()) {

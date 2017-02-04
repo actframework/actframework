@@ -129,7 +129,12 @@ public final class Act {
     }
 
     public static final String VERSION = Version.fullVersion();
-    public static Logger logger = L.get(Act.class);
+    public static final Logger LOGGER = L.get(Act.class);
+    /**
+     * This field is deprecated. please use {@link #LOGGER} instead
+     */
+    @Deprecated
+    public static final Logger logger = LOGGER;
     private static ActConfig conf;
     private static Mode mode = Mode.PROD;
     private static String nodeGroup = "";
@@ -152,7 +157,7 @@ public final class Act {
         if (cl instanceof PluginClassProvider) {
             return ((PluginClassProvider) cl).pluginClasses();
         } else {
-            logger.warn("Class loader [%s] of Act is not a PluginClassProvider", cl);
+            LOGGER.warn("Class loader [%s] of Act is not a PluginClassProvider", cl);
             return C.list();
         }
     }
@@ -162,7 +167,7 @@ public final class Act {
         if (cl instanceof BootstrapClassLoader) {
             return ((BootstrapClassLoader) cl).classInfoRepository();
         } else {
-            logger.warn("Class loader [%s] of Act is not a ActClassLoader", cl);
+            LOGGER.warn("Class loader [%s] of Act is not a ActClassLoader", cl);
             return null;
         }
     }
@@ -286,7 +291,7 @@ public final class Act {
         loadPlugins();
         initNetworkLayer();
         initApplicationManager();
-        logger.info("loading application(s) ...");
+        LOGGER.info("loading application(s) ...");
         if (singleAppServer) {
             appManager.loadSingleApp(appName);
         } else {
@@ -346,7 +351,7 @@ public final class Act {
                 try {
                     l.on(event);
                 } catch (Exception e) {
-                    logger.error(e, "error calling act event listener %s on event %s", l.id(), event);
+                    LOGGER.error(e, "error calling act event listener %s on event %s", l.id(), event);
                 }
             }
         }
@@ -531,13 +536,13 @@ public final class Act {
     }
 
     private static void loadConfig() {
-        logger.debug("loading configuration ...");
+        LOGGER.debug("loading configuration ...");
 
         String s = SysProps.get("act.mode");
         if (null != s) {
             mode = Mode.valueOfIgnoreCase(s);
         }
-        logger.debug("Act starts in %s mode", mode);
+        LOGGER.debug("Act starts in %s mode", mode);
 
         conf = new ActConfLoader().load(null);
     }
@@ -547,10 +552,10 @@ public final class Act {
     }
 
     private static void loadPlugins() {
-        logger.debug("scanning plugins ...");
+        LOGGER.debug("scanning plugins ...");
         long ts = $.ms();
         new PluginScanner().scan();
-        logger.debug("plugin scanning finished in %sms", $.ms() - ts);
+        LOGGER.debug("plugin scanning finished in %sms", $.ms() - ts);
     }
 
     private static void unloadPlugins() {
@@ -558,7 +563,7 @@ public final class Act {
     }
 
     private static void initViewManager() {
-        logger.debug("initializing view manager ...");
+        LOGGER.debug("initializing view manager ...");
         viewManager = new ViewManager();
     }
 
@@ -570,7 +575,7 @@ public final class Act {
     }
 
     private static void initMetricPlugin() {
-        logger.debug("initializing metric plugin ...");
+        LOGGER.debug("initializing metric plugin ...");
         metricPlugin = new SimpleMetricPlugin();
     }
 
@@ -582,7 +587,7 @@ public final class Act {
     }
 
     private static void initPluginManager() {
-        logger.debug("initializing generic plugin manager ...");
+        LOGGER.debug("initializing generic plugin manager ...");
         pluginManager = new GenericPluginManager();
     }
 
@@ -594,7 +599,7 @@ public final class Act {
     }
 
     private static void initAppServicePluginManager() {
-        logger.debug("initializing app service plugin manager ...");
+        LOGGER.debug("initializing app service plugin manager ...");
         appPluginManager = new AppServicePluginManager();
     }
 
@@ -606,7 +611,7 @@ public final class Act {
     }
 
     private static void initSessionManager() {
-        logger.debug("initializing session manager ...");
+        LOGGER.debug("initializing session manager ...");
         sessionManager = new SessionManager();
     }
 
@@ -618,7 +623,7 @@ public final class Act {
     }
 
     private static void initDbManager() {
-        logger.debug("initializing db manager ...");
+        LOGGER.debug("initializing db manager ...");
         dbManager = new DbManager();
     }
 
@@ -630,7 +635,7 @@ public final class Act {
     }
 
     private static void initAppCodeScannerPluginManager() {
-        logger.debug("initializing app code scanner plugin manager ...");
+        LOGGER.debug("initializing app code scanner plugin manager ...");
         scannerPluginManager = new AppCodeScannerPluginManager();
     }
 
@@ -642,7 +647,7 @@ public final class Act {
     }
 
     static void initEnhancerManager() {
-        logger.debug("initializing byte code enhancer manager ...");
+        LOGGER.debug("initializing byte code enhancer manager ...");
         enhancerManager = new BytecodeEnhancerManager();
     }
 
@@ -654,7 +659,7 @@ public final class Act {
     }
 
     private static void initNetworkLayer() {
-        logger.debug("initializing network layer ...");
+        LOGGER.debug("initializing network layer ...");
         network = new UndertowNetwork();
     }
 
@@ -669,17 +674,17 @@ public final class Act {
         if (network.isDestroyed()) {
             return;
         }
-        logger.debug("starting network layer ...");
+        LOGGER.debug("starting network layer ...");
         network.start();
     }
 
     private static void shutdownNetworkLayer() {
-        logger.debug("shutting down network layer ...");
+        LOGGER.debug("shutting down network layer ...");
         network.shutdown();
     }
 
     protected static void initApplicationManager() {
-        logger.debug("initializing application manager ...");
+        LOGGER.debug("initializing application manager ...");
         appManager = AppManager.create();
     }
 
@@ -701,10 +706,10 @@ public final class Act {
                 String pid = Env.PID.get();
                 IO.writeContent(pid, new File(pidFile));
             } catch (Exception e) {
-                logger.warn(e, "Error writing pid file: %s", e.getMessage());
+                LOGGER.warn(e, "Error writing pid file: %s", e.getMessage());
             }
         } else {
-            logger.warn("Write pid file not supported on non-linux system");
+            LOGGER.warn("Write pid file not supported on non-linux system");
         }
     }
 
@@ -719,7 +724,7 @@ public final class Act {
                 file.deleteOnExit();
             }
         } catch (Exception e) {
-            logger.warn(e, "Error delete pid file: %s", pidFile);
+            LOGGER.warn(e, "Error delete pid file: %s", pidFile);
         }
     }
 

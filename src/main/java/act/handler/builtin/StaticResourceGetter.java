@@ -221,7 +221,7 @@ public class StaticResourceGetter extends FastRequestHandler {
             etagBag.set(String.valueOf(Arrays.hashCode(ba)));
             return buffer;
         } catch (IOException e) {
-            Act.logger.warn(e, "Error loading resource: %s", baseUrl.getPath());
+            Act.LOGGER.warn(e, "Error loading resource: %s", baseUrl.getPath());
         }
         return null;
     }

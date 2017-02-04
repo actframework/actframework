@@ -44,7 +44,7 @@ public abstract class NetworkBase extends DestroyableBase implements Network {
             if (!trySetUpClient(client, port)) {
                 failed.put(port, client);
             } else {
-                Act.logger.info("network client hooked on port: %s", port);
+                Act.LOGGER.info("network client hooked on port: %s", port);
             }
         }
         started = true;

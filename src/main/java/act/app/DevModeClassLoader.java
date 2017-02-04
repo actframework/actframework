@@ -148,7 +148,7 @@ public class DevModeClassLoader extends AppClassLoader {
 
             Set<String> classesNeedByteCodeScan = C.newSet();
             if (scanners.isEmpty()) {
-                //logger.warn("No source code scanner found");
+                //LOGGER.warn("No source code scanner found");
                 for (String className : sources.keySet()) {
                     classesNeedByteCodeScan.add(className);
                 }
@@ -159,7 +159,7 @@ public class DevModeClassLoader extends AppClassLoader {
                     List<AppSourceCodeScanner> l = C.newList();
                     for (AppSourceCodeScanner scanner : scanners) {
                         if (scanner.start(className)) {
-                            //logger.trace("scanner %s added to the list", scanner.getClass().getName());
+                            //LOGGER.trace("scanner %s added to the list", scanner.getClass().getName());
                             l.add(scanner);
                         }
                     }

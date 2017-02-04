@@ -1,9 +1,9 @@
 package act.boot.app;
 
+import act.Act;
 import act.conf.AppConfigKey;
 import act.util.SysProps;
 import org.osgl.$;
-import org.osgl.logging.L;
 import org.osgl.logging.Logger;
 import org.osgl.util.E;
 import org.osgl.util.S;
@@ -16,7 +16,7 @@ import java.lang.reflect.Method;
  */
 public class RunApp {
 
-    private static final Logger logger = L.get(RunApp.class);
+    private static final Logger LOGGER = Act.LOGGER;
 
     /**
      * Start the application.
@@ -50,7 +50,7 @@ public class RunApp {
         } else {
             profile = "using profile[" + profile + "]";
         }
-        logger.debug("run fullstack application with package[%s] %s", packageName, profile);
+        LOGGER.debug("run fullstack application with package[%s] %s", packageName, profile);
         //System.setProperty(AppConfigKey.CONTROLLER_PACKAGE.key(), packageName);
         final String SCAN_PACKAGE = AppConfigKey.SCAN_PACKAGE.key();
         if (S.notBlank(packageName)) {
@@ -70,7 +70,7 @@ public class RunApp {
                 throw E.unexpected(t, "Unknown error captured starting the application");
             }
         }
-        logger.info("it takes %sms to start the app\n", $.ms() - ts);
+        LOGGER.info("it takes %sms to start the app\n", $.ms() - ts);
     }
 
     public static void main(String[] args) throws Exception {

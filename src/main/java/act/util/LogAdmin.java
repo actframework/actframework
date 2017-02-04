@@ -10,7 +10,7 @@ import org.osgl.util.S;
 public class LogAdmin {
 
     @Command(name = "act.log.level.show", help = "Show log level")
-    public String showLogLevel(@Required("specify logger name") String name) {
+    public String showLogLevel(@Required("specify LOGGER name") String name) {
         Logger logger = LogManager.get(name);
         if (logger.isTraceEnabled()) {
             return "trace";
@@ -28,7 +28,7 @@ public class LogAdmin {
 
     @Command(
             name = "act.log.level.update",
-            help = "Update logger level. Valid levels are:\n\t" +
+            help = "Update LOGGER level. Valid levels are:\n\t" +
                     "5 - fatal\n\t" +
                     "4 - error\n\t" +
                     "3 - warn\n\t" +
@@ -37,13 +37,13 @@ public class LogAdmin {
                     "0 - trace"
     )
     public String setLogLevel(
-            @Required("specify logger name") String name,
+            @Required("specify LOGGER name") String name,
             @Required("specify log level")  int level
     ) {
         Level lvl = convert(level);
         Logger logger = LogManager.get(name);
         logger.setLevel(lvl);
-        return S.fmt("logger[%s] level set to %s", name, lvl.toString());
+        return S.fmt("LOGGER[%s] level set to %s", name, lvl.toString());
     }
 
     private Level convert(int level) {

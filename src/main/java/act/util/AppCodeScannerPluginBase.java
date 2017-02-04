@@ -11,11 +11,11 @@ public abstract class AppCodeScannerPluginBase extends DestroyableBase implement
     @Override
     public void register() {
         if (!load()) {
-            Act.logger.warn("Scanner plugin cannot be loaded: " + getClass().getName());
+            Act.LOGGER.warn("Scanner plugin cannot be loaded: " + getClass().getName());
             return;
         }
         Act.scannerPluginManager().register(this);
-        Act.logger.debug("Plugin registered: %s", getClass().getName());
+        Act.LOGGER.debug("Plugin registered: %s", getClass().getName());
     }
 
     public abstract AppSourceCodeScanner createAppSourceCodeScanner(App app);

@@ -861,6 +861,12 @@ public class Router extends AppServiceBase<Router> {
                 return new Redirect(payload.toString());
             }
         },
+        redirectdir() {
+            @Override
+            public RequestHandler resolve(CharSequence payload, App app) {
+                return new RedirectDir(payload.toString());
+            }
+        },
         file() {
             @Override
             public RequestHandler resolve(CharSequence base, App app) {

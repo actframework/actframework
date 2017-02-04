@@ -63,7 +63,7 @@ import static act.app.event.AppEventId.*;
  */
 public class App extends DestroyableBase {
 
-    public static Logger logger = Act.logger;
+    public static Logger logger = Act.LOGGER;
 
     private static App INST;
 
