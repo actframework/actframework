@@ -127,8 +127,9 @@ public interface Dao<ID_TYPE, MODEL_TYPE, QUERY_TYPE extends Dao.Query<MODEL_TYP
      * Save new or update existing the entity in persistent layer with all properties
      * of the entity
      * @param entity the entity to be saved or updated
+     * @return the entity that has been saved
      */
-    void save(MODEL_TYPE entity);
+    MODEL_TYPE save(MODEL_TYPE entity);
 
     /**
      * Update existing entity in persistent layer with specified fields and value. This allows
@@ -140,9 +141,8 @@ public interface Dao<ID_TYPE, MODEL_TYPE, QUERY_TYPE extends Dao.Query<MODEL_TYP
      * @param entity the entity
      * @param fields the fields specification in {@code String}
      * @param values the value array corresponding to the fields specification
-     * @throws IllegalArgumentException
      */
-    void save(MODEL_TYPE entity, String fields, Object ... values) throws IllegalArgumentException;
+    void save(MODEL_TYPE entity, String fields, Object ... values);
 
     /**
      * Batch save entities
