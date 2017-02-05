@@ -4,9 +4,11 @@ import act.Act;
 import act.app.ActionContext;
 import act.app.App;
 import act.app.AppClassLoader;
+import act.cli.JsonView;
 import act.controller.Controller;
 import act.controller.meta.*;
 import act.handler.NonBlock;
+import act.handler.Produces;
 import act.handler.builtin.controller.*;
 import act.inject.param.JsonDTO;
 import act.inject.param.JsonDTOClassManager;
@@ -67,6 +69,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
     private String jsonDTOKey;
     private boolean isStatic;
     private Object singleton;
+    private H.Format produceContentType;
 
     private ReflectedHandlerInvoker(M handlerMetaInfo, App app) {
         this.cl = app.classLoader();
@@ -108,6 +111,11 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         this.csrfSpec = csrfSpec;
         this.jsonDTOKey = app.cuid();
         this.singleton = singleton(app);
+
+        Produces produces = method.getAnnotation(Produces.class);
+        if (null != produces) {
+            produceContentType = produces.value().format();
+        }
     }
 
     @Override
@@ -138,6 +146,9 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
 
     public Result handle(ActionContext actionContext) throws Exception {
         actionContext.attribute("reflected_handler", this);
+        if (null != produceContentType) {
+            actionContext.accept(produceContentType);
+        }
         ensureJsonDTOGenerated(actionContext);
         Object ctrl = controllerInstance(actionContext);
 
