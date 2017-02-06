@@ -16,6 +16,7 @@ import act.db.DbManager;
 import act.event.ActEvent;
 import act.event.ActEventListener;
 import act.event.EventBus;
+import act.handler.RequestHandler;
 import act.handler.RequestHandlerBase;
 import act.handler.SimpleRequestHandler;
 import act.handler.builtin.controller.*;
@@ -488,6 +489,10 @@ public final class Act {
 
     public static void get(String url, SimpleRequestHandler handler) {
         get(url, RequestHandlerBase.wrap(handler));
+    }
+
+    public static void getNonblock(String url, SimpleRequestHandler handler) {
+        get(url, RequestHandlerBase.wrap(handler).setExpress());
     }
 
     public static void post(String url, SimpleRequestHandler handler) {
