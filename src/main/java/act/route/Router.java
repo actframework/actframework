@@ -149,7 +149,7 @@ public class Router extends AppServiceBase<Router> {
                         }
                         handler = node.handler;
                     } else {
-                        return notFound();
+                        return badRequest();
                     }
                 } else if (null == node.handler) {
                     return notFound();
@@ -588,6 +588,10 @@ public class Router extends AppServiceBase<Router> {
 
     private static AlwaysNotFound notFound() {
         return AlwaysNotFound.INSTANCE;
+    }
+
+    private static AlwaysBadRequest badRequest() {
+        return AlwaysBadRequest.INSTANCE;
     }
 
     public final class f {
