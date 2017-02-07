@@ -4,6 +4,7 @@ import act.TestBase;
 import act.app.App;
 import act.handler.RequestHandler;
 import act.handler.RequestHandlerResolver;
+import act.handler.builtin.AlwaysBadRequest;
 import act.handler.builtin.AlwaysNotFound;
 import act.handler.builtin.Echo;
 import act.handler.builtin.StaticFileGetter;
@@ -13,6 +14,7 @@ import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.osgl.http.H;
+import org.osgl.mvc.result.BadRequest;
 import org.osgl.mvc.result.NotFound;
 
 import java.io.File;
@@ -63,7 +65,7 @@ public class RouteTableRouterBuilderTest extends RouterTestBase {
         Mockito.verify(ctx).param("id", "123");
     }
 
-    @Test(expected = NotFound.class)
+    @Test(expected = BadRequest.class)
     public void dynamicPathNotMatchRegEx() {
         addRouteMap("GET /service/{<[0-9]{3}>id}/cost Services.cost");
         verify("Services.cost", GET, "/service/1234/cost");
@@ -93,6 +95,8 @@ public class RouteTableRouterBuilderTest extends RouterTestBase {
         RequestHandler handler = router.getInvoker(method, url, ctx);
         if (handler == AlwaysNotFound.INSTANCE) {
             throw NotFound.get();
+        } else if (handler == AlwaysBadRequest.INSTANCE) {
+            throw BadRequest.get();
         }
         handler.handle(ctx);
         controllerInvoked(expected);
