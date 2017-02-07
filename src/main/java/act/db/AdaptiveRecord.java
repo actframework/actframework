@@ -111,18 +111,18 @@ public interface AdaptiveRecord<ID_TYPE, MODEL_TYPE extends AdaptiveRecord> exte
         }
 
         private void discoverFields(Class<? extends AdaptiveRecord> clazz) {
-            List<Field> list = $.fieldsOf(arClass, $.F.NON_STATIC_FIELD.and($.F.fieldWithAnnotation(transientAnnotationType)).negate());
+            List<Field> list = $.fieldsOf(arClass, $.F.NON_STATIC_FIELD/*.and($.F.fieldWithAnnotation(transientAnnotationType)).negate()*/);
             fields = new HashSet<Field>();
             fieldTypes = new HashMap<String, Type>();
             fieldGetters = new HashMap<String, Osgl.Function>();
             fieldSetters = new HashMap<String, Osgl.Func2>();
             for (Field f : list) {
-                if (!f.isAnnotationPresent(transientAnnotationType)) {
+                //if (!f.isAnnotationPresent(transientAnnotationType)) {
                     fields.add(f);
                     fieldTypes.put(f.getName(), f.getGenericType());
                     fieldGetters.put(f.getName(), fieldGetter(f, clazz));
                     fieldSetters.put(f.getName(), fieldSetter(f, clazz));
-                }
+                //}
             }
         }
 

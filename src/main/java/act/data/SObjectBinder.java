@@ -17,7 +17,6 @@ public class SObjectBinder extends Binder<ISObject> {
     @Override
     public ISObject resolve(ISObject sobj, String s, ParamValueProvider paramValueProvider) {
         E.illegalArgumentIf(!(paramValueProvider instanceof ActionContext));
-        ActionContext ctx = $.cast(paramValueProvider);
-        return ctx.upload(s);
+        return SObjectResolver.INSTANCE.resolve(s);
     }
 }

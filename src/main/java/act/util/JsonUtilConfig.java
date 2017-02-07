@@ -1,6 +1,7 @@
 package act.util;
 
 import act.app.App;
+import act.data.SObjectResolver;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.parser.ParserConfig;
 import com.alibaba.fastjson.serializer.SerializeConfig;
@@ -13,6 +14,8 @@ import org.osgl.$;
 import org.osgl.Osgl;
 import org.osgl.exception.NotAppliedException;
 import org.osgl.mvc.MvcConfig;
+import org.osgl.storage.ISObject;
+import org.osgl.storage.impl.SObject;
 import org.osgl.util.KV;
 import org.osgl.util.KVStore;
 import org.osgl.util.Keyword;
@@ -31,6 +34,7 @@ public class JsonUtilConfig {
         FastJsonValueObjectSerializer valueObjectSerializer = new FastJsonValueObjectSerializer();
         app.registerSingleton(FastJsonValueObjectSerializer.class, valueObjectSerializer);
         FastJsonKeywordCodec keywordCodec = new FastJsonKeywordCodec();
+        FastJsonSObjectCodec sObjectCodec = new FastJsonSObjectCodec();
 
         config.put(DateTime.class, jodaDateCodec);
         config.put(LocalDate.class, jodaDateCodec);
@@ -49,6 +53,8 @@ public class JsonUtilConfig {
         parserConfig.putDeserializer(Keyword.class, keywordCodec);
         parserConfig.putDeserializer(KV.class, FastJsonKvCodec.INSTANCE);
         parserConfig.putDeserializer(KVStore.class, FastJsonKvCodec.INSTANCE);
+        parserConfig.putDeserializer(ISObject.class, sObjectCodec);
+        parserConfig.putDeserializer(SObject.class, sObjectCodec);
 
         MvcConfig.jsonSerializer(new $.F1<Object, String>() {
             @Override
