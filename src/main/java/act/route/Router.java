@@ -616,6 +616,18 @@ public class Router extends AppServiceBase<Router> {
      */
     private static class Node extends DestroyableBase implements Serializable, TreeNode {
 
+        // used to pass a baq request result when dynamic regex matching failed
+        private static final Node BADREQUEST = new Node(Integer.MIN_VALUE) {
+            @Override
+            boolean terminateRouteSearch() {
+                return true;
+            }
+        };
+
+        static {
+            BADREQUEST.handler = AlwaysBadRequest.INSTANCE;
+        }
+
         static Node newRoot(String name) {
             Node node = new Node(-1);
             node.name = S.str(name);
@@ -705,6 +717,8 @@ public class Router extends AppServiceBase<Router> {
                     }
                     context.param(varName.toString(), S.urlDecode(S.string(name)));
                     return dynamicChild;
+                } else {
+                    return Node.BADREQUEST;
                 }
             }
             return node;
