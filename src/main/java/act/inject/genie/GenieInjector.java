@@ -279,7 +279,7 @@ public class GenieInjector extends DependencyInjectorBase<GenieInjector> {
         genieInjector.injectTags.add(valueLoader);
     }
 
-    @SubClassFinder(callOn = AppEventId.DEPENDENCY_INJECTOR_PROVISIONED)
+    @SubClassFinder
     public static void foundGenericTypedBeanLoader(Class<? extends GenericTypedBeanLoader> loaderClass) {
         App app = App.instance();
         GenieInjector genieInjector = app.injector();

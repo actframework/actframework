@@ -687,6 +687,15 @@ public enum AppConfigKey implements ConfigKey {
     UNKNOWN_HTTP_METHOD_HANDLER("unknown_http_method_handler.impl"),
 
     /**
+     * `upload.file.download.enabled`
+     *
+     * Turn on/off downloader for uploading files
+     *
+     * Default value: `false`
+     */
+    UPLOAD_FILE_DOWNLOAD("upload.file.download.enabled"),
+
+    /**
      * {@code validation.message.interpolator.impl} specifies the
      * {@link javax.validation.MessageInterpolator} implementation
      * <p>Default value: {@link act.validation.ValidationMessageInterpolator}</p>

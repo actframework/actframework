@@ -2196,6 +2196,26 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         }
     }
 
+    private Boolean uploadFileDownload;
+    protected T enableUploadFileDownload(boolean b) {
+        uploadFileDownload = b;
+        return me();
+    }
+    public boolean allowDownloadUploadFile() {
+        if (null == uploadFileDownload) {
+            uploadFileDownload = get(UPLOAD_FILE_DOWNLOAD);
+            if (null == uploadFileDownload) {
+                uploadFileDownload = false;
+            }
+        }
+        return uploadFileDownload;
+    }
+    private void _mergeUploadFileDownload(AppConfig config) {
+        if (!hasConfiguration(UPLOAD_FILE_DOWNLOAD)) {
+            uploadFileDownload = config.uploadFileDownload;
+        }
+    }
+
 
     private Set<AppConfigurator> mergeTracker = C.newSet();
 
@@ -2320,6 +2340,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         _mergeCacheServiceProvider(conf);
         _mergeMessageInterpolator(conf);
         _mergeUnknownHttpMethodHandler(conf);
+        _mergeUploadFileDownload(conf);
 
         Set<String> keys = conf.propKeys();
         if (!keys.isEmpty()) {
