@@ -3,6 +3,7 @@ package act.inject.param;
 import act.app.App;
 import act.app.AppClassLoader;
 import act.app.AppServiceBase;
+import act.asm.FieldVisitor;
 import act.inject.DependencyInjector;
 import org.osgl.$;
 import org.osgl.inject.BeanSpec;
@@ -67,9 +68,37 @@ public class JsonDTOClassManager extends AppServiceBase<JsonDTOClassManager> {
         return new JsonDTOClassGenerator(name, beanSpecs, dynamicClassLoader).generate();
     }
 
+    private static final $.Predicate<Class<?>> classFilter = new $.Predicate<Class<?>>() {
+        @Override
+        public boolean test(Class<?> aClass) {
+            if (null == aClass || Object.class == aClass) {
+                return false;
+            }
+            Annotation[] annotations = aClass.getDeclaredAnnotations();
+            if (null == annotations) {
+                return true;
+            }
+            for (Annotation a : annotations) {
+                if (a.annotationType() == NoBind.class) {
+                    return false;
+                }
+            }
+            return true;
+        }
+    };
+
+    private static final $.Predicate<Field> fieldFilter = new $.Predicate<Field>() {
+        @Override
+        public boolean test(Field field) {
+            return !Modifier.isStatic(field.getModifiers());
+        }
+    };
+
     public List<BeanSpec> beanSpecs(Class<?> host, Method method) {
         List<BeanSpec> list = new ArrayList<BeanSpec>();
-        extractBeanSpec(list, $.fieldsOf(host, true), host);
+        if (!Modifier.isStatic(method.getModifiers())) {
+            extractBeanSpec(list, $.fieldsOf(host, classFilter, fieldFilter), host);
+        }
         extractBeanSpec(list, method);
         Collections.sort(list, CMP);
         return list;

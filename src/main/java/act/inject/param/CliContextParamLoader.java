@@ -198,6 +198,8 @@ public class CliContextParamLoader extends ParamValueLoaderService {
             ParamValueLoader loader = findContextSpecificLoader(bindName, spec.rawType(), spec, type, annotations);
             if (loader instanceof OptionLoader) {
                 optionLoaders.add((OptionLoader) loader);
+            } else if (!$.isSimpleType(spec.rawType())) {
+
             }
         }
     }

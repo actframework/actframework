@@ -578,7 +578,7 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
         return name;
     }
 
-    public static String tryFindBindName(Annotation[] annotations, String defVal) {
+    static String tryFindBindName(Annotation[] annotations, String defVal) {
         Param param = filter(annotations, Param.class);
         if (null != param && S.notBlank(param.value())) {
             return param.value();

@@ -1,6 +1,7 @@
 package act.db;
 
 import act.app.security.SecurityContext;
+import act.inject.param.NoBind;
 import act.util.ActContext;
 import org.osgl.$;
 import org.osgl.util.Generics;
@@ -10,6 +11,7 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 import java.util.List;
 
+@NoBind
 public abstract class DaoBase<ID_TYPE, MODEL_TYPE, QUERY_TYPE extends Dao.Query<MODEL_TYPE, QUERY_TYPE>>
         implements Dao<ID_TYPE, MODEL_TYPE, QUERY_TYPE> {
 
