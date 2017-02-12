@@ -392,7 +392,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         Object singleton = app.singleton(controllerClass);
         if (null == singleton) {
             // check if there are fields
-            List<Field> fields = $.fieldsOf(controllerClass, true);
+            List<Field> fields = $.fieldsOf(controllerClass, JsonDTOClassManager.CLASS_FILTER, JsonDTOClassManager.FIELD_FILTER);
             if (fields.isEmpty()) {
                 singleton = app.getInstance(controllerClass);
             }
