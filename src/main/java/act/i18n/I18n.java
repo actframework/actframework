@@ -3,11 +3,18 @@ package act.i18n;
 import act.Act;
 import act.util.ActContext;
 import org.osgl.$;
+import org.osgl.Osgl;
+import org.osgl.exception.NotAppliedException;
 import org.osgl.logging.LogManager;
 import org.osgl.logging.Logger;
+import org.osgl.util.C;
 import org.osgl.util.S;
 
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 public class I18n {
 
@@ -95,30 +102,94 @@ public class I18n {
         return i18n(locale, bundleName, key);
     }
 
-    public static Map<String, String> i18n(Class<? extends Enum> enumClass) {
+    public static Map<String, Object> i18n(Class<? extends Enum> enumClass) {
         return i18n(locale(), enumClass);
     }
 
-    public static Map<String, String> i18n(Locale locale, Class<? extends Enum> enumClass) {
+    public static Map<String, Object> i18n(Locale locale, Class<? extends Enum> enumClass) {
         return i18n(locale, DEF_RESOURCE_BUNDLE_NAME, enumClass);
     }
 
-    public static Map<String, String> i18n(Class<?> bundleSpec, Class<? extends Enum> enumClass) {
+    public static Map<String, Object> i18n(Class<?> bundleSpec, Class<? extends Enum> enumClass) {
         return i18n(locale(), bundleSpec, enumClass);
     }
 
-    public static Map<String, String> i18n(Locale locale, Class<?> bundleSpec, Class<? extends Enum> enumClass) {
+    public static Map<String, Object> i18n(Locale locale, Class<?> bundleSpec, Class<? extends Enum> enumClass) {
         return i18n(locale, bundleSpec.getName(), enumClass);
     }
 
-    public static Map<String, String> i18n(Locale locale, String bundleName, Class<? extends Enum> enumClass) {
-        LinkedHashMap<String, String> map = new LinkedHashMap<>();
+    public static Map<String, Object> i18n(Locale locale, String bundleName, Class<? extends Enum> enumClass) {
+        return i18n(locale, bundleName, enumClass, false);
+    }
+
+
+    public static Map<String, Object> i18n(Class<? extends Enum> enumClass, boolean outputProperties) {
+        return i18n(locale(), enumClass, outputProperties);
+    }
+
+    public static Map<String, Object> i18n(Locale locale, Class<? extends Enum> enumClass, boolean outputProperties) {
+        return i18n(locale, DEF_RESOURCE_BUNDLE_NAME, enumClass, outputProperties);
+    }
+
+    public static Map<String, Object> i18n(Class<?> bundleSpec, Class<? extends Enum> enumClass, boolean outputProperties) {
+        return i18n(locale(), bundleSpec, enumClass, outputProperties);
+    }
+
+
+    public static Map<String, Object> i18n(Locale locale, Class<?> bundleSpec, Class<? extends Enum> enumClass, boolean outputProperties) {
+        return i18n(locale, bundleSpec.getName(), enumClass, outputProperties);
+    }
+
+    public static Map<String, Object> i18n(Locale locale, String bundleName, Class<? extends Enum> enumClass, boolean outputProperties) {
+        LinkedHashMap<String, Object> map = new LinkedHashMap<>();
+
         for (Enum<?> enumInstance : enumClass.getEnumConstants()) {
             String name = enumInstance.name();
             String val = i18n(locale, bundleName, enumInstance);
-            map.put(name, val);
+            if (outputProperties) {
+                Map<String, Object> values = new HashMap<>();
+                map.put(name, values);
+                values.put("message", val);
+                Map<String, $.Function<Object, Object>> getters = enumPropertyGetters(enumClass);
+                for (Map.Entry<String, $.Function<Object, Object>> entry : getters.entrySet()) {
+                    values.put(entry.getKey(), entry.getValue().apply(enumInstance));
+                }
+            } else {
+                map.put(name, val);
+            }
         }
         return map;
     }
 
+    private static Set<String> standardsAnnotationMethods = C.newSet(C.list("getDeclaringClass", "hashCode", "toString", "ordinal", "name", "getClass"));
+    private static ConcurrentMap<Class<? extends Enum>, Map<String, $.Function<Object, Object>>> enumPropertyGetterCache = new ConcurrentHashMap<>();
+
+    private static Map<String, $.Function<Object, Object>> enumPropertyGetters(Class<? extends Enum> enumClass) {
+        Map<String, $.Function<Object, Object>> map = enumPropertyGetterCache.get(enumClass);
+        if (null == map) {
+            map = buildEnumPropertyGetters(enumClass);
+            enumPropertyGetterCache.putIfAbsent(enumClass, map);
+        }
+        return map;
+    }
+
+    private static Map<String, $.Function<Object, Object>> buildEnumPropertyGetters(Class<? extends Enum> enumClass) {
+        Map<String, $.Function<Object, Object>> map = new HashMap<>();
+        for (final Method method : enumClass.getMethods()) {
+            if (void.class == method.getReturnType() || Void.class == method.getReturnType() || Modifier.isStatic(method.getModifiers()) || method.getParameterTypes().length > 0) {
+                continue;
+            }
+            String name = method.getName();
+            if (standardsAnnotationMethods.contains(name)) {
+                continue;
+            }
+            map.put(method.getName(), new Osgl.Function<Object, Object>() {
+                @Override
+                public Object apply(Object o) throws NotAppliedException, Osgl.Break {
+                    return $.invokeVirtual(o, method);
+                }
+            });
+        }
+        return map;
+    }
 }

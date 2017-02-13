@@ -67,9 +67,13 @@ public interface ActContext<CTX_TYPE extends ActContext> extends ParamValueProvi
 
     String i18n(Class<?> bundleSpec, Enum<?> msgId);
 
-    Map<String, String> i18n(Class<? extends Enum> enumClass);
+    Map<String, Object> i18n(Class<? extends Enum> enumClass);
 
-    Map<String, String> i18n(Class<?> bundleSpec, Class<? extends Enum> enumClass);
+    Map<String, Object> i18n(Class<?> bundleSpec, Class<? extends Enum> enumClass);
+
+    Map<String, Object> i18n(Class<? extends Enum> enumClass, boolean outputProperties);
+
+    Map<String, Object> i18n(Class<?> bundleSpec, Class<? extends Enum> enumClass, boolean outputProperties);
 
     String methodPath();
 
@@ -196,12 +200,20 @@ public interface ActContext<CTX_TYPE extends ActContext> extends ParamValueProvi
             return I18n.i18n(locale(true), bundleSpec.getName(), msgId);
         }
 
-        public Map<String, String> i18n(Class<? extends Enum> enumClass) {
+        public Map<String, Object> i18n(Class<? extends Enum> enumClass) {
             return I18n.i18n(locale(true), enumClass);
         }
 
-        public Map<String, String> i18n(Class<?> bundleSpec, Class<? extends Enum> enumClass) {
+        public Map<String, Object> i18n(Class<?> bundleSpec, Class<? extends Enum> enumClass) {
             return I18n.i18n(locale(true), bundleSpec, enumClass);
+        }
+
+        public Map<String, Object> i18n(Class<? extends Enum> enumClass, boolean outputPropeties) {
+            return I18n.i18n(locale(true), enumClass, outputPropeties);
+        }
+
+        public Map<String, Object> i18n(Class<?> bundleSpec, Class<? extends Enum> enumClass, boolean outputProperties) {
+            return I18n.i18n(locale(true), bundleSpec, enumClass, outputProperties);
         }
 
         protected VC_TYPE me() {
