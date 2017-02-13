@@ -8,6 +8,8 @@ import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.parser.*;
 import com.alibaba.fastjson.parser.deserializer.ObjectDeserializer;
 import com.alibaba.fastjson.serializer.*;
+import org.osgl.$;
+import org.osgl.inject.BeanSpec;
 import org.osgl.util.KVStore;
 
 import java.io.IOException;
@@ -143,6 +145,13 @@ public class AdaptiveRecordCodec extends SerializeFilterable implements ObjectDe
 
     }
 
+    private static $.Predicate<BeanSpec> fieldFilter = new $.Predicate<BeanSpec>() {
+        @Override
+        public boolean test(BeanSpec beanSpec) {
+            return !beanSpec.isTransient();
+        }
+    };
+
     @Override
     public void write(JSONSerializer serializer, Object object, Object fieldName, Type fieldType, int features) throws IOException {
         SerializeWriter out = serializer.out;
@@ -183,7 +192,7 @@ public class AdaptiveRecordCodec extends SerializeFilterable implements ObjectDe
                 }
             }
 
-            for (Map.Entry<String, Object> entry : ar.entrySet()) {
+            for (Map.Entry<String, Object> entry : ar.entrySet(fieldFilter)) {
                 Object value = entry.getValue();
 
                 String entryKey = entry.getKey();

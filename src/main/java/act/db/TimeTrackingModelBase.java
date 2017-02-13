@@ -1,8 +1,10 @@
 package act.db;
 
 import act.data.Timestamped;
+import act.inject.param.NoBind;
 import org.osgl.$;
 
+@NoBind
 public abstract class TimeTrackingModelBase<
         ID_TYPE, MODEL_TYPE extends ModelBase,
         TIMESTAMP_TYPE, TIMESTAMP_TYPE_RESOLVER extends $.Function<TIMESTAMP_TYPE, Long>

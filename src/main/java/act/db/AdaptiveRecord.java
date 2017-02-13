@@ -6,9 +6,12 @@ import act.plugin.AppServicePlugin;
 import org.osgl.$;
 import org.osgl.Osgl;
 import org.osgl.exception.NotAppliedException;
+import org.osgl.inject.BeanSpec;
+import org.osgl.inject.Injector;
 import org.osgl.util.E;
 import org.osgl.util.S;
 
+import java.beans.Transient;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -79,6 +82,16 @@ public interface AdaptiveRecord<ID_TYPE, MODEL_TYPE extends AdaptiveRecord> exte
     Set<Map.Entry<String, Object>> entrySet();
 
     /**
+     * Returns a set of entries stored in the active record. For
+     * field entries, use the field filter specified to check
+     * if it needs to be added into the return set
+     * @param fieldFilter the function that returns `true` or `false` for
+     *                    bean spec of a certain field declared in the class
+     * @return the entry set with field filter applied
+     */
+    Set<Map.Entry<String, Object>> entrySet($.Function<BeanSpec, Boolean> fieldFilter);
+
+    /**
      * Returns a Map typed object backed by this active record
      * @return a Map backed by this active record
      */
@@ -88,13 +101,14 @@ public interface AdaptiveRecord<ID_TYPE, MODEL_TYPE extends AdaptiveRecord> exte
      * Returns the meta info of this AdaptiveRecord
      * @return
      */
+    @Transient
     MetaInfo metaInfo();
 
     class MetaInfo {
         private Class<? extends AdaptiveRecord> arClass;
         public String className;
         private Class<? extends Annotation> transientAnnotationType;
-        public Set<Field> fields;
+        public Map<String, BeanSpec> fieldSpecs;
         public Map<String, Type> fieldTypes;
         public Map<String, $.Function> fieldGetters;
         public Map<String, $.Func2> fieldSetters;
@@ -112,13 +126,14 @@ public interface AdaptiveRecord<ID_TYPE, MODEL_TYPE extends AdaptiveRecord> exte
 
         private void discoverFields(Class<? extends AdaptiveRecord> clazz) {
             List<Field> list = $.fieldsOf(arClass, $.F.NON_STATIC_FIELD/*.and($.F.fieldWithAnnotation(transientAnnotationType)).negate()*/);
-            fields = new HashSet<Field>();
-            fieldTypes = new HashMap<String, Type>();
-            fieldGetters = new HashMap<String, Osgl.Function>();
-            fieldSetters = new HashMap<String, Osgl.Func2>();
+            fieldSpecs = new HashMap<>();
+            fieldTypes = new HashMap<>();
+            fieldGetters = new HashMap<>();
+            fieldSetters = new HashMap<>();
+            Injector injector = Act.app().injector();
             for (Field f : list) {
                 //if (!f.isAnnotationPresent(transientAnnotationType)) {
-                    fields.add(f);
+                    fieldSpecs.put(f.getName(), BeanSpec.of(f, injector));
                     fieldTypes.put(f.getName(), f.getGenericType());
                     fieldGetters.put(f.getName(), fieldGetter(f, clazz));
                     fieldSetters.put(f.getName(), fieldSetter(f, clazz));
@@ -211,7 +226,7 @@ public interface AdaptiveRecord<ID_TYPE, MODEL_TYPE extends AdaptiveRecord> exte
             protected void applyTo(App app) {
             }
 
-            private ConcurrentMap<Class<?>, MetaInfo> map = new ConcurrentHashMap<Class<?>, MetaInfo>();
+            private ConcurrentMap<Class<?>, MetaInfo> map = new ConcurrentHashMap<>();
 
             public MetaInfo get(Class<? extends AdaptiveRecord> clazz, $.Function<Class<? extends AdaptiveRecord>, MetaInfo> factory) {
                 MetaInfo info = map.get(clazz);

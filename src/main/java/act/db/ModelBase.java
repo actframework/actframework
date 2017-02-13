@@ -5,6 +5,7 @@ import act.inject.param.NoBind;
 import org.osgl.$;
 import org.osgl.util.Generics;
 
+import java.beans.Transient;
 import java.lang.reflect.Type;
 import java.util.List;
 
@@ -13,13 +14,11 @@ import java.util.List;
  * @param <MODEL_TYPE> the generic type of Model class
  * @param <ID_TYPE> the generic type of the ID (Key)
  */
+@NoBind
 public abstract class ModelBase<ID_TYPE, MODEL_TYPE extends ModelBase>
 implements Model<ID_TYPE, MODEL_TYPE> {
 
-    @NoBind
     protected transient Type idType;
-
-    @NoBind
     protected transient Type modelType;
 
     public ModelBase() {
