@@ -2,6 +2,7 @@ package act.i18n;
 
 import act.Act;
 import act.util.ActContext;
+import act.util.AsmTypes;
 import org.osgl.$;
 import org.osgl.Osgl;
 import org.osgl.exception.NotAppliedException;
@@ -161,7 +162,7 @@ public class I18n {
         return map;
     }
 
-    private static Set<String> standardsAnnotationMethods = C.newSet(C.list("getDeclaringClass", "hashCode", "toString", "ordinal", "name", "getClass"));
+    private static Set<String> standardsAnnotationMethods = C.newSet(C.list("declaringClass", "hashCode", "toString", "ordinal", "name", "class"));
     private static ConcurrentMap<Class<? extends Enum>, Map<String, $.Function<Object, Object>>> enumPropertyGetterCache = new ConcurrentHashMap<>();
 
     private static Map<String, $.Function<Object, Object>> enumPropertyGetters(Class<? extends Enum> enumClass) {
@@ -179,7 +180,7 @@ public class I18n {
             if (void.class == method.getReturnType() || Void.class == method.getReturnType() || Modifier.isStatic(method.getModifiers()) || method.getParameterTypes().length > 0) {
                 continue;
             }
-            String name = method.getName();
+            String name = propertyName(method);
             if (standardsAnnotationMethods.contains(name)) {
                 continue;
             }
@@ -191,5 +192,16 @@ public class I18n {
             });
         }
         return map;
+    }
+
+    private static String propertyName(Method method) {
+        String name = method.getName();
+        int len = name.length();
+        if (len > 3 && name.startsWith("get")) {
+            name = S.lowerFirst(name.substring(3));
+        } else if (len > 2 && name.startsWith("is")) {
+            name = S.lowerFirst(name.substring(2));
+        }
+        return name;
     }
 }
