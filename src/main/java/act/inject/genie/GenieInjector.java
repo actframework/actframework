@@ -30,10 +30,7 @@ import javax.inject.Provider;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class GenieInjector extends DependencyInjectorBase<GenieInjector> {
 
@@ -185,7 +182,7 @@ public class GenieInjector extends DependencyInjectorBase<GenieInjector> {
         ClassInfoRepository repo = cl.classInfoRepository();
         ClassNode root = repo.node(autoBinding.getName());
         E.invalidConfigurationIf(null == root, "Cannot find AutoBind root: %s", autoBinding.getName());
-        final List<Class<?>> candidates = C.newList();
+        final Set<Class<?>> candidates = new LinkedHashSet<>();
         final $.Var<Class<?>> priority = $.var();
         root.visitPublicNotAbstractSubTreeNodes(new $.Visitor<ClassNode>() {
 
@@ -230,8 +227,10 @@ public class GenieInjector extends DependencyInjectorBase<GenieInjector> {
                                 break;
                             } else {
                                 App.logger.debug("Ignore auto bind candidate [%s] for [%s]: group mismatch", clazz.getName(), autoBinding.getName());
+                                return;
                             }
                         }
+                        break;
                     }
                     candidates.add(clazz);
                 } catch (ConfigurationException e) {
@@ -243,11 +242,11 @@ public class GenieInjector extends DependencyInjectorBase<GenieInjector> {
         });
 
         Class<?> winner = priority.get();
-        if (null == winner && candidates.isEmpty()) {
+        if (null == winner && !candidates.isEmpty()) {
             if (candidates.size() > 1) {
                 throw new ConfigurationException("Unable to auto bind on %s: multiple candidates found", autoBinding);
             }
-            winner = candidates.get(0);
+            winner = candidates.iterator().next();
         }
 
         if (null != winner) {
@@ -293,6 +292,14 @@ public class GenieInjector extends DependencyInjectorBase<GenieInjector> {
                 }
             }
         }
+    }
+
+    @SubClassFinder
+    public static void foundProviderBase(Class<? extends ActProvider> providerClass) {
+        App app = App.instance();
+        GenieInjector genieInjector = app.injector();
+        ActProvider provider = app.getInstance(providerClass);
+        genieInjector.genie().registerProvider(provider.targetType(), provider);
     }
 
     private static boolean isModuleAllowed(Class<?> moduleClass) {

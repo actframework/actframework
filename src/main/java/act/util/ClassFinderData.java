@@ -2,6 +2,7 @@ package act.util;
 
 import act.app.App;
 import act.app.event.AppEventId;
+import act.sys.Env;
 import org.osgl.$;
 import org.osgl.Osgl;
 import org.osgl.logging.Logger;
@@ -51,6 +52,10 @@ public class ClassFinderData {
                         cl = cl.getParent();
                     }
                     Class<?> targetClass = $.classForName(classNode.name(), app.classLoader());
+                    if (!Env.matches(targetClass)) {
+                        logger.debug("ignore target class[%s]: environment spec not matching", targetClass);
+                        return;
+                    }
                     if (data.isStatic) {
                         Class<?> host = $.classForName(data.className, cl);
                         $.invokeStatic(host, data.methodName, targetClass);

@@ -3,6 +3,7 @@ package act.job.bytecode;
 import act.app.App;
 import act.job.meta.JobClassMetaInfo;
 import act.job.meta.JobMethodMetaInfo;
+import act.sys.Env;
 import com.esotericsoftware.reflectasm.MethodAccess;
 import org.osgl.$;
 import org.osgl.exception.NotAppliedException;
@@ -29,6 +30,7 @@ public class ReflectedJobInvoker<M extends JobMethodMetaInfo> extends $.F0<Objec
     protected Method method;
     private List<BeanSpec> providedParams;
     private int providedParamsSize;
+    private boolean disabled;
 
     public ReflectedJobInvoker(M handlerMetaInfo, App app) {
         this.cl = app.classLoader();
@@ -38,8 +40,11 @@ public class ReflectedJobInvoker<M extends JobMethodMetaInfo> extends $.F0<Objec
     }
 
     private void init() {
+        disabled = false;
         jobClass = $.classForName(classInfo.className(), cl);
+        disabled = disabled || !Env.matches(jobClass);
         method = methodInfo.method();
+        disabled = disabled || !Env.matches(jobClass);
         providedParams = methodInfo.paramTypes();
         providedParamsSize = providedParams.size();
     }
@@ -48,6 +53,9 @@ public class ReflectedJobInvoker<M extends JobMethodMetaInfo> extends $.F0<Objec
     public Object apply() throws NotAppliedException, $.Break {
         if (null == jobClass) {
             init();
+        }
+        if (disabled) {
+            return null;
         }
         Object job = jobClassInstance(app);
         return invoke(job);

@@ -9,6 +9,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.lang.annotation.*;
+import java.lang.reflect.AnnotatedElement;
 
 /**
  * Mark a module should only be loaded in certain environment
@@ -116,6 +117,35 @@ public final class Env {
 
     public static boolean isEnvAnnotation(Class<? extends Annotation> type) {
         return ENV_ANNOTATION_TYPES.contains(type);
+    }
+
+    /**
+     * Determine if an {@link AnnotatedElement} has environment annotations and if it has then check
+     * if all environment annotations matches the current executing environment
+     * @param annotatedElement an annotated element
+     * @return `true` if the element does not have environment annotations or all environment annotations matches
+     */
+    public static boolean matches(AnnotatedElement annotatedElement) {
+        Annotation[] annotations = annotatedElement.getDeclaredAnnotations();
+        for (Annotation anno : annotations) {
+            if (anno instanceof Profile) {
+                Profile profile = (Profile)anno;
+                if (!matches(profile)) {
+                    return false;
+                }
+            } else if (anno instanceof Group) {
+                Group group = (Group) anno;
+                if (!matches(group)) {
+                    return false;
+                }
+            } else if (anno instanceof Mode) {
+                Mode mode = (Mode) anno;
+                if (!matches(mode)) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
     // See http://stackoverflow.com/questions/534648/how-to-daemonize-a-java-program

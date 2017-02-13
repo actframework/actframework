@@ -4,7 +4,6 @@ import act.Act;
 import act.app.ActionContext;
 import act.app.App;
 import act.app.AppClassLoader;
-import act.cli.JsonView;
 import act.controller.Controller;
 import act.controller.meta.*;
 import act.handler.NonBlock;
@@ -16,6 +15,7 @@ import act.inject.param.ParamValueLoaderManager;
 import act.inject.param.ParamValueLoaderService;
 import act.security.CORS;
 import act.security.CSRF;
+import act.sys.Env;
 import act.util.ActContext;
 import act.util.DestroyableBase;
 import act.view.*;
@@ -70,18 +70,21 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
     private boolean isStatic;
     private Object singleton;
     private H.Format produceContentType;
+    private boolean disabled;
 
     private ReflectedHandlerInvoker(M handlerMetaInfo, App app) {
         this.cl = app.classLoader();
         this.handler = handlerMetaInfo;
         this.controller = handlerMetaInfo.classInfo();
         this.controllerClass = $.classForName(controller.className(), cl);
+        this.disabled = !Env.matches(controllerClass);
         this.paramLoaderService = app.service(ParamValueLoaderManager.class).get(ActionContext.class);
         this.jsonDTOClassManager = app.service(JsonDTOClassManager.class);
 
         Class[] paramTypes = paramTypes(cl);
         try {
             method = controllerClass.getMethod(handlerMetaInfo.name(), paramTypes);
+            this.disabled = this.disabled || !Env.matches(method);
         } catch (NoSuchMethodException e) {
             throw E.unexpected(e);
         }
@@ -148,6 +151,9 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         actionContext.attribute("reflected_handler", this);
         if (null != produceContentType) {
             actionContext.accept(produceContentType);
+        }
+        if (disabled) {
+            return ActNotFound.get();
         }
         ensureJsonDTOGenerated(actionContext);
         Object ctrl = controllerInstance(actionContext);
