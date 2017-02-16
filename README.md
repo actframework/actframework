@@ -3,7 +3,7 @@
 ## News
 
 * [A simple helloworld benchmark set](https://github.com/networknt/microservices-framework-benchmark)
-* [A comprehensive TechEmpower benchmark set](https://github.com/greenlaw110/FrameworkBenchmarks/tree/actframework/frameworks/Java/act) has been [accepted](https://github.com/TechEmpower/FrameworkBenchmarks/pull/2525)
+* [A comprehensive TechEmpower benchmark set](https://github.com/TechEmpower/FrameworkBenchmarks/tree/actframework/frameworks/Java/act) has been [accepted](https://github.com/TechEmpower/FrameworkBenchmarks/pull/2525)
 
 ## Project status
 
