@@ -43,26 +43,31 @@ shows Act's throughput 20 times faster than of Spring-boot in simple cases
 
 ## Features
 
-* A full stack MVC framework
+* **A full stack MVC framework**
     * Actframework is **NOT** a servlet framework. Act app does not run in a servlet container. Instead
       it run as an independent Java application and it starts in seconds
-* Unbeatable development experience w/ great performance
+
+* **Unbeatable development experience w/ great performance**
     * Never restart your app when you are developing it. Act's super dev mode provides hot reloading
       feature is the dream of every Java web app developer. Check out 
       [this 3 mins video](https://www.youtube.com/watch?v=68Z-jTL6fDg) to see it
     * According to [this 3rd party benchmark](https://github.com/networknt/microservices-framework-benchmark)
       Act's beats most of Java web framework. In simple case Act can be 20 times faster than Springboot
-* Fully JSR330 Dependency Injection support
-* Superb SPA/Mobile app support
+
+* **Fully JSR330 Dependency Injection support**
+
+* **Superb SPA/Mobile app support**
     * [Awesome JSON/RESTful support](https://www.youtube.com/watch?v=B2RRSzYeo8c&t=4s)
     * [Built-in CORS support](http://actframework.org/doc/configuration.md#cors)
     * Session/Header mapping so you are not limited to cookie
-* Uncompromising Security
+
+* **Uncompromising Security**
     * Session cookie is secure and http only, payload is signed and encrypted (optionally)
     * [Enable CSRF prevention with just one configuration item](http://actframework.org/doc/configuration.md#csrf)
     * XSS prevention: Rythm engine [escape variable output](http://fiddle.rythmengine.org/#/editor/398e71d927234f13a26bb346376141ce) by default
     * Implementing your authentication/authorisation/accounting framework using [AAA plugin](https://github.com/actframework/act-aaa-plugin)
-* Annotation aware but not annotation stack 
+
+* **Annotation aware but not annotation stack** 
     * Annotation is one of the tool ActFramework used to increase expressiveness. However 
       we do not appreciate [crazy annotation stacked code](http://annotatiomania.com/). 
       Instead we make the code to express the intention in a natural way and save 
@@ -70,20 +75,50 @@ shows Act's throughput 20 times faster than of Spring-boot in simple cases
       
       For example, for the following SpringMVC code:
       ```java
-        @RequestMapping(value="/user/{userId}/invoices", method = RequestMethod.GET)
-        public List listUsersInvoices(
+      @RequestMapping(value="/user/{userId}/invoices", method = RequestMethod.GET)
+      public List listUsersInvoices(
         @PathVariable("userId") int user,
         @RequestParam(value = "date", required = false) Date dateOrNull) {
-        ...
-        }
+          ...
+      }
       ```
       The corresponding ActFramework app code is:
       ```java
-        @GetAction("/user/{user}/invoices")
-        public List listUsersInvoices(int user, Date date) {
+      @GetAction("/user/{user}/invoices")
+      public List listUsersInvoices(int user, Date date) {
         ...
-        }
+      }
       ```
+
+* **Multi-environment configuration**
+    * ActFramework supports the concept of profile which allows you to organize your configurations 
+      in different environment (defined by profile) easily. Take a look at the following 
+      configurations from one of our real project:
+    
+    ```text
+    resources
+    ├── conf
+    │   ├── common
+    │   │   ├── app.properties
+    │   │   ├── db.properties
+    │   │   ├── mail.properties
+    │   │   ├── payment.properties
+    │   │   └── social.properties
+    │   ├── local-no-ui
+    │   │   ├── app.properties
+    │   │   ├── db.properties
+    │   │   └── port.properties
+    │   ├── local-sit
+    │   │   └── app.properties
+    │   ├── local-ui
+    │   │   ├── app.properties
+    │   │   └── db.properties
+    │   ├── sit
+    │   │   ├── app.properties
+    │   │   └── db.properties
+    │   └── uat
+    ...
+    ```
 
 ## Background
 
