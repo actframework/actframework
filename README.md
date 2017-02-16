@@ -2,12 +2,12 @@
 
 ## News
 
-* [A simple helloworld benchmark set](https://github.com/greenlaw110/simple-webframework-benchmark/)
-* [A comprehensive TechEmpower benchmark set](https://github.com/greenlaw110/FrameworkBenchmarks/tree/actframework/frameworks/Java/act) has been [submitted](https://github.com/TechEmpower/FrameworkBenchmarks/pull/2525)
+* [A simple helloworld benchmark set](https://github.com/networknt/microservices-framework-benchmark)
+* [A comprehensive TechEmpower benchmark set](https://github.com/greenlaw110/FrameworkBenchmarks/tree/actframework/frameworks/Java/act) has been [accepted](https://github.com/TechEmpower/FrameworkBenchmarks/pull/2525)
 
 ## Project status
 
-* Current stable version: 0.3.1-SNAPSHOT
+* Current stable version: 0.5.0-SNAPSHOT
 * The first public release is target to March 2017
 
 ## Install
@@ -18,7 +18,7 @@ Add the following dependency into your `pom.xml` file
     <dependency>
       <groupId>org.actframework</groupId>
       <artifactId>act</artifactId>
-      <version>0.3.0-SNAPSHOT</version>
+      <version>0.5.0-SNAPSHOT</version>
     </dependency>
 ```
 
