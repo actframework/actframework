@@ -91,7 +91,7 @@ shows Act's throughput 20 times faster than of Spring-boot in simple cases
       ```
 
 * **Multi-environment configuration**
-    * ActFramework supports the concept of profile which allows you to organize your configurations 
+    * ActFramework supports the concept of `profile` which allows you to organize your configurations 
       in different environment (defined by profile) easily. Take a look at the following 
       configurations from one of our real project:
     
@@ -119,6 +119,116 @@ shows Act's throughput 20 times faster than of Spring-boot in simple cases
         │   └── uat
         ...
       ```
+    Suppose on your UAT server, you start the application with JVM option `-Dprofile=uat`,
+    ActFramework will load the configuration in the following sequence:
+        1. Read all `.properties` files in the `/resources/conf/common` dir
+        2. Read all `.properties` files in the `/resources/conf/uat` dir
+    
+    This way ActFramework use the configuration items defined in `uat` profile to overwrite 
+    the same items defined in `common` profile. The common items that are not overwritten 
+    still effective.
+
+* **[Simple yet powerful database support](http://actframework.org/doc/model.md)**
+    * [Multiple database support built in](http://actframework.org/doc/multi_db.md)
+
+* **[Powerful view architecture with multiple render engine support](http://actframework.org/doc/templating.md)**
+
+* **Commonly used tools**
+    * [Sending email](http://actframework.org/doc/email)
+    * [Schedule jobs](http://actframework.org/doc/job)
+    * [Event handling and dispatching](http://actframework.org/doc/event)
+
+## Sample code
+
+### A HelloWorld app
+
+```java
+package demo.helloworld;
+
+import act.Act;
+import act.Version;
+import org.osgl.mvc.annotation.GetAction;
+
+public class HelloWorldApp {
+
+    @GetAction
+    public String sayHello() {
+        return "Hello World!";
+    }
+
+    public static void main(String[] args) throws Exception {
+        Act.start("Hello World", Version.appVersion(), HelloWorldApp.class);
+    }
+
+}
+```
+
+See [this 7 mins video on how to create HelloWorld in Eclipse from scratch](https://www.youtube.com/watch?v=_IhRv3-Ejfw).
+For user who does not have access to youtube, please see the video [here](http://www.tudou.com/programs/view/fZqqkFacfzA/)
+
+### A full RESTful service
+
+```java
+package demo.rest;
+
+import act.controller.Controller;
+import act.db.morphia.MorphiaAdaptiveRecord;
+import act.db.morphia.MorphiaDao;
+import org.mongodb.morphia.annotations.Entity;
+import org.osgl.mvc.annotation.*;
+
+import java.util.Map;
+
+import static act.controller.Controller.Util.notFoundIfNull;
+
+@Entity("user")
+public class User extends MorphiaAdaptiveRecord<User> {
+
+    @Controller("user")
+    public static class Service extends MorphiaDao<User> {
+
+        @PostAction
+        public User create(User user) {
+            return save(user);
+        }
+
+        @GetAction
+        public Iterable<User> list() {
+            return findAll();
+        }
+
+        @GetAction("{id}")
+        public User show(String id, Map<String, Object> data) {
+            return findById(id);
+        }
+
+        @PutAction("{id}")
+        public User update(String id, Map<String, Object> data) {
+            User user = findById(id);
+            notFoundIfNull(user);
+            user.mergeValues(data);
+            return save(user);
+        }
+
+        @DeleteAction("{id}")
+        public void delete(String id) {
+            deleteById(id);
+        }
+    }
+
+    public static void main(String[] args) throws Exception {
+        Act.start("RESTful Demo", Version.appVersion(), User.class);
+    }
+
+}
+
+See [this 1 hour video on RESTful support](https://www.youtube.com/watch?v=B2RRSzYeo8c&t=4s)
+
+
+See [this 7 mins video to understand more about AdaptiveRecord](https://www.youtube.com/watch?v=gWisqi-bp0M&t=1s)
+
+```
+
 
 ## Background
 
