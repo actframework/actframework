@@ -95,30 +95,30 @@ shows Act's throughput 20 times faster than of Spring-boot in simple cases
       in different environment (defined by profile) easily. Take a look at the following 
       configurations from one of our real project:
     
-    ```text
-    resources
-    ├── conf
-    │   ├── common
-    │   │   ├── app.properties
-    │   │   ├── db.properties
-    │   │   ├── mail.properties
-    │   │   ├── payment.properties
-    │   │   └── social.properties
-    │   ├── local-no-ui
-    │   │   ├── app.properties
-    │   │   ├── db.properties
-    │   │   └── port.properties
-    │   ├── local-sit
-    │   │   └── app.properties
-    │   ├── local-ui
-    │   │   ├── app.properties
-    │   │   └── db.properties
-    │   ├── sit
-    │   │   ├── app.properties
-    │   │   └── db.properties
-    │   └── uat
-    ...
-    ```
+      ```text
+        resources
+        ├── conf
+        │   ├── common
+        │   │   ├── app.properties
+        │   │   ├── db.properties
+        │   │   ├── mail.properties
+        │   │   ├── payment.properties
+        │   │   └── social.properties
+        │   ├── local-no-ui
+        │   │   ├── app.properties
+        │   │   ├── db.properties
+        │   │   └── port.properties
+        │   ├── local-sit
+        │   │   └── app.properties
+        │   ├── local-ui
+        │   │   ├── app.properties
+        │   │   └── db.properties
+        │   ├── sit
+        │   │   ├── app.properties
+        │   │   └── db.properties
+        │   └── uat
+        ...
+      ```
 
 ## Background
 
