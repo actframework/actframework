@@ -45,16 +45,20 @@ Add the following snippet into your `pom.xml` file to get SNAPSHOT version:
 * **Unbeatable development experience w/ great performance**
     * Never restart your app when you are developing it. Act's super dev mode provides hot reloading
       feature is the dream of every Java web app developer. Check out 
-      [this 3 mins video](https://www.youtube.com/watch?v=68Z-jTL6fDg) to see it
+      [this 3 mins video](https://www.youtube.com/watch?v=68Z-jTL6fDg) to feel it
     * According to [this 3rd party benchmark](https://github.com/networknt/microservices-framework-benchmark)
       Act's beats most of Java web framework. In simple case Act can be 20 times faster than Springboot
 
 * **Fully JSR330 Dependency Injection support**
+    * ActFramework's DI support is built on top of [Genie](https://github.com/osglworks/java-di), a lightweight
+      yet [fast](https://github.com/greenlaw110/di-benchmark) JSR330 implementation.
+    * Benefit from Act's powerful class scan feature, it does not require the user to create injector from 
+      modules (as the usually way you use Guice). Declare your module and your binding is automatically registered
 
 * **Superb SPA/Mobile app support**
     * [Awesome JSON/RESTful support](https://www.youtube.com/watch?v=B2RRSzYeo8c&t=4s)
     * [Built-in CORS support](http://actframework.org/doc/configuration.md#cors)
-    * Session/Header mapping so you are not limited to cookie
+    * [Session/Header mapping](http://actframework.org/doc/configuration#session_mapper_impl) so you are not limited to cookie
 
 * **Uncompromising Security**
     * Session cookie is secure and http only, payload is signed and encrypted (optionally)
