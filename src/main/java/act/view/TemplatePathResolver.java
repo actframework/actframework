@@ -30,10 +30,19 @@ public class TemplatePathResolver {
         String path = context.templatePath();
         String[] sa = path.split("\\.");
         int level = sa.length + 1;
-        while (--level > 0) {
-            methodPath = S.beforeLast(methodPath, ".");
+        StringBuilder sb;
+        if (S.notBlank(methodPath)) {
+            while (--level > 0) {
+                methodPath = S.beforeLast(methodPath, ".");
+            }
+            sb = S.builder(methodPath);
+        } else {
+            sb = S.builder();
         }
-        path = S.builder(methodPath).append("/").append(path).toString().replace('.', '/');
+        if (!path.startsWith("/")) {
+            sb.append("/");
+        }
+        path = sb.append(path).toString().replace('.', '/');
         return resolveTemplatePath(path, context);
     }
 
