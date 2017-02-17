@@ -309,7 +309,7 @@ public class SessionManager extends DestroyableBase {
         }
 
         String dissolveIntoCookieContent(H.KV<?> kv, boolean isSession) {
-            StringBuilder sb = S.builder();
+            S.Buffer sb = S.buffer();
             int i = 0;
             for (String k : kv.keySet()) {
                 if (i > 0) {

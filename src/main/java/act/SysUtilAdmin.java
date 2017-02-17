@@ -314,7 +314,7 @@ public class SysUtilAdmin {
                     }
                 }
             }
-            return S.builder().append(len).append(unit).toString();
+            return S.builder(len).append(unit).toString();
         }
     }
 

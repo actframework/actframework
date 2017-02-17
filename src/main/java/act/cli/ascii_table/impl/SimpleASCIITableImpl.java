@@ -18,6 +18,7 @@ package act.cli.ascii_table.impl;
 import act.cli.ascii_table.ASCIITableHeader;
 import act.cli.ascii_table.spec.IASCIITable;
 import act.cli.ascii_table.spec.IASCIITableAware;
+import org.osgl.util.S;
 
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -180,7 +181,7 @@ public class SimpleASCIITableImpl implements IASCIITable {
 		/**
 		 * Table String buffer
 		 */
-		StringBuilder tableBuf = new StringBuilder();
+		StringBuilder tableBuf = S.newBuilder();
 		
 		/**
 		 * Get maximum number of columns across all rows
@@ -241,8 +242,8 @@ public class SimpleASCIITableImpl implements IASCIITable {
 	private String getRowDataBuf(int colCount, List<Integer> colMaxLenList, 
 			String[] row, ASCIITableHeader[] headerObjs, boolean isHeader) {
 		
-		StringBuilder rowBuilder = new StringBuilder();
-		String formattedData = null;
+		S.Buffer rowBuilder = S.buffer();
+		String formattedData;
 		int align;
 		
 		for (int i = 0 ; i < colCount ; i ++) {
@@ -315,8 +316,8 @@ public class SimpleASCIITableImpl implements IASCIITable {
 	 */
 	private String getRowLineBuf(int colCount, List<Integer> colMaxLenList, String[][] data) {
 		
-		StringBuilder rowBuilder = new StringBuilder();
-		int colWidth = 0 ;
+		StringBuilder rowBuilder = S.builder();
+		int colWidth;
 		
 		for (int i = 0 ; i < colCount ; i ++) {
 			
@@ -356,11 +357,11 @@ public class SimpleASCIITableImpl implements IASCIITable {
 	private List<Integer> getMaxColLengths(int colCount, String[] header, String[][] data) {
 
 		List<Integer> colMaxLenList = new ArrayList<Integer>(colCount);
-		List<String> colData = null;
+		List<String> colData;
 		int maxLength;
 		
 		for (int i = 0 ; i < colCount ; i ++) {
-			colData = new ArrayList<String>();
+			colData = new ArrayList<>();
 			
 			if (header != null && i < header.length) {
 				colData.add(header[i]);

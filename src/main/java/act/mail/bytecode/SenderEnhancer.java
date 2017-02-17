@@ -277,7 +277,7 @@ public class SenderEnhancer extends MethodVisitor implements Opcodes {
                 }
                 list.add(new VarInsnNode(ALOAD, ctxId));
 
-                StringBuilder sb = S.builder();
+                S.Buffer sb = S.buffer();
                 for (int i = 0; i < len; ++i) {
                     LoadInsnInfo info = loadInsnInfoList.get(i);
                     info.appendTo(list, segment, sb);
@@ -427,7 +427,7 @@ public class SenderEnhancer extends MethodVisitor implements Opcodes {
                 this.index = index;
             }
 
-            void appendTo(InsnList list, Segment segment, StringBuilder paramNames) {
+            void appendTo(InsnList list, Segment segment, S.Buffer paramNames) {
                 LocalVariableMetaInfo var = var(segment);
                 if (null == var) return;
                 LdcInsnNode ldc = new LdcInsnNode(var.name());

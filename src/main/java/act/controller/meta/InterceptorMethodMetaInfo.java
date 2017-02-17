@@ -96,7 +96,7 @@ public class InterceptorMethodMetaInfo extends HandlerMethodMetaInfo<Interceptor
 
     @Override
     public String toString() {
-        StringBuilder sb = S.builder();
+        S.Buffer sb = S.buffer();
         if (0 != priority) {
             sb.append("p[")
                     .append(priority).append("] ");

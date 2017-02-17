@@ -525,11 +525,11 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
         return C.set(this.violations);
     }
 
-    public StringBuilder buildViolationMessage(StringBuilder builder) {
+    public S.Buffer buildViolationMessage(S.Buffer builder) {
         return buildViolationMessage(builder, "\n");
     }
 
-    public StringBuilder buildViolationMessage(StringBuilder builder, String separator) {
+    public S.Buffer buildViolationMessage(S.Buffer builder, String separator) {
         if (violations.isEmpty()) return builder;
         for (ConstraintViolation violation : violations) {
             builder.append(violation.getMessage()).append(separator);
@@ -540,7 +540,7 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
     }
 
     public String violationMessage(String separator) {
-        return buildViolationMessage(S.builder(), separator).toString();
+        return buildViolationMessage(S.buffer(), separator).toString();
     }
 
     public String violationMessage() {

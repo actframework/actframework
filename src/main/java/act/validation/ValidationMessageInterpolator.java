@@ -57,7 +57,7 @@ public class ValidationMessageInterpolator extends DestroyableBase implements Me
 
     private String merge(String template, Object val, Map<String, Object> attrs) {
         FastStr s = FastStr.of(template);
-        StringBuilder sb = S.builder();
+        S.Buffer sb = S.buffer();
         while (true) {
             int p0 = s.indexOf('$');
             if (p0 >= 0) {

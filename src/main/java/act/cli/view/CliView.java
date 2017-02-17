@@ -114,20 +114,20 @@ public enum CliView {
         }
 
         private String toTreeString(TreeNode result) {
-            StringBuilder sb = S.builder();
+            StringBuilder sb = S.newBuilder();
             buildTree(sb, result, "", true);
             return sb.toString();
         }
 
         private void buildTree(StringBuilder sb, TreeNode node, String prefix, boolean isTrail) {
-            StringBuilder sb0 = S.builder(prefix).append(isTrail ? "└── " : "├── ").append(node.label()).append("\n");
+            StringBuilder sb0 = S.newBuilder().append(prefix).append(isTrail ? "└── " : "├── ").append(node.label()).append("\n");
             sb.append(sb0);
             List<TreeNode> children = node.children();
             int sz = children.size();
             if (sz == 0) {
                 return;
             }
-            final String subPrefix = S.builder(prefix).append(isTrail ? "    " : "│   ").toString();
+            final String subPrefix = S.newBuilder().append(prefix).append(isTrail ? "    " : "│   ").toString();
             for (int i = 0; i < sz - 1; ++i) {
                 TreeNode child = children.get(i);
                 buildTree(sb, child, subPrefix, false);
@@ -271,7 +271,7 @@ public enum CliView {
                 spec.onValue("-not_exists");
             }
             List<String> outputFields = repo.outputFields(spec, componentType, context);
-            StringBuilder sb = S.builder();
+            S.Buffer sb = S.buffer();
             buildHeaderLine(sb, outputFields, spec.labelMapping());
             for (Object entity : dataList) {
                 sb.append($.OS.lineSeparator());
@@ -280,7 +280,7 @@ public enum CliView {
             return sb.toString();
         }
 
-        private void buildDataLine(StringBuilder sb, Object data, List<String> outputFields) {
+        private void buildDataLine(S.Buffer sb, Object data, List<String> outputFields) {
             Iterator<String> itr = outputFields.iterator();
             String prop = itr.next();
             sb.append(getProperty(data, prop));
@@ -297,7 +297,7 @@ public enum CliView {
             }
         }
 
-        private void buildHeaderLine(StringBuilder sb, List<String> outputFields, Map<String, String> labels) {
+        private void buildHeaderLine(S.Buffer sb, List<String> outputFields, Map<String, String> labels) {
             if (null == labels) {
                 labels = C.newMap();
             }

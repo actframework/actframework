@@ -3,7 +3,7 @@ package act.inject.param;
 import act.util.ActContext;
 import org.osgl.logging.LogManager;
 import org.osgl.logging.Logger;
-import org.rythmengine.utils.S;
+import org.osgl.util.S;
 
 import java.util.*;
 
@@ -11,7 +11,7 @@ class ParamTree {
 
     private static final Logger LOGGER = LogManager.get(ParamTree.class);
 
-    private Map<ParamKey, ParamTreeNode> allNodes = new HashMap<ParamKey, ParamTreeNode>();
+    private Map<ParamKey, ParamTreeNode> allNodes = new HashMap<>();
 
     void build(ActContext context) {
         Set<String> paramKeys = context.paramKeys();
@@ -75,10 +75,10 @@ class ParamTree {
      * `foo, 0.05`  instead of `foo, 0, 05`
      */
     private static String[] parseRawParamKey(String rawKey) {
-        List<String> list = new ArrayList<String>();
+        List<String> list = new ArrayList<>();
         int len = rawKey.length();
         boolean inSquare = false;
-        StringBuilder token = new StringBuilder();
+        S.Buffer token = S.buffer();
         for (int i = 0; i < len; ++i) {
             char c = rawKey.charAt(i);
             switch (c) {
@@ -106,7 +106,7 @@ class ParamTree {
         return list.toArray(new String[list.size()]);
     }
 
-    private static void addTokenToList(List<String> list, StringBuilder token) {
+    private static void addTokenToList(List<String> list, S.Buffer token) {
         String s = token.toString();
         if (S.notEmpty(s)) {
             list.add(s);

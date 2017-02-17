@@ -19,7 +19,7 @@ public class CliOverHttpContext extends CliContext {
 
     private static String line(ActionContext actionContext) {
         String cmd = null;
-        StringBuilder sb = S.builder();
+        S.Buffer sb = S.buffer();
         for (String s : actionContext.paramKeys()) {
             if ("cmd".equals(s)) {
                 cmd = actionContext.paramVal(s);

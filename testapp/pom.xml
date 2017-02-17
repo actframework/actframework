@@ -18,6 +18,8 @@
 ********************************************\
 *            version history
 ********************************************
+0.5.0
+  - update to ActFramework 0.5
 0.0.2
   - update to ActFramework 0.3
   - update to Act-Storage 0.3
@@ -33,7 +35,7 @@
   <groupId>org.actframework</groupId>
   <artifactId>testapp</artifactId>
   <packaging>jar</packaging>
-  <version>0.0.2-SNAPSHOT</version>
+  <version>0.5.0-SNAPSHOT</version>
 
   <name>ACT TEST APP</name>
   <description>Test ActFramework</description>
@@ -143,19 +145,19 @@
     <dependency>
       <groupId>org.actframework</groupId>
       <artifactId>act</artifactId>
-      <version>0.3.1-SNAPSHOT</version>
+      <version>0.5.0-SNAPSHOT</version>
     </dependency>
 
     <dependency>
       <groupId>org.actframework</groupId>
       <artifactId>act-morphia</artifactId>
-      <version>0.4.1-SNAPSHOT</version>
+      <version>0.5.1-SNAPSHOT</version>
     </dependency>
 
     <dependency>
       <groupId>org.actframework</groupId>
       <artifactId>act-storage</artifactId>
-      <version>0.3.0-SNAPSHOT</version>
+      <version>0.5.0-SNAPSHOT</version>
     </dependency>
 
     <dependency>

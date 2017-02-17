@@ -307,7 +307,7 @@ public class Router extends AppServiceBase<Router> {
             }
             node = node.parent;
         }
-        StringBuilder sb = S.builder();
+        S.Buffer sb = S.buffer();
         Iterator<String> itr = elements.reverseIterator();
         while (itr.hasNext()) {
             sb.append("/").append(itr.next());
@@ -442,7 +442,7 @@ public class Router extends AppServiceBase<Router> {
 
     // -- action method sensor
     public boolean isActionMethod(String className, String methodName) {
-        String action = new StringBuilder(className).append(".").append(methodName).toString();
+        String action = S.builder(className).append(".").append(methodName).toString();
         return actionNames.contains(action);
     }
 
@@ -508,7 +508,7 @@ public class Router extends AppServiceBase<Router> {
     private Node search(H.Method method, Iterator<CharSequence> path, ActionContext context) {
         Node node = root(method);
         if (node.terminateRouteSearch()) {
-            StringBuilder sb = new StringBuilder();
+            StringBuilder sb = S.builder();
             while (path.hasNext()) {
                 sb.append('/').append(path.next());
             }
@@ -731,7 +731,7 @@ public class Router extends AppServiceBase<Router> {
 
         @Override
         public String label() {
-            StringBuilder sb = S.builder(name);
+            StringBuilder sb = S.newBuilder(name);
             if (null != handler) {
                 sb.append(" -> ").append(RouteInfo.compactHandler(handler.toString()));
             }
@@ -808,7 +808,7 @@ public class Router extends AppServiceBase<Router> {
         String path() {
             if (null == parent) return "/";
             String pPath = parent.path();
-            return new StringBuilder(pPath).append(pPath.endsWith("/") ? "" : "/").append(name).toString();
+            return S.builder(pPath).append(pPath.endsWith("/") ? "" : "/").append(name).toString();
         }
 
         void debug(H.Method method, PrintStream ps) {

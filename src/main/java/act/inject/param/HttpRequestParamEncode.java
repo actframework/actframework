@@ -1,6 +1,7 @@
 package act.inject.param;
 
 import org.osgl.util.E;
+import org.osgl.util.S;
 
 public enum HttpRequestParamEncode {
     /**
@@ -9,7 +10,7 @@ public enum HttpRequestParamEncode {
     JQUERY() {
         @Override
         protected String _concat(String[] path, int len) {
-            StringBuilder sb = new StringBuilder(path[0]);
+            StringBuilder sb = S.builder(path[0]);
             for (int i = 1; i < len; ++i) {
                 sb.append("[").append(path[i]).append("]");
             }
@@ -23,7 +24,7 @@ public enum HttpRequestParamEncode {
     DOT_NOTATION() {
         @Override
         protected String _concat(String[] path, int len) {
-            StringBuilder sb = new StringBuilder(path[0]);
+            StringBuilder sb = S.builder(path[0]);
             for (int i = 1; i < len; ++i) {
                 sb.append(".").append(path[i]);
             }

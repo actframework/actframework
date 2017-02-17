@@ -171,7 +171,7 @@ public class JsonDTOClassManager extends AppServiceBase<JsonDTOClassManager> {
     };
 
     private static String key(List<BeanSpec> beanSpecs) {
-        StringBuilder sb = new StringBuilder();
+        S.Buffer sb = S.buffer();
         for (BeanSpec beanSpec : beanSpecs) {
             sb.append(beanSpec.name()).append(beanSpec.type().hashCode());
         }

@@ -34,7 +34,7 @@ public abstract class TreeNodeFilter extends $.F2<List<? extends TreeNode>, Tree
     public enum Common {
         ;
         private static String path(List<? extends TreeNode> context, TreeNode theNode) {
-            StringBuilder sb = S.builder();
+            S.Buffer sb = S.buffer();
             for (TreeNode n : context) {
                 sb.append(n.id()).append("/");
             }

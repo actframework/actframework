@@ -5,13 +5,14 @@ import act.controller.ParamNames;
 import act.handler.ExpressHandler;
 import act.handler.builtin.controller.FastRequestHandler;
 import org.osgl.http.H;
+import org.osgl.util.S;
 
 public class RedirectDir extends FastRequestHandler implements ExpressHandler {
 
     private String url;
 
     public RedirectDir(String url) {
-        StringBuilder sb = new StringBuilder(url);
+        StringBuilder sb = S.builder(url);
         if (!url.endsWith("/")) {
             sb.append("/");
         }

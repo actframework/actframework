@@ -116,7 +116,7 @@ public class GroupInterceptorMetaInfo extends DestroyableBase {
 
     @Override
     public String toString() {
-        StringBuilder sb = S.builder();
+        S.Buffer sb = S.buffer();
         appendList("BEFORE", beforeList, sb);
         appendList("AFTER", afterList, sb);
         appendList("CATCH", catchList, sb);
@@ -132,7 +132,7 @@ public class GroupInterceptorMetaInfo extends DestroyableBase {
         }
     }
 
-    private void appendList(String label, List<?> list, StringBuilder sb) {
+    private void appendList(String label, List<?> list, S.Buffer sb) {
         if (list.isEmpty()) {
             return;
         }

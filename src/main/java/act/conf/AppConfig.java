@@ -356,7 +356,10 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     public CSRFProtector csrfProtector() {
         if (null == csrfProtector) {
             try {
-                this.csrfProtector = get(CSRF_PROTECTOR);
+                csrfProtector = get(CSRF_PROTECTOR);
+                if (null == csrfProtector) {
+                    csrfProtector = CSRFProtector.Predefined.HMAC;
+                }
             } catch (ConfigurationException e) {
                 Object obj = helper.getValFromAliases(raw, CSRF_PROTECTOR.key(), "impl", null);
                 if (null != obj) {

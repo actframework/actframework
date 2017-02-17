@@ -201,7 +201,7 @@ public class CliDispatcher extends AppServiceBase<CliDispatcher> {
         if (sa.length < 2) {
             return null;
         }
-        StringBuilder sb = S.builder();
+        S.Buffer sb = S.buffer();
         switch (level) {
             case 0:
                 sb.append(".");

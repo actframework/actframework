@@ -118,7 +118,7 @@ class AppCompiler extends DestroyableBase {
     private INameEnvironment nameEnv = new INameEnvironment() {
         @Override
         public NameEnvironmentAnswer findType(char[][] chars) {
-            final StringBuilder result = new StringBuilder();
+            final StringBuilder result = S.builder();
             for (int i = 0; i < chars.length; i++) {
                 if (i != 0) {
                     result.append('.');
