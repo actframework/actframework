@@ -10,6 +10,7 @@ import org.osgl.util.S;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 
 /**
  * ASCII arts for Act
@@ -62,8 +63,25 @@ public class Banner {
     }
 
     private static String asciiArt(String s) {
+        String font = System.getProperty("banner.font");
+        if (null == font) {
+            int len = s.length();
+            if (len < 5) {
+                font = "big";
+            } else if (len < 8) {
+                font = "standard";
+            } else if (len < 12) {
+                font = "small";
+            } else {
+                font = "mini";
+            }
+        }
+        InputStream is = Banner.class.getResourceAsStream("/" + font + ".flf");
+        if (null == is) {
+            is = Banner.class.getResourceAsStream("/standard.flf");
+        }
         try {
-            return FigletFont.convertOneLine(s);
+            return FigletFont.convertOneLine(is, s.toUpperCase());
         } catch (IOException e) {
             throw E.ioException(e);
         }

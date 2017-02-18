@@ -111,6 +111,7 @@
           <include>**/*.gif</include>
           <include>**/*.json</include>
           <include>rythm/**</include>
+          <include>*.flf</include>
         </includes>
       </resource>
     </resources>
