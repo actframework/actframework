@@ -3,11 +3,12 @@
 [![Join the chat at https://gitter.im/actframework/actframework](https://badges.gitter.im/actframework/actframework.svg)](https://gitter.im/actframework/actframework?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 ## News
+* Actframework 正式登录[码云](https://git.oschina.net/actframework/actframework)以及[开源中国](http://www.oschina.net/p/actframework)
 * Actframework [benchmark set](https://github.com/TechEmpower/FrameworkBenchmarks/tree/master/frameworks/Java/act) 
 accepted by [TechEmpower Benchmark](https://www.techempower.com/benchmarks/). Looking forward to
 seeing Act in the 14 round test
 * A 3rd party [simple benchmark project](https://github.com/networknt/microservices-framework-benchmark) 
-shows Act's throughput 20 times faster than of Spring-boot in simple cases
+shows Act's throughput is 20 times better than of Spring-boot in simple case
 
 ## Project status
 
@@ -43,11 +44,11 @@ Add the following snippet into your `pom.xml` file to get SNAPSHOT version:
       it run as an independent Java application and it starts in seconds
 
 * **Unbeatable development experience w/ great performance**
-    * Never restart your app when you are developing it. Act's super dev mode provides hot reloading
-      feature is the dream of every Java web app developer. Check out 
-      [this 3 mins video](https://www.youtube.com/watch?v=68Z-jTL6fDg) to feel it
+    * Never restart your app when you are developing. Act's dev mode provides hot reloading
+      feature makes it the dream of every Java web app developer. Check out 
+      [this 3 mins video](https://www.youtube.com/watch?v=68Z-jTL6fDg) and feel it!
     * According to [this 3rd party benchmark](https://github.com/networknt/microservices-framework-benchmark)
-      Act's beats most of Java web framework. In simple case Act can be 20 times faster than Springboot
+      Act beats most Java web framework on the market. In simple case Act can be 20 times faster than Springboot
 
 * **Fully JSR330 Dependency Injection support**
     * ActFramework's DI support is built on top of [Genie](https://github.com/osglworks/java-di), a lightweight
@@ -63,7 +64,7 @@ Add the following snippet into your `pom.xml` file to get SNAPSHOT version:
 * **Uncompromising Security**
     * Session cookie is secure and http only, payload is signed and encrypted (optionally)
     * [Enable CSRF prevention with just one configuration item](http://actframework.org/doc/configuration.md#csrf)
-    * XSS prevention: Rythm engine [escape variable output](http://fiddle.rythmengine.org/#/editor/398e71d927234f13a26bb346376141ce) by default
+    * XSS prevention: the default Rythm engine [escape variable output](http://fiddle.rythmengine.org/#/editor/398e71d927234f13a26bb346376141ce) by default
     * Implementing your authentication/authorisation/accounting framework using [AAA plugin](https://github.com/actframework/act-aaa-plugin)
 
 * **Annotation aware but not annotation stack** 
@@ -222,8 +223,8 @@ public class User extends MorphiaAdaptiveRecord<User> {
 }
 ```
 
-See [this 1 hour video on RESTful support](https://www.youtube.com/watch?v=B2RRSzYeo8c&t=4s) or
-[for user without youtube access](http://www.tudou.com/programs/view/K9ayRYIJNhk/)
+See [this 1 hour video on RESTful support](https://www.youtube.com/watch?v=B2RRSzYeo8c&t=4s) 
+or [for user without youtube access](http://www.tudou.com/programs/view/K9ayRYIJNhk/)
 
 
 See [this 7 mins video to understand more about AdaptiveRecord](https://www.youtube.com/watch?v=gWisqi-bp0M&t=1s)

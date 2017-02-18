@@ -14,6 +14,7 @@ import com.alibaba.fastjson.serializer.ObjectSerializer;
 import com.alibaba.fastjson.serializer.SerializeWriter;
 import org.joda.time.*;
 
+import javax.inject.Inject;
 import javax.inject.Singleton;
 import java.io.IOException;
 import java.lang.reflect.Type;
@@ -28,6 +29,7 @@ public class FastJsonJodaDateCodec extends DestroyableBase implements ObjectSeri
 
     private App app;
 
+    @Inject
     public FastJsonJodaDateCodec(App app) {
         this.app = app;
     }
