@@ -130,7 +130,7 @@ class AppCompiler extends DestroyableBase {
 
         @Override
         public NameEnvironmentAnswer findType(char[] typeName, char[][] packageName) {
-            final StringBuilder result = new StringBuilder();
+            final StringBuilder result = S.builder();
             for (int i = 0; i < packageName.length; i++) {
                 result.append(packageName[i]);
                 result.append('.');
@@ -141,7 +141,7 @@ class AppCompiler extends DestroyableBase {
 
         @Override
         public boolean isPackage(char[][] parentPackageName, char[] packageName) {
-            StringBuilder sb = new StringBuilder();
+            StringBuilder sb = S.builder();
             if (parentPackageName != null) {
                 for (char[] p : parentPackageName) {
                     sb.append(new String(p));

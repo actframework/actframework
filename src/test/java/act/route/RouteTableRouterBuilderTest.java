@@ -26,7 +26,6 @@ import static org.osgl.http.H.Method.GET;
 
 public class RouteTableRouterBuilderTest extends RouterTestBase {
 
-    private static final String SVC_ID_ALL_ONE = "111111111111111111111111";
     private RouteTableRouterBuilder builder;
 
     @Override

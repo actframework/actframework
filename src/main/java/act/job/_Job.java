@@ -107,19 +107,19 @@ class _Job extends DestroyableBase implements Runnable {
     }
 
     protected String brief() {
-        return S.fmt("job[%s]\none time job?%s\ntrigger:%s", id, oneTime, trigger);
+        return S.builder("job[").append(id).append("]\none time job?").append(oneTime).append("\ntrigger:").append(trigger).toString();
     }
 
     @Override
     public String toString() {
-        StringBuilder sb = S.builder(brief());
+        S.Buffer sb = S.buffer(brief());
         printSubJobs(parallelJobs.jobList, "parallel jobs", sb);
         printSubJobs(followingJobs.jobList, "following jobs", sb);
         printSubJobs(precedenceJobs.jobList, "precedence jobs", sb);
         return sb.toString();
     }
 
-    private static void printSubJobs(Collection<? extends _Job> subJobs, String label, StringBuilder sb) {
+    private static void printSubJobs(Collection<? extends _Job> subJobs, String label, S.Buffer sb) {
         if (null != subJobs && !subJobs.isEmpty()) {
             sb.append("\n").append(label);
             for (_Job job : subJobs) {

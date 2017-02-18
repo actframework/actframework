@@ -108,9 +108,7 @@ public final class CliHandlerProxy extends CliHandlerBase {
 
     // could be used by View to resolve default path to template
     private void saveCommandPath(CliContext context) {
-        StringBuilder sb = S.builder(methodMetaInfo.fullName());
-        String path = sb.toString();
-        context.commandPath(path);
+        context.commandPath(methodMetaInfo.fullName());
     }
 
     private void generateExecutor() {

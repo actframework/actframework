@@ -41,8 +41,13 @@ public class CatchMethodMetaInfo extends InterceptorMethodMetaInfo {
 
     @Override
     public String toString() {
-        StringBuilder sb = S.builder("catch").append(targetExceptionClassNames).append(" ").append(super.toString());
-        return sb.toString();
+        return toStrBuffer(S.buffer()).toString();
+    }
+
+    @Override
+    protected S.Buffer toStrBuffer(S.Buffer sb) {
+        StringBuilder prependix = S.builder("catch").append(targetExceptionClassNames).append(" ");
+        return super.toStrBuffer(sb).prepend(prependix);
     }
 
     @Override

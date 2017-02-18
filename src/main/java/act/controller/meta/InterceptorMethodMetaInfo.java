@@ -96,19 +96,24 @@ public class InterceptorMethodMetaInfo extends HandlerMethodMetaInfo<Interceptor
 
     @Override
     public String toString() {
-        S.Buffer sb = S.buffer();
+        return toStrBuffer(S.buffer()).toString();
+    }
+
+    @Override
+    protected S.Buffer toStrBuffer(S.Buffer sb) {
+        StringBuilder prependix = S.builder();
         if (0 != priority) {
-            sb.append("p[")
+            prependix.append("p[")
                     .append(priority).append("] ");
         }
         if (!whiteList.isEmpty()) {
-            sb.append("+").append(whiteList).append(" ");
+            prependix.append("+").append(whiteList).append(" ");
         }
         if (!blackList.isEmpty()) {
-            sb.append("-").append(blackList).append(" ");
+            prependix.append("-").append(blackList).append(" ");
         }
-        sb.append(super.toString());
-        return sb.toString();
+
+        return super.toStrBuffer(sb).prepend(prependix);
     }
 
     @Override

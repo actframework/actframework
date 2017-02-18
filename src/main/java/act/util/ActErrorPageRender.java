@@ -10,6 +10,7 @@ import org.osgl.http.H;
 import org.osgl.mvc.ErrorPageRenderer;
 import org.osgl.mvc.MvcConfig;
 import org.osgl.mvc.result.ErrorResult;
+import org.osgl.util.S;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -54,7 +55,7 @@ public class ActErrorPageRender extends ErrorPageRenderer {
                         + header + "</h1></body></html>";
                 return content;
             } else if (H.Format.XML == accept) {
-                StringBuilder sb = new StringBuilder();
+                StringBuilder sb = S.builder();
                 sb.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?><error>");
                 if (null != errorCode) {
                     sb.append("<code>").append(errorCode).append("</code");
@@ -84,9 +85,9 @@ public class ActErrorPageRender extends ErrorPageRenderer {
             return JSON.toJSONString(payload);
         }
         if (null == errorCode) {
-            return new StringBuilder("{\"message\":\"").append(errorMsg).append("\"}").toString();
+            return S.builder("{\"message\":\"").append(errorMsg).append("\"}").toString();
         } else {
-            return new StringBuilder("{\"code\":").append(errorCode).append(",\"message\":\"").append(errorMsg).append("\"}").toString();
+            return S.builder("{\"code\":").append(errorCode).append(",\"message\":\"").append(errorMsg).append("\"}").toString();
         }
     }
 

@@ -52,7 +52,7 @@ public class SenderMethodMetaInfo extends DestroyableBase {
     }
 
     public String fullName() {
-        return S.builder(clsInfo.className()).append(".").append(name()).toString();
+        return S.buffer(clsInfo.className()).a(".").a(name()).toString();
     }
 
     public SenderMethodMetaInfo configId(String id) {

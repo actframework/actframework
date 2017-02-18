@@ -82,7 +82,7 @@ public class CommandMethodMetaInfo extends DestroyableBase {
     }
 
     public String fullName() {
-        return S.builder(clsInfo.className()).append(".").append(methodName()).toString();
+        return S.buffer(clsInfo.className()).append(".").append(methodName()).toString();
     }
 
     public CommandMethodMetaInfo helpMsg(String msg) {

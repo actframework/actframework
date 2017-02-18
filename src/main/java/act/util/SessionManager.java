@@ -266,7 +266,7 @@ public class SessionManager extends DestroyableBase {
                 List<char[]> kAndV = split(pair, '\u0001');
                 int sz = kAndV.size();
                 if (sz != 2) {
-                    StringBuilder sb = new StringBuilder();
+                    StringBuilder sb = S.builder();
                     for (int i = 0; i < sz; ++i) {
                         if (i > 0) sb.append(":");
                         sb.append(Arrays.toString(kAndV.get(i)));

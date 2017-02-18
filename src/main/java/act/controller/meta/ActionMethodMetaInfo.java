@@ -44,8 +44,11 @@ public class ActionMethodMetaInfo extends HandlerMethodMetaInfo<ActionMethodMeta
 
     @Override
     public String toString() {
-        StringBuilder sb = S.builder(super.toString())
-                .append("\n").append(interceptors);
-        return sb.toString();
+        return toStrBuffer(S.buffer()).toString();
+    }
+
+    @Override
+    protected S.Buffer toStrBuffer(S.Buffer buffer) {
+        return super.toStrBuffer(buffer).append("\n").append(interceptors);
     }
 }

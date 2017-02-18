@@ -89,7 +89,7 @@ class JsonDTOClassGenerator implements Opcodes {
         if (typeParams.isEmpty()) {
             return root;
         }
-        StringBuilder sb = S.builder("<");
+        S.Buffer sb = S.buffer("<");
         for (java.lang.reflect.Type type : typeParams) {
             BeanSpec specx = BeanSpec.of(type, null, spec.injector());
             sb.append(typeDesc(specx));

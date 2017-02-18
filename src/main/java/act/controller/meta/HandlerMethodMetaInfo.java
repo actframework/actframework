@@ -246,14 +246,18 @@ public abstract class HandlerMethodMetaInfo<T extends HandlerMethodMetaInfo> ext
 
     @Override
     public String toString() {
-        StringBuilder sb = S.builder(actContextInjection).append(" ");
+        return toStrBuffer(S.buffer()).toString();
+    }
+
+    protected S.Buffer toStrBuffer(S.Buffer sb) {
+        sb.append(actContextInjection).append("");
         sb.append(_invokeType())
                 .append(_return())
                 .append(fullName())
                 .append("(")
                 .append(_params())
                 .append(")");
-        return sb.toString();
+        return sb;
     }
 
     private String _invokeType() {

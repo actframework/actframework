@@ -38,7 +38,7 @@ public interface CSRFProtector {
             public String generateToken(H.Session session, App app) {
                 String id = session.id();
                 String username = session.get(app.config().sessionKeyUsername());
-                StringBuilder sb = new StringBuilder(id);
+                StringBuilder sb = S.builder(id);
                 if (S.notBlank(username)) {
                     sb.append(username);
                 }

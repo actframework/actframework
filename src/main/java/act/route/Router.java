@@ -373,7 +373,7 @@ public class Router extends AppServiceBase<Router> {
         if (path.startsWith("//") || path.startsWith("http")) {
             return path;
         }
-        StringBuilder sb = S.builder(urlBase());
+        S.Buffer sb = S.buffer(urlBase());
         if (!path.startsWith("/")) {
             sb.append("/");
         }
@@ -493,7 +493,7 @@ public class Router extends AppServiceBase<Router> {
                 if (i == sz) {
                     context.param(ParamNames.PATH, "");
                 } else {
-                    StringBuilder sb = new StringBuilder();
+                    StringBuilder sb = S.builder();
                     for (int j = i; j < sz; ++j) {
                         sb.append('/').append(path.get(j));
                     }
@@ -522,7 +522,7 @@ public class Router extends AppServiceBase<Router> {
                 if (!path.hasNext()) {
                     context.param(ParamNames.PATH, "");
                 } else {
-                    StringBuilder sb = new StringBuilder();
+                    StringBuilder sb = S.builder();
                     while (path.hasNext()) {
                         sb.append('/').append(path.next());
                     }

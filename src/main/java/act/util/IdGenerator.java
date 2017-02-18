@@ -363,13 +363,13 @@ public class IdGenerator {
 
     /**
      * Generate a unique ID across the cluster
-     * @return
+     * @return generated ID
      */
     public String genId() {
-        StringBuilder sb = S.builder();
-        sb.append(longEncoder.longToStr(nodeIdProvider.nodeId()))
-                .append(longEncoder.longToStr(startIdProvider.startId()))
-                .append(longEncoder.longToStr(sequenceProvider.seqId()));
+        S.Buffer sb = S.buffer();
+        sb.a(longEncoder.longToStr(nodeIdProvider.nodeId()))
+          .a(longEncoder.longToStr(startIdProvider.startId()))
+          .a(longEncoder.longToStr(sequenceProvider.seqId()));
         return sb.toString();
     }
 

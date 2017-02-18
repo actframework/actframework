@@ -36,7 +36,7 @@ public class Banner {
     public static String banner(String text, String actVersion, String appVersion) {
         String s = asciiArt(text);
         int width = width(s);
-        StringBuilder sb = S.builder(s);
+        S.Buffer sb = S.buffer(s);
         if (null == appVersion) {
             int n = actVersion.length();
             int spaceLeft = (width - n + 1) / 2;

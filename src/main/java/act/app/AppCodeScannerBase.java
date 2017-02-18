@@ -69,6 +69,6 @@ public abstract class AppCodeScannerBase implements AppCodeScanner {
 
     @Override
     public String toString() {
-        return S.builder(getClass().getName()).append("[").append(app).append("]").toString();
+        return S.buffer(getClass().getName()).append("[").append(app).append("]").toString();
     }
 }

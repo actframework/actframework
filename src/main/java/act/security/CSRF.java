@@ -52,8 +52,8 @@ public class CSRF {
 
     public static String formField(ActionContext ctx) {
         String paramName = ctx.config().csrfParamName();
-        return new StringBuilder("<input type='hidden' name='").append(paramName)
-                .append("' value='").append(ctx.renderArg(paramName)).append("'>").toString();
+        return S.buffer("<input type='hidden' name='").a(paramName)
+                .a("' value='").a(ctx.renderArg(paramName)).a("'>").toString();
     }
 
     public static Spec spec(Class controller) {
