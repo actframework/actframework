@@ -12,7 +12,9 @@ import org.osgl.util.S;
 import org.osgl.util.StringValueResolver;
 
 import javax.inject.Inject;
+import javax.inject.Singleton;
 
+@Singleton
 public class JodaLocalTimeCodec extends JodaDateTimeCodecBase<LocalTime> {
 
     private DateTimeFormatter dateFormat;

@@ -11,7 +11,9 @@ import org.osgl.util.AnnotationAware;
 import org.osgl.util.StringValueResolver;
 
 import javax.inject.Inject;
+import javax.inject.Singleton;
 
+@Singleton
 public class JodaLocalDateCodec extends JodaDateTimeCodecBase<LocalDate> {
 
     private DateTimeFormatter dateFormat;
