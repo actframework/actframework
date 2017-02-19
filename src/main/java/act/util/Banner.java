@@ -66,9 +66,9 @@ public class Banner {
     }
 
     private static final String[] _BANNER_FONTS = {
-            "banner3", "big", "marquee",
-            "mini", "slant", "small", "speed",
-            "standard", "starwars",
+            "banner3", "big", "doom", "marquee",
+            "lcd", "mini", "slant", "small",
+            "speed", "standard", "starwars",
     };
 
     private static String asciiArt(String s) {
@@ -148,7 +148,7 @@ public class Banner {
             printArt("NOPQRSTUVWXYZ");
             printArt("1234567890");
             System.out.println("\n\n\n");
-        } catch (ArrayIndexOutOfBoundsException e) {
+        } catch (RuntimeException e) {
             return false;
         }
         return true;
