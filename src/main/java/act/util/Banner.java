@@ -23,12 +23,7 @@ public class Banner {
     private static String cachedBanner;
 
     public static void print(String appName, String appVersion) {
-        String banner;
-        if (S.anyBlank(appName, appVersion)) {
-            banner = banner("ACT", Act.VERSION, null);
-        } else {
-            banner = banner(appName, Act.VERSION, appVersion);
-        }
+        String banner = banner(appName, Act.VERSION, appVersion);
         System.out.println(banner);
         cachedBanner = banner;
     }
@@ -38,10 +33,13 @@ public class Banner {
     }
 
     public static String banner(String text, String actVersion, String appVersion) {
+        if (S.blank(text)) {
+            text = "ACTFRAMEWORK";
+        }
         String s = asciiArt(text);
         int width = width(s);
         S.Buffer sb = S.buffer(s);
-        if (null == appVersion) {
+        if ("ACTFRAMEWORK".equals(text)) {
             int n = actVersion.length();
             int spaceLeft = (width - n + 1) / 2;
             for (int i = 0; i < spaceLeft; ++i) {

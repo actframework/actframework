@@ -52,7 +52,7 @@ import java.util.Map;
 import static act.Destroyable.Util.tryDestroy;
 
 /**
- * The Act server
+ * The Act runtime and facade
  */
 public final class Act {
 
@@ -462,13 +462,29 @@ public final class Act {
     }
 
     /**
+     * This method is obsolete. Please use {@link #getInstance(String)} instead
+     */
+    @Deprecated
+    public static <T> T newInstance(String className) {
+        return App.instance().getInstance(className);
+    }
+
+    /**
      * Return an instance with give class name
      * @param className the class name
      * @param <T> the generic type of the class
      * @return the instance of the class
      */
-    public static <T> T newInstance(String className) {
-        return App.instance().getInstance(className);
+    public static <T> T getInstance(String className) {
+        return app().getInstance(className);
+    }
+
+    /**
+     * This method is obsolete. Please use {@link #getInstance(Class)} instead
+     */
+    @Deprecated
+    public static <T> T newInstance(Class<T> clz) {
+        return App.instance().getInstance(clz);
     }
 
     /**
@@ -477,8 +493,8 @@ public final class Act {
      * @param <T> the generic type of the class
      * @return the instance of the class
      */
-    public static <T> T newInstance(Class<T> clz) {
-        return App.instance().getInstance(clz);
+    public static <T> T getInstance(Class<? extends T> clz) {
+        return app().getInstance(clz);
     }
 
     public static int classCacheSize() {
