@@ -29,12 +29,22 @@ public class RenderCSV extends RenderContent {
         this.context = context;
     }
 
-    private static String render(Object v, PropertySpec.MetaInfo spec, ActContext context) {
-        return CliView.CSV.render(v, spec, context);
+    public RenderCSV(H.Status status, Object v, PropertySpec.MetaInfo spec, ActContext context) {
+        super(status, render(v, spec, context), H.Format.CSV);
+        this.context = context;
     }
 
     public static RenderCSV get(Object v, PropertySpec.MetaInfo spec, ActContext context) {
         payload.get().message(render(v, spec, context));
         return _INSTANCE;
+    }
+
+    public static RenderCSV get(H.Status status, Object v, PropertySpec.MetaInfo spec, ActContext context) {
+        payload.get().message(render(v, spec, context)).status(status);
+        return _INSTANCE;
+    }
+
+    private static String render(Object v, PropertySpec.MetaInfo spec, ActContext context) {
+        return CliView.CSV.render(v, spec, context);
     }
 }

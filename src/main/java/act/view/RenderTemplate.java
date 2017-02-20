@@ -60,9 +60,12 @@ public class RenderTemplate extends RenderAny {
         resp.initContentType(s);
     }
 
-
-
     public static RenderTemplate get() {
+        return INSTANCE;
+    }
+
+    public static RenderTemplate get(H.Status status) {
+        payload.get().status(status);
         return INSTANCE;
     }
 
@@ -71,4 +74,9 @@ public class RenderTemplate extends RenderAny {
         return INSTANCE;
     }
 
+    public static RenderTemplate of(H.Status status, Map<String, Object> args) {
+        payload.get().status(status);
+        renderArgsBag.set(args);
+        return INSTANCE;
+    }
 }

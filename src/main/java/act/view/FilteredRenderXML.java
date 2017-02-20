@@ -17,6 +17,10 @@ public class FilteredRenderXML extends RenderContent {
         super(render(v, spec, context), H.Format.XML);
     }
 
+    public FilteredRenderXML(H.Status status, Object v, PropertySpec.MetaInfo spec, ActContext context) {
+        super(status, render(v, spec, context), H.Format.XML);
+    }
+
     private static String render(Object v, PropertySpec.MetaInfo spec, ActContext context) {
         return CliView.XML.render(v, spec, context);
     }

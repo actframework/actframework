@@ -29,6 +29,7 @@ public interface AdaptiveRecord<ID_TYPE, MODEL_TYPE extends AdaptiveRecord> exte
 
     /**
      * Add or replace a key/val pair into the active record
+     *
      * @param key the key
      * @param val the value
      * @return the active record instance
@@ -37,13 +38,13 @@ public interface AdaptiveRecord<ID_TYPE, MODEL_TYPE extends AdaptiveRecord> exte
 
     /**
      * Merge a key/val pair in the active record.
-     *
+     * <p>
      * If the key specified does not exists then insert the key/val pair into the record.
-     *
+     * <p>
      * If there are existing key/val pair then merge it with the new one:
      * * if the val is simple type or cannot be merged, then replace the existing value with new value
      * * if the val can be merged, e.g. it is a POJO or another adaptive record, then merge the new value into
-     *   the old value. Merge shall happen recursively
+     * the old value. Merge shall happen recursively
      *
      * @param key the key
      * @param val the value
@@ -53,6 +54,7 @@ public interface AdaptiveRecord<ID_TYPE, MODEL_TYPE extends AdaptiveRecord> exte
 
     /**
      * Add all key/val pairs from specified kv map into this active record
+     *
      * @param kvMap the key/value pairs
      * @return this active record instance
      */
@@ -60,6 +62,7 @@ public interface AdaptiveRecord<ID_TYPE, MODEL_TYPE extends AdaptiveRecord> exte
 
     /**
      * Merge all key/val pairs from specified kv map into this active record
+     *
      * @param kvMap the key/value pairs
      * @return this active record instance
      * @see #mergeValue(String, Object)
@@ -68,6 +71,7 @@ public interface AdaptiveRecord<ID_TYPE, MODEL_TYPE extends AdaptiveRecord> exte
 
     /**
      * Get value from the active record by key specified
+     *
      * @param key the key
      * @param <T> the generic type of the value
      * @return the value or `null` if not found
@@ -76,18 +80,21 @@ public interface AdaptiveRecord<ID_TYPE, MODEL_TYPE extends AdaptiveRecord> exte
 
     /**
      * Export the key/val pairs from this active record into a map
+     *
      * @return the exported map contains all key/val pairs stored in this active record
      */
     Map<String, Object> toMap();
 
     /**
      * Get the size of the data stored in the active record
+     *
      * @return the active record size
      */
     int size();
 
     /**
      * Check if the active records has a value associated with key specified
+     *
      * @param key the key
      * @return `true` if there is value associated with the key in the record, or `false` otherwise
      */
@@ -95,12 +102,14 @@ public interface AdaptiveRecord<ID_TYPE, MODEL_TYPE extends AdaptiveRecord> exte
 
     /**
      * Returns a set of keys that has value stored in the active record
+     *
      * @return the key set
      */
     Set<String> keySet();
 
     /**
      * Returns a set of entries stored in the active record
+     *
      * @return the entry set
      */
     Set<Map.Entry<String, Object>> entrySet();
@@ -109,6 +118,7 @@ public interface AdaptiveRecord<ID_TYPE, MODEL_TYPE extends AdaptiveRecord> exte
      * Returns a set of entries stored in the active record. For
      * field entries, use the field filter specified to check
      * if it needs to be added into the return set
+     *
      * @param fieldFilter the function that returns `true` or `false` for
      *                    bean spec of a certain field declared in the class
      * @return the entry set with field filter applied
@@ -117,12 +127,14 @@ public interface AdaptiveRecord<ID_TYPE, MODEL_TYPE extends AdaptiveRecord> exte
 
     /**
      * Returns a Map typed object backed by this active record
+     *
      * @return a Map backed by this active record
      */
     Map<String, Object> asMap();
 
     /**
      * Returns the meta info of this AdaptiveRecord
+     *
      * @return
      */
     @Transient
@@ -131,41 +143,86 @@ public interface AdaptiveRecord<ID_TYPE, MODEL_TYPE extends AdaptiveRecord> exte
     class MetaInfo {
         private Class<? extends AdaptiveRecord> arClass;
         public String className;
-        private Class<? extends Annotation> transientAnnotationType;
         public Map<String, BeanSpec> fieldSpecs;
         public Map<String, Type> fieldTypes;
         public Map<String, $.Function> fieldGetters;
         public Map<String, $.Func2> fieldSetters;
         public Map<String, $.Func2> fieldMergers;
 
-        public MetaInfo(Class<? extends AdaptiveRecord> clazz, Class<? extends Annotation> transientAnnotationType) {
+        public MetaInfo(Class<? extends AdaptiveRecord> clazz) {
             this.className = clazz.getName();
             this.arClass = clazz;
-            this.transientAnnotationType = transientAnnotationType;
-            this.discoverFields(clazz);
+            this.discoverProperties(clazz);
         }
 
         public Type fieldType(String fieldName) {
             return fieldTypes.get(fieldName);
         }
 
-        private void discoverFields(Class<? extends AdaptiveRecord> clazz) {
-            List<Field> list = $.fieldsOf(arClass, $.F.NON_STATIC_FIELD/*.and($.F.fieldWithAnnotation(transientAnnotationType)).negate()*/);
+        private void discoverProperties(Class<? extends AdaptiveRecord> clazz) {
             fieldSpecs = new HashMap<>();
             fieldTypes = new HashMap<>();
             fieldGetters = new HashMap<>();
             fieldSetters = new HashMap<>();
             fieldMergers = new HashMap<>();
             Injector injector = Act.app().injector();
-            for (Field f : list) {
-                //if (!f.isAnnotationPresent(transientAnnotationType)) {
-                    fieldSpecs.put(f.getName(), BeanSpec.of(f, injector));
-                    fieldTypes.put(f.getName(), f.getGenericType());
-                    fieldGetters.put(f.getName(), fieldGetter(f, clazz));
-                    fieldSetters.put(f.getName(), fieldSetter(f, clazz));
-                    fieldMergers.put(f.getName(), fieldMerger(f, clazz));
-                //}
+            for (final Method m : clazz.getMethods()) {
+                String name = propertyName(m);
+                if (S.blank(name)) {
+                    continue;
+                } else {
+                    name = S.lowerFirst(name);
+                    if ("idAsStr".equals(name)) {
+                        // special case for MorphiaModel
+                        continue;
+                    }
+                }
+                Class returnType = m.getReturnType();
+                Type paramType = null;
+                Class<?>[] params = m.getParameterTypes();
+                if (null != params && params.length == 1) {
+                    paramType = params[0];
+                }
+                Type fieldType = null == paramType ? returnType : paramType;
+                fieldSpecs.put(name, BeanSpec.of(fieldType, m.getDeclaredAnnotations(), name, injector));
+                fieldTypes.put(name, fieldType);
+                if (null != paramType) {
+                    fieldSetters.put(name, new Osgl.Func2() {
+                        @Override
+                        public Object apply(Object host, Object value) throws NotAppliedException, Osgl.Break {
+                            $.invokeVirtual(host, m, value);
+                            return null;
+                        }
+                    });
+                } else {
+                    fieldGetters.put(name, new Osgl.F1() {
+                        @Override
+                        public Object apply(Object host) throws NotAppliedException, Osgl.Break {
+                            try {
+                                return m.invoke(host);
+                            } catch (InvocationTargetException e) {
+                                throw E.unexpected(e.getTargetException());
+                            } catch (IllegalAccessException e) {
+                                throw E.unexpected(e);
+                            }
+                        }
+                    });
+                }
             }
+        }
+
+        private String propertyName(Method m) {
+            String name = m.getName();
+            Type[] paramTypes = m.getGenericParameterTypes();
+            if (name.startsWith("set") && void.class == m.getReturnType() && null != paramTypes && paramTypes.length == 1) {
+                return name.substring(3);
+            }
+            boolean isGet = name.startsWith("get");
+            boolean isIs = name.startsWith("is");
+            if ((isGet || isIs) && void.class != m.getReturnType() && (null == paramTypes || paramTypes.length == 0)) {
+                return isGet ? name.substring(3) : name.substring(2);
+            }
+            return null;
         }
 
         private $.Func2 fieldMerger(final Field f, final Class<?> clz) {
@@ -290,19 +347,19 @@ public interface AdaptiveRecord<ID_TYPE, MODEL_TYPE extends AdaptiveRecord> exte
                 return ValueObject.of(merge(((ValueObject) to).value(), from));
             }
             if (to instanceof AdaptiveRecord) {
-                AdaptiveRecord ar = (AdaptiveRecord)to;
+                AdaptiveRecord ar = (AdaptiveRecord) to;
                 return mergeIntoAdaptiveRecord(ar, from);
             }
             if (to instanceof Map) {
-                Map map = (Map)to;
+                Map map = (Map) to;
                 return mergeIntoMap(map, from);
             }
             if (to instanceof Set) {
-                Set set = (Set)to;
+                Set set = (Set) to;
                 return mergeIntoSet(set, from);
             }
             if (to instanceof List) {
-                List list = (List)to;
+                List list = (List) to;
                 return mergeIntoList(list, from);
             }
             if (to.getClass().isArray()) {
@@ -390,7 +447,7 @@ public interface AdaptiveRecord<ID_TYPE, MODEL_TYPE extends AdaptiveRecord> exte
         }
 
         private static Map mergeMapIntoMap(Map m0, Map<?, ?> m1) {
-            Map retval = (Map)Act.injector().get(m0.getClass());
+            Map retval = (Map) Act.injector().get(m0.getClass());
             retval.putAll(m0);
             for (Map.Entry entry : m1.entrySet()) {
                 Object k = entry.getKey();
@@ -416,7 +473,7 @@ public interface AdaptiveRecord<ID_TYPE, MODEL_TYPE extends AdaptiveRecord> exte
         }
 
         private static Set mergeCollectionIntoSet(Set set, Collection col) {
-            Set set1 = (Set)Act.injector().get(set.getClass());
+            Set set1 = (Set) Act.injector().get(set.getClass());
             set1.addAll(col);
             return set1;
         }

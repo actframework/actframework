@@ -9,6 +9,7 @@ import act.util.DisableFastJsonCircularReferenceDetect;
 import act.util.FastJsonIterable;
 import act.util.PropertySpec;
 import act.view.*;
+import com.sun.org.apache.regexp.internal.RE;
 import org.osgl.$;
 import org.osgl.http.H;
 import org.osgl.mvc.result.*;
@@ -65,7 +66,9 @@ public @interface Controller {
 
         public static final Result NO_RESULT = NoResult.get();
         public static final Ok OK = Ok.get();
+        public static final Created CREATED = Created.INSTANCE;
         public static final Result JSON_OK = new Result(H.Status.OK, "{}") {};
+        public static final Result JSON_CREATED = new Result(H.Status.CREATED, "{}") {};
 
         /**
          * Returns an {@link Ok} result
@@ -554,7 +557,7 @@ public @interface Controller {
          * @param args template argument list
          */
         public static Result template(Object... args) {
-            return RenderTemplate.get();
+            return RenderTemplate.get(ActionContext.current().successStatus());
         }
 
         public static Result inferResult(Result r, ActionContext actionContext) {
@@ -562,26 +565,27 @@ public @interface Controller {
         }
 
         public static Result inferResult(String s, ActionContext actionContext) {
+            final H.Status status = actionContext.successStatus();
             if (actionContext.acceptJson()) {
                 s = s.trim();
                 if (!s.startsWith("[") && !s.startsWith("{")) {
                     s = S.fmt("{\"result\": \"%s\"}", org.rythmengine.utils.S.escapeJSON(s));
                 }
-                return RenderJSON.of(s);
+                return RenderJSON.of(status, s);
             }
             H.Format fmt = actionContext.accept();
             if (HTML == fmt || H.Format.UNKNOWN == fmt) {
-                return html(s);
+                return RenderHtml.of(status, s);
             }
             if (TXT == fmt || CSV == fmt) {
-                return RenderText.of(fmt, s);
+                return RenderText.of(status, fmt, s);
             }
             if (XML == fmt) {
                 s = s.trim();
                 if (!s.startsWith("<") && !s.endsWith(">")) {
                     s = S.fmt("<result>%s</result>", s);
                 }
-                return RenderText.of(fmt, s);
+                return RenderText.of(status, fmt, s);
             }
             throw E.unexpected("Cannot apply text result to format: %s", fmt);
         }
@@ -600,7 +604,7 @@ public @interface Controller {
          */
         public static Result inferResult(Object[] array, ActionContext actionContext) {
             if (actionContext.acceptJson()) {
-                return RenderJSON.of(array);
+                return RenderJSON.of(actionContext.successStatus(), array);
             }
             throw E.tbd("render template with render args in array");
         }
@@ -664,19 +668,30 @@ public @interface Controller {
          * to infer the {@code Result}</li>
          * </ul>
          *
-         * @param v             the value to be rendered
+         * @param meta the HandlerMethodMetaInfo
+         * @param v the value to be rendered
          * @param context the action context
+         * @param hasTemplate a boolean flag indicate if the current handler method has corresponding template
          * @return the rendered result
          */
         public static Result inferResult(HandlerMethodMetaInfo meta, Object v, ActionContext context, boolean hasTemplate) {
-            if (null == v && !hasTemplate) {
-                return null;
-            } else if (v instanceof Result) {
-                return (Result) v;
-            } else if (v instanceof String) {
-                if (hasTemplate) {
-                    return inferToTemplate(v, context);
+            if (v instanceof Result) {
+                return (Result)v;
+            }
+            final H.Request req = context.req();
+            final H.Status status = req.method() == H.Method.POST ? H.Status.CREATED : H.Status.OK;
+            if (Act.isProd() && v instanceof Versioned && req.method().safe()) {
+                processEtag(meta, v, context, req);
+            }
+            if (hasTemplate) {
+                if (v instanceof Map) {
+                    return inferToTemplate(((Map) v), context);
                 }
+                return inferToTemplate(v, context);
+            }
+            if (null == v) {
+                return null;
+            } else if (v instanceof String) {
                 return inferResult((String) v, context);
             } else if (v instanceof InputStream) {
                 return inferResult((InputStream) v, context);
@@ -685,25 +700,8 @@ public @interface Controller {
             } else if (v instanceof ISObject) {
                 return inferResult((ISObject) v, context);
             } else if (v instanceof Map) {
-                if (hasTemplate) {
-                    return inferToTemplate((Map) v, context);
-                }
                 return RenderJSON.of(v);
-            } else if (hasTemplate && v instanceof Object[]) {
-                throw E.tbd("Render template with array");
             } else {
-                H.Request req = context.req();
-                if (Act.isProd() && v instanceof Versioned && req.method().safe()) {
-                    String version = ((Versioned) v)._version();
-                    if (req.etagMatches(version)) {
-                        return NotModified.get();
-                    } else {
-                        context.resp().etag(version);
-                    }
-                }
-                if (hasTemplate) {
-                    return inferToTemplate(v, context);
-                }
                 if (context.acceptJson()) {
                     // patch https://github.com/alibaba/fastjson/issues/478
                     if (meta.disableJsonCircularRefDetect()) {
@@ -715,9 +713,9 @@ public @interface Controller {
                     PropertySpec.MetaInfo propertySpec = PropertySpec.MetaInfo.withCurrent(meta, context);
                     try {
                         if (null == propertySpec) {
-                            return RenderJSON.of(v);
+                            return RenderJSON.of(status, v);
                         }
-                        return FilteredRenderJSON.get(v, propertySpec, context);
+                        return FilteredRenderJSON.get(status, v, propertySpec, context);
                     } finally {
                         if (meta.disableJsonCircularRefDetect()) {
                             DisableFastJsonCircularReferenceDetect.option.set(false);
@@ -728,12 +726,29 @@ public @interface Controller {
                     return new FilteredRenderXML(v, propertySpec, context);
                 } else if (context.accept() == H.Format.CSV) {
                     PropertySpec.MetaInfo propertySpec = PropertySpec.MetaInfo.withCurrent(meta, context);
-                    return RenderCSV.get(v, propertySpec, context);
+                    return RenderCSV.get(status, v, propertySpec, context);
                 } else {
                     String s = meta.returnType().getDescriptor().startsWith("[") ? $.toString2(v) : v.toString();
                     return inferResult(s, context);
                 }
             }
+        }
+
+        private static void processEtag(HandlerMethodMetaInfo meta, Object v, ActionContext context, H.Request req) {
+            if (!(v instanceof Versioned)) {
+                return;
+            }
+            String version = ((Versioned) v)._version();
+            String etagVersion = etag(meta, version);
+            if (req.etagMatches(etagVersion)) {
+                throw NotModified.get();
+            } else {
+                context.resp().etag(etagVersion);
+            }
+        }
+
+        private static String etag(HandlerMethodMetaInfo meta, String version) {
+            return S.newBuffer(version).append(meta.hashCode()).toString();
         }
 
         private static Result inferToTemplate(Object v, ActionContext actionContext) {

@@ -21,7 +21,7 @@ public class CSRFTest extends EndpointTester {
     @Test
     public void postShallReturnOkWhenCsrfIsDisabled() throws IOException {
         url("/csrf/bar").post();
-        bodyEq("");
+        bodyEq("201 Created");
     }
 
     @Test(expected = Unauthorized.class)
@@ -36,7 +36,7 @@ public class CSRFTest extends EndpointTester {
         List<Cookie> cookies = retrieveCsrfToken(csrf);
         setup();
         url("/csrf/foo").post().cookies(cookies).header("X-Xsrf-Token", csrf.get());
-        bodyEq("");
+        bodyEq("201 Created");
     }
 
     @Test
@@ -45,7 +45,7 @@ public class CSRFTest extends EndpointTester {
         List<Cookie> cookies = retrieveCsrfToken(csrf);
         setup();
         url("/csrf/foo").post().cookies(cookies).param("__csrf__", csrf.get()).format(H.Format.FORM_URL_ENCODED);
-        bodyEq("");
+        bodyEq("201 Created");
     }
 
     public List<Cookie> retrieveCsrfToken($.Var<String> csrf) throws IOException {

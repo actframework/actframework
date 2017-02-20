@@ -30,4 +30,9 @@ public class VersionedModel implements Versioned {
     public static VersionedModel getById(String id) {
         return new VersionedModel(id);
     }
+
+    @Override
+    public String toString() {
+        return _version();
+    }
 }

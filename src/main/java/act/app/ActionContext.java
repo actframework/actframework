@@ -320,6 +320,10 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
         return this;
     }
 
+    public H.Status successStatus() {
+        return H.Method.POST == req().method() ? H.Status.CREATED : H.Status.OK;
+    }
+
     public void preCheckCsrf() {
         if (!disableCsrf) {
             handler().csrfSpec().preCheck(this);

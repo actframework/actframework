@@ -38,6 +38,7 @@ public class Router extends AppServiceBase<Router> {
     Node _PUT = Node.newRoot("PUT");
     Node _POST = Node.newRoot("POST");
     Node _DEL = Node.newRoot("DELETE");
+    Node _PATCH = Node.newRoot("PATCH");
 
     private Map<String, RequestHandlerResolver> resolvers = C.newMap();
 
@@ -95,6 +96,7 @@ public class Router extends AppServiceBase<Router> {
         _DEL.destroy();
         _POST.destroy();
         _PUT.destroy();
+        _PATCH.destroy();
         handlerLookup.destroy();
         actionNames.clear();
         appConfig = null;
@@ -581,6 +583,8 @@ public class Router extends AppServiceBase<Router> {
                 return _PUT;
             case DELETE:
                 return _DEL;
+            case PATCH:
+                return _PATCH;
             default:
                 throw E.unexpected("HTTP Method not supported: %s", method);
         }

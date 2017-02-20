@@ -117,10 +117,6 @@ public class AdaptiveRecordCodec extends SerializeFilterable implements ObjectDe
                     lexer.nextToken();
                 } else {
                     value = parser.parseObject(ar.metaInfo().fieldType(key), key);
-                    if (value instanceof Map) {
-                        Map tmp = (Map)value;
-                        value = new KVStore(tmp);
-                    }
                 }
 
                 ar.putValue(key, value);

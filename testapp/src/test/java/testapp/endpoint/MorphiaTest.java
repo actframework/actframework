@@ -22,11 +22,6 @@ public class MorphiaTest extends EndpointTester {
         createUser("Tom", SObject.of(getClass().getResourceAsStream("/photo.jpg")));
         reset();
         url("/morphia/person").getJSON().param("name", "Tom");
-        Response resp = resp();
-        ResponseBody body = resp.body();
-        String s = body.string();
-        int code = resp.code();
-        System.out.println(s);
     }
 
     private void createUser(String name, SObject photo) throws Exception {
@@ -37,7 +32,7 @@ public class MorphiaTest extends EndpointTester {
                                 photo.asByteArray()))
                 .build();
         url("/morphia/person").post().body(requestBody);
-        eq(200, resp().code());
+        eq(201, resp().code());
     }
 
 }

@@ -22,6 +22,7 @@ import org.osgl.cache.CacheService;
 import org.osgl.http.H;
 import org.osgl.logging.L;
 import org.osgl.logging.Logger;
+import org.osgl.mvc.result.Ok;
 import org.osgl.mvc.result.Result;
 import org.osgl.util.C;
 import org.osgl.util.E;
@@ -35,8 +36,7 @@ import java.util.ListIterator;
 import java.util.Set;
 import java.util.regex.Pattern;
 
-import static act.controller.Controller.Util.JSON_OK;
-import static act.controller.Controller.Util.NO_RESULT;
+import static act.controller.Controller.Util.*;
 
 @ApplicationScoped
 public final class RequestHandlerProxy extends RequestHandlerBase {
@@ -173,7 +173,11 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
                 result = afterResult;
             }
             if (null == result) {
-                result = context.acceptJson() ? JSON_OK : NO_RESULT;
+                if (context.req().method() == H.Method.POST) {
+                    result = context.acceptJson() ? JSON_CREATED : CREATED;
+                } else {
+                    result = context.acceptJson() ? JSON_OK : OK;
+                }
             }
             onResult(result, context);
         } catch (Exception e) {

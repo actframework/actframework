@@ -29,12 +29,21 @@ public class FilteredRenderJSON extends RenderContent {
         super(render(v, spec, context), H.Format.JSON);
     }
 
-    private static String render(Object v, PropertySpec.MetaInfo spec, ActContext context) {
-        return CliView.JSON.render(v, spec, context);
-    }
-
     public static FilteredRenderJSON get(Object v, PropertySpec.MetaInfo spec, ActionContext context) {
         payload.get().message(render(v, spec, context));
         return _INSTANCE;
+    }
+
+    public FilteredRenderJSON(H.Status status, Object v, PropertySpec.MetaInfo spec, ActContext context) {
+        super(status, render(v, spec, context), H.Format.JSON);
+    }
+
+    public static FilteredRenderJSON get(H.Status status, Object v, PropertySpec.MetaInfo spec, ActionContext context) {
+        payload.get().message(render(v, spec, context)).status(status);
+        return _INSTANCE;
+    }
+
+    private static String render(Object v, PropertySpec.MetaInfo spec, ActContext context) {
+        return CliView.JSON.render(v, spec, context);
     }
 }
