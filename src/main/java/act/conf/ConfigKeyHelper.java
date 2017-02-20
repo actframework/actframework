@@ -330,7 +330,7 @@ class ConfigKeyHelper {
      */
     public String evaluate(String s, Map<String, ?> map) {
         int n = 0, n0 = 0, len = s.length();
-        S.Buffer sb = S.buffer();
+        S.Buffer sb = S.newBuffer();
         while (n > -1 && n < len) {
             n = s.indexOf("${", n);
             if (n < 0) {

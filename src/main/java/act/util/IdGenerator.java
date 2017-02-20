@@ -366,7 +366,7 @@ public class IdGenerator {
      * @return generated ID
      */
     public String genId() {
-        S.Buffer sb = S.buffer();
+        S.Buffer sb = S.newBuffer();
         sb.a(longEncoder.longToStr(nodeIdProvider.nodeId()))
           .a(longEncoder.longToStr(startIdProvider.startId()))
           .a(longEncoder.longToStr(sequenceProvider.seqId()));

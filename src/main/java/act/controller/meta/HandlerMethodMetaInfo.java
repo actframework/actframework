@@ -246,7 +246,7 @@ public abstract class HandlerMethodMetaInfo<T extends HandlerMethodMetaInfo> ext
 
     @Override
     public String toString() {
-        return toStrBuffer(S.buffer()).toString();
+        return toStrBuffer(S.newBuffer()).toString();
     }
 
     protected S.Buffer toStrBuffer(S.Buffer sb) {

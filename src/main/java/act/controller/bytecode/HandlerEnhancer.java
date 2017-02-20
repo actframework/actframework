@@ -373,7 +373,7 @@ public class HandlerEnhancer extends MethodVisitor implements Opcodes {
                     list.add(lbl);
                     list.add(loadCtx);
                 }
-                S.Buffer sb = S.buffer();
+                S.Buffer sb = S.newBuffer();
                 for (int i = 0; i < len; ++i) {
                     LoadInsnInfo info = loadInsnInfoList.get(i);
                     info.appendTo(list, sb);

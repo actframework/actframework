@@ -108,7 +108,7 @@ public class RouteTableRouterBuilder implements RouterBuilder {
         Iterator<CharSequence> itr = Path.tokenizer(Unsafe.bufOf(line), 0, ' ', '\u0000');
         final String UNKNOWN = S.fmt("route configuration not recognized: %s", line);
         CharSequence method = null, path = null;
-        S.Buffer action = S.buffer();
+        S.Buffer action = S.newBuffer();
         if (itr.hasNext()) {
             method = itr.next();
         } else {

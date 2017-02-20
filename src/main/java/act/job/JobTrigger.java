@@ -195,7 +195,7 @@ abstract class JobTrigger {
 
         @Override
         public String toString() {
-            return S.buffer("cron :").a(cronExpr).toString();
+            return S.newBuffer("cron :").a(cronExpr).toString();
         }
 
         @Override

@@ -41,7 +41,7 @@ public class CatchMethodMetaInfo extends InterceptorMethodMetaInfo {
 
     @Override
     public String toString() {
-        return toStrBuffer(S.buffer()).toString();
+        return toStrBuffer(S.newBuffer()).toString();
     }
 
     @Override

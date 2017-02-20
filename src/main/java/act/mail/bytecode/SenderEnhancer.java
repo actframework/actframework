@@ -277,7 +277,7 @@ public class SenderEnhancer extends MethodVisitor implements Opcodes {
                 }
                 list.add(new VarInsnNode(ALOAD, ctxId));
 
-                S.Buffer sb = S.buffer();
+                S.Buffer sb = S.newBuffer();
                 for (int i = 0; i < len; ++i) {
                     LoadInsnInfo info = loadInsnInfoList.get(i);
                     info.appendTo(list, segment, sb);

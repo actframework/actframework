@@ -544,7 +544,7 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
     }
 
     public String violationMessage(String separator) {
-        return buildViolationMessage(S.buffer(), separator).toString();
+        return buildViolationMessage(S.newBuffer(), separator).toString();
     }
 
     public String violationMessage() {

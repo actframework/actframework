@@ -129,7 +129,7 @@ public class JobMethodMetaInfo extends DestroyableBase {
 
     @Override
     public String toString() {
-        S.Buffer sb = S.buffer();
+        S.Buffer sb = S.newBuffer();
         sb.append(_invokeType())
                 .append(_return())
                 .append(fullName());

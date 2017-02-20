@@ -69,7 +69,7 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
 
         protected String cacheKey(ActionContext actionContext, String seed) {
             H.Request request = actionContext.req();
-            return S.buffer("urlcache:").append(seed).append(request.url()).append(request.query()).append(request.accept()).toString();
+            return actionContext.strBuf().append("urlcache:").append(seed).append(request.url()).append(request.query()).append(request.accept()).toString();
         }
     }
 

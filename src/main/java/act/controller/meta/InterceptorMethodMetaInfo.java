@@ -96,7 +96,7 @@ public class InterceptorMethodMetaInfo extends HandlerMethodMetaInfo<Interceptor
 
     @Override
     public String toString() {
-        return toStrBuffer(S.buffer()).toString();
+        return toStrBuffer(S.newBuffer()).toString();
     }
 
     @Override

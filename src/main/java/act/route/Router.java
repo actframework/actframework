@@ -309,7 +309,7 @@ public class Router extends AppServiceBase<Router> {
             }
             node = node.parent;
         }
-        S.Buffer sb = S.buffer();
+        S.Buffer sb = S.newBuffer();
         Iterator<String> itr = elements.reverseIterator();
         while (itr.hasNext()) {
             sb.append("/").append(itr.next());
@@ -375,7 +375,7 @@ public class Router extends AppServiceBase<Router> {
         if (path.startsWith("//") || path.startsWith("http")) {
             return path;
         }
-        S.Buffer sb = S.buffer(urlBase());
+        S.Buffer sb = S.newBuffer(urlBase());
         if (!path.startsWith("/")) {
             sb.append("/");
         }

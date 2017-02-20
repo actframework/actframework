@@ -44,7 +44,7 @@ public class ActionMethodMetaInfo extends HandlerMethodMetaInfo<ActionMethodMeta
 
     @Override
     public String toString() {
-        return toStrBuffer(S.buffer()).toString();
+        return toStrBuffer(S.newBuffer()).toString();
     }
 
     @Override

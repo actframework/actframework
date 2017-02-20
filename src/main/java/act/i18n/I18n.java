@@ -99,7 +99,7 @@ public class I18n {
     }
 
     public static String i18n(Locale locale, String bundleName, Enum<?> msgId) {
-        String key = S.buffer("enum.").append(msgId.getDeclaringClass().getSimpleName().toLowerCase()).append(".").append(msgId.name().toLowerCase()).toString();
+        String key = S.newBuffer("enum.").append(msgId.getDeclaringClass().getSimpleName().toLowerCase()).append(".").append(msgId.name().toLowerCase()).toString();
         return i18n(locale, bundleName, key);
     }
 

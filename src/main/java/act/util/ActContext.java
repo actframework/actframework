@@ -13,11 +13,10 @@ import org.osgl.http.H;
 import org.osgl.mvc.util.ParamValueProvider;
 import org.osgl.util.C;
 import org.osgl.util.E;
+import org.osgl.util.S;
 
 import javax.enterprise.context.RequestScoped;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 
 import static act.app.App.logger;
 
@@ -77,6 +76,12 @@ public interface ActContext<CTX_TYPE extends ActContext> extends ParamValueProvi
 
     String methodPath();
 
+    /**
+     * Returns a reusable {@link S.Buffer} instance
+     * @return an S.Buffer instance that can be reused
+     */
+    S.Buffer strBuf();
+
     interface Listener {
         void onDestroy(ActContext context);
     }
@@ -91,14 +96,16 @@ public interface ActContext<CTX_TYPE extends ActContext> extends ParamValueProvi
         private List<Destroyable> destroyableList;
         private Map<String, Object> attributes;
         private Locale locale;
+        private S.Buffer strBuf;
 
         public Base(App app) {
             E.NPE(app);
             this.app = app;
-            renderArgs = C.newMap();
-            attributes = C.newMap();
-            listenerList = C.newList();
-            destroyableList = C.newList();
+            renderArgs = new HashMap<>();
+            attributes = new HashMap<>();
+            listenerList = new ArrayList<>();
+            destroyableList = new ArrayList<>();
+            strBuf = S.newBuffer();
         }
 
         @Override
@@ -273,6 +280,11 @@ public interface ActContext<CTX_TYPE extends ActContext> extends ParamValueProvi
         public VC_TYPE addDestroyable(Destroyable resource) {
             destroyableList.add(resource);
             return me();
+        }
+
+        @Override
+        public S.Buffer strBuf() {
+            return strBuf;
         }
 
         public static ActContext currentContext() {
