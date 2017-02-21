@@ -116,7 +116,7 @@ public class AdaptiveRecordCodec extends SerializeFilterable implements ObjectDe
                     value = null;
                     lexer.nextToken();
                 } else {
-                    value = parser.parseObject(ar.metaInfo().fieldType(key), key);
+                    value = parser.parseObject(ar.metaInfo().setterFieldType(key), key);
                 }
 
                 ar.putValue(key, value);

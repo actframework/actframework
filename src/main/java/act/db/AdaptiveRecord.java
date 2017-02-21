@@ -143,8 +143,10 @@ public interface AdaptiveRecord<ID_TYPE, MODEL_TYPE extends AdaptiveRecord> exte
     class MetaInfo {
         private Class<? extends AdaptiveRecord> arClass;
         public String className;
-        public Map<String, BeanSpec> fieldSpecs;
-        public Map<String, Type> fieldTypes;
+        public Map<String, BeanSpec> getterFieldSpecs;
+        public Map<String, Type> getterFieldTypes;
+        public Map<String, BeanSpec> setterFieldSpecs;
+        public Map<String, Type> setterFieldTypes;
         public Map<String, $.Function> fieldGetters;
         public Map<String, $.Func2> fieldSetters;
         public Map<String, $.Func2> fieldMergers;
@@ -155,13 +157,25 @@ public interface AdaptiveRecord<ID_TYPE, MODEL_TYPE extends AdaptiveRecord> exte
             this.discoverProperties(clazz);
         }
 
+        @Deprecated
         public Type fieldType(String fieldName) {
-            return fieldTypes.get(fieldName);
+            Type type = setterFieldTypes.get(fieldName);
+            return null == type ? getterFieldTypes.get(fieldName) : type;
+        }
+
+        public Type getterFieldType(String fieldName) {
+            return getterFieldTypes.get(fieldName);
+        }
+
+        public Type setterFieldType(String fieldName) {
+            return setterFieldTypes.get(fieldName);
         }
 
         private void discoverProperties(Class<? extends AdaptiveRecord> clazz) {
-            fieldSpecs = new HashMap<>();
-            fieldTypes = new HashMap<>();
+            getterFieldSpecs = new HashMap<>();
+            getterFieldTypes = new HashMap<>();
+            setterFieldSpecs = new HashMap<>();
+            setterFieldTypes = new HashMap<>();
             fieldGetters = new HashMap<>();
             fieldSetters = new HashMap<>();
             fieldMergers = new HashMap<>();
@@ -184,12 +198,43 @@ public interface AdaptiveRecord<ID_TYPE, MODEL_TYPE extends AdaptiveRecord> exte
                     paramType = params[0];
                 }
                 Type fieldType = null == paramType ? returnType : paramType;
-                fieldSpecs.put(name, BeanSpec.of(fieldType, m.getDeclaredAnnotations(), name, injector));
-                fieldTypes.put(name, fieldType);
+                if (null == paramType) {
+                    getterFieldSpecs.put(name, BeanSpec.of(fieldType, m.getDeclaredAnnotations(), name, injector));
+                    getterFieldTypes.put(name, fieldType);
+                } else {
+                    BeanSpec existingSpec = setterFieldSpecs.get(name);
+                    if (null != existingSpec) {
+                        // we need to infer the type from field in this case
+                        Field field = $.fieldOf(clazz, name, true);
+                        if (null != field) {
+                            setterFieldSpecs.put(name, BeanSpec.of(field, injector));
+                            setterFieldTypes.put(name, field.getType());
+                        } else {
+                            if (fieldType == Object.class) {
+                                // ignore
+                            } else if (existingSpec.rawType() == Object.class) {
+                                setterFieldSpecs.put(name, BeanSpec.of(fieldType, m.getDeclaredAnnotations(), name, injector));
+                                setterFieldTypes.put(name, fieldType);
+                            }
+                        }
+                    } else {
+                        setterFieldSpecs.put(name, BeanSpec.of(fieldType, m.getDeclaredAnnotations(), name, injector));
+                        setterFieldTypes.put(name, fieldType);
+                    }
+                }
                 if (null != paramType) {
+                    final String fieldName = name;
                     fieldSetters.put(name, new Osgl.Func2() {
                         @Override
                         public Object apply(Object host, Object value) throws NotAppliedException, Osgl.Break {
+                            BeanSpec spec = setterFieldSpecs.get(fieldName);
+                            if (null != value && !spec.isInstance(value)) {
+                                if (value instanceof String) {
+                                    value = Act.app().resolverManager().resolve((String)value, spec.rawType());
+                                } else {
+                                    throw new IllegalArgumentException(S.concat("Type mismatch. Expected: ", spec.rawType().getName(), "found: ", S.string(value)));
+                                }
+                            }
                             $.invokeVirtual(host, m, value);
                             return null;
                         }
@@ -223,107 +268,6 @@ public interface AdaptiveRecord<ID_TYPE, MODEL_TYPE extends AdaptiveRecord> exte
                 return isGet ? name.substring(3) : name.substring(2);
             }
             return null;
-        }
-
-        private $.Func2 fieldMerger(final Field f, final Class<?> clz) {
-            Class<?> fClass = f.getType();
-            final $.Func2 fieldSetter = fieldSetters.get(f.getName());
-            final $.Function fieldGetter = fieldGetters.get(f.getName());
-            if (!canBeMerged(fClass)) {
-                return fieldSetter;
-            }
-            return new $.Func2() {
-                @Override
-                public Object apply(Object host, Object value) throws NotAppliedException, Osgl.Break {
-                    if (null == value) {
-                        return null;
-                    }
-                    final Object value0 = fieldGetter.apply(host);
-                    if (null == value0) {
-                        fieldSetter.apply(host, value);
-                    }
-                    Object value1 = merge(value0, value);
-                    fieldSetter.apply(host, value1);
-                    return null;
-                }
-            };
-        }
-
-        private $.Func2 fieldSetter(final Field f, final Class<?> clz) {
-            final String setterName = setterName(f);
-            try {
-                final Method m = clz.getMethod(setterName, f.getType());
-                final Class<?> paramClass = f.getType();
-                final Type paramType = f.getGenericType();
-                return new $.Func2() {
-                    @Override
-                    public Object apply(Object host, Object value) throws NotAppliedException, Osgl.Break {
-                        try {
-                            if (null != value) {
-                                if (value instanceof String) {
-                                    Class<?> ftype = f.getType();
-                                    if (!ftype.isInstance(value)) {
-                                        value = Act.app().resolverManager().resolve((String) value, ftype);
-                                    }
-                                } else if (value instanceof JSONObject && !paramClass.isInstance(value)) {
-                                    value = JSON.parseObject(JSON.toJSONString(value), paramType);
-                                }
-                            }
-                            m.invoke(host, value);
-                            return null;
-                        } catch (IllegalAccessException e) {
-                            throw E.unexpected("Class.getMethod(String) return a method[%s] that is not accessible?", m);
-                        } catch (InvocationTargetException e) {
-                            throw E.unexpected(e.getTargetException(), "Error invoke setter method on %s::%s", clz.getName(), setterName);
-                        }
-                    }
-                };
-            } catch (NoSuchMethodException e) {
-                f.setAccessible(true);
-                return new $.Func2() {
-                    @Override
-                    public Object apply(Object host, Object value) throws NotAppliedException, Osgl.Break {
-                        try {
-                            f.set(host, value);
-                            return null;
-                        } catch (IllegalAccessException e1) {
-                            throw E.unexpected("Field[%s] is not accessible?", f);
-                        }
-                    }
-                };
-            }
-        }
-
-
-        private $.Function fieldGetter(final Field f, final Class<?> clz) {
-            final String getterName = getterName(f);
-            try {
-                final Method m = clz.getMethod(getterName);
-                return new $.Function() {
-                    @Override
-                    public Object apply(Object o) throws NotAppliedException, Osgl.Break {
-                        try {
-                            return m.invoke(o);
-                        } catch (IllegalAccessException e) {
-                            throw E.unexpected("Class.getMethod(String) return a method[%s] that is not accessible?", m);
-                        } catch (InvocationTargetException e) {
-                            throw E.unexpected(e.getTargetException(), "Error invoke getter method on %s::%s", clz.getName(), getterName);
-                        }
-                    }
-                };
-            } catch (NoSuchMethodException e) {
-                f.setAccessible(true);
-                return new $.Function() {
-                    @Override
-                    public Object apply(Object o) throws NotAppliedException, Osgl.Break {
-                        try {
-                            return f.get(o);
-                        } catch (IllegalAccessException e1) {
-                            throw E.unexpected("Field[%s] is not accessible?", f);
-                        }
-                    }
-                };
-            }
         }
 
         public static Object merge(Object to, Object from) {
