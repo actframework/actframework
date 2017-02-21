@@ -67,7 +67,7 @@ public class JobMethodMetaInfo extends DestroyableBase {
     }
 
     public String fullName() {
-        return S.builder(clsInfo.className()).append(".").append(name()).toString();
+        return S.concat(clsInfo.className(), ".", name());
     }
 
     public JobMethodMetaInfo id(String id) {

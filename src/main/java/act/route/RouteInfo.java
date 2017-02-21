@@ -34,7 +34,7 @@ public class RouteInfo extends $.T3<String, String, String> implements Comparabl
         if (len == 1) {
             return handler;
         }
-        StringBuilder sb = S.builder();
+        S.Buffer sb = S.newBuffer();
         for (int i = 0; i < len - 2; ++i) {
             sb.append(sa[i].charAt(0)).append('.');
         }

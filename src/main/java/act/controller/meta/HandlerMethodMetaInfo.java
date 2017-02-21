@@ -26,6 +26,7 @@ public abstract class HandlerMethodMetaInfo<T extends HandlerMethodMetaInfo> ext
     private ActContextInjection actContextInjection;
     private ControllerClassMetaInfo clsInfo;
     private C.List<HandlerParamMetaInfo> params = C.newList();
+    private transient String fullName;
     private ReturnTypeInfo returnType;
     private PropertySpec.MetaInfo propertySpec;
     private boolean disableJsonCircularRefDetect = false;
@@ -81,7 +82,14 @@ public abstract class HandlerMethodMetaInfo<T extends HandlerMethodMetaInfo> ext
     }
 
     public String fullName() {
-        return S.builder(clsInfo.className()).append(".").append(name()).toString();
+        if (null == fullName) {
+            synchronized (this) {
+                if (null == fullName) {
+                    fullName = S.concat(classInfo().className(), ".", name);
+                }
+            }
+        }
+        return fullName;
     }
 
     @Override

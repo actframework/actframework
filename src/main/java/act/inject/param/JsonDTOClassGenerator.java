@@ -108,6 +108,6 @@ class JsonDTOClassGenerator implements Opcodes {
     }
 
     private static String setterName(BeanSpec beanSpec) {
-        return S.builder("set").append(S.capFirst(beanSpec.name())).toString();
+        return S.concat("set", S.capFirst(beanSpec.name()));
     }
 }

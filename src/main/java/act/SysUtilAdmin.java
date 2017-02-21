@@ -284,7 +284,7 @@ public class SysUtilAdmin {
 
         private String printPath(File file) {
             if (isDir) {
-                return S.builder("[").append(file.getName()).append("]").toString();
+                return S.newBuffer("[").append(file.getName()).append("]").toString();
             } else {
                 return file.getName();
             }
@@ -314,7 +314,7 @@ public class SysUtilAdmin {
                     }
                 }
             }
-            return S.builder(len).append(unit).toString();
+            return S.newBuffer(len).append(unit).toString();
         }
     }
 

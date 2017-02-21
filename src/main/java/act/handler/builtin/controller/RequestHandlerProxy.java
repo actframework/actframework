@@ -22,7 +22,6 @@ import org.osgl.cache.CacheService;
 import org.osgl.http.H;
 import org.osgl.logging.L;
 import org.osgl.logging.Logger;
-import org.osgl.mvc.result.Ok;
 import org.osgl.mvc.result.Result;
 import org.osgl.util.C;
 import org.osgl.util.E;
@@ -89,6 +88,7 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
     private CacheStrategy cacheStrategy = CacheStrategy.NO_CACHE;
     private String controllerClassName;
     private String actionMethodName;
+    private String actionPath;
 
     private volatile ControllerAction actionHandler = null;
     private C.List<BeforeInterceptor> beforeInterceptors = C.newList();
@@ -113,6 +113,7 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
         E.illegalArgumentIf(S.isEmpty(controllerClassName), ERR, actionMethodName);
         this.actionMethodName = actionMethodName.substring(pos + 1);
         E.illegalArgumentIf(S.isEmpty(this.actionMethodName), ERR, actionMethodName);
+        this.actionPath = actionMethodName;
         cache = app.config().cacheService("action_proxy");
         this.app = app;
         this.appInterceptor = app.interceptorManager();
@@ -277,9 +278,7 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
 
     // could be used by View to resolve default path to template
     private void saveActionPath(ActionContext context) {
-        StringBuilder sb = S.builder(controllerClassName).append(".").append(actionMethodName);
-        String path = sb.toString();
-        context.actionPath(path);
+        context.actionPath(actionPath);
     }
 
     private boolean matches(String actionMethodName, Set<String> patterns) {
@@ -461,7 +460,7 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
 
     @Override
     public String toString() {
-        return S.builder(controllerClassName).append(".").append(actionMethodName).toString();
+        return actionPath;
     }
 
     public static void registerGlobalInterceptor(BeforeInterceptor interceptor) {

@@ -86,7 +86,7 @@ public class MailerContext extends ActContext.Base<MailerContext> {
     }
 
     public MailerContext senderPath(String className, String methodName) {
-        senderPath = S.builder(className).append(".").append(methodName).toString();
+        senderPath = S.concat(className, ".", methodName);
         return this;
     }
 

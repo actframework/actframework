@@ -251,7 +251,7 @@ abstract class JobTrigger {
 
         @Override
         public String toString() {
-            return S.builder("fixed delay of ").append(seconds).append(" seconds").toString();
+            return S.concat("fixed delay of ", S.string(seconds), " seconds");
         }
 
         @Override
@@ -287,7 +287,7 @@ abstract class JobTrigger {
 
         @Override
         public String toString() {
-            return S.builder("every ").append(seconds).append(" seconds").toString();
+            return S.concat("every ", S.string(seconds), " seconds");
         }
 
         @Override
@@ -351,8 +351,7 @@ abstract class JobTrigger {
         }
 
         private String delayedRegisterJobId(_Job job) {
-            StringBuilder sb = S.builder("delayed_association_register-").append(job.id()).append("-to-").append(id);
-            return sb.toString();
+            return S.concat("delayed_association_register-", job.id(), "-to-", id);
         }
 
         abstract void associate(_Job theJob, _Job toJob);
@@ -365,7 +364,7 @@ abstract class JobTrigger {
 
         @Override
         public String toString() {
-            return S.builder("along with ").append(id).toString();
+            return S.concat("along with ", id);
         }
 
         @Override
@@ -381,7 +380,7 @@ abstract class JobTrigger {
 
         @Override
         public String toString() {
-            return S.builder("before ").append(id).toString();
+            return S.concat("before ", id);
         }
 
         @Override
@@ -397,7 +396,7 @@ abstract class JobTrigger {
 
         @Override
         public String toString() {
-            return S.builder("after ").append(id).toString();
+            return S.concat("after ", id);
         }
 
         @Override

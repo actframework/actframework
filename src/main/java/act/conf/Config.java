@@ -139,7 +139,7 @@ public abstract class Config<E extends ConfigKey> extends DestroyableBase {
             return t;
         }
         key = key.toLowerCase();
-        for (Map.Entry<String, Object> entries: raw.entrySet()) {
+        for (Map.Entry<String, Object> entries : raw.entrySet()) {
             if (entries.getKey().toLowerCase().equals(key)) {
                 Object o = entries.getValue();
                 if (o instanceof String) {

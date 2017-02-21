@@ -316,7 +316,7 @@ public class SimpleASCIITableImpl implements IASCIITable {
 	 */
 	private String getRowLineBuf(int colCount, List<Integer> colMaxLenList, String[][] data) {
 		
-		StringBuilder rowBuilder = S.builder();
+		S.Buffer rowBuilder = S.buffer();
 		int colWidth;
 		
 		for (int i = 0 ; i < colCount ; i ++) {

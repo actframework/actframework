@@ -107,7 +107,7 @@ public enum AsmTypes implements Opcodes {
     public static final String RESULT_DESC = RESULT.desc();
 
     public static String methodDesc(Class retType, Class... paramTypes) {
-        StringBuilder sb = S.builder("(");
+        S.Buffer sb = S.newBuffer("(");
         for (Class c : paramTypes) {
             Type t = Type.getType(c);
             sb.append(t.getDescriptor());

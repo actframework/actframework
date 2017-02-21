@@ -40,6 +40,6 @@ public class LocalVariableMetaInfo {
     public String toString() {
         // print out the local variable className as
         // $index   $className   $start_label  $end_label
-        return S.fmt("%s\t%s\t%s\t%s", index, name, start, end);
+        return S.concat(S.string(index), "\t", S.string(name), "\t", S.string(start), "\t", S.string(end));
     }
 }

@@ -57,6 +57,8 @@ public class Source {
 
     private String packageName;
 
+    private String className;
+
     // The srccode code
     private String code;
 
@@ -78,6 +80,7 @@ public class Source {
         this.file = file;
         this.simpleName = S.afterLast(className, ".");
         this.packageName = S.beforeLast(className, ".");
+        this.className = className;
         compilationUnit = _compilationUnit();
     }
 
@@ -90,8 +93,7 @@ public class Source {
     }
 
     public String className() {
-        StringBuilder sb = S.builder(packageName).append(".").append(simpleName);
-        return sb.toString();
+        return className;
     }
 
     public String code() {

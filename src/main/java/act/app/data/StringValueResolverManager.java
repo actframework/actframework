@@ -4,6 +4,7 @@ import act.app.App;
 import act.app.AppServiceBase;
 import act.conf.AppConfig;
 import act.data.SObjectResolver;
+import org.osgl.$;
 import org.osgl.storage.ISObject;
 import org.osgl.util.AnnotationAware;
 import org.osgl.util.C;
@@ -38,13 +39,28 @@ public class StringValueResolverManager extends AppServiceBase<StringValueResolv
 
     public <T> StringValueResolver<T> resolver(final Class<T> targetType) {
         StringValueResolver<T> r = resolvers.get(targetType);
+        final Class<? extends Enum> clazz = $.cast(targetType);
         if (null == r && Enum.class.isAssignableFrom(targetType)) {
-            r = new StringValueResolver<T>(targetType) {
-                @Override
-                public T resolve(String value) {
-                    return (T) Enum.valueOf(((Class<Enum>) targetType), value);
-                }
-            };
+            if (app().config().enumResolvingCaseSensitive()) {
+                r = new StringValueResolver<T>(targetType) {
+                    @Override
+                    public T resolve(String value) {
+                        return (T)Enum.valueOf(clazz, value);
+                    }
+                };
+            } else {
+                r = new StringValueResolver<T>(targetType) {
+                    @Override
+                    public T resolve(String value) {
+                        T e = (T) $.asEnum(clazz, value);
+                        if (null == e) {
+                            throw new IllegalArgumentException(
+                                    "No enum constant " + clazz.getCanonicalName() + "." + value);
+                        }
+                        return e;
+                    }
+                };
+            }
             resolvers.put(targetType, r);
         }
         return r;

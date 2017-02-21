@@ -30,14 +30,14 @@ public class TemplatePathResolver {
         String path = context.templatePath();
         String[] sa = path.split("\\.");
         int level = sa.length + 1;
-        StringBuilder sb;
+        S.Buffer sb;
         if (S.notBlank(methodPath)) {
             while (--level > 0) {
                 methodPath = S.beforeLast(methodPath, ".");
             }
-            sb = S.builder(methodPath);
+            sb = S.newBuffer(methodPath);
         } else {
-            sb = S.builder();
+            sb = S.newBuffer();
         }
         if (!path.startsWith("/")) {
             sb.append("/");
@@ -71,7 +71,7 @@ public class TemplatePathResolver {
             fmt = HTML;
         }
         if (isAcceptFormatSupported(fmt)) {
-            return S.builder(path).append(".").append(fmt.name()).toString();
+            return S.concat(path, ".", fmt.name());
         }
         throw E.unsupport("Request accept not supported: %s", fmt);
     }

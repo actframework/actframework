@@ -10,11 +10,11 @@ public enum HttpRequestParamEncode {
     JQUERY() {
         @Override
         protected String _concat(String[] path, int len) {
-            StringBuilder sb = S.builder(path[0]);
+            S.Buffer buf = S.buffer(path[0]);
             for (int i = 1; i < len; ++i) {
-                sb.append("[").append(path[i]).append("]");
+                buf.append("[").append(path[i]).append("]");
             }
-            return sb.toString();
+            return buf.toString();
         }
     },
 
@@ -24,11 +24,11 @@ public enum HttpRequestParamEncode {
     DOT_NOTATION() {
         @Override
         protected String _concat(String[] path, int len) {
-            StringBuilder sb = S.builder(path[0]);
+            S.Buffer buf = S.buffer(path[0]);
             for (int i = 1; i < len; ++i) {
-                sb.append(".").append(path[i]);
+                buf.append(".").append(path[i]);
             }
-            return sb.toString();
+            return buf.toString();
         }
     };
 

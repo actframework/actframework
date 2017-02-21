@@ -142,7 +142,7 @@ public class CommandMethodMetaInfo extends DestroyableBase {
             }
         }
 
-        StringBuilder sb = S.builder(commandName);
+        S.Buffer sb = S.buffer(commandName);
         if (hasOptions) {
             sb.append(" [options]");
         }

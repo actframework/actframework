@@ -657,7 +657,8 @@ public class App extends DestroyableBase {
 
     @Override
     public String toString() {
-        return S.builder("app@[").append(appBase).append("]").toString();
+        String path = appBase.getPath();
+        return S.concat("app@[", path, "]");
     }
 
     /**

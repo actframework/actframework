@@ -28,11 +28,8 @@ public class CliOverHttpContext extends CliContext {
                 if (S.notBlank(val)) {
                     val = val.replaceAll("[\n\r]+", "<br/>").trim();
                     if (val.contains(" ")) {
-                        if (val.contains("\"")) {
-                            val = S.builder("'").append(val).append("'").toString();
-                        } else {
-                            val = S.builder("\"").append(val).append("\"").toString();
-                        }
+                        char quote = val.contains("\"") ? '\'' : '\\';
+                        val = S.quote(val, quote);
                     }
                     if (s.contains(",")) {
                         s = S.before(s, ",");

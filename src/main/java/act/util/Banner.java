@@ -85,7 +85,7 @@ public class Banner {
         } else if ("BianLian".equals(font)) {
             font = $.random(_BANNER_FONTS);
         }
-        String path = font.endsWith(".flf") ? font : S.builder("/").append(font).append(".flf").toString();
+        String path = font.endsWith(".flf") ? font : S.concat("/", font, ".flf");
         File file = new File(path);
         if (file.exists() && file.canRead()) {
             try {
@@ -122,7 +122,7 @@ public class Banner {
         if (gap == 0) {
             return poweredBy;
         }
-        return S.builder(S.times(" ", gap)).append(poweredBy).toString();
+        return S.concat(S.times(" ", gap), poweredBy);
     }
 
     public static void main(String[] args) {

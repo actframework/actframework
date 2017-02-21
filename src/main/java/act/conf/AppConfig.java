@@ -92,6 +92,11 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     }
 
     public void preloadConfigurations() {
+        // preload frequently used configurations so
+        // that we do not need to synchronize on them
+        // and avoid the NPE
+        basicAuthenticationEnabled();
+        corsEnabled();
         sessionCookieName();
         sessionCookiePrefix();
         encryptSession();
@@ -742,6 +747,28 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     private void _mergeMaxCliSession(AppConfig conf) {
         if (!hasConfiguration(CLI_SESSION_MAX)) {
             maxCliSession = conf.maxCliSession;
+        }
+    }
+
+    private Boolean enumResolvingCaseSensitive;
+    protected T enumResolvingCaseSensitive(boolean b) {
+        enumResolvingCaseSensitive = b;
+        return me();
+    }
+    public boolean enumResolvingCaseSensitive() {
+        synchronized (ENUM_RESOLVING_CASE_SENSITIVE) {
+            if (null == enumResolvingCaseSensitive) {
+                enumResolvingCaseSensitive = get(ENUM_RESOLVING_CASE_SENSITIVE);
+                if (null == enumResolvingCaseSensitive) {
+                    enumResolvingCaseSensitive = false;
+                }
+            }
+            return enumResolvingCaseSensitive;
+        }
+    }
+    private void _mergeEnumResolvingCaseSensitive(AppConfig conf) {
+        if (!hasConfiguration(ENUM_RESOLVING_CASE_SENSITIVE)) {
+            enumResolvingCaseSensitive = conf.enumResolvingCaseSensitive;
         }
     }
 
@@ -1825,7 +1852,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     public String sessionCookieName() {
         if (null == sessionCookieName) {
             String sessionCookiePrefix = sessionCookiePrefix();
-            sessionCookieName = S.builder(sessionCookiePrefix).append("_").append("session").toString();
+            sessionCookieName = S.newBuffer(sessionCookiePrefix).append("_").append("session").toString();
         }
         return sessionCookieName;
     }
@@ -1849,7 +1876,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     public String flashCookieName() {
         if (null == flashCookieName) {
             String sessionCookiePrefix = sessionCookiePrefix();
-            flashCookieName = S.builder(sessionCookiePrefix).append("_").append("flash").toString();
+            flashCookieName = S.newBuffer(sessionCookiePrefix).append("_").append("flash").toString();
         }
         return flashCookieName;
     }
@@ -2290,6 +2317,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         _mergeAjaxCsrfCheckFailureHandler(conf);
         _mergeCookieDomain(conf);
         _mergeMaxCliSession(conf);
+        _mergeEnumResolvingCaseSensitive(conf);
         _mergeXForwardedProtocol(conf);
         _mergeHost(conf);
         _mergeLoginUrl(conf);

@@ -88,7 +88,7 @@ public class ActContextInjection<T> {
 
     @Override
     public String toString() {
-        return S.fmt("inject[%s, %s]", type.name().toLowerCase(), v);
+        return S.concat("inject[", type.name().toLowerCase(), ", ", S.string(v), "]");
     }
 
     public static class FieldActContextInjection extends ActContextInjection<String> {

@@ -26,7 +26,7 @@ public @interface Async {
          * @return the name of the async method that pairs to the original method
          */
         public static String transform(String methodName) {
-            return S.builder("__act_").append(methodName).append("_async").toString();
+            return S.concat("__act_", methodName, "_async");
         }
     }
 }

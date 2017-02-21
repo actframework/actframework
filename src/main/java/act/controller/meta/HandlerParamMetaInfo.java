@@ -119,6 +119,6 @@ public class HandlerParamMetaInfo {
 
     @Override
     public String toString() {
-        return S.fmt("%s %s", type.getClassName(), name);
+        return S.concat(type.getClassName(), name);
     }
 }

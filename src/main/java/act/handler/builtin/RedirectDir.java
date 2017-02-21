@@ -12,7 +12,7 @@ public class RedirectDir extends FastRequestHandler implements ExpressHandler {
     private String url;
 
     public RedirectDir(String url) {
-        this.url = url.endsWith("/") ? url : S.builder(url).append("/").toString();
+        this.url = url.endsWith("/") ? url : S.concat(url, "/");
     }
 
     @Override

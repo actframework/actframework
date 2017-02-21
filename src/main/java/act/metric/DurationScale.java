@@ -51,9 +51,9 @@ enum DurationScale {
             s = S.str(l).insert(-2, '.').toString();
         }
         if (s.startsWith(".")) {
-            s = S.builder("0").append(s).toString();
+            s = S.concat("0", s);
         }
-        return S.fmt("%s%s", s, last.suffix());
+        return S.concat(s, last.suffix);
     }
 
     private String suffix() {

@@ -266,7 +266,7 @@ public class SessionManager extends DestroyableBase {
                 List<char[]> kAndV = split(pair, '\u0001');
                 int sz = kAndV.size();
                 if (sz != 2) {
-                    StringBuilder sb = S.builder();
+                    S.Buffer sb = S.newBuffer();
                     for (int i = 0; i < sz; ++i) {
                         if (i > 0) sb.append(":");
                         sb.append(Arrays.toString(kAndV.get(i)));
@@ -323,7 +323,7 @@ public class SessionManager extends DestroyableBase {
             String data = sb.toString();
             if (isSession) {
                 String sign = app.sign(data);
-                data = S.builder(sign).append("-").append(data).toString();
+                data = S.concat(sign, "-", data);
                 if (encryptSession) {
                     data = app.encrypt(data);
                 }

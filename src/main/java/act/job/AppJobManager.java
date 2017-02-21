@@ -31,7 +31,7 @@ public class AppJobManager extends AppServiceBase<AppJobManager> {
     private ConcurrentMap<String, ScheduledFuture> scheduled = new ConcurrentHashMap<>();
 
     static String appEventJobId(AppEventId eventId) {
-        return S.builder("__act_app_").append(eventId.toString().toLowerCase()).toString();
+        return S.concat("__act_app__", eventId.toString().toLowerCase());
     }
 
     public AppJobManager(App app) {

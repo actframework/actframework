@@ -55,7 +55,7 @@ public class ActErrorPageRender extends ErrorPageRenderer {
                         + header + "</h1></body></html>";
                 return content;
             } else if (H.Format.XML == accept) {
-                StringBuilder sb = S.builder();
+                S.Buffer sb = S.newBuffer();
                 sb.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?><error>");
                 if (null != errorCode) {
                     sb.append("<code>").append(errorCode).append("</code");
@@ -85,9 +85,9 @@ public class ActErrorPageRender extends ErrorPageRenderer {
             return JSON.toJSONString(payload);
         }
         if (null == errorCode) {
-            return S.builder("{\"message\":\"").append(errorMsg).append("\"}").toString();
+            return S.concat("{\"message\":\"", errorMsg, "\"}");
         } else {
-            return S.builder("{\"code\":").append(errorCode).append(",\"message\":\"").append(errorMsg).append("\"}").toString();
+            return S.concat("{\"code\":", S.string(errorCode), ",\"message\":\"", errorMsg, "\"}");
         }
     }
 

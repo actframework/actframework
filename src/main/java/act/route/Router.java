@@ -202,13 +202,7 @@ public class Router extends AppServiceBase<Router> {
                 break;
             }
         }
-        if (urlContext != null) {
-            if (urlContext.endsWith("/") && path.length() > 0 && path.charAt(0) == '/') {
-                urlContext = urlContext.substring(0, urlContext.length() - 1);
-            }
-            path = S.builder().append(urlContext).append(path);
-        }
-        return path;
+        return null == urlContext ? path : S.pathConcat(urlContext, '/', path.toString());
     }
 
     public void addMapping(H.Method method, CharSequence path, CharSequence action) {
@@ -302,7 +296,7 @@ public class Router extends AppServiceBase<Router> {
                 if (null != v) {
                     elements.add(S.string(v));
                 } else {
-                    elements.add(S.builder("{").append(s).append("}").toString());
+                    elements.add(S.concat("{", s, "}"));
                 }
             } else {
                 elements.add(node.name.toString());
@@ -444,8 +438,7 @@ public class Router extends AppServiceBase<Router> {
 
     // -- action method sensor
     public boolean isActionMethod(String className, String methodName) {
-        String action = S.builder(className).append(".").append(methodName).toString();
-        return actionNames.contains(action);
+        return actionNames.contains(S.concat(className, ".", methodName));
     }
 
     // TODO: build controllerNames set to accelerate the process
@@ -484,33 +477,10 @@ public class Router extends AppServiceBase<Router> {
         return targetMethods;
     }
 
-    private Node search(H.Method method, List<CharSequence> path, ActionContext context) {
-        Node node = root(method);
-        int sz = path.size();
-        int i = 0;
-        while (null != node && i < sz) {
-            CharSequence nodeName = path.get(i++);
-            node = node.child(nodeName, context);
-            if (null != node && node.terminateRouteSearch()) {
-                if (i == sz) {
-                    context.param(ParamNames.PATH, "");
-                } else {
-                    StringBuilder sb = S.builder();
-                    for (int j = i; j < sz; ++j) {
-                        sb.append('/').append(path.get(j));
-                    }
-                    context.param(ParamNames.PATH, sb.toString());
-                }
-                break;
-            }
-        }
-        return node;
-    }
-
     private Node search(H.Method method, Iterator<CharSequence> path, ActionContext context) {
         Node node = root(method);
         if (node.terminateRouteSearch()) {
-            StringBuilder sb = S.builder();
+            S.Buffer sb = S.newBuffer();
             while (path.hasNext()) {
                 sb.append('/').append(path.next());
             }
@@ -524,7 +494,7 @@ public class Router extends AppServiceBase<Router> {
                 if (!path.hasNext()) {
                     context.param(ParamNames.PATH, "");
                 } else {
-                    StringBuilder sb = S.builder();
+                    S.Buffer sb = S.newBuffer();
                     while (path.hasNext()) {
                         sb.append('/').append(path.next());
                     }
@@ -812,7 +782,7 @@ public class Router extends AppServiceBase<Router> {
         String path() {
             if (null == parent) return "/";
             String pPath = parent.path();
-            return S.builder(pPath).append(pPath.endsWith("/") ? "" : "/").append(name).toString();
+            return S.pathConcat(pPath, '/', name.toString());
         }
 
         void debug(H.Method method, PrintStream ps) {

@@ -3,8 +3,6 @@ package testapp.endpoint;
 import act.cli.Command;
 import act.controller.Controller;
 import act.data.annotation.ReadContent;
-import act.util.AnnotatedClassFinder;
-import org.osgl.inject.annotation.AnnotatedWith;
 import org.osgl.mvc.annotation.PostAction;
 import org.osgl.storage.impl.SObject;
 import org.osgl.util.C;
@@ -54,12 +52,6 @@ public class MiscsTestBed extends Controller.Util {
     ) {
         return lines;
     }
-
-    @AnnotatedClassFinder(Controller.class)
-    public static void findXxxClass(Class<?> c) {
-        System.out.printf(">>>>>> %s\n", c.getName());
-    }
-
 
     @PostAction("readMulti")
     public Object testMultiFileRead(

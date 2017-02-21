@@ -291,6 +291,14 @@ public enum AppConfigKey implements ConfigKey {
     ENCODING("encoding"),
 
     /**
+     * `act.enum.resolving.case_sensitive` specifies whether it
+     * allow enum resolving for request parameters to ignore case
+     *
+     * Default value: `false` meaning enum resolving is case insensitive
+     */
+    ENUM_RESOLVING_CASE_SENSITIVE("enum.resolving.case_sensitive"),
+
+    /**
      * {@code act.fmt.date} specifies the default date format used to
      * lookup/output the date string
      * <p>Default value: the pattern of {@code java.text.DateFormat.getDateInstance()}</p>

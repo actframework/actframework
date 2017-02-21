@@ -71,7 +71,8 @@ public class NetworkHandler extends DestroyableBase {
         NetworkJob job = new NetworkJob() {
             @Override
             public void run() {
-                Timer timer = metric.startTimer(S.builder(MetricInfo.HTTP_HANDLER).append(":").append(requestHandler).toString());
+                String key = S.concat(MetricInfo.HTTP_HANDLER, ":", requestHandler.toString());
+                Timer timer = metric.startTimer(key);
                 ctx.saveLocal();
                 try {
                     requestHandler.handle(ctx);

@@ -198,10 +198,9 @@ public class FullStackAppBootstrapClassLoader extends BootstrapClassLoader imple
     }
 
     private void saveToFile(String name, String content) {
-        StringBuilder sb = S.builder("#").append(jarsChecksum);
-        sb.append(lineSeparator).append(content);
         File file = new File(name);
-        IO.writeContent(sb.toString(), file);
+        String fileContent = S.concat("#", S.string(jarsChecksum), lineSeparator, content);
+        IO.writeContent(fileContent, file);
     }
 
     private void restoreClassInfoRegistry() {

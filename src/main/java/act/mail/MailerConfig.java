@@ -95,7 +95,7 @@ public class MailerConfig extends AppHolderBase {
 
     private String getProperty(String key, Map<String, String> properties) {
         String key0 = key;
-        key = S.builder("mailer.").append(id).append(".").append(key).toString();
+        key = S.concat("mailer.", id, ".", key);
         String val = properties.get(key);
         if (null != val) {
             return val;
@@ -106,12 +106,12 @@ public class MailerConfig extends AppHolderBase {
             return val;
         }
         if (isDefault) {
-            key = S.builder("mailer.").append(key0).toString();
+            key = S.concat("mailer.", key0);
             val = properties.get(key);
             if (null != val) {
                 return val;
             }
-            return properties.get("act." + key);
+            return properties.get(S.concat("act.", key));
         } else {
             return null;
         }

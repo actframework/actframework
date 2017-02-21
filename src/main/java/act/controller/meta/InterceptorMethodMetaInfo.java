@@ -101,7 +101,7 @@ public class InterceptorMethodMetaInfo extends HandlerMethodMetaInfo<Interceptor
 
     @Override
     protected S.Buffer toStrBuffer(S.Buffer sb) {
-        StringBuilder prependix = S.builder();
+        S.Buffer prependix = S.newBuffer();
         if (0 != priority) {
             prependix.append("p[")
                     .append(priority).append("] ");

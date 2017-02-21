@@ -83,7 +83,7 @@ public enum CliView {
                 itemsFound = cursor.records();
                 appendix = cursor.hasNext() ? "\nType \"it\" for more" : "";
             }
-            return S.builder(tableString).append("Items found: ").append(itemsFound).append(appendix).toString();
+            return S.concat(tableString, "Items found: ", S.string(itemsFound), appendix);
         }
 
     },

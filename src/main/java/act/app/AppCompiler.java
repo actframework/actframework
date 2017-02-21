@@ -118,7 +118,7 @@ class AppCompiler extends DestroyableBase {
     private INameEnvironment nameEnv = new INameEnvironment() {
         @Override
         public NameEnvironmentAnswer findType(char[][] chars) {
-            final StringBuilder result = S.builder();
+            final S.Buffer result = S.buffer();
             for (int i = 0; i < chars.length; i++) {
                 if (i != 0) {
                     result.append('.');
@@ -130,7 +130,7 @@ class AppCompiler extends DestroyableBase {
 
         @Override
         public NameEnvironmentAnswer findType(char[] typeName, char[][] packageName) {
-            final StringBuilder result = S.builder();
+            final S.Buffer result = S.buffer();
             for (int i = 0; i < packageName.length; i++) {
                 result.append(packageName[i]);
                 result.append('.');
@@ -141,7 +141,7 @@ class AppCompiler extends DestroyableBase {
 
         @Override
         public boolean isPackage(char[][] parentPackageName, char[] packageName) {
-            StringBuilder sb = S.builder();
+            S.Buffer sb = S.buffer();
             if (parentPackageName != null) {
                 for (char[] p : parentPackageName) {
                     sb.append(new String(p));
@@ -215,7 +215,7 @@ class AppCompiler extends DestroyableBase {
                     if (null == caa) {
                         caa = result.compilationUnit.getPackageName();
                     }
-                    StringBuilder sb = S.builder();
+                    S.Buffer sb = S.buffer();
                     if (null != caa) {
                         for (char[] ca : caa) {
                             sb.append(ca).append(".");

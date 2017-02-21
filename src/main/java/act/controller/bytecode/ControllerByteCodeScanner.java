@@ -709,7 +709,9 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
             final Set<String> contexts = new HashSet<>();
             if (!noRegister) {
                 String contextPath = classInfo.contextPath();
-                registerOnContext(contextPath, S.builder(classInfo.className()).append(".").append(methodName).toString());
+                String className = classInfo.className();
+                String action = S.newSizedBuffer(className.length() + methodName.length() + 1).append(className).append(".").append(methodName).toString();
+                registerOnContext(contextPath, action);
                 contexts.add(contextPath);
             }
 

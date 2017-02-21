@@ -95,7 +95,7 @@ public class ViewManager extends DestroyableBase {
     }
 
     private Template getTemplate(ActContext context, AppConfig config, String path) {
-        String templatePath = path.startsWith("/") ? path : S.builder("/").append(path).toString();
+        String templatePath = S.ensureStartsWith(path, '/');
 
         Template template = null;
 

@@ -27,7 +27,7 @@ import static org.osgl.http.H.Format.*;
  */
 public class StaticResourceGetter extends FastRequestHandler {
 
-    private static final String SEP = "/";
+    private static final char SEP = '/';
 
     private String base;
     private URL baseUrl;
@@ -46,10 +46,7 @@ public class StaticResourceGetter extends FastRequestHandler {
     private Map<String, Boolean> cachedFailures = new HashMap<>();
 
     public StaticResourceGetter(String base) {
-        String path = base;
-        if (!base.startsWith(SEP)) {
-            path = SEP + base;
-        }
+        String path = S.ensureStartsWith(base, SEP);
         this.base = path;
         this.baseUrl = StaticFileGetter.class.getResource(path);
         E.illegalArgumentIf(null == this.baseUrl, "Cannot find base URL: %s", base);
@@ -130,13 +127,7 @@ public class StaticResourceGetter extends FastRequestHandler {
             if (S.blank(path)) {
                 target = baseUrl;
             } else {
-                StringBuilder sb = S.builder(base);
-                if (base.endsWith(SEP) || path.startsWith(SEP)) {
-                    sb.append(path);
-                } else {
-                    sb.append(SEP).append(path);
-                }
-                target = StaticFileGetter.class.getResource(sb.toString());
+                target = StaticFileGetter.class.getResource(S.pathConcat(base, SEP, path));
                 if (null == target) {
                     throw NotFound.get();
                 }

@@ -60,7 +60,8 @@ public class JodaDateTimeCodec extends JodaDateTimeCodecBase<DateTime> {
 
     @Override
     public String toJSONString(DateTime o) {
-        return S.builder("\"").append(toString(o)).append("\"").toString();
+        String s = toString(o);
+        return S.newSizedBuffer(s.length() + 2).append("\"").append(s).append("\"").toString();
     }
 
     @Override

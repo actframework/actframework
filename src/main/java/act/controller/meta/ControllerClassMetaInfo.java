@@ -258,7 +258,7 @@ public final class ControllerClassMetaInfo extends DestroyableBase {
             }
             return interceptors.find(name, className());
         }
-        return handlerLookup.get(className() + "." + name);
+        return handlerLookup.get(name);
     }
 
     <T extends InterceptorMethodMetaInfo> List<T> convertDerived(List<T> interceptors) {
@@ -305,7 +305,7 @@ public final class ControllerClassMetaInfo extends DestroyableBase {
             if (null == parentContextPath) {
                 return contextPath;
             }
-            StringBuilder sb = S.builder(parentContextPath);
+            S.Buffer sb = S.newBuffer(parentContextPath);
             if (parentContextPath.endsWith("/")) {
                 sb.deleteCharAt(sb.length() - 1);
             }
@@ -404,16 +404,16 @@ public final class ControllerClassMetaInfo extends DestroyableBase {
         C.Map<String, HandlerMethodMetaInfo> lookup = C.newMap();
         lookup.putAll(actionLookup);
         for (InterceptorMethodMetaInfo info : beforeInterceptors()) {
-            lookup.put(info.fullName(), info);
+            lookup.put(info.name(), info);
         }
         for (InterceptorMethodMetaInfo info : afterInterceptors()) {
-            lookup.put(info.fullName(), info);
+            lookup.put(info.name(), info);
         }
         for (InterceptorMethodMetaInfo info : exceptionInterceptors()) {
-            lookup.put(info.fullName(), info);
+            lookup.put(info.name(), info);
         }
         for (InterceptorMethodMetaInfo info : finallyInterceptors()) {
-            lookup.put(info.fullName(), info);
+            lookup.put(info.name(), info);
         }
         handlerLookup = lookup;
     }

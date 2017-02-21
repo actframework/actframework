@@ -385,7 +385,7 @@ class ConfigKeyHelper {
     }
 
     private Set<String> aliases(String key, String suffix) {
-        Set<String> set = C.newSet();
+        Set<String> set = new HashSet<>();
         set.add(Config.PREFIX + key);
         set.add(key);
         if (S.notBlank(suffix)) {
@@ -397,7 +397,7 @@ class ConfigKeyHelper {
                 if (!suffix.startsWith(".")) {
                     suffix = "." + suffix;
                 }
-                String k0 = S.builder(key).append(suffix).toString();
+                String k0 = key + suffix;
                 set.add(Config.PREFIX + k0);
                 set.add(k0);
             }

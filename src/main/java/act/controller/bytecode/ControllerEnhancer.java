@@ -38,12 +38,6 @@ public class ControllerEnhancer extends AppByteCodeEnhancer<ControllerEnhancer> 
         return ControllerEnhancer.class;
     }
 
-    public ControllerEnhancer classInfoHolder(ControllerClassMetaInfoHolder holder) {
-        classInfoHolder = holder;
-        predicate(_F.isController(holder));
-        return this;
-    }
-
     @Override
     public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
         super.visit(version, access, name, signature, superName, interfaces);
@@ -53,7 +47,7 @@ public class ControllerEnhancer extends AppByteCodeEnhancer<ControllerEnhancer> 
     @Override
     public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
         MethodVisitor mv = super.visitMethod(access, name, desc, signature, exceptions);
-        HandlerMethodMetaInfo info = methodInfo(name, access);
+        HandlerMethodMetaInfo info = methodInfo(name);
         if (null == info) {
             return mv;
         }
@@ -61,24 +55,16 @@ public class ControllerEnhancer extends AppByteCodeEnhancer<ControllerEnhancer> 
         return new HandlerEnhancer(mv, info, access, name, desc, signature, exceptions);
     }
 
-    private HandlerMethodMetaInfo methodInfo(String name, int access) {
+    private HandlerMethodMetaInfo methodInfo(String name) {
         if (!isConstructor(name)) {
             ControllerClassMetaInfo ccInfo = classInfoHolder.controllerClassMetaInfo(className);
             if (null == ccInfo) {
                 return null;
             }
-            HandlerMethodMetaInfo info = ccInfo.action(name);
-            if (null != info) {
-                return info;
-            }
             return ccInfo.handler(name);
         } else {
             return null;
         }
-    }
-
-    private boolean isTargetMethod(String name, int access) {
-        return isPublic(access) && !isConstructor(name) && methodInfo(name, access) != null;
     }
 
     private enum _F {
