@@ -14,7 +14,7 @@ import javax.inject.Singleton;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
-class ProvidedValueLoader extends DestroyableBase implements ParamValueLoader {
+public class ProvidedValueLoader extends DestroyableBase implements ParamValueLoader {
     private DependencyInjector<?> injector;
     private BeanSpec beanSpec;
     private Object singleton;
@@ -36,7 +36,7 @@ class ProvidedValueLoader extends DestroyableBase implements ParamValueLoader {
         if (null != singleton) {
             return singleton;
         }
-        if (context.getClass().equals(beanSpec.rawType())) {
+        if (null != context && context.getClass().equals(beanSpec.rawType())) {
             return context;
         } else {
             GenieInjector genieInjector = (GenieInjector) injector;

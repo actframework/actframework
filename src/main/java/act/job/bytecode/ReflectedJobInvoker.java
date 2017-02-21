@@ -1,6 +1,10 @@
 package act.job.bytecode;
 
 import act.app.App;
+import act.controller.meta.HandlerParamMetaInfo;
+import act.inject.param.ParamValueLoaderManager;
+import act.inject.param.ParamValueLoaderService;
+import act.job.JobContext;
 import act.job.meta.JobClassMetaInfo;
 import act.job.meta.JobMethodMetaInfo;
 import act.sys.Env;
@@ -12,6 +16,7 @@ import org.osgl.util.E;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.List;
 
 /**
@@ -29,8 +34,8 @@ public class ReflectedJobInvoker<M extends JobMethodMetaInfo> extends $.F0<Objec
     private int methodIndex;
     protected Method method;
     private List<BeanSpec> providedParams;
-    private int providedParamsSize;
     private boolean disabled;
+    private ParamValueLoaderService paramValueLoaderService;
 
     public ReflectedJobInvoker(M handlerMetaInfo, App app) {
         this.cl = app.classLoader();
@@ -46,7 +51,21 @@ public class ReflectedJobInvoker<M extends JobMethodMetaInfo> extends $.F0<Objec
         method = methodInfo.method();
         disabled = disabled || !Env.matches(jobClass);
         providedParams = methodInfo.paramTypes();
-        providedParamsSize = providedParams.size();
+        ParamValueLoaderManager paramValueLoaderManager = app.service(ParamValueLoaderManager.class);
+        if (null != paramValueLoaderManager) {
+            paramValueLoaderService = paramValueLoaderManager.get(JobContext.class);
+        } else {
+            // this job is scheduled to run before ParamValueLoaderManager initialized
+        }
+
+        if (!Modifier.isStatic(method.getModifiers())) {
+            Class[] paramTypes = paramTypes();
+            //constructorAccess = ConstructorAccess.get(controllerClass);
+            methodAccess = MethodAccess.get(jobClass);
+            methodIndex = methodAccess.getIndex(methodInfo.name(), paramTypes);
+        } else {
+            method.setAccessible(true);
+        }
     }
 
     @Override
@@ -61,15 +80,25 @@ public class ReflectedJobInvoker<M extends JobMethodMetaInfo> extends $.F0<Objec
         return invoke(job);
     }
 
+    private Class[] paramTypes() {
+        List<BeanSpec> paramTypes = methodInfo.paramTypes();
+        int sz = null == paramTypes ? 0 : paramTypes.size();
+        Class[] ca = new Class[sz];
+        for (int i = 0; i < sz; ++i) {
+            BeanSpec spec = methodInfo.paramTypes().get(i);
+            ca[i] = spec.rawType();
+        }
+        return ca;
+    }
+
+
     private Object jobClassInstance(App app) {
-        return app.getInstance(jobClass);
+        return null != paramValueLoaderService ? paramValueLoaderService.loadHostBean(jobClass, JobContext.current())
+                : app.getInstance(jobClass);
     }
 
     private Object invoke(Object jobClassInstance) {
-        Object[] params = new Object[providedParamsSize];
-        for (int i = 0; i < providedParamsSize; ++i) {
-            params[i] = app.getInstance(providedParams.get(i).rawType());
-        }
+        Object[] params = params();
         Object result;
         if (null != methodAccess) {
             result = methodAccess.invoke(jobClassInstance, methodIndex, params);
@@ -83,5 +112,13 @@ public class ReflectedJobInvoker<M extends JobMethodMetaInfo> extends $.F0<Objec
             }
         }
         return result;
+    }
+
+    private Object[] params() {
+        if (null != paramValueLoaderService) {
+            return paramValueLoaderService.loadMethodParams(method, JobContext.current());
+        }
+        E.illegalStateIf(paramTypes().length > 0, "Cannot invoke job with parameters before app fully started");
+        return new Object[0];
     }
 }

@@ -5,6 +5,7 @@ import act.app.ActionContext;
 import act.app.App;
 import act.app.AppServiceBase;
 import act.cli.CliContext;
+import act.job.JobContext;
 import act.util.ActContext;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -25,6 +26,7 @@ public class ParamValueLoaderManager  extends AppServiceBase<ParamValueLoaderMan
         super(app);
         loaderServices.put(ActionContext.class, new ActionContextParamLoader(app));
         loaderServices.put(CliContext.class, new CliContextParamLoader(app));
+        loaderServices.put(JobContext.class, new JobContextParamLoader(app));
     }
 
     public <T extends ParamValueLoaderService> T  get(Class<? extends ActContext> contextClass) {

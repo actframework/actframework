@@ -1,21 +1,25 @@
 package act.job;
 
 import act.app.ActionContext;
+import act.app.App;
 import act.util.ActContext;
 import org.osgl.http.H;
+import org.osgl.util.E;
 
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Communicate context data across threads
  */
-public class JobContext {
+public class JobContext extends ActContext.Base<JobContext> {
 
     private static ThreadLocal<JobContext> current_ = new ThreadLocal<JobContext>();
 
     private JobContext() {
+        super(App.instance());
         ActContext<?> actContext = ActContext.Base.currentContext();
         if (null != actContext) {
             bag_.put("locale", actContext.locale());
@@ -38,6 +42,40 @@ public class JobContext {
      */
     public static boolean initialized() {
         return null != current_.get();
+    }
+
+    public static JobContext current() {
+        return current_.get();
+    }
+
+    @Override
+    public JobContext accept(H.Format fmt) {
+        return this;
+    }
+
+    @Override
+    public H.Format accept() {
+        throw E.unsupport();
+    }
+
+    @Override
+    public String methodPath() {
+        throw E.unsupport();
+    }
+
+    @Override
+    public Set<String> paramKeys() {
+        throw E.unsupport();
+    }
+
+    @Override
+    public String paramVal(String s) {
+        throw E.unsupport();
+    }
+
+    @Override
+    public String[] paramVals(String s) {
+        throw E.unsupport();
     }
 
     /**

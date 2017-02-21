@@ -140,14 +140,14 @@ public class GenieInjector extends DependencyInjectorBase<GenieInjector> {
                     List<ActionMethodParamAnnotationHandler> list = Act.pluginManager().pluginList(ActionMethodParamAnnotationHandler.class);
                     for (ActionMethodParamAnnotationHandler h : list) {
                         Set<Class<? extends Annotation>> set = h.listenTo();
-                        for (Class<? extends Annotation> c: set) {
+                        for (Class<? extends Annotation> c : set) {
                             genie.registerQualifiers(c);
                         }
                     }
 
                     ActProviders.registerBuiltInProviders(ActProviders.class, register);
                     ActProviders.registerBuiltInProviders(GenieProviders.class, register);
-                    for (Class<? extends Annotation> injectTag: injectTags) {
+                    for (Class<? extends Annotation> injectTag : injectTags) {
                         genie.registerInjectTag(injectTag);
                     }
                 }
@@ -183,56 +183,14 @@ public class GenieInjector extends DependencyInjectorBase<GenieInjector> {
         ClassNode root = repo.node(autoBinding.getName());
         E.invalidConfigurationIf(null == root, "Cannot find AutoBind root: %s", autoBinding.getName());
         final Set<Class<?>> candidates = new LinkedHashSet<>();
-        final $.Var<Class<?>> priority = $.var();
         root.visitPublicNotAbstractSubTreeNodes(new $.Visitor<ClassNode>() {
-
-            private void addToPriority(Class<?> clazz) {
-                if (priority.isNull()) {
-                    priority.set(clazz);
-                    return;
-                } else {
-                    throw new ConfigurationException("Unable to auto bind on %s: multiple candidates found", autoBinding);
-                }
-            }
-
             @Override
             public void visit(ClassNode classNode) throws Osgl.Break {
                 try {
                     Class<?> clazz = $.classForName(classNode.name(), cl);
-                    while (true) {
-                        Env.Profile profileSpec = clazz.getAnnotation(Env.Profile.class);
-                        if (null != profileSpec) {
-                            if (Env.matches(profileSpec)) {
-                                addToPriority(clazz);
-                                break;
-                            } else {
-                                App.logger.debug("Ignore auto bind candidate [%s] for [%s]: profile mismatch", clazz.getName(), autoBinding.getName());
-                                return;
-                            }
-                        }
-                        Env.Mode modeSpec = clazz.getAnnotation(Env.Mode.class);
-                        if (null != modeSpec) {
-                            if (Env.matches(modeSpec)) {
-                                addToPriority(clazz);
-                                break;
-                            } else {
-                                App.logger.debug("Ignore auto bind candidate [%s] for [%s]: mode mismatch", clazz.getName(), autoBinding.getName());
-                                return;
-                            }
-                        }
-                        Env.Group groupSpec = clazz.getAnnotation(Env.Group.class);
-                        if (null != groupSpec) {
-                            if (Env.matches(groupSpec)) {
-                                addToPriority(clazz);
-                                break;
-                            } else {
-                                App.logger.debug("Ignore auto bind candidate [%s] for [%s]: group mismatch", clazz.getName(), autoBinding.getName());
-                                return;
-                            }
-                        }
-                        break;
+                    if (Env.matches(clazz)) {
+                        candidates.add(clazz);
                     }
-                    candidates.add(clazz);
                 } catch (ConfigurationException e) {
                     throw e;
                 } catch (RuntimeException e) {
@@ -241,20 +199,37 @@ public class GenieInjector extends DependencyInjectorBase<GenieInjector> {
             }
         });
 
-        Class<?> winner = priority.get();
-        if (null == winner && !candidates.isEmpty()) {
-            if (candidates.size() > 1) {
-                throw new ConfigurationException("Unable to auto bind on %s: multiple candidates found", autoBinding);
-            }
-            winner = candidates.iterator().next();
-        }
-
-        if (null != winner) {
+        if (!candidates.isEmpty()) {
             GenieInjector injector = Act.app().injector();
-            injector.genie().registerProvider(autoBinding, new LazyProvider(winner, injector));
+            // key is: set of annotations plus name
+            Map<$.T2<Set<Annotation>, String>, Class<?>> multiCandidatesMap = new HashMap<>();
+            for (Class<?> c : candidates) {
+                BeanSpec spec = BeanSpec.of(c, injector);
+                Set<Annotation> qualifiers = spec.qualifiers();
+                String name = spec.name();
+                $.T2<Set<Annotation>, String> key = $.T2(qualifiers, name);
+                if (multiCandidatesMap.containsKey(key)) {
+                    throw new ConfigurationException("Unable to auto bind on %s: multiple same qualified candidates found", autoBinding);
+                } else {
+                    multiCandidatesMap.put(key, c);
+                }
+            }
+            for (Map.Entry<$.T2<Set<Annotation>, String>, Class<?>> entry : multiCandidatesMap.entrySet()) {
+                Genie.Binder binder = new Genie.Binder(autoBinding).to(entry.getValue());
+                $.T2<Set<Annotation>, String> key = entry.getKey();
+                Set<Annotation> qualifiers = key._1;
+                String name = key._2;
+                if (!qualifiers.isEmpty()) {
+                    binder = binder.withAnnotation(qualifiers.toArray(new Annotation[qualifiers.size()]));
+                }
+                if (null != name) {
+                    binder.named(name);
+                }
+                binder.register(injector.genie());
+            }
+        } else {
+            App.logger.warn("Unable to auto bind on %s: implementation not found", autoBinding);
         }
-
-        App.logger.warn("Unable to auto bind on %s: implementation not found", autoBinding);
     }
 
     @AnnotatedClassFinder(value = ModuleTag.class, callOn = AppEventId.DEPENDENCY_INJECTOR_LOADED, noAbstract = false)
@@ -283,12 +258,12 @@ public class GenieInjector extends DependencyInjectorBase<GenieInjector> {
         App app = App.instance();
         GenieInjector genieInjector = app.injector();
         Type[] ta = loaderClass.getGenericInterfaces();
-        for (Type t: ta) {
+        for (Type t : ta) {
             if (t instanceof ParameterizedType) {
                 ParameterizedType pt = (ParameterizedType) t;
                 if (GenericTypedBeanLoader.class == pt.getRawType()) {
                     Type compoentType = pt.getActualTypeArguments()[0];
-                    genieInjector.genie().registerGenericTypedBeanLoader((Class)compoentType, app.getInstance(loaderClass));
+                    genieInjector.genie().registerGenericTypedBeanLoader((Class) compoentType, app.getInstance(loaderClass));
                 }
             }
         }

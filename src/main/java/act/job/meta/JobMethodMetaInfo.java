@@ -80,6 +80,14 @@ public class JobMethodMetaInfo extends DestroyableBase {
     }
 
     public Method method() {
+        if (null == method) {
+            Class<?> c = $.classForName(classInfo().className(), Act.app().classLoader());
+            if (null == paramTypes() || paramTypes().isEmpty()) {
+                method = $.getMethod(c, name());
+            } else {
+                throw new IllegalStateException("method cannot have parameters for Job invoked before app fully loaded");
+            }
+        }
         return method;
     }
 

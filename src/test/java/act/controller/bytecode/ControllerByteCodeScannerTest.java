@@ -7,6 +7,8 @@ import act.app.TestingAppClassLoader;
 import act.asm.Type;
 import act.controller.meta.*;
 import act.event.EventBus;
+import act.inject.param.ParamValueLoaderManager;
+import act.inject.param.ParamValueLoaderService;
 import act.job.AppJobManager;
 import act.job.bytecode.JobByteCodeScanner;
 import act.route.RouteSource;
@@ -45,6 +47,7 @@ public class ControllerByteCodeScannerTest extends TestBase {
     private JobByteCodeScanner jobScanner;
     private EventBus eventBus;
     private File base;
+    private ParamValueLoaderManager paramValueLoaderManager;
 
     @Before
     public void setup() throws Exception {
@@ -68,6 +71,8 @@ public class ControllerByteCodeScannerTest extends TestBase {
         C.List<AppByteCodeScanner> scanners = $.cast(C.listOf(controllerScanner, jobScanner));
         //C.List<AppByteCodeScanner> scanners = C.list(controllerScanner);
         when(scannerManager.byteCodeScanners()).thenReturn(scanners);
+        paramValueLoaderManager = mock(ParamValueLoaderManager.class);
+        when(mockApp.service(ParamValueLoaderManager.class)).thenReturn(paramValueLoaderManager);
         controllerScanner.setApp(mockApp);
         jobScanner.setApp(mockApp);
         base = new File("./target/test-classes");
