@@ -17,6 +17,7 @@ import act.inject.genie.SessionScope;
 import act.util.ActContext;
 import act.util.DestroyableBase;
 import org.osgl.$;
+import org.osgl.exception.UnexpectedException;
 import org.osgl.inject.BeanSpec;
 import org.osgl.inject.InjectException;
 import org.osgl.inject.annotation.Provided;
@@ -174,7 +175,7 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
     private <T> Map<Field, ParamValueLoader> fieldLoaders(Class<T> beanClass) {
         Map<Field, ParamValueLoader> fieldLoaders = fieldRegistry.get(beanClass);
         if (null == fieldLoaders) {
-            fieldLoaders = new HashMap<Field, ParamValueLoader>();
+            fieldLoaders = new HashMap<>();
             for (Field field : $.fieldsOf(beanClass, true)) {
                 if (shouldWaive(field)) {
                     continue;
@@ -204,7 +205,11 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
         for (int i = 0; i < sz; ++i) {
             String name = paramName(i);
             BeanSpec spec = BeanSpec.of(types[i], annotations[i], name, injector);
-            loaders[i] = paramValueLoaderOf(spec);
+            ParamValueLoader loader = paramValueLoaderOf(spec);
+            if (null == loader) {
+                throw new UnexpectedException("Cannot find param value loader for param: " + spec);
+            }
+            loaders[i] = loader;
         }
         return loaders;
     }
@@ -228,7 +233,9 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
             loader = findLoader(spec, type, annotations, bindName);
             // Cannot use spec as the key here because
             // spec does not compare Scoped annotation
-            paramRegistry.putIfAbsent(key, loader);
+            if (null != loader) {
+                paramRegistry.putIfAbsent(key, loader);
+            }
         }
         return loader;
     }
@@ -307,7 +314,7 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
         Class rawType = spec.rawType();
         ParamValueLoader loader = findContextSpecificLoader(bindName, rawType, spec, type, annotations);
         if (null == loader) {
-            throw new IllegalStateException("Cannot find param loader for " + spec);
+            return null;
         }
         return decorate(loader, spec, annotations, supportJsonDecorator());
     }
