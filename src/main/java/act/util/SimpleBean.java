@@ -36,10 +36,10 @@ public interface SimpleBean {
         // the class name
         private String className;
         // keep public non-static fields
-        private Map<String, String> publicFields = new HashMap<>();
+        private Map<String, $.T2<String, String>> publicFields = new HashMap<>();
 
         @Inject
-        MetaInfo(String className, Map<String, String> publicFields) {
+        MetaInfo(String className, Map<String, $.T2<String, String>> publicFields) {
             this.className = className;
             this.publicFields = publicFields;
         }
@@ -52,7 +52,7 @@ public interface SimpleBean {
             this.className = className;
         }
 
-        public Map<String, String> getPublicFields() {
+        public Map<String, $.T2<String, String>> getPublicFields() {
             return C.map(publicFields);
         }
 
@@ -134,7 +134,8 @@ public interface SimpleBean {
 
             private String className;
             private boolean isPublicClass;
-            private Map<String, String> publicFields = new HashMap<>();
+            // key: (desc, signature)
+            private Map<String, $.T2<String, String>> publicFields = new HashMap<>();
 
             @Override
             public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
@@ -148,7 +149,7 @@ public interface SimpleBean {
             @Override
             public FieldVisitor visitField(int access, String name, String desc, String signature, Object value) {
                 if (isPublicClass && AsmTypes.isPublic(access) && !AsmTypes.isStatic(access)) {
-                    publicFields.put(name, desc);
+                    publicFields.put(name, $.T2(desc, signature));
                 }
                 return super.visitField(access, name, desc, signature, value);
             }
@@ -170,8 +171,8 @@ public interface SimpleBean {
         private ClassInfoRepository classInfoRepository;
         private boolean isSimpleBean = false;
         private boolean hasPublicFields = false;
-        private Map<String, String> getters = new HashMap<>();
-        private Map<String, String> setters = new HashMap<>();
+        private Map<String, $.T2<String, String>> getters = new HashMap<>();
+        private Map<String, $.T2<String, String>> setters = new HashMap<>();
         private boolean needDefaultConstructor = false;
         private String classDesc;
         private String superClassDesc;
@@ -208,7 +209,7 @@ public interface SimpleBean {
                 superClassDesc = superName;
                 MetaInfo metaInfo = metaInfoManager.get(className);
                 if (null != metaInfo) {
-                    Map<String, String> publicFields = metaInfo.publicFields;
+                    Map<String, $.T2<String, String>> publicFields = metaInfo.publicFields;
                     if (!publicFields.isEmpty()) {
                         getters.putAll(publicFields);
                         setters.putAll(publicFields);
@@ -316,22 +317,26 @@ public interface SimpleBean {
         }
 
         private void addGetters() {
-            for (Map.Entry<String, String> field : C.list(getters.entrySet())) {
+            for (Map.Entry<String, $.T2<String, String>> field : C.list(getters.entrySet())) {
                 addGetter(field);
             }
         }
 
         private void addSetters() {
-            for (Map.Entry<String, String> field : C.list(setters.entrySet())) {
+            for (Map.Entry<String, $.T2<String, String>> field : C.list(setters.entrySet())) {
                 addSetter(field);
             }
         }
 
-        private void addGetter(Map.Entry<String, String> field) {
+        private void addGetter(Map.Entry<String, $.T2<String, String>> field) {
             String name = field.getKey();
-            String desc = field.getValue();
+            String desc = field.getValue()._1;
+            String signature = field.getValue()._2;
+            if (null != signature) {
+                signature = S.concat("()", signature);
+            }
 
-            MethodVisitor mv = visitMethod(ACC_PUBLIC, getterName(name, MetaInfo.isBoolean(desc)), "()" + desc, null, null);
+            MethodVisitor mv = visitMethod(ACC_PUBLIC, getterName(name, MetaInfo.isBoolean(desc)), S.concat("()", desc), signature, null);
             mv.visitCode();
             mv.visitVarInsn(ALOAD, 0);
             mv.visitFieldInsn(GETFIELD, classDesc, name, desc);
@@ -344,11 +349,15 @@ public interface SimpleBean {
             mv.visitEnd();
         }
 
-        private void addSetter(Map.Entry<String, String> field) {
+        private void addSetter(Map.Entry<String, $.T2<String, String>> field) {
             String name = field.getKey();
-            String desc = field.getValue();
+            String desc = field.getValue()._1;
+            String signature = field.getValue()._2;
 
-            MethodVisitor mv = visitMethod(ACC_PUBLIC, setterName(name), "(" + desc + ")V", null, null);
+            if (null != signature) {
+                signature = S.concat("(", signature, ")V");
+            }
+            MethodVisitor mv = visitMethod(ACC_PUBLIC, setterName(name), S.concat("(", desc, ")V"), signature, null);
             mv.visitCode();
             mv.visitVarInsn(ALOAD, 0);
             mv.visitVarInsn(loadCode(desc), 1);

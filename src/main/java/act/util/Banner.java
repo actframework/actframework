@@ -75,9 +75,9 @@ public class Banner {
             int len = s.length();
             if (len < 5) {
                 font = "big";
-            } else if (len < 9) {
+            } else if (len < 7) {
                 font = "standard";
-            } else if (len < 13) {
+            } else if (len < 10) {
                 font = "small";
             } else {
                 font = "mini";

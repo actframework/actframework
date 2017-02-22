@@ -3,8 +3,7 @@ package act.db;
 import act.Act;
 import act.app.App;
 import act.plugin.AppServicePlugin;
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONObject;
+import act.util.ClassNode;
 import org.osgl.$;
 import org.osgl.Osgl;
 import org.osgl.exception.NotAppliedException;
@@ -15,7 +14,6 @@ import org.osgl.util.S;
 import org.osgl.util.ValueObject;
 
 import java.beans.Transient;
-import java.lang.annotation.Annotation;
 import java.lang.reflect.*;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -144,9 +142,9 @@ public interface AdaptiveRecord<ID_TYPE, MODEL_TYPE extends AdaptiveRecord> exte
         private Class<? extends AdaptiveRecord> arClass;
         public String className;
         public Map<String, BeanSpec> getterFieldSpecs;
-        public Map<String, Type> getterFieldTypes;
+        public Map<String, Class> getterFieldClasses;
         public Map<String, BeanSpec> setterFieldSpecs;
-        public Map<String, Type> setterFieldTypes;
+        public Map<String, Class> setterFieldClasses;
         public Map<String, $.Function> fieldGetters;
         public Map<String, $.Func2> fieldSetters;
         public Map<String, $.Func2> fieldMergers;
@@ -158,24 +156,34 @@ public interface AdaptiveRecord<ID_TYPE, MODEL_TYPE extends AdaptiveRecord> exte
         }
 
         @Deprecated
-        public Type fieldType(String fieldName) {
-            Type type = setterFieldTypes.get(fieldName);
-            return null == type ? getterFieldTypes.get(fieldName) : type;
+        public Class fieldClass(String fieldName) {
+            Class clazz = setterFieldClasses.get(fieldName);
+            return null == clazz ? getterFieldClasses.get(fieldName) : clazz;
+        }
+
+        public Class getterFieldClass(String fieldName) {
+            return getterFieldClasses.get(fieldName);
+        }
+
+        public Class setterFieldClass(String fieldName) {
+            return setterFieldClasses.get(fieldName);
         }
 
         public Type getterFieldType(String fieldName) {
-            return getterFieldTypes.get(fieldName);
+            BeanSpec spec = getterFieldSpecs.get(fieldName);
+            return null == spec ? null : spec.type();
         }
 
         public Type setterFieldType(String fieldName) {
-            return setterFieldTypes.get(fieldName);
+            BeanSpec spec = setterFieldSpecs.get(fieldName);
+            return null == spec ? null : spec.type();
         }
 
         private void discoverProperties(Class<? extends AdaptiveRecord> clazz) {
             getterFieldSpecs = new HashMap<>();
-            getterFieldTypes = new HashMap<>();
+            getterFieldClasses = new HashMap<>();
             setterFieldSpecs = new HashMap<>();
-            setterFieldTypes = new HashMap<>();
+            setterFieldClasses = new HashMap<>();
             fieldGetters = new HashMap<>();
             fieldSetters = new HashMap<>();
             fieldMergers = new HashMap<>();
@@ -191,16 +199,24 @@ public interface AdaptiveRecord<ID_TYPE, MODEL_TYPE extends AdaptiveRecord> exte
                         continue;
                     }
                 }
-                Class returnType = m.getReturnType();
+                Class returnClass = m.getReturnType();
+                Type returnType = m.getGenericReturnType();
+                Class paramClass = null;
                 Type paramType = null;
-                Class<?>[] params = m.getParameterTypes();
+                Class[] params = m.getParameterTypes();
+                Type[] paramTypes = m.getGenericParameterTypes();
                 if (null != params && params.length == 1) {
-                    paramType = params[0];
+                    paramClass = params[0];
+                    paramType = paramTypes[0];
                 }
+                Class fieldClass = null == paramClass ? returnClass : paramClass;
                 Type fieldType = null == paramType ? returnType : paramType;
-                if (null == paramType) {
+                if (!(fieldType instanceof ParameterizedType)) {
+                    fieldType = fieldClass;
+                }
+                if (null == paramClass) {
                     getterFieldSpecs.put(name, BeanSpec.of(fieldType, m.getDeclaredAnnotations(), name, injector));
-                    getterFieldTypes.put(name, fieldType);
+                    getterFieldClasses.put(name, fieldClass);
                 } else {
                     BeanSpec existingSpec = setterFieldSpecs.get(name);
                     if (null != existingSpec) {
@@ -208,21 +224,21 @@ public interface AdaptiveRecord<ID_TYPE, MODEL_TYPE extends AdaptiveRecord> exte
                         Field field = $.fieldOf(clazz, name, true);
                         if (null != field) {
                             setterFieldSpecs.put(name, BeanSpec.of(field, injector));
-                            setterFieldTypes.put(name, field.getType());
+                            setterFieldClasses.put(name, field.getType());
                         } else {
-                            if (fieldType == Object.class) {
+                            if (fieldClass == Object.class) {
                                 // ignore
                             } else if (existingSpec.rawType() == Object.class) {
                                 setterFieldSpecs.put(name, BeanSpec.of(fieldType, m.getDeclaredAnnotations(), name, injector));
-                                setterFieldTypes.put(name, fieldType);
+                                setterFieldClasses.put(name, fieldClass);
                             }
                         }
                     } else {
                         setterFieldSpecs.put(name, BeanSpec.of(fieldType, m.getDeclaredAnnotations(), name, injector));
-                        setterFieldTypes.put(name, fieldType);
+                        setterFieldClasses.put(name, fieldClass);
                     }
                 }
-                if (null != paramType) {
+                if (null != paramClass) {
                     final String fieldName = name;
                     fieldSetters.put(name, new Osgl.Func2() {
                         @Override
