@@ -50,7 +50,7 @@ public class StaticResourceGetter extends FastRequestHandler {
         this.base = path;
         this.baseUrl = StaticFileGetter.class.getResource(path);
         E.illegalArgumentIf(null == this.baseUrl, "Cannot find base URL: %s", base);
-        this.isFolder = isFolder(this.baseUrl);
+        this.isFolder = isFolder(this.baseUrl, path);
         if (!this.isFolder && "file".equals(baseUrl.getProtocol())) {
             Act.jobManager().beforeAppStart(new Runnable() {
                 @Override
@@ -124,15 +124,18 @@ public class StaticResourceGetter extends FastRequestHandler {
         try {
             URL target;
             H.Format fmt;
+            String loadPath = path;
             if (S.blank(path)) {
                 target = baseUrl;
+                loadPath = base;
             } else {
-                target = StaticFileGetter.class.getResource(S.pathConcat(base, SEP, path));
+                loadPath = S.pathConcat(base, SEP, path);
+                target = StaticFileGetter.class.getResource(loadPath);
                 if (null == target) {
                     throw NotFound.get();
                 }
             }
-            if (preventFolderAccess(target, context)) {
+            if (preventFolderAccess(target, loadPath, context)) {
                 return;
             }
             fmt = StaticFileGetter.contentType(target.getPath());
@@ -164,12 +167,12 @@ public class StaticResourceGetter extends FastRequestHandler {
         }
     }
 
-    private boolean preventFolderAccess(URL target, ActionContext context) {
+    private boolean preventFolderAccess(URL target, String path, ActionContext context) {
         if (folders.contains(target)) {
             AlwaysForbidden.INSTANCE.handle(context);
             return true;
         }
-        if (isFolder(target)) {
+        if (isFolder(target, path)) {
             folders.add(target);
             AlwaysForbidden.INSTANCE.handle(context);
             return true;
@@ -177,10 +180,17 @@ public class StaticResourceGetter extends FastRequestHandler {
         return false;
     }
 
-    private boolean isFolder(URL target) {
+    private boolean isFolder(URL target, String path) {
         if ("file".equals(target.getProtocol())) {
             File file = new File(target.getFile());
             return file.isDirectory();
+        }
+        if ("jar".equals(target.getProtocol())) {
+            if (path.endsWith("/")) {
+                return true;
+            }
+            URL url = StaticFileGetter.class.getResource(S.ensureEndsWith(path, "/"));
+            return null != url;
         }
         return false;
     }
