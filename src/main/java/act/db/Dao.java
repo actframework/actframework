@@ -142,13 +142,13 @@ public interface Dao<ID_TYPE, MODEL_TYPE, QUERY_TYPE extends Dao.Query<MODEL_TYP
      * @param fields the fields specification in {@code String}
      * @param values the value array corresponding to the fields specification
      */
-    void save(MODEL_TYPE entity, String fields, Object ... values);
+    MODEL_TYPE save(MODEL_TYPE entity, String fields, Object ... values);
 
     /**
      * Batch save entities
      * @param entities an iterable to get entities to be saved
      */
-    void save(Iterable<MODEL_TYPE> entities);
+    List<MODEL_TYPE> save(Iterable<MODEL_TYPE> entities);
 
     /**
      * Remove the entity specified
@@ -195,7 +195,7 @@ public interface Dao<ID_TYPE, MODEL_TYPE, QUERY_TYPE extends Dao.Query<MODEL_TYP
     void deleteAll();
 
     /**
-     * Drop all entities from persistent storage
+     * Drop all entities (and optionally all indexes) from persistent storage
      */
     void drop();
 

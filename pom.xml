@@ -18,9 +18,16 @@
 ********************************************
 *            version history
 ********************************************
+0.6.0
+- Dao API change: save(MODEL, ...) now returns the model been saved
+- DAO API change: save(Iterable) now returns list of object been saved
+
 0.5.0
 - 0.4.0 reserved for TechEmpower benchmark set
 - update dependency versions
+- A lot of fix to Adaptive Record
+- Dependency Injection improvement on auto binding
+- Job parameter binding improvement
 
 0.4.0
 - Performance tuning: enable direct io thread processing handler
@@ -56,7 +63,7 @@
   <groupId>org.actframework</groupId>
   <artifactId>act</artifactId>
   <packaging>jar</packaging>
-  <version>0.5.0-SNAPSHOT</version>
+  <version>0.6.0-SNAPSHOT</version>
 
   <name>ACT Framework</name>
   <description>The ACT full stack MVC framework</description>
