@@ -4,6 +4,7 @@ import act.app.ActionContext;
 import act.app.App;
 import act.app.util.AppCrypto;
 import act.cli.CliContext;
+import act.cli.CliSession;
 import act.conf.AppConfig;
 import act.db.Dao;
 import act.event.EventBus;
@@ -94,6 +95,14 @@ public final class ActProviders {
         @Override
         public CliContext get() {
             return CliContext.current();
+        }
+    };
+
+    public static final Provider<CliSession> CLI_SESSION = new Provider<CliSession>() {
+        @Override
+        public CliSession get() {
+            CliContext context = CliContext.current();
+            return null == context ? null : context.session();
         }
     };
 
