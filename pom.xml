@@ -19,7 +19,6 @@
 *            version history
 ********************************************
 0.6.0
-- Dao API change: save(MODEL, ...) now returns the model been saved
 - DAO API change: save(Iterable) now returns list of object been saved
 
 0.5.0

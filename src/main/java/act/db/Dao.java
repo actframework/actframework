@@ -142,7 +142,7 @@ public interface Dao<ID_TYPE, MODEL_TYPE, QUERY_TYPE extends Dao.Query<MODEL_TYP
      * @param fields the fields specification in {@code String}
      * @param values the value array corresponding to the fields specification
      */
-    MODEL_TYPE save(MODEL_TYPE entity, String fields, Object ... values);
+    void save(MODEL_TYPE entity, String fields, Object ... values);
 
     /**
      * Batch save entities
