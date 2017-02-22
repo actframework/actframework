@@ -306,6 +306,9 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
         }
         Class rawType = spec.rawType();
         ParamValueLoader loader = findContextSpecificLoader(bindName, rawType, spec, type, annotations);
+        if (null == loader) {
+            throw new IllegalStateException("Cannot find param loader for " + spec);
+        }
         return decorate(loader, spec, annotations, supportJsonDecorator());
     }
 
