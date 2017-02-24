@@ -1,6 +1,7 @@
 package testapp.endpoint;
 
 import act.controller.Controller;
+import org.osgl.http.H;
 import org.osgl.mvc.annotation.Action;
 import org.osgl.mvc.annotation.GetAction;
 import org.osgl.mvc.annotation.PostAction;
@@ -67,6 +68,16 @@ public class HelloController extends Controller.Util {
     @Action("/hello/c2/{colors}")
     public String helloWithColor(String colors) {
         return colors;
+    }
+
+    @GetAction("/req/path")
+    public String reqPath(H.Request req) {
+        return req.path();
+    }
+
+    @GetAction("/req/query")
+    public String reqQuery(H.Request req) {
+        return req.query();
     }
 
 }

@@ -40,11 +40,6 @@ public class NettyRequest extends RequestImplBase<NettyRequest> {
     }
 
     @Override
-    protected String _uri() {
-        return nr.uri();
-    }
-
-    @Override
     public String header(String name) {
         return nr.headers().get(name);
     }
@@ -52,6 +47,16 @@ public class NettyRequest extends RequestImplBase<NettyRequest> {
     @Override
     public Iterable<String> headers(String name) {
         return nr.headers().getAll(name);
+    }
+
+    @Override
+    public String path() {
+        return nr.uri();
+    }
+
+    @Override
+    public String query() {
+        throw E.tbd();
     }
 
     @Override

@@ -10,16 +10,12 @@ import org.osgl.util.S;
 public abstract class RequestImplBase<T extends H.Request> extends H.Request<T> {
     private AppConfig cfg;
     private H.Method method;
-    private String path;
-    private String query;
     private Boolean secure;
 
     protected RequestImplBase(AppConfig config) {
         E.NPE(config);
         cfg = config;
     }
-
-    protected abstract String _uri();
 
     protected abstract H.Method _method();
 
@@ -53,22 +49,6 @@ public abstract class RequestImplBase<T extends H.Request> extends H.Request<T> 
     }
 
     @Override
-    public String path() {
-        if (null == path) {
-            parseUri();
-        }
-        return path;
-    }
-
-    @Override
-    public String query() {
-        if (null == query) {
-            parseUri();
-        }
-        return query;
-    }
-
-    @Override
     public boolean secure() {
         if (null == secure) {
             if ("https".equals(cfg.xForwardedProtocol())) {
@@ -78,22 +58,6 @@ public abstract class RequestImplBase<T extends H.Request> extends H.Request<T> 
             }
         }
         return secure;
-    }
-
-    protected void parseUri() {
-        FastStr fs = FastStr.unsafeOf(_uri());
-        if (fs.startsWith("http")) {
-            // the uri include the scheme, domain and port
-            fs = fs.afterFirst("://"); // strip the scheme
-            fs = fs.afterFirst('/'); // strip the domain className, port
-            fs = fs.prepend('/'); // attach the '/' to the path
-        }
-        if (fs.contains('?')) {
-            path = fs.beforeFirst('?').toString();
-            query = fs.afterFirst('?').toString();
-        } else {
-            path = fs.toString();
-        }
     }
 
     private boolean parseSecureXHeaders() {

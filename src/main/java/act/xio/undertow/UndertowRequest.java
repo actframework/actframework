@@ -31,10 +31,14 @@ public class UndertowRequest extends RequestImplBase<UndertowRequest> {
         hse = exchange;
     }
 
+    @Override
+    public String path() {
+        return hse.getRequestPath();
+    }
 
     @Override
-    protected String _uri() {
-        return hse.getRequestURI();
+    public String query() {
+        return hse.getQueryString();
     }
 
     @Override
