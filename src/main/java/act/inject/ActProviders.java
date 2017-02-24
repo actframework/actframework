@@ -1,5 +1,6 @@
 package act.inject;
 
+import act.Act;
 import act.app.ActionContext;
 import act.app.App;
 import act.app.util.AppCrypto;
@@ -131,7 +132,7 @@ public final class ActProviders {
     public static final Provider<Logger> LOGGER = new Provider<Logger>() {
         @Override
         public Logger get() {
-            return App.logger;
+            return Act.LOGGER;
         }
     };
 
@@ -178,7 +179,7 @@ public final class ActProviders {
         @Override
         public Locale get() {
             ActContext context = ActContext.Base.currentContext();
-            return context.locale(true);
+            return null != context ? context.locale(true) : app().config().locale();
         }
     };
 

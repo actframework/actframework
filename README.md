@@ -12,7 +12,7 @@ shows Act's throughput is 20 times better than of Spring-boot in simple case
 
 ## Project status
 
-* Current stable version: 0.5.0-SNAPSHOT
+* Current stable version: 0.6.0-SNAPSHOT
 * The first public release is target to March 2017
 
 ## Install
@@ -23,7 +23,7 @@ Add the following dependency into your `pom.xml` file
     <dependency>
       <groupId>org.actframework</groupId>
       <artifactId>act</artifactId>
-      <version>0.5.0-SNAPSHOT</version>
+      <version>0.6.0-SNAPSHOT</version>
     </dependency>
 ```
 

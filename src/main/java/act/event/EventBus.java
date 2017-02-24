@@ -21,6 +21,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 
+import static act.app.App.LOGGER;
 import static act.app.App.logger;
 
 @ApplicationScoped
@@ -39,7 +40,7 @@ public class EventBus extends AppServiceBase<EventBus> {
     private EventBus onceBus;
 
     private EventBus(App app, boolean once) {
-        super(app);
+        super(app, true);
         appEventListeners = initAppListenerArray();
         asyncAppEventListeners = initAppListenerArray();
         actEventListeners = new ConcurrentHashMap<>();
@@ -79,7 +80,7 @@ public class EventBus extends AppServiceBase<EventBus> {
             try {
                 l.on(appEventLookup.get(appEventId));
             } catch (Exception e) {
-                logger.warn(e, "error calling event handler");
+                LOGGER.warn(e, "error calling event handler");
             }
             return true;
         }
@@ -423,7 +424,7 @@ public class EventBus extends AppServiceBase<EventBus> {
             // in case event listener needs to return a result back
             throw r;
         } catch (Exception x) {
-            logger.error(x, "Error executing event listener");
+            LOGGER.error(x, "Error executing event listener");
         }
     }
 
@@ -543,7 +544,7 @@ public class EventBus extends AppServiceBase<EventBus> {
             public void on(DependencyInjectionBinder event) throws Exception {
                 DependencyInjector injector = app().injector();
                 if (null == injector) {
-                    logger.warn("Dependency injector not found");
+                    LOGGER.warn("Dependency injector not found");
                 } else {
                     injector.registerDiBinder(event);
                 }

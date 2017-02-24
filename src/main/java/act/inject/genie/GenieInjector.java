@@ -19,7 +19,6 @@ import org.osgl.exception.NotAppliedException;
 import org.osgl.inject.*;
 import org.osgl.inject.annotation.LoadValue;
 import org.osgl.inject.annotation.Provided;
-import org.osgl.inject.provider.LazyProvider;
 import org.osgl.mvc.annotation.Bind;
 import org.osgl.mvc.annotation.Param;
 import org.osgl.util.C;
