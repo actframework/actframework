@@ -544,6 +544,14 @@ public final class Act {
         RunApp.start(scanPackage);
     }
 
+    public static void start(String appName, String scanPackage) throws Exception {
+        RunApp.start(appName, Version.appVersion(), scanPackage);
+    }
+
+    public static void start(String appName, Class<?> anyAppClass) throws Exception {
+        RunApp.start(appName, Version.appVersion(), anyAppClass);
+    }
+
     public static void start(Class<?> anyController) throws Exception {
         RunApp.start(anyController);
     }
