@@ -3,7 +3,6 @@ package act.db;
 import act.Act;
 import act.app.App;
 import act.plugin.AppServicePlugin;
-import act.util.ClassNode;
 import org.osgl.$;
 import org.osgl.Osgl;
 import org.osgl.exception.NotAppliedException;
@@ -400,7 +399,7 @@ public interface AdaptiveRecord<ID_TYPE, MODEL_TYPE extends AdaptiveRecord> exte
             Injector injector = Act.app().injector();
             for (final Method m : clazz.getMethods()) {
                 String name = propertyName(m);
-                if (S.blank(name)) {
+                if (S.blank(name) || "getClass".equals(name)) {
                     continue;
                 } else {
                     name = S.lowerFirst(name);

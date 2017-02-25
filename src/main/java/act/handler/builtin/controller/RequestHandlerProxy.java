@@ -175,9 +175,9 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
             }
             if (null == result) {
                 if (context.req().method() == H.Method.POST) {
-                    result = context.acceptJson() ? JSON_CREATED : CREATED;
+                    result = CREATED;
                 } else {
-                    result = context.acceptJson() ? JSON_OK : OK;
+                    result = NO_CONTENT;
                 }
             }
             onResult(result, context);

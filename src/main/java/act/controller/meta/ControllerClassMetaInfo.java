@@ -17,6 +17,7 @@ import org.osgl.util.S;
 import javax.enterprise.context.ApplicationScoped;
 import java.lang.annotation.Annotation;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import static act.Destroyable.Util.destroyAll;
@@ -418,18 +419,27 @@ public final class ControllerClassMetaInfo extends DestroyableBase {
         handlerLookup = lookup;
     }
 
-    private static final C.Set<Class<? extends Annotation>> ACTION_ANNOTATION_TYPES = C.set(
-            Action.class, GetAction.class, PostAction.class,
-            PutAction.class, DeleteAction.class, ActionUtil.class);
-
     private static final C.Set<Class<? extends Annotation>> INTERCEPTOR_ANNOTATION_TYPES = C.set(
             Before.class, After.class, Catch.class, Finally.class);
 
     public static final C.Set<H.Method> ACTION_METHODS = C.set(H.Method.GET, H.Method.POST, H.Method.PUT, H.Method.DELETE);
 
+    private static final Map<Class<? extends Action>, H.Method> METHOD_LOOKUP = C.newMap(
+            GetAction.class, H.Method.GET,
+            PostAction.class, H.Method.POST,
+            PutAction.class, H.Method.PUT,
+            DeleteAction.class, H.Method.DELETE,
+            PatchAction.class, H.Method.PATCH
+    );
+
     public static boolean isActionAnnotation(Class<? extends Annotation> type) {
-        return ACTION_ANNOTATION_TYPES.contains(type);
+        return METHOD_LOOKUP.containsKey(type) || Action.class == type;
     }
+
+    public static H.Method lookupHttpMethod(Class annotationClass) {
+        return METHOD_LOOKUP.get(annotationClass);
+    }
+
 
     public static boolean isActionUtilAnnotation(Class<? extends Annotation> type) {
         return ActionUtil.class == type;

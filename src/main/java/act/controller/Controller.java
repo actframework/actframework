@@ -69,6 +69,7 @@ public @interface Controller {
         public static final Created CREATED = Created.INSTANCE;
         public static final Result JSON_OK = new Result(H.Status.OK, "{}") {};
         public static final Result JSON_CREATED = new Result(H.Status.CREATED, "{}") {};
+        public static final NoContent NO_CONTENT = NoContent.get();
 
         /**
          * Returns an {@link Ok} result

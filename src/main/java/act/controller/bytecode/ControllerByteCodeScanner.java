@@ -238,7 +238,7 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
                     if (null != propSpec) {
                         methodInfo.propertySpec(propSpec);
                     }
-                    return new ActionAnnotationVisitor(av, AnnotationMethodLookup.get(c), ControllerClassMetaInfo.isActionUtilAnnotation(c), isStatic);
+                    return new ActionAnnotationVisitor(av, ControllerClassMetaInfo.lookupHttpMethod(c), ControllerClassMetaInfo.isActionUtilAnnotation(c), isStatic);
                 } else if (ControllerClassMetaInfo.isInterceptorAnnotation(c)) {
                     markRequireScan();
                     InterceptorAnnotationVisitor visitor = new InterceptorAnnotationVisitor(av, c);

@@ -276,7 +276,7 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
                 if (null == bodyParams) {
                     Map<String, String[]> map = C.newMap();
                     H.Method method = request.method();
-                    if (H.Method.POST == method || H.Method.PUT == method || H.Method.DELETE == method) {
+                    if (H.Method.POST == method || H.Method.PUT == method || H.Method.PATCH == method) {
                         RequestBodyParser parser = RequestBodyParser.get(request);
                         map = parser.parse(this);
                     }
