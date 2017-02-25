@@ -4,8 +4,8 @@ import act.app.App;
 import act.inject.param.NoBind;
 import org.osgl.$;
 import org.osgl.util.Generics;
+import org.osgl.util.S;
 
-import java.beans.Transient;
 import java.lang.reflect.Type;
 import java.util.List;
 
@@ -85,6 +85,12 @@ implements Model<ID_TYPE, MODEL_TYPE> {
         }
         return false;
     }
+
+    @Override
+    public String toString() {
+        return S.concat(getClass().getName(), "[", S.string(getId()), "]");
+    }
+
 
     protected final MODEL_TYPE _me() {
         return (MODEL_TYPE)this;

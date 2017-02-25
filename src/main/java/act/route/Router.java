@@ -31,7 +31,7 @@ import java.util.regex.Pattern;
 public class Router extends AppServiceBase<Router> {
 
     private static final H.Method[] targetMethods = new H.Method[]{
-            H.Method.GET, H.Method.POST, H.Method.DELETE, H.Method.PUT};
+            H.Method.PATCH, H.Method.DELETE, H.Method.GET, H.Method.POST, H.Method.PUT};
     private static final Logger logger = L.get(Router.class);
 
     Node _GET = Node.newRoot("GET");
