@@ -1,5 +1,6 @@
 package act.controller.bytecode;
 
+import act.Act;
 import act.app.ActionContext;
 import act.asm.*;
 import act.asm.tree.AbstractInsnNode;
@@ -8,6 +9,7 @@ import act.controller.meta.HandlerMethodMetaInfo;
 import act.controller.meta.HandlerParamMetaInfo;
 import act.controller.meta.LocalVariableMetaInfo;
 import act.util.AsmTypes;
+import act.util.ClassInfoRepository;
 import org.osgl.logging.LogManager;
 import org.osgl.logging.Logger;
 import org.osgl.mvc.result.Result;
@@ -199,17 +201,16 @@ public class HandlerEnhancer extends MethodVisitor implements Opcodes {
                 MethodInsnNode n = (MethodInsnNode) node;
                 Type type = Type.getMethodType(n.desc);
                 Type retType = type.getReturnType();
-                //String method = n.name;
-                //String owner = Type.getType(n.owner).toString();
-                if (RESULT_CLASS.equals(retType.getClassName())) {
-                    if ("([Ljava/lang/Object;)Lorg/osgl/mvc/result/Result;".equals(n.desc)) {
+                if (isResult(retType)) {
+                    if (n.desc.startsWith("([Ljava/lang/Object;)")) {
                         injectRenderArgSetCode(n);
                     }
                     injectThrowCode(n);
                 }
-                if ("act.view.ZXingResult".equalsIgnoreCase(retType.getClassName())) {
-                    injectThrowCode(n);
-                }
+            }
+
+            private boolean isResult(Type type) {
+                return ResultClassLookup.isResult(type.getClassName());
             }
 
             private String ctxFieldName() {

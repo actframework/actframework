@@ -84,7 +84,7 @@ public @interface Controller {
          * @return the result as described
          */
         public static Result created(String resourceGetUrl) {
-            return new Created(resourceGetUrl);
+            return Created.withLocation(resourceGetUrl);
         }
 
         public static Result notModified() {
