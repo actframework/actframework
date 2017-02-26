@@ -12,6 +12,25 @@ public class ActEvent<T> extends EventObject {
 
     private final long ts;
 
+    protected static final Object SOURCE_PLACEHODER = new Object();
+
+    /**
+     * This constructor allows sub class to construct a Self source event, e.g.
+     * the source can be the event instance itself.
+     *
+     * **Note** if sub class needs to use this constructor the {@link #getSource()} ()}
+     * method must be overwritten
+     */
+    protected ActEvent() {
+        super(SOURCE_PLACEHODER);
+        ts = $.ms();
+    }
+
+    /**
+     * Construct an `ActEvent` with source instance
+     * @param source The object on which the Event initially occurred.
+     *               or any payload the developer want to attach to the event
+     */
     public ActEvent(T source) {
         super(source);
         ts = $.ms();
