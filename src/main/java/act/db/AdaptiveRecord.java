@@ -399,7 +399,7 @@ public interface AdaptiveRecord<ID_TYPE, MODEL_TYPE extends AdaptiveRecord> exte
             Injector injector = Act.app().injector();
             for (final Method m : clazz.getMethods()) {
                 String name = propertyName(m);
-                if (S.blank(name) || "getClass".equals(name)) {
+                if (S.blank(name)) {
                     continue;
                 } else {
                     name = S.lowerFirst(name);
@@ -462,6 +462,26 @@ public interface AdaptiveRecord<ID_TYPE, MODEL_TYPE extends AdaptiveRecord> exte
                             return null;
                         }
                     });
+                    fieldMergers.put(name, new Osgl.Func2() {
+                        @Override
+                        public Object apply(Object host, Object value) throws NotAppliedException, Osgl.Break {
+                            BeanSpec spec = setterFieldSpecs.get(fieldName);
+                            if (null != value && !spec.isInstance(value)) {
+                                if (value instanceof String) {
+                                    value = Act.app().resolverManager().resolve((String)value, spec.rawType());
+                                }
+                            }
+                            $.Function getter = fieldGetters.get(fieldName);
+                            if (null == getter) {
+                                $.invokeVirtual(host, m, value);
+                                return null;
+                            }
+                            Object value0 = getter.apply(host);
+                            value = merge(value0, value);
+                            $.invokeVirtual(host, m, value);
+                            return null;
+                        }
+                    });
                 } else {
                     fieldGetters.put(name, new Osgl.F1() {
                         @Override
@@ -481,6 +501,9 @@ public interface AdaptiveRecord<ID_TYPE, MODEL_TYPE extends AdaptiveRecord> exte
 
         private String propertyName(Method m) {
             String name = m.getName();
+            if ("getClass".equals(name)) {
+                return null;
+            }
             Type[] paramTypes = m.getGenericParameterTypes();
             if (name.startsWith("set") && void.class == m.getReturnType() && null != paramTypes && paramTypes.length == 1) {
                 return name.substring(3);
