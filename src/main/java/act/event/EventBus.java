@@ -22,7 +22,6 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 
 import static act.app.App.LOGGER;
-import static act.app.App.logger;
 
 @ApplicationScoped
 public class EventBus extends AppServiceBase<EventBus> {
@@ -157,7 +156,8 @@ public class EventBus extends AppServiceBase<EventBus> {
     }
 
     public EventBus bind(Class<? extends EventObject> c, ActEventListener l) {
-        ConcurrentMap<Class<? extends EventObject>, List<ActEventListener>> listeners = isAsync(l.getClass()) ? asyncActEventListeners : actEventListeners;
+        boolean async = isAsync(l.getClass()) || isAsync(c);
+        ConcurrentMap<Class<? extends EventObject>, List<ActEventListener>> listeners = async ? asyncActEventListeners : actEventListeners;
         return _bind(listeners, c, l, 0);
     }
 
@@ -178,7 +178,8 @@ public class EventBus extends AppServiceBase<EventBus> {
      * @return this event bus instance
      */
     public EventBus bind(Class<? extends EventObject> c, ActEventListener l, int ttl) {
-        ConcurrentMap<Class<? extends EventObject>, List<ActEventListener>> listeners = isAsync(l.getClass()) ? asyncActEventListeners : actEventListeners;
+        boolean async = isAsync(l.getClass()) || isAsync(c);
+        ConcurrentMap<Class<? extends EventObject>, List<ActEventListener>> listeners = async ? asyncActEventListeners : actEventListeners;
         return _bind(listeners, c, l, ttl);
     }
 
