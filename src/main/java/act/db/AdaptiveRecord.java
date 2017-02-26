@@ -456,8 +456,6 @@ public interface AdaptiveRecord<ID_TYPE, MODEL_TYPE extends AdaptiveRecord> exte
                             if (null != value && !spec.isInstance(value)) {
                                 if (value instanceof String) {
                                     value = Act.app().resolverManager().resolve((String)value, spec.rawType());
-                                } else {
-                                    throw new IllegalArgumentException(S.concat("Type mismatch. Expected: ", spec.rawType().getName(), "found: ", S.string(value)));
                                 }
                             }
                             $.invokeVirtual(host, m, value);

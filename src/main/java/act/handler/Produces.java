@@ -8,7 +8,7 @@ import java.lang.annotation.*;
  * Mark an action handler shall produce response with media type specified
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.METHOD)
+@Target({ElementType.METHOD, ElementType.TYPE})
 @Documented
 public @interface Produces {
     /**

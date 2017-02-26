@@ -118,6 +118,11 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         Produces produces = method.getAnnotation(Produces.class);
         if (null != produces) {
             produceContentType = produces.value().format();
+        } else {
+            produces = controllerClass.getAnnotation(Produces.class);
+            if (null != produces) {
+                produceContentType = produces.value().format();
+            }
         }
     }
 
