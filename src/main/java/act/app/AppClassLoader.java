@@ -395,9 +395,15 @@ public class AppClassLoader
 
     private Class<?> loadAppClass(String name, boolean resolve) throws ClassNotFoundException {
         byte[] bytecode = appBytecode(name);
+        // we need to skip getting byte code
         if (null == bytecode) {
-            bytecode = loadAppClassFromDisk(name);
-            if (null == bytecode) return null;
+            if (!(name.contains("$") && name.endsWith("MethodAccess") && !name.endsWith("$MethodAccess"))) {
+                // We need to skip getting byte code for reflectasm generated class for inner class method access
+                bytecode = loadAppClassFromDisk(name);
+                if (null == bytecode) return null;
+            } else {
+                return null;
+            }
         }
         if (!app().config().needEnhancement(name)) {
             Class<?> c;
