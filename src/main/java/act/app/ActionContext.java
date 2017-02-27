@@ -18,6 +18,7 @@ import org.osgl.$;
 import org.osgl.concurrent.ContextLocal;
 import org.osgl.http.H;
 import org.osgl.http.H.Cookie;
+import org.osgl.mvc.result.Result;
 import org.osgl.storage.ISObject;
 import org.osgl.util.C;
 import org.osgl.util.E;
@@ -29,6 +30,7 @@ import javax.inject.Inject;
 import javax.validation.ConstraintViolation;
 import java.util.*;
 
+import static act.controller.Controller.Util.*;
 import static org.osgl.http.H.Header.Names.*;
 
 /**
@@ -69,6 +71,7 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
     private boolean disableCors;
     private boolean disableCsrf;
     private Boolean hasTemplate;
+    private H.Status forceResponseStatus;
 
     @Inject
     private ActionContext(App app, H.Request request, H.Response response) {
@@ -337,7 +340,34 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
     }
 
     public H.Status successStatus() {
+        if (null != forceResponseStatus) {
+            return forceResponseStatus;
+        }
         return H.Method.POST == req().method() ? H.Status.CREATED : H.Status.OK;
+    }
+
+    public ActionContext forceResponseStatus(H.Status status) {
+        this.forceResponseStatus = $.notNull(status);
+        return this;
+    }
+
+    public Result nullValueResult() {
+        if (null != forceResponseStatus) {
+            return new Result(forceResponseStatus){};
+        } else {
+            if (req().method() == H.Method.POST) {
+                H.Format accept = accept();
+                if (H.Format.JSON == accept) {
+                    return CREATED_JSON;
+                } else if (H.Format.XML == accept) {
+                    return CREATED_XML;
+                } else {
+                    return CREATED;
+                }
+            } else {
+                return NO_CONTENT;
+            }
+        }
     }
 
     public void preCheckCsrf() {

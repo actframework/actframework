@@ -15,7 +15,13 @@ import java.util.Map;
  */
 public class RenderTemplate extends RenderAny {
 
-    public static RenderTemplate INSTANCE = new RenderTemplate();
+    public static RenderTemplate INSTANCE = new RenderTemplate() {
+        @Override
+        public H.Status status() {
+            H.Status status = payload().status;
+            return (null == status) ? super.status() : status;
+        }
+    };
 
     static final ThreadLocal<Map<String, Object>> renderArgsBag = new ThreadLocal<>();
 

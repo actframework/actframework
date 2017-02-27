@@ -35,8 +35,6 @@ import java.util.ListIterator;
 import java.util.Set;
 import java.util.regex.Pattern;
 
-import static act.controller.Controller.Util.*;
-
 @ApplicationScoped
 public final class RequestHandlerProxy extends RequestHandlerBase {
 
@@ -174,11 +172,7 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
                 result = afterResult;
             }
             if (null == result) {
-                if (context.req().method() == H.Method.POST) {
-                    result = CREATED;
-                } else {
-                    result = NO_CONTENT;
-                }
+                result = context.nullValueResult();
             }
             onResult(result, context);
         } catch (Exception e) {

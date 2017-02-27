@@ -67,14 +67,23 @@ public @interface Controller {
 
         public static final Ok OK = Ok.get();
         public static final Created CREATED = Created.INSTANCE;
-        public static final Result JSON_OK = new Result(H.Status.OK, "{}") {};
+        public static final Result CREATED_JSON = new Result(H.Status.CREATED, "{\"message\": \"Created\"}") {};
+        public static final Result CREATED_XML = new Result(H.Status.CREATED, "<?xml version=\"1.0\" ?><message>Created</message>") {};
+        public static final Result OK_JSON = new Result(H.Status.OK, "{\"message\": \"Okay\"}") {};
+        public static final Result OK_XML = new Result(H.Status.OK, "<?xml version=\"1.0\" ?><message>Okay</message>") {};
         public static final NoContent NO_CONTENT = NoContent.get();
 
         /**
          * Returns an {@link Ok} result
          */
         public static Result ok() {
-            return ActionContext.current().acceptJson() ? JSON_OK : OK;
+            H.Format accept = ActionContext.current().accept();
+            if (H.Format.JSON == accept) {
+                return OK_JSON;
+            } else if (H.Format.XML == accept) {
+                return OK_XML;
+            }
+            return OK;
         }
 
         /**
@@ -83,15 +92,15 @@ public @interface Controller {
          * @param resourceGetUrl the URL to access the new resource been created
          * @return the result as described
          */
-        public static Result created(String resourceGetUrl) {
+        public static Created created(String resourceGetUrl) {
             return Created.withLocation(resourceGetUrl);
         }
 
-        public static Result notModified() {
+        public static NotModified notModified() {
             return NotModified.get();
         }
 
-        public static Result notModified(String etag, Object... args) {
+        public static NotModified notModified(String etag, Object... args) {
             return NotModified.of(etag, args);
         }
 
@@ -398,7 +407,7 @@ public @interface Controller {
          * @param args the message format arguments
          */
         public static Result text(String msg, Object... args) {
-            return RenderText.of(msg, args);
+            return RenderText.of(successStatus(), msg, args);
         }
 
         /**
@@ -421,7 +430,7 @@ public @interface Controller {
          * @return the result
          */
         public static Result html(String msg, Object... args) {
-            return RenderHtml.of(msg, args);
+            return RenderHtml.of(successStatus(), msg, args);
         }
 
         /**
@@ -444,7 +453,7 @@ public @interface Controller {
          * @return the result
          */
         public static Result json(String msg, Object... args) {
-            return RenderJSON.of(msg, args);
+            return RenderJSON.of(successStatus(), msg, args);
         }
 
         /**
@@ -465,7 +474,7 @@ public @interface Controller {
          * @return the result
          */
         public static Result json(Object data) {
-            return RenderJSON.of(data);
+            return RenderJSON.of(successStatus(), data);
         }
 
         /**
@@ -498,6 +507,29 @@ public @interface Controller {
             return jsonMap(data);
         }
 
+
+        /**
+         * Returns a {@link RenderXML} result with specified message template
+         * and args. The final message is rendered with the template and arguments using
+         * {@link String#format(String, Object...)}
+         *
+         * @param msg  the message format template
+         * @param args the message format arguments
+         * @return the result
+         */
+        public static Result xml(String msg, Object... args) {
+            return RenderXML.of(successStatus(), msg, args);
+        }
+
+        /**
+         * Alias of {@link #xml(String, Object...)}
+         * @param msg the message format template
+         * @param args the message format arguments
+         * @return the result
+         */
+        public static Result renderXml(String msg, Object... args) {
+            return xml(msg, args);
+        }
 
         /**
          * Returns a {@link RenderBinary} result with an {@link ISObject} instance. The result will render
@@ -888,6 +920,10 @@ public @interface Controller {
 
         private static Result inferToTemplate(Map map, ActionContext actionContext) {
             return RenderTemplate.of(map);
+        }
+
+        private static H.Status successStatus() {
+            return ActionContext.current().successStatus();
         }
     }
 

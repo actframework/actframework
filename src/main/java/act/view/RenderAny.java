@@ -41,6 +41,7 @@ public class RenderAny extends Result {
         if (fmt == UNKNOWN) {
             throw E.unsupport("Unknown accept content type");
         }
+        Result result = null;
         if (JSON == fmt) {
             List<String> varNames = context.__appRenderArgNames();
             Map<String, Object> map = C.newMap();
@@ -49,8 +50,7 @@ public class RenderAny extends Result {
                     map.put(name, context.renderArg(name));
                 }
             }
-            new RenderJSON(map).apply(context.req(), context.resp());
-            return;
+            result = new RenderJSON(map);
         } else if (XML == fmt) {
             List<String> varNames = context.__appRenderArgNames();
             Map<String, Object> map = C.newMap();
@@ -59,10 +59,9 @@ public class RenderAny extends Result {
                     map.put(name, context.renderArg(name));
                 }
             }
-            new FilteredRenderXML(map, null, context).apply(context.req(), context.resp());
-            return;
+            result = new FilteredRenderXML(map, null, context);
         } else if (HTML == fmt || TXT == fmt || CSV == fmt) {
-            RenderTemplate.get().apply(context);
+            RenderTemplate.get(context.successStatus()).apply(context);
             return;
         } else if (PDF == fmt || XLS == fmt || XLSX == fmt || DOC == fmt || DOCX == fmt) {
             List<String> varNames = context.__appRenderArgNames();
@@ -71,20 +70,26 @@ public class RenderAny extends Result {
                 String action = S.str(context.actionPath()).afterLast(".").toString();
                 if (firstVar instanceof File) {
                     File file = (File) firstVar;
-                    new RenderBinary(file, action).apply(context.req(), context.resp());
+                    result = new RenderBinary(file, action);
                 } else if (firstVar instanceof InputStream) {
-                    InputStream is = (InputStream)firstVar;
-                    new RenderBinary(is, action).apply(context.req(), context.resp());
+                    InputStream is = (InputStream) firstVar;
+                    result = new RenderBinary(is, action);
                 } else if (firstVar instanceof ISObject) {
                     ISObject sobj = (ISObject) firstVar;
-                    new RenderBinary(sobj.asInputStream(), action).apply(context.req(), context.resp());
+                    result = new RenderBinary(sobj.asInputStream(), action);
                 }
-                throw E.unsupport("Unknown render arg type [%s] for binary response", firstVar.getClass());
+                if (null == result) {
+                    throw E.unsupport("Unknown render arg type [%s] for binary response", firstVar.getClass());
+                }
             } else {
                 throw E.unexpected("No render arg found for binary response");
             }
         }
-        throw E.unexpected("Unknown accept content type: %s", fmt.contentType());
+        if (null != result) {
+            result.status(context.successStatus()).apply(context.req(), context.resp());
+        } else {
+            throw E.unexpected("Unknown accept content type: %s", fmt.contentType());
+        }
     }
 
     public static RenderAny get() {

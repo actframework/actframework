@@ -7,7 +7,6 @@ import act.app.AppClassLoader;
 import act.controller.Controller;
 import act.controller.meta.*;
 import act.handler.NonBlock;
-import act.handler.Produces;
 import act.handler.builtin.controller.*;
 import act.inject.param.JsonDTO;
 import act.inject.param.JsonDTOClassManager;
@@ -25,6 +24,8 @@ import com.esotericsoftware.reflectasm.MethodAccess;
 import org.osgl.$;
 import org.osgl.http.H;
 import org.osgl.inject.BeanSpec;
+import org.osgl.mvc.annotation.ResponseContentType;
+import org.osgl.mvc.annotation.ResponseStatus;
 import org.osgl.mvc.annotation.SessionFree;
 import org.osgl.mvc.result.BadRequest;
 import org.osgl.mvc.result.Result;
@@ -69,7 +70,8 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
     private String jsonDTOKey;
     private boolean isStatic;
     private Object singleton;
-    private H.Format produceContentType;
+    private H.Format forceResponseContentType;
+    private H.Status forceResponseStatus;
     private boolean disabled;
 
     private ReflectedHandlerInvoker(M handlerMetaInfo, App app) {
@@ -115,14 +117,19 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         this.jsonDTOKey = app.cuid();
         this.singleton = singleton(app);
 
-        Produces produces = method.getAnnotation(Produces.class);
-        if (null != produces) {
-            produceContentType = produces.value().format();
+        ResponseContentType contentType = method.getAnnotation(ResponseContentType.class);
+        if (null != contentType) {
+            forceResponseContentType = contentType.value().format();
         } else {
-            produces = controllerClass.getAnnotation(Produces.class);
-            if (null != produces) {
-                produceContentType = produces.value().format();
+            contentType = controllerClass.getAnnotation(ResponseContentType.class);
+            if (null != contentType) {
+                forceResponseContentType = contentType.value().format();
             }
+        }
+
+        ResponseStatus status = method.getAnnotation(ResponseStatus.class);
+        if (null != status) {
+            forceResponseStatus = H.Status.of(status.value());
         }
     }
 
@@ -154,8 +161,11 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
 
     public Result handle(ActionContext actionContext) throws Exception {
         actionContext.attribute("reflected_handler", this);
-        if (null != produceContentType) {
-            actionContext.accept(produceContentType);
+        if (null != forceResponseContentType) {
+            actionContext.accept(forceResponseContentType);
+        }
+        if (null != forceResponseStatus) {
+            actionContext.forceResponseStatus(forceResponseStatus);
         }
         if (disabled) {
             return ActNotFound.get();
