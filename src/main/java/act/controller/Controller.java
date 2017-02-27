@@ -10,6 +10,7 @@ import act.util.FastJsonIterable;
 import act.util.PropertySpec;
 import act.view.*;
 import org.osgl.$;
+import org.osgl.Osgl;
 import org.osgl.http.H;
 import org.osgl.mvc.result.*;
 import org.osgl.storage.ISObject;
@@ -401,15 +402,36 @@ public @interface Controller {
         }
 
         /**
+         * Alias of {@link #text(String, Object...)}
+         * @param msg  the message format template
+         * @param args the message format arguments
+         * @return the result
+         */
+        public static Result renderText(String msg, Object... args) {
+            return text(msg, args);
+        }
+
+        /**
          * Returns a {@link RenderText} result with specified message template
          * and args. The final message is rendered with the template and arguments using
          * {@link String#format(String, Object...)}
          *
          * @param msg  the message format template
          * @param args the message format arguments
+         * @return the result
          */
         public static Result html(String msg, Object... args) {
             return RenderHtml.of(msg, args);
+        }
+
+        /**
+         * Alias of {@link #html(String, Object...)}
+         * @param msg  the message format template
+         * @param args the message format arguments
+         * @return the result
+         */
+        public static Result renderHtml(String msg, Object args) {
+            return html(msg, args);
         }
 
         /**
@@ -419,9 +441,20 @@ public @interface Controller {
          *
          * @param msg  the message format template
          * @param args the message format arguments
+         * @return the result
          */
         public static Result json(String msg, Object... args) {
             return RenderJSON.of(msg, args);
+        }
+
+        /**
+         * Alias of {@link #json(String, Object...)}
+         * @param msg the message format template
+         * @param args the message format arguments
+         * @return the result
+         */
+        public static Result renderJson(String msg, Object... args) {
+            return json(msg, args);
         }
 
         /**
@@ -429,9 +462,19 @@ public @interface Controller {
          * call underline JSON serializer to transform the object into a JSON string
          *
          * @param data the data to be rendered as JSON string
+         * @return the result
          */
         public static Result json(Object data) {
             return RenderJSON.of(data);
+        }
+
+        /**
+         * Alias of {@link #json(Object)}
+         * @param data the data to be rendered as JSON string
+         * @return the result
+         */
+        public static Result renderJson(Object data) {
+            return json(data);
         }
 
         /**
@@ -440,9 +483,19 @@ public @interface Controller {
          * The response is always in JSON format and ignores the HTTP `Accept`
          * header setting
          * @param data the varargs of Object to be put into the JSON map
+         * @return the result
          */
         public static Result jsonMap(Object... data) {
             return RenderJsonMap.get();
+        }
+
+        /**
+         * Alias of {@link #jsonMap(Object...)}
+         * @param data the data to be put into the JSON map
+         * @return the result
+         */
+        public static Result renderJsonMap(Object ... data) {
+            return jsonMap(data);
         }
 
 
@@ -451,9 +504,19 @@ public @interface Controller {
          * the binary using "inline" content disposition
          *
          * @param sobj the {@link ISObject} instance
+         * @return the result
          */
         public static Result binary(ISObject sobj) {
             return new RenderBinary(sobj.asInputStream(), sobj.getAttribute(ISObject.ATTR_FILE_NAME), sobj.getAttribute(ISObject.ATTR_CONTENT_TYPE), true);
+        }
+
+        /**
+         * Alias of {@link #binary(ISObject)}
+         * @param sobj the {@link ISObject} instance
+         * @return the result
+         */
+        public static Result renderBinary(ISObject sobj) {
+            return binary(sobj);
         }
 
         /**
@@ -471,9 +534,19 @@ public @interface Controller {
          * the binary using "inline" content disposition.
          *
          * @param file the file to be rendered
+         * @return a result
          */
         public static Result binary(File file) {
             return new RenderBinary(file);
+        }
+
+        /**
+         * Alias of {@link #binary(File)}
+         * @param file the file to be rendered
+         * @return a result
+         */
+        public static Result renderBinary(File file) {
+            return binary(file);
         }
 
         /**
@@ -481,9 +554,19 @@ public @interface Controller {
          * The result will render the binary using "inline" content disposition.
          *
          * @param outputStreamWriter the delayed writer
+         * @return the result
          */
         public static Result binary($.Function<OutputStream, ?> outputStreamWriter) {
             return new RenderBinary(outputStreamWriter);
+        }
+
+        /**
+         * Alias of {@link #binary(Osgl.Function)}
+         * @param outputStreamWriter the delayed writer
+         * @return the result
+         */
+        public static Result renderBinary($.Function<OutputStream, ?> outputStreamWriter) {
+            return binary(outputStreamWriter);
         }
 
         /**
@@ -496,12 +579,40 @@ public @interface Controller {
             return new RenderBinary(file, file.getName(), false);
         }
 
+        /**
+         * Render barcode for given content
+         * @param content the content to generate the barcode
+         * @return the barcode as a binary result
+         */
         public static ZXingResult barcode(String content) {
             return ZXingResult.barcode(content);
         }
 
+        /**
+         * Alias of {@link #barcode(String)}
+         * @param content the content to generate the barcode
+         * @return the barcode as a binary result
+         */
+        public static ZXingResult renderBarcode(String content) {
+            return barcode(content);
+        }
+
+        /**
+         * Render QRCode for given content
+         * @param content the content to generate the qrcode
+         * @return the qrcode as a binary result
+         */
         public static ZXingResult qrcode(String content) {
             return ZXingResult.qrcode(content);
+        }
+
+        /**
+         * Alias of {@link #qrcode(String)}
+         * @param content the content to generate the barcode
+         * @return the barcode as a binary result
+         */
+        public static ZXingResult renderQrcode(String content) {
+            return qrcode(content);
         }
 
         /**
@@ -509,10 +620,21 @@ public @interface Controller {
          * Note the template path should be set via {@link ActionContext#templatePath(String)}
          * method
          *
-         * @param args
+         * @param args the template arguments
+         * @return a result to render template
          */
         public static Result template(Map<String, Object> args) {
             return RenderTemplate.of(args);
+        }
+
+        /**
+         * Alias of {@link #template(Map)}
+         *
+         * @param args the template arguments
+         * @return a result to render template
+         */
+        public static Result renderTemplate(Map<String, Object> args) {
+            return template(args);
         }
 
         /**
@@ -554,7 +676,6 @@ public @interface Controller {
          *
          * @param args template argument list
          */
-        @Deprecated
         public static Result renderTemplate(Object... args) {
             return RenderTemplate.get();
         }
