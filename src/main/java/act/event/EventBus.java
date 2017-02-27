@@ -6,6 +6,7 @@ import act.app.AppServiceBase;
 import act.app.event.AppEvent;
 import act.app.event.AppEventId;
 import act.app.event.AppEventListener;
+import act.event.bytecode.ReflectedSimpleEventListener;
 import act.inject.DependencyInjectionBinder;
 import act.inject.DependencyInjector;
 import act.job.AppJobManager;
@@ -16,6 +17,7 @@ import org.osgl.util.E;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.AnnotatedElement;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -114,7 +116,7 @@ public class EventBus extends AppServiceBase<EventBus> {
         return bind(appEventId, l);
     }
 
-    private static boolean isAsync(Class<?> c) {
+    public static boolean isAsync(AnnotatedElement c) {
         Annotation[] aa = c.getAnnotations();
         for (Annotation a : aa) {
             if (a.annotationType().getName().contains("Async")) {
@@ -411,6 +413,7 @@ public class EventBus extends AppServiceBase<EventBus> {
 
     public EventBus bind(Object event, SimpleEventListener l) {
         boolean async = event instanceof Class && (isAsync((Class) event));
+        async = async || ((l instanceof ReflectedSimpleEventListener) && ((ReflectedSimpleEventListener) l).isAsync());
         return _bind(async ? asyncAdhocEventListeners : adhocEventListeners, event, l);
     }
 

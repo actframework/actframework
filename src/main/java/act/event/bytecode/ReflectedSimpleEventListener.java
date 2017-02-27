@@ -2,6 +2,7 @@ package act.event.bytecode;
 
 import act.Act;
 import act.app.App;
+import act.event.EventBus;
 import act.event.SimpleEventListener;
 import act.inject.DependencyInjector;
 import act.inject.param.ParamValueLoaderService;
@@ -14,7 +15,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.List;
 
-class ReflectedSimpleEventListener implements SimpleEventListener {
+public class ReflectedSimpleEventListener implements SimpleEventListener {
 
     private transient volatile Object host;
 
@@ -25,6 +26,7 @@ class ReflectedSimpleEventListener implements SimpleEventListener {
     private final Method method;
     private final int providedParamSize;
     private final boolean isStatic;
+    private final boolean isAsync;
 
     ReflectedSimpleEventListener(String className, String methodName, List<BeanSpec> paramTypes, boolean isStatic) {
         this.className = $.notNull(className);
@@ -57,6 +59,11 @@ class ReflectedSimpleEventListener implements SimpleEventListener {
             argList[i] = paramTypes.get(i).rawType();
         }
         method = $.getMethod($.classForName(className, Act.app().classLoader()), methodName, argList);
+        isAsync = EventBus.isAsync(method);
+    }
+
+    public boolean isAsync() {
+        return isAsync;
     }
 
     @Override
