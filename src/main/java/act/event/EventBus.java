@@ -410,7 +410,8 @@ public class EventBus extends AppServiceBase<EventBus> {
     }
 
     public EventBus bind(Object event, SimpleEventListener l) {
-        return _bind(adhocEventListeners, event, l);
+        boolean async = event instanceof Class && (isAsync((Class) event));
+        return _bind(async ? asyncAdhocEventListeners : adhocEventListeners, event, l);
     }
 
     public EventBus bindAsync(Object event, SimpleEventListener l) {
