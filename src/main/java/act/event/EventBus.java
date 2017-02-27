@@ -430,13 +430,17 @@ public class EventBus extends AppServiceBase<EventBus> {
         }
     }
 
-    private void callOn(Object event, List<? extends SimpleEventListener> listeners, boolean async, final Object ... args) {
+    private boolean callOn(Object event, List<? extends SimpleEventListener> listeners, boolean async, final Object ... args) {
         if (null == listeners) {
-            return;
+            return false;
         }
         AppJobManager jobManager = null;
         if (async) {
             jobManager = app().jobManager();
+        }
+        boolean hasListener = !listeners.isEmpty();
+        if (!hasListener) {
+            return false;
         }
         // copy the list to avoid ConcurrentModificationException
         listeners = C.list(listeners);
@@ -452,6 +456,7 @@ public class EventBus extends AppServiceBase<EventBus> {
                 });
             }
         }
+        return true;
     }
 
     public void emit(Enum<?> event, Object... args) {
@@ -459,26 +464,25 @@ public class EventBus extends AppServiceBase<EventBus> {
     }
 
     public void emit(Object event, Object ... args) {
-        callOn(event, adhocEventListeners.get(event), false, args);
-        callOn(event, asyncAdhocEventListeners.get(event), true, args);
-        if (null != onceBus) {
-            onceBus.emit(event, args);
-        }
+        _emit(false, true, event, args);
     }
 
     public void emitSync(Object event, Object ... args) {
-        callOn(event, adhocEventListeners.get(event), false, args);
-        callOn(event, asyncAdhocEventListeners.get(event), false, args);
-        if (null != onceBus) {
-            onceBus.emitSync(event, args);
-        }
+        _emit(false, false, event, args);
     }
 
     public void emitAsync(Object event, Object ... args) {
-        callOn(event, adhocEventListeners.get(event), true, args);
-        callOn(event, asyncAdhocEventListeners.get(event), true, args);
+        _emit(true, true, event, args);
+    }
+
+    private void _emit(boolean async1, boolean async2, Object event, Object ... args) {
+        boolean hit = callOn(event, adhocEventListeners.get(event), async1, args);
+        hit = callOn(event, asyncAdhocEventListeners.get(event), async2, args) || hit;
+        if (!hit && 0 == args.length) {
+            _emit(async1, async2, event.getClass(), event);
+        }
         if (null != onceBus) {
-            onceBus.emitAsync(event);
+            onceBus._emit(async1, async2, event, args);
         }
     }
 

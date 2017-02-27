@@ -6,6 +6,7 @@ import org.osgl.util.E;
 
 import java.lang.reflect.Modifier;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -142,9 +143,24 @@ public class ClassNode extends DestroyableBase {
      * @return this `ClassNode` instance
      */
     public ClassNode visitTree($.Function<ClassNode, ?> visitor) {
-        visitSubTree(visitor);
-        visitor.apply(this);
+        visitTree(visitor, new HashSet<ClassNode>());
         return this;
+    }
+
+    private void visitTree($.Function<ClassNode, ?> visitor, Set<ClassNode> visited) {
+        visitSubTree(visitor, visited);
+        if (!visited.contains(this)) {
+            visitor.apply(this);
+        }
+    }
+
+    private void visitSubTree($.Function<ClassNode, ?> visitor, Set<ClassNode> visited) {
+        for (ClassNode child : children) {
+            if (!visited.contains(child)) {
+                child.visitTree(visitor, visited);
+                visited.add(child);
+            }
+        }
     }
 
     private static $.Predicate<ClassNode> classNodeFilter(final boolean publicOnly, final boolean noAbstract) {
@@ -181,9 +197,7 @@ public class ClassNode extends DestroyableBase {
      * @return this `ClassNode` instance
      */
     public ClassNode visitSubTree($.Function<ClassNode, ?> visitor) {
-        for (ClassNode child : children) {
-            child.visitTree(visitor);
-        }
+        visitSubTree(visitor, new HashSet<ClassNode>());
         return this;
     }
 
