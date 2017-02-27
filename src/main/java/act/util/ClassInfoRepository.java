@@ -1,7 +1,7 @@
 package act.util;
 
+import act.Act;
 import act.Destroyable;
-import act.app.App;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.TypeReference;
 import org.osgl.$;
@@ -138,7 +138,7 @@ public class ClassInfoRepository extends DestroyableBase {
             if (dto.parent != null) {
                 ClassNode parentNode = repo.classes.get(dto.parent);
                 if (null == parentNode) {
-                    App.logger.warn("Error de-serializing ClassInfoRepository: parent[%s] not found for classNode[%s]", dto.parent, dto.canonicalName);
+                    Act.LOGGER.warn("Error de-serializing ClassInfoRepository: parent[%s] not found for classNode[%s]", dto.parent, dto.canonicalName);
                 } else {
                     parentNode.addChild(classNode);
                 }
@@ -146,7 +146,7 @@ public class ClassInfoRepository extends DestroyableBase {
             for (String name : dto.annotated) {
                 ClassNode node = repo.classes.get(name);
                 if (null == node) {
-                    App.logger.warn("Error de-serializing ClassInfoRepository: annotated[%s] not found for classNode[%s]", name, dto.canonicalName);
+                    Act.LOGGER.warn("Error de-serializing ClassInfoRepository: annotated[%s] not found for classNode[%s]", name, dto.canonicalName);
                 } else {
                     classNode.addAnnontated(node);
                 }
@@ -154,7 +154,7 @@ public class ClassInfoRepository extends DestroyableBase {
             for (String name : dto.annotations) {
                 ClassNode node = repo.classes.get(name);
                 if (null == node) {
-                    App.logger.warn("Error de-serializing ClassInfoRepository: annotation[%s] not found for classNode[%s]", name, dto.canonicalName);
+                    Act.LOGGER.warn("Error de-serializing ClassInfoRepository: annotation[%s] not found for classNode[%s]", name, dto.canonicalName);
                 } else {
                     classNode.addAnnotation(node);
                 }
@@ -162,7 +162,7 @@ public class ClassInfoRepository extends DestroyableBase {
             for (String name : dto.interfaces) {
                 ClassNode node = repo.classes.get(name);
                 if (null == node) {
-                    App.logger.warn("Error de-serializing ClassInfoRepository: interface[%s] not found for classNode[%s]", name, dto.canonicalName);
+                    Act.LOGGER.warn("Error de-serializing ClassInfoRepository: interface[%s] not found for classNode[%s]", name, dto.canonicalName);
                 } else {
                     classNode.addInterface(node);
                 }

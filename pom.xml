@@ -84,8 +84,33 @@
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
 
-    <maven.test.skip>false</maven.test.skip>
-    <dagger.version>2.0-SNAPSHOT</dagger.version>
+    <fest-assert.version>1.4</fest-assert.version>
+    <junit.version>4.11</junit.version>
+    <junit-benchmarks.version>0.7.2</junit-benchmarks.version>
+    <mockito-core.version>2.0.2-beta</mockito-core.version>
+
+    <act-asm.version>0.1.0-SNAPSHOT</act-asm.version>
+    <cdi-api.version>1.2</cdi-api.version>
+    <commons-codec.version>1.10</commons-codec.version>
+    <commons-fileupload.version>1.3.2</commons-fileupload.version>
+    <ecj.version>4.6.1</ecj.version>
+    <fastjson.version>1.2.24</fastjson.version>
+    <hibernate-validator.version>5.1.3.Final</hibernate-validator.version>
+    <javax.inject.version>1</javax.inject.version>
+    <javax.mail.version>1.5.0-b01</javax.mail.version>
+    <jfiglet.version>0.0.8</jfiglet.version>
+    <jline.version>2.14.3</jline.version>
+    <joda-time.version>2.9.7</joda-time.version>
+    <okhttp.version>3.6.0</okhttp.version>
+    <osgl-genie.version>0.5.0-SNAPSHOT</osgl-genie.version>
+    <osgl-mvc.version>0.9.0-SNAPSHOT</osgl-mvc.version>
+    <osgl-tool-ext.version>0.1.0-SNAPSHOT</osgl-tool-ext.version>
+    <reflectasm.version>1.11.3</reflectasm.version>
+    <rythmengine.version>1.1.7-SNAPSHOT</rythmengine.version>
+    <validation-api.version>1.1.0.Final</validation-api.version>
+    <undertow.version>1.4.11.Final</undertow.version>
+    <zxing.javase.version>3.3.0</zxing.javase.version>
+
   </properties>
 
   <licenses>
@@ -155,95 +180,82 @@
 
   <dependencies>
 
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <version>4.10</version>
-      <scope>test</scope>
-    </dependency>
 
     <dependency>
       <groupId>org.easytesting</groupId>
       <artifactId>fest-assert</artifactId>
-      <version>1.4</version>
+      <version>${fest-assert.version}</version>
       <scope>test</scope>
     </dependency>
 
     <dependency>
-      <groupId>javax.inject</groupId>
-      <artifactId>javax.inject</artifactId>
-      <version>1</version>
-    </dependency>
-
-    <dependency>
-      <groupId>javax.enterprise</groupId>
-      <artifactId>cdi-api</artifactId>
-      <version>1.2</version>
-    </dependency>
-
-    <dependency>
-      <groupId>javax.validation</groupId>
-      <artifactId>validation-api</artifactId>
-      <version>1.1.0.Final</version>
-    </dependency>
-
-    <dependency>
-      <groupId>javax.mail</groupId>
-      <artifactId>mail</artifactId>
-      <version>1.5.0-b01</version>
-    </dependency>
-
-    <dependency>
-      <groupId>com.google.zxing</groupId>
-      <artifactId>javase</artifactId>
-      <version>3.3.0</version>
-    </dependency>
-
-    <!-- for BANNER font -->
-    <dependency>
-      <groupId>com.github.lalyos</groupId>
-      <artifactId>jfiglet</artifactId>
-      <version>0.0.8</version>
-    </dependency>
-
-    <dependency>
-      <groupId>org.actframework</groupId>
-      <artifactId>act-asm</artifactId>
-      <version>0.1.0-SNAPSHOT</version>
-    </dependency>
-
-    <dependency>
-      <groupId>org.hibernate</groupId>
-      <artifactId>hibernate-validator</artifactId>
-      <version>5.1.3.Final</version>
-    </dependency>
-
-    <dependency>
-      <groupId>org.mockito</groupId>
-      <artifactId>mockito-core</artifactId>
-      <version>2.0.2-beta</version>
-      <scope>test</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>org.powermock</groupId>
-      <artifactId>powermock-api-mockito</artifactId>
-      <version>1.6.2</version>
-      <scope>test</scope>
-    </dependency>
-
-    <dependency>
-      <groupId>org.powermock</groupId>
-      <artifactId>powermock-module-junit4</artifactId>
-      <version>1.6.2</version>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>${junit.version}</version>
       <scope>test</scope>
     </dependency>
 
     <dependency>
       <groupId>com.carrotsearch</groupId>
       <artifactId>junit-benchmarks</artifactId>
-      <version>0.7.2</version>
+      <version>${junit-benchmarks.version}</version>
       <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-core</artifactId>
+      <version>${mockito-core.version}</version>
+      <scope>test</scope>
+    </dependency>
+
+
+    <dependency>
+      <groupId>javax.inject</groupId>
+      <artifactId>javax.inject</artifactId>
+      <version>${javax.inject.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>javax.enterprise</groupId>
+      <artifactId>cdi-api</artifactId>
+      <version>${cdi-api.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>javax.validation</groupId>
+      <artifactId>validation-api</artifactId>
+      <version>${validation-api.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>javax.mail</groupId>
+      <artifactId>mail</artifactId>
+      <version>${javax.mail.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.google.zxing</groupId>
+      <artifactId>javase</artifactId>
+      <version>${zxing.javase.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.github.lalyos</groupId>
+      <artifactId>jfiglet</artifactId>
+      <version>${jfiglet.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.actframework</groupId>
+      <artifactId>act-asm</artifactId>
+      <version>${act-asm.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.hibernate</groupId>
+      <artifactId>hibernate-validator</artifactId>
+      <version>${hibernate-validator.version}</version>
     </dependency>
 
     <dependency>
@@ -253,88 +265,75 @@
     </dependency>
 
     <dependency>
-      <groupId>io.netty</groupId>
-      <artifactId>netty-all</artifactId>
-      <version>4.1.3.Final</version>
-      <scope>provided</scope>
-    </dependency>
-
-    <dependency>
       <groupId>io.undertow</groupId>
       <artifactId>undertow-core</artifactId>
-      <version>1.4.8.Final</version>
+      <version>${undertow.version}</version>
     </dependency>
 
     <dependency>
       <groupId>io.undertow</groupId>
       <artifactId>undertow-websockets-jsr</artifactId>
-      <version>1.4.8.Final</version>
+      <version>${undertow.version}</version>
     </dependency>
 
     <dependency>
       <groupId>com.squareup.okhttp3</groupId>
       <artifactId>okhttp</artifactId>
-      <version>3.4.1</version>
+      <version>${okhttp.version}</version>
     </dependency>
 
     <dependency>
       <groupId>jline</groupId>
       <artifactId>jline</artifactId>
-      <version>2.14.2</version>
+      <version>${jline.version}</version>
     </dependency>
 
     <dependency>
       <groupId>org.eclipse.jdt.core.compiler</groupId>
       <artifactId>ecj</artifactId>
-      <version>4.6.1</version>
+      <version>${ecj.version}</version>
     </dependency>
 
     <dependency>
       <groupId>com.esotericsoftware</groupId>
       <artifactId>reflectasm</artifactId>
-      <version>1.11.3</version>
+      <version>${reflectasm.version}</version>
     </dependency>
 
     <dependency>
       <groupId>commons-fileupload</groupId>
       <artifactId>commons-fileupload</artifactId>
-      <version>1.3.2</version>
-    </dependency>
-
-    <dependency>
-      <groupId>commons-codec</groupId>
-      <artifactId>commons-codec</artifactId>
-      <version>1.10</version>
+      <version>${commons-fileupload.version}</version>
     </dependency>
 
     <dependency>
       <groupId>joda-time</groupId>
       <artifactId>joda-time</artifactId>
-      <version>2.9.7</version>
+      <version>${joda-time.version}</version>
     </dependency>
 
     <dependency>
       <groupId>org.osgl</groupId>
       <artifactId>genie</artifactId>
-      <version>[0.5.0-SNAPSHOT,)</version>
+      <version>${osgl-genie.version}</version>
     </dependency>
 
     <dependency>
       <groupId>org.osgl</groupId>
       <artifactId>osgl-mvc</artifactId>
-      <version>[0.9.0-SNAPSHOT,)</version>
+      <version>${osgl-mvc.version}</version>
     </dependency>
 
     <dependency>
       <groupId>org.osgl</groupId>
       <artifactId>osgl-tool-ext</artifactId>
-      <version>[0.1.0-SNAPSHOT,)</version>
+      <version>${osgl-tool-ext.version}</version>
     </dependency>
 
     <dependency>
       <groupId>org.rythmengine</groupId>
       <artifactId>rythm-engine</artifactId>
-      <version>1.1.7-SNAPSHOT</version>
+      <version>${rythmengine.version}</version>
     </dependency>
 
   </dependencies>

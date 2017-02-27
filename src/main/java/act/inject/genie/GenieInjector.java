@@ -227,7 +227,7 @@ public class GenieInjector extends DependencyInjectorBase<GenieInjector> {
                 binder.register(injector.genie());
             }
         } else {
-            App.logger.warn("Unable to auto bind on %s: implementation not found", autoBinding);
+            App.LOGGER.warn("Unable to auto bind on %s: implementation not found", autoBinding);
         }
     }
 

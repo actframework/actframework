@@ -230,9 +230,9 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
             context.attribute(jsonDTOKey, dto);
         } catch (JSONException e) {
             if (e.getCause() != null) {
-                App.logger.warn(e.getCause(), "error parsing JSON data");
+                App.LOGGER.warn(e.getCause(), "error parsing JSON data");
             } else {
-                App.logger.warn(e, "error parsing JSON data");
+                App.LOGGER.warn(e, "error parsing JSON data");
             }
             throw new BadRequest(e.getCause());
         }

@@ -1,15 +1,16 @@
 package act.data;
 
 import act.app.ActionContext;
-import org.apache.commons.codec.net.URLCodec;
 import org.osgl.exception.UnexpectedException;
 import org.osgl.http.H;
 import org.osgl.mvc.result.ErrorResult;
 import org.osgl.mvc.result.Result;
 import org.osgl.util.C;
+import org.osgl.util.Codec;
 
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
+import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -84,7 +85,7 @@ public class UrlEncodedParser extends RequestBodyParser {
             }
 
             // Second phase - look for _charset_ param and do the encoding
-            String charset = encoding;
+            Charset charset = Charset.forName(encoding);
             if (params.containsKey("_charset_")) {
                 // The form contains a _charset_ param - When this is used together
                 // with accept-charset, we can use _charset_ to extract the encoding.
@@ -94,7 +95,7 @@ public class UrlEncodedParser extends RequestBodyParser {
                 // Must be sure the providedCharset is a valid encoding..
                 try {
                     "test".getBytes(providedCharset);
-                    charset = providedCharset; // it works..
+                    charset = Charset.forName(providedCharset); // it works..
                 } catch (Exception e) {
                     logger.debug("Got invalid _charset_ in form: " + providedCharset);
                     // lets just use the default one..
@@ -103,17 +104,16 @@ public class UrlEncodedParser extends RequestBodyParser {
 
             // We're ready to decode the params
             Map<String, String[]> decodedParams = new LinkedHashMap<String, String[]>(params.size());
-            URLCodec codec = new URLCodec();
             for (Map.Entry<String, String[]> e : params.entrySet()) {
                 String key = e.getKey();
                 try {
-                    key = codec.decode(e.getKey(), charset);
+                    key = Codec.decodeUrl(e.getKey(), charset);
                 } catch (Throwable z) {
                     // Nothing we can do about, ignore
                 }
                 for (String value : e.getValue()) {
                     try {
-                        MapUtil.mergeValueInMap(decodedParams, key, (value == null ? null : codec.decode(value, charset)));
+                        MapUtil.mergeValueInMap(decodedParams, key, (value == null ? null : Codec.decodeUrl(value, charset)));
                     } catch (Throwable z) {
                         // Nothing we can do about, lets fill in with the non decoded value
                         MapUtil.mergeValueInMap(decodedParams, key, value);

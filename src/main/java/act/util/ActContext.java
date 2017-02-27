@@ -18,7 +18,7 @@ import org.osgl.util.S;
 import javax.enterprise.context.RequestScoped;
 import java.util.*;
 
-import static act.app.App.logger;
+import static act.app.App.LOGGER;
 
 public interface ActContext<CTX_TYPE extends ActContext> extends ParamValueProvider {
     App app();
@@ -114,7 +114,7 @@ public interface ActContext<CTX_TYPE extends ActContext> extends ParamValueProvi
                 try {
                     l.onDestroy(this);
                 } catch (Exception e) {
-                    logger.warn(e, "error calling listener onDestroy method");
+                    LOGGER.warn(e, "error calling listener onDestroy method");
                 }
             }
             Destroyable.Util.destroyAll(destroyableList, RequestScoped.class);

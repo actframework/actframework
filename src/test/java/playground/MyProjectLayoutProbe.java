@@ -1,16 +1,11 @@
 package playground;
 
-import act.ActComponent;
 import act.app.BuildFileProbe;
 import act.app.ProjectLayout;
 import act.plugin.Plugin;
 
 import java.io.File;
 
-/**
- * Created by luog on 7/02/2015.
- */
-@ActComponent
 public class MyProjectLayoutProbe extends BuildFileProbe.FileParser implements Plugin {
 
     @Override

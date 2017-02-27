@@ -1,11 +1,11 @@
 package act.app.util;
 
-import act.app.App;
 import act.conf.AppConfig;
-import org.apache.commons.codec.Charsets;
 import org.mindrot.jbcrypt.BCrypt;
 import org.osgl.exception.UnexpectedException;
+import org.osgl.logging.LogManager;
 import org.osgl.logging.Logger;
+import org.osgl.util.Charsets;
 import org.osgl.util.Crypto;
 import org.osgl.util.Token;
 
@@ -14,8 +14,8 @@ import java.security.SecureRandom;
 
 public class AppCrypto {
 
-    private static Logger logger = App.logger;
-    
+    private static Logger logger = LogManager.get(AppCrypto.class);
+
     private byte[] secret;
 
     private SecureRandom secureRandom = new SecureRandom();

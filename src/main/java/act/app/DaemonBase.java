@@ -7,7 +7,7 @@ import org.osgl.util.C;
 
 import java.util.Map;
 
-import static act.app.App.logger;
+import static act.app.App.LOGGER;
 
 /**
  * The base implementation of {@link Daemon}
@@ -48,7 +48,7 @@ public abstract class DaemonBase extends SingletonBase implements Daemon {
         synchronized (this) {
             setState(State.STARTED);
         }
-        logger.info("Daemon[%s] started", id());
+        LOGGER.info("Daemon[%s] started", id());
     }
 
     @Override
@@ -68,7 +68,7 @@ public abstract class DaemonBase extends SingletonBase implements Daemon {
         synchronized (this){
             setState(State.STOPPED);
         }
-        logger.info("Daemon[%s] stopped", id());
+        LOGGER.info("Daemon[%s] stopped", id());
     }
 
     @Override
@@ -152,7 +152,7 @@ public abstract class DaemonBase extends SingletonBase implements Daemon {
     protected synchronized void onException(Exception e, String message, Object... args) {
         this.lastError = e;
         setState(errorState(e));
-        logger.error(e, message, args);
+        LOGGER.error(e, message, args);
     }
 
     private State errorState(Exception e) {

@@ -1,6 +1,5 @@
 package playground;
 
-import act.ActComponent;
 import act.app.BuildFileProbe;
 import act.app.ProjectLayout;
 
@@ -9,7 +8,6 @@ import java.util.List;
 public enum Layouts {
     ;
 
-    @ActComponent
     public static class MyStringParser extends BuildFileProbe.StringParser {
 
         @Override
@@ -23,7 +21,6 @@ public enum Layouts {
         }
     }
 
-    @ActComponent
     public static class MyLinesParser extends BuildFileProbe.LinesParser {
         @Override
         protected ProjectLayout parse(List<String> lines) {

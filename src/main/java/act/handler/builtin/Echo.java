@@ -3,8 +3,8 @@ package act.handler.builtin;
 import act.app.ActionContext;
 import act.handler.ExpressHandler;
 import act.handler.builtin.controller.FastRequestHandler;
-import org.apache.commons.codec.Charsets;
 import org.osgl.http.H;
+import org.osgl.util.Charsets;
 import org.osgl.util.S;
 
 import java.nio.ByteBuffer;

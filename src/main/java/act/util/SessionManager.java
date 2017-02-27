@@ -5,16 +5,12 @@ import act.app.ActionContext;
 import act.app.App;
 import act.conf.AppConfig;
 import act.plugin.Plugin;
-import org.apache.commons.codec.Charsets;
 import org.osgl.$;
 import org.osgl.http.H;
 import org.osgl.http.H.Session;
 import org.osgl.logging.L;
 import org.osgl.logging.Logger;
-import org.osgl.util.C;
-import org.osgl.util.Codec;
-import org.osgl.util.E;
-import org.osgl.util.S;
+import org.osgl.util.*;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Provider;

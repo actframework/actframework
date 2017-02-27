@@ -176,7 +176,7 @@ public class SimpleMetricStore implements MetricStore, Serializable {
                     return store;
                 } catch (IOException e) {
                     ioError = true;
-                    App.logger.error(e, "Error reading simple metric store persisted file:%s. Will reset this file", file.getAbsolutePath());
+                    App.LOGGER.error(e, "Error reading simple metric store persisted file:%s. Will reset this file", file.getAbsolutePath());
                     if (!file.delete()) {
                         file.deleteOnExit();
                     }

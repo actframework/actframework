@@ -115,8 +115,24 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
         return session;
     }
 
+    public String session(String key) {
+        return session.get(key);
+    }
+
+    public H.Session session(String key, String value) {
+        return session.put(key, value);
+    }
+
     public H.Flash flash() {
         return flash;
+    }
+
+    public String flash(String key) {
+        return flash.get(key);
+    }
+
+    public H.Flash flash(String key, String value) {
+        return flash.put(key, value);
     }
 
     public Router router() {

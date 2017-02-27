@@ -3,8 +3,8 @@ package act.view;
 import act.Act;
 import act.app.ActionContext;
 import act.mail.MailerContext;
-import org.apache.commons.codec.Charsets;
 import org.osgl.http.H;
+import org.osgl.util.Charsets;
 
 import java.nio.charset.Charset;
 import java.util.Map;

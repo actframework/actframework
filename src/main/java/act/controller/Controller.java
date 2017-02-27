@@ -9,7 +9,6 @@ import act.util.DisableFastJsonCircularReferenceDetect;
 import act.util.FastJsonIterable;
 import act.util.PropertySpec;
 import act.view.*;
-import com.sun.org.apache.regexp.internal.RE;
 import org.osgl.$;
 import org.osgl.http.H;
 import org.osgl.mvc.result.*;
@@ -20,6 +19,7 @@ import org.osgl.util.S;
 
 import java.io.File;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -64,11 +64,9 @@ public @interface Controller {
      */
     class Util {
 
-        public static final Result NO_RESULT = NoResult.get();
         public static final Ok OK = Ok.get();
         public static final Created CREATED = Created.INSTANCE;
         public static final Result JSON_OK = new Result(H.Status.OK, "{}") {};
-        public static final Result JSON_CREATED = new Result(H.Status.CREATED, "{}") {};
         public static final NoContent NO_CONTENT = NoContent.get();
 
         /**
@@ -476,6 +474,16 @@ public @interface Controller {
          */
         public static Result binary(File file) {
             return new RenderBinary(file);
+        }
+
+        /**
+         * Returns a {@link RenderBinary} result with a delayed output stream writer.
+         * The result will render the binary using "inline" content disposition.
+         *
+         * @param outputStreamWriter the delayed writer
+         */
+        public static Result binary($.Function<OutputStream, ?> outputStreamWriter) {
+            return new RenderBinary(outputStreamWriter);
         }
 
         /**

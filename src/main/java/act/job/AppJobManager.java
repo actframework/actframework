@@ -22,8 +22,6 @@ import java.util.EventObject;
 import java.util.Map;
 import java.util.concurrent.*;
 
-import static act.app.App.logger;
-
 public class AppJobManager extends AppServiceBase<AppJobManager> {
 
     private ScheduledThreadPoolExecutor executor;
@@ -188,7 +186,7 @@ public class AppJobManager extends AppServiceBase<AppJobManager> {
             try {
                 runnable.run();
             } catch (Exception e) {
-                logger.error(e, "Error running job");
+                Act.LOGGER.error(e, "Error running job");
             }
         } else {
             now(runnable);
@@ -248,7 +246,7 @@ public class AppJobManager extends AppServiceBase<AppJobManager> {
             if (null != future) {
                 return new _Job(id, Act.jobManager());
             }
-            logger.warn("cannot find job by id: %s", id);
+            Act.LOGGER.warn("cannot find job by id: %s", id);
         }
         return job;
     }
