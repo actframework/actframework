@@ -348,43 +348,7 @@ public class HandlerEnhancer extends MethodVisitor implements Opcodes {
                     node = node.getPrevious();
                 }
                 InsnList list = new InsnList();
-                int len = loadInsnInfoList.size();
-//                if (len == 0) {
-//                    return;
-//                }
                 int appCtxIdx = ctxIndex();
-
-                // SetRenderArgs enhancement
-                if (appCtxIdx < 0) {
-                    String appCtxFieldName = ctxFieldName();
-                    if (null == appCtxFieldName) {
-                        MethodInsnNode getActionContext = new MethodInsnNode(INVOKESTATIC, AsmTypes.ACTION_CONTEXT_INTERNAL_NAME, ActionContext.METHOD_GET_CURRENT, GET_ACTION_CTX_DESC, false);
-                        list.add(getActionContext);
-                    } else {
-                        VarInsnNode loadThis = new VarInsnNode(ALOAD, 0);
-                        FieldInsnNode getCtx = new FieldInsnNode(GETFIELD, segment.meta.classInfo().internalName(), appCtxFieldName, AsmTypes.ACTION_CONTEXT_DESC);
-                        list.add(loadThis);
-                        list.add(getCtx);
-                    }
-                } else {
-                    LabelNode lbl = new LabelNode();
-                    VarInsnNode loadCtx = new VarInsnNode(ALOAD, appCtxIdx);
-                    list.add(lbl);
-                    list.add(loadCtx);
-                }
-                S.Buffer sb = S.newBuffer();
-                for (int i = 0; i < len; ++i) {
-                    LoadInsnInfo info = loadInsnInfoList.get(i);
-                    info.appendTo(list, sb);
-                }
-                LdcInsnNode ldc = new LdcInsnNode(sb.toString());
-                list.add(ldc);
-                MethodInsnNode invokeRenderArg = new MethodInsnNode(INVOKEVIRTUAL, AsmTypes.ACTION_CONTEXT_INTERNAL_NAME, RENDER_ARG_NAMES_NM, RENDER_ARG_NAMES_DESC, false);
-                list.add(invokeRenderArg);
-
-                InsnNode pop = new InsnNode(POP);
-                list.add(pop);
-
                 // setTemplatePath enhancement
                 if (null != templatePath) {
                     if (appCtxIdx < 0) {
@@ -408,9 +372,51 @@ public class HandlerEnhancer extends MethodVisitor implements Opcodes {
                     list.add(insnNode);
                     MethodInsnNode invokeTemplatePath = new MethodInsnNode(INVOKEVIRTUAL, AsmTypes.ACTION_CONTEXT_INTERNAL_NAME, TEMPLATE_PATH_NM, TEMPLATE_PATH_DESC, false);
                     list.add(invokeTemplatePath);
-                    pop = new InsnNode(POP);
+                    InsnNode pop = new InsnNode(POP);
                     list.add(pop);
                 }
+
+                int len = loadInsnInfoList.size();
+                if (0 == len) {
+                    if (list.size() > 0) {
+                        segment.instructions.insertBefore(node, list);
+                    }
+                    return;
+                }
+
+                // SetRenderArgs enhancement
+                if (appCtxIdx < 0) {
+                    String appCtxFieldName = ctxFieldName();
+                    if (null == appCtxFieldName) {
+                        MethodInsnNode getActionContext = new MethodInsnNode(INVOKESTATIC, AsmTypes.ACTION_CONTEXT_INTERNAL_NAME, ActionContext.METHOD_GET_CURRENT, GET_ACTION_CTX_DESC, false);
+                        list.add(getActionContext);
+                    } else {
+                        VarInsnNode loadThis = new VarInsnNode(ALOAD, 0);
+                        FieldInsnNode getCtx = new FieldInsnNode(GETFIELD, segment.meta.classInfo().internalName(), appCtxFieldName, AsmTypes.ACTION_CONTEXT_DESC);
+                        list.add(loadThis);
+                        list.add(getCtx);
+                    }
+                } else {
+                    LabelNode lbl = new LabelNode();
+                    VarInsnNode loadCtx = new VarInsnNode(ALOAD, appCtxIdx);
+                    list.add(lbl);
+                    list.add(loadCtx);
+                }
+
+                S.Buffer sb = S.newBuffer();
+                for (int i = 0; i < len; ++i) {
+                    LoadInsnInfo info = loadInsnInfoList.get(i);
+                    info.appendTo(list, sb);
+                }
+                LdcInsnNode ldc = new LdcInsnNode(sb.toString());
+                list.add(ldc);
+
+                MethodInsnNode invokeRenderArg = new MethodInsnNode(INVOKEVIRTUAL, AsmTypes.ACTION_CONTEXT_INTERNAL_NAME, RENDER_ARG_NAMES_NM, RENDER_ARG_NAMES_DESC, false);
+                list.add(invokeRenderArg);
+
+                InsnNode pop = new InsnNode(POP);
+                list.add(pop);
+
 
                 segment.instructions.insertBefore(node, list);
             }

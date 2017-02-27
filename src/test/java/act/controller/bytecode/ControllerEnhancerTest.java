@@ -338,6 +338,58 @@ public class ControllerEnhancerTest extends TestBase implements ControllerClassM
         }
     }
 
+    @Test
+    public void templatePathShallBeSetWithoutRenderArgs() throws Exception {
+        prepare("TemplatePathShallBeSetWithoutRenderArgs");
+        m = method();
+        try {
+            m.invoke(c);
+        } catch (InvocationTargetException e) {
+            Throwable r = e.getTargetException();
+            yes(r instanceof Result, "r shall be of type Result, found: %s", E.stackTrace(r));
+            eq("/template", ctx.templatePath());
+        }
+    }
+
+    @Test
+    public void templatePathShallBeSetWithRenderArgs() throws Exception {
+        prepare("TemplatePathShallBeSetWithRenderArgs");
+        m = method(String.class);
+        try {
+            m.invoke(c, "foo");
+        } catch (InvocationTargetException e) {
+            Throwable r = e.getTargetException();
+            yes(r instanceof Result, "r shall be of type Result, found: %s", E.stackTrace(r));
+            eq("/template", ctx.templatePath());
+            eq("foo", ctx.renderArg("foo"));
+        }
+    }
+
+    @Test
+    public void templatePathShallBeSetWithoutRenderArgsWithReturnType() throws Exception {
+        prepare("TemplatePathShallBeSetWithoutRenderArgsWithReturnType");
+        m = method();
+        try {
+            m.invoke(c);
+            eq("/template", ctx.templatePath());
+        } catch (InvocationTargetException e) {
+            fail("it shall not throw exception here: %s", E.stackTrace(e.getTargetException()));
+        }
+    }
+
+    @Test
+    public void templatePathShallBeSetWithRenderArgsWithReturnType() throws Exception {
+        prepare("TemplatePathShallBeSetWithRenderArgsWithReturnType");
+        m = method(String.class);
+        try {
+            m.invoke(c, "foo");
+            eq("/template", ctx.templatePath());
+            eq("foo", ctx.renderArg("foo"));
+        } catch (InvocationTargetException e) {
+            fail("it shall not throw exception here: %s", E.stackTrace(e.getTargetException()));
+        }
+    }
+
     private void prepare(String className) throws Exception {
         cn = "testapp.controller." + className;
         scan(cn);
