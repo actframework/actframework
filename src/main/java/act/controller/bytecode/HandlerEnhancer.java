@@ -1,6 +1,5 @@
 package act.controller.bytecode;
 
-import act.Act;
 import act.app.ActionContext;
 import act.asm.*;
 import act.asm.tree.AbstractInsnNode;
@@ -9,7 +8,6 @@ import act.controller.meta.HandlerMethodMetaInfo;
 import act.controller.meta.HandlerParamMetaInfo;
 import act.controller.meta.LocalVariableMetaInfo;
 import act.util.AsmTypes;
-import act.util.ClassInfoRepository;
 import org.osgl.logging.LogManager;
 import org.osgl.logging.Logger;
 import org.osgl.mvc.result.Result;
@@ -351,9 +349,9 @@ public class HandlerEnhancer extends MethodVisitor implements Opcodes {
                 }
                 InsnList list = new InsnList();
                 int len = loadInsnInfoList.size();
-                if (len == 0) {
-                    return;
-                }
+//                if (len == 0) {
+//                    return;
+//                }
                 int appCtxIdx = ctxIndex();
 
                 // SetRenderArgs enhancement
