@@ -57,6 +57,14 @@ public class CommandLineParser {
         return ptn;
     }
 
+    public Map<String, String> getOptions() {
+        return options;
+    }
+
+    public List<String> getArguments() {
+        return arguments;
+    }
+
     public String commandLine() {
         return raw;
     }

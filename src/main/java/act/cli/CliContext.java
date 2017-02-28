@@ -232,7 +232,12 @@ public class CliContext extends ActContext.Base<CliContext> implements IASCIITab
 
     @Override
     public String paramVal(String key) {
-        return this.preparsedOptionValues.get(key);
+        String s = this.preparsedOptionValues.get(key);
+        if (null == s) {
+            // try free options
+            s = parser.getOptions().get(S.concat("--", key));
+        }
+        return s;
     }
 
     @Override
