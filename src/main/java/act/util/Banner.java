@@ -2,6 +2,7 @@ package act.util;
 
 import act.Act;
 import act.Zen;
+import act.conf.AppConfigKey;
 import act.conf.ConfLoader;
 import act.sys.Env;
 import com.github.lalyos.jfiglet.FigletFont;
@@ -51,11 +52,15 @@ public class Banner {
             sb.append("\n\n version: ").append(appVersion);
         }
         File aFile = new File("");
+        String group = Act.nodeGroup();
+        sb.append("\nscan pkg: ").append(System.getProperty(AppConfigKey.SCAN_PACKAGE.key()));
         sb.append("\nbase dir: ").append(aFile.getAbsolutePath());
         sb.append("\n     pid: ").append(Env.PID.get());
         sb.append("\n profile: ").append(ConfLoader.confSetName());
         sb.append("\n    mode: ").append(Act.mode());
-        sb.append("\n   group: ").append(Act.nodeGroup());
+        if (S.notBlank(group)) {
+            sb.append("\n   group: ").append(group);
+        }
         sb.append("\n");
         sb.append("\n     zen: ").append(Zen.wordsOfTheDay());
         sb.append("\n");

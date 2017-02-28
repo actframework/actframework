@@ -582,6 +582,21 @@ public final class Act {
         return true;
     }
 
+    /**
+     * Start Act application with a string:
+     *
+     * The string specified could be inferred as either a package name (for package scan) or an app name.
+     * the string is identified as an app name when either one of the following conditions met:
+     * * length of the string is less than 4
+     * * it contains whitespace characters
+     * * the first char is an uppercase letter
+     * * it is not a valid full qualified class name
+     *
+     * otherwise the string is identified as a scan package name
+     *
+     * @param appNameOrScanPackage the app name or scan package string
+     * @throws Exception any exception thrown out
+     */
     public static void start(String appNameOrScanPackage) throws Exception {
         if (isItPackageName(appNameOrScanPackage)) {
             RunApp.start(appNameOrScanPackage);
