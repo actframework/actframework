@@ -16,7 +16,6 @@ import act.db.DbManager;
 import act.event.ActEvent;
 import act.event.ActEventListener;
 import act.event.EventBus;
-import act.handler.RequestHandler;
 import act.handler.RequestHandlerBase;
 import act.handler.SimpleRequestHandler;
 import act.handler.builtin.controller.*;
@@ -46,6 +45,8 @@ import org.osgl.logging.Logger;
 import org.osgl.util.*;
 
 import java.io.File;
+import java.text.CharacterIterator;
+import java.text.StringCharacterIterator;
 import java.util.List;
 import java.util.Map;
 
@@ -539,9 +540,75 @@ public final class Act {
         app().router().addMapping(H.Method.DELETE, url, handler, RouteSource.APP_CONFIG);
     }
 
-    // New start entries
-    public static void start(String scanPackage) throws Exception {
-        RunApp.start(scanPackage);
+    public static void start() throws Exception {
+        StackTraceElement[] sa = new RuntimeException().getStackTrace();
+        E.unexpectedIf(sa.length < 2, "Whoops!");
+        StackTraceElement ste = sa[1];
+        String className = ste.getClassName();
+        E.unexpectedIf(!className.contains("."), "The main class must have package name to use Act");
+        RunApp.start(S.beforeLast(className, "."));
+    }
+
+    private static boolean isItPackageName(String s) {
+        if (s.length() < 4) {
+            return false;
+        }
+        if (s.contains(" ") || s.contains("\t") || !s.contains(".")) {
+            return false;
+        }
+        if (Character.isUpperCase(s.charAt(0))) {
+            return false;
+        }
+        return isFullyQualifiedClassname(s);
+    }
+
+    private static boolean isFullyQualifiedClassname(String s) {
+        if (s == null) return false;
+        String[] parts = s.split("[\\.]");
+        if (parts.length == 0) return false;
+        for (String part : parts) {
+            CharacterIterator iter = new StringCharacterIterator(part);
+            // Check first character (there should at least be one character for each part) ...
+            char c = iter.first();
+            if (c == CharacterIterator.DONE) return false;
+            if (!Character.isJavaIdentifierStart(c) && !Character.isIdentifierIgnorable(c)) return false;
+            c = iter.next();
+            // Check the remaining characters, if there are any ...
+            while (c != CharacterIterator.DONE) {
+                if (!Character.isJavaIdentifierPart(c) && !Character.isIdentifierIgnorable(c)) return false;
+                c = iter.next();
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Start Act application with a string:
+     *
+     * The string specified could be inferred as either a package name (for package scan) or an app name.
+     * the string is identified as an app name when either one of the following conditions met:
+     * * length of the string is less than 4
+     * * it contains whitespace characters
+     * * the first char is an uppercase letter
+     * * it is not a valid full qualified class name
+     *
+     * otherwise the string is identified as a scan package name
+     *
+     * @param appNameOrScanPackage the app name or scan package string
+     * @throws Exception any exception thrown out
+     */
+    public static void start(String appNameOrScanPackage) throws Exception {
+        if (isItPackageName(appNameOrScanPackage)) {
+            RunApp.start(appNameOrScanPackage);
+        } else {
+            // it must be an application name
+            StackTraceElement[] sa = new RuntimeException().getStackTrace();
+            E.unexpectedIf(sa.length < 2, "Whoops!");
+            StackTraceElement ste = sa[1];
+            String className = ste.getClassName();
+            E.unexpectedIf(!className.contains("."), "The main class must have package name to use Act");
+            RunApp.start(appNameOrScanPackage, Version.appVersion(), S.beforeLast(className, "."));
+        }
     }
 
     public static void start(String appName, String scanPackage) throws Exception {

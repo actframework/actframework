@@ -26,7 +26,7 @@ public class FastJsonKeywordCodec extends SingletonBase implements ObjectSeriali
         JSONLexer lexer = parser.getLexer();
         if (lexer.token() == JSONToken.LITERAL_STRING) {
             String text = lexer.stringVal();
-            lexer.nextToken();
+            lexer.nextToken(JSONToken.COMMA);
             return (T) Keyword.of(text);
         } else {
             throw new UnsupportedOperationException();

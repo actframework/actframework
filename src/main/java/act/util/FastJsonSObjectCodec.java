@@ -30,7 +30,7 @@ public class FastJsonSObjectCodec extends SingletonBase implements ObjectDeseria
         JSONLexer lexer = parser.getLexer();
         if (lexer.token() == JSONToken.LITERAL_STRING) {
             String text = lexer.stringVal();
-            lexer.nextToken();
+            lexer.nextToken(JSONToken.COMMA);
             return (T) resolver.resolve(text);
         } else {
             throw new UnsupportedOperationException();
