@@ -1,5 +1,6 @@
 package act.inject.param;
 
+import act.inject.DefVal;
 import org.osgl.mvc.annotation.Param;
 import org.osgl.util.E;
 import org.osgl.util.StringValueResolver;
@@ -9,12 +10,19 @@ abstract class StringValueResolverValueLoaderBase implements ParamValueLoader {
     protected final StringValueResolver<?> stringValueResolver;
     protected final ParamKey paramKey;
     protected final Object defVal;
+    protected final DefVal defSpec;
 
-    public StringValueResolverValueLoaderBase(ParamKey key, StringValueResolver<?> resolver, Param param, Class<?> type, boolean simpleKeyOnly) {
+
+    public StringValueResolverValueLoaderBase(ParamKey key, StringValueResolver<?> resolver, Param param, DefVal def, Class<?> type, boolean simpleKeyOnly) {
         E.illegalArgumentIf(simpleKeyOnly && !key.isSimple());
         this.paramKey = key;
         this.stringValueResolver = resolver;
-        this.defVal = defVal(param, type);
+        this.defSpec = def;
+        Object _defVal = defVal(param, type);
+        if (null == _defVal && null != def) {
+            _defVal = resolver.resolve(def.value());
+        }
+        this.defVal = _defVal;
     }
 
     static Object defVal(Param param, Class<?> rawType) {

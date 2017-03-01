@@ -22,4 +22,5 @@ public interface ParamValueLoader {
      * @return the value object
      */
     Object load(Object bean, ActContext<?> context, boolean noDefaultValue);
+
 }
