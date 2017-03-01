@@ -7,8 +7,14 @@ import java.io.IOException;
 
 public class DspTest extends EndpointTester {
 
+    @Test
+    public void postShallReturnGoodIfNoDoubleSubmitToDspEnabledHandler() throws IOException {
+        url("/dsp").post("act_dsp_token", "12345");
+        bodyEq("201 Created");
+    }
+
     @Test(expected = Conflict.class)
-    public void postShallReturnUnauthorizedWhenCsrfTokenNotProvided() throws IOException {
+    public void postShallReturnConflictIfDoubleSubmitToDspEnabledHandler() throws IOException {
         url("/dsp").post("act_dsp_token", "12345");
         bodyEq("201 Created");
         String session = resp().header("X-TEST-Session");
