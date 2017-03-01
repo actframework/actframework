@@ -2,7 +2,7 @@ package act.inject.param;
 
 import act.app.App;
 import act.inject.HeaderVariable;
-import act.inject.DefVal;
+import act.inject.DefaultValue;
 import org.osgl.$;
 import org.osgl.inject.BeanSpec;
 import org.osgl.inject.util.AnnotationUtil;
@@ -35,7 +35,7 @@ class ActionContextParamLoader extends ParamValueLoaderService {
             return new HeaderValueLoader(headerVariable.value(), spec);
         }
 
-        DefVal def = spec.getAnnotation(DefVal.class);
+        DefaultValue def = spec.getAnnotation(DefaultValue.class);
 
         ParamValueLoader loader = binder(spec, bindName);
         if (null == loader) {
