@@ -7,6 +7,7 @@ import act.app.AppClassLoader;
 import act.controller.Controller;
 import act.controller.meta.*;
 import act.handler.NonBlock;
+import act.handler.PreventDoubleSubmission;
 import act.handler.builtin.controller.*;
 import act.inject.param.JsonDTO;
 import act.inject.param.JsonDTOClassManager;
@@ -28,6 +29,7 @@ import org.osgl.mvc.annotation.ResponseContentType;
 import org.osgl.mvc.annotation.ResponseStatus;
 import org.osgl.mvc.annotation.SessionFree;
 import org.osgl.mvc.result.BadRequest;
+import org.osgl.mvc.result.Conflict;
 import org.osgl.mvc.result.Result;
 import org.osgl.util.C;
 import org.osgl.util.E;
@@ -73,6 +75,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
     private H.Format forceResponseContentType;
     private H.Status forceResponseStatus;
     private boolean disabled;
+    private String dspToken;
 
     private ReflectedHandlerInvoker(M handlerMetaInfo, App app) {
         this.cl = app.classLoader();
@@ -131,6 +134,14 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         if (null != status) {
             forceResponseStatus = H.Status.of(status.value());
         }
+
+        PreventDoubleSubmission dsp = method.getAnnotation(PreventDoubleSubmission.class);
+        if (null != dsp) {
+            dspToken = dsp.value();
+            if (PreventDoubleSubmission.DEFAULT.equals(dspToken)) {
+                dspToken = app.config().dspToken();
+            }
+        }
     }
 
     @Override
@@ -160,16 +171,12 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
     }
 
     public Result handle(ActionContext actionContext) throws Exception {
-        actionContext.attribute("reflected_handler", this);
-        if (null != forceResponseContentType) {
-            actionContext.accept(forceResponseContentType);
-        }
-        if (null != forceResponseStatus) {
-            actionContext.forceResponseStatus(forceResponseStatus);
-        }
         if (disabled) {
             return ActNotFound.get();
         }
+        actionContext.attribute("reflected_handler", this);
+        preventDoubleSubmission(actionContext);
+        processForceResponse(actionContext);
         ensureJsonDTOGenerated(actionContext);
         Object ctrl = controllerInstance(actionContext);
 
@@ -327,6 +334,36 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
             ca[i] = $.classForName(param.type().getClassName(), cl);
         }
         return ca;
+    }
+
+    private void processForceResponse(ActionContext actionContext) {
+        if (null != forceResponseContentType) {
+            actionContext.accept(forceResponseContentType);
+        }
+        if (null != forceResponseStatus) {
+            actionContext.forceResponseStatus(forceResponseStatus);
+        }
+    }
+
+    private void preventDoubleSubmission(ActionContext context) {
+        if (null == dspToken) {
+            return;
+        }
+        H.Request req = context.req();
+        if (req.method().safe()) {
+            return;
+        }
+        String tokenValue = context.paramVal(dspToken);
+        if (S.blank(tokenValue)) {
+            return;
+        }
+        H.Session session = context.session();
+        String cacheKey = S.concat("DSP-", dspToken);
+        String cached = session.cached(cacheKey);
+        if (S.eq(tokenValue, cached)) {
+            throw Conflict.get();
+        }
+        session.cacheFor1Min(cacheKey, tokenValue);
     }
 
     private Object controllerInstance(ActionContext context) {
