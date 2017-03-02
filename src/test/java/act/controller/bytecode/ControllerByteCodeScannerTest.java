@@ -8,7 +8,6 @@ import act.asm.Type;
 import act.controller.meta.*;
 import act.event.EventBus;
 import act.inject.param.ParamValueLoaderManager;
-import act.inject.param.ParamValueLoaderService;
 import act.job.AppJobManager;
 import act.job.bytecode.JobByteCodeScanner;
 import act.route.RouteSource;

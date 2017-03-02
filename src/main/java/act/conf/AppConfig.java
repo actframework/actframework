@@ -667,6 +667,29 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         }
     }
 
+    private String dspToken;
+
+    protected T dspToken(final String tokenName) {
+        this.dspToken = tokenName;
+        return me();
+    }
+
+    public String dspToken() {
+        if (null == dspToken) {
+            dspToken = get(DOUBLE_SUBMISSION_PROTECT_TOKEN);
+            if (null == dspToken) {
+                dspToken = "act_dsp_token";
+            }
+        }
+        return dspToken;
+    }
+
+    private void _mergeDspToken(AppConfig conf) {
+        if (!hasConfiguration(DOUBLE_SUBMISSION_PROTECT_TOKEN)) {
+            dspToken = conf.dspToken;
+        }
+    }
+
     private Provider<String> cookieDomainProvider;
 
     protected T cookieDomain(final String domain) {
@@ -2317,6 +2340,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         _mergeAjaxCsrfCheckFailureHandler(conf);
         _mergeCookieDomain(conf);
         _mergeMaxCliSession(conf);
+        _mergeDspToken(conf);
         _mergeEnumResolvingCaseSensitive(conf);
         _mergeXForwardedProtocol(conf);
         _mergeHost(conf);

@@ -268,8 +268,13 @@ public class EndpointTester extends TestBase {
                 throw Unauthorized.INSTANCE;
             case HttpURLConnection.HTTP_NOT_MODIFIED:
                 throw NotModified.INSTANCE;
+            case HttpURLConnection.HTTP_CONFLICT:
+                throw Conflict.INSTANCE;
             default:
-                throw new ErrorResult(H.Status.of(resp.code()));
+                H.Status status = H.Status.of(resp.code());
+                if (status.isError()) {
+                    throw new ErrorResult(status);
+                }
         }
     }
 

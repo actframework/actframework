@@ -285,6 +285,13 @@ public enum AppConfigKey implements ConfigKey {
     DB_SEQ_GENERATOR("db.seq_gen.impl"),
 
     /**
+     * `dsp.token` specifies the name of "double submission protect token"
+     *
+     * Default value: `act_dsp_token`
+     */
+    DOUBLE_SUBMISSION_PROTECT_TOKEN("dsp.token"),
+
+    /**
      * {@code act.encoding} specifies application default encoding
      * <p>Default value: utf-8</p>
      */

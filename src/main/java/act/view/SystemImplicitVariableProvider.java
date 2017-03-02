@@ -91,16 +91,37 @@ public class SystemImplicitVariableProvider extends ImplicitVariableProvider {
                     return S.raw(CSRF.formField(context));
                 }
             },
+            new ActionViewVarDef("_dspToken", String.class) {
+                @Override
+                public Object eval(ActionContext context) {
+                    return dspToken(context);
+                }
+            },
+            new ActionViewVarDef("_dspField", RawData.class) {
+                @Override
+                public Object eval(ActionContext context) {
+                    String dsp = dspToken(context);
+                    return S.raw(new StringBuilder("<a type='hidden' name='").append(context.config().dspToken())
+                            .append("' value='").append(dsp).append("'>"));
+                }
+            },
             new ActionViewVarDef("_lang", String.class) {
                 @Override
                 public Object eval(ActionContext context) {
-                    // TODO fix me
-                    Locale locale = context.locale();
-                    locale = Locale.getDefault();
+                    Locale locale = context.locale(true);
                     return locale.toString().replace('_', '-');
                 }
             }
     );
+
+    private String dspToken(ActionContext context) {
+        String dsp = context.attribute("__dsp__");
+        if (null == dsp) {
+            dsp = S.random(6);
+            context.attribute("__dsp__", dsp);
+        }
+        return dsp;
+    }
 
     private List<MailerViewVarDef> mailerViewVarDefs = C.listOf(
             new MailerViewVarDef("_app", App.class) {

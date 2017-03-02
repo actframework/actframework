@@ -148,46 +148,180 @@ public class NetworkHandler extends DestroyableBase {
     /**
      * Process URL suffix based on suffix
      */
-    private static class ContentSuffixSensor implements $.Func2<H.Request, String, String> {
+    static class ContentSuffixSensor implements $.Func2<H.Request, String, String> {
+
+        private static final char[] mp3 = {'m', 'p'};
+        private static final char[] mp4 = {'m', 'p'};
+
+        private static final char[] mpa = {'m', 'p'};
+
+        private static final char[] pdf = {'p'};
+        private static final char[] gif = {};
+        private static final char[] tif = {};
+
+        private static final char[] png = {'p'};
+        private static final char[] jpg = {};
+        private static final char[] mpg = {};
+        private static final char[] svg = {'s'};
+
+        private static final char[] avi = {'a', 'v'};
+
+        private static final char[] xml = {'x', 'm'};
 
         private static final char[] json = {'j', 's', 'o'};
-        private static final char[] xml = {'x', 'm'};
-        private static final char[] csv = {'c', 's'};
-        private static final char[] xls = {'x', 'l', 's'};
-        private static final char[] xlsx = {'x', 'l', 's', 'x'};
-        private static final char[] pdf = {'p', 'd', 'f'};
+
+        private static final char[] ico = {'i', 'c'};
+
+        private static final char[] bmp = {'b', 'm'};
+
+        private static final char[] xls = {'x', 'l'};
+
+        private static final char[] wav = {'w'};
+        private static final char[] flv = {'f'};
+        private static final char[] csv = {'c'};
+        private static final char[] mov = {'m'};
+
+        private static final char[] xlsx = {'x', 'l', 's'};
 
         @Override
         public String apply(H.Request req, String url) throws NotAppliedException, Osgl.Break {
+            $.Var<H.Format> fmtBag = $.var();
+            String processedUrl = process(url, fmtBag);
+            H.Format fmt = fmtBag.get();
+            if (null != fmt) {
+                req.accept(fmt);
+            }
+            return processedUrl;
+        }
+
+        static String process(String url, $.Var<H.Format> fmtBag) {
             int sz = url.length();
             if (sz < 4) {
                 return url;
             }
             int start = sz - 1;
             char c = url.charAt(start);
+            int initPos = 1;
             char[] trait;
             int sepPos = 3;
             H.Format fmt = H.Format.JSON;
             switch (c) {
-                case 'n':
-                    sepPos = 4;
-                    trait = json;
+                case '3':
+                    trait = mp3;
+                    break;
+                case '4':
+                    trait = mp4;
+                    break;
+                case 'a':
+                    trait = mpa;
+                    break;
+                case 'f':
+                    c = url.charAt(start - 1);
+                    initPos = 2;
+                    switch (c) {
+                        case 'd':
+                            trait = pdf;
+                            fmt = H.Format.PDF;
+                            break;
+                        case 'i':
+                            c = url.charAt(start - 2);
+                            initPos = 3;
+                            switch (c) {
+                                case 'g':
+                                    trait = gif;
+                                    fmt = H.Format.GIF;
+                                    break;
+                                case 't':
+                                    trait = tif;
+                                    fmt = H.Format.TIF;
+                                    break;
+                                default:
+                                    return url;
+                            }
+                            break;
+                        default:
+                            return url;
+                    }
+                    break;
+                case 'g':
+                    c = url.charAt(start - 1);
+                    initPos = 2;
+                    switch (c) {
+                        case 'n':
+                            trait = png;
+                            fmt = H.Format.PNG;
+                            break;
+                        case 'p':
+                            c = url.charAt(start - 2);
+                            initPos = 3;
+                            switch (c) {
+                                case 'j':
+                                    trait = jpg;
+                                    fmt = H.Format.JPG;
+                                    break;
+                                case 'm':
+                                    trait = mpg;
+                                    fmt = H.Format.MPG;
+                                    break;
+                                default:
+                                    return url;
+                            }
+                            break;
+                        case 'v':
+                            trait = svg;
+                            fmt = H.Format.SVG;
+                            break;
+                        default:
+                            return url;
+                    }
+                    break;
+                case 'i':
+                    trait = avi;
+                    fmt = H.Format.AVI;
                     break;
                 case 'l':
                     trait = xml;
                     fmt = H.Format.XML;
                     break;
-                case 'v':
-                    trait = csv;
-                    fmt = H.Format.CSV;
+                case 'n':
+                    sepPos = 4;
+                    trait = json;
                     break;
-                case 'f':
-                    trait = pdf;
-                    fmt = H.Format.PDF;
+                case 'o':
+                    trait = ico;
+                    fmt = H.Format.ICO;
+                    break;
+                case 'p':
+                    trait = bmp;
+                    fmt = H.Format.BMP;
                     break;
                 case 's':
                     trait = xls;
                     fmt = H.Format.XLS;
+                    break;
+                case 'v':
+                    c = url.charAt(start - 1);
+                    initPos = 2;
+                    switch (c) {
+                        case 'a':
+                          trait = wav;
+                          fmt = H.Format.WAV;
+                          break;
+                        case 'l':
+                            trait = flv;
+                            fmt = H.Format.FLV;
+                            break;
+                        case 's':
+                            trait = csv;
+                            fmt = H.Format.CSV;
+                            break;
+                        case 'o':
+                            trait = mov;
+                            fmt = H.Format.MOV;
+                            break;
+                        default:
+                            return url;
+                    }
                     break;
                 case 'x':
                     sepPos = 4;
@@ -201,12 +335,12 @@ public class NetworkHandler extends DestroyableBase {
             if (sep != '.' && sep != '/') {
                 return url;
             }
-            for (int i = 1; i < sepPos; ++i) {
+            for (int i = initPos; i < sepPos; ++i) {
                 if (url.charAt(start - i) != trait[sepPos - i - 1]) {
                     return url;
                 }
             }
-            req.accept(fmt);
+            fmtBag.set(fmt);
             return url.substring(0, sz - sepPos - 1);
         }
     }

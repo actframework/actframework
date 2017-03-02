@@ -1,6 +1,7 @@
 package act.inject.param;
 
 import act.util.ActContext;
+import act.inject.DefaultValue;
 import org.osgl.mvc.annotation.Param;
 import org.osgl.util.E;
 import org.osgl.util.StringValueResolver;
@@ -11,8 +12,8 @@ public class StringValueResolverValueLoader extends StringValueResolverValueLoad
 
     private HttpRequestParamEncode encode;
 
-    public StringValueResolverValueLoader(ParamKey key, StringValueResolver<?> resolver, Param param, Class<?> type) {
-        super(key, resolver, param, type, false);
+    public StringValueResolverValueLoader(ParamKey key, StringValueResolver<?> resolver, Param param, DefaultValue def, Class<?> type) {
+        super(key, resolver, param, def, type, false);
     }
 
     @Override

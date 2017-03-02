@@ -209,6 +209,7 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
             private Map<Integer, List<ParamAnnoInfoTrait>> paramAnnoInfoList = C.newMap();
             private Map<Integer, List<GeneralAnnoInfo>> genericParamAnnoInfoList = C.newMap();
             private BitSet contextInfo = new BitSet();
+            private $.Var<Boolean> isVirtual = $.var(false);
 
             ActionMethodVisitor(boolean isRoutedMethod, MethodVisitor mv, int access, String methodName, String desc, String signature, String[] exceptions) {
                 super(ASM5, mv);
@@ -230,6 +231,10 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
                 Type type = Type.getType(desc);
                 String className = type.getClassName();
                 Class<? extends Annotation> c = $.classForName(className);
+                if (Virtual.class.getName().equals(c.getName())) {
+                    isVirtual.set(true);
+                    return av;
+                }
                 if (ControllerClassMetaInfo.isActionAnnotation(c)) {
                     markRequireScan();
                     ActionMethodMetaInfo tmp = new ActionMethodMetaInfo(classInfo);
@@ -576,7 +581,7 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
                      * Note we need to schedule route registration after all app code scanned because we need the
                      * parent context information be set on class meta info, which is done after controller scanning
                      */
-                    app().jobManager().on(AppEventId.APP_CODE_SCANNED, new RouteRegister(httpMethods, paths, methodName, routers, classInfo, classInfo.isAbstract() && !isStatic));
+                    app().jobManager().on(AppEventId.APP_CODE_SCANNED, new RouteRegister(httpMethods, paths, methodName, routers, classInfo, classInfo.isAbstract() && !isStatic, isVirtual));
                 }
 
             }
@@ -693,15 +698,17 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
         String methodName;
         ControllerClassMetaInfo classInfo;
         List<H.Method> httpMethods;
+        $.Var<Boolean> isVirtual;
         boolean noRegister; // do not register virtual method of an abstract class
 
-        RouteRegister(List<H.Method> methods,  List<String> paths,  String methodName, List<Router> routers, ControllerClassMetaInfo classInfo, boolean noRegister) {
+        RouteRegister(List<H.Method> methods,  List<String> paths,  String methodName, List<Router> routers, ControllerClassMetaInfo classInfo, boolean noRegister, $.Var<Boolean> isVirtual) {
             this.routers = routers;
             this.paths = paths;
             this.methodName = methodName;
             this.classInfo = classInfo;
             this.httpMethods = methods;
             this.noRegister = noRegister;
+            this.isVirtual = isVirtual;
         }
 
         @Override
@@ -713,6 +720,11 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
                 String action = S.newSizedBuffer(className.length() + methodName.length() + 1).append(className).append(".").append(methodName).toString();
                 registerOnContext(contextPath, action);
                 contexts.add(contextPath);
+            }
+
+            if (!isVirtual.get()) {
+                // not virtual handler method, so don't need to register sub class routes
+                return;
             }
 
             // now check on sub classes

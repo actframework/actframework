@@ -15,6 +15,7 @@ import act.inject.genie.GenieInjector;
 import act.inject.genie.RequestScope;
 import act.inject.genie.SessionScope;
 import act.util.ActContext;
+import act.inject.DefaultValue;
 import act.util.DestroyableBase;
 import org.osgl.$;
 import org.osgl.exception.UnexpectedException;
@@ -481,7 +482,8 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
         Class fieldType = field.getType();
         StringValueResolver resolver = resolverManager.resolver(fieldType, spec);
         if (null != resolver) {
-            return new StringValueResolverValueLoader(key, resolver, null, fieldType);
+            DefaultValue def = field.getAnnotation(DefaultValue.class);
+            return new StringValueResolverValueLoader(key, resolver, null, def, fieldType);
         }
 
         return buildLoader(key, field.getGenericType(), spec);
