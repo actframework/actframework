@@ -708,10 +708,11 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     }
 
     public String cookieDomain() {
-        return cookieDomainProvider().get();
+        String domain = cookieDomainProvider().get();
+        return "localhost".equals(domain) ? null : domain;
     }
 
-    public Provider<String> cookieDomainProvider() {
+    private Provider<String> cookieDomainProvider() {
         if (null == cookieDomainProvider) {
             try {
                 cookieDomainProvider = get(COOKIE_DOMAIN_PROVIDER);
