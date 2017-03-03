@@ -332,7 +332,7 @@ public class NetworkHandler extends DestroyableBase {
                     return url;
             }
             char sep = url.charAt(start - sepPos);
-            if (sep != '.' && sep != '/') {
+            if (sep != '/') {
                 return url;
             }
             for (int i = initPos; i < sepPos; ++i) {

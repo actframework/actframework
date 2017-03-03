@@ -11,49 +11,49 @@ public class ContentSuffixSensorTest extends TestBase {
 
     @Test
     public void testShortUrl() {
-        v("f.av", null, "f.av");
+        v("f/av", null, "f/av");
     }
 
     @Test
     public void testJson() {
-        v("f", H.Format.JSON, "f.json");
+        v("f", H.Format.JSON, "f/json");
     }
 
     @Test
     public void testXml() {
-        v("f", H.Format.XML, "f.xml");
+        v("f", H.Format.XML, "f/xml");
     }
 
     @Test
     public void testPdf() {
-        v("f", H.Format.PDF, "f.pdf");
+        v("f", H.Format.PDF, "f/pdf");
     }
 
     @Test
     public void testXls() {
-        v("f", H.Format.XLS, "f.xls");
+        v("f", H.Format.XLS, "f/xls");
     }
 
     @Test
     public void testXlsx() {
-        v("f", H.Format.XLSX, "f.xlsx");
+        v("f", H.Format.XLSX, "f/xlsx");
     }
 
     @Test
     public void testCsv() {
-        v("f", H.Format.CSV, "f.csv");
-        v("f.xsv", null, "f.xsv");
+        v("f", H.Format.CSV, "f/csv");
+        v("f/xsv", null, "f/xsv");
     }
 
     @Test
     public void testMedia() {
-        v("f", H.Format.GIF, "f.gif");
-        v("f", H.Format.JPG, "f.jpg");
-        v("f", H.Format.PNG, "f.png");
-        v("f", H.Format.MPG, "f.mpg");
-        v("f.ppg", null, "f.ppg");
-        v("f.npg", null, "f.npg");
-        v("f", H.Format.AVI, "f.avi");
+        v("f", H.Format.GIF, "f/gif");
+        v("f", H.Format.JPG, "f/jpg");
+        v("f", H.Format.PNG, "f/png");
+        v("f", H.Format.MPG, "f/mpg");
+        v("f/ppg", null, "f/ppg");
+        v("f/npg", null, "f/npg");
+        v("f", H.Format.AVI, "f/avi");
     }
 
     private void v(String expectedUrl, H.Format expectedFormat, String testUrl) {
