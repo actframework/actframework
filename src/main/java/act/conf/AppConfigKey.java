@@ -328,6 +328,46 @@ public enum AppConfigKey implements ConfigKey {
     FORMAT_TIME("fmt.time"),
 
     /**
+     * `act.handler.csrf_check_failure.impl` specifies the implementation
+     * for {@link act.util.MissingAuthenticationHandler}
+     *
+     * Default value: {@link act.util.RedirectToLoginUrl}
+     */
+    HANDLER_CSRF_CHECK_FAILURE("handler.csrf_check_failure.impl"),
+
+    /**
+     * `act.handler.csrf_check_failure.ajax.impl` specifies the implementation for
+     * {@link act.util.MissingAuthenticationHandler} dealing with the case of AJAX
+     * request
+     *
+     * Default value: the value of {@link #HANDLER_CSRF_CHECK_FAILURE}
+     */
+    HANDLER_AJAX_CSRF_CHECK_FAILURE("handler.csrf_check_failure.ajax.impl"),
+
+    /**
+     * {@code handler.missing_authentication.impl} specifies the implementation
+     * for {@link act.util.MissingAuthenticationHandler}
+     * <p>Default value: {@link act.util.RedirectToLoginUrl}</p>
+     */
+    HANDLER_MISSING_AUTHENTICATION("handler.missing_authentication.impl"),
+
+    /**
+     * {@code handler.missing_authentication.ajax.impl} specifies the implementation
+     * for {@link act.util.MissingAuthenticationHandler} dealing with the case of AJAX
+     * request
+     * <p>Default value: the value of {@link #HANDLER_MISSING_AUTHENTICATION}</p>
+     */
+    HANDLER_MISSING_AUTHENTICATION_AJAX("handler.missing_authentication.ajax.impl"),
+
+    /**
+     * {@code unknown_http_method_handler} specifies a class/instance that
+     * implements {@link UnknownHttpMethodProcessor} that process
+     * the HTTP methods that are not recognized by {@link act.route.Router},
+     * e.g. "OPTION", "PATCH" etc
+     */
+    HANDLER_UNKNOWN_HTTP_METHOD("handler.unknown_http_method.impl"),
+
+    /**
      * {@code act.host} specifies the host the application
      * reside on.
      * <p/>
@@ -342,6 +382,21 @@ public enum AppConfigKey implements ConfigKey {
      * Default value: `true` when running in PROD mode; `false` when running in DEV mode
      */
     HTTP_EXTERNAL_SERVER("http.external_server.enabled"),
+
+    /**
+     * {@code act.http.params.max} specifies the maximum number of http parameters
+     * this is to prevent the hash collision DOS attack
+     * <p>Default value: {@code 128}</p>
+     */
+    HTTP_MAX_PARAMS("http.params.max"),
+
+    /**
+     * {@code act.http.port} specifies the default http port the application
+     * listen to
+     * <p/>
+     * <p>Default value: {@code 5460}</p>
+     */
+    HTTP_PORT("http.port"),
 
     /**
      * `act.http.port.external` set the external port which is used to
@@ -362,21 +417,6 @@ public enum AppConfigKey implements ConfigKey {
      * @see #HTTP_EXTERNAL_PORT
      */
     HTTP_EXTERNAL_SECURE_PORT("http.port.external.secure"),
-
-    /**
-     * {@code act.http.params.max} specifies the maximum number of http parameters
-     * this is to prevent the hash collision DOS attack
-     * <p>Default value: {@code 1000}</p>
-     */
-    HTTP_MAX_PARAMS("http.params.max"),
-
-    /**
-     * {@code act.http.port} specifies the default http port the application
-     * listen to
-     * <p/>
-     * <p>Default value: {@code 5460}</p>
-     */
-    HTTP_PORT("http.port"),
 
     /**
      * {@code act.http.secure} specifies whether the default http port is
@@ -694,14 +734,6 @@ public enum AppConfigKey implements ConfigKey {
     TEMPLATE_HOME("template.home"),
 
     /**
-     * {@code unknown_http_method_handler} specifies a class/instance that
-     * implements {@link UnknownHttpMethodProcessor} that process
-     * the HTTP methods that are not recognized by {@link act.route.Router},
-     * e.g. "OPTION", "PATCH" etc
-     */
-    UNKNOWN_HTTP_METHOD_HANDLER("unknown_http_method_handler.impl"),
-
-    /**
      * `upload.file.download.enabled`
      *
      * Turn on/off downloader for uploading files
@@ -711,57 +743,25 @@ public enum AppConfigKey implements ConfigKey {
     UPLOAD_FILE_DOWNLOAD("upload.file.download.enabled"),
 
     /**
+     * {@code url.login} specifies the login URL which is used
+     * by {@link act.util.RedirectToLoginUrl}
+     * <p>Default value: {@code /login}</p>
+     */
+    URL_LOGIN("url.login"),
+
+    /**
+     * {@code url.login.ajax} specifies the login URL which is used
+     * by {@link act.util.RedirectToLoginUrl} when request is AJAX
+     * <p>Default value: the value of {@link #URL_LOGIN}</p>
+     */
+    URL_LOGIN_AJAX("url.login.ajax"),
+
+    /**
      * {@code validation.message.interpolator.impl} specifies the
      * {@link javax.validation.MessageInterpolator} implementation
      * <p>Default value: {@link act.validation.ValidationMessageInterpolator}</p>
      */
     VALIDATION_MSG_INTERPOLATOR("validation.message.interpolator.impl"),
-
-    /**
-     * {@code url.login} specifies the login URL which is used
-     * by {@link act.util.RedirectToLoginUrl}
-     * <p>Default value: {@code /login}</p>
-     */
-    LOGIN_URL("url.login"),
-
-    /**
-     * {@code url.login.ajax} specifies the login URL which is used
-     * by {@link act.util.RedirectToLoginUrl} when request is AJAX
-     * <p>Default value: the value of {@link #LOGIN_URL}</p>
-     */
-    AJAX_LOGIN_URL("url.login.ajax"),
-
-    /**
-     * {@code handler.missing_authentication.impl} specifies the implementation
-     * for {@link act.util.MissingAuthenticationHandler}
-     * <p>Default value: {@link act.util.RedirectToLoginUrl}</p>
-     */
-    MISSING_AUTHENTICATION_HANDLER("handler.missing_authentication.impl"),
-
-    /**
-     * `act.handler.csrf_check_failure.impl` specifies the implementation
-     * for {@link act.util.MissingAuthenticationHandler}
-     *
-     * Default value: {@link act.util.RedirectToLoginUrl}
-     */
-    CSRF_CHECK_FAILURE_HANDLER("handler.csrf_check_failure.impl"),
-
-    /**
-     * {@code handler.missing_authentication.ajax.impl} specifies the implementation
-     * for {@link act.util.MissingAuthenticationHandler} dealing with the case of AJAX
-     * request
-     * <p>Default value: the value of {@link #MISSING_AUTHENTICATION_HANDLER}</p>
-     */
-    AJAX_MISSING_AUTHENTICATION_HANDLER("handler.missing_authentication.ajax.impl"),
-
-    /**
-     * `act.handler.csrf_check_failure.ajax.impl` specifies the implementation for
-     * {@link act.util.MissingAuthenticationHandler} dealing with the case of AJAX
-     * request
-     *
-     * Default value: the value of {@link #CSRF_CHECK_FAILURE_HANDLER}
-     */
-    AJAX_CSRF_CHECK_FAILURE_HANDLER("handler.csrf_check_failure.ajax.impl"),
 
     /**
      * {@code act.view.default} specifies the default view solution. If there

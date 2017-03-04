@@ -217,7 +217,7 @@ public class CSRF {
 
         private static void raiseCsrfNotVerified(ActionContext context) {
             AppConfig config = context.config();
-            MissingAuthenticationHandler handler = context.isAjax() ? config.ajaxMissingAuthenticationHandler() : config.missingAuthenticationHandler();
+            MissingAuthenticationHandler handler = context.isAjax() ? config.ajaxCsrfCheckFailureHandler() : config.csrfCheckFailureHandler();
             context.removeAttribute(ATTR_CSR_TOKEN_PREFETCH);
             throw handler.result(context);
         }

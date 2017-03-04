@@ -1141,7 +1141,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     }
     public String loginUrl() {
         if (null == loginUrl) {
-            loginUrl = get(LOGIN_URL);
+            loginUrl = get(URL_LOGIN);
             if (null == loginUrl) {
                 loginUrl = "/login";
             }
@@ -1153,7 +1153,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         return loginUrl;
     }
     private void _mergeLoginUrl(AppConfig conf) {
-        if (!hasConfiguration(LOGIN_URL)) {
+        if (!hasConfiguration(URL_LOGIN)) {
             loginUrl = conf.loginUrl;
         }
     }
@@ -1166,12 +1166,12 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     }
     public String ajaxLoginUrl() {
         if (null == ajaxLoginUrl) {
-            ajaxLoginUrl = get(AJAX_LOGIN_URL);
+            ajaxLoginUrl = get(URL_LOGIN_AJAX);
             if (null == ajaxLoginUrl) {
                 ajaxLoginUrl = loginUrl;
             }
             if (null == ajaxLoginUrl) {
-                ajaxLoginUrl = get(LOGIN_URL);
+                ajaxLoginUrl = get(URL_LOGIN);
             }
             if (null == ajaxLoginUrl) {
                 ajaxLoginUrl = "/login";
@@ -1180,7 +1180,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         return ajaxLoginUrl;
     }
     private void _mergeAjaxLoginUrl(AppConfig conf) {
-        if (!hasConfiguration(AJAX_LOGIN_URL)) {
+        if (!hasConfiguration(URL_LOGIN_AJAX)) {
             ajaxLoginUrl = conf.ajaxLoginUrl;
         }
     }
@@ -1196,7 +1196,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         if (-1 == httpMaxParams) {
             Integer I = get(HTTP_MAX_PARAMS);
             if (null == I) {
-                I = 1000;
+                I = 128;
             }
             if (I < 0) {
                 throw new ConfigurationException("http.params.max setting cannot be negative number. Found: %s", I);
@@ -1289,7 +1289,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
 
     public int httpExternalSecurePort() {
         if (-1 == httpExternalSecurePort) {
-            String s = get(HTTP_EXTERNAL_PORT);
+            String s = get(HTTP_EXTERNAL_SECURE_PORT);
             httpExternalSecurePort = null == s ? httpExternal() ? 443 : httpPort() : Integer.parseInt(s);
         }
         return httpExternalSecurePort;
@@ -1355,15 +1355,15 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     }
     public MissingAuthenticationHandler missingAuthenticationHandler() {
         if (null == mah) {
-            mah = get(MISSING_AUTHENTICATION_HANDLER);
+            mah = get(HANDLER_MISSING_AUTHENTICATION);
             if (null == mah) {
-                mah = new RedirectToLoginUrl();
+                mah = app.getInstance(RedirectToLoginUrl.class);
             }
         }
         return mah;
     }
     private void _mergeMissingAuthenticationHandler(AppConfig config) {
-        if (!hasConfiguration(MISSING_AUTHENTICATION_HANDLER)) {
+        if (!hasConfiguration(HANDLER_MISSING_AUTHENTICATION)) {
             mah = config.mah;
         }
     }
@@ -1376,7 +1376,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     }
     public MissingAuthenticationHandler ajaxMissingAuthenticationHandler() {
         if (null == ajaxMah) {
-            ajaxMah = get(AJAX_MISSING_AUTHENTICATION_HANDLER);
+            ajaxMah = get(HANDLER_MISSING_AUTHENTICATION_AJAX);
             if (null == ajaxMah) {
                 ajaxMah = missingAuthenticationHandler();
             }
@@ -1384,7 +1384,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         return ajaxMah;
     }
     private void _mergeAjaxMissingAuthenticationHandler(AppConfig config) {
-        if (!hasConfiguration(AJAX_MISSING_AUTHENTICATION_HANDLER)) {
+        if (!hasConfiguration(HANDLER_MISSING_AUTHENTICATION_AJAX)) {
             ajaxMah = config.ajaxMah;
         }
     }
@@ -1397,15 +1397,15 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     }
     public MissingAuthenticationHandler csrfCheckFailureHandler() {
         if (null == csrfCheckFailureHandler) {
-            csrfCheckFailureHandler = get(CSRF_CHECK_FAILURE_HANDLER);
+            csrfCheckFailureHandler = get(HANDLER_CSRF_CHECK_FAILURE);
             if (null == csrfCheckFailureHandler) {
-                csrfCheckFailureHandler = new RedirectToLoginUrl();
+                csrfCheckFailureHandler = missingAuthenticationHandler();
             }
         }
         return csrfCheckFailureHandler;
     }
     private void _mergeCsrfCheckFailureHandler(AppConfig config) {
-        if (!hasConfiguration(CSRF_CHECK_FAILURE_HANDLER)) {
+        if (!hasConfiguration(HANDLER_CSRF_CHECK_FAILURE)) {
             csrfCheckFailureHandler = config.csrfCheckFailureHandler;
         }
     }
@@ -1418,7 +1418,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     }
     public MissingAuthenticationHandler ajaxCsrfCheckFailureHandler() {
         if (null == csrfCheckFailureHandler) {
-            csrfCheckFailureHandler = get(AJAX_CSRF_CHECK_FAILURE_HANDLER);
+            csrfCheckFailureHandler = get(HANDLER_AJAX_CSRF_CHECK_FAILURE);
             if (null == csrfCheckFailureHandler) {
                 csrfCheckFailureHandler = csrfCheckFailureHandler();
             }
@@ -1426,7 +1426,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         return csrfCheckFailureHandler;
     }
     private void _mergeAjaxCsrfCheckFailureHandler(AppConfig config) {
-        if (!hasConfiguration(AJAX_CSRF_CHECK_FAILURE_HANDLER)) {
+        if (!hasConfiguration(HANDLER_AJAX_CSRF_CHECK_FAILURE)) {
             csrfCheckFailureHandler = config.csrfCheckFailureHandler;
         }
     }
@@ -2214,7 +2214,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
 
     public UnknownHttpMethodProcessor unknownHttpMethodProcessor() {
         if (null == _unknownHttpMethodProcessor) {
-            _unknownHttpMethodProcessor = get(AppConfigKey.UNKNOWN_HTTP_METHOD_HANDLER);
+            _unknownHttpMethodProcessor = get(AppConfigKey.HANDLER_UNKNOWN_HTTP_METHOD);
             if (null == _unknownHttpMethodProcessor) {
                 _unknownHttpMethodProcessor = UnknownHttpMethodProcessor.METHOD_NOT_ALLOWED;
             }
@@ -2223,7 +2223,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     }
 
     private void _mergeUnknownHttpMethodHandler(AppConfig config) {
-        if (!hasConfiguration(AppConfigKey.UNKNOWN_HTTP_METHOD_HANDLER)) {
+        if (!hasConfiguration(AppConfigKey.HANDLER_UNKNOWN_HTTP_METHOD)) {
             this._unknownHttpMethodProcessor = config._unknownHttpMethodProcessor;
         }
     }

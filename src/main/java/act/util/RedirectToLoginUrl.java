@@ -15,9 +15,9 @@ import java.util.Map;
 
 /**
  * When authentication is required but missing, redirect the user to
- * {@link act.conf.AppConfigKey#LOGIN_URL}
+ * {@link act.conf.AppConfigKey#URL_LOGIN}
  */
-public class RedirectToLoginUrl implements MissingAuthenticationHandler {
+public class RedirectToLoginUrl extends SingletonBase implements MissingAuthenticationHandler {
 
     private volatile Result R = null;
     private volatile Result R_AJAX = null;
