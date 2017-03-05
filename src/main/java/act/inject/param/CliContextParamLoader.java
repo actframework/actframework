@@ -42,8 +42,10 @@ public class CliContextParamLoader extends ParamValueLoaderService {
         methodMetaInfoHolder.set(methodMetaInfo);
         ParamValueLoader loader = findBeanLoader(commander);
         classRegistry.putIfAbsent(commander, loader);
-        ParamValueLoader[] loaders = findMethodParamLoaders(method);
+        $.Var<Boolean> boolBag = $.var();
+        ParamValueLoader[] loaders = findMethodParamLoaders(method, boolBag);
         methodRegistry.putIfAbsent(method, loaders);
+        methodValidationConstraintLookup.put(method, boolBag.get());
         return CliContext.ParsingContextBuilder.finish();
     }
 

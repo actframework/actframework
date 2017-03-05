@@ -1,7 +1,6 @@
 package act.job.bytecode;
 
 import act.app.App;
-import act.controller.meta.HandlerParamMetaInfo;
 import act.inject.param.ParamValueLoaderManager;
 import act.inject.param.ParamValueLoaderService;
 import act.job.JobContext;
@@ -98,7 +97,7 @@ public class ReflectedJobInvoker<M extends JobMethodMetaInfo> extends $.F0<Objec
     }
 
     private Object invoke(Object jobClassInstance) {
-        Object[] params = params();
+        Object[] params = params(jobClassInstance);
         Object result;
         if (null != methodAccess) {
             result = methodAccess.invoke(jobClassInstance, methodIndex, params);
@@ -114,9 +113,9 @@ public class ReflectedJobInvoker<M extends JobMethodMetaInfo> extends $.F0<Objec
         return result;
     }
 
-    private Object[] params() {
+    private Object[] params(Object job) {
         if (null != paramValueLoaderService) {
-            return paramValueLoaderService.loadMethodParams(method, JobContext.current());
+            return paramValueLoaderService.loadMethodParams(job, method, JobContext.current());
         }
         E.illegalStateIf(paramTypes().length > 0, "Cannot invoke job with parameters before app fully started");
         return new Object[0];

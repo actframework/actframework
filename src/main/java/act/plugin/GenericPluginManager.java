@@ -33,7 +33,8 @@ public class GenericPluginManager extends DestroyableBase {
     }
 
     public <T> List<T> pluginList(Class<T> pluginClass) {
-        return (List<T>)C.list(registry.get(pluginClass));
+        List<T> list = (List<T>)registry.get(pluginClass);
+        return null == list ? C.<T>list() : C.<T>list(list);
     }
 
 }

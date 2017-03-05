@@ -9,6 +9,7 @@ act.controller.builtin.CliOverHttp
 act.app.conf.AppConfigPlugin
 act.Info
 act.handler.builtin.controller.RequestHandlerProxy
+act.validation.ValidationPlugin
 act.Zen
 act.util.AdaptiveRecordCodec
 org.osgl.util.FastJsonKvCodec

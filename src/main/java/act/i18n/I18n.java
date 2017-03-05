@@ -2,7 +2,6 @@ package act.i18n;
 
 import act.Act;
 import act.util.ActContext;
-import act.util.AsmTypes;
 import org.osgl.$;
 import org.osgl.Osgl;
 import org.osgl.exception.NotAppliedException;
@@ -52,7 +51,12 @@ public class I18n {
         if (null == msgId) {
             return "";
         }
-        ResourceBundle bundle = ResourceBundle.getBundle(bundleName, $.notNull(locale), Act.app().classLoader());
+        ResourceBundle bundle;
+        try {
+            bundle = ResourceBundle.getBundle(bundleName, $.notNull(locale), Act.app().classLoader());
+        } catch (MissingResourceException e) {
+            return msgId;
+        }
         String msg = msgId;
         if (ignoreError) {
             if (bundle.containsKey(msgId)) {

@@ -18,6 +18,9 @@
 ********************************************
 *            version history
 ********************************************
+0.7.0
+- Validation refactory
+
 0.6.0
 - DAO API change: save(Iterable) now returns list of object been saved
 
@@ -62,7 +65,7 @@
   <groupId>org.actframework</groupId>
   <artifactId>act</artifactId>
   <packaging>jar</packaging>
-  <version>0.6.0-SNAPSHOT</version>
+  <version>0.7.0-SNAPSHOT</version>
 
   <name>ACT Framework</name>
   <description>The ACT full stack MVC framework</description>
@@ -96,6 +99,7 @@
     <ecj.version>4.6.1</ecj.version>
     <fastjson.version>1.2.24</fastjson.version>
     <hibernate-validator.version>5.1.3.Final</hibernate-validator.version>
+    <bval.version>1.1.2</bval.version>
     <javax.inject.version>1</javax.inject.version>
     <javax.mail.version>1.5.0-b01</javax.mail.version>
     <jfiglet.version>0.0.8</jfiglet.version>
@@ -252,10 +256,15 @@
       <version>${act-asm.version}</version>
     </dependency>
 
+    <!--<dependency>-->
+      <!--<groupId>org.hibernate</groupId>-->
+      <!--<artifactId>hibernate-validator</artifactId>-->
+      <!--<version>${hibernate-validator.version}</version>-->
+    <!--</dependency>-->
     <dependency>
-      <groupId>org.hibernate</groupId>
-      <artifactId>hibernate-validator</artifactId>
-      <version>${hibernate-validator.version}</version>
+      <groupId>org.apache.bval</groupId>
+      <artifactId>org.apache.bval.bundle</artifactId>
+      <version>1.1.2</version>
     </dependency>
 
     <dependency>

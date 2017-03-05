@@ -17,7 +17,6 @@ import act.handler.event.ResultEvent;
 import act.i18n.I18n;
 import act.security.CSRFProtector;
 import act.util.*;
-import act.validation.ValidationMessageInterpolator;
 import act.view.TemplatePathResolver;
 import act.view.View;
 import org.osgl.$;
@@ -31,7 +30,6 @@ import org.osgl.mvc.MvcConfig;
 import org.osgl.util.*;
 
 import javax.inject.Provider;
-import javax.validation.MessageInterpolator;
 import java.io.File;
 import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
@@ -2102,27 +2100,6 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         }
     }
 
-    private MessageInterpolator _messageInterpolator = null;
-    protected T messageInterpolator(MessageInterpolator messageInterpolator) {
-        this._messageInterpolator = $.notNull(messageInterpolator);
-        return me();
-    }
-    public MessageInterpolator validationMessageInterpolator() {
-        if (null == _messageInterpolator) {
-            _messageInterpolator = get(AppConfigKey.VALIDATION_MSG_INTERPOLATOR);
-            if (null == _messageInterpolator) {
-                _messageInterpolator = new ValidationMessageInterpolator(this);
-            }
-        }
-        return _messageInterpolator;
-    }
-
-    private void _mergeMessageInterpolator(AppConfig config) {
-        if (!hasConfiguration(AppConfigKey.VALIDATION_MSG_INTERPOLATOR)) {
-            this._messageInterpolator = config._messageInterpolator;
-        }
-    }
-
     public boolean possibleControllerClass(String className) {
         return appClassTester().test(className);
     }
@@ -2394,7 +2371,6 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         _mergeSessionMapper(conf);
         _mergeSecret(conf);
         _mergeCacheServiceProvider(conf);
-        _mergeMessageInterpolator(conf);
         _mergeUnknownHttpMethodHandler(conf);
         _mergeUploadFileDownload(conf);
 

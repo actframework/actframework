@@ -61,7 +61,7 @@ public class ReflectedCommandExecutor extends CommandExecutor {
         context.prepare(parsingContext);
         paramLoaderService.preParseOptions(method, methodMetaInfo, context);
         Object cmd = commanderInstance(context);
-        Object[] params = params(context);
+        Object[] params = params(cmd, context);
         return invoke(cmd, params);
     }
 
@@ -101,11 +101,11 @@ public class ReflectedCommandExecutor extends CommandExecutor {
         return ca;
     }
 
-    private Object[] params(CliContext ctx) {
+    private Object[] params(Object cmd, CliContext ctx) {
         if (0 == paramCount) {
             return DUMP_PARAMS;
         }
-        return paramLoaderService.loadMethodParams(method, ctx);
+        return paramLoaderService.loadMethodParams(cmd, method, ctx);
     }
 
     private Object invoke(Object commander, Object[] params) {

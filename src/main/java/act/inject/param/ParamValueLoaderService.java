@@ -6,16 +6,12 @@ import act.app.App;
 import act.app.data.BinderManager;
 import act.app.data.StringValueResolverManager;
 import act.controller.ActionMethodParamAnnotationHandler;
-import act.inject.ActProviders;
-import act.inject.Context;
-import act.inject.DependencyInjector;
-import act.inject.SessionVariable;
+import act.inject.*;
 import act.inject.genie.DependentScope;
 import act.inject.genie.GenieInjector;
 import act.inject.genie.RequestScope;
 import act.inject.genie.SessionScope;
 import act.util.ActContext;
-import act.inject.DefaultValue;
 import act.util.DestroyableBase;
 import org.osgl.$;
 import org.osgl.exception.UnexpectedException;
@@ -24,6 +20,8 @@ import org.osgl.inject.InjectException;
 import org.osgl.inject.annotation.Provided;
 import org.osgl.inject.util.AnnotationUtil;
 import org.osgl.inject.util.ArrayLoader;
+import org.osgl.logging.LogManager;
+import org.osgl.logging.Logger;
 import org.osgl.mvc.annotation.Bind;
 import org.osgl.mvc.annotation.Param;
 import org.osgl.mvc.result.Result;
@@ -42,6 +40,11 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Provider;
 import javax.inject.Singleton;
+import javax.validation.Constraint;
+import javax.validation.ConstraintViolation;
+import javax.validation.Valid;
+import javax.validation.Validator;
+import javax.validation.executable.ExecutableValidator;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.*;
 import java.util.*;
@@ -52,6 +55,8 @@ import java.util.concurrent.ConcurrentMap;
  * Manage {@link ParamValueLoader} grouped by Method
  */
 public abstract class ParamValueLoaderService extends DestroyableBase {
+
+    protected Logger logger = LogManager.get(getClass());
 
     private static final ParamValueLoader[] DUMB = new ParamValueLoader[0];
     private static final ThreadLocal<ParamTree> PARAM_TREE = new ThreadLocal<ParamTree>();
@@ -73,18 +78,21 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
     StringValueResolverManager resolverManager;
     BinderManager binderManager;
     DependencyInjector<?> injector;
-    ConcurrentMap<Method, ParamValueLoader[]> methodRegistry = new ConcurrentHashMap<Method, ParamValueLoader[]>();
+    ConcurrentMap<Method, ParamValueLoader[]> methodRegistry = new ConcurrentHashMap<>();
+    Map<Method, Boolean> methodValidationConstraintLookup = new HashMap();
     ConcurrentMap<Class, Map<Field, ParamValueLoader>> fieldRegistry = new ConcurrentHashMap<Class, Map<Field, ParamValueLoader>>();
     ConcurrentMap<Class, ParamValueLoader> classRegistry = new ConcurrentHashMap<Class, ParamValueLoader>();
     private ConcurrentMap<$.T2<Type, Annotation[]>, ParamValueLoader> paramRegistry = new ConcurrentHashMap<$.T2<Type, Annotation[]>, ParamValueLoader>();
     private ConcurrentMap<BeanSpec, Map<Class<? extends Annotation>, ActionMethodParamAnnotationHandler>> annoHandlers = new ConcurrentHashMap<BeanSpec, Map<Class<? extends Annotation>, ActionMethodParamAnnotationHandler>>();
     private Map<Class<? extends Annotation>, ActionMethodParamAnnotationHandler> allAnnotationHandlers;
+    private Validator validator;
+    private volatile ExecutableValidator executableValidator;
 
     public ParamValueLoaderService(App app) {
         resolverManager = app.resolverManager();
         binderManager = app.binderManager();
         injector = app.injector();
-        allAnnotationHandlers = new HashMap<Class<? extends Annotation>, ActionMethodParamAnnotationHandler>();
+        allAnnotationHandlers = new HashMap<>();
         List<ActionMethodParamAnnotationHandler> list = Act.pluginManager().pluginList(ActionMethodParamAnnotationHandler.class);
         for (ActionMethodParamAnnotationHandler h : list) {
             Set<Class<? extends Annotation>> set = h.listenTo();
@@ -109,17 +117,31 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
         return loader.load(null, ctx, false);
     }
 
-    public Object[] loadMethodParams(Method method, ActContext ctx) {
+    public Object[] loadMethodParams(Object host, Method method, ActContext ctx) {
         try {
             ParamValueLoader[] loaders = methodRegistry.get(method);
+            Boolean hasValidationConstraint = methodValidationConstraintLookup.get(method);
             if (null == loaders) {
-                loaders = findMethodParamLoaders(method);
+                $.Var<Boolean> boolBag = $.var(Boolean.FALSE);
+                loaders = findMethodParamLoaders(method, boolBag);
                 methodRegistry.putIfAbsent(method, loaders);
+                hasValidationConstraint = boolBag.get();
+                if (hasValidationConstraint && null == host) {
+                    logger.error("Cannot validate static method: %s", method);
+                    hasValidationConstraint = false;
+                }
+                methodValidationConstraintLookup.put(method, hasValidationConstraint);
             }
             int sz = loaders.length;
             Object[] params = new Object[sz];
             for (int i = 0; i < sz; ++i) {
                 params[i] = loaders[i].load(null, ctx, false);
+            }
+            if (hasValidationConstraint) {
+                Set<ConstraintViolation> violations = $.cast(executableValidator().validateParameters(host, method, params));
+                if (!violations.isEmpty()) {
+                    ctx.addViolations(violations);
+                }
             }
             return params;
         } finally {
@@ -131,6 +153,7 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
         final Provider<T> provider = injector.getProvider(beanClass);
         final Map<Field, ParamValueLoader> loaders = fieldLoaders(beanClass);
         final boolean hasField = !loaders.isEmpty();
+        final $.Var<Boolean> hasValidateConstraint = $.var();
         ParamValueLoader loader = new ParamValueLoader() {
             @Override
             public Object load(Object bean, ActContext<?> context, boolean noDefaultValue) {
@@ -154,6 +177,9 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
                         if (null != fieldValue) {
                             context.renderArg(field.getName(), fieldValue);
                         }
+                        if (hasValidationConstraint(BeanSpec.of(field, injector))) {
+                            hasValidateConstraint.set(true);
+                        }
                     }
                 } catch (IllegalAccessException e) {
                     throw new InjectException(e);
@@ -161,7 +187,7 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
                 return bean;
             }
         };
-        return decorate(loader, BeanSpec.of(beanClass, injector), beanClass.getDeclaredAnnotations(), false);
+        return decorate(loader, BeanSpec.of(beanClass, injector), beanClass.getDeclaredAnnotations(), false, true);
     }
 
     private boolean shouldWaive(Field field) {
@@ -195,7 +221,7 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
         return fieldLoaders;
     }
 
-    protected ParamValueLoader[] findMethodParamLoaders(Method method) {
+    protected ParamValueLoader[] findMethodParamLoaders(Method method, $.Var<Boolean> hasValidationConstraint) {
         Type[] types = method.getGenericParameterTypes();
         int sz = types.length;
         if (0 == sz) {
@@ -206,6 +232,9 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
         for (int i = 0; i < sz; ++i) {
             String name = paramName(i);
             BeanSpec spec = BeanSpec.of(types[i], annotations[i], name, injector);
+            if (hasValidationConstraint(spec)) {
+                hasValidationConstraint.set(true);
+            }
             ParamValueLoader loader = paramValueLoaderOf(spec);
             if (null == loader) {
                 throw new UnexpectedException("Cannot find param value loader for param: " + spec);
@@ -317,7 +346,7 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
         if (null == loader) {
             return null;
         }
-        return decorate(loader, spec, annotations, supportJsonDecorator());
+        return decorate(loader, spec, annotations, supportJsonDecorator(), false);
     }
 
     ParamValueLoader buildLoader(final ParamKey key, final Type type, BeanSpec targetSpec) {
@@ -522,25 +551,52 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
             final ParamValueLoader loader,
             final BeanSpec spec,
             final Annotation[] annotations,
-            boolean useJsonDecorator
+            boolean useJsonDecorator,
+            boolean useValidationDecorator
     ) {
         final ParamValueLoader jsonDecorated = useJsonDecorator ? new JsonParamValueLoader(loader, spec, injector) : loader;
-        final Map<Class<? extends Annotation>, ActionMethodParamAnnotationHandler> handlers = paramAnnoHandlers(spec);
-        final ParamValueLoader annoHandlerDecorated = new ParamValueLoader() {
-            @Override
-            public Object load(Object bean, ActContext<?> context, boolean noDefaultValue) {
-                Object object = jsonDecorated.load(bean, context, noDefaultValue);
-                if (!(context instanceof ActionContext) || null == handlers) {
+        ParamValueLoader validationDecorated = jsonDecorated;
+        if (useValidationDecorator) {
+            validationDecorated = new ParamValueLoader() {
+                private Validator validator = Act.app().getInstance(Validator.class);
+
+                @Override
+                public Object load(Object bean, ActContext<?> context, boolean noDefaultValue) {
+                    Object object = jsonDecorated.load(bean, context, noDefaultValue);
+                    Set<ConstraintViolation> violations = $.cast(validator.validate(object));
+                    if (!violations.isEmpty()) {
+                        context.addViolations(violations);
+                    }
                     return object;
                 }
-                for (Map.Entry<Class<? extends Annotation>, ActionMethodParamAnnotationHandler> entry : handlers.entrySet()) {
-                    Annotation ann = filter(annotations, entry.getKey());
-                    entry.getValue().handle(spec.name(), object, ann, (ActionContext) context);
-                }
-                return object;
+            };
+        }
+//        final Map<Class<? extends Annotation>, ActionMethodParamAnnotationHandler> handlers = paramAnnoHandlers(spec);
+//        final ParamValueLoader annoHandlerDecorated = new ParamValueLoader() {
+//            @Override
+//            public Object load(Object bean, ActContext<?> context, boolean noDefaultValue) {
+//                Object object = jsonDecorated.load(bean, context, noDefaultValue);
+//                if (!(context instanceof ActionContext) || null == handlers) {
+//                    return object;
+//                }
+//                for (Map.Entry<Class<? extends Annotation>, ActionMethodParamAnnotationHandler> entry : handlers.entrySet()) {
+//                    Annotation ann = filter(annotations, entry.getKey());
+//                    entry.getValue().handle(spec.name(), object, ann, (ActionContext) context);
+//                }
+//                return object;
+//            }
+//        };
+        return new ScopedParamValueLoader(validationDecorated, spec, scopeCacheSupport(annotations));
+    }
+
+    private boolean hasValidationConstraint(BeanSpec spec) {
+        for (Annotation anno : spec.allAnnotations()) {
+            Class<? extends Annotation> annoType = anno.annotationType();
+            if (Valid.class == annoType || annoType.isAnnotationPresent(Constraint.class)) {
+                return true;
             }
-        };
-        return new ScopedParamValueLoader(annoHandlerDecorated, spec, scopeCacheSupport(annotations));
+        }
+        return false;
     }
 
     private Map<Class<? extends Annotation>, ActionMethodParamAnnotationHandler> paramAnnoHandlers(BeanSpec spec) {
@@ -548,7 +604,7 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
         if (null != handlers) {
             return handlers;
         }
-        handlers = new HashMap<Class<? extends Annotation>, ActionMethodParamAnnotationHandler>();
+        handlers = new HashMap<>();
         for (Annotation annotation : spec.allAnnotations()) {
             Class<? extends Annotation> c = annotation.annotationType();
             ActionMethodParamAnnotationHandler h = allAnnotationHandlers.get(c);
@@ -558,6 +614,18 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
         }
         annoHandlers.putIfAbsent(spec, handlers);
         return handlers;
+    }
+
+    private ExecutableValidator executableValidator() {
+        if (null == executableValidator) {
+            synchronized (this) {
+                if (null == executableValidator) {
+                    validator = Act.getInstance(Validator.class);
+                    executableValidator = validator.forExecutables();
+                }
+            }
+        }
+        return executableValidator;
     }
 
     private static ScopeCacheSupport scopeCacheSupport(Annotation[] annotations) {

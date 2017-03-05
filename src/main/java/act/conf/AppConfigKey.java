@@ -757,13 +757,6 @@ public enum AppConfigKey implements ConfigKey {
     URL_LOGIN_AJAX("url.login.ajax"),
 
     /**
-     * {@code validation.message.interpolator.impl} specifies the
-     * {@link javax.validation.MessageInterpolator} implementation
-     * <p>Default value: {@link act.validation.ValidationMessageInterpolator}</p>
-     */
-    VALIDATION_MSG_INTERPOLATOR("validation.message.interpolator.impl"),
-
-    /**
      * {@code act.view.default} specifies the default view solution. If there
      * are multiple views registered and default view are available, then
      * it will be used at priority to load the templates

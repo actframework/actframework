@@ -178,7 +178,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         preventDoubleSubmission(actionContext);
         processForceResponse(actionContext);
         ensureJsonDTOGenerated(actionContext);
-        Object ctrl = controllerInstance(actionContext);
+        Object controller = controllerInstance(actionContext);
 
         /*
          * We will send back response immediately when param validation
@@ -188,14 +188,14 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
          */
         boolean failOnViolation = actionContext.acceptJson() || checkTemplate(actionContext);
 
-        Object[] params = params(actionContext);
+        Object[] params = params(controller, actionContext);
 
         if (failOnViolation && actionContext.hasViolation()) {
             String msg = actionContext.violationMessage(";");
             return new BadRequest(msg);
         }
 
-        return invoke(handler, actionContext, ctrl, params);
+        return invoke(handler, actionContext, controller, params);
     }
 
     @Override
@@ -439,11 +439,11 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         return hasTemplate;
     }
 
-    private Object[] params(ActionContext context) {
+    private Object[] params(Object controller, ActionContext context) {
         if (0 == paramCount) {
             return DUMP_PARAMS;
         }
-        return paramLoaderService.loadMethodParams(method, context);
+        return paramLoaderService.loadMethodParams(controller, method, context);
     }
 
     private Object singleton(App app) {

@@ -16,6 +16,7 @@ import org.osgl.util.E;
 import org.osgl.util.S;
 
 import javax.enterprise.context.RequestScoped;
+import javax.validation.ConstraintViolation;
 import java.util.*;
 
 import static act.app.App.LOGGER;
@@ -54,6 +55,11 @@ public interface ActContext<CTX_TYPE extends ActContext> extends ParamValueProvi
     Map<String, Object> attributes();
     CTX_TYPE removeAttribute(String name);
 
+    CTX_TYPE addViolations(Set<ConstraintViolation> violations);
+    CTX_TYPE addViolation(ConstraintViolation violation);
+    boolean hasViolation();
+    Set<ConstraintViolation> violations();
+
     String i18n(boolean ignoreError, String msgId, Object... args);
 
     String i18n(String msgId, Object ... args);
@@ -86,7 +92,7 @@ public interface ActContext<CTX_TYPE extends ActContext> extends ParamValueProvi
         void onDestroy(ActContext context);
     }
 
-    abstract class Base<VC_TYPE extends Base> extends DestroyableBase implements ActContext<VC_TYPE> {
+    abstract class Base<CTX extends Base> extends DestroyableBase implements ActContext<CTX> {
 
         private App app;
         private String templatePath;
@@ -97,6 +103,7 @@ public interface ActContext<CTX_TYPE extends ActContext> extends ParamValueProvi
         private Map<String, Object> attributes;
         private Locale locale;
         private S.Buffer strBuf;
+        private Set<ConstraintViolation> violations;
 
         public Base(App app) {
             E.NPE(app);
@@ -106,6 +113,7 @@ public interface ActContext<CTX_TYPE extends ActContext> extends ParamValueProvi
             listenerList = new ArrayList<>();
             destroyableList = new ArrayList<>();
             strBuf = S.newBuffer();
+            violations = new HashSet<>();
         }
 
         @Override
@@ -126,6 +134,7 @@ public interface ActContext<CTX_TYPE extends ActContext> extends ParamValueProvi
             this.template = null;
             this.listenerList.clear();
             this.destroyableList.clear();
+            this.violations.clear();
         }
 
         @Override
@@ -144,7 +153,7 @@ public interface ActContext<CTX_TYPE extends ActContext> extends ParamValueProvi
         }
 
         @Override
-        public VC_TYPE templatePath(String templatePath) {
+        public CTX templatePath(String templatePath) {
             template = null;
             this.templatePath = templatePath;
             return me();
@@ -156,12 +165,12 @@ public interface ActContext<CTX_TYPE extends ActContext> extends ParamValueProvi
         }
 
         @Override
-        public VC_TYPE cacheTemplate(Template template) {
+        public CTX cacheTemplate(Template template) {
             this.template = template;
             return me();
         }
 
-        public final VC_TYPE locale(Locale locale) {
+        public final CTX locale(Locale locale) {
             this.locale = locale;
             return me();
         }
@@ -223,8 +232,8 @@ public interface ActContext<CTX_TYPE extends ActContext> extends ParamValueProvi
             return I18n.i18n(locale(true), bundleSpec, enumClass, outputProperties);
         }
 
-        protected VC_TYPE me() {
-            return (VC_TYPE) this;
+        protected CTX me() {
+            return (CTX) this;
         }
 
         @Override
@@ -233,7 +242,7 @@ public interface ActContext<CTX_TYPE extends ActContext> extends ParamValueProvi
         }
 
         @Override
-        public VC_TYPE renderArg(String name, Object val) {
+        public CTX renderArg(String name, Object val) {
             renderArgs.put(name, val);
             return me();
         }
@@ -251,7 +260,7 @@ public interface ActContext<CTX_TYPE extends ActContext> extends ParamValueProvi
          * @param attr the attribute object
          * @return this context
          */
-        public VC_TYPE attribute(String name, Object attr) {
+        public CTX attribute(String name, Object attr) {
             attributes.put(name, attr);
             return me();
         }
@@ -260,7 +269,7 @@ public interface ActContext<CTX_TYPE extends ActContext> extends ParamValueProvi
             return $.cast(attributes.get(name));
         }
 
-        public VC_TYPE removeAttribute(String name) {
+        public CTX removeAttribute(String name) {
             attributes.remove(name);
             return me();
         }
@@ -271,13 +280,13 @@ public interface ActContext<CTX_TYPE extends ActContext> extends ParamValueProvi
         }
 
         @Override
-        public VC_TYPE addListener(Listener listener) {
+        public CTX addListener(Listener listener) {
             listenerList.add(listener);
             return me();
         }
 
         @Override
-        public VC_TYPE addDestroyable(Destroyable resource) {
+        public CTX addDestroyable(Destroyable resource) {
             destroyableList.add(resource);
             return me();
         }
@@ -285,6 +294,28 @@ public interface ActContext<CTX_TYPE extends ActContext> extends ParamValueProvi
         @Override
         public S.Buffer strBuf() {
             return strBuf;
+        }
+
+        @Override
+        public CTX addViolations(Set<ConstraintViolation> violations) {
+            this.violations.addAll(violations);
+            return me();
+        }
+
+        @Override
+        public CTX addViolation(ConstraintViolation violation) {
+            this.violations.add(violation);
+            return me();
+        }
+
+        @Override
+        public boolean hasViolation() {
+            return !violations.isEmpty();
+        }
+
+        @Override
+        public Set<ConstraintViolation> violations() {
+            return C.set(this.violations);
         }
 
         public static ActContext currentContext() {

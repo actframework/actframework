@@ -62,7 +62,6 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
     private State state;
     private Map<String, Object> controllerInstances;
     private Map<String, ISObject[]> uploads;
-    private Set<ConstraintViolation> violations;
     private Router router;
     private RequestHandler handler;
     private UserAgent ua;
@@ -557,29 +556,12 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
         }
     }
 
-    public ActionContext addViolations(Set<ConstraintViolation<?>> violations) {
-        this.violations.addAll(violations);
-        return this;
-    }
-
-    public ActionContext addViolation(ConstraintViolation<?> violation) {
-        this.violations.add(violation);
-        return this;
-    }
-
-    public boolean hasViolation() {
-        return !violations.isEmpty();
-    }
-
-    public Set<ConstraintViolation> violations() {
-        return C.set(this.violations);
-    }
-
     public S.Buffer buildViolationMessage(S.Buffer builder) {
         return buildViolationMessage(builder, "\n");
     }
 
     public S.Buffer buildViolationMessage(S.Buffer builder, String separator) {
+        Set<ConstraintViolation> violations = violations();
         if (violations.isEmpty()) return builder;
         for (ConstraintViolation violation : violations) {
             builder.append(violation.getMessage()).append(separator);
@@ -602,7 +584,7 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
     }
 
     public ActionContext flashViolationMessage(String separator) {
-        if (violations.isEmpty()) return this;
+        if (violations().isEmpty()) return this;
         flash().error(violationMessage(separator));
         return this;
     }
@@ -738,7 +720,6 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
             this.flash = null;
             this.session = null;
             this.controllerInstances = null;
-            this.violations.clear();
             clearLocal();
             this.uploads.clear();
         }
@@ -779,9 +760,8 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
     }
 
     private void _init() {
-        uploads = C.newMap();
-        extraParams = C.newMap();
-        violations = C.newSet();
+        uploads = new HashMap<>();
+        extraParams = new HashMap<>();
         final Set<Map.Entry<String, String[]>> paramEntrySet = new AbstractSet<Map.Entry<String, String[]>>() {
             @Override
             public Iterator<Map.Entry<String, String[]>> iterator() {
