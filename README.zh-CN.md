@@ -3,6 +3,7 @@
 [![Join the chat at https://gitter.im/actframework/actframework](https://badges.gitter.im/actframework/actframework.svg)](https://gitter.im/actframework/actframework?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 ## 新闻
+* ACT 0.7.0 - 完全重写JSR303/349 Bean Validation集成部分
 * 一个ActFramework版本的[TodoBackend](http://www.todobackend.com/)项目: http://github.com/greenlaw110/todomvc-act
 * Actframework 正式登录[码云](https://git.oschina.net/actframework/actframework)以及[开源中国](http://www.oschina.net/p/actframework)
 * [TechEmpower Benchmark](https://www.techempower.com/benchmarks/)接受了
@@ -13,7 +14,7 @@ Actframework [性能测试项目](https://github.com/TechEmpower/FrameworkBenchm
 
 ## 项目状态
 
-* 当前稳定版本: 0.6.0-SNAPSHOT
+* 当前稳定版本: 0.7.0-SNAPSHOT
 * 第一个正式版预计在2017年三月发行
 
 ## 安装
@@ -24,7 +25,7 @@ Actframework [性能测试项目](https://github.com/TechEmpower/FrameworkBenchm
     <dependency>
       <groupId>org.actframework</groupId>
       <artifactId>act</artifactId>
-      <version>0.6.0-SNAPSHOT</version>
+      <version>0.7.0-SNAPSHOT</version>
     </dependency>
 ```
 
@@ -51,21 +52,20 @@ Actframework [性能测试项目](https://github.com/TechEmpower/FrameworkBenchm
       在简单的情况下Act可以获得Spring-boot20倍以上的吞吐量
 
 * **完整的JSR330依赖注入支持**
-    * ActFramework's DI support is built on top of [Genie](https://github.com/osglworks/java-di), a lightweight
-      yet [fast](https://github.com/greenlaw110/di-benchmark) JSR330 implementation.
-    * Benefit from Act's powerful class scan feature, it does not require the user to create injector from 
-      modules (as the usually way you use Guice). Declare your module and your binding is automatically registered
+    * ActFramework基于[Genie](https://github.com/osglworks/java-di)的依赖注入是一个轻量且
+    [高性能](https://github.com/greenlaw110/di-benchmark)的JSR330标准实现    
+    * 在ActFramework使用Genie, 你不需要注册你的绑定模块, 只需要提供绑定模块的代码, ActFramework会自动注册
 
-* **Superb SPA/Mobile app support**
-    * [Awesome JSON/RESTful support](https://www.youtube.com/watch?v=B2RRSzYeo8c&t=4s)
-    * [Built-in CORS support](http://actframework.org/doc/configuration.md#cors)
-    * [Session/Header mapping](http://actframework.org/doc/configuration#session_mapper_impl) so you are not limited to cookie
+* **强大的单页/移动应用开发支持**
+    * [JSON/RESTful支持](https://www.youtube.com/watch?v=B2RRSzYeo8c&t=4s)
+    * [内置CORS支持](http://actframework.org/doc/configuration.md#cors)
+    * 当不能使用Cookie的情况下, ActFramework提供了[回话/HTTP头映射](http://actframework.org/doc/configuration#session_mapper_impl)
 
-* **Uncompromising Security**
-    * Session cookie is secure and http only, payload is signed and encrypted (optionally)
-    * [Enable CSRF prevention with just one configuration item](http://actframework.org/doc/configuration.md#csrf)
-    * XSS prevention: the default Rythm engine [escape variable output](http://fiddle.rythmengine.org/#/editor/398e71d927234f13a26bb346376141ce) by default
-    * Implementing your authentication/authorisation/accounting framework using [AAA plugin](https://github.com/actframework/act-aaa-plugin)
+* **必须的安全性**
+    * 回话cookie设置为http only, secure(当运行在HTTPS上面时), 框架通过将cookie内容签名并加密(可选)来防止Cookie篡改
+    * [只需一行配置即可启用CSRF保护](http://actframework.org/doc/configuration.md#csrf)
+    * XSS防范: 缺省的Rythm模板引擎自动[将变量输出转码](http://fiddle.rythmengine.org/#/editor/398e71d927234f13a26bb346376141ce)
+    * 采用[AAA plugin](https://github.com/actframework/act-aaa-plugin)实现认证/授权/记账机制
 
 * **Annotation aware but not annotation stack** 
     * Annotation is one of the tool ActFramework used to increase expressiveness. However 
