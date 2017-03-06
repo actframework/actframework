@@ -96,7 +96,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         basicAuthenticationEnabled();
         corsEnabled();
         sessionCookieName();
-        sessionCookiePrefix();
+        cookiePrefix();
         encryptSession();
         sessionMapper();
         sessionKeyUsername();
@@ -394,7 +394,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         if (null == csrfCookieName) {
             String s = get(CSRF_COOKIE_NAME);
             if (S.blank(s)) {
-                s = "XSRF-TOKEN";
+                s = cookieName("xsrf-token");
             }
             csrfCookieName = s;
         }
@@ -996,7 +996,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         if (null == localeCookieName) {
             String s = get(I18N_LOCALE_COOKIE_NAME);
             if (S.blank(s)) {
-                s = "act_locale";
+                s = cookieName("locale");
             }
             localeCookieName = s;
         }
@@ -1835,29 +1835,53 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         }
     }
 
-    private String sessionCookiePrefix;
+    private String cookiePrefix;
 
-    protected T sessionCookiePrefix(String prefix) {
+    protected T cookiePrefix(String prefix) {
         prefix = prefix.trim().toLowerCase();
-        E.illegalArgumentIf(prefix.length() == 0, "session cookie prefix cannot be blank");
-        sessionCookiePrefix = prefix;
+        E.illegalArgumentIf(prefix.length() == 0, "cookie prefix cannot be blank");
+        cookiePrefix = prefix;
         return me();
     }
 
-    private String sessionCookiePrefix() {
-        if (null == sessionCookiePrefix) {
-            sessionCookiePrefix = get(SESSION_PREFIX);
-            if (null == sessionCookiePrefix) {
-                sessionCookiePrefix = "act";
+    private String cookiePrefix() {
+        if (null == cookiePrefix) {
+            cookiePrefix = get(COOKIE_PREFIX);
+            if (null == cookiePrefix) {
+                String appName = app().name();
+                if (S.blank(appName)) {
+                    appName = "act";
+                }
+                String[] sa = appName.split("[\\s]+");
+                int len = sa.length;
+                switch (len) {
+                    case 1:
+                        String s = sa[0];
+                        cookiePrefix = S.concat(s.length() > 2 ? s.substring(0, 3) : s, "-");
+                        break;
+                    case 2:
+                        String s1 = sa[0], s2 = sa[1];
+                        s1 = s1.length() > 1 ? s1.substring(0, 2) : s1;
+                        s2 = s2.length() > 1 ? s2.substring(0, 2) : s2;
+                        cookiePrefix = S.concat(s1, "-", s2, "-");
+                        break;
+                    default:
+                        cookiePrefix = S.concat(
+                                sa[0].substring(0, 1),
+                                sa[1].substring(0, 1),
+                                sa[2].substring(0, 1),
+                                "-"
+                        );
+                }
             }
-            sessionCookiePrefix = sessionCookiePrefix.trim().toLowerCase();
+            cookiePrefix = cookiePrefix.trim().toLowerCase();
         }
-        return sessionCookiePrefix;
+        return cookiePrefix;
     }
 
-    private void _mergeSessionCookiePrefix(AppConfig config) {
-        if (!hasConfiguration(SESSION_PREFIX)) {
-            sessionCookiePrefix = config.sessionCookiePrefix;
+    private void _mergeCookiePrefix(AppConfig config) {
+        if (!hasConfiguration(COOKIE_PREFIX)) {
+            cookiePrefix = config.cookiePrefix;
         }
     }
 
@@ -1873,8 +1897,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
 
     public String sessionCookieName() {
         if (null == sessionCookieName) {
-            String sessionCookiePrefix = sessionCookiePrefix();
-            sessionCookieName = S.newBuffer(sessionCookiePrefix).append("_").append("session").toString();
+            sessionCookieName = cookieName("session");
         }
         return sessionCookieName;
     }
@@ -1897,8 +1920,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
 
     public String flashCookieName() {
         if (null == flashCookieName) {
-            String sessionCookiePrefix = sessionCookiePrefix();
-            flashCookieName = S.newBuffer(sessionCookiePrefix).append("_").append("flash").toString();
+            flashCookieName = cookieName("flash");
         }
         return flashCookieName;
     }
@@ -2360,7 +2382,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         _mergeDefaultView(conf);
         _mergePingPath(conf);
         _mergeServerHeader(conf);
-        _mergeSessionCookiePrefix(conf);
+        _mergeCookiePrefix(conf);
         _mergeSessionCookieName(conf);
         _mergeFlashCookieName(conf);
         _mergeSessionTtl(conf);
@@ -2394,4 +2416,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         return $.cast(this);
     }
 
+    private String cookieName(String suffix) {
+        return S.concat(cookiePrefix(), suffix);
+    }
 }

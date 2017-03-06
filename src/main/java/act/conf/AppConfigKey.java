@@ -164,6 +164,17 @@ public enum AppConfigKey implements ConfigKey {
     COOKIE_DOMAIN_PROVIDER("cookie.domain_provider.impl"),
 
     /**
+     * {@code cookie.prefix} specifies the prefix to be prepended
+     * to the different cookie names e.g. session cookie, flash cookie,
+     * locale cookie etc. Let's say the default cookie name is
+     * {@code act_session}, and user specifies the prefix {@code my_app}
+     * then the session cookie name will be {@code my_app_session}.
+     * <p>Note this setting also impact the {@link AppConfig#flashCookieName()}</p>
+     * <p>Default value: {@code act}</p>
+     */
+    COOKIE_PREFIX("cookie.prefix"),
+
+    /**
      * {@code act.cors.enabled} turn on/off CORS in Act application
      *
      * Default value: `false`
@@ -636,16 +647,6 @@ public enum AppConfigKey implements ConfigKey {
      * <p>Default value: {@code act}</p>
      */
     SERVER_HEADER("server.header"),
-
-    /**
-     * {@code session.prefix} specifies the prefix to be prepended
-     * to the session cookie name. Let's say the default cookie name is
-     * {@code act_session}, and user specifies the prefix {@code my_app}
-     * then the session cookie name will be {@code my_app_session}.
-     * <p>Note this setting also impact the {@link AppConfig#flashCookieName()}</p>
-     * <p>Default value: {@code act}</p>
-     */
-    SESSION_PREFIX("session.prefix"),
 
     /**
      * {@code session.ttl} specifies the session duration in seconds.

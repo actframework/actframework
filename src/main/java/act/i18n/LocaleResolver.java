@@ -112,14 +112,16 @@ public class LocaleResolver {
     }
 
     private Locale resolveFromSessionOrCookie() {
-        // if session exists then resolve from session, otherwise resolve from cookie
+        Locale locale = null;
         H.Session session = context.session();
         if (null != session) {
-            return parseStr(session.get(KEY));
-        } else {
-            H.Cookie cookie = context.cookie(config.localeCookieName());
-            return null == cookie ? null : parseStr(cookie.value());
+            locale = parseStr(session.get(KEY));
         }
+        if (null == locale) {
+            H.Cookie cookie = context.cookie(config.localeCookieName());
+            locale = null == cookie ? null : parseStr(cookie.value());
+        }
+        return locale;
     }
 
     private Locale resolveFromParam() {
