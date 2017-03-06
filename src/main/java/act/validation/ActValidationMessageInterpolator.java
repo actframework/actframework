@@ -1,7 +1,7 @@
 package act.validation;
 
 import act.conf.AppConfig;
-import act.util.ActContext;
+import act.i18n.I18n;
 import act.util.DestroyableBase;
 
 import javax.validation.MessageInterpolator;
@@ -19,13 +19,22 @@ public class ActValidationMessageInterpolator extends DestroyableBase implements
 
     @Override
     public String interpolate(String messageTemplate, Context context) {
-        ActContext actContext = ActContext.Base.currentContext();
-        Locale locale = null == actContext ? config.locale() : actContext.locale(true);
-        return interpolate(messageTemplate, context, locale);
+        return interpolate(messageTemplate, context, I18n.locale());
     }
 
     @Override
     public String interpolate(String messageTemplate, Context context, Locale locale) {
+        if (messageTemplate.startsWith("{act.")) {
+            return actInterpolate(messageTemplate, locale);
+        }
         return realInterpolator.interpolate(messageTemplate, context, locale);
     }
+
+    private String actInterpolate(String messageTemplate, Locale locale) {
+        if (null == locale) {
+            locale = I18n.locale();
+        }
+        return I18n.i18n(locale, "act_message", messageTemplate);
+    }
+
 }
