@@ -3,6 +3,7 @@ package act.validation;
 import act.conf.AppConfig;
 import act.i18n.I18n;
 import act.util.DestroyableBase;
+import org.osgl.util.S;
 
 import javax.validation.MessageInterpolator;
 import java.util.Locale;
@@ -26,6 +27,9 @@ public class ActValidationMessageInterpolator extends DestroyableBase implements
     public String interpolate(String messageTemplate, Context context, Locale locale) {
         if (messageTemplate.startsWith("{act.")) {
             return actInterpolate(messageTemplate, locale);
+        }
+        if (!messageTemplate.startsWith("{")) {
+            messageTemplate = S.concat("{", messageTemplate, "}");
         }
         return realInterpolator.interpolate(messageTemplate, context, locale);
     }
