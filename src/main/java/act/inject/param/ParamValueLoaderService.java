@@ -134,7 +134,7 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
             for (int i = 0; i < sz; ++i) {
                 params[i] = loaders[i].load(null, ctx, false);
             }
-            if (hasValidationConstraint) {
+            if (null != hasValidationConstraint && hasValidationConstraint) {
                 Set<ConstraintViolation> violations = $.cast(executableValidator().validateParameters(host, method, params));
                 if (!violations.isEmpty()) {
                     ctx.addViolations(violations);
