@@ -55,6 +55,18 @@ public class SystemImplicitVariableProvider extends ImplicitVariableProvider {
                     return context;
                 }
             },
+            new ActionViewVarDef("_req", H.Request.class) {
+                @Override
+                public Object eval(ActionContext context) {
+                    return context.req();
+                }
+            },
+            new ActionViewVarDef("_resp", H.Response.class) {
+                @Override
+                public Object eval(ActionContext context) {
+                    return context.resp();
+                }
+            },
             new ActionViewVarDef("_mailer", MailerContext.class) {
                 @Override
                 public Object eval(ActionContext context) {
