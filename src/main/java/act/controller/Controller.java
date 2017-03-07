@@ -311,11 +311,11 @@ public @interface Controller {
             conflictIf(!test, message, args);
         }
 
-        public static Result unauthorized() {
+        public static Unauthorized unauthorized() {
             return ActUnauthorized.create();
         }
 
-        public static Result unauthorized(String realm) {
+        public static Unauthorized unauthorized(String realm) {
             return ActUnauthorized.create(realm);
         }
 
