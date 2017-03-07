@@ -40,7 +40,7 @@ public class JodaDateTimeCodec extends JodaDateTimeCodecBase<DateTime> {
 
     @Override
     public DateTime resolve(String value) {
-        return null == value ? null : dateFormat.parseDateTime(value);
+        return S.blank(value) ? null : dateFormat.parseDateTime(value);
     }
 
     @Override

@@ -3,6 +3,7 @@ package act.data;
 import act.conf.AppConfig;
 import org.osgl.logging.L;
 import org.osgl.logging.Logger;
+import org.osgl.util.S;
 import org.osgl.util.StringValueResolver;
 
 import javax.inject.Inject;
@@ -34,6 +35,9 @@ public class DateResolver extends StringValueResolver<Date> {
 
     @Override
     public Date resolve(String value) {
+        if (S.blank(value)) {
+            return null;
+        }
         try {
             return dateFormat.parse(value);
         } catch (ParseException e) {

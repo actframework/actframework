@@ -56,6 +56,11 @@ class CollectionLoader implements ParamValueLoader {
     }
 
     @Override
+    public String bindName() {
+        return key.toString();
+    }
+
+    @Override
     public Object load(Object bean, ActContext<?> context, boolean noDefaultValue) {
         ParamTree tree = ParamValueLoaderService.ensureParamTree(context);
         ParamTreeNode node = tree.node(key);

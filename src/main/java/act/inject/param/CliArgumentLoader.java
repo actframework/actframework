@@ -28,4 +28,9 @@ class CliArgumentLoader extends CliParamValueLoader {
         }
         return val;
     }
+
+    @Override
+    public String bindName() {
+        return null;
+    }
 }

@@ -25,6 +25,11 @@ abstract class StringValueResolverValueLoaderBase implements ParamValueLoader {
         this.defVal = _defVal;
     }
 
+    @Override
+    public String bindName() {
+        return paramKey.toString();
+    }
+
     static Object defVal(Param param, Class<?> rawType) {
         if (boolean.class == rawType) {
             return null != param && param.defBooleanVal();

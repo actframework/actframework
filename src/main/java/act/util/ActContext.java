@@ -55,10 +55,11 @@ public interface ActContext<CTX_TYPE extends ActContext> extends ParamValueProvi
     Map<String, Object> attributes();
     CTX_TYPE removeAttribute(String name);
 
-    CTX_TYPE addViolations(Set<ConstraintViolation> violations);
-    CTX_TYPE addViolation(ConstraintViolation violation);
+    CTX_TYPE addViolations(Map<String, ConstraintViolation> violations);
+    CTX_TYPE addViolation(String property, ConstraintViolation violation);
     boolean hasViolation();
-    Set<ConstraintViolation> violations();
+    Map<String, ConstraintViolation> violations();
+    ConstraintViolation violation(String property);
 
     String i18n(boolean ignoreError, String msgId, Object... args);
 
@@ -103,7 +104,8 @@ public interface ActContext<CTX_TYPE extends ActContext> extends ParamValueProvi
         private Map<String, Object> attributes;
         private Locale locale;
         private S.Buffer strBuf;
-        private Set<ConstraintViolation> violations;
+        // (violation.propertyPath, violation)
+        private Map<String, ConstraintViolation> violations;
 
         public Base(App app) {
             E.NPE(app);
@@ -113,7 +115,7 @@ public interface ActContext<CTX_TYPE extends ActContext> extends ParamValueProvi
             listenerList = new ArrayList<>();
             destroyableList = new ArrayList<>();
             strBuf = S.newBuffer();
-            violations = new HashSet<>();
+            violations = new HashMap<>();
         }
 
         @Override
@@ -293,18 +295,18 @@ public interface ActContext<CTX_TYPE extends ActContext> extends ParamValueProvi
 
         @Override
         public S.Buffer strBuf() {
-            return strBuf;
+            return strBuf.consumed() ? strBuf.reset() : S.newBuffer();
         }
 
         @Override
-        public CTX addViolations(Set<ConstraintViolation> violations) {
-            this.violations.addAll(violations);
+        public CTX addViolations(Map<String, ConstraintViolation> violations) {
+            this.violations.putAll(violations);
             return me();
         }
 
         @Override
-        public CTX addViolation(ConstraintViolation violation) {
-            this.violations.add(violation);
+        public CTX addViolation(String property, ConstraintViolation violation) {
+            this.violations.put(property, violation);
             return me();
         }
 
@@ -314,8 +316,13 @@ public interface ActContext<CTX_TYPE extends ActContext> extends ParamValueProvi
         }
 
         @Override
-        public Set<ConstraintViolation> violations() {
-            return C.set(this.violations);
+        public Map<String, ConstraintViolation> violations() {
+            return C.map(this.violations);
+        }
+
+        @Override
+        public ConstraintViolation violation(String property) {
+            return this.violations.get(property);
         }
 
         public static ActContext currentContext() {

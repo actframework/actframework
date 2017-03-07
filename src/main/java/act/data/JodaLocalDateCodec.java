@@ -8,6 +8,7 @@ import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
 import org.osgl.$;
 import org.osgl.util.AnnotationAware;
+import org.osgl.util.S;
 import org.osgl.util.StringValueResolver;
 
 import javax.inject.Inject;
@@ -39,7 +40,7 @@ public class JodaLocalDateCodec extends JodaDateTimeCodecBase<LocalDate> {
 
     @Override
     public LocalDate resolve(String value) {
-        return null == value ? null : dateFormat.parseLocalDate(value);
+        return S.blank(value) ? null : dateFormat.parseLocalDate(value);
     }
 
     @Override

@@ -37,10 +37,7 @@ import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Provider;
 import javax.inject.Singleton;
-import javax.validation.Constraint;
-import javax.validation.ConstraintViolation;
-import javax.validation.Valid;
-import javax.validation.Validator;
+import javax.validation.*;
 import javax.validation.executable.ExecutableValidator;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.*;
@@ -62,11 +59,21 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
         public Object load(Object bean, ActContext<?> context, boolean noDefaultValue) {
             return context.attribute(ActionContext.ATTR_RESULT);
         }
+
+        @Override
+        public String bindName() {
+            return null;
+        }
     };
     private static final ParamValueLoader EXCEPTION_LOADED = new ParamValueLoader() {
         @Override
         public Object load(Object bean, ActContext<?> context, boolean noDefaultValue) {
             return context.attribute(ActionContext.ATTR_EXCEPTION);
+        }
+
+        @Override
+        public String bindName() {
+            return null;
         }
     };
     // contains field names that should be waived when looking for value loader
@@ -137,7 +144,24 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
             if (null != hasValidationConstraint && hasValidationConstraint) {
                 Set<ConstraintViolation> violations = $.cast(executableValidator().validateParameters(host, method, params));
                 if (!violations.isEmpty()) {
-                    ctx.addViolations(violations);
+                    Map<String, ConstraintViolation> map = new HashMap<>();
+                    for (ConstraintViolation v : violations) {
+                        S.Buffer buf = ctx.strBuf();
+                        for (Path.Node node : v.getPropertyPath()) {
+                            if (node.getKind() == ElementKind.METHOD) {
+                                continue;
+                            } else if (node.getKind() == ElementKind.PARAMETER) {
+                                Path.ParameterNode pnode = node.as(Path.ParameterNode.class);
+                                int paramIdx = pnode.getParameterIndex();
+                                ParamValueLoader ploader = loaders[paramIdx];
+                                buf.append(ploader.bindName());
+                            } else if (node.getKind() == ElementKind.PROPERTY) {
+                                buf.append(".").append(node.toString());
+                            }
+                        }
+                        map.put(buf.toString(), v);
+                    }
+                    ctx.addViolations(map);
                 }
             }
             return params;
@@ -182,6 +206,11 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
                     throw new InjectException(e);
                 }
                 return bean;
+            }
+
+            @Override
+            public String bindName() {
+                return null;
             }
         };
         return decorate(loader, BeanSpec.of(beanClass, injector), beanClass.getDeclaredAnnotations(), false, true);
@@ -430,6 +459,11 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
                 list = (List) collectionLoader.load(list, context, false);
                 return null == list ? null : ArrayLoader.listToArray(list, BeanSpec.rawTypeOf(elementType));
             }
+
+            @Override
+            public String bindName() {
+                return key.toString();
+            }
         };
     }
 
@@ -493,6 +527,11 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
                     fl.applyTo(beanSource, context);
                 }
                 return beanBag.get();
+            }
+
+            @Override
+            public String bindName() {
+                return key.toString();
             }
         };
     }
@@ -570,27 +609,23 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
                     Object object = jsonDecorated.load(bean, context, noDefaultValue);
                     Set<ConstraintViolation> violations = $.cast(validator.validate(object));
                     if (!violations.isEmpty()) {
-                        context.addViolations(violations);
+                        Map<String, ConstraintViolation> map = new HashMap<>();
+                        for (ConstraintViolation v : violations) {
+                            map.put(v.getPropertyPath().toString(), v);
+                        }
+                        context.addViolations(map);
                     }
                     return object;
                 }
+
+                @Override
+                public String bindName() {
+                    return jsonDecorated.bindName();
+                }
             };
+
         }
-//        final Map<Class<? extends Annotation>, ActionMethodParamAnnotationHandler> handlers = paramAnnoHandlers(spec);
-//        final ParamValueLoader annoHandlerDecorated = new ParamValueLoader() {
-//            @Override
-//            public Object load(Object bean, ActContext<?> context, boolean noDefaultValue) {
-//                Object object = jsonDecorated.load(bean, context, noDefaultValue);
-//                if (!(context instanceof ActionContext) || null == handlers) {
-//                    return object;
-//                }
-//                for (Map.Entry<Class<? extends Annotation>, ActionMethodParamAnnotationHandler> entry : handlers.entrySet()) {
-//                    Annotation ann = filter(annotations, entry.getKey());
-//                    entry.getValue().handle(spec.name(), object, ann, (ActionContext) context);
-//                }
-//                return object;
-//            }
-//        };
+
         return new ScopedParamValueLoader(validationDecorated, spec, scopeCacheSupport(annotations));
     }
 

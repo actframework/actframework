@@ -76,7 +76,12 @@ class HeaderValueLoader implements ParamValueLoader {
         }
     }
 
-    private String key(String name,  BeanSpec spec) {
+    @Override
+    public String bindName() {
+        return key;
+    }
+
+    private String key(String name, BeanSpec spec) {
         if (S.notBlank(name)) {
             return name;
         }

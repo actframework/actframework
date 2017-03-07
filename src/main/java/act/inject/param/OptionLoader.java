@@ -75,6 +75,11 @@ class OptionLoader extends CliParamValueLoader implements ParamValueLoader {
         return val;
     }
 
+    @Override
+    public String bindName() {
+        return this.bindName;
+    }
+
     private Object resolve(String val) {
         return resolve(val, resolver);
     }

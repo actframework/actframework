@@ -4,12 +4,14 @@ import act.Act;
 import act.app.ActionContext;
 import act.i18n.I18n;
 import act.route.Router;
+import act.util.ActContext;
 import org.osgl.util.E;
 import org.rythmengine.RythmEngine;
 import org.rythmengine.template.JavaTagBase;
 import org.rythmengine.utils.S;
 
 import javax.inject.Inject;
+import javax.validation.ConstraintViolation;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,6 +30,34 @@ public class Tags {
         }
     }
 
+    /**
+     * Retrieve validation error message by field name
+     *
+     * Usage: `@_error("foo.name")` where`foo.name` is the field name
+     */
+    public static class ValidationError extends JavaTagBase {
+        @Override
+        public String __getName() {
+            return "_error";
+        }
+
+        @Override
+        protected void call(__ParameterList params, __Body body) {
+            int paramSize = params.size();
+            E.illegalArgumentIf(paramSize < 1);
+            String field = params.get(0).value.toString();
+            ConstraintViolation violation = ActContext.Base.currentContext().violation(field);
+            if (null != violation) {
+                p(violation.getMessage());
+            }
+        }
+    }
+
+    /**
+     * Retrieve act framework defined i18n messages
+     *
+     * Usage: `@actMsg("msg-id")`
+     */
     public static class ActMessage extends JavaTagBase {
         @Override
         public String __getName() {
@@ -52,6 +82,11 @@ public class Tags {
         }
     }
 
+    /**
+     * Retrieve reverse routing URL path
+     *
+     * Usage: `@fullUrl()`
+     */
     public static class ReverseRouting extends JavaTagBase {
 
         private boolean fullUrl = false;
@@ -76,6 +111,7 @@ public class Tags {
             }
             String value = o.toString();
 
+            boolean fullUrl = this.fullUrl;
             o = parameterList.getByName("fullUrl");
             if (null != o) {
                 fullUrl = (Boolean) o;
@@ -84,24 +120,29 @@ public class Tags {
             ActionContext context = ActionContext.current();
             Router router = null == context ? Act.app().router() : context.router();
 
-            if (value.contains("/") && fullUrl) {
+            if (value.contains("/") || !value.contains(".")) {
                 int n = parameterList.size();
                 Object[] args = new Object[n - 1];
                 for (int i = 0; i < n - 1; ++i) {
                     args[i] = parameterList.getByPosition(i + 1);
                 }
-                p(router._fullUrl(value, args));
-            }
-
-            Map<String, Object> args = new HashMap<>();
-            for (__Parameter param : parameterList) {
-                String name = param.name;
-                if (S.ne(name, "value") && S.ne(name, "fullUrl")) {
-                    args.put(param.name, param.value);
+                if (fullUrl) {
+                    p(router._fullUrl(value, args));
+                } else {
+                    p(String.format(value, args));
                 }
-            }
+            } else {
+                // value is an action path, need reverse route
+                Map<String, Object> args = new HashMap<>();
+                for (__Parameter param : parameterList) {
+                    String name = param.name;
+                    if (S.ne(name, "value") && S.ne(name, "fullUrl")) {
+                        args.put(param.name, param.value);
+                    }
+                }
 
-            p(router.reverseRoute(value, args, fullUrl));
+                p(router.reverseRoute(value, args, fullUrl));
+            }
         }
     }
 

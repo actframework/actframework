@@ -20,4 +20,9 @@ class BoundedValueLoader implements ParamValueLoader {
     public Object load(Object bean, ActContext<?> context, boolean noDefaultValue) {
         return binder.resolve(bean, bindModel, context);
     }
+
+    @Override
+    public String bindName() {
+        return bindModel;
+    }
 }

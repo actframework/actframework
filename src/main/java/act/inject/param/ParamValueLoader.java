@@ -23,4 +23,10 @@ public interface ParamValueLoader {
      */
     Object load(Object bean, ActContext<?> context, boolean noDefaultValue);
 
+    /**
+     * Returns the parameter binding name
+     * @return the bind name
+     */
+    String bindName();
+
 }

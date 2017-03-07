@@ -18,6 +18,8 @@
 ********************************************\
 *            version history
 ********************************************
+0.7.0
+  - update to ActFramework 0.7
 0.6.0
   - update to ActFramework 0.6
 0.5.0
@@ -37,7 +39,7 @@
   <groupId>org.actframework</groupId>
   <artifactId>testapp</artifactId>
   <packaging>jar</packaging>
-  <version>0.6.0-SNAPSHOT</version>
+  <version>0.7.0-SNAPSHOT</version>
 
   <name>ACT TEST APP</name>
   <description>Test ActFramework</description>
@@ -45,6 +47,9 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+    <act.version>0.7.0-SNAPSHOT</act.version>
+    <act.storage.version>0.7.0-SNAPSHOT</act.storage.version>
+    <act.morphia.version>0.7.0-SNAPSHOT</act.morphia.version>
     <app.entry>testapp.TestApp</app.entry>
   </properties>
 
@@ -147,19 +152,19 @@
     <dependency>
       <groupId>org.actframework</groupId>
       <artifactId>act</artifactId>
-      <version>0.6.0-SNAPSHOT</version>
+      <version>${act.version}</version>
     </dependency>
 
     <dependency>
       <groupId>org.actframework</groupId>
       <artifactId>act-morphia</artifactId>
-      <version>0.6.0-SNAPSHOT</version>
+      <version>${act.morphia.version}</version>
     </dependency>
 
     <dependency>
       <groupId>org.actframework</groupId>
       <artifactId>act-storage</artifactId>
-      <version>0.6.0-SNAPSHOT</version>
+      <version>${act.storage.version}</version>
     </dependency>
 
     <dependency>

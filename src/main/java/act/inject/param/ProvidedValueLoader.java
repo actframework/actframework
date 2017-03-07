@@ -25,9 +25,8 @@ public class ProvidedValueLoader extends DestroyableBase implements ParamValueLo
                 || type.isAnnotationPresent(Singleton.class)
                 || type.isAnnotationPresent(ApplicationScoped.class)) {
             singleton = injector.get(type);
-        } else {
-            this.beanSpec = beanSpec;
         }
+        this.beanSpec = beanSpec;
         this.injector = injector;
     }
 
@@ -42,6 +41,11 @@ public class ProvidedValueLoader extends DestroyableBase implements ParamValueLo
             GenieInjector genieInjector = (GenieInjector) injector;
             return genieInjector.get(beanSpec);
         }
+    }
+
+    @Override
+    public String bindName() {
+        return beanSpec.name();
     }
 
     @Override

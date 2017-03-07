@@ -379,7 +379,7 @@ public class Router extends AppServiceBase<Router> {
     private static final Method M_FULL_URL = $.getMethod(Router.class, "fullUrl", String.class, Object[].class);
 
     public String _fullUrl(String path, Object[] args) {
-        return $.invokeVirtual(this, M_FULL_URL, args);
+        return $.invokeVirtual(this, M_FULL_URL, path, args);
     }
 
     boolean isMapped(H.Method method, CharSequence path) {

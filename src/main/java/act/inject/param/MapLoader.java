@@ -121,6 +121,11 @@ class MapLoader implements ParamValueLoader {
         return map;
     }
 
+    @Override
+    public String bindName() {
+        return key.toString();
+    }
+
     private ParamValueLoader childLoader(ParamKey key) {
         ParamValueLoader loader = childLoaders.get(key);
         if (null == loader) {

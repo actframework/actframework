@@ -32,4 +32,9 @@ class CliVarArgumentLoader extends CliParamValueLoader {
         }
         return ArrayLoader.listToArray(list, componentType);
     }
+
+    @Override
+    public String bindName() {
+        return null;
+    }
 }

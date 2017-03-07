@@ -561,10 +561,10 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
     }
 
     public S.Buffer buildViolationMessage(S.Buffer builder, String separator) {
-        Set<ConstraintViolation> violations = violations();
+        Map<String, ConstraintViolation> violations = violations();
         if (violations.isEmpty()) return builder;
-        for (ConstraintViolation violation : violations) {
-            builder.append(violation.getMessage()).append(separator);
+        for (Map.Entry<String, ConstraintViolation> entry : violations.entrySet()) {
+            builder.append(entry.getKey()).append(": ").append(entry.getValue().getMessage()).append(separator);
         }
         int n = builder.length();
         builder.delete(n - separator.length(), n);

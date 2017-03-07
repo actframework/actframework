@@ -55,6 +55,11 @@ class JsonParamValueLoader implements ParamValueLoader {
         }
     }
 
+    @Override
+    public String bindName() {
+        return spec.name();
+    }
+
     private static Provider findDefValProvider(BeanSpec beanSpec, DependencyInjector<?> injector) {
         final Class c = beanSpec.rawType();
         final StringValueResolverManager resolver = App.instance().resolverManager();

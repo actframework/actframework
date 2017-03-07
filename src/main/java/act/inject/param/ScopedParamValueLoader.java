@@ -34,4 +34,8 @@ class ScopedParamValueLoader implements ParamValueLoader {
         return cached;
     }
 
+    @Override
+    public String bindName() {
+        return realLoader.bindName();
+    }
 }
