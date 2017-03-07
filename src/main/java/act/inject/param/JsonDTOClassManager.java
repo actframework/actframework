@@ -5,17 +5,16 @@ import act.app.AppClassLoader;
 import act.app.AppServiceBase;
 import act.inject.DependencyInjector;
 import org.osgl.$;
+import org.osgl.exception.UnexpectedException;
 import org.osgl.inject.BeanSpec;
 import org.osgl.util.E;
+import org.osgl.util.Generics;
 import org.osgl.util.S;
 
 import javax.inject.Inject;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.*;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -105,7 +104,7 @@ public class JsonDTOClassManager extends AppServiceBase<JsonDTOClassManager> {
         if (!Modifier.isStatic(method.getModifiers())) {
             extractBeanSpec(list, $.fieldsOf(host, CLASS_FILTER, FIELD_FILTER), host);
         }
-        extractBeanSpec(list, method);
+        extractBeanSpec(list, method, host);
         Collections.sort(list, CMP);
         return list;
     }
@@ -153,7 +152,7 @@ public class JsonDTOClassManager extends AppServiceBase<JsonDTOClassManager> {
         }
     }
 
-    private void extractBeanSpec(List<BeanSpec> beanSpecs, Method method) {
+    private void extractBeanSpec(List<BeanSpec> beanSpecs, Method method, Class host) {
         Type[] paramTypes = method.getGenericParameterTypes();
         int sz = paramTypes.length;
         if (0 == sz) {
@@ -162,6 +161,17 @@ public class JsonDTOClassManager extends AppServiceBase<JsonDTOClassManager> {
         Annotation[][] annotations = method.getParameterAnnotations();
         for (int i = 0; i < sz; ++i) {
             Type type = paramTypes[i];
+            if (type instanceof TypeVariable && !Modifier.isStatic(method.getModifiers())) {
+                // explore type variable impl
+                TypeVariable typeVar = $.cast(type);
+                String typeVarName = typeVar.getName();
+                // find all generic types on host
+                Map<String, Class> typeVarLookup = Generics.buildTypeParamImplLookup(host);
+                type = typeVarLookup.get(typeVarName);
+                if (null == type) {
+                    throw new UnexpectedException("Cannot determine concrete type of method parameter %s", typeVarName);
+                }
+            }
             Annotation[] anno = annotations[i];
             BeanSpec spec = BeanSpec.of(type, anno, injector);
             if (!ParamValueLoaderService.noBindOrProvided(spec, injector)) {

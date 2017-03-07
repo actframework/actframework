@@ -26,10 +26,7 @@ import org.osgl.mvc.annotation.Bind;
 import org.osgl.mvc.annotation.Param;
 import org.osgl.mvc.result.Result;
 import org.osgl.mvc.util.Binder;
-import org.osgl.util.C;
-import org.osgl.util.E;
-import org.osgl.util.S;
-import org.osgl.util.StringValueResolver;
+import org.osgl.util.*;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.context.Dependent;
@@ -123,7 +120,7 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
             Boolean hasValidationConstraint = methodValidationConstraintLookup.get(method);
             if (null == loaders) {
                 $.Var<Boolean> boolBag = $.var(Boolean.FALSE);
-                loaders = findMethodParamLoaders(method, boolBag);
+                loaders = findMethodParamLoaders(method, host.getClass(), boolBag);
                 methodRegistry.putIfAbsent(method, loaders);
                 hasValidationConstraint = boolBag.get();
                 if (hasValidationConstraint && null == host) {
@@ -221,7 +218,7 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
         return fieldLoaders;
     }
 
-    protected ParamValueLoader[] findMethodParamLoaders(Method method, $.Var<Boolean> hasValidationConstraint) {
+    protected ParamValueLoader[] findMethodParamLoaders(Method method, Class host, $.Var<Boolean> hasValidationConstraint) {
         Type[] types = method.getGenericParameterTypes();
         int sz = types.length;
         if (0 == sz) {
@@ -231,7 +228,15 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
         Annotation[][] annotations = method.getParameterAnnotations();
         for (int i = 0; i < sz; ++i) {
             String name = paramName(i);
-            BeanSpec spec = BeanSpec.of(types[i], annotations[i], name, injector);
+            Type type = types[i];
+            if (type instanceof TypeVariable) {
+                TypeVariable var = $.cast(type);
+                type = Generics.buildTypeParamImplLookup(host).get(var.getName());
+                if (null == type) {
+                    throw new UnexpectedException("Cannot infer param type: %s", var.getName());
+                }
+            }
+            BeanSpec spec = BeanSpec.of(type, annotations[i], name, injector);
             if (hasValidationConstraint(spec)) {
                 hasValidationConstraint.set(true);
             }

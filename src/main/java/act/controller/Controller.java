@@ -96,6 +96,14 @@ public @interface Controller {
             return Created.withLocation(resourceGetUrl);
         }
 
+        /**
+         * Return a {@link Created} result
+         * @return the result as described
+         */
+        public static Created created() {
+            return Created.INSTANCE;
+        }
+
         public static NotModified notModified() {
             return NotModified.get();
         }

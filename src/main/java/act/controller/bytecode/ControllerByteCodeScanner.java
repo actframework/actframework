@@ -220,6 +220,9 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
                 this.signature = signature;
                 this.exceptions = exceptions;
                 this.isStatic = isStatic(access);
+                if (classInfo.isAbstract()) {
+                    this.isVirtual.set(true);
+                }
                 if (isRoutedMethod) {
                     markRequireScan();
                 }
