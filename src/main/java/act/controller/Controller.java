@@ -233,8 +233,12 @@ public @interface Controller {
             notFoundIf(!test, msg, args);
         }
 
-        public static Result badRequest() {
+        public static BadRequest badRequest() {
             return ActBadRequest.create();
+        }
+
+        public static BadRequest badRequest(String msg, Object... args) {
+            return ActBadRequest.create(msg, args);
         }
 
         public static void badRequestIf(boolean test) {
@@ -283,11 +287,11 @@ public @interface Controller {
             badRequestIf(!test, msg, args);
         }
 
-        public static Result conflict() {
+        public static Conflict conflict() {
             return ActConflict.create();
         }
 
-        public static Result conflict(String message, Object... args) {
+        public static Conflict conflict(String message, Object... args) {
             return ActConflict.create(message, args);
         }
 
@@ -342,8 +346,20 @@ public @interface Controller {
         /**
          * Returns a {@link Forbidden} result
          */
-        public static Result forbidden() {
+        public static Forbidden forbidden() {
             return ActForbidden.create();
+        }
+
+        /**
+         * Returns a {@link Forbidden} result with custom message
+         * template and arguments. The final message is rendered with
+         * the template and arguments using {@link String#format(String, Object...)}
+         *
+         * @param msg  the message template
+         * @param args the message argument
+         */
+        public static Forbidden forbidden(String msg, Object... args) {
+            return ActForbidden.create(msg, args);
         }
 
         /**
@@ -364,18 +380,6 @@ public @interface Controller {
          */
         public static void forbiddenIfNot(boolean test) {
             forbiddenIf(!test);
-        }
-
-        /**
-         * Returns a {@link Forbidden} result with custom message
-         * template and arguments. The final message is rendered with
-         * the template and arguments using {@link String#format(String, Object...)}
-         *
-         * @param msg  the message template
-         * @param args the message argument
-         */
-        public static Result forbidden(String msg, Object... args) {
-            return ActForbidden.create(msg, args);
         }
 
         /**
@@ -402,7 +406,7 @@ public @interface Controller {
             forbiddenIf(!test, msg, args);
         }
 
-        public static Result redirect(String url, Object... args) {
+        public static Redirect redirect(String url, Object... args) {
             return Redirect.of(url, args);
         }
 
@@ -414,7 +418,7 @@ public @interface Controller {
          * @param msg  the message format template
          * @param args the message format arguments
          */
-        public static Result text(String msg, Object... args) {
+        public static RenderText text(String msg, Object... args) {
             return RenderText.of(successStatus(), msg, args);
         }
 
@@ -424,7 +428,7 @@ public @interface Controller {
          * @param args the message format arguments
          * @return the result
          */
-        public static Result renderText(String msg, Object... args) {
+        public static RenderText renderText(String msg, Object... args) {
             return text(msg, args);
         }
 
@@ -437,7 +441,7 @@ public @interface Controller {
          * @param args the message format arguments
          * @return the result
          */
-        public static Result html(String msg, Object... args) {
+        public static RenderHtml html(String msg, Object... args) {
             return RenderHtml.of(successStatus(), msg, args);
         }
 
@@ -447,7 +451,7 @@ public @interface Controller {
          * @param args the message format arguments
          * @return the result
          */
-        public static Result renderHtml(String msg, Object args) {
+        public static RenderHtml renderHtml(String msg, Object args) {
             return html(msg, args);
         }
 
@@ -460,7 +464,7 @@ public @interface Controller {
          * @param args the message format arguments
          * @return the result
          */
-        public static Result json(String msg, Object... args) {
+        public static RenderJSON json(String msg, Object... args) {
             return RenderJSON.of(successStatus(), msg, args);
         }
 
@@ -470,7 +474,7 @@ public @interface Controller {
          * @param args the message format arguments
          * @return the result
          */
-        public static Result renderJson(String msg, Object... args) {
+        public static RenderJSON renderJson(String msg, Object... args) {
             return json(msg, args);
         }
 
@@ -481,7 +485,7 @@ public @interface Controller {
          * @param data the data to be rendered as JSON string
          * @return the result
          */
-        public static Result json(Object data) {
+        public static RenderJSON json(Object data) {
             return RenderJSON.of(successStatus(), data);
         }
 
@@ -490,7 +494,7 @@ public @interface Controller {
          * @param data the data to be rendered as JSON string
          * @return the result
          */
-        public static Result renderJson(Object data) {
+        public static RenderJSON renderJson(Object data) {
             return json(data);
         }
 
@@ -502,7 +506,7 @@ public @interface Controller {
          * @param data the varargs of Object to be put into the JSON map
          * @return the result
          */
-        public static Result jsonMap(Object... data) {
+        public static RenderJsonMap jsonMap(Object... data) {
             return RenderJsonMap.get();
         }
 
@@ -511,7 +515,7 @@ public @interface Controller {
          * @param data the data to be put into the JSON map
          * @return the result
          */
-        public static Result renderJsonMap(Object ... data) {
+        public static RenderJsonMap renderJsonMap(Object ... data) {
             return jsonMap(data);
         }
 
@@ -525,7 +529,7 @@ public @interface Controller {
          * @param args the message format arguments
          * @return the result
          */
-        public static Result xml(String msg, Object... args) {
+        public static RenderXML xml(String msg, Object... args) {
             return RenderXML.of(successStatus(), msg, args);
         }
 
@@ -535,7 +539,7 @@ public @interface Controller {
          * @param args the message format arguments
          * @return the result
          */
-        public static Result renderXml(String msg, Object... args) {
+        public static RenderXML renderXml(String msg, Object... args) {
             return xml(msg, args);
         }
 
@@ -546,7 +550,7 @@ public @interface Controller {
          * @param sobj the {@link ISObject} instance
          * @return the result
          */
-        public static Result binary(ISObject sobj) {
+        public static RenderBinary binary(ISObject sobj) {
             return new RenderBinary(sobj.asInputStream(), sobj.getAttribute(ISObject.ATTR_FILE_NAME), sobj.getAttribute(ISObject.ATTR_CONTENT_TYPE), true);
         }
 
@@ -555,7 +559,7 @@ public @interface Controller {
          * @param sobj the {@link ISObject} instance
          * @return the result
          */
-        public static Result renderBinary(ISObject sobj) {
+        public static RenderBinary renderBinary(ISObject sobj) {
             return binary(sobj);
         }
 
@@ -565,7 +569,7 @@ public @interface Controller {
          *
          * @param sobj the {@link ISObject} instance
          */
-        public static Result download(ISObject sobj) {
+        public static RenderBinary download(ISObject sobj) {
             return new RenderBinary(sobj.asInputStream(), sobj.getAttribute(ISObject.ATTR_FILE_NAME), sobj.getAttribute(ISObject.ATTR_CONTENT_TYPE), false);
         }
 
@@ -576,7 +580,7 @@ public @interface Controller {
          * @param file the file to be rendered
          * @return a result
          */
-        public static Result binary(File file) {
+        public static RenderBinary binary(File file) {
             return new RenderBinary(file);
         }
 
@@ -585,7 +589,7 @@ public @interface Controller {
          * @param file the file to be rendered
          * @return a result
          */
-        public static Result renderBinary(File file) {
+        public static RenderBinary renderBinary(File file) {
             return binary(file);
         }
 
@@ -596,7 +600,7 @@ public @interface Controller {
          * @param outputStreamWriter the delayed writer
          * @return the result
          */
-        public static Result binary($.Function<OutputStream, ?> outputStreamWriter) {
+        public static RenderBinary binary($.Function<OutputStream, ?> outputStreamWriter) {
             return new RenderBinary(outputStreamWriter);
         }
 
@@ -605,7 +609,7 @@ public @interface Controller {
          * @param outputStreamWriter the delayed writer
          * @return the result
          */
-        public static Result renderBinary($.Function<OutputStream, ?> outputStreamWriter) {
+        public static RenderBinary renderBinary($.Function<OutputStream, ?> outputStreamWriter) {
             return binary(outputStreamWriter);
         }
 
@@ -615,7 +619,7 @@ public @interface Controller {
          *
          * @param file the file to be rendered
          */
-        public static Result download(File file) {
+        public static RenderBinary download(File file) {
             return new RenderBinary(file, file.getName(), false);
         }
 
@@ -663,7 +667,7 @@ public @interface Controller {
          * @param args the template arguments
          * @return a result to render template
          */
-        public static Result template(Map<String, Object> args) {
+        public static RenderTemplate template(Map<String, Object> args) {
             return RenderTemplate.of(args);
         }
 
@@ -673,8 +677,27 @@ public @interface Controller {
          * @param args the template arguments
          * @return a result to render template
          */
-        public static Result renderTemplate(Map<String, Object> args) {
+        public static RenderTemplate renderTemplate(Map<String, Object> args) {
             return template(args);
+        }
+
+        /**
+         * This method is deprecated, please use {@link #template(Object...)} instead
+         *
+         * @param args template argument list
+         */
+        public static RenderTemplate renderTemplate(Object... args) {
+            return RenderTemplate.get();
+        }
+
+        /**
+         * Kind of like {@link #render(Object...)}, the only differences is this method force to render a template
+         * without regarding to the request format
+         *
+         * @param args template argument list
+         */
+        public static RenderTemplate template(Object... args) {
+            return RenderTemplate.get(ActionContext.current().successStatus());
         }
 
         /**
@@ -705,29 +728,10 @@ public @interface Controller {
          * </tr>
          * </table>
          *
-         * @param args
+         * @param args any argument that can be put into the returned JSON/XML data or as template arguments
          */
-        public static Result render(Object... args) {
+        public static RenderAny render(Object... args) {
             return RenderAny.get();
-        }
-
-        /**
-         * This method is deprecated, please use {@link #template(Object...)} instead
-         *
-         * @param args template argument list
-         */
-        public static Result renderTemplate(Object... args) {
-            return RenderTemplate.get();
-        }
-
-        /**
-         * Kind of like {@link #render(Object...)}, the only differences is this method force to render a template
-         * without regarding to the request format
-         *
-         * @param args template argument list
-         */
-        public static Result template(Object... args) {
-            return RenderTemplate.get(ActionContext.current().successStatus());
         }
 
         public static Result inferResult(Result r, ActionContext actionContext) {
