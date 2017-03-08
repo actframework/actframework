@@ -18,6 +18,9 @@
 ********************************************
 *            version history
 ********************************************
+1.0.0
+- First formal release
+
 0.7.0
 - Validation refactory
 
@@ -65,7 +68,7 @@
   <groupId>org.actframework</groupId>
   <artifactId>act</artifactId>
   <packaging>jar</packaging>
-  <version>0.7.0-SNAPSHOT</version>
+  <version>1.0.0-SNAPSHOT</version>
 
   <name>ACT Framework</name>
   <description>The ACT full stack MVC framework</description>
@@ -92,7 +95,7 @@
     <junit-benchmarks.version>0.7.2</junit-benchmarks.version>
     <mockito-core.version>2.0.2-beta</mockito-core.version>
 
-    <act-asm.version>0.1.0-SNAPSHOT</act-asm.version>
+    <act-asm.version>5.0</act-asm.version>
     <cdi-api.version>1.2</cdi-api.version>
     <commons-codec.version>1.10</commons-codec.version>
     <commons-fileupload.version>1.3.2</commons-fileupload.version>
@@ -106,11 +109,11 @@
     <jline.version>2.14.3</jline.version>
     <joda-time.version>2.9.7</joda-time.version>
     <okhttp.version>3.6.0</okhttp.version>
-    <osgl-genie.version>0.5.0-SNAPSHOT</osgl-genie.version>
-    <osgl-mvc.version>0.9.0-SNAPSHOT</osgl-mvc.version>
-    <osgl-tool-ext.version>0.1.0-SNAPSHOT</osgl-tool-ext.version>
+    <osgl-genie.version>1.0.0</osgl-genie.version>
+    <osgl-mvc.version>1.0.0</osgl-mvc.version>
+    <osgl-tool-ext.version>1.0.0</osgl-tool-ext.version>
     <reflectasm.version>1.11.3</reflectasm.version>
-    <rythmengine.version>1.1.7-SNAPSHOT</rythmengine.version>
+    <rythmengine.version>1.1.7</rythmengine.version>
     <validation-api.version>1.1.0.Final</validation-api.version>
     <undertow.version>1.4.11.Final</undertow.version>
     <zxing.javase.version>3.3.0</zxing.javase.version>
@@ -178,6 +181,37 @@
           <debug>true</debug>
           <debuglevel>lines,vars,source</debuglevel>
         </configuration>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-javadoc-plugin</artifactId>
+        <version>2.9</version>
+        <configuration>
+          <stylesheetfile>src/etc/javadoc.css</stylesheetfile>
+          <quiet/>
+          <doclet>ch.raffael.doclets.pegdown.PegdownDoclet</doclet>
+          <docletArtifact>
+            <groupId>ch.raffael.pegdown-doclet</groupId>
+            <artifactId>pegdown-doclet</artifactId>
+            <version>1.1</version>
+          </docletArtifact>
+          <useStandardDocletOptions>true</useStandardDocletOptions>
+        </configuration>
+        <executions>
+          <execution>
+            <id>gen-javadoc</id>
+            <phase>prepare-package</phase>
+            <goals>
+              <goal>javadoc</goal>
+            </goals>
+          </execution>
+          <execution>
+            <id>attach-javadocs</id>
+            <goals>
+              <goal>jar</goal>
+            </goals>
+          </execution>
+        </executions>
       </plugin>
     </plugins>
   </build>
@@ -393,37 +427,6 @@
                     <descriptor>${basedir}/assembly-dist.xml</descriptor>
                   </descriptors>
                 </configuration>
-              </execution>
-            </executions>
-          </plugin>
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-javadoc-plugin</artifactId>
-            <version>2.9</version>
-            <configuration>
-              <stylesheetfile>src/etc/javadoc.css</stylesheetfile>
-              <quiet/>
-              <doclet>ch.raffael.doclets.pegdown.PegdownDoclet</doclet>
-              <docletArtifact>
-                <groupId>ch.raffael.pegdown-doclet</groupId>
-                <artifactId>pegdown-doclet</artifactId>
-                <version>1.1</version>
-              </docletArtifact>
-              <useStandardDocletOptions>true</useStandardDocletOptions>
-            </configuration>
-            <executions>
-              <execution>
-                <id>gen-javadoc</id>
-                <phase>prepare-package</phase>
-                <goals>
-                  <goal>javadoc</goal>
-                </goals>
-              </execution>
-              <execution>
-                <id>attach-javadocs</id>
-                <goals>
-                  <goal>jar</goal>
-                </goals>
               </execution>
             </executions>
           </plugin>
