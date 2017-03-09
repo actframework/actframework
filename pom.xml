@@ -18,6 +18,10 @@
 ********************************************
 *            version history
 ********************************************
+1.0.1
+- Fix #79 static action handler method cause NPE
+- Fix #81 Duplicate route mapping breaks the hot reloading and application state #81
+
 1.0.0
 - First formal release
 
