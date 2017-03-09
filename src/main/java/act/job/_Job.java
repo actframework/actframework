@@ -185,15 +185,19 @@ class _Job extends DestroyableBase implements Runnable {
                 }
             }
             if (isFatal) {
-                Act.shutdownApp(App.instance());
-                destroy();
-                if (App.instance().isMainThread()) {
-                    if (cause instanceof RuntimeException) {
-                        throw (RuntimeException) cause;
-                    }
-                    throw e;
+                if (Act.isDev()) {
+                    app.setBlockIssue(e);
                 } else {
-                    logger.fatal(null == cause ? e : cause, "Fatal error executing job %s", id());
+                    Act.shutdownApp(App.instance());
+                    destroy();
+                    if (App.instance().isMainThread()) {
+                        if (cause instanceof RuntimeException) {
+                            throw (RuntimeException) cause;
+                        }
+                        throw e;
+                    } else {
+                        logger.fatal(cause, "Fatal error executing job %s", id());
+                    }
                 }
                 return;
             }

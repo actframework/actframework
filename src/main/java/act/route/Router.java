@@ -113,6 +113,10 @@ public class Router extends AppServiceBase<Router> {
     // --- routing ---
     public RequestHandler getInvoker(H.Method method, CharSequence path, ActionContext context) {
         context.router(this);
+        RequestHandler handler = app().blockIssueHandler();
+        if (null != handler) {
+            return handler;
+        }
         if (method == H.Method.OPTIONS) {
             return optionHandlerFactory.optionHandler(path, context);
         }

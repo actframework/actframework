@@ -20,7 +20,9 @@ import act.data.util.ActPropertyHandlerFactory;
 import act.event.AppEventListenerBase;
 import act.event.EventBus;
 import act.event.bytecode.SimpleEventListenerByteCodeScanner;
+import act.handler.RequestHandler;
 import act.handler.builtin.StaticResourceGetter;
+import act.handler.builtin.controller.FastRequestHandler;
 import act.inject.DependencyInjectionBinder;
 import act.inject.DependencyInjector;
 import act.inject.genie.GenieInjector;
@@ -48,6 +50,7 @@ import org.osgl.http.HttpConfig;
 import org.osgl.logging.LogManager;
 import org.osgl.logging.Logger;
 import org.osgl.mvc.MvcConfig;
+import org.osgl.mvc.result.Result;
 import org.osgl.storage.IStorageService;
 import org.osgl.util.*;
 
@@ -114,6 +117,15 @@ public class App extends DestroyableBase {
     private Set<String> scanList;
     private List<File> baseDirs;
     private volatile File tmpDir;
+    private boolean restarting;
+    private Result blockIssue;
+    private RequestHandler blockIssueHandler = new FastRequestHandler() {
+        @Override
+        public void handle(ActionContext context) {
+            E.illegalArgumentIf(null == blockIssue);
+            blockIssue.apply(context.req(), context.resp());
+        }
+    };
 
     protected App() {
         INST = this;
@@ -333,6 +345,14 @@ public class App extends DestroyableBase {
         refresh();
     }
 
+    public synchronized void setBlockIssue(Exception e) {
+        if (e instanceof ActErrorResult) {
+            blockIssue = (ActErrorResult) e;
+        } else {
+            blockIssue = ActErrorResult.of(e);
+        }
+    }
+
     /**
      * In dev mode it could request app to refresh. However if
      * the request is issued in a thread that will be interrupted
@@ -365,7 +385,7 @@ public class App extends DestroyableBase {
         if (null == daemonRegistry) {
             return;
         }
-        logger.info("App shutting down ....");
+        LOGGER.info("App shutting down ....");
         if (null != classLoader && config().i18nEnabled()) {
             ResourceBundle.clearCache(classLoader);
         }
@@ -388,15 +408,29 @@ public class App extends DestroyableBase {
         }
     }
 
+    public synchronized boolean isRestarting() {
+        return restarting;
+    }
+
+    public RequestHandler blockIssueHandler() {
+        if (null != blockIssue && Act.isDev()) {
+            return blockIssueHandler;
+        }
+        return null;
+    }
+
     public synchronized void refresh() {
         currentState = null;
         long ms = $.ms();
-        logger.info("App starting ....");
+        LOGGER.info("App starting ....");
         profile = null;
+        blockIssue = null;
 
         initScanlist();
         initServiceResourceManager();
+        reload();
         mainThread = Thread.currentThread();
+        restarting = mainThread.getName().contains("job");
         eventEmitted = C.newSet();
 
         initSingletonRegistry();
@@ -477,7 +511,7 @@ public class App extends DestroyableBase {
         emit(PRE_START);
         emit(START);
         daemonKeeper();
-        logger.info("App[%s] loaded in %sms", name(), $.ms() - ms);
+        LOGGER.info("App[%s] loaded in %sms", name(), $.ms() - ms);
         emit(POST_START);
     }
 
