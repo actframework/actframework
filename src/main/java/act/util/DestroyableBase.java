@@ -33,6 +33,13 @@ public abstract class DestroyableBase implements Destroyable {
         return destroyed;
     }
 
+    /**
+     * Recover the destry state. Use this API with cautious
+     */
+    protected void reload() {
+        destroyed = false;
+    }
+
     protected void releaseResources() {}
 
     public Class<? extends Annotation> scope() {

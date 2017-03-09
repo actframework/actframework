@@ -127,7 +127,8 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
             Boolean hasValidationConstraint = methodValidationConstraintLookup.get(method);
             if (null == loaders) {
                 $.Var<Boolean> boolBag = $.var(Boolean.FALSE);
-                loaders = findMethodParamLoaders(method, host.getClass(), boolBag);
+                Class hostClass = null == host ? null : host.getClass();
+                loaders = findMethodParamLoaders(method, hostClass, boolBag);
                 methodRegistry.putIfAbsent(method, loaders);
                 hasValidationConstraint = boolBag.get();
                 if (hasValidationConstraint && null == host) {
@@ -260,7 +261,9 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
             Type type = types[i];
             if (type instanceof TypeVariable) {
                 TypeVariable var = $.cast(type);
-                type = Generics.buildTypeParamImplLookup(host).get(var.getName());
+                if (null != host) {
+                    type = Generics.buildTypeParamImplLookup(host).get(var.getName());
+                }
                 if (null == type) {
                     throw new UnexpectedException("Cannot infer param type: %s", var.getName());
                 }
