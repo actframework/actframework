@@ -53,7 +53,7 @@ public class CSRFTest extends EndpointTester {
         List<Cookie> cookies = cookies();
         List<Cookie> returnCookies = C.newList();
         for (Cookie cookie : cookies) {
-            if ("XSRF-TOKEN".equals(cookie.name())) {
+            if ("act-xsrf-token".equals(cookie.name())) {
                 csrf.set(cookie.value());
             } else {
                 returnCookies.add(cookie);
