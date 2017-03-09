@@ -3,19 +3,11 @@
 [![Join the chat at https://gitter.im/actframework/actframework](https://badges.gitter.im/actframework/actframework.svg)](https://gitter.im/actframework/actframework?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 ## 新闻
-* ACT 0.7.0 - 完全重写JSR303/349 Bean Validation集成部分
-* 一个ActFramework版本的[TodoBackend](http://www.todobackend.com/)项目: http://github.com/greenlaw110/todomvc-act
-* Actframework 正式登录[码云](https://git.oschina.net/actframework/actframework)以及[开源中国](http://www.oschina.net/p/actframework)
-* [TechEmpower Benchmark](https://www.techempower.com/benchmarks/)接受了
-Actframework [性能测试项目](https://github.com/TechEmpower/FrameworkBenchmarks/tree/master/frameworks/Java/act) 
-期待看到Act在即将来到的TechEmpower第14轮测试的表现
-* 一个三方的[性能测试](https://github.com/networknt/microservices-framework-benchmark)显示Act在简单情况下的性能
- 是Spring-boot的20倍
+* 2017-3-9 ACT 1.0.0 发布到maven中央库
 
 ## 项目状态
 
-* 当前稳定版本: 0.7.0-SNAPSHOT
-* 第一个正式版预计在2017年三月发行
+* 当前稳定版本: 1.0.0
 
 ## 安装
 
@@ -25,11 +17,11 @@ Actframework [性能测试项目](https://github.com/TechEmpower/FrameworkBenchm
     <dependency>
       <groupId>org.actframework</groupId>
       <artifactId>act</artifactId>
-      <version>0.7.0-SNAPSHOT</version>
+      <version>[1.0.0, 2.0.0)</version>
     </dependency>
 ```
 
-因为现在还是使用快照版发行,您还需要在`pom.xml`文件中加入下面的代码:
+如果需要使用快照版发行,您还需要在`pom.xml`文件中加入下面的代码:
 
 ```xml
   <parent>
