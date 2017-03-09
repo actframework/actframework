@@ -3,6 +3,7 @@
 [![Join the chat at https://gitter.im/actframework/actframework](https://badges.gitter.im/actframework/actframework.svg)](https://gitter.im/actframework/actframework?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 ## News
+* ACT 1.0.0 released to Maven Central repository
 * ACT 0.7.0-SNAPSHOT: rewrite JSR 303/349 Validation integration
 * A [TodoBackend](http://www.todobackend.com/) project written in ActFramework: http://github.com/greenlaw110/todomvc-act
 * Actframework 正式登录[码云](https://git.oschina.net/actframework/actframework)以及[开源中国](http://www.oschina.net/p/actframework)
@@ -14,8 +15,7 @@ shows Act's throughput is 20 times better than of Spring-boot in simple case
 
 ## Project status
 
-* Current stable version: 0.7.0-SNAPSHOT
-* The first public release is target to March 2017
+* Current stable version: 1.0.0
 
 ## Install
 
@@ -25,11 +25,11 @@ Add the following dependency into your `pom.xml` file
     <dependency>
       <groupId>org.actframework</groupId>
       <artifactId>act</artifactId>
-      <version>0.7.0-SNAPSHOT</version>
+      <version>[1.0.0, 2.0.0)</version>
     </dependency>
 ```
 
-Add the following snippet into your `pom.xml` file to get SNAPSHOT version:
+Add the following snippet into your `pom.xml` file if you want to get SNAPSHOT version:
 
 ```xml
   <parent>
