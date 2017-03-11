@@ -18,6 +18,10 @@
 ********************************************
 *            version history
 ********************************************
+1.0.2
+- Fix #86 It shall allow `null` value for enum type parameter when do the request parameter binding
+- Fix #87 DependencyInjectionListener shall register with sub classes of the target class also
+
 1.0.1
 - Fix #79 static action handler method cause NPE
 - Fix #81 Duplicate route mapping breaks the hot reloading and application state #81

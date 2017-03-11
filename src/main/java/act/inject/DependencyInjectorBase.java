@@ -2,9 +2,13 @@ package act.inject;
 
 import act.Destroyable;
 import act.app.App;
+import act.app.AppClassLoader;
 import act.app.AppServiceBase;
 import act.app.event.AppEventId;
+import act.util.ClassNode;
 import act.util.SubClassFinder;
+import org.osgl.$;
+import org.osgl.Osgl;
 import org.osgl.inject.BeanSpec;
 import org.osgl.util.C;
 
@@ -47,7 +51,16 @@ public abstract class DependencyInjectorBase<DI extends DependencyInjectorBase<D
         for (Class c : targets) {
             List<DependencyInjectionListener> list = listeners.get(c);
             if (null == list) {
-                list = C.newList();
+                final List<DependencyInjectionListener> list0 = C.newList();
+                list = list0;
+                final AppClassLoader cl = app().classLoader();
+                ClassNode node = cl.classInfoRepository().node(c.getName());
+                node.visitPublicNotAbstractTreeNodes(new $.Visitor<ClassNode>() {
+                    @Override
+                    public void visit(ClassNode classNode) throws Osgl.Break {
+                        listeners.put($.classForName(classNode.name(), cl), list0);
+                    }
+                });
                 listeners.put(c, list);
             }
             list.add(listener);
@@ -66,7 +79,7 @@ public abstract class DependencyInjectorBase<DI extends DependencyInjectorBase<D
     }
 
 
-    @SubClassFinder(value = DependencyInjectionListener.class, callOn = AppEventId.DEPENDENCY_INJECTOR_LOADED)
+    @SubClassFinder(value = DependencyInjectionListener.class, callOn = AppEventId.DEPENDENCY_INJECTOR_PROVISIONED)
     public static void discoverDiListener(final Class<? extends DependencyInjectionListener> target) {
         App app = App.instance();
         DependencyInjector di = app.injector();

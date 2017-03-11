@@ -45,6 +45,7 @@ public class StringValueResolverManager extends AppServiceBase<StringValueResolv
                 r = new StringValueResolver<T>(targetType) {
                     @Override
                     public T resolve(String value) {
+                        //TODO should we handle exception here?
                         return (T)Enum.valueOf(clazz, value);
                     }
                 };
@@ -52,12 +53,7 @@ public class StringValueResolverManager extends AppServiceBase<StringValueResolv
                 r = new StringValueResolver<T>(targetType) {
                     @Override
                     public T resolve(String value) {
-                        T e = (T) $.asEnum(clazz, value);
-                        if (null == e) {
-                            throw new IllegalArgumentException(
-                                    "No enum constant " + clazz.getCanonicalName() + "." + value);
-                        }
-                        return e;
+                        return (T) $.asEnum(clazz, value);
                     }
                 };
             }

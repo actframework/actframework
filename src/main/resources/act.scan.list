@@ -1,16 +1,17 @@
 # Put package/class names that needs Act to scan. It can be regular expressions
 act\..*Admin
-act.i18n.TimeZoneResolver
-act.i18n.LocaleResolver
 act.app.SingletonFinder
 act.app.util.SimpleRestfulServiceBase
-act.inject.genie.GenieInjector
-act.db.DbBind
-act.controller.builtin.CliOverHttp
 act.app.conf.AppConfigPlugin
-act.Info
+act.controller.builtin.CliOverHttp
+act.db.DbBind
 act.handler.builtin.controller.RequestHandlerProxy
+act.i18n.TimeZoneResolver
+act.i18n.LocaleResolver
+act.inject.DependencyInjectorBase
+act.inject.genie.GenieInjector
+act.Info
+act.util.AdaptiveRecordCodec
 act.validation.ValidationPlugin
 act.Zen
-act.util.AdaptiveRecordCodec
 org.osgl.util.FastJsonKvCodec
