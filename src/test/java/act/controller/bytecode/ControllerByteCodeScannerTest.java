@@ -166,6 +166,7 @@ public class ControllerByteCodeScannerTest extends TestBase {
     }
 
     @Test
+    @Ignore // moved to testapp
     public void testInheritedInterceptor() throws Exception {
         scan(ControllerWithInheritedInterceptor.class);
 
@@ -214,6 +215,7 @@ public class ControllerByteCodeScannerTest extends TestBase {
             classLoader.preloadClassFile(base, file);
         }
         classLoader.scan();
+        classLoader.controllerClassMetaInfoManager().buildControllerHierarchies();
         infoSrc.mergeActionMetaInfo(mockApp);
     }
 
