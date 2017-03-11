@@ -1,14 +1,17 @@
 package act.controller.meta;
 
+import act.Act;
 import act.app.App;
+import act.app.AppClassLoader;
+import act.app.event.AppEventId;
 import act.asm.Type;
-import act.util.AsmTypes;
+import act.util.ClassInfoRepository;
+import act.util.ClassNode;
 import act.util.DestroyableBase;
 import org.osgl.util.C;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
-import java.util.List;
 import java.util.Map;
 
 import static act.Destroyable.Util.destroyAll;
@@ -17,52 +20,28 @@ import static act.Destroyable.Util.destroyAll;
 public class ControllerClassMetaInfoManager extends DestroyableBase {
 
     private Map<String, ControllerClassMetaInfo> controllers = C.newMap();
-    private Map<Type, List<ControllerClassMetaInfo>> subTypeInfo = C.newMap();
-    private App app;
 
     @Inject
     public ControllerClassMetaInfoManager(App app) {
-        this.app = app;
+        app.jobManager().on(AppEventId.APP_CODE_SCANNED, new Runnable() {
+            @Override
+            public void run() {
+                buildControllerHierarchies();
+            }
+        });
     }
 
     @Override
     protected void releaseResources() {
         destroyAll(controllers.values(), ApplicationScoped.class);
         controllers.clear();
-        for (List<ControllerClassMetaInfo> l : subTypeInfo.values()) {
-            destroyAll(l);
-        }
-        subTypeInfo.clear();
         super.releaseResources();
     }
 
     public void registerControllerMetaInfo(ControllerClassMetaInfo metaInfo) {
         String className = Type.getObjectType(metaInfo.className()).getClassName();
         controllers.put(className, metaInfo);
-        if (metaInfo.isController()) {
-            Type superType = metaInfo.superType();
-            if (!AsmTypes.OBJECT_TYPE.equals(superType)) {
-                ControllerClassMetaInfo superInfo = controllerMetaInfo(superType.getClassName());
-                if (null != superInfo) {
-                    metaInfo.parent(superInfo);
-                }
-                List<ControllerClassMetaInfo> subTypes = subTypeInfo.get(superType);
-                if (null == subTypes) {
-                    subTypes = C.newList();
-                    subTypeInfo.put(superType, subTypes);
-                }
-                subTypes.add(metaInfo);
-            }
-        }
-        List<ControllerClassMetaInfo> subTypes = subTypeInfo.get(metaInfo.type());
-        if (null != subTypes) {
-            for (ControllerClassMetaInfo subTypeInfo : subTypes) {
-                subTypeInfo.parent(metaInfo);
-            }
-            subTypeInfo.remove(metaInfo.type());
-        }
-        app.eventBus().trigger(new ControllerMetaInfoRegistered(metaInfo));
-        App.logger.trace("Controller meta info registered for: %s", className);
+        App.LOGGER.trace("Controller meta info registered for: %s", className);
     }
 
     public ControllerClassMetaInfo controllerMetaInfo(String className) {
@@ -72,6 +51,33 @@ public class ControllerClassMetaInfoManager extends DestroyableBase {
     public void mergeActionMetaInfo(App app) {
         for (ControllerClassMetaInfo info : controllers.values()) {
             info.merge(this, app);
+        }
+    }
+
+    public void buildControllerHierarchies() {
+        AppClassLoader cl = Act.app().classLoader();
+        ControllerClassMetaInfoManager manager = cl.controllerClassMetaInfoManager();
+        ClassInfoRepository repo = cl.classInfoRepository();
+        for (ControllerClassMetaInfo info : manager.controllers.values()) {
+            buildSuperClassMetaInfo(info, manager, repo);
+        }
+    }
+
+    private static void buildSuperClassMetaInfo(ControllerClassMetaInfo info, ControllerClassMetaInfoManager manager, ClassInfoRepository repo) {
+        String className = info.className();
+        ClassNode node = repo.node(className);
+        if (null == node) {
+            return;
+        }
+        ClassNode parent = node.parent();
+        final String OBJECT = Object.class.getName();
+        while (null != parent && !OBJECT.equals(parent.name())) {
+            ControllerClassMetaInfo parentInfo = manager.controllerMetaInfo(parent.name());
+            if (null != parentInfo) {
+                info.parent(parentInfo);
+                break;
+            }
+            parent = parent.parent();
         }
     }
 
