@@ -4,6 +4,7 @@ import act.util.DestroyableBase;
 import org.osgl.exception.ConfigurationException;
 import org.osgl.exception.UnexpectedNewInstanceException;
 import org.osgl.util.C;
+import org.osgl.util.S;
 
 import java.util.HashMap;
 import java.util.List;
@@ -64,6 +65,17 @@ public abstract class Config<E extends ConfigKey> extends DestroyableBase {
         } else {
             return (T) o;
         }
+    }
+
+    public Integer getInteger(ConfigKey key) {
+        Object retVal = get(key);
+        if (null == retVal) {
+            return null;
+        }
+        if (retVal instanceof Number) {
+            return ((Number) retVal).intValue();
+        }
+        return Integer.parseInt(S.string(retVal));
     }
 
     boolean hasConfiguration(ConfigKey key) {
