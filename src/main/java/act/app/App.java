@@ -53,6 +53,7 @@ import org.osgl.mvc.MvcConfig;
 import org.osgl.mvc.result.Result;
 import org.osgl.storage.IStorageService;
 import org.osgl.util.*;
+import org.rythmengine.utils.I18N;
 
 import javax.enterprise.context.ApplicationScoped;
 import java.io.File;
@@ -387,7 +388,10 @@ public class App extends DestroyableBase {
         }
         LOGGER.info("App shutting down ....");
         if (null != classLoader && config().i18nEnabled()) {
+            // clear resource bundle cache for Act I18n
             ResourceBundle.clearCache(classLoader);
+            // clear resource bundle cache for Rythm I18n
+            ResourceBundle.clearCache(I18N.class.getClassLoader());
         }
 
         for (Daemon d : daemonRegistry.values()) {

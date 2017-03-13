@@ -285,7 +285,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
 
     public int corsMaxAge() {
         if (null == corsMaxAge) {
-            Integer I = get(CORS_MAX_AGE);
+            Integer I = getInteger(CORS_MAX_AGE);
             if (null == I) {
                 I = 30 * 60;
             }
@@ -464,7 +464,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
 
     public int cliTablePageSize() {
         if (-1 == cliTablePageSz) {
-            Integer I = get(CLI_PAGE_SIZE_TABLE);
+            Integer I = getInteger(CLI_PAGE_SIZE_TABLE);
             if (null == I) {
                 I = 22;
             }
@@ -489,7 +489,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
 
     public int cliJSONPageSize() {
         if (-1 == cliJSONPageSz) {
-            Integer I = get(CLI_PAGE_SIZE_TABLE);
+            Integer I = getInteger(CLI_PAGE_SIZE_TABLE);
             if (null == I) {
                 I = 22;
             }
@@ -650,7 +650,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
 
     public int cliSessionExpiration() {
         if (-1 == cliSessionExpiration) {
-            Integer I = get(CLI_SESSION_EXPIRATION);
+            Integer I = getInteger(CLI_SESSION_EXPIRATION);
             if (null == I) {
                 I = 300;
             }
@@ -757,7 +757,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
 
     public int maxCliSession() {
         if (-1 == maxCliSession) {
-            Integer I = get(CLI_SESSION_MAX);
+            Integer I = getInteger(CLI_SESSION_MAX);
             if (null == I) {
                 I = 3;
             }
@@ -1016,7 +1016,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     }
     public int ipEffectiveBytes() {
         if (null == ipEffectiveBytes) {
-            ipEffectiveBytes = get(ID_GEN_NODE_ID_EFFECTIVE_IP_BYTES);
+            ipEffectiveBytes = getInteger(ID_GEN_NODE_ID_EFFECTIVE_IP_BYTES);
             if (null == ipEffectiveBytes) {
                 ipEffectiveBytes = 4;
             }
@@ -1192,7 +1192,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     }
     public int httpMaxParams() {
         if (-1 == httpMaxParams) {
-            Integer I = get(HTTP_MAX_PARAMS);
+            Integer I = getInteger(HTTP_MAX_PARAMS);
             if (null == I) {
                 I = 128;
             }
@@ -1219,7 +1219,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
 
     public int jobPoolSize() {
         if (-1 == jobPoolSize) {
-            Integer I = get(JOB_POOL_SIZE);
+            Integer I = getInteger(JOB_POOL_SIZE);
             if (null == I) {
                 I = 10;
             }
@@ -1940,7 +1940,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
 
     public int sessionTtl() {
         if (null == sessionTtl) {
-            sessionTtl = get(AppConfigKey.SESSION_TTL);
+            sessionTtl = getInteger(AppConfigKey.SESSION_TTL);
             if (null == sessionTtl) {
                 sessionTtl = 60 * 30;
             }
@@ -2234,7 +2234,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     }
     public int resourcePreloadSizeLimit() {
         if (null == resourcePreloadSizeLimit) {
-            resourcePreloadSizeLimit = get(RESOURCE_PRELOAD_SIZE_LIMIT);
+            resourcePreloadSizeLimit = getInteger(RESOURCE_PRELOAD_SIZE_LIMIT);
             if (null == resourcePreloadSizeLimit) {
                 resourcePreloadSizeLimit = 1024 * 10;
             } else if (resourcePreloadSizeLimit <= 0) {
