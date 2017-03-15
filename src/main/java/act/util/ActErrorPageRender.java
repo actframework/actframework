@@ -48,14 +48,13 @@ public class ActErrorPageRender extends ErrorPageRenderer {
             if (H.Format.JSON == accept) {
                 return jsonContent(error, errorCode, errorMsg);
             } else if (H.Format.HTML == accept) {
-                String header = "HTTP/1.1 " + statusCode + " " + errorMsg;
-                String content = "<!DOCTYPE html><html><head><title>"
-                        + header
-                        + "</title></head><body><h1>"
-                        + header + "</h1></body></html>";
-                return content;
+                String header = S.concat("HTTP/1.1 ", Integer.toString(statusCode), " ", errorMsg);
+                return S.concat("<!DOCTYPE html><html><head><meta charset='utf-8'><title>"
+                        , header
+                        , "</title></head><body><h1>"
+                        , header, "</h1></body></html>");
             } else if (H.Format.XML == accept) {
-                S.Buffer sb = S.newBuffer();
+                S.Buffer sb = context.strBuf();
                 sb.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?><error>");
                 if (null != errorCode) {
                     sb.append("<code>").append(errorCode).append("</code");
@@ -64,12 +63,12 @@ public class ActErrorPageRender extends ErrorPageRenderer {
                 return sb.toString();
             } else if (H.Format.CSV == accept) {
                 if (null == errorCode) {
-                    return "message\n" + errorMsg;
+                    return S.concat("message\n", errorMsg);
                 } else {
-                    return "code,message\n" + errorCode + "," + errorMsg;
+                    return S.concat("code,message\n", Integer.toString(errorCode), ",", errorMsg);
                 }
             } else if (H.Format.TXT == accept) {
-                return null == errorCode ? errorMsg : errorCode + " " + errorMsg;
+                return null == errorCode ? errorMsg : S.concat(Integer.toString(errorCode), " ", errorMsg);
             } else {
                 // Unknown accept format
                 return "";
