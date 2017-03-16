@@ -453,7 +453,15 @@
             <groupId>com.mycila.maven-license-plugin</groupId>
             <artifactId>maven-license-plugin</artifactId>
             <configuration>
-              <header>src/etc/header.txt</header>
+              <header>etc/header.txt</header>
+              <headerDefinitions>
+                <headerDefinition>etc/headerStyle.xml</headerDefinition>
+              </headerDefinitions>
+              <excludes>
+                <exclude>**/README</exclude>
+                <exclude>src/test/resources/**</exclude>
+                <exclude>src/main/resources/**</exclude>
+              </excludes>
             </configuration>
           </plugin>
         </plugins>
