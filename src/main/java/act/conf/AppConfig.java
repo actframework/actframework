@@ -102,6 +102,8 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         sessionKeyUsername();
         sessionSecure();
         sessionTtl();
+
+        MvcConfig.renderJsonOutputCharset(renderJsonOutputCharset());
     }
 
     public App app() {
@@ -1786,6 +1788,26 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         }
     }
 
+    private Boolean renderJsonOutputCharset;
+    protected T renderJsonOutputCharset(boolean outputCharset) {
+        this.renderJsonOutputCharset = outputCharset;
+        return me();
+    }
+    public boolean renderJsonOutputCharset() {
+        if (null == renderJsonOutputCharset) {
+            renderJsonOutputCharset = get(RENDER_JSON_OUTPUT_CHARSET);
+            if (null == renderJsonOutputCharset) {
+                renderJsonOutputCharset = true;
+            }
+        }
+        return renderJsonOutputCharset;
+    }
+    private void _mergeRenderJsonOutputCharset(AppConfig config) {
+        if (!hasConfiguration(RENDER_JSON_OUTPUT_CHARSET)) {
+            renderJsonOutputCharset = config.renderJsonOutputCharset;
+        }
+    }
+
     private String serverHeader;
 
     protected T serverHeader(String header) {
@@ -2381,6 +2403,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         _mergeTemplateHome(conf);
         _mergeDefaultView(conf);
         _mergePingPath(conf);
+        _mergeRenderJsonOutputCharset(conf);
         _mergeServerHeader(conf);
         _mergeCookiePrefix(conf);
         _mergeSessionCookieName(conf);
