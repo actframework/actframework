@@ -592,6 +592,15 @@ public enum AppConfigKey implements ConfigKey {
      */
     PROFILE("profile"),
 
+    /**
+     * `render.json.output_charset`
+     *
+     * Specifies output charset in `application/json` response header `Content-Type`
+     *
+     * Default value: `false`
+     */
+    RENDER_JSON_OUTPUT_CHARSET("render.json.output_charset.enabled"),
+
 
     /**
      * {@code resolver.error_template_path.impl} specifies error page (template)
