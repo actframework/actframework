@@ -19,4 +19,5 @@ public class AppConfigPlugin  {
         configurator.configure();
         app.config()._merge(configurator);
     }
+
 }

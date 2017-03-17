@@ -601,6 +601,17 @@ public enum AppConfigKey implements ConfigKey {
      */
     RENDER_JSON_OUTPUT_CHARSET("render.json.output_charset.enabled"),
 
+    /**
+     * `render.json.content_type.ie`
+     *
+     * Internet Explorer is know to have an issue with `application/json` content type.
+     * if this configuration is set, the framework will output Content-Type header using
+     * the setting when the request is detected as initialized from IE browser.
+     *
+     * Default value: `null`
+     */
+    RENDER_JSON_CONTENT_TYPE_IE("render.json.content_type.ie"),
+
 
     /**
      * {@code resolver.error_template_path.impl} specifies error page (template)
