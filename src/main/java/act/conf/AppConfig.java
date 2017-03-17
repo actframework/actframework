@@ -20,14 +20,17 @@ import act.util.*;
 import act.view.TemplatePathResolver;
 import act.view.View;
 import org.osgl.$;
+import org.osgl.Osgl;
 import org.osgl.cache.CacheService;
 import org.osgl.cache.CacheServiceProvider;
 import org.osgl.exception.ConfigurationException;
+import org.osgl.exception.NotAppliedException;
 import org.osgl.http.H;
 import org.osgl.logging.L;
 import org.osgl.logging.Logger;
 import org.osgl.mvc.MvcConfig;
 import org.osgl.util.*;
+import org.osgl.web.util.UserAgent;
 
 import javax.inject.Provider;
 import java.io.File;
@@ -104,6 +107,10 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         sessionTtl();
 
         MvcConfig.renderJsonOutputCharset(renderJsonOutputCharset());
+        Osgl.Func0<H.Format> jsonContentProvider = jsonContentTypeProvider();
+        if (null != jsonContentTypeProvider) {
+            MvcConfig.jsonMediaTypeProvider(jsonContentProvider);
+        }
     }
 
     public App app() {
@@ -1788,6 +1795,53 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         }
     }
 
+    private Osgl.Func0<H.Format> jsonContentTypeProvider = null;
+    private Boolean renderJsonIeFix = null;
+    private H.Format jsonIE;
+    protected T renderJsonContentTypeIE(final String contentType) {
+        setRenderJsonContenTypeIE(contentType);
+        return me();
+    }
+    private void setRenderJsonContenTypeIE(final String contentType) {
+        if (H.Format.JSON.contentType().equalsIgnoreCase(contentType)) {
+            renderJsonIeFix = false;
+            return;
+        }
+        renderJsonIeFix = true;
+        jsonIE = H.Format.of("json_ie", contentType);
+        jsonContentTypeProvider = new Osgl.Func0<H.Format>() {
+            @Override
+            public H.Format apply() throws NotAppliedException, Osgl.Break {
+                ActionContext context = ActionContext.current();
+                if (null != context) {
+                    UserAgent ua = context.userAgent();
+                    if (ua.isIE()) {
+                        return jsonIE;
+                    }
+                }
+                return H.Format.JSON;
+            }
+        };
+    }
+    public Osgl.Func0<H.Format> jsonContentTypeProvider() {
+        if (null == renderJsonIeFix) {
+            String contentType = get(RENDER_JSON_CONTENT_TYPE_IE);
+            if (null != contentType) {
+                setRenderJsonContenTypeIE(contentType);
+            } else {
+                renderJsonIeFix = false;
+            }
+        }
+        return renderJsonIeFix ? jsonContentTypeProvider : null;
+    }
+    private void _mergeRenderJsonContentTypeIE(AppConfig conf) {
+        if (!hasConfiguration(RENDER_JSON_CONTENT_TYPE_IE)) {
+            jsonContentTypeProvider = conf.jsonContentTypeProvider;
+            renderJsonIeFix = conf.renderJsonIeFix;
+            jsonIE = conf.jsonIE;
+        }
+    }
+
     private Boolean renderJsonOutputCharset;
     protected T renderJsonOutputCharset(boolean outputCharset) {
         this.renderJsonOutputCharset = outputCharset;
@@ -2403,6 +2457,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         _mergeTemplateHome(conf);
         _mergeDefaultView(conf);
         _mergePingPath(conf);
+        _mergeRenderJsonContentTypeIE(conf);
         _mergeRenderJsonOutputCharset(conf);
         _mergeServerHeader(conf);
         _mergeCookiePrefix(conf);
