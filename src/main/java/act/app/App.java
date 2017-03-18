@@ -450,8 +450,6 @@ public class App extends DestroyableBase {
         loadConfig();
         emit(CONFIG_LOADED);
 
-        Act.viewManager().reload(this);
-
         initCache();
         initDataPropertyRepository();
         initCrypto();
@@ -494,6 +492,8 @@ public class App extends DestroyableBase {
         //classLoader().loadClasses();
         emit(APP_CODE_SCANNED);
         emit(CLASS_LOADED);
+
+        Act.viewManager().reload(this);
 
         loadDependencyInjector();
         emit(DEPENDENCY_INJECTOR_LOADED);
