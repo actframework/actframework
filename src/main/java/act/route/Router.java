@@ -291,6 +291,9 @@ public class Router extends AppServiceBase<Router> {
     public String reverseRoute(String action, H.Method method, Map<String, Object> args) {
         Node root = root(method);
         Node node = root.reverseRoutes.get(action);
+        if (null == node) {
+            return null;
+        }
         C.List<String> elements = C.newList();
         args = new HashMap<>(args);
         while (root != node) {
