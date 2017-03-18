@@ -19,8 +19,9 @@
 *            version history
 ********************************************
 1.0.3
-- #94 Invalid encoded characters in Error page
-- #99 Update FastJson version to 1.2.28
+- #84  @fullUrl and @url tag doesn't work when there is no GET request mapping to the action handler method
+- #94  Invalid encoded characters in Error page
+- #99  Update FastJson version to 1.2.28
 - #100 when the browser get a json request, Chinese characters are not displayed properly
 - #101 IE doesn't support "application/json" content type
 - #104 Incorrectly configured routes should not crash hot-reload
