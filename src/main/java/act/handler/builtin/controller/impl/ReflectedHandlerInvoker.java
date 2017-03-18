@@ -185,6 +185,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
          * failed in the following cases:
          * a) this is a data endpoint and accept JSON data
          * b) there is no template associated with the endpoint
+         *   TODO: fix me - if method use arbitrary templates, then this check will fail
          */
         boolean failOnViolation = actionContext.acceptJson() || checkTemplate(actionContext);
 
