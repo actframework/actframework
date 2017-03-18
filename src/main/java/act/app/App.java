@@ -120,6 +120,7 @@ public class App extends DestroyableBase {
     private volatile File tmpDir;
     private boolean restarting;
     private Result blockIssue;
+    private Exception blockIssueCause;
     private RequestHandler blockIssueHandler = new FastRequestHandler() {
         @Override
         public void handle(ActionContext context) {
@@ -350,7 +351,12 @@ public class App extends DestroyableBase {
         if (e instanceof ActErrorResult) {
             blockIssue = (ActErrorResult) e;
         } else {
-            blockIssue = ActErrorResult.of(e);
+            if (null != classLoader()) {
+                blockIssue = ActErrorResult.of(e);
+                blockIssueCause = null;
+            } else {
+                blockIssueCause = e;
+            }
         }
     }
 
@@ -429,6 +435,7 @@ public class App extends DestroyableBase {
         LOGGER.info("App starting ....");
         profile = null;
         blockIssue = null;
+        blockIssueCause = null;
 
         initScanlist();
         initServiceResourceManager();
@@ -515,6 +522,9 @@ public class App extends DestroyableBase {
         emit(PRE_START);
         emit(START);
         daemonKeeper();
+        if (null != blockIssueCause) {
+            setBlockIssue(blockIssueCause);
+        }
         LOGGER.info("App[%s] loaded in %sms", name(), $.ms() - ms);
         emit(POST_START);
     }

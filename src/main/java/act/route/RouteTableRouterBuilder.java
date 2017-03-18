@@ -1,5 +1,6 @@
 package act.route;
 
+import act.Act;
 import org.osgl.http.H;
 import org.osgl.http.util.Path;
 import org.osgl.util.C;
@@ -100,7 +101,15 @@ public class RouteTableRouterBuilder implements RouterBuilder {
             String line = lines.get(i).trim();
             if (line.startsWith("#")) continue;
             if (S.blank(line)) continue;
-            process(line, router);
+            try {
+                process(line, router);
+            } catch (RuntimeException e) {
+                if (Act.isDev()) {
+                    router.app().setBlockIssue(e);
+                } else {
+                    throw e;
+                }
+            }
         }
     }
 
