@@ -271,6 +271,7 @@ public class Router extends AppServiceBase<Router> {
     }
 
     public String reverseRoute(String action, Map<String, Object> args) {
+        String fullAction = inferFullActionPath(action);
         for (H.Method m : supportedHttpMethods()) {
             String url = reverseRoute(action, m, args);
             if (null != url) {
@@ -278,6 +279,40 @@ public class Router extends AppServiceBase<Router> {
             }
         }
         return null;
+    }
+
+    // See https://github.com/actframework/actframework/issues/107
+    public static String inferFullActionPath(String actionPath) {
+        return inferFullActionPath(actionPath, null);
+    }
+
+    public static String inferFullActionPath(String actionPath, String currentActionPath) {
+        String handler, controller = null;
+        int pos = actionPath.indexOf(".");
+        if (pos < 0) {
+            handler = actionPath;
+        } else {
+            controller = actionPath.substring(0, pos);
+            handler = actionPath.substring(pos + 1, actionPath.length());
+            if (handler.indexOf(".") > 0) {
+                // it's a full path, not shortcut
+                return actionPath;
+            }
+        }
+        String currentPath = currentActionPath;
+        if (null == currentActionPath) {
+            ActionContext context = ActionContext.current();
+            E.illegalStateIf(null == context, "cannot use shortcut action path outside of a request handling context");
+            currentPath = context.actionPath();
+        }
+        pos = currentPath.lastIndexOf(".");
+        String currentPathWithoutHandler = currentPath.substring(0, pos);
+        if (null == controller) {
+            return S.concat(currentPathWithoutHandler, ".", handler);
+        }
+        pos = currentPathWithoutHandler.lastIndexOf(".");
+        String currentPathWithoutController = currentPathWithoutHandler.substring(0, pos);
+        return S.concat(currentPathWithoutController, ".", controller, ".", handler);
     }
 
     public String reverseRoute(String action, Map<String, Object> args, boolean fullUrl) {

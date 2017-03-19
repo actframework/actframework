@@ -1,7 +1,5 @@
 package act.route;
 
-import act.app.App;
-import act.conf.AppConfig;
 import act.controller.ParamNames;
 import act.handler.RequestHandler;
 import act.handler.builtin.AlwaysNotFound;
@@ -10,12 +8,9 @@ import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.osgl.http.H;
-import org.osgl.mvc.result.NotFound;
 import org.osgl.util.C;
 
 import java.io.File;
-import java.util.Map;
-import java.util.Properties;
 
 import static act.route.RouteSource.*;
 import static org.osgl.http.H.Method.GET;
@@ -148,16 +143,24 @@ public class RouterTest extends RouterTestBase {
 
     @Test
     public void testReverseRoute() {
-        router.addMapping(GET, "/foo/bar", "Foo.bar");
-        eq(router.reverseRoute("Foo.bar"), "/foo/bar");
-        eq(router.reverseRoute("Foo.bar", C.<String, Object>map("foo", "bar")), "/foo/bar?foo=bar");
+        router.addMapping(GET, "/foo/bar", "pkg.Foo.bar");
+        eq(router.reverseRoute("pkg.Foo.bar"), "/foo/bar");
+        eq(router.reverseRoute("pkg.Foo.bar", C.<String, Object>map("foo", "bar")), "/foo/bar?foo=bar");
     }
 
     @Test
     public void testReverseRouteWithPathVar() {
-        router.addMapping(GET, "/foo/{fooId}/bar/{barId}", "Foo.bar");
-        eq(router.reverseRoute("Foo.bar"), "/foo/{fooId}/bar/{barId}");
-        eq(router.reverseRoute("Foo.bar", C.<String, Object>map("fooId", 1, "barId", 3)), "/foo/1/bar/3");
+        router.addMapping(GET, "/foo/{fooId}/bar/{barId}", "pkg.Foo.bar");
+        eq(router.reverseRoute("pkg.Foo.bar"), "/foo/{fooId}/bar/{barId}");
+        eq(router.reverseRoute("pkg.Foo.bar", C.<String, Object>map("fooId", 1, "barId", 3)), "/foo/1/bar/3");
+    }
+
+    @Test
+    public void testInferFullActionPath() {
+        String currentActionPath = "com.my.comp.proj_a.controller.MyController.login";
+        eq("com.my.comp.proj_a.controller.MyController.home", Router.inferFullActionPath("home", currentActionPath));
+        eq("com.my.comp.proj_a.controller.YourController.home", Router.inferFullActionPath("YourController.home", currentActionPath));
+        eq("pkg.YourController.home", Router.inferFullActionPath("pkg.YourController.home", currentActionPath));
     }
 
 }
