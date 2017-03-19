@@ -7,6 +7,9 @@ import act.handler.builtin.StaticFileGetter;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
+import org.osgl.$;
+import org.osgl.Osgl;
+import org.osgl.exception.NotAppliedException;
 import org.osgl.http.H;
 import org.osgl.util.C;
 
@@ -157,10 +160,16 @@ public class RouterTest extends RouterTestBase {
 
     @Test
     public void testInferFullActionPath() {
-        String currentActionPath = "com.my.comp.proj_a.controller.MyController.login";
-        eq("com.my.comp.proj_a.controller.MyController.home", Router.inferFullActionPath("home", currentActionPath));
-        eq("com.my.comp.proj_a.controller.YourController.home", Router.inferFullActionPath("YourController.home", currentActionPath));
-        eq("pkg.YourController.home", Router.inferFullActionPath("pkg.YourController.home", currentActionPath));
+        final String currentActionPath = "com.my.comp.proj_a.controller.MyController.login";
+        $.Func0<String> provider = new $.Func0<String>() {
+            @Override
+            public String apply() throws NotAppliedException, Osgl.Break {
+                return currentActionPath;
+            }
+        };
+        eq("com.my.comp.proj_a.controller.MyController.home", Router.inferFullActionPath("home", provider));
+        eq("com.my.comp.proj_a.controller.YourController.home", Router.inferFullActionPath("YourController.home", provider));
+        eq("pkg.YourController.home", Router.inferFullActionPath("pkg.YourController.home", provider));
     }
 
 }

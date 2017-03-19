@@ -85,11 +85,10 @@ public class ViewManager extends DestroyableBase {
             String amendedPath = resolver.resolveWithContextMethodPath(context);
             if (S.neq(amendedPath, path)) {
                 template = getTemplate(context, config, amendedPath);
+                if (null != template) {
+                    context.templatePath(amendedPath);
+                }
             }
-        }
-
-        if (null != template) {
-            context.cacheTemplate(template);
         }
         return template;
     }
@@ -128,6 +127,9 @@ public class ViewManager extends DestroyableBase {
             }
         } else if (multiViews) {
             preferredViews.put(templatePath, defView);
+        }
+        if (null != template) {
+            context.cacheTemplate(template);
         }
         return template;
     }

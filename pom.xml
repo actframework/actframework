@@ -26,6 +26,7 @@
 - #101 IE doesn't support "application/json" content type
 - #104 Incorrectly configured routes should not crash hot-reload
 - #106 Reloading View manager might break the hot reload process
+- #108 Simplify the use of `@url` and `@fullUrl` tag
 
 1.0.2
 - Fix #86 It shall allow `null` value for enum type parameter when do the request parameter binding

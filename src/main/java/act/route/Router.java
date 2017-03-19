@@ -11,8 +11,11 @@ import act.controller.ParamNames;
 import act.handler.*;
 import act.handler.builtin.*;
 import act.handler.builtin.controller.RequestHandlerProxy;
+import act.util.ActContext;
 import act.util.DestroyableBase;
 import org.osgl.$;
+import org.osgl.Osgl;
+import org.osgl.exception.NotAppliedException;
 import org.osgl.http.H;
 import org.osgl.http.util.Path;
 import org.osgl.logging.L;
@@ -273,7 +276,7 @@ public class Router extends AppServiceBase<Router> {
     public String reverseRoute(String action, Map<String, Object> args) {
         String fullAction = inferFullActionPath(action);
         for (H.Method m : supportedHttpMethods()) {
-            String url = reverseRoute(action, m, args);
+            String url = reverseRoute(fullAction, m, args);
             if (null != url) {
                 return url;
             }
@@ -281,12 +284,21 @@ public class Router extends AppServiceBase<Router> {
         return null;
     }
 
+    public static final $.Func0<String> DEF_ACTION_PATH_PROVIDER = new $.Func0<String>() {
+        @Override
+        public String apply() throws NotAppliedException, Osgl.Break {
+            ActContext context = ActContext.Base.currentContext();
+            E.illegalStateIf(null == context, "cannot use shortcut action path outside of a act context");
+            return context.methodPath();
+        }
+    };
+
     // See https://github.com/actframework/actframework/issues/107
     public static String inferFullActionPath(String actionPath) {
-        return inferFullActionPath(actionPath, null);
+        return inferFullActionPath(actionPath, DEF_ACTION_PATH_PROVIDER);
     }
 
-    public static String inferFullActionPath(String actionPath, String currentActionPath) {
+    public static String inferFullActionPath(String actionPath, $.Func0<String> currentActionPathProvider) {
         String handler, controller = null;
         int pos = actionPath.indexOf(".");
         if (pos < 0) {
@@ -299,12 +311,7 @@ public class Router extends AppServiceBase<Router> {
                 return actionPath;
             }
         }
-        String currentPath = currentActionPath;
-        if (null == currentActionPath) {
-            ActionContext context = ActionContext.current();
-            E.illegalStateIf(null == context, "cannot use shortcut action path outside of a request handling context");
-            currentPath = context.actionPath();
-        }
+        String currentPath = currentActionPathProvider.apply();
         pos = currentPath.lastIndexOf(".");
         String currentPathWithoutHandler = currentPath.substring(0, pos);
         if (null == controller) {
