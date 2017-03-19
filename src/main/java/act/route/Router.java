@@ -415,14 +415,28 @@ public class Router extends AppServiceBase<Router> {
     }
 
     public String fullUrl(String path, Object... args) {
+        path = S.fmt(path, args);
         if (path.startsWith("//") || path.startsWith("http")) {
             return path;
+        }
+        if (path.contains(".") || path.contains("(")) {
+            path = reverseRoute(path);
         }
         S.Buffer sb = S.newBuffer(urlBase());
         if (!path.startsWith("/")) {
             sb.append("/");
         }
         return sb.append(S.fmt(path, args)).toString();
+    }
+
+    /**
+     * Return full URL of reverse rout of specified action
+     * @param action the action path
+     * @param renderArgs the render arguments
+     * @return the full URL as described above
+     */
+    public String fullUrl(String action, Map<String, Object> renderArgs) {
+        return fullUrl(reverseRoute(action, renderArgs));
     }
 
     private static final Method M_FULL_URL = $.getMethod(Router.class, "fullUrl", String.class, Object[].class);
