@@ -110,7 +110,7 @@ public class HandlerEnhancer extends MethodVisitor implements Opcodes {
         Transformer(MethodNode mn, HandlerMethodMetaInfo meta) {
             this.mn = mn;
             this.meta = meta;
-            this.instructions = mn.instructions;
+            this.instructions = mergeRenderLineBreaks(mn.instructions);
         }
 
         void doIt() {
@@ -124,6 +124,45 @@ public class HandlerEnhancer extends MethodVisitor implements Opcodes {
                     cur.handle(insn);
                 }
             }
+        }
+
+        private InsnList mergeRenderLineBreaks(InsnList list) {
+            ListIterator<AbstractInsnNode> itr = list.iterator();
+            while (itr.hasNext()) {
+                AbstractInsnNode insn = itr.next();
+                if (isRenderLine(insn)) {
+                    mergeRenderLineBreaks(insn, list);
+                }
+            }
+            return list;
+        }
+
+        private void mergeRenderLineBreaks(AbstractInsnNode renderLine, InsnList list) {
+            AbstractInsnNode node = renderLine;
+            while (true) {
+                node = node.getPrevious();
+                if (node.getOpcode() == ANEWARRAY) {
+                    return;
+                } else if (node instanceof LabelNode) {
+                    AbstractInsnNode node0 = node.getPrevious();
+                    list.remove(node);
+                    node = node0;
+                }
+            }
+        }
+
+        static boolean isRenderLine(AbstractInsnNode insnNode) {
+            if (!(insnNode instanceof MethodInsnNode)) {
+                return false;
+            }
+            MethodInsnNode node = (MethodInsnNode) insnNode;
+            Type type = Type.getMethodType(node.desc);
+            Type retType = type.getReturnType();
+            return (isResult(retType) && node.desc.startsWith("([Ljava/lang/Object;)"));
+        }
+
+        static boolean isResult(Type type) {
+            return ResultClassLookup.isResult(type.getClassName());
         }
 
         private static abstract class InstructionHandler {
@@ -205,10 +244,6 @@ public class HandlerEnhancer extends MethodVisitor implements Opcodes {
                     }
                     injectThrowCode(n);
                 }
-            }
-
-            private boolean isResult(Type type) {
-                return ResultClassLookup.isResult(type.getClassName());
             }
 
             private String ctxFieldName() {

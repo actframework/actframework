@@ -19,6 +19,7 @@
 *            version history
 ********************************************
 1.0.3
+- #68  Error enhancing render arguments when break the statement into multiple lines
 - #84  @fullUrl and @url tag doesn't work when there is no GET request mapping to the action handler method
 - #94  Invalid encoded characters in Error page
 - #99  Update FastJson version to 1.2.28
