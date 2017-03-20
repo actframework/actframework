@@ -1,10 +1,31 @@
 package act.controller;
 
+/*-
+ * #%L
+ * ACT Framework
+ * %%
+ * Copyright (C) 2014 - 2017 ActFramework
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * #L%
+ */
+
 import act.Act;
 import act.app.ActionContext;
 import act.conf.AppConfigKey;
 import act.controller.meta.HandlerMethodMetaInfo;
 import act.data.Versioned;
+import act.route.Router;
 import act.util.DisableFastJsonCircularReferenceDetect;
 import act.util.FastJsonIterable;
 import act.util.PropertySpec;
@@ -407,7 +428,20 @@ public @interface Controller {
         }
 
         public static Redirect redirect(String url, Object... args) {
-            return Redirect.of(url, args);
+            url = S.fmt(url, args);
+            if (url.contains(".") || url.contains("(")) {
+                String inferFullActionPath = Router.inferFullActionPath(url);
+                if (inferFullActionPath != url) {
+                    url = ActionContext.current().router().reverseRoute(url);
+                }
+            }
+            return Redirect.of(url);
+        }
+
+        public static Redirect redirect(String url, Map reverseRoutingArguments) {
+            url = Router.inferFullActionPath(url);
+            url = ActionContext.current().router().reverseRoute(url, reverseRoutingArguments);
+            return Redirect.of(url);
         }
 
         /**

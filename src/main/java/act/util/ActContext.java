@@ -1,5 +1,25 @@
 package act.util;
 
+/*-
+ * #%L
+ * ACT Framework
+ * %%
+ * Copyright (C) 2014 - 2017 ActFramework
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * #L%
+ */
+
 import act.Destroyable;
 import act.app.ActionContext;
 import act.app.App;
@@ -40,6 +60,12 @@ public interface ActContext<CTX_TYPE extends ActContext> extends ParamValueProvi
      * @return this {@code AppContext}
      */
     CTX_TYPE templatePath(String path);
+
+    /**
+     * Check if the template path is implicit i.e. derived from {@link #methodPath()}
+     * @return `true` if template path is implicit; `false` otherwise
+     */
+    boolean templatePathIsImplicit();
     Template cachedTemplate();
     CTX_TYPE cacheTemplate(Template template);
     <T> T renderArg(String name);
@@ -159,6 +185,16 @@ public interface ActContext<CTX_TYPE extends ActContext> extends ParamValueProvi
             template = null;
             this.templatePath = templatePath;
             return me();
+        }
+
+        /**
+         * Template path is implicit if {@link #templatePath(String)} is never called
+         * on this context instance
+         * @return `true` if template path is implicit
+         */
+        @Override
+        public boolean templatePathIsImplicit() {
+            return null == templatePath;
         }
 
         @Override

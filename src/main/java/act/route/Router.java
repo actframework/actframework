@@ -1,5 +1,25 @@
 package act.route;
 
+/*-
+ * #%L
+ * ACT Framework
+ * %%
+ * Copyright (C) 2014 - 2017 ActFramework
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * #L%
+ */
+
 import act.Act;
 import act.Destroyable;
 import act.app.ActionContext;
@@ -11,8 +31,11 @@ import act.controller.ParamNames;
 import act.handler.*;
 import act.handler.builtin.*;
 import act.handler.builtin.controller.RequestHandlerProxy;
+import act.util.ActContext;
 import act.util.DestroyableBase;
 import org.osgl.$;
+import org.osgl.Osgl;
+import org.osgl.exception.NotAppliedException;
 import org.osgl.http.H;
 import org.osgl.http.util.Path;
 import org.osgl.logging.L;
@@ -271,13 +294,52 @@ public class Router extends AppServiceBase<Router> {
     }
 
     public String reverseRoute(String action, Map<String, Object> args) {
+        String fullAction = inferFullActionPath(action);
         for (H.Method m : supportedHttpMethods()) {
-            String url = reverseRoute(action, m, args);
+            String url = reverseRoute(fullAction, m, args);
             if (null != url) {
                 return url;
             }
         }
         return null;
+    }
+
+    public static final $.Func0<String> DEF_ACTION_PATH_PROVIDER = new $.Func0<String>() {
+        @Override
+        public String apply() throws NotAppliedException, Osgl.Break {
+            ActContext context = ActContext.Base.currentContext();
+            E.illegalStateIf(null == context, "cannot use shortcut action path outside of a act context");
+            return context.methodPath();
+        }
+    };
+
+    // See https://github.com/actframework/actframework/issues/107
+    public static String inferFullActionPath(String actionPath) {
+        return inferFullActionPath(actionPath, DEF_ACTION_PATH_PROVIDER);
+    }
+
+    public static String inferFullActionPath(String actionPath, $.Func0<String> currentActionPathProvider) {
+        String handler, controller = null;
+        int pos = actionPath.indexOf(".");
+        if (pos < 0) {
+            handler = actionPath;
+        } else {
+            controller = actionPath.substring(0, pos);
+            handler = actionPath.substring(pos + 1, actionPath.length());
+            if (handler.indexOf(".") > 0) {
+                // it's a full path, not shortcut
+                return actionPath;
+            }
+        }
+        String currentPath = currentActionPathProvider.apply();
+        pos = currentPath.lastIndexOf(".");
+        String currentPathWithoutHandler = currentPath.substring(0, pos);
+        if (null == controller) {
+            return S.concat(currentPathWithoutHandler, ".", handler);
+        }
+        pos = currentPathWithoutHandler.lastIndexOf(".");
+        String currentPathWithoutController = currentPathWithoutHandler.substring(0, pos);
+        return S.concat(currentPathWithoutController, ".", controller, ".", handler);
     }
 
     public String reverseRoute(String action, Map<String, Object> args, boolean fullUrl) {
@@ -373,14 +435,28 @@ public class Router extends AppServiceBase<Router> {
     }
 
     public String fullUrl(String path, Object... args) {
+        path = S.fmt(path, args);
         if (path.startsWith("//") || path.startsWith("http")) {
             return path;
+        }
+        if (path.contains(".") || path.contains("(")) {
+            path = reverseRoute(path);
         }
         S.Buffer sb = S.newBuffer(urlBase());
         if (!path.startsWith("/")) {
             sb.append("/");
         }
         return sb.append(S.fmt(path, args)).toString();
+    }
+
+    /**
+     * Return full URL of reverse rout of specified action
+     * @param action the action path
+     * @param renderArgs the render arguments
+     * @return the full URL as described above
+     */
+    public String fullUrl(String action, Map<String, Object> renderArgs) {
+        return fullUrl(reverseRoute(action, renderArgs));
     }
 
     private static final Method M_FULL_URL = $.getMethod(Router.class, "fullUrl", String.class, Object[].class);

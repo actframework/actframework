@@ -1,5 +1,25 @@
 package act.controller.bytecode;
 
+/*-
+ * #%L
+ * ACT Framework
+ * %%
+ * Copyright (C) 2014 - 2017 ActFramework
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * #L%
+ */
+
 import act.app.ActionContext;
 import act.asm.*;
 import act.asm.tree.AbstractInsnNode;
@@ -110,7 +130,7 @@ public class HandlerEnhancer extends MethodVisitor implements Opcodes {
         Transformer(MethodNode mn, HandlerMethodMetaInfo meta) {
             this.mn = mn;
             this.meta = meta;
-            this.instructions = mn.instructions;
+            this.instructions = mergeRenderLineBreaks(mn.instructions);
         }
 
         void doIt() {
@@ -124,6 +144,45 @@ public class HandlerEnhancer extends MethodVisitor implements Opcodes {
                     cur.handle(insn);
                 }
             }
+        }
+
+        private InsnList mergeRenderLineBreaks(InsnList list) {
+            ListIterator<AbstractInsnNode> itr = list.iterator();
+            while (itr.hasNext()) {
+                AbstractInsnNode insn = itr.next();
+                if (isRenderLine(insn)) {
+                    mergeRenderLineBreaks(insn, list);
+                }
+            }
+            return list;
+        }
+
+        private void mergeRenderLineBreaks(AbstractInsnNode renderLine, InsnList list) {
+            AbstractInsnNode node = renderLine;
+            while (true) {
+                node = node.getPrevious();
+                if (node.getOpcode() == ANEWARRAY) {
+                    return;
+                } else if (node instanceof LabelNode) {
+                    AbstractInsnNode node0 = node.getPrevious();
+                    list.remove(node);
+                    node = node0;
+                }
+            }
+        }
+
+        static boolean isRenderLine(AbstractInsnNode insnNode) {
+            if (!(insnNode instanceof MethodInsnNode)) {
+                return false;
+            }
+            MethodInsnNode node = (MethodInsnNode) insnNode;
+            Type type = Type.getMethodType(node.desc);
+            Type retType = type.getReturnType();
+            return (isResult(retType) && node.desc.startsWith("([Ljava/lang/Object;)"));
+        }
+
+        static boolean isResult(Type type) {
+            return ResultClassLookup.isResult(type.getClassName());
         }
 
         private static abstract class InstructionHandler {
@@ -205,10 +264,6 @@ public class HandlerEnhancer extends MethodVisitor implements Opcodes {
                     }
                     injectThrowCode(n);
                 }
-            }
-
-            private boolean isResult(Type type) {
-                return ResultClassLookup.isResult(type.getClassName());
             }
 
             private String ctxFieldName() {

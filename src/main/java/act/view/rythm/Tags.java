@@ -1,10 +1,33 @@
 package act.view.rythm;
 
+/*-
+ * #%L
+ * ACT Framework
+ * %%
+ * Copyright (C) 2014 - 2017 ActFramework
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ * 
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ * 
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * #L%
+ */
+
 import act.Act;
 import act.app.ActionContext;
 import act.i18n.I18n;
 import act.route.Router;
 import act.util.ActContext;
+import org.osgl.$;
+import org.osgl.Osgl;
+import org.osgl.exception.NotAppliedException;
 import org.osgl.util.E;
 import org.rythmengine.RythmEngine;
 import org.rythmengine.template.JavaTagBase;
@@ -103,13 +126,43 @@ public class Tags {
             return "url";
         }
 
+        // See https://github.com/actframework/actframework/issues/108#infer_reference
+        private static $.Func0<String> INFER_REFERENCE_PROVIDER = new $.Func0<String>() {
+            @Override
+            public String apply() throws NotAppliedException, Osgl.Break {
+                ActContext context = ActContext.Base.currentContext();
+                E.illegalStateIf(null == context, "Cannot get full action path reference outside of act context");
+                if (context.templatePathIsImplicit()) {
+                    return context.methodPath();
+                } else {
+                    String path = context.templatePath();
+                    // remove suffix
+                    path = org.osgl.util.S.beforeLast(path, ".");
+                    return path.replace('/', '.');
+                }
+            }
+        };
+
+        // see https://github.com/actframework/actframework/issues/108
+        private String inferFullPath(String actionPath) {
+            E.illegalArgumentIf(S.empty(actionPath), "action path expected");
+            if (actionPath.contains("/") || (!actionPath.contains(".") && !actionPath.contains("("))) {
+                // this is a URL path, not action path
+                return actionPath;
+            }
+            if (actionPath.contains("(")) {
+                actionPath = org.osgl.util.S.beforeFirst(actionPath, "(");
+            }
+            return Router.inferFullActionPath(actionPath, INFER_REFERENCE_PROVIDER);
+        }
+
         @Override
         protected void call(__ParameterList parameterList, __Body body) {
             Object o = parameterList.getByName("value");
             if (null == o) {
                 o = parameterList.getDefault();
             }
-            String value = o.toString();
+            String value = inferFullPath(o.toString());
 
             boolean fullUrl = this.fullUrl;
             o = parameterList.getByName("fullUrl");
@@ -136,9 +189,10 @@ public class Tags {
                 Map<String, Object> args = new HashMap<>();
                 for (__Parameter param : parameterList) {
                     String name = param.name;
-                    if (S.ne(name, "value") && S.ne(name, "fullUrl")) {
-                        args.put(param.name, param.value);
+                    if (S.empty(name) || "value".equals(name) || "fullUrl".equals(name)) {
+                        continue;
                     }
+                    args.put(param.name, param.value);
                 }
 
                 p(router.reverseRoute(value, args, fullUrl));

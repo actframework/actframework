@@ -19,13 +19,15 @@
 *            version history
 ********************************************
 1.0.3
+- #68  Error enhancing render arguments when break the statement into multiple lines
 - #84  @fullUrl and @url tag doesn't work when there is no GET request mapping to the action handler method
 - #94  Invalid encoded characters in Error page
-- #99  Update FastJson version to 1.2.28
+- #99  Update FastJson version to 1.2.29
 - #100 when the browser get a json request, Chinese characters are not displayed properly
 - #101 IE doesn't support "application/json" content type
 - #104 Incorrectly configured routes should not crash hot-reload
 - #106 Reloading View manager might break the hot reload process
+- #108 Simplify the use of `@url` and `@fullUrl` tag
 
 1.0.2
 - Fix #86 It shall allow `null` value for enum type parameter when do the request parameter binding
@@ -89,12 +91,18 @@
   <name>ACT Framework</name>
   <description>The ACT full stack MVC framework</description>
   <url>http://actframework.org/</url>
+  <inceptionYear>2014</inceptionYear>
 
   <parent>
     <groupId>org.sonatype.oss</groupId>
     <artifactId>oss-parent</artifactId>
     <version>7</version>
   </parent>
+
+  <organization>
+    <name>ActFramework</name>
+    <url>http://actframework.org</url>
+  </organization>
 
   <scm>
     <connection>scm:git:git@github.com:actframework/actframework.git</connection>
@@ -171,6 +179,30 @@
     </resources>
 
     <plugins>
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>license-maven-plugin</artifactId>
+        <version>1.12</version>
+        <configuration>
+          <verbose>false</verbose>
+        </configuration>
+        <executions>
+          <execution>
+            <id>first</id>
+            <goals>
+              <goal>update-file-header</goal>
+            </goals>
+            <phase>process-sources</phase>
+            <configuration>
+              <licenseName>apache_v2</licenseName>
+              <roots>
+                <root>src/main/java</root>
+                <root>src/test</root>
+              </roots>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>buildnumber-maven-plugin</artifactId>
