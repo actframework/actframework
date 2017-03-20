@@ -91,12 +91,18 @@
   <name>ACT Framework</name>
   <description>The ACT full stack MVC framework</description>
   <url>http://actframework.org/</url>
+  <inceptionYear>2014</inceptionYear>
 
   <parent>
     <groupId>org.sonatype.oss</groupId>
     <artifactId>oss-parent</artifactId>
     <version>7</version>
   </parent>
+
+  <organization>
+    <name>ActFramework</name>
+    <url>http://actframework.org</url>
+  </organization>
 
   <scm>
     <connection>scm:git:git@github.com:actframework/actframework.git</connection>
@@ -174,6 +180,29 @@
 
     <plugins>
       <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>license-maven-plugin</artifactId>
+        <version>1.12</version>
+        <configuration>
+          <verbose>false</verbose>
+        </configuration>
+        <executions>
+          <execution>
+            <id>first</id>
+            <goals>
+              <goal>update-file-header</goal>
+            </goals>
+            <phase>process-sources</phase>
+            <configuration>
+              <licenseName>apache_v2</licenseName>
+              <roots>
+                <root>src/main/java</root>
+                <root>src/test</root>
+              </roots>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>      <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>buildnumber-maven-plugin</artifactId>
         <version>1.4</version>
