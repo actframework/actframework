@@ -21,17 +21,21 @@
 1.0.3
 - #68  Error enhancing render arguments when break the statement into multiple lines
 - #84  @fullUrl and @url tag doesn't work when there is no GET request mapping to the action handler method
+- #89  session.ttl setting prevent app from start up
 - #94  Invalid encoded characters in Error page
+- #97  Act controller not return correct @version "v" for save method when MorphiaDao return the value bug
 - #99  Update FastJson version to 1.2.29
 - #100 when the browser get a json request, Chinese characters are not displayed properly
 - #101 IE doesn't support "application/json" content type
 - #104 Incorrectly configured routes should not crash hot-reload
 - #106 Reloading View manager might break the hot reload process
+- #107 Simplify the use of reverse routing API
 - #108 Simplify the use of `@url` and `@fullUrl` tag
 
 1.0.2
 - Fix #86 It shall allow `null` value for enum type parameter when do the request parameter binding
 - Fix #87 DependencyInjectionListener shall register with sub classes of the target class also
+- Fix #88 Controller context break with intermediate non-controller class in the hierarchies
 
 1.0.1
 - Fix #79 static action handler method cause NPE
