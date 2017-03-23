@@ -314,6 +314,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
             return body;
         }
         String theName = singleJsonFieldName(context);
+        int theNameLen = theName.length();
         if (null == theName) {
             return body;
         }
@@ -334,7 +335,8 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
                     if (c == '"') {
                         break;
                     }
-                    if (theName.charAt(i - nameStart - 1) != c) {
+                    int id = i - nameStart - 1;
+                    if (id >= theNameLen || theName.charAt(i - nameStart - 1) != c) {
                         needPatch = true;
                         break;
                     }

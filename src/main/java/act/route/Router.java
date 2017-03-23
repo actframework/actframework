@@ -677,7 +677,7 @@ public class Router extends AppServiceBase<Router> {
      * The data structure support decision tree for
      * fast URL routing
      */
-    private static class Node extends DestroyableBase implements Serializable, TreeNode {
+    private static class Node extends DestroyableBase implements Serializable, TreeNode, Comparable<Node> {
 
         // used to pass a baq request result when dynamic regex matching failed
         private static final Node BADREQUEST = new Node(Integer.MIN_VALUE) {
@@ -750,6 +750,22 @@ public class Router extends AppServiceBase<Router> {
                 return that.id == id && that.name.equals(name);
             }
             return false;
+        }
+
+        @Override
+        public int compareTo(Node o) {
+            if (!o.isDynamic && !isDynamic) {
+                return name.compareTo(o.name);
+            }
+            int myVars = varNames.size(), hisVars = o.varNames.size();
+            if (myVars != hisVars) {
+                return -(myVars - hisVars);
+            }
+            boolean fullVar = "(.*)".equals(patternTrait), hisIsFullVar = "(.*)".equals(o.patternTrait);
+            if (fullVar == hisIsFullVar) {
+                return name.compareTo(o.name);
+            }
+            return fullVar ? 1 : -1;
         }
 
         public boolean isDynamic() {
@@ -878,6 +894,7 @@ public class Router extends AppServiceBase<Router> {
                     child.dynamicReverseAliases.put(action, child);
                     dynamicChilds.add(child);
                 }
+                Collections.sort(dynamicChilds);
                 return child;
             } else {
                 staticChildren.put(name, child);
@@ -887,7 +904,7 @@ public class Router extends AppServiceBase<Router> {
 
         Node handler(RequestHandler handler, RouteSource source) {
             this.routeSource = $.notNull(source);
-            this.handler = handler.requireResolveContext() ? new ContextualHandler((RequestHandlerBase)handler, this) : handler;
+            this.handler = handler.requireResolveContext() ? new ContextualHandler((RequestHandlerBase) handler, this) : handler;
             return this;
         }
 
@@ -916,7 +933,7 @@ public class Router extends AppServiceBase<Router> {
             for (Node node : staticChildren.values()) {
                 node.debug(method, ps);
             }
-            for (Node node: dynamicChilds) {
+            for (Node node : dynamicChilds) {
                 node.debug(method, ps);
             }
         }
@@ -1116,28 +1133,6 @@ public class Router extends AppServiceBase<Router> {
             }
 
             return true;
-        }
-
-        private static $.T2<StrBase, Pattern> _parseDynaName(StrBase name) {
-            name = name.trim();
-            if (name.startsWith("{") && name.endsWith("}")) {
-                StrBase s = name.afterFirst('{').beforeLast('}').trim();
-                if (s.contains('<') && s.contains('>')) {
-                    StrBase varName = s.afterLast('>').trim();
-                    StrBase ptn = s.afterFirst('<').beforeLast('>').trim();
-                    Pattern pattern = Pattern.compile(ptn.toString());
-                    return $.T2(varName, pattern);
-                } else {
-                    return $.T2(s, null);
-                }
-            } else if (name.contains(":")) {
-                StrBase varName = name.beforeFirst(":");
-                StrBase ptn = name.afterFirst(":");
-                Pattern pattern = ptn.isBlank() ? null : Pattern.compile(ptn.toString());
-                return $.T2(varName, pattern);
-            } else {
-                return null;
-            }
         }
     }
 
