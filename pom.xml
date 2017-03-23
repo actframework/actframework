@@ -18,6 +18,10 @@
 ********************************************
 *            version history
 ********************************************
+1.0.4
+- #111 Routing failure on `/{path1}/{path2}/{path3}/{id}.html` style URL path
+- #115 Router: support inner variables inside URL path
+
 1.0.3
 - #68  Error enhancing render arguments when break the statement into multiple lines
 - #84  @fullUrl and @url tag doesn't work when there is no GET request mapping to the action handler method
