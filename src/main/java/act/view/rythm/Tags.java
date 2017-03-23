@@ -132,16 +132,37 @@ public class Tags {
             public String apply() throws NotAppliedException, Osgl.Break {
                 ActContext context = ActContext.Base.currentContext();
                 E.illegalStateIf(null == context, "Cannot get full action path reference outside of act context");
+                /*
+                 * try to determine if the template is free or bounded template
+                 */
                 if (context.templatePathIsImplicit()) {
                     return context.methodPath();
                 } else {
                     String path = context.templatePath();
-                    // remove suffix
                     path = org.osgl.util.S.beforeLast(path, ".");
+                    if (!isTemplateBounded(path, context.methodPath())) {
+                        return context.methodPath();
+                    }
                     return path.replace('/', '.');
                 }
             }
         };
+
+        private static boolean isTemplateBounded(String templatePath, String methodPath) {
+            int pos = templatePath.indexOf('/');
+            if (pos < 0) {
+                // must be a free template without package hierarchies
+                return false;
+            }
+            int pos2 = methodPath.indexOf('.');
+            if (pos2 != pos) {
+                // must be a free template as the first package path doesn't match
+                return false;
+            }
+            String templatePathStartPkg = templatePath.substring(0, pos);
+            String methodPathStartPkg = methodPath.substring(0, pos2);
+            return S.eq(templatePathStartPkg, methodPathStartPkg);
+        }
 
         // see https://github.com/actframework/actframework/issues/108
         private String inferFullPath(String actionPath) {

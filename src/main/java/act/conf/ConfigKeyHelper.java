@@ -26,7 +26,6 @@ import org.osgl.exception.ConfigurationException;
 import org.osgl.exception.NotAppliedException;
 import org.osgl.logging.L;
 import org.osgl.logging.Logger;
-import org.osgl.util.C;
 import org.osgl.util.S;
 
 import java.io.File;
@@ -346,7 +345,7 @@ class ConfigKeyHelper {
     }
 
     /*
-     * Check if v has variable e.g. `${foo.bar` inside and expand it recursively
+     * Check if v has variable e.g. `${foo.bar}` inside and expand it recursively
      */
     public String evaluate(String s, Map<String, ?> map) {
         int n = 0, n0 = 0, len = s.length();

@@ -49,6 +49,7 @@ import java.io.Serializable;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.*;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class Router extends AppServiceBase<Router> {
@@ -169,25 +170,12 @@ public class Router extends AppServiceBase<Router> {
         }
         RequestHandler handler = node.handler;
         if (null == handler) {
-            if (null != node.dynamicChild) {
-                node = node.dynamicChild;
-                if (null != node.pattern) {
-                    if (node.pattern.matcher("").matches()) {
-                        if (null == node.handler) {
-                            return notFound();
-                        }
-                        handler = node.handler;
-                    } else {
-                        return badRequest();
-                    }
-                } else if (null == node.handler) {
-                    return notFound();
-                } else {
-                    return node.handler;
+            for (Node targetNode : node.dynamicChilds) {
+                if (targetNode.pattern.matcher("").matches()) {
+                    return getInvokerFrom(targetNode);
                 }
-            } else {
-                return notFound();
             }
+            return notFound();
         }
         return handler;
     }
@@ -245,7 +233,7 @@ public class Router extends AppServiceBase<Router> {
     }
 
     public void addMapping(H.Method method, CharSequence path, RequestHandler handler, RouteSource source) {
-        Node node = _locate(method, path);
+        Node node = _locate(method, path, handler.toString());
         if (null == node.handler) {
             handler = prepareReverseRoutes(handler, node);
             node.handler(handler, source);
@@ -360,13 +348,26 @@ public class Router extends AppServiceBase<Router> {
         args = new HashMap<>(args);
         while (root != node) {
             if (node.isDynamic()) {
-                String s = node.varName.toString();
-                Object v = args.remove(s);
-                if (null != v) {
-                    elements.add(S.string(v));
-                } else {
-                    elements.add(S.concat("{", s, "}"));
+                Node targetNode = node;
+                for (Map.Entry<String, Node> entry : node.dynamicReverseAliases.entrySet()) {
+                    if (entry.getKey().equals(action)) {
+                        targetNode = entry.getValue();
+                        break;
+                    }
                 }
+                S.Buffer buffer = S.buffer();
+                for ($.Transformer<Map<String, Object>, String> builder : targetNode.nodeValueBuilders) {
+                    String s = builder.transform(args);
+                    buffer.append(s);
+                }
+                String s = buffer.toString();
+                if (S.blank(s)) {
+                    s = S.string(args.remove(S.string(targetNode.varNames.get(0))));
+                }
+                if (S.blank(s)) {
+                    s = S.string("-");
+                }
+                elements.add(s);
             } else {
                 elements.add(node.name.toString());
             }
@@ -490,7 +491,7 @@ public class Router extends AppServiceBase<Router> {
         return node.findChild((StrBase) paths.get(len - 1));
     }
 
-    private Node _locate(H.Method method, CharSequence path) {
+    private Node _locate(H.Method method, CharSequence path, String action) {
         Node node = root(method);
         E.unsupportedIf(null == node, "Method %s is not supported", method);
         assert null != node;
@@ -502,9 +503,9 @@ public class Router extends AppServiceBase<Router> {
         List<CharSequence> paths = Path.tokenize(Unsafe.bufOf(sUrl));
         int len = paths.size();
         for (int i = 0; i < len - 1; ++i) {
-            node = node.addChild((StrBase) paths.get(i), path);
+            node = node.addChild((StrBase) paths.get(i), path, action);
         }
-        return node.addChild((StrBase) paths.get(len - 1), path);
+        return node.addChild((StrBase) paths.get(len - 1), path, action);
     }
 
     // --- action handler resolving
@@ -597,6 +598,11 @@ public class Router extends AppServiceBase<Router> {
         }
         RequestHandler theHandler() {
             return handler_;
+        }
+
+        @Override
+        public String toString() {
+            return action.toString();
         }
     }
 
@@ -692,14 +698,26 @@ public class Router extends AppServiceBase<Router> {
         }
 
         private int id;
+
+        private boolean isDynamic;
+
+        // --- for static node
         private StrBase name;
+
+        // --- for dynamic node
         private Pattern pattern;
-        private CharSequence varName;
+        private String patternTrait;
+        private List<CharSequence> varNames = new ArrayList<>();
+        // used to build the node value for reverse routing
+        private List<$.Transformer<Map<String, Object>, String>> nodeValueBuilders = new ArrayList<>();
+
+        // --- references
         private Node root;
         private Node parent;
-        private Node dynamicChild;
-        private C.Map<CharSequence, Node> staticChildren = C.newMap();
-        private C.Map<UrlPath, Node> dynamicAliases = C.newMap();
+        private List<Node> dynamicChilds = new ArrayList<>();
+        private Map<CharSequence, Node> staticChildren = new HashMap<>();
+        private Map<UrlPath, Node> dynamicAliases = new HashMap<>();
+        private Map<String, Node> dynamicReverseAliases = new HashMap<>();
         private RequestHandler handler;
         private RouteSource routeSource;
         private Map<String, Node> reverseRoutes = new HashMap<>();
@@ -735,17 +753,20 @@ public class Router extends AppServiceBase<Router> {
         }
 
         public boolean isDynamic() {
-            return null != varName;
+            return isDynamic;
         }
 
         boolean metaInfoMatches(StrBase string) {
-            $.T2<StrBase, Pattern> result = _parseDynaName(string);
-            if (pattern != null && result._2 != null) {
-                return pattern.pattern().equals(result._2.pattern());
-            } else {
-                // just allow route table to use different var names
-                return true;
-            }
+            return this.isDynamic && $.eq(string, name);
+//            $.Var<String> patternTraitsVar = $.var();
+//
+//            boolean isDynamic = parseDynaNameStyleA(string, null, null, patternTraitsVar);
+//
+//            isDynamic = isDynamic || parseDynaNameStyleB(
+//                    string, null, null,
+//                    patternTraitsVar, null);
+//
+//            return isDynamic && patternTrait.equals(patternTraitsVar.get());
         }
 
         public boolean matches(CharSequence chars) {
@@ -757,26 +778,39 @@ public class Router extends AppServiceBase<Router> {
         @SuppressWarnings("unchecked")
         public List<TreeNode> children() {
             C.List<TreeNode> list = (C.List) C.list(staticChildren.values());
-            return null == dynamicChild ? list : list.append(dynamicChild);
+            return list.append(dynamicChilds);
         }
 
         public Node child(CharSequence name, ActionContext context) {
             Node node = staticChildren.get(name);
-            if (null == node && null != dynamicChild) {
-                if (dynamicChild.matches(name)) {
-                    UrlPath path = new UrlPath(context.req().path());
-                    CharSequence varName = dynamicChild.varName;
-                    for (Map.Entry<UrlPath, Node> entry : dynamicChild.dynamicAliases.entrySet()) {
+            if (null == node && !dynamicChilds.isEmpty()) {
+                UrlPath path = new UrlPath(context.req().path());
+                for (Node targetNode : dynamicChilds) {
+                    for (Map.Entry<UrlPath, Node> entry : targetNode.dynamicAliases.entrySet()) {
                         if (entry.getKey().equals(path)) {
-                            varName = entry.getValue().varName;
+                            targetNode = entry.getValue();
                             break;
                         }
                     }
-                    context.param(varName.toString(), S.urlDecode(S.string(name)));
-                    return dynamicChild;
-                } else {
-                    return Node.BADREQUEST;
+                    Pattern pattern = targetNode.pattern;
+                    Matcher matcher = null == pattern ? null : pattern.matcher(name);
+                    if (null != matcher && matcher.matches()) {
+                        if (!targetNode.nodeValueBuilders.isEmpty()) {
+                            for (CharSequence varName : targetNode.varNames) {
+                                String varNameStr = varName.toString();
+                                String varValue = matcher.group(varNameStr);
+                                if (S.notBlank(varValue)) {
+                                    context.param(varNameStr, S.urlDecode(S.string(varValue)));
+                                }
+                            }
+                        } else {
+                            CharSequence varName = targetNode.varNames.get(0);
+                            context.param(varName.toString(), S.urlDecode(S.string(name)));
+                        }
+                        return targetNode;
+                    }
                 }
+                return Node.BADREQUEST;
             }
             return node;
         }
@@ -800,19 +834,18 @@ public class Router extends AppServiceBase<Router> {
             if (null != handler) {
                 handler.destroy();
             }
-            if (null != dynamicChild) {
-                dynamicChild.destroy();
-                dynamicChild = null;
-            }
+            Destroyable.Util.destroyAll(dynamicChilds, ApplicationScoped.class);
             Destroyable.Util.destroyAll(staticChildren.values(), ApplicationScoped.class);
             staticChildren.clear();
         }
 
         Node childByMetaInfo(StrBase s) {
             Node node = staticChildren.get(s);
-            if (null == node && null != dynamicChild) {
-                if (dynamicChild.metaInfoMatches(s)) {
-                    return dynamicChild;
+            if (null == node && !dynamicChilds.isEmpty()) {
+                for (Node targetNode : dynamicChilds) {
+                    if (targetNode.metaInfoMatches(s)) {
+                        return targetNode;
+                    }
                 }
             }
             return node;
@@ -823,21 +856,29 @@ public class Router extends AppServiceBase<Router> {
             return childByMetaInfo(name);
         }
 
-        Node addChild(StrBase<?> name, CharSequence path) {
+        Node addChild(StrBase<?> name, CharSequence path, String action) {
             name = name.trim();
             Node node = childByMetaInfo(name);
-            if (null != node && !node.isDynamic()) {
+            if (null != node) {
                 return node;
             }
             Node child = new Node(name, this);
             if (child.isDynamic()) {
-                if (null == dynamicChild) {
-                    dynamicChild = child;
-                    child.dynamicAliases.put(new UrlPath(path), child);
-                } else {
-                    dynamicChild.dynamicAliases.put(new UrlPath(path), child);
+                boolean isAlias = false;
+                for (Node targetNode : dynamicChilds) {
+                    if (S.eq(targetNode.patternTrait, child.patternTrait)) {
+                        targetNode.dynamicAliases.put(new UrlPath(path), child);
+                        targetNode.dynamicReverseAliases.put(action, child);
+                        isAlias = true;
+                        break;
+                    }
                 }
-                return dynamicChild;
+                if (!isAlias) {
+                    child.dynamicAliases.put(new UrlPath(path), child);
+                    child.dynamicReverseAliases.put(action, child);
+                    dynamicChilds.add(child);
+                }
+                return child;
             } else {
                 staticChildren.put(name, child);
             }
@@ -875,8 +916,8 @@ public class Router extends AppServiceBase<Router> {
             for (Node node : staticChildren.values()) {
                 node.debug(method, ps);
             }
-            if (null != dynamicChild) {
-                dynamicChild.debug(method, ps);
+            for (Node node: dynamicChilds) {
+                node.debug(method, ps);
             }
         }
 
@@ -887,17 +928,194 @@ public class Router extends AppServiceBase<Router> {
             for (Node node : staticChildren.values()) {
                 node.debug(method, routes);
             }
-            if (null != dynamicChild) {
-                dynamicChild.debug(method, routes);
+            for (Node node : dynamicChilds) {
+                node.debug(method, routes);
             }
         }
 
         private void parseDynaName(StrBase name) {
-            $.T2<StrBase, Pattern> result = _parseDynaName(name);
-            if (null != result) {
-                this.varName = result._1;
-                this.pattern = result._2;
+            $.Var<Pattern> patternVar = $.var();
+            $.Var<String> patternTraitsVar = $.var();
+            boolean isDynamic = parseDynaNameStyleA(name, varNames, patternVar, patternTraitsVar);
+            this.isDynamic = isDynamic || parseDynaNameStyleB(
+                    name, varNames, patternVar,
+                    patternTraitsVar, nodeValueBuilders);
+            if (!this.isDynamic) {
+                return;
             }
+            this.pattern = patternVar.get();
+            this.patternTrait = patternTraitsVar.get();
+        }
+
+        /*
+         * case one `{var_name<regex>}`, e.g /{foo<[a-b]+>}
+         * case two `{<regex>var_name}`, e.g /{<[a-b]+>foo>}
+         * case three `foo-{var_name<regex>}-{var_name<regex}-bar...`
+         */
+        static boolean parseDynaNameStyleB(
+                StrBase name,
+                List<CharSequence> varNames,
+                $.Var<Pattern> pattern,
+                $.Var<String> patternTrait,
+                List<$.Transformer<Map<String, Object>, String>> nodeValueBuilders
+        ) {
+            int pos = name.indexOf('{');
+            if (pos < 0) {
+                return false;
+            }
+            int len = name.length();
+            int lastPos = 0;
+            int leftPos = pos;
+            S.Buffer patternTraitBuilder = S.buffer();
+            S.Buffer patternStrBuilder = null == pattern ? null : S.buffer();
+            while (leftPos >= 0 & leftPos < len) {
+                final StrBase literal = name.substr(lastPos, leftPos);
+                if (!literal.isEmpty()) {
+                    patternTraitBuilder.append(literal);
+                    if (null != pattern) {
+                        patternStrBuilder.append(literal);
+                    }
+                    if (null != nodeValueBuilders) {
+                        nodeValueBuilders.add(new $.Transformer<Map<String, Object>, String>() {
+                            @Override
+                            public String transform(Map<String, Object> stringObjectMap) {
+                                return S.string(literal);
+                            }
+                        });
+                    }
+                }
+
+                int rightAngle = name.indexOf('>', leftPos);
+                if (rightAngle < 0) {
+                    if (name.indexOf('<', leftPos) < 0) {
+                        rightAngle = leftPos;
+                    } else {
+                        throw new RoutingException("Invalid route: " + name);
+                    }
+                }
+                pos = name.indexOf('}', rightAngle);
+                if (pos < 0) {
+                    throw new RuntimeException("Invalid node: " + name);
+                }
+                $.T2<? extends CharSequence, Pattern> t2 = parseVarBlock(name, leftPos + 1, pos);
+                final CharSequence varName = t2._1;
+                if (null != varNames) {
+                    varNames.add(varName);
+                }
+                Pattern pattern1 = t2._2;
+                String patternStr = ".*";
+                if (null != pattern1) {
+                    patternStr = pattern1.pattern();
+                }
+                if (null != patternStrBuilder) {
+                    patternStrBuilder.append("(?<").append(varName).append(">").append(patternStr).append(")");
+                }
+                patternTraitBuilder.append("(").append(patternStr).append(")");
+                if (null != nodeValueBuilders) {
+                    nodeValueBuilders.add(new $.Transformer<Map<String, Object>, String>() {
+                        @Override
+                        public String transform(Map<String, Object> stringObjectMap) {
+                            String s = S.string(varName);
+                            s = S.notBlank(s) ? s : "-";
+                            return S.string(stringObjectMap.remove(s));
+                        }
+                    });
+                }
+                lastPos = pos + 1;
+                leftPos = name.indexOf('{', lastPos);
+            }
+            StrBase literal = name.substr(lastPos, name.length());
+            if (!literal.isEmpty()) {
+                if (literal.charAt(literal.length() - 1) == '}') {
+                    literal = literal.tail(-1);
+                }
+                if (!literal.isEmpty()) {
+                    final StrBase finalLiteral = literal;
+                    patternTraitBuilder.append(literal);
+                    if (null != patternStrBuilder) {
+                        patternStrBuilder.append(literal);
+                    }
+                    if (null != nodeValueBuilders) {
+                        nodeValueBuilders.add(new $.Transformer<Map<String, Object>, String>() {
+                            @Override
+                            public String transform(Map<String, Object> stringObjectMap) {
+                                return S.string(finalLiteral);
+                            }
+                        });
+                    }
+                }
+            }
+            if (null != pattern) {
+                pattern.set(Pattern.compile(patternStrBuilder.toString()));
+            }
+            patternTrait.set(patternTraitBuilder.toString());
+            return true;
+        }
+
+        private static $.T2<? extends CharSequence, Pattern> parseVarBlock(StrBase name, int blockStart, int blockEnd) {
+            int pos = name.indexOf('<', blockStart);
+            if (pos < 0 || pos >= blockEnd) {
+                return $.T2(name.substr(blockStart, blockEnd), null);
+            }
+            Pattern pattern;
+            StrBase varName;
+            if (pos == blockStart) {
+                pos = name.indexOf('>', blockStart);
+                if (pos >= blockEnd) {
+                    throw new RoutingException("Invalid route: " + name);
+                }
+                pattern = Pattern.compile(name.substring(blockStart + 1, pos));
+                varName = name.substr(pos + 1, blockEnd);
+            } else {
+                if (name.charAt(blockEnd - 1) != '>') {
+                    throw new RoutingException("Invalid route: " + name);
+                }
+                pattern = Pattern.compile(name.substring(pos + 2, blockEnd - 1));
+                varName = name.substr(blockStart, pos);
+            }
+            return $.T2(varName, pattern);
+        }
+
+        /*
+         * case one: `var_name:regex`, e.g /foo:[a-b]+
+         * case two: `:var_name`, e.g /:foo
+         * case three: `var_name:`, e.g /foo:
+         */
+        static boolean parseDynaNameStyleA(
+                StrBase name,
+                List<CharSequence> varNames,
+                $.Var<Pattern> pattern,
+                $.Var<String> patternTrait
+        ) {
+            int pos = name.indexOf(':');
+
+            if (pos < 0) {
+                return false;
+            }
+
+            if (0 == pos) {
+                if (null != varNames) {
+                    varNames.add(name.substring(1));
+                }
+            } else {
+                int len = name.length();
+                if (pos == len - 1) {
+                    if (null != varNames) {
+                        varNames.add(name.substring(0, len - 2));
+                    }
+                } else {
+                    if (null != varNames) {
+                        varNames.add(name.substring(0, pos));
+                    }
+                    String patternStr = name.substring(pos + 1, name.length());
+                    if (null != pattern) {
+                        pattern.add(Pattern.compile(patternStr));
+                    }
+                    patternTrait.set(patternStr);
+                }
+            }
+
+            return true;
         }
 
         private static $.T2<StrBase, Pattern> _parseDynaName(StrBase name) {
@@ -998,7 +1216,9 @@ public class Router extends AppServiceBase<Router> {
             pathVariables = new HashSet<>();
             while (node != null) {
                 if (node.isDynamic()) {
-                    pathVariables.add(node.varName.toString());
+                    for (CharSequence varName : node.varNames) {
+                        pathVariables.add(varName.toString());
+                    }
                 }
                 node = node.parent;
             }

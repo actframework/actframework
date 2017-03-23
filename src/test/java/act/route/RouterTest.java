@@ -36,6 +36,8 @@ import org.osgl.util.C;
 import java.io.File;
 
 import static act.route.RouteSource.*;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static org.osgl.http.H.Method.GET;
 
 public class RouterTest extends RouterTestBase {
@@ -48,7 +50,7 @@ public class RouterTest extends RouterTestBase {
     @Before
     public void prepare() {
         staticDirHandler = Mockito.mock(StaticFileGetter.class);
-        Mockito.when(staticDirHandler.supportPartialPath()).thenReturn(true);
+        when(staticDirHandler.supportPartialPath()).thenReturn(true);
     }
 
     @Test
@@ -82,19 +84,61 @@ public class RouterTest extends RouterTestBase {
     public void searchDynamicUrl() {
         router.addMapping(GET, "/svc/{<[0-9]{4}>id}", controller);
         H.Request req = Mockito.mock(H.Request.class);
-        Mockito.when(ctx.req()).thenReturn(req);
-        Mockito.when(req.path()).thenReturn("/svc/1234");
+        when(ctx.req()).thenReturn(req);
+        when(req.path()).thenReturn("/svc/1234");
         router.getInvoker(GET, "/svc/1234/", ctx).handle(ctx);
         controllerInvoked();
-        Mockito.verify(ctx).param("id", "1234");
+        verify(ctx).param("id", "1234");
+    }
+
+    @Test
+    public void searchDynamicUrl2() {
+        router.addMapping(GET, "/svc/{<[0-9]{4}>id}-{name}", controller);
+        H.Request req = Mockito.mock(H.Request.class);
+        when(ctx.req()).thenReturn(req);
+        when(req.path()).thenReturn("/svc/1234-abc");
+        router.getInvoker(GET, "/svc/1234-abc/", ctx).handle(ctx);
+        controllerInvoked();
+        verify(ctx).param("id", "1234");
+        verify(ctx).param("name", "abc");
+    }
+
+    @Test
+    public void searchDynamicUrl3() {
+        router.addMapping(GET, "/svc/{<[0-9]{4}>id}-{name}", controller);
+        router.addMapping(GET, "/svc/{<[0-9]{4}>sid}-{sname}/obj", controller);
+        router.addMapping(GET, "/Persons/Joe/Parents;generations={gen}", controller);
+        router.addMapping(GET, "/place/{latitude};{longitude}", controller);
+
+        H.Request req = Mockito.mock(H.Request.class);
+        when(ctx.req()).thenReturn(req);
+
+        when(req.path()).thenReturn("/svc/1234-abc");
+        router.getInvoker(GET, "/svc/1234-abc", ctx).handle(ctx);
+        verify(ctx).param("id", "1234");
+        verify(ctx).param("name", "abc");
+
+        when(req.path()).thenReturn("/svc/1234-abc/obj");
+        router.getInvoker(GET, "/svc/1234-abc/obj", ctx).handle(ctx);
+        verify(ctx).param("sid", "1234");
+        verify(ctx).param("sname", "abc");
+
+        when(req.path()).thenReturn("/Persons/Joe/Parents;generations=147");
+        router.getInvoker(GET, "/Persons/Joe/Parents;generations=147", ctx).handle(ctx);
+        verify(ctx).param("gen", "147");
+
+        when(req.path()).thenReturn("/place/39.87381;-86.1399");
+        router.getInvoker(GET, "/place/39.87381;-86.1399", ctx).handle(ctx);
+        verify(ctx).param("latitude", "39.87381");
+        verify(ctx).param("longitude", "-86.1399");
     }
 
     @Test
     public void searchPartialUrl() {
         router.addMapping(GET, "/public", staticDirHandler);
         router.getInvoker(GET, "/public/foo/bar.txt", ctx).handle(ctx);
-        Mockito.verify(staticDirHandler).handle(ctx);
-        Mockito.verify(ctx).param(ParamNames.PATH, "/foo/bar.txt");
+        verify(staticDirHandler).handle(ctx);
+        verify(ctx).param(ParamNames.PATH, "/foo/bar.txt");
     }
 
     @Test
@@ -173,9 +217,20 @@ public class RouterTest extends RouterTestBase {
 
     @Test
     public void testReverseRouteWithPathVar() {
+        router.addMapping(GET, "/foo/{foo}", "pkg.Foo.foo");
         router.addMapping(GET, "/foo/{fooId}/bar/{barId}", "pkg.Foo.bar");
-        eq(router.reverseRoute("pkg.Foo.bar"), "/foo/{fooId}/bar/{barId}");
+        eq(router.reverseRoute("pkg.Foo.bar"), "/foo/-/bar/-");
         eq(router.reverseRoute("pkg.Foo.bar", C.<String, Object>map("fooId", 1, "barId", 3)), "/foo/1/bar/3");
+        eq(router.reverseRoute("pkg.Foo.foo", C.<String, Object>map("foo", 1)), "/foo/1");
+    }
+
+    @Test
+    public void testReverseRouteWithPathVar2() {
+        router.addMapping(GET, "/foo/{fooId}-{barId}", "pkg.Foo.bar");
+        router.addMapping(GET, "/foo/{foo}.htm", "pkg.Foo.foo");
+        //eq(router.reverseRoute("pkg.Foo.bar"), "/foo/---");
+        eq(router.reverseRoute("pkg.Foo.bar", C.<String, Object>map("fooId", 1, "barId", 3)), "/foo/1-3");
+        eq(router.reverseRoute("pkg.Foo.foo", C.<String, Object>map("foo", 1)), "/foo/1.htm");
     }
 
     @Test
