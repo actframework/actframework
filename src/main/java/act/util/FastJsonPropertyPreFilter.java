@@ -168,6 +168,11 @@ public class FastJsonPropertyPreFilter implements PropertyPreFilter {
         if (paths.contains(path)) {
             return true;
         }
+        for (String s : paths) {
+            if (path.startsWith(S.concat(s, "."))) {
+                return true;
+            }
+        }
         if (hasPattern(paths)) {
             return patternMatches(paths, path, exclude);
         }

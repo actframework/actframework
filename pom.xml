@@ -20,6 +20,7 @@
 ********************************************
 1.0.4
 - #111 Routing failure on `/{path1}/{path2}/{path3}/{id}.html` style URL path
+- #112 Missing embedded object content when PropertySpec is specified
 - #113 Exception encountered when first field of post JSON body contains the parameter name
 - #115 Router: support inner variables inside URL path
 

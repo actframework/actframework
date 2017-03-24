@@ -37,7 +37,7 @@ public class StringOrPattern {
     }
 
     public boolean matches(String s) {
-        return isPattern() ? p.matcher(s).matches() : S.eq(s(), s);
+        return isPattern() ? this.s.startsWith(S.concat(s, "\\.")) || p.matcher(s).matches() : S.eq(s(), s);
     }
 
     public boolean isPattern() {
