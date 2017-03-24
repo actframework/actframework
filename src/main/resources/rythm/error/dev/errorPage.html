@@ -20,12 +20,11 @@ templateSourceInfo = ((act.view.TemplateException) actError).templateSourceInfo(
 act.route.RouteInfo routeInfo = null != _action ? act.route.RouteInfo.of(_action) : null;
 boolean isCompileError = actError.getCauseOrThis() instanceof act.app.CompilationException;
 List<String> stackTrace;
-if (isCompileError || null != templateSourceInfo) {stackTrace = null;}
-else {stackTrace = actError.stackTrace();}
+  if (isCompileError) {stackTrace = null;}
+  else {stackTrace = actError.stackTrace();}
   boolean activeSource = null == templateSourceInfo && null != sourceInfo;
-  boolean activeStack = !activeSource && (null != stackTrace && !stackTrace.isEmpty());
+  boolean activeStack = null == templateSourceInfo && !activeSource && (null != stackTrace && !stackTrace.isEmpty());
   }
-
 
   @section(head){
   <style>
@@ -107,11 +106,11 @@ else {stackTrace = actError.stackTrace();}
   }
 
   @def Throwable getCauseOrThis(Throwable t) {
-    Throwable cause = t.getCause();
-    return null == cause ? t : cause;
+  Throwable cause = t.getCause();
+  return null == cause ? t : cause;
   }
 
-  <pre class="error-message">
+  <pre class="error-message" style="white-space: pre-wrap;">
   @if(templateSourceInfo) {
   @(((act.view.TemplateException) actError).errorMessage().raw())
   } else {
@@ -128,7 +127,7 @@ else {stackTrace = actError.stackTrace();}
     }
     @if(stackTrace) {
     <div id="tab-stacktrace" class="stacktrace tab @if(activeStack){active}"" onclick="showStacktrace()">@actMsg("error_page.stacktrace")</div>
-    }
+  }
   </div>
 
   @if(templateSourceInfo) {
@@ -148,27 +147,27 @@ else {stackTrace = actError.stackTrace();}
   <div id="stacktrace" class="detail @if(activeStack) {active}">
     @{boolean traceErrorSet = false;}
     @for(int i = 0; i < stackTrace.size(); ++i) {
-      @{
-        String trace = stackTrace.get(i);
-        String nextTrace = "";
-        if (i < stackTrace.size() - 1) {
-          nextTrace = stackTrace.get(i + 1);
-        }
-        String cls = "";
-        if (!traceErrorSet) {
-          if (null != sourceInfo && trace.contains(sourceInfo.fileName() + ":" + sourceInfo.lineNumber())) {
-            cls = "error";
-            traceErrorSet = true;
-          } else if (actError.isErrorSpot(trace, nextTrace)) {
-            cls = "error";
-            traceErrorSet = true;
-          }
-        }
-        if (trace.contains("Caused by")) {
-          cls = cls + " big-line";
-        }
-      }
-      <div class="trace-line line @cls">@trace</div>
+    @{
+    String trace = stackTrace.get(i);
+    String nextTrace = "";
+    if (i < stackTrace.size() - 1) {
+    nextTrace = stackTrace.get(i + 1);
+    }
+    String cls = "";
+    if (!traceErrorSet) {
+    if (null != sourceInfo && trace.contains(sourceInfo.fileName() + ":" + sourceInfo.lineNumber())) {
+    cls = "error";
+    traceErrorSet = true;
+    } else if (actError.isErrorSpot(trace, nextTrace)) {
+    cls = "error";
+    traceErrorSet = true;
+    }
+    }
+    if (trace.contains("Caused by")) {
+    cls = cls + " big-line";
+    }
+    }
+    <div class="trace-line line @cls">@trace</div>
     }
   </div>
   }
@@ -191,109 +190,109 @@ else {stackTrace = actError.stackTrace();}
 
 
   <script>
-    function showSource() {
+      function showSource() {
       @if (templateSourceInfo) {
-        document.getElementById("template").className = "detail source-info";
-        document.getElementById("tab-template").className = "tab";
-      }
+              document.getElementById("template").className = "detail source-info";
+              document.getElementById("tab-template").className = "tab";
+          }
 
       @if (stackTrace) {
-        document.getElementById("stacktrace").className = "detail";
-        document.getElementById("tab-stacktrace").className = "tab";
-      }
+              document.getElementById("stacktrace").className = "detail";
+              document.getElementById("tab-stacktrace").className = "tab";
+          }
 
       @if (sourceInfo) {
-        document.getElementById("source").className = "detail source-info active";
-        document.getElementById("tab-source").className = "tab active";
-        var e = new Event('show-source');
-        window.dispatchEvent(e);
+              document.getElementById("source").className = "detail source-info active";
+              document.getElementById("tab-source").className = "tab active";
+              var e = new Event('show-source');
+              window.dispatchEvent(e);
+          }
       }
-    }
-    function showTemplate() {
+      function showTemplate() {
       @if(templateSourceInfo) {
-        document.getElementById("template").className = "detail source-info active";
-        document.getElementById("tab-template").className = "tab active";
-      }
+              document.getElementById("template").className = "detail source-info active";
+              document.getElementById("tab-template").className = "tab active";
+          }
       @if (stackTrace) {
-        document.getElementById("stacktrace").className = "detail";
-        document.getElementById("tab-stacktrace").className = "tab";
-      }
+              document.getElementById("stacktrace").className = "detail";
+              document.getElementById("tab-stacktrace").className = "tab";
+          }
 
       @if (sourceInfo) {
-        document.getElementById("source").className = "detail source-info";
-        document.getElementById("tab-source").className = "tab";
+              document.getElementById("source").className = "detail source-info";
+              document.getElementById("tab-source").className = "tab";
+          }
+          var e = new Event('show-template-source');
+          window.dispatchEvent(e);
       }
-      var e = new Event('show-template-source');
-      window.dispatchEvent(e);
-    }
-    function showStacktrace() {
+      function showStacktrace() {
       @if(templateSourceInfo) {
-        document.getElementById("template").className = "detail source-info";
-        document.getElementById("tab-template").className = "tab";
-      }
+              document.getElementById("template").className = "detail source-info";
+              document.getElementById("tab-template").className = "tab";
+          }
 
       @if (stackTrace) {
-        document.getElementById("stacktrace").className = "detail active";
-        document.getElementById("tab-stacktrace").className = "tab active";
-      }
+              document.getElementById("stacktrace").className = "detail active";
+              document.getElementById("tab-stacktrace").className = "tab active";
+          }
 
       @if (sourceInfo) {
-        document.getElementById("source").className = "detail source-info";
-        document.getElementById("tab-source").className = "tab";
+              document.getElementById("source").className = "detail source-info";
+              document.getElementById("tab-source").className = "tab";
+          }
       }
-    }
-    @if (templateSourceInfo) {
-      function scrollTemplateSource() {
-        var element = document.getElementsByClassName('template-line line error nohighlight')[0];
-        element.scrollIntoView();
-        element.parentElement.scrollTop -= 100;
+      @if (templateSourceInfo) {
+          function scrollTemplateSource() {
+              var element = document.getElementsByClassName('template-line line error nohighlight')[0];
+              element.scrollIntoView();
+              element.parentElement.scrollTop -= 100;
+          }
+          var templateSourceLoaded = false;
+          $('body').on('click', '#template .line.error', function() {
+              $.getJSON('http://localhost:8091?message=@(templateSourceInfo.fileName()):@(templateSourceInfo.lineNumber())')
+          });
+          var windowHeight = $(window).height(), maxDetailHeight = windowHeight - 280;
+          $('.detail').css({maxHeight: maxDetailHeight + 'px'});
+          window.addEventListener('show-template-source', function() {
+              if (templateSourceLoaded) return;
+              templateSourceLoaded = true;
+              scrollTemplateSource();
+          }, false);
+          $(document).ready(function() {
+              $('.line-code').each(function(i, block) {
+                  hljs.highlightBlock(block);
+              });
+          });
+          setTimeout(scrollTemplateSource, 200);
       }
-      var templateSourceLoaded = false;
-      $('body').on('click', '#template .line.error', function() {
-        $.getJSON('http://localhost:8091?message=@(templateSourceInfo.fileName()):@(templateSourceInfo.lineNumber())')
-      });
-      var windowHeight = $(window).height(), maxDetailHeight = windowHeight - 280;
-      $('.detail').css({maxHeight: maxDetailHeight + 'px'});
-      window.addEventListener('show-template-source', function() {
-        if (templateSourceLoaded) return;
-        templateSourceLoaded = true;
-        scrollTemplateSource();
-      }, false);
-      $(document).ready(function() {
-        $('.line-code').each(function(i, block) {
-          hljs.highlightBlock(block);
-        });
-      });
-      setTimeout(scrollTemplateSource, 200);
-    }
-    @if (sourceInfo) {
-      function scrollJavaSource() {
-        if (sourceLoaded) return;
-        sourceLoaded = true;
-        var element = document.getElementsByClassName('source-line line error nohighlight')[0];
-        element.scrollIntoView();
-        element.parentElement.scrollTop -= 100;
-      }
-      var sourceLoaded = false;
+      @if (sourceInfo) {
+          function scrollJavaSource() {
+              if (sourceLoaded) return;
+              sourceLoaded = true;
+              var element = document.getElementsByClassName('source-line line error nohighlight')[0];
+              element.scrollIntoView();
+              element.parentElement.scrollTop -= 100;
+          }
+          var sourceLoaded = false;
       @{
-        int linkedSourceLineNumber = sourceInfo.lineNumber();
-        if (null != templateSourceInfo && templateSourceInfo.fileName().equals(sourceInfo.fileName())) {
-          linkedSourceLineNumber = templateSourceInfo.lineNumber();
-        }
-      }
-      $('body').on('click', '#source .line.error', function() {
-        $.getJSON('http://localhost:8091?message=@(sourceInfo.fileName()):@linkedSourceLineNumber')
-      });
-      var windowHeight = $(window).height(), maxDetailHeight = windowHeight - 280;
-      $('.detail').css({maxHeight: maxDetailHeight + 'px'});
-      window.addEventListener('show-source', scrollJavaSource, false);
-      $(document).ready(function() {
-        $('.line-code').each(function(i, block) {
-          hljs.highlightBlock(block);
-        });
-      });
+              int linkedSourceLineNumber = sourceInfo.lineNumber();
+              if (null != templateSourceInfo && templateSourceInfo.fileName().equals(sourceInfo.fileName())) {
+                  linkedSourceLineNumber = templateSourceInfo.lineNumber();
+              }
+          }
+          $('body').on('click', '#source .line.error', function() {
+              $.getJSON('http://localhost:8091?message=@(sourceInfo.fileName()):@linkedSourceLineNumber')
+          });
+          var windowHeight = $(window).height(), maxDetailHeight = windowHeight - 280;
+          $('.detail').css({maxHeight: maxDetailHeight + 'px'});
+          window.addEventListener('show-source', scrollJavaSource, false);
+          $(document).ready(function() {
+              $('.line-code').each(function(i, block) {
+                  hljs.highlightBlock(block);
+              });
+          });
       @if(activeSource) {
-        setTimeout(scrollJavaSource, 200);
+              setTimeout(scrollJavaSource, 200);
+          }
       }
-    }
   </script>
