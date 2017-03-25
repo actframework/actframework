@@ -1,4 +1,4 @@
-package act.data.util;
+package act.route;
 
 /*-
  * #%L
@@ -20,36 +20,10 @@ package act.data.util;
  * #L%
  */
 
-import org.osgl.util.S;
+import org.osgl.exception.InvalidArgException;
 
-import java.util.regex.Pattern;
-
-// stores either String or Pattern
-public class StringOrPattern {
-    String s;
-    Pattern p;
-
-    public StringOrPattern(String s) {
-        this.s = s;
-        if (s.contains("*")) {
-            p = Pattern.compile(s);
-        }
+public class RoutingException extends InvalidArgException {
+    public RoutingException(String message, Object... args) {
+        super(message, args);
     }
-
-    public boolean matches(String s) {
-        return isPattern() ? this.s.startsWith(S.concat(s, "\\.")) || p.matcher(s).matches() : S.eq(s(), s);
-    }
-
-    public boolean isPattern() {
-        return null != p;
-    }
-
-    public Pattern p() {
-        return p;
-    }
-
-    public String s() {
-        return s;
-    }
-
 }

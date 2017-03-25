@@ -18,20 +18,34 @@
 ********************************************
 *            version history
 ********************************************
+1.0.4
+- #109 It shall display the exception stack trace tab on template exception page
+- #110 Using simplified action path in @fullUrl and @url doesn't work in an free template
+- #111 Routing failure on `/{path1}/{path2}/{path3}/{id}.html` style URL path
+- #112 Missing embedded object content when PropertySpec is specified
+- #113 Exception encountered when first field of post JSON body contains the parameter name
+- #115 Router: support inner variables inside URL path
+- Update RythmEngine to 1.2.0
+- Update joda-time to 2.9.9
+
 1.0.3
 - #68  Error enhancing render arguments when break the statement into multiple lines
 - #84  @fullUrl and @url tag doesn't work when there is no GET request mapping to the action handler method
+- #89  session.ttl setting prevent app from start up
 - #94  Invalid encoded characters in Error page
+- #97  Act controller not return correct @version "v" for save method when MorphiaDao return the value bug
 - #99  Update FastJson version to 1.2.29
 - #100 when the browser get a json request, Chinese characters are not displayed properly
 - #101 IE doesn't support "application/json" content type
 - #104 Incorrectly configured routes should not crash hot-reload
 - #106 Reloading View manager might break the hot reload process
+- #107 Simplify the use of reverse routing API
 - #108 Simplify the use of `@url` and `@fullUrl` tag
 
 1.0.2
 - Fix #86 It shall allow `null` value for enum type parameter when do the request parameter binding
 - Fix #87 DependencyInjectionListener shall register with sub classes of the target class also
+- Fix #88 Controller context break with intermediate non-controller class in the hierarchies
 
 1.0.1
 - Fix #79 static action handler method cause NPE
@@ -125,19 +139,18 @@
     <commons-fileupload.version>1.3.2</commons-fileupload.version>
     <ecj.version>4.6.1</ecj.version>
     <fastjson.version>1.2.29</fastjson.version>
-    <hibernate-validator.version>5.1.3.Final</hibernate-validator.version>
     <bval.version>1.1.2</bval.version>
     <javax.inject.version>1</javax.inject.version>
     <javax.mail.version>1.5.0-b01</javax.mail.version>
     <jfiglet.version>0.0.8</jfiglet.version>
     <jline.version>2.14.3</jline.version>
-    <joda-time.version>2.9.7</joda-time.version>
+    <joda-time.version>2.9.9</joda-time.version>
     <okhttp.version>3.6.0</okhttp.version>
     <osgl-genie.version>[1.0.1, 2.0.0)</osgl-genie.version>
     <osgl-mvc.version>[1.0.2, 2.0.0)</osgl-mvc.version>
     <osgl-tool-ext.version>[1.0.0, 2.0.0)</osgl-tool-ext.version>
     <reflectasm.version>1.11.3</reflectasm.version>
-    <rythmengine.version>[1.1.7, 2.0.0)</rythmengine.version>
+    <rythmengine.version>[1.2.0, 2.0.0)</rythmengine.version>
     <validation-api.version>1.1.0.Final</validation-api.version>
     <undertow.version>1.4.11.Final</undertow.version>
     <zxing.javase.version>3.3.0</zxing.javase.version>
@@ -338,11 +351,6 @@
       <version>${act-asm.version}</version>
     </dependency>
 
-    <!--<dependency>-->
-      <!--<groupId>org.hibernate</groupId>-->
-      <!--<artifactId>hibernate-validator</artifactId>-->
-      <!--<version>${hibernate-validator.version}</version>-->
-    <!--</dependency>-->
     <dependency>
       <groupId>org.apache.bval</groupId>
       <artifactId>org.apache.bval.bundle</artifactId>
