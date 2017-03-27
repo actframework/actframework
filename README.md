@@ -3,8 +3,10 @@
 [![Join the chat at https://gitter.im/actframework/actframework](https://badges.gitter.im/actframework/actframework.svg)](https://gitter.im/actframework/actframework?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 ## News
-* 13/Mar/2017 ACT 1.0.2 released to Maven Central Repository
-* 09/Mar/2017 ACT 1.0.0 released to Maven Central repository
+* 27/Mar/2017 ACT 1.0.5 released
+* 20/Mar/2017 ACT 1.0.3 released
+* 13/Mar/2017 ACT 1.0.2 released
+* 09/Mar/2017 ACT 1.0.0 released
 * ACT 0.7.0-SNAPSHOT: rewrite JSR 303/349 Validation integration
 * A [TodoBackend](http://www.todobackend.com/) project written in ActFramework: http://github.com/greenlaw110/todomvc-act
 * Actframework 正式登录[码云](https://git.oschina.net/actframework/actframework)以及[开源中国](http://www.oschina.net/p/actframework)
