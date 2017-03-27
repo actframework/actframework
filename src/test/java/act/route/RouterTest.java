@@ -204,8 +204,8 @@ public class RouterTest extends RouterTestBase {
 
     @Test(expected = DuplicateRouteMappingException.class)
     public void itShallNotAllowAddingHandlersToSameRouteEndingWithDynamicPart() {
-        router.addMapping(GET, "/foo/{id}", "Controller.foo", RouteSource.ACTION_ANNOTATION);
-        router.addMapping(GET, "/foo/{id}", "Foo.bar", RouteSource.ACTION_ANNOTATION);
+        router.addMapping(GET, "/foo/{id}", "Controller.foo", ACTION_ANNOTATION);
+        router.addMapping(GET, "/foo/{id}", "Foo.bar", ACTION_ANNOTATION);
     }
 
     @Test
@@ -245,6 +245,16 @@ public class RouterTest extends RouterTestBase {
         eq("com.my.comp.proj_a.controller.MyController.home", Router.inferFullActionPath("home", provider));
         eq("com.my.comp.proj_a.controller.YourController.home", Router.inferFullActionPath("YourController.home", provider));
         eq("pkg.YourController.home", Router.inferFullActionPath("pkg.YourController.home", provider));
+    }
+
+    @Test
+    public void ghIssue121() {
+        router.addMapping(GET, "/abc/134/foo/{a}", "pkg.Foo.any", ACTION_ANNOTATION);
+        router.addMapping(GET, "/abc/134/foo/bar", "pkg.Foo.bar", ACTION_ANNOTATION);
+        router.addMapping(GET, "/abc/134/foo/zee", "pkg.Foo.zee", ACTION_ANNOTATION);
+        eq("/abc/134/foo/abc", router.reverseRoute("pkg.Foo.any", C.<String, Object>map("a", "abc")));
+        eq("/abc/134/foo/bar", router.reverseRoute("pkg.Foo.bar"));
+        eq("/abc/134/foo/zee", router.reverseRoute("pkg.Foo.zee"));
     }
 
 }

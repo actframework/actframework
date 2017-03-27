@@ -1871,7 +1871,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         if (null == renderJsonOutputCharset) {
             renderJsonOutputCharset = get(RENDER_JSON_OUTPUT_CHARSET);
             if (null == renderJsonOutputCharset) {
-                renderJsonOutputCharset = true;
+                renderJsonOutputCharset = false;
             }
         }
         return renderJsonOutputCharset;
