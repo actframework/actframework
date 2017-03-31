@@ -751,7 +751,7 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
     }
 
     public static void clearLocal() {
-        _local.remove();
+        clearCurrent();
     }
 
     private Set<Map.Entry<String, String[]>> requestParamCache() {
