@@ -39,8 +39,11 @@ public abstract class DaoBase<ID_TYPE, MODEL_TYPE, QUERY_TYPE extends Dao.Query<
     private SecurityContext secCtx;
     private boolean destroyed;
     protected Type modelType;
+    protected Class<MODEL_TYPE> modelClass;
     protected Type idType;
+    protected Class<ID_TYPE> idClass;
     protected Type queryType;
+    protected Class<QUERY_TYPE> queryClass;
 
     public DaoBase() {
         exploreTypes();
@@ -48,7 +51,9 @@ public abstract class DaoBase<ID_TYPE, MODEL_TYPE, QUERY_TYPE extends Dao.Query<
 
     public DaoBase(Class<ID_TYPE> idType, Class<MODEL_TYPE> modelType) {
         this.idType = $.notNull(idType);
+        this.idClass = Generics.classOf(idType);
         this.modelType = $.notNull(modelType);
+        this.modelClass = Generics.classOf(modelType);
     }
 
 
@@ -68,17 +73,17 @@ public abstract class DaoBase<ID_TYPE, MODEL_TYPE, QUERY_TYPE extends Dao.Query<
 
     @Override
     public Class<ID_TYPE> idType() {
-        return Generics.classOf(idType);
+        return idClass;
     }
 
     @Override
     public Class<MODEL_TYPE> modelType() {
-        return Generics.classOf(modelType);
+        return modelClass;
     }
 
     @Override
     public Class<QUERY_TYPE> queryType() {
-        return Generics.classOf(queryType);
+        return queryClass;
     }
 
     @Override
@@ -114,11 +119,14 @@ public abstract class DaoBase<ID_TYPE, MODEL_TYPE, QUERY_TYPE extends Dao.Query<
         }
         if (sz > 2) {
             queryType = types.get(2);
+            queryClass = Generics.classOf(queryType);
         }
         if (sz > 1) {
             modelType = types.get(1);
+            modelClass = Generics.classOf(modelType);
         }
         idType = types.get(0);
+        idClass = Generics.classOf(idType);
     }
 
 }

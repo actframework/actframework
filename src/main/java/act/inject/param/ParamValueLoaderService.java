@@ -241,9 +241,31 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
         int modifiers = field.getModifiers();
         return Modifier.isStatic(modifiers)
                 || Modifier.isTransient(modifiers)
+                || noBind(field.getDeclaringClass())
                 || field.isAnnotationPresent(NoBind.class)
                 || fieldBlackList.contains(field.getName())
-                || Object.class.equals(field.getDeclaringClass());
+                || Object.class.equals(field.getDeclaringClass())
+                || field.getDeclaringClass().isAnnotationPresent(NoBind.class);
+    }
+
+    private ConcurrentMap<Class, Boolean> noBindCache = new ConcurrentHashMap<>();
+
+    private boolean noBind(Class c) {
+        Boolean b = noBindCache.get(c);
+        if (null != b) {
+            return b;
+        }
+        Annotation[] aa = c.getDeclaredAnnotations();
+        if (null != aa) {
+            for (Annotation a: aa) {
+                if (a.annotationType() == NoBind.class) {
+                    noBindCache.putIfAbsent(c, true);
+                    return true;
+                }
+            }
+        }
+        noBindCache.putIfAbsent(c, false);
+        return false;
     }
 
     private <T> Map<Field, ParamValueLoader> fieldLoaders(Class<T> beanClass) {

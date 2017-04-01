@@ -2365,7 +2365,6 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         }
     }
 
-
     private Set<AppConfigurator> mergeTracker = C.newSet();
 
     public void loadJarProperties(Map<String, Properties> jarProperties) {

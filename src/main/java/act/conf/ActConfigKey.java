@@ -71,6 +71,25 @@ public enum ActConfigKey implements ConfigKey {
      * <pre><code>-Dmode=uat</code></pre>
      */
     MODE("mode", Act.Mode.PROD),
+
+    /**
+     * `act.xio.worker_threads.max`
+     *
+     * specifies the maximum number of worker threads shall be created.
+     *
+     * Default value: `0` meaning let the system decide the worker_threads number
+     */
+    XIO_MAX_WORKER_THREADS("xio.worker_threads.max"),
+
+    /**
+     * `act.xio.statistics.enabled`
+     *
+     * Enable/disable XIO statistics (for undertow only)
+     *
+     * Default value: `false`
+     */
+    XIO_STATISTICS("xio.statistics.enabled"),
+
     /**
      * {@code act.xio.impl} specifies the implementation for the network stack implementation
      */

@@ -20,15 +20,17 @@ package act.xio.undertow;
  * #L%
  */
 
+import act.Act;
 import act.xio.Network;
 import act.xio.NetworkBase;
 import act.xio.NetworkHandler;
 import io.undertow.UndertowOptions;
+import io.undertow.connector.ByteBufferPool;
+import io.undertow.server.DefaultByteBufferPool;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.protocol.http.HttpOpenListener;
-import org.osgl.logging.L;
+import org.osgl.logging.LogManager;
 import org.osgl.logging.Logger;
-import org.osgl.util.C;
 import org.osgl.util.E;
 import org.osgl.util.IO;
 import org.xnio.*;
@@ -36,7 +38,7 @@ import org.xnio.channels.AcceptingChannel;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.nio.ByteBuffer;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -44,27 +46,30 @@ import java.util.List;
  */
 public class UndertowNetwork extends NetworkBase {
 
-    private static final Logger logger = L.get(UndertowNetwork.class);
+    private static final Logger logger = LogManager.get(UndertowNetwork.class);
 
     private Xnio xnio;
     private int ioThreads;
     private XnioWorker worker;
-    private int buffersPerRegion;
-    private Pool<ByteBuffer> buffers;
-    private boolean directBuffers;
     private OptionMap socketOptions;
-    private OptionMap undertowOptions;
+    private OptionMap serverOptions;
     private List<AcceptingChannel<? extends StreamConnection>> channels;
 
     @Override
     protected void bootUp() {
         try {
-            xnio = Xnio.getInstance();
+            xnio = Xnio.getInstance(UndertowNetwork.class.getClassLoader());
             worker = createWorker();
-            buffers = createBuffer();
             socketOptions = createSocketOptions();
-            undertowOptions = OptionMap.builder().set(UndertowOptions.BUFFER_PIPELINED_DATA, true).getMap();
-            channels = C.newList();
+            serverOptions = OptionMap.builder()
+                    .set(UndertowOptions.BUFFER_PIPELINED_DATA, true)
+                    .set(UndertowOptions.ALWAYS_SET_KEEP_ALIVE, false)
+                    .set(UndertowOptions.ALWAYS_SET_DATE, true)
+                    .set(UndertowOptions.RECORD_REQUEST_START_TIME, false)
+                    .set(UndertowOptions.NO_REQUEST_TIMEOUT, 60 * 1000)
+                    .set(UndertowOptions.ENABLE_STATISTICS, Act.conf().xioStatistics())
+                    .getMap();
+            channels = new ArrayList<>();
         } catch (Exception e) {
             throw E.unexpected(e, "Error booting up Undertow service: %s", e.getMessage());
         }
@@ -74,7 +79,8 @@ public class UndertowNetwork extends NetworkBase {
     protected void setUpClient(NetworkHandler client, int port) throws IOException {
 
         HttpHandler handler = new ActHttpHandler(client);
-        HttpOpenListener openListener = new HttpOpenListener(buffers, undertowOptions);
+        ByteBufferPool buffers = new DefaultByteBufferPool(true, 16 * 1024, -1, 4);
+        HttpOpenListener openListener = new HttpOpenListener(buffers, serverOptions);
         openListener.setRootHandler(handler);
         ChannelListener<AcceptingChannel<StreamConnection>> acceptListener = ChannelListeners.openListenerAdapter(openListener);
 
@@ -97,36 +103,21 @@ public class UndertowNetwork extends NetworkBase {
     }
 
     private XnioWorker createWorker() throws IOException {
-        ioThreads = Math.max(Runtime.getRuntime().availableProcessors(), 2);
+        ioThreads = Runtime.getRuntime().availableProcessors() * 2;
         int workerThreads = ioThreads * 8;
-        return xnio.createWorker(OptionMap.builder().set(Options.WORKER_IO_THREADS, ioThreads)
+        int maxWorkerThreads = Act.conf().xioMaxWorkerThreads();
+        if (maxWorkerThreads > 0) {
+            workerThreads = Math.min(maxWorkerThreads, workerThreads);
+        }
+        return xnio.createWorker(OptionMap.builder()
+                .set(Options.WORKER_IO_THREADS, ioThreads)
                 .set(Options.WORKER_TASK_CORE_THREADS, workerThreads)
                 .set(Options.WORKER_TASK_MAX_THREADS, workerThreads)
-                .set(Options.TCP_NODELAY, true).getMap());
-    }
-
-    private Pool<ByteBuffer> createBuffer() {
-        long maxMemory = Runtime.getRuntime().maxMemory();
-        int bufferSize;
-        //smaller than 64mb of ram we use 512b buffers
-        if (maxMemory < 64 * 1024 * 1024) {
-            //use 512b buffers
-            directBuffers = false;
-            bufferSize = 512;
-            buffersPerRegion = 10;
-        } else if (maxMemory < 128 * 1024 * 1024) {
-            //use 1k buffers
-            directBuffers = true;
-            bufferSize = 1024;
-            buffersPerRegion = 10;
-        } else {
-            //use 16k buffers for best performance
-            //as 16k is generally the max amount of data that can be sent in a single write() call
-            directBuffers = true;
-            bufferSize = 1024 * 16;
-            buffersPerRegion = 20;
-        }
-        return new ByteBufferSlicePool(directBuffers ? BufferAllocator.DIRECT_BYTE_BUFFER_ALLOCATOR : BufferAllocator.BYTE_BUFFER_ALLOCATOR, bufferSize, bufferSize * buffersPerRegion);
+                .set(Options.CONNECTION_HIGH_WATER, 1000000)
+                .set(Options.CONNECTION_LOW_WATER, 1000000)
+                .set(Options.TCP_NODELAY, true)
+                .set(Options.CORK, true)
+                .getMap());
     }
 
     private OptionMap createSocketOptions() {
@@ -136,7 +127,9 @@ public class UndertowNetwork extends NetworkBase {
                 .set(Options.REUSE_ADDRESSES, true)
                 .set(Options.BALANCING_TOKENS, 1)
                 .set(Options.BALANCING_CONNECTIONS, 2)
+                .set(Options.BACKLOG, 10000)
                 .getMap();
+
         return socketOptions;
     }
 }

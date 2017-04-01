@@ -26,8 +26,7 @@ import java.io.File;
 import java.net.URI;
 import java.util.Map;
 
-import static act.conf.ActConfigKey.APP_BASE;
-import static act.conf.ActConfigKey.HOME;
+import static act.conf.ActConfigKey.*;
 
 public class ActConfig extends Config<ActConfigKey> {
 
@@ -75,6 +74,31 @@ public class ActConfig extends Config<ActConfigKey> {
             validateDir(appBase, APP_BASE.key());
         }
         return appBase;
+    }
+
+    private Integer xioMaxWorkerThreads;
+    public int xioMaxWorkerThreads() {
+        if (null == xioMaxWorkerThreads) {
+            String s = get(XIO_MAX_WORKER_THREADS);
+            if (null == s) {
+                xioMaxWorkerThreads = 0;
+            } else {
+                xioMaxWorkerThreads = Integer.parseInt(s);
+            }
+        }
+        return xioMaxWorkerThreads;
+    }
+
+
+    private Boolean xioStatistics;
+    public boolean xioStatistics() {
+        if (null == xioStatistics) {
+            xioStatistics = get(XIO_STATISTICS);
+            if (null == xioStatistics) {
+                xioStatistics = false;
+            }
+        }
+        return xioStatistics;
     }
 
     private static void validateDir(File dir, String conf) {
