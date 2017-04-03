@@ -18,6 +18,16 @@
 ********************************************
 *            version history
 ********************************************
+1.0.7
+- #70 Make it able to configure the number of network io threads and work threads
+- #120 configuration render.json.output_charset.enabled default value shall be false
+- #127 qrcode method problem
+- #130 Response outputstream not closed
+- #131 ZXingResult call applyAfterCommitHandler twice
+- #132 "type not recognized: MODEL_TYPE" Error when using a DaoBase subclass as Controller
+- #133 It uses undertow deprecated API to construct HttpOpenListener
+- #134 Fine tune undertow configurations
+
 1.0.6
 - #121 #115 caused issue that failed to add route mapping in certain case
 - Update fastjson to 1.2.30
