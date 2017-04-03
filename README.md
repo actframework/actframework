@@ -3,6 +3,7 @@
 [![Join the chat at https://gitter.im/actframework/actframework](https://badges.gitter.im/actframework/actframework.svg)](https://gitter.im/actframework/actframework?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) [![Lecense](https://img.shields.io/badge/license-Apache%202-4EB1BA.svg)](http://www.apache.org/licenses/LICENSE-2.0.html) [![Maven Central](https://img.shields.io/maven-central/v/org.actframework/act.svg)](http://search.maven.org/#search%7Cgav%7C1%7Cg%3A%22org.actframework%22%20AND%20a%3A%22act%22)
 
 ## News
+* 03/Apr/2017 ACT 1.0.7 released
 * 27/Mar/2017 ACT 1.0.6 released
 * 20/Mar/2017 ACT 1.0.3 released
 * 13/Mar/2017 ACT 1.0.2 released
@@ -18,7 +19,7 @@ shows Act's throughput is 20 times better than of Spring-boot in simple case
 
 ## Project status
 
-- Current stable version: 1.0.0
+- Current stable version: 1.0.7
 
 ## Install
 
