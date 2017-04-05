@@ -169,6 +169,13 @@ public class GenieInjector extends DependencyInjectorBase<GenieInjector> {
                     for (Class<? extends Annotation> injectTag : injectTags) {
                         genie.registerInjectTag(injectTag);
                     }
+
+                    genie.registerProvider(Genie.class, new Provider<Genie>() {
+                        @Override
+                        public Genie get() {
+                            return genie;
+                        }
+                    });
                 }
             }
         }

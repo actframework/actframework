@@ -126,13 +126,7 @@ public class DbServiceManager extends AppServiceBase<DbServiceManager> implement
     public Dao dao(Class<?> modelClass) {
         Dao dao = modelDaoMap.get(modelClass);
         if (null == dao) {
-            String svcId = DEFAULT;
-            Annotation[] aa = modelClass.getDeclaredAnnotations();
-            for (Annotation a : aa) {
-                if (a instanceof DB) {
-                    svcId = ((DB)a).value();
-                }
-            }
+            String svcId = dbId(modelClass);
             DbService dbService = dbService(svcId);
             dao = dbService.defaultDao(modelClass);
             modelDaoMap.put(modelClass, dao);
@@ -236,5 +230,13 @@ public class DbServiceManager extends AppServiceBase<DbServiceManager> implement
         DbService svc = plugin.initDbService(dbId, app(), svcConf);
         serviceMap.put(svcId, svc);
         logger.info("db service[%s] initialized", svcId);
+    }
+
+    public static String dbId(Class<?> modelClass) {
+        DB db = modelClass.getAnnotation(DB.class);
+        if (null != db) {
+            return db.value();
+        }
+        return DbServiceManager.DEFAULT;
     }
 }

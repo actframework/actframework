@@ -43,7 +43,7 @@ public class EntityClassEnhancer extends AppByteCodeEnhancer<EntityClassEnhancer
     private DbServiceManager dbm;
 
     public EntityClassEnhancer() {
-        super(S.F.startsWith("act.").negate().or(S.F.startsWith("act.fsa")));
+        super(S.F.startsWith("act.").negate());
     }
 
     @Override
