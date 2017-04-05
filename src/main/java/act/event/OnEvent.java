@@ -45,4 +45,12 @@ public @interface OnEvent {
      */
     boolean async() default false;
 
+    /**
+     * When specified as `true` then this is to handle event that triggered before
+     * application get started and it shall get hooked immediately after classes has
+     * been loaded
+     * @return `true` if the event handler needs to be registered early before app started
+     */
+    boolean beforeAppStart() default false;
+
 }

@@ -65,7 +65,8 @@ public class SimpleEventListenerByteCodeScanner extends AppByteCodeScannerBase {
             final EventBus eventBus = app().eventBus();
             AppJobManager jobManager = app().jobManager();
             for (final SimpleEventListenerMetaInfo metaInfo : metaInfoList) {
-                jobManager.on(AppEventId.PRE_START, new Runnable() {
+                AppEventId hookOn = metaInfo.beforeAppStart() ? AppEventId.DEPENDENCY_INJECTOR_PROVISIONED : AppEventId.PRE_START;
+                jobManager.on(hookOn, new Runnable() {
                     @Override
                     public void run() {
                         for (final Object event : metaInfo.events()) {
@@ -112,7 +113,7 @@ public class SimpleEventListenerByteCodeScanner extends AppByteCodeScannerBase {
                 private List<Object> events = C.newList();
                 private List<$.Func0> delayedEvents = C.newList();
                 private boolean isOnEvent = false;
-
+                private boolean beforeAppStart = false;
                 private boolean isAsync;
 
                 private String asyncMethodName = null;
@@ -183,6 +184,8 @@ public class SimpleEventListenerByteCodeScanner extends AppByteCodeScannerBase {
                             public void visit(String name, Object value) {
                                 if ("async".equals(name)) {
                                     isAsync = Boolean.parseBoolean(S.string(value));
+                                } else if ("beforeAppStart".equals(name)) {
+                                    beforeAppStart = Boolean.parseBoolean(S.string(value));
                                 }
                             }
 
@@ -227,7 +230,7 @@ public class SimpleEventListenerByteCodeScanner extends AppByteCodeScannerBase {
                     }
                     if (!events.isEmpty() || !delayedEvents.isEmpty()) {
                         SimpleEventListenerMetaInfo metaInfo = new SimpleEventListenerMetaInfo(
-                                events, delayedEvents, className, methodName, asyncMethodName, paramTypes, isAsync, isStatic, app());
+                                events, delayedEvents, className, methodName, asyncMethodName, paramTypes, isAsync, isStatic, beforeAppStart, app());
                         metaInfoList.add(metaInfo);
                     }
                     super.visitEnd();

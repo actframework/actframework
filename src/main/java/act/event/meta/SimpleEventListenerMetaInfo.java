@@ -44,6 +44,7 @@ public class SimpleEventListenerMetaInfo {
     private List<BeanSpec> paramTypes;
     private boolean async;
     private boolean isStatic;
+    private boolean beforeAppStart;
 
     public SimpleEventListenerMetaInfo(
             final List<Object> events,
@@ -54,6 +55,7 @@ public class SimpleEventListenerMetaInfo {
             final List<String> paramTypes,
             boolean async,
             boolean isStatic,
+            boolean beforeAppStart,
             App app
     ) {
         int eventCnt = null == events ? 0 : events.size();
@@ -68,7 +70,9 @@ public class SimpleEventListenerMetaInfo {
 
         this.async = async;
         this.isStatic = isStatic;
-        app.jobManager().on(AppEventId.DEPENDENCY_INJECTOR_PROVISIONED, new Runnable() {
+        this.beforeAppStart = beforeAppStart;
+        AppEventId hookOn = beforeAppStart ? AppEventId.DEPENDENCY_INJECTOR_LOADED : AppEventId.DEPENDENCY_INJECTOR_PROVISIONED;
+        app.jobManager().on(hookOn, new Runnable() {
             @Override
             public void run() {
                 SimpleEventListenerMetaInfo.this.paramTypes = convert(paramTypes, className, methodName, $.<Method>var());
@@ -109,6 +113,10 @@ public class SimpleEventListenerMetaInfo {
 
     public boolean isStatic() {
         return isStatic;
+    }
+
+    public boolean beforeAppStart() {
+        return beforeAppStart;
     }
 
     public static List<BeanSpec> convert(List<String> paramTypes, String className, String methodName, $.Var<Method> methodHolder) {
