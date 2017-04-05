@@ -20,25 +20,50 @@ package act.db;
  * #L%
  */
 
+import act.Act;
 import act.app.App;
 import act.app.AppHolderBase;
+import org.osgl.logging.LogManager;
+import org.osgl.logging.Logger;
 import org.osgl.util.E;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
+import java.util.Set;
 
 public abstract class DbService extends AppHolderBase<DbService> {
 
+    protected static final Logger _logger = LogManager.get(DbService.class);
+
     private String id;
 
+    /**
+     * Construct a `DbService` with service ID and the current application
+     * @param id the service ID
+     * @param app the current application
+     */
     public DbService(String id, App app) {
         super(app);
         E.NPE(id);
         this.id = id;
     }
 
+    /**
+     * Returns the DB ID of the service
+     * @return the service ID
+     */
     public String id() {
         return id;
+    }
+
+    /**
+     * Returns all model classes registered on this datasource
+     *
+     * @return model classes talk to this datasource
+     */
+    public Set<Class> modelClasses() {
+        EntityClassRepository repo = Act.getInstance(EntityClassRepository.class);
+        return repo.modelClasses(id());
     }
 
     @Override
@@ -50,6 +75,15 @@ public abstract class DbService extends AppHolderBase<DbService> {
 
     public abstract Class<? extends Annotation> entityAnnotationType();
 
+    /**
+     * Utility method to find the ID type from Model type. Could be used by sub class on {@link #defaultDao(Class)}
+     * method implementation
+     *
+     * @param modelType the model type
+     * @param idAnnotation the ID annotation
+     * @return the ID type
+     */
+    @SuppressWarnings("unused")
     protected static Class<?> findModelIdTypeByAnnotation(Class<?> modelType, Class<? extends Annotation> idAnnotation) {
         Class<?> curClass = modelType;
         while (Object.class != curClass && null != curClass) {

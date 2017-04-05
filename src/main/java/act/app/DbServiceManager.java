@@ -61,6 +61,7 @@ public class DbServiceManager extends AppServiceBase<DbServiceManager> implement
     @Inject
     public DbServiceManager(final App app) {
         super(app);
+        EntityClassRepository.init(app);
         initServices(app.config());
         configureSequenceGenerator(app);
         app.eventBus().bind(AppEventId.SINGLETON_PROVISIONED, new AppEventListenerBase() {
@@ -154,14 +155,14 @@ public class DbServiceManager extends AppServiceBase<DbServiceManager> implement
             return;
         }
         DbPlugin db = dbManager.theSolePlugin();
-        Map<String, Object> dbConf = config.subSet("db.");
+        Map<String, String> dbConf = config.subSet("db.");
         if (dbConf.isEmpty()) {
             if (null == db) {
                 logger.warn("DB service not intialized: need to specify default db service implementation");
                 return;
             } else {
                 logger.warn("DB configuration not found. Will try to init default service with the sole db plugin: %s", db);
-                DbService svc = db.initDbService(DEFAULT, app(), new HashMap<String, Object>());
+                DbService svc = db.initDbService(DEFAULT, app(), new HashMap<String, String>());
                 serviceMap.put(DEFAULT, svc);
                 return;
             }
@@ -196,11 +197,11 @@ public class DbServiceManager extends AppServiceBase<DbServiceManager> implement
                     logger.warn("DB service not initialized: need to specify default db service implementation");
                 } else {
                     logger.warn("DB configuration not found. Will try to init default service with the sole db plugin: %s", db);
-                    Map<String, Object> svcConf = C.newMap();
+                    Map<String, String> svcConf = C.newMap();
                     String prefix = "db.";
                     for (String key : dbConf.keySet()) {
                         if (key.startsWith(prefix)) {
-                            Object o = dbConf.get(key);
+                            String o = dbConf.get(key);
                             svcConf.put(key.substring(prefix.length()), o);
                         }
                     }
@@ -214,12 +215,12 @@ public class DbServiceManager extends AppServiceBase<DbServiceManager> implement
         }
     }
 
-    private void initService(String dbId, Map<String, Object> conf) {
-        Map<String, Object> svcConf = C.newMap();
+    private void initService(String dbId, Map<String, String> conf) {
+        Map<String, String> svcConf = C.newMap();
         String prefix = "db." + (S.empty(dbId) ? "" : dbId + ".");
         for (String key : conf.keySet()) {
             if (key.startsWith(prefix)) {
-                Object o = conf.get(key);
+                String o = conf.get(key);
                 svcConf.put(key.substring(prefix.length()), o);
             }
         }

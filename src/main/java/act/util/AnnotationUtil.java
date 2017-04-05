@@ -47,21 +47,19 @@ public class AnnotationUtil {
      * @return the annotation tagged on annotation of type `tagClass`
      */
     public static <T extends Annotation> T annotation(Annotation annotation, Class<T> tagClass) {
-        Class<?> c = classOf(annotation);
-        for (Annotation a : c.getAnnotations()) {
-            if (tagClass.isInstance(a)) {
-                return (T) a;
-            }
-        }
-        return null;
+        Class<?> c = annotation.annotationType();
+        return c.getAnnotation(tagClass);
     }
 
     /**
+     * **Note** this method is deprecated. Please use {@link Annotation#annotationType} instead
+     *
      * Returns the class of an annotation instance
      * @param annotation the annotation instance
      * @param <T> the generic type of the annotation
      * @return the real annotation class
      */
+    @Deprecated
     public static <T extends Annotation> Class<T> classOf(Annotation annotation) {
         Class<?>[] ca = annotation.getClass().getInterfaces();
         for (Class<?> c: ca) {
@@ -70,5 +68,17 @@ public class AnnotationUtil {
             }
         }
         throw new UnexpectedException("!!!");
+    }
+
+    public static <T extends Annotation> T getAnnotation(Class<?> targetClass, Class<T> annotationClass) {
+        if (Object.class == targetClass) {
+            return null;
+        }
+        T annotation = targetClass.getAnnotation(annotationClass);
+        if (null != annotation) {
+            return annotation;
+        }
+        targetClass = targetClass.getSuperclass();
+        return null != targetClass ? getAnnotation(targetClass, annotationClass) : null;
     }
 }
