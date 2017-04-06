@@ -1944,31 +1944,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         if (null == cookiePrefix) {
             cookiePrefix = get(COOKIE_PREFIX);
             if (null == cookiePrefix) {
-                String appName = app().name();
-                if (S.blank(appName)) {
-                    appName = "act";
-                }
-                String[] sa = appName.split("[\\s]+");
-                int len = sa.length;
-                switch (len) {
-                    case 1:
-                        String s = sa[0];
-                        cookiePrefix = S.concat(s.length() > 2 ? s.substring(0, 3) : s, "-");
-                        break;
-                    case 2:
-                        String s1 = sa[0], s2 = sa[1];
-                        s1 = s1.length() > 1 ? s1.substring(0, 2) : s1;
-                        s2 = s2.length() > 1 ? s2.substring(0, 2) : s2;
-                        cookiePrefix = S.concat(s1, "-", s2, "-");
-                        break;
-                    default:
-                        cookiePrefix = S.concat(
-                                sa[0].substring(0, 1),
-                                sa[1].substring(0, 1),
-                                sa[2].substring(0, 1),
-                                "-"
-                        );
-                }
+                cookiePrefix = S.concat(app().id(), "-");
             }
             cookiePrefix = cookiePrefix.trim().toLowerCase();
         }

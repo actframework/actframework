@@ -65,6 +65,7 @@ import org.osgl.logging.Logger;
 import org.osgl.util.*;
 
 import java.io.File;
+import java.lang.management.ManagementFactory;
 import java.text.CharacterIterator;
 import java.text.StringCharacterIterator;
 import java.util.List;
@@ -814,18 +815,32 @@ public final class Act {
     private static void writePidFile() {
         String pidFile = System.getProperty("pidfile");
         if (S.blank(pidFile)) {
-            return;
+            pidFile = "act.pid";
         }
         OS os = OS.get();
+        String pid;
         if (os.isLinux()) {
-            try {
-                String pid = Env.PID.get();
-                IO.writeContent(pid, new File(pidFile));
-            } catch (Exception e) {
-                LOGGER.warn(e, "Error writing pid file: %s", e.getMessage());
-            }
+            pid = Env.PID.get();
         } else {
-            LOGGER.warn("Write pid file not supported on non-linux system");
+            try {
+                // see http://stackoverflow.com/questions/35842/how-can-a-java-program-get-its-own-process-id
+                String name = ManagementFactory.getRuntimeMXBean().getName();
+                int pos = name.indexOf('@');
+                if (pos > 0) {
+                    pid = name.substring(0, pos);
+                } else {
+                    LOGGER.warn("Write pid file not supported on non-linux system");
+                    return;
+                }
+            } catch (Exception e) {
+                LOGGER.warn("Write pid file not supported on non-linux system");
+                return;
+            }
+        }
+        try {
+            IO.writeContent(pid, new File(pidFile));
+        } catch (Exception e) {
+            LOGGER.warn(e, "Error writing pid file: %s", e.getMessage());
         }
     }
 

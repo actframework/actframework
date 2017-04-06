@@ -104,6 +104,7 @@ public class App extends DestroyableBase {
 
     private volatile String profile;
     private String name;
+    private String id;
     private File appBase;
     private File appHome;
     private Router router;
@@ -159,6 +160,7 @@ public class App extends DestroyableBase {
 
     protected App(String name, File appBase, ProjectLayout layout) {
         this.name = name;
+        this.id = generateId(name);
         this.appBase = appBase;
         this.layout = layout;
         this.appHome = RuntimeDirs.home(this);
@@ -171,11 +173,52 @@ public class App extends DestroyableBase {
 
     App name(String name) {
         this.name = name;
+        this.id = generateId(name);
         return this;
     }
 
     public String name() {
         return name;
+    }
+
+    /**
+     * Returns short id which is derived from passed in app name.
+     *
+     * **Note** `App.id()` is by no means to create a unique identifier of application.
+     *
+     * @return the short name
+     */
+    public String id() {
+        return id;
+    }
+
+    private static String generateId(String name) {
+        String id;
+        if (S.blank(name) || "MyApp".equals(name)) {
+            return "act";
+        }
+        String[] sa = name.split("[\\s]+");
+        int len = sa.length;
+        switch (len) {
+            case 1:
+                String s = sa[0];
+                id = s.length() > 2 ? s.substring(0, 3) : s;
+                break;
+            case 2:
+                String s1 = sa[0], s2 = sa[1];
+                s1 = s1.length() > 1 ? s1.substring(0, 2) : s1;
+                s2 = s2.length() > 1 ? s2.substring(0, 2) : s2;
+                id = S.concat(s1, "-", s2);
+                break;
+            default:
+                id = S.concat(
+                        sa[0].substring(0, 1),
+                        sa[1].substring(0, 1),
+                        sa[2].substring(0, 1),
+                        "-"
+                );
+        }
+        return id;
     }
 
     public String profile() {
