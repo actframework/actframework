@@ -40,6 +40,7 @@ import org.osgl.util.E;
 import org.osgl.util.S;
 
 import java.lang.annotation.Annotation;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -142,10 +143,14 @@ public class JobByteCodeScanner extends AppByteCodeScannerBase {
                     Class<? extends Annotation> c = (Class<? extends Annotation>)Class.forName(className);
                     if (JobClassMetaInfo.isActionAnnotation(c)) {
                         markRequireScan();
-                        JobMethodMetaInfo tmp = new JobMethodMetaInfo(classInfo, paramTypes);
-                        methodInfo = tmp;
-                        classInfo.addAction(tmp);
-                        this.aav = new ActionAnnotationVisitor(av, c, methodInfo);
+                        if (null == methodInfo) {
+                            JobMethodMetaInfo tmp = new JobMethodMetaInfo(classInfo, paramTypes);
+                            methodInfo = tmp;
+                            classInfo.addAction(tmp);
+                            this.aav = new ActionAnnotationVisitor(av, c, methodInfo);
+                        } else {
+                            this.aav.add(c);
+                        }
                         return this.aav;
                     } else if (Env.isEnvAnnotation(c)) {
                         this.eav = new EnvAnnotationVisitor(av, c);
@@ -191,21 +196,25 @@ public class JobByteCodeScanner extends AppByteCodeScannerBase {
 
             private class ActionAnnotationVisitor extends AnnotationVisitor implements Opcodes {
 
-                Object value;
-                Object async;
+                List<AnnoInfo> annoInfos = new ArrayList<>();
+                AnnoInfo currentInfo;
                 JobMethodMetaInfo method;
-                Class<? extends Annotation> c;
 
                 public ActionAnnotationVisitor(AnnotationVisitor av, Class<? extends Annotation> c, JobMethodMetaInfo methodMetaInfo) {
                     super(ASM5, av);
-                    this.c = c;
                     this.method = methodMetaInfo;
+                    this.add(c);
+                }
+
+                void add(Class<? extends Annotation> annotationClass) {
+                    currentInfo = new AnnoInfo(annotationClass);
+                    annoInfos.add(currentInfo);
                 }
 
                 @Override
                 public void visitEnum(String name, String desc, String value) {
                     if (desc.contains("AppEventId")) {
-                        this.value = AppEventId.valueOf(value);
+                        this.currentInfo.value = AppEventId.valueOf(value);
                     }
                     super.visitEnum(name, desc, value);
                 }
@@ -213,9 +222,9 @@ public class JobByteCodeScanner extends AppByteCodeScannerBase {
                 @Override
                 public void visit(String name, Object value) {
                     if ("value".equals(name)) {
-                        this.value = value;
+                        this.currentInfo.value = value;
                     } else if ("async".equals(name)) {
-                        this.async = value;
+                        this.currentInfo.async = value;
                     } else if ("id".equals(name)) {
                         this.method.id(S.string(value));
                     }
@@ -223,15 +232,30 @@ public class JobByteCodeScanner extends AppByteCodeScannerBase {
                 }
 
                 public void doRegistration() {
-                    if (value != null && async != null) {
-                        value = $.T2(value, async);
-                    } else if (value == null) {
-                        value = async;
+                    for (AnnoInfo info : annoInfos) {
+                        Object value = info.value;
+                        Object async = info.async;
+                        if (value != null && async != null) {
+                            value = $.T2(value, async);
+                        } else if (value == null) {
+                            value = async;
+                        }
+                        annotationProcessor.register(method, info.annotationType, value);
                     }
-                    annotationProcessor.register(method, c, value);
                 }
             }
         }
     }
+
+    private static class AnnoInfo {
+        Object value;
+        Object async;
+        Class<? extends Annotation> annotationType;
+
+        AnnoInfo(Class <? extends Annotation> annoType) {
+            this.annotationType = annoType;
+        }
+    }
+
 
 }
