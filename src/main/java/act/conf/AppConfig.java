@@ -1212,6 +1212,45 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         }
     }
 
+    private boolean urlContextInitialized;
+    private String urlContext;
+    protected T urlContext(String context) {
+        this.urlContext = context;
+        urlContextInitialized = S.notBlank(context);
+        return me();
+    }
+    public String urlContext() {
+        if (!urlContextInitialized) {
+            urlContext = get(URL_CONTEXT);
+            if (null != urlContext) {
+                urlContext = urlContext.trim();
+                if (urlContext.length() == 0) {
+                    urlContext = null;
+                } else {
+                    while (urlContext.endsWith("/")) {
+                        urlContext = urlContext.substring(0, urlContext.length() - 1);
+                    }
+                    if (urlContext.length() == 0) {
+                        urlContext = null;
+                    } else if (!urlContext.startsWith("/")) {
+                        urlContext = S.concat("/", urlContext);
+                    }
+                }
+                if (null != urlContext && urlContext.contains(" ")) {
+                    throw E.invalidConfiguration("url context shall not contains white space");
+                }
+            }
+            urlContextInitialized = true;
+        }
+        return urlContext;
+    }
+    private void _mergeUrlContext(AppConfig conf) {
+        if (!hasConfiguration(URL_CONTEXT)) {
+            urlContext = conf.urlContext;
+            urlContextInitialized = conf.urlContextInitialized;
+        }
+    }
+
 
     private int httpMaxParams = -1;
     protected T httpMaxParams(int max) {
@@ -2417,6 +2456,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         _mergeHost(conf);
         _mergeLoginUrl(conf);
         _mergeAjaxLoginUrl(conf);
+        _mergeUrlContext(conf);
         _mergeHttpMaxParams(conf);
         _mergeJobPoolSize(conf);
         _mergeMissingAuthenticationHandler(conf);

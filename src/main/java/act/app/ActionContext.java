@@ -422,8 +422,11 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
     }
 
     public ActionContext applyCorsSpec() {
-        CORS.Spec spec = handler().corsSpec();
-        spec.applyTo(this);
+        RequestHandler handler = handler();
+        if (null != handler) {
+            CORS.Spec spec = handler.corsSpec();
+            spec.applyTo(this);
+        }
         applyGlobalCorsSetting();
         return this;
     }

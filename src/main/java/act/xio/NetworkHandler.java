@@ -25,6 +25,7 @@ import act.app.ActionContext;
 import act.app.App;
 import act.app.util.NamedPort;
 import act.handler.RequestHandler;
+import act.handler.builtin.AlwaysNotFound;
 import act.handler.builtin.controller.FastRequestHandler;
 import act.handler.builtin.controller.RequestHandlerProxy;
 import act.metric.Metric;
@@ -40,6 +41,7 @@ import org.osgl.http.H;
 import org.osgl.logging.LogManager;
 import org.osgl.logging.Logger;
 import org.osgl.mvc.result.ErrorResult;
+import org.osgl.mvc.result.NotFound;
 import org.osgl.mvc.result.Result;
 import org.osgl.util.E;
 import org.osgl.util.S;
@@ -56,12 +58,23 @@ public class NetworkHandler extends DestroyableBase {
     private NamedPort port;
     private Metric metric;
     private $.Func2<H.Request, String, String> contentSuffixProcessor;
+    private $.Func2<H.Request, String, String> urlContextProcessor;
 
     public NetworkHandler(App app) {
         E.NPE(app);
         this.app = app;
         this.metric = Act.metricPlugin().metric("act.http");
+        this.initUrlProcessors();
+    }
+
+    private void initUrlProcessors() {
         this.contentSuffixProcessor = app.config().contentSuffixAware() ? new ContentSuffixSensor() : DUMB_CONTENT_SUFFIX_SENSOR;
+        String urlContext = app.config().urlContext();
+        if (null != urlContext) {
+            this.urlContextProcessor = new UrlContextProcessor(urlContext);
+        } else {
+            this.urlContextProcessor = DUMB_CONTENT_SUFFIX_SENSOR;
+        }
     }
 
     public NetworkHandler(App app, NamedPort port) {
@@ -80,10 +93,21 @@ public class NetworkHandler extends DestroyableBase {
         final H.Request req = ctx.req();
         String url = req.url();
         H.Method method = req.method();
-        if (Act.isDev() && !url.startsWith("/asset/")) {
-            app.checkUpdates(false);
+        if (Act.isDev()) {
+            boolean updated = app.checkUpdates(false);
+            if (updated) {
+                initUrlProcessors();
+            }
         }
         url = contentSuffixProcessor.apply(req, url);
+        try {
+            url = urlContextProcessor.apply(req, url);
+        } catch (NotFound notFound) {
+            ctx.handler(AlwaysNotFound.INSTANCE);
+            ctx.saveLocal();
+            AlwaysNotFound.INSTANCE.apply(ctx);
+            return;
+        }
         Timer timer = metric.startTimer(MetricInfo.ROUTING);
         final RequestHandler requestHandler = router().getInvoker(method, url, ctx);
         ctx.handler(requestHandler);
@@ -164,6 +188,25 @@ public class NetworkHandler extends DestroyableBase {
             return s;
         }
     };
+
+    static class UrlContextProcessor implements $.Func2<H.Request, String, String> {
+
+        private String context;
+        private int contextLen;
+
+        UrlContextProcessor(String context) {
+            this.context = context;
+            this.contextLen = context.length();
+        }
+
+        @Override
+        public String apply(H.Request request, String s) throws NotAppliedException, Osgl.Break {
+            if (s.length() < contextLen || !s.startsWith(context)) {
+                throw NotFound.get();
+            }
+            return s.substring(contextLen, s.length());
+        }
+    }
 
     /**
      * Process URL suffix based on suffix
@@ -324,9 +367,9 @@ public class NetworkHandler extends DestroyableBase {
                     initPos = 2;
                     switch (c) {
                         case 'a':
-                          trait = wav;
-                          fmt = H.Format.WAV;
-                          break;
+                            trait = wav;
+                            fmt = H.Format.WAV;
+                            break;
                         case 'l':
                             trait = flv;
                             fmt = H.Format.FLV;

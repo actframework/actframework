@@ -2,6 +2,11 @@
 
 @args org.osgl.mvc.result.ErrorResult _error
 
+@if(null != _conf.urlContext() && null == _action.router()) {
+<p>@actMsg("e404.url_context.not_match")</p>
+@return
+}
+
 @section(moreStyles){
 <style>
   code, table {

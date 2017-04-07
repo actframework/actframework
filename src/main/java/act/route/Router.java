@@ -286,7 +286,7 @@ public class Router extends AppServiceBase<Router> {
         for (H.Method m : supportedHttpMethods()) {
             String url = reverseRoute(fullAction, m, args);
             if (null != url) {
-                return url;
+                return ensureUrlContext(url);
             }
         }
         return null;
@@ -415,11 +415,12 @@ public class Router extends AppServiceBase<Router> {
         String scheme = secure ? "https" : "http";
 
         String domain = config.host();
+        String urlContext = config.urlContext();
 
         if (80 == port || 443 == port) {
-            return S.fmt("%s://%s", scheme, domain);
+            return S.concat(scheme, "://", domain);
         } else {
-            return S.fmt("%s://%s:%s", scheme, domain, port);
+            return S.concat(scheme, "://", domain, ":", S.string(port));
         }
     }
 
@@ -435,6 +436,26 @@ public class Router extends AppServiceBase<Router> {
         }
     }
 
+    private String ensureUrlContext(String path) {
+        String urlContext = appConfig.urlContext();
+        if (null == urlContext || path.startsWith(urlContext)) {
+            if ("/".equals(path)) {
+                path = "";
+            }
+            return path;
+        }
+        if (!path.startsWith("/")) {
+            path = S.concat("/", path);
+            if (path.startsWith(urlContext)) {
+                return path;
+            }
+        }
+        if ("/".equals(path)) {
+            path = "";
+        }
+        return S.concat(urlContext, path);
+    }
+
     public String fullUrl(String path, Object... args) {
         path = S.fmt(path, args);
         if (path.startsWith("//") || path.startsWith("http")) {
@@ -444,9 +465,7 @@ public class Router extends AppServiceBase<Router> {
             path = reverseRoute(path);
         }
         S.Buffer sb = S.newBuffer(urlBase());
-        if (!path.startsWith("/")) {
-            sb.append("/");
-        }
+        path = ensureUrlContext(path);
         return sb.append(S.fmt(path, args)).toString();
     }
 

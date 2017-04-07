@@ -380,17 +380,20 @@ public class App extends DestroyableBase {
         return layout;
     }
 
-    public void checkUpdates(boolean async) {
+    public boolean checkUpdates(boolean async) {
         if (!Act.isDev()) {
-            return;
+            return false;
         }
         synchronized (this) {
             try {
                 detectChanges();
+                return false;
             } catch (RequestRefreshClassLoader refreshRequest) {
                 refresh(async);
+                return true;
             } catch (RequestServerRestart requestServerRestart) {
                 refresh(async);
+                return true;
             }
         }
     }

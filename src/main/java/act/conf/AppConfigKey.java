@@ -784,6 +784,16 @@ public enum AppConfigKey implements ConfigKey {
     UPLOAD_FILE_DOWNLOAD("upload.file.download.enabled"),
 
     /**
+     * `act.url.context` specifies the app URL context.
+     *
+     * If this configuration is specified then all route configured will
+     * be attached to the configured context path.
+     *
+     * Default value: `null`
+     */
+    URL_CONTEXT("url.context"),
+
+    /**
      * {@code url.login} specifies the login URL which is used
      * by {@link act.util.RedirectToLoginUrl}
      * <p>Default value: {@code /login}</p>
