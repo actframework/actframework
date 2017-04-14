@@ -36,7 +36,7 @@ import org.osgl.logging.LogManager;
 import org.osgl.logging.Logger;
 import org.osgl.util.C;
 import org.osgl.util.E;
-import org.rythmengine.utils.S;
+import org.osgl.util.S;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -211,23 +211,23 @@ public class DbServiceManager extends AppServiceBase<DbServiceManager> implement
 
     private void initService(String dbId, Map<String, String> conf) {
         Map<String, String> svcConf = C.newMap();
-        String prefix = "db." + (S.empty(dbId) ? "" : dbId + ".");
+        String prefix = "db." + (S.blank(dbId) ? "" : dbId + ".");
         for (String key : conf.keySet()) {
             if (key.startsWith(prefix)) {
                 String o = conf.get(key);
                 svcConf.put(key.substring(prefix.length()), o);
             }
         }
-        Object impl = svcConf.remove("impl");
+        String impl = svcConf.remove("impl");
         String svcId = S.empty(dbId) ? DEFAULT : dbId;
         if (null == impl) {
             throw new ConfigurationException("Cannot init db service[%s]: implementation not specified", svcId);
         }
-        DbPlugin plugin = Act.dbManager().plugin(impl.toString());
+        DbPlugin plugin = Act.dbManager().plugin(impl);
         if (null == plugin) {
-            throw new ConfigurationException("Cannot init db service[%s]: implementation not found", svcId);
+            throw new ConfigurationException("Cannot init db service[%s]: implementation not found: %s", svcId, impl);
         }
-        DbService svc = plugin.initDbService(dbId, app(), svcConf);
+        DbService svc = plugin.initDbService(S.blank(dbId) ? DEFAULT : dbId, app(), svcConf);
         serviceMap.put(svcId, svc);
         logger.info("db service[%s] initialized", svcId);
     }
