@@ -18,8 +18,18 @@
 ********************************************
 *            version history
 ********************************************
+1.1.1
+- #148 Support get process ID on non-unix environment
+- #147 Unnecessary synchronization ReflectedHandlerInvoker.checkTemplate
+- #146 When db plugin is configured, it uses empty string as service ID
+- #144 `EventBus.bind(Object, SimpleEventListener)` shall check if the object type is `EventObject`
+
 1.1.0
-- #136 Allow `@With` annotation to be used on specific handler method
+- #142 Always generate pid file when app start in prod mode
+- #141 Support context URL path
+- #140 Cannot use multiple Job annotations on one job method
+- #139 allow SimpleEventHandler to be used to handle event happening before app started
+- #138 Update FastJson to 1.2.31
 - #135 Provides SqlDbService as a base class for all SQL based DbService solution
 - upgrade FastJson to 1.2.31
 
