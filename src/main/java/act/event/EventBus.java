@@ -442,7 +442,7 @@ public class EventBus extends AppServiceBase<EventBus> {
     }
 
     @SuppressWarnings("unchecked")
-    private void callOn(Object e, SimpleEventListener l, Object ... args) {
+    private void callOn(SimpleEventListener l, Object ... args) {
         try {
             l.invoke(args);
         } catch (Result r) {
@@ -453,7 +453,7 @@ public class EventBus extends AppServiceBase<EventBus> {
         }
     }
 
-    private boolean callOn(Object event, List<? extends SimpleEventListener> listeners, boolean async, final Object ... args) {
+    private boolean callOn(List<? extends SimpleEventListener> listeners, boolean async, final Object ... args) {
         if (null == listeners) {
             return false;
         }
@@ -469,7 +469,7 @@ public class EventBus extends AppServiceBase<EventBus> {
         listeners = C.list(listeners);
         for (final SimpleEventListener l : listeners) {
             if (!async) {
-                callOn(event, l, args);
+                callOn(l, args);
             } else {
                 jobManager.now(new Runnable() {
                     @Override
@@ -499,8 +499,8 @@ public class EventBus extends AppServiceBase<EventBus> {
     }
 
     private void _emit(boolean async1, boolean async2, Object event, Object ... args) {
-        boolean hit = callOn(event, adhocEventListeners.get(event), async1, args);
-        hit = callOn(event, asyncAdhocEventListeners.get(event), async2, args) || hit;
+        boolean hit = callOn(adhocEventListeners.get(event), async1, args);
+        hit = callOn(asyncAdhocEventListeners.get(event), async2, args) || hit;
         if (!hit && 0 == args.length) {
             _emit(async1, async2, event.getClass(), event);
         }

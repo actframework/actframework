@@ -22,13 +22,15 @@ package act.sys;
 
 import act.Act;
 import org.osgl.util.C;
-import org.rythmengine.utils.S;
+import org.osgl.util.OS;
+import org.osgl.util.S;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.lang.annotation.*;
+import java.lang.management.ManagementFactory;
 import java.lang.reflect.AnnotatedElement;
 
 /**
@@ -174,26 +176,37 @@ public final class Env {
         private static String pid = getPid();
 
         private static String getPid() {
-            File proc_self = new File("/proc/self");
-            if(proc_self.exists()) try {
-                return proc_self.getCanonicalFile().getName();
-            }
-            catch(Exception e) {
-                /// Continue on fall-back
-            }
-            File bash = new File("/bin/bash");
-            if(bash.exists()) {
-                ProcessBuilder pb = new ProcessBuilder("/bin/bash","-c","echo $PPID");
-                try {
-                    Process p = pb.start();
-                    BufferedReader rd = new BufferedReader(new InputStreamReader(p.getInputStream()));
-                    return rd.readLine();
+            OS os = OS.get();
+            if (os.isUnix()) {
+                File proc_self = new File("/proc/self");
+                if(proc_self.exists()) try {
+                    return proc_self.getCanonicalFile().getName();
                 }
-                catch(IOException e) {
-                    return String.valueOf(Thread.currentThread().getId());
+                catch(Exception e) {
+                    /// Continue on fall-back
+                }
+                File bash = new File("/bin/sh");
+                if(bash.exists()) {
+                    ProcessBuilder pb = new ProcessBuilder("/bin/sh","-c","echo $PPID");
+                    try {
+                        Process p = pb.start();
+                        BufferedReader rd = new BufferedReader(new InputStreamReader(p.getInputStream()));
+                        return rd.readLine();
+                    }
+                    catch(IOException e) {
+                        return String.valueOf(Thread.currentThread().getId());
+                    }
+                }
+            } else {
+                String nameOfRunningVM = ManagementFactory.getRuntimeMXBean().getName();
+                if (null != nameOfRunningVM) {
+                    int p = nameOfRunningVM.indexOf('@');
+                    if (p > -1) {
+                        return nameOfRunningVM.substring(0, p);
+                    }
                 }
             }
-            // This is a cop-out to return something when we don't have BASH
+            // The final resort
             return String.valueOf(Thread.currentThread().getId());
         }
 

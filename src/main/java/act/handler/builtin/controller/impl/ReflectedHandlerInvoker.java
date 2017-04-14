@@ -59,8 +59,9 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 /**
  * Implement handler using
@@ -76,7 +77,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
     private MethodAccess methodAccess;
     private M handler;
     private int handlerIndex;
-    private Map<H.Format, Boolean> templateCache = C.newMap();
+    private ConcurrentMap<H.Format, Boolean> templateCache = new ConcurrentHashMap<>();
     protected Method method; //
     private ParamValueLoaderService paramLoaderService;
     private JsonDTOClassManager jsonDTOClassManager;
@@ -438,7 +439,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         return Controller.Util.inferResult(handlerMetaInfo, result, context, hasTemplate);
     }
 
-    private synchronized boolean checkTemplate(ActionContext context) {
+    private boolean checkTemplate(ActionContext context) {
         if (!context.state().isHandling()) {
             // we don't check template on interceptors
             return false;
@@ -450,16 +451,20 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         H.Format fmt = context.accept();
         hasTemplate = templateCache.get(fmt);
         if (null == hasTemplate || Act.isDev()) {
-            if (!TemplatePathResolver.isAcceptFormatSupported(fmt)) {
-                hasTemplate = false;
-            } else {
-                Template t = Act.viewManager().load(context);
-                hasTemplate = t != null;
-            }
-            templateCache.put(fmt, hasTemplate);
+            hasTemplate = probeTemplate(fmt, context);
+            templateCache.putIfAbsent(fmt, hasTemplate);
         }
         context.hasTemplate(hasTemplate);
         return hasTemplate;
+    }
+
+    private boolean probeTemplate(H.Format fmt, ActionContext context) {
+        if (!TemplatePathResolver.isAcceptFormatSupported(fmt)) {
+            return false;
+        } else {
+            Template t = Act.viewManager().load(context);
+            return t != null;
+        }
     }
 
     private Object[] params(Object controller, ActionContext context) {

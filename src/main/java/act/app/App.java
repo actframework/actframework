@@ -818,6 +818,9 @@ public class App extends DestroyableBase {
     }
 
     public void emit(AppEventId appEvent) {
+        if (LOGGER.isTraceEnabled()) {
+            LOGGER.trace(S.concat("emitting event: ", appEvent.name()));
+        }
         currentState = appEvent;
         eventEmitted().add(appEvent);
         EventBus bus = eventBus();
@@ -845,7 +848,7 @@ public class App extends DestroyableBase {
     private void loadConfig() {
         JsonUtilConfig.configure(this);
         File conf = RuntimeDirs.conf(this);
-        logger.debug("loading app configuration: %s ...", appBase.getAbsolutePath());
+        LOGGER.debug("loading app configuration: %s ...", appBase.getAbsolutePath());
         config = new AppConfLoader().load(conf);
         config.app(this);
         configureLoggingLevels();
@@ -1094,13 +1097,13 @@ public class App extends DestroyableBase {
         if (null == di) {
             new GenieInjector(this);
         } else {
-            logger.warn("Third party injector[%s] loaded. Please consider using Act air injection instead", di.getClass());
+            LOGGER.warn("Third party injector[%s] loaded. Please consider using Act air injection instead", di.getClass());
         }
     }
 
     private void loadRoutes() {
         loadBuiltInRoutes();
-        logger.debug("loading app routing table: %s ...", appBase.getPath());
+        LOGGER.debug("loading app routing table: %s ...", appBase.getPath());
         File routes;
         if (Act.isProd()) {
             routes = RuntimeDirs.routes(this);
@@ -1108,7 +1111,7 @@ public class App extends DestroyableBase {
             routes = layout().routeTable(base());
         }
         if (!(routes.isFile() && routes.canRead())) {
-            logger.debug("No route table find found");
+            LOGGER.debug("No route table find found");
             // guess the app is purely using annotation based routes
             return;
         }
