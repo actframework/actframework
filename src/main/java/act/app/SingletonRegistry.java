@@ -71,7 +71,7 @@ public class SingletonRegistry extends AppServiceBase<SingletonRegistry> {
         registry.clear();
     }
 
-    private synchronized void doRegister() {
+    private void doRegister() {
         batchRegistered = true;
         for (Class<?> c : preRegistry.keySet()) {
             registry.put(c, app().getInstance(c));

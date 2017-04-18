@@ -20,6 +20,7 @@ package act.util;
  * #L%
  */
 
+import act.Act;
 import act.app.ActionContext;
 import act.app.App;
 import act.handler.builtin.AlwaysNotFound;
@@ -29,6 +30,7 @@ import org.osgl.http.H;
 import org.osgl.storage.ISObject;
 import org.osgl.storage.IStorageService;
 import org.osgl.storage.KeyGenerator;
+import org.osgl.storage.KeyNameProvider;
 import org.osgl.storage.impl.FileSystemService;
 import org.osgl.storage.impl.SObject;
 import org.osgl.util.C;
@@ -45,8 +47,16 @@ import java.util.UUID;
 
 public class UploadFileStorageService extends FileSystemService {
 
+    public static final KeyNameProvider ACT_STORAGE_KEY_NAME_PROVIDER = new KeyNameProvider() {
+        @Override
+        public String newKeyName() {
+            return Act.cuid();
+        }
+    };
+
     public UploadFileStorageService(Map<String, String> conf) {
         super(conf);
+        this.setKeyNameProvider(ACT_STORAGE_KEY_NAME_PROVIDER);
     }
 
     public static IStorageService create(App app) {
@@ -57,6 +67,7 @@ public class UploadFileStorageService extends FileSystemService {
         Map<String, String> conf = C.newMap("storage.fs.home.dir", Files.file(app.tmpDir(), "uploads").getAbsolutePath(),
                 "storage.keygen", KeyGenerator.BY_DATE.name());
         conf.put(IStorageService.CONF_ID, "__upload");
+        conf.put("storage.storeSuffix", "false");
         return new UploadFileStorageService(conf);
     }
 
