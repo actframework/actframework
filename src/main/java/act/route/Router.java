@@ -54,6 +54,8 @@ import java.util.regex.Pattern;
 
 public class Router extends AppServiceBase<Router> {
 
+    public static final String IGNORE_NOTATION = "...";
+
     private static final H.Method[] targetMethods = new H.Method[]{
             H.Method.GET, H.Method.POST, H.Method.DELETE, H.Method.PUT, H.Method.PATCH};
     private static final Logger logger = L.get(Router.class);
@@ -522,9 +524,25 @@ public class Router extends AppServiceBase<Router> {
         List<CharSequence> paths = Path.tokenize(Unsafe.bufOf(sUrl));
         int len = paths.size();
         for (int i = 0; i < len - 1; ++i) {
-            node = node.addChild((StrBase) paths.get(i), path, action);
+            CharSequence part = paths.get(i);
+            if (checkIgnoreRestParts(node, part)) {
+                return node;
+            }
+            node = node.addChild((StrBase) part, path, action);
         }
-        return node.addChild((StrBase) paths.get(len - 1), path, action);
+        CharSequence part = paths.get(len - 1);
+        if (checkIgnoreRestParts(node, part)) {
+            return node;
+        }
+        return node.addChild((StrBase) part, path, action);
+    }
+
+    private boolean checkIgnoreRestParts(Node node, CharSequence nextPart) {
+        boolean shouldIgnoreRests = S.eq(IGNORE_NOTATION, S.string(nextPart));
+        E.invalidConfigurationIf(node.ignoreRestParts() && !shouldIgnoreRests, "Bad route configuration: parts appended to route that ends with \"...\"");
+        E.invalidConfigurationIf(shouldIgnoreRests && !node.children().isEmpty(), "Bad route configuration: \"...\" appended to node that has children");
+        node.ignoreRestParts(shouldIgnoreRests);
+        return shouldIgnoreRests;
     }
 
     // --- action handler resolving
@@ -593,17 +611,21 @@ public class Router extends AppServiceBase<Router> {
         while (null != node && path.hasNext()) {
             CharSequence nodeName = path.next();
             node = node.child(nodeName, context);
-            if (null != node && node.terminateRouteSearch()) {
-                if (!path.hasNext()) {
-                    context.param(ParamNames.PATH, "");
-                } else {
-                    S.Buffer sb = S.newBuffer();
-                    while (path.hasNext()) {
-                        sb.append('/').append(path.next());
+            if (null != node) {
+                if (node.terminateRouteSearch()) {
+                    if (!path.hasNext()) {
+                        context.param(ParamNames.PATH, "");
+                    } else {
+                        S.Buffer sb = S.newBuffer();
+                        while (path.hasNext()) {
+                            sb.append('/').append(path.next());
+                        }
+                        context.param(ParamNames.PATH, sb.toString());
                     }
-                    context.param(ParamNames.PATH, sb.toString());
+                    break;
+                } else if (node.ignoreRestParts()) {
+                    break;
                 }
-                break;
             }
         }
         return node;
@@ -723,6 +745,9 @@ public class Router extends AppServiceBase<Router> {
         // --- for static node
         private StrBase name;
 
+        // ignore all the rest in URL when routing
+        private boolean ignoreRestParts;
+
         // --- for dynamic node
         private Pattern pattern;
         private String patternTrait;
@@ -785,6 +810,14 @@ public class Router extends AppServiceBase<Router> {
                 return name.compareTo(o.name);
             }
             return fullVar ? 1 : -1;
+        }
+
+        public boolean ignoreRestParts() {
+            return ignoreRestParts;
+        }
+
+        public void ignoreRestParts(boolean ignore) {
+            this.ignoreRestParts = ignore;
         }
 
         public boolean isDynamic() {

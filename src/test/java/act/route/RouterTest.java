@@ -29,6 +29,7 @@ import org.junit.Test;
 import org.mockito.Mockito;
 import org.osgl.$;
 import org.osgl.Osgl;
+import org.osgl.exception.ConfigurationException;
 import org.osgl.exception.NotAppliedException;
 import org.osgl.http.H;
 import org.osgl.util.C;
@@ -131,6 +132,35 @@ public class RouterTest extends RouterTestBase {
         router.getInvoker(GET, "/place/39.87381;-86.1399", ctx).handle(ctx);
         verify(ctx).param("latitude", "39.87381");
         verify(ctx).param("longitude", "-86.1399");
+    }
+
+    @Test
+    public void searchPathEndsWithStar() {
+        router.addMapping(GET, "/foo/bar/*", controller);
+        router.addMapping(GET, "/svc/{id}/*", controller);
+
+        H.Request req = Mockito.mock(H.Request.class);
+        when(ctx.req()).thenReturn(req);
+
+        when(req.path()).thenReturn("/foo/bar/something-should-be-ignored");
+        RequestHandler handler = router.getInvoker(GET, "/foo/bar/something-should-be-ignored", ctx);
+        same(controller, handler);
+
+        when(req.path()).thenReturn("/svc/123/another-thing-should-be-ignored/and-whatever/else");
+        router.getInvoker(GET, "/svc/123/another-thing-should-be-ignored/and-whatever/else", ctx).handle(ctx);
+        verify(ctx).param("id", "123");
+    }
+
+    @Test(expected = ConfigurationException.class)
+    public void routingConfiguredWithEndStarConflict1() {
+        router.addMapping(GET, "/foo/bar/...", controller);
+        router.addMapping(GET, "/foo/bar/xyz", controller);
+    }
+
+    @Test(expected = ConfigurationException.class)
+    public void routingConfiguredWithEndStarConflict2() {
+        router.addMapping(GET, "/foo/bar/xyz", controller);
+        router.addMapping(GET, "/foo/bar/...", controller);
     }
 
     @Test

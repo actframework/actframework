@@ -32,15 +32,15 @@ import java.util.List;
 
 public abstract class DestroyableBase implements Destroyable {
 
-    private boolean destroyed;
+    private volatile boolean destroyed;
 
     private List<Destroyable> subResources = C.newList();
 
     private volatile Class<? extends Annotation> scope;
 
     @Override
-    public synchronized final void destroy() {
-        if (destroyed) {
+    public final void destroy() {
+        if (isDestroyed()) {
             return;
         }
         destroyed = true;
@@ -49,7 +49,7 @@ public abstract class DestroyableBase implements Destroyable {
     }
 
     @Override
-    public final synchronized boolean isDestroyed() {
+    public final boolean isDestroyed() {
         return destroyed;
     }
 

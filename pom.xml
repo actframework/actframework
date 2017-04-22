@@ -18,6 +18,9 @@
 ********************************************
 *            version history
 ********************************************
+1.2.0
+- #157 SEO support on routing
+
 1.1.2
 - #151 Update version of osgl and other dependencies
 - #150 Deadlock while app boot up
