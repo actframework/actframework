@@ -347,7 +347,7 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
         sessionFree = actionHandler.sessionFree();
         express = actionHandler.express();
         App app = this.app;
-        for (InterceptorMethodMetaInfo info : ctrlInfo.beforeInterceptors()) {
+        for (InterceptorMethodMetaInfo info : actionInfo.beforeInterceptors()) {
             if (!applied(info)) {
                 continue;
             }
@@ -356,7 +356,7 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
             sessionFree = sessionFree && interceptor.sessionFree();
             express = express && interceptor.express();
         }
-        for (InterceptorMethodMetaInfo info : ctrlInfo.afterInterceptors()) {
+        for (InterceptorMethodMetaInfo info : actionInfo.afterInterceptors()) {
             if (!applied(info)) {
                 continue;
             }
@@ -365,7 +365,7 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
             sessionFree = sessionFree && interceptor.sessionFree();
             express = express && interceptor.express();
         }
-        for (CatchMethodMetaInfo info : ctrlInfo.exceptionInterceptors()) {
+        for (CatchMethodMetaInfo info : actionInfo.exceptionInterceptors()) {
             if (!applied(info)) {
                 continue;
             }
@@ -376,7 +376,7 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
         }
         Collections.sort(exceptionInterceptors);
 
-        for (InterceptorMethodMetaInfo info : ctrlInfo.finallyInterceptors()) {
+        for (InterceptorMethodMetaInfo info : actionInfo.finallyInterceptors()) {
             if (!applied(info)) {
                 continue;
             }

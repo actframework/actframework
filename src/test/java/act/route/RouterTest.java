@@ -135,9 +135,9 @@ public class RouterTest extends RouterTestBase {
     }
 
     @Test
-    public void searchPathEndsWithStar() {
-        router.addMapping(GET, "/foo/bar/*", controller);
-        router.addMapping(GET, "/svc/{id}/*", controller);
+    public void searchPathEndsWithIgnoreNotation() {
+        router.addMapping(GET, "/foo/bar/...", controller);
+        router.addMapping(GET, "/svc/{id}/...", controller);
 
         H.Request req = Mockito.mock(H.Request.class);
         when(ctx.req()).thenReturn(req);

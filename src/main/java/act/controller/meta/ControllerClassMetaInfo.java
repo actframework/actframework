@@ -62,7 +62,7 @@ public final class ControllerClassMetaInfo extends DestroyableBase {
     // handlerLookup index handler method by method name
     // handler could by action or any kind of interceptors
     private C.Map<String, HandlerMethodMetaInfo> handlerLookup = null;
-    private GroupInterceptorMetaInfo interceptors = new GroupInterceptorMetaInfo();
+    GroupInterceptorMetaInfo interceptors = new GroupInterceptorMetaInfo();
     private ControllerClassMetaInfo parent;
     private boolean isController;
     private boolean possibleController;
@@ -308,9 +308,9 @@ public final class ControllerClassMetaInfo extends DestroyableBase {
 
     public ControllerClassMetaInfo merge(ControllerClassMetaInfoManager infoBase, App app) {
         mergeFromWithList(infoBase, app);
-        mergeIntoActionList();
+        mergeIntoActionList(infoBase, app);
         buildActionLookup();
-        buildHandlerLookup(app);
+        buildHandlerLookup();
         return this;
     }
 
@@ -407,8 +407,9 @@ public final class ControllerClassMetaInfo extends DestroyableBase {
         }
     }
 
-    private void mergeIntoActionList() {
+    private void mergeIntoActionList(ControllerClassMetaInfoManager infoBase, App app) {
         for (ActionMethodMetaInfo info : actions) {
+            info.merge(infoBase, app);
             info.mergeFromClassInterceptors(interceptors);
         }
     }
@@ -421,7 +422,7 @@ public final class ControllerClassMetaInfo extends DestroyableBase {
         actionLookup = lookup;
     }
 
-    private void buildHandlerLookup(App app) {
+    private void buildHandlerLookup() {
         C.Map<String, HandlerMethodMetaInfo> lookup = C.newMap();
         lookup.putAll(actionLookup);
         for (InterceptorMethodMetaInfo info : beforeInterceptors()) {

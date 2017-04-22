@@ -287,13 +287,13 @@ public class ControllerByteCodeScannerTest extends TestBase {
     private InterceptorMethodMetaInfo interceptor(ActionMethodMetaInfo action, InterceptorType interceptorType, String className, String methodName) {
         switch (interceptorType) {
             case BEFORE:
-                return interceptor(action.beforeList(), className, methodName);
+                return interceptor(action.beforeInterceptors(), className, methodName);
             case AFTER:
-                return interceptor(action.afterList(), className, methodName);
+                return interceptor(action.afterInterceptors(), className, methodName);
             case CATCH:
-                return interceptor(action.catchList(), className, methodName);
+                return interceptor(action.exceptionInterceptors(), className, methodName);
             case FINALLY:
-                return interceptor(action.finallyList(), className, methodName);
+                return interceptor(action.finallyInterceptors(), className, methodName);
             default:
                 throw E.unexpected("unknown interceptor type: %s", interceptorType);
         }

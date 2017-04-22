@@ -128,7 +128,7 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
             }
             if (Type.getType(With.class).getDescriptor().equals(desc)) {
                 classInfo.isController(true);
-                return new WithAnnotationVisitor(av);
+                return new ClassWithAnnotationVisitor(av);
             }
             return super.visitAnnotation(desc, visible);
         }
@@ -162,8 +162,8 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
             }
         }
 
-        private class WithAnnotationVisitor extends AnnotationVisitor {
-            public WithAnnotationVisitor(AnnotationVisitor av) {
+        private class ClassWithAnnotationVisitor extends AnnotationVisitor {
+            public ClassWithAnnotationVisitor(AnnotationVisitor av) {
                 super(ASM5, av);
             }
 
@@ -230,6 +230,7 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
             private Map<Integer, List<GeneralAnnoInfo>> genericParamAnnoInfoList = C.newMap();
             private BitSet contextInfo = new BitSet();
             private $.Var<Boolean> isVirtual = $.var(false);
+            private HandlerWithAnnotationVisitor withAnnotationVisitor;
 
             ActionMethodVisitor(boolean isRoutedMethod, MethodVisitor mv, int access, String methodName, String desc, String signature, String[] exceptions) {
                 super(ASM5, mv);
@@ -257,6 +258,11 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
                 if (Virtual.class.getName().equals(c.getName())) {
                     isVirtual.set(true);
                     return av;
+                }
+                if (Type.getType(With.class).getDescriptor().equals(desc)) {
+                    classInfo.isController(true);
+                    withAnnotationVisitor = new HandlerWithAnnotationVisitor(av);
+                    return withAnnotationVisitor;
                 }
                 if (ControllerClassMetaInfo.isActionAnnotation(c)) {
                     markRequireScan();
@@ -356,6 +362,12 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
                     methodInfo = action;
                     classInfo.addAction(action);
                 }
+                if (null != withAnnotationVisitor) {
+                    if (methodInfo instanceof ActionMethodMetaInfo) {
+                        ActionMethodMetaInfo actionInfo = $.cast(methodInfo);
+                        actionInfo.addWith(withAnnotationVisitor.withArray);
+                    }
+                }
                 final HandlerMethodMetaInfo info = methodInfo;
                 info.name(methodName);
                 boolean isStatic = AsmTypes.isStatic(access);
@@ -433,6 +445,32 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
                     });
                 }
                 super.visitEnd();
+            }
+
+            private class HandlerWithAnnotationVisitor extends AnnotationVisitor {
+
+                private String[] withArray;
+
+                public HandlerWithAnnotationVisitor(AnnotationVisitor av) {
+                    super(ASM5, av);
+                }
+
+                @Override
+                public AnnotationVisitor visitArray(String name) {
+                    AnnotationVisitor av = super.visitArray(name);
+                    if ("value".equals(name)) {
+                        return new StringArrayVisitor(av) {
+                            @Override
+                            public void visitEnd() {
+                                String[] sa = new String[strings.size()];
+                                sa = strings.toArray(sa);
+                                withArray = sa;
+                                super.visitEnd();
+                            }
+                        };
+                    }
+                    return av;
+                }
             }
 
             private void markRequireScan() {
