@@ -69,6 +69,10 @@ public class ActionMethodMetaInfo extends HandlerMethodMetaInfo<ActionMethodMeta
         return this;
     }
 
+    public GroupInterceptorMetaInfo interceptors() {
+        return interceptors;
+    }
+
     public List<InterceptorMethodMetaInfo> beforeInterceptors() {
         return interceptors.beforeList();
     }

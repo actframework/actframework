@@ -290,6 +290,10 @@ public final class ControllerClassMetaInfo extends DestroyableBase {
         return list;
     }
 
+    public GroupInterceptorMetaInfo interceptors() {
+        return interceptors;
+    }
+
     public List<InterceptorMethodMetaInfo> beforeInterceptors() {
         return interceptors.beforeList();
     }

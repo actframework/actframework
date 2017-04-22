@@ -26,10 +26,7 @@ import act.app.ActionContext;
 import act.app.App;
 import act.app.AppInterceptorManager;
 import act.app.event.AppEventId;
-import act.controller.meta.ActionMethodMetaInfo;
-import act.controller.meta.CatchMethodMetaInfo;
-import act.controller.meta.ControllerClassMetaInfo;
-import act.controller.meta.InterceptorMethodMetaInfo;
+import act.controller.meta.*;
 import act.handler.RequestHandlerBase;
 import act.security.CORS;
 import act.security.CSRF;
@@ -39,6 +36,7 @@ import act.view.ActErrorResult;
 import act.view.RenderAny;
 import org.osgl.$;
 import org.osgl.cache.CacheService;
+import org.osgl.exception.UnexpectedException;
 import org.osgl.http.H;
 import org.osgl.logging.L;
 import org.osgl.logging.Logger;
@@ -94,6 +92,10 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
     private static final C.List<AfterInterceptor> globalAfterInterceptors = C.newList();
     private static final C.List<FinallyInterceptor> globalFinallyInterceptors = C.newList();
     private static final C.List<ExceptionInterceptor> globalExceptionInterceptors = C.newList();
+    // for @Global on classes
+    private static final C.Set<GroupInterceptorMetaInfo> globalFreeStyleInterceptors = C.newSet();
+    // for @Global on methods
+    private static final GroupInterceptorMetaInfo globalFreeStyleInterceptor = new GroupInterceptorMetaInfo();
 
     public static final GroupInterceptorWithResult GLOBAL_BEFORE_INTERCEPTOR = new GroupInterceptorWithResult(globalBeforeInterceptors);
     public static final GroupAfterInterceptor GLOBAL_AFTER_INTERCEPTOR = new GroupAfterInterceptor(globalAfterInterceptors);
@@ -147,7 +149,6 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
             actionHandler.destroy();
             actionHandler = null;
         }
-        releaseGlobalResources();
     }
 
     public static void releaseGlobalResources() {
@@ -155,6 +156,8 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
         _releaseResourceCollections(globalBeforeInterceptors);
         _releaseResourceCollections(globalExceptionInterceptors);
         _releaseResourceCollections(globalFinallyInterceptors);
+        _releaseResourceCollections(globalFreeStyleInterceptors);
+        globalFreeStyleInterceptor.destroy();
     }
 
     private static void _releaseResourceCollections(Collection<? extends Destroyable> col) {
@@ -295,12 +298,12 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
         context.actionPath(actionPath);
     }
 
-    private boolean matches(String actionMethodName, Set<String> patterns) {
-        if (patterns.contains(actionMethodName)) {
+    private boolean matches(Set<String> patterns) {
+        if (patterns.contains(actionMethodName) || patterns.contains(actionPath)) {
             return true;
         }
         for (String s : patterns) {
-            if (Pattern.compile(s).matcher(actionMethodName).matches()) {
+            if (Pattern.compile(s).matcher(actionPath).matches()) {
                 return true;
             }
         }
@@ -310,19 +313,22 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
     private boolean applied(InterceptorMethodMetaInfo interceptor) {
         Set<String> blackList = interceptor.blackList();
         if (!blackList.isEmpty()) {
-            return !matches(actionMethodName, blackList);
+            return !matches(blackList);
         } else {
             Set<String> whiteList = interceptor.whiteList();
             if (!whiteList.isEmpty()) {
-                return matches(actionMethodName, whiteList);
+                return matches(whiteList);
             }
             return true;
         }
     }
 
     private ActionMethodMetaInfo findActionInfoFromParent(ControllerClassMetaInfo ctrlInfo, String methodName) {
-        ActionMethodMetaInfo actionInfo = null;
+        ActionMethodMetaInfo actionInfo;
         ControllerClassMetaInfo parent = ctrlInfo.parent(true);
+        if (null == parent) {
+            throw new UnexpectedException("Cannot find action method meta info: %s", actionPath);
+        }
         while(true) {
             actionInfo = parent.action(methodName);
             if (null != actionInfo) {
@@ -347,7 +353,14 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
         sessionFree = actionHandler.sessionFree();
         express = actionHandler.express();
         App app = this.app;
-        for (InterceptorMethodMetaInfo info : actionInfo.beforeInterceptors()) {
+
+        GroupInterceptorMetaInfo interceptorMetaInfo = new GroupInterceptorMetaInfo(actionInfo.interceptors());
+        interceptorMetaInfo.mergeFrom(globalFreeStyleInterceptor);
+        for (GroupInterceptorMetaInfo freeStyleInterceptor: globalFreeStyleInterceptors) {
+            interceptorMetaInfo.mergeFrom(freeStyleInterceptor);
+        }
+
+        for (InterceptorMethodMetaInfo info : interceptorMetaInfo.beforeList()) {
             if (!applied(info)) {
                 continue;
             }
@@ -356,7 +369,7 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
             sessionFree = sessionFree && interceptor.sessionFree();
             express = express && interceptor.express();
         }
-        for (InterceptorMethodMetaInfo info : actionInfo.afterInterceptors()) {
+        for (InterceptorMethodMetaInfo info : interceptorMetaInfo.afterList()) {
             if (!applied(info)) {
                 continue;
             }
@@ -365,7 +378,7 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
             sessionFree = sessionFree && interceptor.sessionFree();
             express = express && interceptor.express();
         }
-        for (CatchMethodMetaInfo info : actionInfo.exceptionInterceptors()) {
+        for (CatchMethodMetaInfo info : interceptorMetaInfo.catchList()) {
             if (!applied(info)) {
                 continue;
             }
@@ -376,7 +389,7 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
         }
         Collections.sort(exceptionInterceptors);
 
-        for (InterceptorMethodMetaInfo info : actionInfo.finallyInterceptors()) {
+        for (InterceptorMethodMetaInfo info : interceptorMetaInfo.finallyList()) {
             if (!applied(info)) {
                 continue;
             }
@@ -477,6 +490,14 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
         return actionPath;
     }
 
+    public static void registerGlobalInterceptor(GroupInterceptorMetaInfo freeStyleInterceptor) {
+        globalFreeStyleInterceptors.add(freeStyleInterceptor);
+    }
+
+    public static void registerGlobalInterceptor(InterceptorMethodMetaInfo interceptor, InterceptorType type) {
+        globalFreeStyleInterceptor.add(interceptor, type);
+    }
+
     public static void registerGlobalInterceptor(BeforeInterceptor interceptor) {
         insertInterceptor(globalBeforeInterceptors, interceptor);
     }
@@ -510,6 +531,12 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
         } else if (FinallyInterceptor.class.isAssignableFrom(interceptorClass)) {
             FinallyInterceptor interceptor = (FinallyInterceptor) app.getInstance(interceptorClass);
             registerGlobalInterceptor(interceptor);
+        } else {
+            // check if this is a free style interceptor
+            ControllerClassMetaInfo metaInfo = app.classLoader().controllerClassMetaInfo(interceptorClass.getName());
+            if (null != metaInfo) {
+                registerGlobalInterceptor(metaInfo.interceptors());
+            }
         }
     }
 

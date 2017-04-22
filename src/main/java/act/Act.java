@@ -813,10 +813,7 @@ public final class Act {
     }
 
     private static void writePidFile() {
-        String pidFile = System.getProperty("pidfile");
-        if (S.blank(pidFile)) {
-            pidFile = "act.pid";
-        }
+        String pidFile = pidFile();
         OS os = OS.get();
         String pid;
         if (os.isLinux()) {
@@ -839,16 +836,19 @@ public final class Act {
         }
         try {
             IO.writeContent(pid, new File(pidFile));
+            Runtime.getRuntime().addShutdownHook(new Thread() {
+                @Override
+                public void run() {
+                    clearPidFile();
+                }
+            });
         } catch (Exception e) {
             LOGGER.warn(e, "Error writing pid file: %s", e.getMessage());
         }
     }
 
     private static void clearPidFile() {
-        String pidFile = System.getProperty("pidfile");
-        if (S.blank(pidFile)) {
-            return;
-        }
+        String pidFile = pidFile();
         try {
             File file = new File(pidFile);
             if (!file.delete()) {
@@ -857,6 +857,14 @@ public final class Act {
         } catch (Exception e) {
             LOGGER.warn(e, "Error delete pid file: %s", pidFile);
         }
+    }
+
+    private static String pidFile() {
+        String pidFile = System.getProperty("pidfile");
+        if (S.blank(pidFile)) {
+            pidFile = "act.pid";
+        }
+        return pidFile;
     }
 
     public enum F {

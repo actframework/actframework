@@ -21,6 +21,7 @@ package act.util;
  */
 
 import act.Destroyable;
+import act.handler.builtin.controller.RequestHandlerProxy;
 import org.osgl.util.C;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -54,9 +55,10 @@ public abstract class DestroyableBase implements Destroyable {
     }
 
     /**
-     * Recover the destry state. Use this API with cautious
+     * Recover the destroy state. Use this API with cautious
      */
     protected void reload() {
+        RequestHandlerProxy.releaseGlobalResources();
         destroyed = false;
     }
 

@@ -34,6 +34,7 @@ import act.asm.signature.SignatureVisitor;
 import act.conf.AppConfig;
 import act.controller.Controller;
 import act.controller.meta.*;
+import act.handler.builtin.controller.RequestHandlerProxy;
 import act.route.RouteSource;
 import act.route.Router;
 import act.util.*;
@@ -231,6 +232,7 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
             private BitSet contextInfo = new BitSet();
             private $.Var<Boolean> isVirtual = $.var(false);
             private HandlerWithAnnotationVisitor withAnnotationVisitor;
+            private $.Var<Boolean> isGlobal = $.var(false);
 
             ActionMethodVisitor(boolean isRoutedMethod, MethodVisitor mv, int access, String methodName, String desc, String signature, String[] exceptions) {
                 super(ASM5, mv);
@@ -257,6 +259,10 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
                 Class<? extends Annotation> c = $.classForName(className);
                 if (Virtual.class.getName().equals(c.getName())) {
                     isVirtual.set(true);
+                    return av;
+                }
+                if (Global.class.getName().equals(c.getName())) {
+                    isGlobal.set(true);
                     return av;
                 }
                 if (Type.getType(With.class).getDescriptor().equals(desc)) {
@@ -512,6 +518,14 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
                         }
                     }
                     return super.visitArray(name);
+                }
+
+                @Override
+                public void visitEnd() {
+                    if (isGlobal.get()) {
+                        RequestHandlerProxy.registerGlobalInterceptor(info, interceptorType);
+                    }
+                    super.visitEnd();
                 }
 
                 private class OnlyValueVisitor extends StringArrayVisitor {

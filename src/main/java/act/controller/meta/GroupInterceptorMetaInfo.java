@@ -44,6 +44,12 @@ public class GroupInterceptorMetaInfo extends DestroyableBase {
     private C.List<InterceptorMethodMetaInfo> catchList = C.newList();
     private C.List<InterceptorMethodMetaInfo> finallyList = C.newList();
 
+    public GroupInterceptorMetaInfo() {}
+
+    public GroupInterceptorMetaInfo(GroupInterceptorMetaInfo copy) {
+        mergeFrom(copy);
+    }
+
     @Override
     protected void releaseResources() {
         destroyAll(beforeList, ApplicationScoped.class);
@@ -75,6 +81,10 @@ public class GroupInterceptorMetaInfo extends DestroyableBase {
 
     public void add(InterceptorMethodMetaInfo info, Class<? extends Annotation> interceptorType) {
         InterceptorType.of(interceptorType).addToGroup(info, this);
+    }
+
+    public void add(InterceptorMethodMetaInfo info, InterceptorType type) {
+        type.addToGroup(info, this);
     }
 
     public C.List<InterceptorMethodMetaInfo> beforeList() {

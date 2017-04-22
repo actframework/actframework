@@ -31,7 +31,7 @@ import java.lang.annotation.Target;
  * ActFramework will register interceptor implementation automatically if it is marked
  * as `@Global`
  */
-@Target(ElementType.TYPE)
+@Target({ElementType.TYPE, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Global {
 }
