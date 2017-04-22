@@ -26,6 +26,8 @@ import act.app.App;
 import act.app.util.NamedPort;
 import act.handler.RequestHandler;
 import act.handler.builtin.AlwaysNotFound;
+import act.handler.builtin.StaticFileGetter;
+import act.handler.builtin.StaticResourceGetter;
 import act.handler.builtin.controller.FastRequestHandler;
 import act.handler.builtin.controller.RequestHandlerProxy;
 import act.metric.Metric;
@@ -93,10 +95,15 @@ public class NetworkHandler extends DestroyableBase {
         final H.Request req = ctx.req();
         String url = req.url();
         H.Method method = req.method();
+        Exception refreshError = null;
         if (Act.isDev()) {
-            boolean updated = app.checkUpdates(false);
-            if (updated) {
-                initUrlProcessors();
+            try {
+                boolean updated = app.checkUpdates(false);
+                if (updated) {
+                    initUrlProcessors();
+                }
+            } catch (Exception e) {
+                refreshError = e;
             }
         }
         url = contentSuffixProcessor.apply(req, url);
@@ -112,6 +119,13 @@ public class NetworkHandler extends DestroyableBase {
         final RequestHandler requestHandler = router().getInvoker(method, url, ctx);
         ctx.handler(requestHandler);
         timer.stop();
+        boolean resourceGetter = requestHandler instanceof StaticResourceGetter || requestHandler instanceof StaticFileGetter;
+        if (null != refreshError && !resourceGetter) {
+            ctx.saveLocal();
+            handleException(refreshError, ctx, "Error refreshing app");
+            ActionContext.clearCurrent();
+            return;
+        }
         NetworkJob job = new NetworkJob() {
             @Override
             public void run() {
@@ -138,24 +152,8 @@ public class NetworkHandler extends DestroyableBase {
 
                     ctx.resp().addHeaderIfNotAdded(H.Header.Names.CONTENT_TYPE, fmt.contentType());
                     r.apply(req, ctx.resp());
-                } catch (Exception t) {
-                    logger.error(t, "Error handling network request");
-                    Result r;
-                    try {
-                        r = RequestHandlerProxy.GLOBAL_EXCEPTION_INTERCEPTOR.apply(t, ctx);
-                    } catch (Exception e) {
-                        logger.error(e, "Error calling global exception interceptor");
-                        r = ActErrorResult.of(e);
-                    }
-                    if (null == r) {
-                        r = ActErrorResult.of(t);
-                    } else if (r instanceof ErrorResult) {
-                        r = ActErrorResult.of(r);
-                    }
-                    if (null == ctx.handler()) {
-                        ctx.handler(FastRequestHandler.DUMB);
-                    }
-                    r.apply(req, ctx.resp());
+                } catch (Exception e) {
+                    handleException(e, ctx, "Error handling network request");
                 } finally {
                     // we don't destroy ctx here in case it's been passed to
                     // another thread
@@ -171,6 +169,26 @@ public class NetworkHandler extends DestroyableBase {
         } else {
             job.run();
         }
+    }
+
+    private void handleException(Exception exception, final ActionContext ctx, String errorMessage) {
+        logger.error(exception, errorMessage);
+        Result r;
+        try {
+            r = RequestHandlerProxy.GLOBAL_EXCEPTION_INTERCEPTOR.apply(exception, ctx);
+        } catch (Exception e) {
+            logger.error(e, "Error calling global exception interceptor");
+            r = ActErrorResult.of(e);
+        }
+        if (null == r) {
+            r = ActErrorResult.of(exception);
+        } else if (r instanceof ErrorResult) {
+            r = ActErrorResult.of(r);
+        }
+        if (null == ctx.handler()) {
+            ctx.handler(FastRequestHandler.DUMB);
+        }
+        r.apply(ctx.req(), ctx.resp());
     }
 
     @Override
