@@ -38,6 +38,8 @@ import act.security.CSRF;
 import act.sys.Env;
 import act.util.ActContext;
 import act.util.DestroyableBase;
+import act.util.Global;
+import act.util.Stateless;
 import act.view.*;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONException;
@@ -487,8 +489,26 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
             if (fields.isEmpty()) {
                 singleton = app.getInstance(controllerClass);
             }
+            boolean stateful = false;
+            for (Field field : fields) {
+                if (!isGlobal(field)) {
+                    stateful = true;
+                    break;
+                }
+            }
+            if (!stateful) {
+                singleton = app.getInstance(controllerClass);
+            }
         }
         return singleton;
+    }
+
+    private boolean isGlobal(Field field) {
+        if (null != field.getAnnotation(Global.class)) {
+            return true;
+        }
+        Class<?> fieldType = field.getType();
+        return fieldType.isAnnotationPresent(Stateless.class);
     }
 
     public static ControllerAction createControllerAction(ActionMethodMetaInfo meta, App app) {

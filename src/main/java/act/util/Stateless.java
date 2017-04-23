@@ -26,12 +26,16 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Mark an interceptor as global interceptor.
+ * Mark a Class is stateless in the context of ActFramework.
  *
- * ActFramework will register interceptor implementation automatically if it is marked
- * as `@Global`
+ * E.g. a certain Dao like `Foo.Dao` could be marked as `@Stateless` as
+ * every time it injected to a controller should be the same instance.
+ *
+ * Note this annotation is **NOT** inherited
+ *
+ * See https://github.com/actframework/actframework/issues/161
  */
-@Target({ElementType.TYPE, ElementType.METHOD, ElementType.FIELD})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface Global {
+@Target(ElementType.TYPE)
+public @interface Stateless {
 }

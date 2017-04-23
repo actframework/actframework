@@ -19,6 +19,7 @@
 *            version history
 ********************************************
 1.2.0
+* #161 Add an annotation that indicate an injected field is stateless
 * #160 Make `ActionContext` an injectable field in `Controller.Util`
 * #159 generated pid file not get deleted when app process is killed
 * #157 SEO support on routing
