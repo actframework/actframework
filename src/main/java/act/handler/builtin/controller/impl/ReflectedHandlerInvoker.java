@@ -50,6 +50,7 @@ import org.osgl.mvc.annotation.ResponseStatus;
 import org.osgl.mvc.annotation.SessionFree;
 import org.osgl.mvc.result.BadRequest;
 import org.osgl.mvc.result.Conflict;
+import org.osgl.mvc.result.NotFound;
 import org.osgl.mvc.result.Result;
 import org.osgl.util.C;
 import org.osgl.util.E;
@@ -430,13 +431,17 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
             // handler invoker return `null`
             // and there are return type of the action method signature
             // and the return type is **NOT** Result
-            return ActNotFound.create(method);
+            return notFoundOnMethod(null);
         }
         boolean hasTemplate = checkTemplate(context);
         if (hasTemplate && result instanceof RenderAny) {
             result = RenderTemplate.INSTANCE;
         }
         return Controller.Util.inferResult(handlerMetaInfo, result, context, hasTemplate);
+    }
+
+    public NotFound notFoundOnMethod(String message) {
+        return ActNotFound.create(method, message);
     }
 
     private boolean checkTemplate(ActionContext context) {

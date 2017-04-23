@@ -20,13 +20,21 @@ package act.db.di;
  * #L%
  */
 
+import act.Act;
+import act.app.ActionContext;
 import act.app.App;
 import act.db.Dao;
+import act.handler.DelegateRequestHandler;
+import act.handler.RequestHandler;
+import act.handler.builtin.controller.RequestHandlerProxy;
 import act.inject.param.ParamValueLoaderService;
 import act.util.ActContext;
+import org.osgl.$;
 import org.osgl.inject.ValueLoader;
+import org.osgl.mvc.result.NotFound;
 import org.osgl.util.*;
 
+import javax.validation.constraints.NotNull;
 import java.util.Collection;
 
 public class FindBy extends ValueLoader.Base {
@@ -38,12 +46,14 @@ public class FindBy extends ValueLoader.Base {
     private boolean byId;
     private String querySpec;
     private Class<?> rawType;
+    private boolean notNull;
 
     @Override
     protected void initialized() {
         App app = App.instance();
 
         rawType = spec.rawType();
+        notNull = spec.hasAnnotation(NotNull.class);
         findOne = !(Collection.class.isAssignableFrom(rawType));
         dao = app.dbServiceManager().dao(findOne ? rawType : (Class) spec.typeParams().get(0));
 
@@ -69,10 +79,11 @@ public class FindBy extends ValueLoader.Base {
         ActContext ctx = ActContext.Base.currentContext();
         E.illegalStateIf(null == ctx);
         String value = resolve(bindName, ctx);
-        if (null == value) {
-            return null;
+        if (S.blank(value)) {
+            return ensureNotNull(null, "null");
         }
         Object by = resolver.resolve(value);
+        ensureNotNull(by, value);
         if (null == by) {
             return null;
         }
@@ -80,19 +91,44 @@ public class FindBy extends ValueLoader.Base {
         if (byId) {
             Object bean = dao.findById(by);
             if (findOne) {
-                return bean;
+                return ensureNotNull(bean, value);
             } else {
                 col.add(bean);
                 return col;
             }
         } else {
             if (findOne) {
-                return dao.findOneBy(Keyword.of(querySpec).javaVariable(), by);
+                Object found = dao.findOneBy(Keyword.of(querySpec).javaVariable(), by);
+                return ensureNotNull(found, value);
             } else {
                 col.addAll(C.list(dao.findBy(Keyword.of(querySpec).javaVariable(), by)));
                 return col;
             }
         }
+    }
+
+    private Object ensureNotNull(Object obj, String value) {
+        if (notNull) {
+            if (null == obj) {
+                if (!Act.isDev()) {
+                    throw NotFound.get();
+                }
+                ActionContext ctx = ActionContext.current();
+                if (null == ctx) {
+                    throw NotFound.get();
+                }
+                RequestHandler handler = ctx.handler();
+                if (handler instanceof DelegateRequestHandler) {
+                    handler = ((DelegateRequestHandler) handler).realHandler();
+                }
+                if (handler instanceof RequestHandlerProxy) {
+                    RequestHandlerProxy proxy = $.cast(handler);
+                    throw proxy.notFoundOnMethod(S.fmt("%s not found by %s", spec.name(), value));
+                }
+                throw NotFound.get();
+            }
+        }
+        return obj;
     }
 
     private static String resolve(String bindName, ActContext ctx) {

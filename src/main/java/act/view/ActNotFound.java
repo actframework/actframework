@@ -24,6 +24,7 @@ import act.Act;
 import act.app.SourceInfo;
 import act.util.ActError;
 import org.osgl.mvc.result.NotFound;
+import org.osgl.util.S;
 
 import java.lang.reflect.Method;
 import java.util.List;
@@ -46,8 +47,8 @@ public class ActNotFound extends NotFound implements ActError {
         }
     }
 
-    public ActNotFound(Method method) {
-        super("null value returned from %s.%s()", method.getDeclaringClass().getName(), method.getName());
+    public ActNotFound(Method method, String message) {
+        super(null == message ? S.fmt("null value returned from %s.%s()", method.getDeclaringClass().getName(), method.getName()) : message);
         if (Act.isDev()) {
             loadSourceInfo(method);
         }
@@ -110,8 +111,8 @@ public class ActNotFound extends NotFound implements ActError {
         return Act.isDev() ? new ActNotFound(msg, args) : NotFound.of(msg, args);
     }
 
-    public static NotFound create(Method method) {
-        return Act.isDev() ? new ActNotFound(method) : NotFound.get();
+    public static NotFound create(Method method, String message) {
+        return Act.isDev() ? new ActNotFound(method, message) : NotFound.get();
     }
 
     public static NotFound create(Throwable cause, String msg, Object ... args) {

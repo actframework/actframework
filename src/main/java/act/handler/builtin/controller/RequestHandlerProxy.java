@@ -40,6 +40,7 @@ import org.osgl.exception.UnexpectedException;
 import org.osgl.http.H;
 import org.osgl.logging.L;
 import org.osgl.logging.Logger;
+import org.osgl.mvc.result.NotFound;
 import org.osgl.mvc.result.Result;
 import org.osgl.util.C;
 import org.osgl.util.E;
@@ -171,6 +172,10 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
 
     public String action() {
         return actionMethodName;
+    }
+
+    public NotFound notFoundOnMethod(String message) {
+        return actionHandler.notFoundOnMethod(message);
     }
 
     @Override

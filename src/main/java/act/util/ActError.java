@@ -80,13 +80,31 @@ public interface ActError {
                 return null;
             }
             List<String> lines = source.lines();
+            Line candidate = null;
             for (int i = 0; i < lines.size(); ++i) {
                 String line = lines.get(i);
                 if (line.matches("^\\s*.*" + method.getName() + "\\s*\\(.*")) {
-                    return new SourceInfoImpl(source, i + 1);
+                    candidate = new Line(line, i + 1);
+                    if (candidate.forSure) {
+                        return new SourceInfoImpl(source, candidate.no);
+                    }
                 }
             }
+            if (null != candidate) {
+                return new SourceInfoImpl(source, candidate.no);
+            }
             return new SourceInfoImpl(source, 1);
+        }
+
+        private static class Line {
+            String line;
+            int no;
+            boolean forSure;
+            Line(String line, int no) {
+                this.line = line;
+                this.no = no;
+                forSure = line.contains("public ");
+            }
         }
     }
 }
