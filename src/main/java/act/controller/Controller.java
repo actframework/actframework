@@ -39,6 +39,7 @@ import org.osgl.util.E;
 import org.osgl.util.IO;
 import org.osgl.util.S;
 
+import javax.inject.Inject;
 import java.io.File;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -971,6 +972,15 @@ public @interface Controller {
         private static H.Status successStatus() {
             return ActionContext.current().successStatus();
         }
+    }
+
+    /**
+     * Controller class extends this class automatically get `ActionContext` injected
+     * as a field
+     */
+    class Base extends Util {
+        @Inject
+        protected ActionContext context;
     }
 
 }

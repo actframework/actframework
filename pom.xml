@@ -19,14 +19,14 @@
 *            version history
 ********************************************
 1.2.0
-- #159 generated pid file not get deleted when app process is killed
-- #157 SEO support on routing
-- #156 Compile error is not displayed at dev mode
-- #153 When `@NotNull` used along with `@DbBind` it shall return 404 if binding failed
-- #152 Allow annotation based interceptor class to be registered as global interceptor
-- #124 Improve error reporting on "Unknown accept content type"
-
-- #136 Allow `@With` annotation to be used on specific handler method
+* #160 Make `ActionContext` an injectable field in `Controller.Util`
+* #159 generated pid file not get deleted when app process is killed
+* #157 SEO support on routing
+* #156 Compile error is not displayed at dev mode
+* #153 When `@NotNull` used along with `@DbBind` it shall return 404 if binding failed
+* #152 Allow annotation based interceptor class to be registered as global interceptor
+* #136 Allow `@With` annotation to be used on specific handler method
+* #124 Improve error reporting on "Unknown accept content type"
 
 1.1.2
 - #151 Update version of osgl and other dependencies
