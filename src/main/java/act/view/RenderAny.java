@@ -59,7 +59,16 @@ public class RenderAny extends Result {
     public void apply(ActionContext context) {
         H.Format fmt = context.accept();
         if (fmt == UNKNOWN) {
-            throw E.unsupport("Unknown accept content type");
+            H.Request req = context.req();
+            H.Method method = req.method();
+            String methodInfo = S.concat(method.name(), " method to ");
+            String acceptHeader = req.header(H.Header.Names.ACCEPT);
+            throw E.unsupport(S.concat(
+                    "Unknown accept content type(",
+                    acceptHeader,
+                    "): ",
+                    methodInfo,
+                    req.url()));
         }
         Result result = null;
         if (JSON == fmt) {

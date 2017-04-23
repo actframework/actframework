@@ -22,8 +22,9 @@
 - #159 generated pid file not get deleted when app process is killed
 - #157 SEO support on routing
 - #156 Compile error is not displayed at dev mode
-- #153 When `@NotNull` used along with `@DbBind` it shall return 404 if binding failed 
+- #153 When `@NotNull` used along with `@DbBind` it shall return 404 if binding failed
 - #152 Allow annotation based interceptor class to be registered as global interceptor
+- #124 Improve error reporting on "Unknown accept content type"
 
 - #136 Allow `@With` annotation to be used on specific handler method
 
