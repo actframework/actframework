@@ -195,7 +195,7 @@
     <osgl-tool.version>1.0.3</osgl-tool.version>
     <osgl-genie.version>1.0.2</osgl-genie.version>
     <osgl-mvc.version>1.0.6</osgl-mvc.version>
-    <osgl-storage.version>1.1.0</osgl-storage.version>
+    <osgl-storage.version>1.2.0</osgl-storage.version>
     <osgl-tool-ext.version>1.0.1</osgl-tool-ext.version>
     <reflectasm.version>1.11.3</reflectasm.version>
     <rythmengine.version>1.2.0</rythmengine.version>

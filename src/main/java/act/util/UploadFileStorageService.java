@@ -64,8 +64,7 @@ public class UploadFileStorageService extends FileSystemService {
         if (!tmp.exists() && !tmp.mkdirs()) {
             throw E.unexpected("Cannot create tmp dir");
         }
-        Map<String, String> conf = C.newMap("storage.fs.home.dir", Files.file(app.tmpDir(), "uploads").getAbsolutePath(),
-                "storage.keygen", KeyGenerator.BY_DATE.name());
+        Map<String, String> conf = C.newMap("storage.fs.home.dir", Files.file(app.tmpDir(), "uploads").getAbsolutePath(), "storage.keygen", KeyGenerator.Predefined.BY_DATE.name());
         conf.put(IStorageService.CONF_ID, "__upload");
         conf.put("storage.storeSuffix", "false");
         return new UploadFileStorageService(conf);
