@@ -36,15 +36,15 @@ import act.inject.param.ParamValueLoaderService;
 import act.security.CORS;
 import act.security.CSRF;
 import act.sys.Env;
-import act.util.ActContext;
-import act.util.DestroyableBase;
-import act.util.Global;
-import act.util.Stateless;
+import act.util.*;
 import act.view.*;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONException;
 import com.esotericsoftware.reflectasm.MethodAccess;
 import org.osgl.$;
+import org.osgl.Osgl;
+import org.osgl.cache.CacheService;
+import org.osgl.exception.NotAppliedException;
 import org.osgl.http.H;
 import org.osgl.inject.BeanSpec;
 import org.osgl.mvc.annotation.ResponseContentType;
@@ -62,7 +62,9 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -98,8 +100,12 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
     private Object singleton;
     private H.Format forceResponseContentType;
     private H.Status forceResponseStatus;
+    // Env doesn't match
     private boolean disabled;
     private String dspToken;
+    private $.Function<ActionContext, String> cacheKeyBuilder;
+    private boolean cacheSupportPost;
+    private int cacheTtl;
 
     private ReflectedHandlerInvoker(M handlerMetaInfo, App app) {
         this.cl = app.classLoader();
@@ -114,6 +120,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         try {
             method = controllerClass.getMethod(handlerMetaInfo.name(), paramTypes);
             this.disabled = this.disabled || !Env.matches(method);
+
         } catch (NoSuchMethodException e) {
             throw E.unexpected(e);
         }
@@ -166,6 +173,8 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
                 dspToken = app.config().dspToken();
             }
         }
+
+        initCacheParams(method);
     }
 
     @Override
@@ -177,6 +186,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         methodAccess = null;
         handler.destroy();
         handler = null;
+        cacheKeyBuilder = null;
         super.releaseResources();
     }
 
@@ -194,15 +204,27 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         rv.apply(controllerClass, method);
     }
 
-    public Result handle(ActionContext actionContext) throws Exception {
+    public Result handle(ActionContext context) throws Exception {
         if (disabled) {
             return ActNotFound.get();
         }
-        actionContext.attribute("reflected_handler", this);
-        preventDoubleSubmission(actionContext);
-        processForceResponse(actionContext);
-        ensureJsonDTOGenerated(actionContext);
-        Object controller = controllerInstance(actionContext);
+
+        boolean shouldCheckCache = shouldCheckCache(context);
+        CacheService cache = shouldCheckCache ? context.app().cache() : null;
+        if (shouldCheckCache) {
+            String cacheKey = cacheKeyBuilder.apply(context);
+            Result cached = cache.get(cacheKey);
+            if (null != cached) {
+                return cached;
+            }
+            context.cacheParams(cacheKey, cacheTtl);
+        }
+
+        context.attribute("reflected_handler", this);
+        preventDoubleSubmission(context);
+        processForceResponse(context);
+        ensureJsonDTOGenerated(context);
+        Object controller = controllerInstance(context);
 
         /*
          * We will send back response immediately when param validation
@@ -211,16 +233,16 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
          * b) there is no template associated with the endpoint
          *   TODO: fix me - if method use arbitrary templates, then this check will fail
          */
-        boolean failOnViolation = actionContext.acceptJson() || checkTemplate(actionContext);
+        boolean failOnViolation = context.acceptJson() || checkTemplate(context);
 
-        Object[] params = params(controller, actionContext);
+        Object[] params = params(controller, context);
 
-        if (failOnViolation && actionContext.hasViolation()) {
-            String msg = actionContext.violationMessage(";");
+        if (failOnViolation && context.hasViolation()) {
+            String msg = context.violationMessage(";");
             return new BadRequest(msg);
         }
 
-        return invoke(handler, actionContext, controller, params);
+        return invoke(handler, context, controller, params);
     }
 
     @Override
@@ -407,6 +429,24 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
             context.__controllerInstance(controllerName, inst);
         }
         return inst;
+    }
+
+    private boolean shouldCheckCache(ActionContext context) {
+        if (null == cacheKeyBuilder) {
+            return false;
+        }
+        H.Method method = context.req().method();
+        return H.Method.GET == method || (cacheSupportPost && H.Method.POST == method);
+    }
+
+    private void initCacheParams(Method method) {
+        CacheFor cacheFor = method.getAnnotation(CacheFor.class);
+        if (null == cacheFor) {
+            return;
+        }
+        cacheSupportPost = cacheFor.supportPost();
+        cacheTtl = cacheFor.value();
+        cacheKeyBuilder = new CacheKeyBuilder(cacheFor, method.getName());
     }
 
     private Result invoke(M handlerMetaInfo, ActionContext context, Object controller, Object[] params) throws Exception {
@@ -710,6 +750,56 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         protected void releaseResources() {
             invoker.destroy();
             invoker = null;
+        }
+    }
+
+    private static class CacheKeyBuilder extends $.F1<ActionContext, String> {
+        private String[] keys;
+        private final String methodName;
+        private final boolean sessionBased;
+
+        CacheKeyBuilder(CacheFor cacheFor, String methodName) {
+            this.sessionBased = cacheFor.sessionBased();
+            this.methodName = methodName;
+            this.keys = cacheFor.keys();
+        }
+
+        @Override
+        public String apply(ActionContext context) throws NotAppliedException, Osgl.Break {
+            TreeMap<String, String> keyValues = keyValues(context);
+            S.Buffer buffer = S.newBuffer(methodName);
+            if (sessionBased) {
+                buffer.append(context.session().id());
+            }
+            for (Map.Entry<String, String> entry : keyValues.entrySet()) {
+                buffer.append("-").append(entry.getKey()).append(":").append(entry.getValue());
+            }
+            return buffer.toString();
+        }
+
+        private TreeMap<String, String> keyValues(ActionContext context) {
+            TreeMap<String, String> map = new TreeMap<>();
+            if (keys.length > 0) {
+                for (String key : keys) {
+                    map.put(key, paramVal(key, context));
+                }
+            } else {
+                for (String key : context.paramKeys()) {
+                    map.put(key, paramVal(key, context));
+                }
+            }
+            return map;
+        }
+
+        private String paramVal(String key, ActionContext context) {
+            String[] allValues = context.paramVals(key);
+            if (0 == allValues.length) {
+                return "";
+            } else if (1 == allValues.length) {
+                return allValues[0];
+            } else {
+                return  $.toString2(allValues);
+            }
         }
     }
 
