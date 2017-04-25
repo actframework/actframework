@@ -106,7 +106,6 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
     private App app;
     private AppInterceptorManager appInterceptor;
     private CacheService cache;
-    private CacheStrategy cacheStrategy = CacheStrategy.NO_CACHE;
     private String controllerClassName;
     private String actionMethodName;
     private String actionPath;
@@ -180,7 +179,7 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
 
     @Override
     public void handle(ActionContext context) {
-        Result result = cacheStrategy.cached(context, cache);
+        Result result = null;
         try {
             if (null != result) {
                 onResult(result, context);
@@ -239,14 +238,6 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
     @Override
     public boolean express(ActionContext context) {
         return express;
-    }
-
-    protected final void useSessionCache() {
-        cacheStrategy = CacheStrategy.SESSION_SCOPED;
-    }
-
-    protected final void useGlobalCache() {
-        cacheStrategy = CacheStrategy.GLOBAL_SCOPED;
     }
 
     protected final void registerBeforeInterceptor(BeforeInterceptor interceptor) {

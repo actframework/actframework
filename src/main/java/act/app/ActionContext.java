@@ -23,6 +23,7 @@ package act.app;
 import act.Act;
 import act.Destroyable;
 import act.conf.AppConfig;
+import act.controller.CacheParams;
 import act.data.MapUtil;
 import act.data.RequestBodyParser;
 import act.event.ActEvent;
@@ -91,6 +92,7 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
     private boolean disableCsrf;
     private Boolean hasTemplate;
     private H.Status forceResponseStatus;
+    private CacheParams cacheParams;
 
     @Inject
     private ActionContext(App app, H.Request request, H.Response response) {
@@ -163,6 +165,11 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
 
     public ActionContext router(Router router) {
         this.router = $.notNull(router);
+        return this;
+    }
+
+    public ActionContext cacheParams(String key, int ttl) {
+        this.cacheParams = new CacheParams(key, ttl);
         return this;
     }
 
