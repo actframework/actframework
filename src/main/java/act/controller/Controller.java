@@ -445,6 +445,26 @@ public @interface Controller {
             return Redirect.of(url);
         }
 
+        public static void redirectIf(boolean test, String url, Object... args) {
+            if (test) {
+                throw redirect(url, args);
+            }
+        }
+
+        public static void redirectIfNot(boolean test, String url, Object... args) {
+            redirectIf(!test, url, args);
+        }
+
+        public static void redirectIf(boolean test, String url, Map reverseRoutingArguments) {
+            if (test) {
+                throw redirect(url, reverseRoutingArguments);
+            }
+        }
+
+        public static void redirectIfNot(boolean test, String url, Map reverseRoutingArguments) {
+            redirectIf(!test, url, reverseRoutingArguments);
+        }
+
         /**
          * Returns a {@link RenderText} result with specified message template
          * and args. The final message is rendered with the template and arguments using
