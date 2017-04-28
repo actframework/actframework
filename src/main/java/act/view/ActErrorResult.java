@@ -22,6 +22,8 @@ package act.view;
 
 import act.Act;
 import act.app.*;
+import act.asm.AsmContext;
+import act.asm.AsmException;
 import act.exception.BindException;
 import act.util.ActError;
 import org.osgl.$;
@@ -33,6 +35,7 @@ import org.osgl.mvc.result.ErrorResult;
 import org.osgl.mvc.result.Result;
 import org.osgl.util.C;
 import org.osgl.util.E;
+import org.osgl.util.S;
 
 import javax.validation.ValidationException;
 import java.util.List;
@@ -70,6 +73,17 @@ public class ActErrorResult extends ErrorResult implements ActError {
         super(H.Status.INTERNAL_SERVER_ERROR, cause);
         init();
         populateSourceInfo(cause);
+    }
+
+    private ActErrorResult(AsmException exception, boolean scanning) {
+        super(H.Status.INTERNAL_SERVER_ERROR, exception.getCause(), errorMsg(exception, scanning));
+        init();
+        populateSourceInfo(exception.context());
+    }
+
+    private static String errorMsg(AsmException exception, boolean scanning) {
+        String userMsg = exception.getLocalizedMessage();
+        return (S.blank(userMsg)) ? S.concat("Error %s bytecode at %s", scanning ? "scanning" : "enhancing", exception.context().toString()) : userMsg;
     }
 
     public ActErrorResult(H.Status status, Throwable cause) {
@@ -157,6 +171,13 @@ public class ActErrorResult extends ErrorResult implements ActError {
         }
     }
 
+    protected void populateSourceInfo(AsmContext context) {
+        if (!Act.isDev()) {
+            return;
+        }
+        this.sourceInfo = Util.loadSourceInfo(context);
+    }
+
     private void populateSourceInfo() {
         populateSourceInfo(new RuntimeException());
     }
@@ -211,10 +232,20 @@ public class ActErrorResult extends ErrorResult implements ActError {
             return (Result) t;
         } else if (t instanceof org.rythmengine.exception.RythmException) {
             return Act.isDev() ? new RythmTemplateException((org.rythmengine.exception.RythmException) t) : ErrorResult.of(H.Status.INTERNAL_SERVER_ERROR);
+        } else if (t instanceof AsmException) {
+            return new ActErrorResult((AsmException) t, true);
         } else {
             $.Function<Throwable, Result> transformer = transformerOf(t);
             return null == transformer ? new ActErrorResult(t) : transformer.apply(t);
         }
+    }
+
+    public static ActErrorResult scanningError(AsmException exception) {
+        return new ActErrorResult(exception, true);
+    }
+
+    public static ActErrorResult enhancingError(AsmException exception) {
+        return new ActErrorResult(exception, false);
     }
 
     private static $.Function<Throwable, Result> transformerOf(Throwable t) {

@@ -20,17 +20,24 @@ package act.util;
  * #L%
  */
 
+import act.Act;
 import act.app.*;
+import act.asm.AsmContext;
 import org.osgl.util.C;
+import org.osgl.util.E;
 import org.osgl.util.S;
 
+import java.lang.annotation.ElementType;
 import java.lang.reflect.Method;
 import java.util.List;
 
 public interface ActError {
     Throwable getCauseOrThis();
+    Throwable getCause();
     SourceInfo sourceInfo();
     List<String> stackTrace();
+    String getMessage();
+    String getLocalizedMessage();
     boolean isErrorSpot(String traceLine, String nextTraceLine);
 
     class Util {
@@ -53,6 +60,7 @@ public interface ActError {
         }
 
         public static SourceInfo loadSourceInfo(StackTraceElement[] stackTraceElements, Class<? extends ActError> errClz) {
+            E.illegalStateIf(Act.isProd());
             DevModeClassLoader cl = (DevModeClassLoader) App.instance().classLoader();
             for (StackTraceElement stackTraceElement : stackTraceElements) {
                 int line = stackTraceElement.getLineNumber();
@@ -73,17 +81,28 @@ public interface ActError {
         }
 
         public static SourceInfo loadSourceInfo(Method method) {
+            return loadSourceInfo(method.getDeclaringClass().getName(), method.getName(), true);
+        }
+
+        public static SourceInfo loadSourceInfo(AsmContext asmContext) {
+            return loadSourceInfo(asmContext.className(), asmContext.name(), ElementType.METHOD == asmContext.type());
+        }
+
+        private static SourceInfo loadSourceInfo(String className, String elementName, boolean isMethod) {
+            E.illegalStateIf(Act.isProd());
             DevModeClassLoader cl = (DevModeClassLoader) App.instance().classLoader();
-            String className = method.getDeclaringClass().getName();
             Source source = cl.source(className);
-            if (null == className) {
+            if (null == source) {
                 return null;
             }
             List<String> lines = source.lines();
             Line candidate = null;
+            String pattern = isMethod ?
+                    S.concat("^\\s*.*", elementName, "\\s*\\(.*") :
+                    S.concat("^\\s*.*", elementName, "[^\\(\\{]*");
             for (int i = 0; i < lines.size(); ++i) {
                 String line = lines.get(i);
-                if (line.matches("^\\s*.*" + method.getName() + "\\s*\\(.*")) {
+                if (line.matches(pattern)) {
                     candidate = new Line(line, i + 1);
                     if (candidate.forSure) {
                         return new SourceInfoImpl(source, candidate.no);

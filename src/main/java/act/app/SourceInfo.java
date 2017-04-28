@@ -34,7 +34,7 @@ public interface SourceInfo {
 
     boolean isSourceAvailable();
 
-    public static abstract class Base implements SourceInfo {
+    abstract class Base implements SourceInfo {
         protected String fileName;
         protected List<String> lines;
         protected int lineNumber;

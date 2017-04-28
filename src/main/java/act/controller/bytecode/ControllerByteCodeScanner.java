@@ -25,10 +25,7 @@ import act.app.App;
 import act.app.AppByteCodeScannerBase;
 import act.app.AppClassLoader;
 import act.app.event.AppEventId;
-import act.asm.AnnotationVisitor;
-import act.asm.MethodVisitor;
-import act.asm.Opcodes;
-import act.asm.Type;
+import act.asm.*;
 import act.asm.signature.SignatureReader;
 import act.asm.signature.SignatureVisitor;
 import act.conf.AppConfig;
@@ -103,6 +100,14 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
 
     private class _ByteCodeVisitor extends ByteCodeVisitor {
         private String[] ports = {};
+        private Set<String> methodNames = new HashSet<>();
+
+        private void checkMethodName(String methodName) {
+            if (methodNames.contains(methodName)) {
+                throw AsmException.of("Duplicate action/interceptor method name found: %s", methodName);
+            }
+            methodNames.add(methodName);
+        }
 
         @Override
         public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
@@ -271,6 +276,7 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
                     return withAnnotationVisitor;
                 }
                 if (ControllerClassMetaInfo.isActionAnnotation(c)) {
+                    checkMethodName(methodName);
                     markRequireScan();
                     ActionMethodMetaInfo tmp = new ActionMethodMetaInfo(classInfo);
                     methodInfo = tmp;
@@ -280,6 +286,7 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
                     }
                     return new ActionAnnotationVisitor(av, ControllerClassMetaInfo.lookupHttpMethod(c), ControllerClassMetaInfo.isActionUtilAnnotation(c), isStatic);
                 } else if (ControllerClassMetaInfo.isInterceptorAnnotation(c)) {
+                    checkMethodName(methodName);
                     markRequireScan();
                     InterceptorAnnotationVisitor visitor = new InterceptorAnnotationVisitor(av, c);
                     methodInfo = visitor.info;

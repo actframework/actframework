@@ -139,10 +139,7 @@ public class Router extends AppServiceBase<Router> {
     // --- routing ---
     public RequestHandler getInvoker(H.Method method, CharSequence path, ActionContext context) {
         context.router(this);
-        RequestHandler handler = app().blockIssueHandler();
-        if (null != handler) {
-            return handler;
-        }
+        RequestHandler blockIssueHandler = app().blockIssueHandler();
         if (method == H.Method.OPTIONS) {
             return optionHandlerFactory.optionHandler(path, context);
         }
@@ -150,7 +147,14 @@ public class Router extends AppServiceBase<Router> {
             return UnknownHttpMethodHandler.INSTANCE;
         }
         Node node = search(method, Path.tokenizer(Unsafe.bufOf(path)), context);
-        return getInvokerFrom(node);
+        RequestHandler handler = getInvokerFrom(node);
+        if (null == blockIssueHandler) {
+            return handler;
+        }
+        if (handler instanceof StaticFileGetter || handler instanceof StaticResourceGetter) {
+            return handler;
+        }
+        return blockIssueHandler;
     }
 
     public RequestHandler findStaticGetHandler(String url) {
