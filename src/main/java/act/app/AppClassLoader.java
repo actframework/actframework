@@ -22,6 +22,7 @@ package act.app;
 
 import act.Act;
 import act.app.event.AppEventId;
+import act.asm.AsmException;
 import act.asm.ClassReader;
 import act.asm.ClassWriter;
 import act.boot.BootstrapClassLoader;
@@ -42,9 +43,9 @@ import act.mail.meta.MailerClassMetaInfoManager;
 import act.metric.Metric;
 import act.metric.MetricInfo;
 import act.util.*;
+import act.view.ActErrorResult;
 import org.osgl.$;
 import org.osgl.exception.NotAppliedException;
-import org.osgl.exception.UnexpectedException;
 import org.osgl.logging.L;
 import org.osgl.logging.Logger;
 import org.osgl.util.C;
@@ -278,12 +279,18 @@ public class AppClassLoader
             ClassReader cr = new ClassReader(ba);
             try {
                 cr.accept(theVisitor, 0);
-            } catch (UnexpectedException e) {
+            } catch (AsmException e) {
                 Throwable t = e.getCause();
                 if (t instanceof ClassNotFoundException) {
                     continue;
                 } else {
-                    throw e;
+                    logger.error(e, "Error scanning bytecode at %s", e.context());
+                    ActErrorResult error = ActErrorResult.scanningError(e);
+                    if (Act.isDev()) {
+                        app.setBlockIssue(error);
+                    } else {
+                        throw error;
+                    }
                 }
             }
             for (AppByteCodeScanner scanner : scanners) {
@@ -322,7 +329,11 @@ public class AppClassLoader
             byte[] bytes = bytecodeProvider.apply(className);
             libClsCache.put(className, bytes);
             ClassReader cr = new ClassReader(bytes);
-            cr.accept(theVisitor, 0);
+            try {
+                cr.accept(theVisitor, 0);
+            } catch (AsmException e) {
+                throw ActErrorResult.of(e);
+            }
             for (AppByteCodeScanner scanner : scanners) {
                 scanner.scanFinished(className);
                 Map<Class<? extends AppByteCodeScanner>, Set<String>> ss = scanner.dependencyClasses();
@@ -474,7 +485,12 @@ public class AppClassLoader
         cw.set(new ClassWriter(ClassWriter.COMPUTE_FRAMES));
         enhancer.commitDownstream();
         ClassReader r = new ClassReader(bytecode);
-        r.accept(enhancer, 0);
+        try {
+            r.accept(enhancer, 0);
+        } catch (AsmException e) {
+            logger.error(e, "error enhancing bytecode at %s", e.context());
+            throw ActErrorResult.enhancingError(e);
+        }
         return cw.get().toByteArray();
     }
 

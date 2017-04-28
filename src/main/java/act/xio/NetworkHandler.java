@@ -135,13 +135,16 @@ public class NetworkHandler extends DestroyableBase {
                 try {
                     requestHandler.handle(ctx);
                 } catch (Result r) {
+                    if (isError(r)) {
+                        ctx.handler(FastRequestHandler.DUMB);
+                    }
                     try {
                         r = RequestHandlerProxy.GLOBAL_AFTER_INTERCEPTOR.apply(r, ctx);
                     } catch (Exception e) {
                         logger.error(e, "Error calling global after interceptor");
                         r = ActErrorResult.of(e);
                     }
-                    if (null == ctx.handler()) {
+                    if (null == ctx.handler() || isError(r)) {
                         ctx.handler(FastRequestHandler.DUMB);
                     }
 
@@ -169,6 +172,10 @@ public class NetworkHandler extends DestroyableBase {
         } else {
             job.run();
         }
+    }
+
+    private boolean isError(Result r) {
+        return r instanceof ErrorResult;
     }
 
     private void handleException(Exception exception, final ActionContext ctx, String errorMessage) {

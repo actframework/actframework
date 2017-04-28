@@ -104,12 +104,13 @@ public abstract class BootstrapClassLoader extends ClassLoader implements Plugin
     }
 
     protected Class<?> defineClass(String name, byte[] ba) {
-        Class<?> c;
+        Class<?> c = null;
         $.Var<ClassWriter> cw = $.val(null);
         ByteCodeVisitor enhancer = enhancerManager.generalEnhancer(name, cw);
         if (null == enhancer) {
             c = defineClassX(name, ba, 0, ba.length, DOMAIN);
         } else {
+            Exception exception = null;
             ClassWriter w = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
             cw.set(w);
             enhancer.commitDownstream();
@@ -119,12 +120,14 @@ public abstract class BootstrapClassLoader extends ClassLoader implements Plugin
                 r.accept(enhancer, 0);
                 byte[] baNew = w.toByteArray();
                 c = defineClassX(name, baNew, 0, baNew.length, DOMAIN);
-            } catch (RuntimeException e) {
-                throw e;
             } catch (Error e) {
                 throw e;
             } catch (Exception e) {
-                throw E.unexpected("Error processing class " + name);
+                exception = e;
+            }
+            if (null != exception) {
+                logger.error(exception, "Error enhancing class %s", name);
+                throw E.unexpected(exception);
             }
         }
         return c;

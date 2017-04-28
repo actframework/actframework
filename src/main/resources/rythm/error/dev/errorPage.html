@@ -113,9 +113,7 @@ List<String> stackTrace;
   <pre class="error-message" style="white-space: pre-wrap;">
   @if(templateSourceInfo) {
   @(((act.view.TemplateException) actError).errorMessage().raw())
-  } else {
-    @actError.getCauseOrThis().getClass().getName(): <b>@actError.getCauseOrThis().getLocalizedMessage()</b>
-  }
+    } else {@{String actErrMsg = actError.getLocalizedMessage();} @if(!s().isEmpty(actErrMsg)) {<b>@actErrMsg</b>@if(actError.getCause()){<br/> - }} @if(actError.getCause()) {@actError.getCause().getClass().getName(): <b>@actError.getCause().getLocalizedMessage()}</b>}
   </pre>
 
   <div class="tabs">
