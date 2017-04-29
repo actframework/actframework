@@ -214,10 +214,6 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
                         } else {
                             fieldValue = field.get(bean);
                         }
-                        // preset the render args for fields
-                        if (null != fieldValue) {
-                            context.renderArg(field.getName(), fieldValue);
-                        }
                         if (hasValidationConstraint(BeanSpec.of(field, injector))) {
                             hasValidateConstraint.set(true);
                         }

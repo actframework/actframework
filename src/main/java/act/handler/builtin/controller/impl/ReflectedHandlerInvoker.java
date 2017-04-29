@@ -58,13 +58,11 @@ import org.osgl.util.C;
 import org.osgl.util.E;
 import org.osgl.util.S;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -106,6 +104,11 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
     private $.Function<ActionContext, String> cacheKeyBuilder;
     private boolean cacheSupportPost;
     private int cacheTtl;
+    // (field name: output name)
+    private Map<Field, String> outputFields;
+    // (param index: output name)
+    private Map<Integer, String> outputParams;
+    private boolean hasOutputVar;
 
     private ReflectedHandlerInvoker(M handlerMetaInfo, App app) {
         this.cl = app.classLoader();
@@ -174,6 +177,8 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
             }
         }
 
+        initOutputVariables();
+
         initCacheParams(method);
     }
 
@@ -240,6 +245,10 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         if (failOnViolation && context.hasViolation()) {
             String msg = context.violationMessage(";");
             return new BadRequest(msg);
+        }
+
+        if (hasOutputVar) {
+            fillOutputVariables(controller, params, context);
         }
 
         return invoke(handler, context, controller, params);
@@ -447,6 +456,85 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         cacheSupportPost = cacheFor.supportPost();
         cacheTtl = cacheFor.value();
         cacheKeyBuilder = new CacheKeyBuilder(cacheFor, method.getName());
+    }
+
+    private void fillOutputVariables(Object controller, Object[] params, ActionContext context) {
+        if (!isStatic) {
+            for (Map.Entry<Field, String> entry : outputFields.entrySet()) {
+                Field field = entry.getKey();
+                String outputName = entry.getValue();
+                try {
+                    Object val = field.get(controller);
+                    context.renderArg(outputName, val);
+                } catch (IllegalAccessException e) {
+                    throw E.unexpected(e);
+                }
+            }
+        }
+        if (0 == params.length) {
+            return;
+        }
+        for (Map.Entry<Integer, String> entry : outputParams.entrySet()) {
+            int i = entry.getKey();
+            String outputName = entry.getValue();
+            context.renderArg(outputName, params[i]);
+        }
+    }
+
+    private void initOutputVariables() {
+        Set<String> outputNames = new HashSet<>();
+        outputFields = new HashMap<>();
+        if (!isStatic) {
+            List<Field> fields = $.fieldsOf(controllerClass);
+            for (Field field : fields) {
+                Output output = field.getAnnotation(Output.class);
+                if (null != output) {
+                    String fieldName = field.getName();
+                    String outputName = output.value();
+                    if (S.blank(outputName)) {
+                        outputName = fieldName;
+                    }
+                    E.unexpectedIf(outputNames.contains(outputName), "output name already used: %s", outputName);
+                    field.setAccessible(true);
+                    outputFields.put(field, outputName);
+                    outputNames.add(outputName);
+                }
+            }
+        }
+
+        outputParams = new HashMap<>();
+        Class<?>[] paramTypes = method.getParameterTypes();
+        int len = paramTypes.length;
+        if (0 == len) {
+            return;
+        }
+        Annotation[][] aaa = method.getParameterAnnotations();
+        for (int i = 0; i < len; ++i) {
+            Annotation[] aa = aaa[i];
+            if (null == aa) {
+                continue;
+            }
+            Output output = null;
+            for (int j = aa.length - 1; j >= 0; --j) {
+                Annotation a = aa[j];
+                if (a.annotationType() == Output.class) {
+                    output = $.cast(a);
+                    break;
+                }
+            }
+            if (null == output) {
+                continue;
+            }
+            String outputName = output.value();
+            if (S.blank(outputName)) {
+                HandlerParamMetaInfo paramMetaInfo = handler.param(i);
+                outputName = paramMetaInfo.name();
+            }
+            E.unexpectedIf(outputNames.contains(outputName), "output name already used: %s", outputName);
+            outputParams.put(i, outputName);
+            outputNames.add(outputName);
+        }
+        hasOutputVar = !outputNames.isEmpty();
     }
 
     private Result invoke(M handlerMetaInfo, ActionContext context, Object controller, Object[] params) throws Exception {

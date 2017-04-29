@@ -1,4 +1,4 @@
-package act.handler;
+package act.util;
 
 /*-
  * #%L
@@ -26,17 +26,18 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Mark an action handler method to be double-submission protected
+ * Mark a controller field or action method parameter to be output into
+ * template (i.e. add em into the render argument list or JSON fields)
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.METHOD)
-public @interface PreventDoubleSubmission {
-
-    String DEFAULT = "--configured--";
+@Target({ElementType.FIELD, ElementType.PARAMETER})
+public @interface Output {
 
     /**
-     * Specify the dsp (double submission protection) token name
-     * @return the dsp token name
+     * Optionally specify the output(template render argument) name. If not specified, then
+     * it will use the field/parameter name instead
+     * @return the name
      */
-    String value() default  DEFAULT;
+    String value() default "";
+
 }

@@ -32,6 +32,7 @@ import org.osgl.util.S;
 
 import java.io.File;
 import java.io.InputStream;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -73,7 +74,7 @@ public class RenderAny extends Result {
         Result result = null;
         if (JSON == fmt) {
             List<String> varNames = context.__appRenderArgNames();
-            Map<String, Object> map = C.newMap();
+            Map<String, Object> map = new HashMap<>(context.renderArgs());
             if (null != varNames && !varNames.isEmpty()) {
                 for (String name : varNames) {
                     map.put(name, context.renderArg(name));
