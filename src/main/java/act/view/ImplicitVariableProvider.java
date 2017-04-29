@@ -21,9 +21,31 @@ package act.view;
  */
 
 import act.Act;
+import act.app.ActionContext;
+import act.app.App;
+import act.app.AppByteCodeScannerBase;
+import act.asm.AnnotationVisitor;
+import act.asm.AsmException;
+import act.asm.MethodVisitor;
+import act.asm.Type;
+import act.inject.genie.GenieInjector;
+import act.inject.param.ParamValueLoader;
+import act.inject.param.ProvidedValueLoader;
+import act.mail.MailerContext;
 import act.plugin.Plugin;
+import act.util.AsmTypes;
+import act.util.ByteCodeVisitor;
+import com.esotericsoftware.reflectasm.MethodAccess;
+import org.osgl.$;
+import org.osgl.inject.BeanSpec;
+import org.osgl.util.E;
+import org.osgl.util.S;
 
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Plugin developer could extend this interface to inject
@@ -47,4 +69,233 @@ public abstract class ImplicitVariableProvider implements Plugin {
     public void register() {
         Act.viewManager().register(this);
     }
+
+    public static class TemplateVariableScanner extends AppByteCodeScannerBase {
+
+        private static class Meta {
+            String className;
+            String methodName;
+            String varName;
+            boolean isStatic;
+
+            @Override
+            public int hashCode() {
+                return $.hc(className, methodName);
+            }
+
+            @Override
+            public boolean equals(Object obj) {
+                if (obj == this) {
+                    return true;
+                }
+                if (obj instanceof Meta) {
+                    Meta that = $.cast(obj);
+                    return $.eq(that.className, this.className) && $.eq(that.methodName, this.methodName);
+                }
+                return false;
+            }
+
+            @Override
+            public String toString() {
+                return S.concat("Template variable provider: ", className, "::", methodName);
+            }
+        }
+
+        private Set<Meta> providers = new HashSet<>();
+
+        public TemplateVariableScanner(final App app) {
+            app.jobManager().beforeAppStart(new Runnable() {
+                @Override
+                public void run() {
+                    register(app);
+                }
+            });
+        }
+
+        @Override
+        protected boolean shouldScan(String className) {
+            return true;
+        }
+
+        @Override
+        public ByteCodeVisitor byteCodeVisitor() {
+            return new ByteCodeVisitor() {
+                private String className;
+
+                @Override
+                public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
+                    if (isPublic(access)) {
+                        className = Type.getObjectType(name).getClassName();
+                    }
+                    super.visit(version, access, name, signature, superName, interfaces);
+                }
+
+                @Override
+                public MethodVisitor visitMethod(int access, final String methodName, String desc, String signature, String[] exceptions) {
+                    MethodVisitor mv = super.visitMethod(access, methodName, desc, signature, exceptions);
+                    if (null == className) {
+                        return mv;
+                    }
+
+                    final boolean isStatic = isStatic(access);
+
+                    return new MethodVisitor(ASM5, mv) {
+                        @Override
+                        public AnnotationVisitor visitAnnotation(String desc, boolean visible) {
+                            AnnotationVisitor av = super.visitAnnotation(desc, visible);
+                            Type annoType = Type.getType(desc);
+                            if (AsmTypes.TEMPLATE_VARIABLE.asmType().equals(annoType)) {
+                                final Meta meta = new Meta();
+                                meta.className = className;
+                                meta.methodName = methodName;
+                                meta.isStatic = isStatic;
+                                if (providers.contains(meta)) {
+                                    throw AsmException.of("@ProvidesImplicitTemplateVariable annotated method cannot be overloaded: %s", meta.toString());
+                                }
+                                providers.add(meta);
+                                return new AnnotationVisitor(ASM5, av) {
+                                    @Override
+                                    public void visit(String name, Object value) {
+                                        super.visit(name, value);
+                                        if ("value".equals(name)) {
+                                            meta.varName = value.toString();
+                                        }
+                                    }
+                                };
+                            }
+                            return av;
+                        }
+                    };
+                }
+            };
+        }
+
+        @Override
+        public void scanFinished(String className) {
+
+        }
+
+        private void register(App app) {
+            for (Meta meta : providers) {
+                register(meta, app);
+            }
+        }
+
+        private void register(Meta meta, App app) {
+            Class<?> cls = $.classForName(meta.className, app.classLoader());
+            Method method = findMethod(cls, meta.methodName);
+            E.unexpectedIf(null == method, "Unable to find method %s", meta);
+            register(meta, cls, method, app);
+        }
+
+        private Method findMethod(Class<?> cls, String methodName) {
+            Method[] methods = cls.getDeclaredMethods();
+            for (Method method : methods) {
+                if (!method.getName().equals(methodName)) {
+                    continue;
+                }
+                if (method.isAnnotationPresent(ProvidesImplicitTemplateVariable.class)) {
+                    return method;
+                }
+            }
+            return null;
+        }
+
+        private void register(Meta meta, Class<?> cls, Method method, App app) {
+            final ReflectedActionViewVarDef def = new ReflectedActionViewVarDef(meta, cls, method, app);
+            if (def.supportMailer) {
+                MailerViewVarDef mailerVarDef = new MailerViewVarDef(meta.varName, def.returnType()) {
+                    @Override
+                    public Object eval(MailerContext context) {
+                        return def.getValue(context.app());
+                    }
+                };
+                Act.viewManager().register(mailerVarDef);
+            }
+            if (def.supportAction) {
+                ActionViewVarDef actionVarDef = new ActionViewVarDef(meta.varName, def.returnType()) {
+                    @Override
+                    public Object eval(ActionContext context) {
+                        return def.getValue(context.app());
+                    }
+                };
+                Act.viewManager().register(actionVarDef);
+            }
+        }
+
+        private static class ReflectedActionViewVarDef {
+
+            private Class<?> cls;
+            private Method method;
+            private MethodAccess methodAccess;
+            private int methodIndex;
+            private ParamValueLoader[] loaders;
+            private boolean supportAction;
+            private boolean supportMailer;
+            private int paramLen;
+
+            protected ReflectedActionViewVarDef(Meta meta, Class<?> cls, Method method, App app) {
+                this.cls = cls;
+                this.method = method;
+                if (!meta.isStatic) {
+                    methodAccess = MethodAccess.get(cls);
+                    methodIndex = methodAccess.getIndex(method.getName(), method.getParameterTypes());
+                }
+                initLoaders(app);
+            }
+
+            private void initLoaders(App app) {
+                java.lang.reflect.Type[] types = method.getGenericParameterTypes();
+                int len = types.length;
+                ParamValueLoader[] loaders = new ParamValueLoader[len];
+                if (0 < len) {
+                    GenieInjector injector = app.injector();
+                    Annotation[][] annos = method.getParameterAnnotations();
+                    for (int i = 0; i < len; ++i) {
+                        java.lang.reflect.Type type = types[i];
+                        Annotation[] aa = annos[i];
+                        BeanSpec spec = BeanSpec.of(type, aa, injector);
+                        E.unexpectedIf(!injector.injectable(spec), "");
+                        loaders[i] = ProvidedValueLoader.get(spec, injector);
+                        if (spec.isInstanceOf(ActionContext.class)) {
+                            supportAction = true;
+                        } else if (spec.isInstanceOf(MailerContext.class)) {
+                            supportMailer = true;
+                        }
+                    }
+                }
+                if (!supportAction && !supportMailer) {
+                    supportAction = true;
+                    supportMailer = true;
+                }
+                this.loaders = loaders;
+                this.paramLen = len;
+            }
+
+            Class<?> returnType() {
+                return method.getReturnType();
+            }
+
+            Object getValue(App app) {
+                Object[] params = params();
+                if (null != methodAccess) {
+                    return methodAccess.invoke(app.getInstance(cls), methodIndex, params);
+                } else {
+                    return $.invokeStatic(method, params);
+                }
+            }
+
+            private Object[] params() {
+                Object[] params = new Object[paramLen];
+                for (int i = 0; i < paramLen; ++i) {
+                    ParamValueLoader loader = loaders[i];
+                    params[i] = loader.load(null, null, false);
+                }
+                return params;
+            }
+
+        }
+
+    }
+
 }

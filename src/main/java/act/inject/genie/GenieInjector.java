@@ -28,10 +28,7 @@ import act.app.event.AppEventId;
 import act.controller.ActionMethodParamAnnotationHandler;
 import act.inject.*;
 import act.sys.Env;
-import act.util.AnnotatedClassFinder;
-import act.util.ClassInfoRepository;
-import act.util.ClassNode;
-import act.util.SubClassFinder;
+import act.util.*;
 import org.osgl.$;
 import org.osgl.Osgl;
 import org.osgl.exception.ConfigurationException;
@@ -44,8 +41,10 @@ import org.osgl.mvc.annotation.Param;
 import org.osgl.util.C;
 import org.osgl.util.E;
 
+import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.inject.Provider;
+import javax.inject.Singleton;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
@@ -124,6 +123,20 @@ public class GenieInjector extends DependencyInjectorBase<GenieInjector> {
     public boolean subjectToInject(BeanSpec spec) {
         return genie().subjectToInject(spec);
     }
+
+    public boolean injectable(BeanSpec beanSpec) {
+        Class rawType = beanSpec.rawType();
+        return (ActProviders.isProvided(rawType)
+                || null != beanSpec.getAnnotation(Inject.class)
+                || null != beanSpec.getAnnotation(Provided.class)
+                || null != beanSpec.getAnnotation(Context.class)
+                || null != beanSpec.getAnnotation(Singleton.class)
+                || beanSpec.isInstanceOf(SingletonBase.class)
+                || null != beanSpec.getAnnotation(ApplicationScoped.class)
+                || subjectToInject(beanSpec)
+        );
+    }
+
 
     private C.Set<Object> factories() {
         Set<String> factories = GenieFactoryFinder.factories();

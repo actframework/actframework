@@ -26,7 +26,9 @@ import act.app.App;
 import act.app.data.BinderManager;
 import act.app.data.StringValueResolverManager;
 import act.controller.ActionMethodParamAnnotationHandler;
-import act.inject.*;
+import act.inject.DefaultValue;
+import act.inject.DependencyInjector;
+import act.inject.SessionVariable;
 import act.inject.genie.DependentScope;
 import act.inject.genie.GenieInjector;
 import act.inject.genie.RequestScope;
@@ -37,7 +39,6 @@ import org.osgl.$;
 import org.osgl.exception.UnexpectedException;
 import org.osgl.inject.BeanSpec;
 import org.osgl.inject.InjectException;
-import org.osgl.inject.annotation.Provided;
 import org.osgl.inject.util.AnnotationUtil;
 import org.osgl.inject.util.ArrayLoader;
 import org.osgl.logging.LogManager;
@@ -53,10 +54,8 @@ import javax.enterprise.context.Dependent;
 import javax.enterprise.context.RequestScoped;
 import javax.enterprise.context.SessionScoped;
 import javax.enterprise.inject.New;
-import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Provider;
-import javax.inject.Singleton;
 import javax.validation.*;
 import javax.validation.executable.ExecutableValidator;
 import java.lang.annotation.Annotation;
@@ -767,16 +766,8 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
     }
 
     public static boolean provided(BeanSpec beanSpec, DependencyInjector<?> injector) {
-        Class rawType = beanSpec.rawType();
         GenieInjector genieInjector = $.cast(injector);
-        return (ActProviders.isProvided(rawType)
-                || null != beanSpec.getAnnotation(Inject.class)
-                || null != beanSpec.getAnnotation(Provided.class)
-                || null != beanSpec.getAnnotation(Context.class)
-                || null != beanSpec.getAnnotation(Singleton.class)
-                || null != beanSpec.getAnnotation(ApplicationScoped.class)
-                || genieInjector.subjectToInject(beanSpec)
-        );
+        return genieInjector.injectable(beanSpec);
     }
 
     public static boolean noBindOrProvided(BeanSpec beanSpec, DependencyInjector<?> injector) {

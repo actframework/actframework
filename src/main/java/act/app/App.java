@@ -58,6 +58,7 @@ import act.route.RouteTableRouterBuilder;
 import act.route.Router;
 import act.util.*;
 import act.view.ActErrorResult;
+import act.view.ImplicitVariableProvider;
 import act.view.rythm.JodaDateTimeFormatter;
 import act.view.rythm.JodaTransformers;
 import act.view.rythm.RythmTransformerScanner;
@@ -1090,6 +1091,7 @@ public class App extends DestroyableBase {
         scannerManager.register(new SimpleEventListenerByteCodeScanner());
         scannerManager.register(new CommanderByteCodeScanner());
         scannerManager.register(new RythmTransformerScanner());
+        scannerManager.register(new ImplicitVariableProvider.TemplateVariableScanner(this));
     }
 
     private void loadDependencyInjector() {

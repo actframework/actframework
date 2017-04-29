@@ -60,18 +60,26 @@ public class ViewManager extends DestroyableBase {
         E.NPE(implicitVariableProvider);
         List<ActionViewVarDef> l0 = implicitVariableProvider.implicitActionViewVariables();
         for (ActionViewVarDef var : l0) {
-            if (implicitActionViewVariables.contains(var)) {
-                throw new UnexpectedException("Implicit variable[%s] has already been registered", var.name());
-            }
-            implicitActionViewVariables.add(var);
+            register(var);
         }
         List<MailerViewVarDef> l1 = implicitVariableProvider.implicitMailerViewVariables();
         for (MailerViewVarDef var : l1) {
-            if (implicitMailerViewVariables.contains(var)) {
-                throw new UnexpectedException("Implicit variable[%s] has already been registered", var.name());
-            }
-            implicitMailerViewVariables.add(var);
+            register(var);
         }
+    }
+
+    void register(ActionViewVarDef var) {
+        if (implicitActionViewVariables.contains(var)) {
+            throw new UnexpectedException("Implicit variable[%s] has already been registered", var.name());
+        }
+        implicitActionViewVariables.add(var);
+    }
+
+    void register(MailerViewVarDef var) {
+        if (implicitMailerViewVariables.contains(var)) {
+            throw new UnexpectedException("Implicit variable[%s] has already been registered", var.name());
+        }
+        implicitMailerViewVariables.add(var);
     }
 
     public void onAppStart() {

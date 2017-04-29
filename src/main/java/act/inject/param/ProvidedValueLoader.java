@@ -78,7 +78,7 @@ public class ProvidedValueLoader extends DestroyableBase implements ParamValueLo
 
     private static ConcurrentMap<BeanSpec, ProvidedValueLoader> lookup = new ConcurrentHashMap<BeanSpec, ProvidedValueLoader>();
 
-    static ProvidedValueLoader get(BeanSpec beanSpec, DependencyInjector<?> injector) {
+    public static ProvidedValueLoader get(BeanSpec beanSpec, DependencyInjector<?> injector) {
         ProvidedValueLoader loader = lookup.get(beanSpec);
         if (null == loader) {
             loader = new ProvidedValueLoader(beanSpec, injector);

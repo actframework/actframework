@@ -30,6 +30,7 @@ import act.data.annotation.ReadContent;
 import act.inject.Context;
 import act.inject.SessionVariable;
 import act.mail.MailerContext;
+import act.view.ProvidesImplicitTemplateVariable;
 import org.osgl.inject.annotation.Provides;
 import org.osgl.mvc.annotation.Bind;
 import org.osgl.mvc.annotation.Param;
@@ -72,6 +73,8 @@ public enum AsmTypes implements Opcodes {
     public static AsmType<AnnotatedClassFinder> ANN_CLASS_FINDER = new AsmType<AnnotatedClassFinder>(AnnotatedClassFinder.class);
 
     public static AsmType<Provides> PROVIDES = new AsmType<Provides>(Provides.class);
+
+    public static AsmType<ProvidesImplicitTemplateVariable> TEMPLATE_VARIABLE = new AsmType<>(ProvidesImplicitTemplateVariable.class);
 
 
     public static final Type RETURN_VOID = Type.VOID_TYPE;
