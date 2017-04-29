@@ -257,7 +257,7 @@ public abstract class ImplicitVariableProvider implements Plugin {
                         BeanSpec spec = BeanSpec.of(type, aa, injector);
                         E.unexpectedIf(!injector.injectable(spec), "");
                         loaders[i] = ProvidedValueLoader.get(spec, injector);
-                        if (spec.isInstanceOf(ActionContext.class)) {
+                        if (spec.isInstanceOf(ActionContext.class) || requireAction(type)) {
                             supportAction = true;
                         } else if (spec.isInstanceOf(MailerContext.class)) {
                             supportMailer = true;
@@ -270,6 +270,14 @@ public abstract class ImplicitVariableProvider implements Plugin {
                 }
                 this.loaders = loaders;
                 this.paramLen = len;
+            }
+
+            private boolean requireAction(java.lang.reflect.Type type) {
+                String name = type.toString();
+                if (name.contains("org.osgl.http")) {
+                    return true;
+                }
+                return false;
             }
 
             Class<?> returnType() {
