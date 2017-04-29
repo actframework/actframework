@@ -35,6 +35,7 @@ import org.osgl.Osgl;
 import org.osgl.http.H;
 import org.osgl.mvc.result.*;
 import org.osgl.storage.ISObject;
+import org.osgl.util.C;
 import org.osgl.util.E;
 import org.osgl.util.IO;
 import org.osgl.util.S;
@@ -793,30 +794,22 @@ public @interface Controller {
             return r;
         }
 
-        public static Result inferResult(String s, ActionContext actionContext) {
-            final H.Status status = actionContext.successStatus();
-            if (actionContext.acceptJson()) {
-                s = s.trim();
-                if (!s.startsWith("[") && !s.startsWith("{")) {
-                    s = S.fmt("{\"result\": \"%s\"}", org.rythmengine.utils.S.escapeJSON(s));
+        public static Result inferPrimitiveResult(Object v, ActionContext actionContext, boolean requireJSON, boolean requireXML) {
+            if (requireJSON) {
+                return RenderJSON.of(C.map("result", v));
+            } else if (requireXML) {
+                return RenderXML.of(S.concat("<result>", S.string(v), "</result>"));
+            } else {
+                H.Format fmt = actionContext.accept();
+                final H.Status status = actionContext.successStatus();
+                if (HTML == fmt || H.Format.UNKNOWN == fmt) {
+                    return RenderHtml.of(status, v.toString());
                 }
-                return RenderJSON.of(status, s);
-            }
-            H.Format fmt = actionContext.accept();
-            if (HTML == fmt || H.Format.UNKNOWN == fmt) {
-                return RenderHtml.of(status, s);
-            }
-            if (TXT == fmt || CSV == fmt) {
-                return RenderText.of(status, fmt, s);
-            }
-            if (XML == fmt) {
-                s = s.trim();
-                if (!s.startsWith("<") && !s.endsWith(">")) {
-                    s = S.fmt("<result>%s</result>", s);
+                if (TXT == fmt || CSV == fmt) {
+                    return RenderText.of(status, fmt, status.toString());
                 }
-                return RenderText.of(status, fmt, s);
+                throw E.unexpected("Cannot apply text result to format: %s", fmt);
             }
-            throw E.unexpected("Cannot apply text result to format: %s", fmt);
         }
 
         public static Result inferResult(Map<String, Object> map, ActionContext actionContext) {
@@ -918,10 +911,14 @@ public @interface Controller {
                 }
                 return inferToTemplate(v, context);
             }
+
+            boolean requireJSON = context.acceptJson();
+            boolean requireXML = !requireJSON && context.acceptXML();
+
             if (null == v) {
-                return null;
-            } else if (v instanceof String) {
-                return inferResult((String) v, context);
+                return requireJSON ? RenderJSON.of("{}") : requireXML ? RenderXML.of("<result></result>") : null;
+            } else if ($.isSimpleType(v.getClass())) {
+                return inferPrimitiveResult(v, context, requireJSON, requireXML);
             } else if (v instanceof InputStream) {
                 return inferResult((InputStream) v, context);
             } else if (v instanceof File) {
@@ -931,7 +928,7 @@ public @interface Controller {
             } else if (v instanceof Map) {
                 return RenderJSON.of(v);
             } else {
-                if (context.acceptJson()) {
+                if (requireJSON) {
                     // patch https://github.com/alibaba/fastjson/issues/478
                     if (meta.disableJsonCircularRefDetect()) {
                         DisableFastJsonCircularReferenceDetect.option.set(true);
@@ -958,7 +955,7 @@ public @interface Controller {
                     return RenderCSV.get(status, v, propertySpec, context);
                 } else {
                     String s = meta.returnType().getDescriptor().startsWith("[") ? $.toString2(v) : v.toString();
-                    return inferResult(s, context);
+                    return inferPrimitiveResult(s, context, requireJSON, requireXML);
                 }
             }
         }
