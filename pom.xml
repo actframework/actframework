@@ -26,6 +26,7 @@
 * #177 Better error reporting when multiple controller action/interceptor methods have the same name
 * #178 When handler returns a primitive type the result is not JSON result when `Accept` header require JSON
 * #179 Provide an annotation to mark a field or parameter as template variable
+* #180 Setting character encoding in response doesn't effect correctly 
 
 1.2.0
 * #161 Add an annotation that indicate an injected field is stateless

@@ -63,12 +63,6 @@ public class UndertowResponse extends ResponseImplBase<UndertowResponse> {
     }
 
     @Override
-    public UndertowResponse characterEncoding(String encoding) {
-        hse.getResponseHeaders().put(HttpString.tryFromString(H.Header.Names.ACCEPT_CHARSET), encoding);
-        return this;
-    }
-
-    @Override
     public UndertowResponse contentLength(long len) {
         hse.setResponseContentLength(len);
         return this;
@@ -90,11 +84,6 @@ public class UndertowResponse extends ResponseImplBase<UndertowResponse> {
     protected OutputStream createOutputStream() {
         ensureBlocking();
         return hse.getOutputStream();
-    }
-
-    @Override
-    protected void _setContentType(String type) {
-        hse.getResponseHeaders().put(HttpString.tryFromString(H.Header.Names.CONTENT_TYPE), type);
     }
 
     @Override

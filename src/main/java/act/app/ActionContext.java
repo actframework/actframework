@@ -22,6 +22,7 @@ package act.app;
 
 import act.Act;
 import act.Destroyable;
+import act.ResponseImplBase;
 import act.conf.AppConfig;
 import act.controller.CacheParams;
 import act.data.MapUtil;
@@ -424,7 +425,9 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
             fmt = req.contentType();
         }
 
-        resp().addHeaderIfNotAdded(H.Header.Names.CONTENT_TYPE, fmt.contentType());
+        ResponseImplBase resp = $.cast(resp());
+        resp.initContentType(fmt.contentType());
+        resp.commitContentType();
         return this;
     }
 

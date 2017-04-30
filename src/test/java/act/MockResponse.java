@@ -30,7 +30,7 @@ import java.io.Writer;
 import java.nio.ByteBuffer;
 import java.util.Locale;
 
-public class MockResponse extends H.Response<MockResponse> {
+public class MockResponse extends ResponseImplBase<MockResponse> {
 
     private String contentType;
     private String encoding = "utf-8";

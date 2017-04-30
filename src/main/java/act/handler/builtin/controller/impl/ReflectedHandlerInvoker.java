@@ -844,10 +844,8 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
     private static class CacheKeyBuilder extends $.F1<ActionContext, String> {
         private String[] keys;
         private final String methodName;
-        private final boolean sessionBased;
 
         CacheKeyBuilder(CacheFor cacheFor, String methodName) {
-            this.sessionBased = cacheFor.sessionBased();
             this.methodName = methodName;
             this.keys = cacheFor.keys();
         }
@@ -856,9 +854,6 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         public String apply(ActionContext context) throws NotAppliedException, Osgl.Break {
             TreeMap<String, String> keyValues = keyValues(context);
             S.Buffer buffer = S.newBuffer(methodName);
-            if (sessionBased) {
-                buffer.append(context.session().id());
-            }
             for (Map.Entry<String, String> entry : keyValues.entrySet()) {
                 buffer.append("-").append(entry.getKey()).append(":").append(entry.getValue());
             }

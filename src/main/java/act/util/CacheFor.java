@@ -41,17 +41,6 @@ public @interface CacheFor {
     int value() default 60 * 60;
 
     /**
-     * Specify whether this cache is session based
-     *
-     * **Note** use session based cache with cautious because it might
-     * result in very big memory consumption when you have a lot of
-     * sessions
-     *
-     * @return `true` if this cache should be session based
-     */
-    boolean sessionBased() default false;
-
-    /**
      * Specify the keys to extract parameter/post variables to build the final
      * cache key
      *

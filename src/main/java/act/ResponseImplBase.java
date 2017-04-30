@@ -29,6 +29,10 @@ public abstract class ResponseImplBase<T extends ResponseImplBase> extends H.Res
 
     protected String charset;
     protected Locale locale;
+    protected String contentType;
+    private boolean charsetSet;
+
+    protected ResponseImplBase() {}
 
     protected ResponseImplBase(AppConfig config) {
         charset = config.encoding();
@@ -43,7 +47,21 @@ public abstract class ResponseImplBase<T extends ResponseImplBase> extends H.Res
     @Override
     public T characterEncoding(String encoding) {
         charset = encoding;
+        charsetSet = true;
         return me();
+    }
+
+    @Override
+    protected void _setContentType(String type) {
+        this.contentType = type;
+    }
+
+    protected String _getContentType() {
+        return this.contentType != null ? (this.charsetSet ? this.contentType + ";charset=" + this.charset : this.contentType) : null;
+    }
+
+    public void commitContentType() {
+        header(H.Header.Names.CONTENT_TYPE, _getContentType());
     }
 
     protected final T me() {
