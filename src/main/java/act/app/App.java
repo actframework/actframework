@@ -504,6 +504,7 @@ public class App extends DestroyableBase {
         blockIssue = null;
         blockIssueCause = null;
 
+        Act.viewManager().clearAppDefinedVars();
         initScanlist();
         initServiceResourceManager();
         reload();

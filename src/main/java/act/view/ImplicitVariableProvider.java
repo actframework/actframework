@@ -210,7 +210,7 @@ public abstract class ImplicitVariableProvider implements Plugin {
                         return def.getValue(context.app());
                     }
                 };
-                Act.viewManager().register(mailerVarDef);
+                Act.viewManager().registerAppDefinedVar(mailerVarDef);
             }
             if (def.supportAction) {
                 ActionViewVarDef actionVarDef = new ActionViewVarDef(meta.varName, def.returnType()) {
@@ -219,7 +219,7 @@ public abstract class ImplicitVariableProvider implements Plugin {
                         return def.getValue(context.app());
                     }
                 };
-                Act.viewManager().register(actionVarDef);
+                Act.viewManager().registerAppDefinedVar(actionVarDef);
             }
         }
 

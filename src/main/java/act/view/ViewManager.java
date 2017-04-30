@@ -31,9 +31,7 @@ import org.osgl.util.E;
 import org.osgl.util.S;
 
 import javax.enterprise.context.ApplicationScoped;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static act.Destroyable.Util.tryDestroyAll;
 
@@ -45,6 +43,7 @@ public class ViewManager extends DestroyableBase {
     private C.List<View> viewList = C.newList();
     private C.List<ActionViewVarDef> implicitActionViewVariables = C.newList();
     private C.List<MailerViewVarDef> implicitMailerViewVariables = C.newList();
+    private Set<VarDef> appDefined = new HashSet<>();
     private Map<String, View> preferredViews = new HashMap<String, View>();
     private boolean multiViews = false;
 
@@ -60,26 +59,36 @@ public class ViewManager extends DestroyableBase {
         E.NPE(implicitVariableProvider);
         List<ActionViewVarDef> l0 = implicitVariableProvider.implicitActionViewVariables();
         for (ActionViewVarDef var : l0) {
-            register(var);
+            _register(var, implicitActionViewVariables, false);
         }
         List<MailerViewVarDef> l1 = implicitVariableProvider.implicitMailerViewVariables();
         for (MailerViewVarDef var : l1) {
-            register(var);
+            _register(var, implicitMailerViewVariables, false);
         }
     }
 
-    void register(ActionViewVarDef var) {
-        if (implicitActionViewVariables.contains(var)) {
-            throw new UnexpectedException("Implicit variable[%s] has already been registered", var.name());
-        }
-        implicitActionViewVariables.add(var);
+    void registerAppDefinedVar(ActionViewVarDef var) {
+        _register(var, implicitActionViewVariables, true);
     }
 
-    void register(MailerViewVarDef var) {
-        if (implicitMailerViewVariables.contains(var)) {
+    void registerAppDefinedVar(MailerViewVarDef var) {
+        _register(var, implicitMailerViewVariables, true);
+    }
+
+    private <T extends VarDef> void _register(T var, List<T> list, boolean fromApp) {
+        if (list.contains(var)) {
             throw new UnexpectedException("Implicit variable[%s] has already been registered", var.name());
         }
-        implicitMailerViewVariables.add(var);
+        list.add(var);
+        if (fromApp) {
+            appDefined.add(var);
+        }
+    }
+
+    public void clearAppDefinedVars() {
+        implicitActionViewVariables.removeAll(appDefined);
+        implicitMailerViewVariables.removeAll(appDefined);
+        appDefined.clear();
     }
 
     public void onAppStart() {
