@@ -21,6 +21,7 @@ package act.handler.builtin.controller;
  */
 
 import act.app.ActionContext;
+import act.controller.CacheSupportMetaInfo;
 import act.handler.builtin.controller.impl.ReflectedHandlerInvoker;
 import act.security.CORS;
 import act.security.CSRF;
@@ -38,6 +39,10 @@ public class ControllerAction extends ActionHandler<ControllerAction> {
     public ControllerAction(ActionHandlerInvoker invoker) {
         super(-1);
         this.handlerInvoker = invoker;
+    }
+
+    public CacheSupportMetaInfo cacheSupport() {
+        return handlerInvoker.cacheSupport();
     }
 
     @Override

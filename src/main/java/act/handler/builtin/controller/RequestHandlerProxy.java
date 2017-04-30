@@ -22,10 +22,13 @@ package act.handler.builtin.controller;
 
 import act.Act;
 import act.Destroyable;
+import act.ResponseImplBase;
 import act.app.ActionContext;
 import act.app.App;
 import act.app.AppInterceptorManager;
 import act.app.event.AppEventId;
+import act.controller.CacheSupportMetaInfo;
+import act.controller.ResponseCache;
 import act.controller.meta.*;
 import act.handler.RequestHandlerBase;
 import act.security.CORS;
@@ -54,40 +57,13 @@ import java.util.ListIterator;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+import static org.osgl.http.H.Method.GET;
+import static org.osgl.http.H.Method.POST;
+
 @ApplicationScoped
 public final class RequestHandlerProxy extends RequestHandlerBase {
 
     private static Logger logger = L.get(RequestHandlerProxy.class);
-
-    protected enum CacheStrategy {
-        NO_CACHE() {
-            @Override
-            public Result cached(ActionContext actionContext, CacheService cache) {
-                return null;
-            }
-        },
-        SESSION_SCOPED() {
-            @Override
-            protected String cacheKey(ActionContext actionContext) {
-                H.Session session = actionContext.session();
-                return null == session ? null : super.cacheKey(actionContext, session.id());
-            }
-        },
-        GLOBAL_SCOPED;
-
-        public Result cached(ActionContext actionContext, CacheService cache) {
-            return cache.get(cacheKey(actionContext));
-        }
-
-        protected String cacheKey(ActionContext actionContext) {
-            return cacheKey(actionContext, "");
-        }
-
-        protected String cacheKey(ActionContext actionContext, String seed) {
-            H.Request request = actionContext.req();
-            return actionContext.strBuf().append("urlcache:").append(seed).append(request.url()).append(request.query()).append(request.accept()).toString();
-        }
-    }
 
     private static final C.List<BeforeInterceptor> globalBeforeInterceptors = C.newList();
     private static final C.List<AfterInterceptor> globalAfterInterceptors = C.newList();
@@ -118,6 +94,8 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
 
     private boolean sessionFree;
     private boolean express;
+    private boolean supportCache;
+    private CacheSupportMetaInfo cacheSupport;
 
     final GroupInterceptorWithResult BEFORE_INTERCEPTOR = new GroupInterceptorWithResult(beforeInterceptors);
     final GroupAfterInterceptor AFTER_INTERCEPTOR = new GroupAfterInterceptor(afterInterceptors);
@@ -179,13 +157,21 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
 
     @Override
     public void handle(ActionContext context) {
+        ensureAgentsReady();
         Result result = null;
         try {
-            if (null != result) {
-                onResult(result, context);
-                return;
+            H.Method method = context.req().method();
+            boolean supportCache = this.supportCache && method == GET || (cacheSupport.supportPost && method == POST);
+            String cacheKey = null;
+            if (supportCache) {
+                cacheKey = cacheSupport.cacheKey(context);
+                ResponseCache cached = this.cache.get(cacheKey);
+                if (null != cached) {
+                    cached.applyTo((ResponseImplBase) context.resp());
+                    return;
+                }
+                context.enableCache();
             }
-            ensureAgentsReady();
             saveActionPath(context);
             context.startIntercepting();
             result = handleBefore(context);
@@ -202,6 +188,9 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
                 result = context.nullValueResult();
             }
             onResult(result, context);
+            if (supportCache) {
+                this.cache.put(cacheKey, context.resp(), cacheSupport.ttl);
+            }
         } catch (Exception e) {
             logger.error(e, "Error handling request");
             try {
@@ -348,7 +337,13 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
         actionHandler = mode.createRequestHandler(actionInfo, app);
         sessionFree = actionHandler.sessionFree();
         express = actionHandler.express();
+        cacheSupport = actionHandler.cacheSupport();
+        supportCache = cacheSupport.enabled;
+
         App app = this.app;
+        if (supportCache) {
+            cache = app.cache();
+        }
 
         GroupInterceptorMetaInfo interceptorMetaInfo = new GroupInterceptorMetaInfo(actionInfo.interceptors());
         interceptorMetaInfo.mergeFrom(globalFreeStyleInterceptor);

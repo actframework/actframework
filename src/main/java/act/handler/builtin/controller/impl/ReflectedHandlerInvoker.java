@@ -24,6 +24,7 @@ import act.Act;
 import act.app.ActionContext;
 import act.app.App;
 import act.app.AppClassLoader;
+import act.controller.CacheSupportMetaInfo;
 import act.controller.Controller;
 import act.controller.meta.*;
 import act.handler.NonBlock;
@@ -43,7 +44,6 @@ import com.alibaba.fastjson.JSONException;
 import com.esotericsoftware.reflectasm.MethodAccess;
 import org.osgl.$;
 import org.osgl.Osgl;
-import org.osgl.cache.CacheService;
 import org.osgl.exception.NotAppliedException;
 import org.osgl.http.H;
 import org.osgl.inject.BeanSpec;
@@ -101,9 +101,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
     // Env doesn't match
     private boolean disabled;
     private String dspToken;
-    private $.Function<ActionContext, String> cacheKeyBuilder;
-    private boolean cacheSupportPost;
-    private int cacheTtl;
+    private CacheSupportMetaInfo cacheSupport;
     // (field name: output name)
     private Map<Field, String> outputFields;
     // (param index: output name)
@@ -191,7 +189,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         methodAccess = null;
         handler.destroy();
         handler = null;
-        cacheKeyBuilder = null;
+        cacheSupport = null;
         super.releaseResources();
     }
 
@@ -209,20 +207,14 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         rv.apply(controllerClass, method);
     }
 
+    @Override
+    public CacheSupportMetaInfo cacheSupport() {
+        return cacheSupport;
+    }
+
     public Result handle(ActionContext context) throws Exception {
         if (disabled) {
             return ActNotFound.get();
-        }
-
-        boolean shouldCheckCache = shouldCheckCache(context);
-        CacheService cache = shouldCheckCache ? context.app().cache() : null;
-        if (shouldCheckCache) {
-            String cacheKey = cacheKeyBuilder.apply(context);
-            Result cached = cache.get(cacheKey);
-            if (null != cached) {
-                return cached;
-            }
-            context.cacheParams(cacheKey, cacheTtl);
         }
 
         context.attribute("reflected_handler", this);
@@ -440,22 +432,13 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         return inst;
     }
 
-    private boolean shouldCheckCache(ActionContext context) {
-        if (null == cacheKeyBuilder) {
-            return false;
-        }
-        H.Method method = context.req().method();
-        return H.Method.GET == method || (cacheSupportPost && H.Method.POST == method);
-    }
-
     private void initCacheParams(Method method) {
         CacheFor cacheFor = method.getAnnotation(CacheFor.class);
-        if (null == cacheFor) {
-            return;
-        }
-        cacheSupportPost = cacheFor.supportPost();
-        cacheTtl = cacheFor.value();
-        cacheKeyBuilder = new CacheKeyBuilder(cacheFor, method.getName());
+        cacheSupport = null == cacheFor ? CacheSupportMetaInfo.disabled() :  CacheSupportMetaInfo.enabled(
+                new CacheKeyBuilder(cacheFor, method.getName()),
+                cacheFor.value(),
+                cacheFor.supportPost()
+        );
     }
 
     private void fillOutputVariables(Object controller, Object[] params, ActionContext context) {

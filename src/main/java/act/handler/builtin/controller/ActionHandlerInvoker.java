@@ -22,6 +22,7 @@ package act.handler.builtin.controller;
 
 import act.Destroyable;
 import act.app.ActionContext;
+import act.controller.CacheSupportMetaInfo;
 import act.security.CORS;
 import act.security.CSRF;
 import act.util.Prioritised;
@@ -41,4 +42,6 @@ public interface ActionHandlerInvoker extends Prioritised, Destroyable {
     CORS.Spec corsSpec();
 
     CSRF.Spec csrfSpec();
+
+    CacheSupportMetaInfo cacheSupport();
 }

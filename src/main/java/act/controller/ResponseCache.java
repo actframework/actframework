@@ -20,6 +20,7 @@ package act.controller;
  * #L%
  */
 
+import act.ResponseImplBase;
 import org.osgl.$;
 import org.osgl.exception.UnexpectedIOException;
 import org.osgl.http.H;
@@ -33,26 +34,56 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
-public class ResponseCache extends H.Response implements Serializable {
+import static org.osgl.http.H.Format.HTML;
+import static org.osgl.http.H.Format.JSON;
+import static org.osgl.http.H.Format.TXT;
+
+public class ResponseCache extends ResponseImplBase implements Serializable {
 
     private Map<String, H.Cookie> cookies = new HashMap<>();
     private Map<String, String> headers = new HashMap<>();
-    private String contentType;
-    private Locale locale;
+    private Long len;
     private H.Status status;
 
     private String content;
     private byte[] binary;
-    private ByteArrayOutputStream outputStream;
-    private StringWriter writer;
 
-    private transient OutputStream _os;
-    private transient Writer _w;
+    private transient H.Response realResponse;
 
-    private H.Response realResponse;
+    public ResponseCache() {}
 
     public ResponseCache(H.Response realResponse) {
         this.realResponse = $.notNull(realResponse);
+    }
+
+    public void applyTo(ResponseImplBase response) {
+        for (H.Cookie cookie : cookies.values()) {
+            response.addCookie(cookie);
+        }
+        for (Map.Entry<String, String> entry : headers.entrySet()) {
+            response.header(entry.getKey(), entry.getValue());
+        }
+        if (null != contentType) {
+            response.contentType(contentType);
+        }
+        if (null != charset) {
+            response.characterEncoding(charset);
+        }
+        response.commitContentType();
+        if (null != len) {
+            response.contentLength(len);
+        }
+        if (null != locale) {
+            response.locale(locale);
+        }
+        if (null != status) {
+            response.status(status);
+        }
+        if (null != content) {
+            response.writeContent(content);
+        } else if (null != binary) {
+            response.writeBinary(SObject.of(binary));
+        }
     }
 
     @Override
@@ -73,20 +104,12 @@ public class ResponseCache extends H.Response implements Serializable {
 
     @Override
     public OutputStream outputStream() throws IllegalStateException, UnexpectedIOException {
-        if (null == _os) {
-            outputStream = new ByteArrayOutputStream();
-            _os = new TeeOutputStream(realResponse.outputStream(), outputStream);
-        }
-        return _os;
+        return realResponse.outputStream();
     }
 
     @Override
     public Writer writer() throws IllegalStateException, UnexpectedIOException {
-        if (null == _w) {
-            writer = new StringWriter();
-            _w = new TeeWriter(realResponse.writer(), writer);
-        }
-        return _w;
+        return realResponse.writer();
     }
 
     @Override
@@ -181,27 +204,22 @@ public class ResponseCache extends H.Response implements Serializable {
 
     @Override
     public H.Response writeText(String content) {
-        contentType(H.Format.TXT.contentType());
-        writeContent(content);
-        return this;
+        return writeContent(content, TXT);
     }
 
     @Override
     public H.Response writeHtml(String content) {
-        contentType(H.Format.HTML.contentType());
-        writeContent(content);
-        return this;
+        return writeContent(content, HTML);
     }
 
     @Override
     public H.Response writeJSON(String content) {
-        contentType(H.Format.JSON.contentType());
-        writeContent(content);
-        return this;
+        return writeContent(content, JSON);
     }
 
-    @Override
-    protected H.Response me() {
+    private H.Response writeContent(String content, H.Format contentType) {
+        contentType(contentType.contentType());
+        writeContent(content);
         return this;
     }
 
@@ -217,27 +235,31 @@ public class ResponseCache extends H.Response implements Serializable {
 
     @Override
     public String characterEncoding() {
-        return realResponse.characterEncoding();
+        return charset;
     }
 
     @Override
-    public H.Response characterEncoding(String encoding) {
-        header(H.Header.Names.ACCEPT_CHARSET, encoding);
+    public ResponseImplBase characterEncoding(String encoding) {
+        realResponse.characterEncoding(encoding);
+        super.characterEncoding(encoding);
         return this;
     }
 
     @Override
     public H.Response contentLength(long len) {
         realResponse.contentLength(len);
+        this.len = len;
         return this;
     }
 
     @Override
     protected void _setContentType(String type) {
+        this.contentType = type;
     }
 
     @Override
     protected void _setLocale(Locale loc) {
+        this.locale = loc;
     }
 
     @Override
@@ -248,6 +270,7 @@ public class ResponseCache extends H.Response implements Serializable {
     @Override
     public void addCookie(H.Cookie cookie) {
         realResponse.addCookie(cookie);
+        cookies.put(cookie.name(), cookie);
     }
 
     @Override
@@ -281,96 +304,28 @@ public class ResponseCache extends H.Response implements Serializable {
 
     @Override
     public H.Response status(int sc) {
-        return null;
+        realResponse.status(sc);
+        this.status = H.Status.of(sc);
+        return this;
     }
 
     @Override
     public H.Response addHeader(String name, String value) {
-        return null;
+        realResponse.addHeader(name, value);
+        headers.put(name, value);
+        return this;
     }
 
     @Override
     public H.Response writeContent(ByteBuffer buffer) {
-        return null;
+        realResponse.writeContent(buffer);
+        // we don't cache the byte buffer
+        return this;
     }
 
     @Override
     public void commit() {
-
+        realResponse.commit();
     }
 
-    private static class TeeWriter extends Writer {
-        private final Writer writer;
-        private final Writer tee;
-
-        TeeWriter(Writer writer, Writer tee) {
-            this.writer = writer;
-            this.tee = tee;
-        }
-
-        @Override
-        public void write(char[] cbuf, int off, int len) throws IOException {
-            writer.write(cbuf, off, len);
-            tee.write(cbuf, off, len);
-        }
-
-        @Override
-        public void flush() throws IOException {
-            writer.flush();
-            tee.flush();
-        }
-
-        @Override
-        public void close() throws IOException {
-            writer.close();
-            tee.close();
-        }
-    }
-
-
-    private static class TeeOutputStream extends OutputStream {
-
-        private final OutputStream out;
-        private final OutputStream tee;
-
-        TeeOutputStream(OutputStream out, OutputStream tee) {
-            if (out == null)
-                throw new NullPointerException();
-            else if (tee == null)
-                throw new NullPointerException();
-
-            this.out = out;
-            this.tee = tee;
-        }
-
-        @Override
-        public void write(int b) throws IOException {
-            out.write(b);
-            tee.write(b);
-        }
-
-        @Override
-        public void write(byte[] b) throws IOException {
-            out.write(b);
-            tee.write(b);
-        }
-
-        @Override
-        public void write(byte[] b, int off, int len) throws IOException {
-            out.write(b, off, len);
-            tee.write(b, off, len);
-        }
-
-        @Override
-        public void flush() throws IOException {
-            out.flush();
-            tee.flush();
-        }
-
-        @Override
-        public void close() throws IOException {
-            out.close();
-            tee.close();
-        }
-    }
 }

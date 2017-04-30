@@ -25,6 +25,7 @@ import act.Destroyable;
 import act.ResponseImplBase;
 import act.conf.AppConfig;
 import act.controller.CacheParams;
+import act.controller.ResponseCache;
 import act.data.MapUtil;
 import act.data.RequestBodyParser;
 import act.event.ActEvent;
@@ -94,6 +95,7 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
     private Boolean hasTemplate;
     private H.Status forceResponseStatus;
     private CacheParams cacheParams;
+    private boolean cacheEnabled;
 
     @Inject
     private ActionContext(App app, H.Request request, H.Response response) {
@@ -221,6 +223,13 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
 
     public ActionContext hasTemplate(boolean b) {
         hasTemplate = b;
+        return this;
+    }
+
+    public ActionContext enableCache() {
+        E.illegalArgumentIf(this.cacheEnabled, "cache already enabled in the action context");
+        this.cacheEnabled = true;
+        this.response = new ResponseCache(response);
         return this;
     }
 
