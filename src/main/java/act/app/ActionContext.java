@@ -24,7 +24,6 @@ import act.Act;
 import act.Destroyable;
 import act.ResponseImplBase;
 import act.conf.AppConfig;
-import act.controller.CacheParams;
 import act.controller.ResponseCache;
 import act.data.MapUtil;
 import act.data.RequestBodyParser;
@@ -94,8 +93,8 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
     private boolean disableCsrf;
     private Boolean hasTemplate;
     private H.Status forceResponseStatus;
-    private CacheParams cacheParams;
     private boolean cacheEnabled;
+
 
     @Inject
     private ActionContext(App app, H.Request request, H.Response response) {
@@ -168,11 +167,6 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
 
     public ActionContext router(Router router) {
         this.router = $.notNull(router);
-        return this;
-    }
-
-    public ActionContext cacheParams(String key, int ttl) {
-        this.cacheParams = new CacheParams(key, ttl);
         return this;
     }
 
@@ -643,21 +637,6 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
     @Override
     public String methodPath() {
         return actionPath;
-    }
-
-    /**
-     * If {@link #templatePath(String) template path has been set before} then return
-     * the template path. Otherwise returns the {@link #actionPath()}
-     *
-     * @return either template path or action path if template path not set before
-     */
-    public String templatePath() {
-        String path = super.templatePath();
-        if (S.notBlank(path)) {
-            return path;
-        } else {
-            return actionPath().replace('.', '/');
-        }
     }
 
     public void startIntercepting() {

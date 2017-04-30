@@ -26,6 +26,7 @@ import act.app.App;
 import act.app.AppClassLoader;
 import act.controller.CacheSupportMetaInfo;
 import act.controller.Controller;
+import act.controller.annotation.TemplateContext;
 import act.controller.meta.*;
 import act.handler.NonBlock;
 import act.handler.PreventDoubleSubmission;
@@ -107,6 +108,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
     // (param index: output name)
     private Map<Integer, String> outputParams;
     private boolean hasOutputVar;
+    private String templateContext;
 
     private ReflectedHandlerInvoker(M handlerMetaInfo, App app) {
         this.cl = app.classLoader();
@@ -176,8 +178,8 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         }
 
         initOutputVariables();
-
-        initCacheParams(method);
+        initCacheParams();
+        checkTemplateContext();
     }
 
     @Override
@@ -218,6 +220,9 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         }
 
         context.attribute("reflected_handler", this);
+        if (null != templateContext) {
+            context.templateContext(templateContext);
+        }
         preventDoubleSubmission(context);
         processForceResponse(context);
         ensureJsonDTOGenerated(context);
@@ -432,13 +437,25 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         return inst;
     }
 
-    private void initCacheParams(Method method) {
+    private void initCacheParams() {
         CacheFor cacheFor = method.getAnnotation(CacheFor.class);
         cacheSupport = null == cacheFor ? CacheSupportMetaInfo.disabled() :  CacheSupportMetaInfo.enabled(
                 new CacheKeyBuilder(cacheFor, method.getName()),
                 cacheFor.value(),
                 cacheFor.supportPost()
         );
+    }
+
+    private void checkTemplateContext() {
+        TemplateContext templateContext = method.getAnnotation(TemplateContext.class);
+        if (null != templateContext) {
+            this.templateContext = templateContext.value();
+        } else {
+            templateContext = controllerClass.getAnnotation(TemplateContext.class);
+            if (null != templateContext) {
+                this.templateContext = templateContext.value();
+            }
+        }
     }
 
     private void fillOutputVariables(Object controller, Object[] params, ActionContext context) {

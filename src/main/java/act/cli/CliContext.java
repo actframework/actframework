@@ -422,25 +422,6 @@ public class CliContext extends ActContext.Base<CliContext> implements IASCIITab
         return null == commanderInstances ? null : commanderInstances.get(className);
     }
 
-    /**
-     * If {@link #templatePath(String) template path has been set before} then return
-     * the template path. Otherwise returns the {@link #commandPath()}
-     * @return either template path or action path if template path not set before
-     */
-    public String templatePath() {
-        String path = super.templatePath();
-        if (S.notBlank(path)) {
-            return path;
-        } else {
-            return commandPath().replace('.', '/');
-        }
-    }
-
-    @Override
-    public CliContext templatePath(String templatePath) {
-        return super.templatePath(templatePath);
-    }
-
     @Override
     public <T> T renderArg(String name) {
         return super.renderArg(name);

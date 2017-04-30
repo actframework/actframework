@@ -141,21 +141,6 @@ public class MailerContext extends ActContext.Base<MailerContext> {
         return null != fmt ? fmt : mailerConfig().contentType();
     }
 
-
-    /**
-     * If {@link #templatePath(String) template path has been set before} then return
-     * the template path. Otherwise returns the {@link #senderPath()}
-     * @return either template path or action path if template path not set before
-     */
-    public String templatePath() {
-        String path = super.templatePath();
-        if (S.notBlank(path)) {
-            return path;
-        } else {
-            return senderPath().replace('.', '/');
-        }
-    }
-
     @Override
     public MailerContext templatePath(String templatePath) {
         return super.templatePath(templatePath);

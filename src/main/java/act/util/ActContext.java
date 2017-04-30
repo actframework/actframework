@@ -62,6 +62,19 @@ public interface ActContext<CTX_TYPE extends ActContext> extends ParamValueProvi
     CTX_TYPE templatePath(String path);
 
     /**
+     * Returns the template context
+     * @return template context
+     */
+    String templateContext();
+
+    /**
+     * Set template context
+     * @param context the path to template context
+     * @return this {@code AppContext}
+     */
+    CTX_TYPE templateContext(String context);
+
+    /**
      * Check if the template path is implicit i.e. derived from {@link #methodPath()}
      * @return `true` if template path is implicit; `false` otherwise
      */
@@ -123,6 +136,7 @@ public interface ActContext<CTX_TYPE extends ActContext> extends ParamValueProvi
 
         private App app;
         private String templatePath;
+        private String templateContext;
         private Template template;
         private Map<String, Object> renderArgs;
         private List<Listener> listenerList;
@@ -177,13 +191,33 @@ public interface ActContext<CTX_TYPE extends ActContext> extends ParamValueProvi
 
         @Override
         public String templatePath() {
-            return templatePath;
+            String path = templatePath;
+            String context = templateContext;
+            if (S.notBlank(path)) {
+                return path.startsWith("/") || S.blank(context) ? path : S.pathConcat(context, '/', path);
+            } else {
+                if (S.blank(context)) {
+                    return methodPath().replace('.', '/');
+                } else {
+                    return S.pathConcat(context, '/', S.afterLast(methodPath(), "."));
+                }
+            }
         }
 
         @Override
         public CTX templatePath(String templatePath) {
             template = null;
             this.templatePath = templatePath;
+            return me();
+        }
+
+        public String templateContext() {
+            return this.templateContext;
+        }
+
+        public CTX templateContext(String templateContext) {
+            template = null;
+            this.templateContext = templateContext;
             return me();
         }
 
