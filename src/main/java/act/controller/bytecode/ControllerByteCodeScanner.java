@@ -30,6 +30,8 @@ import act.asm.signature.SignatureReader;
 import act.asm.signature.SignatureVisitor;
 import act.conf.AppConfig;
 import act.controller.Controller;
+import act.controller.annotation.Port;
+import act.controller.annotation.UrlContext;
 import act.controller.meta.*;
 import act.handler.builtin.controller.RequestHandlerProxy;
 import act.route.RouteSource;
@@ -131,8 +133,12 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
             if (Type.getType(Controller.class).getDescriptor().equals(desc)) {
                 classInfo.isController(true);
                 return new ControllerAnnotationVisitor(av);
-            }
-            if (Type.getType(With.class).getDescriptor().equals(desc)) {
+            } else if (Type.getType(UrlContext.class).getDescriptor().equals(desc)) {
+                classInfo.isController(true);
+                return new UrlContextAnnotationVisitor(av);
+            } else if (Type.getType(Port.class).getDescriptor().equals(desc)) {
+                return new PortAnnotationVisitor(av);
+            } if (Type.getType(With.class).getDescriptor().equals(desc)) {
                 classInfo.isController(true);
                 return new ClassWithAnnotationVisitor(av);
             }
@@ -219,6 +225,42 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
                 return av;
             }
         }
+
+        private class UrlContextAnnotationVisitor extends AnnotationVisitor {
+            UrlContextAnnotationVisitor(AnnotationVisitor av) {
+                super(ASM5, av);
+            }
+
+            @Override
+            public void visit(String name, Object value) {
+                if ("value".equals(name)) {
+                    classInfo.contextPath(value.toString());
+                }
+            }
+        }
+
+        private class PortAnnotationVisitor extends AnnotationVisitor {
+            PortAnnotationVisitor(AnnotationVisitor av) {
+                super(ASM5, av);
+            }
+
+            @Override
+            public AnnotationVisitor visitArray(String name) {
+                AnnotationVisitor av = super.visitArray(name);
+                if ("value".equals(name)) {
+                    return new StringArrayVisitor(av) {
+                        @Override
+                        public void visitEnd() {
+                            ports = new String[strings.size()];
+                            ports = strings.toArray(ports);
+                            super.visitEnd();
+                        }
+                    };
+                }
+                return av;
+            }
+        }
+
 
         private class ActionMethodVisitor extends MethodVisitor implements Opcodes {
 
