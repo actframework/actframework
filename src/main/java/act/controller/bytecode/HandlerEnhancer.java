@@ -159,7 +159,7 @@ public class HandlerEnhancer extends MethodVisitor implements Opcodes {
 
         private void mergeRenderLineBreaks(AbstractInsnNode renderLine, InsnList list) {
             AbstractInsnNode node = renderLine;
-            while (true) {
+            while (null != node) {
                 node = node.getPrevious();
                 if (node.getOpcode() == ANEWARRAY) {
                     return;

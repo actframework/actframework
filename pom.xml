@@ -22,6 +22,7 @@
 * #128 Create a mechanism to cache the GET request result
 * #163 Introduce `@TemplateContext` annotation
 * #164 Split `@Controller` annotation into `@UrlContext` and `@Port` annotation
+* #169 Regex in route not working
 * #170 Make it easy to create global template variable
 * #171 Add helper javascript library that extends jQuery
 * #175 Create better error message when there are error enhancing classes

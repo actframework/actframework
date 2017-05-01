@@ -1143,7 +1143,7 @@ public class Router extends AppServiceBase<Router> {
                 if (name.charAt(blockEnd - 1) != '>') {
                     throw new RoutingException("Invalid route: " + name);
                 }
-                pattern = Pattern.compile(name.substring(pos + 2, blockEnd - 1));
+                pattern = Pattern.compile(name.substring(pos + 1, blockEnd - 1));
                 varName = name.substr(blockStart, pos);
             }
             return $.T2(varName, pattern);
@@ -1182,7 +1182,7 @@ public class Router extends AppServiceBase<Router> {
                     }
                     String patternStr = name.substring(pos + 1, name.length());
                     if (null != pattern) {
-                        pattern.add(Pattern.compile(patternStr));
+                        pattern.set(Pattern.compile(patternStr));
                     }
                     patternTrait.set(patternStr);
                 }

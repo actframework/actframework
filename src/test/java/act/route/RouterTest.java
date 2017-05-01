@@ -135,6 +135,28 @@ public class RouterTest extends RouterTestBase {
     }
 
     @Test
+    public void regExtStyleA() {
+        _regExtTests("n:[0-9]+");
+    }
+
+    @Test
+    public void regExtStyleB2() {
+        _regExtTests("{n<[0-9]+>}");
+    }
+
+    private void _regExtTests(String pattern) {
+        router.addMapping(GET, "/int/" + pattern, controller);
+        H.Request req = Mockito.mock(H.Request.class);
+        when(ctx.req()).thenReturn(req);
+
+        when(req.path()).thenReturn("/int/33");
+        RequestHandler handler = router.getInvoker(GET, "/int/33", ctx);
+        same(controller, handler);
+
+        verify(ctx).param("n", "33");
+    }
+
+    @Test
     public void searchPathEndsWithIgnoreNotation() {
         router.addMapping(GET, "/foo/bar/...", controller);
         router.addMapping(GET, "/svc/{id}/...", controller);
