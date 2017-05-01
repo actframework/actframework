@@ -73,7 +73,7 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
     // for @Global on classes
     private static final C.Set<GroupInterceptorMetaInfo> globalFreeStyleInterceptors = C.newSet();
     // for @Global on methods
-    private static final GroupInterceptorMetaInfo globalFreeStyleInterceptor = new GroupInterceptorMetaInfo();
+    private static GroupInterceptorMetaInfo globalFreeStyleInterceptor = new GroupInterceptorMetaInfo();
 
     public static final GroupInterceptorWithResult GLOBAL_BEFORE_INTERCEPTOR = new GroupInterceptorWithResult(globalBeforeInterceptors);
     public static final GroupAfterInterceptor GLOBAL_AFTER_INTERCEPTOR = new GroupAfterInterceptor(globalAfterInterceptors);
@@ -139,6 +139,7 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
         _releaseResourceCollections(globalFinallyInterceptors);
         _releaseResourceCollections(globalFreeStyleInterceptors);
         globalFreeStyleInterceptor.destroy();
+        globalFreeStyleInterceptor = new GroupInterceptorMetaInfo();
     }
 
     private static void _releaseResourceCollections(Collection<? extends Destroyable> col) {
