@@ -55,7 +55,12 @@ public enum RuntimeDirs {
     }
 
     public static File classes(App app) {
-        return new File(app.home(), CLASSES);
+        File file = new File(app.home(), CLASSES);
+        if (!file.exists()) {
+            // suppose we starts PROD mode from IDE
+            file = new File(app.layout().target(app.home()), CLASSES);
+        }
+        return file;
     }
 
     public static File lib(App app) {
