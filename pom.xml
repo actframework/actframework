@@ -22,6 +22,7 @@
 * #128 Create a mechanism to cache the GET request result
 * #163 Introduce `@TemplateContext` annotation
 * #164 Split `@Controller` annotation into `@UrlContext` and `@Port` annotation
+* #167 `@Global` doesn't work when put behind the interceptor annotation
 * #168 Make all scanner favor the setting of `@Env` annotations
 * #169 Regex in route not working
 * #170 Make it easy to create global template variable
