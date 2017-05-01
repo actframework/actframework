@@ -22,6 +22,7 @@ package act.app;
 
 import act.Act;
 import act.app.event.AppEventId;
+import act.app.util.EnvMatcher;
 import act.asm.AsmException;
 import act.asm.ClassReader;
 import act.asm.ClassWriter;
@@ -35,6 +36,7 @@ import act.controller.meta.ControllerClassMetaInfo;
 import act.controller.meta.ControllerClassMetaInfoHolder;
 import act.controller.meta.ControllerClassMetaInfoManager;
 import act.event.AppEventListenerBase;
+import act.exception.EnvNotMatchException;
 import act.job.meta.JobClassMetaInfo;
 import act.job.meta.JobClassMetaInfoManager;
 import act.mail.meta.MailerClassMetaInfo;
@@ -276,9 +278,13 @@ public class AppClassLoader
                 continue;
             }
             ByteCodeVisitor theVisitor = ByteCodeVisitor.chain(visitors);
+            EnvMatcher matcher = new EnvMatcher();
+            matcher.setDownstream(theVisitor);
             ClassReader cr = new ClassReader(ba);
             try {
-                cr.accept(theVisitor, 0);
+                cr.accept(matcher, 0);
+            } catch (EnvNotMatchException e) {
+                continue;
             } catch (AsmException e) {
                 Throwable t = e.getCause();
                 if (t instanceof ClassNotFoundException) {
@@ -482,11 +488,15 @@ public class AppClassLoader
         if (null == enhancer) {
             return bytecode;
         }
+        EnvMatcher matcher = new EnvMatcher();
+        matcher.setDownstream(enhancer);
         cw.set(new ClassWriter(ClassWriter.COMPUTE_FRAMES));
         enhancer.commitDownstream();
         ClassReader r = new ClassReader(bytecode);
         try {
-            r.accept(enhancer, 0);
+            r.accept(matcher, 0);
+        } catch (EnvNotMatchException e) {
+            return bytecode;
         } catch (AsmException e) {
             logger.error(e, "error enhancing bytecode at %s", e.context());
             throw ActErrorResult.enhancingError(e);

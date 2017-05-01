@@ -110,27 +110,39 @@ public final class Env {
     }
 
     public static boolean matches(Mode modeTag) {
-        return modeTag.unless() ^ (modeTag.value() == Act.mode());
+        return modeMatches(modeTag.value(), modeTag.unless());
     }
 
     public static boolean modeMatches(Act.Mode mode) {
         return mode == Act.mode();
     }
 
+    public static boolean modeMatches(Act.Mode mode, boolean unless) {
+        return unless ^ modeMatches(mode);
+    }
+
     public static boolean matches(Profile profileTag) {
-        return profileTag.unless() ^ S.eq(profileTag.value(), Act.profile(), S.IGNORECASE);
+        return profileMatches(profileTag.value(), profileTag.unless());
     }
 
     public static boolean profileMatches(String profile) {
         return S.eq(profile, Act.profile(), S.IGNORECASE);
     }
 
+    public static boolean profileMatches(String profile, boolean unless) {
+        return unless ^ profileMatches(profile);
+    }
+
     public static boolean matches(Group groupTag) {
-        return groupTag.unless() ^ (S.eq(groupTag.value(), Act.nodeGroup(), S.IGNORECASE));
+        return groupMatches(groupTag.value(), groupTag.unless());
     }
 
     public static boolean groupMatches(String group) {
         return S.eq(group, Act.nodeGroup(), S.IGNORECASE);
+    }
+
+    public static boolean groupMatches(String group, boolean unless) {
+        return unless ^ groupMatches(group);
     }
 
     private static final C.Set<Class<? extends Annotation>> ENV_ANNOTATION_TYPES = C.set(
