@@ -436,6 +436,14 @@ public @interface Controller {
                 if (inferFullActionPath != url) {
                     url = ActionContext.current().router().reverseRoute(url);
                 }
+            } else {
+                if (!url.startsWith("/")) {
+                    ActionContext context = ActionContext.current();
+                    String urlContext = context.urlContext();
+                    if (S.notBlank(urlContext)) {
+                        url = S.pathConcat(urlContext, '/', url);
+                    }
+                }
             }
             return Redirect.of(url);
         }
@@ -878,7 +886,6 @@ public @interface Controller {
          * <ul>
          * <li>If v is {@code null} then null returned</li>
          * <li>If v is instance of {@code Result} then it is returned directly</li>
-         * <li>If v is instance of {@code String} then {@link #inferResult(String, ActionContext)} is used
          * to infer the {@code Result}</li>
          * <li>If v is instance of {@code InputStream} then {@link #inferResult(InputStream, ActionContext)} is used
          * to infer the {@code Result}</li>

@@ -41,10 +41,16 @@ public class RedirectToLoginUrl extends SingletonBase implements MissingAuthenti
 
     private volatile Result R = null;
     private volatile Result R_AJAX = null;
-    private Map<String, Result> resultMap = new HashMap<String, Result>();
-    private Map<String, Result> ajaxResultMap = new HashMap<String, Result>();
+    private final Map<String, Result> resultMap = new HashMap<String, Result>();
+    private final Map<String, Result> ajaxResultMap = new HashMap<String, Result>();
+    private final Redirect userDefined;
+
+    public RedirectToLoginUrl(String url) {
+        userDefined = new Redirect(url);
+    }
 
     public RedirectToLoginUrl() {
+        userDefined = null;
         App app = App.instance();
         AppConfig<?> config = app.config();
         String loginUrl = config.loginUrl();
@@ -67,6 +73,9 @@ public class RedirectToLoginUrl extends SingletonBase implements MissingAuthenti
 
     @Override
     public Result result(ActionContext context) {
+        if (null != userDefined) {
+            return userDefined;
+        }
         if (context.isAjax()) {
             return _ajaxResult(context);
         } else {

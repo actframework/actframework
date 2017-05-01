@@ -110,5 +110,10 @@ public class RouteInfo extends $.T3<String, String, String> implements Comparabl
         public boolean sessionFree() {
             return true;
         }
+
+        @Override
+        public void prepareAuthentication(ActionContext context) {
+            throw E.unsupport();
+        }
     };
 }

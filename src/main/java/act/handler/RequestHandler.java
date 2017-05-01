@@ -84,6 +84,13 @@ public interface RequestHandler extends $.Function<ActionContext, Void>, Destroy
     boolean requireResolveContext();
 
     /**
+     * Setting up handler for authentication. For example, initialize the missing authentication
+     * handler, csrf failure handler.
+     * @param context the current action context
+     */
+    void prepareAuthentication(ActionContext context);
+
+    /**
      * Returns if the handler is session free or not. If a handler is session free then
      * the framework will NOT resolve session
      * @return `true` if the handler is session free

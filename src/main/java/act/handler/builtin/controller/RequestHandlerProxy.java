@@ -35,6 +35,7 @@ import act.security.CORS;
 import act.security.CSRF;
 import act.util.AnnotatedClassFinder;
 import act.util.Global;
+import act.util.MissingAuthenticationHandler;
 import act.view.ActErrorResult;
 import act.view.RenderAny;
 import org.osgl.$;
@@ -96,6 +97,8 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
     private boolean express;
     private boolean supportCache;
     private CacheSupportMetaInfo cacheSupport;
+    private MissingAuthenticationHandler missingAuthenticationHandler;
+    private MissingAuthenticationHandler csrfFailureHandler;
 
     final GroupInterceptorWithResult BEFORE_INTERCEPTOR = new GroupInterceptorWithResult(beforeInterceptors);
     final GroupAfterInterceptor AFTER_INTERCEPTOR = new GroupAfterInterceptor(afterInterceptors);
@@ -225,6 +228,16 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
     }
 
     @Override
+    public void prepareAuthentication(ActionContext context) {
+        if (null != missingAuthenticationHandler) {
+            context.forceMissingAuthenticationHandler(missingAuthenticationHandler);
+        }
+        if (null != csrfFailureHandler) {
+            context.forceCsrfCheckingFailureHandler(csrfFailureHandler);
+        }
+    }
+
+    @Override
     public boolean express(ActionContext context) {
         return express;
     }
@@ -336,6 +349,8 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
         Act.Mode mode = Act.mode();
         actionHandler = mode.createRequestHandler(actionInfo, app);
         sessionFree = actionHandler.sessionFree();
+        missingAuthenticationHandler = actionHandler.missingAuthenticationHandler();
+        csrfFailureHandler = actionHandler.csrfFailureHandler();
         express = actionHandler.express();
         cacheSupport = actionHandler.cacheSupport();
         supportCache = cacheSupport.enabled;

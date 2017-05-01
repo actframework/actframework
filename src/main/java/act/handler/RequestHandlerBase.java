@@ -122,6 +122,10 @@ public abstract class RequestHandlerBase extends $.F1<ActionContext, Void> imple
             public void handle(ActionContext context) {
                 handler.handle(context);
             }
+
+            @Override
+            public void prepareAuthentication(ActionContext context) {
+            }
         }.setSessionFree().noContextResoving();
     }
 }

@@ -26,6 +26,8 @@ import act.app.App;
 import act.app.AppClassLoader;
 import act.controller.CacheSupportMetaInfo;
 import act.controller.Controller;
+import act.controller.annotation.HandleCsrfFailure;
+import act.controller.annotation.HandleMissingAuthentication;
 import act.controller.annotation.TemplateContext;
 import act.controller.meta.*;
 import act.handler.NonBlock;
@@ -109,6 +111,8 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
     private Map<Integer, String> outputParams;
     private boolean hasOutputVar;
     private String templateContext;
+    private MissingAuthenticationHandler missingAuthenticationHandler;
+    private MissingAuthenticationHandler csrfFailureHandler;
 
     private ReflectedHandlerInvoker(M handlerMetaInfo, App app) {
         this.cl = app.classLoader();
@@ -154,14 +158,9 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         this.jsonDTOKey = app.cuid();
         this.singleton = singleton(app);
 
-        ResponseContentType contentType = method.getAnnotation(ResponseContentType.class);
+        ResponseContentType contentType = getAnnotation(ResponseContentType.class);
         if (null != contentType) {
             forceResponseContentType = contentType.value().format();
-        } else {
-            contentType = controllerClass.getAnnotation(ResponseContentType.class);
-            if (null != contentType) {
-                forceResponseContentType = contentType.value().format();
-            }
         }
 
         ResponseStatus status = method.getAnnotation(ResponseStatus.class);
@@ -180,6 +179,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         initOutputVariables();
         initCacheParams();
         checkTemplateContext();
+        initMissingAuthenticationAndCsrfCheckHandler();
     }
 
     @Override
@@ -214,9 +214,24 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         return cacheSupport;
     }
 
+    @Override
+    public MissingAuthenticationHandler missingAuthenticationHandler() {
+        return missingAuthenticationHandler;
+    }
+
+    @Override
+    public MissingAuthenticationHandler csrfFailureHandler() {
+        return csrfFailureHandler;
+    }
+
     public Result handle(ActionContext context) throws Exception {
         if (disabled) {
             return ActNotFound.get();
+        }
+
+        String urlContext = this.controller.contextPath();
+        if (S.notBlank(urlContext)) {
+            context.urlContext(urlContext);
         }
 
         context.attribute("reflected_handler", this);
@@ -227,6 +242,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         processForceResponse(context);
         ensureJsonDTOGenerated(context);
         Object controller = controllerInstance(context);
+
 
         /*
          * We will send back response immediately when param validation
@@ -481,6 +497,18 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         }
     }
 
+    private void initMissingAuthenticationAndCsrfCheckHandler() {
+        HandleMissingAuthentication hma = getAnnotation(HandleMissingAuthentication.class);
+        if (null != hma) {
+            missingAuthenticationHandler = hma.value().handler(hma.custom());
+        }
+
+        HandleCsrfFailure hcf = getAnnotation(HandleCsrfFailure.class);
+        if (null != hcf) {
+            csrfFailureHandler = hcf.value().handler(hcf.custom());
+        }
+    }
+
     private void initOutputVariables() {
         Set<String> outputNames = new HashSet<>();
         outputFields = new HashMap<>();
@@ -629,6 +657,14 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
             }
         }
         return singleton;
+    }
+
+    private <T extends Annotation> T getAnnotation(Class<T> annoType) {
+        T anno = method.getAnnotation(annoType);
+        if (null == anno) {
+            anno = controllerClass.getAnnotation(annoType);
+        }
+        return anno;
     }
 
     private boolean isGlobal(Field field) {

@@ -1483,13 +1483,13 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         return me();
     }
     public MissingAuthenticationHandler ajaxCsrfCheckFailureHandler() {
-        if (null == csrfCheckFailureHandler) {
-            csrfCheckFailureHandler = get(HANDLER_AJAX_CSRF_CHECK_FAILURE);
-            if (null == csrfCheckFailureHandler) {
-                csrfCheckFailureHandler = csrfCheckFailureHandler();
+        if (null == ajaxCsrfCheckFailureHandler) {
+            ajaxCsrfCheckFailureHandler = get(HANDLER_AJAX_CSRF_CHECK_FAILURE);
+            if (null == ajaxCsrfCheckFailureHandler) {
+                ajaxCsrfCheckFailureHandler = csrfCheckFailureHandler();
             }
         }
-        return csrfCheckFailureHandler;
+        return ajaxCsrfCheckFailureHandler;
     }
     private void _mergeAjaxCsrfCheckFailureHandler(AppConfig config) {
         if (!hasConfiguration(HANDLER_AJAX_CSRF_CHECK_FAILURE)) {

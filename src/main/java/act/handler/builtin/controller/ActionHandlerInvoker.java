@@ -25,6 +25,7 @@ import act.app.ActionContext;
 import act.controller.CacheSupportMetaInfo;
 import act.security.CORS;
 import act.security.CSRF;
+import act.util.MissingAuthenticationHandler;
 import act.util.Prioritised;
 import org.osgl.mvc.result.Result;
 
@@ -44,4 +45,8 @@ public interface ActionHandlerInvoker extends Prioritised, Destroyable {
     CSRF.Spec csrfSpec();
 
     CacheSupportMetaInfo cacheSupport();
+
+    MissingAuthenticationHandler missingAuthenticationHandler();
+
+    MissingAuthenticationHandler csrfFailureHandler();
 }

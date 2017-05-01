@@ -77,6 +77,11 @@ public class DelegateRequestHandler extends RequestHandlerBase {
     }
 
     @Override
+    public void prepareAuthentication(ActionContext context) {
+        handler_.prepareAuthentication(context);
+    }
+
+    @Override
     public RequestHandler realHandler() {
         return realHandler;
     }

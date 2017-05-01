@@ -21,50 +21,66 @@ package act.controller.annotation;
  */
 
 import act.Act;
-import act.app.ActionContext;
 import act.util.MissingAuthenticationHandler;
 import act.util.RedirectToLoginUrl;
 import act.util.ReturnUnauthorized;
-import org.osgl.mvc.result.Result;
+import org.osgl.util.S;
+
+import java.lang.annotation.*;
 
 /**
  * Specify how to handle the case when interact user not authenticated
  */
+@Retention(RetentionPolicy.RUNTIME)
+@Inherited
+@Target(ElementType.TYPE)
 public @interface HandleMissingAuthentication {
 
-    enum Option implements MissingAuthenticationHandler {
+    enum Option {
         /**
          * redirect to login URL
          */
-        REDIRECT(RedirectToLoginUrl.class),
+        REDIRECT() {
+            @Override
+            protected MissingAuthenticationHandler createHandler(String custom) {
+                return S.blank(custom) ? Act.getInstance(RedirectToLoginUrl.class) : new RedirectToLoginUrl(custom);
+            }
+        },
 
         /**
          * send 401 response
          */
-        REJECT(ReturnUnauthorized.class);
+        REJECT() {
+            @Override
+            protected MissingAuthenticationHandler createHandler(String custom) {
+                return Act.getInstance(ReturnUnauthorized.class);
+            }
+        },
+
+        /**
+         * Customized solution
+         */
+        CUSTOM() {
+            @Override
+            protected MissingAuthenticationHandler createHandler(String custom) {
+                return Act.getInstance(custom);
+            }
+        };
 
         private volatile MissingAuthenticationHandler realHandler;
-        private Class<? extends MissingAuthenticationHandler> realHandlerType;
 
-        Option(Class<? extends MissingAuthenticationHandler> realHandler) {
-            this.realHandlerType = realHandler;
-        }
-
-        private MissingAuthenticationHandler realHandler() {
+        public MissingAuthenticationHandler handler(String custom) {
             if (null == realHandler) {
                 synchronized (this) {
                     if (null == realHandler) {
-                        realHandler = Act.getInstance(realHandlerType);
+                        realHandler = createHandler(custom);
                     }
                 }
             }
             return realHandler;
         }
 
-        @Override
-        public Result result(ActionContext context) {
-            return realHandler().result(context);
-        }
+        protected abstract MissingAuthenticationHandler createHandler(String custom);
     }
 
     /**
@@ -73,4 +89,15 @@ public @interface HandleMissingAuthentication {
      */
     Option value();
 
+    /**
+     * If the {@link #value()} is {@link Option#CUSTOM}, this
+     * field specifies the customer implementation.
+     *
+     * If the {@link #value()} is {@link Option#REDIRECT} and this
+     * field is provided, then it specifies the login URL
+     *
+     *
+     * @return the custom implementation or login URL
+     */
+    String custom() default "";
 }

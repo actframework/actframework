@@ -25,6 +25,7 @@ import act.controller.CacheSupportMetaInfo;
 import act.handler.builtin.controller.impl.ReflectedHandlerInvoker;
 import act.security.CORS;
 import act.security.CSRF;
+import act.util.MissingAuthenticationHandler;
 import act.view.ActNotFound;
 import org.osgl.mvc.result.NotFound;
 import org.osgl.mvc.result.Result;
@@ -69,6 +70,14 @@ public class ControllerAction extends ActionHandler<ControllerAction> {
     @Override
     public boolean sessionFree() {
         return handlerInvoker.sessionFree();
+    }
+
+    public MissingAuthenticationHandler missingAuthenticationHandler() {
+        return handlerInvoker.missingAuthenticationHandler();
+    }
+
+    public MissingAuthenticationHandler csrfFailureHandler() {
+        return handlerInvoker.csrfFailureHandler();
     }
 
     @Override

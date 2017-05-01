@@ -23,6 +23,7 @@ package act.route;
 
 import act.app.ActionContext;
 import act.handler.RequestHandlerBase;
+import org.osgl.util.E;
 
 public class NamedMockHandler extends RequestHandlerBase {
 
@@ -46,5 +47,10 @@ public class NamedMockHandler extends RequestHandlerBase {
     @Override
     public boolean sessionFree() {
         return true;
+    }
+
+    @Override
+    public void prepareAuthentication(ActionContext context) {
+        throw E.unsupport();
     }
 }

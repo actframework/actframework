@@ -35,6 +35,7 @@ import act.i18n.LocaleResolver;
 import act.route.Router;
 import act.security.CORS;
 import act.util.ActContext;
+import act.util.MissingAuthenticationHandler;
 import act.util.PropertySpec;
 import org.osgl.$;
 import org.osgl.concurrent.ContextLocal;
@@ -94,6 +95,9 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
     private Boolean hasTemplate;
     private H.Status forceResponseStatus;
     private boolean cacheEnabled;
+    private MissingAuthenticationHandler forceMissingAuthenticationHandler;
+    private MissingAuthenticationHandler forceCsrfCheckingFailureHandler;
+    private String urlContext;
 
 
     @Inject
@@ -168,6 +172,39 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
     public ActionContext router(Router router) {
         this.router = $.notNull(router);
         return this;
+    }
+
+    public MissingAuthenticationHandler missingAuthenticationHandler() {
+        if (null != forceMissingAuthenticationHandler) {
+            return forceMissingAuthenticationHandler;
+        }
+        return isAjax() ? config().ajaxMissingAuthenticationHandler() : config().missingAuthenticationHandler();
+    }
+
+    public MissingAuthenticationHandler csrfFailureHandler() {
+        if (null != forceCsrfCheckingFailureHandler) {
+            return forceCsrfCheckingFailureHandler;
+        }
+        return isAjax() ? config().ajaxCsrfCheckFailureHandler() : config().csrfCheckFailureHandler();
+    }
+
+    public ActionContext forceMissingAuthenticationHandler(MissingAuthenticationHandler handler) {
+        this.forceMissingAuthenticationHandler = handler;
+        return this;
+    }
+
+    public ActionContext forceCsrfCheckingFailureHandler(MissingAuthenticationHandler handler) {
+        this.forceCsrfCheckingFailureHandler = handler;
+        return this;
+    }
+
+    public ActionContext urlContext(String context) {
+        this.urlContext = context;
+        return this;
+    }
+
+    public String urlContext() {
+        return urlContext;
     }
 
     // !!!IMPORTANT! the following methods needs to be kept to allow enhancer work correctly
@@ -678,6 +715,7 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
         localeResolver.resolve();
         state = State.SESSION_RESOLVED;
         if (!sessionFree) {
+            handler.prepareAuthentication(this);
             EventBus eventBus = app().eventBus();
             eventBus.emit(new PreFireSessionResolvedEvent(session, this));
             Act.sessionManager().fireSessionResolved(this);

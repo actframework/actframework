@@ -1,4 +1,4 @@
-package act.handler;
+package act.controller.annotation;
 
 /*-
  * #%L
@@ -20,23 +20,27 @@ package act.handler;
  * #L%
  */
 
-import act.app.ActionContext;
+import java.lang.annotation.*;
 
 /**
- * A ｀SimpleRequestHandler` is treated as a {@link RequestHandler} with the following
- * default properties:
- *
- * * {@link RequestHandler#corsSpec()}: {@link act.security.CORS.Spec#DUMB}
- * * {@link RequestHandler#csrfSpec()}: {@link act.security.CSRF.Spec#DUMB}
- * * {@link RequestHandler#sessionFree()}: `true`
- * * {@link RequestHandler#requireResolveContext()}: `false`
- * * {@link RequestHandler#supportPartialPath()}: `false`
+ * Specify how to handle the case when CSRF checking failed
  */
-public interface SimpleRequestHandler {
+@Retention(RetentionPolicy.RUNTIME)
+@Inherited
+@Target(ElementType.TYPE)
+public @interface HandleCsrfFailure {
+
     /**
-     * Invoke handler upon an action context
-     *
-     * @param context the context data
+     * Specify the option to handle CSRF checking failed
+     * @return the way to deal with CSRF checking failed case
      */
-    void handle(ActionContext context);
+    HandleMissingAuthentication.Option value();
+
+    /**
+     * Specify the custom implementation - only effective when
+     * {@link #value()} is {@link HandleMissingAuthentication.Option#CUSTOM}
+     *
+     * @return the custom implementation
+     */
+    String custom() default "";
 }

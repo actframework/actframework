@@ -24,6 +24,7 @@ import act.app.ActionContext;
 import act.handler.RequestHandler;
 import act.handler.RequestHandlerBase;
 import act.security.CSRF;
+import org.osgl.util.E;
 
 /**
  * For any handler that does not require the framework to lookup incoming request
@@ -55,5 +56,10 @@ public abstract class FastRequestHandler extends RequestHandlerBase {
     @Override
     public boolean sessionFree() {
         return true;
+    }
+
+    @Override
+    public void prepareAuthentication(ActionContext context) {
+        throw E.unsupport();
     }
 }
