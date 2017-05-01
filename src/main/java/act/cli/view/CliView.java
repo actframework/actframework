@@ -209,11 +209,11 @@ public enum CliView {
             if (format) {
                 featureList.add(SerializerFeature.PrettyFormat);
             }
+            Boolean b = DisableFastJsonCircularReferenceDetect.option.get();
+            if (null != b && b) {
+                featureList.add(SerializerFeature.DisableCircularReferenceDetect);
+            }
             if (null == propertyFilter) {
-                Boolean b = DisableFastJsonCircularReferenceDetect.option.get();
-                if (null != b && b) {
-                    featureList.add(SerializerFeature.DisableCircularReferenceDetect);
-                }
                 SerializerFeature[] featureArray = new SerializerFeature[featureList.size()];
                 featureArray = featureList.toArray(featureArray);
                 if (format) {
