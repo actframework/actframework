@@ -81,14 +81,14 @@ public interface ActError {
         }
 
         public static SourceInfo loadSourceInfo(Method method) {
-            return loadSourceInfo(method.getDeclaringClass().getName(), method.getName(), true);
+            return loadSourceInfo(method.getDeclaringClass().getName(), method.getName(), true, null);
         }
 
         public static SourceInfo loadSourceInfo(AsmContext asmContext) {
-            return loadSourceInfo(asmContext.className(), asmContext.name(), ElementType.METHOD == asmContext.type());
+            return loadSourceInfo(asmContext.className(), asmContext.name(), ElementType.METHOD == asmContext.type(), asmContext.lineNo());
         }
 
-        private static SourceInfo loadSourceInfo(String className, String elementName, boolean isMethod) {
+        private static SourceInfo loadSourceInfo(String className, String elementName, boolean isMethod, Integer lineNo) {
             E.illegalStateIf(Act.isProd());
             DevModeClassLoader cl = (DevModeClassLoader) App.instance().classLoader();
             Source source = cl.source(className);
@@ -100,6 +100,9 @@ public interface ActError {
             String pattern = isMethod ?
                     S.concat("^\\s*.*", elementName, "\\s*\\(.*") :
                     S.concat("^\\s*.*", elementName, "[^\\(\\{]*");
+            if (null != lineNo) {
+                return new SourceInfoImpl(source, lineNo);
+            }
             for (int i = 0; i < lines.size(); ++i) {
                 String line = lines.get(i);
                 if (line.matches(pattern)) {
