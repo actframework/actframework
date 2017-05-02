@@ -19,6 +19,7 @@
 *            version history
 ********************************************
 1.3.0
+* #126 `@DisableFastJsonCircularReferenceDetect` not effective when working with `@PropertySpec`
 * #128 Create a mechanism to cache the GET request result
 * #163 Introduce `@TemplateContext` annotation
 * #164 Split `@Controller` annotation into `@UrlContext` and `@Port` annotation
@@ -165,7 +166,7 @@
   <groupId>org.actframework</groupId>
   <artifactId>act</artifactId>
   <packaging>jar</packaging>
-  <version>1.3.0-126-SNAPSHOT</version>
+  <version>1.3.0-SNAPSHOT</version>
 
   <name>ACT Framework</name>
   <description>The ACT full stack MVC framework</description>
