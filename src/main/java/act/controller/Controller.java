@@ -923,7 +923,9 @@ public @interface Controller {
             boolean requireXML = !requireJSON && context.acceptXML();
 
             if (null == v) {
-                return requireJSON ? RenderJSON.of("{}") : requireXML ? RenderXML.of("<result></result>") : null;
+                // the following code breaks before handler without returning result
+                //return requireJSON ? RenderJSON.of("{}") : requireXML ? RenderXML.of("<result></result>") : null;
+                return null;
             } else if ($.isSimpleType(v.getClass())) {
                 return inferPrimitiveResult(v, context, requireJSON, requireXML);
             } else if (v instanceof InputStream) {

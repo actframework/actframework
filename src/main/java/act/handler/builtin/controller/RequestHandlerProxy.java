@@ -44,8 +44,7 @@ import org.osgl.exception.UnexpectedException;
 import org.osgl.http.H;
 import org.osgl.logging.L;
 import org.osgl.logging.Logger;
-import org.osgl.mvc.result.NotFound;
-import org.osgl.mvc.result.Result;
+import org.osgl.mvc.result.*;
 import org.osgl.util.C;
 import org.osgl.util.E;
 import org.osgl.util.S;
@@ -330,7 +329,7 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
         if (null == parent) {
             throw new UnexpectedException("Cannot find action method meta info: %s", actionPath);
         }
-        while(true) {
+        while (true) {
             actionInfo = parent.action(methodName);
             if (null != actionInfo) {
                 break;
@@ -365,7 +364,7 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
 
         GroupInterceptorMetaInfo interceptorMetaInfo = new GroupInterceptorMetaInfo(actionInfo.interceptors());
         interceptorMetaInfo.mergeFrom(globalFreeStyleInterceptor);
-        for (GroupInterceptorMetaInfo freeStyleInterceptor: globalFreeStyleInterceptors) {
+        for (GroupInterceptorMetaInfo freeStyleInterceptor : globalFreeStyleInterceptors) {
             interceptorMetaInfo.mergeFrom(freeStyleInterceptor);
         }
 
