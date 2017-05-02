@@ -139,6 +139,8 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
         _releaseResourceCollections(globalFinallyInterceptors);
         _releaseResourceCollections(globalFreeStyleInterceptors);
         globalFreeStyleInterceptor.destroy();
+        // We must recreate this instance to prevent it from
+        // been reused after destroyed
         globalFreeStyleInterceptor = new GroupInterceptorMetaInfo();
     }
 

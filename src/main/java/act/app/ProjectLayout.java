@@ -21,7 +21,6 @@ package act.app;
  */
 
 import act.Act;
-import act.route.RouteTableRouterBuilder;
 import org.osgl.$;
 import org.osgl.Osgl;
 import org.osgl.exception.NotAppliedException;
@@ -29,10 +28,14 @@ import org.osgl.util.E;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 
+import static act.app.ProjectLayout.Utils.file;
 import static act.app.RuntimeDirs.CLASSES;
 import static act.app.RuntimeDirs.CONF;
+import static act.route.RouteTableRouterBuilder.ROUTES_FILE;
 
 /**
  * Defines the project file structure supported by Act.
@@ -82,47 +85,47 @@ public interface ProjectLayout {
         MAVEN() {
             @Override
             public File source(File appBase) {
-                return Utils.file(appBase, "src/main/java");
+                return file(appBase, "src/main/java");
             }
 
             @Override
             public File testSource(File appBase) {
-                return Utils.file(appBase, "src/test/java");
+                return file(appBase, "src/test/java");
             }
 
             @Override
             public File resource(File appBase) {
                 String resources = Act.isDev() ? "src/main/resources" : "classes";
-                return Utils.file(appBase, resources);
+                return file(appBase, resources);
             }
 
             @Override
             public File testResource(File appBase) {
                 String resources = Act.isDev() ? "src/test/resources" : "test-classes";
-                return Utils.file(appBase, resources);
+                return file(appBase, resources);
             }
 
             @Override
             public File lib(File appBase) {
                 String lib = Act.isDev() ? "src/main/lib" : "lib";
-                return Utils.file(appBase, lib);
+                return file(appBase, lib);
             }
 
             @Override
             public File testLib(File appBase) {
                 String lib = Act.isDev() ? "src/test/lib" : "test-lib";
-                return Utils.file(appBase, lib);
+                return file(appBase, lib);
             }
 
             @Override
             public File asset(File appBase) {
                 String asset = Act.isDev() ? "src/main/asset" : "asset";
-                return Utils.file(appBase, asset);
+                return file(appBase, asset);
             }
 
             @Override
             public File target(File appBase) {
-                return Utils.file(appBase, "target");
+                return file(appBase, "target");
             }
 
         },
@@ -150,17 +153,17 @@ public interface ProjectLayout {
 
             @Override
             public File resource(File appBase) {
-                return Utils.file(appBase, "classes");
+                return file(appBase, "classes");
             }
 
             @Override
             public File lib(File appBase) {
-                return Utils.file(appBase, "lib");
+                return file(appBase, "lib");
             }
 
             @Override
             public File asset(File appBase) {
-                return Utils.file(appBase, "asset");
+                return file(appBase, "asset");
             }
 
             @Override
@@ -190,17 +193,17 @@ public interface ProjectLayout {
         PLAY() {
             @Override
             public File source(File appBase) {
-                return Utils.file(appBase, "app");
+                return file(appBase, "app");
             }
 
             @Override
             public File testSource(File appBase) {
-                return Utils.file(appBase, "test");
+                return file(appBase, "test");
             }
 
             @Override
             public File resource(File appBase) {
-                return Utils.file(appBase, "conf");
+                return file(appBase, "conf");
             }
 
             @Override
@@ -210,7 +213,7 @@ public interface ProjectLayout {
 
             @Override
             public File lib(File appBase) {
-                return Utils.file(appBase, "lib");
+                return file(appBase, "lib");
             }
 
             @Override
@@ -220,12 +223,12 @@ public interface ProjectLayout {
 
             @Override
             public File asset(File appBase) {
-                return Utils.file(appBase, "public");
+                return file(appBase, "public");
             }
 
             @Override
             public File target(File appBase) {
-                return Utils.file(appBase, "tmp");
+                return file(appBase, "tmp");
             }
         },
         ;
@@ -238,8 +241,17 @@ public interface ProjectLayout {
         }
 
         @Override
-        public File routeTable(File appBase) {
-            return Utils.file(resource(appBase), RouteTableRouterBuilder.ROUTES_FILE);
+        public List<File> routeTables(File appBase) {
+            List<File> files = new ArrayList<>();
+            File resourceBase = resource(appBase);
+            files.add(file(resourceBase, ROUTES_FILE));
+            File confBase = conf(appBase);
+            files.add(file(confBase, ROUTES_FILE));
+            File commonBase = file(confBase, "common");
+            files.add(file(commonBase, ROUTES_FILE));
+            File profileBase = file(confBase, Act.profile());
+            files.add(file(profileBase, ROUTES_FILE));
+            return files;
         }
 
         public static ProjectLayout valueOfIgnoreCase(String s) {
@@ -310,7 +322,7 @@ public interface ProjectLayout {
      * Returns the routing table file in relation to the
      * {@code appBase} specified
      */
-    File routeTable(File appBase);
+    List<File> routeTables(File appBase);
 
     /**
      * Returns the app configuration location in relation to the
@@ -407,52 +419,58 @@ public interface ProjectLayout {
 
         @Override
         public File source(File appBase) {
-            return Utils.file(appBase, source);
+            return file(appBase, source);
         }
 
         @Override
         public File testSource(File appBase) {
-            return Utils.file(appBase, testSource);
+            return file(appBase, testSource);
         }
 
         @Override
         public File lib(File appBase) {
-            return Utils.file(appBase, lib);
+            return file(appBase, lib);
         }
 
         @Override
         public File testLib(File appBase) {
-            return Utils.file(appBase, testLib);
+            return file(appBase, testLib);
         }
 
         @Override
-        public File routeTable(File appBase) {
-            return Utils.file(appBase, routeTable);
+        public List<File> routeTables(File appBase) {
+            List<File> files = new ArrayList<>();
+            files.add(file(appBase, routeTable));
+            File confRoot = file(appBase, conf);
+            files.add(file(confRoot, routeTable));
+            File profileRoot = file(confRoot, Act.profile());
+            files.add(file(profileRoot, routeTable));
+            return files;
         }
 
         @Override
         public File resource(File appBase) {
-            return Utils.file(appBase, resource);
+            return file(appBase, resource);
         }
 
         @Override
         public File testResource(File appBase) {
-            return Utils.file(appBase, testResource);
+            return file(appBase, testResource);
         }
 
         @Override
         public File asset(File appBase) {
-            return Utils.file(appBase, asset);
+            return file(appBase, asset);
         }
 
         @Override
         public File conf(File appBase) {
-            return Utils.file(appBase, conf);
+            return file(appBase, conf);
         }
 
         @Override
         public File target(File appBase) {
-            return Utils.file(appBase, target);
+            return file(appBase, target);
         }
     }
 

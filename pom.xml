@@ -27,6 +27,7 @@
 * #169 Regex in route not working
 * #170 Make it easy to create global template variable
 * #171 Add helper javascript library that extends jQuery
+* #174 Support profile specific route configuration
 * #175 Create better error message when there are error enhancing classes
 * #177 Better error reporting when multiple controller action/interceptor methods have the same name
 * #178 When handler returns a primitive type the result is not JSON result when `Accept` header require JSON

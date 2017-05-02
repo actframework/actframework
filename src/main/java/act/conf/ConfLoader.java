@@ -21,6 +21,8 @@ package act.conf;
  */
 
 import act.Act;
+import act.app.ProjectLayout;
+import act.app.RuntimeDirs;
 import act.util.SysProps;
 import org.osgl.logging.L;
 import org.osgl.logging.Logger;
@@ -53,9 +55,9 @@ public abstract class ConfLoader<T extends Config> {
         return m;
     }
 
-    public T load(File confFile) {
+    public T load(File resourceRoot) {
         // load conf from disk
-        Map<String, ?> rawConf = null == confFile ? C.newMap() : loadConfFromDisk(confFile);
+        Map<String, ?> rawConf = null == resourceRoot ? C.newMap() : loadConfFromDisk(resourceRoot);
 
         // load conf from System.properties
         Properties sysProps = System.getProperties();
@@ -134,16 +136,27 @@ public abstract class ConfLoader<T extends Config> {
         return profile;
     }
 
-    private Map loadConfFromDir(File confDir) {
-        if (!confDir.exists()) {
-            logger.warn("Cannot read conf dir[%s]", confDir.getAbsolutePath());
+    private Map loadConfFromDir(File resourceDir) {
+        if (!resourceDir.exists()) {
+            logger.warn("Cannot read conf dir[%s]", resourceDir.getAbsolutePath());
             return C.newMap();
         }
 
         Map map = C.newMap();
 
         /*
-         * try load from common conf
+         * Load from resources root
+         */
+        map.putAll(loadConfFromDir_(resourceDir));
+
+        /*
+         * Load from resources/conf root
+         */
+        File confDir = ProjectLayout.Utils.file(resourceDir, RuntimeDirs.CONF);
+        map.putAll(loadConfFromDir_(confDir));
+
+        /*
+         * try load from resources/conf/common conf
          */
         String common = common();
         File commonConfDir = new File(confDir, common);
@@ -160,10 +173,8 @@ public abstract class ConfLoader<T extends Config> {
         File taggedConfDir = new File(confDir, profile);
         if (taggedConfDir.exists() && taggedConfDir.isDirectory()) {
             map.putAll(loadConfFromDir_(taggedConfDir));
-            return map;
         }
 
-        map.putAll(loadConfFromDir_(confDir));
         return map;
     }
 

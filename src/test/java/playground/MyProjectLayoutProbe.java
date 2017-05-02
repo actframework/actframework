@@ -25,6 +25,7 @@ import act.app.ProjectLayout;
 import act.plugin.Plugin;
 
 import java.io.File;
+import java.util.List;
 
 public class MyProjectLayoutProbe extends BuildFileProbe.FileParser implements Plugin {
 
@@ -77,7 +78,7 @@ public class MyProjectLayoutProbe extends BuildFileProbe.FileParser implements P
             }
 
             @Override
-            public File routeTable(File appBase) {
+            public List<File> routeTables(File appBase) {
                 return null;
             }
 
