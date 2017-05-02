@@ -33,7 +33,7 @@ Add the following dependency into your `pom.xml` file
 <dependency>
   <groupId>org.actframework</groupId>
   <artifactId>act</artifactId>
-  <version>[1.0.0, 2.0.0)</version>
+  <version>${current-version}</version>
 </dependency>
 ```
 
@@ -162,12 +162,12 @@ import org.osgl.mvc.annotation.GetAction;
 public class HelloWorldApp {
 
     @GetAction
-    public String sayHello() {
-        return "Hello World!";
+    public String sayHelloTo(@DefaultValue("World") String who) {
+        return "Hello " + who + "!";
     }
 
     public static void main(String[] args) throws Exception {
-        Act.start("Hello World");
+        Act.start("Hello World App");
     }
 
 }
@@ -207,14 +207,12 @@ public class User extends MorphiaAdaptiveRecord<User> {
         }
 
         @GetAction("{id}")
-        public User show(String id, Map<String, Object> data) {
-            return findById(id);
+        public User show(@DbBind("id") User user) {
+            return user;
         }
 
         @PutAction("{id}")
-        public User update(String id, Map<String, Object> data) {
-            User user = findById(id);
-            notFoundIfNull(user);
+        public User update(@DbBind("id") @NotNull User user, Map<String, Object> data) {
             user.mergeValues(data);
             return save(user);
         }
