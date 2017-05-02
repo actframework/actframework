@@ -23,6 +23,7 @@ package act.boot;
 import act.app.ProjectLayout;
 
 import java.io.File;
+import java.util.List;
 
 /**
  * Helper to build {@link ProjectLayout}
@@ -149,8 +150,8 @@ public class ProjectLayoutBuilder implements ProjectLayout {
     }
 
     @Override
-    public File routeTable(File appBase) {
-        return _layout.routeTable(appBase);
+    public List<File> routeTables(File appBase) {
+        return _layout.routeTables(appBase);
     }
 
     @Override

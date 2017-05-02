@@ -60,7 +60,7 @@ public class ByteCodeVisitor extends ClassVisitor implements Opcodes {
         return this;
     }
 
-    private ByteCodeVisitor setDownstream(ClassVisitor cv) {
+    public ByteCodeVisitor setDownstream(ClassVisitor cv) {
         E.illegalStateIf(null != this.cv);
         this.cv = cv;
         return this;

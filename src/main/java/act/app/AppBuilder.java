@@ -30,6 +30,7 @@ import static act.app.RuntimeDirs.*;
 
 /**
  * Build Application when Act running in DEV mode.
+ * TODO: we probably don't need to copy resources in DEV mode
  */
 class AppBuilder {
 
@@ -123,11 +124,15 @@ class AppBuilder {
     }
 
     void copyRoutes() {
-        File routes = layout.routeTable(appBase);
-        if (null == routes || !routes.canRead()) return;
-        if (routes.exists() && routes.canRead()) {
-            IO.copyDirectory(routes, RuntimeDirs.routes(app));
-        }
+        //TODO fix me
+//        List<File> routes = layout.routeTables(appBase);
+//        for (File file : routes) {
+//            if (!file.canRead()) {
+//                continue;
+//            }
+//            //IO.copyDirectory(file, RuntimeDirs.routes(app));
+//            E.tbd();
+//        }
     }
 
     void copyConf() {

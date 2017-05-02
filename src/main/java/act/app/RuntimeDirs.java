@@ -21,9 +21,13 @@ package act.app;
  */
 
 import act.Act;
-import act.route.RouteTableRouterBuilder;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+
+import static act.app.ProjectLayout.Utils.file;
+import static act.route.RouteTableRouterBuilder.ROUTES_FILE;
 
 /**
  * Define application dir structure at runtime
@@ -44,14 +48,25 @@ public enum RuntimeDirs {
         }
     }
 
+    public static File resource(App app) {
+        return Act.isDev() ? app.layout().resource(app.base()) : classes(app);
+    }
+
     public static File conf(App app) {
         File confBase = Act.isDev() ? app.layout().resource(app.base()) : classes(app);
         File file = new File(confBase, CONF);
         return file.exists() ? file : confBase;
     }
 
-    public static File routes(App app) {
-        return new File(classes(app), RouteTableRouterBuilder.ROUTES_FILE);
+    public static List<File> routes(App app) {
+        List<File> routes = new ArrayList<>();
+        File classes = classes(app);
+        routes.add(file(classes, ROUTES_FILE));
+        File confRoot = file(classes, CONF);
+        routes.add(file(confRoot, ROUTES_FILE));
+        File profileRooot = file(confRoot, Act.profile());
+        routes.add(file(profileRooot, ROUTES_FILE));
+        return routes;
     }
 
     public static File classes(App app) {

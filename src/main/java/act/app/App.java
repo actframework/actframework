@@ -99,7 +99,7 @@ public class App extends DestroyableBase {
         ;
         public static $.Predicate<String> JAVA_SOURCE = S.F.endsWith(".java");
         public static $.Predicate<String> JAR_FILE = S.F.endsWith(".jar");
-        public static $.Predicate<String> CONF_FILE = S.F.endsWith(".conf").or(S.F.endsWith(".properties"));
+        public static $.Predicate<String> CONF_FILE = S.F.endsWith(".conf").or(S.F.endsWith(".properties").or(S.F.endsWith(".yaml").or(S.F.endsWith(".yml").or(S.F.endsWith(".xml")))));
         public static $.Predicate<String> ROUTES_FILE = $.F.eq(RouteTableRouterBuilder.ROUTES_FILE);
     }
 
@@ -849,9 +849,9 @@ public class App extends DestroyableBase {
 
     private void loadConfig() {
         JsonUtilConfig.configure(this);
-        File conf = RuntimeDirs.conf(this);
+        File resource = RuntimeDirs.resource(this);
         LOGGER.debug("loading app configuration: %s ...", appBase.getAbsolutePath());
-        config = new AppConfLoader().load(conf);
+        config = new AppConfLoader().load(resource);
         config.app(this);
         configureLoggingLevels();
         registerSingleton(AppConfig.class, config);
@@ -1107,19 +1107,18 @@ public class App extends DestroyableBase {
     private void loadRoutes() {
         loadBuiltInRoutes();
         LOGGER.debug("loading app routing table: %s ...", appBase.getPath());
-        File routes;
+        List<File> routes;
         if (Act.isProd()) {
             routes = RuntimeDirs.routes(this);
         } else {
-            routes = layout().routeTable(base());
+            routes = layout().routeTables(base());
         }
-        if (!(routes.isFile() && routes.canRead())) {
-            LOGGER.debug("No route table find found");
-            // guess the app is purely using annotation based routes
-            return;
+        for (File route : routes) {
+            if (route.exists() && route.canRead() && route.isFile()) {
+                List<String> lines = IO.readLines(route);
+                new RouteTableRouterBuilder(lines).build(router);
+            }
         }
-        List<String> lines = IO.readLines(routes);
-        new RouteTableRouterBuilder(lines).build(router);
     }
 
     private void loadBuiltInRoutes() {

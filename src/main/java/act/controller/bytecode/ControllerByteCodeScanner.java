@@ -280,6 +280,7 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
             private $.Var<Boolean> isVirtual = $.var(false);
             private HandlerWithAnnotationVisitor withAnnotationVisitor;
             private $.Var<Boolean> isGlobal = $.var(false);
+            private List<InterceptorAnnotationVisitor> interceptorAnnotationVisitors = new ArrayList<>();
 
             ActionMethodVisitor(boolean isRoutedMethod, MethodVisitor mv, int access, String methodName, String desc, String signature, String[] exceptions) {
                 super(ASM5, mv);
@@ -335,6 +336,7 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
                     if (null != propSpec) {
                         methodInfo.propertySpec(propSpec);
                     }
+                    interceptorAnnotationVisitors.add(visitor);
                     return visitor;
                 } else if ($.eq(AsmTypes.PROPERTY_SPEC.asmType(), type)) {
                     propSpec = new PropertySpec.MetaInfo();
@@ -410,6 +412,11 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
                 if (!requireScan()) {
                     super.visitEnd();
                     return;
+                }
+                if (isGlobal.get()) {
+                    for (InterceptorAnnotationVisitor visitor : interceptorAnnotationVisitors) {
+                        visitor.registerGlobalInterceptor();
+                    }
                 }
                 classInfo.isController(true);
                 if (null == methodInfo) {
@@ -569,12 +576,8 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
                     return super.visitArray(name);
                 }
 
-                @Override
-                public void visitEnd() {
-                    if (isGlobal.get()) {
-                        RequestHandlerProxy.registerGlobalInterceptor(info, interceptorType);
-                    }
-                    super.visitEnd();
+                void registerGlobalInterceptor() {
+                    RequestHandlerProxy.registerGlobalInterceptor(info, interceptorType);
                 }
 
                 private class OnlyValueVisitor extends StringArrayVisitor {

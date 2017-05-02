@@ -520,6 +520,7 @@ public class HandlerEnhancer extends MethodVisitor implements Opcodes {
                                 breakWhile = true;
                                 break;
                             default:
+                                AsmContext.line(curLine);
                                 E.unexpected("Invalid statement after render result statement at line %s", curLine);
                         }
                         if (breakWhile) {

@@ -83,7 +83,7 @@ public class ActErrorResult extends ErrorResult implements ActError {
 
     private static String errorMsg(AsmException exception, boolean scanning) {
         String userMsg = exception.getLocalizedMessage();
-        return (S.blank(userMsg)) ? S.concat("Error %s bytecode at %s", scanning ? "scanning" : "enhancing", exception.context().toString()) : userMsg;
+        return (S.blank(userMsg)) ? S.concat("Error ", scanning ? "scanning" : "enhancing", " bytecode at ", exception.context().toString()) : userMsg;
     }
 
     public ActErrorResult(H.Status status, Throwable cause) {
