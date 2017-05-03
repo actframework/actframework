@@ -682,6 +682,15 @@ public enum AppConfigKey implements ConfigKey {
     SECRET("secret"),
 
     /**
+     * `secure_ticket_codec`
+     *
+     * Specify the implementation of {@link act.security.SecureTicketCodec}
+     *
+     * Default value: {@link act.security.DefaultSecureTicketCodec}
+     */
+    SECURE_TICKET_CODEC("secure_ticket_codec"),
+
+    /**
      * {@code server.header}
      * Specifies the server header to be output to the response
      * <p>Default value: {@code act}</p>

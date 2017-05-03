@@ -36,6 +36,9 @@ import act.handler.UnknownHttpMethodProcessor;
 import act.handler.event.ResultEvent;
 import act.i18n.I18n;
 import act.security.CSRFProtector;
+import act.security.DefaultSecureTicketCodec;
+import act.security.SecureTicketCodec;
+import act.security.UsernameSecureTicketCodec;
 import act.util.*;
 import act.view.TemplatePathResolver;
 import act.view.View;
@@ -2155,7 +2158,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         }
     }
 
-    private String secret = null;
+    private volatile String secret = null;
     protected T secret(String secret) {
         E.illegalArgumentIf(S.blank(secret));
         this.secret = secret;
@@ -2177,6 +2180,45 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         }
     }
 
+    private volatile SecureTicketCodec secureTicketCodec;
+    private String secureTicketCodecClass;
+    protected T secureTicketCodec(String secureTicketCodecClass) {
+        this.secureTicketCodecClass = $.notNull(secureTicketCodecClass);
+        return me();
+    }
+    protected T secureTicketCodec(SecureTicketCodec codec) {
+        this.secureTicketCodec = $.notNull(codec);
+        return me();
+    }
+    public SecureTicketCodec secureTicketCodec() {
+        if (null != secureTicketCodec) {
+            return secureTicketCodec;
+        }
+        synchronized (this) {
+            if (null != secureTicketCodec) {
+                return secureTicketCodec;
+            }
+            if (null == secureTicketCodecClass) {
+                secureTicketCodecClass = get(SECURE_TICKET_CODEC);
+                if (null == secureTicketCodecClass) {
+                    secureTicketCodec = app().getInstance(DefaultSecureTicketCodec.class);
+                    return secureTicketCodec;
+                }
+                if ("username".equalsIgnoreCase(secureTicketCodecClass)) {
+                    secureTicketCodec = app().getInstance(UsernameSecureTicketCodec.class);
+                    return secureTicketCodec;
+                }
+                secureTicketCodec = app().getInstance(secureTicketCodecClass);
+            }
+        }
+        return secureTicketCodec;
+    }
+    private void _mergeSecureTicketCodec(AppConfig config) {
+        if (!hasConfiguration(AppConfigKey.SECURE_TICKET_CODEC)) {
+            secureTicketCodec = config.secureTicketCodec;
+            secureTicketCodecClass = config.secureTicketCodecClass;
+        }
+    }
     private List<File> moduleBases;
     public List<File> moduleBases() {
         if (null == moduleBases) {
@@ -2505,6 +2547,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         _mergeSessionKeyUsername(conf);
         _mergeSessionMapper(conf);
         _mergeSecret(conf);
+        _mergeSecureTicketCodec(conf);
         _mergeCacheServiceProvider(conf);
         _mergeUnknownHttpMethodHandler(conf);
         _mergeUploadFileDownload(conf);

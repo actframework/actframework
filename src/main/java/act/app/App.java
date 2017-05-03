@@ -783,7 +783,7 @@ public class App extends DestroyableBase {
     /**
      * Return an ID in string that is unique across the cluster
      *
-     * @return
+     * @return a cluster unique id
      */
     public String cuid() {
         return idGenerator.genId();
