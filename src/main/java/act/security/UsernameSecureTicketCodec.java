@@ -1,47 +1,39 @@
 package act.security;
 
+import act.Act;
 import act.app.util.AppCrypto;
 import act.conf.AppConfig;
-import act.util.SingletonBase;
-import org.osgl.$;
-import org.osgl.http.H;
-import org.osgl.util.E;
-import org.osgl.util.Token;
-
-import javax.inject.Inject;
 
 /**
  * A simple implementation of {@link SecureTicketCodec} that process
  * `id` and `username` in session only
  */
-public class UsernameSecureTicketCodec extends SingletonBase implements SecureTicketCodec {
+public class UsernameSecureTicketCodec extends StringSecureTicketCodec {
 
-    private String sessionKeyUsername;
-    private AppCrypto crypto;
-
-    @Inject
-    public UsernameSecureTicketCodec(AppConfig config, AppCrypto crypto) {
-        this.sessionKeyUsername = config.sessionKeyUsername();
-        this.crypto = $.notNull(crypto);
+    public UsernameSecureTicketCodec() {
+        super(Act.appConfig().sessionKeyUsername());
     }
 
-    @Override
-    public String createTicket(H.Session session) {
-        String id = session.id();
-        String username = session.get(sessionKeyUsername);
-        E.illegalStateIf(null == username, "User has not logged in yet");
-        return crypto.generateToken(id, username);
+    public UsernameSecureTicketCodec(AppConfig config) {
+        super(config.sessionKeyUsername());
     }
 
-    @Override
-    public H.Session parseTicket(String ticket) {
-        H.Session session = new H.Session();
-        Token tk = crypto.parseToken(ticket);
-        if (tk.notValid()) {
-            throw new SecureTicketException("ticket not valid");
-        }
-        $.setField("id", session, tk.id());
-        session.put(sessionKeyUsername, tk.firstPayload());
-        return session;
+    public UsernameSecureTicketCodec(String sessinKeyUsername) {
+        super(sessinKeyUsername);
     }
+
+
+    public UsernameSecureTicketCodec(AppCrypto crypto) {
+        super(crypto, Act.appConfig().sessionKeyUsername());
+    }
+
+    public UsernameSecureTicketCodec(AppCrypto crypto, AppConfig config) {
+        super(crypto, config.sessionKeyUsername());
+    }
+
+    public UsernameSecureTicketCodec(AppCrypto crypto, String sessinKeyUsername) {
+        super(crypto, sessinKeyUsername);
+    }
+
+
 }

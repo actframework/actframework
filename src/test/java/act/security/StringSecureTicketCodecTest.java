@@ -7,13 +7,13 @@ import org.junit.Test;
 import org.osgl.http.H;
 import org.osgl.util.S;
 
-public abstract class SecureTicketCodecTest extends TestBase {
+public abstract class StringSecureTicketCodecTest extends TestBase {
+
+    protected abstract StringSecureTicketCodec codec();
 
     protected AppCrypto crypto() {
         return new AppCrypto(new AppConfig());
     }
-
-    protected abstract SecureTicketCodec codec();
 
     @Test
     public void test() {
@@ -21,7 +21,7 @@ public abstract class SecureTicketCodecTest extends TestBase {
         String foo = S.random();
         session.put("foo", foo);
         prepareSession(session);
-        SecureTicketCodec codec = codec();
+        StringSecureTicketCodec codec = codec();
         String ticket = codec.createTicket(session);
         H.Session session2 = codec.parseTicket(ticket);
         verifySession(session, session2);

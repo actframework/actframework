@@ -3,12 +3,12 @@ package act.security;
 import act.conf.AppConfig;
 import org.osgl.http.H;
 
-public class UsernameSecureTicketCodecTest extends SecureTicketCodecTest {
+public class UsernameSecureTicketCodecTest extends StringSecureTicketCodecTest {
 
-    private String sessionKeyUsername = new AppConfig().sessionKeyUsername();
+    private static final String sessionKeyUsername = new AppConfig<>().sessionKeyUsername();
 
-    protected SecureTicketCodec codec() {
-        return new UsernameSecureTicketCodec(new AppConfig(), crypto());
+    protected StringSecureTicketCodec codec() {
+        return new UsernameSecureTicketCodec(crypto(), sessionKeyUsername);
     }
 
     @Override

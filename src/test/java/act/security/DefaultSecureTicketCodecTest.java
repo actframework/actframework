@@ -1,10 +1,9 @@
 package act.security;
 
-public class DefaultSecureTicketCodecTest extends SecureTicketCodecTest {
+public class DefaultSecureTicketCodecTest extends StringSecureTicketCodecTest {
 
-    protected SecureTicketCodec codec() {
+    protected StringSecureTicketCodec codec() {
         return new DefaultSecureTicketCodec(crypto());
     }
-
 
 }
