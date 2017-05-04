@@ -20,6 +20,7 @@ package act.data;
  * #L%
  */
 
+import act.Act;
 import act.app.ActionContext;
 import act.cli.CliContext;
 import okhttp3.OkHttpClient;
@@ -29,6 +30,7 @@ import org.osgl.storage.ISObject;
 import org.osgl.storage.impl.SObject;
 import org.osgl.util.Codec;
 import org.osgl.util.E;
+import org.osgl.util.S;
 
 import java.io.File;
 import java.io.IOException;
@@ -78,7 +80,8 @@ public class SObjectResolver extends StringValueResolverPlugin<SObject> {
             try {
                 return resolveFromBase64(value);
             } catch (Exception e) {
-                throw E.unexpected("Cannot resolve SObject from value: %s", value);
+                Act.LOGGER.warn(S.concat("Cannot resolve SObject from value", value));
+                return null;
             }
         }
     }
