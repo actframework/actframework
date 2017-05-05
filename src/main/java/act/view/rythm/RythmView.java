@@ -51,9 +51,9 @@ public class RythmView extends View {
 
     public static final String ID = "rythm";
 
-    ConcurrentMap<App, RythmEngine> engines = new ConcurrentHashMap<App, RythmEngine>();
-    ConcurrentMap<String, Template> templates = new ConcurrentHashMap<String, Template>();
-    ConcurrentMap<String, String> missings = new ConcurrentHashMap<String, String>();
+    final ConcurrentMap<App, RythmEngine> engines = new ConcurrentHashMap<>();
+    final ConcurrentMap<String, Template> templates = new ConcurrentHashMap<String, Template>();
+    final ConcurrentMap<String, String> missings = new ConcurrentHashMap<String, String>();
 
     private boolean isDev;
 
@@ -76,9 +76,12 @@ public class RythmView extends View {
         }
         Template template = templates.get(resourcePath);
         if (null == template) {
-            template = loadTemplateFromResource(resourcePath, context.app());
-            if (null != template) {
-                templates.putIfAbsent(resourcePath, template);
+            Template newTemplate = loadTemplateFromResource(resourcePath, context.app());
+            if (null != newTemplate) {
+                template = templates.putIfAbsent(resourcePath, newTemplate);
+                if (null == template) {
+                    template = newTemplate;
+                }
             } else {
                 missings.put(resourcePath, resourcePath);
             }
@@ -89,11 +92,12 @@ public class RythmView extends View {
     public RythmEngine getEngine(App app) {
         RythmEngine engine = engines.get(app);
         if (null == engine) {
-            engine = createEngine(app);
-            RythmEngine engine0 = engines.putIfAbsent(app, engine);
-            if (null != engine0) {
-                engine.shutdown();
-                engine = engine0;
+            RythmEngine newEngine = createEngine(app);
+            engine = engines.putIfAbsent(app, newEngine);
+            if (null == engine) {
+                engine = newEngine;
+            } else {
+                newEngine.shutdown();
             }
         }
         return engine;

@@ -50,10 +50,10 @@ public class EntityClassRepository extends AppServiceBase<EntityClassRepository>
     private void registerModelClass(String dbId, Class<?> modelClass) {
         Set<Class> set = modelClasses.get(dbId);
         if (null == set) {
-            set = new HashSet<>();
-            Set<Class> set0 = modelClasses.putIfAbsent(dbId, set);
-            if (null != set0) {
-                set.addAll(set0);
+            Set<Class> newSet = new HashSet<>();
+            set = modelClasses.putIfAbsent(dbId, newSet);
+            if (null == set) {
+                set = newSet;
             }
         }
         set.add(modelClass);

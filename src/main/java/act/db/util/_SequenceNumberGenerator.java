@@ -66,10 +66,10 @@ public interface _SequenceNumberGenerator {
         private AtomicLong getSeq(String name) {
             AtomicLong al = seqs.get(name);
             if (null == al) {
-                AtomicLong al0 = new AtomicLong(0);
-                al = seqs.putIfAbsent(name, al0);
+                AtomicLong newAl = new AtomicLong(0);
+                al = seqs.putIfAbsent(name, newAl);
                 if (null == al) {
-                    al = al0;
+                    al = newAl;
                 }
             }
             return al;

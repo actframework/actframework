@@ -36,7 +36,8 @@ import javax.enterprise.context.ApplicationScoped;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import static act.Destroyable.Util.tryDestroyAll;
 import static org.osgl.http.H.Session.KEY_EXPIRATION;
@@ -50,8 +51,8 @@ public class SessionManager extends DestroyableBase {
     private static Logger logger = L.get(SessionManager.class);
 
     private C.List<Listener> registry = C.newList();
-    private Map<App, CookieResolver> resolvers = C.newMap();
-    private CookieResolver theResolver = null;
+    private ConcurrentMap<App, CookieResolver> resolvers = new ConcurrentHashMap<>();
+    private volatile CookieResolver theResolver = null;
 
     public SessionManager() {
     }
@@ -102,6 +103,29 @@ public class SessionManager extends DestroyableBase {
         return getResolver(context).dissolveFlash(context);
     }
 
+    public CookieResolver getResolver(App app) {
+        if (Act.multiTenant()) {
+            CookieResolver resolver = resolvers.get(app);
+            if (null == resolver) {
+                CookieResolver newResolver = new CookieResolver(app);
+                resolver = resolvers.putIfAbsent(app, newResolver);
+                if (null == resolver) {
+                    resolver = newResolver;
+                }
+            }
+            return resolver;
+        } else {
+            if (null == theResolver) {
+                synchronized (this) {
+                    if (null == theResolver) {
+                        theResolver = new CookieResolver(app);
+                    }
+                }
+            }
+            return theResolver;
+        }
+    }
+
     private void sessionResolved(Session session, ActionContext context) {
         for (Listener l : registry) {
             l.sessionResolved(session, context);
@@ -115,20 +139,7 @@ public class SessionManager extends DestroyableBase {
     }
 
     private CookieResolver getResolver(ActionContext context) {
-        App app = context.app();
-        if (Act.multiTenant()) {
-            CookieResolver resolver = resolvers.get(app);
-            if (null == resolver) {
-                resolver = new CookieResolver(app);
-                resolvers.put(app, resolver);
-            }
-            return resolver;
-        } else {
-            if (theResolver == null) {
-                theResolver = new CookieResolver(app);
-            }
-            return theResolver;
-        }
+        return getResolver(context.app());
     }
 
     public static abstract class Listener extends DestroyableBase implements Plugin {
@@ -157,7 +168,7 @@ public class SessionManager extends DestroyableBase {
         public void onSessionDissolve() {}
     }
 
-    static class CookieResolver {
+    public static class CookieResolver {
 
         private App app;
         private AppConfig conf;
@@ -252,7 +263,7 @@ public class SessionManager extends DestroyableBase {
             return cookie;
         }
 
-        void resolveFromCookieContent(H.KV<?> kv, String content, boolean isSession) {
+        public void resolveFromCookieContent(H.KV<?> kv, String content, boolean isSession) {
             String data = Codec.decodeUrl(content, Charsets.UTF_8);
             if (isSession) {
                 if (encryptSession) {

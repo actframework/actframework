@@ -74,8 +74,11 @@ public class SimpleMetricStore implements MetricStore, Serializable {
     private void countOnce_(String name) {
         AtomicLong al = counters.get(name);
         if (null == al) {
-            counters.putIfAbsent(name, new AtomicLong());
-            al = counters.get(name);
+            AtomicLong newAl = new AtomicLong();
+            al = counters.putIfAbsent(name, newAl);
+            if (null == al) {
+                al = newAl;
+            }
         }
         al.incrementAndGet();
         name = getParent(name);
@@ -104,8 +107,11 @@ public class SimpleMetricStore implements MetricStore, Serializable {
     private void onTimerStop_(String name, long ns) {
         AtomicLong al = timers.get(name);
         if (null == al) {
-            timers.putIfAbsent(name, new AtomicLong());
-            al = timers.get(name);
+            AtomicLong newAl = new AtomicLong();
+            al = timers.putIfAbsent(name, newAl);
+            if (null == al) {
+                al = newAl;
+            }
         }
         al.addAndGet(ns);
         name = getParent(name);

@@ -30,6 +30,7 @@ import act.conf.AppConfig;
 import act.db.Dao;
 import act.event.EventBus;
 import act.mail.MailerContext;
+import act.security.SecureTicketCodec;
 import act.util.ActContext;
 import org.osgl.$;
 import org.osgl.Osgl;
@@ -200,6 +201,14 @@ public final class ActProviders {
         public Locale get() {
             ActContext context = ActContext.Base.currentContext();
             return null != context ? context.locale(true) : app().config().locale();
+        }
+    };
+
+    public static final Provider<SecureTicketCodec> SECURE_TICKET_CODEC_PROVIDER = new Provider<SecureTicketCodec>() {
+        @Override
+        public SecureTicketCodec get() {
+            AppConfig config = Act.appConfig();
+            return config.secureTicketCodec();
         }
     };
 

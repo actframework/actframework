@@ -192,8 +192,11 @@ public class I18n {
     private static Map<String, $.Function<Object, Object>> enumPropertyGetters(Class<? extends Enum> enumClass) {
         Map<String, $.Function<Object, Object>> map = enumPropertyGetterCache.get(enumClass);
         if (null == map) {
-            map = buildEnumPropertyGetters(enumClass);
-            enumPropertyGetterCache.putIfAbsent(enumClass, map);
+            Map<String, $.Function<Object, Object>> newMap = buildEnumPropertyGetters(enumClass);
+            map = enumPropertyGetterCache.putIfAbsent(enumClass, newMap);
+            if (null == map) {
+                map = newMap;
+            }
         }
         return map;
     }

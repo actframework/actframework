@@ -793,8 +793,11 @@ public interface AdaptiveRecord<ID_TYPE, MODEL_TYPE extends AdaptiveRecord> exte
             public MetaInfo get(Class<? extends AdaptiveRecord> clazz, $.Function<Class<? extends AdaptiveRecord>, MetaInfo> factory) {
                 MetaInfo info = map.get(clazz);
                 if (null == info) {
-                    info = factory.apply(clazz);
-                    map.putIfAbsent(clazz, info);
+                    MetaInfo theInfo = factory.apply(clazz);
+                    info = map.putIfAbsent(clazz, theInfo);
+                    if (null == info) {
+                        info = theInfo;
+                    }
                 }
                 return info;
             }

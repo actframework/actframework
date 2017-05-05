@@ -197,7 +197,8 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
                 this.cache.put(cacheKey, context.resp(), cacheSupport.ttl);
             }
         } catch (Exception e) {
-            logger.error(e, "Error handling request");
+            H.Request req = context.req();
+            logger.error(e, S.concat("Error handling request: [", req.method().name(), "] ", req.url()));
             try {
                 result = handleException(e, context);
             } catch (Exception e0) {

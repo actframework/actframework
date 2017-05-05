@@ -149,8 +149,11 @@ public class EventBus extends AppServiceBase<EventBus> {
     private synchronized EventBus _bind(final ConcurrentMap<Class<? extends EventObject>, List<ActEventListener>> listeners, final Class<? extends EventObject> c, final ActEventListener l, int ttl) {
         List<ActEventListener> list = listeners.get(c);
         if (null == list) {
-            list = C.newList();
-            listeners.putIfAbsent(c, list);
+            List<ActEventListener> newList = new ArrayList<>();
+            list = listeners.putIfAbsent(c, newList);
+            if (null == list) {
+                list = newList;
+            }
         }
         if (!list.contains(l)) {
             list.add(l);
@@ -422,8 +425,11 @@ public class EventBus extends AppServiceBase<EventBus> {
     private EventBus _bind(ConcurrentMap<Object, List<SimpleEventListener>> listeners, Object event, SimpleEventListener l) {
         List<SimpleEventListener> list = listeners.get(event);
         if (null == list) {
-            list = new ArrayList<>();
-            listeners.putIfAbsent(event, list);
+            List<SimpleEventListener> newList = new ArrayList<>();
+            list = listeners.putIfAbsent(event, newList);
+            if (null == list) {
+                list = newList;
+            }
         }
         if (!list.contains(l)) {
             list.add(l);

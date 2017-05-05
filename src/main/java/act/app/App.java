@@ -56,6 +56,8 @@ import act.mail.bytecode.MailerByteCodeScanner;
 import act.route.RouteSource;
 import act.route.RouteTableRouterBuilder;
 import act.route.Router;
+import act.security.SecureTicketCodec;
+import act.security.SecureTicketHandler;
 import act.util.*;
 import act.view.ActErrorResult;
 import act.view.ImplicitVariableProvider;
@@ -1132,6 +1134,9 @@ public class App extends DestroyableBase {
             Router router = router(AppConfig.PORT_CLI_OVER_HTTP);
             router.addMapping(H.Method.GET, "/asset/", new StaticResourceGetter("asset"), RouteSource.BUILD_IN);
         }
+        SecureTicketCodec secureTicketCodec = config.secureTicketCodec();
+        SecureTicketHandler secureTicketHandler = new SecureTicketHandler(secureTicketCodec);
+        router().addMapping(H.Method.GET, "/~/ticket", secureTicketHandler);
     }
 
     private void initClassLoader() {

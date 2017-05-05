@@ -49,8 +49,13 @@ public class OptionsInfoBase extends DestroyableBase {
         String s = S.string(path);
         RequestHandler handler = handlers.get(s);
         if (null == handler) {
-            handler = createHandler(path, context);
-            handlers.putIfAbsent(s, handler);
+            RequestHandler newHandler = createHandler(path, context);
+            handler = handlers.putIfAbsent(s, newHandler);
+            if (null == handler) {
+                handler = newHandler;
+            } else {
+                newHandler.destroy();
+            }
         }
         return handler;
     }

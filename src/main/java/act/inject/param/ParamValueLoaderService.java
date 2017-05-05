@@ -134,8 +134,11 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
     public Object loadHostBean(Class beanClass, ActContext<?> ctx) {
         ParamValueLoader loader = classRegistry.get(beanClass);
         if (null == loader) {
-            loader = findBeanLoader(beanClass);
-            classRegistry.putIfAbsent(beanClass, loader);
+            ParamValueLoader newLoader = findBeanLoader(beanClass);
+            loader = classRegistry.putIfAbsent(beanClass, newLoader);
+            if (null == loader) {
+                loader = newLoader;
+            }
         }
         return loader.load(null, ctx, false);
     }
@@ -147,8 +150,11 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
             if (null == loaders) {
                 $.Var<Boolean> boolBag = $.var(Boolean.FALSE);
                 Class hostClass = null == host ? null : host.getClass();
-                loaders = findMethodParamLoaders(method, hostClass, boolBag);
-                methodRegistry.putIfAbsent(method, loaders);
+                ParamValueLoader[] newLoaders = findMethodParamLoaders(method, hostClass, boolBag);
+                loaders = methodRegistry.putIfAbsent(method, newLoaders);
+                if (null == loaders) {
+                    loaders = newLoaders;
+                }
                 hasValidationConstraint = boolBag.get();
                 if (hasValidationConstraint && null == host) {
                     logger.error("Cannot validate static method: %s", method);
@@ -266,7 +272,7 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
     private <T> Map<Field, ParamValueLoader> fieldLoaders(Class<T> beanClass) {
         Map<Field, ParamValueLoader> fieldLoaders = fieldRegistry.get(beanClass);
         if (null == fieldLoaders) {
-            fieldLoaders = new HashMap<>();
+            Map<Field, ParamValueLoader> newFieldLoaders = new HashMap<>();
             for (Field field : $.fieldsOf(beanClass, true)) {
                 if (shouldWaive(field)) {
                     continue;
@@ -277,10 +283,13 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
                 ParamValueLoader loader = paramValueLoaderOf(spec);
                 boolean provided = (loader instanceof ProvidedValueLoader);
                 if (null != loader && !provided) {
-                    fieldLoaders.put(field, loader);
+                    newFieldLoaders.put(field, loader);
                 }
             }
-            fieldRegistry.putIfAbsent(beanClass, fieldLoaders);
+            fieldLoaders = fieldRegistry.putIfAbsent(beanClass, newFieldLoaders);
+            if (null == fieldLoaders) {
+                fieldLoaders = newFieldLoaders;
+            }
         }
         return fieldLoaders;
     }
@@ -334,11 +343,14 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
         $.T2<Type, Annotation[]> key = $.T2(type, annotations);
         ParamValueLoader loader = paramRegistry.get(key);
         if (null == loader) {
-            loader = findLoader(spec, type, annotations, bindName);
-            // Cannot use spec as the key here because
-            // spec does not compare Scoped annotation
-            if (null != loader) {
-                paramRegistry.putIfAbsent(key, loader);
+            ParamValueLoader newLoader = findLoader(spec, type, annotations, bindName);
+            if (null != newLoader) {
+                // Cannot use spec as the key here because
+                // spec does not compare Scoped annotation
+                loader = paramRegistry.putIfAbsent(key, newLoader);
+                if (null == loader) {
+                    loader = newLoader;
+                }
             }
         }
         return loader;
@@ -684,15 +696,18 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
         if (null != handlers) {
             return handlers;
         }
-        handlers = new HashMap<>();
+        Map<Class<? extends Annotation>, ActionMethodParamAnnotationHandler> newHandlers = new HashMap<>();
         for (Annotation annotation : spec.allAnnotations()) {
             Class<? extends Annotation> c = annotation.annotationType();
             ActionMethodParamAnnotationHandler h = allAnnotationHandlers.get(c);
             if (null != h) {
-                handlers.put(c, h);
+                newHandlers.put(c, h);
             }
         }
-        annoHandlers.putIfAbsent(spec, handlers);
+        handlers = annoHandlers.putIfAbsent(spec, newHandlers);
+        if (null == handlers) {
+            handlers = newHandlers;
+        }
         return handlers;
     }
 
