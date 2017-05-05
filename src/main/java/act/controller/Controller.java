@@ -802,7 +802,7 @@ public @interface Controller {
             return r;
         }
 
-        public static Result inferPrimitiveResult(Object v, ActionContext actionContext, boolean requireJSON, boolean requireXML) {
+        public static Result inferPrimitiveResult(Object v, ActionContext actionContext, boolean requireJSON, boolean requireXML, boolean isArray) {
             if (requireJSON) {
                 return RenderJSON.of(C.map("result", v));
             } else if (requireXML) {
@@ -811,7 +811,8 @@ public @interface Controller {
                 H.Format fmt = actionContext.accept();
                 final H.Status status = actionContext.successStatus();
                 if (HTML == fmt || H.Format.UNKNOWN == fmt) {
-                    return RenderHtml.of(status, v.toString());
+                    String s = isArray ? $.toString2(v) : v.toString();
+                    return RenderHtml.of(status, s);
                 }
                 if (TXT == fmt || CSV == fmt) {
                     return RenderText.of(status, fmt, status.toString());
@@ -927,7 +928,8 @@ public @interface Controller {
                 //return requireJSON ? RenderJSON.of("{}") : requireXML ? RenderXML.of("<result></result>") : null;
                 return null;
             } else if ($.isSimpleType(v.getClass())) {
-                return inferPrimitiveResult(v, context, requireJSON, requireXML);
+                boolean isArray = meta.returnType().getDescriptor().startsWith("[");
+                return inferPrimitiveResult(v, context, requireJSON, requireXML, isArray);
             } else if (v instanceof InputStream) {
                 return inferResult((InputStream) v, context);
             } else if (v instanceof File) {
@@ -963,8 +965,8 @@ public @interface Controller {
                     PropertySpec.MetaInfo propertySpec = PropertySpec.MetaInfo.withCurrent(meta, context);
                     return RenderCSV.get(status, v, propertySpec, context);
                 } else {
-                    String s = meta.returnType().getDescriptor().startsWith("[") ? $.toString2(v) : v.toString();
-                    return inferPrimitiveResult(s, context, requireJSON, requireXML);
+                    boolean isArray = meta.returnType().getDescriptor().startsWith("[");
+                    return inferPrimitiveResult(v, context, false, requireXML, isArray);
                 }
             }
         }
