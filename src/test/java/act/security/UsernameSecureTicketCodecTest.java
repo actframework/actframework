@@ -21,6 +21,8 @@ package act.security;
  */
 
 import act.conf.AppConfig;
+import act.ws.StringSecureTicketCodec;
+import act.ws.UsernameSecureTicketCodec;
 import org.osgl.http.H;
 
 public class UsernameSecureTicketCodecTest extends StringSecureTicketCodecTest {

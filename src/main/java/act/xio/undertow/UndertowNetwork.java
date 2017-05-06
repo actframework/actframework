@@ -77,7 +77,6 @@ public class UndertowNetwork extends NetworkBase {
 
     @Override
     protected void setUpClient(NetworkHandler client, int port) throws IOException {
-
         HttpHandler handler = new ActHttpHandler(client);
         ByteBufferPool buffers = new DefaultByteBufferPool(true, 16 * 1024, -1, 4);
         HttpOpenListener openListener = new HttpOpenListener(buffers, serverOptions);

@@ -20,6 +20,8 @@ package act.security;
  * #L%
  */
 
+import act.ws.DefaultSecureTicketCodec;
+import act.ws.StringSecureTicketCodec;
 import org.osgl.http.H.Session;
 
 import static org.osgl.http.H.Session.KEY_EXPIRATION;

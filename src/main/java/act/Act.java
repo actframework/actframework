@@ -562,7 +562,7 @@ public final class Act {
     }
 
     public static void start() throws Exception {
-        StackTraceElement[] sa = new RuntimeException().getStackTrace();
+        StackTraceElement[] sa = new Throwable().getStackTrace();
         E.unexpectedIf(sa.length < 2, "Whoops!");
         StackTraceElement ste = sa[1];
         String className = ste.getClassName();
@@ -623,7 +623,7 @@ public final class Act {
             RunApp.start(appNameOrScanPackage);
         } else {
             // it must be an application name
-            StackTraceElement[] sa = new RuntimeException().getStackTrace();
+            StackTraceElement[] sa = new Throwable().getStackTrace();
             E.unexpectedIf(sa.length < 2, "Whoops!");
             StackTraceElement ste = sa[1];
             String className = ste.getClassName();

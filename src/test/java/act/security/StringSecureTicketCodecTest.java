@@ -23,6 +23,7 @@ package act.security;
 import act.TestBase;
 import act.app.util.AppCrypto;
 import act.conf.AppConfig;
+import act.ws.StringSecureTicketCodec;
 import org.junit.Test;
 import org.osgl.http.H;
 import org.osgl.util.S;

@@ -25,6 +25,8 @@ import act.app.App;
 import act.handler.UnknownHttpMethodProcessor;
 import act.view.TemplatePathResolver;
 import act.view.View;
+import act.ws.DefaultSecureTicketCodec;
+import act.ws.SecureTicketCodec;
 import org.osgl.$;
 import org.osgl.exception.NotAppliedException;
 import org.osgl.util.E;
@@ -684,9 +686,9 @@ public enum AppConfigKey implements ConfigKey {
     /**
      * `secure_ticket_codec`
      *
-     * Specify the implementation of {@link act.security.SecureTicketCodec}
+     * Specify the implementation of {@link SecureTicketCodec}
      *
-     * Default value: {@link act.security.DefaultSecureTicketCodec}
+     * Default value: {@link DefaultSecureTicketCodec}
      */
     SECURE_TICKET_CODEC("secure_ticket_codec"),
 

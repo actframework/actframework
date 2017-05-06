@@ -1,4 +1,4 @@
-package act.security;
+package act.ws;
 
 /*-
  * #%L
@@ -20,23 +20,17 @@ package act.security;
  * #L%
  */
 
-import act.app.util.AppCrypto;
-
-import javax.inject.Singleton;
+import act.exception.ActException;
 
 /**
- * Default implementation of {@link SecureTicketCodec}. This implementation
- * encode everything from the session object into the secure ticket
+ * Triggered when there are any issue found in secure ticket
  */
-@Singleton
-public class DefaultSecureTicketCodec extends StringSecureTicketCodec {
-    public DefaultSecureTicketCodec() {
-        super();
+public class SecureTicketException extends ActException {
+    public SecureTicketException(Throwable cause) {
+        super(cause);
     }
 
-    public DefaultSecureTicketCodec(AppCrypto crypto) {
-        super(crypto);
+    public SecureTicketException(String message, Object... args) {
+        super(message, args);
     }
-
-
 }

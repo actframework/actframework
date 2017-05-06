@@ -1,4 +1,4 @@
-package act.security;
+package act.ws;
 
 /*-
  * #%L

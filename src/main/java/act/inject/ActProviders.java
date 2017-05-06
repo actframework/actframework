@@ -30,7 +30,7 @@ import act.conf.AppConfig;
 import act.db.Dao;
 import act.event.EventBus;
 import act.mail.MailerContext;
-import act.security.SecureTicketCodec;
+import act.ws.SecureTicketCodec;
 import act.util.ActContext;
 import org.osgl.$;
 import org.osgl.Osgl;

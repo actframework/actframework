@@ -1,4 +1,4 @@
-package act.security;
+package act.ws;
 
 /*-
  * #%L
@@ -52,6 +52,15 @@ public interface SecureTicketCodec<T> {
      * @return a session data from the ticket or `null` if the ticket is invalid to this codec
      */
     H.Session parseTicket(T ticket);
+
+    /**
+     * Do sanity check on an object to quickly probe if it is a
+     * ticket that can be processed by this codec
+     *
+     * @param ticket the object to be tested
+     * @return `true` if the codec believe it can process the ticket or `false` if not sure
+     */
+    boolean probeTicket(Object ticket);
 
     abstract class Base<T> implements SecureTicketCodec<T> {
 

@@ -1,4 +1,4 @@
-package act.security;
+package act.ws;
 
 /*-
  * #%L
@@ -35,6 +35,9 @@ import java.util.Map;
  * Implement {@link SecureTicketCodec} on {@link String} typed ticket
  */
 public class StringSecureTicketCodec extends SecureTicketCodec.Base<String> {
+
+    public static final String MARKER = "stk:";
+    private static final int MARKER_LEN = MARKER.length();
 
     private AppCrypto crypto;
 
@@ -75,11 +78,15 @@ public class StringSecureTicketCodec extends SecureTicketCodec.Base<String> {
 
     @Override
     protected String serialize(String id, Map<String, String> payload) {
-        return crypto.generateToken(id, encode(payload));
+        String tk = crypto.generateToken(id, encode(payload));
+        return S.concat(MARKER, tk);
     }
 
     @Override
     protected String deserialize(String ticket, Map<String, String> payload) {
+        if (ticket.startsWith(MARKER)) {
+            ticket = ticket.substring(MARKER_LEN);
+        }
         Token token = crypto.parseToken(ticket);
         if (token.notValid()) {
             return null;
@@ -90,6 +97,12 @@ public class StringSecureTicketCodec extends SecureTicketCodec.Base<String> {
             payload.put(t2._1, Codec.decodeUrl(t2._2));
         }
         return token.id();
+    }
+
+    @Override
+    public boolean probeTicket(Object ticket) {
+        String s = ticket.toString();
+        return s.startsWith(MARKER);
     }
 
     private String[] encode(Map<String, String> map) {

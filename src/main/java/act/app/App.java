@@ -56,8 +56,8 @@ import act.mail.bytecode.MailerByteCodeScanner;
 import act.route.RouteSource;
 import act.route.RouteTableRouterBuilder;
 import act.route.Router;
-import act.security.SecureTicketCodec;
-import act.security.SecureTicketHandler;
+import act.ws.SecureTicketCodec;
+import act.ws.SecureTicketHandler;
 import act.util.*;
 import act.view.ActErrorResult;
 import act.view.ImplicitVariableProvider;
@@ -1214,7 +1214,6 @@ public class App extends DestroyableBase {
 
     private void scanAppCodes() {
         classLoader().scan();
-        //classLoader().scan();
     }
 
     static App create(File appBase, ProjectLayout layout) {
