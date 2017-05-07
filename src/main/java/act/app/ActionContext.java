@@ -493,6 +493,7 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
         r.addHeaderIfNotAdded(ACCESS_CONTROL_ALLOW_ORIGIN, conf.corsAllowOrigin());
         if (request.method() == H.Method.OPTIONS || !conf.corsOptionCheck()) {
             r.addHeaderIfNotAdded(ACCESS_CONTROL_ALLOW_HEADERS, conf.corsAllowHeaders());
+            r.addHeaderIfNotAdded(ACCESS_CONTROL_ALLOW_CREDENTIALS, S.string(conf.corsAllowCredentials()));
             r.addHeaderIfNotAdded(ACCESS_CONTROL_EXPOSE_HEADERS, conf.corsExposeHeaders());
             r.addHeaderIfNotAdded(ACCESS_CONTROL_MAX_AGE, S.string(conf.corsMaxAge()));
         }

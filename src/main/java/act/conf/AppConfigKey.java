@@ -252,6 +252,13 @@ public enum AppConfigKey implements ConfigKey {
     CORS_MAX_AGE("cors.max_age"),
 
     /**
+     * `act.cors.allow_credential` specifies `Access-Control-Allow-Credential`.
+     *
+     * Default value: `false`
+     */
+    CORS_ALLOW_CREDENTIALS("cors.allow_credentials.enabled"),
+
+    /**
      * {@code act.content_suffix.aware.enabled}
      * <p>
      *     Once enabled then the framework automatically recognize request with content suffix.
