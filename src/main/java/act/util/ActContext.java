@@ -70,7 +70,7 @@ public interface ActContext<CTX_TYPE extends ActContext> extends ParamValueProvi
     /**
      * Set template context
      * @param context the path to template context
-     * @return this {@code AppContext}
+     * @return this {@code ActContext}
      */
     CTX_TYPE templateContext(String context);
 
@@ -206,7 +206,7 @@ public interface ActContext<CTX_TYPE extends ActContext> extends ParamValueProvi
 
         @Override
         public CTX templatePath(String templatePath) {
-            template = null;
+            this.template = null;
             this.templatePath = templatePath;
             return me();
         }
@@ -216,7 +216,7 @@ public interface ActContext<CTX_TYPE extends ActContext> extends ParamValueProvi
         }
 
         public CTX templateContext(String templateContext) {
-            template = null;
+            this.template = null;
             this.templateContext = templateContext;
             return me();
         }
