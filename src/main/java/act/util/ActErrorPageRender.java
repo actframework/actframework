@@ -35,6 +35,10 @@ import org.osgl.util.S;
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.osgl.http.H.Format.CSV;
+import static org.osgl.http.H.Format.HTML;
+import static org.osgl.http.H.Format.XML;
+
 public class ActErrorPageRender extends ErrorPageRenderer {
 
     public static final String ARG_ERROR = "_error";
@@ -51,6 +55,7 @@ public class ActErrorPageRender extends ErrorPageRenderer {
         }
         Integer errorCode = error.errorCode();
         int statusCode = error.statusCode();
+        fixRequestAcceptFormat(context);
         Template t = getTemplate(statusCode, context);
         if (null == t) {
             String errorMsg = error.getMessage();
@@ -67,7 +72,7 @@ public class ActErrorPageRender extends ErrorPageRenderer {
             H.Format accept = context.accept();
             if (H.Format.JSON == accept) {
                 return jsonContent(error, errorCode, errorMsg);
-            } else if (H.Format.HTML == accept) {
+            } else if (HTML == accept) {
                 String header = S.concat("HTTP/1.1 ", Integer.toString(statusCode), " ", errorMsg);
                 return S.concat("<!DOCTYPE html><html><head><meta charset='utf-8'><title>"
                         , header
@@ -81,7 +86,7 @@ public class ActErrorPageRender extends ErrorPageRenderer {
                 }
                 sb.append("<message>").append(errorMsg).append("</message></error>");
                 return sb.toString();
-            } else if (H.Format.CSV == accept) {
+            } else if (CSV == accept) {
                 if (null == errorCode) {
                     return S.concat("message\n", errorMsg);
                 } else {
@@ -94,13 +99,28 @@ public class ActErrorPageRender extends ErrorPageRenderer {
                 return "";
             }
         }
-        if (H.Format.HTML == context.accept()) {
+        if (HTML == context.accept()) {
             String header = S.concat("HTTP/1.1 ", Integer.toString(statusCode), " ", MvcConfig.errorMessage(error.status()));
 
             context.renderArg("header", header);
         }
         context.renderArg(ARG_ERROR, error);
         return t.render(context);
+    }
+
+    private void fixRequestAcceptFormat(ActionContext context) {
+        H.Request req = context.req();
+        if (null != req && !isAcceptGoodForErrorPage(req.accept())) {
+            req.accept(H.Format.HTML);
+        }
+    }
+
+    private boolean isAcceptGoodForErrorPage(H.Format fmt) {
+        return (null == fmt ||
+                HTML == fmt
+                || CSV == fmt
+                || H.Format.JSON == fmt
+                || XML == fmt);
     }
 
     private String jsonContent(ErrorResult error, Integer errorCode, String errorMsg) {
