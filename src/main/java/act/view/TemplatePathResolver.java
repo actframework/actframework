@@ -22,6 +22,7 @@ package act.view;
 
 import act.app.ActionContext;
 import act.util.ActContext;
+import org.osgl.$;
 import org.osgl.http.H;
 import org.osgl.util.C;
 import org.osgl.util.E;
@@ -93,7 +94,12 @@ public class TemplatePathResolver {
         if (isAcceptFormatSupported(fmt)) {
             return S.concat(path, ".", fmt.name());
         }
-        throw E.unsupport("Request accept not supported: %s", fmt);
+        if (context instanceof ActionContext) {
+            ActionContext actionContext = $.cast(context);
+            H.Request req = actionContext.req();
+            throw E.unsupport("Error handling %s request to %s - Request accept not supported: %s", req.method(), req.url(), fmt);
+        }
+        throw E.unsupport("Request accept not supported: %s",  fmt);
     }
 
     public static void registerSupportedFormats(H.Format ... fmts) {
