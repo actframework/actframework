@@ -329,6 +329,26 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         }
     }
 
+    private Boolean corsAllowCredentials;
+    protected T corsAllowCredentials(boolean b) {
+        this.corsAllowCredentials = b;
+        return me();
+    }
+    public boolean corsAllowCredentials() {
+        if (null == corsAllowCredentials) {
+            corsAllowCredentials = get(CORS_ALLOW_CREDENTIALS);
+            if (null == corsAllowCredentials) {
+                corsAllowCredentials = false;
+            }
+        }
+        return corsAllowCredentials;
+    }
+    private void _mergeCorsAllowCredential(AppConfig conf) {
+        if (!hasConfiguration(CORS_ALLOW_CREDENTIALS)) {
+            corsAllowCredentials = conf.corsAllowCredentials;
+        }
+    }
+
 
     private Boolean csrf;
 
@@ -2430,6 +2450,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         _mergeCorsHeadersExpose(conf);
         _mergeCorsHeadersAllowed(conf);
         _mergeCorsMaxAge(conf);
+        _mergeCorsAllowCredential(conf);
         _mergeCorsOptionCheck(conf);
         _mergeCliEnabled(conf);
         _mergeCliJSONPageSz(conf);

@@ -101,6 +101,28 @@ public class CORS {
 
     /**
      * Mark a controller class or action handler method that
+     * needs to add `Access-Control-Allow-Credentials` header
+     * and set the value to `false`
+     */
+    @Documented
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target({ElementType.METHOD, ElementType.TYPE})
+    public @interface DisallowCredentials {
+    }
+
+    /**
+     * Mark a controller class or action handler method that
+     * needs to add `Access-Control-Allow-Credentials` header
+     * and set the value to `true`
+     */
+    @Documented
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target({ElementType.METHOD, ElementType.TYPE})
+    public @interface AllowCredentials {
+    }
+
+    /**
+     * Mark a controller class or action handler method that
      * needs to add `Access-Control-Max-Age` header
      */
     @Documented
@@ -133,6 +155,8 @@ public class CORS {
                 .with(beanSpec.getAnnotation(Disable.class))
                 .with(beanSpec.getAnnotation(AllowOrigin.class))
                 .with(beanSpec.getAnnotation(ExposeHeaders.class))
+                .with(beanSpec.getAnnotation(AllowCredentials.class))
+                .with(beanSpec.getAnnotation(DisallowCredentials.class))
                 .with(beanSpec.getAnnotation(AllowHeaders.class))
                 .with(beanSpec.getAnnotation(MaxAge.class));
     }
@@ -157,6 +181,7 @@ public class CORS {
         private String methods;
         private String exposeHeaders;
         private String allowHeaders;
+        private Boolean allowCredentials;
         private int maxAge = -1;
         private boolean effective = false;
 
@@ -208,6 +233,22 @@ public class CORS {
             return this;
         }
 
+        public Spec with(AllowCredentials allowCredentials) {
+            if (null != allowCredentials) {
+                this.effective = true;
+                this.allowCredentials = true;
+            }
+            return this;
+        }
+
+        public Spec with(DisallowCredentials disallowCredentials) {
+            if (null != disallowCredentials) {
+                this.effective = true;
+                this.allowCredentials = false;
+            }
+            return this;
+        }
+
         public Spec with(MaxAge maxAge) {
             if (null != maxAge) {
                 this.effective = true;
@@ -239,6 +280,9 @@ public class CORS {
                 }
                 if (null != exposeHeaders) {
                     r.addHeaderIfNotAdded(ACCESS_CONTROL_EXPOSE_HEADERS, exposeHeaders);
+                }
+                if (null != allowCredentials) {
+                    r.addHeaderIfNotAdded(ACCESS_CONTROL_ALLOW_CREDENTIALS, S.string(allowCredentials));
                 }
                 if (null != allowHeaders) {
                     r.addHeaderIfNotAdded(ACCESS_CONTROL_ALLOW_HEADERS, allowHeaders);

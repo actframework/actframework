@@ -314,6 +314,9 @@ public class Router extends AppServiceBase<Router> {
 
     public static String inferFullActionPath(String actionPath, $.Func0<String> currentActionPathProvider) {
         String handler, controller = null;
+        if (actionPath.contains("/")) {
+            return actionPath;
+        }
         int pos = actionPath.indexOf(".");
         if (pos < 0) {
             handler = actionPath;
@@ -326,6 +329,9 @@ public class Router extends AppServiceBase<Router> {
             }
         }
         String currentPath = currentActionPathProvider.apply();
+        if (null == currentPath) {
+            return actionPath;
+        }
         pos = currentPath.lastIndexOf(".");
         String currentPathWithoutHandler = currentPath.substring(0, pos);
         if (null == controller) {

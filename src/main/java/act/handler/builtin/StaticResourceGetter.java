@@ -144,7 +144,7 @@ public class StaticResourceGetter extends FastRequestHandler {
         try {
             URL target;
             H.Format fmt;
-            String loadPath = path;
+            String loadPath;
             if (S.blank(path)) {
                 target = baseUrl;
                 loadPath = base;
@@ -161,6 +161,7 @@ public class StaticResourceGetter extends FastRequestHandler {
             fmt = StaticFileGetter.contentType(target.getPath());
             H.Response resp = context.resp();
             resp.contentType(fmt.contentType());
+            context.applyCorsSpec().applyContentType();
             try {
                 int n = IO.copy(target.openStream(), resp.outputStream());
                 if (Act.isProd()) {
