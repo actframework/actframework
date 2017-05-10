@@ -81,6 +81,7 @@ public class StaticFileGetter extends FastRequestHandler {
         H.Response resp = context.resp();
         fmt = contentType(file.getPath());
         resp.contentType(fmt.contentType());
+        context.applyCorsSpec().applyContentType();
         InputStream is = new BufferedInputStream(IO.is(file));
         IO.copy(is, context.resp().outputStream());
     }

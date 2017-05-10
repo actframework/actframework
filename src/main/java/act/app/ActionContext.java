@@ -466,7 +466,9 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
         }
 
         ResponseImplBase resp = $.cast(resp());
-        resp.initContentType(fmt.contentType());
+        if (null != fmt) {
+            resp.initContentType(fmt.contentType());
+        }
         resp.commitContentType();
         return this;
     }
