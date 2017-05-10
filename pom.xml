@@ -28,7 +28,6 @@
 * #187 NPE triggered on actframework official website
 * #186 Add Access-Control-Allow-Credentials in CORS support
 
-
 1.3.2
 * #194 functional test cases break when action handler returns array of elements
 
@@ -183,7 +182,7 @@
   <groupId>org.actframework</groupId>
   <artifactId>act</artifactId>
   <packaging>jar</packaging>
-  <version>1.3.3-SNAPSHOT</version>
+  <version>1.3.3</version>
 
   <name>ACT Framework</name>
   <description>The ACT full stack MVC framework</description>
