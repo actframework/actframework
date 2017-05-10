@@ -235,7 +235,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         }
 
         context.attribute("reflected_handler", this);
-        if (null != templateContext) {
+        if (null != templateContext && context.state().isHandling()) {
             context.templateContext(templateContext);
         }
         preventDoubleSubmission(context);
@@ -456,7 +456,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
     private void initCacheParams() {
         CacheFor cacheFor = method.getAnnotation(CacheFor.class);
         cacheSupport = null == cacheFor ? CacheSupportMetaInfo.disabled() :  CacheSupportMetaInfo.enabled(
-                new CacheKeyBuilder(cacheFor, method.getName()),
+                new CacheKeyBuilder(cacheFor, S.concat(controllerClass.getName(), ".", method.getName())),
                 cacheFor.value(),
                 cacheFor.supportPost()
         );
@@ -604,7 +604,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
 
     private boolean checkTemplate(ActionContext context) {
         if (!context.state().isHandling()) {
-            // we don't check template on interceptors
+            //we don't check template on interceptors
             return false;
         }
         Boolean hasTemplate = context.hasTemplate();
@@ -882,20 +882,31 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
 
     private static class CacheKeyBuilder extends $.F1<ActionContext, String> {
         private String[] keys;
-        private final String methodName;
+        private final String base;
 
-        CacheKeyBuilder(CacheFor cacheFor, String methodName) {
-            this.methodName = methodName;
+        CacheKeyBuilder(CacheFor cacheFor, String actionPath) {
+            this.base = base(actionPath);
             this.keys = cacheFor.keys();
+        }
+
+        private String base(String actionPath) {
+            S.Buffer buffer = S.newBuffer();
+            String[] sa = actionPath.split("\\.");
+            for (String s : sa) {
+                buffer.append(s.charAt(0));
+            }
+            buffer.append(actionPath.hashCode());
+            return buffer.toString();
         }
 
         @Override
         public String apply(ActionContext context) throws NotAppliedException, Osgl.Break {
             TreeMap<String, String> keyValues = keyValues(context);
-            S.Buffer buffer = S.newBuffer(methodName);
+            S.Buffer buffer = S.newBuffer(base);
             for (Map.Entry<String, String> entry : keyValues.entrySet()) {
                 buffer.append("-").append(entry.getKey()).append(":").append(entry.getValue());
             }
+            buffer.append(context.userAgent().isMobile() ? "M" : "B");
             return buffer.toString();
         }
 

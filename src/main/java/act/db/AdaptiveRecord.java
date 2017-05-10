@@ -23,6 +23,8 @@ package act.db;
 import act.Act;
 import act.app.App;
 import act.plugin.AppServicePlugin;
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import org.osgl.$;
 import org.osgl.Osgl;
 import org.osgl.exception.NotAppliedException;
@@ -58,13 +60,13 @@ public interface AdaptiveRecord<ID_TYPE, MODEL_TYPE extends AdaptiveRecord> exte
 
     /**
      * Merge a key/val pair in the active record.
-     * <p>
+     *
      * If the key specified does not exists then insert the key/val pair into the record.
-     * <p>
+     *
      * If there are existing key/val pair then merge it with the new one:
-     * * if the val is simple type or cannot be merged, then replace the existing value with new value
-     * * if the val can be merged, e.g. it is a POJO or another adaptive record, then merge the new value into
-     * the old value. Merge shall happen recursively
+     *
+     * 1. if the val is simple type or cannot be merged, then replace the existing value with new value
+     * 2. if the val can be merged, e.g. it is a POJO or another adaptive record, then merge the new value into the old value. Merge shall happen recursively
      *
      * @param key the key
      * @param val the value
@@ -196,6 +198,10 @@ public interface AdaptiveRecord<ID_TYPE, MODEL_TYPE extends AdaptiveRecord> exte
 
         public static <MODEL_TYPE extends AdaptiveRecord> MODEL_TYPE putValues(MODEL_TYPE ar, Map<String, Object> map) {
             for (Map.Entry<String, Object> entry: map.entrySet()) {
+                String key = entry.getKey();
+                if ("id".equals(key)) {
+                    continue;
+                }
                 ar.putValue(entry.getKey(), entry.getValue());
             }
             return ar;
@@ -476,6 +482,8 @@ public interface AdaptiveRecord<ID_TYPE, MODEL_TYPE extends AdaptiveRecord> exte
                             if (null != value && !spec.isInstance(value)) {
                                 if (value instanceof String) {
                                     value = Act.app().resolverManager().resolve((String)value, spec.rawType());
+                                } else if (value instanceof JSONObject) {
+                                    value = JSON.parseObject(((JSONObject) value).toJSONString(), spec.rawType());
                                 }
                             }
                             $.invokeVirtual(host, m, value);

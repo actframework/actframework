@@ -19,7 +19,19 @@
 *            version history
 ********************************************
 1.4.0
+* #192 Log the URL with handler error message
+* #191 Review and fix the use of `ConcurrentMap`
 * #17 Support WebSocket
+
+1.3.3
+* #200 It does not put correct content type header when servicing static resource as css file bug fixed
+* #199 Error generating error page if `Request.accept()` format is not normal
+* #197 `@TemplateUrl` annotation on interceptor class shall not impact the template context of handler action
+* #196 page cache key is the same for two action handler methods with the same name in different class
+* #193 `MorphiaAdaptiveRecord.putValues(Map<String, Object>)` failure
+* #188 Allow page cache key generator create different key by checking useragent for mobile/browser
+* #187 NPE triggered on actframework official website
+* #186 Add Access-Control-Allow-Credentials in CORS support
 
 1.3.2
 * #194 functional test cases break when action handler returns array of elements
@@ -212,7 +224,7 @@
     <cdi-api.version>1.2</cdi-api.version>
     <commons-fileupload.version>1.3.2</commons-fileupload.version>
     <ecj.version>4.6.1</ecj.version>
-    <fastjson.version>1.2.31</fastjson.version>
+    <fastjson.version>1.2.32</fastjson.version>
     <bval.version>1.1.2</bval.version>
     <javax.inject.version>1</javax.inject.version>
     <javax.mail.version>1.5.0-b01</javax.mail.version>
