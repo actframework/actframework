@@ -18,6 +18,9 @@
 ********************************************
 *            version history
 ********************************************
+1.3.4
+* #202 `@Output` annotation on controller field is not effective when handler method has no parameters
+
 1.3.3
 * #200 It does not put correct content type header when servicing static resource as css file bug fixed
 * #199 Error generating error page if `Request.accept()` format is not normal

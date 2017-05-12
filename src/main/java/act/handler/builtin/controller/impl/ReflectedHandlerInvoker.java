@@ -530,39 +530,42 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
             }
         }
 
-        outputParams = new HashMap<>();
-        Class<?>[] paramTypes = method.getParameterTypes();
-        int len = paramTypes.length;
-        if (0 == len) {
-            return;
-        }
-        Annotation[][] aaa = method.getParameterAnnotations();
-        for (int i = 0; i < len; ++i) {
-            Annotation[] aa = aaa[i];
-            if (null == aa) {
-                continue;
+        try {
+            outputParams = new HashMap<>();
+            Class<?>[] paramTypes = method.getParameterTypes();
+            int len = paramTypes.length;
+            if (0 == len) {
+                return;
             }
-            Output output = null;
-            for (int j = aa.length - 1; j >= 0; --j) {
-                Annotation a = aa[j];
-                if (a.annotationType() == Output.class) {
-                    output = $.cast(a);
-                    break;
+            Annotation[][] aaa = method.getParameterAnnotations();
+            for (int i = 0; i < len; ++i) {
+                Annotation[] aa = aaa[i];
+                if (null == aa) {
+                    continue;
                 }
+                Output output = null;
+                for (int j = aa.length - 1; j >= 0; --j) {
+                    Annotation a = aa[j];
+                    if (a.annotationType() == Output.class) {
+                        output = $.cast(a);
+                        break;
+                    }
+                }
+                if (null == output) {
+                    continue;
+                }
+                String outputName = output.value();
+                if (S.blank(outputName)) {
+                    HandlerParamMetaInfo paramMetaInfo = handler.param(i);
+                    outputName = paramMetaInfo.name();
+                }
+                E.unexpectedIf(outputNames.contains(outputName), "output name already used: %s", outputName);
+                outputParams.put(i, outputName);
+                outputNames.add(outputName);
             }
-            if (null == output) {
-                continue;
-            }
-            String outputName = output.value();
-            if (S.blank(outputName)) {
-                HandlerParamMetaInfo paramMetaInfo = handler.param(i);
-                outputName = paramMetaInfo.name();
-            }
-            E.unexpectedIf(outputNames.contains(outputName), "output name already used: %s", outputName);
-            outputParams.put(i, outputName);
-            outputNames.add(outputName);
+        } finally {
+            hasOutputVar = !outputNames.isEmpty();
         }
-        hasOutputVar = !outputNames.isEmpty();
     }
 
     private Result invoke(M handlerMetaInfo, ActionContext context, Object controller, Object[] params) throws Exception {
