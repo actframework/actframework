@@ -28,7 +28,7 @@ shows Act's throughput is 20 times better than of Spring-boot in simple case
 
 ## Project status
 
-- Current stable version: 1.3.0
+- Current stable version: 1.3.3
 
 ## Install
 
