@@ -45,6 +45,7 @@ public final class MailerClassMetaInfo extends DestroyableBase {
     private C.Map<String, SenderMethodMetaInfo> mailerLookup = null;
     private boolean isMailer;
     private String contextPath;
+    private String templateContext;
 
     public MailerClassMetaInfo className(String name) {
         this.type = Type.getObjectType(name);
@@ -73,6 +74,15 @@ public final class MailerClassMetaInfo extends DestroyableBase {
 
     public String configId() {
         return configId;
+    }
+
+    public MailerClassMetaInfo templateContext(String templateContext) {
+        this.templateContext = templateContext;
+        return this;
+    }
+
+    public String templateContext() {
+        return templateContext;
     }
 
     public String internalName() {

@@ -67,6 +67,10 @@ public class MailerContext extends ActContext.Base<MailerContext> {
     private static final ContextLocal<MailerContext> _local = $.contextLocal();
 
     public MailerContext(App app, String confId) {
+        this(app, confId, null);
+    }
+
+    public MailerContext(App app, String confId, String templateContext) {
         super(app);
         this.confId = confId;
         _local.set(this);
@@ -75,6 +79,7 @@ public class MailerContext extends ActContext.Base<MailerContext> {
             locale(actionContext.locale());
         }
         app.eventBus().triggerSync(new InitEvent(this));
+        super.templateContext(templateContext);
     }
 
     @Override
