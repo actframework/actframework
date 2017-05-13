@@ -24,6 +24,7 @@ import act.app.AppByteCodeScannerBase;
 import act.asm.*;
 import act.asm.signature.SignatureReader;
 import act.asm.signature.SignatureVisitor;
+import act.controller.annotation.TemplateContext;
 import act.controller.meta.HandlerParamMetaInfo;
 import act.controller.meta.ParamAnnoInfoTrait;
 import act.mail.Mailer;
@@ -81,6 +82,10 @@ public class MailerByteCodeScanner extends AppByteCodeScannerBase {
         return Type.getType(Mailer.class).getDescriptor().equals(desc);
     }
 
+    public static boolean isTemplateContextAnno(String desc) {
+        return Type.getType(TemplateContext.class).getDescriptor().equals(desc);
+    }
+
     private class _ByteCodeVisitor extends ByteCodeVisitor {
         @Override
         public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
@@ -106,6 +111,8 @@ public class MailerByteCodeScanner extends AppByteCodeScannerBase {
             if (isMailerAnno(desc)) {
                 classInfo.isMailer(true);
                 return new MailerAnnotationVisitor(av);
+            } else if (isTemplateContextAnno(desc)) {
+                return new TemplateContextAnnotationVisitor(av);
             }
             return super.visitAnnotation(desc, visible);
         }
@@ -136,6 +143,20 @@ public class MailerByteCodeScanner extends AppByteCodeScannerBase {
             }
         }
 
+        private class TemplateContextAnnotationVisitor extends AnnotationVisitor {
+            TemplateContextAnnotationVisitor(AnnotationVisitor av) {
+                super(ASM5, av);
+            }
+
+            @Override
+            public void visit(String name, Object value) {
+                if ("value".equals(name)) {
+                    classInfo.templateContext(value.toString());
+                }
+            }
+        }
+
+
         private class SenderMethodVisitor extends MethodVisitor implements Opcodes {
 
             private String methodName;
@@ -164,6 +185,12 @@ public class MailerByteCodeScanner extends AppByteCodeScannerBase {
                         classInfo.addSender(methodInfo);
                     }
                     return new SenderAnnotationVisitor(av);
+                } else if (isTemplateContextAnno(desc)) {
+                    if (null == methodInfo) {
+                        methodInfo = new SenderMethodMetaInfo(classInfo);
+                        classInfo.addSender(methodInfo);
+                    }
+                    return new _ByteCodeVisitor.TemplateContextAnnotationVisitor(av);
                 }
                 return av;
             }
@@ -249,6 +276,21 @@ public class MailerByteCodeScanner extends AppByteCodeScannerBase {
                 public void visit(String name, Object value) {
                     if ("value".equals(name)) {
                         methodInfo.configId(value.toString());
+                    }
+                }
+
+            }
+
+            private class TemplateContextAnnotationVisitor extends AnnotationVisitor implements Opcodes {
+
+                public TemplateContextAnnotationVisitor(AnnotationVisitor av) {
+                    super(ASM5, av);
+                }
+
+                @Override
+                public void visit(String name, Object value) {
+                    if ("value".equals(name)) {
+                        methodInfo.templateContext(value.toString());
                     }
                 }
 

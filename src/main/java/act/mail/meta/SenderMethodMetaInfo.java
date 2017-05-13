@@ -43,6 +43,7 @@ public class SenderMethodMetaInfo extends DestroyableBase {
     private MailerClassMetaInfo clsInfo;
     private C.List<HandlerParamMetaInfo> params = C.newList();
     private ReturnTypeInfo returnType;
+    private String templateContext;
     private Map<Label, Map<Integer, LocalVariableMetaInfo>> locals = C.newMap();
     private int appCtxLVT_id = -1;
 
@@ -92,6 +93,15 @@ public class SenderMethodMetaInfo extends DestroyableBase {
     public SenderMethodMetaInfo invokeInstanceMethod() {
         invokeType = InvokeType.VIRTUAL;
         return this;
+    }
+
+    public SenderMethodMetaInfo templateContext(String templateContext) {
+        this.templateContext = templateContext;
+        return this;
+    }
+
+    public String templateContext() {
+        return null == templateContext ? classInfo().templateContext() : templateContext;
     }
 
     public boolean isStatic() {
