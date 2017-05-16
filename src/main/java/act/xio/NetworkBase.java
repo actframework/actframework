@@ -22,7 +22,9 @@ package act.xio;
 
 import act.Act;
 import act.Destroyable;
+import act.controller.meta.ActionMethodMetaInfo;
 import act.util.DestroyableBase;
+import act.ws.WebSocketConnectionManager;
 import org.osgl.logging.LogManager;
 import org.osgl.logging.Logger;
 import org.osgl.util.C;
@@ -97,4 +99,12 @@ public abstract class NetworkBase extends DestroyableBase implements Network {
         Destroyable.Util.destroyAll(registry.values(), ApplicationScoped.class);
         registry.clear();
     }
+
+    @Override
+    public WebSocketConnectionHandler createWebSocketConnectionHandler(ActionMethodMetaInfo methodInfo) {
+        WebSocketConnectionManager manager = Act.app().service(WebSocketConnectionManager.class);
+        return internalCreateWsConnHandler(methodInfo, manager);
+    }
+
+    protected abstract WebSocketConnectionHandler internalCreateWsConnHandler(ActionMethodMetaInfo methodInfo, WebSocketConnectionManager manager);
 }

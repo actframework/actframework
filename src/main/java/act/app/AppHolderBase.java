@@ -20,6 +20,7 @@ package act.app;
  * #L%
  */
 
+import act.Act;
 import act.Destroyable;
 import act.util.DestroyableBase;
 import org.osgl.$;
@@ -29,6 +30,7 @@ public abstract class AppHolderBase<T extends AppHolderBase> extends Destroyable
     private App app;
 
     protected AppHolderBase() {
+        app = Act.app();
     }
 
     protected AppHolderBase(App app) {

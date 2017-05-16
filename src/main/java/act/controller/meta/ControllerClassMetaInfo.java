@@ -29,6 +29,7 @@ import act.handler.builtin.controller.Handler;
 import act.util.ClassInfoRepository;
 import act.util.ClassNode;
 import act.util.DestroyableBase;
+import act.ws.WsAction;
 import org.osgl.http.H;
 import org.osgl.mvc.annotation.*;
 import org.osgl.util.C;
@@ -454,7 +455,8 @@ public final class ControllerClassMetaInfo extends DestroyableBase {
             PostAction.class, H.Method.POST,
             PutAction.class, H.Method.PUT,
             DeleteAction.class, H.Method.DELETE,
-            PatchAction.class, H.Method.PATCH
+            PatchAction.class, H.Method.PATCH,
+            WsAction.class, H.Method.GET
     );
 
     public static boolean isActionAnnotation(Class<? extends Annotation> type) {

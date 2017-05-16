@@ -21,9 +21,12 @@ package act.xio.undertow;
  */
 
 import act.Act;
+import act.controller.meta.ActionMethodMetaInfo;
+import act.ws.WebSocketConnectionManager;
 import act.xio.Network;
 import act.xio.NetworkBase;
 import act.xio.NetworkHandler;
+import act.xio.WebSocketConnectionHandler;
 import io.undertow.UndertowOptions;
 import io.undertow.connector.ByteBufferPool;
 import io.undertow.server.DefaultByteBufferPool;
@@ -86,6 +89,11 @@ public class UndertowNetwork extends NetworkBase {
         AcceptingChannel<? extends StreamConnection> server = worker.createStreamConnectionServer(new InetSocketAddress(port), acceptListener, socketOptions);
         server.resumeAccepts();
         channels.add(server);
+    }
+
+    @Override
+    protected WebSocketConnectionHandler internalCreateWsConnHandler(ActionMethodMetaInfo methodInfo, WebSocketConnectionManager manager) {
+        return new UndertowWebSocketConnectionHandler(methodInfo, manager);
     }
 
     @Override

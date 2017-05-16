@@ -38,6 +38,7 @@ import act.util.Global;
 import act.util.MissingAuthenticationHandler;
 import act.view.ActErrorResult;
 import act.view.RenderAny;
+import act.xio.WebSocketConnectionHandler;
 import org.osgl.$;
 import org.osgl.cache.CacheService;
 import org.osgl.exception.UnexpectedException;
@@ -98,6 +99,8 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
     private CacheSupportMetaInfo cacheSupport;
     private MissingAuthenticationHandler missingAuthenticationHandler;
     private MissingAuthenticationHandler csrfFailureHandler;
+
+    private WebSocketConnectionHandler webSocketConnectionHandler;
 
     final GroupInterceptorWithResult BEFORE_INTERCEPTOR = new GroupInterceptorWithResult(beforeInterceptors);
     final GroupAfterInterceptor AFTER_INTERCEPTOR = new GroupAfterInterceptor(afterInterceptors);
@@ -343,11 +346,19 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
         return new ActionMethodMetaInfo($.notNull(actionInfo), ctrlInfo);
     }
 
+    private WebSocketConnectionHandler tryGenerateWebSocketConnectionHandler(ActionMethodMetaInfo methodInfo) {
+        return Act.network().createWebSocketConnectionHandler(methodInfo);
+    }
+
     private void generateHandlers() {
         ControllerClassMetaInfo ctrlInfo = app.classLoader().controllerClassMetaInfo(controllerClassName);
         ActionMethodMetaInfo actionInfo = ctrlInfo.action(actionMethodName);
         if (null == actionInfo) {
             actionInfo = findActionInfoFromParent(ctrlInfo, actionMethodName);
+        }
+        webSocketConnectionHandler = tryGenerateWebSocketConnectionHandler(actionInfo);
+        if (null != webSocketConnectionHandler) {
+            return;
         }
         Act.Mode mode = Act.mode();
         actionHandler = mode.createRequestHandler(actionInfo, app);

@@ -834,6 +834,15 @@ public enum AppConfigKey implements ConfigKey {
      */
     VIEW_DEFAULT("view.default"),
 
+    /**
+     * `ws.key.ticket`
+     *
+     * Specifies the parameter variable name to get websocket ticket
+     *
+     * Default value: `ws_ticket`
+     */
+    WS_KEY_TICKET("ws.key.ticket"),
+
     X_FORWARD_PROTOCOL("x_forward_protocol"),
 
     ;

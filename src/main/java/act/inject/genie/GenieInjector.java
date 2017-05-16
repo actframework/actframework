@@ -317,19 +317,7 @@ public class GenieInjector extends DependencyInjectorBase<GenieInjector> {
     }
 
     private static boolean isModuleAllowed(Class<?> moduleClass) {
-        Env.Profile profile = moduleClass.getAnnotation(Env.Profile.class);
-        if (null != profile) {
-            return Env.matches(profile);
-        }
-        Env.Mode mode = moduleClass.getAnnotation(Env.Mode.class);
-        if (null != mode) {
-            return Env.matches(mode);
-        }
-        Env.Group group = moduleClass.getAnnotation(Env.Group.class);
-        if (null != group) {
-            return Env.matches(group);
-        }
-        return true;
+        return Env.matches(moduleClass);
     }
 
 }

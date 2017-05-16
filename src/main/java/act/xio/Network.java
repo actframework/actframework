@@ -21,6 +21,7 @@ package act.xio;
  */
 
 import act.Destroyable;
+import act.controller.meta.ActionMethodMetaInfo;
 
 /**
  * Encapsulate operations provided by underline network service, e.g. netty/undertow etc
@@ -31,4 +32,11 @@ public interface Network extends Destroyable {
     void start();
 
     void shutdown();
+
+    /**
+     * create a {@link WebSocketConnectionHandler} instance
+     * @param methodInfo the action handler method meta info
+     * @return a websocket connection handler
+     */
+    WebSocketConnectionHandler createWebSocketConnectionHandler(ActionMethodMetaInfo methodInfo);
 }

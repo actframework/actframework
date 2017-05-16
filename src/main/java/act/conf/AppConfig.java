@@ -2442,6 +2442,29 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         }
     }
 
+    private String wsTicketKey;
+
+    protected T wsTicketeKey(String wsTicketKey) {
+        this.wsTicketKey = wsTicketKey;
+        return me();
+    }
+
+    public String wsTicketKey() {
+        if (null == wsTicketKey) {
+            wsTicketKey = get(WS_KEY_TICKET);
+            if (null == wsTicketKey) {
+                wsTicketKey = "ws_ticket";
+            }
+        }
+        return wsTicketKey;
+    }
+
+    private void _mergeWsTicketKey(AppConfig config) {
+        if (!hasConfiguration(WS_KEY_TICKET)) {
+            wsTicketKey = config.wsTicketKey;
+        }
+    }
+
     private Set<AppConfigurator> mergeTracker = C.newSet();
 
     public void loadJarProperties(Map<String, Properties> jarProperties) {
@@ -2470,6 +2493,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
             }
         }
     }
+
 
     /**
      * Merge application configurator settings. Note application configurator
@@ -2572,6 +2596,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         _mergeCacheServiceProvider(conf);
         _mergeUnknownHttpMethodHandler(conf);
         _mergeUploadFileDownload(conf);
+        _mergeWsTicketKey(conf);
 
         Set<String> keys = conf.propKeys();
         if (!keys.isEmpty()) {

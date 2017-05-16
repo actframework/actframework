@@ -570,6 +570,10 @@ public final class Act {
         RunApp.start(S.beforeLast(className, "."));
     }
 
+    public static Network network() {
+        return network;
+    }
+
     private static boolean isItPackageName(String s) {
         if (s.length() < 4) {
             return false;

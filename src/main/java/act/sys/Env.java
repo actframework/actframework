@@ -49,6 +49,32 @@ public final class Env {
      */
     @Target({ElementType.TYPE, ElementType.METHOD})
     @Retention(RetentionPolicy.RUNTIME)
+    public @interface RequireProfile {
+
+        /**
+         * The profile specification
+         */
+        String value();
+
+        /**
+         * If `except` is `true` then the module should be load
+         * when the current profile is **NOT** the value specified
+         */
+        boolean except() default false;
+    }
+
+    /**
+     * Used to mark a dependency injector module that
+     * should be load only in specified profile.
+     *
+     * This annotation shall NOT used along with
+     * {@link Mode} and {@link Group}
+     *
+     * This annotation is deprecated. Please use {@link RequireProfile} instead
+     */
+    @Target({ElementType.TYPE, ElementType.METHOD})
+    @Retention(RetentionPolicy.RUNTIME)
+    @Deprecated
     public @interface Profile {
 
         /**
@@ -68,10 +94,37 @@ public final class Env {
      * should be load only in specified node group
      *
      * This annotation shall NOT used along with
-     * {@link Mode} and {@link Profile}
+     * {@link Mode} and {@link RequireProfile}
      */
     @Target({ElementType.TYPE, ElementType.METHOD})
     @Retention(RetentionPolicy.RUNTIME)
+    public @interface RequireGroup {
+
+        /**
+         * The node group specification
+         */
+        String value();
+
+        /**
+         * If `except` is `true` then the module should be load
+         * when the current node group is **NOT** the value specified
+         */
+        boolean except() default false;
+    }
+
+    /**
+     * Used to mark a dependency injector module that
+     * should be load only in specified node group
+     *
+     * This annotation shall NOT used along with
+     * {@link Mode} and {@link Profile}
+     *
+     * This annotation is deprecated. Please use {@link RequireGroup}
+     * instead
+     */
+    @Target({ElementType.TYPE, ElementType.METHOD})
+    @Retention(RetentionPolicy.RUNTIME)
+    @Deprecated
     public @interface Group {
 
         /**
@@ -91,7 +144,30 @@ public final class Env {
      * that should be load only in specified mode
      *
      * This annotation shall NOT used along with
-     * {@link Profile} and {@link Group}
+     * {@link RequireProfile} and {@link RequireGroup}
+     */
+    @Target({ElementType.TYPE, ElementType.METHOD})
+    @Retention(RetentionPolicy.RUNTIME)
+    public @interface RequireMode {
+
+        /**
+         * The mode specification
+         */
+        Act.Mode value();
+
+        /**
+         * If `except` is `true` then the module should be load
+         * when the current mode is **NOT** the value specified
+         */
+        boolean except() default false;
+    }
+
+    /**
+     * Used to mark a dependency injector module
+     * that should be load only in specified mode
+     *
+     * This annotation shall NOT used along with
+     * {@link RequireProfile} and {@link RequireGroup}
      */
     @Target({ElementType.TYPE, ElementType.METHOD})
     @Retention(RetentionPolicy.RUNTIME)
@@ -109,6 +185,14 @@ public final class Env {
         boolean unless() default false;
     }
 
+    public static boolean matches(RequireMode modeTag) {
+        return modeMatches(modeTag.value(), modeTag.except());
+    }
+
+    /**
+     * This method is deprecated. Please use {@link #matches(RequireMode)} instead
+     */
+    @Deprecated
     public static boolean matches(Mode modeTag) {
         return modeMatches(modeTag.value(), modeTag.unless());
     }
@@ -121,6 +205,14 @@ public final class Env {
         return unless ^ modeMatches(mode);
     }
 
+    public static boolean matches(RequireProfile profileTag) {
+        return profileMatches(profileTag.value(), profileTag.except());
+    }
+
+    /**
+     * This method is deprecated. Please use {@link #matches(RequireProfile)} instead
+     */
+    @Deprecated
     public static boolean matches(Profile profileTag) {
         return profileMatches(profileTag.value(), profileTag.unless());
     }
@@ -133,6 +225,14 @@ public final class Env {
         return unless ^ profileMatches(profile);
     }
 
+    public static boolean matches(RequireGroup groupTag) {
+        return groupMatches(groupTag.value(), groupTag.except());
+    }
+
+    /**
+     * This method is deprecated. Please use {@link #matches(RequireGroup)} instead
+     */
+    @Deprecated
     public static boolean matches(Group groupTag) {
         return groupMatches(groupTag.value(), groupTag.unless());
     }
@@ -146,7 +246,8 @@ public final class Env {
     }
 
     private static final C.Set<Class<? extends Annotation>> ENV_ANNOTATION_TYPES = C.set(
-            Env.Mode.class, Env.Profile.class, Env.Group.class
+            Env.Mode.class, Env.Profile.class, Env.Group.class,
+            Env.RequireProfile.class, Env.RequireGroup.class, Env.RequireMode.class
     );
 
     public static boolean isEnvAnnotation(Class<? extends Annotation> type) {
@@ -162,7 +263,22 @@ public final class Env {
     public static boolean matches(AnnotatedElement annotatedElement) {
         Annotation[] annotations = annotatedElement.getDeclaredAnnotations();
         for (Annotation anno : annotations) {
-            if (anno instanceof Profile) {
+            if (anno instanceof RequireProfile) {
+                RequireProfile profile = (RequireProfile) anno;
+                if (!matches(profile)) {
+                    return false;
+                }
+            } else if (anno instanceof RequireMode) {
+                RequireMode mode = (RequireMode) anno;
+                if (!matches(mode)) {
+                    return false;
+                }
+            } else if (anno instanceof RequireGroup) {
+                RequireGroup group = (RequireGroup) anno;
+                if (!matches(group)) {
+                    return false;
+                }
+            } else if (anno instanceof Profile) {
                 Profile profile = (Profile)anno;
                 if (!matches(profile)) {
                     return false;

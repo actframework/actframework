@@ -34,7 +34,7 @@ import java.lang.annotation.Annotation;
 public class EnvAnnotationVisitor extends AnnotationVisitor implements Opcodes {
 
     private boolean matched = true;
-    private boolean unless = false;
+    private boolean except = false;
     private Class<? extends Annotation> type;
 
     public EnvAnnotationVisitor(AnnotationVisitor annotationVisitor, Class<? extends Annotation> c) {
@@ -46,13 +46,15 @@ public class EnvAnnotationVisitor extends AnnotationVisitor implements Opcodes {
     public void visit(String name, Object value) {
         if ("value".equals(name)) {
             String s = S.string(value);
-            if (type == Env.Profile.class) {
+            if (type == Env.RequireProfile.class || type == Env.Profile.class) {
                 matched = Env.profileMatches(s);
-            } else if (type == Env.Group.class) {
+            } else if (type == Env.RequireGroup.class || type == Env.Group.class) {
                 matched = Env.groupMatches(s);
             }
-        } else if ("unless".equals(name)) {
-            unless = (Boolean) value;
+        } else if ("except".equals(name)) {
+            except = (Boolean) value;
+        } else if ("except".equals(name)) {
+            except = (Boolean) value;
         }
         super.visit(name, value);
     }
@@ -70,7 +72,7 @@ public class EnvAnnotationVisitor extends AnnotationVisitor implements Opcodes {
 
     @Override
     public void visitEnd() {
-        matched = unless ^ matched;
+        matched = except ^ matched;
         super.visitEnd();
     }
 
