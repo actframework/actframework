@@ -68,7 +68,7 @@ public class ReflectedJobInvoker<M extends JobMethodMetaInfo> extends $.F0<Objec
         jobClass = $.classForName(classInfo.className(), cl);
         disabled = disabled || !Env.matches(jobClass);
         method = methodInfo.method();
-        disabled = disabled || !Env.matches(jobClass);
+        disabled = disabled || !Env.matches(method);
         providedParams = methodInfo.paramTypes();
         ParamValueLoaderManager paramValueLoaderManager = app.service(ParamValueLoaderManager.class);
         if (null != paramValueLoaderManager) {
