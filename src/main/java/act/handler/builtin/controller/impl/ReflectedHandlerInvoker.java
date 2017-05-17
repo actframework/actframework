@@ -653,7 +653,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
             }
             boolean stateful = false;
             for (Field field : fields) {
-                if (!isGlobal(field)) {
+                if (!isGlobalOrStateless(field)) {
                     stateful = true;
                     break;
                 }
@@ -673,8 +673,8 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         return anno;
     }
 
-    private boolean isGlobal(Field field) {
-        if (null != field.getAnnotation(Global.class)) {
+    private boolean isGlobalOrStateless(Field field) {
+        if (null != field.getAnnotation(Stateless.class) || null != field.getAnnotation(Global.class)) {
             return true;
         }
         Class<?> fieldType = field.getType();
