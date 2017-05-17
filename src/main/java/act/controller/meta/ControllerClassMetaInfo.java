@@ -29,7 +29,6 @@ import act.handler.builtin.controller.Handler;
 import act.util.ClassInfoRepository;
 import act.util.ClassNode;
 import act.util.DestroyableBase;
-import act.ws.WsAction;
 import org.osgl.http.H;
 import org.osgl.mvc.annotation.*;
 import org.osgl.util.C;

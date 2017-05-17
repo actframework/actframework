@@ -1,4 +1,4 @@
-package act.ws;
+package act.inject.param;
 
 /*-
  * #%L
@@ -20,19 +20,15 @@ package act.ws;
  * #L%
  */
 
-import act.app.ActionContext;
-import act.event.ActEvent;
-import act.xio.WebSocketConnection;
+import act.app.App;
 
-public class WebSocketConnectEvent extends ActEvent<WebSocketConnection> {
+/**
+ * Responsible for loading param value for {@link act.app.ActionContext}
+ */
+class WebSocketContextParamLoader extends ActionContextParamLoader {
 
-    private ActionContext context;
-
-    public WebSocketConnectEvent(WebSocketConnection connection, ActionContext context) {
-        super(connection);
+    WebSocketContextParamLoader(App app) {
+        super(app);
     }
 
-    public ActionContext context() {
-        return context;
-    }
 }

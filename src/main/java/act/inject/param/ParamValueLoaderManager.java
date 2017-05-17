@@ -27,6 +27,7 @@ import act.app.AppServiceBase;
 import act.cli.CliContext;
 import act.job.JobContext;
 import act.util.ActContext;
+import act.ws.WebSocketContext;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -47,6 +48,7 @@ public class ParamValueLoaderManager  extends AppServiceBase<ParamValueLoaderMan
         loaderServices.put(ActionContext.class, new ActionContextParamLoader(app));
         loaderServices.put(CliContext.class, new CliContextParamLoader(app));
         loaderServices.put(JobContext.class, new JobContextParamLoader(app));
+        loaderServices.put(WebSocketContext.class, new WebSocketContextParamLoader(app));
     }
 
     public <T extends ParamValueLoaderService> T  get(Class<? extends ActContext> contextClass) {

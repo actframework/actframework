@@ -20,19 +20,15 @@ package act.ws;
  * #L%
  */
 
-import act.app.ActionContext;
-import act.event.ActEvent;
-import act.xio.WebSocketConnection;
+import org.osgl.mvc.util.Binder;
+import org.osgl.mvc.util.ParamValueProvider;
 
-public class WebSocketConnectEvent extends ActEvent<WebSocketConnection> {
+public class FullMessageBinder extends Binder<String> {
 
-    private ActionContext context;
+    public static final FullMessageBinder INSTANCE = new FullMessageBinder();
 
-    public WebSocketConnectEvent(WebSocketConnection connection, ActionContext context) {
-        super(connection);
-    }
-
-    public ActionContext context() {
-        return context;
+    @Override
+    public String resolve(String bean, String model, ParamValueProvider paramValueProvider) {
+        return paramValueProvider.paramVal("_body");
     }
 }

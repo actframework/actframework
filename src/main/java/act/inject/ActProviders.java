@@ -32,6 +32,7 @@ import act.event.EventBus;
 import act.mail.MailerContext;
 import act.ws.SecureTicketCodec;
 import act.util.ActContext;
+import act.ws.WebSocketContext;
 import org.osgl.$;
 import org.osgl.Osgl;
 import org.osgl.cache.CacheService;
@@ -132,6 +133,13 @@ public final class ActProviders {
         @Override
         public MailerContext get() {
             return MailerContext.current();
+        }
+    };
+
+    public static final Provider<WebSocketContext> WEB_SOCKET_CONTEXT = new Provider<WebSocketContext>() {
+        @Override
+        public WebSocketContext get() {
+            return WebSocketContext.current();
         }
     };
 

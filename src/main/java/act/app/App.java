@@ -65,6 +65,7 @@ import act.view.rythm.JodaDateTimeFormatter;
 import act.view.rythm.JodaTransformers;
 import act.view.rythm.RythmTransformerScanner;
 import act.view.rythm.RythmView;
+import act.ws.WebSocketConnectionManager;
 import org.osgl.$;
 import org.osgl.Osgl;
 import org.osgl.cache.CacheService;
@@ -131,6 +132,7 @@ public class App extends DestroyableBase {
     private IStorageService uploadFileStorageService;
     private AppServiceRegistry appServiceRegistry;
     private Map<String, Daemon> daemonRegistry;
+    private WebSocketConnectionManager webSocketConnectionManager;
     private AppCrypto crypto;
     private IdGenerator idGenerator;
     private CacheService cache;
@@ -579,6 +581,7 @@ public class App extends DestroyableBase {
 
         initHttpConfig();
         initViewManager();
+        initWebSocketConnectionManager();
 
         // let's any emit the dependency injector loaded event
         // in case some other service depend on this event.
@@ -1158,6 +1161,10 @@ public class App extends DestroyableBase {
 
     private void initBinderManager() {
         binderManager = new BinderManager(this);
+    }
+
+    private void initWebSocketConnectionManager() {
+        webSocketConnectionManager = new WebSocketConnectionManager(this);
     }
 
     private void initParamValueLoaderManager() {

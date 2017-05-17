@@ -143,25 +143,30 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
         return loader.load(null, ctx, false);
     }
 
+    public ParamValueLoader[] methodParamLoaders(Object host, Method method) {
+        ParamValueLoader[] loaders = methodRegistry.get(method);
+        if (null == loaders) {
+            $.Var<Boolean> boolBag = $.var(Boolean.FALSE);
+            Class hostClass = null == host ? null : host.getClass();
+            ParamValueLoader[] newLoaders = findMethodParamLoaders(method, hostClass, boolBag);
+            loaders = methodRegistry.putIfAbsent(method, newLoaders);
+            if (null == loaders) {
+                loaders = newLoaders;
+            }
+            boolean hasValidationConstraint = boolBag.get();
+            if (hasValidationConstraint && null == host) {
+                logger.error("Cannot validate static method: %s", method);
+                hasValidationConstraint = false;
+            }
+            methodValidationConstraintLookup.put(method, hasValidationConstraint);
+        }
+        return loaders;
+    }
+
     public Object[] loadMethodParams(Object host, Method method, ActContext ctx) {
         try {
-            ParamValueLoader[] loaders = methodRegistry.get(method);
+            ParamValueLoader[] loaders = methodParamLoaders(host, method);
             Boolean hasValidationConstraint = methodValidationConstraintLookup.get(method);
-            if (null == loaders) {
-                $.Var<Boolean> boolBag = $.var(Boolean.FALSE);
-                Class hostClass = null == host ? null : host.getClass();
-                ParamValueLoader[] newLoaders = findMethodParamLoaders(method, hostClass, boolBag);
-                loaders = methodRegistry.putIfAbsent(method, newLoaders);
-                if (null == loaders) {
-                    loaders = newLoaders;
-                }
-                hasValidationConstraint = boolBag.get();
-                if (hasValidationConstraint && null == host) {
-                    logger.error("Cannot validate static method: %s", method);
-                    hasValidationConstraint = false;
-                }
-                methodValidationConstraintLookup.put(method, hasValidationConstraint);
-            }
             int sz = loaders.length;
             Object[] params = new Object[sz];
             for (int i = 0; i < sz; ++i) {

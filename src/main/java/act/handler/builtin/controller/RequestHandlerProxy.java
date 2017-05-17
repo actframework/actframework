@@ -45,7 +45,8 @@ import org.osgl.exception.UnexpectedException;
 import org.osgl.http.H;
 import org.osgl.logging.L;
 import org.osgl.logging.Logger;
-import org.osgl.mvc.result.*;
+import org.osgl.mvc.result.NotFound;
+import org.osgl.mvc.result.Result;
 import org.osgl.util.C;
 import org.osgl.util.E;
 import org.osgl.util.S;
@@ -166,6 +167,10 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
     @Override
     public void handle(ActionContext context) {
         ensureAgentsReady();
+        if (null != webSocketConnectionHandler) {
+            webSocketConnectionHandler.handle(context);
+            return;
+        }
         Result result = null;
         try {
             H.Method method = context.req().method();
@@ -347,7 +352,8 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
     }
 
     private WebSocketConnectionHandler tryGenerateWebSocketConnectionHandler(ActionMethodMetaInfo methodInfo) {
-        return Act.network().createWebSocketConnectionHandler(methodInfo);
+        WebSocketConnectionHandler wsHandler = Act.network().createWebSocketConnectionHandler(methodInfo);
+        return null == wsHandler || !wsHandler.isValid() ? null : wsHandler;
     }
 
     private void generateHandlers() {
