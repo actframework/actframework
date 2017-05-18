@@ -29,6 +29,7 @@ import act.xio.NetworkHandler;
 import act.xio.WebSocketConnectionHandler;
 import io.undertow.UndertowOptions;
 import io.undertow.connector.ByteBufferPool;
+import io.undertow.protocols.ssl.UndertowXnioSsl;
 import io.undertow.server.DefaultByteBufferPool;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.protocol.http.HttpOpenListener;
@@ -38,9 +39,16 @@ import org.osgl.util.E;
 import org.osgl.util.IO;
 import org.xnio.*;
 import org.xnio.channels.AcceptingChannel;
+import org.xnio.ssl.SslConnection;
+import org.xnio.ssl.XnioSsl;
 
+import javax.net.ssl.*;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.InetSocketAddress;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.security.KeyStore;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -62,6 +70,7 @@ public class UndertowNetwork extends NetworkBase {
     protected void bootUp() {
         try {
             xnio = Xnio.getInstance(UndertowNetwork.class.getClassLoader());
+            // abcdefgdgd1234566789(dddd)
             worker = createWorker();
             socketOptions = createSocketOptions();
             serverOptions = OptionMap.builder()
@@ -79,16 +88,29 @@ public class UndertowNetwork extends NetworkBase {
     }
 
     @Override
-    protected void setUpClient(NetworkHandler client, int port) throws IOException {
+    protected void setUpClient(NetworkHandler client, int port, boolean secure) throws IOException {
         HttpHandler handler = new ActHttpHandler(client);
         ByteBufferPool buffers = new DefaultByteBufferPool(true, 16 * 1024, -1, 4);
         HttpOpenListener openListener = new HttpOpenListener(buffers, serverOptions);
         openListener.setRootHandler(handler);
         ChannelListener<AcceptingChannel<StreamConnection>> acceptListener = ChannelListeners.openListenerAdapter(openListener);
 
-        AcceptingChannel<? extends StreamConnection> server = worker.createStreamConnectionServer(new InetSocketAddress(port), acceptListener, socketOptions);
-        server.resumeAccepts();
-        channels.add(server);
+        if (!secure) {
+            AcceptingChannel<? extends StreamConnection> server = worker.createStreamConnectionServer(new InetSocketAddress(port), acceptListener, socketOptions);
+            server.resumeAccepts();
+            channels.add(server);
+        } else {
+            XnioSsl xnioSsl;
+            try {
+                SSLContext sslContext = createSSLContext(loadKeyStore("server.keystore"), loadKeyStore("server.truststore"));
+                xnioSsl = new UndertowXnioSsl(xnio, OptionMap.create(Options.USE_DIRECT_BUFFERS, true), sslContext);
+                AcceptingChannel<SslConnection> sslServer = xnioSsl.createSslConnectionServer(worker, new InetSocketAddress(port), (ChannelListener)acceptListener, socketOptions);
+                sslServer.resumeAccepts();
+                channels.add(sslServer);
+            } catch (Exception e) {
+                throw E.unexpected(e);
+            }
+        }
     }
 
     @Override
@@ -139,4 +161,58 @@ public class UndertowNetwork extends NetworkBase {
 
         return socketOptions;
     }
+
+    private static final char[] STORE_PASSWORD = "password".toCharArray();
+
+    private static SSLContext createSSLContext(final KeyStore keyStore, final KeyStore trustStore) throws Exception {
+        KeyManager[] keyManagers;
+        KeyManagerFactory keyManagerFactory = KeyManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
+        keyManagerFactory.init(keyStore, password("key"));
+        keyManagers = keyManagerFactory.getKeyManagers();
+
+        TrustManager[] trustManagers;
+        TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance(KeyManagerFactory.getDefaultAlgorithm());
+        trustManagerFactory.init(trustStore);
+        trustManagers = trustManagerFactory.getTrustManagers();
+
+        SSLContext sslContext;
+        sslContext = SSLContext.getInstance("TLS");
+        sslContext.init(keyManagers, trustManagers, null);
+
+        return sslContext;
+    }
+
+    private static KeyStore loadKeyStore(String name) {
+        String storeLoc = System.getProperty(name);
+        final InputStream stream;
+        if (storeLoc == null) {
+            stream = UndertowNetwork.class.getResourceAsStream(name);
+        } else {
+            try {
+                stream = Files.newInputStream(Paths.get(storeLoc));
+            } catch (IOException e) {
+                throw E.ioException(e);
+            }
+        }
+
+        if (stream == null) {
+            throw new RuntimeException("Could not load keystore");
+        }
+        try (InputStream is = stream) {
+            KeyStore loadedKeystore = KeyStore.getInstance("JKS");
+            loadedKeystore.load(is, password(name));
+            return loadedKeystore;
+        } catch (IOException e) {
+            throw E.ioException(e);
+        } catch (Exception e) {
+            throw E.unexpected(e);
+        }
+    }
+
+
+    static char[] password(String name) {
+        String pw = System.getProperty(name + ".password");
+        return pw != null ? pw.toCharArray() : STORE_PASSWORD;
+    }
+
 }

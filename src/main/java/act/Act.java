@@ -360,10 +360,14 @@ public final class Act {
 
     public static void hook(App app) {
         int port = app.config().httpPort();
-        network.register(port, new NetworkHandler(app));
+        NetworkHandler networkHandler = new NetworkHandler(app);
+        network.register(port, false, networkHandler);
+        if (app.config().supportSsl()) {
+            network.register(appConfig().httpsPort(), true, networkHandler);
+        }
         List<NamedPort> portList = app.config().namedPorts();
         for (NamedPort np : portList) {
-            network.register(np.port(), new NetworkHandler(app, np));
+            network.register(np.port(), false, new NetworkHandler(app, np));
         }
     }
 

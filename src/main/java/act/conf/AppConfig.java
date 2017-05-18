@@ -1436,6 +1436,29 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         }
     }
 
+
+    private int httpsPort = -1;
+
+    protected T httpsPort(int port) {
+        E.illegalArgumentIf(port < 1, "port value not valid: %s", port);
+        this.httpsPort = port;
+        return me();
+    }
+
+    public int httpsPort() {
+        if (-1 == httpsPort) {
+            String s = get(HTTPS_PORT);
+            httpsPort = null == s ? 5443 : Integer.parseInt(s);
+        }
+        return httpsPort;
+    }
+
+    private void _mergeHttpsPort(AppConfig conf) {
+        if (!hasConfiguration(HTTPS_PORT)) {
+            httpsPort = conf.httpsPort;
+        }
+    }
+
     private MissingAuthenticationHandler mah = null;
     protected T missingAuthenticationHandler(MissingAuthenticationHandler handler) {
         E.NPE(handler);
@@ -2442,6 +2465,26 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         }
     }
 
+    private Boolean ssl;
+    protected T supportSsl(boolean b) {
+        ssl = b;
+        return me();
+    }
+    public boolean supportSsl() {
+        if (null == ssl) {
+            ssl = get(SSL);
+            if (null == ssl) {
+                ssl = false;
+            }
+        }
+        return ssl;
+    }
+    private void _mergeSslSupport(AppConfig config) {
+        if (!hasConfiguration(SSL)) {
+            ssl = config.ssl;
+        }
+    }
+
     private String wsTicketKey;
 
     protected T wsTicketeKey(String wsTicketKey) {
@@ -2553,6 +2596,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         _mergeHttpExternalSecurePort(conf);
         _mergeHttpPort(conf);
         _mergeHttpSecure(conf);
+        _mergeHttpsPort(conf);
         _mergePorts(conf);
         _mergeContentSuffixAware(conf);
         _mergeSequenceNumberGenerator(conf);
@@ -2596,6 +2640,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         _mergeCacheServiceProvider(conf);
         _mergeUnknownHttpMethodHandler(conf);
         _mergeUploadFileDownload(conf);
+        _mergeSslSupport(conf);
         _mergeWsTicketKey(conf);
 
         Set<String> keys = conf.propKeys();

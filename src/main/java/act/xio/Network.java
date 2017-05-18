@@ -27,7 +27,7 @@ import act.controller.meta.ActionMethodMetaInfo;
  * Encapsulate operations provided by underline network service, e.g. netty/undertow etc
  */
 public interface Network extends Destroyable {
-    void register(int port, NetworkHandler client);
+    void register(int port, boolean secure, NetworkHandler client);
 
     void start();
 

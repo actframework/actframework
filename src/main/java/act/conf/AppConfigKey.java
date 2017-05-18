@@ -471,6 +471,15 @@ public enum AppConfigKey implements ConfigKey {
     HTTP_SECURE("http.secure.enabled"),
 
     /**
+     * `https.port`
+     *
+     * Specify the https port - only effect when {@link #SSL} is enabled
+     *
+     * Default value: `5443`
+     */
+    HTTPS_PORT("https.port"),
+
+    /**
      * `act.i18n.enabled` turn on/off i18n tools, e.g. {@link act.i18n.LocaleResolver}
      *
      * Default value: `false`
@@ -774,6 +783,15 @@ public enum AppConfigKey implements ConfigKey {
      * <p>Default value: 1.7</p>
      */
     SOURCE_VERSION("source.version"),
+
+    /**
+     * `ssl.enabled`
+     *
+     * Turn on/off SSL support
+     *
+     * Default value: `false`
+     */
+    SSL("ssl.enabled"),
 
     /**
      * {@code act.target.version} specifies the java version
