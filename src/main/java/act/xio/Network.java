@@ -39,4 +39,13 @@ public interface Network extends Destroyable {
      * @return a websocket connection handler
      */
     WebSocketConnectionHandler createWebSocketConnectionHandler(ActionMethodMetaInfo methodInfo);
+
+    /**
+     * Create a {@link WebSocketConnectionHandler} instance without message handler, i.e.
+     * the handler is pure created to handle connection request. This is typically used when
+     * client request connection for push notification from server
+     *
+     * @return a connection handler without message processing logic
+     */
+    WebSocketConnectionHandler createWebSocketConnectionHandler();
 }

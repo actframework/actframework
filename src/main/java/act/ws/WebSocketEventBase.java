@@ -20,9 +20,11 @@ package act.ws;
  * #L%
  */
 
-public class WebSocketConnectEvent extends WebSocketEventBase {
+import act.event.ActEvent;
 
-    public WebSocketConnectEvent(WebSocketContext context) {
+public abstract class WebSocketEventBase extends ActEvent<WebSocketContext> {
+
+    public WebSocketEventBase(WebSocketContext context) {
         super(context);
     }
 

@@ -56,8 +56,6 @@ import act.mail.bytecode.MailerByteCodeScanner;
 import act.route.RouteSource;
 import act.route.RouteTableRouterBuilder;
 import act.route.Router;
-import act.ws.SecureTicketCodec;
-import act.ws.SecureTicketHandler;
 import act.util.*;
 import act.view.ActErrorResult;
 import act.view.ImplicitVariableProvider;
@@ -65,6 +63,8 @@ import act.view.rythm.JodaDateTimeFormatter;
 import act.view.rythm.JodaTransformers;
 import act.view.rythm.RythmTransformerScanner;
 import act.view.rythm.RythmView;
+import act.ws.SecureTicketCodec;
+import act.ws.SecureTicketHandler;
 import act.ws.WebSocketConnectionManager;
 import org.osgl.$;
 import org.osgl.Osgl;
@@ -540,6 +540,8 @@ public class App extends DestroyableBase {
         initCliDispatcher();
         initCliServer();
 
+        initWebSocketConnectionManager();
+
         initDbServiceManager();
         emit(DB_SVC_LOADED);
 
@@ -581,7 +583,6 @@ public class App extends DestroyableBase {
 
         initHttpConfig();
         initViewManager();
-        initWebSocketConnectionManager();
 
         // let's any emit the dependency injector loaded event
         // in case some other service depend on this event.

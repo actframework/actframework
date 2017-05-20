@@ -1,4 +1,4 @@
-package act.xio;
+package act.ws;
 
 /*-
  * #%L
@@ -20,35 +20,28 @@ package act.xio;
  * #L%
  */
 
-import act.Destroyable;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
- * A WebSocket connection
+ * Mark a class as websocket connection endpoint.
+ *
+ * Note it does not require this class to have any specific method or
+ * implement any interface. This annotation is purely a tag that
+ * tells framework to setup a websocket connection endpoint.
  */
-public interface WebSocketConnection extends Destroyable {
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.TYPE)
+public @interface WsEndpoint {
+
+    String PSEUDO_METHOD = "__ws_endpoint__";
 
     /**
-     * Session ID of this connection
-     * @return connection session id
+     * Specify the endpoint URL paths
+     * @return the URL paths
      */
-    String sessionId();
-
-    /**
-     * Send a text message through websocket
-     * @param message the text message
-     */
-    void send(String message);
-
-    /**
-     * Close the connection. Note if there are any `IOException`
-     * raised by the underline network layer, it will be ignored
-     */
-    void close();
-
-    /**
-     * Check if the connection has been closed
-     * @return `true` if connection is closed
-     */
-    boolean closed();
+    String[] value() default {};
 
 }

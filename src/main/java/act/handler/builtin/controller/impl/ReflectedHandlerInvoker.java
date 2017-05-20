@@ -156,7 +156,9 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         CSRF.Spec csrfSpec = CSRF.spec(method).chain(CSRF.spec(controllerClass));
         this.csrfSpec = csrfSpec;
         this.jsonDTOKey = app.cuid();
-        this.singleton = singleton(app);
+        if (!isStatic) {
+            this.singleton = ReflectedInvokerHelper.tryGetSingleton(controllerClass, app);
+        }
 
         ResponseContentType contentType = getAnnotation(ResponseContentType.class);
         if (null != contentType) {
@@ -643,27 +645,6 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         return paramLoaderService.loadMethodParams(controller, method, context);
     }
 
-    private Object singleton(App app) {
-        Object singleton = app.singleton(controllerClass);
-        if (null == singleton) {
-            // check if there are fields
-            List<Field> fields = $.fieldsOf(controllerClass, JsonDTOClassManager.CLASS_FILTER, JsonDTOClassManager.FIELD_FILTER);
-            if (fields.isEmpty()) {
-                singleton = app.getInstance(controllerClass);
-            }
-            boolean stateful = false;
-            for (Field field : fields) {
-                if (!isGlobalOrStateless(field)) {
-                    stateful = true;
-                    break;
-                }
-            }
-            if (!stateful) {
-                singleton = app.getInstance(controllerClass);
-            }
-        }
-        return singleton;
-    }
 
     private <T extends Annotation> T getAnnotation(Class<T> annoType) {
         T anno = method.getAnnotation(annoType);
@@ -671,14 +652,6 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
             anno = controllerClass.getAnnotation(annoType);
         }
         return anno;
-    }
-
-    private boolean isGlobalOrStateless(Field field) {
-        if (null != field.getAnnotation(Stateless.class) || null != field.getAnnotation(Global.class)) {
-            return true;
-        }
-        Class<?> fieldType = field.getType();
-        return fieldType.isAnnotationPresent(Stateless.class);
     }
 
     public static ControllerAction createControllerAction(ActionMethodMetaInfo meta, App app) {

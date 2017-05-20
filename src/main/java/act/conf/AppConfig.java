@@ -2167,7 +2167,13 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     public SessionMapper sessionMapper() {
         if (null == sessionMapper) {
             Object o = get(SESSION_MAPPER);
-            sessionMapper = SessionMapper.DefaultSessionMapper.wrap((SessionMapper) o);
+            if (null == o) {
+                // we might set header session mapper prefix
+                sessionMapperHeaderPrefix();
+            }
+            if (null == sessionMapper) {
+                sessionMapper = SessionMapper.DefaultSessionMapper.wrap((SessionMapper) o);
+            }
         }
         return sessionMapper;
     }
@@ -2175,6 +2181,29 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     private void _mergeSessionMapper(AppConfig config) {
         if (!hasConfiguration(AppConfigKey.SESSION_MAPPER)) {
             sessionMapper = config.sessionMapper;
+        }
+    }
+
+    private String sessionMapperHeaderPrefix = null;
+    private boolean sessionMapperHeaderPrefixSet = false;
+    protected T sessionMapperHeaderPrefix(String prefix) {
+        this.sessionMapperHeaderPrefix = prefix;
+        return me();
+    }
+    public String sessionMapperHeaderPrefix() {
+        if (!sessionMapperHeaderPrefixSet) {
+            sessionMapperHeaderPrefix = get(SESSION_MAPPER_HEADER_PREFIX);
+            sessionMapperHeaderPrefixSet = true;
+            if (null != sessionMapperHeaderPrefix) {
+                this.sessionMapper = SessionMapper.DefaultSessionMapper.wrap(new SessionMapper.HeaderSessionMapper(sessionMapperHeaderPrefix));
+            }
+        }
+        return sessionMapperHeaderPrefix;
+    }
+    private void _mergeSessionMapperHeaderPrefix(AppConfig config) {
+        if (!hasConfiguration(SESSION_MAPPER_HEADER_PREFIX)) {
+            this.sessionMapperHeaderPrefix = config.sessionMapperHeaderPrefix;
+            this.sessionMapperHeaderPrefixSet = config.sessionMapperHeaderPrefixSet;
         }
     }
 
@@ -2635,6 +2664,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         _mergeSessionSecure(conf);
         _mergeSessionKeyUsername(conf);
         _mergeSessionMapper(conf);
+        _mergeSessionMapperHeaderPrefix(conf);
         _mergeSecret(conf);
         _mergeSecureTicketCodec(conf);
         _mergeCacheServiceProvider(conf);

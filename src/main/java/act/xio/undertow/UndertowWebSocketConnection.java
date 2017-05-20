@@ -30,10 +30,17 @@ import java.io.IOException;
 
 public class UndertowWebSocketConnection extends DestroyableBase implements WebSocketConnection {
 
-    private WebSocketChannel channel;
+    private final WebSocketChannel channel;
+    private final String id;
 
-    public UndertowWebSocketConnection(WebSocketChannel channel) {
+    public UndertowWebSocketConnection(WebSocketChannel channel, String id) {
         this.channel = $.notNull(channel);
+        this.id = $.notNull(id);
+    }
+
+    @Override
+    public String sessionId() {
+        return id;
     }
 
     @Override

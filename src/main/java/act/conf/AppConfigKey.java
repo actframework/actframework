@@ -763,6 +763,16 @@ public enum AppConfigKey implements ConfigKey {
     SESSION_MAPPER("session.mapper.impl"),
 
     /**
+     * `session.mapper.header.prefix`
+     *
+     * this configuration enables the {@link act.util.SessionMapper.HeaderSessionMapper}
+     * and set the prefix
+     *
+     * Default value: `null`
+     */
+    SESSION_MAPPER_HEADER_PREFIX("session.mapper.header.prefix"),
+
+    /**
      * {@code session.secure.enabled} specifies whether the session cookie should
      * be set as secure. Enable secure session will cause session cookie only
      * effective in https connection. Literally this will enforce the web site to run

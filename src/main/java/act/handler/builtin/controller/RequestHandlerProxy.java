@@ -353,7 +353,7 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
 
     private WebSocketConnectionHandler tryGenerateWebSocketConnectionHandler(ActionMethodMetaInfo methodInfo) {
         WebSocketConnectionHandler wsHandler = Act.network().createWebSocketConnectionHandler(methodInfo);
-        return null == wsHandler || !wsHandler.isValid() ? null : wsHandler;
+        return null == wsHandler || !wsHandler.isWsHandler() ? null : wsHandler;
     }
 
     private void generateHandlers() {

@@ -56,6 +56,11 @@ public class WebSocketContext extends ActContext.Base<WebSocketContext> implemen
         _local.set(this);
     }
 
+    @Override
+    public String sessionId() {
+        return connection.sessionId();
+    }
+
     /**
      * Called when remote end send a message to this connection
      * @param receivedMessage the message received
@@ -65,6 +70,16 @@ public class WebSocketContext extends ActContext.Base<WebSocketContext> implemen
         this.stringMessage = S.string(receivedMessage).trim();
         isJson = stringMessage.startsWith("{") || stringMessage.startsWith("]");
         tryParseQueryParams();
+        return this;
+    }
+
+    /**
+     * Tag the websocket connection hold by this context with label specified
+     * @param label the label used to tag the websocket connection
+     * @return this context
+     */
+    public WebSocketContext tag(String label) {
+        manager.tagRegistry().register(label, connection);
         return this;
     }
 

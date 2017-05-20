@@ -20,9 +20,12 @@ package act.xio.undertow;
  * #L%
  */
 
+import act.Act;
 import act.app.ActionContext;
 import act.controller.meta.ActionMethodMetaInfo;
 import act.view.ActErrorResult;
+import act.ws.WebSocketCloseEvent;
+import act.ws.WebSocketConnectEvent;
 import act.ws.WebSocketConnectionManager;
 import act.ws.WebSocketContext;
 import act.xio.WebSocketConnection;
@@ -40,6 +43,10 @@ import java.io.IOException;
 
 class UndertowWebSocketConnectionHandler extends WebSocketConnectionHandler {
 
+    UndertowWebSocketConnectionHandler (WebSocketConnectionManager manager) {
+        super(manager);
+    }
+
     UndertowWebSocketConnectionHandler(ActionMethodMetaInfo method, WebSocketConnectionManager manager) {
         super(method, manager);
     }
@@ -52,7 +59,7 @@ class UndertowWebSocketConnectionHandler extends WebSocketConnectionHandler {
             Handlers.websocket(new WebSocketConnectionCallback() {
                 @Override
                 public void onConnect(WebSocketHttpExchange exchange, WebSocketChannel channel) {
-                    final WebSocketConnection connection = new UndertowWebSocketConnection(channel);
+                    final WebSocketConnection connection = new UndertowWebSocketConnection(channel, context.session().id());
                     channel.setAttribute("act_conn", connection);
                     connectionManager.registerNewConnection(connection, context);
                     final WebSocketContext wsCtx = new WebSocketContext(req.url(), connection, connectionManager, connectionManager.app());
@@ -68,10 +75,13 @@ class UndertowWebSocketConnectionHandler extends WebSocketConnectionHandler {
                         protected void onClose(WebSocketChannel webSocketChannel, StreamSourceFrameChannel channel) throws IOException {
                             super.onClose(webSocketChannel, channel);
                             connection.destroy();
+                            context.app().eventBus().trigger(new WebSocketCloseEvent(wsCtx));
                         }
                     });
                     channel.resumeReceives();
+                    Act.eventBus().trigger(new WebSocketConnectEvent(wsCtx));
                 }
+
             }).handleRequest(exchange);
         } catch (RuntimeException e) {
             throw e;

@@ -47,6 +47,7 @@ public abstract class NetworkBase extends DestroyableBase implements Network {
     private Map<Integer, NetworkHandler> registry = new HashMap<>();
     private Map<Integer, NetworkHandler> failed = new HashMap<>();
     private Set<Integer> securePorts = new HashSet<>();
+    private volatile WebSocketConnectionHandler simpleWebSocketConnector;
 
     public synchronized void register(int port, boolean secure, NetworkHandler client) {
         E.NPE(client);
@@ -110,6 +111,19 @@ public abstract class NetworkBase extends DestroyableBase implements Network {
     public WebSocketConnectionHandler createWebSocketConnectionHandler(ActionMethodMetaInfo methodInfo) {
         WebSocketConnectionManager manager = Act.app().service(WebSocketConnectionManager.class);
         return internalCreateWsConnHandler(methodInfo, manager);
+    }
+
+    @Override
+    public WebSocketConnectionHandler createWebSocketConnectionHandler() {
+        if (null == simpleWebSocketConnector) {
+            synchronized (this) {
+                if (null == simpleWebSocketConnector) {
+                    WebSocketConnectionManager manager = Act.app().service(WebSocketConnectionManager.class);
+                    simpleWebSocketConnector = internalCreateWsConnHandler(null, manager);
+                }
+            }
+        }
+        return simpleWebSocketConnector;
     }
 
     protected abstract WebSocketConnectionHandler internalCreateWsConnHandler(ActionMethodMetaInfo methodInfo, WebSocketConnectionManager manager);

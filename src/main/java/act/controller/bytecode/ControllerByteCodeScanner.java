@@ -37,6 +37,7 @@ import act.handler.builtin.controller.RequestHandlerProxy;
 import act.route.RouteSource;
 import act.route.Router;
 import act.util.*;
+import act.ws.WsEndpoint;
 import org.osgl.$;
 import org.osgl.Osgl;
 import org.osgl.http.H;
@@ -138,9 +139,12 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
                 return new UrlContextAnnotationVisitor(av);
             } else if (Type.getType(Port.class).getDescriptor().equals(desc)) {
                 return new PortAnnotationVisitor(av);
-            } if (Type.getType(With.class).getDescriptor().equals(desc)) {
+            } else if (Type.getType(With.class).getDescriptor().equals(desc)) {
                 classInfo.isController(true);
                 return new ClassWithAnnotationVisitor(av);
+            } else if (Type.getType(WsEndpoint.class).getDescriptor().equals(desc)) {
+                classInfo.isController(true);
+                return new WsEndpointAnnotationVisitor(av);
             }
             return super.visitAnnotation(desc, visible);
         }
@@ -171,6 +175,36 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
             public void visit(String name, Object value) {
                 strings.add(value.toString());
                 super.visit(name, value);
+            }
+        }
+
+        private class WsEndpointAnnotationVisitor extends AnnotationVisitor {
+            WsEndpointAnnotationVisitor(AnnotationVisitor av) {
+                super(ASM5, av);
+            }
+
+            @Override
+            public AnnotationVisitor visitArray(String name) {
+                AnnotationVisitor av = super.visitArray(name);
+                if ("value".equals(name)) {
+                    return new StringArrayVisitor(av) {
+                        @Override
+                        public void visitEnd() {
+                            List<Router> routers = routers();
+                            if (strings.isEmpty()) {
+                                strings.add("");
+                            }
+                            /*
+                             * Note we need to schedule route registration after all app code scanned because we need the
+                             * parent context information be set on class meta info, which is done after controller scanning
+                             */
+                            app().jobManager().on(AppEventId.APP_CODE_SCANNED, new RouteRegister(C.list(H.Method.GET), strings, WsEndpoint.PSEUDO_METHOD, routers, classInfo, false, $.var(false)));
+
+                            super.visitEnd();
+                        }
+                    };
+                }
+                return super.visitArray(name);
             }
         }
 
@@ -269,9 +303,7 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
             private String desc;
             private String signature;
             private boolean isStatic;
-            private String[] exceptions;
             private boolean requireScan;
-            private boolean isRoutedMethod;
             private HandlerMethodMetaInfo methodInfo;
             private PropertySpec.MetaInfo propSpec;
             private Map<Integer, List<ParamAnnoInfoTrait>> paramAnnoInfoList = C.newMap();
@@ -284,12 +316,10 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
 
             ActionMethodVisitor(boolean isRoutedMethod, MethodVisitor mv, int access, String methodName, String desc, String signature, String[] exceptions) {
                 super(ASM5, mv);
-                this.isRoutedMethod = isRoutedMethod;
                 this.access = access;
                 this.methodName = methodName;
                 this.desc = desc;
                 this.signature = signature;
-                this.exceptions = exceptions;
                 this.isStatic = isStatic(access);
                 if (classInfo.isAbstract()) {
                     this.isVirtual.set(true);
@@ -683,23 +713,7 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
                         // start(*) match
                         httpMethods.addAll(H.Method.actionMethods());
                     }
-                    final List<Router> routers = C.newList();
-                    if (null == ports || ports.length == 0) {
-                        routers.add(app().router());
-                    } else {
-                        App app = app();
-                        for (String portName : ports) {
-                            Router r = app.router(portName);
-                            if (null == r) {
-                                if (S.eq(AppConfig.PORT_CLI_OVER_HTTP, portName)) {
-                                    // cli over http is disabled
-                                    return;
-                                }
-                                throw E.invalidConfiguration("Cannot find configuration for named port[%s]", portName);
-                            }
-                            routers.add(r);
-                        }
-                    }
+                    final List<Router> routers = routers();
                     if (paths.isEmpty()) {
                         paths.add("");
                     }
@@ -817,6 +831,27 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
                 }
             }
         }
+
+        private List<Router> routers() {
+            final List<Router> routers = C.newList();
+            if (null == ports || ports.length == 0) {
+                routers.add(app().router());
+            } else {
+                App app = app();
+                for (String portName : ports) {
+                    Router r = app.router(portName);
+                    if (null == r) {
+                        if (S.eq(AppConfig.PORT_CLI_OVER_HTTP, portName)) {
+                            // cli over http is disabled
+                            return routers;
+                        }
+                        throw E.invalidConfiguration("Cannot find configuration for named port[%s]", portName);
+                    }
+                    routers.add(r);
+                }
+            }
+            return routers;
+        }
     }
 
     private static class RouteRegister implements Runnable {
@@ -828,7 +863,7 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
         $.Var<Boolean> isVirtual;
         boolean noRegister; // do not register virtual method of an abstract class
 
-        RouteRegister(List<H.Method> methods,  List<String> paths,  String methodName, List<Router> routers, ControllerClassMetaInfo classInfo, boolean noRegister, $.Var<Boolean> isVirtual) {
+        RouteRegister(List<H.Method> methods, List<String> paths, String methodName, List<Router> routers, ControllerClassMetaInfo classInfo, boolean noRegister, $.Var<Boolean> isVirtual) {
             this.routers = routers;
             this.paths = paths;
             this.methodName = methodName;
@@ -844,7 +879,7 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
             if (!noRegister) {
                 String contextPath = classInfo.contextPath();
                 String className = classInfo.className();
-                String action = S.newSizedBuffer(className.length() + methodName.length() + 1).append(className).append(".").append(methodName).toString();
+                String action = WsEndpoint.PSEUDO_METHOD == methodName ? methodName : S.concat(className, ".", methodName);
                 registerOnContext(contextPath, action);
                 contexts.add(contextPath);
             }
@@ -880,24 +915,28 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
 
         private void registerOnContext(String ctxPath, String action) {
             S.Buffer sb = S.newBuffer();
-            for (Router r: routers) {
-                for (String actionPath : paths) {
-                    if (!actionPath.startsWith("/")) {
+            for (Router r : routers) {
+                for (String urlPath : paths) {
+                    if (!urlPath.startsWith("/")) {
                         if (!(S.blank(ctxPath) || "/".equals(ctxPath))) {
                             if (ctxPath.endsWith("/")) {
                                 ctxPath = ctxPath.substring(0, ctxPath.length() - 1);
                             }
                             sb.setLength(0);
                             sb.append(ctxPath);
-                            if (!actionPath.startsWith("/")) {
+                            if (!urlPath.startsWith("/")) {
                                 sb.append("/");
                             }
-                            sb.append(actionPath);
-                            actionPath = sb.toString();
+                            sb.append(urlPath);
+                            urlPath = sb.toString();
                         }
                     }
                     for (H.Method m : httpMethods) {
-                        r.addMapping(m, actionPath, action, RouteSource.ACTION_ANNOTATION);
+                        try {
+                            r.addMapping(m, urlPath, action, RouteSource.ACTION_ANNOTATION);
+                        } catch (RuntimeException e) {
+                            logger.error(e, "add router mapping failed: \n\tmethod[%s]\n\turl path: %s\n\taction: %s", m, urlPath, action);
+                        }
                     }
                 }
             }

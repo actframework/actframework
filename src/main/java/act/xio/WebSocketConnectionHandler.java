@@ -67,15 +67,26 @@ public abstract class WebSocketConnectionHandler extends RequestHandlerBase {
     private String jsonDTOKey;
     private List<BeanSpec> paramSpecs;
     private Object host;
-    private boolean isValid;
+    private boolean isWsHandler;
     private Class[] paramTypes;
     private boolean isSingleParam;
 
+    // used to compose connection only websocket handler
+    protected WebSocketConnectionHandler(WebSocketConnectionManager manager) {
+        this.connectionManager = manager;
+        this.isWsHandler = false;
+        this.disabled = true;
+    }
 
     public WebSocketConnectionHandler(ActionMethodMetaInfo methodInfo, WebSocketConnectionManager manager) {
+        this.connectionManager = $.notNull(manager);
+        if (null == methodInfo) {
+            this.isWsHandler = false;
+            this.disabled = true;
+            return;
+        }
         App app = manager.app();
         this.cl = app.classLoader();
-        this.connectionManager = $.notNull(manager);
         this.handler = $.notNull(methodInfo);
         this.controller = handler.classInfo();
 
@@ -90,13 +101,13 @@ public abstract class WebSocketConnectionHandler extends RequestHandlerBase {
 
         try {
             this.method = handlerClass.getMethod(methodInfo.name(), paramTypes);
-            this.isValid = null != this.method.getAnnotation(WsAction.class);
+            this.isWsHandler = null != this.method.getAnnotation(WsAction.class);
             this.disabled = this.disabled || !Env.matches(method);
         } catch (NoSuchMethodException e) {
             throw E.unexpected(e);
         }
 
-        if (!isValid || disabled) {
+        if (!isWsHandler || disabled) {
             return;
         }
 
@@ -130,8 +141,13 @@ public abstract class WebSocketConnectionHandler extends RequestHandlerBase {
         }
     }
 
-    public boolean isValid() {
-        return isValid;
+    /**
+     * This method is used by {@link act.handler.builtin.controller.RequestHandlerProxy}
+     * to check if a handler is WS handler or GET handler
+     * @return `true` if this is a real WS handler
+     */
+    public boolean isWsHandler() {
+        return isWsHandler;
     }
 
     @Override

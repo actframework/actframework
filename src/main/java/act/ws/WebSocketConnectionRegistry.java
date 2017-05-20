@@ -29,9 +29,9 @@ import org.osgl.util.C;
 import javax.enterprise.context.ApplicationScoped;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Vector;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * Organize websocket connection by string typed keys. One key can be used to
@@ -40,6 +40,11 @@ import java.util.concurrent.ConcurrentMap;
 public class WebSocketConnectionRegistry extends DestroyableBase {
     private ConcurrentMap<String, List<WebSocketConnection>> registry = new ConcurrentHashMap<>();
 
+    /**
+     * Return a list of websocket connection by key
+     * @param key the key to find the websocket connection list
+     * @return a list of websocket connection or an empty list if no websocket connection found by key
+     */
     public List<WebSocketConnection> get(String key) {
         final List<WebSocketConnection> retList = new ArrayList<>();
         accept(key, C.F.addTo(retList));
@@ -48,6 +53,9 @@ public class WebSocketConnectionRegistry extends DestroyableBase {
 
     public void accept(String key, $.Function<WebSocketConnection, ?> visitor) {
         List<WebSocketConnection> connections = registry.get(key);
+        if (null == connections) {
+            return;
+        }
         if (!connections.isEmpty()) {
             List<WebSocketConnection> toBeCleared = null;
             for (WebSocketConnection conn : connections) {
@@ -56,6 +64,7 @@ public class WebSocketConnectionRegistry extends DestroyableBase {
                         toBeCleared = new ArrayList<>();
                     }
                     toBeCleared.add(conn);
+                    continue;
                 }
                 visitor.apply(conn);
             }
@@ -69,7 +78,9 @@ public class WebSocketConnectionRegistry extends DestroyableBase {
     public void register(String key, WebSocketConnection connection) {
         List<WebSocketConnection> connections = registry.get(key);
         if (null == connections) {
-            List<WebSocketConnection> newConnections = new Vector<>();
+            // TODO find a better strategy to keep track of the connections
+            // see http://stackoverflow.com/questions/44040637/best-practice-to-track-websocket-connections-in-java/
+            List<WebSocketConnection> newConnections = new CopyOnWriteArrayList<>();
             connections = registry.putIfAbsent(key, newConnections);
             if (null == connections) {
                 connections = newConnections;

@@ -20,9 +20,9 @@ package act.ws;
  * #L%
  */
 
-public class WebSocketConnectEvent extends WebSocketEventBase {
+public class WebSocketCloseEvent extends WebSocketEventBase {
 
-    public WebSocketConnectEvent(WebSocketContext context) {
+    public WebSocketCloseEvent(WebSocketContext context) {
         super(context);
     }
 
