@@ -29,6 +29,8 @@ import com.alibaba.fastjson.JSON;
 import org.osgl.$;
 import org.osgl.Osgl;
 import org.osgl.http.H;
+import org.osgl.logging.LogManager;
+import org.osgl.logging.Logger;
 
 import java.util.Collection;
 
@@ -37,6 +39,8 @@ import java.util.Collection;
  */
 @Stateless
 public class WebSocketConnectionManager extends AppServiceBase<WebSocketConnectionManager> {
+
+    private static final Logger logger = LogManager.get(WebSocketConnectionManager.class);
 
     private final WebSocketConnectionRegistry bySessionId = new WebSocketConnectionRegistry();
     private final WebSocketConnectionRegistry byUsername = new WebSocketConnectionRegistry();
@@ -204,6 +208,9 @@ public class WebSocketConnectionManager extends AppServiceBase<WebSocketConnecti
 
     private void sendToConnections(String message, WebSocketConnectionRegistry registry, String key) {
         for (WebSocketConnection conn : registry.get(key)) {
+            if (logger.isTraceEnabled()) {
+                logger.trace("send to websocket connection by key: %s", key);
+            }
             conn.send(message);
         }
     }

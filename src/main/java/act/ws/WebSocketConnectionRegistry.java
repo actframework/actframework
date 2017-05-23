@@ -34,8 +34,8 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
- * Organize websocket connection by string typed keys. One key can be used to
- * locate a list of websocket connection
+ * Organize websocket connection by string typed keys. Multiple connections
+ * can be attached to the same key
  */
 public class WebSocketConnectionRegistry extends DestroyableBase {
     private ConcurrentMap<String, List<WebSocketConnection>> registry = new ConcurrentHashMap<>();
@@ -51,6 +51,12 @@ public class WebSocketConnectionRegistry extends DestroyableBase {
         return retList;
     }
 
+    /**
+     * Accept a visitor to iterate through the connections attached to the key specified
+     *
+     * @param key the key
+     * @param visitor the visitor
+     */
     public void accept(String key, $.Function<WebSocketConnection, ?> visitor) {
         List<WebSocketConnection> connections = registry.get(key);
         if (null == connections) {
@@ -75,6 +81,14 @@ public class WebSocketConnectionRegistry extends DestroyableBase {
         }
     }
 
+    /**
+     * Register a connection to the registry by key.
+     *
+     * Note multiple connections can be attached to the same key
+     *
+     * @param key the key
+     * @param connection the websocket connection
+     */
     public void register(String key, WebSocketConnection connection) {
         List<WebSocketConnection> connections = registry.get(key);
         if (null == connections) {
@@ -87,6 +101,34 @@ public class WebSocketConnectionRegistry extends DestroyableBase {
             }
         }
         connections.add(connection);
+    }
+
+    /**
+     * Returns the connection count in this registry.
+     *
+     * Note it might count connections that are closed but not removed from registry yet
+     *
+     * @return the connection count
+     */
+    public int count() {
+        int n = 0;
+        for (List<?> list : registry.values()) {
+            n += list.size();
+        }
+        return n;
+    }
+
+    /**
+     * Returns the connection count by key specified in this registry
+     *
+     * Note it might count connections that are closed but not removed from registry yet
+     *
+     * @param key the key
+     * @return connection count by key
+     */
+    public int count(String key) {
+        List<?> list = registry.get(key);
+        return null == list ? 0 : list.size();
     }
 
     @Override
