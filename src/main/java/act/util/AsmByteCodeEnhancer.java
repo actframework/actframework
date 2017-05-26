@@ -59,9 +59,13 @@ public abstract class AsmByteCodeEnhancer<T extends AsmByteCodeEnhancer> extends
         Act.enhancerManager().register(this);
     }
 
+    protected void reset() {}
+
     public T clone() {
         try {
-            return (T) super.clone();
+            T clone = (T) super.clone();
+            clone.reset();
+            return clone;
         } catch (CloneNotSupportedException e) {
             throw E.unexpected(e);
         }

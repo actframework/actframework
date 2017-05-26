@@ -52,6 +52,15 @@ public class EntityClassEnhancer extends AppByteCodeEnhancer<EntityClassEnhancer
     }
 
     @Override
+    protected void reset() {
+        this.classDesc = null;
+        this.daoClsMethodFound = false;
+        this.daoMethodFound = false;
+        this.isEntityClass = false;
+        super.reset();
+    }
+
+    @Override
     public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
         super.visit(version, access, name, signature, superName, interfaces);
         classDesc = "L" + name + ";";

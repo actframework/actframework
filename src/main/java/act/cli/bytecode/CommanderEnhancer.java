@@ -49,6 +49,13 @@ public class CommanderEnhancer extends AppByteCodeEnhancer<CommanderEnhancer> {
     }
 
     @Override
+    protected void reset() {
+        this.className = null;
+        this.metaInfo = null;
+        super.reset();
+    }
+
+    @Override
     public AppByteCodeEnhancer app(App app) {
         this.infoBase = app.classLoader();
         return super.app(app);
