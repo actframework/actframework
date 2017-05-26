@@ -103,7 +103,7 @@ public interface SimpleBean {
 
         @Override
         protected void releaseResources() {
-            Destroyable.Util.tryDestroyAll(registry.values());
+            Destroyable.Util.tryDestroyAll(registry.values(), ApplicationScoped.class);
             registry.clear();
         }
 
@@ -209,6 +209,18 @@ public interface SimpleBean {
         @Override
         protected Class<ByteCodeEnhancer> subClass() {
             return ByteCodeEnhancer.class;
+        }
+
+        @Override
+        protected void reset() {
+            this.isSimpleBean = false;
+            this.hasPublicFields = false;
+            this.getters.clear();
+            this.setters.clear();
+            this.needDefaultConstructor = false;
+            this.classDesc = null;
+            this.superClassDesc = null;
+            super.reset();
         }
 
         @Override

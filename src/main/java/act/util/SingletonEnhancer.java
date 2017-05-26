@@ -50,6 +50,14 @@ public class SingletonEnhancer extends AppByteCodeEnhancer<SingletonEnhancer> {
     }
 
     @Override
+    protected void reset() {
+        this.shouldAddAnnotation = true;
+        this.shouldEnhance = false;
+        this.typeName = null;
+        super.reset();
+    }
+
+    @Override
     public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
         super.visit(version, access, name, signature, superName, interfaces);
         this.typeName = name;

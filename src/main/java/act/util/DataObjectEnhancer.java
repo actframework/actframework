@@ -51,6 +51,12 @@ public class DataObjectEnhancer extends AppByteCodeEnhancer<DataObjectEnhancer> 
     }
 
     @Override
+    protected void reset() {
+        this.metaInfo = null;
+        super.reset();
+    }
+
+    @Override
     public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
         Type type = Type.getObjectType(name);
         Type superType = null == superName ? null : Type.getObjectType(superName);

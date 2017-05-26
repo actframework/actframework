@@ -59,6 +59,12 @@ public class ControllerEnhancer extends AppByteCodeEnhancer<ControllerEnhancer> 
     }
 
     @Override
+    protected void reset() {
+        this.className = null;
+        super.reset();
+    }
+
+    @Override
     public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
         super.visit(version, access, name, signature, superName, interfaces);
         className = Type.getObjectType(name).getClassName();

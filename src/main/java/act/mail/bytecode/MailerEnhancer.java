@@ -59,6 +59,12 @@ public class MailerEnhancer extends AppByteCodeEnhancer<MailerEnhancer> {
         return MailerEnhancer.class;
     }
 
+    @Override
+    protected void reset() {
+        className = null;
+        super.reset();
+    }
+
     public MailerEnhancer classInfoHolder(MailerClassMetaInfoHolder holder) {
         classInfoHolder = holder;
         predicate(_F.isMailer(holder));
