@@ -64,8 +64,10 @@ List<String> stackTrace;
       color: #eee;
     }
     .source-info .line.big-line, .trace-line.big-line {
-      padding-top: 0.5em;
+      margin-top: 1.5em;
       font-weight: bold;
+      padding-left: 0px;
+      border-bottom: 1px solid #aaa;
     }
     .source-info.active {
       background-color: #000;
@@ -81,7 +83,7 @@ List<String> stackTrace;
       color: #aaa;
     }
     .trace-line {
-      padding: 4px 5px;
+      padding: 4px 15px;
     }
     .template-line, .source-line {
       padding: 2px 0px;
@@ -103,11 +105,6 @@ List<String> stackTrace;
   <script src="/asset/act/js/jquery.js"></script>
   <script src="/asset/act/js/highlight.min.js"></script>
   <script src="/asset/act/js/highlight.java.min.js"></script>
-  }
-
-  @def Throwable getCauseOrThis(Throwable t) {
-  Throwable cause = t.getCause();
-  return null == cause ? t : cause;
   }
 
   <pre class="error-message" style="white-space: pre-wrap;">

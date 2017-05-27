@@ -89,13 +89,7 @@ public class ActNotFound extends NotFound implements ActError {
     }
 
     public List<String> stackTrace() {
-        Throwable cause = getCause();
-        ActError root = this;
-        if (null == cause) {
-            cause = this;
-            root = null;
-        }
-        return Util.stackTraceOf(cause, root);
+        return Util.stackTraceOf(this);
     }
 
     @Override
