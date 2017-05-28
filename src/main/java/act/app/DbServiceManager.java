@@ -116,9 +116,9 @@ public class DbServiceManager extends AppServiceBase<DbServiceManager> implement
 
     @Override
     protected void releaseResources() {
-        Destroyable.Util.tryDestroyAll(serviceMap.values(), ApplicationScoped.class);
+        Destroyable.Util.tryDestroyAll(C.newSet(serviceMap.values()), ApplicationScoped.class);
         serviceMap.clear();
-        Destroyable.Util.tryDestroyAll(modelDaoMap.values(), ApplicationScoped.class);
+        Destroyable.Util.tryDestroyAll(C.newSet(modelDaoMap.values()), ApplicationScoped.class);
         modelDaoMap.clear();
     }
 
