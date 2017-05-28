@@ -41,12 +41,33 @@ public interface ActError {
     boolean isErrorSpot(String traceLine, String nextTraceLine);
 
     class Util {
+
+        public static List<String> stackTraceOf(ActError error) {
+            Throwable cause = error.getCause();
+            ActError root = error;
+            if (null == cause) {
+                cause = (Throwable) error;
+                root = null;
+            }
+            return stackTraceOf(cause, root);
+        }
+
         public static List<String> stackTraceOf(Throwable t, ActError root) {
             List<String> l = C.newList();
             while (null != t) {
                 StackTraceElement[] a = t.getStackTrace();
                 for (StackTraceElement e : a) {
-                    l.add("at " + e.toString());
+                    String line = S.concat("at ", e.toString());
+                    if (line.contains("org.osgl.util.E.")) {
+                        // skip E util class
+                        continue;
+                    }
+                    if (l.contains(line)) {
+                        l.add(line);
+                        // caused by stack trace stop at here
+                        break;
+                    }
+                    l.add(line);
                 }
                 t = t.getCause();
                 if (t == root) {

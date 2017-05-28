@@ -112,7 +112,8 @@ public class ActErrorResult extends ErrorResult implements ActError {
 
     @Override
     public Throwable getCauseOrThis() {
-        return rootCauseOf(this);
+        Throwable cause = getCause();
+        return null == cause ? this : cause;
     }
 
     public SourceInfo sourceInfo() {
@@ -127,19 +128,7 @@ public class ActErrorResult extends ErrorResult implements ActError {
     }
 
     public List<String> stackTrace() {
-        List<String> l = C.newList();
-        Throwable t = getCauseOrThis();
-        while (null != t) {
-            StackTraceElement[] a = t.getStackTrace();
-            for (StackTraceElement e : a) {
-                l.add("at " + e.toString());
-            }
-            t = t.getCause();
-            if (null != t) {
-                l.add("Caused by " + t.toString());
-            }
-        }
-        return l;
+        return Util.stackTraceOf(this);
     }
 
     @Override

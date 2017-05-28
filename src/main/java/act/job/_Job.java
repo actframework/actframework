@@ -73,6 +73,9 @@ class _Job extends DestroyableBase implements Runnable {
             try {
                 for (_Job subJob : jobList) {
                     subJob.run();
+                    if (Act.isDev() && subJob.app.hasBlockIssue()) {
+                        break;
+                    }
                 }
             } finally {
                 iterating = false;

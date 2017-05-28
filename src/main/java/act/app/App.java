@@ -28,6 +28,7 @@ import act.app.event.AppEventId;
 import act.app.util.AppCrypto;
 import act.app.util.NamedPort;
 import act.boot.BootstrapClassLoader;
+import act.boot.app.BlockIssueException;
 import act.cli.CliDispatcher;
 import act.cli.bytecode.CommanderByteCodeScanner;
 import act.conf.AppConfLoader;
@@ -429,6 +430,7 @@ public class App extends DestroyableBase {
                 blockIssueCause = e;
             }
         }
+        throw BlockIssueException.INSTANCE;
     }
 
     /**
@@ -519,88 +521,101 @@ public class App extends DestroyableBase {
         initSingletonRegistry();
         initEventBus();
         emit(EVENT_BUS_INITIALIZED);
-        loadConfig();
-        emit(CONFIG_LOADED);
 
-        initCache();
-        initDataPropertyRepository();
-        initCrypto();
-        initIdGenerator();
-        initJobManager();
-        initDaemonRegistry();
-
-        initInterceptorManager();
-        initResolverManager();
-        initBinderManager();
-        initUploadFileStorageService();
-        initRouters();
-        emit(ROUTER_INITIALIZED);
-        loadRoutes();
-        emit(ROUTER_LOADED);
-        initCliDispatcher();
-        initCliServer();
-
-        initWebSocketConnectionManager();
-
-        initDbServiceManager();
-        emit(DB_SVC_LOADED);
-
-        Act.viewManager().reset();
-        loadGlobalPlugin();
-        emit(APP_ACT_PLUGIN_LOADED);
-        initScannerManager();
-        loadActScanners();
-        loadBuiltInScanners();
-        emit(PRE_LOAD_CLASSES);
-
-        initClassLoader();
-        emit(AppEventId.CLASS_LOADER_INITIALIZED);
-        preloadClasses();
         try {
-            scanAppCodes();
-            compilationException = null;
-        } catch (CompilationException e) {
-            compilationException = e;
-            throw ActErrorResult.of(e);
+
+            loadConfig();
+            emit(CONFIG_LOADED);
+
+            initCache();
+            initDataPropertyRepository();
+            initCrypto();
+            initIdGenerator();
+            initJobManager();
+            initDaemonRegistry();
+
+            initInterceptorManager();
+            initResolverManager();
+            initBinderManager();
+            initUploadFileStorageService();
+            initRouters();
+            emit(ROUTER_INITIALIZED);
+            loadRoutes();
+            emit(ROUTER_LOADED);
+            initCliDispatcher();
+            initCliServer();
+
+            initWebSocketConnectionManager();
+            initDbServiceManager();
+            emit(DB_SVC_LOADED);
+
+            Act.viewManager().reset();
+            loadGlobalPlugin();
+            emit(APP_ACT_PLUGIN_LOADED);
+            initScannerManager();
+            loadActScanners();
+            loadBuiltInScanners();
+            emit(PRE_LOAD_CLASSES);
+
+            initClassLoader();
+            emit(AppEventId.CLASS_LOADER_INITIALIZED);
+            preloadClasses();
+            try {
+                scanAppCodes();
+                compilationException = null;
+            } catch (CompilationException e) {
+                compilationException = e;
+                throw ActErrorResult.of(e);
+            }
+            //classLoader().loadClasses();
+            emit(APP_CODE_SCANNED);
+            emit(CLASS_LOADED);
+
+            Act.viewManager().reload(this);
+
+            loadDependencyInjector();
+            emit(DEPENDENCY_INJECTOR_LOADED);
+            initJsonDTOClassManager();
+            initParamValueLoaderManager();
+            initMailerConfigManager();
+
+            // setting context class loader here might lead to memory leaks
+            // and cause weird problems as class loader been set to thread
+            // could be switched to handling other app in ACT or still hold
+            // old app class loader instance after the app been refreshed
+            // - Thread.currentThread().setContextClassLoader(classLoader());
+
+            initHttpConfig();
+            initViewManager();
+
+            // let's any emit the dependency injector loaded event
+            // in case some other service depend on this event.
+            // If any DI plugin e.g. guice has emitted this event
+            // already, it doesn't matter we emit the event again
+            // because once app event is consumed the event listeners
+            // are cleared
+            emit(DEPENDENCY_INJECTOR_PROVISIONED);
+            emit(SINGLETON_PROVISIONED);
+            config().preloadConfigurations();
+            emit(PRE_START);
+            emit(START);
+            daemonKeeper();
+        } catch (BlockIssueException e) {
+            // ignore
         }
-        //classLoader().loadClasses();
-        emit(APP_CODE_SCANNED);
-        emit(CLASS_LOADED);
-
-        Act.viewManager().reload(this);
-
-        loadDependencyInjector();
-        emit(DEPENDENCY_INJECTOR_LOADED);
-        initJsonDTOClassManager();
-        initParamValueLoaderManager();
-        initMailerConfigManager();
-
-        // setting context class loader here might lead to memory leaks
-        // and cause weird problems as class loader been set to thread
-        // could be switched to handling other app in ACT or still hold
-        // old app class loader instance after the app been refreshed
-        // - Thread.currentThread().setContextClassLoader(classLoader());
-
-        initHttpConfig();
-        initViewManager();
-
-        // let's any emit the dependency injector loaded event
-        // in case some other service depend on this event.
-        // If any DI plugin e.g. guice has emitted this event
-        // already, it doesn't matter we emit the event again
-        // because once app event is consumed the event listeners
-        // are cleared
-        emit(DEPENDENCY_INJECTOR_PROVISIONED);
-        emit(SINGLETON_PROVISIONED);
-        config().preloadConfigurations();
-        emit(PRE_START);
-        emit(START);
-        daemonKeeper();
         if (null != blockIssueCause) {
             setBlockIssue(blockIssueCause);
         }
         LOGGER.info("App[%s] loaded in %sms", name(), $.ms() - ms);
         emit(POST_START);
+    }
+
+    /**
+     * Check if the app has block issue set
+     * @return `true` if the app has block issue encountered during start up
+     */
+    public boolean hasBlockIssue() {
+        return null != blockIssue;
     }
 
     public AppBuilder builder() {
