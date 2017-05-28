@@ -27,7 +27,9 @@ import act.conf.AppConfig;
 import act.db.*;
 import act.db.util.SequenceNumberGenerator;
 import act.db.util._SequenceNumberGenerator;
+import act.event.ActEventListenerBase;
 import act.event.AppEventListenerBase;
+import act.event.EventBus;
 import act.util.ClassNode;
 import act.util.General;
 import org.osgl.$;
@@ -41,9 +43,7 @@ import org.osgl.util.S;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import java.lang.annotation.Annotation;
-import java.util.EventObject;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 @ApplicationScoped
 public class DbServiceManager extends AppServiceBase<DbServiceManager> implements DaoLocator {
@@ -53,20 +53,24 @@ public class DbServiceManager extends AppServiceBase<DbServiceManager> implement
     public static final String DEFAULT = "default";
 
     // map service id to service instance
-    private Map<String, DbService> serviceMap = C.newMap();
+    private Map<String, DbService> serviceMap = new HashMap<>();
 
     // map model class to dao class
-    private Map<Class<?>, Dao> modelDaoMap = C.newMap();
+    private Map<Class<?>, Dao> modelDaoMap = new HashMap<>();
+
+    private Dictionary<DbService, DbService> asyncInitializers = new Hashtable<>();
 
     @Inject
     public DbServiceManager(final App app) {
         super(app);
         EntityClassRepository.init(app);
         initServices(app.config());
+        prepareAsyncInitializers();
         configureSequenceGenerator(app);
-        app.eventBus().bind(AppEventId.SINGLETON_PROVISIONED, new AppEventListenerBase() {
+
+        final Runnable daoInitializer = new Runnable() {
             @Override
-            public void on(EventObject event) throws Exception {
+            public void run() {
                 ClassNode node = app.classLoader().classInfoRepository().node(Dao.class.getName());
                 node.visitPublicNotAbstractTreeNodes(new $.Visitor<ClassNode>() {
                     private boolean isGeneral(Class c) {
@@ -100,7 +104,29 @@ public class DbServiceManager extends AppServiceBase<DbServiceManager> implement
                     }
                 });
             }
-        });
+        };
+
+        final EventBus eventBus = app.eventBus();
+        if (asyncInitializers.isEmpty()) {
+            eventBus.bind(AppEventId.SINGLETON_PROVISIONED, new AppEventListenerBase() {
+                @Override
+                public void on(EventObject event) throws Exception {
+                    daoInitializer.run();
+                    eventBus.emit(AppEventId.DB_SVC_LOADED);
+                }
+            });
+        } else {
+            eventBus.bind(DbServiceInitialized.class, new ActEventListenerBase<DbServiceInitialized>() {
+                @Override
+                public void on(DbServiceInitialized event) throws Exception {
+                    asyncInitializers.remove(event.source());
+                    if (asyncInitializers.isEmpty()) {
+                        daoInitializer.run();
+                        eventBus.emit(AppEventId.DB_SVC_LOADED);
+                    }
+                }
+            });
+        }
     }
 
     private void configureSequenceGenerator(final App app) {
@@ -112,6 +138,16 @@ public class DbServiceManager extends AppServiceBase<DbServiceManager> implement
                 SequenceNumberGenerator.registerImpl(seqGen);
             }
         });
+    }
+
+    private void prepareAsyncInitializers() {
+        asyncInitializers = new Hashtable<>();
+        for (Map.Entry<String, DbService> entry : serviceMap.entrySet()) {
+            DbService service = entry.getValue();
+            if (service.initAsynchronously()) {
+                asyncInitializers.put(service, service);
+            }
+        }
     }
 
     @Override

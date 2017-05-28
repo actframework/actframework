@@ -69,6 +69,27 @@ public abstract class DbService extends AppHolderBase<DbService> {
     @Override
     protected abstract void releaseResources();
 
+    /**
+     * Tells the framework whether this service init asynchronously or synchronously
+     *
+     * By default a db service is init synchronously
+     *
+     * **IMPORTANT** if the implementation of the db service overwrite this method and
+     * return `true`, the implementation must raise a {@link DbServiceInitialized} event
+     * once the async initialization process is finished
+     *
+     * @return `true` if this db service initialization asynchronously or `false` otherwise
+     */
+    public boolean initAsynchronously() {
+        return false;
+    }
+
+    /**
+     * Report if the db service has been initialized
+     * @return `true` if the db service is initialized
+     */
+    public abstract boolean initialized();
+
     public abstract <DAO extends Dao> DAO defaultDao(Class<?> modelType);
 
     public abstract <DAO extends Dao> DAO newDaoInstance(Class<DAO> daoType);

@@ -504,7 +504,7 @@ public class App extends DestroyableBase {
 
     public synchronized void refresh() {
         currentState = null;
-        long ms = $.ms();
+        final long ms = $.ms();
         LOGGER.info("App starting ....");
         profile = null;
         blockIssue = null;
@@ -547,7 +547,6 @@ public class App extends DestroyableBase {
 
             initWebSocketConnectionManager();
             initDbServiceManager();
-            emit(DB_SVC_LOADED);
 
             Act.viewManager().reset();
             loadGlobalPlugin();
@@ -597,17 +596,22 @@ public class App extends DestroyableBase {
             emit(DEPENDENCY_INJECTOR_PROVISIONED);
             emit(SINGLETON_PROVISIONED);
             config().preloadConfigurations();
-            emit(PRE_START);
-            emit(START);
-            daemonKeeper();
+            jobManager().on(AppEventId.DB_SVC_LOADED, new Runnable() {
+                @Override
+                public void run() {
+                    if (null != blockIssueCause) {
+                        setBlockIssue(blockIssueCause);
+                    }
+                    emit(PRE_START);
+                    emit(START);
+                    daemonKeeper();
+                    LOGGER.info("App[%s] loaded in %sms", name(), $.ms() - ms);
+                    emit(POST_START);
+                }
+            }, true);
         } catch (BlockIssueException e) {
             // ignore
         }
-        if (null != blockIssueCause) {
-            setBlockIssue(blockIssueCause);
-        }
-        LOGGER.info("App[%s] loaded in %sms", name(), $.ms() - ms);
-        emit(POST_START);
     }
 
     /**
@@ -971,7 +975,7 @@ public class App extends DestroyableBase {
                 try {
                     daemon.start();
                 } catch (Exception e) {
-                    logger.error(e, "Error starting daemon [%s]", daemon.id());
+                    LOGGER.error(e, "Error starting daemon [%s]", daemon.id());
                 }
             }
         });

@@ -23,6 +23,7 @@ package act.xio;
 import act.Act;
 import act.app.ActionContext;
 import act.app.App;
+import act.app.event.AppEventId;
 import act.app.util.NamedPort;
 import act.handler.RequestHandler;
 import act.handler.builtin.AlwaysNotFound;
@@ -88,24 +89,32 @@ public class NetworkHandler extends DestroyableBase {
         return app;
     }
 
-    public void handle(final ActionContext ctx, NetworkDispatcher dispatcher) {
+    public void handle(final ActionContext ctx, final NetworkDispatcher dispatcher) {
         if (isDestroyed()) {
             return;
         }
-        final H.Request req = ctx.req();
-        String url = req.url();
-        H.Method method = req.method();
         Exception refreshError = null;
         if (Act.isDev()) {
             try {
                 boolean updated = app.checkUpdates(false);
                 if (updated) {
                     initUrlProcessors();
+                    app.jobManager().on(AppEventId.POST_START, new Runnable() {
+                        @Override
+                        public void run() {
+                            handle(ctx, dispatcher);
+                        }
+                    }, true);
+                    dispatcher.keep();
+                    return;
                 }
             } catch (Exception e) {
                 refreshError = e;
             }
         }
+        final H.Request req = ctx.req();
+        String url = req.url();
+        H.Method method = req.method();
         url = contentSuffixProcessor.apply(req, url);
         try {
             url = urlContextProcessor.apply(req, url);

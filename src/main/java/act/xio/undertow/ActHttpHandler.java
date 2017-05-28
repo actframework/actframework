@@ -51,6 +51,11 @@ public class ActHttpHandler implements HttpHandler {
             public void dispatch(NetworkJob job) {
                 exchange.dispatch(job);
             }
+
+            @Override
+            public void keep() {
+                exchange.getRequestChannel().resumeReads();
+            }
         });
     }
 
