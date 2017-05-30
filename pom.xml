@@ -21,6 +21,9 @@
 1.3.4
 * #202 `@Output` annotation on controller field is not effective when handler method has no parameters
 * #203 Make mailer support `@TemplateContext` annotation
+* #214 App bytecode enhancer state not cleaned
+* #216 Improve handling of fatal error in Job method during app bootstrap
+* #222 async job is not really async
 
 1.3.3
 * #200 It does not put correct content type header when servicing static resource as css file bug fixed
@@ -230,7 +233,7 @@
     <jfiglet.version>0.0.8</jfiglet.version>
     <jline.version>2.14.3</jline.version>
     <joda-time.version>2.9.9</joda-time.version>
-    <okhttp.version>3.7.0</okhttp.version>
+    <okhttp.version>3.8.0</okhttp.version>
     <osgl-tool.version>1.1.0</osgl-tool.version>
     <osgl-genie.version>1.0.2</osgl-genie.version>
     <osgl-mvc.version>1.0.6</osgl-mvc.version>
