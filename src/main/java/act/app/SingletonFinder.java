@@ -20,18 +20,26 @@ package act.app;
  * #L%
  */
 
+import act.Act;
 import act.app.event.AppEventId;
 import act.util.*;
 import org.osgl.$;
 import org.osgl.Osgl;
+import org.osgl.inject.Injector;
+import org.osgl.logging.LogManager;
+import org.osgl.logging.Logger;
+import org.osgl.util.E;
 
 import javax.inject.Singleton;
+import java.lang.annotation.Annotation;
 
 /**
  * Find all classes annotated with {@link javax.inject.Singleton}
  */
 @SuppressWarnings("unused")
 public class SingletonFinder {
+
+    private static final Logger LOGGER = LogManager.get(SingletonFinder.class);
 
     private SingletonFinder() {}
 
@@ -57,15 +65,35 @@ public class SingletonFinder {
             public void visit(ClassNode classNode) throws Osgl.Break {
                 String name = classNode.name();
                 Class<?> cls = $.classForName(name, app.classLoader());
-                registerSingleton(cls);
+                if (!stopInheritedScope(cls)) {
+                    registerSingleton(cls);
+                } else if (LOGGER.isDebugEnabled()) {
+                    LOGGER.debug("@Stateful or @StopInheritedScope annotation found on %s, inherited stateless terminated", name);
+                }
             }
         });
     }
 
     private static void registerSingleton(Class<?> cls) {
+        E.invalidConfigurationIf(stopInheritedScope(cls), "@Stateful or @StopInheritedScope annotation cannot be apply on singleton or @Stateless annotated class");
         if (null == cls.getAnnotation(Lazy.class)) {
             App.instance().registerSingletonClass(cls);
+            if (LOGGER.isTraceEnabled()) {
+                LOGGER.trace("register singleton: %s", cls);
+            }
+        } else if (LOGGER.isTraceEnabled()) {
+            LOGGER.trace("skip lazy singleton registration for %s", cls);
         }
+    }
+
+    private static boolean stopInheritedScope(Class<?> cls) {
+        Injector injector = Act.app().injector();
+        for (Annotation anno : cls.getAnnotations()) {
+            if (injector.isInheritedScopeStopper(anno.annotationType())) {
+                return true;
+            }
+        }
+        return false;
     }
 
 }

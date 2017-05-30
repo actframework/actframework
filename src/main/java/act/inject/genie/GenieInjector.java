@@ -36,6 +36,7 @@ import org.osgl.exception.NotAppliedException;
 import org.osgl.inject.*;
 import org.osgl.inject.annotation.LoadValue;
 import org.osgl.inject.annotation.Provided;
+import org.osgl.inject.annotation.StopInheritedScope;
 import org.osgl.mvc.annotation.Bind;
 import org.osgl.mvc.annotation.Param;
 import org.osgl.util.C;
@@ -111,8 +112,13 @@ public class GenieInjector extends DependencyInjectorBase<GenieInjector> {
     }
 
     @Override
-    public boolean isScope(Class<? extends Annotation> aClass) {
-        return genie().isScope(aClass);
+    public boolean isScope(Class<? extends Annotation> annoClass) {
+        return genie().isScope(annoClass);
+    }
+
+    @Override
+    public boolean isInheritedScopeStopper(Class<? extends Annotation> annoClass) {
+        return genie().isInheritedScopeStopper(annoClass);
     }
 
     public void addModule(Object module) {
@@ -170,6 +176,7 @@ public class GenieInjector extends DependencyInjectorBase<GenieInjector> {
                     genie.registerQualifiers(Bind.class, Param.class);
                     genie.registerScopeAlias(Singleton.class, Stateless.class);
                     genie.registerScopeAlias(Singleton.class, InheritedStateless.class);
+                    genie.registerScopeAlias(StopInheritedScope.class, Stateful.class);
                     List<ActionMethodParamAnnotationHandler> list = Act.pluginManager().pluginList(ActionMethodParamAnnotationHandler.class);
                     for (ActionMethodParamAnnotationHandler h : list) {
                         Set<Class<? extends Annotation>> set = h.listenTo();

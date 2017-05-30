@@ -639,14 +639,19 @@ public class App extends DestroyableBase {
     }
 
     private boolean hasSingletonAnnotation(Class<?> cls) {
+        boolean found = false;
+        GenieInjector injector = Act.app().injector();
         Annotation[] aa = cls.getAnnotations();
         for (Annotation a: aa) {
             Class<? extends Annotation> type = a.annotationType();
+            if (injector.isInheritedScopeStopper(type)) {
+                return false;
+            }
             if (InheritedStateless.class == type || Stateless.class == type || Singleton.class == type) {
-                return true;
+                found = true;
             }
         }
-        return false;
+        return found;
     }
 
     void build() {

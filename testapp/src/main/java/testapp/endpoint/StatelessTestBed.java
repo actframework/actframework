@@ -4,6 +4,7 @@ import act.app.App;
 import act.controller.annotation.UrlContext;
 import act.util.InheritedStateless;
 import act.util.Lazy;
+import act.util.Stateful;
 import act.util.Stateless;
 import org.osgl.mvc.annotation.GetAction;
 import org.osgl.util.S;
@@ -23,6 +24,8 @@ public class StatelessTestBed {
 
     private StatelessBar bar;
 
+    private StatefulBar barReverted;
+
     //@Stateless can't make the testbed stateless
     // otherwise we can't really test the stateless of Foo and Bar
     private final String id;
@@ -36,12 +39,14 @@ public class StatelessTestBed {
             @NotNull App app,
             @NotNull StatelessFoo foo,
             @NotNull StatelessBar bar,
+            @NotNull StatefulBar barReverted,
             @NotNull Eager eager,
             @NotNull LazyBoy lazyBoy
     ) {
         this.id = app.cuid();
         this.foo = foo;
         this.bar = bar;
+        this.barReverted = barReverted;
         this.eager = eager;
         this.lazyBoy = lazyBoy;
     }
@@ -57,6 +62,9 @@ public class StatelessTestBed {
     public abstract static class InheritedStatelessBase extends StatelessBase {}
 
     public static class StatelessBar extends InheritedStatelessBase {}
+
+    @Stateful
+    public static class StatefulBar extends StatelessBar {}
 
     @Singleton
     public static class Eager extends StatelessBase {}
@@ -78,6 +86,11 @@ public class StatelessTestBed {
     @GetAction("bar")
     public String bar() {
         return bar.id;
+    }
+
+    @GetAction("stopInheritedScope")
+    public String barReverted() {
+        return barReverted.id;
     }
 
     @GetAction("eager")

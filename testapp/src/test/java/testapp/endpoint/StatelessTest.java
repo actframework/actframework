@@ -22,6 +22,11 @@ public class StatelessTest extends EndpointTester {
     }
 
     @Test
+    public void testStopInheriedScope() throws Exception {
+        testUrl("stateless/stopInheritedScope", true);
+    }
+
+    @Test
     public void testEagerSingleton() throws Exception {
         testUrl("stateless/eager");
     }
