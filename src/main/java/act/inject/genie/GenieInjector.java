@@ -127,12 +127,11 @@ public class GenieInjector extends DependencyInjectorBase<GenieInjector> {
     public boolean injectable(BeanSpec beanSpec) {
         Class rawType = beanSpec.rawType();
         return (ActProviders.isProvided(rawType)
-                || null != beanSpec.getAnnotation(Inject.class)
-                || null != beanSpec.getAnnotation(Provided.class)
-                || null != beanSpec.getAnnotation(Context.class)
-                || null != beanSpec.getAnnotation(Singleton.class)
-                || beanSpec.isInstanceOf(SingletonBase.class)
-                || null != beanSpec.getAnnotation(ApplicationScoped.class)
+                || beanSpec.hasAnnotation(Inject.class)
+                || beanSpec.hasAnnotation(Provided.class)
+                || beanSpec.hasAnnotation(Context.class)
+                || app().isSingleton(rawType)
+                || beanSpec.hasAnnotation(ApplicationScoped.class)
                 || subjectToInject(beanSpec)
         );
     }
