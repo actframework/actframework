@@ -19,16 +19,25 @@
 *            version history
 ********************************************
 1.4.0
+* #221 Make `Dao` implementation be stateless
+* #220 Automatically register a class with `@Stateless` tag into app's singleton registry
+* #219 Support Lazy initialized singleton
+* #217 Support initialize DbService asynchronously
+* #212 Support easy configuring of header session mapper
+* #211 Smart initialize Job instance
+* #207 Deprecate `@Env.Mode` for `@Env.RequireMode`
+* #206 Deprecate `@Env.Profile` for `@Env.RequireProfile`
+* #205 Deprecate `@Env.Group` for `@Env.RequireGroup`
 * #192 Log the URL with handler error message
 * #191 Review and fix the use of `ConcurrentMap`
 * #17 Support WebSocket
 
 1.3.4
-* #202 `@Output` annotation on controller field is not effective when handler method has no parameters
-* #203 Make mailer support `@TemplateContext` annotation
-* #214 App bytecode enhancer state not cleaned
-* #216 Improve handling of fatal error in Job method during app bootstrap
 * #222 async job is not really async
+* #216 Improve handling of fatal error in Job method during app bootstrap
+* #214 App bytecode enhancer state not cleaned
+* #203 Make mailer support `@TemplateContext` annotation
+* #202 `@Output` annotation on controller field is not effective when handler method has no parameters
 
 1.3.3
 * #200 It does not put correct content type header when servicing static resource as css file bug fixed
