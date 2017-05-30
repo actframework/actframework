@@ -104,7 +104,7 @@ public enum AppEventId {
     }, STATELESS_PROVISIONED {
         @Override
         public AppEvent of(App app) {
-            return new SingletonProvisioned(app);
+            return new StatelessProvisioned(app);
         }
     }, START() {
         @Override
