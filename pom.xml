@@ -19,6 +19,7 @@
 *            version history
 ********************************************
 1.4.0
+* #223 Allow app to terminate `@InheritedStateless`
 * #221 Make `Dao` implementation be stateless
 * #220 Automatically register a class with `@Stateless` tag into app's singleton registry
 * #219 Support Lazy initialized singleton
