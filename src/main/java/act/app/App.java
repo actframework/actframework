@@ -81,8 +81,10 @@ import org.osgl.util.*;
 import org.rythmengine.utils.I18N;
 
 import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Singleton;
 import java.io.File;
 import java.io.IOException;
+import java.lang.annotation.Annotation;
 import java.util.*;
 
 import static act.app.event.AppEventId.*;
@@ -603,6 +605,7 @@ public class App extends DestroyableBase {
                         setBlockIssue(blockIssueCause);
                     }
                     emit(PRE_START);
+                    emit(STATELESS_PROVISIONED);
                     emit(START);
                     daemonKeeper();
                     LOGGER.info("App[%s] loaded in %sms", name(), $.ms() - ms);
@@ -624,6 +627,26 @@ public class App extends DestroyableBase {
 
     public AppBuilder builder() {
         return builder;
+    }
+
+    /**
+     * Report if a class is registered into singleton registry
+     * @param cls the class
+     * @return `true` if the class is registered into singleton registry
+     */
+    public boolean isSingleton(Class<?> cls) {
+        return null != singletonRegistry.get(cls) || hasSingletonAnnotation(cls);
+    }
+
+    private boolean hasSingletonAnnotation(Class<?> cls) {
+        Annotation[] aa = cls.getAnnotations();
+        for (Annotation a: aa) {
+            Class<? extends Annotation> type = a.annotationType();
+            if (InheritedStateless.class == type || Stateless.class == type || Singleton.class == type) {
+                return true;
+            }
+        }
+        return false;
     }
 
     void build() {
@@ -1194,6 +1217,7 @@ public class App extends DestroyableBase {
     private void initSingletonRegistry() {
         singletonRegistry = new SingletonRegistry(this);
         singletonRegistry.register(App.class, this);
+        singletonRegistry.register(SingletonRegistry.class, singletonRegistry);
         appServiceRegistry.bulkRegisterSingleton();
     }
 

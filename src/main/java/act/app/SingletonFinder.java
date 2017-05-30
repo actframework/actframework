@@ -20,16 +20,17 @@ package act.app;
  * #L%
  */
 
-import act.util.AnnotatedClassFinder;
-import act.util.SingletonBase;
-import act.util.SubClassFinder;
+import act.app.event.AppEventId;
+import act.util.*;
+import org.osgl.$;
+import org.osgl.Osgl;
 
 import javax.inject.Singleton;
 
 /**
  * Find all classes annotated with {@link javax.inject.Singleton}
  */
-
+@SuppressWarnings("unused")
 public class SingletonFinder {
 
     private SingletonFinder() {}
@@ -37,7 +38,34 @@ public class SingletonFinder {
     @SubClassFinder(SingletonBase.class)
     @AnnotatedClassFinder(Singleton.class)
     public static void found(Class<?> cls) {
-        App.instance().registerSingletonClass(cls);
+        registerSingleton(cls);
+    }
+
+    @AnnotatedClassFinder(value = Stateless.class, callOn = AppEventId.PRE_START)
+    public static void foundStateless(Class<?> cls) {
+        registerSingleton(cls);
+    }
+
+    @AnnotatedClassFinder(value = InheritedStateless.class, callOn = AppEventId.PRE_START)
+    public static void foundInheritedStateless(Class<?> cls) {
+        final App app = App.instance();
+        app.registerSingletonClass(cls);
+        ClassInfoRepository repo = app.classLoader().classInfoRepository();
+        ClassNode node = repo.node(cls.getName());
+        node.visitPublicNotAbstractSubTreeNodes(new Osgl.Visitor<ClassNode>() {
+            @Override
+            public void visit(ClassNode classNode) throws Osgl.Break {
+                String name = classNode.name();
+                Class<?> cls = $.classForName(name, app.classLoader());
+                registerSingleton(cls);
+            }
+        });
+    }
+
+    private static void registerSingleton(Class<?> cls) {
+        if (null == cls.getAnnotation(Lazy.class)) {
+            App.instance().registerSingletonClass(cls);
+        }
     }
 
 }

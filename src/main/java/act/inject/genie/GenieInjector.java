@@ -169,6 +169,8 @@ public class GenieInjector extends DependencyInjectorBase<GenieInjector> {
                         }
                     };
                     genie.registerQualifiers(Bind.class, Param.class);
+                    genie.registerScopeAlias(Singleton.class, Stateless.class);
+                    genie.registerScopeAlias(Singleton.class, InheritedStateless.class);
                     List<ActionMethodParamAnnotationHandler> list = Act.pluginManager().pluginList(ActionMethodParamAnnotationHandler.class);
                     for (ActionMethodParamAnnotationHandler h : list) {
                         Set<Class<? extends Annotation>> set = h.listenTo();

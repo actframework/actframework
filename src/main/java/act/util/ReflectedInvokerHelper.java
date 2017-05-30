@@ -20,6 +20,7 @@ package act.util;
  * #L%
  */
 
+import act.Act;
 import act.app.App;
 import act.app.AppServiceBase;
 import act.inject.param.JsonDTOClassManager;
@@ -65,7 +66,7 @@ public class ReflectedInvokerHelper {
             return true;
         }
         Class<?> fieldType = field.getType();
-        return fieldType.isAnnotationPresent(Stateless.class) || AppServiceBase.class.isAssignableFrom(fieldType);
+        return Act.app().isSingleton(fieldType) || AppServiceBase.class.isAssignableFrom(fieldType);
     }
 
 }
