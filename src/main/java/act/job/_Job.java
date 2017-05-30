@@ -69,19 +69,35 @@ class _Job extends DestroyableBase implements Runnable {
         }
 
         synchronized void runSubJobs() {
+            runSubJobs(false);
+        }
+
+        synchronized void runSubJobs(boolean async) {
+            if (jobList.isEmpty()) {
+                return;
+            }
+            final AppJobManager jobManager = async ? Act.jobManager() : null;
             iterating = true;
             try {
-                for (_Job subJob : jobList) {
-                    subJob.run();
-                    if (Act.isDev() && subJob.app.hasBlockIssue()) {
-                        break;
+                for (final _Job subJob : jobList) {
+                    if (null != jobManager) {
+                        jobManager.now(new Runnable() {
+                            @Override
+                            public void run() {
+                                subJob.run();
+                            }
+                        });
+                    } else {
+                        subJob.run();
+                        if (Act.isDev() && subJob.app.hasBlockIssue()) {
+                            break;
+                        }
                     }
                 }
             } finally {
                 iterating = false;
             }
         }
-
     }
 
     static final String BRIEF_VIEW = "id,oneTime,executed,trigger";
@@ -276,7 +292,7 @@ class _Job extends DestroyableBase implements Runnable {
     }
 
     private void invokeParallelJobs() {
-        parallelJobs.runSubJobs();
+        parallelJobs.runSubJobs(true);
     }
 
     protected final AppJobManager manager() {

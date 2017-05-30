@@ -58,7 +58,7 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-    <act.version>[1.3.0, 1.4.0)</act.version>
+    <act.version>[1.3.0, 1.3.999)</act.version>
     <act.storage.version>[0.7.0, 2.0.0)</act.storage.version>
     <act.morphia.version>[1.0.0, 1.0.100)</act.morphia.version>
     <app.entry>testapp.TestApp</app.entry>
