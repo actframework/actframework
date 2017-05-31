@@ -28,7 +28,7 @@ import act.app.event.AppEventId;
 import act.app.util.AppCrypto;
 import act.app.util.NamedPort;
 import act.boot.BootstrapClassLoader;
-import act.boot.app.BlockIssueException;
+import act.boot.app.BlockIssueSignal;
 import act.cli.CliDispatcher;
 import act.cli.bytecode.CommanderByteCodeScanner;
 import act.conf.AppConfLoader;
@@ -149,7 +149,7 @@ public class App extends DestroyableBase {
     private volatile File tmpDir;
     private boolean restarting;
     private Result blockIssue;
-    private Exception blockIssueCause;
+    private Throwable blockIssueCause;
     private RequestHandler blockIssueHandler = new FastRequestHandler() {
         @Override
         public void handle(ActionContext context) {
@@ -421,7 +421,11 @@ public class App extends DestroyableBase {
         refresh();
     }
 
-    public synchronized void setBlockIssue(Exception e) {
+    public synchronized void setBlockIssue(Throwable e) {
+        if (null != blockIssue || null != blockIssueCause) {
+            // do not overwrite previous block issue
+            return;
+        }
         if (e instanceof ActErrorResult) {
             blockIssue = (ActErrorResult) e;
         } else {
@@ -432,7 +436,7 @@ public class App extends DestroyableBase {
                 blockIssueCause = e;
             }
         }
-        throw BlockIssueException.INSTANCE;
+        throw BlockIssueSignal.INSTANCE;
     }
 
     /**
@@ -567,10 +571,14 @@ public class App extends DestroyableBase {
             } catch (CompilationException e) {
                 compilationException = e;
                 throw ActErrorResult.of(e);
+            } catch (BlockIssueSignal e) {
+                // ignore
             }
-            //classLoader().loadClasses();
-            emit(APP_CODE_SCANNED);
-            emit(CLASS_LOADED);
+            if (null == blockIssue) {
+                //classLoader().loadClasses();
+                emit(APP_CODE_SCANNED);
+                emit(CLASS_LOADED);
+            }
 
             Act.viewManager().reload(this);
 
@@ -612,7 +620,7 @@ public class App extends DestroyableBase {
                     emit(POST_START);
                 }
             }, true);
-        } catch (BlockIssueException e) {
+        } catch (BlockIssueSignal e) {
             // ignore
         }
     }

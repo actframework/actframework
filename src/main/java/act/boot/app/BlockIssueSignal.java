@@ -25,7 +25,7 @@ import org.osgl.exception.FastRuntimeException;
 /**
  * This exception is thrown out when block issue encountered at dev mode
  */
-public class BlockIssueException extends FastRuntimeException {
-    public static final BlockIssueException INSTANCE = new BlockIssueException();
-    private BlockIssueException() {}
+public class BlockIssueSignal extends FastRuntimeException {
+    public static final BlockIssueSignal INSTANCE = new BlockIssueSignal();
+    private BlockIssueSignal() {}
 }
