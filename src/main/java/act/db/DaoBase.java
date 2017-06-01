@@ -22,7 +22,6 @@ package act.db;
 
 import act.app.security.SecurityContext;
 import act.util.ActContext;
-import act.util.InheritedStateless;
 import org.osgl.$;
 import org.osgl.util.Generics;
 
@@ -31,7 +30,8 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 import java.util.List;
 
-@InheritedStateless
+// We can't do this atm, otherwise app developer cannot use EbeanDao, or MorphiaDao directly
+//@InheritedStateless
 public abstract class DaoBase<ID_TYPE, MODEL_TYPE, QUERY_TYPE extends Dao.Query<MODEL_TYPE, QUERY_TYPE>>
         implements Dao<ID_TYPE, MODEL_TYPE, QUERY_TYPE> {
 
