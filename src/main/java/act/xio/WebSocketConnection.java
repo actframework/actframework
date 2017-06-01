@@ -21,6 +21,7 @@ package act.xio;
  */
 
 import act.Destroyable;
+import act.conf.AppConfig;
 
 /**
  * A WebSocket connection
@@ -32,6 +33,15 @@ public interface WebSocketConnection extends Destroyable {
      * @return connection session id
      */
     String sessionId();
+
+    /**
+     * Returns the username which is gained when connection is setup
+     * by calling {@link org.osgl.http.H.Session#get(String)} with
+     * {@link AppConfig#sessionKeyUsername()}
+     *
+     * @return the username or `null` if there is no logged in user when connection is setup
+     */
+    String username();
 
     /**
      * Send a text message through websocket

@@ -59,7 +59,7 @@ class UndertowWebSocketConnectionHandler extends WebSocketConnectionHandler {
             Handlers.websocket(new WebSocketConnectionCallback() {
                 @Override
                 public void onConnect(WebSocketHttpExchange exchange, WebSocketChannel channel) {
-                    final WebSocketConnection connection = new UndertowWebSocketConnection(channel, context.session().id());
+                    final WebSocketConnection connection = new UndertowWebSocketConnection(channel, context.session());
                     channel.setAttribute("act_conn", connection);
                     connectionManager.registerNewConnection(connection, context);
                     final WebSocketContext wsCtx = new WebSocketContext(req.url(), connection, connectionManager, connectionManager.app());

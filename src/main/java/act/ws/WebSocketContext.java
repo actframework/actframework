@@ -61,6 +61,19 @@ public class WebSocketContext extends ActContext.Base<WebSocketContext> implemen
         return connection.sessionId();
     }
 
+    @Override
+    public String username() {
+        return connection.username();
+    }
+
+    public WebSocketConnectionManager manager() {
+        return manager;
+    }
+
+    public WebSocketConnection connection() {
+        return connection;
+    }
+
     /**
      * Called when remote end send a message to this connection
      * @param receivedMessage the message received

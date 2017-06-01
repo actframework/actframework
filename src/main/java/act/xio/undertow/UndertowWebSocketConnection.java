@@ -20,27 +20,36 @@ package act.xio.undertow;
  * #L%
  */
 
+import act.Act;
 import act.util.DestroyableBase;
 import act.xio.WebSocketConnection;
 import io.undertow.websockets.core.WebSocketChannel;
 import io.undertow.websockets.core.WebSockets;
 import org.osgl.$;
+import org.osgl.http.H;
 
 import java.io.IOException;
 
 public class UndertowWebSocketConnection extends DestroyableBase implements WebSocketConnection {
 
     private final WebSocketChannel channel;
-    private final String id;
+    private final String sessionId;
+    private final String username;
 
-    public UndertowWebSocketConnection(WebSocketChannel channel, String id) {
+    public UndertowWebSocketConnection(WebSocketChannel channel, H.Session session) {
         this.channel = $.notNull(channel);
-        this.id = $.notNull(id);
+        this.sessionId = session.id();
+        this.username = session.get(Act.appConfig().sessionKeyUsername());
     }
 
     @Override
     public String sessionId() {
-        return id;
+        return sessionId;
+    }
+
+    @Override
+    public String username() {
+        return username;
     }
 
     @Override
