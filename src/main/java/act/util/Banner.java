@@ -185,7 +185,7 @@ public class Banner {
     }
 
     private static String udfBanner() {
-        URL url = Banner.class.getResource("/banner.txt");
+        URL url = Banner.class.getResource("/act_banner.txt");
         return null == url ? null : IO.readContentAsString(url);
     }
 
