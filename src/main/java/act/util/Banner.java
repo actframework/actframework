@@ -26,14 +26,17 @@ import act.conf.AppConfigKey;
 import act.conf.ConfLoader;
 import act.sys.Env;
 import com.github.lalyos.jfiglet.FigletFont;
+import org.fusesource.jansi.Ansi;
 import org.osgl.$;
 import org.osgl.util.C;
 import org.osgl.util.E;
+import org.osgl.util.IO;
 import org.osgl.util.S;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 import java.util.List;
 
 /**
@@ -82,7 +85,7 @@ public class Banner {
             sb.append("\n   group: ").append(group);
         }
         sb.append("\n");
-        sb.append("\n     zen: ").append(Zen.wordsOfTheDay());
+        sb.append("\n     zen: ").append(Ansi.ansi().a(Ansi.Attribute.ITALIC).a(Zen.wordsOfTheDay()).a(Ansi.Attribute.ITALIC_OFF));
         sb.append("\n");
 
         return sb.toString();
@@ -95,6 +98,10 @@ public class Banner {
     };
 
     private static String asciiArt(String s) {
+        String udfBanner = udfBanner();
+        if (null != udfBanner) {
+            return S.concat(udfBanner, "\n");
+        }
         String font = System.getProperty("banner.font");
         if (null == font) {
             int len = s.length();
@@ -140,7 +147,7 @@ public class Banner {
     }
 
     private static String poweredBy(int width, String actVersion) {
-        String poweredBy = "powered by ActFramework " + actVersion;
+        String poweredBy = Ansi.ansi().render("powered by @|bold ActFramework|@ ") + actVersion;
         int pw = poweredBy.length();
         int gap = width - pw;
         gap = Math.max(gap, 0);
@@ -175,6 +182,11 @@ public class Banner {
             return false;
         }
         return true;
+    }
+
+    private static String udfBanner() {
+        URL url = Banner.class.getResource("/banner.txt");
+        return null == url ? null : IO.readContentAsString(url);
     }
 
     private static void printArt(String s) {

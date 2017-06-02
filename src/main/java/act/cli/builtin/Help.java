@@ -25,6 +25,7 @@ import act.cli.CliDispatcher;
 import act.cli.util.CommandLineParser;
 import act.handler.CliHandler;
 import act.handler.CliHandlerBase;
+import org.fusesource.jansi.Ansi;
 import org.osgl.util.C;
 import org.osgl.util.S;
 
@@ -71,13 +72,13 @@ public class Help extends CliHandlerBase {
         }
         String fmt = "%-" + (maxLen + 4) + "s - %s";
         if (sys) {
-            list(command, "System commands", fmt, sysCommands, dispatcher, context);
+            list(command, "@|bold System commands|@", fmt, sysCommands, dispatcher, context);
         }
         if (app) {
             if (sys) {
                 context.println("");
             }
-            list(command, "Application commands", fmt, appCommands, dispatcher, context);
+            list(command, "@|bold Application commands|@", fmt, appCommands, dispatcher, context);
         }
     }
 
@@ -95,7 +96,7 @@ public class Help extends CliHandlerBase {
                 lines.add(S.fmt(fmt, cmd, commandLine._2));
             }
         }
-        context.println(S.join("\n", lines));
+        context.println(Ansi.ansi().render(S.join("\n", lines)).toString());
     }
 
     private int calMaxCmdLen(List<String> commands) {
@@ -117,7 +118,7 @@ public class Help extends CliHandlerBase {
 
         List<String> names = dispatcher.names(handler);
         T2<String, String> commandLine = handler.commandLine();
-        lines.add("Usage: " + names.get(0));
+        lines.add("@|bold Usage|@: " + names.get(0));
         lines.add(commandLine._2);
 
         String summary = handler.summary();
@@ -129,7 +130,7 @@ public class Help extends CliHandlerBase {
         List<T2<String, String>> options = handler.options();
         if (!options.isEmpty()) {
             lines.add("");
-            lines.add("Options:");
+            lines.add("@|bold Options|@:");
             int maxLen = 0;
             for (T2<String, String> t2: options) {
                 maxLen = Math.max(maxLen, t2._1.length());
@@ -142,16 +143,16 @@ public class Help extends CliHandlerBase {
 
         if (names.size() > 1) {
             lines.add("");
-            lines.add("Aliases: " + S.join(", ", C.list(names).tail()));
+            lines.add("@|Aliases|@: " + S.join(", ", C.list(names).tail()));
         }
 
         List<String> shortCuts = dispatcher.shortCuts(handler);
         if (shortCuts.size() > 0) {
             lines.add("");
-            lines.add("Shortcuts: " + S.join(", ", shortCuts));
+            lines.add("@|bold Shortcuts|@: " + S.join(", ", shortCuts));
         }
 
-        context.println(S.join("\n", lines));
+        context.println(Ansi.ansi().render(S.join("\n", lines)).toString());
         return true;
     }
 

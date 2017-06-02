@@ -19,6 +19,8 @@
 *            version history
 ********************************************
 1.4.0
+* #227 Support colorful console output
+* #226 Support customized banner text
 * #223 Allow app to terminate `@InheritedStateless`
 * #221 Make `Dao` implementation be stateless
 * #220 Automatically register a class with `@Stateless` tag into app's singleton registry
@@ -243,6 +245,7 @@
     <ecj.version>4.6.1</ecj.version>
     <fastjson.version>1.2.32</fastjson.version>
     <bval.version>1.1.2</bval.version>
+    <jansi.version>1.16</jansi.version>
     <javax.inject.version>1</javax.inject.version>
     <javax.mail.version>1.5.0-b01</javax.mail.version>
     <jfiglet.version>0.0.8</jfiglet.version>
@@ -442,6 +445,12 @@
       <groupId>com.google.zxing</groupId>
       <artifactId>javase</artifactId>
       <version>${zxing.javase.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.fusesource.jansi</groupId>
+      <artifactId>jansi</artifactId>
+      <version>${jansi.version}</version>
     </dependency>
 
     <dependency>

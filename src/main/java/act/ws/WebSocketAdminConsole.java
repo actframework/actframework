@@ -31,19 +31,19 @@ public class WebSocketAdminConsole {
     @Inject
     private WebSocketConnectionManager manager;
 
-    @Command(name = "ws.conn.by-user", help = "report websocket connection number by user")
+    @Command(name = "act.ws.conn.by-user", help = "report websocket connection number by user")
     public int userConnections(@Optional("specify user name") String username) {
         WebSocketConnectionRegistry registry = manager.usernameRegistry();
         return S.blank(username) ? registry.count() : registry.count(username);
     }
 
-    @Command(name = "ws.conn.by-tag", help = "report websocket connection number by user")
+    @Command(name = "act.ws.conn.by-tag", help = "report websocket connection number by user")
     public int tagConnections(@Optional("specify the tag label") String label) {
         WebSocketConnectionRegistry registry = manager.tagRegistry();
         return S.blank(label) ? registry.count() : registry.count(label);
     }
 
-    @Command(name = "ws.conn.by-session", help = "report websocket connection number by user")
+    @Command(name = "act.ws.conn.by-session", help = "report websocket connection number by user")
     public int sessionConnections(@Optional("specify the session id") String sessionId) {
         WebSocketConnectionRegistry registry = manager.sessionRegistry();
         return S.blank(sessionId) ? registry.count() : registry.count(sessionId);
