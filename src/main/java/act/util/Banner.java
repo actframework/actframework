@@ -25,6 +25,7 @@ import act.Zen;
 import act.conf.AppConfigKey;
 import act.conf.ConfLoader;
 import act.sys.Env;
+import ascii.Image2ascii;
 import com.github.lalyos.jfiglet.FigletFont;
 import org.fusesource.jansi.Ansi;
 import org.osgl.$;
@@ -46,8 +47,8 @@ public class Banner {
 
     private static String cachedBanner;
 
-    public static void print(String appName, String appVersion) {
-        String banner = banner(appName, Act.VERSION, appVersion);
+    public static void print() {
+        String banner = banner();
         System.out.println(banner);
         cachedBanner = banner;
     }
@@ -56,23 +57,37 @@ public class Banner {
         return cachedBanner;
     }
 
-    public static String banner(String text, String actVersion, String appVersion) {
-        if (S.blank(text)) {
-            text = "ACTFRAMEWORK";
+    public static String banner() {
+        String bannerText = null;
+
+
+        String udfBanner = udfBanner();
+        if (null != udfBanner) {
+            bannerText = S.concat(udfBanner, "\n");
         }
-        String s = asciiArt(text);
-        int width = width(s);
-        S.Buffer sb = S.buffer(s);
-        if ("ACTFRAMEWORK".equals(text)) {
+        if (null == bannerText) {
+            bannerText = asciiArt(Act.appName());
+        }
+        int bannerTextWidth = width(bannerText);
+
+        String favicon = favicon();
+        int faviconWidth = width(favicon);
+        int maxWidth = Math.max(faviconWidth, bannerTextWidth);
+
+        S.Buffer sb = S.buffer();
+        String actVersion = Act.actVersion();
+        if ("ACTFRAMEWORK".equals(bannerText)) {
+            addFavicon(sb, favicon, maxWidth, faviconWidth);
             int n = actVersion.length();
-            int spaceLeft = (width - n + 1) / 2;
-            for (int i = 0; i < spaceLeft; ++i) {
-                sb.append(" ");
-            }
-            sb.append(actVersion).append("\n");
+            int padLeft = (maxWidth - n + 1) / 2;
+            sb.append(S.times(" ", padLeft)).append(actVersion).append("\n");
         } else {
-            sb.append(poweredBy(width, actVersion));
-            sb.append("\n\n version: ").append(appVersion);
+            sb.append(bannerText);
+            if (S.notBlank(favicon)) {
+                addFavicon(sb, favicon, maxWidth, faviconWidth);
+            }
+            sb.append(poweredBy(bannerTextWidth, actVersion));
+            sb.append("\n\n version: ").append(Act.appVersion());
         }
         File aFile = new File("");
         String group = Act.nodeGroup();
@@ -97,11 +112,38 @@ public class Banner {
             "speed", "standard", "starwars",
     };
 
-    private static String asciiArt(String s) {
-        String udfBanner = udfBanner();
-        if (null != udfBanner) {
-            return S.concat(udfBanner, "\n");
+    private static void addFavicon(S.Buffer buffer, String favicon, int maxWidth, int faviconWidth) {
+        if (S.blank(favicon)) {
+            return;
         }
+        int delta = maxWidth - faviconWidth;
+        if (0 == delta) {
+            buffer.append(favicon).append("\n");
+        } else {
+            int padLeft = (delta + 1) / 2;
+            String[] lines = favicon.split("\n");
+            for (String line : lines) {
+                buffer.append(S.times(" ", padLeft)).append(line).append("\n");
+            }
+        }
+        buffer.append("\n");
+    }
+
+    private static String favicon() {
+        URL url = Banner.class.getResource("/asset/favicon.ico");
+        if (null == url) {
+            url = Banner.class.getResource("/asset/img/favicon.ico");
+            if (null == url) {
+                url = Banner.class.getResource("/asset/image/favicon.ico");
+            }
+        }
+        if (null == url) {
+            return "";
+        }
+        return Image2ascii.render(url, true);
+    }
+
+    private static String asciiArt(String s) {
         String font = System.getProperty("banner.font");
         if (null == font) {
             int len = s.length();

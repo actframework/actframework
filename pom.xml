@@ -245,6 +245,7 @@
     <ecj.version>4.6.1</ecj.version>
     <fastjson.version>1.2.32</fastjson.version>
     <bval.version>1.1.2</bval.version>
+    <image4j.version>0.7</image4j.version>
     <jansi.version>1.16</jansi.version>
     <javax.inject.version>1</javax.inject.version>
     <javax.mail.version>1.5.0-b01</javax.mail.version>
@@ -439,6 +440,12 @@
       <groupId>javax.mail</groupId>
       <artifactId>mail</artifactId>
       <version>${javax.mail.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.jclarion</groupId>
+      <artifactId>image4j</artifactId>
+      <version>${image4j.version}</version>
     </dependency>
 
     <dependency>

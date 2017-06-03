@@ -151,6 +151,24 @@ public final class Act {
         }
     }
 
+    public static class AppInfo extends $.T2<String, String> {
+        public AppInfo(String appName, String appVersion) {
+            super(ensureAppName(appName), appVersion);
+        }
+
+        public String appName() {
+            return _1;
+        }
+
+        public String appVersion() {
+            return _2;
+        }
+
+        private static String ensureAppName(String name) {
+            return S.blank(name) ? "ActFramework" : name;
+        }
+    }
+
     public static final String VERSION = Version.fullVersion();
     public static final Logger LOGGER = L.get(Act.class);
     /**
@@ -299,8 +317,23 @@ public final class Act {
         }
     }
 
+    private static final ThreadLocal<AppInfo> APP_INFO = new ThreadLocal<>();
+    public static AppInfo appInfo() {
+        return APP_INFO.get();
+    }
+    public static String appName() {
+        return appInfo().appName();
+    }
+    public static String appVersion() {
+        return appInfo().appVersion();
+    }
+    public static String actVersion() {
+        return VERSION;
+    }
+
     private static void start(boolean singleAppServer, String appName, String appVersion) {
-        Banner.print(appName, appVersion);
+        APP_INFO.set(new AppInfo(appName, appVersion));
+        Banner.print();
         loadConfig();
         initMetricPlugin();
         initPluginManager();
