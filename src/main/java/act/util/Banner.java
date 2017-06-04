@@ -75,17 +75,26 @@ public class Banner {
 
         S.Buffer sb = S.buffer();
         String actVersion = Act.actVersion();
-        if ("ACTFRAMEWORK".equals(bannerText)) {
-            addFavicon(sb, favicon, maxWidth, faviconWidth);
+        if ("ACTFRAMEWORK".equals(Act.appName())) {
+            sb.append(bannerText);
+            if (S.notBlank(favicon)) {
+                sb.append("\n");
+                addFavicon(sb, favicon, maxWidth, faviconWidth);
+                sb.append("\n");
+            }
             int n = actVersion.length();
             int padLeft = (maxWidth - n + 1) / 2;
             sb.append(S.times(" ", padLeft)).append(actVersion).append("\n");
         } else {
             sb.append(bannerText);
             if (S.notBlank(favicon)) {
+                sb.append("\n");
                 addFavicon(sb, favicon, maxWidth, faviconWidth);
+                sb.append("\n");
+                sb.append(poweredBy(maxWidth, actVersion, true));
+            } else {
+                sb.append(poweredBy(maxWidth, actVersion, false));
             }
-            sb.append(poweredBy(bannerTextWidth, actVersion));
             sb.append("\n\n version: ").append(Act.appVersion());
         }
         File aFile = new File("");
@@ -125,7 +134,6 @@ public class Banner {
                 buffer.append(S.times(" ", padLeft)).append(line).append("\n");
             }
         }
-        buffer.append("\n");
     }
 
     private static String favicon() {
@@ -184,10 +192,17 @@ public class Banner {
             is = Banner.class.getResourceAsStream("/standard.flf");
         }
         try {
-            return FigletFont.convertOneLine(is, s.toUpperCase());
+            String bannerText = FigletFont.convertOneLine(is, s.toUpperCase());
+            return S.concat(removeEndingBlankLines(bannerText), "\n");
         } catch (IOException e) {
             throw E.ioException(e);
         }
+    }
+
+    private static String removeEndingBlankLines(String text) {
+        int lastLineBreak = text.lastIndexOf("\n");
+        boolean lastLineIsBlank = (S.isBlank(text.substring(lastLineBreak, text.length())));
+        return lastLineIsBlank ? removeEndingBlankLines(text.substring(0, lastLineBreak)) : text;
     }
 
     private static int width(String banner) {
@@ -199,13 +214,17 @@ public class Banner {
         return max;
     }
 
-    private static String poweredBy(int width, String actVersion) {
-        String poweredBy = Ansi.ansi().render("powered by @|bold ActFramework|@ ") + actVersion;
-        int pw = poweredBy.length();
+    private static String poweredBy(int width, String actVersion, boolean center) {
+        String raw = S.concat("powered by @|bold ActFramework|@ ", actVersion);
+        String poweredBy = Ansi.ansi().render(raw).toString();
+        int pw = raw.length() - 9;
         int gap = width - pw;
         gap = Math.max(gap, 0);
         if (gap == 0) {
             return poweredBy;
+        }
+        if (center) {
+            gap = (gap + 1) / 2;
         }
         return S.concat(S.times(" ", gap), poweredBy);
     }
