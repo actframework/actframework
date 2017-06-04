@@ -22,6 +22,7 @@ package ascii;
 
 import net.sf.image4j.codec.ico.ICODecoder;
 import org.osgl.$;
+import org.osgl.util.E;
 import org.osgl.util.IO;
 
 import javax.imageio.ImageIO;
@@ -29,6 +30,7 @@ import java.awt.*;
 import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.net.MalformedURLException;
 import java.net.URL;
 
 // Adapted from https://github.com/netwinder-dev/ASCIIConversion/blob/master/src/ASCIIConvert/ASCIIConversions.java
@@ -153,21 +155,32 @@ public class Image2ascii {
         return $.T3(max, (int)(height * factor), factor);
     }
 
-    public static String render(URL imageSource) {
-        return render(imageSource, false);
+    public static String render(File imageSource, boolean favicon) {
+        try {
+            URL url = imageSource.toURI().toURL();
+            boolean isIcon = imageSource.getName().endsWith(".ico");
+            return render(url, favicon, isIcon);
+        } catch (MalformedURLException e) {
+            // this is never gonna happen
+            throw E.unexpected(e);
+        }
     }
 
-    public static String render(URL imageSource, boolean favicon) {
+    public static String render(URL imageSource, boolean iconFile) {
+        return render(imageSource, false, iconFile);
+    }
+
+    public static String render(URL imageSource, boolean favicon, boolean iconFile) {
         try {
-            BufferedImage image = read(imageSource, favicon);
+            BufferedImage image = read(imageSource, iconFile);
             return new Image2ascii().convert(image, favicon);
         } catch (Exception e) {
             return "";
         }
     }
 
-    private static BufferedImage read(URL imageSource, boolean favicon) throws Exception {
-        if (favicon) {
+    private static BufferedImage read(URL imageSource, boolean isIcon) throws Exception {
+        if (isIcon) {
             java.util.List<BufferedImage> images = ICODecoder.read(imageSource.openStream());
             return images.get(0);
         } else {
@@ -179,7 +192,7 @@ public class Image2ascii {
         Image2ascii convert = new Image2ascii();
         java.util.List<BufferedImage> images = ICODecoder.read(new File("/home/luog/favicon.ico"));
         String s = convert.convert(images.get(0), true);
-        if (images.size() > 1) {
+        if (images.size() > 0) {
             for (int i = 0; i < images.size(); ++i) {
                 ImageIO.write(images.get(i), "png", new File("/home/luog/f" + i + ".png"));
             }

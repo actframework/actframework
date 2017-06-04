@@ -60,7 +60,6 @@ public class Banner {
     public static String banner() {
         String bannerText = null;
 
-
         String udfBanner = udfBanner();
         if (null != udfBanner) {
             bannerText = S.concat(udfBanner, "\n");
@@ -130,17 +129,29 @@ public class Banner {
     }
 
     private static String favicon() {
-        URL url = Banner.class.getResource("/asset/favicon.ico");
+        boolean isIcon = true;
+        URL url = Banner.class.getResource("/asset/favicon.png");
         if (null == url) {
-            url = Banner.class.getResource("/asset/img/favicon.ico");
+            url = Banner.class.getResource("/asset/img/favicon.png");
             if (null == url) {
-                url = Banner.class.getResource("/asset/image/favicon.ico");
+                url = Banner.class.getResource("/asset/image/favicon.png");
+            }
+        }
+        if (null != url) {
+            isIcon = false;
+        } else {
+            url = Banner.class.getResource("/asset/favicon.ico");
+            if (null == url) {
+                url = Banner.class.getResource("/asset/img/favicon.ico");
+                if (null == url) {
+                    url = Banner.class.getResource("/asset/image/favicon.ico");
+                }
             }
         }
         if (null == url) {
             return "";
         }
-        return Image2ascii.render(url, true);
+        return Image2ascii.render(url, true, isIcon);
     }
 
     private static String asciiArt(String s) {
