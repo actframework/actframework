@@ -8,7 +8,7 @@ import org.osgl.util.S;
 import javax.inject.Singleton;
 
 @Singleton
-public class GH222 {
+public class GH222 extends GithubIssueBase {
 
     private long syncThreadId;
     private long asyncThreadId;
@@ -23,7 +23,7 @@ public class GH222 {
         asyncThreadId = Thread.currentThread().getId();
     }
 
-    @GetAction("/gh/222")
+    @GetAction("222")
     public void check() {
         Act.LOGGER.info(S.concat("sync: ", S.string(syncThreadId), "\tasync: ", S.string(asyncThreadId)));
         if (syncThreadId == asyncThreadId) {
