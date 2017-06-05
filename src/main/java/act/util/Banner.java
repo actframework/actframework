@@ -80,7 +80,6 @@ public class Banner {
             if (S.notBlank(favicon)) {
                 sb.append("\n");
                 addFavicon(sb, favicon, maxWidth, faviconWidth);
-                sb.append("\n");
             }
             int n = actVersion.length();
             int padLeft = (maxWidth - n + 1) / 2;
@@ -159,7 +158,7 @@ public class Banner {
         if (null == url) {
             return "";
         }
-        return Image2ascii.render(url, true, isIcon);
+        return removeEndingBlankLines(Image2ascii.render(url, true, isIcon));
     }
 
     private static String asciiArt(String s) {
