@@ -41,6 +41,7 @@
 * #214 App bytecode enhancer state not cleaned
 * #203 Make mailer support `@TemplateContext` annotation
 * #202 `@Output` annotation on controller field is not effective when handler method has no parameters
+* #229 double decode of URL path variable
 
 1.3.3
 * #200 It does not put correct content type header when servicing static resource as css file bug fixed
