@@ -882,12 +882,12 @@ public class Router extends AppServiceBase<Router> {
                                 String varNameStr = varName.toString();
                                 String varValue = matcher.group(varNameStr);
                                 if (S.notBlank(varValue)) {
-                                    context.param(varNameStr, S.urlDecode(S.string(varValue)));
+                                    context.param(varNameStr, S.string(varValue));
                                 }
                             }
                         } else {
                             CharSequence varName = targetNode.varNames.get(0);
-                            context.param(varName.toString(), S.urlDecode(S.string(name)));
+                            context.param(varName.toString(), S.string(name));
                         }
                         return targetNode;
                     }
