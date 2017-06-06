@@ -58,6 +58,10 @@ public class RenderAny extends Result {
 
     // TODO: Allow plugin to support rendering pdf, xls or other binary types
     public void apply(ActionContext context) {
+        if (context.hasTemplate()) {
+            RenderTemplate.get(context.successStatus()).apply(context);
+            return;
+        }
         H.Format fmt = context.accept();
         if (fmt == UNKNOWN) {
             H.Request req = context.req();
@@ -91,8 +95,7 @@ public class RenderAny extends Result {
             }
             result = new FilteredRenderXML(map, null, context);
         } else if (HTML == fmt || TXT == fmt || CSV == fmt) {
-            RenderTemplate.get(context.successStatus()).apply(context);
-            return;
+            throw E.unsupport("Template not found");
         } else if (PDF == fmt || XLS == fmt || XLSX == fmt || DOC == fmt || DOCX == fmt) {
             List<String> varNames = context.__appRenderArgNames();
             if (null != varNames && !varNames.isEmpty()) {
