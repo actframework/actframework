@@ -25,6 +25,7 @@
 * #216 Improve handling of fatal error in Job method during app bootstrap
 * #222 async job is not really async
 * #229 double decode of URL path variable
+* #230 CLI cannot input negative number
 
 1.3.3
 * #200 It does not put correct content type header when servicing static resource as css file bug fixed

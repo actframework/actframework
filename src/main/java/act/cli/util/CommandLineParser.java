@@ -94,7 +94,15 @@ public class CommandLineParser {
         arguments = C.newList();
         String lead = null;
         for (String cur : tokens) {
-            if (cur.startsWith("-")) {
+            // is cur token an number?
+            boolean isNumberic = false;
+            try {
+                Double.parseDouble(cur);
+                isNumberic = true;
+            } catch (Exception e) {
+                // ignore
+            }
+            if (!isNumberic && cur.startsWith("-")) {
                 // todo handle --option=a, --option:b style
                 String[] sa = cur.split("[=:]");
                 switch (sa.length) {
