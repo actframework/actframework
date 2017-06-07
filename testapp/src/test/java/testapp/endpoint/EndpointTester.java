@@ -191,6 +191,10 @@ public class EndpointTester extends TestBase {
         checkResponseCode(resp());
     }
 
+    protected void responseCodeIs(int code) throws IOException {
+        eq(code, resp().code());
+    }
+
 
     protected Map<String, Object> prepareJsonData(String key, Object val, Object ... otherPairs) {
         Map<String, Object> params = C.newMap(key, val);
