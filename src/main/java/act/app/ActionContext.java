@@ -226,6 +226,7 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
 
     @Override
     public ActionContext templatePath(String templatePath) {
+        hasTemplate = null;
         return super.templatePath(templatePath);
     }
 
