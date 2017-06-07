@@ -803,13 +803,13 @@ public @interface Controller {
         }
 
         public static Result inferPrimitiveResult(Object v, ActionContext actionContext, boolean requireJSON, boolean requireXML, boolean isArray) {
+            H.Status status = actionContext.successStatus();
             if (requireJSON) {
-                return RenderJSON.of(C.map("result", v));
+                return RenderJSON.of(status, C.map("result", v));
             } else if (requireXML) {
-                return RenderXML.of(S.concat("<result>", S.string(v), "</result>"));
+                return RenderXML.of(status, S.concat("<result>", S.string(v), "</result>"));
             } else {
                 H.Format fmt = actionContext.accept();
-                final H.Status status = actionContext.successStatus();
                 if (HTML == fmt || H.Format.UNKNOWN == fmt) {
                     String s = isArray ? $.toString2(v) : v.toString();
                     return RenderHtml.of(status, s);
@@ -823,9 +823,9 @@ public @interface Controller {
 
         public static Result inferResult(Map<String, Object> map, ActionContext actionContext) {
             if (actionContext.acceptJson()) {
-                return RenderJSON.of(map);
+                return RenderJSON.of(actionContext.successStatus(), map);
             }
-            return RenderTemplate.of(map);
+            return RenderTemplate.of(actionContext.successStatus(), map);
         }
 
         /**
@@ -851,9 +851,9 @@ public @interface Controller {
          */
         public static Result inferResult(InputStream is, ActionContext actionContext) {
             if (actionContext.acceptJson()) {
-                return RenderJSON.of(IO.readContentAsString(is));
+                return RenderJSON.of(actionContext.successStatus(), IO.readContentAsString(is));
             } else {
-                return new RenderBinary(is, null, true);
+                return new RenderBinary(is, null, true).status(actionContext.successStatus());
             }
         }
 
@@ -868,17 +868,17 @@ public @interface Controller {
          */
         public static Result inferResult(File file, ActionContext actionContext) {
             if (actionContext.acceptJson()) {
-                return RenderJSON.of(IO.readContentAsString(file));
+                return RenderJSON.of(actionContext.successStatus(), IO.readContentAsString(file));
             } else {
-                return new RenderBinary(file);
+                return new RenderBinary(file).status(actionContext.successStatus());
             }
         }
 
         public static Result inferResult(ISObject sobj, ActionContext context) {
             if (context.acceptJson()) {
-                return RenderJSON.of(sobj.asString());
+                return RenderJSON.of(context.successStatus(), sobj.asString());
             } else {
-                return binary(sobj);
+                return binary(sobj).status(context.successStatus());
             }
         }
 
@@ -909,7 +909,7 @@ public @interface Controller {
                 return (Result)v;
             }
             final H.Request req = context.req();
-            final H.Status status = req.method() == H.Method.POST ? H.Status.CREATED : H.Status.OK;
+            final H.Status status = context.successStatus();
             if (Act.isProd() && v instanceof Versioned && req.method().safe()) {
                 processEtag(meta, v, context, req);
             }
@@ -937,7 +937,7 @@ public @interface Controller {
             } else if (v instanceof ISObject) {
                 return inferResult((ISObject) v, context);
             } else if (v instanceof Map) {
-                return RenderJSON.of(v);
+                return RenderJSON.of(status, v);
             } else {
                 if (requireJSON) {
                     // patch https://github.com/alibaba/fastjson/issues/478
@@ -960,7 +960,7 @@ public @interface Controller {
                     }
                 } else if (context.acceptXML()) {
                     PropertySpec.MetaInfo propertySpec = PropertySpec.MetaInfo.withCurrent(meta, context);
-                    return new FilteredRenderXML(v, propertySpec, context);
+                    return new FilteredRenderXML(status, v, propertySpec, context);
                 } else if (context.accept() == H.Format.CSV) {
                     PropertySpec.MetaInfo propertySpec = PropertySpec.MetaInfo.withCurrent(meta, context);
                     return RenderCSV.get(status, v, propertySpec, context);
