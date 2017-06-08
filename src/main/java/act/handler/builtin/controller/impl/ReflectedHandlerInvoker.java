@@ -266,7 +266,14 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
             fillOutputVariables(controller, params, context);
         }
 
-        return invoke(handler, context, controller, params);
+        try {
+            return invoke(handler, context, controller, params);
+        } finally {
+            // ensure template is loaded as
+            // request handler might change the
+            // template path
+            checkTemplate(context);
+        }
     }
 
     @Override
@@ -607,7 +614,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         return ActNotFound.create(method, message);
     }
 
-    private boolean checkTemplate(ActionContext context) {
+    public boolean checkTemplate(ActionContext context) {
         if (!context.state().isHandling()) {
             //we don't check template on interceptors
             return false;
@@ -625,7 +632,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
                 hasTemplate = b;
             }
         }
-        context.hasTemplate(hasTemplate);
+        context.setHasTemplate(hasTemplate);
         return hasTemplate;
     }
 

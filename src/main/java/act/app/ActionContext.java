@@ -253,7 +253,7 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
         return hasTemplate;
     }
 
-    public ActionContext hasTemplate(boolean b) {
+    public ActionContext setHasTemplate(boolean b) {
         hasTemplate = b;
         return this;
     }
