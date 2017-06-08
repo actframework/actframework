@@ -267,6 +267,10 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         try {
             return invoke(handler, context, controller, params);
         } finally {
+            if (null == context.hasTemplate()) {
+                // template path has been reset by app logic
+                templateCache.remove(context.accept());
+            }
             // ensure template is loaded as
             // request handler might change the
             // template path
