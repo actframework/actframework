@@ -630,11 +630,8 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         H.Format fmt = context.accept();
         hasTemplate = templateCache.get(fmt);
         if (null == hasTemplate || Act.isDev()) {
-            Boolean b = probeTemplate(fmt, context);
-            hasTemplate = templateCache.putIfAbsent(fmt, b);
-            if (null == hasTemplate) {
-                hasTemplate = b;
-            }
+            hasTemplate = probeTemplate(fmt, context);
+            templateCache.putIfAbsent(fmt, hasTemplate);
         }
         context.setHasTemplate(hasTemplate);
         return hasTemplate;
