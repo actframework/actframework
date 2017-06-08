@@ -144,6 +144,7 @@ public interface ActContext<CTX_TYPE extends ActContext> extends ParamValueProvi
         private Map<String, Object> attributes;
         private Locale locale;
         private S.Buffer strBuf;
+
         // (violation.propertyPath, violation)
         private Map<String, ConstraintViolation> violations;
 
