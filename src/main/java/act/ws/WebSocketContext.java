@@ -56,6 +56,10 @@ public class WebSocketContext extends ActContext.Base<WebSocketContext> implemen
         _local.set(this);
     }
 
+    public String url() {
+        return url;
+    }
+
     @Override
     public String sessionId() {
         return connection.sessionId();
