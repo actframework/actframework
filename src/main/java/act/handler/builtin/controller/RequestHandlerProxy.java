@@ -363,9 +363,9 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
             actionInfo = findActionInfoFromParent(ctrlInfo, actionMethodName);
         }
         webSocketConnectionHandler = tryGenerateWebSocketConnectionHandler(actionInfo);
-        if (null != webSocketConnectionHandler) {
-            return;
-        }
+//        if (null != webSocketConnectionHandler) {
+//            return;
+//        }
         Act.Mode mode = Act.mode();
         actionHandler = mode.createRequestHandler(actionInfo, app);
         sessionFree = actionHandler.sessionFree();
