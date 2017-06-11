@@ -43,6 +43,7 @@
 * #202 `@Output` annotation on controller field is not effective when handler method has no parameters
 * #229 double decode of URL path variable
 * #230 CLI cannot input negative number
+* #231 `RenderAny` shall favor `ActionContext.hasTemplate()` result 
 * #233 When action handler returning an object, it failed to apply the `@ResponseStatus` annotation in certain cases
 
 1.3.3
