@@ -29,6 +29,8 @@ import java.util.Map;
  */
 public abstract class JsonDTO {
 
+    public static final String CTX_ATTR_KEY = "act_json_dto";
+
     private Map<String, Object> beans = new HashMap<String, Object>();
 
     /**

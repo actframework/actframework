@@ -69,7 +69,7 @@ class UndertowWebSocketConnectionHandler extends WebSocketConnectionHandler {
                     final WebSocketConnection connection = new UndertowWebSocketConnection(channel, context.session());
                     channel.setAttribute("act_conn", connection);
                     connectionManager.registerNewConnection(connection, context);
-                    final WebSocketContext wsCtx = new WebSocketContext(req.url(), connection, connectionManager, connectionManager.app());
+                    final WebSocketContext wsCtx = new WebSocketContext(req.url(), connection, connectionManager, context, connectionManager.app());
                     if (LOGGER.isTraceEnabled()) {
                         LOGGER.trace("websocket context[%s] created for %s", connection.sessionId(), context.req().url());
                     }

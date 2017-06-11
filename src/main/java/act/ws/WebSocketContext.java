@@ -20,6 +20,7 @@ package act.ws;
  * #L%
  */
 
+import act.app.ActionContext;
 import act.app.App;
 import act.util.ActContext;
 import act.xio.WebSocketConnection;
@@ -36,6 +37,7 @@ public class WebSocketContext extends ActContext.Base<WebSocketContext> implemen
 
     private WebSocketConnection connection;
     private WebSocketConnectionManager manager;
+    private ActionContext actionContext;
     private String url;
     private String stringMessage;
     private boolean isJson;
@@ -47,12 +49,14 @@ public class WebSocketContext extends ActContext.Base<WebSocketContext> implemen
             String url,
             WebSocketConnection connection,
             WebSocketConnectionManager manager,
+            ActionContext actionContext,
             App app
     ) {
         super(app);
         this.url = url;
         this.connection = $.notNull(connection);
         this.manager = $.notNull(manager);
+        this.actionContext = $.notNull(actionContext);
         _local.set(this);
     }
 
@@ -76,6 +80,10 @@ public class WebSocketContext extends ActContext.Base<WebSocketContext> implemen
 
     public WebSocketConnection connection() {
         return connection;
+    }
+
+    public ActionContext actionContext() {
+        return actionContext;
     }
 
     /**

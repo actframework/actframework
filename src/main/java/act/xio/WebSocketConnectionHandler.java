@@ -64,7 +64,6 @@ public abstract class WebSocketConnectionHandler extends RequestHandlerBase {
     private int paramCount;
     private int fieldsAndParamsCount;
     private String singleJsonFieldName;
-    private String jsonDTOKey;
     private List<BeanSpec> paramSpecs;
     private Object host;
     private boolean isWsHandler;
@@ -95,7 +94,6 @@ public abstract class WebSocketConnectionHandler extends RequestHandlerBase {
 
         this.handlerClass = $.classForName(controller.className(), cl);
         this.disabled = !Env.matches(handlerClass);
-        this.jsonDTOKey = app.cuid();
 
         paramTypes = paramTypes(cl);
 
@@ -200,7 +198,7 @@ public abstract class WebSocketConnectionHandler extends RequestHandlerBase {
     }
 
     private void ensureJsonDTOGenerated(WebSocketContext context) {
-        if (0 == fieldsAndParamsCount || !context.isJson() || null != context.attribute(jsonDTOKey)) {
+        if (0 == fieldsAndParamsCount || !context.isJson()) {
             return;
         }
         Class<? extends JsonDTO> dtoClass = jsonDTOClassManager.get(handlerClass, method);
@@ -210,7 +208,7 @@ public abstract class WebSocketConnectionHandler extends RequestHandlerBase {
         }
         try {
             JsonDTO dto = JSON.parseObject(patchedJsonBody(context), dtoClass);
-            context.attribute(jsonDTOKey, dto);
+            context.attribute(JsonDTO.CTX_ATTR_KEY, dto);
         } catch (JSONException e) {
             if (e.getCause() != null) {
                 App.LOGGER.warn(e.getCause(), "error parsing JSON data");
