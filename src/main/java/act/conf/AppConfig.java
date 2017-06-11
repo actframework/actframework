@@ -2575,7 +2575,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
      * @param conf the application configurator
      */
     public void _merge(AppConfigurator conf) {
-        app.eventBus().trigger(AppEventId.CONFIG_PREMERGE);
+        app.emit(AppEventId.CONFIG_PREMERGE);
         if (mergeTracker.contains(conf)) {
             return;
         }

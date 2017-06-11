@@ -606,7 +606,7 @@ public class App extends DestroyableBase {
             emit(DEPENDENCY_INJECTOR_PROVISIONED);
             emit(SINGLETON_PROVISIONED);
             config().preloadConfigurations();
-            jobManager().on(AppEventId.DB_SVC_LOADED, new Runnable() {
+            Runnable runnable = new Runnable() {
                 @Override
                 public void run() {
                     if (null != blockIssueCause) {
@@ -619,7 +619,12 @@ public class App extends DestroyableBase {
                     LOGGER.info("App[%s] loaded in %sms", name(), $.ms() - ms);
                     emit(POST_START);
                 }
-            }, true);
+            };
+            if (!dbServiceManager().hasDbService() || eventEmitted(DB_SVC_LOADED)) {
+                runnable.run();
+            } else {
+                jobManager().on(DB_SVC_LOADED, runnable, true);
+            }
         } catch (BlockIssueSignal e) {
             // ignore
         }
@@ -1028,7 +1033,7 @@ public class App extends DestroyableBase {
 
     private void clearServiceResourceManager() {
         if (null != appServiceRegistry) {
-            eventBus().emit(STOP);
+            emit(STOP);
             appServiceRegistry.destroy();
             dependencyInjector = null;
             if (null != cache) {

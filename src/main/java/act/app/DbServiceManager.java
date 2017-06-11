@@ -112,7 +112,7 @@ public class DbServiceManager extends AppServiceBase<DbServiceManager> implement
                 @Override
                 public void on(EventObject event) throws Exception {
                     daoInitializer.run();
-                    eventBus.emit(AppEventId.DB_SVC_LOADED);
+                    app.emit(AppEventId.DB_SVC_LOADED);
                 }
             });
         } else {
@@ -122,11 +122,15 @@ public class DbServiceManager extends AppServiceBase<DbServiceManager> implement
                     asyncInitializers.remove(event.source());
                     if (asyncInitializers.isEmpty()) {
                         daoInitializer.run();
-                        eventBus.emit(AppEventId.DB_SVC_LOADED);
+                        app.emit(AppEventId.DB_SVC_LOADED);
                     }
                 }
             });
         }
+    }
+
+    boolean hasDbService() {
+        return serviceMap.isEmpty();
     }
 
     private void configureSequenceGenerator(final App app) {

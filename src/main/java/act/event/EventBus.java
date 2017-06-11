@@ -283,12 +283,16 @@ public class EventBus extends AppServiceBase<EventBus> {
         callOn(event, list, async);
     }
 
+    /**
+     * Emit an internal event.
+     *
+     * Not to be used by app developer
+     *
+     * @param eventId the app event ID
+     * @return this event bus
+     */
     public synchronized EventBus emit(AppEventId eventId) {
         return emit(appEventLookup.get(eventId));
-    }
-
-    public synchronized EventBus trigger(AppEventId eventId) {
-        return emit(eventId);
     }
 
     public synchronized EventBus emit(final AppEvent event) {

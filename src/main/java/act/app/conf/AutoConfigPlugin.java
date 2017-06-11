@@ -146,6 +146,9 @@ public class AutoConfigPlugin extends AnnotatedTypeFinder {
         void loadClass(Class<?> c, String ns) {
             Class[] ca = c.getClasses();
             for (Class c0 : ca) {
+                if (c0 == c) {
+                    continue;
+                }
                 int mod = c0.getModifiers();
                 if (Modifier.isStatic(mod)) {
                     loadClass(c0, ns + "." + c0.getSimpleName());
