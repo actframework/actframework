@@ -19,6 +19,9 @@
 *            version history
 ********************************************
 1.4.0
+* #235 Update fastjson to 1.2.33
+* #234 App start event listener not called when there is no Async DbService
+* #228 Generate ASCII banner for favicon
 * #227 Support colorful console output
 * #226 Support customized banner text
 * #223 Allow app to terminate `@InheritedStateless`
@@ -36,15 +39,15 @@
 * #17 Support WebSocket
 
 1.3.4
+* #233 When action handler returning an object, it failed to apply the `@ResponseStatus` annotation in certain cases
+* #231 `RenderAny` shall favor `ActionContext.hasTemplate()` result
+* #230 CLI cannot input negative number
+* #229 double decode of URL path variable
 * #222 async job is not really async
 * #216 Improve handling of fatal error in Job method during app bootstrap
 * #214 App bytecode enhancer state not cleaned
 * #203 Make mailer support `@TemplateContext` annotation
 * #202 `@Output` annotation on controller field is not effective when handler method has no parameters
-* #229 double decode of URL path variable
-* #230 CLI cannot input negative number
-* #231 `RenderAny` shall favor `ActionContext.hasTemplate()` result 
-* #233 When action handler returning an object, it failed to apply the `@ResponseStatus` annotation in certain cases
 
 1.3.3
 * #200 It does not put correct content type header when servicing static resource as css file bug fixed
