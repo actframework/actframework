@@ -1,4 +1,4 @@
-package act.boot.app;
+package act.ws;
 
 /*-
  * #%L
@@ -20,12 +20,15 @@ package act.boot.app;
  * #L%
  */
 
-import org.osgl.exception.FastRuntimeException;
+import org.osgl.mvc.util.Binder;
+import org.osgl.mvc.util.ParamValueProvider;
 
-/**
- * This exception is thrown out when block issue encountered at dev mode
- */
-public class BlockIssueException extends FastRuntimeException {
-    public static final BlockIssueException INSTANCE = new BlockIssueException();
-    private BlockIssueException() {}
+public class FullMessageBinder extends Binder<String> {
+
+    public static final FullMessageBinder INSTANCE = new FullMessageBinder();
+
+    @Override
+    public String resolve(String bean, String model, ParamValueProvider paramValueProvider) {
+        return paramValueProvider.paramVal("_body");
+    }
 }

@@ -146,7 +146,7 @@ class _Job extends DestroyableBase implements Runnable {
     }
 
     protected String brief() {
-        return S.concat("job[", "id", "]\none time job?", S.string(oneTime), "\trigger:", trigger.toString());
+        return S.concat("job[", id, "]\none time job:", S.string(oneTime), "\ntrigger:", S.string(trigger));
     }
 
     @Override

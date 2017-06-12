@@ -81,8 +81,11 @@ public class ProvidedValueLoader extends DestroyableBase implements ParamValueLo
     public static ProvidedValueLoader get(BeanSpec beanSpec, DependencyInjector<?> injector) {
         ProvidedValueLoader loader = lookup.get(beanSpec);
         if (null == loader) {
-            loader = new ProvidedValueLoader(beanSpec, injector);
-            lookup.putIfAbsent(beanSpec, loader);
+            ProvidedValueLoader newLoader = new ProvidedValueLoader(beanSpec, injector);
+            loader = lookup.putIfAbsent(beanSpec, newLoader);
+            if (null == loader) {
+                loader = newLoader;
+            }
         }
         return loader;
     }

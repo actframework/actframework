@@ -41,6 +41,7 @@ import act.cli.ascii_table.ASCIITableHeader;
 import act.cli.ascii_table.spec.IASCIITableAware;
 import org.osgl.$;
 import org.osgl.cache.CacheService;
+import org.osgl.util.Keyword;
 import org.osgl.util.S;
 
 import java.io.Serializable;
@@ -90,7 +91,7 @@ public class CollectionASCIITableAware<T> implements IASCIITableAware {
 					properties.remove(i);
 					properties.add(i, prop);
 				}
-				headers.add(new ASCIITableHeader(String.valueOf(header).toUpperCase()));
+				headers.add(new ASCIITableHeader(Keyword.of(String.valueOf(header)).constantName()));
 			}
 			
 			//Populate data

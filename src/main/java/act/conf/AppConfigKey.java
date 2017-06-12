@@ -25,6 +25,8 @@ import act.app.App;
 import act.handler.UnknownHttpMethodProcessor;
 import act.view.TemplatePathResolver;
 import act.view.View;
+import act.ws.DefaultSecureTicketCodec;
+import act.ws.SecureTicketCodec;
 import org.osgl.$;
 import org.osgl.exception.NotAppliedException;
 import org.osgl.util.E;
@@ -469,6 +471,15 @@ public enum AppConfigKey implements ConfigKey {
     HTTP_SECURE("http.secure.enabled"),
 
     /**
+     * `https.port`
+     *
+     * Specify the https port - only effect when {@link #SSL} is enabled
+     *
+     * Default value: `5443`
+     */
+    HTTPS_PORT("https.port"),
+
+    /**
      * `act.i18n.enabled` turn on/off i18n tools, e.g. {@link act.i18n.LocaleResolver}
      *
      * Default value: `false`
@@ -689,6 +700,15 @@ public enum AppConfigKey implements ConfigKey {
     SECRET("secret"),
 
     /**
+     * `secure_ticket_codec`
+     *
+     * Specify the implementation of {@link SecureTicketCodec}
+     *
+     * Default value: {@link DefaultSecureTicketCodec}
+     */
+    SECURE_TICKET_CODEC("secure_ticket_codec"),
+
+    /**
      * {@code server.header}
      * Specifies the server header to be output to the response
      * <p>Default value: {@code act}</p>
@@ -743,6 +763,16 @@ public enum AppConfigKey implements ConfigKey {
     SESSION_MAPPER("session.mapper.impl"),
 
     /**
+     * `session.mapper.header.prefix`
+     *
+     * this configuration enables the {@link act.util.SessionMapper.HeaderSessionMapper}
+     * and set the prefix
+     *
+     * Default value: `null`
+     */
+    SESSION_MAPPER_HEADER_PREFIX("session.mapper.header.prefix"),
+
+    /**
      * {@code session.secure.enabled} specifies whether the session cookie should
      * be set as secure. Enable secure session will cause session cookie only
      * effective in https connection. Literally this will enforce the web site to run
@@ -763,6 +793,15 @@ public enum AppConfigKey implements ConfigKey {
      * <p>Default value: 1.7</p>
      */
     SOURCE_VERSION("source.version"),
+
+    /**
+     * `ssl.enabled`
+     *
+     * Turn on/off SSL support
+     *
+     * Default value: `false`
+     */
+    SSL("ssl.enabled"),
 
     /**
      * {@code act.target.version} specifies the java version
@@ -822,6 +861,15 @@ public enum AppConfigKey implements ConfigKey {
      * <p>Default value: {@code rythm}</p>
      */
     VIEW_DEFAULT("view.default"),
+
+    /**
+     * `ws.key.ticket`
+     *
+     * Specifies the parameter variable name to get websocket ticket
+     *
+     * Default value: `ws_ticket`
+     */
+    WS_KEY_TICKET("ws.key.ticket"),
 
     X_FORWARD_PROTOCOL("x_forward_protocol"),
 

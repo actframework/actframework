@@ -165,5 +165,9 @@ public class UndertowRequest extends RequestImplBase<UndertowRequest> {
         }
     }
 
+    HttpServerExchange exchange() {
+        return hse;
+    }
+
 
 }

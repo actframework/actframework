@@ -454,7 +454,8 @@ public final class ControllerClassMetaInfo extends DestroyableBase {
             PostAction.class, H.Method.POST,
             PutAction.class, H.Method.PUT,
             DeleteAction.class, H.Method.DELETE,
-            PatchAction.class, H.Method.PATCH
+            PatchAction.class, H.Method.PATCH,
+            WsAction.class, H.Method.GET
     );
 
     public static boolean isActionAnnotation(Class<? extends Annotation> type) {

@@ -28,7 +28,7 @@ import act.app.event.AppEventId;
 import act.app.util.AppCrypto;
 import act.app.util.NamedPort;
 import act.boot.BootstrapClassLoader;
-import act.boot.app.BlockIssueException;
+import act.boot.app.BlockIssueSignal;
 import act.cli.CliDispatcher;
 import act.cli.bytecode.CommanderByteCodeScanner;
 import act.conf.AppConfLoader;
@@ -64,6 +64,9 @@ import act.view.rythm.JodaDateTimeFormatter;
 import act.view.rythm.JodaTransformers;
 import act.view.rythm.RythmTransformerScanner;
 import act.view.rythm.RythmView;
+import act.ws.SecureTicketCodec;
+import act.ws.SecureTicketHandler;
+import act.ws.WebSocketConnectionManager;
 import org.osgl.$;
 import org.osgl.Osgl;
 import org.osgl.cache.CacheService;
@@ -78,8 +81,10 @@ import org.osgl.util.*;
 import org.rythmengine.utils.I18N;
 
 import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Singleton;
 import java.io.File;
 import java.io.IOException;
+import java.lang.annotation.Annotation;
 import java.util.*;
 
 import static act.app.event.AppEventId.*;
@@ -130,6 +135,7 @@ public class App extends DestroyableBase {
     private IStorageService uploadFileStorageService;
     private AppServiceRegistry appServiceRegistry;
     private Map<String, Daemon> daemonRegistry;
+    private WebSocketConnectionManager webSocketConnectionManager;
     private AppCrypto crypto;
     private IdGenerator idGenerator;
     private CacheService cache;
@@ -143,7 +149,7 @@ public class App extends DestroyableBase {
     private volatile File tmpDir;
     private boolean restarting;
     private Result blockIssue;
-    private Exception blockIssueCause;
+    private Throwable blockIssueCause;
     private RequestHandler blockIssueHandler = new FastRequestHandler() {
         @Override
         public void handle(ActionContext context) {
@@ -415,7 +421,11 @@ public class App extends DestroyableBase {
         refresh();
     }
 
-    public synchronized void setBlockIssue(Exception e) {
+    public synchronized void setBlockIssue(Throwable e) {
+        if (null != blockIssue || null != blockIssueCause) {
+            // do not overwrite previous block issue
+            return;
+        }
         if (e instanceof ActErrorResult) {
             blockIssue = (ActErrorResult) e;
         } else {
@@ -426,7 +436,7 @@ public class App extends DestroyableBase {
                 blockIssueCause = e;
             }
         }
-        throw BlockIssueException.INSTANCE;
+        throw BlockIssueSignal.INSTANCE;
     }
 
     /**
@@ -500,7 +510,7 @@ public class App extends DestroyableBase {
 
     public synchronized void refresh() {
         currentState = null;
-        long ms = $.ms();
+        final long ms = $.ms();
         LOGGER.info("App starting ....");
         profile = null;
         blockIssue = null;
@@ -541,8 +551,8 @@ public class App extends DestroyableBase {
             initCliDispatcher();
             initCliServer();
 
+            initWebSocketConnectionManager();
             initDbServiceManager();
-            emit(DB_SVC_LOADED);
 
             Act.viewManager().reset();
             loadGlobalPlugin();
@@ -561,10 +571,14 @@ public class App extends DestroyableBase {
             } catch (CompilationException e) {
                 compilationException = e;
                 throw ActErrorResult.of(e);
+            } catch (BlockIssueSignal e) {
+                // ignore
             }
-            //classLoader().loadClasses();
-            emit(APP_CODE_SCANNED);
-            emit(CLASS_LOADED);
+            if (null == blockIssue) {
+                //classLoader().loadClasses();
+                emit(APP_CODE_SCANNED);
+                emit(CLASS_LOADED);
+            }
 
             Act.viewManager().reload(this);
 
@@ -592,17 +606,28 @@ public class App extends DestroyableBase {
             emit(DEPENDENCY_INJECTOR_PROVISIONED);
             emit(SINGLETON_PROVISIONED);
             config().preloadConfigurations();
-            emit(PRE_START);
-            emit(START);
-            daemonKeeper();
-        } catch (BlockIssueException e) {
+            Runnable runnable = new Runnable() {
+                @Override
+                public void run() {
+                    if (null != blockIssueCause) {
+                        setBlockIssue(blockIssueCause);
+                    }
+                    emit(PRE_START);
+                    emit(STATELESS_PROVISIONED);
+                    emit(START);
+                    daemonKeeper();
+                    LOGGER.info("App[%s] loaded in %sms", name(), $.ms() - ms);
+                    emit(POST_START);
+                }
+            };
+            if (!dbServiceManager().hasDbService() || eventEmitted(DB_SVC_LOADED)) {
+                runnable.run();
+            } else {
+                jobManager().on(DB_SVC_LOADED, runnable, true);
+            }
+        } catch (BlockIssueSignal e) {
             // ignore
         }
-        if (null != blockIssueCause) {
-            setBlockIssue(blockIssueCause);
-        }
-        LOGGER.info("App[%s] loaded in %sms", name(), $.ms() - ms);
-        emit(POST_START);
     }
 
     /**
@@ -615,6 +640,31 @@ public class App extends DestroyableBase {
 
     public AppBuilder builder() {
         return builder;
+    }
+
+    /**
+     * Report if a class is registered into singleton registry
+     * @param cls the class
+     * @return `true` if the class is registered into singleton registry
+     */
+    public boolean isSingleton(Class<?> cls) {
+        return null != singletonRegistry.get(cls) || hasSingletonAnnotation(cls);
+    }
+
+    private boolean hasSingletonAnnotation(Class<?> cls) {
+        boolean found = false;
+        GenieInjector injector = Act.app().injector();
+        Annotation[] aa = cls.getAnnotations();
+        for (Annotation a: aa) {
+            Class<? extends Annotation> type = a.annotationType();
+            if (injector.isInheritedScopeStopper(type)) {
+                return false;
+            }
+            if (InheritedStateless.class == type || Stateless.class == type || Singleton.class == type) {
+                found = true;
+            }
+        }
+        return found;
     }
 
     void build() {
@@ -799,7 +849,7 @@ public class App extends DestroyableBase {
     /**
      * Return an ID in string that is unique across the cluster
      *
-     * @return
+     * @return a cluster unique id
      */
     public String cuid() {
         return idGenerator.genId();
@@ -966,7 +1016,7 @@ public class App extends DestroyableBase {
                 try {
                     daemon.start();
                 } catch (Exception e) {
-                    logger.error(e, "Error starting daemon [%s]", daemon.id());
+                    LOGGER.error(e, "Error starting daemon [%s]", daemon.id());
                 }
             }
         });
@@ -983,7 +1033,7 @@ public class App extends DestroyableBase {
 
     private void clearServiceResourceManager() {
         if (null != appServiceRegistry) {
-            eventBus().emit(STOP);
+            emit(STOP);
             appServiceRegistry.destroy();
             dependencyInjector = null;
             if (null != cache) {
@@ -1148,6 +1198,9 @@ public class App extends DestroyableBase {
             Router router = router(AppConfig.PORT_CLI_OVER_HTTP);
             router.addMapping(H.Method.GET, "/asset/", new StaticResourceGetter("asset"), RouteSource.BUILD_IN);
         }
+        SecureTicketCodec secureTicketCodec = config.secureTicketCodec();
+        SecureTicketHandler secureTicketHandler = new SecureTicketHandler(secureTicketCodec);
+        router().addMapping(H.Method.GET, "/~/ticket", secureTicketHandler);
     }
 
     private void initClassLoader() {
@@ -1171,6 +1224,10 @@ public class App extends DestroyableBase {
         binderManager = new BinderManager(this);
     }
 
+    private void initWebSocketConnectionManager() {
+        webSocketConnectionManager = new WebSocketConnectionManager(this);
+    }
+
     private void initParamValueLoaderManager() {
         new ParamValueLoaderManager(this);
     }
@@ -1178,6 +1235,7 @@ public class App extends DestroyableBase {
     private void initSingletonRegistry() {
         singletonRegistry = new SingletonRegistry(this);
         singletonRegistry.register(App.class, this);
+        singletonRegistry.register(SingletonRegistry.class, singletonRegistry);
         appServiceRegistry.bulkRegisterSingleton();
     }
 
@@ -1225,7 +1283,6 @@ public class App extends DestroyableBase {
 
     private void scanAppCodes() {
         classLoader().scan();
-        //classLoader().scan();
     }
 
     static App create(File appBase, ProjectLayout layout) {

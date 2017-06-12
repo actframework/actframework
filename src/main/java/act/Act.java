@@ -151,6 +151,24 @@ public final class Act {
         }
     }
 
+    public static class AppInfo extends $.T2<String, String> {
+        public AppInfo(String appName, String appVersion) {
+            super(ensureAppName(appName), appVersion);
+        }
+
+        public String appName() {
+            return _1;
+        }
+
+        public String appVersion() {
+            return _2;
+        }
+
+        private static String ensureAppName(String name) {
+            return S.blank(name) ? "ActFramework" : name;
+        }
+    }
+
     public static final String VERSION = Version.fullVersion();
     public static final Logger LOGGER = L.get(Act.class);
     /**
@@ -299,8 +317,23 @@ public final class Act {
         }
     }
 
+    private static final ThreadLocal<AppInfo> APP_INFO = new ThreadLocal<>();
+    public static AppInfo appInfo() {
+        return APP_INFO.get();
+    }
+    public static String appName() {
+        return appInfo().appName();
+    }
+    public static String appVersion() {
+        return appInfo().appVersion();
+    }
+    public static String actVersion() {
+        return VERSION;
+    }
+
     private static void start(boolean singleAppServer, String appName, String appVersion) {
-        Banner.print(appName, appVersion);
+        APP_INFO.set(new AppInfo(appName, appVersion));
+        Banner.print();
         loadConfig();
         initMetricPlugin();
         initPluginManager();
@@ -360,10 +393,14 @@ public final class Act {
 
     public static void hook(App app) {
         int port = app.config().httpPort();
-        network.register(port, new NetworkHandler(app));
+        NetworkHandler networkHandler = new NetworkHandler(app);
+        network.register(port, false, networkHandler);
+        if (app.config().supportSsl()) {
+            network.register(appConfig().httpsPort(), true, networkHandler);
+        }
         List<NamedPort> portList = app.config().namedPorts();
         for (NamedPort np : portList) {
-            network.register(np.port(), new NetworkHandler(app, np));
+            network.register(np.port(), false, new NetworkHandler(app, np));
         }
     }
 
@@ -562,12 +599,16 @@ public final class Act {
     }
 
     public static void start() throws Exception {
-        StackTraceElement[] sa = new RuntimeException().getStackTrace();
+        StackTraceElement[] sa = new Throwable().getStackTrace();
         E.unexpectedIf(sa.length < 2, "Whoops!");
         StackTraceElement ste = sa[1];
         String className = ste.getClassName();
         E.unexpectedIf(!className.contains("."), "The main class must have package name to use Act");
         RunApp.start(S.beforeLast(className, "."));
+    }
+
+    public static Network network() {
+        return network;
     }
 
     private static boolean isItPackageName(String s) {
@@ -623,7 +664,7 @@ public final class Act {
             RunApp.start(appNameOrScanPackage);
         } else {
             // it must be an application name
-            StackTraceElement[] sa = new RuntimeException().getStackTrace();
+            StackTraceElement[] sa = new Throwable().getStackTrace();
             E.unexpectedIf(sa.length < 2, "Whoops!");
             StackTraceElement ste = sa[1];
             String className = ste.getClassName();

@@ -74,19 +74,25 @@ public class JsonDTOClassManager extends AppServiceBase<JsonDTOClassManager> {
         if (S.blank(key)) {
             return null;
         }
-        Class<? extends JsonDTO> c = dtoClasses.get(key);
-        if (null == c) {
+        Class<? extends JsonDTO> cls = dtoClasses.get(key);
+        if (null == cls) {
             try {
-                c = generate(key, beanSpecs);
+                Class<? extends JsonDTO> newClass = generate(key, beanSpecs);
+                cls = dtoClasses.putIfAbsent(key, newClass);
+                if (null == cls) {
+                    cls = newClass;
+                }
             } catch (LinkageError e) {
                 if (e.getMessage().contains("duplicate class definition")) {
                     // another thread has already the DTO class
-                    return dtoClasses.get(key);
+                    cls = dtoClasses.get(key);
+                    E.unexpectedIf(null == cls, "We don't know what happened here ...");
+                } else {
+                    throw e;
                 }
             }
-            dtoClasses.putIfAbsent(key, c);
         }
-        return c;
+        return cls;
     }
 
     private Class<? extends JsonDTO> generate(String name, List<BeanSpec> beanSpecs) {

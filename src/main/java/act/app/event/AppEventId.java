@@ -101,6 +101,11 @@ public enum AppEventId {
         public AppEvent of(App app) {
             return new AppPreStart(app);
         }
+    }, STATELESS_PROVISIONED {
+        @Override
+        public AppEvent of(App app) {
+            return new StatelessProvisioned(app);
+        }
     }, START() {
         @Override
         public AppEvent of(App app) {

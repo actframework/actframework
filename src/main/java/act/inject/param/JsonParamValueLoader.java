@@ -65,8 +65,7 @@ class JsonParamValueLoader implements ParamValueLoader {
         if (isPathVariable) {
             return fallBack.load(bean, context, noDefaultValue);
         }
-        ReflectedHandlerInvoker reflectedHandlerInvoker = context.attribute("reflected_handler");
-        JsonDTO dto = null == reflectedHandlerInvoker ? null : reflectedHandlerInvoker.cachedJsonDTO(context);
+        JsonDTO dto = context.attribute(JsonDTO.CTX_ATTR_KEY);
         if (null == dto) {
             return this.fallBack.load(bean, context, noDefaultValue);
         } else {

@@ -36,6 +36,6 @@ import java.lang.annotation.Target;
  * See https://github.com/actframework/actframework/issues/161
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.TYPE)
+@Target({ElementType.TYPE, ElementType.FIELD})
 public @interface Stateless {
 }

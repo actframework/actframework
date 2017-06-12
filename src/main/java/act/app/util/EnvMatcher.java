@@ -51,17 +51,17 @@ public class EnvMatcher extends ByteCodeVisitor {
             Profile() {
                 @Override
                 boolean matches(EnvAnnotationVisitor visitor) {
-                    return Env.profileMatches(visitor.value, visitor.unless);
+                    return Env.profileMatches(visitor.value, visitor.except);
                 }
             }, Group() {
                 @Override
                 boolean matches(EnvAnnotationVisitor visitor) {
-                    return Env.groupMatches(visitor.value, visitor.unless);
+                    return Env.groupMatches(visitor.value, visitor.except);
                 }
             }, Mode() {
                 @Override
                 boolean matches(EnvAnnotationVisitor visitor) {
-                    return Env.modeMatches(Act.Mode.valueOf(visitor.value), visitor.unless);
+                    return Env.modeMatches(Act.Mode.valueOf(visitor.value), visitor.except);
                 }
             };
 
@@ -70,7 +70,7 @@ public class EnvMatcher extends ByteCodeVisitor {
 
         private Type type;
         private String value;
-        private boolean unless;
+        private boolean except;
 
         public EnvAnnotationVisitor(AnnotationVisitor av, String desc) {
             super(ASM5, av);
@@ -81,8 +81,8 @@ public class EnvMatcher extends ByteCodeVisitor {
         public void visit(String name, Object value) {
             if ("value".equals(name)) {
                 this.value = value.toString();
-            } else if ("unless".equals(name)) {
-                this.unless = Boolean.parseBoolean(value.toString());
+            } else if ("except".equals(name)) {
+                this.except = Boolean.parseBoolean(value.toString());
             }
             super.visit(name, value);
         }

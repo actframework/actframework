@@ -18,16 +18,36 @@
 ********************************************
 *            version history
 ********************************************
+1.4.0
+* #235 Update fastjson to 1.2.33
+* #234 App start event listener not called when there is no Async DbService
+* #228 Generate ASCII banner for favicon
+* #227 Support colorful console output
+* #226 Support customized banner text
+* #223 Allow app to terminate `@InheritedStateless`
+* #221 Make `Dao` implementation be stateless
+* #220 Automatically register a class with `@Stateless` tag into app's singleton registry
+* #219 Support Lazy initialized singleton
+* #217 Support initialize DbService asynchronously
+* #212 Support easy configuring of header session mapper
+* #211 Smart initialize Job instance
+* #207 Deprecate `@Env.Mode` for `@Env.RequireMode`
+* #206 Deprecate `@Env.Profile` for `@Env.RequireProfile`
+* #205 Deprecate `@Env.Group` for `@Env.RequireGroup`
+* #192 Log the URL with handler error message
+* #191 Review and fix the use of `ConcurrentMap`
+* #17 Support WebSocket
+
 1.3.4
-* #202 `@Output` annotation on controller field is not effective when handler method has no parameters
-* #203 Make mailer support `@TemplateContext` annotation
-* #214 App bytecode enhancer state not cleaned
-* #216 Improve handling of fatal error in Job method during app bootstrap
-* #222 async job is not really async
-* #229 double decode of URL path variable
-* #230 CLI cannot input negative number
-* #231 `RenderAny` shall favor `ActionContext.hasTemplate()` result 
 * #233 When action handler returning an object, it failed to apply the `@ResponseStatus` annotation in certain cases
+* #231 `RenderAny` shall favor `ActionContext.hasTemplate()` result
+* #230 CLI cannot input negative number
+* #229 double decode of URL path variable
+* #222 async job is not really async
+* #216 Improve handling of fatal error in Job method during app bootstrap
+* #214 App bytecode enhancer state not cleaned
+* #203 Make mailer support `@TemplateContext` annotation
+* #202 `@Output` annotation on controller field is not effective when handler method has no parameters
 
 1.3.3
 * #200 It does not put correct content type header when servicing static resource as css file bug fixed
@@ -193,7 +213,7 @@
   <groupId>org.actframework</groupId>
   <artifactId>act</artifactId>
   <packaging>jar</packaging>
-  <version>1.3.5-SNAPSHOT</version>
+  <version>1.4.0-SNAPSHOT</version>
 
   <name>ACT Framework</name>
   <description>The ACT full stack MVC framework</description>
@@ -230,23 +250,25 @@
     <cdi-api.version>1.2</cdi-api.version>
     <commons-fileupload.version>1.3.2</commons-fileupload.version>
     <ecj.version>4.6.1</ecj.version>
-    <fastjson.version>1.2.32</fastjson.version>
+    <fastjson.version>1.2.33</fastjson.version>
     <bval.version>1.1.2</bval.version>
+    <image4j.version>0.7</image4j.version>
+    <jansi.version>1.16</jansi.version>
     <javax.inject.version>1</javax.inject.version>
     <javax.mail.version>1.5.0-b01</javax.mail.version>
     <jfiglet.version>0.0.8</jfiglet.version>
     <jline.version>2.14.3</jline.version>
     <joda-time.version>2.9.9</joda-time.version>
     <okhttp.version>3.8.0</okhttp.version>
-    <osgl-tool.version>1.1.0</osgl-tool.version>
-    <osgl-genie.version>1.0.2</osgl-genie.version>
-    <osgl-mvc.version>1.0.6</osgl-mvc.version>
+    <osgl-tool.version>1.2.0</osgl-tool.version>
+    <osgl-genie.version>1.1.2</osgl-genie.version>
+    <osgl-mvc.version>1.1.1</osgl-mvc.version>
     <osgl-storage.version>1.2.0</osgl-storage.version>
     <osgl-tool-ext.version>1.0.1</osgl-tool-ext.version>
     <reflectasm.version>1.11.3</reflectasm.version>
     <rythmengine.version>1.2.0</rythmengine.version>
     <validation-api.version>1.1.0.Final</validation-api.version>
-    <undertow.version>1.4.12.Final</undertow.version>
+    <undertow.version>1.4.15.Final</undertow.version>
     <zxing.javase.version>3.3.0</zxing.javase.version>
 
   </properties>
@@ -337,37 +359,37 @@
           <debuglevel>lines,vars,source</debuglevel>
         </configuration>
       </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-javadoc-plugin</artifactId>
-        <version>2.9</version>
-        <configuration>
-          <stylesheetfile>src/etc/javadoc.css</stylesheetfile>
-          <quiet />
-          <doclet>ch.raffael.doclets.pegdown.PegdownDoclet</doclet>
-          <docletArtifact>
-            <groupId>ch.raffael.pegdown-doclet</groupId>
-            <artifactId>pegdown-doclet</artifactId>
-            <version>1.3</version>
-          </docletArtifact>
-          <useStandardDocletOptions>true</useStandardDocletOptions>
-        </configuration>
-        <executions>
-          <execution>
-            <id>gen-javadoc</id>
-            <phase>prepare-package</phase>
-            <goals>
-              <goal>javadoc</goal>
-            </goals>
-          </execution>
-          <execution>
-            <id>attach-javadocs</id>
-            <goals>
-              <goal>jar</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
+      <!--<plugin>-->
+        <!--<groupId>org.apache.maven.plugins</groupId>-->
+        <!--<artifactId>maven-javadoc-plugin</artifactId>-->
+        <!--<version>2.9</version>-->
+        <!--<configuration>-->
+          <!--<stylesheetfile>src/etc/javadoc.css</stylesheetfile>-->
+          <!--<quiet />-->
+          <!--<doclet>ch.raffael.doclets.pegdown.PegdownDoclet</doclet>-->
+          <!--<docletArtifact>-->
+            <!--<groupId>ch.raffael.pegdown-doclet</groupId>-->
+            <!--<artifactId>pegdown-doclet</artifactId>-->
+            <!--<version>1.3</version>-->
+          <!--</docletArtifact>-->
+          <!--<useStandardDocletOptions>true</useStandardDocletOptions>-->
+        <!--</configuration>-->
+        <!--<executions>-->
+          <!--<execution>-->
+            <!--<id>gen-javadoc</id>-->
+            <!--<phase>prepare-package</phase>-->
+            <!--<goals>-->
+              <!--<goal>javadoc</goal>-->
+            <!--</goals>-->
+          <!--</execution>-->
+          <!--<execution>-->
+            <!--<id>attach-javadocs</id>-->
+            <!--<goals>-->
+              <!--<goal>jar</goal>-->
+            <!--</goals>-->
+          <!--</execution>-->
+        <!--</executions>-->
+      <!--</plugin>-->
     </plugins>
   </build>
 
@@ -428,9 +450,21 @@
     </dependency>
 
     <dependency>
+      <groupId>org.jclarion</groupId>
+      <artifactId>image4j</artifactId>
+      <version>${image4j.version}</version>
+    </dependency>
+
+    <dependency>
       <groupId>com.google.zxing</groupId>
       <artifactId>javase</artifactId>
       <version>${zxing.javase.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>org.fusesource.jansi</groupId>
+      <artifactId>jansi</artifactId>
+      <version>${jansi.version}</version>
     </dependency>
 
     <dependency>

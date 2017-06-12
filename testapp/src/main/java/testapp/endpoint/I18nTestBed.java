@@ -1,7 +1,7 @@
 package testapp.endpoint;
 
 import act.app.ActionContext;
-import act.controller.Controller;
+import act.controller.annotation.UrlContext;
 import org.osgl.mvc.annotation.GetAction;
 import org.osgl.mvc.result.Result;
 import testapp.TestApp;
@@ -10,7 +10,7 @@ import javax.inject.Inject;
 
 import static act.controller.Controller.Util.text;
 
-@Controller("/i18n")
+@UrlContext("/i18n")
 public class I18nTestBed {
 
     @Inject

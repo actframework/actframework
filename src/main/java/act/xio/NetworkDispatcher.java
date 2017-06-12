@@ -25,6 +25,20 @@ package act.xio;
  */
 public interface NetworkDispatcher {
 
+    /**
+     * Dispatch handling request job (to the worker thread)
+     * @param job the request handling job
+     */
     void dispatch(NetworkJob job);
+
+    /**
+     * Keep the state of the network request/response so we can come back
+     * to it later on.
+     *
+     * This method is mainly used when app is running in dev mode and there
+     * are code changes triggered app refresh, we need to wait for until the
+     * refreshed app started
+     */
+    void keep();
 
 }

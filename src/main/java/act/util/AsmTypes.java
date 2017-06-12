@@ -70,7 +70,7 @@ public enum AsmTypes implements Opcodes {
     public static AsmType<CsvView> CSV_VIEW = new AsmType<CsvView>(CsvView.class);
 
     public static AsmType<SubClassFinder> SUB_CLASS_FINDER = new AsmType<SubClassFinder>(SubClassFinder.class);
-    public static AsmType<AnnotatedClassFinder> ANN_CLASS_FINDER = new AsmType<AnnotatedClassFinder>(AnnotatedClassFinder.class);
+    public static AsmType<AnnotatedClassFinder> ANN_CLASS_FINDER = new AsmType<>(AnnotatedClassFinder.class);
 
     public static AsmType<Provides> PROVIDES = new AsmType<Provides>(Provides.class);
 

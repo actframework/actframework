@@ -30,7 +30,9 @@ import act.conf.AppConfig;
 import act.db.Dao;
 import act.event.EventBus;
 import act.mail.MailerContext;
+import act.ws.SecureTicketCodec;
 import act.util.ActContext;
+import act.ws.WebSocketContext;
 import org.osgl.$;
 import org.osgl.Osgl;
 import org.osgl.cache.CacheService;
@@ -134,6 +136,13 @@ public final class ActProviders {
         }
     };
 
+    public static final Provider<WebSocketContext> WEB_SOCKET_CONTEXT = new Provider<WebSocketContext>() {
+        @Override
+        public WebSocketContext get() {
+            return WebSocketContext.current();
+        }
+    };
+
     public static final Provider<ActContext> ACT_CONTEXT = new Provider<ActContext>() {
         @Override
         public ActContext get() {
@@ -200,6 +209,14 @@ public final class ActProviders {
         public Locale get() {
             ActContext context = ActContext.Base.currentContext();
             return null != context ? context.locale(true) : app().config().locale();
+        }
+    };
+
+    public static final Provider<SecureTicketCodec> SECURE_TICKET_CODEC_PROVIDER = new Provider<SecureTicketCodec>() {
+        @Override
+        public SecureTicketCodec get() {
+            AppConfig config = Act.appConfig();
+            return config.secureTicketCodec();
         }
     };
 

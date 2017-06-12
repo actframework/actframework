@@ -38,13 +38,15 @@ import act.util.Global;
 import act.util.MissingAuthenticationHandler;
 import act.view.ActErrorResult;
 import act.view.RenderAny;
+import act.xio.WebSocketConnectionHandler;
 import org.osgl.$;
 import org.osgl.cache.CacheService;
 import org.osgl.exception.UnexpectedException;
 import org.osgl.http.H;
 import org.osgl.logging.L;
 import org.osgl.logging.Logger;
-import org.osgl.mvc.result.*;
+import org.osgl.mvc.result.NotFound;
+import org.osgl.mvc.result.Result;
 import org.osgl.util.C;
 import org.osgl.util.E;
 import org.osgl.util.S;
@@ -98,6 +100,8 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
     private CacheSupportMetaInfo cacheSupport;
     private MissingAuthenticationHandler missingAuthenticationHandler;
     private MissingAuthenticationHandler csrfFailureHandler;
+
+    private WebSocketConnectionHandler webSocketConnectionHandler;
 
     final GroupInterceptorWithResult BEFORE_INTERCEPTOR = new GroupInterceptorWithResult(beforeInterceptors);
     final GroupAfterInterceptor AFTER_INTERCEPTOR = new GroupAfterInterceptor(afterInterceptors);
@@ -163,6 +167,10 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
     @Override
     public void handle(ActionContext context) {
         ensureAgentsReady();
+        if (null != webSocketConnectionHandler) {
+            webSocketConnectionHandler.handle(context);
+            return;
+        }
         Result result = null;
         try {
             H.Method method = context.req().method();
@@ -197,7 +205,8 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
                 this.cache.put(cacheKey, context.resp(), cacheSupport.ttl);
             }
         } catch (Exception e) {
-            logger.error(e, "Error handling request");
+            H.Request req = context.req();
+            logger.error(e, S.concat("Error handling request: [", req.method().name(), "] ", req.url()));
             try {
                 result = handleException(e, context);
             } catch (Exception e0) {
@@ -342,12 +351,21 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
         return new ActionMethodMetaInfo($.notNull(actionInfo), ctrlInfo);
     }
 
+    private WebSocketConnectionHandler tryGenerateWebSocketConnectionHandler(ActionMethodMetaInfo methodInfo) {
+        WebSocketConnectionHandler wsHandler = Act.network().createWebSocketConnectionHandler(methodInfo);
+        return null == wsHandler || !wsHandler.isWsHandler() ? null : wsHandler;
+    }
+
     private void generateHandlers() {
         ControllerClassMetaInfo ctrlInfo = app.classLoader().controllerClassMetaInfo(controllerClassName);
         ActionMethodMetaInfo actionInfo = ctrlInfo.action(actionMethodName);
         if (null == actionInfo) {
             actionInfo = findActionInfoFromParent(ctrlInfo, actionMethodName);
         }
+        webSocketConnectionHandler = tryGenerateWebSocketConnectionHandler(actionInfo);
+//        if (null != webSocketConnectionHandler) {
+//            return;
+//        }
         Act.Mode mode = Act.mode();
         actionHandler = mode.createRequestHandler(actionInfo, app);
         sessionFree = actionHandler.sessionFree();

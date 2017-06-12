@@ -22,15 +22,19 @@ package act.xio;
 
 import act.Act;
 import act.Destroyable;
+import act.controller.meta.ActionMethodMetaInfo;
 import act.util.DestroyableBase;
+import act.ws.WebSocketConnectionManager;
 import org.osgl.logging.LogManager;
 import org.osgl.logging.Logger;
-import org.osgl.util.C;
 import org.osgl.util.E;
 
 import javax.enterprise.context.ApplicationScoped;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * The base implementation of {@link Network}
@@ -40,15 +44,20 @@ public abstract class NetworkBase extends DestroyableBase implements Network {
     protected final static Logger logger = LogManager.get(Network.class);
 
     private volatile boolean started;
-    private Map<Integer, NetworkHandler> registry = C.newMap();
-    private Map<Integer, NetworkHandler> failed = C.newMap();
+    private Map<Integer, NetworkHandler> registry = new HashMap<>();
+    private Map<Integer, NetworkHandler> failed = new HashMap<>();
+    private Set<Integer> securePorts = new HashSet<>();
+    private volatile WebSocketConnectionHandler simpleWebSocketConnector;
 
-    public synchronized void register(int port, NetworkHandler client) {
+    public synchronized void register(int port, boolean secure, NetworkHandler client) {
         E.NPE(client);
         E.illegalArgumentIf(registry.containsKey(port), "Port %s has been registered already", port);
         registry.put(port, client);
+        if (secure) {
+            securePorts.add(port);
+        }
         if (started) {
-            if (!trySetUpClient(client, port)) {
+            if (!trySetUpClient(client, port, secure)) {
                 failed.put(port, client);
             } else {
                 logger.info("network client hooked on port: %s", port);
@@ -61,7 +70,7 @@ public abstract class NetworkBase extends DestroyableBase implements Network {
         bootUp();
         for (int port : registry.keySet()) {
             NetworkHandler client = registry.get(port);
-            if (!trySetUpClient(client, port)) {
+            if (!trySetUpClient(client, port, securePorts.contains(port))) {
                 failed.put(port, client);
             } else {
                 Act.LOGGER.info("network client hooked on port: %s", port);
@@ -75,9 +84,9 @@ public abstract class NetworkBase extends DestroyableBase implements Network {
         close();
     }
 
-    private boolean trySetUpClient(NetworkHandler client, int port) {
+    private boolean trySetUpClient(NetworkHandler client, int port, boolean secure) {
         try {
-            setUpClient(client, port);
+            setUpClient(client, port, secure);
             return true;
         } catch (IOException e) {
             logger.warn(e, "Cannot set up %s to port %s:", client, port);
@@ -85,7 +94,7 @@ public abstract class NetworkBase extends DestroyableBase implements Network {
         }
     }
 
-    protected abstract void setUpClient(NetworkHandler client, int port) throws IOException;
+    protected abstract void setUpClient(NetworkHandler client, int port, boolean secure) throws IOException;
 
     protected abstract void bootUp();
 
@@ -97,4 +106,25 @@ public abstract class NetworkBase extends DestroyableBase implements Network {
         Destroyable.Util.destroyAll(registry.values(), ApplicationScoped.class);
         registry.clear();
     }
+
+    @Override
+    public WebSocketConnectionHandler createWebSocketConnectionHandler(ActionMethodMetaInfo methodInfo) {
+        WebSocketConnectionManager manager = Act.app().service(WebSocketConnectionManager.class);
+        return internalCreateWsConnHandler(methodInfo, manager);
+    }
+
+    @Override
+    public WebSocketConnectionHandler createWebSocketConnectionHandler() {
+        if (null == simpleWebSocketConnector) {
+            synchronized (this) {
+                if (null == simpleWebSocketConnector) {
+                    WebSocketConnectionManager manager = Act.app().service(WebSocketConnectionManager.class);
+                    simpleWebSocketConnector = internalCreateWsConnHandler(null, manager);
+                }
+            }
+        }
+        return simpleWebSocketConnector;
+    }
+
+    protected abstract WebSocketConnectionHandler internalCreateWsConnHandler(ActionMethodMetaInfo methodInfo, WebSocketConnectionManager manager);
 }

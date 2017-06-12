@@ -27,7 +27,6 @@ import org.osgl.util.C;
 import org.osgl.util.IO;
 import org.rythmengine.utils.S;
 
-import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -51,12 +50,15 @@ public final class Zen {
     }
 
     private static List<String> loadWords() {
-        URL url = Zen.class.getResource("/zen.txt");
+        URL url = Zen.class.getResource("/act_zen.txt");
         List<String> words = C.newList(defaultWords());
         if (null != url) {
             try {
-                words.addAll(IO.readLines(url.openStream()));
-            } catch (IOException e) {
+                List<String> myWords = IO.readLines(url.openStream());
+                if (!myWords.isEmpty()) {
+                    words = myWords;
+                }
+            } catch (Exception e) {
                 // ignore it
             }
         }

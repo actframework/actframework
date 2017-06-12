@@ -183,7 +183,7 @@ public class StaticResourceGetter extends FastRequestHandler {
                 AlwaysForbidden.INSTANCE.handle(context);
             }
         } catch (IOException e) {
-            App.logger.warn(e, "Error servicing static resource request");
+            App.LOGGER.warn(e, "Error servicing static resource request");
             throw NotFound.get();
         }
     }

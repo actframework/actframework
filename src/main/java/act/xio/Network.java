@@ -21,14 +21,31 @@ package act.xio;
  */
 
 import act.Destroyable;
+import act.controller.meta.ActionMethodMetaInfo;
 
 /**
  * Encapsulate operations provided by underline network service, e.g. netty/undertow etc
  */
 public interface Network extends Destroyable {
-    void register(int port, NetworkHandler client);
+    void register(int port, boolean secure, NetworkHandler client);
 
     void start();
 
     void shutdown();
+
+    /**
+     * create a {@link WebSocketConnectionHandler} instance
+     * @param methodInfo the action handler method meta info
+     * @return a websocket connection handler
+     */
+    WebSocketConnectionHandler createWebSocketConnectionHandler(ActionMethodMetaInfo methodInfo);
+
+    /**
+     * Create a {@link WebSocketConnectionHandler} instance without message handler, i.e.
+     * the handler is pure created to handle connection request. This is typically used when
+     * client request connection for push notification from server
+     *
+     * @return a connection handler without message processing logic
+     */
+    WebSocketConnectionHandler createWebSocketConnectionHandler();
 }

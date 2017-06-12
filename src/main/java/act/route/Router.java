@@ -33,6 +33,7 @@ import act.handler.builtin.*;
 import act.handler.builtin.controller.RequestHandlerProxy;
 import act.util.ActContext;
 import act.util.DestroyableBase;
+import act.ws.WsEndpoint;
 import org.osgl.$;
 import org.osgl.Osgl;
 import org.osgl.exception.NotAppliedException;
@@ -83,6 +84,9 @@ public class Router extends AppServiceBase<Router> {
             lookup = new RequestHandlerResolverBase() {
                 @Override
                 public RequestHandler resolve(CharSequence payload, App app) {
+                    if (S.eq(WsEndpoint.PSEUDO_METHOD, payload.toString())) {
+                        return Act.network().createWebSocketConnectionHandler();
+                    }
                     return new RequestHandlerProxy(payload.toString(), app);
                 }
 

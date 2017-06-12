@@ -36,6 +36,9 @@ import act.handler.UnknownHttpMethodProcessor;
 import act.handler.event.ResultEvent;
 import act.i18n.I18n;
 import act.security.CSRFProtector;
+import act.ws.DefaultSecureTicketCodec;
+import act.ws.SecureTicketCodec;
+import act.ws.UsernameSecureTicketCodec;
 import act.util.*;
 import act.view.TemplatePathResolver;
 import act.view.View;
@@ -1433,6 +1436,29 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         }
     }
 
+
+    private int httpsPort = -1;
+
+    protected T httpsPort(int port) {
+        E.illegalArgumentIf(port < 1, "port value not valid: %s", port);
+        this.httpsPort = port;
+        return me();
+    }
+
+    public int httpsPort() {
+        if (-1 == httpsPort) {
+            String s = get(HTTPS_PORT);
+            httpsPort = null == s ? 5443 : Integer.parseInt(s);
+        }
+        return httpsPort;
+    }
+
+    private void _mergeHttpsPort(AppConfig conf) {
+        if (!hasConfiguration(HTTPS_PORT)) {
+            httpsPort = conf.httpsPort;
+        }
+    }
+
     private MissingAuthenticationHandler mah = null;
     protected T missingAuthenticationHandler(MissingAuthenticationHandler handler) {
         E.NPE(handler);
@@ -2141,7 +2167,13 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     public SessionMapper sessionMapper() {
         if (null == sessionMapper) {
             Object o = get(SESSION_MAPPER);
-            sessionMapper = SessionMapper.DefaultSessionMapper.wrap((SessionMapper) o);
+            if (null == o) {
+                // we might set header session mapper prefix
+                sessionMapperHeaderPrefix();
+            }
+            if (null == sessionMapper) {
+                sessionMapper = SessionMapper.DefaultSessionMapper.wrap((SessionMapper) o);
+            }
         }
         return sessionMapper;
     }
@@ -2149,6 +2181,29 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     private void _mergeSessionMapper(AppConfig config) {
         if (!hasConfiguration(AppConfigKey.SESSION_MAPPER)) {
             sessionMapper = config.sessionMapper;
+        }
+    }
+
+    private String sessionMapperHeaderPrefix = null;
+    private boolean sessionMapperHeaderPrefixSet = false;
+    protected T sessionMapperHeaderPrefix(String prefix) {
+        this.sessionMapperHeaderPrefix = prefix;
+        return me();
+    }
+    public String sessionMapperHeaderPrefix() {
+        if (!sessionMapperHeaderPrefixSet) {
+            sessionMapperHeaderPrefix = get(SESSION_MAPPER_HEADER_PREFIX);
+            sessionMapperHeaderPrefixSet = true;
+            if (null != sessionMapperHeaderPrefix) {
+                this.sessionMapper = SessionMapper.DefaultSessionMapper.wrap(new SessionMapper.HeaderSessionMapper(sessionMapperHeaderPrefix));
+            }
+        }
+        return sessionMapperHeaderPrefix;
+    }
+    private void _mergeSessionMapperHeaderPrefix(AppConfig config) {
+        if (!hasConfiguration(SESSION_MAPPER_HEADER_PREFIX)) {
+            this.sessionMapperHeaderPrefix = config.sessionMapperHeaderPrefix;
+            this.sessionMapperHeaderPrefixSet = config.sessionMapperHeaderPrefixSet;
         }
     }
 
@@ -2175,7 +2230,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         }
     }
 
-    private String secret = null;
+    private volatile String secret = null;
     protected T secret(String secret) {
         E.illegalArgumentIf(S.blank(secret));
         this.secret = secret;
@@ -2197,6 +2252,45 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         }
     }
 
+    private volatile SecureTicketCodec secureTicketCodec;
+    private String secureTicketCodecClass;
+    protected T secureTicketCodec(String secureTicketCodecClass) {
+        this.secureTicketCodecClass = $.notNull(secureTicketCodecClass);
+        return me();
+    }
+    protected T secureTicketCodec(SecureTicketCodec codec) {
+        this.secureTicketCodec = $.notNull(codec);
+        return me();
+    }
+    public SecureTicketCodec secureTicketCodec() {
+        if (null != secureTicketCodec) {
+            return secureTicketCodec;
+        }
+        synchronized (this) {
+            if (null != secureTicketCodec) {
+                return secureTicketCodec;
+            }
+            if (null == secureTicketCodecClass) {
+                secureTicketCodecClass = get(SECURE_TICKET_CODEC);
+                if (null == secureTicketCodecClass) {
+                    secureTicketCodec = app().getInstance(DefaultSecureTicketCodec.class);
+                    return secureTicketCodec;
+                }
+                if ("username".equalsIgnoreCase(secureTicketCodecClass)) {
+                    secureTicketCodec = app().getInstance(UsernameSecureTicketCodec.class);
+                    return secureTicketCodec;
+                }
+                secureTicketCodec = app().getInstance(secureTicketCodecClass);
+            }
+        }
+        return secureTicketCodec;
+    }
+    private void _mergeSecureTicketCodec(AppConfig config) {
+        if (!hasConfiguration(AppConfigKey.SECURE_TICKET_CODEC)) {
+            secureTicketCodec = config.secureTicketCodec;
+            secureTicketCodecClass = config.secureTicketCodecClass;
+        }
+    }
     private List<File> moduleBases;
     public List<File> moduleBases() {
         if (null == moduleBases) {
@@ -2400,6 +2494,49 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         }
     }
 
+    private Boolean ssl;
+    protected T supportSsl(boolean b) {
+        ssl = b;
+        return me();
+    }
+    public boolean supportSsl() {
+        if (null == ssl) {
+            ssl = get(SSL);
+            if (null == ssl) {
+                ssl = false;
+            }
+        }
+        return ssl;
+    }
+    private void _mergeSslSupport(AppConfig config) {
+        if (!hasConfiguration(SSL)) {
+            ssl = config.ssl;
+        }
+    }
+
+    private String wsTicketKey;
+
+    protected T wsTicketeKey(String wsTicketKey) {
+        this.wsTicketKey = wsTicketKey;
+        return me();
+    }
+
+    public String wsTicketKey() {
+        if (null == wsTicketKey) {
+            wsTicketKey = get(WS_KEY_TICKET);
+            if (null == wsTicketKey) {
+                wsTicketKey = "ws_ticket";
+            }
+        }
+        return wsTicketKey;
+    }
+
+    private void _mergeWsTicketKey(AppConfig config) {
+        if (!hasConfiguration(WS_KEY_TICKET)) {
+            wsTicketKey = config.wsTicketKey;
+        }
+    }
+
     private Set<AppConfigurator> mergeTracker = C.newSet();
 
     public void loadJarProperties(Map<String, Properties> jarProperties) {
@@ -2429,6 +2566,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         }
     }
 
+
     /**
      * Merge application configurator settings. Note application configurator
      * settings has lower priority as it's hardcoded thus only when configuration file
@@ -2437,7 +2575,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
      * @param conf the application configurator
      */
     public void _merge(AppConfigurator conf) {
-        app.eventBus().trigger(AppEventId.CONFIG_PREMERGE);
+        app.emit(AppEventId.CONFIG_PREMERGE);
         if (mergeTracker.contains(conf)) {
             return;
         }
@@ -2487,6 +2625,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         _mergeHttpExternalSecurePort(conf);
         _mergeHttpPort(conf);
         _mergeHttpSecure(conf);
+        _mergeHttpsPort(conf);
         _mergePorts(conf);
         _mergeContentSuffixAware(conf);
         _mergeSequenceNumberGenerator(conf);
@@ -2525,10 +2664,14 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         _mergeSessionSecure(conf);
         _mergeSessionKeyUsername(conf);
         _mergeSessionMapper(conf);
+        _mergeSessionMapperHeaderPrefix(conf);
         _mergeSecret(conf);
+        _mergeSecureTicketCodec(conf);
         _mergeCacheServiceProvider(conf);
         _mergeUnknownHttpMethodHandler(conf);
         _mergeUploadFileDownload(conf);
+        _mergeSslSupport(conf);
+        _mergeWsTicketKey(conf);
 
         Set<String> keys = conf.propKeys();
         if (!keys.isEmpty()) {

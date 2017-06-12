@@ -69,6 +69,8 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import static act.inject.param.JsonDTO.CTX_ATTR_KEY;
+
 /**
  * Implement handler using
  * https://github.com/EsotericSoftware/reflectasm
@@ -96,7 +98,6 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
     private Set<String> pathVariables;
     private CORS.Spec corsSpec;
     private CSRF.Spec csrfSpec;
-    private String jsonDTOKey;
     private boolean isStatic;
     private Object singleton;
     private H.Format forceResponseContentType;
@@ -155,8 +156,9 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
 
         CSRF.Spec csrfSpec = CSRF.spec(method).chain(CSRF.spec(controllerClass));
         this.csrfSpec = csrfSpec;
-        this.jsonDTOKey = app.cuid();
-        this.singleton = singleton(app);
+        if (!isStatic) {
+            this.singleton = ReflectedInvokerHelper.tryGetSingleton(controllerClass, app);
+        }
 
         ResponseContentType contentType = getAnnotation(ResponseContentType.class);
         if (null != contentType) {
@@ -309,12 +311,8 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         return csrfSpec;
     }
 
-    public JsonDTO cachedJsonDTO(ActContext<?> context) {
-        return context.attribute(jsonDTOKey);
-    }
-
     private void ensureJsonDTOGenerated(ActionContext context) {
-        if (0 == fieldsAndParamsCount || !context.jsonEncoded() || null != context.attribute(jsonDTOKey)) {
+        if ((0 == fieldsAndParamsCount) || !context.jsonEncoded() || (null != context.attribute(CTX_ATTR_KEY))) {
             return;
         }
         Class<? extends JsonDTO> dtoClass = jsonDTOClassManager.get(controllerClass, method);
@@ -324,7 +322,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         }
         try {
             JsonDTO dto = JSON.parseObject(patchedJsonBody(context), dtoClass);
-            context.attribute(jsonDTOKey, dto);
+            context.attribute(CTX_ATTR_KEY, dto);
         } catch (JSONException e) {
             if (e.getCause() != null) {
                 App.LOGGER.warn(e.getCause(), "error parsing JSON data");
@@ -651,27 +649,6 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         return paramLoaderService.loadMethodParams(controller, method, context);
     }
 
-    private Object singleton(App app) {
-        Object singleton = app.singleton(controllerClass);
-        if (null == singleton) {
-            // check if there are fields
-            List<Field> fields = $.fieldsOf(controllerClass, JsonDTOClassManager.CLASS_FILTER, JsonDTOClassManager.FIELD_FILTER);
-            if (fields.isEmpty()) {
-                singleton = app.getInstance(controllerClass);
-            }
-            boolean stateful = false;
-            for (Field field : fields) {
-                if (!isGlobal(field)) {
-                    stateful = true;
-                    break;
-                }
-            }
-            if (!stateful) {
-                singleton = app.getInstance(controllerClass);
-            }
-        }
-        return singleton;
-    }
 
     private <T extends Annotation> T getAnnotation(Class<T> annoType) {
         T anno = method.getAnnotation(annoType);
@@ -679,14 +656,6 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
             anno = controllerClass.getAnnotation(annoType);
         }
         return anno;
-    }
-
-    private boolean isGlobal(Field field) {
-        if (null != field.getAnnotation(Global.class)) {
-            return true;
-        }
-        Class<?> fieldType = field.getType();
-        return fieldType.isAnnotationPresent(Stateless.class);
     }
 
     public static ControllerAction createControllerAction(ActionMethodMetaInfo meta, App app) {

@@ -1,5 +1,7 @@
 # WebSocket support
 
+**Note** WebSocket support is done there is big differences between the implementation of the proposed API as described below
+
 ## Findings
 
 * new WebSocket(...) client API does not support specifying http headers
