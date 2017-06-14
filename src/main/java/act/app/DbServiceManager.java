@@ -130,7 +130,7 @@ public class DbServiceManager extends AppServiceBase<DbServiceManager> implement
     }
 
     boolean hasDbService() {
-        return serviceMap.isEmpty();
+        return !serviceMap.isEmpty();
     }
 
     private void configureSequenceGenerator(final App app) {

@@ -18,6 +18,9 @@
 ********************************************
 *            version history
 ********************************************
+1.4.1
+* #239 `DbServiceManager.hasDbService()` error implementation
+
 1.4.0
 * #235 Update fastjson to 1.2.33
 * #234 App start event listener not called when there is no Async DbService
