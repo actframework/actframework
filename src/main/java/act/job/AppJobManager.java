@@ -66,8 +66,8 @@ public class AppJobManager extends AppServiceBase<AppJobManager> {
             job.destroy();
         }
         jobs.clear();
-        executor.shutdown();
         executor.getQueue().clear();
+        executor.shutdownNow();
     }
 
     public <T> Future<T> now(Callable<T> callable) {

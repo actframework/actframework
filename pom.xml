@@ -18,6 +18,10 @@
 ********************************************
 *            version history
 ********************************************
+1.3.5
+* #246 Returning Locale type result does not rendering valid JSON response
+* #244 Resource consumption issue with DEV mode
+
 1.3.4
 * #202 `@Output` annotation on controller field is not effective when handler method has no parameters
 * #203 Make mailer support `@TemplateContext` annotation
@@ -238,7 +242,7 @@
     <jline.version>2.14.3</jline.version>
     <joda-time.version>2.9.9</joda-time.version>
     <okhttp.version>3.8.0</okhttp.version>
-    <osgl-tool.version>1.1.0</osgl-tool.version>
+    <osgl-tool.version>1.2.1-SNAPSHOT</osgl-tool.version>
     <osgl-genie.version>1.0.2</osgl-genie.version>
     <osgl-mvc.version>1.0.6</osgl-mvc.version>
     <osgl-storage.version>1.2.0</osgl-storage.version>
