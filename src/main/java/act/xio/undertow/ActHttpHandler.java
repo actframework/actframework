@@ -23,9 +23,7 @@ package act.xio.undertow;
 import act.app.ActionContext;
 import act.app.App;
 import act.conf.AppConfig;
-import act.xio.NetworkDispatcher;
 import act.xio.NetworkHandler;
-import act.xio.NetworkJob;
 import io.undertow.server.HttpHandler;
 import io.undertow.server.HttpServerExchange;
 import org.osgl.http.H;
@@ -46,17 +44,7 @@ public class ActHttpHandler implements HttpHandler {
     @Override
     public void handleRequest(final HttpServerExchange exchange) throws Exception {
         ActionContext ctx = createActionContext(exchange);
-        client.handle(ctx, new NetworkDispatcher() {
-            @Override
-            public void dispatch(NetworkJob job) {
-                exchange.dispatch(job);
-            }
-
-            @Override
-            public void keep() {
-                exchange.getRequestChannel().resumeReads();
-            }
-        });
+        client.handle(ctx, new UndertowNetworkDispatcher(exchange));
     }
 
     private ActionContext createActionContext(HttpServerExchange exchange) {
