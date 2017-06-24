@@ -29,7 +29,7 @@ import org.joda.time.DateTime;
 import org.joda.time.Seconds;
 import org.osgl.$;
 import org.osgl.exception.NotAppliedException;
-import org.osgl.logging.L;
+import org.osgl.logging.LogManager;
 import org.osgl.logging.Logger;
 import org.osgl.util.E;
 import org.osgl.util.S;
@@ -46,7 +46,7 @@ import static act.job.AppJobManager.appEventJobId;
 
 abstract class JobTrigger {
 
-    protected static Logger logger = L.get(App.class);
+    protected static final Logger LOGGER = LogManager.get(JobTrigger.class);
 
     @Override
     public String toString() {
@@ -54,6 +54,9 @@ abstract class JobTrigger {
     }
 
     final void register(_Job job, AppJobManager manager) {
+        if (LOGGER.isTraceEnabled()) {
+            LOGGER.trace("trigger on [%s]: %s", this, job);
+        }
         job.trigger(this);
         manager.addJob(job);
         schedule(manager, job);
@@ -342,12 +345,12 @@ abstract class JobTrigger {
         @Override
         void schedule(AppJobManager manager, _Job job) {
             if (null == id) {
-                logger.warn("Failed to register job because target job not found: %s. Will try again after app started", id);
+                LOGGER.warn("Failed to register job because target job not found: %s. Will try again after app started", id);
                 scheduleDelayedRegister(manager, job);
             } else {
                 _Job associateTarget = manager.jobById(id);
                 if (null == associateTarget) {
-                    logger.warn("Cannot find associated job: %s", id);
+                    LOGGER.warn("Cannot find associated job: %s", id);
                 } else {
                     associate(job, associateTarget);
                 }
@@ -361,7 +364,7 @@ abstract class JobTrigger {
                 public Void apply() throws NotAppliedException, $.Break {
                     _Job associateTo = manager.jobById(id);
                     if (null == associateTo) {
-                        logger.warn("Cannot find associated job: %s", id);
+                        LOGGER.warn("Cannot find associated job: %s", id);
                     } else {
                         associate(job, associateTo);
                     }
