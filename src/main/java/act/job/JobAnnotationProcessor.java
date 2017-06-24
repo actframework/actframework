@@ -27,6 +27,8 @@ import act.job.bytecode.ReflectedJobInvoker;
 import act.job.meta.JobClassMetaInfo;
 import act.job.meta.JobMethodMetaInfo;
 import org.osgl.$;
+import org.osgl.logging.LogManager;
+import org.osgl.logging.Logger;
 import org.osgl.util.E;
 import org.osgl.util.S;
 
@@ -34,6 +36,8 @@ import java.lang.annotation.Annotation;
 import java.util.List;
 
 public class JobAnnotationProcessor extends AppHolderBase<JobAnnotationProcessor> {
+
+    private static final Logger LOGGER = LogManager.get(JobAnnotationProcessor.class);
 
     private AppJobManager manager;
 
@@ -43,6 +47,9 @@ public class JobAnnotationProcessor extends AppHolderBase<JobAnnotationProcessor
     }
 
     public void register(final JobMethodMetaInfo method, final Class<? extends Annotation> anno, final Object v) {
+        if (LOGGER.isTraceEnabled()) {
+            LOGGER.trace("register job[%s] on anno[%s] with arg[%s]", method, anno, v);
+        }
         if (isAbstract(method)) {
             app().jobManager().on(AppEventId.SINGLETON_PROVISIONED, new Runnable() {
                 @Override
