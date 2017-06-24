@@ -243,6 +243,7 @@ public class Router extends AppServiceBase<Router> {
     }
 
     public void addMapping(H.Method method, CharSequence path, RequestHandler handler, RouteSource source) {
+        logger.trace("R+ %s %s | %s (%s)", method, path, handler, source);
         Node node = _locate(method, path, handler.toString());
         if (null == node.handler) {
             handler = prepareReverseRoutes(handler, node);
