@@ -33,7 +33,7 @@ import java.util.Set;
 
 public abstract class DbService extends AppHolderBase<DbService> {
 
-    protected static final Logger _logger = LogManager.get(DbService.class);
+    protected final Logger logger = LogManager.get(getClass());
 
     private String id;
 
