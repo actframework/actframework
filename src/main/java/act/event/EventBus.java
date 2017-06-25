@@ -299,7 +299,7 @@ public class EventBus extends AppServiceBase<EventBus> {
 
     public synchronized EventBus emit(final AppEvent event) {
         if (isTraceEnabled()) {
-            trace("emitting app event: %s", event.id());
+            trace("emitting app event: %s", event);
         }
         if (isDestroyed()) {
             return this;
@@ -319,7 +319,7 @@ public class EventBus extends AppServiceBase<EventBus> {
 
     public synchronized EventBus emitAsync(final AppEvent event) {
         if (isTraceEnabled()) {
-            trace("emitting app event asynchronously: %s", event.id());
+            trace("emitting app event asynchronously: %s", event);
         }
         if (isDestroyed()) {
             return this;
