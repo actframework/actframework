@@ -53,6 +53,14 @@ abstract class JobTrigger {
         return getClass().getSimpleName();
     }
 
+    protected static boolean isTraceEnabled() {
+        return LOGGER.isTraceEnabled();
+    }
+
+    protected static void trace(String msg, Object... args) {
+        LOGGER.trace(msg, args);
+    }
+
     final void register(_Job job, AppJobManager manager) {
         if (LOGGER.isTraceEnabled()) {
             LOGGER.trace("trigger on [%s]: %s", this, job);
@@ -65,6 +73,12 @@ abstract class JobTrigger {
     void scheduleFollowingCalls(AppJobManager manager, _Job job) {}
 
     void schedule(AppJobManager manager, _Job job) {}
+
+    void traceSchedule(_Job job) {
+        if (isTraceEnabled()) {
+            trace("trigger[%s] schedule job: %s", this, job);
+        }
+    }
 
     static JobTrigger of(AppConfig config, Cron anno) {
         String v = anno.value();
@@ -223,6 +237,7 @@ abstract class JobTrigger {
 
         @Override
         void schedule(final AppJobManager manager, final _Job job) {
+            traceSchedule(job);
             App app = manager.app();
             if (!app.isStarted()) {
                 app.eventBus().bindAsync(AppEventId.POST_START, new AppEventListenerBase() {
@@ -279,6 +294,7 @@ abstract class JobTrigger {
 
         @Override
         void schedule(final AppJobManager manager, final _Job job) {
+            traceSchedule(job);
             App app = manager.app();
             if (!app.isStarted()) {
                 app.eventBus().bindAsync(AppEventId.POST_START, new AppEventListenerBase() {
@@ -315,6 +331,7 @@ abstract class JobTrigger {
 
         @Override
         void schedule(final AppJobManager manager, final _Job job) {
+            traceSchedule(job);
             App app = manager.app();
             if (!app.isStarted()) {
                 app.eventBus().bindAsync(AppEventId.POST_START, new AppEventListenerBase() {
@@ -336,21 +353,22 @@ abstract class JobTrigger {
     }
 
     private abstract static class _AssociatedTo extends JobTrigger {
-        protected String id;
-        _AssociatedTo(String id) {
-            E.illegalArgumentIf(S.blank(id), "associate job ID expected");
-            this.id = id;
+        String targetId;
+        _AssociatedTo(String targetId) {
+            E.illegalArgumentIf(S.blank(targetId), "associate job ID expected");
+            this.targetId = targetId;
         }
 
         @Override
         void schedule(AppJobManager manager, _Job job) {
-            if (null == id) {
-                LOGGER.warn("Failed to register job because target job not found: %s. Will try again after app started", id);
+            traceSchedule(job);
+            if (null == targetId) {
+                LOGGER.warn("Failed to register job because target job not found: %s. Will try again after app started", targetId);
                 scheduleDelayedRegister(manager, job);
             } else {
-                _Job associateTarget = manager.jobById(id);
+                _Job associateTarget = manager.jobById(targetId);
                 if (null == associateTarget) {
-                    LOGGER.warn("Cannot find associated job: %s", id);
+                    LOGGER.warn("Cannot find associated job: %s", targetId);
                 } else {
                     associate(job, associateTarget);
                 }
@@ -374,20 +392,20 @@ abstract class JobTrigger {
         }
 
         private String delayedRegisterJobId(_Job job) {
-            return S.concat("delayed_association_register-", job.id(), "-to-", id);
+            return S.concat("delayed_association_register-", job.id(), "-to-", targetId);
         }
 
         abstract void associate(_Job theJob, _Job toJob);
     }
 
     private static class _AlongWith extends _AssociatedTo {
-        _AlongWith(String id) {
-            super(id);
+        _AlongWith(String targetId) {
+            super(targetId);
         }
 
         @Override
         public String toString() {
-            return S.concat("along with ", id);
+            return S.concat("along with ", targetId);
         }
 
         @Override
@@ -397,13 +415,13 @@ abstract class JobTrigger {
     }
 
     private static class _Before extends _AssociatedTo {
-        _Before(String id) {
-            super(id);
+        _Before(String targetId) {
+            super(targetId);
         }
 
         @Override
         public String toString() {
-            return S.concat("before ", id);
+            return S.concat("before ", targetId);
         }
 
         @Override
@@ -413,13 +431,13 @@ abstract class JobTrigger {
     }
 
     private static class _After extends _AssociatedTo {
-        _After(String id) {
-            super(id);
+        _After(String targetId) {
+            super(targetId);
         }
 
         @Override
         public String toString() {
-            return S.concat("after ", id);
+            return S.concat("after ", targetId);
         }
 
         @Override

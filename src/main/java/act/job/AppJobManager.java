@@ -135,12 +135,15 @@ public class AppJobManager extends AppServiceBase<AppJobManager> {
 
     private int parseTime(String timeDuration) {
         if (timeDuration.startsWith("${") && timeDuration.endsWith("}")) {
-            timeDuration = (String) app().config().get(timeDuration.substring(2, timeDuration.length() - 1));
+            timeDuration = app().config().get(timeDuration.substring(2, timeDuration.length() - 1));
         }
         return Time.parseDuration(timeDuration);
     }
 
     public void on(DateTime instant, Runnable runnable) {
+        if (LOGGER.isTraceEnabled()) {
+            LOGGER.trace("schedule runnable[%s] on %s", runnable, instant);
+        }
         DateTime now = DateTime.now();
         E.illegalArgumentIf(instant.isBefore(now));
         Seconds seconds = Seconds.secondsBetween(now, instant);
@@ -148,6 +151,9 @@ public class AppJobManager extends AppServiceBase<AppJobManager> {
     }
 
     public <T> Future<T> on(DateTime instant, Callable<T> callable) {
+        if (LOGGER.isTraceEnabled()) {
+            LOGGER.trace("schedule callable[%s] on %s", callable, instant);
+        }
         DateTime now = DateTime.now();
         E.illegalArgumentIf(instant.isBefore(now));
         Seconds seconds = Seconds.secondsBetween(now, instant);
@@ -159,12 +165,7 @@ public class AppJobManager extends AppServiceBase<AppJobManager> {
     }
 
     public void on(AppEventId appEvent, final Runnable runnable, boolean runImmediatelyIfEventDispatched) {
-        _Job job = jobById(appEventJobId(appEvent));
-        if (null == job) {
-            processDelayedJob(wrap(runnable), runImmediatelyIfEventDispatched);
-        } else {
-            job.addPrecedenceJob(_Job.once(runnable, this));
-        }
+        on(appEvent, runnable.toString(), runnable, runImmediatelyIfEventDispatched);
     }
 
     public void post(AppEventId appEvent, final Runnable runnable) {
