@@ -39,7 +39,7 @@ import org.osgl.Osgl;
 import org.osgl.exception.NotAppliedException;
 import org.osgl.http.H;
 import org.osgl.http.util.Path;
-import org.osgl.logging.L;
+import org.osgl.logging.LogManager;
 import org.osgl.logging.Logger;
 import org.osgl.util.*;
 
@@ -59,7 +59,8 @@ public class Router extends AppServiceBase<Router> {
 
     private static final H.Method[] targetMethods = new H.Method[]{
             H.Method.GET, H.Method.POST, H.Method.DELETE, H.Method.PUT, H.Method.PATCH};
-    private static final Logger logger = L.get(Router.class);
+
+    private static final Logger LOGGER = LogManager.get(Router.class);
 
     Node _GET = Node.newRoot("GET");
     Node _PUT = Node.newRoot("PUT");
@@ -243,6 +244,9 @@ public class Router extends AppServiceBase<Router> {
     }
 
     public void addMapping(H.Method method, CharSequence path, RequestHandler handler, RouteSource source) {
+        if (LOGGER.isTraceEnabled()) {
+            LOGGER.trace("R+ %s %s | %s (%s)", method, path, handler, source);
+        }
         Node node = _locate(method, path, handler.toString());
         if (null == node.handler) {
             handler = prepareReverseRoutes(handler, node);
@@ -252,7 +256,7 @@ public class Router extends AppServiceBase<Router> {
             ConflictResolver resolving = source.onConflict(existing);
             switch (resolving) {
                 case OVERWRITE_WARN:
-                    logger.warn("\n\tOverwrite existing route \n\t\t%s\n\twith new route\n\t\t%s",
+                    LOGGER.warn("\n\tOverwrite existing route \n\t\t%s\n\twith new route\n\t\t%s",
                             routeInfo(method, path, node.handler()),
                             routeInfo(method, path, handler)
                     );
@@ -1238,7 +1242,7 @@ public class Router extends AppServiceBase<Router> {
             public RequestHandler resolve(CharSequence base, App app) {
                 File file = new File(base.toString());
                 if (!file.canRead()) {
-                    logger.warn("External file not found: %s", file.getPath());
+                    LOGGER.warn("External file not found: %s", file.getPath());
                 }
                 return new StaticFileGetter(file);
             }

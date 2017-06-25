@@ -25,12 +25,20 @@ import act.event.ActEvent;
 import act.event.SystemEvent;
 
 public abstract class AppEvent extends ActEvent<App> implements SystemEvent {
-    private int id;
+
+    private AppEventId id;
+
     public AppEvent(AppEventId id, App source) {
         super(source);
-        this.id = id.ordinal();
+        this.id = id;
     }
+
+    @Override
+    public String toString() {
+        return id.name();
+    }
+
     public int id() {
-        return id;
+        return id.ordinal();
     }
 }

@@ -33,6 +33,8 @@ import org.joda.time.DateTime;
 import org.joda.time.Seconds;
 import org.osgl.$;
 import org.osgl.exception.NotAppliedException;
+import org.osgl.logging.LogManager;
+import org.osgl.logging.Logger;
 import org.osgl.util.C;
 import org.osgl.util.E;
 import org.osgl.util.S;
@@ -43,6 +45,8 @@ import java.util.Map;
 import java.util.concurrent.*;
 
 public class AppJobManager extends AppServiceBase<AppJobManager> {
+
+    private static final Logger LOGGER = LogManager.get(AppJobManager.class);
 
     private ScheduledThreadPoolExecutor executor;
     private ConcurrentMap<String, _Job> jobs = new ConcurrentHashMap<String, _Job>();
@@ -62,12 +66,13 @@ public class AppJobManager extends AppServiceBase<AppJobManager> {
 
     @Override
     protected void releaseResources() {
+        LOGGER.trace("release job manager resources");
         for (_Job job : jobs.values()) {
             job.destroy();
         }
         jobs.clear();
-        executor.shutdown();
         executor.getQueue().clear();
+        executor.shutdownNow();
     }
 
     public <T> Future<T> now(Callable<T> callable) {
@@ -130,12 +135,15 @@ public class AppJobManager extends AppServiceBase<AppJobManager> {
 
     private int parseTime(String timeDuration) {
         if (timeDuration.startsWith("${") && timeDuration.endsWith("}")) {
-            timeDuration = (String) app().config().get(timeDuration.substring(2, timeDuration.length() - 1));
+            timeDuration = app().config().get(timeDuration.substring(2, timeDuration.length() - 1));
         }
         return Time.parseDuration(timeDuration);
     }
 
     public void on(DateTime instant, Runnable runnable) {
+        if (LOGGER.isTraceEnabled()) {
+            LOGGER.trace("schedule runnable[%s] on %s", runnable, instant);
+        }
         DateTime now = DateTime.now();
         E.illegalArgumentIf(instant.isBefore(now));
         Seconds seconds = Seconds.secondsBetween(now, instant);
@@ -143,6 +151,9 @@ public class AppJobManager extends AppServiceBase<AppJobManager> {
     }
 
     public <T> Future<T> on(DateTime instant, Callable<T> callable) {
+        if (LOGGER.isTraceEnabled()) {
+            LOGGER.trace("schedule callable[%s] on %s", callable, instant);
+        }
         DateTime now = DateTime.now();
         E.illegalArgumentIf(instant.isBefore(now));
         Seconds seconds = Seconds.secondsBetween(now, instant);
@@ -154,12 +165,7 @@ public class AppJobManager extends AppServiceBase<AppJobManager> {
     }
 
     public void on(AppEventId appEvent, final Runnable runnable, boolean runImmediatelyIfEventDispatched) {
-        _Job job = jobById(appEventJobId(appEvent));
-        if (null == job) {
-            processDelayedJob(wrap(runnable), runImmediatelyIfEventDispatched);
-        } else {
-            job.addPrecedenceJob(_Job.once(runnable, this));
-        }
+        on(appEvent, runnable.toString(), runnable, runImmediatelyIfEventDispatched);
     }
 
     public void post(AppEventId appEvent, final Runnable runnable) {
@@ -180,10 +186,20 @@ public class AppJobManager extends AppServiceBase<AppJobManager> {
     }
 
     public void on(AppEventId appEvent, String jobId, final Runnable runnable, boolean runImmediatelyIfEventDispatched) {
+        boolean traceEnabled = LOGGER.isTraceEnabled();
+        if (traceEnabled) {
+            LOGGER.trace("binding job[%s] to app event: %s, run immediately if event dispatched: %s", jobId, appEvent, runImmediatelyIfEventDispatched);
+        }
         _Job job = jobById(appEventJobId(appEvent));
         if (null == job) {
+            if (traceEnabled) {
+                LOGGER.trace("process delayed job: %s", jobId);
+            }
             processDelayedJob(wrap(runnable), runImmediatelyIfEventDispatched);
         } else {
+            if (traceEnabled) {
+                LOGGER.trace("schedule job: %s", jobId);
+            }
             job.addPrecedenceJob(_Job.once(jobId, runnable, this));
         }
     }
@@ -291,7 +307,10 @@ public class AppJobManager extends AppServiceBase<AppJobManager> {
     private void initExecutor(App app) {
         int poolSize = app.config().jobPoolSize();
         executor = new ScheduledThreadPoolExecutor(poolSize, new AppThreadFactory("jobs"), new ThreadPoolExecutor.AbortPolicy());
-        //JDK1.7 API: executor.setRemoveOnCancelPolicy(true);
+        executor.setRemoveOnCancelPolicy(true);
+        if (LOGGER.isTraceEnabled()) {
+            LOGGER.trace("init executor with thread pool: %s", poolSize);
+        }
     }
 
     private void createAppEventListener(AppEventId appEventId) {
