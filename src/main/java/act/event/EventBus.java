@@ -30,6 +30,8 @@ import act.event.bytecode.ReflectedSimpleEventListener;
 import act.inject.DependencyInjectionBinder;
 import act.inject.DependencyInjector;
 import act.job.AppJobManager;
+import org.osgl.logging.LogManager;
+import org.osgl.logging.Logger;
 import org.osgl.mvc.result.Result;
 import org.osgl.util.C;
 import org.osgl.util.E;
@@ -43,10 +45,10 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
 
-import static act.app.App.LOGGER;
-
 @ApplicationScoped
 public class EventBus extends AppServiceBase<EventBus> {
+
+    private static final Logger LOGGER = LogManager.get(EventBus.class);
 
     private boolean once;
 
@@ -289,6 +291,9 @@ public class EventBus extends AppServiceBase<EventBus> {
     }
 
     public synchronized EventBus emit(final AppEvent event) {
+        if (isTraceEnabled()) {
+            trace("emitting app event: %s", event.id());
+        }
         if (isDestroyed()) {
             return this;
         }
@@ -306,6 +311,9 @@ public class EventBus extends AppServiceBase<EventBus> {
     }
 
     public synchronized EventBus emitAsync(final AppEvent event) {
+        if (isTraceEnabled()) {
+            trace("emitting app event asynchronously: %s", event.id());
+        }
         if (isDestroyed()) {
             return this;
         }
@@ -367,6 +375,10 @@ public class EventBus extends AppServiceBase<EventBus> {
 
     @SuppressWarnings("unchecked")
     public EventBus emit(final ActEvent event) {
+        if (isTraceEnabled()) {
+            trace("emitting act event: %s", event);
+        }
+
         if (isDestroyed()) {
             return this;
         }
@@ -394,6 +406,10 @@ public class EventBus extends AppServiceBase<EventBus> {
     }
 
     public EventBus emitAsync(final ActEvent event) {
+        if (isTraceEnabled()) {
+            trace("emitting act event asynchronously: %s", event);
+        }
+
         if (isDestroyed()) {
             return this;
         }
@@ -581,5 +597,12 @@ public class EventBus extends AppServiceBase<EventBus> {
         });
     }
 
+    private static boolean isTraceEnabled() {
+        return LOGGER.isTraceEnabled();
+    }
+
+    private static void trace(String msg, Object... args) {
+        LOGGER.trace(msg, args);
+    }
 
 }
