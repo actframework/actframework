@@ -35,6 +35,7 @@ import org.osgl.logging.Logger;
 import org.osgl.mvc.result.Result;
 import org.osgl.util.C;
 import org.osgl.util.E;
+import org.osgl.util.S;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -611,8 +612,12 @@ public class EventBus extends AppServiceBase<EventBus> {
         return LOGGER.isTraceEnabled();
     }
 
-    private static void trace(String msg, Object... args) {
-        LOGGER.trace(msg, args);
+    private void trace(String msg, Object... args) {
+        msg = S.fmt(msg, args);
+        if (once) {
+            msg = S.builder("[once]").append(msg).toString();
+        }
+        LOGGER.trace(msg);
     }
 
 }
