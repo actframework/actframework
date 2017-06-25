@@ -625,7 +625,7 @@ public class App extends DestroyableBase {
             if (!dbServiceManager().hasDbService() || eventEmitted(DB_SVC_LOADED)) {
                 runnable.run();
             } else {
-                jobManager().on(DB_SVC_LOADED, runnable, true);
+                jobManager().on(DB_SVC_LOADED, "app-refresh-after-db-svc-loaded", runnable, true);
             }
         } catch (BlockIssueSignal e) {
             // ignore
