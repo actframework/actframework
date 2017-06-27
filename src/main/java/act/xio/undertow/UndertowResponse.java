@@ -23,17 +23,22 @@ package act.xio.undertow;
 import act.ResponseImplBase;
 import act.app.ActionContext;
 import act.conf.AppConfig;
+import io.undertow.io.IoCallback;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.util.HeaderMap;
 import io.undertow.util.Headers;
 import io.undertow.util.HttpString;
 import org.osgl.exception.UnexpectedIOException;
 import org.osgl.http.H;
+import org.osgl.storage.ISObject;
 import org.osgl.util.E;
 import org.osgl.util.IO;
 
+import java.io.File;
+import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
 import java.util.Locale;
 
 public class UndertowResponse extends ResponseImplBase<UndertowResponse> {
@@ -78,6 +83,31 @@ public class UndertowResponse extends ResponseImplBase<UndertowResponse> {
     public UndertowResponse writeContent(ByteBuffer byteBuffer) {
         hse.getResponseSender().send(byteBuffer);
         return this;
+    }
+
+    @Override
+    public UndertowResponse writeBinary(ISObject binary) {
+        File file = tryGetFileFrom(binary);
+        if (null == file) {
+            byte[] ba = binary.asByteArray();
+            ByteBuffer buffer = ByteBuffer.wrap(ba);
+            hse.getResponseSender().send(buffer);
+        } else {
+            try {
+                hse.getResponseSender().transferFrom(FileChannel.open(file.toPath()), IoCallback.END_EXCHANGE);
+            } catch (IOException e) {
+                throw E.ioException(e);
+            }
+        }
+        return this;
+    }
+
+    private File tryGetFileFrom(ISObject sobj) {
+        String className = sobj.getClass().getSimpleName();
+        if (className.contains("FileSObject")) {
+            return sobj.asFile();
+        }
+        return null;
     }
 
     @Override
