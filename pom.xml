@@ -20,6 +20,7 @@
 ********************************************
 1.4.3
 * #250 Two `WebSocketConnectionManager` exists
+* #248 HttpServerExchange cannot have both async IO resumed and dispatch() called in the same cycle
 * catch up to bug fixes in 1.3.6
 
 1.4.2
