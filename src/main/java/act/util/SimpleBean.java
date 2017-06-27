@@ -25,6 +25,7 @@ import act.Destroyable;
 import act.app.App;
 import act.app.AppByteCodeScannerBase;
 import act.app.AppClassLoader;
+import act.app.event.AppEventId;
 import act.asm.ClassVisitor;
 import act.asm.FieldVisitor;
 import act.asm.MethodVisitor;
@@ -176,9 +177,17 @@ public interface SimpleBean {
 
             @Override
             public void visitEnd() {
-                if (isPublicClass && !publicFields.isEmpty()) {
-                    MetaInfo metaInfo = new MetaInfo(className, publicFields);
-                    Act.app().classLoader().simpleBeanInfoManager().register(metaInfo);
+                if (isPublicClass) {
+                    Act.app().jobManager().on(AppEventId.APP_CODE_SCANNED, new Runnable() {
+                        @Override
+                        public void run() {
+                            SimpleBean.MetaInfoManager metaInfoManager = Act.app().classLoader().simpleBeanInfoManager();
+                            if (metaInfoManager.isSimpleBean(className)) {
+                                MetaInfo metaInfo = new MetaInfo(className, publicFields);
+                                metaInfoManager.register(metaInfo);
+                            }
+                        }
+                    });
                 }
                 super.visitEnd();
             }
