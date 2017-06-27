@@ -76,7 +76,10 @@ public class SingletonFinder {
 
     private static void registerSingleton(Class<?> cls) {
         E.invalidConfigurationIf(stopInheritedScope(cls), "@Stateful or @StopInheritedScope annotation cannot be apply on singleton or @Stateless annotated class");
-        if (null == cls.getAnnotation(Lazy.class)) {
+        Object instance = tryLoadAppService(cls);
+        if (null != instance) {
+            Act.app().registerSingleton(instance);
+        } else if (null == cls.getAnnotation(Lazy.class)) {
             App.instance().registerSingletonClass(cls);
             if (LOGGER.isTraceEnabled()) {
                 LOGGER.trace("register singleton: %s", cls);
@@ -84,6 +87,10 @@ public class SingletonFinder {
         } else if (LOGGER.isTraceEnabled()) {
             LOGGER.trace("skip lazy singleton registration for %s", cls);
         }
+    }
+
+    private static Object tryLoadAppService(Class cls) {
+        return Act.app().service(cls);
     }
 
     private static boolean stopInheritedScope(Class<?> cls) {
