@@ -19,6 +19,8 @@
 *            version history
 ********************************************
 1.3.6
+* #254 SimpleBean Bytecode scanner issue: interfaces not populated in certain case
+* #253 SimpleBean implementation shall be enhanced even without public fields
 * #252 download stalled
 
 1.3.5
