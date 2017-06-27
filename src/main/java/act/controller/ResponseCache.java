@@ -26,17 +26,17 @@ import org.osgl.exception.UnexpectedIOException;
 import org.osgl.http.H;
 import org.osgl.storage.ISObject;
 import org.osgl.storage.impl.SObject;
-import org.osgl.util.IO;
 
-import java.io.*;
+import java.io.OutputStream;
+import java.io.PrintWriter;
+import java.io.Serializable;
+import java.io.Writer;
 import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
-import static org.osgl.http.H.Format.HTML;
-import static org.osgl.http.H.Format.JSON;
-import static org.osgl.http.H.Format.TXT;
+import static org.osgl.http.H.Format.*;
 
 public class ResponseCache extends ResponseImplBase implements Serializable {
 
@@ -190,8 +190,8 @@ public class ResponseCache extends ResponseImplBase implements Serializable {
 
     @Override
     public H.Response writeBinary(ISObject binary) {
+        realResponse.writeBinary(binary);
         this.binary = binary.asByteArray();
-        IO.copy(SObject.of(this.binary).asInputStream(), realResponse.outputStream(), false);
         return this;
     }
 
