@@ -279,7 +279,7 @@ public abstract class HandlerMethodMetaInfo<T extends HandlerMethodMetaInfo> ext
     }
 
     protected S.Buffer toStrBuffer(S.Buffer sb) {
-        sb.append(actContextInjection).append("");
+        sb.append(actContextInjection).append(" ");
         sb.append(_invokeType())
                 .append(_return())
                 .append(fullName())

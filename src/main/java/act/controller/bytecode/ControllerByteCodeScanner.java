@@ -272,6 +272,7 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
             private String[] exceptions;
             private boolean requireScan;
             private boolean isRoutedMethod;
+            private boolean disableJsonCircularRefDetect;
             private HandlerMethodMetaInfo methodInfo;
             private PropertySpec.MetaInfo propSpec;
             private Map<Integer, List<ParamAnnoInfoTrait>> paramAnnoInfoList = C.newMap();
@@ -321,12 +322,12 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
                 if (ControllerClassMetaInfo.isActionAnnotation(c)) {
                     checkMethodName(methodName);
                     markRequireScan();
-                    ActionMethodMetaInfo tmp = new ActionMethodMetaInfo(classInfo);
-                    methodInfo = tmp;
-                    classInfo.addAction(tmp);
+                    methodInfo = new ActionMethodMetaInfo(classInfo);
+                    classInfo.addAction((ActionMethodMetaInfo) methodInfo);
                     if (null != propSpec) {
                         methodInfo.propertySpec(propSpec);
                     }
+                    methodInfo.disableJsonCircularRefDetect(disableJsonCircularRefDetect);
                     return new ActionAnnotationVisitor(av, ControllerClassMetaInfo.lookupHttpMethod(c), ControllerClassMetaInfo.isActionUtilAnnotation(c), isStatic);
                 } else if (ControllerClassMetaInfo.isInterceptorAnnotation(c)) {
                     checkMethodName(methodName);
@@ -377,7 +378,11 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
                         }
                     };
                 } else if ($.eq(AsmTypes.DISABLE_JSON_CIRCULAR_REF_DETECT.asmType(), type)) {
-                    methodInfo.disableJsonCircularRefDetect(true);
+                    if (null != methodInfo) {
+                        methodInfo.disableJsonCircularRefDetect(true);
+                    } else {
+                        disableJsonCircularRefDetect = true;
+                    }
                 }
                 //markNotTargetClass();
                 return av;
