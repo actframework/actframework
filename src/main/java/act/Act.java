@@ -66,8 +66,6 @@ import org.osgl.util.*;
 
 import java.io.File;
 import java.lang.management.ManagementFactory;
-import java.text.CharacterIterator;
-import java.text.StringCharacterIterator;
 import java.util.List;
 import java.util.Map;
 
@@ -100,6 +98,7 @@ public final class Act {
 
         /**
          * Returns if the current mode is {@link #DEV dev mode}
+         *
          * @return `true` if the current mode is dev
          */
         public boolean isDev() {
@@ -108,6 +107,7 @@ public final class Act {
 
         /**
          * Returns if the current mode is {@link #PROD prod mode}
+         *
          * @return `true` if the current mode is product mode
          */
         public boolean isProd() {
@@ -286,7 +286,7 @@ public final class Act {
 
     @SuppressWarnings("unchecked")
     public static <T extends Plugin> T registeredPlugin(Class<T> type) {
-        return (T)genericPluginRegistry.get(type.getCanonicalName().intern());
+        return (T) genericPluginRegistry.get(type.getCanonicalName().intern());
     }
 
     public static void startServer() {
@@ -417,7 +417,7 @@ public final class Act {
         }
     }
 
-    public static synchronized  <T extends ActEvent> void registerEventListener(Class<T> eventClass, ActEventListener<T> listener) {
+    public static synchronized <T extends ActEvent> void registerEventListener(Class<T> eventClass, ActEventListener<T> listener) {
         List<ActEventListener> list = listeners.get(eventClass);
         if (null == list) {
             list = C.newList();
@@ -439,6 +439,7 @@ public final class Act {
 
     /**
      * Returns the current {@link App application's} crypto service
+     *
      * @return an {@link AppCrypto} instance
      */
     public static AppCrypto crypto() {
@@ -447,6 +448,7 @@ public final class Act {
 
     /**
      * Return the {@link App} instance
+     *
      * @return the App instance
      */
     public static App app() {
@@ -455,6 +457,7 @@ public final class Act {
 
     /**
      * Return the {@link App}'s config
+     *
      * @return the app config
      */
     public static AppConfig appConfig() {
@@ -463,6 +466,7 @@ public final class Act {
 
     /**
      * Utility method to retrieve singleton instance via {@link App#singleton(Class)} method
+     *
      * @param singletonClass
      * @param <T>
      * @return the singleton instance
@@ -473,6 +477,7 @@ public final class Act {
 
     /**
      * Returns the application's {@link App#cache() cache service}
+     *
      * @return the cache service
      */
     public static CacheService cache() {
@@ -481,6 +486,7 @@ public final class Act {
 
     /**
      * Trigger an {@link act.app.event.AppEventId App event}
+     *
      * @param appEvent the app event
      */
     public static void emit(AppEventId appEvent) {
@@ -489,6 +495,7 @@ public final class Act {
 
     /**
      * Alias of {@link #emit(AppEventId)}
+     *
      * @param appEventId the app event
      */
     public static void trigger(AppEventId appEventId) {
@@ -497,6 +504,7 @@ public final class Act {
 
     /**
      * Returns the {@link App app}'s {@link EventBus eventBus}
+     *
      * @return the eventBus
      */
     public static EventBus eventBus() {
@@ -505,6 +513,7 @@ public final class Act {
 
     /**
      * Returns the {@link App app}'s {@link AppJobManager}
+     *
      * @return the app's jobManager
      */
     public static AppJobManager jobManager() {
@@ -513,6 +522,7 @@ public final class Act {
 
     /**
      * Returns the {@link App app}'s {@link DependencyInjector}
+     *
      * @param <DI> the generic type of injector
      * @return the app's injector
      */
@@ -530,8 +540,9 @@ public final class Act {
 
     /**
      * Return an instance with give class name
+     *
      * @param className the class name
-     * @param <T> the generic type of the class
+     * @param <T>       the generic type of the class
      * @return the instance of the class
      */
     public static <T> T getInstance(String className) {
@@ -548,6 +559,7 @@ public final class Act {
 
     /**
      * Return an instance with give class
+     *
      * @param clz the class
      * @param <T> the generic type of the class
      * @return the instance of the class
@@ -557,7 +569,7 @@ public final class Act {
     }
 
     public static int classCacheSize() {
-        return ((FullStackAppBootstrapClassLoader)Act.class.getClassLoader()).libBCSize();
+        return ((FullStackAppBootstrapClassLoader) Act.class.getClassLoader()).libBCSize();
     }
 
     // --- Spark style API for application to hook action handler to a certain http request endpoint
@@ -598,99 +610,89 @@ public final class Act {
         app().router().addMapping(H.Method.DELETE, url, handler, RouteSource.APP_CONFIG);
     }
 
+    /**
+     * Start the application without application name and use the entry class to find the scan package
+     *
+     * @throws Exception any exception raised during app start
+     */
     public static void start() throws Exception {
         StackTraceElement[] sa = new Throwable().getStackTrace();
         E.unexpectedIf(sa.length < 2, "Whoops!");
         StackTraceElement ste = sa[1];
         String className = ste.getClassName();
         E.unexpectedIf(!className.contains("."), "The main class must have package name to use Act");
-        RunApp.start(S.beforeLast(className, "."));
+        RunApp.start(null, Version.appVersion(), S.beforeLast(className, "."));
     }
 
     public static Network network() {
         return network;
     }
 
-    private static boolean isItPackageName(String s) {
-        if (s.length() < 4) {
-            return false;
-        }
-        if (s.contains(" ") || s.contains("\t") || !s.contains(".")) {
-            return false;
-        }
-        if (Character.isUpperCase(s.charAt(0))) {
-            return false;
-        }
-        return isFullyQualifiedClassname(s);
-    }
-
-    private static boolean isFullyQualifiedClassname(String s) {
-        if (s == null) return false;
-        String[] parts = s.split("[\\.]");
-        if (parts.length == 0) return false;
-        for (String part : parts) {
-            CharacterIterator iter = new StringCharacterIterator(part);
-            // Check first character (there should at least be one character for each part) ...
-            char c = iter.first();
-            if (c == CharacterIterator.DONE) return false;
-            if (!Character.isJavaIdentifierStart(c) && !Character.isIdentifierIgnorable(c)) return false;
-            c = iter.next();
-            // Check the remaining characters, if there are any ...
-            while (c != CharacterIterator.DONE) {
-                if (!Character.isJavaIdentifierPart(c) && !Character.isIdentifierIgnorable(c)) return false;
-                c = iter.next();
-            }
-        }
-        return true;
+    /**
+     * Start Act application with specified app name and use the entry class to
+     * find the scan package
+     *
+     * @param appName the app name
+     * @throws Exception any exception thrown out
+     */
+    public static void start(String appName) throws Exception {
+        StackTraceElement[] sa = new RuntimeException().getStackTrace();
+        E.unexpectedIf(sa.length < 2, "Whoops!");
+        StackTraceElement ste = sa[1];
+        String className = ste.getClassName();
+        E.unexpectedIf(!className.contains("."), "The main class must have package name to use Act");
+        RunApp.start(appName, Version.appVersion(), S.beforeLast(className, "."));
     }
 
     /**
-     * Start Act application with a string:
-     *
-     * The string specified could be inferred as either a package name (for package scan) or an app name.
-     * the string is identified as an app name when either one of the following conditions met:
-     * * length of the string is less than 4
-     * * it contains whitespace characters
-     * * the first char is an uppercase letter
-     * * it is not a valid full qualified class name
-     *
-     * otherwise the string is identified as a scan package name
-     *
-     * @param appNameOrScanPackage the app name or scan package string
-     * @throws Exception any exception thrown out
+     * Start Act application with specified name and scan package
+     * @param appName the app name
+     * @param scanPackage the scan package, the package could be separated by {@link Constants#LIST_SEPARATOR}
+     * @throws Exception any exception raised during act start up
      */
-    public static void start(String appNameOrScanPackage) throws Exception {
-        if (isItPackageName(appNameOrScanPackage)) {
-            RunApp.start(appNameOrScanPackage);
-        } else {
-            // it must be an application name
-            StackTraceElement[] sa = new Throwable().getStackTrace();
-            E.unexpectedIf(sa.length < 2, "Whoops!");
-            StackTraceElement ste = sa[1];
-            String className = ste.getClassName();
-            E.unexpectedIf(!className.contains("."), "The main class must have package name to use Act");
-            RunApp.start(appNameOrScanPackage, Version.appVersion(), S.beforeLast(className, "."));
-        }
-    }
-
     public static void start(String appName, String scanPackage) throws Exception {
         RunApp.start(appName, Version.appVersion(), scanPackage);
     }
 
+    /**
+     * Start Act application with specified name and scan package specified by a class
+     * @param appName the app name
+     * @param anyAppClass specifies the scan package
+     * @throws Exception any exception raised during act start up
+     */
     public static void start(String appName, Class<?> anyAppClass) throws Exception {
         RunApp.start(appName, Version.appVersion(), anyAppClass);
     }
 
-    public static void start(Class<?> anyController) throws Exception {
-        RunApp.start(anyController);
+    /**
+     * Start Act application with no app name and scan package specified by a class
+     * @param anyAppClass specifies the scan package
+     * @throws Exception any exception raised during act start up
+     */
+    public static void start(Class<?> anyAppClass) throws Exception {
+        RunApp.start(anyAppClass);
     }
 
-    public static void start(String appName, String appVersion, Class<?> anyController) throws Exception {
-        RunApp.start(appName, appVersion, anyController);
+    /**
+     * Start Act application with specified name and scan package specified by a class
+     * @param appName the app name
+     * @param appVersion the app version tag
+     * @param anyAppClass specifies the scan package
+     * @throws Exception any exception raised during act start up
+     */
+    public static void start(String appName, String appVersion, Class<?> anyAppClass) throws Exception {
+        RunApp.start(appName, appVersion, anyAppClass);
     }
 
-    public static void start(String appName, String appVersion, String packageName) throws Exception {
-        RunApp.start(appName, appVersion, packageName);
+    /**
+     * Start Act application with specified name and scan package
+     * @param appName the app name
+     * @param appVersion the app version tag
+     * @param scanPackage the scan package, the package could be separated by {@link Constants#LIST_SEPARATOR}
+     * @throws Exception any exception raised during act start up
+     */
+    public static void start(String appName, String appVersion, String scanPackage) throws Exception {
+        RunApp.start(appName, appVersion, scanPackage);
     }
 
     private static void loadConfig() {

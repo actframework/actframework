@@ -97,7 +97,7 @@ public class RenderAny extends Result {
             result = new FilteredRenderXML(map, null, context);
         } else if (HTML == fmt || TXT == fmt || CSV == fmt) {
             if (null != hasTemplate) {
-                throw E.unsupport("Template not found");
+                throw E.unsupport("Template[%s] not found", context.templatePath());
             }
             // try render template again as handler might changed the template path
             // in the code

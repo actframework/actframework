@@ -422,6 +422,7 @@ public class App extends DestroyableBase {
     }
 
     public synchronized void setBlockIssue(Throwable e) {
+        LOGGER.fatal(e, "Block issue encountered");
         if (null != blockIssue || null != blockIssueCause) {
             // do not overwrite previous block issue
             return;
@@ -573,63 +574,75 @@ public class App extends DestroyableBase {
             } catch (CompilationException e) {
                 compilationException = e;
                 throw ActErrorResult.of(e);
+            }
+        } catch (BlockIssueSignal e) {
+            return;
+        }
+
+        try {
+            //classLoader().loadClasses();
+            emit(APP_CODE_SCANNED);
+            emit(CLASS_LOADED);
+            Act.viewManager().reload(this);
+        } catch (BlockIssueSignal e) {
+            // ignore and keep going with dependency injector initialization
+        }
+
+        try {
+            loadDependencyInjector();
+            emit(DEPENDENCY_INJECTOR_LOADED);
+        } catch (BlockIssueSignal e) {
+            return;
+        }
+
+        if (null == blockIssue && null == blockIssueCause) {
+            try {
+                initJsonDTOClassManager();
+                initParamValueLoaderManager();
+                initMailerConfigManager();
+
+                // setting context class loader here might lead to memory leaks
+                // and cause weird problems as class loader been set to thread
+                // could be switched to handling other app in ACT or still hold
+                // old app class loader instance after the app been refreshed
+                // - Thread.currentThread().setContextClassLoader(classLoader());
+
+                initHttpConfig();
+                initViewManager();
+
+                // let's any emit the dependency injector loaded event
+                // in case some other service depend on this event.
+                // If any DI plugin e.g. guice has emitted this event
+                // already, it doesn't matter we emit the event again
+                // because once app event is consumed the event listeners
+                // are cleared
+                emit(DEPENDENCY_INJECTOR_PROVISIONED);
+                emit(SINGLETON_PROVISIONED);
+                config().preloadConfigurations();
+                Runnable runnable = new Runnable() {
+                    @Override
+                    public void run() {
+                        if (null != blockIssueCause) {
+                            setBlockIssue(blockIssueCause);
+                        }
+                        emit(PRE_START);
+                        emit(STATELESS_PROVISIONED);
+                        emit(START);
+                        daemonKeeper();
+                        LOGGER.info("App[%s] loaded in %sms", name(), $.ms() - ms);
+                        emit(POST_START);
+                    }
+                };
+                if (!dbServiceManager().hasDbService() || eventEmitted(DB_SVC_LOADED)) {
+                    runnable.run();
+                } else {
+                    jobManager().on(DB_SVC_LOADED, runnable, true);
+                }
             } catch (BlockIssueSignal e) {
                 // ignore
             }
-            if (null == blockIssue) {
-                //classLoader().loadClasses();
-                emit(APP_CODE_SCANNED);
-                emit(CLASS_LOADED);
-            }
-
-            Act.viewManager().reload(this);
-
-            loadDependencyInjector();
-            emit(DEPENDENCY_INJECTOR_LOADED);
-            initJsonDTOClassManager();
-            initParamValueLoaderManager();
-            initMailerConfigManager();
-
-            // setting context class loader here might lead to memory leaks
-            // and cause weird problems as class loader been set to thread
-            // could be switched to handling other app in ACT or still hold
-            // old app class loader instance after the app been refreshed
-            // - Thread.currentThread().setContextClassLoader(classLoader());
-
-            initHttpConfig();
-            initViewManager();
-
-            // let's any emit the dependency injector loaded event
-            // in case some other service depend on this event.
-            // If any DI plugin e.g. guice has emitted this event
-            // already, it doesn't matter we emit the event again
-            // because once app event is consumed the event listeners
-            // are cleared
-            emit(DEPENDENCY_INJECTOR_PROVISIONED);
-            emit(SINGLETON_PROVISIONED);
-            config().preloadConfigurations();
-            Runnable runnable = new Runnable() {
-                @Override
-                public void run() {
-                    if (null != blockIssueCause) {
-                        setBlockIssue(blockIssueCause);
-                    }
-                    emit(PRE_START);
-                    emit(STATELESS_PROVISIONED);
-                    emit(START);
-                    daemonKeeper();
-                    LOGGER.info("App[%s] loaded in %sms", name(), $.ms() - ms);
-                    emit(POST_START);
-                }
-            };
-            if (!dbServiceManager().hasDbService() || eventEmitted(DB_SVC_LOADED)) {
-                runnable.run();
-            } else {
-                jobManager().on(DB_SVC_LOADED, "app-refresh-after-db-svc-loaded", runnable, true);
-            }
-        } catch (BlockIssueSignal e) {
-            // ignore
         }
+
     }
 
     /**
