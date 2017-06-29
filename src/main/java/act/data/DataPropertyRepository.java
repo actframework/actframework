@@ -26,6 +26,8 @@ import act.util.ActContext;
 import act.util.PropertySpec;
 import org.joda.time.*;
 import org.osgl.$;
+import org.osgl.logging.LogManager;
+import org.osgl.logging.Logger;
 import org.osgl.util.C;
 import org.rythmengine.utils.S;
 
@@ -40,6 +42,8 @@ import java.util.*;
  * Keep the property information of Data class
  */
 public class DataPropertyRepository extends AppServiceBase<DataPropertyRepository> {
+
+    private static final Logger LOGGER = LogManager.get(DataPropertyRepository.class);
 
     /**
      * all classes that can NOT be decomposed in terms of get properties
