@@ -24,7 +24,6 @@ import act.conf.AppConfig;
 import org.osgl.$;
 import org.osgl.http.H;
 import org.osgl.util.E;
-import org.osgl.util.FastStr;
 import org.osgl.util.S;
 
 public abstract class RequestImplBase<T extends H.Request> extends H.Request<T> {
@@ -37,7 +36,11 @@ public abstract class RequestImplBase<T extends H.Request> extends H.Request<T> 
         cfg = config;
     }
 
-    protected abstract H.Method _method();
+    private H.Method _method() {
+        return H.Method.valueOfIgnoreCase(methodName());
+    }
+
+    protected abstract String methodName();
 
     @Override
     public String contextPath() {

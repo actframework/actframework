@@ -26,8 +26,6 @@ import act.conf.AppConfig;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.server.handlers.Cookie;
 import io.undertow.util.HttpString;
-import org.osgl.http.H;
-import org.osgl.mvc.result.MethodNotAllowed;
 import org.osgl.util.E;
 import org.osgl.util.IO;
 
@@ -63,12 +61,8 @@ public class UndertowRequest extends RequestImplBase<UndertowRequest> {
     }
 
     @Override
-    protected H.Method _method() {
-        try {
-            return H.Method.valueOfIgnoreCase(hse.getRequestMethod().toString());
-        } catch (IllegalArgumentException e) {
-            throw MethodNotAllowed.get();
-        }
+    protected String methodName() {
+        return hse.getRequestMethod().toString();
     }
 
     @Override
