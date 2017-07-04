@@ -37,7 +37,7 @@ public abstract class UnknownHttpMethodProcessor implements Serializable {
     private static class NotAllowed extends UnknownHttpMethodProcessor implements ExpressHandler {
         @Override
         public Result handle(H.Method method) {
-            return MethodNotAllowed.INSTANCE;
+            return MethodNotAllowed.get();
         }
 
         private Object readResolve() {
