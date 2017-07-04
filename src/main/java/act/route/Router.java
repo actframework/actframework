@@ -144,7 +144,6 @@ public class Router extends AppServiceBase<Router> {
     // --- routing ---
     public RequestHandler getInvoker(H.Method method, CharSequence path, ActionContext context) {
         context.router(this);
-        RequestHandler blockIssueHandler = app().blockIssueHandler();
         if (method == H.Method.OPTIONS) {
             return optionHandlerFactory.optionHandler(path, context);
         }
@@ -153,6 +152,7 @@ public class Router extends AppServiceBase<Router> {
         }
         Node node = search(method, Path.tokenizer(Unsafe.bufOf(path)), context);
         RequestHandler handler = getInvokerFrom(node);
+        RequestHandler blockIssueHandler = app().blockIssueHandler();
         if (null == blockIssueHandler) {
             return handler;
         }
