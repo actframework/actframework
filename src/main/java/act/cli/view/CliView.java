@@ -20,6 +20,7 @@ package act.cli.view;
  * #L%
  */
 
+import act.Act;
 import act.cli.CliContext;
 import act.cli.CliOverHttpContext;
 import act.cli.ascii_table.impl.CollectionASCIITableAware;
@@ -222,9 +223,14 @@ public enum CliView {
                     json = com.alibaba.fastjson.JSON.toJSONString(result);
                 }
             } else {
-                // Note: we can't check DisableFastJsonCircularReferenceDetect here because if
-                // that option is set, then FastJson will skip the JsonSerializer.context setting
-                // and there is property filter mechanism will break
+                Boolean b = DisableFastJsonCircularReferenceDetect.option.get();
+                if (null != b && b) {
+                    Act.LOGGER.warn(new RuntimeException(), "Cannot use @DisableFastJsonCircularReferenceDetect along with @PropertySpec");
+                    // Note: we can't check DisableFastJsonCircularReferenceDetect here because if
+                    // that option is set, then FastJson will skip the JsonSerializer.context setting
+                    // and breaks the property filter mechanism
+                    //featureList.add(SerializerFeature.DisableCircularReferenceDetect);
+                }
                 MappedFastJsonNameFilter nameFilter = new MappedFastJsonNameFilter(spec.labelMapping(context));
 
                 SerializerFeature[] featureArray = new SerializerFeature[featureList.size()];
