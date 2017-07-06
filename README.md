@@ -3,6 +3,8 @@
 [![Join the chat at https://gitter.im/actframework/actframework](https://badges.gitter.im/actframework/actframework.svg)](https://gitter.im/actframework/actframework?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) [![Lecense](https://img.shields.io/badge/license-Apache%202-4EB1BA.svg)](http://www.apache.org/licenses/LICENSE-2.0.html) [![Maven Central](https://img.shields.io/maven-central/v/org.actframework/act.svg)](http://search.maven.org/#search%7Cgav%7C1%7Cg%3A%22org.actframework%22%20AND%20a%3A%22act%22)
 
 ## News
+* 06/Jun/2017 [ACT 1.4.4 released](https://github.com/actframework/actframework/milestone/16?closed=1)
+* 06/Jun/2017 [ACT 1.3.7 released](https://github.com/actframework/actframework/milestone/16?closed=1)
 * 29/Jun/2017 [ACT 1.4.3 released](https://github.com/actframework/actframework/milestone/14?closed=1)
 * 29/Jun/2017 [ACT 1.3.6 released](https://github.com/actframework/actframework/milestone/15?closed=1)
 * 25/Jun/2017 [ACT 1.4.2 released](https://github.com/actframework/actframework/milestone/12?closed=1)
