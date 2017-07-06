@@ -98,18 +98,20 @@ class GenieProviders {
                     list.add(c);
                 }
             };
-            root.visitTree($.guardedVisitor(new $.Predicate<ClassNode>() {
-                @Override
-                public boolean test(ClassNode classNode) {
-                    if (!loadNonPublic && !classNode.isPublic()) {
-                        return false;
+            for (ClassNode node : root.annotatedClasses()) {
+                $.guardedVisitor(new $.Predicate<ClassNode>() {
+                    @Override
+                    public boolean test(ClassNode classNode) {
+                        if (!loadNonPublic && !classNode.isPublic()) {
+                            return false;
+                        }
+                        if (!loadAbstract && classNode.isAbstract()) {
+                            return false;
+                        }
+                        return true;
                     }
-                    if (!loadAbstract && classNode.isAbstract()) {
-                        return false;
-                    }
-                    return true;
-                }
-            }, visitor));
+                }, visitor).visit(node);
+            }
             return list;
         }
     };
