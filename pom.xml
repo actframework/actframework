@@ -18,6 +18,9 @@
 ********************************************
 *            version history
 ********************************************
+1.4.4
+* Catch up update to 1.3.7
+
 1.4.3
 * #250 Two `WebSocketConnectionManager` exists
 * #248 HttpServerExchange cannot have both async IO resumed and dispatch() called in the same cycle
@@ -48,6 +51,12 @@
 * #192 Log the URL with handler error message
 * #191 Review and fix the use of `ConcurrentMap`
 * #17 Support WebSocket
+
+1.3.7
+* #275 `@AnnotatedWith` injection not work
+* #272 `AdaptiveRecord.Util.asMap` method error
+* #269 It shall report `405 Method Not Allowed` for HTTP method not recongized
+* #265 update fastjson to 1.2.34
 
 1.3.6
 * #261 No log for block issue encountered before loading dependency manager
@@ -237,7 +246,7 @@
   <groupId>org.actframework</groupId>
   <artifactId>act</artifactId>
   <packaging>jar</packaging>
-  <version>1.4.4-SNAPSHOT</version>
+  <version>1.4.5-SNAPSHOT</version>
 
   <name>ACT Framework</name>
   <description>The ACT full stack MVC framework</description>
@@ -274,7 +283,7 @@
     <cdi-api.version>1.2</cdi-api.version>
     <commons-fileupload.version>1.3.2</commons-fileupload.version>
     <ecj.version>4.6.1</ecj.version>
-    <fastjson.version>1.2.33</fastjson.version>
+    <fastjson.version>1.2.34</fastjson.version>
     <bval.version>1.1.2</bval.version>
     <image4j.version>0.7</image4j.version>
     <jansi.version>1.16</jansi.version>
@@ -283,7 +292,7 @@
     <jfiglet.version>0.0.8</jfiglet.version>
     <jline.version>2.14.3</jline.version>
     <joda-time.version>2.9.9</joda-time.version>
-    <okhttp.version>3.8.0</okhttp.version>
+    <okhttp.version>3.8.1</okhttp.version>
     <osgl-tool.version>1.3.1</osgl-tool.version>
     <osgl-genie.version>1.1.2</osgl-genie.version>
     <osgl-mvc.version>1.1.1</osgl-mvc.version>

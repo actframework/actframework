@@ -305,7 +305,7 @@ public interface AdaptiveRecord<ID_TYPE, MODEL_TYPE extends AdaptiveRecord> exte
                 @Override
                 public Object get(Object key) {
                     $.Function getter = ar.metaInfo().fieldGetters.get(key);
-                    return null != getter ? getter.apply(this) : kv.get((String)key);
+                    return null != getter ? getter.apply(ar) : kv.get((String)key);
                 }
 
                 @Override
@@ -313,7 +313,7 @@ public interface AdaptiveRecord<ID_TYPE, MODEL_TYPE extends AdaptiveRecord> exte
                     $.Func2 setter = ar.metaInfo().fieldSetters.get(key);
                     if (null != setter) {
                         Object o = get(key);
-                        setter.apply(this, value);
+                        setter.apply(ar, value);
                         return o;
                     }
                     return kv.put(key, value);
@@ -350,7 +350,7 @@ public interface AdaptiveRecord<ID_TYPE, MODEL_TYPE extends AdaptiveRecord> exte
                     List<Object> list = new ArrayList<Object>();
                     list.addAll(kv.values());
                     for ($.Function getter : ar.metaInfo().fieldGetters.values()) {
-                        list.add(getter.apply(this));
+                        list.add(getter.apply(ar));
                     }
                     return list;
                 }
