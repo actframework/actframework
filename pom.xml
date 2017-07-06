@@ -57,6 +57,7 @@
 * #272 `AdaptiveRecord.Util.asMap` method error
 * #269 It shall report `405 Method Not Allowed` for HTTP method not recongized
 * #265 update fastjson to 1.2.34
+* #264 Update osgl-http dependency to 1.1.0
 
 1.3.6
 * #261 No log for block issue encountered before loading dependency manager
