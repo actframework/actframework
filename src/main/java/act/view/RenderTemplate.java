@@ -41,6 +41,11 @@ public class RenderTemplate extends RenderAny {
             H.Status status = payload().status;
             return (null == status) ? super.status() : status;
         }
+
+        @Override
+        public long timestamp() {
+            return payload().timestamp;
+        }
     };
 
     static final ThreadLocal<Map<String, Object>> renderArgsBag = new ThreadLocal<>();
@@ -91,7 +96,7 @@ public class RenderTemplate extends RenderAny {
     }
 
     public static RenderTemplate get(H.Status status) {
-        payload.get().status(status);
+        touchPayload().status(status);
         return INSTANCE;
     }
 
@@ -101,7 +106,7 @@ public class RenderTemplate extends RenderAny {
     }
 
     public static RenderTemplate of(H.Status status, Map<String, Object> args) {
-        payload.get().status(status);
+        touchPayload().status(status);
         renderArgsBag.set(args);
         return INSTANCE;
     }

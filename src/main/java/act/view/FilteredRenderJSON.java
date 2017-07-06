@@ -39,6 +39,11 @@ public class FilteredRenderJSON extends RenderContent {
         public String content() {
             return payload().message;
         }
+
+        @Override
+        public long timestamp() {
+            return payload().timestamp;
+        }
     };
 
     private FilteredRenderJSON() {
@@ -50,7 +55,7 @@ public class FilteredRenderJSON extends RenderContent {
     }
 
     public static FilteredRenderJSON get(Object v, PropertySpec.MetaInfo spec, ActionContext context) {
-        payload.get().message(render(v, spec, context));
+        touchPayload().message(render(v, spec, context));
         return _INSTANCE;
     }
 
@@ -59,7 +64,7 @@ public class FilteredRenderJSON extends RenderContent {
     }
 
     public static FilteredRenderJSON get(H.Status status, Object v, PropertySpec.MetaInfo spec, ActionContext context) {
-        payload.get().message(render(v, spec, context)).status(status);
+        touchPayload().message(render(v, spec, context)).status(status);
         return _INSTANCE;
     }
 

@@ -36,6 +36,11 @@ public class RenderCSV extends RenderContent {
         public String content() {
             return payload().message;
         }
+
+        @Override
+        public long timestamp() {
+            return payload().timestamp;
+        }
     };
 
     private ActContext context;
@@ -55,12 +60,12 @@ public class RenderCSV extends RenderContent {
     }
 
     public static RenderCSV get(Object v, PropertySpec.MetaInfo spec, ActContext context) {
-        payload.get().message(render(v, spec, context));
+        touchPayload().message(render(v, spec, context));
         return _INSTANCE;
     }
 
     public static RenderCSV get(H.Status status, Object v, PropertySpec.MetaInfo spec, ActContext context) {
-        payload.get().message(render(v, spec, context)).status(status);
+        touchPayload().message(render(v, spec, context)).status(status);
         return _INSTANCE;
     }
 
