@@ -18,6 +18,11 @@
 ********************************************
 *            version history
 ********************************************
+1.3.8
+* #286 When handler has no return value it shall still check the context render arguments
+* #285 `@Output` annotation on field declaration does not work
+* #284 Add an annotation to support output all controller method parameters into render argument list
+
 1.3.7
 * #276 update osgl-mvc to 1.2.0
 * #275 `@AnnotatedWith` injection not work
