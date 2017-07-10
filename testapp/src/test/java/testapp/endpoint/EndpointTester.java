@@ -257,7 +257,7 @@ public class EndpointTester extends TestBase {
         return S.fmt(END_POINT + tmpl0, args);
     }
 
-    private void checkResponseCode(Response resp) {
+    protected final void checkResponseCode(Response resp) {
         if (resp.code() < 300 && resp.code() > 199) {
             return;
         }
