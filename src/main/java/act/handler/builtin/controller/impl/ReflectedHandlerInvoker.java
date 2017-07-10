@@ -264,13 +264,14 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
             return new BadRequest(msg);
         }
 
-        if (hasOutputVar) {
-            fillOutputVariables(controller, params, context);
-        }
-
         try {
             return invoke(handler, context, controller, params);
         } finally {
+
+            if (hasOutputVar) {
+                fillOutputVariables(controller, params, context);
+            }
+
             if (null == context.hasTemplate()) {
                 // template path has been reset by app logic
                 templateCache.remove(context.accept());
@@ -556,7 +557,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
             if (null != outputRequestParams) {
                 DependencyInjector injector = app.injector();
                 for (int i = 0; i < len; ++i) {
-                    if (injector.isProvided(paramTypes[i])) {
+                    if (!injector.isProvided(paramTypes[i])) {
                         String outputName = handler.param(i).name();
                         outputParams.put(i, outputName);
                         outputNames.add(outputName);

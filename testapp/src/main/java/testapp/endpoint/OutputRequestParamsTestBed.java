@@ -12,7 +12,7 @@ import static act.controller.Controller.Util.render;
 public class OutputRequestParamsTestBed {
 
     @Output
-    public String fieldOne;
+    public String field1;
 
     @GetAction("specific")
     public void testOutputSpecificParam(@Output String param1, int param2, EventBus param3) {
@@ -22,7 +22,7 @@ public class OutputRequestParamsTestBed {
     @GetAction("all")
     @OutputRequestParams
     public void testOutputAllParams(String param1, int param2, EventBus param3) {
-        render();
+        throw render();
     }
 
 }
