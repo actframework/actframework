@@ -33,6 +33,7 @@ import act.controller.meta.*;
 import act.handler.NonBlock;
 import act.handler.PreventDoubleSubmission;
 import act.handler.builtin.controller.*;
+import act.inject.DependencyInjector;
 import act.inject.param.JsonDTO;
 import act.inject.param.JsonDTOClassManager;
 import act.inject.param.ParamValueLoaderManager;
@@ -79,6 +80,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         implements ActionHandlerInvoker, AfterInterceptorInvoker, ExceptionInterceptorInvoker {
 
     private static final Object[] DUMP_PARAMS = new Object[0];
+    private App app;
     private ClassLoader cl;
     private ControllerClassMetaInfo controller;
     private Class<?> controllerClass;
@@ -116,6 +118,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
     private MissingAuthenticationHandler csrfFailureHandler;
 
     private ReflectedHandlerInvoker(M handlerMetaInfo, App app) {
+        this.app = app;
         this.cl = app.classLoader();
         this.handler = handlerMetaInfo;
         this.controller = handlerMetaInfo.classInfo();
@@ -186,6 +189,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
 
     @Override
     protected void releaseResources() {
+        app = null;
         cl = null;
         controller = null;
         controllerClass = null;
@@ -262,13 +266,14 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
             return new BadRequest(msg);
         }
 
-        if (hasOutputVar) {
-            fillOutputVariables(controller, params, context);
-        }
-
         try {
             return invoke(handler, context, controller, params);
         } finally {
+
+            if (hasOutputVar) {
+                fillOutputVariables(controller, params, context);
+            }
+
             if (null == context.hasTemplate()) {
                 // template path has been reset by app logic
                 templateCache.remove(context.accept());
@@ -546,31 +551,43 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
             if (0 == len) {
                 return;
             }
-            Annotation[][] aaa = method.getParameterAnnotations();
-            for (int i = 0; i < len; ++i) {
-                Annotation[] aa = aaa[i];
-                if (null == aa) {
-                    continue;
-                }
-                Output output = null;
-                for (int j = aa.length - 1; j >= 0; --j) {
-                    Annotation a = aa[j];
-                    if (a.annotationType() == Output.class) {
-                        output = $.cast(a);
-                        break;
+            Annotation outputRequestParams = method.getAnnotation(OutputRequestParams.class);
+            if (null != outputRequestParams) {
+                DependencyInjector injector = app.injector();
+                for (int i = 0; i < len; ++i) {
+                    if (!injector.isProvided(paramTypes[i])) {
+                        String outputName = handler.param(i).name();
+                        outputParams.put(i, outputName);
+                        outputNames.add(outputName);
                     }
                 }
-                if (null == output) {
-                    continue;
+            } else {
+                Annotation[][] aaa = method.getParameterAnnotations();
+                for (int i = 0; i < len; ++i) {
+                    Annotation[] aa = aaa[i];
+                    if (null == aa) {
+                        continue;
+                    }
+                    Output output = null;
+                    for (int j = aa.length - 1; j >= 0; --j) {
+                        Annotation a = aa[j];
+                        if (a.annotationType() == Output.class) {
+                            output = $.cast(a);
+                            break;
+                        }
+                    }
+                    if (null == output) {
+                        continue;
+                    }
+                    String outputName = output.value();
+                    if (S.blank(outputName)) {
+                        HandlerParamMetaInfo paramMetaInfo = handler.param(i);
+                        outputName = paramMetaInfo.name();
+                    }
+                    E.unexpectedIf(outputNames.contains(outputName), "output name already used: %s", outputName);
+                    outputParams.put(i, outputName);
+                    outputNames.add(outputName);
                 }
-                String outputName = output.value();
-                if (S.blank(outputName)) {
-                    HandlerParamMetaInfo paramMetaInfo = handler.param(i);
-                    outputName = paramMetaInfo.name();
-                }
-                E.unexpectedIf(outputNames.contains(outputName), "output name already used: %s", outputName);
-                outputParams.put(i, outputName);
-                outputNames.add(outputName);
             }
         } finally {
             hasOutputVar = !outputNames.isEmpty();

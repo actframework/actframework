@@ -37,6 +37,7 @@ import act.security.CORS;
 import act.util.ActContext;
 import act.util.MissingAuthenticationHandler;
 import act.util.PropertySpec;
+import act.view.RenderAny;
 import org.osgl.$;
 import org.osgl.concurrent.ContextLocal;
 import org.osgl.http.H;
@@ -420,6 +421,9 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
     }
 
     public Result nullValueResult() {
+        if (hasRenderArgs()) {
+            return new RenderAny();
+        }
         if (null != forceResponseStatus) {
             return new Result(forceResponseStatus){};
         } else {

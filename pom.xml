@@ -18,6 +18,9 @@
 ********************************************
 *            version history
 ********************************************
+1.4.5
+* Catch up update to 1.3.8
+
 1.4.4
 * Catch up update to 1.3.7
 
@@ -51,6 +54,11 @@
 * #192 Log the URL with handler error message
 * #191 Review and fix the use of `ConcurrentMap`
 * #17 Support WebSocket
+
+1.3.8
+* #286 When handler has no return value it shall still check the context render arguments
+* #285 `@Output` annotation on field declaration does not work
+* #284 Add an annotation to support output all controller method parameters into render argument list
 
 1.3.7
 * #276 update osgl-mvc to 1.2.0
