@@ -325,6 +325,10 @@ public interface ActContext<CTX_TYPE extends ActContext> extends ParamValueProvi
             return C.newMap(renderArgs);
         }
 
+        protected boolean hasRenderArgs() {
+            return !renderArgs.isEmpty();
+        }
+
         /**
          * Associate a user attribute to the context. Could be used by third party
          * libraries or user application
