@@ -22,11 +22,18 @@ package act.view;
 
 import act.app.ActionContext;
 import act.util.ActContext;
+import org.osgl.inject.BeanSpec;
 
 public abstract class ActionViewVarDef extends VarDef {
+
     protected ActionViewVarDef(String name, Class<?> type) {
         super(name, type);
     }
+
+    protected ActionViewVarDef(String name, BeanSpec spec) {
+        super(name, spec);
+    }
+
 
     @Override
     public final Object evaluate(ActContext context) {

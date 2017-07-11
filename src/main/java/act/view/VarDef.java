@@ -21,6 +21,7 @@ package act.view;
  */
 
 import act.util.ActContext;
+import org.osgl.inject.BeanSpec;
 import org.osgl.util.E;
 import org.osgl.util.S;
 
@@ -46,6 +47,23 @@ public abstract class VarDef {
         E.NPE(type);
         this.name = name;
         this.type = type.getCanonicalName().replace('$', '.');
+    }
+
+    /**
+     * Construct an implicit variable by name and {@link BeanSpec bean spec}
+     *
+     * @param name the name of the variable. Could be referenced in
+     *             view template to get the variable
+     * @param type the {@link BeanSpec} of the variable. Some view solution e.g.
+     *             Rythm needs to explicitly declare the template
+     *             arguments. And type information is used by those
+     *             static template engines
+     */
+    protected VarDef(String name, BeanSpec type) {
+        E.illegalArgumentIf(S.blank(name), "VarDef name cannot be empty");
+        E.NPE(type);
+        this.name = name;
+        this.type = type.toString();
     }
 
     public String name() {
