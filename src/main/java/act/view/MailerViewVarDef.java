@@ -22,10 +22,15 @@ package act.view;
 
 import act.mail.MailerContext;
 import act.util.ActContext;
+import org.osgl.inject.BeanSpec;
 
 public abstract class MailerViewVarDef extends VarDef {
     protected MailerViewVarDef(String name, Class<?> type) {
         super(name, type);
+    }
+
+    protected MailerViewVarDef(String name, BeanSpec spec) {
+        super(name, spec);
     }
 
     @Override

@@ -204,7 +204,7 @@ public abstract class ImplicitVariableProvider implements Plugin {
         private void register(Meta meta, Class<?> cls, Method method, App app) {
             final ReflectedActionViewVarDef def = new ReflectedActionViewVarDef(meta, cls, method, app);
             if (def.supportMailer) {
-                MailerViewVarDef mailerVarDef = new MailerViewVarDef(meta.varName, def.returnType()) {
+                MailerViewVarDef mailerVarDef = new MailerViewVarDef(meta.varName, def.returnType(app)) {
                     @Override
                     public Object eval(MailerContext context) {
                         return def.getValue(context.app());
@@ -213,7 +213,7 @@ public abstract class ImplicitVariableProvider implements Plugin {
                 Act.viewManager().registerAppDefinedVar(mailerVarDef);
             }
             if (def.supportAction) {
-                ActionViewVarDef actionVarDef = new ActionViewVarDef(meta.varName, def.returnType()) {
+                ActionViewVarDef actionVarDef = new ActionViewVarDef(meta.varName, def.returnType(app)) {
                     @Override
                     public Object eval(ActionContext context) {
                         return def.getValue(context.app());
@@ -280,8 +280,8 @@ public abstract class ImplicitVariableProvider implements Plugin {
                 return false;
             }
 
-            Class<?> returnType() {
-                return method.getReturnType();
+            BeanSpec returnType(App app) {
+                return BeanSpec.of(method.getGenericReturnType(), null, app.injector());
             }
 
             Object getValue(App app) {
