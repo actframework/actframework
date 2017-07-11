@@ -142,7 +142,7 @@ public class CliServer extends AppServiceBase<CliServer> implements Runnable {
                             }
                         }
                         for (CliSession session: toBeRemoved) {
-                            session.stop("your session is timeout");
+                            session.stop("Your session has expired");
                             sessions.remove(session.id());
                         }
                         try {

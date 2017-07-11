@@ -19,6 +19,7 @@
 *            version history
 ********************************************
 1.3.8
+* #290 English label is not correct in Act CLI
 * #288 Make `@ProvidesImplicitTemplateVariable` support default value
 * #287 `@ProvidesImplicitTemplateVariable`: Generic type lost
 * #286 When handler has no return value it shall still check the context render arguments
