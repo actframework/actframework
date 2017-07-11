@@ -96,7 +96,7 @@ public abstract class ImplicitVariableProvider implements Plugin {
             }
 
             String varName() {
-                return S.eq(ProvidesImplicitTemplateVariable.DEFAULT, varName) ? methodName : varName;
+                return (null == varName || S.eq(ProvidesImplicitTemplateVariable.DEFAULT, varName)) ? methodName : varName;
             }
 
             @Override
