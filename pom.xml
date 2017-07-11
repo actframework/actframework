@@ -19,6 +19,8 @@
 *            version history
 ********************************************
 1.3.8
+* #288 Make `@ProvidesImplicitTemplateVariable` support default value
+* #287 `@ProvidesImplicitTemplateVariable`: Generic type lost
 * #286 When handler has no return value it shall still check the context render arguments
 * #285 `@Output` annotation on field declaration does not work
 * #284 Add an annotation to support output all controller method parameters into render argument list

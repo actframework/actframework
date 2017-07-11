@@ -15,7 +15,7 @@ import java.util.List;
 @TemplateContext("gh/287")
 public class GH287 extends GithubIssueBase {
 
-    @ProvidesImplicitTemplateVariable("bar")
+    @ProvidesImplicitTemplateVariable
     public List<Integer> bar() {
         return C.list(1, 2, 3);
     }

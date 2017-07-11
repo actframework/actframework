@@ -33,9 +33,11 @@ import java.lang.annotation.Target;
 @Target(ElementType.METHOD)
 public @interface ProvidesImplicitTemplateVariable {
 
+    String DEFAULT = "NULL";
+
     /**
      * Specify the template variable name.
      * @return the template variable name
      */
-    String value();
+    String value() default DEFAULT;
 }
