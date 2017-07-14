@@ -24,8 +24,8 @@ import act.app.ActionContext;
 import act.app.App;
 import act.controller.ParamNames;
 import act.handler.builtin.controller.FastRequestHandler;
+import org.osgl.$;
 import org.osgl.http.H;
-import org.osgl.util.E;
 import org.osgl.util.FastStr;
 import org.osgl.util.IO;
 import org.osgl.util.S;
@@ -35,16 +35,22 @@ import java.io.File;
 import java.io.InputStream;
 
 public class StaticFileGetter extends FastRequestHandler {
+
     private File base;
+    private FastRequestHandler delegate;
 
     public StaticFileGetter(String base, App app) {
-        E.NPE(base);
-        this.base = app.file(base);
+        this(app.file(base));
     }
 
     public StaticFileGetter(File base) {
-        E.NPE(base);
-        this.base = base;
+        this.base = $.notNull(base);
+        this.delegate = verifyBase(base);
+    }
+
+    @Override
+    public boolean express(ActionContext context) {
+        return null != delegate;
     }
 
     @Override
@@ -54,13 +60,12 @@ public class StaticFileGetter extends FastRequestHandler {
 
     @Override
     public void handle(ActionContext context) {
-        context.handler(this);
-        File file = base;
-        if (!file.exists()) {
-            // try load from resource
-            AlwaysNotFound.INSTANCE.handle(context);
+        if (null != delegate) {
+            delegate.handle(context);
             return;
         }
+        context.handler(this);
+        File file = base;
         H.Format fmt;
         if (base.isDirectory()) {
             String path = context.paramVal(ParamNames.PATH);
@@ -109,5 +114,25 @@ public class StaticFileGetter extends FastRequestHandler {
     public String toString() {
         boolean dir = supportPartialPath();
         return "file: " + (dir ? base().getPath() + "/**" : base().getPath());
+    }
+
+    /*
+     * If base is valid then return null
+     * otherwise return delegate request handler
+     */
+    private FastRequestHandler verifyBase(File base) {
+        if (!base.exists()) {
+            logger.warn("file base not exists: " + base);
+            return AlwaysNotFound.INSTANCE;
+        }
+        if (!base.canRead()) {
+            logger.warn("cannot read file base: " + base);
+            return AlwaysForbidden.INSTANCE;
+        }
+        if (base.isDirectory() & (!base.canExecute())) {
+            logger.warn("cannot access directory: " + base);
+            return AlwaysForbidden.INSTANCE;
+        }
+        return null;
     }
 }

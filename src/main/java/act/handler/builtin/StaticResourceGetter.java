@@ -28,7 +28,6 @@ import act.handler.builtin.controller.FastRequestHandler;
 import org.osgl.$;
 import org.osgl.http.H;
 import org.osgl.mvc.result.NotFound;
-import org.osgl.util.E;
 import org.osgl.util.IO;
 import org.osgl.util.S;
 
@@ -48,6 +47,8 @@ import static org.osgl.http.H.Format.*;
 public class StaticResourceGetter extends FastRequestHandler {
 
     private static final char SEP = '/';
+
+    private FastRequestHandler delegate;
 
     private String base;
     private URL baseUrl;
@@ -69,17 +70,19 @@ public class StaticResourceGetter extends FastRequestHandler {
         String path = S.ensureStartsWith(base, SEP);
         this.base = path;
         this.baseUrl = StaticFileGetter.class.getResource(path);
-        E.illegalArgumentIf(null == this.baseUrl, "Cannot find base URL: %s", base);
-        this.isFolder = isFolder(this.baseUrl, path);
-        if (!this.isFolder && "file".equals(baseUrl.getProtocol())) {
-            Act.jobManager().beforeAppStart(new Runnable() {
-                @Override
-                public void run() {
-                    preloadCache();
-                }
-            });
+        this.delegate = verifyBase(this.baseUrl, base);
+        if (null == delegate) {
+            this.isFolder = isFolder(this.baseUrl, path);
+            if (!this.isFolder && "file".equals(baseUrl.getProtocol())) {
+                Act.jobManager().beforeAppStart(new Runnable() {
+                    @Override
+                    public void run() {
+                        preloadCache();
+                    }
+                });
+            }
+            this.preloadSizeLimit = Act.appConfig().resourcePreloadSizeLimit();
         }
-        this.preloadSizeLimit = Act.appConfig().resourcePreloadSizeLimit();
     }
 
     @Override
@@ -88,7 +91,7 @@ public class StaticResourceGetter extends FastRequestHandler {
 
     @Override
     public boolean express(ActionContext context) {
-        if (preloaded) {
+        if (preloaded || null != delegate) {
             return true;
         }
         String path = context.paramVal(ParamNames.PATH);
@@ -100,6 +103,10 @@ public class StaticResourceGetter extends FastRequestHandler {
 
     @Override
     public void handle(ActionContext context) {
+        if (null != delegate) {
+            delegate.handle(context);
+            return;
+        }
         context.handler(this);
         String path = context.paramVal(ParamNames.PATH);
         handle(path, context);
@@ -268,6 +275,19 @@ public class StaticResourceGetter extends FastRequestHandler {
 
     @Override
     public String toString() {
-        return baseUrl.toString();
+        return null != baseUrl ? baseUrl.toString() : base + "(not found)";
     }
+
+    /*
+     * If base is valid then return null
+     * otherwise return delegate request handler
+     */
+    private FastRequestHandler verifyBase(URL baseUrl, String baseSupplied) {
+        if (null == baseUrl) {
+            logger.warn("URL base not exists: " + baseSupplied);
+            return AlwaysNotFound.INSTANCE;
+        }
+        return null;
+    }
+
 }
