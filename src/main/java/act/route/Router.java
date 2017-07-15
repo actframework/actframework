@@ -669,6 +669,12 @@ public class Router extends AppServiceBase<Router> {
         $.T2<String, String> t2 = splitActionStr(action);
         String directive = t2._1, payload = t2._2;
 
+        if (S.empty(directive)) {
+            if (payload.contains("/")) {
+                directive = "resource";
+            }
+        }
+
         if (S.notEmpty(directive)) {
             RequestHandlerResolver resolver = resolvers.get(directive);
             RequestHandler handler = null == resolver ?
@@ -1252,7 +1258,8 @@ public class Router extends AppServiceBase<Router> {
             String s = directive.toString().toLowerCase();
             try {
                 return valueOf(s).resolve(payload, app);
-            } catch (IllegalArgumentException e) {
+            } catch (RuntimeException e) {
+                LOGGER.warn(e, "cannot resolve directive %s on payload: %s", directive, payload);
                 return null;
             }
         }

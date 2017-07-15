@@ -246,6 +246,10 @@ public interface ProjectLayout {
             File resourceBase = resource(appBase);
             files.add(file(resourceBase, ROUTES_FILE));
             File confBase = conf(appBase);
+            if ($.eq(confBase, resourceBase)) {
+                // see https://github.com/actframework/actframework/issues/300
+                return files;
+            }
             files.add(file(confBase, ROUTES_FILE));
             File commonBase = file(confBase, "common");
             files.add(file(commonBase, ROUTES_FILE));

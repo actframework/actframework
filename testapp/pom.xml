@@ -188,6 +188,12 @@
     </dependency>
 
     <dependency>
+      <groupId>org.osgl</groupId>
+      <artifactId>genie</artifactId>
+      <version>1.0.3-SNAPSHOT</version>
+    </dependency>
+
+    <dependency>
       <groupId>org.slf4j</groupId>
       <artifactId>slf4j-simple</artifactId>
       <version>1.7.12</version>

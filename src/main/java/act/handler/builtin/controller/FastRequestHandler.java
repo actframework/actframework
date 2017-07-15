@@ -24,6 +24,8 @@ import act.app.ActionContext;
 import act.handler.RequestHandler;
 import act.handler.RequestHandlerBase;
 import act.security.CSRF;
+import org.osgl.logging.LogManager;
+import org.osgl.logging.Logger;
 import org.osgl.util.E;
 
 /**
@@ -31,6 +33,8 @@ import org.osgl.util.E;
  * and construct the sessions, it shall extends from this class
  */
 public abstract class FastRequestHandler extends RequestHandlerBase {
+
+    protected Logger logger = LogManager.get(getClass());
 
     public static final RequestHandler DUMB = new FastRequestHandler() {
         @Override
