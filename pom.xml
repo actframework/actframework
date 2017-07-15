@@ -19,6 +19,7 @@
 *            version history
 ********************************************
 1.3.8
+* #304 Support early binding of `ActEventListener`
 * #303 Add `classForName` method to `App` instance
 * #302 `DbBind` comment error
 * #301 Allow `DbBind` to use different names to map between request parameter and model field
