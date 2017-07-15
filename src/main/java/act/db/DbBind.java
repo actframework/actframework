@@ -20,6 +20,7 @@ package act.db;
  * #L%
  */
 
+import act.data.annotation.ParamBindingAnnotation;
 import act.db.di.FindBy;
 import org.osgl.inject.annotation.LoadValue;
 
@@ -36,14 +37,28 @@ import java.lang.annotation.Target;
 @LoadValue(FindBy.class)
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.PARAMETER, ElementType.FIELD})
+@ParamBindingAnnotation
 public @interface DbBind {
     /**
-     * Specifies the db query field. Default value is an empty string
-     * meaning the bind name (from {@literal @}Named, or field name
-     * or param name) will be used as db query field
-     * @return the db query field spec
+     * Specifies the request parameter name. Default value is an
+     * empty string meaning the bind name coming from
+     * {@literal @}Named annotation, or field name or param name) will
+     * be used as the request parameter name.
+     *
+     * @return the parameter binding name
      */
     String value() default "";
+
+    /**
+     * Specify the mapping property name used to query database.
+     * Default value is an empty string meaning use the {@link #value() binding name}
+     * as the property name.
+     *
+     * Note this setting has no effect unless {@link #byId()} value is `false`
+     *
+     * @return the property name used to query the database
+     */
+    String field() default "";
 
     /**
      * Indicate if it shall use the resolved value to search for ID or normal field

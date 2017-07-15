@@ -39,12 +39,12 @@ import java.util.Collection;
 
 public class FindBy extends ValueLoader.Base {
 
-    private String bindName;
+    private String requestParamName;
+    private String queryFieldName;
     private Dao dao;
     private StringValueResolver resolver;
     private boolean findOne;
     private boolean byId;
-    private String querySpec;
     private Class<?> rawType;
     private boolean notNull;
 
@@ -57,19 +57,19 @@ public class FindBy extends ValueLoader.Base {
         findOne = !(Collection.class.isAssignableFrom(rawType));
         dao = app.dbServiceManager().dao(findOne ? rawType : (Class) spec.typeParams().get(0));
 
-        byId = (Boolean) options.get("byId");
+        queryFieldName = S.string(options.get("field"));
+        byId = S.blank(queryFieldName) && (Boolean) options.get("byId");
         resolver = app.resolverManager().resolver(byId ? dao.idType() : (Class) options.get("fieldType"));
         if (null == resolver) {
             throw new IllegalArgumentException("Cannot find String value resolver for type: " + dao.idType());
         }
-        bindName = S.string(value());
-        if (S.blank(bindName)) {
-            bindName = ParamValueLoaderService.bindName(spec);
+        requestParamName = S.string(value());
+        if (S.blank(requestParamName)) {
+            requestParamName = ParamValueLoaderService.bindName(spec);
         }
         if (!byId) {
-            querySpec = S.string(options.get("value"));
-            if (S.blank(querySpec)) {
-                querySpec = bindName;
+            if (S.blank(queryFieldName)) {
+                queryFieldName = requestParamName;
             }
         }
     }
@@ -78,7 +78,7 @@ public class FindBy extends ValueLoader.Base {
     public Object get() {
         ActContext ctx = ActContext.Base.currentContext();
         E.illegalStateIf(null == ctx);
-        String value = resolve(bindName, ctx);
+        String value = resolve(requestParamName, ctx);
         if (S.blank(value)) {
             return ensureNotNull(null, "null");
         }
@@ -98,10 +98,10 @@ public class FindBy extends ValueLoader.Base {
             }
         } else {
             if (findOne) {
-                Object found = dao.findOneBy(Keyword.of(querySpec).javaVariable(), by);
+                Object found = dao.findOneBy(Keyword.of(queryFieldName).javaVariable(), by);
                 return ensureNotNull(found, value);
             } else {
-                col.addAll(C.list(dao.findBy(Keyword.of(querySpec).javaVariable(), by)));
+                col.addAll(C.list(dao.findBy(Keyword.of(queryFieldName).javaVariable(), by)));
                 return col;
             }
         }
