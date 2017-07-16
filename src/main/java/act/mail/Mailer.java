@@ -21,15 +21,22 @@ package act.mail;
  */
 
 import act.app.ActionContext;
+import org.osgl.$;
 import org.osgl.logging.L;
 import org.osgl.logging.Logger;
+import org.osgl.storage.ISObject;
+import org.osgl.storage.impl.SObject;
+import org.osgl.util.C;
 import org.osgl.util.E;
 import org.osgl.util.S;
 
+import java.io.File;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
@@ -87,6 +94,49 @@ public @interface Mailer {
             ctx().subjectArgs = args;
         }
 
+        public static void attach(SObject... attachments) {
+            ctx().attachments.addAll(C.listOf(attachments));
+        }
+
+        public static void attach(ISObject ... attachments) {
+            ctx().attachments.addAll(C.listOf(attachments));
+        }
+
+        public static void attach(Collection<? extends ISObject> attachments) {
+            ctx().attachments.addAll(attachments);
+        }
+
+        public static void attach(File... attachments) {
+            if (attachments.length == 0) {
+                return;
+            }
+            attachFiles(C.listOf(attachments));
+        }
+
+        public static void attachFiles(Collection<File> attachments) {
+            if (attachments.isEmpty()) {
+                return;
+            }
+            attach(C.list(attachments).map(new $.Transformer<File, SObject>() {
+                @Override
+                public SObject transform(File file) {
+                    return SObject.of(file);
+                }
+            }));
+        }
+
+        public static void content(String content, Object ... args) {
+            if (null != content) {
+                ctx().content = S.fmt(content, args);
+            } else {
+                ctx().content = null;
+            }
+        }
+
+        public static void templatePath(String templatePath, Object ... args) {
+            ctx().templatePath = null == templatePath ? null : S.fmt(templatePath, args);
+        }
+
         private static SimpleContext ctx() {
             return _ctx.get();
         }
@@ -118,6 +168,15 @@ public @interface Mailer {
                 }
                 if (S.notBlank(ctx.subject)) {
                     context.subject(ctx.subject, ctx.subjectArgs);
+                }
+                if (!ctx.attachments.isEmpty()) {
+                    context.attach(ctx.attachments);
+                }
+                if (null != ctx.content) {
+                    context.content(ctx.content);
+                }
+                if (S.notBlank(ctx.templatePath)) {
+                    context.templatePath(ctx.templatePath);
                 }
                 _ctx.remove();
             }
@@ -165,6 +224,9 @@ public @interface Mailer {
             String bcc;
             String subject;
             Object[] subjectArgs;
+            String content;
+            String templatePath;
+            List<ISObject> attachments = new ArrayList<>();
         }
 
     }

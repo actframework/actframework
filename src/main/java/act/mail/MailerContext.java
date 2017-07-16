@@ -57,6 +57,7 @@ public class MailerContext extends ActContext.Base<MailerContext> {
     private H.Format fmt = H.Format.HTML;
     private InternetAddress from;
     private String subject;
+    private String content;
     private List<InternetAddress> to = C.newList();
     private List<InternetAddress> cc = C.newList();
     private List<InternetAddress> bcc = C.newList();
@@ -197,8 +198,22 @@ public class MailerContext extends ActContext.Base<MailerContext> {
         return this;
     }
 
-    public MailerContext attach(ISObject... sobjs) {
-        attachments.addAll(C.listOf(sobjs));
+    public MailerContext content(String content, Object ... args) {
+        if (null != content) {
+            this.content = S.fmt(content, args);
+        } else {
+            this.content = null;
+        }
+        return this;
+    }
+
+    public MailerContext attach(ISObject... attachments) {
+        this.attachments.addAll(C.listOf(attachments));
+        return this;
+    }
+
+    public MailerContext attach(Collection<ISObject> attachments) {
+        this.attachments.addAll(attachments);
         return this;
     }
 
@@ -350,10 +365,14 @@ public class MailerContext extends ActContext.Base<MailerContext> {
         msg.setRecipients(Message.RecipientType.CC, list2Array(cc()));
         msg.setRecipients(Message.RecipientType.BCC, list2Array(bcc()));
 
-        ViewManager vm = Act.viewManager();
-        Template t = vm.load(this);
-        E.illegalStateIf(null == t, "Mail template not defined");
-        String content = t.render(this);
+        String content = this.content;
+        if (null == content) {
+            ViewManager vm = Act.viewManager();
+            Template t = vm.load(this);
+            E.illegalStateIf(null == t, "Mail template not defined");
+            content = t.render(this);
+        }
+
         if (attachments.isEmpty()) {
             msg.setText(content, config().encoding(), accept().name());
         } else {
@@ -362,8 +381,17 @@ public class MailerContext extends ActContext.Base<MailerContext> {
             mp.addBodyPart(bp);
             bp.setText(content, config().encoding(), accept().name());
             for (ISObject sobj : attachments) {
+                String fileName = sobj.getAttribute(ISObject.ATTR_FILE_NAME);
+                if (S.blank(fileName)) {
+                    fileName = sobj.getKey();
+                }
+                String contentType = sobj.getAttribute(ISObject.ATTR_CONTENT_TYPE);
+                if (S.blank(contentType)) {
+                    contentType = "application/octet-stream";
+                }
                 MimeBodyPart attachment = new MimeBodyPart();
-                attachment.attachFile(sobj.asFile(), sobj.getAttribute(ISObject.ATTR_CONTENT_TYPE), "utf-8");
+                attachment.attachFile(sobj.asFile(), contentType, null);
+                attachment.setFileName(fileName);
                 mp.addBodyPart(attachment);
             }
             msg.setContent(mp);

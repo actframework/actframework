@@ -531,6 +531,16 @@ public final class Act {
     }
 
     /**
+     * Call {@link App#classForName(String)} method on the current {@link #app() app instance}
+     *
+     * @param className the class name
+     * @return the class corresponding to the name specified
+     */
+    public static Class<?> appClassForName(String className) {
+        return app().classForName(className);
+    }
+
+    /**
      * This method is obsolete. Please use {@link #getInstance(String)} instead
      */
     @Deprecated

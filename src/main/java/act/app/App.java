@@ -818,9 +818,12 @@ public class App extends DestroyableBase {
 
     /**
      * Get/Create new instance of a class specified by the className
-     * <p/>
-     * **Note** if the class is a singleton class, then the singleton instance
-     * will be returned
+     *
+     * This method will call the build in {@link DependencyInjector}
+     * to load the instance. And this is dependency inject process,
+     * not a simple constructor call
+     *
+     * **Note** the class will be loaded by the app's {@link #classLoader()}
      *
      * @param className the className of the instance to be returned
      * @param <T>       the generic type of the class
@@ -831,11 +834,32 @@ public class App extends DestroyableBase {
         return getInstance(c);
     }
 
+    /**
+     * Get/Create new instance of a class
+     *
+     * This method will call the build in {@link DependencyInjector}
+     * to load the instance. And this is dependency inject process,
+     * not a simple constructor call
+     *
+     * @param clz the class
+     * @param <T> the generic type of the class
+     * @return the instance of the class
+     */
     public <T> T getInstance(Class<T> clz) {
         if (null == dependencyInjector) {
             return $.newInstance(clz);
         }
         return dependencyInjector.get(clz);
+    }
+
+    /**
+     * Load/get a class by name using the app's {@link #classLoader()}
+     *
+     * @param className the name of the class to be loaded
+     * @return the class as described above
+     */
+    public Class<?> classForName(String className) {
+        return $.classForName(className, classLoader());
     }
 
     @Override

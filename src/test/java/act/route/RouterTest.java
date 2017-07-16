@@ -25,6 +25,7 @@ import act.handler.RequestHandler;
 import act.handler.builtin.AlwaysNotFound;
 import act.handler.builtin.StaticFileGetter;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.osgl.$;
@@ -59,6 +60,14 @@ public class RouterTest extends RouterTestBase {
         no(router.isMapped(GET, "/foo"));
         router.addMapping(GET, "/foo", "Foo.bar");
         yes(router.isMapped(GET, "/foo"));
+    }
+
+    // #295 Exception using underscore in a URL path variable name
+    @Test
+    @Ignore // this issue is not fixed yet
+    public void testGH295() {
+        router.addMapping(GET, "/foo/{var_name}", "Foo.bar");
+        yes(router.isMapped(GET, "/foo/{var_name}"));
     }
 
     @Test
