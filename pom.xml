@@ -19,6 +19,9 @@
 *            version history
 ********************************************
 1.3.8
+* #307 java.lang.IllegalStateException: parent context not found
+* #306 Allow user to set content through `Mailer.Util`
+* #305 Add `attach(...)` methods into `Mailer.Util`
 * #304 Support early binding of `ActEventListener`
 * #303 Add `classForName` method to `App` instance
 * #302 `DbBind` comment error
@@ -27,6 +30,7 @@
 * #299 Suppress `resource:` directive in route table
 * #298 The app cannot boot up when static file routing cannot find dir
 * #297 JSON binding doesn't work well with @DbBind annotation
+* #294 Mail: Sending attachment caused `javax.mail.messagingexception: unknown encoding: utf-8`
 * #290 English label is not correct in Act CLI
 * #288 Make `@ProvidesImplicitTemplateVariable` support default value
 * #287 `@ProvidesImplicitTemplateVariable`: Generic type lost
@@ -262,11 +266,11 @@
     <junit-benchmarks.version>0.7.2</junit-benchmarks.version>
     <mockito-core.version>2.0.2-beta</mockito-core.version>
 
-    <act-asm.version>5.0.1</act-asm.version>
+    <act-asm.version>5.0.2</act-asm.version>
     <cdi-api.version>1.2</cdi-api.version>
     <commons-fileupload.version>1.3.2</commons-fileupload.version>
     <ecj.version>4.6.1</ecj.version>
-    <fastjson.version>1.2.34</fastjson.version>
+    <fastjson.version>1.2.35</fastjson.version>
     <bval.version>1.1.2</bval.version>
     <javax.inject.version>1</javax.inject.version>
     <javax.mail.version>1.5.0-b01</javax.mail.version>
@@ -274,7 +278,7 @@
     <jline.version>2.14.3</jline.version>
     <joda-time.version>2.9.9</joda-time.version>
     <okhttp.version>3.8.1</okhttp.version>
-    <osgl-tool.version>1.3.1</osgl-tool.version>
+    <osgl-tool.version>1.4.0</osgl-tool.version>
     <osgl-genie.version>1.0.3</osgl-genie.version>
     <osgl-mvc.version>1.2.0</osgl-mvc.version>
     <osgl-storage.version>1.2.0</osgl-storage.version>
