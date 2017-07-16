@@ -201,6 +201,8 @@ public class MailerContext extends ActContext.Base<MailerContext> {
     public MailerContext content(String content, Object ... args) {
         if (null != content) {
             this.content = S.fmt(content, args);
+        } else {
+            this.content = null;
         }
         return this;
     }

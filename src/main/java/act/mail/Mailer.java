@@ -128,7 +128,13 @@ public @interface Mailer {
         public static void content(String content, Object ... args) {
             if (null != content) {
                 ctx().content = S.fmt(content, args);
+            } else {
+                ctx().content = null;
             }
+        }
+
+        public static void templatePath(String templatePath, Object ... args) {
+            ctx().templatePath = null == templatePath ? null : S.fmt(templatePath, args);
         }
 
         private static SimpleContext ctx() {
@@ -168,6 +174,9 @@ public @interface Mailer {
                 }
                 if (null != ctx.content) {
                     context.content(ctx.content);
+                }
+                if (S.notBlank(ctx.templatePath)) {
+                    context.templatePath(ctx.templatePath);
                 }
                 _ctx.remove();
             }
@@ -216,6 +225,7 @@ public @interface Mailer {
             String subject;
             Object[] subjectArgs;
             String content;
+            String templatePath;
             List<ISObject> attachments = new ArrayList<>();
         }
 
