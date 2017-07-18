@@ -500,6 +500,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
                     throw E.unexpected(e);
                 }
             }
+            context.fieldOutputVarCountt(outputFields.size());
         }
         if (0 == params.length) {
             return;

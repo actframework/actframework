@@ -143,6 +143,7 @@ public interface ActContext<CTX_TYPE extends ActContext> extends ParamValueProvi
         private List<Destroyable> destroyableList;
         private Map<String, Object> attributes;
         private Locale locale;
+        private int fieldOutputVarCount;
         private S.Buffer strBuf;
 
         // (violation.propertyPath, violation)
@@ -318,6 +319,16 @@ public interface ActContext<CTX_TYPE extends ActContext> extends ParamValueProvi
         public CTX renderArg(String name, Object val) {
             renderArgs.put(name, val);
             return me();
+        }
+
+        // see https://github.com/actframework/actframework/issues/312
+        public CTX fieldOutputVarCount(int count) {
+            this.fieldOutputVarCount = count;
+            return me();
+        }
+
+        public int fieldOutputVarCount() {
+            return fieldOutputVarCount;
         }
 
         @Override
