@@ -472,11 +472,8 @@ public class EventBus extends AppServiceBase<EventBus> {
     private void callOn(SimpleEventListener l, Object ... args) {
         try {
             l.invoke(args);
-        } catch (Result r) {
-            // in case event listener needs to return a result back
-            throw r;
-        } catch (Exception x) {
-            LOGGER.error(x, "Error executing event listener");
+        } catch (RuntimeException x) {
+            throw x;
         }
     }
 
