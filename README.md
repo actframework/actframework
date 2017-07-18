@@ -209,7 +209,7 @@ import static act.controller.Controller.Util.notFoundIfNull;
 @Entity("user")
 public class User extends MorphiaAdaptiveRecord<User> {
 
-    @Controller("user")
+    @UrlContext("user")
     public static class Service extends MorphiaDao<User> {
 
         @PostAction
