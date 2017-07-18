@@ -59,7 +59,7 @@ public class FindBy extends ValueLoader.Base {
         dao = app.dbServiceManager().dao(findOne ? rawType : (Class) spec.typeParams().get(0));
 
         queryFieldName = S.string(options.get("field"));
-        byId = !findOne && S.blank(queryFieldName) && (Boolean) options.get("byId");
+        byId = findOne && S.blank(queryFieldName) && (Boolean) options.get("byId");
         resolver = app.resolverManager().resolver(byId ? dao.idType() : (Class) options.get("fieldType"));
         if (null == resolver) {
             throw new IllegalArgumentException("Cannot find String value resolver for type: " + dao.idType());
