@@ -35,6 +35,7 @@ import org.osgl.mvc.result.NotFound;
 import org.osgl.util.*;
 
 import javax.validation.constraints.NotNull;
+import java.util.ArrayList;
 import java.util.Collection;
 
 public class FindBy extends ValueLoader.Base {
@@ -54,11 +55,11 @@ public class FindBy extends ValueLoader.Base {
 
         rawType = spec.rawType();
         notNull = spec.hasAnnotation(NotNull.class);
-        findOne = !(Collection.class.isAssignableFrom(rawType));
+        findOne = !(Iterable.class.isAssignableFrom(rawType));
         dao = app.dbServiceManager().dao(findOne ? rawType : (Class) spec.typeParams().get(0));
 
         queryFieldName = S.string(options.get("field"));
-        byId = S.blank(queryFieldName) && (Boolean) options.get("byId");
+        byId = !findOne && S.blank(queryFieldName) && (Boolean) options.get("byId");
         resolver = app.resolverManager().resolver(byId ? dao.idType() : (Class) options.get("fieldType"));
         if (null == resolver) {
             throw new IllegalArgumentException("Cannot find String value resolver for type: " + dao.idType());
@@ -79,29 +80,41 @@ public class FindBy extends ValueLoader.Base {
         ActContext ctx = ActContext.Base.currentContext();
         E.illegalStateIf(null == ctx);
         String value = resolve(requestParamName, ctx);
-        if (S.blank(value)) {
-            return ensureNotNull(null, "null");
+        if (S.empty(value)) {
+            if (findOne) {
+                return ensureNotNull(null, "null");
+            }
         }
-        Object by = resolver.resolve(value);
-        ensureNotNull(by, value);
+        Object by = null == value ? null : resolver.resolve(value);
+        if (findOne) ensureNotNull(by, value);
         if (null == by) {
             return null;
         }
-        Collection col = findOne ? null : (Collection) App.instance().getInstance(rawType);
+        Collection col = null;
+        if (!findOne) {
+            if (rawType.equals(Iterable.class)) {
+                if (S.empty(value)) {
+                    return dao.findAll();
+                } else {
+                    col = new ArrayList();
+                }
+            } else {
+                col = (Collection) App.instance().getInstance(rawType);
+            }
+        }
         if (byId) {
             Object bean = dao.findById(by);
-            if (findOne) {
-                return ensureNotNull(bean, value);
-            } else {
-                col.add(bean);
-                return col;
-            }
+            return ensureNotNull(bean, value);
         } else {
             if (findOne) {
                 Object found = dao.findOneBy(Keyword.of(queryFieldName).javaVariable(), by);
                 return ensureNotNull(found, value);
             } else {
-                col.addAll(C.list(dao.findBy(Keyword.of(queryFieldName).javaVariable(), by)));
+                if (S.empty(value)) {
+                    col.addAll(dao.findAllAsList());
+                } else {
+                    col.addAll(C.list(dao.findBy(Keyword.of(queryFieldName).javaVariable(), by)));
+                }
                 return col;
             }
         }
@@ -133,7 +146,7 @@ public class FindBy extends ValueLoader.Base {
 
     private static String resolve(String bindName, ActContext ctx) {
         String value = ctx.paramVal(bindName);
-        if (S.notBlank(value)) {
+        if (S.notEmpty(value)) {
             return value;
         }
 

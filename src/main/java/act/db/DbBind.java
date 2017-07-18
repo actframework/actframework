@@ -54,14 +54,18 @@ public @interface DbBind {
      * Default value is an empty string meaning use the {@link #value() binding name}
      * as the property name.
      *
-     * Note this setting has no effect unless {@link #byId()} value is `false`
-     *
      * @return the property name used to query the database
      */
     String field() default "";
 
     /**
      * Indicate if it shall use the resolved value to search for ID or normal field
+     *
+     * **Note** this setting has no effect when any one of the following follow case is `true`
+     *
+     * 1. the parameter type or field type is collection or iterable
+     * 2. {@link #field()} setting is not blank
+     *
      * @return `true` if it shall bind by ID field, `false` otherwise
      */
     boolean byId() default true;
