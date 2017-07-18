@@ -18,6 +18,10 @@
 ********************************************
 *            version history
 ********************************************
+1.3.9
+* #312 when using `@Output` on field it shall allow method not to have template
+* #310 Make `DbBind` annotation to support fetch all data from database
+
 1.3.8
 * #309 Add `templatePath` method into `Mailer.Util`
 * #307 java.lang.IllegalStateException: parent context not found
