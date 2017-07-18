@@ -46,8 +46,15 @@ public class RenderAny extends Result {
 
     public static final RenderAny INSTANCE = new RenderAny();
 
+    private boolean ignoreMissingTemplate = false;
+
     public RenderAny() {
         super(H.Status.OK);
+    }
+
+    public RenderAny ignoreMissingTemplate() {
+        this.ignoreMissingTemplate = true;
+        return this;
     }
 
     @Override
@@ -96,12 +103,10 @@ public class RenderAny extends Result {
             }
             result = new FilteredRenderXML(map, null, context);
         } else if (HTML == fmt || TXT == fmt || CSV == fmt) {
-            if (null != hasTemplate) {
+            if (!ignoreMissingTemplate) {
                 throw E.unsupport("Template[%s] not found", context.templatePath());
             }
-            // try render template again as handler might changed the template path
-            // in the code
-            RenderTemplate.get(context.successStatus()).apply(context);
+            context.nullValueResultIgnoreRenderArgs().apply(context.req(), context.resp());
             return;
         } else if (PDF == fmt || XLS == fmt || XLSX == fmt || DOC == fmt || DOCX == fmt) {
             List<String> varNames = context.__appRenderArgNames();

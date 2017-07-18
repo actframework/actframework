@@ -422,8 +422,16 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
 
     public Result nullValueResult() {
         if (hasRenderArgs()) {
-            return new RenderAny();
+            RenderAny result = new RenderAny();
+            if (renderArgs().size() == fieldOutputVarCount() && req().isAjax()) {
+                result.ignoreMissingTemplate();
+            }
+            return result;
         }
+        return nullValueResultIgnoreRenderArgs();
+    }
+
+    public Result nullValueResultIgnoreRenderArgs() {
         if (null != forceResponseStatus) {
             return new Result(forceResponseStatus){};
         } else {
