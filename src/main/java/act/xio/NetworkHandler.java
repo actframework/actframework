@@ -67,6 +67,12 @@ public class NetworkHandler extends DestroyableBase {
         this.app = app;
         this.metric = Act.metricPlugin().metric("act.http");
         this.initUrlProcessors();
+        app.registerHotReloadListener(new App.HotReloadListener() {
+            @Override
+            public void preHotReload() {
+                initUrlProcessors();
+            }
+        });
     }
 
     private void initUrlProcessors() {
@@ -98,10 +104,7 @@ public class NetworkHandler extends DestroyableBase {
         Exception refreshError = null;
         if (Act.isDev()) {
             try {
-                boolean updated = app.checkUpdates(false);
-                if (updated) {
-                    initUrlProcessors();
-                }
+                app.checkUpdates(false);
             } catch (Exception e) {
                 refreshError = e;
             }

@@ -89,6 +89,10 @@ import static act.app.event.AppEventId.*;
  */
 public class App extends DestroyableBase {
 
+    public interface HotReloadListener {
+        void preHotReload();
+    }
+
     @Deprecated
     public static final Logger logger = Act.LOGGER;
 
@@ -151,6 +155,7 @@ public class App extends DestroyableBase {
             blockIssue.apply(context.req(), context.resp());
         }
     };
+    private List<HotReloadListener> hotReloadListeners = new ArrayList<>();
 
     protected App() {
         INST = this;
@@ -382,6 +387,12 @@ public class App extends DestroyableBase {
         return layout;
     }
 
+    public void registerHotReloadListener(HotReloadListener listener) {
+        if (Act.isDev()) {
+            hotReloadListeners.add(listener);
+        }
+    }
+
     public boolean checkUpdates(boolean async) {
         if (!Act.isDev()) {
             return false;
@@ -465,6 +476,9 @@ public class App extends DestroyableBase {
             return;
         }
         LOGGER.info("App shutting down ....");
+        for (HotReloadListener listener : hotReloadListeners) {
+            listener.preHotReload();
+        }
         if (null != classLoader && config().i18nEnabled()) {
             // clear resource bundle cache for Act I18n
             ResourceBundle.clearCache(classLoader);
