@@ -87,9 +87,6 @@ public class FindBy extends ValueLoader.Base {
         }
         Object by = null == value ? null : resolver.resolve(value);
         if (findOne) ensureNotNull(by, value);
-        if (null == by) {
-            return null;
-        }
         Collection col = null;
         if (!findOne) {
             if (rawType.equals(Iterable.class)) {
@@ -101,6 +98,9 @@ public class FindBy extends ValueLoader.Base {
             } else {
                 col = (Collection) App.instance().getInstance(rawType);
             }
+        }
+        if (null == by) {
+            return null;
         }
         if (byId) {
             Object bean = dao.findById(by);
