@@ -53,7 +53,7 @@ public interface SimpleEventListener {
      * ```
      *
      * Finally user can use the custom `OnMyEvent` to mark a method as simple
-     * event hander:
+     * event handler:
      *
      * ```java
      * @OnMyEvent(MyEvent.USER_SIGNED_UP)

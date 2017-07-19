@@ -22,6 +22,7 @@ package act.xio;
 
 import act.Act;
 import act.Destroyable;
+import act.app.App;
 import act.controller.meta.ActionMethodMetaInfo;
 import act.util.DestroyableBase;
 import act.ws.WebSocketConnectionManager;
@@ -77,11 +78,24 @@ public abstract class NetworkBase extends DestroyableBase implements Network {
             }
         }
         started = true;
+        App app = Act.app();
+        if (null != app) {
+            app.registerHotReloadListener(new App.HotReloadListener() {
+                @Override
+                public void preHotReload() {
+                    simpleWebSocketConnector = null;
+                }
+            });
+        }
     }
 
     @Override
     public void shutdown() {
         close();
+    }
+
+    protected void resetWebSocketConnectionHandler() {
+        simpleWebSocketConnector = null;
     }
 
     private boolean trySetUpClient(NetworkHandler client, int port, boolean secure) {
