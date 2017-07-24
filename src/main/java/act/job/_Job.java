@@ -26,6 +26,9 @@ import act.app.event.AppEventId;
 import act.event.AppEventListenerBase;
 import act.route.DuplicateRouteMappingException;
 import act.util.DestroyableBase;
+import act.util.ProgressGauge;
+import act.util.SimpleProgressGauge;
+import act.ws.WebSocketConnectionManager;
 import org.osgl.$;
 import org.osgl.exception.ConfigurationException;
 import org.osgl.exception.NotAppliedException;
@@ -38,9 +41,12 @@ import org.osgl.util.S;
 
 import java.util.*;
 
+import static act.util.SimpleProgressGauge.wsJobProgressTag;
+
 class _Job extends DestroyableBase implements Runnable {
 
     private static final Logger logger = LogManager.get(_Job.class);
+
 
     private static class LockableJobList {
         boolean iterating;
@@ -48,7 +54,7 @@ class _Job extends DestroyableBase implements Runnable {
         _Job parent;
 
         LockableJobList(_Job parent) {
-            this.jobList = new ArrayList<_Job>();
+            this.jobList = new ArrayList<>();
             this.parent = parent;
         }
 
@@ -108,19 +114,22 @@ class _Job extends DestroyableBase implements Runnable {
             ConfigurationException.class
     );
 
-    private String id;
+    private final String id;
+    private final String jobProgressTag;
     private App app;
     private boolean oneTime;
     private boolean executed;
     private AppJobManager manager;
     private JobTrigger trigger;
     private $.Func0<?> worker;
+    // progress percentage
+    private SimpleProgressGauge progress = new SimpleProgressGauge();
     private LockableJobList parallelJobs = new LockableJobList(this);
     private LockableJobList followingJobs = new LockableJobList(this);
     private LockableJobList precedenceJobs = new LockableJobList(this);
 
     _Job(String id, AppJobManager manager) {
-        this(id, manager, null);
+        this(id, manager, ($.Func0<?>)null);
     }
 
     _Job(String id, AppJobManager manager, $.Func0<?> worker) {
@@ -133,6 +142,40 @@ class _Job extends DestroyableBase implements Runnable {
         this.worker = worker;
         this.oneTime = oneTime;
         this.app = manager.app();
+        this.jobProgressTag = wsJobProgressTag(id);
+    }
+
+    _Job(String id, AppJobManager manager, $.Function<ProgressGauge, ?> worker) {
+        this(id, manager, worker, true);
+    }
+
+    _Job(String id, AppJobManager manager, $.Function<ProgressGauge, ?> worker, boolean oneTime) {
+        this.id = id;
+        this.manager = $.notNull(manager);
+        $.F1<ProgressGauge, ?> f1 = $.f1(worker);
+        this.worker = f1.curry(progress);
+        this.oneTime = oneTime;
+        this.app = manager.app();
+        this.jobProgressTag = wsJobProgressTag(id);
+    }
+
+    public void setProgressGauge(ProgressGauge progressGauge) {
+        progress = SimpleProgressGauge.wrap(progressGauge);
+        progress.addListener(new ProgressGauge.Listener() {
+            @Override
+            public void onUpdate(ProgressGauge progressGauge) {
+                Map<String, ProgressGauge> payload = C.map("act_job_progress", progressGauge);
+                app.getInstance(WebSocketConnectionManager.class).sendJsonToTagged(payload, jobProgressTag);
+            }
+        });
+    }
+
+    public SimpleProgressGauge progress() {
+        return progress;
+    }
+
+    public int getProgressInPercent() {
+        return progress.currrentProgressPercent();
     }
 
     @Override
@@ -170,10 +213,6 @@ class _Job extends DestroyableBase implements Runnable {
     _Job setOneTime() {
         oneTime = true;
         return this;
-    }
-
-    boolean isOneTime() {
-        return oneTime;
     }
 
     boolean done() {
@@ -335,5 +374,22 @@ class _Job extends DestroyableBase implements Runnable {
 
     private static String uuid() {
         return UUID.randomUUID().toString();
+    }
+
+    // ---- Java bean accessors
+    public String getId() {
+        return id;
+    }
+
+    public boolean isExecuted() {
+        return executed;
+    }
+
+    public boolean isOneTime() {
+        return oneTime;
+    }
+
+    public JobTrigger getTrigger() {
+        return trigger;
     }
 }

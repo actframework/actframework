@@ -29,6 +29,7 @@ import act.cli.bytecode.ReflectedCommandExecutor;
 import act.cli.meta.CommandMethodMetaInfo;
 import act.cli.meta.CommanderClassMetaInfo;
 import act.handler.CliHandlerBase;
+import act.util.ProgressGauge;
 import act.util.PropertySpec;
 import org.osgl.$;
 import org.osgl.logging.L;
@@ -114,8 +115,12 @@ public final class CliHandlerProxy extends CliHandlerBase {
         if (null == result) {
             return;
         }
-        PropertySpec.MetaInfo filter = methodMetaInfo.propertySpec();
-        methodMetaInfo.view().print(result, filter, context);
+        if (result instanceof ProgressGauge) {
+            context.print((ProgressGauge) result);
+        } else {
+            PropertySpec.MetaInfo filter = methodMetaInfo.propertySpec();
+            methodMetaInfo.view().print(result, filter, context);
+        }
     }
 
     private void ensureAgentsReady() {

@@ -41,7 +41,7 @@ public class I18n {
 
     private static final Logger logger = LogManager.get(I18n.class);
 
-    private static final String DEF_RESOURCE_BUNDLE_NAME = "messages";
+    public static final String DEF_RESOURCE_BUNDLE_NAME = "messages";
 
     public static Locale locale() {
         ActContext context = ActContext.Base.currentContext();

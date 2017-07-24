@@ -23,10 +23,15 @@ package act.cli.bytecode;
 import act.app.App;
 import act.cli.CliContext;
 import act.cli.CommandExecutor;
+import act.cli.ReportProgress;
 import act.cli.meta.CommandMethodMetaInfo;
 import act.cli.meta.CommandParamMetaInfo;
 import act.inject.param.CliContextParamLoader;
 import act.inject.param.ParamValueLoaderManager;
+import act.job.AppJobManager;
+import act.job.TrackableWorker;
+import act.util.Async;
+import act.util.ProgressGauge;
 import com.esotericsoftware.reflectasm.MethodAccess;
 import org.osgl.$;
 import org.osgl.util.E;
@@ -52,6 +57,8 @@ public class ReflectedCommandExecutor extends CommandExecutor {
     private int commandIndex;
     private int paramCount;
     private CliContext.ParsingContext parsingContext;
+    private boolean async;
+    private ReportProgress reportProgress;
 
     public ReflectedCommandExecutor(CommandMethodMetaInfo methodMetaInfo, App app) {
         this.methodMetaInfo = $.notNull(methodMetaInfo);
@@ -62,6 +69,8 @@ public class ReflectedCommandExecutor extends CommandExecutor {
         this.commanderClass = $.classForName(methodMetaInfo.classInfo().className(), cl);
         try {
             this.method = commanderClass.getMethod(methodMetaInfo.methodName(), paramTypes);
+            this.async = null != method.getAnnotation(Async.class);
+            this.reportProgress = method.getAnnotation(ReportProgress.class);
         } catch (NoSuchMethodException e) {
             throw E.unexpected(e);
         }
@@ -80,8 +89,25 @@ public class ReflectedCommandExecutor extends CommandExecutor {
         context.attribute(CliContext.ATTR_METHOD, method);
         context.prepare(parsingContext);
         paramLoaderService.preParseOptions(method, methodMetaInfo, context);
-        Object cmd = commanderInstance(context);
-        Object[] params = params(cmd, context);
+        final Object cmd = commanderInstance(context);
+        final Object[] params = params(cmd, context);
+        if (async) {
+            AppJobManager jobManager = context.app().jobManager();
+            String jobId = jobManager.prepare(new TrackableWorker() {
+                @Override
+                protected void run(ProgressGauge progressGauge) {
+                    invoke(cmd, params);
+                }
+            });
+            context.setJobId(jobId);
+            jobManager.now(jobId);
+            if (null != reportProgress) {
+                context.attribute(ReportProgress.CTX_ATTR_KEY, reportProgress);
+                return context.progress();
+            } else {
+                return "Async job started: " + jobId;
+            }
+        }
         return invoke(cmd, params);
     }
 

@@ -379,6 +379,7 @@
     <javax.mail.version>1.5.0-b01</javax.mail.version>
     <jfiglet.version>0.0.8</jfiglet.version>
     <jline.version>2.14.3</jline.version>
+    <progressbar.version>0.5.5</progressbar.version>
     <joda-time.version>2.9.9</joda-time.version>
     <okhttp.version>3.8.1</okhttp.version>
     <osgl-genie.version>1.1.3</osgl-genie.version>
@@ -671,6 +672,12 @@
       <groupId>org.hibernate.javax.persistence</groupId>
       <artifactId>hibernate-jpa-2.1-api</artifactId>
       <version>1.0.0.Final</version>
+    </dependency>
+
+    <dependency>
+      <groupId>me.tongfei</groupId>
+      <artifactId>progressbar</artifactId>
+      <version>${progressbar.version}</version>
     </dependency>
 
   </dependencies>

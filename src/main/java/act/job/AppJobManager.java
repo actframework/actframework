@@ -29,9 +29,12 @@ import act.app.event.AppEventId;
 import act.event.AppEventListenerBase;
 import act.event.OnceEventListenerBase;
 import act.mail.MailerContext;
+import act.util.ProgressGauge;
+import act.util.SimpleProgressGauge;
 import org.joda.time.DateTime;
 import org.joda.time.Seconds;
 import org.osgl.$;
+import org.osgl.Osgl;
 import org.osgl.exception.NotAppliedException;
 import org.osgl.logging.LogManager;
 import org.osgl.logging.Logger;
@@ -81,6 +84,37 @@ public class AppJobManager extends AppServiceBase<AppJobManager> {
 
     public void now(Runnable runnable) {
         executor().submit(wrap(runnable));
+    }
+
+    public String now($.Function<ProgressGauge, ?> worker) {
+        _Job job = wrap(worker);
+        addJob(job);
+        executor().submit(job);
+        return job.id();
+    }
+
+    /**
+     * Prepare a job from worker. This function will return
+     * a job ID and can be used to feed into the {@link #now(String)}
+     * call
+     *
+     * @param worker the worker
+     * @return the job ID allocated
+     */
+    public String prepare($.Function<ProgressGauge, ?> worker) {
+        _Job job = wrap(worker);
+        addJob(job);
+        return job.id();
+    }
+
+    /**
+     * Run a job by ID now
+     * @param jobId the job ID
+     * @see #prepare(Osgl.Function)
+     */
+    public void now(String jobId) {
+        _Job job = $.notNull(jobById(jobId));
+        executor().submit(job);
     }
 
     public <T> Future<T> delay(Callable<T> callable, long delay, TimeUnit timeUnit) {
@@ -266,6 +300,19 @@ public class AppJobManager extends AppServiceBase<AppJobManager> {
         on(AppEventId.STOP, runnable);
     }
 
+    public SimpleProgressGauge progressGauge(String jobId) {
+        return jobById(jobId).progress();
+    }
+
+    public void setJobProgressGauge(String jobId, ProgressGauge progressGauge) {
+        _Job job = jobById(jobId);
+        if (null == job) {
+            LOGGER.warn("cannot find job by Id: " + jobId);
+        } else {
+            job.setProgressGauge(progressGauge);
+        }
+    }
+
     C.List<_Job> jobs() {
         return C.list(jobs.values());
     }
@@ -350,7 +397,11 @@ public class AppJobManager extends AppServiceBase<AppJobManager> {
     }
 
     private Runnable wrap(Runnable runnable) {
-        return new ContextualJob(app().cuid(), runnable);
+        return new ContextualJob(randomJobId(), runnable);
+    }
+
+    private _Job wrap($.Function<ProgressGauge, ?> worker) {
+        return new ContextualJob(randomJobId(), worker);
     }
 
     private Runnable wrap(final Callable callable) {
@@ -381,6 +432,27 @@ public class AppJobManager extends AppServiceBase<AppJobManager> {
                     return null;
                 }
             }, true);
+            foo();
+        }
+
+        ContextualJob(String id, final $.Function<ProgressGauge, ?> worker) {
+            super(id, AppJobManager.this, worker);
+            foo();
+        }
+
+        @Override
+        protected void _before() {
+            // copy the JobContext of parent thread into the current thread
+            JobContext.init(origin_);
+        }
+
+        @Override
+        protected void _finally() {
+            JobContext.clear();
+            removeJob(this);
+        }
+
+        private void foo() {
             app().eventBus().once(MailerContext.InitEvent.class, new OnceEventListenerBase<MailerContext.InitEvent>() {
                 @Override
                 public boolean tryHandle(MailerContext.InitEvent event) throws Exception {
@@ -393,17 +465,10 @@ public class AppJobManager extends AppServiceBase<AppJobManager> {
                 }
             });
         }
+    }
 
-        @Override
-        protected void _before() {
-            // copy the JobContext of parent thread into the current thread
-            JobContext.init(origin_);
-        }
-
-        @Override
-        protected void _finally() {
-            JobContext.clear();
-        }
+    private String randomJobId() {
+        return app().cuid() + S.random(4);
     }
 
 }

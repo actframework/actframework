@@ -22,6 +22,8 @@ package act.util;
 
 import act.Destroyable;
 import act.handler.builtin.controller.RequestHandlerProxy;
+import org.osgl.logging.LogManager;
+import org.osgl.logging.Logger;
 import org.osgl.util.C;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -32,6 +34,8 @@ import java.lang.annotation.Annotation;
 import java.util.List;
 
 public abstract class DestroyableBase implements Destroyable {
+
+    protected Logger logger = LogManager.get(getClass());
 
     private volatile boolean destroyed;
 

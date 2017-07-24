@@ -31,8 +31,12 @@ import act.cli.builtin.Help;
 import act.cli.util.CommandLineParser;
 import act.handler.CliHandler;
 import act.util.ActContext;
+import act.util.ProgressGauge;
 import act.util.PropertySpec;
+import act.util.SimpleProgressGauge;
 import jline.console.ConsoleReader;
+import me.tongfei.progressbar.ProgressBar;
+import me.tongfei.progressbar.ProgressBarStyle;
 import org.osgl.$;
 import org.osgl.cache.CacheService;
 import org.osgl.concurrent.ContextLocal;
@@ -40,12 +44,16 @@ import org.osgl.http.H;
 import org.osgl.util.C;
 import org.osgl.util.E;
 import org.osgl.util.S;
+import org.xnio.streams.WriterOutputStream;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import static act.cli.ReportProgress.Type.BAR;
 
 public class CliContext extends ActContext.Base<CliContext> implements IASCIITable {
 
@@ -300,6 +308,53 @@ public class CliContext extends ActContext.Base<CliContext> implements IASCIITab
 
     public boolean disconnected() {
         return pw.checkError();
+    }
+
+    public void print(ProgressGauge progressGauge) {
+        ReportProgress reportProgress = attribute(ReportProgress.CTX_ATTR_KEY);
+        if (null == reportProgress) {
+            reportProgress = org.osgl.inject.util.AnnotationUtil.createAnnotation(ReportProgress.class);
+        }
+        ReportProgress.Type type = reportProgress.type();
+        if (BAR == type) {
+            printBar(progressGauge);
+        } else {
+            printText(progressGauge);
+        }
+    }
+
+    public void printBar(ProgressGauge progressGauge) {
+        PrintStream os = new PrintStream(new WriterOutputStream(rawPrint ? pw : console.getOutput()));
+        String label = app().config().i18nEnabled() ? i18n("act.progress.capFirst") : "Progress";
+        ProgressBar pb = new ProgressBar(label, progressGauge.maxHint(), 200, os, ProgressBarStyle.UNICODE_BLOCK);
+        pb.start();
+        while (!progressGauge.done()) {
+            pb.maxHint(progressGauge.maxHint());
+            pb.stepTo(progressGauge.currentSteps());
+            flush();
+        }
+        pb.stepTo(pb.getMax());
+        pb.stop();
+    }
+
+    public void printText(ProgressGauge progressGauge) {
+        SimpleProgressGauge simpleProgressGauge = SimpleProgressGauge.wrap(progressGauge);
+        boolean i18n = app().config().i18nEnabled();
+        while (!progressGauge.done()) {
+            if (i18n) {
+                print("\r" + i18n("act.progress.report", simpleProgressGauge.currrentProgressPercent()));
+            } else {
+                print("\rCurrent progress: " + simpleProgressGauge.currrentProgressPercent() + "%");
+            }
+            flush();
+            try {
+                Thread.sleep(500);
+            } catch (InterruptedException e) {
+                print("Interrupted");
+                break;
+            }
+        }
+        println();
     }
 
     public void print(String template, Object ... args) {

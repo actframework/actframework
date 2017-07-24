@@ -17,3 +17,7 @@ act.Zen
 act.apidoc.Endpoint.Service
 org.osgl.util.FastJsonKvCodec
 act.ws.WebSocketAdminConsole
+<<<<<<< HEAD
+=======
+act.job.JobAdmin.WebsocketEndpoints.JobProgress
+>>>>>>> 4fb5801... #266 and #267

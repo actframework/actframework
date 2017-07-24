@@ -208,9 +208,7 @@ public class HandlerEnhancer extends MethodVisitor implements Opcodes {
             HandlerMethodMetaInfo meta;
             ListIterator<AbstractInsnNode> itr;
             Transformer trans;
-            private Map<Integer, InstructionHandler> handlers = C.map(
-                    AbstractInsnNode.METHOD_INSN, new InvocationHandler(this, meta)
-            );
+            private Map<Integer, InstructionHandler> handlers;
 
             Segment(Label start, HandlerMethodMetaInfo meta, InsnList instructions, ListIterator<AbstractInsnNode> itr, Transformer trans) {
                 this.startLabel = start;
@@ -218,6 +216,9 @@ public class HandlerEnhancer extends MethodVisitor implements Opcodes {
                 this.instructions = instructions;
                 this.itr = itr;
                 this.trans = trans;
+                this.handlers  = C.map(
+                        AbstractInsnNode.METHOD_INSN, new InvocationHandler(this, meta)
+                );
                 trans.lblList.add(start);
             }
 
@@ -263,6 +264,7 @@ public class HandlerEnhancer extends MethodVisitor implements Opcodes {
                         injectRenderArgSetCode(n);
                     }
                     injectThrowCode(n);
+                    meta.setThrowRenderResult();
                 }
             }
 

@@ -30,8 +30,10 @@ import act.conf.AppConfig;
 import act.db.Dao;
 import act.event.EventBus;
 import act.mail.MailerContext;
-import act.ws.SecureTicketCodec;
 import act.util.ActContext;
+import act.util.ProgressGauge;
+import act.util.SimpleProgressGauge;
+import act.ws.SecureTicketCodec;
 import act.ws.WebSocketContext;
 import org.osgl.$;
 import org.osgl.Osgl;
@@ -126,6 +128,17 @@ public final class ActProviders {
         public CliSession get() {
             CliContext context = CliContext.current();
             return null == context ? null : context.session();
+        }
+    };
+
+    public static final Provider<ProgressGauge> PROGRESS_GAUGE = new Provider<ProgressGauge>() {
+        @Override
+        public ProgressGauge get() {
+            ActContext.Base<?> context = ActContext.Base.currentContext();
+            if (null != context) {
+                return context.progress();
+            }
+            return new SimpleProgressGauge();
         }
     };
 

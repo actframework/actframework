@@ -48,6 +48,7 @@ public abstract class HandlerMethodMetaInfo<T extends HandlerMethodMetaInfo> ext
     private C.List<HandlerParamMetaInfo> params = C.newList();
     private volatile String fullName;
     private ReturnTypeInfo returnType;
+    private boolean throwRenderResult;
     private PropertySpec.MetaInfo propertySpec;
     private boolean disableJsonCircularRefDetect = false;
     private Map<Label, Map<Integer, LocalVariableMetaInfo>> locals = C.newMap();
@@ -168,6 +169,15 @@ public abstract class HandlerMethodMetaInfo<T extends HandlerMethodMetaInfo> ext
         return propertySpec;
     }
 
+    public T setThrowRenderResult() {
+        this.throwRenderResult = true;
+        return me();
+    }
+
+    public boolean throwRenderResult() {
+        return throwRenderResult;
+    }
+
     public T returnType(Type type) {
         returnType = ReturnTypeInfo.of(type);
         return me();
@@ -201,6 +211,10 @@ public abstract class HandlerMethodMetaInfo<T extends HandlerMethodMetaInfo> ext
 
     public boolean hasReturn() {
         return returnType.hasReturn();
+    }
+
+    public boolean hasReturnOrThrowResult() {
+        return hasReturn() || throwRenderResult;
     }
 
     public boolean hasLocalVariableTable() {

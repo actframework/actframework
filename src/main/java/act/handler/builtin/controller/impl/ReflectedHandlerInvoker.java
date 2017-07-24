@@ -38,11 +38,14 @@ import act.inject.param.JsonDTO;
 import act.inject.param.JsonDTOClassManager;
 import act.inject.param.ParamValueLoaderManager;
 import act.inject.param.ParamValueLoaderService;
+import act.job.AppJobManager;
+import act.job.TrackableWorker;
 import act.security.CORS;
 import act.security.CSRF;
 import act.sys.Env;
 import act.util.*;
 import act.view.*;
+import act.ws.WebSocketConnectionManager;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONException;
 import com.esotericsoftware.reflectasm.MethodAccess;
@@ -54,10 +57,7 @@ import org.osgl.inject.BeanSpec;
 import org.osgl.mvc.annotation.ResponseContentType;
 import org.osgl.mvc.annotation.ResponseStatus;
 import org.osgl.mvc.annotation.SessionFree;
-import org.osgl.mvc.result.BadRequest;
-import org.osgl.mvc.result.Conflict;
-import org.osgl.mvc.result.NotFound;
-import org.osgl.mvc.result.Result;
+import org.osgl.mvc.result.*;
 import org.osgl.util.C;
 import org.osgl.util.E;
 import org.osgl.util.S;
@@ -120,6 +120,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
     private boolean noTemplateCache;
     private MissingAuthenticationHandler missingAuthenticationHandler;
     private MissingAuthenticationHandler csrfFailureHandler;
+    private boolean async;
 
     private ReflectedHandlerInvoker(M handlerMetaInfo, App app) {
         this.app = app;
@@ -134,10 +135,13 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         Class[] paramTypes = paramTypes(cl);
         try {
             method = controllerClass.getMethod(handlerMetaInfo.name(), paramTypes);
-            this.disabled = this.disabled || !Env.matches(method);
-
         } catch (NoSuchMethodException e) {
             throw E.unexpected(e);
+        }
+        this.disabled = this.disabled || !Env.matches(method);
+        this.async = null != method.getAnnotation(Async.class);
+        if (this.async && (handlerMetaInfo.hasReturnOrThrowResult())) {
+            logger.warn("handler return result will be ignored for async method: " + method);
         }
         this.isStatic = handlerMetaInfo.isStatic();
         if (!this.isStatic) {
@@ -243,7 +247,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         return csrfFailureHandler;
     }
 
-    public Result handle(ActionContext context) throws Exception {
+    public Result handle(final ActionContext context) throws Exception {
         if (disabled) {
             return ActNotFound.get();
         }
@@ -265,8 +269,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         preventDoubleSubmission(context);
         processForceResponse(context);
         ensureJsonDTOGenerated(context);
-
-        Object controller = controllerInstance(context);
+        final Object controller = controllerInstance(context);
 
         /*
          * We will send back response immediately when param validation
@@ -276,11 +279,30 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
          */
         boolean failOnViolation = context.isAjax() || context.accept() != H.Format.HTML;
 
-        Object[] params = params(controller, context);
+        final Object[] params = params(controller, context);
 
         if (failOnViolation && context.hasViolation()) {
             String msg = context.violationMessage(";");
             return new BadRequest(msg);
+        }
+
+        if (async) {
+            AppJobManager jobManager = context.app().jobManager();
+            String jobId = jobManager.prepare(new TrackableWorker() {
+                @Override
+                protected void run(ProgressGauge progressGauge) {
+                    try {
+                        invoke(handler, context, controller, params);
+                    } catch (Exception e) {
+                        logger.warn(e, "Error executing async handler: " + handler);
+                    }
+                }
+            });
+            context.setJobId(jobId);
+            WebSocketConnectionManager wscm = app.getInstance(WebSocketConnectionManager.class);
+            wscm.subscribe(context.session(), SimpleProgressGauge.wsJobProgressTag(jobId));
+            jobManager.now(jobId);
+            return new RenderJSON(C.map("jobId", jobId));
         }
 
         try {

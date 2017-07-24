@@ -60,7 +60,7 @@ public enum AsmTypes implements Opcodes {
     public static AsmType<PropertySpec> PROPERTY_SPEC = new AsmType<PropertySpec>(PropertySpec.class);
     public static AsmType<DisableFastJsonCircularReferenceDetect> DISABLE_JSON_CIRCULAR_REF_DETECT = new AsmType<DisableFastJsonCircularReferenceDetect>(DisableFastJsonCircularReferenceDetect.class);
 
-    public static AsmType<Command> COMMAND = new AsmType<Command>(Command.class);
+    public static AsmType<Command> COMMAND = new AsmType<>(Command.class);
     public static AsmType<Optional> OPTIONAL = new AsmType<Optional>(Optional.class);
     public static AsmType<ReadContent> READ_FILE_CONTENT = new AsmType<ReadContent>(ReadContent.class);
     public static AsmType<Required> REQUIRED = new AsmType<Required>(Required.class);
