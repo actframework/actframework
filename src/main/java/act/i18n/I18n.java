@@ -32,6 +32,7 @@ import org.osgl.util.S;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.text.MessageFormat;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -41,6 +42,7 @@ public class I18n {
     private static final Logger logger = LogManager.get(I18n.class);
 
     public static final String DEF_RESOURCE_BUNDLE_NAME = "messages";
+    public static final String ACT_RESOURCE_BUNDLE_NAME = "act_message";
 
     public static Locale locale() {
         ActContext context = ActContext.Base.currentContext();
@@ -100,7 +102,8 @@ public class I18n {
                     resolvedArgs[i] = arg;
                 }
             }
-            msg = S.fmt(msg, resolvedArgs);
+            MessageFormat formatter = new MessageFormat(msg, locale);
+            msg = formatter.format(resolvedArgs);
         }
 
         return msg;

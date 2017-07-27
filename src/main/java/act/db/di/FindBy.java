@@ -31,6 +31,7 @@ import act.inject.param.ParamValueLoaderService;
 import act.util.ActContext;
 import org.osgl.$;
 import org.osgl.inject.ValueLoader;
+import org.osgl.mvc.result.BadRequest;
 import org.osgl.mvc.result.NotFound;
 import org.osgl.util.*;
 
@@ -82,11 +83,11 @@ public class FindBy extends ValueLoader.Base {
         String value = resolve(requestParamName, ctx);
         if (S.empty(value)) {
             if (findOne) {
-                return ensureNotNull(null, "null");
+                return ensureNotNull(null, value, ctx);
             }
         }
         Object by = null == value ? null : resolver.resolve(value);
-        if (findOne) ensureNotNull(by, value);
+        if (findOne) ensureNotNull(by, value, ctx);
         Collection col = null;
         if (!findOne) {
             if (rawType.equals(Iterable.class)) {
@@ -104,11 +105,11 @@ public class FindBy extends ValueLoader.Base {
         }
         if (byId) {
             Object bean = dao.findById(by);
-            return ensureNotNull(bean, value);
+            return ensureNotNull(bean, value, ctx);
         } else {
             if (findOne) {
                 Object found = dao.findOneBy(Keyword.of(queryFieldName).javaVariable(), by);
-                return ensureNotNull(found, value);
+                return ensureNotNull(found, value, ctx);
             } else {
                 if (S.empty(value)) {
                     col.addAll(dao.findAllAsList());
@@ -120,25 +121,39 @@ public class FindBy extends ValueLoader.Base {
         }
     }
 
-    private Object ensureNotNull(Object obj, String value) {
+    private Object ensureNotNull(Object obj, String value, ActContext<?> ctx) {
         if (notNull) {
-            if (null == obj) {
-                if (!Act.isDev()) {
-                    throw NotFound.get();
+            if (null == value) {
+                String errMsg = Act.appConfig().i18nEnabled() ? ctx._act_i18n("e400.db_bind.missing_request_param", requestParamName) : "missing required parameter: " + requestParamName;
+                if (!Act.isDev() || !(ctx instanceof ActionContext)) {
+                    throw BadRequest.of(errMsg);
                 }
-                ActionContext ctx = ActionContext.current();
-                if (null == ctx) {
-                    throw NotFound.get();
-                }
-                RequestHandler handler = ctx.handler();
+                ActionContext actionContext = $.cast(ctx);
+                RequestHandler handler = actionContext.handler();
                 if (handler instanceof DelegateRequestHandler) {
                     handler = ((DelegateRequestHandler) handler).realHandler();
                 }
                 if (handler instanceof RequestHandlerProxy) {
                     RequestHandlerProxy proxy = $.cast(handler);
-                    throw proxy.notFoundOnMethod(S.fmt("%s not found by %s", spec.name(), value));
+                    throw proxy.badRequestOnMethod(errMsg);
                 }
-                throw NotFound.get();
+                throw BadRequest.of(errMsg);
+            }
+            if (null == obj) {
+                String errMsg = Act.appConfig().i18nEnabled() ? ctx._act_i18n("e404.db_bind.not_found", queryFieldName, value) : "db record not found by " + queryFieldName + " using value: " + value;
+                if (!Act.isDev() || !(ctx instanceof ActionContext)) {
+                    throw NotFound.of(errMsg);
+                }
+                ActionContext actionContext = $.cast(ctx);
+                RequestHandler handler = actionContext.handler();
+                if (handler instanceof DelegateRequestHandler) {
+                    handler = ((DelegateRequestHandler) handler).realHandler();
+                }
+                if (handler instanceof RequestHandlerProxy) {
+                    RequestHandlerProxy proxy = $.cast(handler);
+                    throw proxy.notFoundOnMethod(errMsg);
+                }
+                throw NotFound.of(errMsg);
             }
         }
         return obj;

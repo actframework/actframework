@@ -24,7 +24,9 @@ import act.Act;
 import act.app.SourceInfo;
 import act.util.ActError;
 import org.osgl.mvc.result.BadRequest;
+import org.osgl.util.S;
 
+import java.lang.reflect.Method;
 import java.util.List;
 
 public class ActBadRequest extends BadRequest implements ActError {
@@ -42,6 +44,13 @@ public class ActBadRequest extends BadRequest implements ActError {
         super(message, args);
         if (Act.isDev()) {
             loadSourceInfo();
+        }
+    }
+
+    public ActBadRequest(Method method, String message, Object... args) {
+        super(null == message ? S.fmt("bad request on invoking %s.%s()", method.getDeclaringClass().getName(), method.getName()) : message);
+        if (Act.isDev()) {
+            loadSourceInfo(method);
         }
     }
 
@@ -63,6 +72,10 @@ public class ActBadRequest extends BadRequest implements ActError {
         doFillInStackTrace();
         Throwable cause = getCause();
         sourceInfo = Util.loadSourceInfo(null == cause ? getStackTrace() : cause.getStackTrace(), ActBadRequest.class);
+    }
+
+    private void loadSourceInfo(Method method) {
+        sourceInfo = Util.loadSourceInfo(method);
     }
 
     @Override
@@ -93,6 +106,12 @@ public class ActBadRequest extends BadRequest implements ActError {
         return Act.isDev() ? new ActBadRequest(msg, args) : BadRequest.of
                 (msg, args);
     }
+
+    public static BadRequest create(Method method, String message) {
+        return Act.isDev() ? new ActBadRequest(method, message) : BadRequest.get();
+    }
+
+
 
     public static BadRequest create(Throwable cause, String msg, Object ... args) {
         return Act.isDev() ? new ActBadRequest(cause, msg, args) : new BadRequest(cause, msg, args);

@@ -632,6 +632,10 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         return ActNotFound.create(method, message);
     }
 
+    public BadRequest badRequestOnMethod(String message) {
+        return ActBadRequest.create(method, message);
+    }
+
     public boolean checkTemplate(ActionContext context) {
         if (!context.state().isHandling()) {
             //we don't check template on interceptors

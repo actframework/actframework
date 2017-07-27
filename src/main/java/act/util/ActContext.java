@@ -100,6 +100,8 @@ public interface ActContext<CTX_TYPE extends ActContext> extends ParamValueProvi
     Map<String, ConstraintViolation> violations();
     ConstraintViolation violation(String property);
 
+    String _act_i18n(String msgId, Object... args);
+
     String i18n(boolean ignoreError, String msgId, Object... args);
 
     String i18n(String msgId, Object ... args);
@@ -265,6 +267,7 @@ public interface ActContext<CTX_TYPE extends ActContext> extends ParamValueProvi
         }
 
         public static final String DEF_RESOURCE_BUNDLE_NAME = I18n.DEF_RESOURCE_BUNDLE_NAME;
+        public static final String ACT_RESOURCE_BUNDLE_NAME = I18n.ACT_RESOURCE_BUNDLE_NAME;
 
         public String i18n(boolean ignoreError, String msgId, Object... args) {
             return I18n.i18n(ignoreError, locale(true), I18n.DEF_RESOURCE_BUNDLE_NAME, msgId, args);
@@ -272,6 +275,18 @@ public interface ActContext<CTX_TYPE extends ActContext> extends ParamValueProvi
 
         public String i18n(String msgId, Object ... args) {
             return I18n.i18n(locale(true), DEF_RESOURCE_BUNDLE_NAME, msgId, args);
+        }
+
+        public String _act_i18n(String msgId, Object... args) {
+            return I18n.i18n(locale(true), ACT_RESOURCE_BUNDLE_NAME, msgId, args);
+        }
+
+        public String i18n(String bundleName, String msgId, Object... args) {
+            return I18n.i18n(locale(true), bundleName, msgId, args);
+        }
+
+        public String i18n(boolean ignoreError, String bundleName, String msgId, Object... args) {
+            return I18n.i18n(ignoreError, locale(true), bundleName, msgId, args);
         }
 
         public String i18n(Class<?> bundleSpec, String msgId, Object... args) {
