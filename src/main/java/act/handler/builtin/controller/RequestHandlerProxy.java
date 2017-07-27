@@ -160,6 +160,10 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
         return actionHandler.notFoundOnMethod(message);
     }
 
+    public BadRequest badRequestOnMethod(String message) {
+        return actionHandler.badRequestOnMethod(message);
+    }
+
     @Override
     public void handle(ActionContext context) {
         ensureAgentsReady();
