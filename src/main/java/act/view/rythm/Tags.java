@@ -21,6 +21,7 @@ package act.view.rythm;
  */
 
 import act.Act;
+import act.act_messages;
 import act.app.ActionContext;
 import act.i18n.I18n;
 import act.route.Router;
@@ -101,7 +102,7 @@ public class Tags {
             } else {
                 args = new Object[0];
             }
-            p(I18n.i18n(I18n.locale(), "act_message", msg, args));
+            p(I18n.i18n(act_messages.class, msg, args));
         }
     }
 

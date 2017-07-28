@@ -20,6 +20,7 @@ package act.validation;
  * #L%
  */
 
+import act.act_messages;
 import act.conf.AppConfig;
 import act.i18n.I18n;
 import act.util.DestroyableBase;
@@ -58,7 +59,7 @@ public class ActValidationMessageInterpolator extends DestroyableBase implements
         if (null == locale) {
             locale = I18n.locale();
         }
-        return I18n.i18n(locale, "act_message", messageTemplate);
+        return I18n.i18n(locale, act_messages.class, messageTemplate);
     }
 
 }
