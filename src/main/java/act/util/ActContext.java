@@ -21,6 +21,7 @@ package act.util;
  */
 
 import act.Destroyable;
+import act.act_messages;
 import act.app.ActionContext;
 import act.app.App;
 import act.cli.CliContext;
@@ -266,43 +267,32 @@ public interface ActContext<CTX_TYPE extends ActContext> extends ParamValueProvi
             return locale;
         }
 
-        public static final String DEF_RESOURCE_BUNDLE_NAME = I18n.DEF_RESOURCE_BUNDLE_NAME;
-        public static final String ACT_RESOURCE_BUNDLE_NAME = I18n.ACT_RESOURCE_BUNDLE_NAME;
-
         public String i18n(boolean ignoreError, String msgId, Object... args) {
-            return I18n.i18n(ignoreError, locale(true), I18n.DEF_RESOURCE_BUNDLE_NAME, msgId, args);
+            return I18n.i18n(ignoreError, locale(true), msgId, args);
         }
 
         public String i18n(String msgId, Object ... args) {
-            return I18n.i18n(locale(true), DEF_RESOURCE_BUNDLE_NAME, msgId, args);
+            return I18n.i18n(locale(true), msgId, args);
         }
 
         public String _act_i18n(String msgId, Object... args) {
-            return I18n.i18n(locale(true), ACT_RESOURCE_BUNDLE_NAME, msgId, args);
-        }
-
-        public String i18n(String bundleName, String msgId, Object... args) {
-            return I18n.i18n(locale(true), bundleName, msgId, args);
-        }
-
-        public String i18n(boolean ignoreError, String bundleName, String msgId, Object... args) {
-            return I18n.i18n(ignoreError, locale(true), bundleName, msgId, args);
+            return I18n.i18n(locale(true), act_messages.class, msgId, args);
         }
 
         public String i18n(Class<?> bundleSpec, String msgId, Object... args) {
-            return I18n.i18n(locale(true), bundleSpec.getName(), msgId, args);
+            return I18n.i18n(locale(true), bundleSpec, msgId, args);
         }
 
         public String i18n(boolean ignoreError, Class<?> bundleSpec, String msgId, Object... args) {
-            return I18n.i18n(ignoreError, locale(true), bundleSpec.getName(), msgId, args);
+            return I18n.i18n(ignoreError, locale(true), bundleSpec, msgId, args);
         }
 
         public String i18n(Enum<?> msgId) {
-            return I18n.i18n(locale(true), DEF_RESOURCE_BUNDLE_NAME, msgId);
+            return I18n.i18n(locale(true), msgId);
         }
 
         public String i18n(Class<?> bundleSpec, Enum<?> msgId) {
-            return I18n.i18n(locale(true), bundleSpec.getName(), msgId);
+            return I18n.i18n(locale(true), bundleSpec, msgId);
         }
 
         public Map<String, Object> i18n(Class<? extends Enum> enumClass) {

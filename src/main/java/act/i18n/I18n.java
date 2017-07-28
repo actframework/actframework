@@ -41,35 +41,46 @@ public class I18n {
 
     private static final Logger logger = LogManager.get(I18n.class);
 
-    public static final String DEF_RESOURCE_BUNDLE_NAME = "messages";
-    public static final String ACT_RESOURCE_BUNDLE_NAME = "act_message";
+    private static final String DEF_RESOURCE_BUNDLE_NAME = "messages";
 
     public static Locale locale() {
         ActContext context = ActContext.Base.currentContext();
         return null != context ? context.locale(true) : Act.appConfig().locale();
     }
 
-    public static String i18n(String msgId, Object ... args) {
-        return i18n(locale(), msgId, args);
+    public static String i18n(String msgId, Object... args) {
+        return _i18n(true, locale(), DEF_RESOURCE_BUNDLE_NAME, msgId, args);
     }
 
-    public static String i18n(Locale locale, String msgId, Object ... args) {
-        return i18n(locale, DEF_RESOURCE_BUNDLE_NAME, msgId, args);
+    public static String i18n(boolean ignoreError, String msgId, Object... args) {
+        return _i18n(ignoreError, locale(), DEF_RESOURCE_BUNDLE_NAME, msgId, args);
+    }
+
+    public static String i18n(Locale locale, String msgId, Object... args) {
+        return _i18n(true, locale, DEF_RESOURCE_BUNDLE_NAME, msgId, args);
+    }
+
+    public static String i18n(boolean ignoreError, Locale locale, String msgId, Object... args) {
+        return _i18n(ignoreError, locale, DEF_RESOURCE_BUNDLE_NAME, msgId, args);
     }
 
     public static String i18n(Class<?> bundleSpec, String msgId, Object... args) {
-        return i18n(locale(), bundleSpec.getName(), msgId, args);
+        return _i18n(true, locale(), bundleSpec.getName(), msgId, args);
+    }
+
+    public static String i18n(boolean ignoreError, Class<?> bundleSpec, String msgId, Object... args) {
+        return _i18n(ignoreError, locale(), bundleSpec.getName(), msgId, args);
     }
 
     public static String i18n(Locale locale, Class<?> bundleSpec, String msgId, Object... args) {
-        return i18n(locale, bundleSpec.getName(), msgId, args);
+        return _i18n(true, locale, bundleSpec.getName(), msgId, args);
     }
 
-    public static String i18n(Locale locale, String bundleName, String msgId, Object... args) {
-        return i18n(false, locale, bundleName, msgId, args);
+    public static String i18n(boolean ignoreError, Locale locale, Class<?> bundleSpec, String msgId, Object... args) {
+        return _i18n(ignoreError, locale, bundleSpec.getName(), msgId, args);
     }
 
-    public static String i18n(boolean ignoreError, Locale locale, String bundleName, String msgId, Object... args) {
+    private static String _i18n(boolean ignoreError, Locale locale, String bundleName, String msgId, Object... args) {
         if (null == msgId) {
             return "";
         }
@@ -97,7 +108,7 @@ public class I18n {
             for (int i = 0; i < len; ++i) {
                 Object arg = args[i];
                 if (arg instanceof String) {
-                    resolvedArgs[i] = i18n(true, locale, bundleName, (String) arg);
+                    resolvedArgs[i] = _i18n(true, locale, bundleName, (String) arg);
                 } else {
                     resolvedArgs[i] = arg;
                 }
@@ -122,12 +133,8 @@ public class I18n {
     }
 
     public static String i18n(Locale locale, Class<?> bundleSpec, Enum<?> msgId) {
-        return i18n(locale, bundleSpec.getName(), msgId);
-    }
-
-    public static String i18n(Locale locale, String bundleName, Enum<?> msgId) {
         String key = S.newBuffer("enum.").append(msgId.getDeclaringClass().getSimpleName().toLowerCase()).append(".").append(msgId.name().toLowerCase()).toString();
-        return i18n(locale, bundleName, key);
+        return _i18n(true, locale, bundleSpec.getName(), key);
     }
 
     public static Map<String, Object> i18n(Class<? extends Enum> enumClass) {
