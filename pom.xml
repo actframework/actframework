@@ -19,6 +19,7 @@
 *            version history
 ********************************************
 1.3.9
+* #323 Random issue: Cannot instantiate interface org.osgl.inject.ScopeCache$SingletonScope
 * #320 i18n message interpolation shall follow standard message format 
 * #319 It shall respond with `400` when `DbBind` cannot find the binding value in the request
 * #316 Provide a mechanism to allow plugin listen to app hot reload event
