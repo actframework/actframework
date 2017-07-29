@@ -27,8 +27,8 @@ import act.asm.Type;
 import act.util.AsmTypes;
 import act.util.ByteCodeVisitor;
 import org.osgl.inject.Module;
-import org.osgl.util.C;
 
+import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -37,7 +37,7 @@ import java.util.Set;
  */
 public class GenieFactoryFinder extends AppByteCodeScannerBase {
 
-    private static Set<String> factories = C.newSet();
+    private static Set<String> factories = new HashSet<>();
 
     private boolean isFactory;
 

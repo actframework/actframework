@@ -39,7 +39,6 @@ import org.osgl.inject.annotation.Provided;
 import org.osgl.inject.annotation.StopInheritedScope;
 import org.osgl.mvc.annotation.Bind;
 import org.osgl.mvc.annotation.Param;
-import org.osgl.util.C;
 import org.osgl.util.E;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -68,8 +67,9 @@ public class GenieInjector extends DependencyInjectorBase<GenieInjector> {
 
     public GenieInjector(App app) {
         super(app);
-        modules = factories();
+        modules = new LinkedHashSet<>();
         modules.add(SCOPE_MODULE);
+        modules.addAll(factories());
     }
 
     @Override
@@ -148,10 +148,10 @@ public class GenieInjector extends DependencyInjectorBase<GenieInjector> {
     }
 
 
-    private C.Set<Object> factories() {
+    private Set<Object> factories() {
         Set<String> factories = GenieFactoryFinder.factories();
         int len = factories.size();
-        C.Set<Object> set = C.newSet();
+        Set<Object> set = new HashSet<>();
         if (0 == len) {
             return set;
         }
