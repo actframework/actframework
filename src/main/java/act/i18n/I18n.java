@@ -180,7 +180,7 @@ public class I18n {
 
         for (Enum<?> enumInstance : enumClass.getEnumConstants()) {
             String name = enumInstance.name();
-            String val = i18n(locale, bundleName, enumInstance);
+            String val = _i18n(true, locale, bundleName, enumInstance.name());
             if (outputProperties) {
                 Map<String, Object> values = new HashMap<>();
                 map.put(name, values);
