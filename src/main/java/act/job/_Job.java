@@ -210,7 +210,7 @@ class _Job extends DestroyableBase implements Runnable {
                 app.checkUpdates(false);
             }
             doJob();
-        } catch (RuntimeException e) {
+        } catch (Throwable e) {
             boolean isFatal = FATAL_EXCEPTIONS.contains(e.getClass());
             Throwable cause = e;
             if (!isFatal) {

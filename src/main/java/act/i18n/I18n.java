@@ -133,8 +133,12 @@ public class I18n {
     }
 
     public static String i18n(Locale locale, Class<?> bundleSpec, Enum<?> msgId) {
+        return i18n(true, locale, bundleSpec.getName(), msgId);
+    }
+
+    public static String i18n(Locale locale, String bundleName, Enum<?> msgId) {
         String key = S.newBuffer("enum.").append(msgId.getDeclaringClass().getSimpleName().toLowerCase()).append(".").append(msgId.name().toLowerCase()).toString();
-        return _i18n(true, locale, bundleSpec.getName(), key);
+        return _i18n(true, locale, bundleName, key);
     }
 
     public static Map<String, Object> i18n(Class<? extends Enum> enumClass) {
@@ -180,7 +184,7 @@ public class I18n {
 
         for (Enum<?> enumInstance : enumClass.getEnumConstants()) {
             String name = enumInstance.name();
-            String val = _i18n(true, locale, bundleName, enumInstance.name());
+            String val = i18n(locale, bundleName, enumInstance);
             if (outputProperties) {
                 Map<String, Object> values = new HashMap<>();
                 map.put(name, values);
