@@ -147,7 +147,7 @@ public class App extends DestroyableBase {
     private volatile File tmpDir;
     private boolean restarting;
     private Result blockIssue;
-    private Exception blockIssueCause;
+    private Throwable blockIssueCause;
     private RequestHandler blockIssueHandler = new FastRequestHandler() {
         @Override
         public void handle(ActionContext context) {
@@ -426,7 +426,7 @@ public class App extends DestroyableBase {
         refresh();
     }
 
-    public synchronized void setBlockIssue(Exception e) {
+    public synchronized void setBlockIssue(Throwable e) {
         LOGGER.fatal(e, "Block issue encountered");
         if (e instanceof ActErrorResult) {
             blockIssue = (ActErrorResult) e;
