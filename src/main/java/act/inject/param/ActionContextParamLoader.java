@@ -45,7 +45,7 @@ class ActionContextParamLoader extends ParamValueLoaderService {
     @Override
     protected ParamValueLoader findContextSpecificLoader(
             String bindName,
-            Class rawType,
+            Class<?> rawType,
             BeanSpec spec,
             Type type,
             Annotation[] annotations

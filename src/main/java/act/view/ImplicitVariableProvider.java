@@ -259,7 +259,7 @@ public abstract class ImplicitVariableProvider implements Plugin {
                         java.lang.reflect.Type type = types[i];
                         Annotation[] aa = annos[i];
                         BeanSpec spec = BeanSpec.of(type, aa, injector);
-                        E.unexpectedIf(!injector.injectable(spec), "");
+                        E.unexpectedIf(!injector.isProvided(spec), "");
                         loaders[i] = ProvidedValueLoader.get(spec, injector);
                         if (spec.isInstanceOf(ActionContext.class) || requireAction(type)) {
                             supportAction = true;

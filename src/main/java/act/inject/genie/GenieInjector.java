@@ -40,7 +40,6 @@ import org.osgl.mvc.annotation.Bind;
 import org.osgl.mvc.annotation.Param;
 import org.osgl.util.E;
 
-import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.inject.Provider;
 import javax.inject.Singleton;
@@ -97,7 +96,21 @@ public class GenieInjector extends DependencyInjectorBase<GenieInjector> {
     public boolean isProvided(Class<?> type) {
         return ActProviders.isProvided(type)
                 || type.isAnnotationPresent(Provided.class)
-                || type.isAnnotationPresent(Inject.class);
+                || type.isAnnotationPresent(Inject.class)
+                || type.isAnnotationPresent(Singleton.class)
+                || SingletonBase.class.isAssignableFrom(type);
+    }
+
+    public boolean isProvided(BeanSpec beanSpec) {
+        Class rawType = beanSpec.rawType();
+        return (ActProviders.isProvided(rawType)
+                || null != beanSpec.getAnnotation(Inject.class)
+                || null != beanSpec.getAnnotation(Provided.class)
+                || null != beanSpec.getAnnotation(Context.class)
+                || null != beanSpec.getAnnotation(Singleton.class)
+                || beanSpec.isInstanceOf(SingletonBase.class)
+                || subjectToInject(beanSpec)
+        );
     }
 
     @Override
@@ -122,19 +135,6 @@ public class GenieInjector extends DependencyInjectorBase<GenieInjector> {
 
     public boolean subjectToInject(BeanSpec spec) {
         return genie().subjectToInject(spec);
-    }
-
-    public boolean injectable(BeanSpec beanSpec) {
-        Class rawType = beanSpec.rawType();
-        return (ActProviders.isProvided(rawType)
-                || null != beanSpec.getAnnotation(Inject.class)
-                || null != beanSpec.getAnnotation(Provided.class)
-                || null != beanSpec.getAnnotation(Context.class)
-                || null != beanSpec.getAnnotation(Singleton.class)
-                || beanSpec.isInstanceOf(SingletonBase.class)
-                || null != beanSpec.getAnnotation(ApplicationScoped.class)
-                || subjectToInject(beanSpec)
-        );
     }
 
 
