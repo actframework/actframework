@@ -434,7 +434,7 @@ public interface AdaptiveRecord<ID_TYPE, MODEL_TYPE extends AdaptiveRecord> exte
                         continue;
                     }
                 }
-                Class returnClass = m.getReturnType();
+                final Class returnClass = m.getReturnType();
                 Type returnType = m.getGenericReturnType();
                 Class paramClass = null;
                 Type paramType = null;
@@ -514,13 +514,7 @@ public interface AdaptiveRecord<ID_TYPE, MODEL_TYPE extends AdaptiveRecord> exte
                     fieldGetters.put(name, new Osgl.F1() {
                         @Override
                         public Object apply(Object host) throws NotAppliedException, Osgl.Break {
-                            try {
-                                return m.invoke(host);
-                            } catch (InvocationTargetException e) {
-                                throw E.unexpected(e.getTargetException());
-                            } catch (IllegalAccessException e) {
-                                throw E.unexpected(e);
-                            }
+                            return $.invokeVirtual(host, m);
                         }
                     });
                 }

@@ -64,7 +64,6 @@ import org.osgl.util.S;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -599,22 +598,10 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
 
     private Result invoke(M handlerMetaInfo, ActionContext context, Object controller, Object[] params) throws Exception {
         Object result;
-        if (null != methodAccess) {
-            try {
-                result = methodAccess.invoke(controller, handlerIndex, params);
-            } catch (Result r) {
-                return r;
-            }
-        } else {
-            try {
-                result = method.invoke(null, params);
-            } catch (InvocationTargetException e) {
-                Throwable cause = e.getCause();
-                if (cause instanceof Result) {
-                    return (Result) cause;
-                }
-                throw (Exception) cause;
-            }
+        try {
+            result = null == methodAccess ? $.invokeStatic(method, params) : methodAccess.invoke(controller, handlerIndex, params);
+        } catch (Result r) {
+            result = r;
         }
         if (null == result && handler.hasReturn() && !handler.returnTypeInfo().isResult()) {
             // ActFramework respond 404 Not Found when

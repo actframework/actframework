@@ -20,16 +20,15 @@ package act.boot.server;
  * #L%
  */
 
-import java.lang.reflect.Method;
+import org.osgl.$;
 
 /**
  * bootstrap the Act server instance
  */
 public class RunServer {
-    public static void main(String[] args) throws Exception {
+    public static void main(String[] args)  {
         ServerBootstrapClassLoader classLoader = new ServerBootstrapClassLoader(RunServer.class.getClassLoader());
-        Class<?> actClass = classLoader.loadClass("Act");
-        Method m = actClass.getDeclaredMethod("startServer");
-        m.invoke(null);
+        Class<?> actClass = $.classForName("Act", classLoader);
+        $.invokeStatic(actClass, "startServer");
     }
 }

@@ -31,7 +31,6 @@ import org.osgl.inject.BeanSpec;
 import org.osgl.util.C;
 import org.osgl.util.E;
 
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.List;
 
@@ -88,28 +87,18 @@ public class ReflectedSimpleEventListener implements SimpleEventListener {
 
     @Override
     public void invoke(Object... args) {
-        try {
-            int paramNo = paramTypes.size();
-            int argsNo = args.length;
-            Object[] realArgs = args;
-            if (paramNo != argsNo || providedParamSize > 0) {
-                realArgs = new Object[paramNo + providedParamSize];
-                System.arraycopy(args, 0, realArgs, 0, Math.min(paramNo, argsNo));
-                App app = Act.app();
-                for (int i = 0; i < providedParamSize; ++i) {
-                    realArgs[i + paramNo] = app.getInstance(providedParamTypes.get(i));
-                }
+        int paramNo = paramTypes.size();
+        int argsNo = args.length;
+        Object[] realArgs = args;
+        if (paramNo != argsNo || providedParamSize > 0) {
+            realArgs = new Object[paramNo + providedParamSize];
+            System.arraycopy(args, 0, realArgs, 0, Math.min(paramNo, argsNo));
+            App app = Act.app();
+            for (int i = 0; i < providedParamSize; ++i) {
+                realArgs[i + paramNo] = app.getInstance(providedParamTypes.get(i));
             }
-            method.invoke(host(), realArgs);
-        } catch (IllegalAccessException e) {
-            throw E.unexpected(e);
-        } catch (InvocationTargetException e) {
-            Throwable t = e.getCause();
-            if (t instanceof RuntimeException) {
-                throw (RuntimeException) t;
-            }
-            throw E.unexpected(t, "Error executing event listener method %s.%s", className, methodName);
         }
+        $.invokeVirtual(host(), method, realArgs);
     }
 
     private Object host() {
