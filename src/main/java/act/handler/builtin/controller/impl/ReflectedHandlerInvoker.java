@@ -97,7 +97,6 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
     private Set<String> pathVariables;
     private CORS.Spec corsSpec;
     private CSRF.Spec csrfSpec;
-    private String jsonDTOKey;
     private boolean isStatic;
     private Object singleton;
     private H.Format forceResponseContentType;
@@ -157,7 +156,6 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
 
         CSRF.Spec csrfSpec = CSRF.spec(method).chain(CSRF.spec(controllerClass));
         this.csrfSpec = csrfSpec;
-        this.jsonDTOKey = app.cuid();
         this.singleton = singleton(app);
 
         ResponseContentType contentType = getAnnotation(ResponseContentType.class);
@@ -314,11 +312,11 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
     }
 
     public JsonDTO cachedJsonDTO(ActContext<?> context) {
-        return context.attribute(jsonDTOKey);
+        return context.attribute(JsonDTOClassManager.CTX_ATTR_KEY);
     }
 
     private void ensureJsonDTOGenerated(ActionContext context) {
-        if (0 == fieldsAndParamsCount || !context.jsonEncoded() || null != context.attribute(jsonDTOKey)) {
+        if (0 == fieldsAndParamsCount || !context.jsonEncoded() || null != context.attribute(JsonDTOClassManager.CTX_ATTR_KEY)) {
             return;
         }
         Class<? extends JsonDTO> dtoClass = jsonDTOClassManager.get(controllerClass, method);
@@ -328,7 +326,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         }
         try {
             JsonDTO dto = JSON.parseObject(patchedJsonBody(context), dtoClass);
-            context.attribute(jsonDTOKey, dto);
+            context.attribute(JsonDTOClassManager.CTX_ATTR_KEY, dto);
         } catch (JSONException e) {
             if (e.getCause() != null) {
                 App.LOGGER.warn(e.getCause(), "error parsing JSON data");

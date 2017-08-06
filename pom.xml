@@ -25,6 +25,7 @@
 * #320 i18n message interpolation shall follow standard message format 
 * #319 It shall respond with `400` when `DbBind` cannot find the binding value in the request
 * #318 Cannot implement Command handler in MorphiaDao
+* #317 `@DbBind` not working with JSON format
 * #316 Provide a mechanism to allow plugin listen to app hot reload event
 * #313 EventBus call on `SimpleEventListener` shall throw out exceptions
 * #312 when using `@Output` on field it shall allow method not to have template

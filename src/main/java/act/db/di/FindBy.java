@@ -27,6 +27,8 @@ import act.db.Dao;
 import act.handler.DelegateRequestHandler;
 import act.handler.RequestHandler;
 import act.handler.builtin.controller.RequestHandlerProxy;
+import act.inject.param.JsonDTO;
+import act.inject.param.JsonDTOClassManager;
 import act.inject.param.ParamValueLoaderService;
 import act.util.ActContext;
 import org.osgl.$;
@@ -161,6 +163,18 @@ public class FindBy extends ValueLoader.Base {
 
     private static String resolve(String bindName, ActContext ctx) {
         String value = ctx.paramVal(bindName);
+        if (S.notEmpty(value)) {
+            return value;
+        }
+
+        if (ctx instanceof ActionContext) {
+            ActionContext actionContext = (ActionContext) ctx;
+            JsonDTO dto = actionContext.attribute(JsonDTOClassManager.CTX_ATTR_KEY);
+            if (null != dto) {
+                value = S.string(dto.get(bindName));
+            }
+        }
+
         if (S.notEmpty(value)) {
             return value;
         }
