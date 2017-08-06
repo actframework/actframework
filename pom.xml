@@ -247,7 +247,7 @@
   <groupId>org.actframework</groupId>
   <artifactId>act</artifactId>
   <packaging>jar</packaging>
-  <version>1.3.9-LTS-SNAPSHOT</version>
+  <version>1.3.9-LTS</version>
 
   <name>ACT Framework</name>
   <description>The ACT full stack MVC framework</description>
