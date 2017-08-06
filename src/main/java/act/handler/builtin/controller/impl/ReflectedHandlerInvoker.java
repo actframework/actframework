@@ -64,13 +64,10 @@ import org.osgl.util.S;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-
-import static act.inject.param.JsonDTO.CTX_ATTR_KEY;
 
 /**
  * Implement handler using
@@ -316,8 +313,12 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         return csrfSpec;
     }
 
+    public JsonDTO cachedJsonDTO(ActContext<?> context) {
+        return context.attribute(JsonDTOClassManager.CTX_ATTR_KEY);
+    }
+
     private void ensureJsonDTOGenerated(ActionContext context) {
-        if ((0 == fieldsAndParamsCount) || !context.jsonEncoded() || (null != context.attribute(CTX_ATTR_KEY))) {
+        if (0 == fieldsAndParamsCount || !context.jsonEncoded() || null != context.attribute(JsonDTOClassManager.CTX_ATTR_KEY)) {
             return;
         }
         Class<? extends JsonDTO> dtoClass = jsonDTOClassManager.get(controllerClass, method);
@@ -327,7 +328,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         }
         try {
             JsonDTO dto = JSON.parseObject(patchedJsonBody(context), dtoClass);
-            context.attribute(CTX_ATTR_KEY, dto);
+            context.attribute(JsonDTOClassManager.CTX_ATTR_KEY, dto);
         } catch (JSONException e) {
             if (e.getCause() != null) {
                 App.LOGGER.warn(e.getCause(), "error parsing JSON data");
@@ -597,22 +598,10 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
 
     private Result invoke(M handlerMetaInfo, ActionContext context, Object controller, Object[] params) throws Exception {
         Object result;
-        if (null != methodAccess) {
-            try {
-                result = methodAccess.invoke(controller, handlerIndex, params);
-            } catch (Result r) {
-                return r;
-            }
-        } else {
-            try {
-                result = method.invoke(null, params);
-            } catch (InvocationTargetException e) {
-                Throwable cause = e.getCause();
-                if (cause instanceof Result) {
-                    return (Result) cause;
-                }
-                throw (Exception) cause;
-            }
+        try {
+            result = null == methodAccess ? $.invokeStatic(method, params) : methodAccess.invoke(controller, handlerIndex, params);
+        } catch (Result r) {
+            result = r;
         }
         if (null == result && handler.hasReturn() && !handler.returnTypeInfo().isResult()) {
             // ActFramework respond 404 Not Found when

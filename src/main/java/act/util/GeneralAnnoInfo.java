@@ -307,12 +307,7 @@ public class GeneralAnnoInfo {
 
 
         private Object getAnnotationMemberValue(Annotation annotation, String name) {
-            try {
-                Method method = annotation.getClass().getMethod(name, new Class<?>[]{});
-                return method.invoke(annotation);
-            } catch (Exception e) {
-                throw E.unexpected(e);
-            }
+            return $.invokeVirtual(annotation, name);
         }
 
         public static <T extends Annotation> T proxy(GeneralAnnoInfo info) {

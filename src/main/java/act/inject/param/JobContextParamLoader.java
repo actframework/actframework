@@ -33,7 +33,7 @@ public class JobContextParamLoader extends ParamValueLoaderService {
     }
 
     @Override
-    protected ParamValueLoader findContextSpecificLoader(String bindName, Class rawType, BeanSpec spec, Type type, Annotation[] annotations) {
+    protected ParamValueLoader findContextSpecificLoader(String bindName, Class<?> rawType, BeanSpec spec, Type type, Annotation[] annotations) {
         return null;
     }
 }

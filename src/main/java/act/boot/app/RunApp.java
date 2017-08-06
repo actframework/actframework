@@ -25,10 +25,8 @@ import act.conf.AppConfigKey;
 import act.util.SysProps;
 import org.osgl.$;
 import org.osgl.logging.Logger;
-import org.osgl.util.E;
 import org.osgl.util.S;
 
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 /**
@@ -80,16 +78,7 @@ public class RunApp {
         Thread.currentThread().setContextClassLoader(classLoader);
         Class<?> actClass = classLoader.loadClass("act.Act");
         Method m = actClass.getDeclaredMethod("startApp", String.class, String.class);
-        try {
-            m.invoke(null, appName, appVersion);
-        } catch (InvocationTargetException e) {
-            Throwable t = e.getCause();
-            if (t instanceof Exception) {
-                throw (Exception) t;
-            } else {
-                throw E.unexpected(t, "Unknown error captured starting the application");
-            }
-        }
+        $.invokeStatic(m, appName, appVersion);
         LOGGER.info("it takes %sms to start the app\n", $.ms() - ts);
     }
 

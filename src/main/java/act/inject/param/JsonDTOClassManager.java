@@ -23,6 +23,7 @@ package act.inject.param;
 import act.app.App;
 import act.app.AppClassLoader;
 import act.app.AppServiceBase;
+import act.db.DbBind;
 import act.inject.DependencyInjector;
 import org.osgl.$;
 import org.osgl.exception.UnexpectedException;
@@ -39,6 +40,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 public class JsonDTOClassManager extends AppServiceBase<JsonDTOClassManager> {
+
+    public static final String CTX_ATTR_KEY = "__json_dto__";
 
     static class DynamicClassLoader extends ClassLoader {
         private DynamicClassLoader(AppClassLoader parent) {
@@ -172,7 +175,10 @@ public class JsonDTOClassManager extends AppServiceBase<JsonDTOClassManager> {
             if (null == spec) {
                 throw E.unexpected("Cannot determine bean spec of field: %s", field);
             }
-            if (!ParamValueLoaderService.noBindOrProvided(spec, injector)) {
+            String dbBindName = dbBindName(spec);
+            if (null != dbBindName) {
+                beanSpecs.add(BeanSpec.of(String.class, new Annotation[0], dbBindName, injector));
+            } else {
                 beanSpecs.add(spec);
             }
         }
@@ -200,10 +206,23 @@ public class JsonDTOClassManager extends AppServiceBase<JsonDTOClassManager> {
             }
             Annotation[] anno = annotations[i];
             BeanSpec spec = BeanSpec.of(type, anno, injector);
-            if (!ParamValueLoaderService.noBindOrProvided(spec, injector)) {
+            String dbBindName = dbBindName(spec);
+            if (null != dbBindName) {
+                beanSpecs.add(BeanSpec.of(String.class, new Annotation[0], dbBindName, injector));
+            } else {
                 beanSpecs.add(spec);
             }
         }
+    }
+
+    private static String dbBindName(BeanSpec spec) {
+        for (Annotation annotation : spec.allAnnotations()) {
+            if (annotation.annotationType().getName().equals(DbBind.class.getName())) {
+                String value = $.invokeVirtual(annotation, "value");
+                return (S.blank(value)) ? spec.name() : value;
+            }
+        }
+        return null;
     }
 
     private static final Comparator<BeanSpec> CMP = new Comparator<BeanSpec>() {

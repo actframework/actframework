@@ -131,21 +131,9 @@ public class ReflectedCommandExecutor extends CommandExecutor {
     private Object invoke(Object commander, Object[] params) {
         Object result;
         if (null != methodAccess) {
-            try {
-                result = methodAccess.invoke(commander, commandIndex, params);
-            } catch (RuntimeException e) {
-                throw e;
-            } catch (Exception e) {
-                throw E.unexpected(e);
-            }
+            result = methodAccess.invoke(commander, commandIndex, params);
         } else {
-            try {
-                result = method.invoke(null, params);
-            } catch (RuntimeException e) {
-                throw e;
-            } catch (Exception e) {
-                throw E.unexpected(e);
-            }
+            result = $.invokeStatic(method, params);
         }
         return result;
     }

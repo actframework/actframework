@@ -34,7 +34,6 @@ import org.osgl.exception.NotAppliedException;
 import org.osgl.inject.BeanSpec;
 import org.osgl.util.E;
 
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.List;
@@ -63,6 +62,7 @@ public class ReflectedJobInvoker<M extends JobMethodMetaInfo> extends $.F0<Objec
         this.methodInfo = handlerMetaInfo;
         this.classInfo = handlerMetaInfo.classInfo();
         this.app = app;
+        this.isStatic = handlerMetaInfo.isStatic();
     }
 
     private void init() {
@@ -132,19 +132,7 @@ public class ReflectedJobInvoker<M extends JobMethodMetaInfo> extends $.F0<Objec
 
     private Object invoke(Object jobClassInstance) {
         Object[] params = params(jobClassInstance);
-        Object result;
-        if (null != methodAccess) {
-            result = methodAccess.invoke(jobClassInstance, methodIndex, params);
-        } else {
-            try {
-                result = method.invoke(jobClassInstance, params);
-            } catch (InvocationTargetException e) {
-                throw E.unexpected(e.getCause());
-            } catch (Exception e) {
-                throw E.unexpected(e);
-            }
-        }
-        return result;
+        return null == methodAccess ? $.invokeStatic(method, params) : methodAccess.invoke(jobClassInstance, methodIndex, params);
     }
 
     private Object[] params(Object job) {

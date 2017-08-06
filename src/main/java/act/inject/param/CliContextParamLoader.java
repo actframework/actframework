@@ -102,7 +102,7 @@ public class CliContextParamLoader extends ParamValueLoaderService {
     @Override
     protected ParamValueLoader findContextSpecificLoader(
             String bindName,
-            Class rawType,
+            Class<?> rawType,
             BeanSpec spec,
             Type type,
             Annotation[] annotations
@@ -183,19 +183,24 @@ public class CliContextParamLoader extends ParamValueLoaderService {
     private List<OptionLoader> findOptionLoaders(Method method, CommandMethodMetaInfo methodMetaInfo) {
         List<OptionLoader> optionLoaders = new ArrayList<OptionLoader>();
 
-        findFieldOptionLoaders(method.getDeclaringClass(), optionLoaders);
         findParamOptionLoaders(method, methodMetaInfo, optionLoaders);
+        findFieldOptionLoaders(method.getDeclaringClass(), optionLoaders);
 
         return optionLoaders;
     }
 
     private void findFieldOptionLoaders(Class c, List<OptionLoader> optionLoaders) {
+        if (injector.isProvided(c)) {
+            // No field injection for a provided host
+            return;
+        }
         for (Field field : $.fieldsOf(c, true)) {
             Type type = field.getGenericType();
             Annotation[] annotations = field.getAnnotations();
             String bindName = bindName(annotations, field.getName());
             BeanSpec spec = BeanSpec.of(type, annotations, bindName, injector);
-            ParamValueLoader loader = findContextSpecificLoader(bindName, field.getDeclaringClass(), spec, type, annotations);
+            boolean provided = injector.isProvided(spec);
+            ParamValueLoader loader = provided ? ProvidedValueLoader.get(spec, injector) : findContextSpecificLoader(bindName, field.getDeclaringClass(), spec, type, annotations);
             if (loader instanceof OptionLoader) {
                 optionLoaders.add((OptionLoader) loader);
             }

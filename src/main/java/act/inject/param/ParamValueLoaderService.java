@@ -98,15 +98,15 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
     // contains field names that should be waived when looking for value loader
     private static final Set<String> fieldBlackList = new HashSet<>();
 
-    StringValueResolverManager resolverManager;
-    BinderManager binderManager;
-    DependencyInjector<?> injector;
+    protected StringValueResolverManager resolverManager;
+    protected BinderManager binderManager;
+    protected GenieInjector injector;
     ConcurrentMap<Method, ParamValueLoader[]> methodRegistry = new ConcurrentHashMap<>();
     Map<Method, Boolean> methodValidationConstraintLookup = new HashMap();
-    ConcurrentMap<Class, Map<Field, ParamValueLoader>> fieldRegistry = new ConcurrentHashMap<Class, Map<Field, ParamValueLoader>>();
-    ConcurrentMap<Class, ParamValueLoader> classRegistry = new ConcurrentHashMap<Class, ParamValueLoader>();
-    private ConcurrentMap<$.T2<Type, Annotation[]>, ParamValueLoader> paramRegistry = new ConcurrentHashMap<$.T2<Type, Annotation[]>, ParamValueLoader>();
-    private ConcurrentMap<BeanSpec, Map<Class<? extends Annotation>, ActionMethodParamAnnotationHandler>> annoHandlers = new ConcurrentHashMap<BeanSpec, Map<Class<? extends Annotation>, ActionMethodParamAnnotationHandler>>();
+    ConcurrentMap<Class, Map<Field, ParamValueLoader>> fieldRegistry = new ConcurrentHashMap<>();
+    ConcurrentMap<Class, ParamValueLoader> classRegistry = new ConcurrentHashMap<>();
+    private ConcurrentMap<$.T2<Type, Annotation[]>, ParamValueLoader> paramRegistry = new ConcurrentHashMap<>();
+    private ConcurrentMap<BeanSpec, Map<Class<? extends Annotation>, ActionMethodParamAnnotationHandler>> annoHandlers = new ConcurrentHashMap<>();
     private Map<Class<? extends Annotation>, ActionMethodParamAnnotationHandler> allAnnotationHandlers;
     private Validator validator;
     private volatile ExecutableValidator executableValidator;
@@ -363,7 +363,7 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
 
     protected abstract ParamValueLoader findContextSpecificLoader(
             String bindName,
-            Class rawType,
+            Class<?> rawType,
             BeanSpec spec,
             Type type,
             Annotation[] annotations
@@ -783,7 +783,7 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
 
     public static boolean provided(BeanSpec beanSpec, DependencyInjector<?> injector) {
         GenieInjector genieInjector = $.cast(injector);
-        return genieInjector.injectable(beanSpec);
+        return genieInjector.isProvided(beanSpec);
     }
 
     public static boolean noBindOrProvided(BeanSpec beanSpec, DependencyInjector<?> injector) {
