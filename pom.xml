@@ -294,7 +294,7 @@
   <groupId>org.actframework</groupId>
   <artifactId>act</artifactId>
   <packaging>jar</packaging>
-  <version>1.4.7-SNAPSHOT</version>
+  <version>1.4.7</version>
 
   <name>ACT Framework</name>
   <description>The ACT full stack MVC framework</description>
