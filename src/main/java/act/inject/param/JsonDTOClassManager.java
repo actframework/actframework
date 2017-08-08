@@ -169,6 +169,9 @@ public class JsonDTOClassManager extends AppServiceBase<JsonDTOClassManager> {
             if (null == spec) {
                 throw E.unexpected("Cannot determine bean spec of field: %s", field);
             }
+            if (ParamValueLoaderService.noBindOrProvided(spec, injector)) {
+                return;
+            }
             String dbBindName = dbBindName(spec);
             if (null != dbBindName) {
                 beanSpecs.add(BeanSpec.of(String.class, new Annotation[0], dbBindName, injector));
@@ -200,6 +203,9 @@ public class JsonDTOClassManager extends AppServiceBase<JsonDTOClassManager> {
             }
             Annotation[] anno = annotations[i];
             BeanSpec spec = BeanSpec.of(type, anno, injector);
+            if (ParamValueLoaderService.noBindOrProvided(spec, injector)) {
+                return;
+            }
             String dbBindName = dbBindName(spec);
             if (null != dbBindName) {
                 beanSpecs.add(BeanSpec.of(String.class, new Annotation[0], dbBindName, injector));
