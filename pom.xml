@@ -18,6 +18,9 @@
 ********************************************
 *            version history
 ********************************************
+1.3.10
+* #327 com.alibaba.fastjson.JSONException: default constructor not found. class act.app.ActionContext
+
 1.3.9
 * #323 Random issue: Cannot instantiate interface org.osgl.inject.ScopeCache$SingletonScope
 * #322 CLI: Print out the real exception instead of `InvocationTargetException`
