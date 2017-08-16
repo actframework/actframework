@@ -18,6 +18,9 @@
 ********************************************
 *            version history
 ********************************************
+1.4.8
+* catch up update to 1.3.11-LTS
+
 1.4.7
 * catch up update to 1.3.10-LTS
 
@@ -60,6 +63,10 @@
 * #192 Log the URL with handler error message
 * #191 Review and fix the use of `ConcurrentMap`
 * #17 Support WebSocket
+
+1.3.11
+* #330 Error message could not display correctly
+* #328 ACT can't register ebean as default datasource when configuration both ebean and mongo datasource
 
 1.3.10
 * #327 com.alibaba.fastjson.JSONException: default constructor not found. class act.app.ActionContext
@@ -294,7 +301,7 @@
   <groupId>org.actframework</groupId>
   <artifactId>act</artifactId>
   <packaging>jar</packaging>
-  <version>1.4.8-SNAPSHOT</version>
+  <version>1.4.9-SNAPSHOT</version>
 
   <name>ACT Framework</name>
   <description>The ACT full stack MVC framework</description>

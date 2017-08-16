@@ -22,12 +22,13 @@ package act.db;
 
 import act.app.App;
 import act.app.AppServiceBase;
-import act.app.DbServiceManager;
 
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+
+import static act.app.DbServiceManager.DEFAULT;
 
 /**
  * Keep track of SQL entity model classes
@@ -37,18 +38,29 @@ public class EntityClassRepository extends AppServiceBase<EntityClassRepository>
     // map model class set to db service ID
     private ConcurrentMap<String, Set<Class>> modelClasses = new ConcurrentHashMap<>();
 
+    // the db service ID that is an alias to default
+    private String defaultAlias;
+
+    private Set<Class> defaultModelClasses = new HashSet<>();
+
     public EntityClassRepository(App app) {
         super(app);
+        modelClasses.put(DEFAULT, defaultModelClasses);
     }
 
     public void registerModelClass(Class<?> modelClass) {
         DB db = modelClass.getAnnotation(DB.class);
-        String dbId = null == db ? DbServiceManager.DEFAULT : db.value();
+        String dbId = null == db ? DEFAULT : db.value();
         registerModelClass(dbId, modelClass);
     }
 
+    public void setDefaultAlias(String defaultAlias) {
+        this.defaultAlias = defaultAlias;
+        modelClasses.put(defaultAlias, defaultModelClasses);
+    }
+
     private void registerModelClass(String dbId, Class<?> modelClass) {
-        Set<Class> set = modelClasses.get(dbId);
+        Set<Class> set = DEFAULT.equals(dbId) || defaultAlias.equalsIgnoreCase(dbId) ? defaultModelClasses : modelClasses.get(dbId);
         if (null == set) {
             Set<Class> newSet = new HashSet<>();
             set = modelClasses.putIfAbsent(dbId, newSet);
@@ -66,6 +78,7 @@ public class EntityClassRepository extends AppServiceBase<EntityClassRepository>
     @Override
     protected void releaseResources() {
         modelClasses.clear();
+        defaultModelClasses.clear();
     }
 
     public static void init(App app) {
