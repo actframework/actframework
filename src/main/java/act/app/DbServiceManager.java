@@ -58,6 +58,8 @@ public class DbServiceManager extends AppServiceBase<DbServiceManager> implement
     // map model class to dao class
     private Map<Class<?>, Dao> modelDaoMap = C.newMap();
 
+    private String firstInstance = DEFAULT;
+
     @Inject
     public DbServiceManager(final App app) {
         super(app);
@@ -120,6 +122,7 @@ public class DbServiceManager extends AppServiceBase<DbServiceManager> implement
         serviceMap.clear();
         Destroyable.Util.tryDestroyAll(C.newSet(modelDaoMap.values()), ApplicationScoped.class);
         modelDaoMap.clear();
+        firstInstance = DEFAULT;
     }
 
     @Override
@@ -162,7 +165,6 @@ public class DbServiceManager extends AppServiceBase<DbServiceManager> implement
             }
         }
 
-        String firstInstance = null;
         if (dbConf.containsKey("db.instances")) {
             String instances = dbConf.get("db.instances").toString();
             String[] sa = instances.split("[,\\s;:]+");
@@ -170,6 +172,7 @@ public class DbServiceManager extends AppServiceBase<DbServiceManager> implement
                 initService(dbId, dbConf);
             }
             firstInstance = sa[0];
+            app().service(EntityClassRepository.class).setDefaultAlias(firstInstance);
         }
         if (serviceMap.containsKey(DEFAULT)) return;
         // try init default service if conf found
@@ -239,4 +242,5 @@ public class DbServiceManager extends AppServiceBase<DbServiceManager> implement
         }
         return DbServiceManager.DEFAULT;
     }
+
 }
