@@ -1,3 +1,9 @@
+<<<<<<< HEAD
 # By default waive authentication check on `act.Info.` and `act.i18n.`
 -act.i18n.
 -act.Zen.
+=======
+# By default waive authentication check on `act.Zen.` and `act.i18n.`
+-act.i18n.
+-act.Zen.
+>>>>>>> 1.3

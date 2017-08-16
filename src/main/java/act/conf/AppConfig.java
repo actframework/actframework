@@ -82,9 +82,9 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
             @Override
             public String transform(String message) {
                 if (Act.appConfig().i18nEnabled()) {
-                    String translated = I18n.i18n(true, I18n.locale(), message);
+                    String translated = I18n.i18n(message);
                     if (message == translated) {
-                        translated = I18n.i18n(true, I18n.locale(), MvcConfig.class.getName(), message);
+                        translated = I18n.i18n(MvcConfig.class, message);
                         message = translated;
                     }
                     return message;
