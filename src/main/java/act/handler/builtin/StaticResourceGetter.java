@@ -190,7 +190,7 @@ public class StaticResourceGetter extends FastRequestHandler {
                 AlwaysForbidden.INSTANCE.handle(context);
             }
         } catch (IOException e) {
-            App.logger.warn(e, "Error servicing static resource request");
+            App.LOGGER.warn(e, "Error servicing static resource request");
             throw NotFound.get();
         }
     }
@@ -275,7 +275,11 @@ public class StaticResourceGetter extends FastRequestHandler {
 
     @Override
     public String toString() {
-        return null != baseUrl ? baseUrl.toString() : base + "(not found)";
+        S.Buffer buf = S.buffer().append("resource: ").append(base);
+        if (null == baseUrl) {
+            buf.append("(not found)");
+        }
+        return buf.toString();
     }
 
     /*

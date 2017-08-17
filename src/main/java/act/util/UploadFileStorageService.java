@@ -45,6 +45,8 @@ import java.io.InputStream;
 import java.util.Map;
 import java.util.UUID;
 
+import static org.osgl.storage.ISObject.*;
+
 public class UploadFileStorageService extends FileSystemService {
 
     public static final KeyNameProvider ACT_STORAGE_KEY_NAME_PROVIDER = new KeyNameProvider() {
@@ -74,11 +76,12 @@ public class UploadFileStorageService extends FileSystemService {
     public static ISObject store(FileItem file, App app) {
         IStorageService ss = app.uploadFileStorageService();
         try {
-            String key = newKey();
+            String key = newKey() + "/" + file.getName();
             ISObject sobj = SObject.of(file.getInputStream());
-            sobj.setAttribute(SObject.ATTR_FILE_NAME, file.getName());
-            sobj.setAttribute(SObject.ATTR_CONTENT_TYPE, file.getContentType());
-            sobj.setAttribute(SObject.ATTR_URL, "/~upload/" + sobj.getKey());
+            sobj.setAttribute(ATTR_FILE_NAME, file.getName());
+            sobj.setAttribute(ATTR_CONTENT_TYPE, file.getContentType());
+            sobj.setAttribute(ATTR_CONTENT_LENGTH, S.string(file.getSize()));
+            sobj.setAttribute(ATTR_URL, "/~/upload/" + sobj.getKey());
             ss.put(key, sobj);
             return ss.get(key);
         } catch (IOException e) {
@@ -105,7 +108,7 @@ public class UploadFileStorageService extends FileSystemService {
                 AlwaysNotFound.INSTANCE.handle(context);
                 return;
             }
-            H.Format fmt = H.Format.of(sobj.getAttribute(ISObject.ATTR_CONTENT_TYPE));
+            H.Format fmt = H.Format.of(sobj.getAttribute(ATTR_CONTENT_TYPE));
             InputStream is = new BufferedInputStream(sobj.asInputStream());
             H.Response resp = context.resp();
             if (null != fmt && H.Format.UNKNOWN != fmt) {
@@ -116,7 +119,7 @@ public class UploadFileStorageService extends FileSystemService {
 
         @Override
         public String toString() {
-            return "Upload file getter";
+            return "Upload file accessor";
         }
     }
 }
