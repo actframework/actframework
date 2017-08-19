@@ -18,6 +18,18 @@
 ********************************************
 *            version history
 ********************************************
+1.3.12
+* #345 Support in memory cache of uploaded file when size not exceeds threshold
+* #344 Support `*` in integer value configuration
+* #343 Drop download upload file support
+* #341 Make upload file in memory threshold be configurable
+* #340 Upload file get saved twice to filesystem
+* #339 Make upload file stored in a hierarchical directory structure
+* #338 It shall report 400 Bad Request if required file upload is missing
+* #337 StaticResourceGetter.toString method output is confusing
+* #336 Act's asset static resource URL shall follow the built-in URL convention
+* #335 UploadFileStorageService shall add length attribute into SObject
+
 1.3.11
 * #330 Error message could not display correctly
 * #328 ACT can't register ebean as default datasource when configuration both ebean and mongo datasource
@@ -291,7 +303,7 @@
     <cdi-api.version>1.2</cdi-api.version>
     <commons-fileupload.version>1.3.2</commons-fileupload.version>
     <ecj.version>4.6.1</ecj.version>
-    <fastjson.version>1.2.35</fastjson.version>
+    <fastjson.version>1.2.37</fastjson.version>
     <bval.version>1.1.2</bval.version>
     <javax.inject.version>1</javax.inject.version>
     <javax.mail.version>1.5.0-b01</javax.mail.version>
@@ -302,7 +314,7 @@
     <osgl-tool.version>1.4.1</osgl-tool.version>
     <osgl-genie.version>1.0.3</osgl-genie.version>
     <osgl-mvc.version>1.2.0</osgl-mvc.version>
-    <osgl-storage.version>1.3.0</osgl-storage.version>
+    <osgl-storage.version>1.4.0</osgl-storage.version>
     <osgl-tool-ext.version>1.0.1</osgl-tool-ext.version>
     <reflectasm.version>1.11.3</reflectasm.version>
     <rythmengine.version>1.2.0</rythmengine.version>

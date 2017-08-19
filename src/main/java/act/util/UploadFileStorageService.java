@@ -21,12 +21,9 @@ package act.util;
  */
 
 import act.Act;
-import act.app.ActionContext;
 import act.app.App;
-import act.handler.builtin.AlwaysNotFound;
-import act.handler.builtin.controller.FastRequestHandler;
-import org.apache.commons.fileupload.FileItem;
-import org.osgl.http.H;
+import org.apache.commons.fileupload.FileItemStream;
+import org.osgl.$;
 import org.osgl.storage.ISObject;
 import org.osgl.storage.IStorageService;
 import org.osgl.storage.KeyGenerator;
@@ -38,14 +35,8 @@ import org.osgl.util.E;
 import org.osgl.util.IO;
 import org.osgl.util.S;
 
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.util.Map;
-import java.util.UUID;
-
-import static org.osgl.storage.ISObject.*;
 
 public class UploadFileStorageService extends FileSystemService {
 
@@ -56,12 +47,15 @@ public class UploadFileStorageService extends FileSystemService {
         }
     };
 
-    public UploadFileStorageService(Map<String, String> conf) {
+    private int inMemoryCacheThreshold;
+
+    public UploadFileStorageService(Map<String, String> conf, int inMemoryCacheThreshold) {
         super(conf);
         this.setKeyNameProvider(ACT_STORAGE_KEY_NAME_PROVIDER);
+        this.inMemoryCacheThreshold = inMemoryCacheThreshold;
     }
 
-    public static IStorageService create(App app) {
+    public static UploadFileStorageService create(App app) {
         File tmp = app.tmpDir();
         if (!tmp.exists() && !tmp.mkdirs()) {
             throw E.unexpected("Cannot create tmp dir");
@@ -70,56 +64,142 @@ public class UploadFileStorageService extends FileSystemService {
                 "storage.keygen", KeyGenerator.Predefined.BY_DATE.name());
         conf.put(IStorageService.CONF_ID, "__upload");
         conf.put("storage.storeSuffix", "false");
-        return new UploadFileStorageService(conf);
+        return new UploadFileStorageService(conf, app.config().uploadInMemoryCacheThreshold());
     }
 
-    public static ISObject store(FileItem file, App app) {
-        IStorageService ss = app.uploadFileStorageService();
+    public static ISObject store(FileItemStream fileItemStream, App app) {
+        UploadFileStorageService ss = app.uploadFileStorageService();
         try {
-            String key = newKey() + "/" + file.getName();
-            ISObject sobj = SObject.of(file.getInputStream());
-            sobj.setAttribute(ATTR_FILE_NAME, file.getName());
-            sobj.setAttribute(ATTR_CONTENT_TYPE, file.getContentType());
-            sobj.setAttribute(ATTR_CONTENT_LENGTH, S.string(file.getSize()));
-            sobj.setAttribute(ATTR_URL, "/~/upload/" + sobj.getKey());
-            ss.put(key, sobj);
-            return ss.get(key);
+            return ss._store(fileItemStream);
         } catch (IOException e) {
             throw E.ioException(e);
         }
     }
 
-    public static String newKey() {
-        // Note we don't use App.cuid() here to get higher level security
-        return UUID.randomUUID().toString();
+    private ISObject _store(FileItemStream fileItemStream) throws IOException {
+        String filename = fileItemStream.getName();
+        String key = newKey(filename);
+        File tmpFile = getFile(key);
+        InputStream input = fileItemStream.openStream();
+        ThresholdingByteArrayOutputStream output = new ThresholdingByteArrayOutputStream(inMemoryCacheThreshold, tmpFile);
+        IO.copy(input, output);
+
+        ISObject retVal;
+        if (output.exceedThreshold) {
+            retVal = getFull(key);
+        } else {
+            int size = output.written;
+            byte[] buf = output.buf();
+            retVal = SObject.of(key, buf, size);
+        }
+
+        if (null != filename) {
+            retVal.setFilename(filename);
+        }
+        String contentType = fileItemStream.getContentType();
+        if (null != contentType) {
+            retVal.setContentType(contentType);
+        }
+        return retVal;
     }
 
-    public static class UploadFileGetter extends FastRequestHandler {
+    private String newKey(String filename) {
+        if (null == filename) {
+            return S.concat(Act.cuid(), "tmp");
+        }
+        return S.pathConcat(getKey(Act.cuid()), '/', filename);
+    }
 
-        @Override
-        public void handle(ActionContext context) {
-            String key = context.paramVal("path");
-            if (S.blank(key)) {
-                AlwaysNotFound.INSTANCE.handle(context);
-                return;
+    /**
+     * The idea come from apache-commons-IO's `ThresholdingOutputStream`
+     *
+     * Before threshold exceeded the data is written into internal byte array buffer, once
+     * threshold is reached then the internal byte array buffer will be dumped into the
+     * second output stream and remaining written will be redirected to the second output
+     * stream also
+     */
+    private static class ThresholdingByteArrayOutputStream extends ByteArrayOutputStream {
+        private int threshold;
+        private int written;
+        private boolean exceedThreshold;
+        private File file;
+        private OutputStream fileOutputStream;
+
+        public ThresholdingByteArrayOutputStream(int threshold, File file) {
+            if (threshold < 1024) {
+                threshold = 1024;
             }
-            ISObject sobj = context.app().uploadFileStorageService().get(key);
-            if (null == sobj) {
-                AlwaysNotFound.INSTANCE.handle(context);
-                return;
-            }
-            H.Format fmt = H.Format.of(sobj.getAttribute(ATTR_CONTENT_TYPE));
-            InputStream is = new BufferedInputStream(sobj.asInputStream());
-            H.Response resp = context.resp();
-            if (null != fmt && H.Format.UNKNOWN != fmt) {
-                resp.contentType(fmt.contentType());
-            }
-            IO.copy(is, context.resp().outputStream());
+            buf = new byte[threshold];
+            this.threshold = threshold;
+            this.file = $.notNull(file);
         }
 
         @Override
-        public String toString() {
-            return "Upload file accessor";
+        public synchronized void write(int b) {
+            if (!checkThresholding(1)) {
+                super.write(b);
+            } else {
+                try {
+                    fileOutputStream.write(b);
+                } catch (IOException e) {
+                    throw E.ioException(e);
+                }
+            }
+            written++;
+        }
+
+        @Override
+        public synchronized void write(byte[] b, int off, int len) {
+            if (!checkThresholding(len)) {
+                super.write(b, off, len);
+            } else {
+                try {
+                    fileOutputStream.write(b, off, len);
+                } catch (IOException e) {
+                    throw E.ioException(e);
+                }
+            }
+            written += len;
+        }
+
+        @Override
+        public void flush() throws IOException {
+            if (exceedThreshold) {
+                fileOutputStream.flush();
+            }
+        }
+
+        @Override
+        public void close() throws IOException {
+            if (exceedThreshold) {
+                IO.close(fileOutputStream);
+            }
+        }
+
+        byte[] buf() {
+            return this.buf;
+        }
+
+        private boolean checkThresholding(int bytes) {
+            if (!exceedThreshold && (written + bytes > threshold)) {
+                exceedThreshold = true;
+                fileOutputStream = createFileOutputStream();
+                try {
+                    fileOutputStream.write(buf, 0, written);
+                } catch (IOException e) {
+                    throw E.ioException(e);
+                }
+            }
+            return exceedThreshold;
+        }
+
+        private OutputStream createFileOutputStream() {
+            File dir = file.getParentFile();
+            if (!dir.exists() && !dir.mkdirs()) {
+                throw E.ioException("Cannot create dir: " + dir.getAbsolutePath());
+            }
+            return IO.buffered(IO.os(file));
         }
     }
+
 }
