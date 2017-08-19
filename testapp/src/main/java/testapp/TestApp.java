@@ -34,4 +34,5 @@ public class TestApp extends AppConfigurator<TestApp> {
         System.setProperty("act.i18n", "true");
         RunApp.start("ACTEST", "0.1", TestApp.class);
     }
+
 }
