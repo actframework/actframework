@@ -2474,23 +2474,23 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         }
     }
 
-    private Boolean uploadFileDownload;
-    protected T enableUploadFileDownload(boolean b) {
-        uploadFileDownload = b;
+    private Integer uploadInMemoryCacheThreshold;
+    protected T uploadInMemoryCacheThreshold(int l) {
+        uploadInMemoryCacheThreshold = l;
         return me();
     }
-    public boolean allowDownloadUploadFile() {
-        if (null == uploadFileDownload) {
-            uploadFileDownload = get(UPLOAD_FILE_DOWNLOAD);
-            if (null == uploadFileDownload) {
-                uploadFileDownload = false;
+    public int uploadInMemoryCacheThreshold() {
+        if (null == uploadInMemoryCacheThreshold) {
+            uploadInMemoryCacheThreshold = getInteger(UPLOAD_IN_MEMORY_CACHE_THRESHOLD);
+            if (null == uploadInMemoryCacheThreshold) {
+                uploadInMemoryCacheThreshold = 1024 * 10;
             }
         }
-        return uploadFileDownload;
+        return uploadInMemoryCacheThreshold;
     }
-    private void _mergeUploadFileDownload(AppConfig config) {
-        if (!hasConfiguration(UPLOAD_FILE_DOWNLOAD)) {
-            uploadFileDownload = config.uploadFileDownload;
+    private void _mergeUploadInMemoryCacheThreshold(AppConfig config) {
+        if (!hasConfiguration(UPLOAD_IN_MEMORY_CACHE_THRESHOLD)) {
+            uploadInMemoryCacheThreshold = config.uploadInMemoryCacheThreshold;
         }
     }
 
@@ -2669,7 +2669,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         _mergeSecureTicketCodec(conf);
         _mergeCacheServiceProvider(conf);
         _mergeUnknownHttpMethodHandler(conf);
-        _mergeUploadFileDownload(conf);
+        _mergeUploadInMemoryCacheThreshold(conf);
         _mergeSslSupport(conf);
         _mergeWsTicketKey(conf);
 

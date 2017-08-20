@@ -182,6 +182,9 @@ public class JsonDTOClassManager extends AppServiceBase<JsonDTOClassManager> {
             if (null != dbBindName) {
                 beanSpecs.add(BeanSpec.of(String.class, new Annotation[0], dbBindName, injector));
             } else {
+                if (ParamValueLoaderService.noBindOrProvided(spec, injector)) {
+                    return;
+                }
                 beanSpecs.add(spec);
             }
         }
