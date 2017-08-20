@@ -3,6 +3,8 @@
 [![Join the chat at https://gitter.im/actframework/actframework](https://badges.gitter.im/actframework/actframework.svg)](https://gitter.im/actframework/actframework?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) [![Lecense](https://img.shields.io/badge/license-Apache%202-4EB1BA.svg)](http://www.apache.org/licenses/LICENSE-2.0.html) [![Maven Central](https://img.shields.io/maven-central/v/org.actframework/act.svg)](http://search.maven.org/#search%7Cgav%7C1%7Cg%3A%22org.actframework%22%20AND%20a%3A%22act%22)
 
 ## News
+* 20/Aug/2017 ACT 1.4.9 released - Catch up bug fixes of ACT 1.3.12-LTS
+* 20/Aug/2017 ACT [1.3.12-LTS released](https://github.com/actframework/actframework/milestone/25?closed=1)
 * 16/Aug/2017 ACT 1.4.8 released - Catch up bug fixes of ACT 1.3.11-LTS
 * 16/Aug/2017 [ACT 1.3.11-LTS released](https://github.com/actframework/actframework/milestone/24?closed=1)
 * 08/Aug/2017 ACT 1.4.7 released - Catch up bug fixes of ACT 1.3.10-LTS
