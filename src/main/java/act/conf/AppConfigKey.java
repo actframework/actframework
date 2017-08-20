@@ -821,13 +821,15 @@ public enum AppConfigKey implements ConfigKey {
     TEMPLATE_HOME("template.home"),
 
     /**
-     * `upload.file.download.enabled`
+     * `upload.in_memory.threshold`
      *
-     * Turn on/off downloader for uploading files
+     * If file upload content length is less than this configuration then
+     * the file will not get written into disk, instead it will get cached
+     * into a in memory byte array
      *
-     * Default value: `false`
+     * Default value: `1024 * 10`
      */
-    UPLOAD_FILE_DOWNLOAD("upload.file.download.enabled"),
+    UPLOAD_IN_MEMORY_CACHE_THRESHOLD("upload.in_memory.threshold"),
 
     /**
      * `act.url.context` specifies the app URL context.

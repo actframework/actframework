@@ -95,7 +95,16 @@ public abstract class Config<E extends ConfigKey> extends DestroyableBase {
         if (retVal instanceof Number) {
             return ((Number) retVal).intValue();
         }
-        return Integer.parseInt(S.string(retVal));
+        String s = S.string(retVal);
+        if (s.contains("*")) {
+            List<String> sl = S.fastSplit(s, "*");
+            int n = 1;
+            for (String sn : sl) {
+                n *= Integer.parseInt(sn.trim());
+            }
+            return n;
+        }
+        return Integer.parseInt(s);
     }
 
     boolean hasConfiguration(ConfigKey key) {

@@ -275,7 +275,11 @@ public class StaticResourceGetter extends FastRequestHandler {
 
     @Override
     public String toString() {
-        return null != baseUrl ? baseUrl.toString() : base + "(not found)";
+        S.Buffer buf = S.buffer().append("resource: ").append(base);
+        if (null == baseUrl) {
+            buf.append("(not found)");
+        }
+        return buf.toString();
     }
 
     /*

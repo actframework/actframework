@@ -6,7 +6,6 @@ import org.osgl.$;
 import org.osgl.exception.UnexpectedException;
 import org.osgl.exception.UnexpectedNoSuchMethodException;
 import org.osgl.inject.InjectException;
-import org.osgl.inject.Injector;
 import org.osgl.mvc.annotation.GetAction;
 import testapp.sbean.*;
 

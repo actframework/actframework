@@ -37,6 +37,7 @@ import act.conf.AppConfigKey;
 import act.controller.bytecode.ControllerByteCodeScanner;
 import act.data.DataPropertyRepository;
 import act.data.JodaDateTimeCodec;
+import act.util.UploadFileStorageService;
 import act.data.util.ActPropertyHandlerFactory;
 import act.event.AppEventListenerBase;
 import act.event.EventBus;
@@ -76,7 +77,6 @@ import org.osgl.logging.LogManager;
 import org.osgl.logging.Logger;
 import org.osgl.mvc.MvcConfig;
 import org.osgl.mvc.result.Result;
-import org.osgl.storage.IStorageService;
 import org.osgl.util.*;
 import org.rythmengine.utils.I18N;
 
@@ -136,7 +136,7 @@ public class App extends DestroyableBase {
     private BinderManager binderManager;
     private AppInterceptorManager interceptorManager;
     private DependencyInjector<?> dependencyInjector;
-    private IStorageService uploadFileStorageService;
+    private UploadFileStorageService uploadFileStorageService;
     private AppServiceRegistry appServiceRegistry;
     private Map<String, Daemon> daemonRegistry;
     private WebSocketConnectionManager webSocketConnectionManager;
@@ -810,7 +810,7 @@ public class App extends DestroyableBase {
         return (DI) dependencyInjector;
     }
 
-    public IStorageService uploadFileStorageService() {
+    public UploadFileStorageService uploadFileStorageService() {
         return uploadFileStorageService;
     }
 
@@ -1242,10 +1242,10 @@ public class App extends DestroyableBase {
 
     private void loadBuiltInRoutes() {
         router().addMapping(H.Method.GET, "/asset/", new StaticResourceGetter("asset"), RouteSource.BUILD_IN);
-        router().addMapping(H.Method.GET, "/asset/act/", new StaticResourceGetter("asset/act"), RouteSource.BUILD_IN);
-        if (config().allowDownloadUploadFile()) {
-            router().addMapping(H.Method.GET, "/~upload/{path}", new UploadFileStorageService.UploadFileGetter(), RouteSource.BUILD_IN);
-        }
+        StaticResourceGetter actAssets = new StaticResourceGetter("asset/~/act");
+        router().addMapping(H.Method.GET, "/~/asset/", actAssets, RouteSource.BUILD_IN);
+        // TODO drop the following routes in 2.0
+        router().addMapping(H.Method.GET, "/asset/act/", actAssets, RouteSource.BUILD_IN);
         router().addContext("act.", "/~");
         if (config.cliOverHttp()) {
             Router router = router(AppConfig.PORT_CLI_OVER_HTTP);
