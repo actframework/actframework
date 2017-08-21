@@ -51,9 +51,9 @@ public class RythmView extends View {
 
     public static final String ID = "rythm";
 
-    ConcurrentMap<App, RythmEngine> engines = new ConcurrentHashMap<App, RythmEngine>();
-    ConcurrentMap<String, Template> templates = new ConcurrentHashMap<String, Template>();
-    ConcurrentMap<String, String> missings = new ConcurrentHashMap<String, String>();
+    ConcurrentMap<App, RythmEngine> engines = new ConcurrentHashMap<>();
+    ConcurrentMap<String, Template> templates = new ConcurrentHashMap<>();
+    ConcurrentMap<String, String> missings = new ConcurrentHashMap<>();
 
     private boolean isDev;
 

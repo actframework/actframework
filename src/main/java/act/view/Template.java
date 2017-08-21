@@ -23,11 +23,30 @@ package act.view;
 import act.app.ActionContext;
 import act.mail.MailerContext;
 
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
 /**
  * A Template represents a resource that can be merged with {@link ActionContext application context}
  * and output the result
  */
 public interface Template {
+
+    /**
+     * Notify framework not to cache template for this handler method.
+     *
+     * If developer can change template path in the logic of handler method,
+     * caching template could cause trouble (i.e. it uses the template of first run).
+     * In this case developer must annotate the handler method with `@Template.NoCache`
+     * annotation
+     */
+    @Retention(RetentionPolicy.RUNTIME)
+    @Target(ElementType.METHOD)
+    @interface NoCache {
+    }
+
     void merge(ActionContext context);
 
     String render(ActionContext context);

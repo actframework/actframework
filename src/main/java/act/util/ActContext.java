@@ -148,6 +148,7 @@ public interface ActContext<CTX_TYPE extends ActContext> extends ParamValueProvi
         private Locale locale;
         private int fieldOutputVarCount;
         private S.Buffer strBuf;
+        private boolean noTemplateCache;
 
         // (violation.propertyPath, violation)
         private Map<String, ConstraintViolation> violations;
@@ -241,9 +242,16 @@ public interface ActContext<CTX_TYPE extends ActContext> extends ParamValueProvi
             return template;
         }
 
+        public CTX disableTemplateCaching() {
+            this.noTemplateCache = true;
+            return me();
+        }
+
         @Override
         public CTX cacheTemplate(Template template) {
-            this.template = template;
+            if (!noTemplateCache) {
+                this.template = template;
+            }
             return me();
         }
 
