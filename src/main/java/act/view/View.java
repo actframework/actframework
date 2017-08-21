@@ -68,6 +68,7 @@ public abstract class View extends AppServicePlugin {
      * @param context      the view context
      * @return the template instance or {@code null} if template not found
      */
+    // TODO it shall not need context to load template, revise this interface to remove it
     protected abstract Template loadTemplate(String resourcePath, ActContext context);
 
     /**

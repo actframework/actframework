@@ -99,7 +99,7 @@ public class FastJson37Issue {
 
         Map<String, Double> floatOverflowMap = new HashMap<>();
         double floatOverflow = Float.MAX_VALUE;
-        floatOverflowMap.put("va", floatOverflow + 1);
+        floatOverflowMap.put("v", floatOverflow + floatOverflow);
         String sFloatOverflow = JSON.toJSONString(floatOverflowMap);
         System.out.println("prepare to parse overflow float val: " + sIntOverflow);
         FloatVal floatVal = JSON.parseObject(sFloatOverflow, FloatVal.class);

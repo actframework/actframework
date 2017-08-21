@@ -84,7 +84,13 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
     private MethodAccess methodAccess;
     private M handler;
     private int handlerIndex;
-    private ConcurrentMap<H.Format, Boolean> templateCache = new ConcurrentHashMap<>();
+    private ConcurrentMap<H.Format, Boolean> templateAvailabilityCache = new ConcurrentHashMap<>();
+    private $.Visitor<H.Format> templateChangeListener = new $.Visitor<H.Format>() {
+        @Override
+        public void visit(H.Format format) throws Osgl.Break {
+            templateAvailabilityCache.remove(format);
+        }
+    };
     protected Method method; //
     private ParamValueLoaderService paramLoaderService;
     private JsonDTOClassManager jsonDTOClassManager;
@@ -111,6 +117,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
     private Map<Integer, String> outputParams;
     private boolean hasOutputVar;
     private String templateContext;
+    private boolean noTemplateCache;
     private MissingAuthenticationHandler missingAuthenticationHandler;
     private MissingAuthenticationHandler csrfFailureHandler;
 
@@ -143,6 +150,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
 
         sessionFree = method.isAnnotationPresent(SessionFree.class);
         express = method.isAnnotationPresent(NonBlock.class);
+        noTemplateCache = method.isAnnotationPresent(Template.NoCache.class);
 
         paramCount = handler.paramCount();
         paramSpecs = jsonDTOClassManager.beanSpecs(controllerClass, method);
@@ -232,6 +240,11 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
             return ActNotFound.get();
         }
 
+        context.templateChangeListener(templateChangeListener);
+        if (noTemplateCache) {
+            context.disableTemplateCaching();
+        }
+
         String urlContext = this.controller.contextPath();
         if (S.notBlank(urlContext)) {
             context.urlContext(urlContext);
@@ -244,17 +257,16 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         preventDoubleSubmission(context);
         processForceResponse(context);
         ensureJsonDTOGenerated(context);
-        Object controller = controllerInstance(context);
 
+        Object controller = controllerInstance(context);
 
         /*
          * We will send back response immediately when param validation
-         * failed in the following cases:
-         * a) this is a data endpoint and accept JSON data
-         * b) there is no template associated with the endpoint
-         *   TODO: fix me - if method use arbitrary templates, then this check will fail
+         * failed in either of the following cases:
+         * 1) this is an ajax call
+         * 2) the accept content type is **NOT** html
          */
-        boolean failOnViolation = context.acceptJson() || checkTemplate(context);
+        boolean failOnViolation = context.isAjax() || context.accept() != H.Format.HTML;
 
         Object[] params = params(controller, context);
 
@@ -266,19 +278,9 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         try {
             return invoke(handler, context, controller, params);
         } finally {
-
             if (hasOutputVar) {
                 fillOutputVariables(controller, params, context);
             }
-
-            if (null == context.hasTemplate()) {
-                // template path has been reset by app logic
-                templateCache.remove(context.accept());
-            }
-            // ensure template is loaded as
-            // request handler might change the
-            // template path
-            checkTemplate(context);
         }
     }
 
@@ -630,15 +632,18 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
             //we don't check template on interceptors
             return false;
         }
+        H.Format fmt = context.accept();
+        if (noTemplateCache || Act.isDev()) {
+            return probeTemplate(fmt, context);
+        }
         Boolean hasTemplate = context.hasTemplate();
         if (null != hasTemplate) {
             return hasTemplate;
         }
-        H.Format fmt = context.accept();
-        hasTemplate = templateCache.get(fmt);
-        if (null == hasTemplate || Act.isDev()) {
+        hasTemplate = templateAvailabilityCache.get(fmt);
+        if (null == hasTemplate) {
             hasTemplate = probeTemplate(fmt, context);
-            templateCache.putIfAbsent(fmt, hasTemplate);
+            templateAvailabilityCache.putIfAbsent(fmt, hasTemplate);
         }
         context.setHasTemplate(hasTemplate);
         return hasTemplate;

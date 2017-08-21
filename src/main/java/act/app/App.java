@@ -1242,10 +1242,7 @@ public class App extends DestroyableBase {
 
     private void loadBuiltInRoutes() {
         router().addMapping(H.Method.GET, "/asset/", new StaticResourceGetter("asset"), RouteSource.BUILD_IN);
-        StaticResourceGetter actAssets = new StaticResourceGetter("asset/~/act");
-        router().addMapping(H.Method.GET, "/~/asset/", actAssets, RouteSource.BUILD_IN);
-        // TODO drop the following routes in 2.0
-        router().addMapping(H.Method.GET, "/asset/act/", actAssets, RouteSource.BUILD_IN);
+        router().addMapping(H.Method.GET, "/~/asset/", new StaticResourceGetter("asset/~act"), RouteSource.BUILD_IN);
         router().addContext("act.", "/~");
         if (config.cliOverHttp()) {
             Router router = router(AppConfig.PORT_CLI_OVER_HTTP);

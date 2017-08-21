@@ -94,6 +94,7 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
     private boolean disableCors;
     private boolean disableCsrf;
     private Boolean hasTemplate;
+    private $.Visitor<H.Format> templateChangeListener;
     private H.Status forceResponseStatus;
     private boolean cacheEnabled;
     private MissingAuthenticationHandler forceMissingAuthenticationHandler;
@@ -228,7 +229,15 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
     @Override
     public ActionContext templatePath(String templatePath) {
         hasTemplate = null;
+        if (null != templateChangeListener) {
+            templateChangeListener.visit(accept());
+        }
         return super.templatePath(templatePath);
+    }
+
+    public ActionContext templateChangeListener($.Visitor<H.Format> listener) {
+        this.templateChangeListener = $.notNull(listener);
+        return this;
     }
 
     public RequestHandler handler() {

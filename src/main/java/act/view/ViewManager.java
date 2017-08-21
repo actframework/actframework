@@ -108,12 +108,12 @@ public class ViewManager extends DestroyableBase {
     }
 
     public Template load(ActContext context) {
-        AppConfig config = context.config();
         Template cached = context.cachedTemplate();
         if (null != cached) {
             return cached;
         }
 
+        AppConfig config = context.config();
         TemplatePathResolver resolver = config.templatePathResolver();
 
         String path = resolver.resolve(context);
