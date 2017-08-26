@@ -46,7 +46,7 @@ public abstract class HandlerMethodMetaInfo<T extends HandlerMethodMetaInfo> ext
     private ActContextInjection actContextInjection;
     private ControllerClassMetaInfo clsInfo;
     private C.List<HandlerParamMetaInfo> params = C.newList();
-    private transient String fullName;
+    private volatile String fullName;
     private ReturnTypeInfo returnType;
     private PropertySpec.MetaInfo propertySpec;
     private boolean disableJsonCircularRefDetect = false;
