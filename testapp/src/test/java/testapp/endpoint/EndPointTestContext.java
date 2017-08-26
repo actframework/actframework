@@ -1,6 +1,7 @@
 package testapp.endpoint;
 
 import org.osgl.$;
+import org.osgl.http.H;
 import org.osgl.util.C;
 import org.osgl.util.E;
 import org.osgl.util.S;
@@ -30,8 +31,16 @@ public class EndPointTestContext {
             @Override
             public void verify(EndpointTester tester, EndPointTestContext context) throws Exception {
                 tester.setup();
-                Map<String, Object> params = tester.prepareJsonData(context.params);
-                tester.url(context.url).postJSON(params);
+                Object payload = context.jsonBody;
+                if (null != payload) {
+                    tester.url(context.url).postJSON(payload);
+                } else {
+                    Map<String, Object> params = tester.prepareJsonData(context.params);
+                    tester.url(context.url).postJSON(params);
+                }
+                if (null != context.accept) {
+                    tester.reqBuilder.accept(context.accept);
+                }
                 tester.bodyEq(context.expected, context.expected2, context.expected3);
             }
         };
@@ -49,6 +58,8 @@ public class EndPointTestContext {
     // plus the Set of big decimals
     private String expected3;
     private List<$.T2<String, Object>> params;
+    private Object jsonBody;
+    private H.Format accept;
     private RequestMethod requestMethod;
 
     public EndPointTestContext() {}
@@ -67,6 +78,16 @@ public class EndPointTestContext {
         this.expected = expected;
         this.expected2 = expected2;
         this.expected3 = expected3;
+        return this;
+    }
+
+    public EndPointTestContext jsonBody(Object body) {
+        this.jsonBody = body;
+        return this;
+    }
+
+    public EndPointTestContext accept(H.Format format){
+        this.accept = format;
         return this;
     }
 

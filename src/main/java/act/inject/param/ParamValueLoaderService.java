@@ -781,13 +781,20 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
         return bindName(beanSpec.allAnnotations(), beanSpec.name());
     }
 
+    public static boolean isThrowable(BeanSpec beanSpec) {
+        return beanSpec.isInstanceOf(Throwable.class);
+    }
+
     public static boolean provided(BeanSpec beanSpec, DependencyInjector<?> injector) {
+        if (isThrowable(beanSpec)) {
+            return true;
+        }
         GenieInjector genieInjector = $.cast(injector);
         return genieInjector.isProvided(beanSpec);
     }
 
-    public static boolean noBindOrProvided(BeanSpec beanSpec, DependencyInjector<?> injector) {
-        return null != beanSpec.getAnnotation(NoBind.class) || provided(beanSpec, injector) || beanSpec.isInstanceOf(Throwable.class);
+    public static boolean providedButNotDbBind(BeanSpec beanSpec, DependencyInjector<?> injector) {
+        return null != beanSpec.getAnnotation(NoBind.class) || provided(beanSpec, injector);
     }
 
 }
