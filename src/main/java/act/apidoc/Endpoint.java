@@ -310,13 +310,18 @@ public class Endpoint implements Comparable<Endpoint> {
         }
     }
 
+    // we don't need fields declared in `@NoBind` or `@Stateless` classes
+    private static final $.Predicate<Field> FIELD_PREDICATE = new $.Predicate<Field>() {
+        @Override
+        public boolean test(Field field) {
+            return !ParamValueLoaderService.shouldWaive(field);
+        }
+    };
+
     private void exploreParamInfo(Class<?> controller) {
         DependencyInjector injector = Act.injector();
-        List<Field> fields = $.fieldsOf(controller);
+        List<Field> fields = $.fieldsOf(controller, FIELD_PREDICATE);
         for (Field field : fields) {
-            if (ParamValueLoaderService.shouldWaive(field)) {
-                continue;
-            }
             Type type = field.getGenericType();
             Annotation[] annos = field.getAnnotations();
             ParamInfo info = paramInfo(type, annos, injector, field.getName());

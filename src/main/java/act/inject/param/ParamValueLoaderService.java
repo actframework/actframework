@@ -34,8 +34,7 @@ import act.inject.genie.DependentScope;
 import act.inject.genie.GenieInjector;
 import act.inject.genie.RequestScope;
 import act.inject.genie.SessionScope;
-import act.util.ActContext;
-import act.util.DestroyableBase;
+import act.util.*;
 import org.osgl.$;
 import org.osgl.exception.UnexpectedException;
 import org.osgl.inject.BeanSpec;
@@ -57,6 +56,7 @@ import javax.enterprise.context.SessionScoped;
 import javax.enterprise.inject.New;
 import javax.inject.Named;
 import javax.inject.Provider;
+import javax.inject.Singleton;
 import javax.validation.*;
 import javax.validation.executable.ExecutableValidator;
 import java.lang.annotation.Annotation;
@@ -247,9 +247,10 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
                 || Modifier.isTransient(modifiers)
                 || noBind(field.getDeclaringClass())
                 || field.isAnnotationPresent(NoBind.class)
+                || field.isAnnotationPresent(Stateless.class)
+                || field.isAnnotationPresent(Global.class)
                 || fieldBlackList.contains(field.getName())
-                || Object.class.equals(field.getDeclaringClass())
-                || field.getDeclaringClass().isAnnotationPresent(NoBind.class);
+                || Object.class.equals(field.getDeclaringClass());
     }
 
     private static ConcurrentMap<Class, Boolean> noBindCache = new ConcurrentHashMap<>();
@@ -259,16 +260,13 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
         if (null != b) {
             return b;
         }
-        Annotation[] aa = c.getDeclaredAnnotations();
-        if (null != aa) {
-            for (Annotation a: aa) {
-                if (a.annotationType() == NoBind.class) {
-                    noBindCache.putIfAbsent(c, true);
-                    return true;
-                }
-            }
+        if (SingletonBase.class.isAssignableFrom(c)
+                || c.isAnnotationPresent(NoBind.class)
+                || c.isAnnotationPresent(Stateless.class)
+                || c.isAnnotationPresent(Singleton.class)) {
+            noBindCache.putIfAbsent(c, true);
+            return true;
         }
-        noBindCache.putIfAbsent(c, false);
         return false;
     }
 
