@@ -460,7 +460,17 @@ public class Endpoint implements Comparable<Endpoint> {
                     return BigInteger.valueOf(1);
                 } else if (ISObject.class.isAssignableFrom(type)) {
                     return null;
-                } else if (Collection.class.isAssignableFrom(type)) {
+                } else if (Map.class.isAssignableFrom(type)) {
+                    Map map = $.cast(Act.getInstance(type));
+                    Type keyType = spec.typeParams().get(0);
+                    Type valType = spec.typeParams().get(1);
+                    map.put(
+                            generateSampleData(BeanSpec.of(keyType, null, Act.injector()), typeChain),
+                            generateSampleData(BeanSpec.of(valType, null, Act.injector()), typeChain));
+                    map.put(
+                            generateSampleData(BeanSpec.of(keyType, null, Act.injector()), typeChain),
+                            generateSampleData(BeanSpec.of(valType, null, Act.injector()), typeChain));
+                } else if (Iterable.class.isAssignableFrom(type)) {
                     Collection col = $.cast(Act.getInstance(type));
                     Type componentType = spec.typeParams().get(0);
                     col.add(generateSampleData(BeanSpec.of(componentType, null, Act.injector()), typeChain));
