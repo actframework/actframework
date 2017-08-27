@@ -52,6 +52,16 @@ import java.util.Map;
 public enum AppConfigKey implements ConfigKey {
 
     /**
+     * `act.api_doc.enabled` turns on/off API doc feature
+     *
+     * When API doc is enabled, developer can access the app's API document
+     * through `GET /~/apidoc`
+     *
+     * Default value: `true` when app running in `dev` mode, or `false` otherwise
+     */
+    API_DOC_EABLED("api_doc.enabled"),
+
+    /**
      * {@code act.basic_authentication.enabled} turn on/off Basic Authentication
      * in Act application.
      *
