@@ -33,16 +33,16 @@
             </table>
         </div>
         <!-- eof param list -->
-        <div class="query-sample" if="{ ('GET' === method) && (params.length > 0) }">
-            <h4>Query sample</h4>
+        <div class="query-sample" if="{ sampleQuery }">
+            <h4>Query example</h4>
             <pre class="code">{ sampleQuery }</pre>
         </div>
-        <div class="post-sample" if="{ ('GET' != method) && (params.length > 0) }">
-            <h4>Post sample</h4>
+        <div class="post-sample" if="{ sampleJsonPost }">
+            <h4>Json body example</h4>
             <pre class="code">{ sampleJsonPost }</pre>
         </div>
         <div class="return-sample" if="{ returnSample }">
-            <h4>Return sample</h4>
+            <h4>Return value sample</h4>
             <pre class="code">{ returnSample }</pre>
         </div>
     </div>

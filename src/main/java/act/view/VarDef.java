@@ -104,10 +104,11 @@ public abstract class VarDef {
     }
 
     private static String toString(BeanSpec spec) {
-        if (S.blank(spec.name())) {
-            return spec.toString();
+        if (spec.typeParams().isEmpty()) {
+            return spec.rawType().getName();
+        } else {
+            return spec.type().toString();
         }
-        return BeanSpec.of(spec.type(), spec.allAnnotations(), null, spec.injector()).toString();
     }
 
 
