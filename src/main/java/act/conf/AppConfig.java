@@ -145,6 +145,30 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         return AppConfigKey.valueOfIgnoreCase(s);
     }
 
+    private Boolean apiDoc;
+
+    protected T enableApiDoc(boolean b) {
+        this.apiDoc = b;
+        return me();
+    }
+
+    public boolean apiDocEnabled() {
+        if (null == apiDoc) {
+            Boolean B = get(API_DOC_EABLED);
+            if (null == B) {
+                B = Act.isDev();
+            }
+            this.apiDoc = B;
+        }
+        return this.apiDoc;
+    }
+
+    private void _mergeApiDocEnabled(AppConfig conf) {
+        if (!hasConfiguration(API_DOC_EABLED)) {
+            this.apiDoc = conf.apiDoc;
+        }
+    }
+
     private Boolean basicAuth;
 
     protected T enableBasicAuthentication(boolean b) {
@@ -2580,6 +2604,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
             return;
         }
         mergeTracker.add(conf);
+        _mergeApiDocEnabled(conf);
         _mergeBasicAuthentication(conf);
         _mergeCacheName(conf);
         _mergeCors(conf);

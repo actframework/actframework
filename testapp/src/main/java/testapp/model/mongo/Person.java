@@ -30,7 +30,7 @@ public class Person extends MorphiaModel<Person> {
     }
 
     public String getPhotoUrl() {
-        return photo.getUrl();
+        return null == photo ? null : photo.getUrl();
     }
 
     public void setPhoto(SObject photo) {

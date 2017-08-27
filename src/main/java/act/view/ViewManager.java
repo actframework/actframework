@@ -41,9 +41,9 @@ import static act.Destroyable.Util.tryDestroyAll;
 public class ViewManager extends DestroyableBase {
 
     private C.List<View> viewList = C.newList();
-    private C.List<ActionViewVarDef> implicitActionViewVariables = C.newList();
-    private C.List<MailerViewVarDef> implicitMailerViewVariables = C.newList();
-    private Set<VarDef> appDefined = new HashSet<>();
+    private Map<String, ActionViewVarDef> implicitActionViewVariables = new HashMap<>();
+    private Map<String, MailerViewVarDef> implicitMailerViewVariables = new HashMap<>();
+    private Map<String, VarDef> appDefined = new HashMap<>();
     private Map<String, View> preferredViews = new HashMap<String, View>();
     private boolean multiViews = false;
 
@@ -75,19 +75,21 @@ public class ViewManager extends DestroyableBase {
         _register(var, implicitMailerViewVariables, true);
     }
 
-    private <T extends VarDef> void _register(T var, List<T> list, boolean fromApp) {
-        if (list.contains(var)) {
+    private <T extends VarDef> void _register(T var, Map<String, T> map, boolean fromApp) {
+        if (map.containsKey(var.name())) {
             throw new UnexpectedException("Implicit variable[%s] has already been registered", var.name());
         }
-        list.add(var);
+        map.put(var.name(), var);
         if (fromApp) {
-            appDefined.add(var);
+            appDefined.put(var.name(), var);
         }
     }
 
     public void clearAppDefinedVars() {
-        implicitActionViewVariables.removeAll(appDefined);
-        implicitMailerViewVariables.removeAll(appDefined);
+        for (String name : appDefined.keySet()) {
+            implicitActionViewVariables.remove(name);
+            implicitMailerViewVariables.remove(name);
+        }
         appDefined.clear();
     }
 
@@ -173,11 +175,11 @@ public class ViewManager extends DestroyableBase {
 
 
     public List<ActionViewVarDef> implicitActionViewVariables() {
-        return C.list(implicitActionViewVariables);
+        return C.list(implicitActionViewVariables.values());
     }
 
     public List<MailerViewVarDef> implicitMailerViewVariables() {
-        return C.list(implicitMailerViewVariables);
+        return C.list(implicitMailerViewVariables.values());
     }
 
     public void reset() {

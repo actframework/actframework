@@ -29,7 +29,7 @@ public class GHIssue353 extends EndpointTester {
         url("/gh/353").accept(H.Format.JSON).postJSON(user);
         String s = resp().body().string();
         User user2 = JSON.parseObject(s, User.class);
-        eq(user, user2);
+        eq(user.name, user2.name);
     }
 
     @Test

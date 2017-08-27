@@ -31,8 +31,11 @@ import act.controller.Controller;
 import act.handler.RequestHandler;
 import act.handler.RequestHandlerBase;
 import act.handler.builtin.StaticResourceGetter;
+import act.handler.builtin.controller.RequestHandlerProxy;
 import act.route.Router;
 import org.osgl.http.H;
+import org.osgl.logging.LogManager;
+import org.osgl.logging.Logger;
 
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -42,6 +45,8 @@ import java.util.TreeSet;
  */
 public class ApiManager extends AppServiceBase<ApiManager> {
 
+    static final Logger LOGGER = LogManager.get(ApiManager.class);
+
     /**
      * The {@link Endpoint} defined in the system
      */
@@ -50,6 +55,9 @@ public class ApiManager extends AppServiceBase<ApiManager> {
 
     public ApiManager(final App app) {
         super(app);
+        if (!app.config().apiDocEnabled()) {
+            return;
+        }
         app.jobManager().alongWith(AppEventId.POST_START, "compile-api-book", new Runnable() {
             @Override
             public void run() {
@@ -81,7 +89,9 @@ public class ApiManager extends AppServiceBase<ApiManager> {
         router.accept(new Router.Visitor() {
             @Override
             public void visit(H.Method method, String path, RequestHandler handler) {
-                endpoints.add(new Endpoint(portNumber, method, path, handler));
+                if ((handler instanceof RequestHandlerProxy)) {
+                    endpoints.add(new Endpoint(portNumber, method, path, handler));
+                }
             }
         });
     }
