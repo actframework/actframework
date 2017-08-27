@@ -805,12 +805,17 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
             return false;
         }
         Annotation[] aa = beanSpec.allAnnotations();
-        for (Annotation a : aa) {
+        return !hasDbBind(aa);
+    }
+
+    // DbBind is special: it's class loader is AppClassLoader
+    public static boolean hasDbBind(Annotation[] annotations) {
+        for (Annotation a : annotations) {
             if (a.annotationType().getName().equals(DbBind.class.getName())) {
-                return false;
+                return true;
             }
         }
-        return true;
+        return false;
     }
 
 }
