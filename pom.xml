@@ -19,7 +19,10 @@
 *            version history
 ********************************************
 1.3.14
+* #354 `ProvidesImplicitTemplateVariable` generates bad rythm template source code
 * #353 The rest parameters is always `null` after `@DbBind` annotated parameter
+* #351 Support API document generation
+* #350 Improve `Catch` interceptor API
 
 1.3.13
 * #347 Add annotation to allow developer specify a handler method's template shall not be cached
