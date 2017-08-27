@@ -24,7 +24,6 @@ import act.Act;
 import act.app.DevModeClassLoader;
 import act.app.Source;
 import act.app.data.StringValueResolverManager;
-import act.db.DbBind;
 import act.handler.RequestHandler;
 import act.handler.builtin.controller.RequestHandlerProxy;
 import act.handler.builtin.controller.impl.ReflectedHandlerInvoker;
@@ -40,6 +39,7 @@ import org.osgl.logging.Logger;
 import org.osgl.mvc.result.Result;
 import org.osgl.storage.ISObject;
 import org.osgl.util.C;
+import org.osgl.util.Generics;
 import org.osgl.util.N;
 import org.osgl.util.StringValueResolver;
 import org.rythmengine.utils.S;
@@ -339,10 +339,10 @@ public class Endpoint implements Comparable<Endpoint> {
         if (ParamValueLoaderService.providedButNotDbBind(spec, injector)) {
             return null;
         }
-        if (spec.hasAnnotation(DbBind.class)) {
+        if (ParamValueLoaderService.hasDbBind(spec.allAnnotations())) {
             return new ParamInfo(name, BeanSpec.of(String.class, Act.injector()), name + " id");
         }
-        String description = spec.toString();
+        String description = spec.rawType().getSimpleName();
         Description descAnno = spec.getAnnotation(Description.class);
         if (null != descAnno) {
             description = descAnno.value();
@@ -462,19 +462,36 @@ public class Endpoint implements Comparable<Endpoint> {
                     return null;
                 } else if (Map.class.isAssignableFrom(type)) {
                     Map map = $.cast(Act.getInstance(type));
-                    Type keyType = spec.typeParams().get(0);
-                    Type valType = spec.typeParams().get(1);
-                    map.put(
-                            generateSampleData(BeanSpec.of(keyType, null, Act.injector()), typeChain),
-                            generateSampleData(BeanSpec.of(valType, null, Act.injector()), typeChain));
-                    map.put(
-                            generateSampleData(BeanSpec.of(keyType, null, Act.injector()), typeChain),
-                            generateSampleData(BeanSpec.of(valType, null, Act.injector()), typeChain));
+                    List<Type> typeParams = spec.typeParams();
+                    if (typeParams.isEmpty()) {
+                        typeParams = Generics.typeParamImplementations(type, Map.class);
+                    }
+                    if (typeParams.size() < 2) {
+                        map.put(S.random(), S.random());
+                        map.put(S.random(), S.random());
+                    } else {
+                        Type keyType = typeParams.get(0);
+                        Type valType = typeParams.get(1);
+                        map.put(
+                                generateSampleData(BeanSpec.of(keyType, null, Act.injector()), typeChain),
+                                generateSampleData(BeanSpec.of(valType, null, Act.injector()), typeChain));
+                        map.put(
+                                generateSampleData(BeanSpec.of(keyType, null, Act.injector()), typeChain),
+                                generateSampleData(BeanSpec.of(valType, null, Act.injector()), typeChain));
+                    }
                 } else if (Iterable.class.isAssignableFrom(type)) {
                     Collection col = $.cast(Act.getInstance(type));
-                    Type componentType = spec.typeParams().get(0);
-                    col.add(generateSampleData(BeanSpec.of(componentType, null, Act.injector()), typeChain));
-                    col.add(generateSampleData(BeanSpec.of(componentType, null, Act.injector()), typeChain));
+                    List<Type> typeParams = spec.typeParams();
+                    if (typeParams.isEmpty()) {
+                        typeParams = Generics.typeParamImplementations(type, Map.class);
+                    }
+                    if (typeParams.isEmpty()) {
+                        col.add(S.random());
+                    } else {
+                        Type componentType = typeParams.get(0);
+                        col.add(generateSampleData(BeanSpec.of(componentType, null, Act.injector()), typeChain));
+                        col.add(generateSampleData(BeanSpec.of(componentType, null, Act.injector()), typeChain));
+                    }
                     return col;
                 }
 
