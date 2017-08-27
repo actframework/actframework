@@ -16,7 +16,7 @@
                 <tr>
                     <th>name</th>
                     <th>type</th>
-                    <th if={ defaultValue }>default</th>
+                    <th>default</th>
                     <th>description</th>
                 </tr>
                 </thead>
@@ -24,7 +24,10 @@
                 <tr each={ params }>
                     <td>{ name }</td>
                     <td>{ type }</td>
-                    <td if={ defaultValue }>{ defaultValue }</td>
+                    <td>
+                        <span if={ defaultValue }>{ defaultValue }</span>
+                        <span if={ !defaultValue }>N/A</span>
+                    </td>
                     <td>{ description }</td>
                 </tr>
                 </tbody>
