@@ -44,7 +44,6 @@ public abstract class VarDef {
      */
     protected VarDef(String name, Class<?> type) {
         E.illegalArgumentIf(S.blank(name), "VarDef name cannot be empty");
-        E.NPE(type);
         this.name = name;
         this.type = type.getCanonicalName().replace('$', '.');
     }
@@ -60,7 +59,9 @@ public abstract class VarDef {
      *             static template engines
      */
     protected VarDef(String name, BeanSpec type) {
-        this(name, type.rawType());
+        E.illegalArgumentIf(S.blank(name), "VarDef name cannot be empty");
+        this.name = name;
+        this.type = toString(type);
     }
 
     public String name() {
@@ -101,4 +102,13 @@ public abstract class VarDef {
         }
         return false;
     }
+
+    private static String toString(BeanSpec spec) {
+        if (S.blank(spec.name())) {
+            return spec.toString();
+        }
+        return BeanSpec.of(spec.type(), spec.allAnnotations(), null, spec.injector()).toString();
+    }
+
+
 }

@@ -45,10 +45,7 @@ import org.osgl.util.StringValueResolver;
 import org.rythmengine.utils.S;
 
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.lang.reflect.Type;
+import java.lang.reflect.*;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.*;
@@ -238,7 +235,7 @@ public class Endpoint implements Comparable<Endpoint> {
         Class<?> controllerClass = invoker.controllerClass();
         Method method = invoker.method();
         returnType = method.getReturnType();
-        returnSample = generateSampleJson(returnType);
+        returnSample = generateSampleJson(BeanSpec.of(method.getGenericReturnType(), null, Act.injector()));
         Description descAnno = method.getAnnotation(Description.class);
         this.description = null == descAnno ? methodDescription(method) : descAnno.value();
         exploreParamInfo(method);
@@ -296,7 +293,7 @@ public class Endpoint implements Comparable<Endpoint> {
                 if (null != info.defaultValue) {
                     sample = resolver.resolve(info.defaultValue, info.beanSpec.rawType());
                 } else {
-                    sample = generateSampleData(info.beanSpec.rawType());
+                    sample = generateSampleData(info.beanSpec);
                 }
                 if (H.Method.GET == this.method) {
                     sampleQuery.add(generateSampleQuery(info.beanSpec, info.bindName));
@@ -357,11 +354,12 @@ public class Endpoint implements Comparable<Endpoint> {
         return false;
     }
 
-    private static String generateSampleJson(Class<?> type) {
+    private static String generateSampleJson(BeanSpec spec) {
+        Class<?> type = spec.rawType();
         if (Result.class.isAssignableFrom(type)) {
             return null;
         }
-        Object sample = generateSampleData(type);
+        Object sample = generateSampleData(spec);
         if (null == sample) {
             return null;
         }
@@ -374,21 +372,22 @@ public class Endpoint implements Comparable<Endpoint> {
     private static String generateSampleQuery(BeanSpec spec, String bindName) {
         Class<?> type = spec.rawType();
         if ($.isSimpleType(type)) {
-            return bindName + "=" + generateSampleData(type);
+            return bindName + "=" + generateSampleData(spec);
         }
         if (type.isArray()) {
             // TODO handle datetime component type
             Class<?> elementType = type.getComponentType();
+            BeanSpec elementSpec = BeanSpec.of(elementType, Act.injector());
             if ($.isSimpleType(elementType)) {
-                return bindName + "[0]=" + generateSampleData(elementType)
-                        + "&" + bindName + "[1]=" + generateSampleData(elementType);
+                return bindName + "[0]=" + generateSampleData(elementSpec)
+                        + "&" + bindName + "[1]=" + generateSampleData(elementSpec);
             }
         } else if (Collection.class.isAssignableFrom(type)) {
             // TODO handle datetime component type
-            Class<?> elementType = (Class<?>)spec.typeParams().get(0);
-            if ($.isSimpleType(elementType)) {
-                return bindName + "[0]=" + generateSampleData(elementType)
-                        + "&" + bindName + "[1]=" + generateSampleData(elementType);
+            BeanSpec elementSpec = BeanSpec.of(spec.typeParams().get(0), null, Act.injector());
+            if ($.isSimpleType(spec.rawType())) {
+                return bindName + "[0]=" + generateSampleData(elementSpec)
+                        + "&" + bindName + "[1]=" + generateSampleData(elementSpec);
             }
         } else if (Map.class.isAssignableFrom(type)) {
             LOGGER.warn("Map not supported yet");
@@ -412,7 +411,8 @@ public class Endpoint implements Comparable<Endpoint> {
         return S.join("&", queryPairs);
     }
 
-    private static Object generateSampleData(Class<?> type) {
+    private static Object generateSampleData(BeanSpec spec) {
+        Class<?> type = spec.rawType();
         if (void.class == type || Void.class == type || Result.class.isAssignableFrom(type)) {
             return null;
         }
@@ -445,6 +445,13 @@ public class Endpoint implements Comparable<Endpoint> {
                 return BigInteger.valueOf(1);
             } else if (ISObject.class.isAssignableFrom(type)) {
                 return null;
+            } else if (type.isArray()) {
+                Object sample = Array.newInstance(type.getComponentType(), 1);
+                Array.set(sample, 0, generateSampleData(BeanSpec.of(type.getComponentType(), Act.injector())));
+                return sample;
+            } else if (Collection.class.isAssignableFrom(type)) {
+                Collection col = $.cast(Act.getInstance(type));
+                return col;
             }
 
             if (null != stringValueResolver(type)) {
@@ -464,7 +471,7 @@ public class Endpoint implements Comparable<Endpoint> {
                 Object val = null;
                 try {
                     field.setAccessible(true);
-                    val = generateSampleData(fieldType);
+                    val = generateSampleData(BeanSpec.of(field, Act.injector()));
                     field.set(obj, val);
                 } catch (Exception e) {
                     LOGGER.warn("Error setting value[%s] to field[%s]", obj, val);

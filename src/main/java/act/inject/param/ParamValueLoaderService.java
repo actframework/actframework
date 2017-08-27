@@ -26,6 +26,7 @@ import act.app.App;
 import act.app.data.BinderManager;
 import act.app.data.StringValueResolverManager;
 import act.controller.ActionMethodParamAnnotationHandler;
+import act.db.DbBind;
 import act.inject.DefaultValue;
 import act.inject.DependencyInjector;
 import act.inject.SessionVariable;
@@ -782,7 +783,16 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
     }
 
     public static boolean providedButNotDbBind(BeanSpec beanSpec, DependencyInjector<?> injector) {
-        return null == beanSpec.getAnnotation(NoBind.class) && provided(beanSpec, injector);
+        if (!provided(beanSpec, injector)) {
+            return false;
+        }
+        Annotation[] aa = beanSpec.allAnnotations();
+        for (Annotation a : aa) {
+            if (a.annotationType().getName().equals(DbBind.class.getName())) {
+                return false;
+            }
+        }
+        return true;
     }
 
 }
