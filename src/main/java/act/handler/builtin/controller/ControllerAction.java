@@ -99,6 +99,10 @@ public class ControllerAction extends ActionHandler<ControllerAction> {
         handlerInvoker.accept(visitor.invokerVisitor());
     }
 
+    public ActionHandlerInvoker invoker() {
+        return handlerInvoker;
+    }
+
     @Override
     protected void releaseResources() {
         handlerInvoker.destroy();

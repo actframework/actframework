@@ -14,4 +14,5 @@ act.Info
 act.util.AdaptiveRecordCodec
 act.validation.ValidationPlugin
 act.Zen
+act.apidoc.Endpoint.Service
 org.osgl.util.FastJsonKvCodec

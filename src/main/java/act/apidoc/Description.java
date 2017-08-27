@@ -1,4 +1,4 @@
-package act.app;
+package act.apidoc;
 
 /*-
  * #%L
@@ -20,33 +20,20 @@ package act.app;
  * #L%
  */
 
-public abstract class AppServiceBase<T extends AppServiceBase> extends AppHolderBase<T> implements AppService<T> {
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-    protected AppServiceBase() {
-        super();
-    }
-
-    protected AppServiceBase(App app) {
-        super(app);
-        app.register(this);
-    }
-
-    protected AppServiceBase(App app, boolean noDiBinder) {
-        super(app);
-        app.register(this, noDiBinder);
-    }
-
-    @Override
-    public T app(App app) {
-        app.register(this);
-        return super.app(app);
-    }
-
-    public void onAppStart() {
-    }
-
-    public void onAppStartAsync() {
-    }
-
-    protected abstract void releaseResources();
+/**
+ * The `@Description` annotation can be used by developer to document
+ * programming elements including class, field, method and parameter.
+ *
+ * The apidoc utility will capture the documented description and present
+ * them in the API documentation
+ */
+@Retention(RetentionPolicy.RUNTIME)
+@Target({ElementType.TYPE, ElementType.FIELD, ElementType.METHOD, ElementType.PARAMETER})
+public @interface Description {
+    String value();
 }

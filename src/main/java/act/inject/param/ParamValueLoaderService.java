@@ -136,6 +136,7 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
     protected void releaseResources() {
         DestroyableBase.Util.tryDestroyAll(classRegistry.values(), ApplicationScoped.class);
         DestroyableBase.Util.tryDestroyAll(paramRegistry.values(), ApplicationScoped.class);
+        noBindCache.clear();
     }
 
     public Object loadHostBean(Class beanClass, ActContext<?> ctx) {
@@ -239,7 +240,7 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
         return decorate(loader, BeanSpec.of(beanClass, injector), beanClass.getDeclaredAnnotations(), false, true);
     }
 
-    private boolean shouldWaive(Field field) {
+    public static boolean shouldWaive(Field field) {
         int modifiers = field.getModifiers();
         return Modifier.isStatic(modifiers)
                 || Modifier.isTransient(modifiers)
@@ -250,9 +251,9 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
                 || field.getDeclaringClass().isAnnotationPresent(NoBind.class);
     }
 
-    private ConcurrentMap<Class, Boolean> noBindCache = new ConcurrentHashMap<>();
+    private static ConcurrentMap<Class, Boolean> noBindCache = new ConcurrentHashMap<>();
 
-    private boolean noBind(Class c) {
+    private static boolean noBind(Class c) {
         Boolean b = noBindCache.get(c);
         if (null != b) {
             return b;
