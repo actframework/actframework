@@ -217,6 +217,15 @@ public class AppJobManager extends AppServiceBase<AppJobManager> {
         }
     }
 
+    public void alongWith(AppEventId appEvent, String jobId, final Runnable runnable) {
+        _Job job = jobById(appEventJobId(appEvent));
+        if (null == job) {
+            processDelayedJob(wrap(runnable), false);
+        } else {
+            job.addParallelJob(_Job.once(jobId, runnable, this));
+        }
+    }
+
     private void processDelayedJob(final Runnable runnable, boolean runImmediatelyIfEventDispatched) {
         if (runImmediatelyIfEventDispatched) {
             try {

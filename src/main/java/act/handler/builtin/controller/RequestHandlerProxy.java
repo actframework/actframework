@@ -161,6 +161,11 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
         return actionMethodName;
     }
 
+    public ControllerAction actionHandler() {
+        ensureAgentsReady();
+        return actionHandler;
+    }
+
     public NotFound notFoundOnMethod(String message) {
         return actionHandler.notFoundOnMethod(message);
     }

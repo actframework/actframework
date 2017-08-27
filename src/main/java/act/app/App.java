@@ -22,6 +22,7 @@ package act.app;
 
 import act.Act;
 import act.Destroyable;
+import act.apidoc.ApiManager;
 import act.app.data.BinderManager;
 import act.app.data.StringValueResolverManager;
 import act.app.event.AppEventId;
@@ -129,6 +130,7 @@ public class App extends DestroyableBase {
     private AppCodeScannerManager scannerManager;
     private DbServiceManager dbServiceManager;
     private AppJobManager jobManager;
+    private ApiManager apiManager;
     private CliServer cliServer;
     private MailerConfigManager mailerConfigManager;
     private StringValueResolverManager resolverManager;
@@ -565,6 +567,7 @@ public class App extends DestroyableBase {
             emit(ROUTER_INITIALIZED);
             loadRoutes();
             emit(ROUTER_LOADED);
+            initApiManager();
             initCliDispatcher();
             initCliServer();
 
@@ -1163,6 +1166,10 @@ public class App extends DestroyableBase {
         if (null != jobManager) {
             jobManager.destroy();
         }
+    }
+
+    private void initApiManager() {
+        apiManager = new ApiManager(this);
     }
 
     private void initScanlist() {

@@ -220,6 +220,14 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         rv.apply(controllerClass, method);
     }
 
+    public Class<?> controllerClass() {
+        return controllerClass;
+    }
+
+    public Method method() {
+        return method;
+    }
+
     @Override
     public CacheSupportMetaInfo cacheSupport() {
         return cacheSupport;

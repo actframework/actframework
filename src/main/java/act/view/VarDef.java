@@ -60,10 +60,7 @@ public abstract class VarDef {
      *             static template engines
      */
     protected VarDef(String name, BeanSpec type) {
-        E.illegalArgumentIf(S.blank(name), "VarDef name cannot be empty");
-        E.NPE(type);
-        this.name = name;
-        this.type = type.toString();
+        this(name, type.rawType());
     }
 
     public String name() {

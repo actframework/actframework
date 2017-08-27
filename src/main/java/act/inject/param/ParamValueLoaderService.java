@@ -84,17 +84,24 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
             return null;
         }
     };
-    private static final ParamValueLoader EXCEPTION_LOADED = new ParamValueLoader() {
+    private static class ThrowableLoader implements ParamValueLoader {
+        private Class<? extends Throwable> throwableType;
+
+        public ThrowableLoader(Class<? extends Throwable> throwableType) {
+            this.throwableType = throwableType;
+        }
+
         @Override
         public Object load(Object bean, ActContext<?> context, boolean noDefaultValue) {
-            return context.attribute(ActionContext.ATTR_EXCEPTION);
+            Object o = context.attribute(ActionContext.ATTR_EXCEPTION);
+            return throwableType.isInstance(o) ? o : null;
         }
 
         @Override
         public String bindName() {
             return null;
         }
-    };
+    }
     // contains field names that should be waived when looking for value loader
     private static final Set<String> fieldBlackList = new HashSet<>();
 
@@ -129,6 +136,7 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
     protected void releaseResources() {
         DestroyableBase.Util.tryDestroyAll(classRegistry.values(), ApplicationScoped.class);
         DestroyableBase.Util.tryDestroyAll(paramRegistry.values(), ApplicationScoped.class);
+        noBindCache.clear();
     }
 
     public Object loadHostBean(Class beanClass, ActContext<?> ctx) {
@@ -243,7 +251,7 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
         return decorate(loader, BeanSpec.of(beanClass, injector), beanClass.getDeclaredAnnotations(), false, true);
     }
 
-    private boolean shouldWaive(Field field) {
+    public static boolean shouldWaive(Field field) {
         int modifiers = field.getModifiers();
         return Modifier.isStatic(modifiers)
                 || Modifier.isTransient(modifiers)
@@ -254,9 +262,9 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
                 || field.getDeclaringClass().isAnnotationPresent(NoBind.class);
     }
 
-    private ConcurrentMap<Class, Boolean> noBindCache = new ConcurrentHashMap<>();
+    private static ConcurrentMap<Class, Boolean> noBindCache = new ConcurrentHashMap<>();
 
-    private boolean noBind(Class c) {
+    private static boolean noBind(Class c) {
         Boolean b = noBindCache.get(c);
         if (null != b) {
             return b;
@@ -340,8 +348,8 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
         Class<?> rawType = spec.rawType();
         if (Result.class.isAssignableFrom(rawType)) {
             return RESULT_LOADER;
-        } else if (Exception.class.isAssignableFrom(rawType)) {
-            return EXCEPTION_LOADED;
+        } else if (Throwable.class.isAssignableFrom(rawType)) {
+            return new ThrowableLoader((Class<? extends Throwable>)rawType);
         }
         Type type = spec.type();
         Annotation[] annotations = spec.allAnnotations();

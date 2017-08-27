@@ -20,9 +20,12 @@ package act.controller.meta;
  * #L%
  */
 
+import act.Act;
+import org.osgl.$;
 import org.osgl.util.C;
 import org.osgl.util.S;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -34,6 +37,7 @@ import java.util.List;
 public class CatchMethodMetaInfo extends InterceptorMethodMetaInfo {
     private static final List<String> CATCH_THROWABLE = C.list(Throwable.class.getName());
     private List<String> targetExceptionClassNames = CATCH_THROWABLE;
+    private volatile Boolean paramTypeAnalyzed;
 
     protected CatchMethodMetaInfo(CatchMethodMetaInfo copy, ControllerClassMetaInfo clsInfo) {
         super(copy, clsInfo);
@@ -51,13 +55,48 @@ public class CatchMethodMetaInfo extends InterceptorMethodMetaInfo {
     }
 
     public CatchMethodMetaInfo exceptionClasses(List<String> list) {
-        targetExceptionClassNames = C.list(list);
+        targetExceptionClassNames = C.newList(list);
         return this;
     }
 
     public List<String> exceptionClasses() {
+        if (null == paramTypeAnalyzed) {
+            synchronized (this) {
+                if (null == paramTypeAnalyzed) {
+                    paramTypeAnalyzed = true;
+                    analyzeParamTypes();
+                }
+            }
+        }
         return targetExceptionClassNames;
     }
+
+    private void analyzeParamTypes() {
+        ClassLoader cl = Act.app().classLoader();
+        List<String> paramExceptions = new ArrayList<>();
+        for (int i = 0, n = paramCount(); i < n; ++i) {
+            HandlerParamMetaInfo param = param(i);
+            String className = param.type().getClassName();
+            if (className.endsWith("Exception")) {
+                paramExceptions.add(className);
+            } else {
+                Class<?> cls = $.classForName(className, cl);
+                if (Throwable.class.isAssignableFrom(cls)) {
+                    paramExceptions.add(className);
+                }
+            }
+        }
+        if (!paramExceptions.isEmpty()) {
+            if (1 == targetExceptionClassNames.size() && Throwable.class.getName().equals(targetExceptionClassNames.get(0))) {
+                // Since we have param declared exception let's remove the default
+                // Throwable from exception type match list
+                targetExceptionClassNames = paramExceptions;
+            } else {
+                targetExceptionClassNames.addAll(paramExceptions);
+            }
+        }
+    }
+
 
     @Override
     public String toString() {

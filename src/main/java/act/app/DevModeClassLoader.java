@@ -67,7 +67,21 @@ public class DevModeClassLoader extends AppClassLoader {
     }
 
     public boolean isSourceClass(String className) {
-        return sources.containsKey(className);
+        if (sources.containsKey(className)) {
+            return true;
+        }
+        Class<?> clazz = app().classForName(className);
+        return null != source(clazz);
+    }
+
+    public Source source(Class<?> clazz) {
+        String className = clazz.getName();
+        Source source = sources.get(className);
+        if (null != source) {
+            return source;
+        }
+        Class<?> enclosingClass = clazz.getEnclosingClass();
+        return null == enclosingClass ? null : source(enclosingClass);
     }
 
     public ControllerClassMetaInfo controllerClassMetaInfo(String controllerClassName) {

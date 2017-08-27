@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>apibook</title>
+    <style>
+        body {
+            background-color: #222;
+            color: #f1f1f1;
+            font-family: "Futura-Normal", "Candara", "Segoe UI", Frutiger, "Frutiger Linotype", "Dejavu Sans", "Helvetica Neue", Arial, sans-serif;
+            font-size: 1em;
+        }
+        a {color: #00b8b6;}
+        h1,h2,h3,h4,h5 {
+            font-family: "Franklin Gothic Medium", "Franklin Gothic", "ITC Franklin Gothic", Arial, sans-serif;
+            font-weight: bold;
+        }
+        h1 {
+            font-size: 42px;
+        }
+        h2 {
+            font-size: 36px;
+        }
+        h3 {
+            font-size: 28px;
+        }
+        h4 {
+            font-size: 21px;
+        }
+        h5 {
+            font-size: 18px;
+        }
+        .code, code {
+            font-family: "Envy Code R", Consolas, Menlo, Monaco, "Lucida Console", "Liberation Mono", "DejaVu Sans Mono", "Bitstream Vera Sans Mono", "Courier New", monospace;
+        }
+    </style>
+</head>
+<body>
+<h1>API Book</h1>
+<endpoint-list></endpoint-list>
+<script src="/~/asset/js/jquery.js"></script>
+<script src="/~/asset/js/jquery.ext.js"></script>
+<script src="/~/asset/js/riotjs.js"></script>
+<script type="riot/tag" src="/~/asset/apibook/endpoint_list.tag"></script>
+<script>
+    var Store = function(){
+        riot.observable(this)
+    }
+    riot.store = new Store()
+    riot.mount('*');
+</script>
+</body>
+</html>

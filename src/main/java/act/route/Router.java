@@ -55,6 +55,23 @@ import java.util.regex.Pattern;
 
 public class Router extends AppServiceBase<Router> {
 
+    /**
+     * A visitor can be passed to the router to traverse
+     * the routes
+     */
+    public interface Visitor {
+        /**
+         * Visit a route mapping in the router
+         * @param method
+         *      the HTTP method
+         * @param path
+         *      the URL path
+         * @param handler
+         *      the handler
+         */
+        void visit(H.Method method, String path, RequestHandler handler);
+    }
+
     public static final String IGNORE_NOTATION = "...";
 
     private static final H.Method[] targetMethods = new H.Method[]{
@@ -139,6 +156,37 @@ public class Router extends AppServiceBase<Router> {
 
     public int port() {
         return port;
+    }
+
+    /**
+     * Accept a {@link Visitor} to traverse route mapping in this
+     * router
+     *
+     * @param visitor
+     *          the visitor
+     */
+    public void accept(Visitor visitor) {
+        visit(_GET, H.Method.GET, visitor);
+        visit(_POST, H.Method.POST, visitor);
+        visit(_PUT, H.Method.PUT, visitor);
+        visit(_DEL, H.Method.DELETE, visitor);
+        visit(_PATCH, H.Method.PATCH, visitor);
+    }
+
+    private void visit(Node node, H.Method method, Visitor visitor) {
+        RequestHandler handler = node.handler;
+        if (null != handler) {
+            if (handler instanceof ContextualHandler) {
+                handler = ((ContextualHandler) handler).realHandler();
+            }
+            visitor.visit(method, node.path(), handler);
+        }
+        for (Node child : node.dynamicChilds) {
+            visit(child, method, visitor);
+        }
+        for (Node child : node.staticChildren.values()) {
+            visit(child, method, visitor);
+        }
     }
 
     // --- routing ---
