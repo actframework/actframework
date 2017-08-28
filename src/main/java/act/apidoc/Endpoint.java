@@ -38,11 +38,7 @@ import org.osgl.inject.BeanSpec;
 import org.osgl.logging.Logger;
 import org.osgl.mvc.result.Result;
 import org.osgl.storage.ISObject;
-import org.osgl.util.C;
-import org.osgl.util.Generics;
-import org.osgl.util.N;
-import org.osgl.util.StringValueResolver;
-import org.rythmengine.utils.S;
+import org.osgl.util.*;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.*;
@@ -340,6 +336,9 @@ public class Endpoint implements Comparable<Endpoint> {
             return null;
         }
         if (ParamValueLoaderService.hasDbBind(spec.allAnnotations())) {
+            if (org.osgl.util.S.blank(name)) {
+                name = spec.name();
+            }
             return new ParamInfo(name, BeanSpec.of(String.class, Act.injector()), name + " id");
         }
         String description = spec.rawType().getSimpleName();
