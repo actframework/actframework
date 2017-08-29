@@ -182,13 +182,15 @@ public class DbServiceManager extends AppServiceBase<DbServiceManager> implement
     }
 
     public <T extends DbService> List<T> dbServicesByClass(Class<T> dbServiceClass) {
-        List<T> list = new ArrayList<>();
+        // It is possible for same service instance link to different name, e.g. `default` a `db1` etc
+        // thus we must add it to set first to prevent the same service appears multiple times in the list
+        Set<T> set = new HashSet<>();
         for (DbService service : serviceMap.values()) {
             if (dbServiceClass.isInstance(service)) {
-                list.add((T) service);
+                set.add((T) service);
             }
         }
-        return list;
+        return new ArrayList<>(set);
     }
 
     public Iterable<DbService> registeredServices() {
