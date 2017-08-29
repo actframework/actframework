@@ -62,7 +62,7 @@ public class JobAnnotationProcessor extends AppHolderBase<JobAnnotationProcessor
             });
             return;
         }
-        _Job job = createMethodJob(method);
+        Job job = createMethodJob(method);
         if (Cron.class.isAssignableFrom(anno)) {
             registerCron(job, evaluateExpression(v.toString(), anno));
         } else if (AlongWith.class.isAssignableFrom(anno)) {
@@ -114,39 +114,39 @@ public class JobAnnotationProcessor extends AppHolderBase<JobAnnotationProcessor
         return ret;
     }
 
-    private void registerCron(_Job job, String expression) {
+    private void registerCron(Job job, String expression) {
         JobTrigger.cron(expression).register(job, manager);
     }
 
-    private void registerAlongWith(_Job job, String targetJobId) {
+    private void registerAlongWith(Job job, String targetJobId) {
         JobTrigger.alongWith(targetJobId).register(job, manager);
     }
 
-    private void registerEvery(_Job job, String expression) {
+    private void registerEvery(Job job, String expression) {
         JobTrigger.every(expression).register(job, manager);
     }
 
-    private void registerFixedDelay(_Job job, String expression) {
+    private void registerFixedDelay(Job job, String expression) {
         JobTrigger.fixedDelay(expression).register(job, manager);
     }
 
-    private void registerInvokeAfter(_Job job, String targetJobId) {
+    private void registerInvokeAfter(Job job, String targetJobId) {
         JobTrigger.after(targetJobId).register(job, manager);
     }
 
-    private void registerInvokeBefore(_Job job, String targetJobId) {
+    private void registerInvokeBefore(Job job, String targetJobId) {
         JobTrigger.before(targetJobId).register(job, manager);
     }
 
-    private void registerOnAppStart(_Job job, boolean async) {
+    private void registerOnAppStart(Job job, boolean async) {
         JobTrigger.onAppStart(async).register(job, manager);
     }
 
-    private void registerOnAppStop(_Job job, boolean async) {
+    private void registerOnAppStop(Job job, boolean async) {
         JobTrigger.onAppStop(async).register(job, manager);
     }
 
-    private void registerOnAppEvent(_Job job, AppEventId appEventId, boolean async) {
+    private void registerOnAppEvent(Job job, AppEventId appEventId, boolean async) {
         JobTrigger.onAppEvent(appEventId, async).register(job, manager);
     }
 
@@ -155,8 +155,8 @@ public class JobAnnotationProcessor extends AppHolderBase<JobAnnotationProcessor
         return (classMetaInfo.isAbstract());
     }
     
-    private _Job createMethodJob(JobMethodMetaInfo method) {
+    private Job createMethodJob(JobMethodMetaInfo method) {
         String id = method.id();
-        return new _Job(id, app().jobManager(), new ReflectedJobInvoker<>(method, app()), false);
+        return new Job(id, app().jobManager(), new ReflectedJobInvoker<>(method, app()), false);
     }
 }

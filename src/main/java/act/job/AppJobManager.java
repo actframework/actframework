@@ -52,7 +52,7 @@ public class AppJobManager extends AppServiceBase<AppJobManager> {
     private static final Logger LOGGER = LogManager.get(AppJobManager.class);
 
     private ScheduledThreadPoolExecutor executor;
-    private ConcurrentMap<String, _Job> jobs = new ConcurrentHashMap<String, _Job>();
+    private ConcurrentMap<String, Job> jobs = new ConcurrentHashMap<String, Job>();
     private ConcurrentMap<String, ScheduledFuture> scheduled = new ConcurrentHashMap<>();
 
     static String appEventJobId(AppEventId eventId) {
@@ -70,7 +70,7 @@ public class AppJobManager extends AppServiceBase<AppJobManager> {
     @Override
     protected void releaseResources() {
         LOGGER.trace("release job manager resources");
-        for (_Job job : jobs.values()) {
+        for (Job job : jobs.values()) {
             job.destroy();
         }
         jobs.clear();
@@ -87,7 +87,7 @@ public class AppJobManager extends AppServiceBase<AppJobManager> {
     }
 
     public String now($.Function<ProgressGauge, ?> worker) {
-        _Job job = wrap(worker);
+        Job job = wrap(worker);
         addJob(job);
         executor().submit(job);
         return job.id();
@@ -102,7 +102,7 @@ public class AppJobManager extends AppServiceBase<AppJobManager> {
      * @return the job ID allocated
      */
     public String prepare($.Function<ProgressGauge, ?> worker) {
-        _Job job = wrap(worker);
+        Job job = wrap(worker);
         addJob(job);
         return job.id();
     }
@@ -113,7 +113,7 @@ public class AppJobManager extends AppServiceBase<AppJobManager> {
      * @see #prepare(Osgl.Function)
      */
     public void now(String jobId) {
-        _Job job = $.notNull(jobById(jobId));
+        Job job = $.notNull(jobById(jobId));
         executor().submit(job);
     }
 
@@ -136,35 +136,35 @@ public class AppJobManager extends AppServiceBase<AppJobManager> {
     }
 
     public void every(String id, Runnable runnable, String interval) {
-        JobTrigger.every(interval).schedule(this, _Job.multipleTimes(id, runnable, this));
+        JobTrigger.every(interval).schedule(this, Job.multipleTimes(id, runnable, this));
     }
 
     public void every(Runnable runnable, String interval) {
-        JobTrigger.every(interval).schedule(this, _Job.multipleTimes(runnable, this));
+        JobTrigger.every(interval).schedule(this, Job.multipleTimes(runnable, this));
     }
 
     public void every(Runnable runnable, long interval, TimeUnit timeUnit) {
-        JobTrigger.every(interval, timeUnit).schedule(this, _Job.multipleTimes(runnable, this));
+        JobTrigger.every(interval, timeUnit).schedule(this, Job.multipleTimes(runnable, this));
     }
 
     public void every(String id, Runnable runnable, long interval, TimeUnit timeUnit) {
-        JobTrigger.every(interval, timeUnit).schedule(this, _Job.multipleTimes(id, runnable, this));
+        JobTrigger.every(interval, timeUnit).schedule(this, Job.multipleTimes(id, runnable, this));
     }
 
     public void fixedDelay(Runnable runnable, String interval) {
-        JobTrigger.every(interval).schedule(this, _Job.multipleTimes(runnable, this));
+        JobTrigger.every(interval).schedule(this, Job.multipleTimes(runnable, this));
     }
 
     public void fixedDelay(String id, Runnable runnable, String interval) {
-        JobTrigger.every(interval).schedule(this, _Job.multipleTimes(id, runnable, this));
+        JobTrigger.every(interval).schedule(this, Job.multipleTimes(id, runnable, this));
     }
 
     public void fixedDelay(Runnable runnable, long interval, TimeUnit timeUnit) {
-        JobTrigger.fixedDelay(interval, timeUnit).schedule(this, _Job.multipleTimes(runnable, this));
+        JobTrigger.fixedDelay(interval, timeUnit).schedule(this, Job.multipleTimes(runnable, this));
     }
 
     public void fixedDelay(String id, Runnable runnable, long interval, TimeUnit timeUnit) {
-        JobTrigger.fixedDelay(interval, timeUnit).schedule(this, _Job.multipleTimes(id, runnable, this));
+        JobTrigger.fixedDelay(interval, timeUnit).schedule(this, Job.multipleTimes(id, runnable, this));
     }
 
     private int parseTime(String timeDuration) {
@@ -207,11 +207,11 @@ public class AppJobManager extends AppServiceBase<AppJobManager> {
     }
 
     public void post(AppEventId appEvent, final Runnable runnable, boolean runImmediatelyIfEventDispatched) {
-        _Job job = jobById(appEventJobId(appEvent));
+        Job job = jobById(appEventJobId(appEvent));
         if (null == job) {
             processDelayedJob(wrap(runnable), runImmediatelyIfEventDispatched);
         } else {
-            job.addFollowingJob(_Job.once(runnable, this));
+            job.addFollowingJob(Job.once(runnable, this));
         }
     }
 
@@ -224,7 +224,7 @@ public class AppJobManager extends AppServiceBase<AppJobManager> {
         if (traceEnabled) {
             LOGGER.trace("binding job[%s] to app event: %s, run immediately if event dispatched: %s", jobId, appEvent, runImmediatelyIfEventDispatched);
         }
-        _Job job = jobById(appEventJobId(appEvent));
+        Job job = jobById(appEventJobId(appEvent));
         if (null == job) {
             if (traceEnabled) {
                 LOGGER.trace("process delayed job: %s", jobId);
@@ -234,7 +234,7 @@ public class AppJobManager extends AppServiceBase<AppJobManager> {
             if (traceEnabled) {
                 LOGGER.trace("schedule job: %s", jobId);
             }
-            job.addPrecedenceJob(_Job.once(jobId, runnable, this));
+            job.addPrecedenceJob(Job.once(jobId, runnable, this));
         }
     }
 
@@ -243,20 +243,20 @@ public class AppJobManager extends AppServiceBase<AppJobManager> {
     }
 
     public void post(AppEventId appEvent, String jobId, final Runnable runnable, boolean runImmediatelyIfEventDispatched) {
-        _Job job = jobById(appEventJobId(appEvent));
+        Job job = jobById(appEventJobId(appEvent));
         if (null == job) {
             processDelayedJob(wrap(runnable), runImmediatelyIfEventDispatched);
         } else {
-            job.addFollowingJob(_Job.once(jobId, runnable, this));
+            job.addFollowingJob(Job.once(jobId, runnable, this));
         }
     }
 
     public void alongWith(AppEventId appEvent, String jobId, final Runnable runnable) {
-        _Job job = jobById(appEventJobId(appEvent));
+        Job job = jobById(appEventJobId(appEvent));
         if (null == job) {
             processDelayedJob(wrap(runnable), false);
         } else {
-            job.addParallelJob(_Job.once(jobId, runnable, this));
+            job.addParallelJob(Job.once(jobId, runnable, this));
         }
     }
 
@@ -277,7 +277,7 @@ public class AppJobManager extends AppServiceBase<AppJobManager> {
      * @param jobId the job Id
      */
     public void cancel(String jobId) {
-        _Job job = jobById(jobId);
+        Job job = jobById(jobId);
         if (null != job) {
             removeJob(job);
         } else {
@@ -305,7 +305,7 @@ public class AppJobManager extends AppServiceBase<AppJobManager> {
     }
 
     public void setJobProgressGauge(String jobId, ProgressGauge progressGauge) {
-        _Job job = jobById(jobId);
+        Job job = jobById(jobId);
         if (null == job) {
             LOGGER.warn("cannot find job by Id: " + jobId);
         } else {
@@ -313,16 +313,16 @@ public class AppJobManager extends AppServiceBase<AppJobManager> {
         }
     }
 
-    C.List<_Job> jobs() {
+    C.List<Job> jobs() {
         return C.list(jobs.values());
     }
 
-    C.List<_Job> virtualJobs() {
+    C.List<Job> virtualJobs() {
         final AppJobManager jobManager = Act.jobManager();
-        return C.list(scheduled.entrySet()).map(new $.Transformer<Map.Entry<String, ScheduledFuture>, _Job>() {
+        return C.list(scheduled.entrySet()).map(new $.Transformer<Map.Entry<String, ScheduledFuture>, Job>() {
             @Override
-            public _Job transform(Map.Entry<String, ScheduledFuture> entry) {
-                return new _Job(entry.getKey(), jobManager);
+            public Job transform(Map.Entry<String, ScheduledFuture> entry) {
+                return new Job(entry.getKey(), jobManager);
             }
         });
     }
@@ -331,23 +331,23 @@ public class AppJobManager extends AppServiceBase<AppJobManager> {
         scheduled.putIfAbsent(id, future);
     }
 
-    _Job jobById(String id) {
-        _Job job = jobs.get(id);
+    Job jobById(String id) {
+        Job job = jobs.get(id);
         if (null == job) {
             ScheduledFuture future = scheduled.get(id);
             if (null != future) {
-                return new _Job(id, Act.jobManager());
+                return new Job(id, Act.jobManager());
             }
             Act.LOGGER.warn("cannot find job by id: %s", id);
         }
         return job;
     }
 
-    void addJob(_Job job) {
+    void addJob(Job job) {
         jobs.put(job.id(), job);
     }
 
-    void removeJob(_Job job) {
+    void removeJob(Job job) {
         String id = job.id();
         jobs.remove(id);
         ScheduledFuture future = scheduled.remove(id);
@@ -371,7 +371,7 @@ public class AppJobManager extends AppServiceBase<AppJobManager> {
 
     private void createAppEventListener(AppEventId appEventId) {
         String jobId = appEventJobId(appEventId);
-        _Job job = new _Job(jobId, this);
+        Job job = new Job(jobId, this);
         addJob(job);
         app().eventBus().bind(appEventId, new _AppEventListener(jobId, job));
     }
@@ -400,7 +400,7 @@ public class AppJobManager extends AppServiceBase<AppJobManager> {
         return new ContextualJob(randomJobId(), runnable);
     }
 
-    private _Job wrap($.Function<ProgressGauge, ?> worker) {
+    private Job wrap($.Function<ProgressGauge, ?> worker) {
         return new ContextualJob(randomJobId(), worker);
     }
 
@@ -420,7 +420,7 @@ public class AppJobManager extends AppServiceBase<AppJobManager> {
         };
     }
 
-    private class ContextualJob extends _Job {
+    private class ContextualJob extends Job {
 
         private JobContext origin_ = JobContext.copy();
 

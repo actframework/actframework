@@ -33,8 +33,6 @@ import org.osgl.$;
 import org.osgl.exception.ConfigurationException;
 import org.osgl.exception.NotAppliedException;
 import org.osgl.exception.UnexpectedException;
-import org.osgl.logging.LogManager;
-import org.osgl.logging.Logger;
 import org.osgl.util.C;
 import org.osgl.util.E;
 import org.osgl.util.S;
@@ -43,17 +41,17 @@ import java.util.*;
 
 import static act.util.SimpleProgressGauge.wsJobProgressTag;
 
-class _Job extends DestroyableBase implements Runnable {
-
-    private static final Logger logger = LogManager.get(_Job.class);
-
+/**
+ * A `Job` is a piece of logic that can be run/scheduled in ActFramework
+ */
+public class Job extends DestroyableBase implements Runnable {
 
     private static class LockableJobList {
         boolean iterating;
-        List<_Job> jobList;
-        _Job parent;
+        List<Job> jobList;
+        Job parent;
 
-        LockableJobList(_Job parent) {
+        LockableJobList(Job parent) {
             this.jobList = new ArrayList<>();
             this.parent = parent;
         }
@@ -62,7 +60,7 @@ class _Job extends DestroyableBase implements Runnable {
             jobList.clear();
         }
 
-        synchronized _Job add(_Job thatJob) {
+        synchronized Job add(Job thatJob) {
             if (parent.isOneTime()) {
                 thatJob.setOneTime();
             }
@@ -85,7 +83,7 @@ class _Job extends DestroyableBase implements Runnable {
             final AppJobManager jobManager = async ? Act.jobManager() : null;
             iterating = true;
             try {
-                for (final _Job subJob : jobList) {
+                for (final Job subJob : jobList) {
                     if (null != jobManager) {
                         jobManager.now(new Runnable() {
                             @Override
@@ -128,15 +126,15 @@ class _Job extends DestroyableBase implements Runnable {
     private LockableJobList followingJobs = new LockableJobList(this);
     private LockableJobList precedenceJobs = new LockableJobList(this);
 
-    _Job(String id, AppJobManager manager) {
+    Job(String id, AppJobManager manager) {
         this(id, manager, ($.Func0<?>)null);
     }
 
-    _Job(String id, AppJobManager manager, $.Func0<?> worker) {
+    Job(String id, AppJobManager manager, $.Func0<?> worker) {
         this(id, manager, worker, true);
     }
 
-    _Job(String id, AppJobManager manager, $.Func0<?> worker, boolean oneTime) {
+    Job(String id, AppJobManager manager, $.Func0<?> worker, boolean oneTime) {
         this.id = id;
         this.manager = $.NPE(manager);
         this.worker = worker;
@@ -145,11 +143,11 @@ class _Job extends DestroyableBase implements Runnable {
         this.jobProgressTag = wsJobProgressTag(id);
     }
 
-    _Job(String id, AppJobManager manager, $.Function<ProgressGauge, ?> worker) {
+    Job(String id, AppJobManager manager, $.Function<ProgressGauge, ?> worker) {
         this(id, manager, worker, true);
     }
 
-    _Job(String id, AppJobManager manager, $.Function<ProgressGauge, ?> worker, boolean oneTime) {
+    Job(String id, AppJobManager manager, $.Function<ProgressGauge, ?> worker, boolean oneTime) {
         this.id = id;
         this.manager = $.notNull(manager);
         $.F1<ProgressGauge, ?> f1 = $.f1(worker);
@@ -201,16 +199,16 @@ class _Job extends DestroyableBase implements Runnable {
         return sb.toString();
     }
 
-    private static void printSubJobs(Collection<? extends _Job> subJobs, String label, S.Buffer sb) {
+    private static void printSubJobs(Collection<? extends Job> subJobs, String label, S.Buffer sb) {
         if (null != subJobs && !subJobs.isEmpty()) {
             sb.append("\n").append(label);
-            for (_Job job : subJobs) {
+            for (Job job : subJobs) {
                 sb.append("\n\t").append(job.brief());
             }
         }
     }
 
-    _Job setOneTime() {
+    Job setOneTime() {
         oneTime = true;
         return this;
     }
@@ -228,15 +226,15 @@ class _Job extends DestroyableBase implements Runnable {
         this.trigger = trigger;
     }
 
-    final _Job addParallelJob(_Job thatJob) {
+    final Job addParallelJob(Job thatJob) {
         return parallelJobs.add(thatJob);
     }
 
-    final _Job addFollowingJob(_Job thatJob) {
+    final Job addFollowingJob(Job thatJob) {
         return followingJobs.add(thatJob);
     }
 
-    final _Job addPrecedenceJob(_Job thatJob) {
+    final Job addPrecedenceJob(Job thatJob) {
         return precedenceJobs.add(thatJob);
     }
 
@@ -292,7 +290,7 @@ class _Job extends DestroyableBase implements Runnable {
                         app.eventBus().bind(AppEventId.POST_START, new AppEventListenerBase() {
                             @Override
                             public void on(EventObject event) throws Exception {
-                                manager.removeJob(_Job.this);
+                                manager.removeJob(Job.this);
                             }
                         });
                     }
@@ -342,8 +340,8 @@ class _Job extends DestroyableBase implements Runnable {
         if (null != trigger) trigger.scheduleFollowingCalls(manager(), this);
     }
 
-    private static _Job of(String jobId, final Runnable runnable, AppJobManager manager, boolean oneTime) {
-        return new _Job(jobId, manager, new $.F0() {
+    private static Job of(String jobId, final Runnable runnable, AppJobManager manager, boolean oneTime) {
+        return new Job(jobId, manager, new $.F0() {
             @Override
             public Object apply() throws NotAppliedException, $.Break {
                 runnable.run();
@@ -352,23 +350,23 @@ class _Job extends DestroyableBase implements Runnable {
         }, oneTime);
     }
 
-    private static _Job of(final Runnable runnable, AppJobManager manager, boolean oneTime) {
+    private static Job of(final Runnable runnable, AppJobManager manager, boolean oneTime) {
         return of(Act.cuid(), runnable, manager, oneTime);
     }
 
-    static _Job once(final Runnable runnable, AppJobManager manager) {
+    static Job once(final Runnable runnable, AppJobManager manager) {
         return of(runnable, manager, true);
     }
 
-    static _Job once(String jobId, final Runnable runnable, AppJobManager manager) {
+    static Job once(String jobId, final Runnable runnable, AppJobManager manager) {
         return of(jobId, runnable, manager, true);
     }
 
-    static _Job multipleTimes(final Runnable runnable, AppJobManager manager) {
+    static Job multipleTimes(final Runnable runnable, AppJobManager manager) {
         return of(runnable, manager, false);
     }
 
-    static _Job multipleTimes(String jobId, final Runnable runnable, AppJobManager manager) {
+    static Job multipleTimes(String jobId, final Runnable runnable, AppJobManager manager) {
         return of(jobId, runnable, manager, false);
     }
 
@@ -389,7 +387,7 @@ class _Job extends DestroyableBase implements Runnable {
         return oneTime;
     }
 
-    public JobTrigger getTrigger() {
+    public JobTrigger trigger() {
         return trigger;
     }
 }

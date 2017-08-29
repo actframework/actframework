@@ -45,17 +45,17 @@ public class JobAdmin {
 
     /**
      * List all jobs in the job manager
-     * @return a list of {@link _Job jobs}
+     * @return a list of {@link Job jobs}
      */
     @Command(value = "act.job.list", help = "List jobs")
-    @PropertySpec(_Job.BRIEF_VIEW)
+    @PropertySpec(Job.BRIEF_VIEW)
     @TableView
-    public List<_Job> listJobs(@Optional(lead = "-q") final String q, AppJobManager jobManager) {
-        C.List<_Job> jobs = jobManager.jobs().append(jobManager.virtualJobs());
+    public List<Job> listJobs(@Optional(lead = "-q") final String q, AppJobManager jobManager) {
+        C.List<Job> jobs = jobManager.jobs().append(jobManager.virtualJobs());
         if (S.notBlank(q)) {
-            jobs = jobs.filter(new $.Predicate<_Job>() {
+            jobs = jobs.filter(new $.Predicate<Job>() {
                 @Override
-                public boolean test(_Job job) {
+                public boolean test(Job job) {
                     return job.toString().contains(q);
                 }
             });
@@ -65,14 +65,14 @@ public class JobAdmin {
 
     @Command(value = "act.job.show", help = "Show job details")
     @JsonView
-    @PropertySpec(_Job.DETAIL_VIEW)
-    public _Job getJob(@Required("specify job id") final String id, AppJobManager jobManager) {
+    @PropertySpec(Job.DETAIL_VIEW)
+    public Job getJob(@Required("specify job id") final String id, AppJobManager jobManager) {
         return jobManager.jobById(id);
     }
 
     @Command(value = "act.job.progress", help = "Show job progress")
     public int getJobProgress(@Required("specify job id") final String id, AppJobManager jobManager) {
-        _Job job = jobManager.jobById(id);
+        Job job = jobManager.jobById(id);
         return null == job ? -1 : job.getProgressInPercent();
     }
 

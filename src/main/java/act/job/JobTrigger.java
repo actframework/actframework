@@ -44,7 +44,10 @@ import static act.app.event.AppEventId.START;
 import static act.app.event.AppEventId.STOP;
 import static act.job.AppJobManager.appEventJobId;
 
-abstract class JobTrigger {
+/**
+ * A `JobTrigger` triggers a {@link Job} to be executed
+ */
+public abstract class JobTrigger {
 
     protected static final Logger LOGGER = LogManager.get(JobTrigger.class);
 
@@ -61,7 +64,7 @@ abstract class JobTrigger {
         LOGGER.trace(msg, args);
     }
 
-    final void register(_Job job, AppJobManager manager) {
+    final void register(Job job, AppJobManager manager) {
         if (LOGGER.isTraceEnabled()) {
             LOGGER.trace("trigger on [%s]: %s", this, job);
         }
@@ -70,11 +73,11 @@ abstract class JobTrigger {
         schedule(manager, job);
     }
 
-    void scheduleFollowingCalls(AppJobManager manager, _Job job) {}
+    void scheduleFollowingCalls(AppJobManager manager, Job job) {}
 
-    void schedule(AppJobManager manager, _Job job) {}
+    void schedule(AppJobManager manager, Job job) {}
 
-    void traceSchedule(_Job job) {
+    void traceSchedule(Job job) {
         if (isTraceEnabled()) {
             trace("trigger[%s] schedule job: %s", this, job);
         }
@@ -236,7 +239,7 @@ abstract class JobTrigger {
         }
 
         @Override
-        void schedule(final AppJobManager manager, final _Job job) {
+        void schedule(final AppJobManager manager, final Job job) {
             traceSchedule(job);
             App app = manager.app();
             if (!app.isStarted()) {
@@ -251,7 +254,7 @@ abstract class JobTrigger {
             }
         }
 
-        private void delayedSchedule(AppJobManager manager, _Job job) {
+        private void delayedSchedule(AppJobManager manager, Job job) {
             DateTime now = DateTime.now();
             // add one seconds to prevent the next time be the current time (now)
             DateTime next = cronExpr.nextTimeAfter(now.plusSeconds(1));
@@ -261,7 +264,7 @@ abstract class JobTrigger {
         }
 
         @Override
-        void scheduleFollowingCalls(AppJobManager manager, _Job job) {
+        void scheduleFollowingCalls(AppJobManager manager, Job job) {
             schedule(manager, job);
         }
     }
@@ -293,7 +296,7 @@ abstract class JobTrigger {
         }
 
         @Override
-        void schedule(final AppJobManager manager, final _Job job) {
+        void schedule(final AppJobManager manager, final Job job) {
             traceSchedule(job);
             App app = manager.app();
             if (!app.isStarted()) {
@@ -308,7 +311,7 @@ abstract class JobTrigger {
             }
         }
 
-        private void delayedSchedule(AppJobManager manager, _Job job) {
+        private void delayedSchedule(AppJobManager manager, Job job) {
             ScheduledThreadPoolExecutor executor = manager.executor();
             ScheduledFuture future = executor.scheduleWithFixedDelay(job, seconds, seconds, TimeUnit.SECONDS);
             manager.futureScheduled(job.id(), future);
@@ -330,7 +333,7 @@ abstract class JobTrigger {
         }
 
         @Override
-        void schedule(final AppJobManager manager, final _Job job) {
+        void schedule(final AppJobManager manager, final Job job) {
             traceSchedule(job);
             App app = manager.app();
             if (!app.isStarted()) {
@@ -345,7 +348,7 @@ abstract class JobTrigger {
             }
         }
 
-        private void delayedSchedule(AppJobManager manager, _Job job) {
+        private void delayedSchedule(AppJobManager manager, Job job) {
             ScheduledThreadPoolExecutor executor = manager.executor();
             ScheduledFuture future = executor.scheduleAtFixedRate(job, seconds, seconds, TimeUnit.SECONDS);
             manager.futureScheduled(job.id(), future);
@@ -360,13 +363,13 @@ abstract class JobTrigger {
         }
 
         @Override
-        void schedule(AppJobManager manager, _Job job) {
+        void schedule(AppJobManager manager, Job job) {
             traceSchedule(job);
             if (null == targetId) {
                 LOGGER.warn("Failed to register job because target job not found: %s. Will try again after app started", targetId);
                 scheduleDelayedRegister(manager, job);
             } else {
-                _Job associateTarget = manager.jobById(targetId);
+                Job associateTarget = manager.jobById(targetId);
                 if (null == associateTarget) {
                     LOGGER.warn("Cannot find associated job: %s", targetId);
                 } else {
@@ -375,12 +378,12 @@ abstract class JobTrigger {
             }
         }
 
-        private void scheduleDelayedRegister(final AppJobManager manager, final _Job job) {
+        private void scheduleDelayedRegister(final AppJobManager manager, final Job job) {
             final String id = delayedRegisterJobId(job);
-            before(START).register(new _Job(id, manager, new $.F0<Void>() {
+            before(START).register(new Job(id, manager, new $.F0<Void>() {
                 @Override
                 public Void apply() throws NotAppliedException, $.Break {
-                    _Job associateTo = manager.jobById(id);
+                    Job associateTo = manager.jobById(id);
                     if (null == associateTo) {
                         LOGGER.warn("Cannot find associated job: %s", id);
                     } else {
@@ -391,11 +394,11 @@ abstract class JobTrigger {
             }), manager);
         }
 
-        private String delayedRegisterJobId(_Job job) {
+        private String delayedRegisterJobId(Job job) {
             return S.concat("delayed_association_register-", job.id(), "-to-", targetId);
         }
 
-        abstract void associate(_Job theJob, _Job toJob);
+        abstract void associate(Job theJob, Job toJob);
     }
 
     private static class _AlongWith extends _AssociatedTo {
@@ -409,7 +412,7 @@ abstract class JobTrigger {
         }
 
         @Override
-        void associate(_Job theJob, _Job toJob) {
+        void associate(Job theJob, Job toJob) {
             toJob.addParallelJob(theJob);
         }
     }
@@ -425,7 +428,7 @@ abstract class JobTrigger {
         }
 
         @Override
-        void associate(_Job theJob, _Job toJob) {
+        void associate(Job theJob, Job toJob) {
             toJob.addPrecedenceJob(theJob);
         }
     }
@@ -441,7 +444,7 @@ abstract class JobTrigger {
         }
 
         @Override
-        void associate(_Job theJob, _Job toJob) {
+        void associate(Job theJob, Job toJob) {
             toJob.addFollowingJob(theJob);
         }
     }
