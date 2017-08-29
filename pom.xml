@@ -20,6 +20,10 @@
 ********************************************
 1.4.11
 * catch up update to 1.3.14-LTS
+* #267 Support running CLI Job in background
+* #266 Enhance Job support on logging and process reporting
+* #355 `job.list` CLI command failure
+
 
 1.4.10
 * catch up update to 1.3.13-LTS
