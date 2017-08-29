@@ -181,6 +181,16 @@ public class DbServiceManager extends AppServiceBase<DbServiceManager> implement
         return (T)serviceMap.get(id);
     }
 
+    public <T extends DbService> List<T> dbServicesByClass(Class<T> dbServiceClass) {
+        List<T> list = new ArrayList<>();
+        for (DbService service : serviceMap.values()) {
+            if (dbServiceClass.isInstance(service)) {
+                list.add((T) service);
+            }
+        }
+        return list;
+    }
+
     public Iterable<DbService> registeredServices() {
         return serviceMap.values();
     }
