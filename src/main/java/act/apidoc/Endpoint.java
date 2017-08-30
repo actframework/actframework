@@ -292,7 +292,10 @@ public class Endpoint implements Comparable<Endpoint> {
                     sample = generateSampleData(info.beanSpec, new HashSet<Class<?>>());
                 }
                 if (H.Method.GET == this.method) {
-                    sampleQuery.add(generateSampleQuery(info.beanSpec, info.bindName));
+                    String query = generateSampleQuery(info.beanSpec, info.bindName);
+                    if (S.notBlank(query)) {
+                        sampleQuery.add(query);
+                    }
                 } else {
                     sampleData.put(info.bindName, sample);
                 }
@@ -383,15 +386,15 @@ public class Endpoint implements Comparable<Endpoint> {
             Class<?> elementType = type.getComponentType();
             BeanSpec elementSpec = BeanSpec.of(elementType, Act.injector());
             if ($.isSimpleType(elementType)) {
-                return bindName + "[0]=" + generateSampleData(elementSpec, new HashSet<Class<?>>())
-                        + "&" + bindName + "[1]=" + generateSampleData(elementSpec, new HashSet<Class<?>>());
+                return bindName + "=" + generateSampleData(elementSpec, new HashSet<Class<?>>())
+                        + "&" + bindName + "=" + generateSampleData(elementSpec, new HashSet<Class<?>>());
             }
         } else if (Collection.class.isAssignableFrom(type)) {
             // TODO handle datetime component type
             BeanSpec elementSpec = BeanSpec.of(spec.typeParams().get(0), null, Act.injector());
-            if ($.isSimpleType(spec.rawType())) {
-                return bindName + "[0]=" + generateSampleData(elementSpec, new HashSet<Class<?>>())
-                        + "&" + bindName + "[1]=" + generateSampleData(elementSpec, new HashSet<Class<?>>());
+            if ($.isSimpleType(elementSpec.rawType())) {
+                return bindName + "=" + generateSampleData(elementSpec, new HashSet<Class<?>>())
+                        + "&" + bindName + "=" + generateSampleData(elementSpec, new HashSet<Class<?>>());
             }
         } else if (Map.class.isAssignableFrom(type)) {
             LOGGER.warn("Map not supported yet");
