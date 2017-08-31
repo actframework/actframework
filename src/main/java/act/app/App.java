@@ -38,7 +38,6 @@ import act.conf.AppConfigKey;
 import act.controller.bytecode.ControllerByteCodeScanner;
 import act.data.DataPropertyRepository;
 import act.data.JodaDateTimeCodec;
-import act.util.UploadFileStorageService;
 import act.data.util.ActPropertyHandlerFactory;
 import act.event.AppEventListenerBase;
 import act.event.EventBus;
@@ -116,7 +115,7 @@ public class App extends DestroyableBase {
 
     private volatile String profile;
     private String name;
-    private String id;
+    private String shortId;
     private File appBase;
     private File appHome;
     private Router router;
@@ -174,8 +173,7 @@ public class App extends DestroyableBase {
     }
 
     protected App(String name, File appBase, ProjectLayout layout) {
-        this.name = name;
-        this.id = generateId(name);
+        this.name(name);
         this.appBase = appBase;
         this.layout = layout;
         this.appHome = RuntimeDirs.home(this);
@@ -188,10 +186,14 @@ public class App extends DestroyableBase {
 
     App name(String name) {
         this.name = name;
-        this.id = generateId(name);
+        this.shortId = generateId(name);
         return this;
     }
 
+    /**
+     * Returns the name of the app
+     * @return the app name
+     */
     public String name() {
         return name;
     }
@@ -199,12 +201,12 @@ public class App extends DestroyableBase {
     /**
      * Returns short id which is derived from passed in app name.
      *
-     * **Note** `App.id()` is by no means to create a unique identifier of application.
+     * **Note** `App.shortId()` is by no means to create a unique identifier of application.
      *
-     * @return the short name
+     * @return the short id of the app
      */
-    public String id() {
-        return id;
+    public String shortId() {
+        return shortId;
     }
 
     private static String generateId(String name) {

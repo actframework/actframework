@@ -93,7 +93,7 @@ public class UploadFileStorageService extends FileSystemService {
             retVal = SObject.of(key, buf, size);
         }
 
-        if (null != filename) {
+        if (S.notBlank(filename)) {
             retVal.setFilename(filename);
         }
         String contentType = fileItemStream.getContentType();
@@ -104,7 +104,7 @@ public class UploadFileStorageService extends FileSystemService {
     }
 
     private String newKey(String filename) {
-        if (null == filename) {
+        if (S.blank(filename)) {
             return S.concat(Act.cuid(), "tmp");
         }
         return S.pathConcat(getKey(Act.cuid()), '/', filename);

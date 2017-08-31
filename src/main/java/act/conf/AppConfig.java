@@ -2053,7 +2053,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         if (null == cookiePrefix) {
             cookiePrefix = get(COOKIE_PREFIX);
             if (null == cookiePrefix) {
-                cookiePrefix = S.concat(app().id(), "-");
+                cookiePrefix = S.concat(app().shortId(), "-");
             }
             cookiePrefix = cookiePrefix.trim().toLowerCase();
         }

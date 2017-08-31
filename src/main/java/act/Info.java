@@ -35,7 +35,7 @@ public class Info {
     public static Object show(ActionContext context, App app) {
         if (context.acceptJson()) {
             String actVersion = Version.version();
-            String appVersion = Version.appVersion();
+            String appVersion = Version.appVersion(app.name());
             String appName = app.name();
             String pid = Env.PID.get();
             String baseDir = app.base().getAbsolutePath();
