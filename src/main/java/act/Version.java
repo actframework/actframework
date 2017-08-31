@@ -21,9 +21,12 @@ package act;
  */
 
 import org.osgl.util.E;
+import org.osgl.util.IO;
+import org.osgl.util.Keyword;
 import org.osgl.util.S;
 
 import java.io.IOException;
+import java.net.URL;
 import java.util.Properties;
 
 /**
@@ -68,18 +71,38 @@ public class Version {
         return S.fmt("%s-%s", version, buildNumber);
     }
 
-    public synchronized static String appVersion() {
+    public synchronized static String appVersion(String appName) {
+        final String UNKNOWN = "unknown";
         if (null == appVersion) {
-            Properties p = new Properties();
-            try {
-                p.load(Version.class.getResourceAsStream("/app.version"));
-                appVersion = p.getProperty("app.version");
-            } catch (Exception e) {
-                // ignore
-                appVersion = "0.0.1";
+            URL url = appVersionData(appName);
+            if (null != url) {
+                try {
+                    Properties p = IO.loadProperties(IO.is(url));
+                    String version = p.getProperty("version");
+                    String buildNum = p.getProperty("build");
+                    if (S.blank(version)) {
+                        appVersion = S.blank(buildNum) ? UNKNOWN : buildNum;
+                    } else {
+                        appVersion = S.blank(buildNum) ? version : version + '-' + buildNum;
+                    }
+                } catch (Exception e) {
+                    // ignore
+                }
             }
         }
+        if (null == appVersion) {
+            appVersion = UNKNOWN;
+        }
         return appVersion;
+    }
+
+    private static URL appVersionData(String appName) {
+        String path = "/" + Keyword.of(appName).dashed() + ".version";
+        URL url = Version.class.getResource(path);
+        if (null == url) {
+            url = Version.class.getResource("/app.version");
+        }
+        return url;
     }
 
 }

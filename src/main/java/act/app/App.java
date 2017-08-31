@@ -81,6 +81,7 @@ import org.rythmengine.utils.I18N;
 import javax.enterprise.context.ApplicationScoped;
 import java.io.File;
 import java.io.IOException;
+import java.security.Key;
 import java.util.*;
 
 import static act.app.event.AppEventId.*;
@@ -111,7 +112,7 @@ public class App extends DestroyableBase {
 
     private volatile String profile;
     private String name;
-    private String id;
+    private String shortId;
     private File appBase;
     private File appHome;
     private Router router;
@@ -168,8 +169,7 @@ public class App extends DestroyableBase {
     }
 
     protected App(String name, File appBase, ProjectLayout layout) {
-        this.name = name;
-        this.id = generateId(name);
+        this.name(name);
         this.appBase = appBase;
         this.layout = layout;
         this.appHome = RuntimeDirs.home(this);
@@ -182,10 +182,14 @@ public class App extends DestroyableBase {
 
     App name(String name) {
         this.name = name;
-        this.id = generateId(name);
+        this.shortId = generateId(name);
         return this;
     }
 
+    /**
+     * Returns the name of the app
+     * @return the app name
+     */
     public String name() {
         return name;
     }
@@ -193,12 +197,12 @@ public class App extends DestroyableBase {
     /**
      * Returns short id which is derived from passed in app name.
      *
-     * **Note** `App.id()` is by no means to create a unique identifier of application.
+     * **Note** `App.shortId()` is by no means to create a unique identifier of application.
      *
-     * @return the short name
+     * @return the short id of the app
      */
-    public String id() {
-        return id;
+    public String shortId() {
+        return shortId;
     }
 
     private static String generateId(String name) {

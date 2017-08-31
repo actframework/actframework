@@ -66,8 +66,10 @@ import org.osgl.util.*;
 
 import java.io.File;
 import java.lang.management.ManagementFactory;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import static act.Destroyable.Util.tryDestroy;
 
@@ -584,17 +586,18 @@ public final class Act {
     }
 
     /**
-     * Start the application without application name and use the entry class to find the scan package
+     * Start the application without specifying application name and use the entry class to find the scan package
+     *
+     * The main entry class's {@link Class#getSimpleName()} will be used as the application's name
      *
      * @throws Exception any exception raised during app start
      */
     public static void start() throws Exception {
-        StackTraceElement[] sa = new RuntimeException().getStackTrace();
-        E.unexpectedIf(sa.length < 2, "Whoops!");
-        StackTraceElement ste = sa[1];
-        String className = ste.getClassName();
-        E.unexpectedIf(!className.contains("."), "The main class must have package name to use Act");
-        RunApp.start(null, Version.appVersion(), S.beforeLast(className, "."));
+        String className = exploreClassName();
+        $.Var<String> appNameHolder = $.var();
+        $.Var<String> pkgNameHolder = $.var();
+        getAppNameAndPackage(className, appNameHolder, pkgNameHolder);
+        RunApp.start(appNameHolder.get(), Version.appVersion(appNameHolder.get()), pkgNameHolder.get());
     }
 
     /**
@@ -604,13 +607,16 @@ public final class Act {
      * @param appName the app name
      * @throws Exception any exception thrown out
      */
-    public static void start(String appName) throws Exception {
-        StackTraceElement[] sa = new RuntimeException().getStackTrace();
-        E.unexpectedIf(sa.length < 2, "Whoops!");
-        StackTraceElement ste = sa[1];
-        String className = ste.getClassName();
-        E.unexpectedIf(!className.contains("."), "The main class must have package name to use Act");
-        RunApp.start(appName, Version.appVersion(), S.beforeLast(className, "."));
+    public static void start(final String appName) throws Exception {
+        String className = exploreClassName();
+        $.Var<String> appNameHolder = $.var(appName);
+        $.Var<String> pkgNameHolder = $.var();
+        if (S.blank(appName)) {
+            getAppNameAndPackage(className, appNameHolder, pkgNameHolder);
+        } else {
+            pkgNameHolder.set(getPackageName(className));
+        }
+        RunApp.start(appNameHolder.get(), Version.appVersion(appNameHolder.get()), pkgNameHolder.get());
     }
 
     /**
@@ -620,7 +626,7 @@ public final class Act {
      * @throws Exception any exception raised during act start up
      */
     public static void start(String appName, String scanPackage) throws Exception {
-        RunApp.start(appName, Version.appVersion(), scanPackage);
+        RunApp.start(appName, Version.appVersion(appName), scanPackage);
     }
 
     /**
@@ -630,7 +636,7 @@ public final class Act {
      * @throws Exception any exception raised during act start up
      */
     public static void start(String appName, Class<?> anyAppClass) throws Exception {
-        RunApp.start(appName, Version.appVersion(), anyAppClass);
+        RunApp.start(appName, Version.appVersion(appName), anyAppClass);
     }
 
     /**
@@ -639,7 +645,11 @@ public final class Act {
      * @throws Exception any exception raised during act start up
      */
     public static void start(Class<?> anyAppClass) throws Exception {
-        RunApp.start(anyAppClass);
+        String className = anyAppClass.getName();
+        $.Var<String> appNameHolder = $.var();
+        $.Var<String> pkgNameHolder = $.var();
+        getAppNameAndPackage(className, appNameHolder, pkgNameHolder);
+        RunApp.start(appNameHolder.get(), Version.appVersion(appNameHolder.get()), pkgNameHolder.get());
     }
 
     /**
@@ -817,11 +827,66 @@ public final class Act {
         appManager = AppManager.create();
     }
 
+    private static String getPackageName(Class<?> theClass, Package thePackage) {
+        if (null != thePackage) {
+            return thePackage.getName();
+        } else {
+            String className = theClass.getName();
+            E.unexpectedIf(!className.contains("."), "The main class must have package name to use Act");
+            return (S.beforeLast(theClass.getName(), "."));
+        }
+    }
+
+    static String getPackageName(String className) {
+        Class mainClass = $.classForName(className);
+        while (null != mainClass.getEnclosingClass()) {
+            mainClass = mainClass.getEnclosingClass();
+        }
+        Package pkg = mainClass.getPackage();
+        return getPackageName(mainClass, pkg);
+    }
+
+    static String exploreClassName() {
+        StackTraceElement[] sa = new RuntimeException().getStackTrace();
+        E.unexpectedIf(sa.length < 3, "Whoops!");
+        StackTraceElement ste = sa[2];
+        String className = ste.getClassName();
+        E.unexpectedIf(!className.contains("."), "The main class must have package name to use Act");
+        return className;
+    }
+
+    static void getAppNameAndPackage(String className, $.Var<String> appNameHolder, $.Var<String> packageHolder) {
+        C.List<String> nameList = C.newList();
+        Class mainClass = $.classForName(className);
+        nameList.addAll(classNameTokensReversed(mainClass));
+        while (null != mainClass.getEnclosingClass()) {
+            mainClass = mainClass.getEnclosingClass();
+            nameList.addAll(classNameTokensReversed(mainClass));
+        }
+        Package pkg = mainClass.getPackage();
+        String pkgName = getPackageName(mainClass, pkg);
+        packageHolder.set(pkgName);
+        nameList = filterNoise(nameList).reverse();
+        if (nameList.isEmpty()) {
+            // app name is all noise, let's fall back to the package names
+            nameList = C.list(Keyword.of(pkgName).tokens());
+            if (nameList.size() > 1) {
+                nameList = nameList.drop(1);
+            }
+        }
+        String appNameChain = S.join(".", nameList);
+        appNameHolder.set(Keyword.of(appNameChain).header());
+    }
+
     private static void destroyApplicationManager() {
         if (null != appManager) {
             appManager.destroy();
             appManager = null;
         }
+    }
+
+    private static List<String> classNameTokensReversed(Class theClass) {
+        return C.list(Keyword.of(theClass.getSimpleName()).tokens()).reverse();
     }
 
     private static void writePidFile() {
@@ -877,6 +942,23 @@ public final class Act {
             pidFile = "act.pid";
         }
         return pidFile;
+    }
+
+    private static final Set<String> NOISE_WORDS = C.set(
+            "app", "application", "demo", "entry", "main");
+
+    private static C.List<String> filterNoise(List<String> appNameTokens) {
+        C.List<String> result = C.newList();
+        for (String token : appNameTokens) {
+            if (S.blank(token)) {
+                continue;
+            }
+            token = token.trim().toLowerCase();
+            if (!NOISE_WORDS.contains(token)) {
+                result.add(token);
+            }
+        }
+        return result;
     }
 
     public enum F {
