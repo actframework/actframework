@@ -30,7 +30,9 @@ import act.handler.builtin.controller.impl.ReflectedHandlerInvoker;
 import act.inject.DefaultValue;
 import act.inject.DependencyInjector;
 import act.inject.param.ParamValueLoaderService;
+import act.validation.NotBlank;
 import com.alibaba.fastjson.JSON;
+import org.apache.bval.constraints.NotEmpty;
 import org.joda.time.*;
 import org.osgl.$;
 import org.osgl.http.H;
@@ -40,6 +42,7 @@ import org.osgl.mvc.result.Result;
 import org.osgl.storage.ISObject;
 import org.osgl.util.*;
 
+import javax.validation.constraints.NotNull;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.*;
 import java.math.BigDecimal;
@@ -60,6 +63,7 @@ public class Endpoint implements Comparable<Endpoint> {
         private BeanSpec beanSpec;
         private String description;
         private String defaultValue;
+        private boolean required;
         private List<String> options;
 
         private ParamInfo(String bindName, BeanSpec beanSpec, String description) {
@@ -67,6 +71,7 @@ public class Endpoint implements Comparable<Endpoint> {
             this.beanSpec = beanSpec;
             this.description = description;
             this.defaultValue = checkDefaultValue(beanSpec);
+            this.required = checkRequired(beanSpec);
             this.options = checkOptions(beanSpec);
         }
 
@@ -82,6 +87,10 @@ public class Endpoint implements Comparable<Endpoint> {
             return description;
         }
 
+        public boolean isRequired() {
+            return required;
+        }
+
         public List<String> getOptions() {
             return options;
         }
@@ -92,7 +101,21 @@ public class Endpoint implements Comparable<Endpoint> {
 
         private String checkDefaultValue(BeanSpec spec) {
             DefaultValue def = spec.getAnnotation(DefaultValue.class);
-            return null != def ? def.value() : null;
+            if (null != def) {
+                return def.value();
+            }
+            Class<?> type = spec.rawType();
+            if (type.isPrimitive()) {
+                Object o = Act.app().resolverManager().resolve("", type);
+                return null != o ? o.toString() : null;
+            }
+            return null;
+        }
+
+        private boolean checkRequired(BeanSpec spec) {
+            return (spec.hasAnnotation(NotNull.class)
+                    || spec.hasAnnotation(NotBlank.class)
+                    || spec.hasAnnotation(NotEmpty.class));
         }
 
         private List<String> checkOptions(BeanSpec spec) {
@@ -112,6 +135,11 @@ public class Endpoint implements Comparable<Endpoint> {
     public enum Scheme {
         HTTP
     }
+
+    /**
+     * unique identify an endpoint in an application.
+     */
+    private String id;
 
     /**
      * The scheme used to access the endpoint
@@ -174,6 +202,10 @@ public class Endpoint implements Comparable<Endpoint> {
         return method.ordinal() - o.method.ordinal();
     }
 
+    public String getId() {
+        return id;
+    }
+
     public Scheme getScheme() {
         return scheme;
     }
@@ -230,6 +262,7 @@ public class Endpoint implements Comparable<Endpoint> {
         ReflectedHandlerInvoker invoker = $.cast(proxy.actionHandler().invoker());
         Class<?> controllerClass = invoker.controllerClass();
         Method method = invoker.method();
+        this.id = id(method);
         returnType = method.getReturnType();
         returnSample = generateSampleJson(BeanSpec.of(method.getGenericReturnType(), null, Act.injector()));
         Description descAnno = method.getAnnotation(Description.class);
@@ -248,10 +281,10 @@ public class Endpoint implements Comparable<Endpoint> {
                 // TODO find method description from comments in source file
             }
         }
-        return defMethodDescription(method);
+        return id(method);
     }
 
-    private String defMethodDescription(Method method) {
+    private String id(Method method) {
         Class<?> hosting = method.getDeclaringClass();
         return className(hosting) + "." + method.getName();
     }
@@ -443,6 +476,9 @@ public class Endpoint implements Comparable<Endpoint> {
                     Array.set(sample, 1, generateSampleData(BeanSpec.of(type.getComponentType(), Act.injector()), typeChain));
                     return sample;
                 } else if ($.isSimpleType(type)) {
+                    if (!type.isPrimitive()) {
+                        type = $.primitiveTypeOf(type);
+                    }
                     return StringValueResolver.predefined().get(type).resolve(null);
                 } else if (LocalDateTime.class.isAssignableFrom(type)) {
                     return LocalDateTime.now();
