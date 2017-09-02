@@ -128,6 +128,16 @@ public class GenieInjector extends DependencyInjectorBase<GenieInjector> {
         return genie().isScope(aClass);
     }
 
+    @Override
+    public boolean isInheritedScopeStopper(Class<? extends Annotation> annoClass) {
+        return genie().isInheritedScopeStopper(annoClass);
+    }
+
+    @Override
+    public Class<? extends Annotation> scopeByAlias(Class<? extends Annotation> aClass) {
+        return genie().scopeByAlias(aClass);
+    }
+
     public void addModule(Object module) {
         E.illegalStateIf(null != genie);
         modules.add(module);
