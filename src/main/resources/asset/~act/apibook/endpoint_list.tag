@@ -1,5 +1,6 @@
 <endpoint-list>
     <div class="endpoint" each={ endpoints }>
+        <a id="{ id }"></a>
         <h3 class="desc">{ description }</h3>
         <pre class="code">[{ method }] { path }</pre>
         <br/>
@@ -14,6 +15,7 @@
                     <tr>
                         <th>name</th>
                         <th>type</th>
+                        <th>required</th>
                         <th>default</th>
                         <th>description</th>
                     </tr>
@@ -21,9 +23,8 @@
                     <tbody>
                     <tr each={ params }>
                         <td>{ name }</td>
-                        <td>
-                            { type }
-                        </td>
+                        <td>{ type }</td>
+                        <td>{ required }</td>
                         <td>
                             <span if={ defaultValue }>{ defaultValue }</span>
                             <span if={ !defaultValue }>N/A</span>
@@ -51,6 +52,14 @@
     <style>
         h3, h4, h5 {
             margin-bottom: 0.2em;
+        }
+
+        h3.desc {
+            margin-top: 80px;
+        }
+
+        a[id] {
+            display: block;
         }
 
         table {
@@ -123,15 +132,15 @@
     <script>
         var self = this
         self.endpoints = []
+        self.sysInfo = {}
         self.on('mount', function () {
-            self.endpoints = self.fetchEndpoints()
-            self.update()
+            self.fetchEndpoints()
         })
-        fetchEndpoints()
-        {
-            $.getJSON('/~/apidoc/endpoint', function (endpoints) {
+        fetchEndpoints() {
+            $.getJSON('/~/apidoc/endpoint', function(endpoints) {
                 self.endpoints = endpoints
                 self.update()
+                riot.store.trigger('endpoints-fetched', endpoints);
             })
         }
     </script>

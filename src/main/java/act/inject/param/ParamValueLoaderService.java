@@ -289,9 +289,7 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
                 if (shouldWaive(field)) {
                     continue;
                 }
-                Type type = field.getGenericType();
-                Annotation[] annotations = field.getAnnotations();
-                BeanSpec spec = BeanSpec.of(type, annotations, field.getName(), injector);
+                BeanSpec spec = BeanSpec.of(field, injector);
                 ParamValueLoader loader = paramValueLoaderOf(spec);
                 boolean provided = (loader instanceof ProvidedValueLoader);
                 if (null != loader && !provided) {
@@ -392,10 +390,10 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
             }
         }
         if (null == loader) {
-            Annotation[] aa = spec.allAnnotations();
-            for (Annotation a : aa) {
-                Bind bind = AnnotationUtil.tagAnnotation(a, Bind.class);
-                if (null != bind) {
+            Annotation[] aa = spec.taggedAnnotations(Bind.class);
+            if (aa.length > 0) {
+                for (Annotation a: aa) {
+                    Bind bind = AnnotationUtil.tagAnnotation(a, Bind.class);
                     for (Class<? extends Binder> binderClass : bind.value()) {
                         Binder binder = injector.get(binderClass);
                         binder.attributes($.evaluate(a));
@@ -615,6 +613,11 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
             name = field.getName();
         }
         ParamKey key = paramKey.child(name);
+
+        ParamValueLoader loader = binder(spec, key.toString());
+        if (null != loader) {
+            return loader;
+        }
 
         Class fieldType = field.getType();
         StringValueResolver resolver = resolverManager.resolver(fieldType, spec);

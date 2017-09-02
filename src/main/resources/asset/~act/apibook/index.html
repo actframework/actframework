@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="UTF-8">
-    <title>apibook</title>
+    <title>apibook - { appName } </title>
     <style>
         body {
             background-color: #222;
@@ -40,12 +40,13 @@
     </style>
 </head>
 <body>
-<h1 class="book-title">API Book</h1>
-<endpoint-list></endpoint-list>
+<apibook></apibook>
 <script src="/~/asset/js/jquery.js"></script>
 <script src="/~/asset/js/jquery.ext.js"></script>
 <script src="/~/asset/js/riotjs.js"></script>
+<script type="riot/tag" src="/~/asset/apibook/apibook.tag"></script>
 <script type="riot/tag" src="/~/asset/apibook/endpoint_list.tag"></script>
+<script type="riot/tag" src="/~/asset/apibook/toc.tag"></script>
 <script>
     var Store = function(){
         riot.observable(this)
