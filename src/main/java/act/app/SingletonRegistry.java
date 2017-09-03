@@ -61,7 +61,7 @@ public class SingletonRegistry extends AppServiceBase<SingletonRegistry> {
         registry.put(singletonClass, singleton);
     }
 
-    synchronized <T> T get(Class<T> singletonClass) {
+    <T> T get(Class<T> singletonClass) {
         return $.cast(registry.get(singletonClass));
     }
 
