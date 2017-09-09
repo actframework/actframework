@@ -274,6 +274,7 @@ public class HandlerEnhancer extends MethodVisitor implements Opcodes {
                 return segment.meta.appCtxLocalVariableTableIndex();
             }
 
+            @SuppressWarnings("FallThrough")
             private void injectRenderArgSetCode(AbstractInsnNode invokeNode) {
                 if (!segment.meta.hasLocalVariableTable()) {
                     logger.warn("local variable table info not found. ActionContext render args might not be automatically populated");
@@ -476,6 +477,7 @@ public class HandlerEnhancer extends MethodVisitor implements Opcodes {
                 segment.instructions.insertBefore(node, list);
             }
 
+            @SuppressWarnings("FallThrough")
             private void injectThrowCode(AbstractInsnNode invokeNode) {
                 if (segment.meta.hasReturn()) {
                     return;

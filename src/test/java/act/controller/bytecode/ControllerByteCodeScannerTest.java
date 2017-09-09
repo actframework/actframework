@@ -20,7 +20,7 @@ package act.controller.bytecode;
  * #L%
  */
 
-import act.TestBase;
+import act.ActTestBase;
 import act.app.AppByteCodeScanner;
 import act.app.AppCodeScannerManager;
 import act.app.TestingAppClassLoader;
@@ -55,7 +55,7 @@ import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.*;
 import static org.osgl.http.H.Method.*;
 
-public class ControllerByteCodeScannerTest extends TestBase {
+public class ControllerByteCodeScannerTest extends ActTestBase {
 
     private ControllerClassMetaInfoManager infoSrc;
     private ClassInfoRepository classInfoRepository;
@@ -144,6 +144,8 @@ public class ControllerByteCodeScannerTest extends TestBase {
         verify(mockRouter).addMapping(GET, "/foo/bar", "testapp.controller.WithContextPath.bar", RouteSource.ACTION_ANNOTATION);
     }
 
+    @Test
+    @Ignore
     public void verifyWithAppContextNoReturnNoParam() {
         String url = "/no_ret_no_param";
         verifyRouting(url, "WithAppContext", "noReturnNoParam", GET, PUT);
@@ -169,6 +171,8 @@ public class ControllerByteCodeScannerTest extends TestBase {
         assertNoParam(ff_f1);
     }
 
+    @Test
+    @Ignore
     public void verifyWithAppContextStaticNoReturnNoParam() {
         String url = "/static_no_ret_no_param";
         verifyRouting(url, "WithAppContext", "staticReturnStringNoParam", GET);

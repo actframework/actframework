@@ -595,16 +595,12 @@ public class EventBus extends AppServiceBase<EventBus> {
         });
     }
 
-    private static boolean isTraceEnabled() {
-        return LOGGER.isTraceEnabled();
-    }
-
-    private void trace(String msg, Object... args) {
+    protected void trace(String msg, Object... args) {
         msg = S.fmt(msg, args);
         if (once) {
             msg = S.builder("[once]").append(msg).toString();
         }
-        LOGGER.trace(msg);
+        super.trace(msg);
     }
 
 }

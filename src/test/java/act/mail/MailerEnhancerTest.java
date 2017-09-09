@@ -20,7 +20,7 @@ package act.mail;
  * #L%
  */
 
-import act.TestBase;
+import act.ActTestBase;
 import act.app.AppByteCodeScanner;
 import act.app.AppCodeScannerManager;
 import act.app.TestingAppClassLoader;
@@ -52,7 +52,7 @@ import java.util.List;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class MailerEnhancerTest extends TestBase implements MailerClassMetaInfoHolder {
+public class MailerEnhancerTest extends ActTestBase implements MailerClassMetaInfoHolder {
 
     public static final String TMPL_PATH = "/path/to/template";
 

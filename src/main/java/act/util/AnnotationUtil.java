@@ -20,9 +20,6 @@ package act.util;
  * #L%
  */
 
-import org.osgl.$;
-import org.osgl.exception.UnexpectedException;
-
 import java.lang.annotation.Annotation;
 
 public class AnnotationUtil {
@@ -61,13 +58,7 @@ public class AnnotationUtil {
      */
     @Deprecated
     public static <T extends Annotation> Class<T> classOf(Annotation annotation) {
-        Class<?>[] ca = annotation.getClass().getInterfaces();
-        for (Class<?> c: ca) {
-            if (Annotation.class.isAssignableFrom(c)) {
-                return $.cast(c);
-            }
-        }
-        throw new UnexpectedException("!!!");
+        return (Class<T>) annotation.annotationType();
     }
 
     public static <T extends Annotation> T getAnnotation(Class<?> targetClass, Class<T> annotationClass) {

@@ -20,11 +20,11 @@ package act.cli.util;
  * #L%
  */
 
-import act.TestBase;
+import act.ActTestBase;
 import org.junit.Test;
 import org.osgl.util.C;
 
-public class CommandLineParserTest extends TestBase {
+public class CommandLineParserTest extends ActTestBase {
 
     private CommandLineParser p;
 

@@ -24,6 +24,7 @@ import act.Act;
 import act.Zen;
 import act.conf.AppConfigKey;
 import act.conf.ConfLoader;
+import act.internal.util.AppDescriptor;
 import act.sys.Env;
 import com.github.lalyos.jfiglet.FigletFont;
 import org.osgl.$;
@@ -43,8 +44,8 @@ public class Banner {
 
     private static String cachedBanner;
 
-    public static void print(String appName, String appVersion) {
-        String banner = banner(appName, Act.VERSION, appVersion);
+    public static void print(AppDescriptor appDescriptor) {
+        String banner = banner(appDescriptor);
         System.out.println(banner);
         cachedBanner = banner;
     }
@@ -53,13 +54,15 @@ public class Banner {
         return cachedBanner;
     }
 
-    public static String banner(String text, String actVersion, String appVersion) {
+    public static String banner(AppDescriptor appDescriptor) {
+        String text = appDescriptor.getAppName();
         if (S.blank(text)) {
             text = "ACTFRAMEWORK";
         }
         String s = asciiArt(text);
         int width = width(s);
         S.Buffer sb = S.buffer(s);
+        String actVersion = Act.VERSION.getVersion();
         if ("ACTFRAMEWORK".equals(text)) {
             int n = actVersion.length();
             int spaceLeft = (width - n + 1) / 2;
@@ -69,7 +72,7 @@ public class Banner {
             sb.append(actVersion).append("\n");
         } else {
             sb.append(poweredBy(width, actVersion));
-            sb.append("\n\n version: ").append(appVersion);
+            sb.append("\n\n version: ").append(appDescriptor.getVersion().getVersion());
         }
         File aFile = new File("");
         String group = Act.nodeGroup();

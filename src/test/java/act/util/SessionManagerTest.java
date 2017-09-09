@@ -20,7 +20,7 @@ package act.util;
  * #L%
  */
 
-import act.TestBase;
+import act.ActTestBase;
 import act.app.App;
 import act.app.util.AppCrypto;
 import act.conf.AppConfig;
@@ -33,7 +33,7 @@ import static org.mockito.Mockito.*;
 /**
  * Test {@link SessionManager}
  */
-public class SessionManagerTest extends TestBase {
+public class SessionManagerTest extends ActTestBase {
     App app;
     AppConfig config;
     AppCrypto crypto;

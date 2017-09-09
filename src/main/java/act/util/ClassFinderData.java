@@ -20,6 +20,7 @@ package act.util;
  * #L%
  */
 
+import act.Act;
 import act.app.App;
 import act.app.event.AppEventId;
 import act.sys.Env;
@@ -30,7 +31,7 @@ import org.osgl.util.S;
 
 public class ClassFinderData {
 
-    private static final Logger logger = App.logger;
+    private static final Logger logger = Act.LOGGER;
 
     public enum By {
         ANNOTATION() {

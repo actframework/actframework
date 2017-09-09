@@ -21,6 +21,7 @@ package act.app;
  */
 
 import act.Act;
+import act.internal.util.AppDescriptor;
 import org.osgl.$;
 import org.osgl.logging.L;
 import org.osgl.logging.Logger;
@@ -66,12 +67,12 @@ public class AppScanner {
         return buildFileProbeMap.size() + projectLayoutProbes.size();
     }
 
-    void scan(String appName, $.Func1<App, ?> callback) {
+    void scan(AppDescriptor descriptor, $.Func1<App, ?> callback) {
         File[] appBases = appBases();
         int size = appBases.length;
         for (int i = 0; i < size; ++i) {
             File appBase = appBases[i];
-            scan(appName, appBase, callback);
+            scan(descriptor, appBase, callback);
         }
     }
 
@@ -80,16 +81,16 @@ public class AppScanner {
         return appBase.listFiles();
     }
 
-    private void scan(String appName, File appBase, $.Func1<App, ?> callback) {
+    private void scan(AppDescriptor descriptor, File appBase, $.Func1<App, ?> callback) {
         App app;
         ProjectLayout layout = probe(appBase);
         if (null == layout && !Act.isDev()) {
             layout = ProjectLayout.PredefinedLayout.PKG;
         }
         if (null != layout) {
-            app = App.create(appBase, layout);
-            if (null != appName) {
-                app.name(appName);
+            app = App.create(appBase, descriptor.getVersion(), layout);
+            if (null != descriptor.getAppName()) {
+                app.name(descriptor.getAppName());
             }
             callback.apply(app);
         } else {

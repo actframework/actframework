@@ -20,14 +20,14 @@ package act.data;
  * #L%
  */
 
-import act.TestBase;
+import act.ActTestBase;
 import org.junit.Before;
 import org.junit.Test;
 import testapp.model.Person;
 
 import java.util.List;
 
-public class DataPropertyRepositoryTest extends TestBase {
+public class DataPropertyRepositoryTest extends ActTestBase {
     private DataPropertyRepository repo;
 
     @Before

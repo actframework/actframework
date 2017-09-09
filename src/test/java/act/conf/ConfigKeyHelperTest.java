@@ -21,7 +21,7 @@ package act.conf;
  */
 
 import act.Act;
-import act.TestBase;
+import act.ActTestBase;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -33,7 +33,7 @@ import org.osgl.util.S;
 
 import java.util.Map;
 
-public class ConfigKeyHelperTest extends TestBase {
+public class ConfigKeyHelperTest extends ActTestBase {
 
     ConfigKeyHelper helper = new ConfigKeyHelper(new $.F0<Act.Mode>() {
         @Override

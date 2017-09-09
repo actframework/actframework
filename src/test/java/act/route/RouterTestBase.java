@@ -20,7 +20,7 @@ package act.route;
  * #L%
  */
 
-import act.TestBase;
+import act.ActTestBase;
 import act.app.ActionContext;
 import act.app.App;
 import act.conf.AppConfig;
@@ -34,7 +34,7 @@ import java.io.File;
 
 import static org.mockito.Mockito.*;
 
-public abstract class RouterTestBase extends TestBase {
+public abstract class RouterTestBase extends ActTestBase {
 
     protected Router router;
     protected RequestHandler controller;

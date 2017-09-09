@@ -54,11 +54,11 @@ public class BootstrapClassLoaderTestRunner extends BlockJUnit4ClassRunner {
 
     private static void initClassLoader() {
         prepareActHome();
-        classLoader = new TestServerBootstrapClassLoader(TestBase.class.getClassLoader());
+        classLoader = new TestServerBootstrapClassLoader(ActTestBase.class.getClassLoader());
     }
 
     private static void prepareActHome() {
-        File actHome = TestBase.root();
+        File actHome = ActTestBase.root();
         File lib = ensureDir(actHome, "lib");
         File plugin = ensureDir(actHome, "plugin");
         packageActJarInto(lib);
@@ -74,17 +74,17 @@ public class BootstrapClassLoaderTestRunner extends BlockJUnit4ClassRunner {
     }
 
     private static void packageActJarInto(File lib) {
-        File classes = new File(TestBase.root(), "classes");
+        File classes = new File(ActTestBase.root(), "classes");
         packageJarInto(classes, new File(lib, "act.jar"), "*");
     }
 
     private static void packageTestJarInto(File lib) {
-        File classes = new File(TestBase.root(), "test-classes");
+        File classes = new File(ActTestBase.root(), "test-classes");
         packageJarInto(classes, new File(lib, "act-test.jar"), "*");
     }
 
     private static void packagePluginJarInto(File lib) {
-        File classes = new File(TestBase.root(), "test-classes");
+        File classes = new File(ActTestBase.root(), "test-classes");
         packageJarInto(classes, new File(lib, "playground.jar"), "playground");
     }
 

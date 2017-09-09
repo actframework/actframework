@@ -37,6 +37,7 @@ import org.osgl.util.StringValueResolver;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
@@ -60,8 +61,10 @@ public class CliContextParamLoader extends ParamValueLoaderService {
         CliContext.ParsingContextBuilder.start();
         ensureOptionLoaders(method, methodMetaInfo);
         methodMetaInfoHolder.set(methodMetaInfo);
-        ParamValueLoader loader = findBeanLoader(commander);
-        classRegistry.putIfAbsent(commander, loader);
+        if (!Modifier.isStatic(method.getModifiers())) {
+            ParamValueLoader loader = findBeanLoader(commander);
+            classRegistry.putIfAbsent(commander, loader);
+        }
         $.Var<Boolean> boolBag = $.var();
         ParamValueLoader[] loaders = findMethodParamLoaders(method, commander, boolBag);
         methodRegistry.putIfAbsent(method, loaders);

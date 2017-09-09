@@ -207,15 +207,12 @@ public abstract class Config<E extends ConfigKey> extends DestroyableBase {
         Map<String, Object> subset = C.newMap();
         for (String key : raw.keySet()) {
             if (key.startsWith(prefix) || key.startsWith(prefix2)) {
-                Object o = data.get(key);
+                Object o = raw.get(key);
                 if (null == o) {
-                    o = raw.get(key);
-                    if (null == o) {
-                        continue;
-                    }
-                    if (o instanceof String) {
-                        o = AppConfigKey.helper.evaluate(o.toString(), raw);
-                    }
+                    continue;
+                }
+                if (o instanceof String) {
+                    o = AppConfigKey.helper.evaluate(o.toString(), raw);
                 }
                 if (key.startsWith("act.")) {
                     key = key.substring(4);

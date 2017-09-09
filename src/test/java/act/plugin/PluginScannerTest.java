@@ -22,13 +22,13 @@ package act.plugin;
 
 import act.Act;
 import act.BootstrapClassLoaderTestRunner;
-import act.TestBase;
+import act.ActTestBase;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 @RunWith(BootstrapClassLoaderTestRunner.class)
-public class PluginScannerTest extends TestBase {
+public class PluginScannerTest extends ActTestBase {
 
     protected PluginScanner pluginScanner;
 

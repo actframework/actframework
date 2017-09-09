@@ -227,7 +227,7 @@ class _Job extends DestroyableBase implements Runnable {
                 if (Act.isDev()) {
                     app.setBlockIssue(e);
                 } else {
-                    Act.shutdownApp(App.instance());
+                    Act.shutdown(App.instance());
                     destroy();
                     if (App.instance().isMainThread()) {
                         if (cause instanceof RuntimeException) {

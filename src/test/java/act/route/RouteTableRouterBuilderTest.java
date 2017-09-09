@@ -20,7 +20,7 @@ package act.route;
  * #L%
  */
 
-import act.TestBase;
+import act.ActTestBase;
 import act.app.App;
 import act.handler.RequestHandler;
 import act.handler.RequestHandlerResolver;
@@ -95,7 +95,7 @@ public class RouteTableRouterBuilderTest extends RouterTestBase {
         addRouteMap("GET /public file:/public");
         RequestHandler h = router.getInvoker(GET, "/public/file1.txt", ctx);
         yes(h instanceof StaticFileGetter);
-        eq(new File("target/test-classes/public"), TestBase.fieldVal(h, "base"));
+        eq(new File("target/test-classes/public"), ActTestBase.fieldVal(h, "base"));
     }
 
     @Test

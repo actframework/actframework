@@ -31,7 +31,7 @@ import javax.enterprise.context.SessionScoped;
 import java.lang.annotation.Annotation;
 import java.util.List;
 
-public abstract class DestroyableBase implements Destroyable {
+public abstract class DestroyableBase extends LogSupport implements Destroyable {
 
     private volatile boolean destroyed;
 

@@ -27,8 +27,6 @@ import org.osgl.util.S;
 
 import java.util.Set;
 
-import static act.app.App.logger;
-
 /**
  * Stores all method level information needed to generate
  * {@link Handler interceptors}

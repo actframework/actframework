@@ -20,7 +20,7 @@ package act.util;
  * #L%
  */
 
-import act.TestBase;
+import act.ActTestBase;
 import org.junit.Test;
 import org.osgl.mvc.annotation.GetAction;
 
@@ -28,7 +28,7 @@ import javax.inject.Singleton;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
-public class AnnotationUtilTest extends TestBase {
+public class AnnotationUtilTest extends ActTestBase {
 
     @Singleton
     static class Base {}

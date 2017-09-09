@@ -1,55 +1,622 @@
-/* comes from http://sensemaya.org/maya/2009/07/10/making-javadoc-more-legible */
-/* Javadoc style sheet */
+@import url(highlight.css);
 
-/* Define colors, fonts and other style attributes here to override the defaults */
-
-/* Page background color */
-body { background-color: #FFFFFF; color:#333; font-size: 100%; }
-
-body { font-size: 0.875em; line-height: 1.286em; font-family:   "Helvetica", "Arial", sans-serif; }
-
-code { color: #777; line-height: 1.286em; font-family: "Consolas", "Lucida Console", "Droid Sans Mono", "Andale Mono", "Monaco", "Lucida Sans Typewriter"; }
-
-a { text-decoration: none; color: #16569A; /* also try #2E85ED, #0033FF, #6C93C6, #1D7BBE, #1D8DD2 */ }
-a:hover { color: #EEEEEE; background-color: #16569A; }
-a:visited { color: #CC3300; }
-a:visited:hover { color: #fff; background-color: #CC3300; }
-
-table[border="1"] { border: 1px solid #ddd; }
-table[border="1"] td, table[border="1"] th { border: 1px solid #ddd; }
-table[cellpadding="3"] td { padding: 0.5em; }
-
-font[size="-1"] { font-size: 0.85em; line-height: 1.5em; }
-font[size="-2"] { font-size: 0.8em; }
-font[size="+2"] { font-size: 1.4em; line-height: 1.3em; padding: 0.4em 0; }
-
-/* Headings */
-h1 { font-size: 1.5em; line-height: 1.286em;}
-
-/* Table colors */
-.TableHeadingColor     { background: #ccc; color:#444; } /* Dark mauve */
-.TableSubHeadingColor  { background: #ddd; color:#444; } /* Light mauve */
-.TableRowColor         { background: #FFFFFF; color:#666; font-size: 0.95em; } /* White */
-.TableRowColor code    { color:#000; } /* White */
-
-/* Font used in left-hand frame lists */
-.FrameTitleFont   { font-size: 100%; }
-.FrameHeadingFont { font-size:  90%; }
-.FrameItemFont { font-size:  0.9em; line-height: 1.3em; 
+body {
+  background-color:#222222;
+  color:#D2DECA;
+  font-family:'Roboto', 'San Francisco Text', 'Noto Sans', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+  font-size:16px;
+  margin:0;
 }
-/* Java Interfaces */
-.FrameItemFont a i {
-  font-style: normal; color: #666;
+a:link, a:visited {
+  text-decoration:none;
+  color:#999;
 }
-.FrameItemFont a:hover i {
-  font-style: normal; color: #fff; background-color: #666;
+a:hover, a:focus {
+  text-decoration:underline;
+}
+a:active {
+  text-decoration:none;
+  color:#999;
+}
+a[name] {
+  color:#D2DECA;
+}
+a[name]:hover {
+  text-decoration:none;
+  color:#D2DECA;
+}
+/*[MOD]
+pre {
+    font-family:'Roboto Mono', 'Envy Code R', Consolas, Menlo, Monaco,monospace;
+    font-size:14px;
+}*/
+h1 {
+  font-size:20px;
+}
+h2 {
+  font-size:18px;
+}
+h3 {
+  font-size:16px;
+  font-style:italic;
+}
+h4 {
+  font-size:13px;
+}
+h5 {
+  font-size:12px;
+}
+h6 {
+  font-size:11px;
+}
+ul {
+  list-style-type:disc;
 }
 
-/* Navigation bar fonts and colors */
-.NavBarCell1    { background-color:#E0E6DF; } /* Light mauve */
-.NavBarCell1Rev { background-color:#16569A; color:#FFFFFF} /* Dark Blue */
-.NavBarFont1    { }
-.NavBarFont1Rev { color:#FFFFFF; }
+code, tt {
+  font-family:'Roboto Mono', 'Envy Code R', Consolas, Menlo, Monaco,monospace;
+  font-size:14px;
+  padding-top:4px;
+  margin-top:8px;
+  line-height:1.4em;
+}
+dt code {
+  font-family:'Roboto Mono', 'Envy Code R', Consolas, Menlo, Monaco,monospace;
+  font-size:14px;
+  padding-top:4px;
+}
+table tr td dt code {
+  font-family:'Roboto Mono', 'Envy Code R', Consolas, Menlo, Monaco,monospace;
+  font-size:14px;
+  vertical-align:top;
+  padding-top:4px;
+}
+sup {
+  font-size:8px;
+}
+/*
+Document title and Copyright styles
+*/
+.clear {
+  clear:both;
+  height:0px;
+  overflow:hidden;
+}
+.aboutLanguage {
+  float:right;
+  padding:0px 21px;
+  font-size:.8em;
+  z-index:200;
+  margin-top:-7px;
+}
+.legalCopy {
+  margin-left:.5em;
+}
+.bar a, .bar a:link, .bar a:visited, .bar a:active {
+  color:#222222;
+  text-decoration:none;
+}
+.bar a:hover, .bar a:focus {
+  color:#999;
+}
+.tab {
+  background-color:#004F66;
+  color:#D0D0D0;
+  padding:8px;
+  width:5em;
+  font-weight:bold;
+}
+/*
+Navigation bar styles
+*/
+.bar {
+  background-color:#818487;
+  color:#080707;
+  padding:.8em .5em .4em .8em;
+  height:auto;/*height:1.8em;*/
+  font-size:11px;
+  margin:0;
+}
+.topNav {
+  background-color:#818487;
+  color:#222222;
+  float:left;
+  padding:0;
+  width:100%;
+  clear:right;
+  height:2.8em;
+  padding-top:10px;
+  overflow:hidden;
+  font-size:12px;
+}
+.bottomNav {
+  margin-top:10px;
+  background-color:#818487;
+  color:#222222;
+  float:left;
+  padding:0;
+  width:100%;
+  clear:right;
+  height:2.8em;
+  padding-top:10px;
+  overflow:hidden;
+  font-size:12px;
+}
+.subNav {
+  background-color:#47494C;
+  float:left;
+  width:100%;
+  overflow:hidden;
+  font-size:12px;
+}
+.subNav div {
+  clear:left;
+  float:left;
+  padding:0 0 5px 6px;
+  text-transform:uppercase;/*???*/
+}
+ul.navList, ul.subNavList {
+  float:left;
+  margin:0 25px 0 0;
+  padding:0;
+}
+ul.navList li{
+  list-style:none;
+  float:left;
+  padding: 5px 6px;
+  text-transform:uppercase;/*???*/
+}
+ul.subNavList li{
+  list-style:none;
+  float:left;
+  font-size:90%;/*???*/
+}
+.topNav a:link, .topNav a:active, .topNav a:visited, .bottomNav a:link, .bottomNav a:active, .bottomNav a:visited {
+  color:#222222;
+  text-decoration:none;
+  text-transform:uppercase;/*???*/
+}
+.topNav a:hover, .bottomNav a:hover {
+  text-decoration:none;
+  color:#999;
+  text-transform:uppercase;/*???*/
+}
+.navBarCell1Rev {
+  background-color:#C2C2C2;
+  color:#253441;
+  margin: auto 5px;
+}
+.skipNav {
+  position:absolute;
+  top:auto;
+  left:-9999px;
+  overflow:hidden;
+}
+/*
+Page header and footer styles
+*/
+.header, .footer {
+  clear:both;
+  margin:0 20px;
+  padding:5px 0 0 0;
+}
+.indexHeader {
+  margin:10px;
+  position:relative;
+}
+.indexHeader span{
+  margin-right:15px;
+}
+.indexHeader h1 {
+  font-size:13px;
+}
+.title {
+  margin:10px 0;
+}
+.subTitle {
+  margin:5px 0 0 0;
+}
+.header ul {
+  margin:0 0 15px 0;
+  padding:0;
+}
+.footer ul {
+  margin:20px 0 5px 0;
+}
+.header ul li, .footer ul li {
+  list-style:none;
+  font-size:13px;
+}
+/*
+Heading styles
+*/
+div.details ul.blockList ul.blockList ul.blockList li.blockList h4, div.details ul.blockList ul.blockList ul.blockListLast li.blockList h4 {
+  background-color:#47494C;
+  border:none;
+  margin:0 0 6px -8px;
+  padding:7px 5px;
+}
+ul.blockList ul.blockList ul.blockList li.blockList h3 {
+  background-color:#47494C;
+  border:none;
+  margin:0 0 6px -8px;
+  padding:7px 5px;
+}
+ul.blockList ul.blockList li.blockList h3 {
+  padding:0;
+  margin:15px 0;
+}
+ul.blockList li.blockList h2 {
+  padding:10px 0 10px 0;
+}
+/*
+Page layout container styles
+*/
+.contentContainer, .sourceContainer, .classUseContainer, .serializedFormContainer, .constantValuesContainer {
+  clear:both;
+  padding:10px 20px;
+  position:relative;
+}
+.indexContainer {
+  margin:10px;
+  position:relative;
+  font-size:14px;
+}
+.indexContainer h2 {
+  font-size:15px;
+  padding:0 0 3px 0;
+}
+.indexContainer ul {
+  margin:0;
+  padding:0;
+}
+.indexContainer ul li {
+  list-style:none;
+  padding-top:2px;
+}
+.contentContainer .description dl dt, .contentContainer .details dl dt, .serializedFormContainer dl dt {
+  font-size:14px;
+  font-weight:bold;
+  margin:10px 0 0 0;
+  color:#e4e4e4;
+}
+.contentContainer .description dl dd, .contentContainer .details dl dd, .serializedFormContainer dl dd {
+  margin:5px 0 10px 0px;
+  font-size:14px;
+  font-family:'DejaVu Sans Mono',monospace;
+}
+.serializedFormContainer dl.nameValue dt {
+  margin-left:1px;
+  font-size:1.1em;
+  display:inline;
+  font-weight:bold;
+}
+.serializedFormContainer dl.nameValue dd {
+  margin:0 0 0 1px;
+  font-size:1.1em;
+  display:inline;
+}
+/*
+List styles
+*/
+ul.horizontal li {
+  display:inline;
+  font-size:0.9em;
+}
+ul.inheritance {
+  margin:0;
+  padding:0;
+}
+ul.inheritance li {
+  display:inline;
+  list-style:none;
+}
+ul.inheritance li ul.inheritance {
+  margin-left:15px;
+  padding-left:15px;
+  padding-top:1px;
+}
+ul.blockList, ul.blockListLast {
+  margin:10px 0 10px 0;
+  padding:0;
+}
+ul.blockList li.blockList, ul.blockListLast li.blockList {
+  list-style:none;
+  margin-bottom:15px;
+  line-height:1.4;
+}
+ul.blockList ul.blockList li.blockList, ul.blockList ul.blockListLast li.blockList {
+  padding:0px 20px 5px 10px;
+  border:1px solid #545454;
+  background-color:#282828;
+}
+ul.blockList ul.blockList ul.blockList li.blockList, ul.blockList ul.blockList ul.blockListLast li.blockList {
+  padding:0 0 5px 8px;
+  background-color:#222222;
+  border:none;
+}
+ul.blockList ul.blockList ul.blockList ul.blockList li.blockList {
+  margin-left:0;
+  padding-left:0;
+  padding-bottom:15px;
+  border:none;
+}
+ul.blockList ul.blockList ul.blockList ul.blockList li.blockListLast {
+  list-style:none;
+  border-bottom:none;
+  padding-bottom:0;
+}
+table tr td dl, table tr td dl dt, table tr td dl dd {
+  margin-top:0;
+  margin-bottom:1px;
+}
+/*
+Table styles
+*/
+.overviewSummary, .memberSummary, .typeSummary, .useSummary, .constantsSummary, .deprecatedSummary {
+  width:100%;
+  border-left:1px solid #333;
+  border-right:1px solid #333;
+  border-bottom:1px solid #333;
+}
+.overviewSummary, .memberSummary  {
+  padding:0px;
+}
+.overviewSummary caption, .memberSummary caption, .typeSummary caption,
+.useSummary caption, .constantsSummary caption, .deprecatedSummary caption {
+  position:relative;
+  text-align:left;
+  background-repeat:no-repeat;
+  color:#253441;
+  font-weight:bold;
+  clear:none;
+  overflow:hidden;
+  padding:0px;
+  padding-top:10px;
+  padding-left:1px;
+  margin:0px;
+  white-space:pre;
+}
+.overviewSummary caption a:link, .memberSummary caption a:link, .typeSummary caption a:link,
+.useSummary caption a:link, .constantsSummary caption a:link, .deprecatedSummary caption a:link,
+.overviewSummary caption a:hover, .memberSummary caption a:hover, .typeSummary caption a:hover,
+.useSummary caption a:hover, .constantsSummary caption a:hover, .deprecatedSummary caption a:hover,
+.overviewSummary caption a:active, .memberSummary caption a:active, .typeSummary caption a:active,
+.useSummary caption a:active, .constantsSummary caption a:active, .deprecatedSummary caption a:active,
+.overviewSummary caption a:visited, .memberSummary caption a:visited, .typeSummary caption a:visited,
+.useSummary caption a:visited, .constantsSummary caption a:visited, .deprecatedSummary caption a:visited {
+  color:#222222;
+}
+.overviewSummary caption span, .memberSummary caption span, .typeSummary caption span,
+.useSummary caption span, .constantsSummary caption span, .deprecatedSummary caption span {
+  white-space:nowrap;
+  padding-top:5px;
+  padding-left:12px;
+  padding-right:12px;
+  padding-bottom:7px;
+  display:inline-block;
+  float:left;
+  background-color:#C2C2C2;
+  border: none;
+  height:16px;
+}
+.memberSummary caption span.activeTableTab span {
+  white-space:nowrap;
+  padding-top:5px;
+  padding-left:12px;
+  padding-right:12px;
+  margin-right:3px;
+  display:inline-block;
+  float:left;
+  background-color:#C2C2C2;
+  height:16px;
+}
+.memberSummary caption span.tableTab span {
+  white-space:nowrap;
+  padding-top:5px;
+  padding-left:12px;
+  padding-right:12px;
+  margin-right:3px;
+  display:inline-block;
+  float:left;
+  background-color:#818487;
+  height:16px;
+}
+.memberSummary caption span.tableTab, .memberSummary caption span.activeTableTab {
+  padding-top:0px;
+  padding-left:0px;
+  padding-right:0px;
+  background-image:none;
+  float:none;
+  display:inline;
+}
+.overviewSummary .tabEnd, .memberSummary .tabEnd, .typeSummary .tabEnd,
+.useSummary .tabEnd, .constantsSummary .tabEnd, .deprecatedSummary .tabEnd {
+  display:none;
+  width:5px;
+  position:relative;
+  float:left;
+  background-color:#C2C2C2;
+}
+.memberSummary .activeTableTab .tabEnd {
+  display:none;
+  width:5px;
+  margin-right:3px;
+  position:relative;
+  float:left;
+  background-color:#C2C2C2;
+}
+.memberSummary .tableTab .tabEnd {
+  display:none;
+  width:5px;
+  margin-right:3px;
+  position:relative;
+  background-color:#818487;
+  float:left;
 
-.NavBarCell2    { background-color:#FFFFFF; color:#000000}
-.NavBarCell3    { background-color:#FFFFFF; color:#000000}
+}
+.overviewSummary td, .memberSummary td, .typeSummary td,
+.useSummary td, .constantsSummary td, .deprecatedSummary td {
+  text-align:left;
+  padding:0px 0px 12px 10px;
+  width:100%;
+}
+th.colOne, th.colFirst, th.colLast, .useSummary th, .constantsSummary th,
+td.colOne, td.colFirst, td.colLast, .useSummary td, .constantsSummary td{
+  vertical-align:top;
+  padding-right:0px;
+  padding-top:8px;
+  padding-bottom:3px;
+}
+th.colFirst, th.colLast, th.colOne, .constantsSummary th {
+  background:#47494C;
+  text-align:left;
+  padding:8px 3px 3px 7px;
+}
+td.colFirst, th.colFirst {
+  white-space:nowrap;
+  font-size:13px;
+}
+td.colLast, th.colLast {
+  font-size:13px;
+}
+td.colOne, th.colOne {
+  font-size:13px;
+}
+.overviewSummary td.colFirst, .overviewSummary th.colFirst,
+.overviewSummary td.colOne, .overviewSummary th.colOne,
+.memberSummary td.colFirst, .memberSummary th.colFirst,
+.memberSummary td.colOne, .memberSummary th.colOne,
+.typeSummary td.colFirst{
+  width:25%;
+  vertical-align:top;
+}
+td.colOne a:link, td.colOne a:active, td.colOne a:visited, td.colOne a:hover, td.colFirst a:link, td.colFirst a:active, td.colFirst a:visited, td.colFirst a:hover, td.colLast a:link, td.colLast a:active, td.colLast a:visited, td.colLast a:hover, .constantValuesContainer td a:link, .constantValuesContainer td a:active, .constantValuesContainer td a:visited, .constantValuesContainer td a:hover {
+  font-weight:bold;
+}
+.tableSubHeadingColor {
+  background-color:#2F3131;
+}
+.altColor {
+  background-color:#222222;
+}
+.rowColor {
+  background-color:#2F3131;
+}
+/*
+Content styles
+*/
+.description pre {
+  margin-top:0;
+}
+.deprecatedContent {
+  margin:0;
+  padding:10px 0;
+}
+.docSummary {
+  padding:0;
+}
+
+ul.blockList ul.blockList ul.blockList li.blockList h3 {
+  font-style:normal;
+}
+
+div.block {
+  font-size:16px;
+  font-family:'Roboto', 'San Francisco Text', 'Noto Sans', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+}
+
+td.colLast div {
+  padding-top:0px;
+}
+
+
+td.colLast a {
+  padding-bottom:3px;
+}
+/*
+Formatting effect styles
+*/
+.sourceLineNo {
+  color:green;
+  padding:0 30px 0 0;
+}
+h1.hidden {
+  visibility:hidden;
+  overflow:hidden;
+  font-size:10px;
+}
+.block {
+  display:block;
+  margin:3px 10px 2px 0px;
+  color:#E9E9e9;
+}
+.deprecatedLabel, .descfrmTypeLabel, .memberNameLabel, .memberNameLink,
+.overrideSpecifyLabel, .packageHierarchyLabel, .paramLabel, .returnLabel,
+.seeLabel, .simpleTagLabel, .throwsLabel, .typeNameLabel, .typeNameLink {
+  font-weight:bold;
+}
+.deprecationComment, .emphasizedPhrase, .interfaceName {
+  font-style:italic;
+}
+
+div.block div.block span.deprecationComment, div.block div.block span.emphasizedPhrase,
+div.block div.block span.interfaceName {
+  font-style:normal;
+}
+
+/* code block tweaks */
+code, tt {
+  font-size: 14px;
+}
+pre {
+  /* inspired by GitHub */
+  padding: 0 5px;
+  border: solid 1px #888;
+  background: #888;
+  border-radius: none;
+}
+pre code {
+  background: none;
+}
+li.blockList > pre {
+  font-size: 16px;
+  padding: 0;
+  margin: 0;
+  background: 0;
+  border: 0;
+}
+div.summary code {
+  background: none;
+  border: 0;
+  padding: 0;
+}
+
+/* @todo tag */
+div.todo {
+  display: block;
+  margin: 1em;
+  border: solid 1px black;
+  border-radius: 3px;
+}
+div.todoTitle {
+  display: block;
+  background: #f6f30d;
+  padding: 5px;
+  border-bottom: solid 1px black;
+}
+span.todoTitle {
+  font-weight: bold;
+}
+span.todoCounter {
+  float: right;
+  font-size: .8em;
+}
+div.todoText {
+  display: block;
+  padding: 5px;
+}
+
+pre .comment, pre .annotation, pre .template_comment, pre .diff .header, pre .chunk, pre .markdown .blockquote {
+  color: #333
+}

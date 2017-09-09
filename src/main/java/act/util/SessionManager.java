@@ -28,15 +28,12 @@ import act.plugin.Plugin;
 import org.osgl.$;
 import org.osgl.http.H;
 import org.osgl.http.H.Session;
-import org.osgl.logging.L;
-import org.osgl.logging.Logger;
 import org.osgl.util.*;
 
 import javax.enterprise.context.ApplicationScoped;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 
 import static act.Destroyable.Util.tryDestroyAll;
 import static org.osgl.http.H.Session.KEY_EXPIRATION;
@@ -47,10 +44,7 @@ import static org.osgl.http.H.Session.KEY_EXPIRE_INDICATOR;
  */
 public class SessionManager extends DestroyableBase {
 
-    private static Logger logger = L.get(SessionManager.class);
-
     private C.List<Listener> registry = C.newList();
-    private Map<App, CookieResolver> resolvers = C.newMap();
     private CookieResolver theResolver = null;
 
     public SessionManager() {
@@ -60,9 +54,6 @@ public class SessionManager extends DestroyableBase {
     protected void releaseResources() {
         tryDestroyAll(registry, ApplicationScoped.class);
         registry = null;
-
-        tryDestroyAll(resolvers.values(), ApplicationScoped.class);
-        resolvers = null;
 
         theResolver = null;
     }
@@ -116,19 +107,10 @@ public class SessionManager extends DestroyableBase {
 
     private CookieResolver getResolver(ActionContext context) {
         App app = context.app();
-        if (Act.multiTenant()) {
-            CookieResolver resolver = resolvers.get(app);
-            if (null == resolver) {
-                resolver = new CookieResolver(app);
-                resolvers.put(app, resolver);
-            }
-            return resolver;
-        } else {
-            if (theResolver == null) {
-                theResolver = new CookieResolver(app);
-            }
-            return theResolver;
+        if (theResolver == null) {
+            theResolver = new CookieResolver(app);
         }
+        return theResolver;
     }
 
     public static abstract class Listener extends DestroyableBase implements Plugin {
@@ -157,7 +139,7 @@ public class SessionManager extends DestroyableBase {
         public void onSessionDissolve() {}
     }
 
-    static class CookieResolver {
+    static class CookieResolver extends LogSupport {
 
         private App app;
         private AppConfig conf;
@@ -284,7 +266,7 @@ public class SessionManager extends DestroyableBase {
                         if (i > 0) sb.append(":");
                         sb.append(Arrays.toString(kAndV.get(i)));
                     }
-                    logger.warn("unexpected KV string: %S", sb.toString());
+                    warn("unexpected KV string: %S", sb.toString());
                 } else {
                     kv.put(new String(kAndV.get(0)), new String(kAndV.get(1)));
                 }

@@ -22,7 +22,7 @@ package act.handler.builtin;
 
 import act.MockResponse;
 import act.RequestImplBase;
-import act.TestBase;
+import act.ActTestBase;
 import act.app.ActionContext;
 import act.controller.ParamNames;
 import org.junit.Before;
@@ -35,11 +35,10 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 
 import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class StaticFileGetterTest extends TestBase {
+public class StaticFileGetterTest extends ActTestBase {
     ActionContext ctx;
     MockResponse resp;
     StaticFileGetter pathHandler;

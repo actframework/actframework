@@ -67,6 +67,7 @@ import act.view.rythm.RythmTransformerScanner;
 import act.view.rythm.RythmView;
 import org.osgl.$;
 import org.osgl.Osgl;
+import org.osgl.bootstrap.Version;
 import org.osgl.cache.CacheService;
 import org.osgl.http.H;
 import org.osgl.http.HttpConfig;
@@ -92,11 +93,6 @@ public class App extends DestroyableBase {
     public interface HotReloadListener {
         void preHotReload();
     }
-
-    @Deprecated
-    public static final Logger logger = Act.LOGGER;
-
-    public static final Logger LOGGER = Act.LOGGER;
 
     private static App INST;
 
@@ -156,18 +152,16 @@ public class App extends DestroyableBase {
             blockIssue.apply(context.req(), context.resp());
         }
     };
+    private final Version version;
     private List<HotReloadListener> hotReloadListeners = new ArrayList<>();
 
-    protected App() {
-        INST = this;
+    protected App(File appBase, Version version, ProjectLayout layout) {
+        this("MyApp", version, appBase, layout);
     }
 
-    protected App(File appBase, ProjectLayout layout) {
-        this("MyApp", appBase, layout);
-    }
-
-    protected App(String name, File appBase, ProjectLayout layout) {
+    protected App(String name, Version version, File appBase, ProjectLayout layout) {
         this.name(name);
+        this.version = version;
         this.appBase = appBase;
         this.layout = layout;
         this.appHome = RuntimeDirs.home(this);
@@ -190,6 +184,15 @@ public class App extends DestroyableBase {
      */
     public String name() {
         return name;
+    }
+
+    /**
+     * Returns the app version
+     * @return
+     *      the app version
+     */
+    public Version version() {
+        return version;
     }
 
     /**
@@ -431,7 +434,7 @@ public class App extends DestroyableBase {
     }
 
     public synchronized void setBlockIssue(Throwable e) {
-        LOGGER.fatal(e, "Block issue encountered");
+        logger.fatal(e, "Block issue encountered");
         if (e instanceof ActErrorResult) {
             blockIssue = (ActErrorResult) e;
         } else {
@@ -468,7 +471,7 @@ public class App extends DestroyableBase {
     }
 
     public void shutdown() {
-        Act.shutdownApp(this);
+        Act.shutdown(this);
     }
 
     @Override
@@ -479,7 +482,7 @@ public class App extends DestroyableBase {
         if (null == daemonRegistry) {
             return;
         }
-        LOGGER.info("App shutting down ....");
+        logger.info("App shutting down ....");
         for (HotReloadListener listener : hotReloadListeners) {
             listener.preHotReload();
         }
@@ -522,7 +525,7 @@ public class App extends DestroyableBase {
     public synchronized void refresh() {
         currentState = null;
         long ms = $.ms();
-        LOGGER.info("App starting ....");
+        logger.info("App starting ....");
         profile = null;
         blockIssue = null;
         blockIssueCause = null;
@@ -639,7 +642,7 @@ public class App extends DestroyableBase {
         if (null != blockIssueCause) {
             setBlockIssue(blockIssueCause);
         }
-        LOGGER.info("App[%s] loaded in %sms", name(), $.ms() - ms);
+        logger.info("App[%s] loaded in %sms", name(), $.ms() - ms);
         emit(POST_START);
     }
 
@@ -898,8 +901,8 @@ public class App extends DestroyableBase {
     }
 
     public void emit(AppEventId appEvent) {
-        if (LOGGER.isTraceEnabled()) {
-            LOGGER.trace(S.concat("emitting event: ", appEvent.name()));
+        if (logger.isTraceEnabled()) {
+            logger.trace(S.concat("emitting event: ", appEvent.name()));
         }
         currentState = appEvent;
         eventEmitted().add(appEvent);
@@ -928,7 +931,7 @@ public class App extends DestroyableBase {
     private void loadConfig() {
         JsonUtilConfig.configure(this);
         File resource = RuntimeDirs.resource(this);
-        LOGGER.debug("loading app configuration: %s ...", appBase.getAbsolutePath());
+        logger.debug("loading app configuration: %s ...", appBase.getAbsolutePath());
         config = new AppConfLoader().load(resource);
         config.app(this);
         configureLoggingLevels();
@@ -1182,13 +1185,13 @@ public class App extends DestroyableBase {
         if (null == di) {
             new GenieInjector(this);
         } else {
-            LOGGER.warn("Third party injector[%s] loaded. Please consider using Act air injection instead", di.getClass());
+            logger.warn("Third party injector[%s] loaded. Please consider using Act air injection instead", di.getClass());
         }
     }
 
     private void loadRoutes() {
         loadBuiltInRoutes();
-        LOGGER.debug("loading app routing table: %s ...", appBase.getPath());
+        logger.debug("loading app routing table: %s ...", appBase.getPath());
         List<File> routes;
         if (Act.isProd()) {
             routes = RuntimeDirs.routes(this);
@@ -1291,8 +1294,8 @@ public class App extends DestroyableBase {
         //classLoader().scan();
     }
 
-    static App create(File appBase, ProjectLayout layout) {
-        return new App(appBase, layout);
+    static App create(File appBase, Version version, ProjectLayout layout) {
+        return new App(appBase, version, layout);
     }
 
 

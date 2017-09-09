@@ -51,6 +51,7 @@ public class ReflectedCommandExecutor extends CommandExecutor {
     private MethodAccess methodAccess;
     private int commandIndex;
     private int paramCount;
+    private boolean isStatic;
     private CliContext.ParsingContext parsingContext;
 
     public ReflectedCommandExecutor(CommandMethodMetaInfo methodMetaInfo, App app) {
@@ -59,6 +60,7 @@ public class ReflectedCommandExecutor extends CommandExecutor {
         this.cl = app.classLoader();
         this.paramTypes = paramTypes();
         this.paramCount = methodMetaInfo.paramCount();
+        this.isStatic = methodMetaInfo.isStatic();
         this.commanderClass = $.classForName(methodMetaInfo.classInfo().className(), cl);
         try {
             this.method = commanderClass.getMethod(methodMetaInfo.methodName(), paramTypes);
@@ -77,6 +79,9 @@ public class ReflectedCommandExecutor extends CommandExecutor {
 
     @Override
     public Object execute(CliContext context) {
+        if (isStatic) {
+            return null;
+        }
         context.attribute(CliContext.ATTR_METHOD, method);
         context.prepare(parsingContext);
         paramLoaderService.preParseOptions(method, methodMetaInfo, context);

@@ -242,6 +242,7 @@ public class SenderEnhancer extends MethodVisitor implements Opcodes {
                 }
             }
 
+            @SuppressWarnings("FallThrough")
             private boolean injectRenderArgSetCode(AbstractInsnNode invokeNode) {
                 if (!segment.meta.hasLocalVariableTable()) {
                     logger.warn("local variable table info not found. AppContext render args will not be automatically populated");

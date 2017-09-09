@@ -1,10 +1,13 @@
-package act;
+/**
+ * Utility classes used internally in ActFramework
+ */
+package act.internal.util;
 
 /*-
  * #%L
- * ACT Framework
+ * OSGL Genie
  * %%
- * Copyright (C) 2014 - 2017 ActFramework
+ * Copyright (C) 2017 OSGL (Open Source General Library)
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,14 +22,3 @@ package act;
  * limitations under the License.
  * #L%
  */
-
-import com.carrotsearch.junitbenchmarks.BenchmarkRule;
-import org.junit.Ignore;
-import org.junit.Rule;
-import org.junit.rules.TestRule;
-
-@Ignore
-public class BenchmarkBase extends ActTestBase {
-    @Rule
-    public TestRule benchmarkRun = new BenchmarkRule();
-}

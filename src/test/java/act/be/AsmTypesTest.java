@@ -20,7 +20,7 @@ package act.be;
  * #L%
  */
 
-import act.TestBase;
+import act.ActTestBase;
 import act.app.ActionContext;
 import act.asm.Type;
 import act.util.AsmTypes;
@@ -28,7 +28,7 @@ import org.junit.Test;
 
 import java.lang.reflect.Method;
 
-public class AsmTypesTest extends TestBase {
+public class AsmTypesTest extends ActTestBase {
 
     @Test
     public void testMethodDescWithoutReturnType() throws Exception {

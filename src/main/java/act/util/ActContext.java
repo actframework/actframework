@@ -40,8 +40,6 @@ import javax.enterprise.context.RequestScoped;
 import javax.validation.ConstraintViolation;
 import java.util.*;
 
-import static act.app.App.LOGGER;
-
 public interface ActContext<CTX_TYPE extends ActContext> extends ParamValueProvider {
     App app();
     AppConfig config();
@@ -170,7 +168,7 @@ public interface ActContext<CTX_TYPE extends ActContext> extends ParamValueProvi
                 try {
                     l.onDestroy(this);
                 } catch (Exception e) {
-                    LOGGER.warn(e, "error calling listener onDestroy method");
+                    warn(e, "error calling listener onDestroy method");
                 }
             }
             Destroyable.Util.destroyAll(destroyableList, RequestScoped.class);

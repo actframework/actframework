@@ -21,7 +21,6 @@ package act;
  */
 
 import act.app.ActionContext;
-import act.app.App;
 import org.junit.Before;
 import org.junit.Test;
 import org.osgl.http.H;
@@ -33,7 +32,7 @@ import java.util.Map;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class ActionContextTest extends TestBase {
+public class ActionContextTest extends ActTestBase {
 
     protected ActionContext ctx;
 
