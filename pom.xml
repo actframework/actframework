@@ -74,13 +74,13 @@
     <jline.version>2.14.3</jline.version>
     <joda-time.version>2.9.9</joda-time.version>
     <okhttp.version>3.8.1</okhttp.version>
-    <osgl-tool.version>1.4.2-SNAPSHOT</osgl-tool.version>
-    <osgl-genie.version>1.2.0-BETA-1</osgl-genie.version>
+    <osgl-tool.version>1.4.3</osgl-tool.version>
+    <osgl-genie.version>1.2.0-BETA-2</osgl-genie.version>
     <osgl-mvc.version>1.2.0</osgl-mvc.version>
     <osgl-storage.version>1.4.1</osgl-storage.version>
     <osgl-tool-ext.version>1.0.1</osgl-tool-ext.version>
-    <osgl-bootstrap.version>1.0.0-BETA-10-SNAPSHOT</osgl-bootstrap.version>
-    <osgl-ut.version>1.0.0-BETA-5-SNAPSHOT</osgl-ut.version>
+    <osgl-bootstrap.version>1.0.0-BETA-10</osgl-bootstrap.version>
+    <osgl-ut.version>1.0.0-BETA-5</osgl-ut.version>
     <reflectasm.version>1.11.3</reflectasm.version>
     <rythmengine.version>1.2.0</rythmengine.version>
     <validation-api.version>1.1.0.Final</validation-api.version>
@@ -240,12 +240,14 @@
       <scope>test</scope>
     </dependency>
 
+    <!-- TODO: can't update to mockito 2.x yet. See github issue #371 -->
     <dependency>
       <groupId>org.mockito</groupId>
       <artifactId>mockito-core</artifactId>
       <version>2.0.2-beta</version>
       <scope>test</scope>
     </dependency>
+
     <dependency>
       <groupId>org.osgl</groupId>
       <artifactId>osgl-bootstrap</artifactId>

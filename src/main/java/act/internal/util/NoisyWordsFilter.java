@@ -62,10 +62,12 @@ class NoisyWordsFilter {
      * Filter a list of string tokens and get rid of tokens that are
      * {@link #noiseWords() noise}
      *
+     * The tokens in the return list is in lower case
+     *
      * @param tokens
      *      the list of string token
      * @return
-     *      filtered list of string token
+     *      filtered list of lowercase string tokens
      */
     static C.List<String> filter(List<String> tokens) {
         C.List<String> result = C.newList();

@@ -109,7 +109,7 @@ public class RythmView extends View {
         Properties p = new Properties();
 
         p.put(ENGINE_MODE.getKey(), Act.mode().isDev() ? Rythm.Mode.dev : Rythm.Mode.prod);
-        p.put(ENGINE_PLUGIN_VERSION.getKey(), Act.VERSION);
+        p.put(ENGINE_PLUGIN_VERSION.getKey(), Act.VERSION.getVersion());
         p.put(ENGINE_CLASS_LOADER_PARENT_IMPL.getKey(), app.classLoader());
         p.put(HOME_TMP.getKey(), createTempHome(app));
 

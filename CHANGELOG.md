@@ -1,6 +1,10 @@
 # ActFramework Change Log
 
 1.3.14
+* Improve maven build process #372
+* Improve logging support #370
+* Simplify start API/implementation #369
+* Introduce osgl-bootstrap and osgl-ut #368
 * It shall not try to instantiate commander class for command implemented on static method #367
 * NPE when building param tree #365
 * Deadlock on app start  #363
