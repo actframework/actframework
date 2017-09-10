@@ -24,12 +24,12 @@ import act.Act;
 import act.Zen;
 import act.conf.AppConfigKey;
 import act.conf.ConfLoader;
+import act.internal.util.AppDescriptor;
 import act.sys.Env;
 import ascii.Image2ascii;
 import com.github.lalyos.jfiglet.FigletFont;
 import org.fusesource.jansi.Ansi;
 import org.osgl.$;
-import org.osgl.util.C;
 import org.osgl.util.E;
 import org.osgl.util.IO;
 import org.osgl.util.S;
@@ -38,7 +38,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.util.List;
 
 /**
  * ASCII arts for Act
@@ -47,8 +46,8 @@ public class Banner {
 
     private static String cachedBanner;
 
-    public static void print() {
-        String banner = banner();
+    public static void print(AppDescriptor appDescriptor) {
+        String banner = banner(appDescriptor);
         System.out.println(banner);
         cachedBanner = banner;
     }
@@ -57,7 +56,7 @@ public class Banner {
         return cachedBanner;
     }
 
-    public static String banner() {
+    public static String banner(AppDescriptor appDescriptor) {
         String bannerText = null;
 
         String udfBanner = udfBanner();
@@ -65,7 +64,7 @@ public class Banner {
             bannerText = S.concat(udfBanner, "\n");
         }
         if (null == bannerText) {
-            bannerText = asciiArt(Act.appName());
+            bannerText = asciiArt(appDescriptor.getAppName());
         }
         int bannerTextWidth = width(bannerText);
 
@@ -74,8 +73,8 @@ public class Banner {
         int maxWidth = Math.max(faviconWidth, bannerTextWidth);
 
         S.Buffer sb = S.buffer();
-        String actVersion = Act.actVersion();
-        if ("ACTFRAMEWORK".equals(Act.appName())) {
+        String actVersion = Act.VERSION.getVersion();
+        if ("ACTFRAMEWORK".equals(appDescriptor.getAppName())) {
             sb.append(bannerText);
             if (S.notBlank(favicon)) {
                 sb.append("\n");
@@ -94,7 +93,7 @@ public class Banner {
             } else {
                 sb.append(poweredBy(maxWidth, actVersion, false));
             }
-            sb.append("\n\n version: ").append(Act.appVersion());
+            sb.append("\n\n version: ").append(appDescriptor.getVersion().getVersion());
         }
         File aFile = new File("");
         String group = Act.nodeGroup();
@@ -107,7 +106,7 @@ public class Banner {
             sb.append("\n   group: ").append(group);
         }
         sb.append("\n");
-        sb.append("\n     zen: ").append(Ansi.ansi().a(Ansi.Attribute.ITALIC).a(Zen.wordsOfTheDay()).a(Ansi.Attribute.ITALIC_OFF));
+        sb.append("\n     zen: ").append(Zen.wordsOfTheDay());
         sb.append("\n");
 
         return sb.toString();
@@ -191,8 +190,7 @@ public class Banner {
             is = Banner.class.getResourceAsStream("/standard.flf");
         }
         try {
-            String bannerText = FigletFont.convertOneLine(is, s.toUpperCase());
-            return S.concat(removeEndingBlankLines(bannerText), "\n");
+            return FigletFont.convertOneLine(is, s.toUpperCase());
         } catch (IOException e) {
             throw E.ioException(e);
         }
@@ -204,6 +202,7 @@ public class Banner {
         return lastLineIsBlank ? removeEndingBlankLines(text.substring(0, lastLineBreak)) : text;
     }
 
+
     private static int width(String banner) {
         String[] lines = banner.split("\n");
         int max = 0;
@@ -211,6 +210,11 @@ public class Banner {
             max = Math.max(max, s.length());
         }
         return max;
+    }
+
+    private static String udfBanner() {
+        URL url = Banner.class.getResource("/act_banner.txt");
+        return null == url ? null : IO.readContentAsString(url);
     }
 
     private static String poweredBy(int width, String actVersion, boolean center) {
@@ -228,39 +232,4 @@ public class Banner {
         return S.concat(S.times(" ", gap), poweredBy);
     }
 
-    public static void main(String[] args) {
-        List<String> fail = C.newList();
-        for (String font : _BANNER_FONTS) {
-            if (!test(font)) {
-                fail.add(font);
-            }
-        }
-        if (!fail.isEmpty()) {
-            System.out.println(">>>>>Failed:");
-            System.out.println(S.join(",", fail));
-        }
-    }
-
-    private static boolean test(String font) {
-        System.setProperty("banner.font", font);
-        try {
-            System.out.println("================= " + font + "==================");
-            printArt("ABCDEFGHIJKLM");
-            printArt("NOPQRSTUVWXYZ");
-            printArt("1234567890");
-            System.out.println("\n\n\n");
-        } catch (RuntimeException e) {
-            return false;
-        }
-        return true;
-    }
-
-    private static String udfBanner() {
-        URL url = Banner.class.getResource("/act_banner.txt");
-        return null == url ? null : IO.readContentAsString(url);
-    }
-
-    private static void printArt(String s) {
-        System.out.println(asciiArt(s));
-    }
 }

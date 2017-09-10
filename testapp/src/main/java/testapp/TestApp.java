@@ -1,10 +1,10 @@
 package testapp;
 
-import act.app.conf.AppConfigurator;
-import act.boot.app.RunApp;
-import act.security.CSRFProtector;
-
 import static testapp.TestApp.GLOBAL_CORS.*;
+
+import act.Act;
+import act.app.conf.AppConfigurator;
+import act.security.CSRFProtector;
 
 /**
  * This class runs an ActFramework application with public endpoints to be
@@ -32,7 +32,7 @@ public class TestApp extends AppConfigurator<TestApp> {
         System.setProperty("act.http.port", "6111");
         System.setProperty("act.cli.port", "6222");
         System.setProperty("act.i18n", "true");
-        RunApp.start("ACTEST", "0.1", TestApp.class);
+        Act.start("ACTEST");
     }
 
 }

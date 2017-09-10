@@ -46,10 +46,6 @@
     </triggeringPolicy>
   </appender>
 
-  <logger name="act.boot.app.RunApp" level="INFO" additivity="false">
-    <appender-ref ref="STDOUT"/>
-  </logger>
-
   <logger name="act" level="INFO" additivity="false">
     <appender-ref ref="FILE" />
     <appender-ref ref="STDOUT"/>

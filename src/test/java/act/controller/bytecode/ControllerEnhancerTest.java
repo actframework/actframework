@@ -20,7 +20,7 @@ package act.controller.bytecode;
  * #L%
  */
 
-import act.TestBase;
+import act.ActTestBase;
 import act.app.ActionContext;
 import act.app.AppByteCodeScanner;
 import act.app.AppCodeScannerManager;
@@ -60,7 +60,7 @@ import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class ControllerEnhancerTest extends TestBase implements ControllerClassMetaInfoHolder {
+public class ControllerEnhancerTest extends ActTestBase implements ControllerClassMetaInfoHolder {
 
     public static final String TMPL_PATH = "/path/to/template";
 

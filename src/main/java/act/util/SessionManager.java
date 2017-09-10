@@ -28,16 +28,12 @@ import act.plugin.Plugin;
 import org.osgl.$;
 import org.osgl.http.H;
 import org.osgl.http.H.Session;
-import org.osgl.logging.L;
-import org.osgl.logging.Logger;
 import org.osgl.util.*;
 
 import javax.enterprise.context.ApplicationScoped;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 
 import static act.Destroyable.Util.tryDestroyAll;
 import static org.osgl.http.H.Session.KEY_EXPIRATION;
@@ -48,10 +44,7 @@ import static org.osgl.http.H.Session.KEY_EXPIRE_INDICATOR;
  */
 public class SessionManager extends DestroyableBase {
 
-    private static Logger logger = L.get(SessionManager.class);
-
     private C.List<Listener> registry = C.newList();
-    private ConcurrentMap<App, CookieResolver> resolvers = new ConcurrentHashMap<>();
     private volatile CookieResolver theResolver = null;
 
     public SessionManager() {
@@ -61,9 +54,6 @@ public class SessionManager extends DestroyableBase {
     protected void releaseResources() {
         tryDestroyAll(registry, ApplicationScoped.class);
         registry = null;
-
-        tryDestroyAll(resolvers.values(), ApplicationScoped.class);
-        resolvers = null;
 
         theResolver = null;
     }
@@ -104,26 +94,14 @@ public class SessionManager extends DestroyableBase {
     }
 
     public CookieResolver getResolver(App app) {
-        if (Act.multiTenant()) {
-            CookieResolver resolver = resolvers.get(app);
-            if (null == resolver) {
-                CookieResolver newResolver = new CookieResolver(app);
-                resolver = resolvers.putIfAbsent(app, newResolver);
-                if (null == resolver) {
-                    resolver = newResolver;
+        if (null == theResolver) {
+            synchronized (this) {
+                if (null == theResolver) {
+                    theResolver = new CookieResolver(app);
                 }
             }
-            return resolver;
-        } else {
-            if (null == theResolver) {
-                synchronized (this) {
-                    if (null == theResolver) {
-                        theResolver = new CookieResolver(app);
-                    }
-                }
-            }
-            return theResolver;
         }
+        return theResolver;
     }
 
     private void sessionResolved(Session session, ActionContext context) {
@@ -168,7 +146,7 @@ public class SessionManager extends DestroyableBase {
         public void onSessionDissolve() {}
     }
 
-    public static class CookieResolver {
+    public static class CookieResolver extends LogSupport {
 
         private App app;
         private AppConfig conf;
@@ -295,7 +273,7 @@ public class SessionManager extends DestroyableBase {
                         if (i > 0) sb.append(":");
                         sb.append(Arrays.toString(kAndV.get(i)));
                     }
-                    logger.warn("unexpected KV string: %S", sb.toString());
+                    warn("unexpected KV string: %S", sb.toString());
                 } else {
                     kv.put(new String(kAndV.get(0)), new String(kAndV.get(1)));
                 }

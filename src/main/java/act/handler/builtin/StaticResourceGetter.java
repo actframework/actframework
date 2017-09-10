@@ -22,7 +22,6 @@ package act.handler.builtin;
 
 import act.Act;
 import act.app.ActionContext;
-import act.app.App;
 import act.controller.ParamNames;
 import act.handler.builtin.controller.FastRequestHandler;
 import org.osgl.$;
@@ -190,7 +189,7 @@ public class StaticResourceGetter extends FastRequestHandler {
                 AlwaysForbidden.INSTANCE.handle(context);
             }
         } catch (IOException e) {
-            App.LOGGER.warn(e, "Error servicing static resource request");
+            logger.warn(e, "Error servicing static resource request");
             throw NotFound.get();
         }
     }

@@ -3,7 +3,6 @@
 1.4.11
 * catch up update to 1.3.14-LTS
 * Support running CLI Job in background #267 
-* Enhance Job support on logging and process reporting #266 
 * `job.list` CLI command failure #355 
 
 1.4.10
@@ -59,15 +58,23 @@
 * upport WebSocket #17 S
 
 1.3.14
+* Improve maven build process #372
+* Improve logging support #370
+* Simplify start API/implementation #369
+* Introduce osgl-bootstrap and osgl-ut #368
+* It shall not try to instantiate commander class for command implemented on static method #367
+* NPE when building param tree #365
+* Deadlock on app start  #363
 * Binder annotation on bean field doesn't work #362
 * Support app defined parameter binder annotation #361
-* Improve app version reading support #359 
+* Improve app version reading support #359
+* If no file selected in an upload form, the server side will trigger a 500 server error #357 
 * `ProvidesImplicitTemplateVariable` generates bad rythm template source code #354 
 * The rest parameters is always `null` after `@DbBind` annotated parameter #353 
 * Support API document generation #351 
 * Improve `Catch` interceptor API #350 
-* Fix regression issues: #287 and #297
 * Get `DbService` list from `DbServiceManager` by plugin class #273 
+* Fix regression issues: #287 and #297
 
 1.3.13
 * Add annotation to allow developer specify a handler method's template shall not be cached #347 

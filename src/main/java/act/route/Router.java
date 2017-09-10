@@ -291,9 +291,10 @@ public class Router extends AppServiceBase<Router> {
         addMapping(method, path, handler, RouteSource.ROUTE_TABLE);
     }
 
+    @SuppressWarnings("FallThrough")
     public void addMapping(H.Method method, CharSequence path, RequestHandler handler, RouteSource source) {
-        if (LOGGER.isTraceEnabled()) {
-            LOGGER.trace("R+ %s %s | %s (%s)", method, path, handler, source);
+        if (isTraceEnabled()) {
+            trace("R+ %s %s | %s (%s)", method, path, handler, source);
         }
         Node node = _locate(method, path, handler.toString());
         if (null == node.handler) {
@@ -304,7 +305,7 @@ public class Router extends AppServiceBase<Router> {
             ConflictResolver resolving = source.onConflict(existing);
             switch (resolving) {
                 case OVERWRITE_WARN:
-                    LOGGER.warn("\n\tOverwrite existing route \n\t\t%s\n\twith new route\n\t\t%s",
+                    warn("\n\tOverwrite existing route \n\t\t%s\n\twith new route\n\t\t%s",
                             routeInfo(method, path, node.handler()),
                             routeInfo(method, path, handler)
                     );

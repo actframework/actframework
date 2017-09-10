@@ -183,7 +183,7 @@ public class CSRF {
                     raiseCsrfNotVerified(context);
                 }
             } catch (UnexpectedException e) {
-                App.logger.warn(e, "Error checking CSRF token");
+                Act.LOGGER.warn(e, "Error checking CSRF token");
                 raiseCsrfNotVerified(context);
             }
         }

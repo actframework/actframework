@@ -41,6 +41,7 @@ import act.handler.SimpleRequestHandler;
 import act.handler.builtin.controller.*;
 import act.handler.builtin.controller.impl.ReflectedHandlerInvoker;
 import act.inject.DependencyInjector;
+import act.internal.util.AppDescriptor;
 import act.job.AppJobManager;
 import act.metric.MetricPlugin;
 import act.metric.SimpleMetricPlugin;
@@ -56,6 +57,7 @@ import act.xio.Network;
 import act.xio.NetworkHandler;
 import act.xio.undertow.UndertowNetwork;
 import org.osgl.$;
+import org.osgl.bootstrap.Version;
 import org.osgl.cache.CacheService;
 import org.osgl.exception.NotAppliedException;
 import org.osgl.exception.UnexpectedException;
@@ -66,10 +68,9 @@ import org.osgl.util.*;
 
 import java.io.File;
 import java.lang.management.ManagementFactory;
-import java.util.ArrayList;
+import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import static act.Destroyable.Util.tryDestroy;
 
@@ -153,35 +154,11 @@ public final class Act {
         }
     }
 
-    public static class AppInfo extends $.T2<String, String> {
-        public AppInfo(String appName, String appVersion) {
-            super(ensureAppName(appName), appVersion);
-        }
-
-        public String appName() {
-            return _1;
-        }
-
-        public String appVersion() {
-            return _2;
-        }
-
-        private static String ensureAppName(String name) {
-            return S.blank(name) ? "ActFramework" : name;
-        }
-    }
-
-    public static final String VERSION = Version.fullVersion();
+    public static final org.osgl.bootstrap.Version VERSION = org.osgl.bootstrap.Version.of(Act.class);
     public static final Logger LOGGER = L.get(Act.class);
-    /**
-     * This field is deprecated. please use {@link #LOGGER} instead
-     */
-    @Deprecated
-    public static final Logger logger = LOGGER;
     private static ActConfig conf;
     private static Mode mode = Mode.PROD;
     private static String nodeGroup = "";
-    private static boolean multiTenant = false;
     private static AppManager appManager;
     private static ViewManager viewManager;
     private static Network network;
@@ -194,26 +171,6 @@ public final class Act {
     private static AppServicePluginManager appPluginManager;
     private static Map<String, Plugin> genericPluginRegistry = C.newMap();
     private static Map<Class<? extends ActEvent>, List<ActEventListener>> listeners = C.newMap();
-
-    public static List<Class<?>> pluginClasses() {
-        ClassLoader cl = Act.class.getClassLoader();
-        if (cl instanceof PluginClassProvider) {
-            return ((PluginClassProvider) cl).pluginClasses();
-        } else {
-            LOGGER.warn("Class loader [%s] of Act is not a PluginClassProvider", cl);
-            return C.list();
-        }
-    }
-
-    public static ClassInfoRepository classInfoRepository() {
-        ClassLoader cl = Act.class.getClassLoader();
-        if (cl instanceof BootstrapClassLoader) {
-            return ((BootstrapClassLoader) cl).classInfoRepository();
-        } else {
-            LOGGER.warn("Class loader [%s] of Act is not a ActClassLoader", cl);
-            return null;
-        }
-    }
 
     public static Mode mode() {
         return mode;
@@ -242,8 +199,32 @@ public final class Act {
         return conf;
     }
 
-    public static boolean multiTenant() {
-        return multiTenant;
+    public static ClassInfoRepository classInfoRepository() {
+        ClassLoader cl = Act.class.getClassLoader();
+        if (cl instanceof BootstrapClassLoader) {
+            return ((BootstrapClassLoader) cl).classInfoRepository();
+        } else {
+            LOGGER.warn("Class loader [%s] of Act is not a ActClassLoader", cl);
+            return null;
+        }
+    }
+
+    public static List<Class<?>> pluginClasses() {
+        ClassLoader cl = Act.class.getClassLoader();
+        if (cl instanceof PluginClassProvider) {
+            return ((PluginClassProvider) cl).pluginClasses();
+        } else {
+            LOGGER.warn("Class loader [%s] of Act is not a PluginClassProvider", cl);
+            return C.list();
+        }
+    }
+
+    public static AppServicePluginManager appServicePluginManager() {
+        return appPluginManager;
+    }
+
+    public static DbManager dbManager() {
+        return dbManager;
     }
 
     public static BytecodeEnhancerManager enhancerManager() {
@@ -254,32 +235,28 @@ public final class Act {
         return pluginManager;
     }
 
-    public static DbManager dbManager() {
-        return dbManager;
-    }
-
-    public static ViewManager viewManager() {
-        return viewManager;
-    }
-
-    public static SessionManager sessionManager() {
-        return sessionManager;
+    public static MetricPlugin metricPlugin() {
+        return metricPlugin;
     }
 
     public static AppCodeScannerPluginManager scannerPluginManager() {
         return scannerPluginManager;
     }
 
-    public static AppServicePluginManager appServicePluginManager() {
-        return appPluginManager;
+    public static SessionManager sessionManager() {
+        return sessionManager;
     }
 
     public static AppManager applicationManager() {
         return appManager;
     }
 
-    public static MetricPlugin metricPlugin() {
-        return metricPlugin;
+    public static ViewManager viewManager() {
+        return viewManager;
+    }
+
+    public static Network network() {
+        return network;
     }
 
     public static void registerPlugin(Plugin plugin) {
@@ -291,57 +268,14 @@ public final class Act {
         return (T) genericPluginRegistry.get(type.getCanonicalName().intern());
     }
 
-    public static void startServer() {
-        start(false, null, null);
-    }
-
-    public static void startApp(String appName, String appVersion) {
-        String s = System.getProperty("app.mode");
-        if (null != s) {
-            mode = Mode.valueOfIgnoreCase(s);
-        } else {
-            String profile = SysProps.get(AppConfigKey.PROFILE.key());
-            mode = S.neq("prod", profile, S.IGNORECASE) ? Mode.DEV : Mode.PROD;
-        }
-        s = System.getProperty("app.nodeGroup");
-        if (null != s) {
-            nodeGroup = s;
-        }
-        start(true, appName, appVersion);
-    }
-
-    public static void shutdownApp(App app) {
-        if (null == appManager) {
-            return;
-        }
-        if (!appManager.unload(app)) {
-            app.destroy();
-        }
-    }
-
-    private static final ThreadLocal<AppInfo> APP_INFO = new ThreadLocal<>();
-    public static AppInfo appInfo() {
-        return APP_INFO.get();
-    }
-    public static String appName() {
-        return appInfo().appName();
-    }
-    public static String appVersion() {
-        return appInfo().appVersion();
-    }
-    public static String actVersion() {
-        return VERSION;
-    }
-
-    private static void start(boolean singleAppServer, String appName, String appVersion) {
-        APP_INFO.set(new AppInfo(appName, appVersion));
-        Banner.print();
+    public static void startup(AppDescriptor descriptor) {
+        processEnvironment();
+        Banner.print(descriptor);
         loadConfig();
         initMetricPlugin();
         initPluginManager();
         initAppServicePluginManager();
         initDbManager();
-        //initExecuteService();
         initEnhancerManager();
         initViewManager();
         initSessionManager();
@@ -350,11 +284,7 @@ public final class Act {
         initNetworkLayer();
         initApplicationManager();
         LOGGER.info("loading application(s) ...");
-        if (singleAppServer) {
-            appManager.loadSingleApp(appName);
-        } else {
-            appManager.scan();
-        }
+        appManager.loadSingleApp(descriptor);
         startNetworkLayer();
         Thread.currentThread().setContextClassLoader(Act.class.getClassLoader());
         App app = app();
@@ -366,21 +296,14 @@ public final class Act {
         writePidFile();
     }
 
-    public static void shutdown() {
-        clearPidFile();
-        shutdownNetworkLayer();
-        destroyApplicationManager();
-        unloadPlugins();
-        destroyAppCodeScannerPluginManager();
-        destroySessionManager();
-        destroyViewManager();
-        destroyEnhancerManager();
-        destroyDbManager();
-        destroyAppServicePluginManager();
-        destroyPluginManager();
-        destroyMetricPlugin();
-        unloadConfig();
-        destroyNetworkLayer();
+    public static void shutdown(App app) {
+        if (null == appManager) {
+            return;
+        }
+        if (!appManager.unload(app)) {
+            app.destroy();
+        }
+        shutdownAct();
     }
 
     public static RequestServerRestart requestRestart() {
@@ -458,6 +381,16 @@ public final class Act {
     }
 
     /**
+     * Returns the app version
+     *
+     * @return
+     *      the app version
+     */
+    public static Version appVersion() {
+        return app().version();
+    }
+
+    /**
      * Return the {@link App}'s config
      *
      * @return the app config
@@ -467,12 +400,15 @@ public final class Act {
     }
 
     /**
-     * Utility method to retrieve singleton instance via {@link App#singleton(Class)} method
+     * Utility method to retrieve singleton instance via {@link App#singleton(Class)} method.
+     *
+     * This method is deprecated. Please use {@link #getInstance(Class)} instead
      *
      * @param singletonClass
      * @param <T>
      * @return the singleton instance
      */
+    @Deprecated
     public static <T> T singleton(Class<T> singletonClass) {
         return App.instance().singleton(singletonClass);
     }
@@ -543,14 +479,6 @@ public final class Act {
     }
 
     /**
-     * This method is obsolete. Please use {@link #getInstance(String)} instead
-     */
-    @Deprecated
-    public static <T> T newInstance(String className) {
-        return App.instance().getInstance(className);
-    }
-
-    /**
      * Return an instance with give class name
      *
      * @param className the class name
@@ -562,14 +490,6 @@ public final class Act {
     }
 
     /**
-     * This method is obsolete. Please use {@link #getInstance(Class)} instead
-     */
-    @Deprecated
-    public static <T> T newInstance(Class<T> clz) {
-        return App.instance().getInstance(clz);
-    }
-
-    /**
      * Return an instance with give class
      *
      * @param clz the class
@@ -578,10 +498,6 @@ public final class Act {
      */
     public static <T> T getInstance(Class<? extends T> clz) {
         return app().getInstance(clz);
-    }
-
-    public static int classCacheSize() {
-        return ((FullStackAppBootstrapClassLoader) Act.class.getClassLoader()).libBCSize();
     }
 
     // --- Spark style API for application to hook action handler to a certain http request endpoint
@@ -622,97 +538,122 @@ public final class Act {
         app().router().addMapping(H.Method.DELETE, url, handler, RouteSource.APP_CONFIG);
     }
 
+    // --- ActFramework entry methods
+
     /**
-     * Start the application without specifying application name and use the entry class to find the scan package
+     * Start Act application
      *
-     * The main entry class's {@link Class#getSimpleName()} will be used as the application's name
-     *
-     * @throws Exception any exception raised during app start
+     * @throws Exception
+     *      any exception raised during app start
      */
     public static void start() throws Exception {
-        String className = exploreClassName();
-        $.Var<String> appNameHolder = $.var();
-        $.Var<String> pkgNameHolder = $.var();
-        getAppNameAndPackage(className, appNameHolder, pkgNameHolder);
-        RunApp.start(appNameHolder.get(), Version.appVersion(appNameHolder.get()), pkgNameHolder.get());
-    }
-
-    public static Network network() {
-        return network;
+        bootstrap(AppDescriptor.of(getCallerClass()));
     }
 
     /**
-     * Start Act application with specified app name and use the entry class to
-     * find the scan package
+     * Start Act application with specified app name
      *
-     * @param appName the app name
-     * @throws Exception any exception thrown out
+     * @param appName
+     *      the app name, optional
+     * @throws Exception
+     *      any exception thrown out
      */
     public static void start(final String appName) throws Exception {
-        String className = exploreClassName();
-        $.Var<String> appNameHolder = $.var(appName);
-        $.Var<String> pkgNameHolder = $.var();
-        if (S.blank(appName)) {
-            getAppNameAndPackage(className, appNameHolder, pkgNameHolder);
-        } else {
-            pkgNameHolder.set(getPackageName(className));
-        }
-        RunApp.start(appNameHolder.get(), Version.appVersion(appNameHolder.get()), pkgNameHolder.get());
+        bootstrap(AppDescriptor.of(appName, getCallerClass()));
     }
 
     /**
-     * Start Act application with specified name and scan package
-     * @param appName the app name
-     * @param scanPackage the scan package, the package could be separated by {@link Constants#LIST_SEPARATOR}
-     * @throws Exception any exception raised during act start up
+     * Start Act application with specified app name and scan package.
+     *
+     * If there are multiple packages, they should be joined in a single string
+     * by comma `,`. And the first package name will be used to explore the
+     * `.version` file in the class path
+     *
+     * @param appName
+     *      the app name, optional
+     * @param scanPackage
+     *      the scan package
+     * @throws Exception
+     *      any exception raised during act start up
      */
     public static void start(String appName, String scanPackage) throws Exception {
-        RunApp.start(appName, Version.appVersion(appName), scanPackage);
+        bootstrap(AppDescriptor.of(appName, scanPackage));
     }
 
     /**
      * Start Act application with specified name and scan package specified by a class
-     * @param appName the app name
-     * @param anyAppClass specifies the scan package
-     * @throws Exception any exception raised during act start up
+     *
+     * @param appName
+     *      the app name
+     * @param anyAppClass
+     *      specifies the scan package
+     * @throws Exception
+     *      any exception raised during act start up
      */
     public static void start(String appName, Class<?> anyAppClass) throws Exception {
-        RunApp.start(appName, Version.appVersion(appName), anyAppClass);
+        bootstrap(AppDescriptor.of(appName, anyAppClass));
     }
 
     /**
-     * Start Act application with no app name and scan package specified by a class
-     * @param anyAppClass specifies the scan package
-     * @throws Exception any exception raised during act start up
+     * Start Act application with scan package specified by a class
+     *
+     * @param anyAppClass
+     *      specifies the scan package
+     * @throws Exception
+     *      any exception raised during act start up
      */
     public static void start(Class<?> anyAppClass) throws Exception {
-        String className = anyAppClass.getName();
-        $.Var<String> appNameHolder = $.var();
-        $.Var<String> pkgNameHolder = $.var();
-        getAppNameAndPackage(className, appNameHolder, pkgNameHolder);
-        RunApp.start(appNameHolder.get(), Version.appVersion(appNameHolder.get()), pkgNameHolder.get());
+        bootstrap(AppDescriptor.of(anyAppClass));
     }
 
     /**
-     * Start Act application with specified name and scan package specified by a class
-     * @param appName the app name
-     * @param appVersion the app version tag
-     * @param anyAppClass specifies the scan package
-     * @throws Exception any exception raised during act start up
+     * Start Act application with specified app name, app version and
+     * scan page via an app class
+     *
+     * @param appName
+     *      the app name
+     * @param anyAppClass
+     *      specifies the scan package
+     * @param appVersion
+     *      the app version tag
+     * @throws Exception
+     *      any exception raised during act start up
      */
-    public static void start(String appName, String appVersion, Class<?> anyAppClass) throws Exception {
-        RunApp.start(appName, appVersion, anyAppClass);
+    public static void start(String appName, Class<?> anyAppClass, Version appVersion) throws Exception {
+        bootstrap(AppDescriptor.of(appName, anyAppClass, appVersion));
     }
 
     /**
-     * Start Act application with specified name and scan package
-     * @param appName the app name
-     * @param appVersion the app version tag
-     * @param scanPackage the scan package, the package could be separated by {@link Constants#LIST_SEPARATOR}
+     * Start Act application with specified app name, app version and scan package
+     *
+     * @param appName
+     *      the app name
+     * @param scanPackage
+     *      the scan package, the package could be separated by {@link Constants#LIST_SEPARATOR}
+     * @param appVersion
+     *      the app version tag
      * @throws Exception any exception raised during act start up
      */
-    public static void start(String appName, String appVersion, String scanPackage) throws Exception {
-        RunApp.start(appName, appVersion, scanPackage);
+    public static void start(String appName, String scanPackage, Version appVersion) throws Exception {
+        bootstrap(AppDescriptor.of(appName, scanPackage, appVersion));
+    }
+
+    static int classCacheSize() {
+        return ((FullStackAppBootstrapClassLoader) Act.class.getClassLoader()).libBCSize();
+    }
+
+    private static void processEnvironment() {
+        String s = System.getProperty("app.mode");
+        if (null != s) {
+            mode = Mode.valueOfIgnoreCase(s);
+        } else {
+            String profile = SysProps.get(AppConfigKey.PROFILE.key());
+            mode = S.neq("prod", profile, S.IGNORECASE) ? Mode.DEV : Mode.PROD;
+        }
+        s = System.getProperty("app.nodeGroup");
+        if (null != s) {
+            nodeGroup = s;
+        }
     }
 
     private static void loadConfig() {
@@ -868,66 +809,62 @@ public final class Act {
         appManager = AppManager.create();
     }
 
-    private static String getPackageName(Class<?> theClass, Package thePackage) {
-        if (null != thePackage) {
-            return thePackage.getName();
-        } else {
-            String className = theClass.getName();
-            E.unexpectedIf(!className.contains("."), "The main class must have package name to use Act");
-            return (S.beforeLast(theClass.getName(), "."));
-        }
-    }
-
-    static String getPackageName(String className) {
-        Class mainClass = $.classForName(className);
-        while (null != mainClass.getEnclosingClass()) {
-            mainClass = mainClass.getEnclosingClass();
-        }
-        Package pkg = mainClass.getPackage();
-        return getPackageName(mainClass, pkg);
-    }
-
-    static String exploreClassName() {
+    private static Class<?> getCallerClass() {
         StackTraceElement[] sa = new RuntimeException().getStackTrace();
         E.unexpectedIf(sa.length < 3, "Whoops!");
         StackTraceElement ste = sa[2];
         String className = ste.getClassName();
         E.unexpectedIf(!className.contains("."), "The main class must have package name to use Act");
-        return className;
+        return $.classForName(className);
     }
 
-    static void getAppNameAndPackage(String className, $.Var<String> appNameHolder, $.Var<String> packageHolder) {
-        C.List<String> nameList = C.newList();
-        Class mainClass = $.classForName(className);
-        nameList.addAll(classNameTokensReversed(mainClass));
-        while (null != mainClass.getEnclosingClass()) {
-            mainClass = mainClass.getEnclosingClass();
-            nameList.addAll(classNameTokensReversed(mainClass));
+    private static void bootstrap(AppDescriptor appDescriptor) throws Exception {
+        long ts = $.ms();
+        String profile = SysProps.get(AppConfigKey.PROFILE.key());
+        if (S.blank(profile)) {
+            profile = "";
+        } else {
+            profile = "using profile[" + profile + "]";
         }
-        Package pkg = mainClass.getPackage();
-        String pkgName = getPackageName(mainClass, pkg);
-        packageHolder.set(pkgName);
-        nameList = filterNoise(nameList).reverse();
-        if (nameList.isEmpty()) {
-            // app name is all noise, let's fall back to the package names
-            nameList = C.list(Keyword.of(pkgName).tokens());
-            if (nameList.size() > 1) {
-                nameList = nameList.drop(1);
-            }
+        String packageName = appDescriptor.getPackageName();
+        LOGGER.debug("run fullstack application with package[%s] %s", packageName, profile);
+        final String SCAN_PACKAGE = AppConfigKey.SCAN_PACKAGE.key();
+        if (S.notBlank(packageName)) {
+            System.setProperty(SCAN_PACKAGE, packageName);
         }
-        String appNameChain = S.join(".", nameList);
-        appNameHolder.set(Keyword.of(appNameChain).header());
+        FullStackAppBootstrapClassLoader classLoader = new FullStackAppBootstrapClassLoader(RunApp.class.getClassLoader());
+        Thread.currentThread().setContextClassLoader(classLoader);
+        Class<?> actClass = classLoader.loadClass("act.Act");
+        Method m = actClass.getDeclaredMethod("startup", byte[].class);
+        m.setAccessible(true);
+        $.invokeStatic(m, appDescriptor.toByteArray());
+        LOGGER.info("it takes %sms to start the app\n", $.ms() - ts);
     }
+
+
+    private static void shutdownAct() {
+        clearPidFile();
+        shutdownNetworkLayer();
+        destroyApplicationManager();
+        unloadPlugins();
+        destroyAppCodeScannerPluginManager();
+        destroySessionManager();
+        destroyViewManager();
+        destroyEnhancerManager();
+        destroyDbManager();
+        destroyAppServicePluginManager();
+        destroyPluginManager();
+        destroyMetricPlugin();
+        unloadConfig();
+        destroyNetworkLayer();
+    }
+
 
     private static void destroyApplicationManager() {
         if (null != appManager) {
             appManager.destroy();
             appManager = null;
         }
-    }
-
-    private static List<String> classNameTokensReversed(Class theClass) {
-        return C.list(Keyword.of(theClass.getSimpleName()).tokens()).reverse();
     }
 
     private static void writePidFile() {
@@ -985,22 +922,11 @@ public final class Act {
         return pidFile;
     }
 
-    private static final Set<String> NOISE_WORDS = C.set(
-            "app", "application", "demo", "entry", "main");
-
-    private static C.List<String> filterNoise(List<String> appNameTokens) {
-        C.List<String> result = C.newList();
-        for (String token : appNameTokens) {
-            if (S.blank(token)) {
-                continue;
-            }
-            token = token.trim().toLowerCase();
-            if (!NOISE_WORDS.contains(token)) {
-                result.add(token);
-            }
-        }
-        return result;
+    private static void startup(byte[] appDescriptor) {
+        AppDescriptor descriptor = AppDescriptor.deserializeFrom(appDescriptor);
+        startup(descriptor);
     }
+
 
     public enum F {
         ;

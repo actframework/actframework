@@ -119,7 +119,7 @@ public class SysUtilAdmin {
 
     @Command(name = "act.version, act.ver", help = "Print actframework version")
     public String version() {
-        return Version.fullVersion().replace("-S-", "-SNAPSHOT-");
+        return Act.VERSION.toString();
     }
 
     @Command(name = "act.pwd", help = "Print name of the current working directory")

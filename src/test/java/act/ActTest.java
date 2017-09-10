@@ -20,29 +20,5 @@ package act;
  * #L%
  */
 
-import org.junit.Test;
-import org.osgl.$;
-import testapp.Main;
-
-public class ActTest extends TestBase {
-
-    @Test
-    public void testGetAppNameAndPackage() {
-        String className = ActTest.class.getName();
-        $.Var<String> appNameHolder = $.var();
-        $.Var<String> pkgNameHolder = $.var();
-        Act.getAppNameAndPackage(className, appNameHolder, pkgNameHolder);
-        eq("Act Test", appNameHolder.get());
-        eq("act", pkgNameHolder.get());
-    }
-
-    @Test
-    public void testGetAppNameAndPackageWithNestedEntryClass() {
-        String className = Main.Entry.class.getName();
-        $.Var<String> appNameHolder = $.var();
-        $.Var<String> pkgNameHolder = $.var();
-        Act.getAppNameAndPackage(className, appNameHolder, pkgNameHolder);
-        eq("Testapp", appNameHolder.get());
-        eq("testapp", pkgNameHolder.get());
-    }
+public class ActTest extends ActTestBase {
 }

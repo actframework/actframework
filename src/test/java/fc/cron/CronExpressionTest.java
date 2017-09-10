@@ -35,12 +35,10 @@ package fc.cron;
  * #L%
  */
 
-import static org.fest.assertions.Assertions.assertThat;
-
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
-
+import fc.cron.CronExpression.CronFieldType;
+import fc.cron.CronExpression.DayOfMonthField;
+import fc.cron.CronExpression.DayOfWeekField;
+import fc.cron.CronExpression.SimpleField;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.Hours;
@@ -49,10 +47,11 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import fc.cron.CronExpression.CronFieldType;
-import fc.cron.CronExpression.DayOfMonthField;
-import fc.cron.CronExpression.DayOfWeekField;
-import fc.cron.CronExpression.SimpleField;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+
+import static org.fest.assertions.Assertions.assertThat;
 
 public class CronExpressionTest {
     DateTimeZone original;
@@ -498,7 +497,7 @@ public class CronExpressionTest {
     @Test(expected = IllegalArgumentException.class)
     public void test_two_year_barrier() throws Exception {
         // The next leap year is 2016, so an IllegalArgumentException is expected.
-        new CronExpression("* * * 29 2 *").nextTimeAfter(new DateTime(2012, 3, 1, 00, 00), 1000 * 60 * 60 * 24 * 356 * 2);
+        new CronExpression("* * * 29 2 *").nextTimeAfter(new DateTime(2012, 3, 1, 00, 00), 1000L * 60 * 60 * 24 * 356 * 2);
     }
 
     @Test(expected = IllegalArgumentException.class)

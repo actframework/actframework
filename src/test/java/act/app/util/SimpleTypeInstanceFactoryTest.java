@@ -20,14 +20,14 @@ package act.app.util;
  * #L%
  */
 
-import act.TestBase;
+import act.ActTestBase;
 import act.app.App;
 import org.junit.Test;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
-public class SimpleTypeInstanceFactoryTest extends TestBase {
+public class SimpleTypeInstanceFactoryTest extends ActTestBase {
     @Test
     public void test() {
         eq(Boolean.FALSE, get(Boolean.class));

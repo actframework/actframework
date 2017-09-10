@@ -20,7 +20,7 @@ package act.cli.bytecode;
  * #L%
  */
 
-import act.TestBase;
+import act.ActTestBase;
 import act.app.AppByteCodeScanner;
 import act.app.AppCodeScannerManager;
 import act.app.TestingAppClassLoader;
@@ -47,7 +47,7 @@ import static org.mockito.Matchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class CommanderByteCodeScannerTest extends TestBase {
+public class CommanderByteCodeScannerTest extends ActTestBase {
 
     private CommanderClassMetaInfoManager infoSrc;
     private TestingAppClassLoader classLoader;

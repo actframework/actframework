@@ -34,8 +34,8 @@ public class Info {
     @GetAction("info")
     public static Object show(ActionContext context, App app) {
         if (context.acceptJson()) {
-            String actVersion = Version.version();
-            String appVersion = Version.appVersion(app.name());
+            String actVersion = Act.VERSION.getVersion();
+            String appVersion = Act.appVersion().getVersion();
             String appName = app.name();
             String pid = Env.PID.get();
             String baseDir = app.base().getAbsolutePath();

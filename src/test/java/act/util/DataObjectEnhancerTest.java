@@ -20,7 +20,7 @@ package act.util;
  * #L%
  */
 
-import act.TestBase;
+import act.ActTestBase;
 import act.asm.ClassReader;
 import act.asm.ClassVisitor;
 import act.asm.ClassWriter;
@@ -31,7 +31,6 @@ import org.osgl.$;
 import org.osgl.util.E;
 import org.osgl.util.IO;
 import org.osgl.util.S;
-import testapp.model.Person2;
 
 import java.io.FileOutputStream;
 import java.io.InputStream;
@@ -39,10 +38,7 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.lang.reflect.Method;
 
-import static testapp.model.Person2.Gender.F;
-import static testapp.model.Person2.Gender.M;
-
-public class DataObjectEnhancerTest extends TestBase {
+public class DataObjectEnhancerTest extends ActTestBase {
 
     public static final String TMPL_PATH = "/path/to/template";
 

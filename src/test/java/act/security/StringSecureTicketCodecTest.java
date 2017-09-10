@@ -20,7 +20,7 @@ package act.security;
  * #L%
  */
 
-import act.TestBase;
+import act.ActTestBase;
 import act.app.util.AppCrypto;
 import act.conf.AppConfig;
 import act.ws.StringSecureTicketCodec;
@@ -28,7 +28,7 @@ import org.junit.Test;
 import org.osgl.http.H;
 import org.osgl.util.S;
 
-public abstract class StringSecureTicketCodecTest extends TestBase {
+public abstract class StringSecureTicketCodecTest extends ActTestBase {
 
     protected abstract StringSecureTicketCodec codec();
 

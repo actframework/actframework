@@ -20,11 +20,11 @@ package act.metric;
  * #L%
  */
 
-import act.TestBase;
+import act.ActTestBase;
 import org.junit.Before;
 import org.junit.Test;
 
-public class SimpleMetricStoreTest extends TestBase {
+public class SimpleMetricStoreTest extends ActTestBase {
     private SimpleMetricStore store;
 
     @Before

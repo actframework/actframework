@@ -356,15 +356,13 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
             return new String[]{val};
         }
         String[] sa = request.paramVals(name);
-        if (null == sa) {
-            sa = getBody(name);
-        }
-        return sa;
+        return null == sa ? getBody(name) : sa;
     }
 
     private String[] getBody(String name) {
         Map<String, String[]> body = bodyParams();
-        return body.get(name);
+        String[] sa = body.get(name);
+        return null == sa ? new String[0] : sa;
     }
 
     private Map<String, String[]> bodyParams() {

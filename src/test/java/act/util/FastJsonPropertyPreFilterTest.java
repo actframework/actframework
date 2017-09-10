@@ -20,7 +20,7 @@ package act.util;
  * #L%
  */
 
-import act.TestBase;
+import act.ActTestBase;
 import act.data.DataPropertyRepository;
 import com.alibaba.fastjson.JSON;
 import org.junit.Before;
@@ -32,7 +32,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
 
-public class FastJsonPropertyPreFilterTest extends TestBase {
+public class FastJsonPropertyPreFilterTest extends ActTestBase {
     private FastJsonPropertyPreFilter filter;
     private Foo foo;
     private Foo foo2;

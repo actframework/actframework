@@ -20,12 +20,12 @@ package act.xio;
  * #L%
  */
 
-import act.TestBase;
+import act.ActTestBase;
 import org.junit.Test;
 import org.osgl.$;
 import org.osgl.http.H;
 
-public class ContentSuffixSensorTest extends TestBase {
+public class ContentSuffixSensorTest extends ActTestBase {
 
     private $.Var<H.Format> fmtBag = $.var();
 

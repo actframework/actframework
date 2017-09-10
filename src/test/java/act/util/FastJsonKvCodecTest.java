@@ -20,7 +20,7 @@ package act.util;
  * #L%
  */
 
-import act.TestBase;
+import act.ActTestBase;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.parser.Feature;
 import com.alibaba.fastjson.parser.ParserConfig;
@@ -31,7 +31,7 @@ import org.junit.Test;
 import org.osgl.util.KV;
 import org.osgl.util.KVStore;
 
-public class FastJsonKvCodecTest extends TestBase {
+public class FastJsonKvCodecTest extends ActTestBase {
 
     private KV kv;
 

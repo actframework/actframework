@@ -20,7 +20,6 @@ package act.job.meta;
  * #L%
  */
 
-import act.app.App;
 import act.asm.Type;
 import act.util.AsmTypes;
 import act.util.DestroyableBase;
@@ -72,7 +71,7 @@ public class JobClassMetaInfoManager extends DestroyableBase {
         if (null != subTypes) {
             subTypeInfo.remove(metaInfo.type());
         }
-        App.logger.trace("Job meta info registered for: %s", className);
+        logger.trace("Job meta info registered for: %s", className);
     }
 
     public JobClassMetaInfo jobMetaInfo(String className) {

@@ -25,11 +25,15 @@ import act.security.CORS;
 import act.security.CSRF;
 import org.osgl.$;
 import org.osgl.exception.NotAppliedException;
+import org.osgl.logging.LogManager;
+import org.osgl.logging.Logger;
 
 import javax.enterprise.context.ApplicationScoped;
 import java.lang.annotation.Annotation;
 
 public abstract class RequestHandlerBase extends $.F1<ActionContext, Void> implements RequestHandler {
+
+    protected Logger logger = LogManager.get(getClass());
 
     private boolean destroyed;
     private boolean sessionFree;

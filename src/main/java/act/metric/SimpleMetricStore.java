@@ -21,6 +21,7 @@ package act.metric;
  */
 
 import act.app.App;
+import act.util.LogSupport;
 import org.osgl.$;
 import org.osgl.logging.LogManager;
 import org.osgl.logging.Logger;
@@ -171,7 +172,7 @@ public class SimpleMetricStore implements MetricStore, Serializable {
         return S.beforeLast(name, ":");
     }
 
-    private static class FileSynchronizer {
+    private static class FileSynchronizer extends LogSupport {
         private static final String FILE_NAME = ".act.metric";
         private boolean ioError = false;
 
@@ -202,7 +203,7 @@ public class SimpleMetricStore implements MetricStore, Serializable {
                     return store;
                 } catch (IOException e) {
                     ioError = true;
-                    App.LOGGER.error(e, "Error reading simple metric store persisted file:%s. Will reset this file", file.getAbsolutePath());
+                    error(e, "Error reading simple metric store persisted file:%s. Will reset this file", file.getAbsolutePath());
                     if (!file.delete()) {
                         file.deleteOnExit();
                     }

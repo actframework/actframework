@@ -20,14 +20,14 @@ package act.event;
  * #L%
  */
 
-import act.TestBase;
+import act.ActTestBase;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Mockito;
 
 import static org.mockito.Mockito.*;
 
-public class EventBusTest extends TestBase {
+public class EventBusTest extends ActTestBase {
 
     private EventBus eventBus;
 

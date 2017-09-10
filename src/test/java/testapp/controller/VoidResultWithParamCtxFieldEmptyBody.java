@@ -20,8 +20,8 @@ package testapp.controller;
  * #L%
  */
 
+import act.Act;
 import act.app.ActionContext;
-import act.boot.app.RunApp;
 import act.controller.Controller;
 import org.osgl.http.H;
 import org.osgl.mvc.annotation.Before;
@@ -61,6 +61,6 @@ public class VoidResultWithParamCtxFieldEmptyBody  {
     }
 
     public static void main(String[] args) throws Exception {
-        RunApp.start(HelloWorldApp.class);
+        Act.start(HelloWorldApp.class);
     }
 }

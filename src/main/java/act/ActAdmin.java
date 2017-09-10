@@ -40,7 +40,7 @@ public class ActAdmin {
     public void shutdown(CliContext context) {
         context.println(context._act_i18n("cli.shutdown"));
         context.flush();
-        Act.shutdownApp(context.app());
+        Act.shutdown(context.app());
     }
 
 }

@@ -21,7 +21,7 @@ package act.conf;
  */
 
 import act.Act;
-import act.TestBase;
+import act.ActTestBase;
 import act.app.conf.AutoConfig;
 import act.app.conf.AutoConfigPlugin;
 import act.app.data.StringValueResolverManager;
@@ -43,7 +43,7 @@ import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class AutoConfigPluginTest extends TestBase {
+public class AutoConfigPluginTest extends ActTestBase {
 
     private String intVal = "37";
     private String intListVal = "37,23";
@@ -127,8 +127,9 @@ public class AutoConfigPluginTest extends TestBase {
             this.substring = substring;
         }
 
+        @Override
         public boolean matches(Object actual) {
-            return actual != null && ((String) actual).toUpperCase().contains(substring.toUpperCase());
+            return actual != null && actual.toString().toUpperCase().contains(substring.toUpperCase());
         }
 
         public void describeTo(Description description) {

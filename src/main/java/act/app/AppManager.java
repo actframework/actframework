@@ -21,10 +21,9 @@ package act.app;
  */
 
 import act.Act;
+import act.internal.util.AppDescriptor;
 import act.util.DestroyableBase;
 import org.osgl.$;
-import org.osgl.logging.LogManager;
-import org.osgl.logging.Logger;
 import org.osgl.util.C;
 import org.osgl.util.E;
 
@@ -36,10 +35,10 @@ import static act.Destroyable.Util.tryDestroyAll;
 
 /**
  * Manage applications deployed on Act
+ *
+ * TODO: get rid of multi-tenant support
  */
 public class AppManager extends DestroyableBase {
-
-    private static Logger logger = LogManager.get(AppManager.class);
 
     private Map<Integer, App> byPort = C.newMap();
 
@@ -52,13 +51,8 @@ public class AppManager extends DestroyableBase {
         byPort = null;
     }
 
-    public AppManager scan() {
-        Act.mode().appScanner().scan(null, _F.loadApp(this));
-        return this;
-    }
-
-    public AppManager loadSingleApp(String name) {
-        AppScanner.SINGLE_APP_SCANNER.scan(name, _F.loadApp(this));
+    public AppManager loadSingleApp(AppDescriptor descriptor) {
+        AppScanner.SINGLE_APP_SCANNER.scan(descriptor, _F.loadApp(this));
         return this;
     }
 
@@ -88,11 +82,7 @@ public class AppManager extends DestroyableBase {
     }
 
     public boolean unload(App app) {
-        boolean b = unloadApp(app, byPort);
-        if (byPort.isEmpty()) {
-            Act.shutdown();
-        }
-        return b;
+        return unloadApp(app, byPort);
     }
 
     private boolean unloadApp(App app, Map<?, App> map) {
@@ -154,7 +144,7 @@ public class AppManager extends DestroyableBase {
                     try {
                         mgr.load(app);
                     } catch (RuntimeException e) {
-                        Act.shutdownApp(app);
+                        Act.shutdown(app);
                         throw e;
                     }
                 }

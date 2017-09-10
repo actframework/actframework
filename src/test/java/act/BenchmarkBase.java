@@ -26,7 +26,7 @@ import org.junit.Rule;
 import org.junit.rules.TestRule;
 
 @Ignore
-public class BenchmarkBase extends TestBase {
+public class BenchmarkBase extends ActTestBase {
     @Rule
     public TestRule benchmarkRun = new BenchmarkRule();
 }

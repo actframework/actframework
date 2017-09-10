@@ -21,13 +21,8 @@ package act.boot.app;
  */
 
 import act.Act;
-import act.conf.AppConfigKey;
-import act.util.SysProps;
-import org.osgl.$;
 import org.osgl.logging.Logger;
-import org.osgl.util.S;
-
-import java.lang.reflect.Method;
+import org.osgl.util.E;
 
 /**
  * The entry to start an Act full stack app
@@ -61,25 +56,7 @@ public class RunApp {
     }
 
     public static void start(String appName, String appVersion, String packageName) throws Exception {
-        long ts = $.ms();
-        String profile = SysProps.get(AppConfigKey.PROFILE.key());
-        if (S.blank(profile)) {
-            profile = "";
-        } else {
-            profile = "using profile[" + profile + "]";
-        }
-        LOGGER.debug("run fullstack application with package[%s] %s", packageName, profile);
-        //System.setProperty(AppConfigKey.CONTROLLER_PACKAGE.key(), packageName);
-        final String SCAN_PACKAGE = AppConfigKey.SCAN_PACKAGE.key();
-        if (S.notBlank(packageName)) {
-            System.setProperty(SCAN_PACKAGE, packageName);
-        }
-        FullStackAppBootstrapClassLoader classLoader = new FullStackAppBootstrapClassLoader(RunApp.class.getClassLoader());
-        Thread.currentThread().setContextClassLoader(classLoader);
-        Class<?> actClass = classLoader.loadClass("act.Act");
-        Method m = actClass.getDeclaredMethod("startApp", String.class, String.class);
-        $.invokeStatic(m, appName, appVersion);
-        LOGGER.info("it takes %sms to start the app\n", $.ms() - ts);
+        E.tbd();
     }
 
     public static void main(String[] args) throws Exception {

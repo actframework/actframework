@@ -28,7 +28,6 @@ import javax.enterprise.context.ApplicationScoped;
 import java.util.Map;
 
 import static act.Destroyable.Util.destroyAll;
-import static act.app.App.logger;
 
 @ApplicationScoped
 public class MailerClassMetaInfoManager extends DestroyableBase {

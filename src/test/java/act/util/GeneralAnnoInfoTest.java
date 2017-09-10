@@ -20,7 +20,7 @@ package act.util;
  * #L%
  */
 
-import act.TestBase;
+import act.ActTestBase;
 import act.asm.Type;
 import org.junit.Before;
 import org.junit.Test;
@@ -29,7 +29,7 @@ import org.osgl.mvc.annotation.Action;
 
 import javax.validation.constraints.NotNull;
 
-public class GeneralAnnoInfoTest extends TestBase {
+public class GeneralAnnoInfoTest extends ActTestBase {
     private GeneralAnnoInfo actionInfo;
     private GeneralAnnoInfo notNullInfo;
 

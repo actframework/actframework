@@ -100,6 +100,7 @@ public class CliContext extends ActContext.Base<CliContext> implements IASCIITab
             return set;
         }
 
+        @SuppressWarnings("FallThrough")
         public void raiseExceptionIfThereAreMissingOptions(CliContext context) {
             Set<String> missings = missingOptions();
             int missing = missings.size();

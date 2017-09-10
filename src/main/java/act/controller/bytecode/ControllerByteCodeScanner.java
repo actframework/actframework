@@ -41,8 +41,6 @@ import act.ws.WsEndpoint;
 import org.osgl.$;
 import org.osgl.Osgl;
 import org.osgl.http.H;
-import org.osgl.logging.L;
-import org.osgl.logging.Logger;
 import org.osgl.mvc.annotation.With;
 import org.osgl.mvc.util.Binder;
 import org.osgl.util.C;
@@ -58,7 +56,6 @@ import java.util.*;
  */
 public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
 
-    private final static Logger logger = L.get(ControllerByteCodeScanner.class);
     private Router router;
     private ControllerClassMetaInfo classInfo;
     private volatile ControllerClassMetaInfoManager classInfoBase;

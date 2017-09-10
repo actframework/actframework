@@ -211,9 +211,9 @@ public abstract class WebSocketConnectionHandler extends RequestHandlerBase {
             context.attribute(JsonDTO.CTX_ATTR_KEY, dto);
         } catch (JSONException e) {
             if (e.getCause() != null) {
-                App.LOGGER.warn(e.getCause(), "error parsing JSON data");
+                logger.warn(e.getCause(), "error parsing JSON data");
             } else {
-                App.LOGGER.warn(e, "error parsing JSON data");
+                logger.warn(e, "error parsing JSON data");
             }
             throw new BadRequest(e.getCause());
         }
