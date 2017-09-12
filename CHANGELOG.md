@@ -1,5 +1,9 @@
 # ActFramework Change Log
 
+1.4.12
+* `SequenceNumberGenerator` cause error in heterogeneouse data source environment #374
+* Allow inject `Dao` interface #373
+
 1.4.11
 * catch up update to 1.3.14-LTS
 * Support running CLI Job in background #267 
