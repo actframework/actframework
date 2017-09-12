@@ -20,8 +20,12 @@ package act.db.util;
  * #L%
  */
 
+import act.Act;
+import act.app.App;
+import act.app.DbServiceManager;
 import act.cli.Command;
 import act.cli.Required;
+import act.conf.AppConfig;
 import org.osgl.$;
 
 import javax.inject.Inject;
@@ -55,8 +59,16 @@ public class SequenceNumberGenerator {
         @Override
         public _SequenceNumberGenerator get() {
             if (generators.size() > 1) {
+                App app = Act.app();
+                AppConfig config = app.config();
+                DbServiceManager dbServiceManager = app.dbServiceManager();
                 for (_SequenceNumberGenerator gen: generators) {
                     if (!_SequenceNumberGenerator.InMemorySequenceNumberGenerator.class.isInstance(gen)) {
+                        try {
+                            gen.configure(config, dbServiceManager);
+                        } catch (Exception e) {
+                            continue;
+                        }
                         return gen;
                     }
                 }

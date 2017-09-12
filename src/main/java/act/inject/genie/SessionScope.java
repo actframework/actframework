@@ -40,8 +40,8 @@ public class SessionScope extends ScopeCacheSupport.Base implements ScopeCache.S
     }
 
     @Override
-    public <T> T get(Class<T> aClass) {
-        return get(aClass.getName());
+    public <T> T get(BeanSpec target) {
+        return get(target.toString());
     }
 
     @Override
@@ -64,8 +64,8 @@ public class SessionScope extends ScopeCacheSupport.Base implements ScopeCache.S
     }
 
     @Override
-    public <T> void put(Class<T> aClass, T t) {
-        put(aClass.getName(), t);
+    public <T> void put(BeanSpec target, T t) {
+        put(target.toString(), t);
     }
 
     @Override

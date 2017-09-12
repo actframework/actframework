@@ -21,6 +21,7 @@ package act.inject.genie;
  */
 
 import act.app.App;
+import org.osgl.inject.BeanSpec;
 import org.osgl.inject.ScopeCache;
 
 public class SingletonScope implements ScopeCache.SingletonScope {
@@ -34,13 +35,13 @@ public class SingletonScope implements ScopeCache.SingletonScope {
     }
 
     @Override
-    public <T> T get(Class<T> aClass) {
-        return app.singleton(aClass);
+    public <T> T get(BeanSpec target) {
+        return (T) app.singleton(target.rawType());
     }
 
     @Override
-    public <T> void put(Class<T> aClass, T t) {
-        app.registerSingleton(aClass, t);
+    public <T> void put(BeanSpec target, T t) {
+        app.registerSingleton(target.rawType(), t);
     }
 
 }

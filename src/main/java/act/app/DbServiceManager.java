@@ -140,7 +140,7 @@ public class DbServiceManager extends AppServiceBase<DbServiceManager> implement
             @Override
             public void run() {
                 _SequenceNumberGenerator seqGen = app.config().sequenceNumberGenerator();
-                seqGen.configure(app.config(), DbServiceManager.this);
+                //seqGen.configure(app.config(), DbServiceManager.this);
                 SequenceNumberGenerator.registerImpl(seqGen);
             }
         });

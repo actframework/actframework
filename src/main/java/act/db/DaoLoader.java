@@ -1,4 +1,4 @@
-package act.inject.genie;
+package act.db;
 
 /*-
  * #%L
@@ -20,29 +20,32 @@ package act.inject.genie;
  * #L%
  */
 
-import act.inject.param.ScopeCacheSupport;
+import act.app.App;
+import act.app.DbServiceManager;
 import org.osgl.inject.BeanSpec;
-import org.osgl.inject.ScopeCache;
+import org.osgl.inject.GenericTypedBeanLoader;
 
-public class DependentScope extends ScopeCacheSupport.Base implements ScopeCache, ScopeCacheSupport {
+import javax.enterprise.context.ApplicationScoped;
+import java.lang.reflect.Type;
+import java.util.List;
 
-    public static final DependentScope INSTANCE = new DependentScope();
+@ApplicationScoped
+public class DaoLoader implements GenericTypedBeanLoader<Dao> {
+
+    private DbServiceManager dbServiceManager;
+    public DaoLoader() {
+        dbServiceManager = App.instance().dbServiceManager();
+    }
 
     @Override
-    public <T> T get(BeanSpec target) {
+    public Dao load(BeanSpec spec) {
+        List<Type> typeList = spec.typeParams();
+        int sz = typeList.size();
+        if (sz > 1) {
+            Class<?> modelType = BeanSpec.rawTypeOf(typeList.get(1));
+            return dbServiceManager.dao(modelType);
+        }
         return null;
     }
 
-    @Override
-    public <T> T get(String key) {
-        return null;
-    }
-
-    @Override
-    public <T> void put(BeanSpec target, T t) {
-    }
-
-    @Override
-    public <T> void put(String key, T t) {
-    }
 }

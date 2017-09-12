@@ -23,6 +23,7 @@ package act.inject.genie;
 import act.app.ActionContext;
 import act.cli.CliContext;
 import act.inject.param.ScopeCacheSupport;
+import org.osgl.inject.BeanSpec;
 import org.osgl.inject.ScopeCache;
 
 public class RequestScope extends ScopeCacheSupport.Base implements ScopeCache.RequestScope, ScopeCacheSupport {
@@ -30,8 +31,8 @@ public class RequestScope extends ScopeCacheSupport.Base implements ScopeCache.R
     public static final act.inject.genie.RequestScope INSTANCE = new act.inject.genie.RequestScope();
 
     @Override
-    public <T> T get(Class<T> aClass) {
-        return get(aClass.getName());
+    public <T> T get(BeanSpec target) {
+        return get(target.toString());
     }
 
     @Override
@@ -48,11 +49,11 @@ public class RequestScope extends ScopeCacheSupport.Base implements ScopeCache.R
     }
 
     @Override
-    public <T> void put(Class<T> aClass, T t) {
+    public <T> void put(BeanSpec target, T t) {
         if (null == t) {
             return;
         }
-        put(aClass.getName(), t);
+        put(target.toString(), t);
     }
 
     public <T> void put(String key, T t) {
