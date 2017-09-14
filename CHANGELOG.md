@@ -1,5 +1,8 @@
 # ActFramework Change Log
 
+1.4.13
+* Allow it to skip implicity view arguments for certain controller method #376
+
 1.4.12
 * `SequenceNumberGenerator` cause error in heterogeneouse data source environment #374
 * Allow inject `Dao` interface #373

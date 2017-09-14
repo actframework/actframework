@@ -121,6 +121,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
     private MissingAuthenticationHandler missingAuthenticationHandler;
     private MissingAuthenticationHandler csrfFailureHandler;
     private boolean async;
+    private boolean byPassImplicityTemplateVariable;
 
     private ReflectedHandlerInvoker(M handlerMetaInfo, App app) {
         this.app = app;
@@ -190,6 +191,9 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
             }
         }
 
+        byPassImplicityTemplateVariable = (controllerClass.isAnnotationPresent(NoImplicitTemplateVariable.class) ||
+                method.isAnnotationPresent(NoImplicitTemplateVariable.class));
+
         initOutputVariables();
         initCacheParams();
         checkTemplateContext();
@@ -250,6 +254,10 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
     public Result handle(final ActionContext context) throws Exception {
         if (disabled) {
             return ActNotFound.get();
+        }
+
+        if (byPassImplicityTemplateVariable && context.state().isHandling()) {
+            context.byPassImplicitVariable();
         }
 
         context.templateChangeListener(templateChangeListener);

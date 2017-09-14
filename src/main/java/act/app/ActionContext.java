@@ -100,6 +100,7 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
     private MissingAuthenticationHandler forceMissingAuthenticationHandler;
     private MissingAuthenticationHandler forceCsrfCheckingFailureHandler;
     private String urlContext;
+    private boolean byPassImplicitTemplateVariable;
 
 
     @Inject
@@ -198,6 +199,15 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
     public ActionContext forceCsrfCheckingFailureHandler(MissingAuthenticationHandler handler) {
         this.forceCsrfCheckingFailureHandler = handler;
         return this;
+    }
+
+    public ActionContext byPassImplicitVariable() {
+        this.byPassImplicitTemplateVariable = true;
+        return this;
+    }
+
+    public boolean isByPassImplicitTemplateVariable() {
+        return this.byPassImplicitTemplateVariable;
     }
 
     public ActionContext urlContext(String context) {

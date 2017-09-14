@@ -174,12 +174,12 @@ public class ViewManager extends DestroyableBase {
     }
 
 
-    public List<ActionViewVarDef> implicitActionViewVariables() {
-        return C.list(implicitActionViewVariables.values());
+    public Collection<ActionViewVarDef> implicitActionViewVariables() {
+        return implicitActionViewVariables.values();
     }
 
-    public List<MailerViewVarDef> implicitMailerViewVariables() {
-        return C.list(implicitMailerViewVariables.values());
+    public Collection<MailerViewVarDef> implicitMailerViewVariables() {
+        return implicitMailerViewVariables.values();
     }
 
     public void reset() {

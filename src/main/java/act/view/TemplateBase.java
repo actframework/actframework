@@ -39,7 +39,9 @@ public abstract class TemplateBase implements Template {
     @Override
     public void merge(ActionContext context) {
         Map<String, Object> renderArgs = context.renderArgs();
-        exposeImplicitVariables(renderArgs, context);
+        if (!context.isByPassImplicitTemplateVariable()) {
+            exposeImplicitVariables(renderArgs, context);
+        }
         beforeRender(context);
         merge(renderArgs, context.resp());
     }
