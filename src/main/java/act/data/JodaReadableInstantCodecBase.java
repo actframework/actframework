@@ -1,4 +1,4 @@
-package act.data.annotation;
+package act.data;
 
 /*-
  * #%L
@@ -20,25 +20,21 @@ package act.data.annotation;
  * #L%
  */
 
-import java.lang.annotation.*;
+import org.joda.time.ReadableInstant;
+import org.joda.time.format.DateTimeFormatter;
 
-/**
- * Specify the Date time format.
- *
- * Normally this annotation is used to specify
- *
- */
-@Documented
-@Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.TYPE, ElementType.PARAMETER, ElementType.FIELD, ElementType.METHOD})
-public @interface Pattern {
-    /**
-     * The date time format value. E.g
-     *
-     * * "yyyy-MM-dd"
-     * * "dd/MM/yyyy HH:MM"
-     *
-     * @return the format string
-     */
-    String value();
+public abstract class JodaReadableInstantCodecBase<T extends ReadableInstant> extends JodaDateTimeCodecBase<T> {
+
+    public JodaReadableInstantCodecBase(DateTimeFormatter formatter) {
+        super(formatter);
+    }
+
+    public JodaReadableInstantCodecBase(String pattern) {
+        super(pattern);
+    }
+
+    @Override
+    public String toString(T o) {
+        return formatter().print(o);
+    }
 }

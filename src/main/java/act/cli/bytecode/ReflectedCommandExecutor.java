@@ -26,6 +26,7 @@ import act.cli.CommandExecutor;
 import act.cli.ReportProgress;
 import act.cli.meta.CommandMethodMetaInfo;
 import act.cli.meta.CommandParamMetaInfo;
+import act.data.annotation.Pattern;
 import act.inject.param.CliContextParamLoader;
 import act.inject.param.ParamValueLoaderManager;
 import act.job.AppJobManager;
@@ -60,6 +61,7 @@ public class ReflectedCommandExecutor extends CommandExecutor {
     private CliContext.ParsingContext parsingContext;
     private boolean async;
     private ReportProgress reportProgress;
+    private String pattern;
 
     public ReflectedCommandExecutor(CommandMethodMetaInfo methodMetaInfo, App app) {
         this.methodMetaInfo = $.notNull(methodMetaInfo);
@@ -82,16 +84,20 @@ public class ReflectedCommandExecutor extends CommandExecutor {
         } else {
             method.setAccessible(true);
         }
+        Pattern pattern = method.getAnnotation(Pattern.class);
+        if (null != pattern) {
+            this.pattern = pattern.value();
+        }
         this.paramLoaderService = app.service(ParamValueLoaderManager.class).get(CliContext.class);
         this.buildParsingContext();
     }
 
     @Override
     public Object execute(CliContext context) {
-        if (isStatic) {
-            return null;
-        }
         context.attribute(CliContext.ATTR_METHOD, method);
+        if (null != pattern) {
+            context.pattern(pattern);
+        }
         context.prepare(parsingContext);
         paramLoaderService.preParseOptions(method, methodMetaInfo, context);
         final Object cmd = commanderInstance(context);
@@ -129,6 +135,9 @@ public class ReflectedCommandExecutor extends CommandExecutor {
     }
 
     private Object commanderInstance(CliContext context) {
+        if (isStatic) {
+            return null;
+        }
         String commander = commanderClass.getName();
         Object inst = context.__commanderInstance(commander);
         if (null == inst) {

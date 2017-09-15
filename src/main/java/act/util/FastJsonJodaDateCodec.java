@@ -128,28 +128,28 @@ public class FastJsonJodaDateCodec extends DestroyableBase implements ObjectSeri
 
     private JodaDateTimeCodec dateTimeCodec() {
         if (null == dateTimeCodec) {
-            dateTimeCodec = app.singleton(JodaDateTimeCodec.class);
+            dateTimeCodec = app.getInstance(JodaDateTimeCodec.class);
         }
         return dateTimeCodec;
     }
 
     private JodaLocalDateTimeCodec localDateTimeCodec() {
         if (null == localDateTimeCodec) {
-            localDateTimeCodec = app.singleton(JodaLocalDateTimeCodec.class);
+            localDateTimeCodec = app.getInstance(JodaLocalDateTimeCodec.class);
         }
         return localDateTimeCodec;
     }
 
     private JodaLocalDateCodec localDateCodec() {
         if (null == localDateCodec) {
-            localDateCodec = app.singleton(JodaLocalDateCodec.class);
+            localDateCodec = app.getInstance(JodaLocalDateCodec.class);
         }
         return localDateCodec;
     }
 
     private JodaLocalTimeCodec localTimeCodec() {
         if (null == localTimeCodec) {
-            localTimeCodec = app.singleton(JodaLocalTimeCodec.class);
+            localTimeCodec = app.getInstance(JodaLocalTimeCodec.class);
         }
         return localTimeCodec;
     }

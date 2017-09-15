@@ -156,6 +156,14 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
         return session.put(key, value);
     }
 
+    /**
+     * Returns HTTP session's id
+     * @return HTTP session id
+     */
+    public String sessionId() {
+        return session().id();
+    }
+
     public H.Flash flash() {
         return flash;
     }

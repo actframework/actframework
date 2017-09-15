@@ -30,6 +30,7 @@ import act.controller.annotation.HandleCsrfFailure;
 import act.controller.annotation.HandleMissingAuthentication;
 import act.controller.annotation.TemplateContext;
 import act.controller.meta.*;
+import act.data.annotation.Pattern;
 import act.handler.NonBlock;
 import act.handler.PreventDoubleSubmission;
 import act.handler.builtin.controller.*;
@@ -116,6 +117,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
     // (param index: output name)
     private Map<Integer, String> outputParams;
     private boolean hasOutputVar;
+    private String pattern;
     private String templateContext;
     private boolean noTemplateCache;
     private MissingAuthenticationHandler missingAuthenticationHandler;
@@ -151,6 +153,11 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
             handlerIndex = methodAccess.getIndex(handlerMetaInfo.name(), paramTypes);
         } else {
             method.setAccessible(true);
+        }
+
+        Pattern pattern = method.getAnnotation(Pattern.class);
+        if (null != pattern) {
+            this.pattern = pattern.value();
         }
 
         sessionFree = method.isAnnotationPresent(SessionFree.class);
@@ -254,6 +261,10 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
     public Result handle(final ActionContext context) throws Exception {
         if (disabled) {
             return ActNotFound.get();
+        }
+
+        if (null != pattern) {
+            context.pattern(pattern);
         }
 
         if (byPassImplicityTemplateVariable && context.state().isHandling()) {

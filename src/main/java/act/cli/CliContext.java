@@ -250,6 +250,24 @@ public class CliContext extends ActContext.Base<CliContext> implements IASCIITab
         return session;
     }
 
+    public CliContext session(String key, Object val) {
+        session().attribute(key, val);
+        return this;
+    }
+
+    public <T> T session(String key) {
+        return session().attribute(key);
+    }
+
+    /**
+     * Returns CLI session id
+     * @return CLI session id
+     */
+    @Override
+    public String sessionId() {
+        return session().id();
+    }
+
     @Override
     public Set<String> paramKeys() {
         return preparsedOptionValues.keySet();

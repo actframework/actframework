@@ -21,36 +21,22 @@ package act.data;
  */
 
 import act.conf.AppConfig;
-import act.data.annotation.Pattern;
 import org.joda.time.LocalDate;
-import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
-import org.osgl.$;
-import org.osgl.util.AnnotationAware;
-import org.osgl.util.S;
-import org.osgl.util.StringValueResolver;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
 @Singleton
-public class JodaLocalDateCodec extends JodaDateTimeCodecBase<LocalDate> {
+public class JodaLocalDateCodec extends JodaReadablePatialCodecBase<LocalDate> {
 
-    private DateTimeFormatter dateFormat;
-
-    public JodaLocalDateCodec(DateTimeFormatter dateFormat) {
-        this.dateFormat = $.notNull(dateFormat);
-        verify();
+    public JodaLocalDateCodec(DateTimeFormatter formatter) {
+        super(formatter);
     }
 
     public JodaLocalDateCodec(String pattern) {
-        if (isIsoStandard(pattern)) {
-            dateFormat = ISODateTimeFormat.date();
-        } else {
-            dateFormat = DateTimeFormat.forPattern(pattern);
-        }
-        verify();
+        super(pattern);
     }
 
     @Inject
@@ -59,36 +45,23 @@ public class JodaLocalDateCodec extends JodaDateTimeCodecBase<LocalDate> {
     }
 
     @Override
-    public LocalDate resolve(String value) {
-        return S.blank(value) ? null : dateFormat.parseLocalDate(value);
+    protected JodaDateTimeCodecBase<LocalDate> create(String pattern) {
+        return new JodaLocalDateCodec(pattern);
     }
 
     @Override
-    public LocalDate parse(String s) {
-        return resolve(s);
+    protected LocalDate parse(DateTimeFormatter formatter, String value) {
+        return formatter.parseLocalDate(value);
     }
 
     @Override
-    public String toString(LocalDate localDate) {
-        return dateFormat.print(localDate);
+    protected DateTimeFormatter isoFormatter() {
+        return ISODateTimeFormat.localDateParser();
     }
 
     @Override
-    public String toJSONString(LocalDate localDate) {
-        return null;
+    protected LocalDate now() {
+        return LocalDate.now();
     }
 
-    @Override
-    public StringValueResolver<LocalDate> amended(AnnotationAware beanSpec) {
-        Pattern pattern = beanSpec.getAnnotation(Pattern.class);
-        return null == pattern ? this : new JodaLocalDateCodec(pattern.value());
-    }
-
-    private void verify() {
-        LocalDate now = LocalDate.now();
-        String s = toString(now);
-        if (!s.equals(toString(parse(s)))) {
-            throw new IllegalArgumentException("Invalid date time pattern");
-        }
-    }
 }

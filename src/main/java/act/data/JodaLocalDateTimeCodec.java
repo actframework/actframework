@@ -21,38 +21,26 @@ package act.data;
  */
 
 import act.conf.AppConfig;
-import act.data.annotation.Pattern;
 import org.joda.time.LocalDateTime;
-import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
-import org.osgl.$;
-import org.osgl.util.AnnotationAware;
-import org.osgl.util.S;
-import org.osgl.util.StringValueResolver;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
 @Singleton
-public class JodaLocalDateTimeCodec extends JodaDateTimeCodecBase<LocalDateTime> {
+public class JodaLocalDateTimeCodec extends JodaReadablePatialCodecBase<LocalDateTime> {
 
-    private DateTimeFormatter dateFormat;
     private boolean isIso;
 
-    public JodaLocalDateTimeCodec(DateTimeFormatter dateFormat) {
-        this.dateFormat = $.notNull(dateFormat);
-        verify();
+    public JodaLocalDateTimeCodec(DateTimeFormatter formatter, boolean isIso) {
+        super(formatter);
+        this.isIso = isIso;
     }
 
     public JodaLocalDateTimeCodec(String pattern) {
-        if (isIsoStandard(pattern)) {
-            dateFormat = ISODateTimeFormat.dateTimeNoMillis();
-            isIso = true;
-        } else {
-            this.dateFormat = DateTimeFormat.forPattern(pattern);
-        }
-        verify();
+        super(pattern);
+        isIso = isIsoStandard(pattern);
     }
 
     @Inject
@@ -61,45 +49,24 @@ public class JodaLocalDateTimeCodec extends JodaDateTimeCodecBase<LocalDateTime>
     }
 
     @Override
-    public LocalDateTime resolve(String value) {
-        if (S.notBlank(value)) {
-            // See http://stackoverflow.com/questions/15642053/joda-time-parsing-string-throws-java-lang-illegalargumentexception/15642797#15642797
-            if (isIso && !value.contains("Z")) {
-                value += "Z";
-            }
-            return dateFormat.parseLocalDateTime(value);
-        }
-        return null;
+    protected LocalDateTime parse(DateTimeFormatter formatter, String value) {
+        String amended = (isIso && !value.endsWith("Z")) ? value + "Z" : value;
+        return formatter.parseLocalDateTime(amended);
     }
 
     @Override
-    public LocalDateTime parse(String s) {
-        return resolve(s);
+    protected DateTimeFormatter isoFormatter() {
+        return ISODateTimeFormat.dateTimeNoMillis();
     }
 
     @Override
-    public String toString(LocalDateTime localDateTime) {
-        return dateFormat.print(localDateTime);
+    protected LocalDateTime now() {
+        return LocalDateTime.now();
     }
 
     @Override
-    public String toJSONString(LocalDateTime localDateTime) {
-        return null;
-    }
-
-
-    @Override
-    public StringValueResolver<LocalDateTime> amended(AnnotationAware beanSpec) {
-        Pattern pattern = beanSpec.getAnnotation(Pattern.class);
-        return null == pattern ? this : new JodaLocalDateTimeCodec(pattern.value());
-    }
-
-    private void verify() {
-        LocalDateTime now = LocalDateTime.now();
-        String s = toString(now);
-        if (!s.equals(toString(parse(s)))) {
-            throw new IllegalArgumentException("Invalid date time pattern");
-        }
+    protected JodaDateTimeCodecBase<LocalDateTime> create(String pattern) {
+        return new JodaLocalDateTimeCodec(pattern);
     }
 
 }

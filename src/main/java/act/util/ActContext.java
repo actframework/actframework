@@ -31,8 +31,6 @@ import act.mail.MailerContext;
 import act.view.Template;
 import org.osgl.$;
 import org.osgl.http.H;
-import org.osgl.logging.LogManager;
-import org.osgl.logging.Logger;
 import org.osgl.mvc.util.ParamValueProvider;
 import org.osgl.util.C;
 import org.osgl.util.E;
@@ -101,6 +99,30 @@ public interface ActContext<CTX_TYPE extends ActContext> extends ParamValueProvi
     Map<String, ConstraintViolation> violations();
     ConstraintViolation violation(String property);
 
+    /**
+     * Returns the user session with which this context is associated
+     *
+     * @return session id or null if no session associated with this context (e.g. mail context)
+     */
+    String sessionId();
+
+    /**
+     * Returns data format pattern. Normally should be date time format
+     *
+     * @return the data format pattern
+     */
+    String pattern();
+
+    /**
+     * Set data format pattern
+     *
+     * @param pattern
+     *      the data format pattern
+     * @return
+     *      this context instance
+     */
+    CTX_TYPE pattern(String pattern);
+
     String _act_i18n(String msgId, Object... args);
 
     String i18n(boolean ignoreError, String msgId, Object... args);
@@ -137,9 +159,6 @@ public interface ActContext<CTX_TYPE extends ActContext> extends ParamValueProvi
 
     abstract class Base<CTX extends Base> extends DestroyableBase
             implements ActContext<CTX> {
-
-        protected final Logger LOGGER = LogManager.get(getClass());
-
         private App app;
         private String templatePath;
         private String templateContext;
@@ -154,6 +173,7 @@ public interface ActContext<CTX_TYPE extends ActContext> extends ParamValueProvi
         private boolean noTemplateCache;
         private SimpleProgressGauge progress = new SimpleProgressGauge();
         private String jobId;
+        private String pattern;
 
         // (violation.propertyPath, violation)
         private Map<String, ConstraintViolation> violations;
@@ -259,6 +279,25 @@ public interface ActContext<CTX_TYPE extends ActContext> extends ParamValueProvi
                 this.template = template;
             }
             return me();
+        }
+
+        @Override
+        public String pattern() {
+            return pattern;
+        }
+
+        @Override
+        public CTX pattern(String pattern) {
+            this.pattern = pattern;
+            return me();
+        }
+
+        /**
+         * Default session id is `null`
+         * @return the session id
+         */
+        public String sessionId() {
+            return null;
         }
 
         public final CTX locale(Locale locale) {
@@ -458,6 +497,11 @@ public interface ActContext<CTX_TYPE extends ActContext> extends ParamValueProvi
         public static Class<? extends ActContext> currentContextType() {
             ActContext ctx = currentContext();
             return null == ctx ? null : ctx.getClass();
+        }
+
+        public static String dataPattern() {
+            ActContext<?> current = currentContext();
+            return null == current ? null : current.pattern();
         }
     }
 }
