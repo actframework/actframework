@@ -976,8 +976,23 @@ public class App extends DestroyableBase {
     private void loadConfig() {
         JsonUtilConfig.configure(this);
         File resource = RuntimeDirs.resource(this);
-        logger.debug("loading app configuration: %s ...", appBase.getAbsolutePath());
-        config = new AppConfLoader().load(resource);
+        if (resource.exists()) {
+            if (isDebugEnabled()) {
+                debug("loading app configuration: %s ...", appBase.getAbsolutePath());
+            }
+            config = new AppConfLoader().load(resource);
+        } else {
+            String appJarFile = System.getProperty(Act.PROP_APP_JAR_FILE);
+            if (null != appJarFile) {
+                File jarFile = new File(appJarFile);
+                if (isDebugEnabled()) {
+                    debug("loading app configuration from jar file: %s", appJarFile);
+                }
+                config = new AppConfLoader().load(jarFile);
+            } else {
+                warn("Cannot determine where to load app configuration");
+            }
+        }
         config.app(this);
         configureLoggingLevels();
         registerSingleton(AppConfig.class, config);

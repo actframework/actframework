@@ -67,10 +67,15 @@ import org.osgl.logging.Logger;
 import org.osgl.util.*;
 
 import java.io.File;
+import java.io.IOException;
 import java.lang.management.ManagementFactory;
+import java.lang.management.RuntimeMXBean;
 import java.lang.reflect.Method;
+import java.net.URL;
 import java.util.List;
 import java.util.Map;
+import java.util.jar.Attributes;
+import java.util.jar.Manifest;
 
 import static act.Destroyable.Util.tryDestroy;
 
@@ -78,6 +83,17 @@ import static act.Destroyable.Util.tryDestroy;
  * The Act runtime and facade
  */
 public final class Act {
+
+    /**
+     * Used to set/get system property to communicate the app jar file if
+     * app is loaded from jar
+     */
+    public static final String PROP_APP_JAR_FILE = "act_app_jar_file";
+
+    /**
+     * The manifest attributes property to fetch app jar file
+     */
+    private static final String ATTR_APP_JAR = "App-Jar";
 
     public enum Mode {
         PROD,
@@ -269,7 +285,7 @@ public final class Act {
     }
 
     public static void startup(AppDescriptor descriptor) {
-        processEnvironment();
+        processEnvironment(descriptor);
         Banner.print(descriptor);
         loadConfig();
         initMetricPlugin();
@@ -642,17 +658,83 @@ public final class Act {
         return ((FullStackAppBootstrapClassLoader) Act.class.getClassLoader()).libBCSize();
     }
 
-    private static void processEnvironment() {
+    private static String appJar() {
+        URL url = Act.class.getClassLoader().getResource("META-INF/MANIFEST.MF");
+        if (null != url) {
+            try {
+                Manifest manifest = new Manifest(url.openStream());
+                Attributes attributes = manifest.getMainAttributes();
+                if (null != attributes) {
+                    return attributes.getValue(ATTR_APP_JAR);
+                }
+            } catch (IOException e) {
+                LOGGER.warn(e, "cannot open manifest resource: %s", url);
+            }
+        }
+        return null;
+    }
+
+    private static void processEnvironment(AppDescriptor descriptor) {
+        boolean traceEnabled = LOGGER.isTraceEnabled();
+        RuntimeMXBean runtimeMXBean = ManagementFactory.getRuntimeMXBean();
+        List<String> cp = S.fastSplit(runtimeMXBean.getClassPath(), File.pathSeparator);
+        boolean hasClassesDir = false;
+        String artifactId = descriptor.getVersion().getArtifactId();
+        String appJar = appJar();
+        String appJarFile = null;
+        for (String cpItem : cp) {
+            if (!cpItem.endsWith(".jar")) {
+                if (traceEnabled) {
+                    LOGGER.trace("found class path that are not jar file: %s", cpItem);
+                }
+                hasClassesDir = true;
+                break;
+            } else if (null == appJarFile) {
+                if (null != appJar && cpItem.contains(appJar)) {
+                    appJarFile = cpItem;
+                } else if (cpItem.contains(artifactId)) {
+                    appJarFile = cpItem;
+                }
+            }
+        }
         String s = System.getProperty("app.mode");
-        if (null != s) {
-            mode = Mode.valueOfIgnoreCase(s);
+        if (!hasClassesDir) {
+            mode = Mode.PROD;
+            if (null != appJarFile) {
+                System.setProperty(PROP_APP_JAR_FILE, appJarFile);
+            }
         } else {
-            String profile = SysProps.get(AppConfigKey.PROFILE.key());
-            mode = S.neq("prod", profile, S.IGNORECASE) ? Mode.DEV : Mode.PROD;
+            if (null != s) {
+                mode = Mode.valueOfIgnoreCase(s);
+                if (traceEnabled) {
+                    LOGGER.trace("set app mode to user specified: %s", s);
+                }
+            } else {
+                String profile = SysProps.get(AppConfigKey.PROFILE.key());
+                if (S.eq("prod", profile, S.IGNORECASE)) {
+                    mode = Mode.PROD;
+                    if (traceEnabled) {
+                        LOGGER.trace("set app mode to prod based on profile setting");
+                    }
+                } else if (S.eq("dev", profile, S.IGNORECASE)) {
+                    mode = Mode.DEV;
+                    if (traceEnabled) {
+                        LOGGER.trace("set app mode to dev based on profile setting");
+                    }
+                } else {
+                    mode = hasClassesDir ? Mode.DEV : Mode.PROD;
+                    if (traceEnabled) {
+                        LOGGER.trace("set app mode to system determined: %s", mode);
+                    }
+                }
+            }
         }
         s = System.getProperty("app.nodeGroup");
         if (null != s) {
             nodeGroup = s;
+            if (traceEnabled) {
+                LOGGER.trace("set node group to %s", s);
+            }
         }
     }
 

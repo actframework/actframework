@@ -23,26 +23,23 @@ package act.conf;
 import act.Act;
 import act.app.ProjectLayout;
 import act.app.RuntimeDirs;
+import act.util.LogSupport;
 import act.util.SysProps;
-import org.osgl.logging.L;
-import org.osgl.logging.Logger;
 import org.osgl.util.C;
 import org.osgl.util.IO;
 import org.osgl.util.S;
 
 import java.io.*;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 
 import static act.conf.ConfigKey.KEY_COMMON_CONF_TAG;
 
 /**
  * Loading configurations from conf file or conf dir
  */
-public abstract class ConfLoader<T extends Config> {
-
-    private static Logger logger = L.get(ConfLoader.class);
+public abstract class ConfLoader<T extends Config> extends LogSupport {
 
     // trim "act." from conf keys
     private static Map<String, Object> processConf(Map<String, ?> conf) {
@@ -74,12 +71,80 @@ public abstract class ConfLoader<T extends Config> {
 
     protected abstract String confFileName();
 
-    private Map loadConfFromDisk(File conf) {
+    private Map loadConfFromDisk(File conf)  {
         if (conf.isDirectory()) {
             return loadConfFromDir(conf);
+        } else if (conf.getName().endsWith(".jar")) {
+            return loadConfFromJar(conf);
         } else {
             return loadConfFromFile(conf);
         }
+    }
+
+    private Map loadConfFromJar(File jarFile) {
+        TreeMap<String, JarEntry> map = new TreeMap<>(new Comparator<String>() {
+            @Override
+            public int compare(String path1, String path2) {
+                boolean path1IsRoot = path1.contains("/");
+                boolean path2IsRoot = path2.contains("/");
+                if (path1IsRoot && path2IsRoot) {
+                    return path1.compareTo(path2);
+                }
+                if (path1IsRoot) {
+                    return -1;
+                } else if (path2IsRoot) {
+                    return 1;
+                }
+                if (path1.startsWith("conf/")) {
+                    path1 = path1.substring(5);
+                    path2 = path2.substring(5);
+                    return compare(path1, path2);
+                }
+                boolean path1IsCommon = path1.startsWith("common/");
+                boolean path2IsCommon = path2.startsWith("common/");
+                if (path1IsCommon && path2IsCommon) {
+                    return path1.compareTo(path2);
+                }
+                if (path1IsCommon) {
+                    return -1;
+                } else if (path2IsCommon) {
+                    return 1;
+                }
+                return path1.compareTo(path2);
+            }
+        });
+        try (JarFile jar = new JarFile(jarFile)) {
+            for (JarEntry entry : C.enumerable(jar.entries())) {
+                String name = entry.getName();
+                if (isAppProperties(name)) {
+                    map.put(name, entry);
+                }
+            }
+            Map conf = new HashMap();
+            for (Map.Entry<String, JarEntry> entry : map.entrySet()) {
+                Properties p = new Properties();
+                try {
+                    p.load(jar.getInputStream(entry.getValue()));
+                    conf.putAll(p);
+                } catch (IOException e) {
+                    logger.warn("Error loading %s from jar file: %s", entry.getKey(), jarFile);
+                }
+            }
+            return conf;
+        } catch (IOException e) {
+            warn(e, "error opening jar file: %s", jarFile);
+        }
+        return C.newMap();
+    }
+
+    private static boolean isAppProperties(String name) {
+        if (!name.endsWith(".properties")) {
+            return false;
+        }
+        if (name.startsWith("conf/")) {
+            return true;
+        }
+        return !name.contains("/") && !name.startsWith("act") && !name.startsWith("build.");
     }
 
     private Map loadConfFromFile(File conf) {
