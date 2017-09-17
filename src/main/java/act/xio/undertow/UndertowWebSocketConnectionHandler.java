@@ -38,14 +38,10 @@ import io.undertow.websockets.core.BufferedTextMessage;
 import io.undertow.websockets.core.StreamSourceFrameChannel;
 import io.undertow.websockets.core.WebSocketChannel;
 import io.undertow.websockets.spi.WebSocketHttpExchange;
-import org.osgl.logging.LogManager;
-import org.osgl.logging.Logger;
 
 import java.io.IOException;
 
 class UndertowWebSocketConnectionHandler extends WebSocketConnectionHandler {
-
-    private static final Logger LOGGER = LogManager.get(UndertowWebSocketConnectionHandler.class);
 
     UndertowWebSocketConnectionHandler (WebSocketConnectionManager manager) {
         super(manager);
@@ -57,8 +53,8 @@ class UndertowWebSocketConnectionHandler extends WebSocketConnectionHandler {
 
     @Override
     public void handle(final ActionContext context) {
-        if (LOGGER.isTraceEnabled()) {
-            LOGGER.trace("handle websocket connection request to %s", context.req().url());
+        if (logger.isTraceEnabled()) {
+            logger.trace("handle websocket connection request to %s", context.req().url());
         }
         final UndertowRequest req = (UndertowRequest) context.req();
         HttpServerExchange exchange = req.exchange();
@@ -70,15 +66,15 @@ class UndertowWebSocketConnectionHandler extends WebSocketConnectionHandler {
                     channel.setAttribute("act_conn", connection);
                     connectionManager.registerNewConnection(connection, context);
                     final WebSocketContext wsCtx = new WebSocketContext(req.url(), connection, connectionManager, context, connectionManager.app());
-                    if (LOGGER.isTraceEnabled()) {
-                        LOGGER.trace("websocket context[%s] created for %s", connection.sessionId(), context.req().url());
+                    if (logger.isTraceEnabled()) {
+                        logger.trace("websocket context[%s] created for %s", connection.sessionId(), context.req().url());
                     }
                     channel.getReceiveSetter().set(new AbstractReceiveListener() {
                         @Override
                         protected void onFullTextMessage(WebSocketChannel channel, BufferedTextMessage message) throws IOException {
                             String payload = message.getData();
-                            if (LOGGER.isTraceEnabled()) {
-                                LOGGER.trace("websocket message received: %s", payload);
+                            if (logger.isTraceEnabled()) {
+                                logger.trace("websocket message received: %s", payload);
                             }
                             wsCtx.messageReceived(payload);
                             invoke(wsCtx);
@@ -86,8 +82,8 @@ class UndertowWebSocketConnectionHandler extends WebSocketConnectionHandler {
 
                         @Override
                         protected void onClose(WebSocketChannel webSocketChannel, StreamSourceFrameChannel channel) throws IOException {
-                            if (LOGGER.isTraceEnabled()) {
-                                LOGGER.trace("websocket closed: ", connection.sessionId());
+                            if (logger.isTraceEnabled()) {
+                                logger.trace("websocket closed: ", connection.sessionId());
                             }
                             super.onClose(webSocketChannel, channel);
                             connection.destroy();
