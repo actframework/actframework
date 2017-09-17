@@ -41,15 +41,13 @@ import static act.conf.ConfigKey.KEY_COMMON_CONF_TAG;
  */
 public abstract class ConfLoader<T extends Config> extends LogSupport {
 
-    // trim "act." from conf keys
-    private static Map<String, Object> processConf(Map<String, ?> conf) {
-        Map<String, Object> m = new HashMap<String, Object>(conf.size());
-        for (String s : conf.keySet()) {
-            Object o = conf.get(s);
-            if (s.startsWith("act.")) s = s.substring(4);
-            m.put(s, o);
-        }
-        return m;
+    public T load() {
+        Map<String, ?> rawConf = C.newMap();
+        Properties sysProps = System.getProperties();
+        rawConf.putAll((Map) sysProps);
+
+        rawConf = processConf(rawConf);
+        return create(rawConf);
     }
 
     public T load(File resourceRoot) {
@@ -67,6 +65,30 @@ public abstract class ConfLoader<T extends Config> extends LogSupport {
         return create(rawConf);
     }
 
+    /**
+     * Return the "common" configuration set name. By default it is "common"
+     * @return the "common" conf set name
+     */
+    public static String common() {
+        String common = SysProps.get(KEY_COMMON_CONF_TAG);
+        if (S.blank(common)) {
+            common = "common";
+        }
+        return common;
+    }
+
+    /**
+     * Return the name of the current conf set
+     * @return the conf set name
+     */
+    public static String confSetName() {
+        String profile = SysProps.get(AppConfigKey.PROFILE.key());
+        if (S.blank(profile)) {
+            profile = Act.mode().name().toLowerCase();
+        }
+        return profile;
+    }
+
     protected abstract T create(Map<String, ?> rawConf);
 
     protected abstract String confFileName();
@@ -82,6 +104,10 @@ public abstract class ConfLoader<T extends Config> extends LogSupport {
     }
 
     private Map loadConfFromJar(File jarFile) {
+        boolean traceEnabled = isTraceEnabled();
+        if (traceEnabled) {
+            trace("loading app conf from jar file: %s", jarFile);
+        }
         TreeMap<String, JarEntry> map = new TreeMap<>(new Comparator<String>() {
             @Override
             public int compare(String path1, String path2) {
@@ -114,9 +140,13 @@ public abstract class ConfLoader<T extends Config> extends LogSupport {
             }
         });
         try (JarFile jar = new JarFile(jarFile)) {
+            String profile = Act.profile();
             for (JarEntry entry : C.enumerable(jar.entries())) {
                 String name = entry.getName();
-                if (isAppProperties(name)) {
+                if (isAppProperties(name, profile)) {
+                    if (traceEnabled) {
+                        trace("found jar entry for app properties: %s", name);
+                    }
                     map.put(name, entry);
                 }
             }
@@ -124,6 +154,9 @@ public abstract class ConfLoader<T extends Config> extends LogSupport {
             for (Map.Entry<String, JarEntry> entry : map.entrySet()) {
                 Properties p = new Properties();
                 try {
+                    if (traceEnabled) {
+                        trace("loading app properties from jar entry: %s", entry.getKey());
+                    }
                     p.load(jar.getInputStream(entry.getValue()));
                     conf.putAll(p);
                 } catch (IOException e) {
@@ -137,70 +170,51 @@ public abstract class ConfLoader<T extends Config> extends LogSupport {
         return C.newMap();
     }
 
-    private static boolean isAppProperties(String name) {
+    private boolean isAppProperties(String name, String profile) {
         if (!name.endsWith(".properties")) {
             return false;
         }
         if (name.startsWith("conf/")) {
-            return true;
+            String name0 = name.substring(5);
+            if (!name0.contains("/") || name0.startsWith("common")) {
+                return true;
+            }
+            return !S.blank(profile) && name0.startsWith(profile + "/");
         }
         return !name.contains("/") && !name.startsWith("act") && !name.startsWith("build.");
     }
 
     private Map loadConfFromFile(File conf) {
+        if (isTraceEnabled()) {
+            trace("loading app conf from file: %s", conf);
+        }
         if (!conf.canRead()) {
             logger.warn("Cannot read conf file[%s]", conf.getAbsolutePath());
             return C.newMap();
         }
-        InputStream is = null;
-        if (null == conf) {
-            ClassLoader cl = Act.class.getClassLoader();
-            is = cl.getResourceAsStream("/" + confFileName());
-        } else {
-            try {
-                is = new FileInputStream(conf);
-            } catch (IOException e) {
-                logger.warn(e, "Error opening conf file:" + conf);
-            }
-        }
-        if (null != is) {
-            Properties p = new Properties();
-            try {
-                p.load(is);
-                return p;
-            } catch (Exception e) {
-                logger.warn(e, "Error loading %s", confFileName());
-            } finally {
-                IO.close(is);
-            }
+        InputStream is = IO.is(conf);
+        Properties p = new Properties();
+        try {
+            p.load(is);
+            return p;
+        } catch (Exception e) {
+            logger.warn(e, "Error loading %s", confFileName());
+        } finally {
+            IO.close(is);
         }
         return C.newMap();
     }
 
-    /**
-     * Return the "common" configuration set name. By default it is "common"
-     * @return the "common" conf set name
-     */
-    public static String common() {
-        String common = SysProps.get(KEY_COMMON_CONF_TAG);
-        if (S.blank(common)) {
-            common = "common";
+    // trim "act." from conf keys
+    private static Map<String, Object> processConf(Map<String, ?> conf) {
+        Map<String, Object> m = new HashMap<String, Object>(conf.size());
+        for (String s : conf.keySet()) {
+            Object o = conf.get(s);
+            if (s.startsWith("act.")) s = s.substring(4);
+            m.put(s, o);
         }
-        return common;
+        return m;
     }
-
-    /**
-     * Return the name of the current conf set
-     * @return the conf set name
-     */
-    public static String confSetName() {
-        String profile = SysProps.get(AppConfigKey.PROFILE.key());
-        if (S.blank(profile)) {
-            profile = Act.mode().name().toLowerCase();
-        }
-        return profile;
-    }
-
     private Map loadConfFromDir(File resourceDir) {
         if (!resourceDir.exists()) {
             logger.warn("Cannot read conf dir[%s]", resourceDir.getAbsolutePath());
