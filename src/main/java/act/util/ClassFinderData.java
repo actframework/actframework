@@ -20,18 +20,18 @@ package act.util;
  * #L%
  */
 
-import act.Act;
 import act.app.App;
 import act.app.event.AppEventId;
 import act.sys.Env;
 import org.osgl.$;
 import org.osgl.Osgl;
+import org.osgl.logging.LogManager;
 import org.osgl.logging.Logger;
 import org.osgl.util.S;
 
 public class ClassFinderData {
 
-    private static final Logger logger = Act.LOGGER;
+    private static final Logger logger = LogManager.get(ClassFinderData.class);
 
     public enum By {
         ANNOTATION() {
@@ -44,6 +44,14 @@ public class ClassFinderData {
             ) {
                 startNode.visitAnnotatedClasses(visitor, publicOnly, noAbstract);
             }
+
+            @Override
+            String toString(ClassFinderData finder) {
+                return "finding annotated by " + finder.what +
+                        " on " + finder.when +
+                        " for " + finder.className +
+                        "::" + finder.methodName;
+            }
         },
 
         SUPER_TYPE() {
@@ -55,6 +63,14 @@ public class ClassFinderData {
                     $.Visitor<ClassNode> visitor
             ) {
                 startNode.visitSubTree(visitor, publicOnly, noAbstract);
+            }
+
+            @Override
+            String toString(ClassFinderData finder) {
+                return "finding sub type of " + finder.what +
+                        " on " + finder.when +
+                        " for " + finder.className +
+                        "::" + finder.methodName;
             }
         };
 
@@ -94,6 +110,7 @@ public class ClassFinderData {
                 boolean publicOnly,
                 boolean noAbstract,
                 $.Visitor<ClassNode> visitor);
+        abstract String toString(ClassFinderData finder);
     }
 
     /**
@@ -129,6 +146,11 @@ public class ClassFinderData {
      * Is the found callback logic defined in static or instance method
      */
     private boolean isStatic;
+
+    @Override
+    public String toString() {
+        return how.toString(this);
+    }
 
     public ClassFinderData what(String targetClassName) {
         this.what = targetClassName;
@@ -171,6 +193,9 @@ public class ClassFinderData {
     }
 
     public void scheduleFind() {
+        if (logger.isTraceEnabled()) {
+            logger.trace("schedule class finding for %s", this);
+        }
         final App app = App.instance();
         app.jobManager().on(when, jobId(), new Runnable() {
             @Override
