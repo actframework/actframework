@@ -60,7 +60,6 @@
     <plexus-compiler-javac-errorprone.version>2.8.2</plexus-compiler-javac-errorprone.version>
 
     <fest-assert.version>1.4</fest-assert.version>
-    <junit.version>4.11</junit.version>
     <junit-benchmarks.version>0.7.2</junit-benchmarks.version>
     <mockito-core.version>2.0.2-beta</mockito-core.version>
 
@@ -79,13 +78,12 @@
     <progressbar.version>0.5.5</progressbar.version>
     <joda-time.version>2.9.9</joda-time.version>
     <okhttp.version>3.8.1</okhttp.version>
-    <osgl-tool.version>1.4.3</osgl-tool.version>
-    <osgl-genie.version>1.2.1-BETA-1</osgl-genie.version>
+    <osgl-tool.version>1.4.4</osgl-tool.version>
+    <osgl-genie.version>1.2.1-BETA-2</osgl-genie.version>
     <osgl-mvc.version>1.2.0</osgl-mvc.version>
     <osgl-storage.version>1.4.1</osgl-storage.version>
     <osgl-tool-ext.version>1.0.1</osgl-tool-ext.version>
-    <osgl-bootstrap.version>1.0.0-BETA-10</osgl-bootstrap.version>
-    <osgl-ut.version>1.0.0-BETA-5</osgl-ut.version>
+    <osgl-ut.version>1.0.1</osgl-ut.version>
     <reflectasm.version>1.11.3</reflectasm.version>
     <rythmengine.version>1.2.0</rythmengine.version>
     <validation-api.version>1.1.0.Final</validation-api.version>
@@ -282,12 +280,6 @@
     </dependency>
 
     <dependency>
-      <groupId>org.osgl</groupId>
-      <artifactId>osgl-bootstrap</artifactId>
-      <version>${osgl-bootstrap.version}</version>
-    </dependency>
-
-    <dependency>
       <groupId>com.carrotsearch</groupId>
       <artifactId>junit-benchmarks</artifactId>
       <version>${junit-benchmarks.version}</version>
@@ -404,14 +396,14 @@
 
     <dependency>
       <groupId>org.osgl</groupId>
-      <artifactId>osgl-tool</artifactId>
-      <version>${osgl-tool.version}</version>
+      <artifactId>genie</artifactId>
+      <version>${osgl-genie.version}</version>
     </dependency>
 
     <dependency>
       <groupId>org.osgl</groupId>
-      <artifactId>genie</artifactId>
-      <version>${osgl-genie.version}</version>
+      <artifactId>osgl-tool</artifactId>
+      <version>${osgl-tool.version}</version>
     </dependency>
 
     <dependency>
