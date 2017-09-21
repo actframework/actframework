@@ -28,7 +28,7 @@ import org.osgl.logging.Logger;
  */
 public class LogSupport {
 
-    protected final Logger logger = LogManager.get(getClass());
+    protected final transient Logger logger = LogManager.get(getClass());
 
     protected void trace(String format, Object ... args) {
         logger.trace(format, args);

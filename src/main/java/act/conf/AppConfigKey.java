@@ -75,6 +75,14 @@ public enum AppConfigKey implements ConfigKey {
      */
     BASIC_AUTHENTICATION("basic_authentication.enabled"),
 
+    /**
+     * `built_in_req_handler.enabled` turn on/off built in request
+     * handlers.
+     *
+     * Default value: `true`
+     */
+    BUILT_IN_REQ_HANDLER_ENABLED("built_in_req_handler.enabled"),
+
 
     /**
      * {@code act.cache.impl}

@@ -991,6 +991,7 @@ public class App extends DestroyableBase {
                 config = new AppConfLoader().load(jarFile);
             } else {
                 warn("Cannot determine where to load app configuration");
+                config = new AppConfLoader().load();
             }
         }
         config.app(this);
@@ -1267,6 +1268,9 @@ public class App extends DestroyableBase {
     }
 
     private void loadBuiltInRoutes() {
+        if (!config().builtInReqHandlerEnabled()) {
+            return;
+        }
         router().addMapping(H.Method.GET, "/asset/", new StaticResourceGetter("asset"), RouteSource.BUILD_IN);
         router().addMapping(H.Method.GET, "/~/asset/", new StaticResourceGetter("asset/~act"), RouteSource.BUILD_IN);
         router().addContext("act.", "/~");

@@ -98,7 +98,7 @@ public class JobAdmin {
 
     public static class WebsocketEndpoints {
 
-        @WsEndpoint("job/{id}/progress")
+        @WsEndpoint("/~/job/{id}/progress")
         public static class JobProgress {
 
             @Inject

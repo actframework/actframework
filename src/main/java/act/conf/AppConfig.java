@@ -66,8 +66,6 @@ import static act.conf.AppConfigKey.*;
 
 public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> implements AppHolder<AppConfig<T>> {
 
-    protected static Logger logger = L.get(AppConfig.class);
-
     public static final String CONF_FILE_NAME = "app.conf";
 
     public static final String PORT_CLI_OVER_HTTP = "__admin__";
@@ -120,6 +118,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         // that we do not need to synchronize on them
         // and avoid the NPE
         basicAuthenticationEnabled();
+        builtInReqHandlerEnabled();
         corsEnabled();
         sessionCookieName();
         cookiePrefix();
@@ -190,6 +189,29 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     private void _mergeBasicAuthentication(AppConfig conf) {
         if (!hasConfiguration(BASIC_AUTHENTICATION)) {
             this.basicAuth = conf.basicAuth;
+        }
+    }
+
+    private Boolean builtInReqHandlerEnabled;
+
+    protected T disableBuiltInReqHandler() {
+        builtInReqHandlerEnabled = false;
+        return me();
+    }
+
+    public boolean builtInReqHandlerEnabled() {
+        if (null == builtInReqHandlerEnabled) {
+            builtInReqHandlerEnabled = get(BUILT_IN_REQ_HANDLER_ENABLED);
+            if (null == builtInReqHandlerEnabled) {
+                builtInReqHandlerEnabled = true;
+            }
+        }
+        return builtInReqHandlerEnabled;
+    }
+
+    private void _mergeBuiltInReqHandler(AppConfig conf) {
+        if (!hasConfiguration(BUILT_IN_REQ_HANDLER_ENABLED)) {
+            this.builtInReqHandlerEnabled = conf.builtInReqHandlerEnabled;
         }
     }
 
@@ -2606,6 +2628,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         mergeTracker.add(conf);
         _mergeApiDocEnabled(conf);
         _mergeBasicAuthentication(conf);
+        _mergeBuiltInReqHandler(conf);
         _mergeCacheName(conf);
         _mergeCors(conf);
         _mergeCorsOrigin(conf);

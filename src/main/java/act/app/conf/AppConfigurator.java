@@ -23,9 +23,9 @@ package act.app.conf;
 import act.app.event.AppEventId;
 import act.conf.AppConfig;
 import act.security.CSRFProtector;
+import act.util.LogSupport;
 import org.osgl.$;
 import org.osgl.http.H;
-import org.osgl.logging.Logger;
 import org.osgl.util.C;
 import org.osgl.util.E;
 import org.osgl.util.S;
@@ -37,8 +37,6 @@ import java.util.*;
  * Base class for app developer implement source code based configuration
  */
 public abstract class AppConfigurator<T extends AppConfigurator> extends AppConfig<T> {
-
-    protected static Logger logger = AppConfig.logger;
 
     protected static final H.Method GET = H.Method.GET;
     protected static final H.Method POST = H.Method.POST;
@@ -118,7 +116,7 @@ public abstract class AppConfigurator<T extends AppConfigurator> extends AppConf
 
     protected void releaseAppConfigResources() {}
 
-    protected static class CsrfSetting {
+    protected static class CsrfSetting extends LogSupport {
         private AppConfigurator conf;
         private boolean enabled;
         private String headerName;
@@ -181,7 +179,7 @@ public abstract class AppConfigurator<T extends AppConfigurator> extends AppConf
         }
     }
 
-    protected static class CorsSetting {
+    protected static class CorsSetting extends LogSupport {
         private AppConfigurator conf;
         private boolean enabled;
         private String allowOrigin;
