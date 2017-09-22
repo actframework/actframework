@@ -29,7 +29,7 @@ import java.util.Map;
  */
 public abstract class JsonDTO {
 
-    public static final String CTX_ATTR_KEY = JsonDTOClassManager.CTX_ATTR_KEY;
+    public static final String CTX_ATTR_KEY = "__json_dto__";
 
     private Map<String, Object> beans = new HashMap<String, Object>();
 

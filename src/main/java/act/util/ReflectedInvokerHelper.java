@@ -23,7 +23,6 @@ package act.util;
 import act.Act;
 import act.app.App;
 import act.app.AppServiceBase;
-import act.inject.param.JsonDTOClassManager;
 import org.osgl.$;
 
 import java.lang.reflect.Field;
@@ -42,7 +41,7 @@ public class ReflectedInvokerHelper {
         Object singleton = app.singleton(invokerClass);
         if (null == singleton) {
             // check if there are fields
-            List<Field> fields = $.fieldsOf(invokerClass, JsonDTOClassManager.CLASS_FILTER, JsonDTOClassManager.FIELD_FILTER);
+            List<Field> fields = $.fieldsOf(invokerClass);
             if (fields.isEmpty()) {
                 singleton = app.getInstance(invokerClass);
             }

@@ -941,12 +941,12 @@ public class Router extends AppServiceBase<Router> {
                                 String varNameStr = varName.toString();
                                 String varValue = matcher.group(varNameStr);
                                 if (S.notBlank(varValue)) {
-                                    context.param(varNameStr, S.string(varValue));
+                                    context.urlPathParam(varNameStr, S.string(varValue));
                                 }
                             }
                         } else {
                             CharSequence varName = targetNode.varNames.get(0);
-                            context.param(varName.toString(), S.string(name));
+                            context.urlPathParam(varName.toString(), S.string(name));
                         }
                         return targetNode;
                     }
@@ -1331,23 +1331,12 @@ public class Router extends AppServiceBase<Router> {
     }
 
     private static class ContextualHandler extends DelegateRequestHandler {
-        private Set<String> pathVariables;
         protected ContextualHandler(RequestHandlerBase next, Node node) {
             super(next);
-            pathVariables = new HashSet<>();
-            while (node != null) {
-                if (node.isDynamic()) {
-                    for (CharSequence varName : node.varNames) {
-                        pathVariables.add(varName.toString());
-                    }
-                }
-                node = node.parent;
-            }
         }
         @Override
         public void handle(ActionContext context) {
             context.attribute(ActionContext.ATTR_HANDLER, realHandler());
-            context.attribute(ActionContext.ATTR_PATH_VARS, pathVariables);
             context.resolve();
             super.handle(context);
         }

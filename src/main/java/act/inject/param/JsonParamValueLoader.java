@@ -23,7 +23,6 @@ package act.inject.param;
 import act.app.ActionContext;
 import act.app.App;
 import act.app.data.StringValueResolverManager;
-import act.handler.builtin.controller.impl.ReflectedHandlerInvoker;
 import act.inject.DependencyInjector;
 import act.util.ActContext;
 import org.osgl.$;
@@ -33,7 +32,6 @@ import javax.inject.Provider;
 import java.lang.reflect.Array;
 import java.util.Collection;
 import java.util.Map;
-import java.util.Set;
 
 class JsonParamValueLoader implements ParamValueLoader {
 
@@ -55,8 +53,7 @@ class JsonParamValueLoader implements ParamValueLoader {
         this.defValProvider = findDefValProvider(spec, injector);
         ActionContext ctx = ActionContext.current();
         if (null != ctx) {
-            Set<String> pathVariables = ctx.attribute(ActionContext.ATTR_PATH_VARS);
-            isPathVariable = pathVariables.contains(spec.name());
+            isPathVariable = ctx.isPathVar(spec.name());
         }
     }
 

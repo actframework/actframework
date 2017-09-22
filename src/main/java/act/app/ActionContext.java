@@ -68,7 +68,6 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
     public static final String ATTR_CSR_TOKEN_PREFETCH = "__csrf_prefetch__";
     public static final String ATTR_WAS_UNAUTHENTICATED = "__was_unauthenticated__";
     public static final String ATTR_HANDLER = "__act_handler__";
-    public static final String ATTR_PATH_VARS = "__path_vars__";
     public static final String ATTR_RESULT = "__result__";
     public static final String ATTR_EXCEPTION = "__exception__";
     public static final String ATTR_CURRENT_FILE_INDEX = "__file_id__";
@@ -101,6 +100,8 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
     private MissingAuthenticationHandler forceCsrfCheckingFailureHandler;
     private String urlContext;
     private boolean byPassImplicitTemplateVariable;
+    private int pathVarCount;
+    private Set<String> pathVarNames = new HashSet<>();
 
 
     @Inject
@@ -293,6 +294,14 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
         return this;
     }
 
+    public int pathVarCount() {
+        return pathVarCount;
+    }
+
+    public boolean isPathVar(String name) {
+        return pathVarNames.contains(name);
+    }
+
     public String portId() {
         return router().portId();
     }
@@ -341,6 +350,12 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
     public ActionContext param(String name, String value) {
         extraParams.put(name, value);
         return this;
+    }
+
+    public ActionContext urlPathParam(String name, String value) {
+        pathVarCount++;
+        pathVarNames.add(name);
+        return param(name, value);
     }
 
     @Override

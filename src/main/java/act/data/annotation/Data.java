@@ -23,10 +23,7 @@ package act.data.annotation;
 import act.util.EqualField;
 import act.util.EqualIgnore;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import java.lang.annotation.*;
 
 /**
  * Mark a class eligible to auto generation on {@link Object#equals(Object)}
@@ -45,6 +42,7 @@ import java.lang.annotation.Target;
  */
 @Retention(RetentionPolicy.CLASS)
 @Target(ElementType.TYPE)
+@Documented
 public @interface Data {
     /**
      * Whether the generated {@code equals} and {@code hashCode}

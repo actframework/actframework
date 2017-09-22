@@ -74,14 +74,14 @@ public class RouteTableRouterBuilderTest extends RouterTestBase {
     public void withDynamicPath() {
         addRouteMap("GET /service/{id}/cost Services.cost");
         verify("Services.cost", GET, "/service/abc/cost");
-        Mockito.verify(ctx).param("id", "abc");
+        Mockito.verify(ctx).urlPathParam("id", "abc");
     }
 
     @Test
     public void withDynamicPathAndRegex() {
         addRouteMap("GET /service/{<[0-9]{3}>id}/cost Services.cost");
         verify("Services.cost", GET, "/service/123/cost");
-        Mockito.verify(ctx).param("id", "123");
+        Mockito.verify(ctx).urlPathParam("id", "123");
     }
 
     @Test(expected = BadRequest.class)

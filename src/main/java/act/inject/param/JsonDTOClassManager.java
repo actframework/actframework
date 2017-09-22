@@ -20,6 +20,7 @@ package act.inject.param;
  * #L%
  */
 
+import act.Act;
 import act.app.App;
 import act.app.AppClassLoader;
 import act.app.AppServiceBase;
@@ -40,8 +41,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 public class JsonDTOClassManager extends AppServiceBase<JsonDTOClassManager> {
-
-    public static final String CTX_ATTR_KEY = "__json_dto__";
 
     static class DynamicClassLoader extends ClassLoader {
         private DynamicClassLoader(AppClassLoader parent) {
@@ -108,23 +107,24 @@ public class JsonDTOClassManager extends AppServiceBase<JsonDTOClassManager> {
             if (null == aClass || Object.class == aClass) {
                 return false;
             }
-            Annotation[] annotations = aClass.getDeclaredAnnotations();
-            if (null == annotations) {
-                return true;
+            if (aClass.isAnnotationPresent(NoBind.class)) {
+                return false;
             }
-            for (Annotation a : annotations) {
-                if (a.annotationType() == NoBind.class) {
-                    return false;
-                }
-            }
-            return true;
+            return !Act.injector().isProvided(aClass);
         }
     };
 
     public static final $.Predicate<Field> FIELD_FILTER = new $.Predicate<Field>() {
         @Override
         public boolean test(Field field) {
-            return !Modifier.isStatic(field.getModifiers());
+            if (Modifier.isStatic(field.getModifiers())) {
+                return false;
+            }
+            if (field.isAnnotationPresent(NoBind.class)) {
+                return false;
+            }
+            DependencyInjector injector = Act.injector();
+            return !ParamValueLoaderService.provided(BeanSpec.of(field, injector), injector);
         }
     };
 

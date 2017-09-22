@@ -98,7 +98,7 @@ public class RouterTest extends RouterTestBase {
         when(req.path()).thenReturn("/svc/1234");
         router.getInvoker(GET, "/svc/1234/", ctx).handle(ctx);
         controllerInvoked();
-        verify(ctx).param("id", "1234");
+        verify(ctx).urlPathParam("id", "1234");
     }
 
     @Test
@@ -109,8 +109,8 @@ public class RouterTest extends RouterTestBase {
         when(req.path()).thenReturn("/svc/1234-abc");
         router.getInvoker(GET, "/svc/1234-abc/", ctx).handle(ctx);
         controllerInvoked();
-        verify(ctx).param("id", "1234");
-        verify(ctx).param("name", "abc");
+        verify(ctx).urlPathParam("id", "1234");
+        verify(ctx).urlPathParam("name", "abc");
     }
 
     @Test
@@ -125,22 +125,22 @@ public class RouterTest extends RouterTestBase {
 
         when(req.path()).thenReturn("/svc/1234-abc");
         router.getInvoker(GET, "/svc/1234-abc", ctx).handle(ctx);
-        verify(ctx).param("id", "1234");
-        verify(ctx).param("name", "abc");
+        verify(ctx).urlPathParam("id", "1234");
+        verify(ctx).urlPathParam("name", "abc");
 
         when(req.path()).thenReturn("/svc/1234-abc/obj");
         router.getInvoker(GET, "/svc/1234-abc/obj", ctx).handle(ctx);
-        verify(ctx).param("sid", "1234");
-        verify(ctx).param("sname", "abc");
+        verify(ctx).urlPathParam("sid", "1234");
+        verify(ctx).urlPathParam("sname", "abc");
 
         when(req.path()).thenReturn("/Persons/Joe/Parents;generations=147");
         router.getInvoker(GET, "/Persons/Joe/Parents;generations=147", ctx).handle(ctx);
-        verify(ctx).param("gen", "147");
+        verify(ctx).urlPathParam("gen", "147");
 
         when(req.path()).thenReturn("/place/39.87381;-86.1399");
         router.getInvoker(GET, "/place/39.87381;-86.1399", ctx).handle(ctx);
-        verify(ctx).param("latitude", "39.87381");
-        verify(ctx).param("longitude", "-86.1399");
+        verify(ctx).urlPathParam("latitude", "39.87381");
+        verify(ctx).urlPathParam("longitude", "-86.1399");
     }
 
     @Test
@@ -162,7 +162,7 @@ public class RouterTest extends RouterTestBase {
         RequestHandler handler = router.getInvoker(GET, "/int/33", ctx);
         same(controller, handler);
 
-        verify(ctx).param("n", "33");
+        verify(ctx).urlPathParam("n", "33");
     }
 
     @Test
@@ -179,7 +179,7 @@ public class RouterTest extends RouterTestBase {
 
         when(req.path()).thenReturn("/svc/123/another-thing-should-be-ignored/and-whatever/else");
         router.getInvoker(GET, "/svc/123/another-thing-should-be-ignored/and-whatever/else", ctx).handle(ctx);
-        verify(ctx).param("id", "123");
+        verify(ctx).urlPathParam("id", "123");
     }
 
     @Test(expected = ConfigurationException.class)

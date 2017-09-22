@@ -31,6 +31,7 @@ import act.controller.annotation.HandleMissingAuthentication;
 import act.controller.annotation.TemplateContext;
 import act.controller.meta.*;
 import act.data.annotation.Pattern;
+import act.db.RequireDataBind;
 import act.handler.NonBlock;
 import act.handler.PreventDoubleSubmission;
 import act.handler.builtin.controller.*;
@@ -95,13 +96,12 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
     protected Method method; //
     private ParamValueLoaderService paramLoaderService;
     private JsonDTOClassManager jsonDTOClassManager;
-    private final int paramCount;
-    private final int fieldsAndParamsCount;
+    private int paramCount;
+    private int fieldsAndParamsCount;
     private String singleJsonFieldName;
-    private final boolean sessionFree;
-    private final boolean express;
+    private boolean sessionFree;
+    private boolean express;
     private List<BeanSpec> paramSpecs;
-    private Set<String> pathVariables;
     private CORS.Spec corsSpec;
     private CSRF.Spec csrfSpec;
     private boolean isStatic;
@@ -124,6 +124,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
     private MissingAuthenticationHandler csrfFailureHandler;
     private boolean async;
     private boolean byPassImplicityTemplateVariable;
+    private boolean forceDataBinding;
 
     private ReflectedHandlerInvoker(M handlerMetaInfo, App app) {
         this.app = app;
@@ -142,6 +143,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
             throw E.unexpected(e);
         }
         this.disabled = this.disabled || !Env.matches(method);
+        this.forceDataBinding = method.isAnnotationPresent(RequireDataBind.class);
         this.async = null != method.getAnnotation(Async.class);
         if (this.async && (handlerMetaInfo.hasReturnOrThrowResult())) {
             logger.warn("handler return result will be ignored for async method: " + method);
@@ -287,7 +289,9 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         }
         preventDoubleSubmission(context);
         processForceResponse(context);
-        ensureJsonDTOGenerated(context);
+        if (forceDataBinding || context.state().isHandling()) {
+            ensureJsonDTOGenerated(context);
+        }
         final Object controller = controllerInstance(context);
 
         /*
@@ -364,12 +368,12 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         return csrfSpec;
     }
 
-    public JsonDTO cachedJsonDTO(ActContext<?> context) {
-        return context.attribute(JsonDTOClassManager.CTX_ATTR_KEY);
+    private void cacheJsonDTO(ActContext<?> context, JsonDTO dto) {
+        context.attribute(JsonDTO.CTX_ATTR_KEY, dto);
     }
 
     private void ensureJsonDTOGenerated(ActionContext context) {
-        if (0 == fieldsAndParamsCount || !context.jsonEncoded() || null != context.attribute(JsonDTOClassManager.CTX_ATTR_KEY)) {
+        if (0 == fieldsAndParamsCount || !context.jsonEncoded()) {
             return;
         }
         Class<? extends JsonDTO> dtoClass = jsonDTOClassManager.get(controllerClass, method);
@@ -379,7 +383,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         }
         try {
             JsonDTO dto = JSON.parseObject(patchedJsonBody(context), dtoClass);
-            context.attribute(JsonDTOClassManager.CTX_ATTR_KEY, dto);
+            cacheJsonDTO(context, dto);
         } catch (JSONException e) {
             if (e.getCause() != null) {
                 warn(e.getCause(), "error parsing JSON data");
@@ -394,26 +398,19 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         if (fieldsAndParamsCount < 2) {
             return fieldsAndParamsCount;
         }
-        return fieldsAndParamsCount - pathVariables(context).size();
-    }
-
-    private Set<String> pathVariables(ActionContext context) {
-        if (null == pathVariables) {
-            pathVariables = context.attribute(ActionContext.ATTR_PATH_VARS);
-        }
-        return pathVariables;
+        return fieldsAndParamsCount - context.pathVarCount();
     }
 
     private String singleJsonFieldName(ActionContext context) {
         if (null != singleJsonFieldName) {
             return singleJsonFieldName;
         }
-        Set<String> set = context.paramKeys();
         for (BeanSpec spec: paramSpecs) {
             String name = spec.name();
-            if (!set.contains(name)) {
-                return name;
+            if (context.isPathVar(name)) {
+                continue;
             }
+            return name;
         }
         return null;
     }
