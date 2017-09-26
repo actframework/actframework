@@ -28,10 +28,6 @@ jQuery.each(["get", "post", "put", "delete", "patch" ], function (i, method) {
         if (method === "put" || method === "patch" || method === "delete") {
             var hasParam = url.contains("?");
             if (!hasParam) url = url + "?_method=" + method;
-            if (data) $.each(data, function(key, val){
-                url = url + "&" + encodeURIComponent(key) + "=" + encodeURIComponent(val);
-            });
-            data = {};
             submitMethod = "post";
         }
 
@@ -57,20 +53,13 @@ jQuery.each(["getJSON", "postJSON", "putJSON", "deleteJSON", "patchJSON"], funct
         if (method.startsWith("put") || method.startsWith("patch") || method.startsWith("delete")) {
             var hasParam = url.contains("?");
             if (!hasParam) url = url + "?_method=" + method.replace("JSON", "");
-            if (data) $.each(data, function(key, val){
-                url = url + "&" + encodeURIComponent(key) + "=" + encodeURIComponent(val);
-            });
-            data = {};
             submitMethod = "post";
         }
         if (method.startsWith("get")) {
             var hasParam = url.contains("?");
-            if (!hasParam)
-            {
+            if (!hasParam) {
                 url = url +"?now="+ new Date().getTime();
-            }
-            else
-            {
+            } else {
                 url = url +"&now="+ new Date().getTime();
             }
         }

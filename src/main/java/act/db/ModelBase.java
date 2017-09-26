@@ -23,6 +23,7 @@ package act.db;
 import act.app.App;
 import act.inject.param.NoBind;
 import org.osgl.$;
+import org.osgl.util.E;
 import org.osgl.util.Generics;
 import org.osgl.util.S;
 
@@ -73,7 +74,7 @@ implements Model<ID_TYPE, MODEL_TYPE> {
      */
     public static <T extends Dao>
     T dao() {
-        return (T) App.instance().dbServiceManager().dao(ModelBase.class);
+        throw E.unsupport("Please make sure you have Entity annotation tagged on your model class");
     }
 
     /**
@@ -86,7 +87,7 @@ implements Model<ID_TYPE, MODEL_TYPE> {
      */
     public static <T extends Dao>
     T dao(Class<T> cls) {
-        return (T) App.instance().dbServiceManager().dao(ModelBase.class);
+        throw E.unsupport("Please make sure you have Entity annotation tagged on your model class");
     }
 
     @Override

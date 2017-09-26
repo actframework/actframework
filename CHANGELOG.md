@@ -1,7 +1,19 @@
 # ActFramework Change Log
 
 1.4.13
+* Update riotjs to 3.7.2
+* jquery.ext.js: allow `jQuery.put()` and `jQuery.putJSON()` method to use raw body #387
+* `Cannot find out Dao for model type[class act.db.ModelBase]` issue #386
+* Prevent interceptor method from binding JSON data by default #385
+* render.json.output_charset configuration not working on POST request #384
+* ACT can only map wrapped JSON object to entity #383
+* Allow developer to disable actframework built-in routes #382
+* when loading app from jar file it shall set `app.mode` to `prod` #381
+* Add `sessionId()` method to `ActContext` #380
+* Allow app to specify date time format to parse remote JSON response #379
+* It always return `null` when executing CLI command that handled by a static method #378
 * Allow it to skip implicity view arguments for certain controller method #376
+* Properties files in jar are ignored #375
 
 1.4.12
 * `SequenceNumberGenerator` cause error in heterogeneouse data source environment #374
