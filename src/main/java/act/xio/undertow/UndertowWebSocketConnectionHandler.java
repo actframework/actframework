@@ -72,6 +72,7 @@ class UndertowWebSocketConnectionHandler extends WebSocketConnectionHandler {
                     channel.getReceiveSetter().set(new AbstractReceiveListener() {
                         @Override
                         protected void onFullTextMessage(WebSocketChannel channel, BufferedTextMessage message) throws IOException {
+                            WebSocketContext.current(wsCtx);
                             String payload = message.getData();
                             if (logger.isTraceEnabled()) {
                                 logger.trace("websocket message received: %s", payload);
@@ -85,6 +86,7 @@ class UndertowWebSocketConnectionHandler extends WebSocketConnectionHandler {
                             if (logger.isTraceEnabled()) {
                                 logger.trace("websocket closed: ", connection.sessionId());
                             }
+                            WebSocketContext.current(wsCtx);
                             super.onClose(webSocketChannel, channel);
                             connection.destroy();
                             context.app().eventBus().trigger(new WebSocketCloseEvent(wsCtx));

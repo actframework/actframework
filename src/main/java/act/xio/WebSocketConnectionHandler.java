@@ -158,10 +158,19 @@ public abstract class WebSocketConnectionHandler extends RequestHandlerBase {
         }
         ensureJsonDTOGenerated(context);
         Object[] params = params(context);
+        Object retVal;
         if (this.isStatic) {
-            $.invokeStatic(method, params);
+            retVal = $.invokeStatic(method, params);
         } else {
-            methodAccess.invoke(host, methodIndex, params);
+            retVal = methodAccess.invoke(host, methodIndex, params);
+        }
+        if (null == retVal) {
+            return;
+        }
+        if (retVal instanceof String) {
+            context.sendToSelf((String) retVal);
+        } else {
+            context.sendJsonToSelf(retVal);
         }
     }
 

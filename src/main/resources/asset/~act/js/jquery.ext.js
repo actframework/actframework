@@ -4,6 +4,18 @@ if (typeof String.prototype.contains != 'function') {
     };
 }
 
+jQuery.createWebSocket = function(path) {
+    if (!path.startsWith('/')) {
+        var pathname = window.location.pathname
+        if (pathname.endsWith('/')) {
+            path = pathname + path
+        } else {
+            path = pathname + '/' + path
+        }
+    }
+    return new WebSocket(((window.location.protocol === "https:") ? "wss://" : "ws://") + window.location.host + path);
+}
+
 var callbackWithAjaxRedirect = function(realCallback) {
     return function() {
         var jqXHR = arguments[2];

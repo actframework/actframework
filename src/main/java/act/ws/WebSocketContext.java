@@ -337,4 +337,8 @@ public class WebSocketContext extends ActContext.Base<WebSocketContext> implemen
     public static WebSocketContext current() {
         return _local.get();
     }
+
+    public static void current(WebSocketContext ctx) {
+        _local.set(ctx);
+    }
 }
