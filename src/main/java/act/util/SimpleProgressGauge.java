@@ -29,6 +29,7 @@ import java.util.List;
 
 public class SimpleProgressGauge extends DestroyableBase implements ProgressGauge {
 
+    private String id;
     private int maxHint;
     private int currentSteps;
     private ProgressGauge delegate;
@@ -111,6 +112,10 @@ public class SimpleProgressGauge extends DestroyableBase implements ProgressGaug
         return currentSteps;
     }
 
+    public int getCurrentSteps() {
+        return currentSteps();
+    }
+
     @Override
     public int maxHint() {
         if (null != delegate) {
@@ -119,11 +124,28 @@ public class SimpleProgressGauge extends DestroyableBase implements ProgressGaug
         return maxHint;
     }
 
-    public int currrentProgressPercent() {
+    public int getMaxHint() {
+        return maxHint();
+    }
+
+    @Override
+    public void setId(String id) {
+        this.id = id;
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public int currentProgressPercent() {
         if (null != delegate) {
             return delegate.currentSteps() * 100 / delegate.maxHint();
         }
         return currentSteps * 100 / maxHint;
+    }
+
+    public int getProgressPercent() {
+        return currentProgressPercent();
     }
 
     @Override

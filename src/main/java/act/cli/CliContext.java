@@ -361,9 +361,9 @@ public class CliContext extends ActContext.Base<CliContext> implements IASCIITab
         boolean i18n = app().config().i18nEnabled();
         while (!progressGauge.done()) {
             if (i18n) {
-                print("\r" + i18n("act.progress.report", simpleProgressGauge.currrentProgressPercent()));
+                print("\r" + i18n("act.progress.report", simpleProgressGauge.currentProgressPercent()));
             } else {
-                print("\rCurrent progress: " + simpleProgressGauge.currrentProgressPercent() + "%");
+                print("\rCurrent progress: " + simpleProgressGauge.currentProgressPercent() + "%");
             }
             flush();
             try {

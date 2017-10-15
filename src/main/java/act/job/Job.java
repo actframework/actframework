@@ -159,6 +159,7 @@ public class Job extends DestroyableBase implements Runnable {
 
     public void setProgressGauge(ProgressGauge progressGauge) {
         progress = SimpleProgressGauge.wrap(progressGauge);
+        progress.setId(getId());
         progress.addListener(new ProgressGauge.Listener() {
             @Override
             public void onUpdate(ProgressGauge progressGauge) {
@@ -173,7 +174,7 @@ public class Job extends DestroyableBase implements Runnable {
     }
 
     public int getProgressInPercent() {
-        return progress.currrentProgressPercent();
+        return progress.currentProgressPercent();
     }
 
     @Override

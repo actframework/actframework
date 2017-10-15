@@ -26,6 +26,14 @@ package act.util;
 public interface ProgressGauge {
 
     /**
+     * Set ID to the gauge
+     *
+     * @param id
+     *      the gauge ID
+     */
+    void setId(String id);
+
+    /**
      * Update max hint. If the number is negative, then
      * it indicate the progress is indefinite
      *
