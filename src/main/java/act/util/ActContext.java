@@ -208,7 +208,9 @@ public interface ActContext<CTX_TYPE extends ActContext> extends ParamValueProvi
             this.listenerList.clear();
             this.destroyableList.clear();
             this.violations.clear();
-            this.progress.destroy();
+            // note we can't destroy progress as it might still be used
+            // by background thread
+            //this.progress.destroy();
         }
 
         @Override

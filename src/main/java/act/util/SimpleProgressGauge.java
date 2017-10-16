@@ -52,6 +52,7 @@ public class SimpleProgressGauge extends DestroyableBase implements ProgressGaug
         maxHint = 100;
         currentSteps = 0;
         Destroyable.Util.tryDestroy(delegate);
+        triggerUpdateEvent();
     }
 
     @Override

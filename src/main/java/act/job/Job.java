@@ -296,6 +296,7 @@ public class Job extends DestroyableBase implements Runnable {
                         });
                     }
                 }
+                progress.destroy();
             }
         }
         runFollowingJobs();
