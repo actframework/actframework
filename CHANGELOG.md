@@ -1,7 +1,13 @@
 # ActFramework Change Log
 
-1.4.13
+**1.4.13 16/Oct/2017**
+
 * Update riotjs to 3.7.2
+* Add `createWebSocket(path)` method to `jquery.ext.js` #392
+* The `ActContextProvider` does not favor `WebSocketContext` type #391
+* Allow websocket message handler to return object #390
+* It shall set `WebsocketContext` thread local variable upon ws message incoming #389
+* Multiple `@Catch` can not work normally #388
 * jquery.ext.js: allow `jQuery.put()` and `jQuery.putJSON()` method to use raw body #387
 * `Cannot find out Dao for model type[class act.db.ModelBase]` issue #386
 * Prevent interceptor method from binding JSON data by default #385
@@ -14,12 +20,15 @@
 * It always return `null` when executing CLI command that handled by a static method #378
 * Allow it to skip implicity view arguments for certain controller method #376
 * Properties files in jar are ignored #375
+* Publish backend job progress through websocket #356
+* CLI progress report: it reports less than 100 percent when job finished sometimes #324
 
-1.4.12
+**1.4.12 13/Sep/2017**
+
 * `SequenceNumberGenerator` cause error in heterogeneouse data source environment #374
 * Allow inject `Dao` interface #373
 
-1.4.11
+**1.4.11 10/Sep/2017**
 * catch up update to 1.3.14-LTS
 * Support running CLI Job in background #267 
 * `job.list` CLI command failure #355 
