@@ -1,5 +1,9 @@
 # ActFramework Change Log
 
+**1.4.14**
+
+* Send back `400 Bad Request` on response trigger an obscure error page when content type is `application/vnd.openxmlformats-officedocument.spreadsheetml.sheet` #394
+
 **1.4.13 16/Oct/2017**
 
 * Update riotjs to 3.7.2

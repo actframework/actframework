@@ -510,19 +510,47 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
         this.disableCors = true;
     }
 
-    public ActionContext applyContentType
-            () {
+    /**
+     * Apply content type to response with result provided.
+     *
+     * If `result` is an error then it might not apply content type as requested:
+     * * If request is not ajax request, then use `text/html`
+     * * If request is ajax request then apply requested content type only when `json` or `xml` is requested
+     * * otherwise use `text/html`
+     *
+     * @param result
+     *      the result used to check if it is error result
+     * @return
+     *      this `ActionContext`.
+     */
+    public ActionContext applyContentType(Result result) {
+        if (!result.status().isError()) {
+            return applyContentType();
+        }
+        if (req().isAjax()) {
+            H.Request req = req();
+            H.Format fmt = req.accept();
+            if (H.Format.UNKNOWN == fmt) {
+                fmt = req.contentType();
+            }
+            if (H.Format.JSON == fmt || H.Format.XML == fmt) {
+                applyContentType(fmt);
+            } else {
+                applyContentType(H.Format.HTML);
+            }
+        } else {
+            applyContentType(H.Format.HTML);
+        }
+        return this;
+    }
+
+    public ActionContext applyContentType() {
         H.Request req = req();
         H.Format fmt = req.accept();
         if (H.Format.UNKNOWN == fmt) {
             fmt = req.contentType();
         }
-
-        ResponseImplBase resp = $.cast(resp());
-        if (null != fmt) {
-            resp.initContentType(fmt.contentType());
-        }
-        resp.commitContentType();
+        applyContentType(fmt);
         return this;
     }
 
@@ -534,6 +562,14 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
         }
         applyGlobalCorsSetting();
         return this;
+    }
+
+    private void applyContentType(H.Format fmt) {
+        if (null != fmt) {
+            ResponseImplBase resp = $.cast(resp());
+            resp.initContentType(fmt.contentType());
+            resp.commitContentType();
+        }
     }
 
     private void applyGlobalCorsSetting() {
