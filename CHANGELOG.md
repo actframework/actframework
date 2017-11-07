@@ -2,6 +2,10 @@
 
 **1.4.14**
 
+* File download not working correctly #401
+* `NullPointerException` encountered with WebSocket Connection Event #400
+* Better support for app to directly write to content to response #399
+* `UT000002: The response has already been started` when it write content to response #398
 * Send back `400 Bad Request` on response trigger an obscure error page when content type is `application/vnd.openxmlformats-officedocument.spreadsheetml.sheet` #394
 
 **1.4.13 16/Oct/2017**
