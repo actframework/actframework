@@ -651,6 +651,9 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         } catch (Result r) {
             result = r;
         }
+        if (context.resp().isClosed()) {
+            return null;
+        }
         if (null == result && handler.hasReturn() && !handler.returnTypeInfo().isResult()) {
             // ActFramework respond 404 Not Found when
             // handler invoker return `null`

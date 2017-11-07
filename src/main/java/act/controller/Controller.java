@@ -682,9 +682,39 @@ public @interface Controller {
          * the binary using "attachment" content disposition.
          *
          * @param file the file to be rendered
+         * @return a `RenderBinary` result as described above
          */
         public static RenderBinary download(File file) {
             return new RenderBinary(file, file.getName(), false);
+        }
+
+        /**
+         * Returns a {@link RenderBinary} result with a file. The result will
+         * render the binary using "attachment" content disposition, with
+         * the `attachmentName` as the name of the download attachment.
+         *
+         * @param file the file to be downloaded
+         * @param attachmentName the attachment file name.
+         * @return a `RenderBinary` result as described above
+         */
+        public static RenderBinary download(File file, String attachmentName) {
+            return new RenderBinary(file, attachmentName, false);
+        }
+
+        /**
+         * Returns a {@link RenderBinary} result with an `InputStream`. The result will
+         * render the binary using "attachment" content disposition, with
+         * the `attachmentName` as the name of the download attachment.
+         *
+         * @param inputStream
+         *      the input stream from which byte content will be written to the
+         *      attachment.
+         * @param attachmentName
+         *      the attachment file name.
+         * @return a `RenderBinary` result as described above
+         */
+        public static RenderBinary download(InputStream inputStream, String attachmentName) {
+            return new RenderBinary(inputStream, attachmentName, false);
         }
 
         /**

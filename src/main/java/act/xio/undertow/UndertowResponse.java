@@ -20,7 +20,7 @@ package act.xio.undertow;
  * #L%
  */
 
-import act.ResponseImplBase;
+import act.ActResponse;
 import act.app.ActionContext;
 import act.conf.AppConfig;
 import io.undertow.io.IoCallback;
@@ -41,13 +41,15 @@ import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.util.Locale;
 
-public class UndertowResponse extends ResponseImplBase<UndertowResponse> {
+public class UndertowResponse extends ActResponse<UndertowResponse> {
     @Override
     protected Class<UndertowResponse> _impl() {
         return UndertowResponse.class;
     }
 
     private HttpServerExchange hse;
+
+    private boolean endAsync;
 
 
     public UndertowResponse(HttpServerExchange exchange, AppConfig config) {
@@ -67,6 +69,7 @@ public class UndertowResponse extends ResponseImplBase<UndertowResponse> {
         return hse.getResponseHeaders().contains(name);
     }
 
+
     @Override
     public UndertowResponse contentLength(long len) {
         hse.setResponseContentLength(len);
@@ -75,18 +78,23 @@ public class UndertowResponse extends ResponseImplBase<UndertowResponse> {
 
     @Override
     public UndertowResponse writeContent(String s) {
+        beforeWritingContent();
         hse.getResponseSender().send(s);
+        afterWritingContent();
         return this;
     }
 
     @Override
     public UndertowResponse writeContent(ByteBuffer byteBuffer) {
+        beforeWritingContent();
         hse.getResponseSender().send(byteBuffer);
+        afterWritingContent();
         return this;
     }
 
     @Override
     public UndertowResponse writeBinary(ISObject binary) {
+        beforeWritingContent();
         File file = tryGetFileFrom(binary);
         if (null == file) {
             byte[] ba = binary.asByteArray();
@@ -95,11 +103,19 @@ public class UndertowResponse extends ResponseImplBase<UndertowResponse> {
         } else {
             try {
                 hse.getResponseSender().transferFrom(FileChannel.open(file.toPath()), IoCallback.END_EXCHANGE);
+                endAsync = true;
             } catch (IOException e) {
+                endAsync = false;
                 throw E.ioException(e);
             }
         }
+        afterWritingContent();
         return this;
+    }
+
+    @Override
+    public OutputStream outputStream() throws IllegalStateException, UnexpectedIOException {
+        return super.outputStream();
     }
 
     private File tryGetFileFrom(ISObject sobj) {
@@ -114,11 +130,6 @@ public class UndertowResponse extends ResponseImplBase<UndertowResponse> {
     protected OutputStream createOutputStream() {
         ensureBlocking();
         return hse.getOutputStream();
-    }
-
-    @Override
-    public OutputStream outputStream() throws IllegalStateException, UnexpectedIOException {
-        return super.outputStream();
     }
 
     @Override
@@ -137,22 +148,10 @@ public class UndertowResponse extends ResponseImplBase<UndertowResponse> {
 
     @Override
     public void commit() {
-        hse.endExchange();
-    }
-
-    @Override
-    public UndertowResponse sendError(int sc, String msg) {
-        return null;
-    }
-
-    @Override
-    public UndertowResponse sendError(int sc) {
-        return null;
-    }
-
-    @Override
-    public UndertowResponse sendRedirect(String location) {
-        return null;
+        if (!endAsync) {
+            hse.endExchange();
+        }
+        markClosed();
     }
 
     @Override

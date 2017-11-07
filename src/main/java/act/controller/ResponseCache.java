@@ -20,7 +20,7 @@ package act.controller;
  * #L%
  */
 
-import act.ResponseImplBase;
+import act.ActResponse;
 import org.osgl.$;
 import org.osgl.exception.UnexpectedIOException;
 import org.osgl.http.H;
@@ -38,7 +38,7 @@ import java.util.Map;
 
 import static org.osgl.http.H.Format.*;
 
-public class ResponseCache extends ResponseImplBase implements Serializable {
+public class ResponseCache extends ActResponse implements Serializable {
 
     private Map<String, H.Cookie> cookies = new HashMap<>();
     private Map<String, String> headers = new HashMap<>();
@@ -56,7 +56,7 @@ public class ResponseCache extends ResponseImplBase implements Serializable {
         this.realResponse = $.notNull(realResponse);
     }
 
-    public void applyTo(ResponseImplBase response) {
+    public void applyTo(ActResponse response) {
         for (H.Cookie cookie : cookies.values()) {
             response.addCookie(cookie);
         }
@@ -239,7 +239,7 @@ public class ResponseCache extends ResponseImplBase implements Serializable {
     }
 
     @Override
-    public ResponseImplBase characterEncoding(String encoding) {
+    public ActResponse characterEncoding(String encoding) {
         realResponse.characterEncoding(encoding);
         super.characterEncoding(encoding);
         return this;
@@ -279,19 +279,19 @@ public class ResponseCache extends ResponseImplBase implements Serializable {
     }
 
     @Override
-    public H.Response sendError(int sc, String msg) {
+    public ActResponse sendError(int sc, String msg) {
         realResponse.sendError(sc, msg);
         return this;
     }
 
     @Override
-    public H.Response sendError(int sc) {
+    public ActResponse sendError(int sc) {
         realResponse.sendError(sc);
         return this;
     }
 
     @Override
-    public H.Response sendRedirect(String location) {
+    public ActResponse sendRedirect(String location) {
         realResponse.sendRedirect(location);
         return this;
     }

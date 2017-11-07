@@ -35,7 +35,7 @@ public class Redirect extends FastRequestHandler implements ExpressHandler {
 
     @Override
     public void handle(ActionContext context) {
-        H.Response resp = context.resp();
+        H.Response resp = context.prepareRespForWrite();
         if (context.isAjax()) {
             resp.status(H.Status.FOUND_AJAX);
         } else {

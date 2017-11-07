@@ -47,7 +47,7 @@ public class ActionContextTest extends ActTestBase {
         when(req.paramVals("foo")).thenReturn(new String[]{"FOO", "foo"});
         when(req.paramVals("bar")).thenReturn(new String[]{"BAR", "bar"});
 
-        H.Response resp = mock(H.Response.class);
+        ActResponse resp = mock(ActResponse.class);
         ctx = ActionContext.create(mockApp, req, resp);
     }
 

@@ -27,7 +27,6 @@ import act.app.AppServiceBase;
 import act.app.event.AppEventId;
 import act.app.util.NamedPort;
 import act.conf.AppConfig;
-import act.controller.Controller;
 import act.handler.RequestHandler;
 import act.handler.RequestHandlerBase;
 import act.handler.builtin.StaticResourceGetter;
@@ -39,6 +38,8 @@ import org.osgl.logging.Logger;
 
 import java.util.SortedSet;
 import java.util.TreeSet;
+
+import static act.controller.Controller.Util.renderJson;
 
 /**
  * Keep track endpoints defined in the system
@@ -106,7 +107,7 @@ public class ApiManager extends AppServiceBase<ApiManager> {
 
         @Override
         public void handle(ActionContext context) {
-            Controller.Util.renderJson(api.endpoints).apply(context.req(), context.resp());
+            renderJson(api.endpoints).apply(context.req(), context.prepareRespForWrite());
         }
 
         @Override

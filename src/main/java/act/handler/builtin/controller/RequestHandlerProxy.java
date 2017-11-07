@@ -22,7 +22,7 @@ package act.handler.builtin.controller;
 
 import act.Act;
 import act.Destroyable;
-import act.ResponseImplBase;
+import act.ActResponse;
 import act.app.ActionContext;
 import act.app.App;
 import act.app.AppInterceptorManager;
@@ -190,7 +190,7 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
                 cacheKey = cacheSupport.cacheKey(context);
                 ResponseCache cached = this.cache.get(cacheKey);
                 if (null != cached) {
-                    cached.applyTo((ResponseImplBase) context.resp());
+                    cached.applyTo(context.prepareRespForWrite());
                     return;
                 }
                 context.enableCache();
@@ -201,6 +201,9 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
             if (null == result) {
                 context.startHandling();
                 result = _handle(context);
+            }
+            if (context.resp().isClosed()) {
+                return;
             }
             context.startIntercepting();
             Result afterResult = handleAfter(result, context);
@@ -289,7 +292,7 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
                 any.apply(context);
             } else {
                 H.Request req = context.req();
-                H.Response resp = context.resp();
+                ActResponse<?> resp = context.prepareRespForWrite();
                 result.apply(req, resp);
             }
         } catch (RuntimeException e) {

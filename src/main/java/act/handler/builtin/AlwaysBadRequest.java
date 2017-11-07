@@ -31,7 +31,7 @@ public class AlwaysBadRequest extends FastRequestHandler implements ExpressHandl
 
     @Override
     public void handle(ActionContext context) {
-        BadRequest.get().apply(context.req(), context.resp());
+        BadRequest.get().apply(context.req(), context.prepareRespForWrite());
     }
 
     @Override

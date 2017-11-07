@@ -20,6 +20,7 @@ package act.view;
  * #L%
  */
 
+import act.ActResponse;
 import act.app.ActionContext;
 import org.osgl.http.H;
 import org.osgl.mvc.result.RenderBinary;
@@ -106,7 +107,7 @@ public class RenderAny extends Result {
             if (!ignoreMissingTemplate) {
                 throw E.unsupport("Template[%s] not found", context.templatePath());
             }
-            context.nullValueResultIgnoreRenderArgs().apply(context.req(), context.resp());
+            context.nullValueResultIgnoreRenderArgs().apply(context.req(), context.prepareRespForWrite());
             return;
         } else if (PDF == fmt || XLS == fmt || XLSX == fmt || DOC == fmt || DOCX == fmt) {
             List<String> varNames = context.__appRenderArgNames();
@@ -131,7 +132,8 @@ public class RenderAny extends Result {
             }
         }
         if (null != result) {
-            result.status(context.successStatus()).apply(context.req(), context.resp());
+            ActResponse<?> resp = context.prepareRespForWrite();
+            result.status(context.successStatus()).apply(context.req(), resp);
         } else {
             throw E.unexpected("Unknown accept content type: %s", fmt.contentType());
         }

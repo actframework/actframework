@@ -155,7 +155,7 @@ public class App extends DestroyableBase {
         @Override
         public void handle(ActionContext context) {
             E.illegalArgumentIf(null == blockIssue);
-            blockIssue.apply(context.req(), context.resp());
+            blockIssue.apply(context.req(), context.prepareRespForWrite());
         }
     };
     private final Version version;

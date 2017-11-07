@@ -20,6 +20,7 @@ package act.xio.undertow;
  * #L%
  */
 
+import act.ActResponse;
 import act.app.ActionContext;
 import act.app.App;
 import act.conf.AppConfig;
@@ -57,7 +58,7 @@ public class ActHttpHandler implements HttpHandler {
         return new UndertowRequest(exchange, config);
     }
 
-    private H.Response resp(HttpServerExchange exchange, AppConfig config) {
+    private ActResponse<?> resp(HttpServerExchange exchange, AppConfig config) {
         return new UndertowResponse(exchange, config);
     }
 

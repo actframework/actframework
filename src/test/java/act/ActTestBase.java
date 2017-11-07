@@ -85,7 +85,7 @@ public class ActTestBase extends TestBase {
     protected App mockApp;
     protected EventBus mockEventBus;
     protected H.Request mockReq;
-    protected H.Response mockResp;
+    protected ActResponse mockResp;
 
     protected void setup() throws Exception {
         initActMetricPlugin();
@@ -116,7 +116,7 @@ public class ActTestBase extends TestBase {
             }
         });
         mockReq = mock(H.Request.class);
-        mockResp = mock(H.Response.class);
+        mockResp = mock(ActResponse.class);
         when(mockReq.method()).thenReturn(H.Method.GET);
     }
 

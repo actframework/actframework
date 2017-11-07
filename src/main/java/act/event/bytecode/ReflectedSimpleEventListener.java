@@ -98,7 +98,12 @@ public class ReflectedSimpleEventListener implements SimpleEventListener {
                 realArgs[i + paramNo] = app.getInstance(providedParamTypes.get(i));
             }
         }
-        $.invokeVirtual(host(), method, realArgs);
+        Object host = host();
+        if (null == host) {
+            $.invokeStatic(method, realArgs);
+        } else {
+            $.invokeVirtual(host, method, realArgs);
+        }
     }
 
     private Object host() {

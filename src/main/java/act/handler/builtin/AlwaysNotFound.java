@@ -31,7 +31,7 @@ public class AlwaysNotFound extends FastRequestHandler implements ExpressHandler
 
     @Override
     public void handle(ActionContext context) {
-        NotFound.get().apply(context.req(), context.resp());
+        NotFound.get().apply(context.req(), context.prepareRespForWrite());
     }
 
     @Override

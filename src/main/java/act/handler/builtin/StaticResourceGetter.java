@@ -122,7 +122,7 @@ public class StaticResourceGetter extends FastRequestHandler {
                     if (req.etagMatches(etag)) {
                         AlwaysNotModified.INSTANCE.handle(context);
                     } else {
-                        H.Response resp = context.resp();
+                        H.Response resp = context.prepareRespForWrite();
                         resp.contentType(contentType.contentType())
                                 .etag(this.etag)
                                 .writeContent(buffer.duplicate());
@@ -142,7 +142,8 @@ public class StaticResourceGetter extends FastRequestHandler {
         }
         ByteBuffer buffer = cachedBuffers.get(path);
         if (null != buffer) {
-            context.resp().contentType(cachedContentType.get(path))
+            context.prepareRespForWrite()
+                    .contentType(cachedContentType.get(path))
                     .etag(etags.get(path))
                     .writeContent(buffer.duplicate());
             return;
@@ -165,7 +166,7 @@ public class StaticResourceGetter extends FastRequestHandler {
                 return;
             }
             fmt = StaticFileGetter.contentType(target.getPath());
-            H.Response resp = context.resp();
+            H.Response resp = context.prepareRespForWrite();
             resp.contentType(fmt.contentType());
             context.applyCorsSpec().applyContentType();
             try {

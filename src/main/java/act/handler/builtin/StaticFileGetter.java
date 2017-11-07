@@ -83,12 +83,12 @@ public class StaticFileGetter extends FastRequestHandler {
                 return;
             }
         }
-        H.Response resp = context.resp();
+        H.Response resp = context.prepareRespForWrite();
         fmt = contentType(file.getPath());
         resp.contentType(fmt.contentType());
         context.applyCorsSpec().applyContentType();
         InputStream is = new BufferedInputStream(IO.is(file));
-        IO.copy(is, context.resp().outputStream());
+        IO.copy(is, resp.outputStream());
     }
 
     // for unit test

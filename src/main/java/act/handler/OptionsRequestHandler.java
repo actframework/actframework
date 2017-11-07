@@ -40,7 +40,7 @@ public class OptionsRequestHandler extends FastRequestHandler implements Express
 
     @Override
     public void handle(ActionContext context) {
-        context.resp().status(H.Status.NO_CONTENT);
+        context.prepareRespForWrite().status(H.Status.NO_CONTENT);
         context.applyCorsSpec();
     }
 }

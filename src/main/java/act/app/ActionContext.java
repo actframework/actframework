@@ -22,7 +22,7 @@ package act.app;
 
 import act.Act;
 import act.Destroyable;
-import act.ResponseImplBase;
+import act.ActResponse;
 import act.conf.AppConfig;
 import act.controller.ResponseCache;
 import act.data.MapUtil;
@@ -74,7 +74,7 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
     public static final String REQ_BODY = "_body";
 
     private H.Request request;
-    private H.Response response;
+    private ActResponse<?> response;
     private H.Session session;
     private H.Flash flash;
     private Set<Map.Entry<String, String[]>> requestParamCache;
@@ -105,7 +105,7 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
 
 
     @Inject
-    private ActionContext(App app, H.Request request, H.Response response) {
+    private ActionContext(App app, H.Request request, ActResponse<?> response) {
         super(app);
         E.NPE(app, request, response);
         request.context(this);
@@ -137,7 +137,12 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
         return request;
     }
 
-    public H.Response resp() {
+    public ActResponse<?> resp() {
+        return response;
+    }
+
+    public ActResponse<?> prepareRespForWrite() {
+        response.markReady();
         return response;
     }
 
@@ -566,7 +571,7 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
 
     private void applyContentType(H.Format fmt) {
         if (null != fmt) {
-            ResponseImplBase resp = $.cast(resp());
+            ActResponse resp = resp();
             resp.initContentType(fmt.contentType());
             resp.commitContentType();
         }
@@ -1025,7 +1030,7 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
     /**
      * Create an new {@code AppContext} and return the new instance
      */
-    public static ActionContext create(App app, H.Request request, H.Response resp) {
+    public static ActionContext create(App app, H.Request request, ActResponse<?> resp) {
         return new ActionContext(app, request, resp);
     }
 

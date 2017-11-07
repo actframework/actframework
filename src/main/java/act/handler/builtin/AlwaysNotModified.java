@@ -31,7 +31,7 @@ public class AlwaysNotModified extends FastRequestHandler implements ExpressHand
 
     @Override
     public void handle(ActionContext context) {
-        NotModified.get().apply(context.req(), context.resp());
+        NotModified.get().apply(context.req(), context.prepareRespForWrite());
     }
 
     @Override

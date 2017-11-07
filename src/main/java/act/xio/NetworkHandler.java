@@ -167,8 +167,8 @@ public class NetworkHandler extends DestroyableBase {
                         fmt = req.contentType();
                     }
 
-                    ctx.resp().addHeaderIfNotAdded(H.Header.Names.CONTENT_TYPE, fmt.contentType());
-                    r.apply(req, ctx.resp());
+                    ctx.prepareRespForWrite().addHeaderIfNotAdded(H.Header.Names.CONTENT_TYPE, fmt.contentType());
+                    r.apply(req, ctx.prepareRespForWrite());
                 } catch (Exception e) {
                     handleException(e, ctx, "Error handling network request");
                 } finally {
@@ -209,7 +209,7 @@ public class NetworkHandler extends DestroyableBase {
         if (null == ctx.handler()) {
             ctx.handler(FastRequestHandler.DUMB);
         }
-        r.apply(ctx.req(), ctx.resp());
+        r.apply(ctx.req(), ctx.prepareRespForWrite());
     }
 
     @Override

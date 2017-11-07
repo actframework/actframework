@@ -74,7 +74,7 @@ public class RenderTemplate extends RenderAny {
         }
         applyStatus(context.resp());
         H.Request req = context.req();
-        H.Response resp = context.resp();
+        H.Response resp = context.prepareRespForWrite();
         setContentType(req, resp);
         applyBeforeCommitHandler(req, resp);
         t.merge(context);
