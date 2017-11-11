@@ -7,6 +7,7 @@
 [![Javadocs](http://www.javadoc.io/badge/org.actframework/act.svg?color=blue)](http://www.javadoc.io/doc/org.actframework/act)
 
 ## News
+* 07/Nov/2017 ACT [1.4.14](https://github.com/actframework/actframework/milestone/32?closed=1) released
 * 16/Oct/2017 ACT [1.4.13](https://github.com/actframework/actframework/milestone/31?closed=1) released
 * 13/Sep/2017 ACT [1.4.12](https://github.com/actframework/actframework/milestone/30?closed=1) released
 * 10/Sep/2017 ACT [1.4.11](https://github.com/actframework/actframework/milestone/28?closed=1) released - Catch up all changes in ACT 1.3.14-LTS
