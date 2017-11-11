@@ -1,5 +1,9 @@
 # ActFramework Change Log
 
+**1.4.15**
+
+* Update riotjs version and add riot-route.js #404
+
 **1.4.14**
 
 * File download not working correctly #401
