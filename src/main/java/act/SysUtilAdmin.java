@@ -20,14 +20,12 @@ package act;
  * #L%
  */
 
-import act.cli.CliContext;
-import act.cli.Command;
-import act.cli.Optional;
-import act.cli.Required;
+import act.cli.*;
 import act.sys.Env;
 import act.util.PropertySpec;
 import org.joda.time.LocalDateTime;
 import org.osgl.$;
+import org.osgl.mvc.annotation.GetAction;
 import org.osgl.storage.impl.SObject;
 import org.osgl.util.C;
 import org.osgl.util.E;
@@ -39,7 +37,9 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @SuppressWarnings("unused")
 public class SysUtilAdmin {
@@ -117,9 +117,14 @@ public class SysUtilAdmin {
         memInfo(false, false, context);
     }
 
-    @Command(name = "act.version, act.ver", help = "Print actframework version")
-    public String version() {
-        return Act.VERSION.toString();
+    @GetAction("version")
+    @Command(name = "act.version, act.ver", help = "Print app/actframework version")
+    @JsonView
+    public Object version() {
+        Map<String, Object> retVal = new HashMap<>();
+        retVal.put("act", Act.VERSION);
+        retVal.put("app", Act.appVersion());
+        return retVal;
     }
 
     @Command(name = "act.pwd", help = "Print name of the current working directory")
