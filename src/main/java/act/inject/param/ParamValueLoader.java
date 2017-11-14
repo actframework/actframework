@@ -28,6 +28,18 @@ import act.util.ActContext;
  */
 public interface ParamValueLoader {
 
+    ParamValueLoader NIL = new ParamValueLoader() {
+        @Override
+        public Object load(Object bean, ActContext<?> context, boolean noDefaultValue) {
+            return null;
+        }
+
+        @Override
+        public String bindName() {
+            return null;
+        }
+    };
+
     /**
      * Provide the value for a parameter from current execution context.
      *

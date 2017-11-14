@@ -125,8 +125,9 @@ public abstract class WebSocketConnectionHandler extends RequestHandlerBase {
         if (fieldsAndParamsCount == 1) {
             singleJsonFieldName = paramSpecs.get(0).name();
         }
-
-        ParamValueLoader[] loaders = paramLoaderService.methodParamLoaders(host, method);
+        // todo: do we want to allow inject Annotation type into web socket
+        // handler method param list?
+        ParamValueLoader[] loaders = paramLoaderService.methodParamLoaders(host, method, null);
         if (loaders.length > 0) {
             int realParamCnt = 0;
             for (ParamValueLoader loader : loaders) {

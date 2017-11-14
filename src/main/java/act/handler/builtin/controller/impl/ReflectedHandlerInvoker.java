@@ -284,6 +284,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         }
 
         context.attribute("reflected_handler", this);
+        context.attribute(ActContext.ATTR_CUR_METHOD, method);
         if (null != templateContext && context.state().isHandling()) {
             context.templateContext(templateContext);
         }

@@ -20,6 +20,7 @@ package act.inject.param;
  * #L%
  */
 
+import act.Act;
 import act.app.ActionContext;
 import act.app.App;
 import act.cli.CliContext;
@@ -27,7 +28,9 @@ import act.cli.Optional;
 import act.cli.Required;
 import act.cli.meta.CommandMethodMetaInfo;
 import act.cli.util.CommandLineParser;
+import act.util.ActContext;
 import org.osgl.$;
+import org.osgl.http.H;
 import org.osgl.inject.BeanSpec;
 import org.osgl.inject.util.AnnotationUtil;
 import org.osgl.mvc.annotation.Resolve;
@@ -41,6 +44,7 @@ import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -66,7 +70,41 @@ public class CliContextParamLoader extends ParamValueLoaderService {
             classRegistry.putIfAbsent(commander, loader);
         }
         $.Var<Boolean> boolBag = $.var();
-        ParamValueLoader[] loaders = findMethodParamLoaders(method, commander, boolBag);
+        // create a pseudo ctx as we do not have one here
+        // the ctx is just a way to pass the method info
+        ActContext ctx = new ActContext.Base<ActContext.Base>(Act.app()) {
+            @Override
+            public Base accept(H.Format fmt) {
+                return null;
+            }
+
+            @Override
+            public H.Format accept() {
+                return null;
+            }
+
+            @Override
+            public String methodPath() {
+                return null;
+            }
+
+            @Override
+            public Set<String> paramKeys() {
+                return null;
+            }
+
+            @Override
+            public String paramVal(String key) {
+                return null;
+            }
+
+            @Override
+            public String[] paramVals(String key) {
+                return new String[0];
+            }
+        };
+        ctx.attribute(ActContext.ATTR_CUR_METHOD, method);
+        ParamValueLoader[] loaders = findMethodParamLoaders(method, commander, ctx, boolBag);
         methodRegistry.putIfAbsent(method, loaders);
         methodValidationConstraintLookup.put(method, boolBag.get());
         return CliContext.ParsingContextBuilder.finish();

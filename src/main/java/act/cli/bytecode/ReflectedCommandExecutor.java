@@ -31,6 +31,7 @@ import act.inject.param.CliContextParamLoader;
 import act.inject.param.ParamValueLoaderManager;
 import act.job.AppJobManager;
 import act.job.TrackableWorker;
+import act.util.ActContext;
 import act.util.Async;
 import act.util.ProgressGauge;
 import com.esotericsoftware.reflectasm.MethodAccess;
@@ -94,7 +95,7 @@ public class ReflectedCommandExecutor extends CommandExecutor {
 
     @Override
     public Object execute(CliContext context) {
-        context.attribute(CliContext.ATTR_METHOD, method);
+        context.attribute(ActContext.ATTR_CUR_METHOD, method);
         if (null != pattern) {
             context.pattern(pattern);
         }

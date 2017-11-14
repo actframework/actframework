@@ -152,12 +152,12 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
         return loader.load(null, ctx, false);
     }
 
-    public ParamValueLoader[] methodParamLoaders(Object host, Method method) {
+    public ParamValueLoader[] methodParamLoaders(Object host, Method method, ActContext ctx) {
         ParamValueLoader[] loaders = methodRegistry.get(method);
         if (null == loaders) {
             $.Var<Boolean> boolBag = $.var(Boolean.FALSE);
             Class hostClass = null == host ? null : host.getClass();
-            ParamValueLoader[] newLoaders = findMethodParamLoaders(method, hostClass, boolBag);
+            ParamValueLoader[] newLoaders = findMethodParamLoaders(method, hostClass, ctx, boolBag);
             loaders = methodRegistry.putIfAbsent(method, newLoaders);
             if (null == loaders) {
                 loaders = newLoaders;
@@ -174,7 +174,7 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
 
     public Object[] loadMethodParams(Object host, Method method, ActContext ctx) {
         try {
-            ParamValueLoader[] loaders = methodParamLoaders(host, method);
+            ParamValueLoader[] loaders = methodParamLoaders(host, method, ctx);
             Boolean hasValidationConstraint = methodValidationConstraintLookup.get(method);
             int sz = loaders.length;
             Object[] params = new Object[sz];
@@ -290,7 +290,7 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
                     continue;
                 }
                 BeanSpec spec = BeanSpec.of(field, injector);
-                ParamValueLoader loader = paramValueLoaderOf(spec);
+                ParamValueLoader loader = paramValueLoaderOf(spec, null);
                 boolean provided = (loader instanceof ProvidedValueLoader);
                 if (null != loader && !provided) {
                     newFieldLoaders.put(field, loader);
@@ -304,7 +304,9 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
         return fieldLoaders;
     }
 
-    protected ParamValueLoader[] findMethodParamLoaders(Method method, Class host, $.Var<Boolean> hasValidationConstraint) {
+    protected ParamValueLoader[] findMethodParamLoaders(
+            Method method, Class host,
+            ActContext ctx, $.Var<Boolean> hasValidationConstraint) {
         Type[] types = method.getGenericParameterTypes();
         int sz = types.length;
         if (0 == sz) {
@@ -328,7 +330,7 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
             if (hasValidationConstraint(spec)) {
                 hasValidationConstraint.set(true);
             }
-            ParamValueLoader loader = paramValueLoaderOf(spec);
+            ParamValueLoader loader = paramValueLoaderOf(spec, ctx);
             if (null == loader) {
                 throw new UnexpectedException("Cannot find param value loader for param: " + spec);
             }
@@ -337,16 +339,18 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
         return loaders;
     }
 
-    private ParamValueLoader paramValueLoaderOf(BeanSpec spec) {
-        return paramValueLoaderOf(spec, null);
+    private ParamValueLoader paramValueLoaderOf(BeanSpec spec, ActContext ctx) {
+        return paramValueLoaderOf(spec, null, ctx);
     }
 
-    private ParamValueLoader paramValueLoaderOf(BeanSpec spec, String bindName) {
+    private ParamValueLoader paramValueLoaderOf(BeanSpec spec, String bindName, ActContext ctx) {
         Class<?> rawType = spec.rawType();
         if (Result.class.isAssignableFrom(rawType)) {
             return RESULT_LOADER;
         } else if (Throwable.class.isAssignableFrom(rawType)) {
             return new ThrowableLoader((Class<? extends Throwable>)rawType);
+        } else if (Annotation.class.isAssignableFrom(rawType)) {
+            return findHandlerMethodAnnotation((Class<? extends Annotation>) rawType, ctx);
         }
         Type type = spec.type();
         Annotation[] annotations = spec.allAnnotations();
@@ -365,6 +369,60 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
         }
         return loader;
     }
+
+    /**
+     * Returns a `ParamValueLoader` that load annotation from:
+     * * the handler method
+     * * the current method (might be a intercepter method)
+     *
+     * @param annoType the annotation type
+     * @param ctx the current {@link ActContext}
+     * @return a `ParamValueLoader` instance
+     */
+    private ParamValueLoader findHandlerMethodAnnotation(final Class<? extends Annotation> annoType, ActContext<?> ctx) {
+        if (null == ctx) {
+            return ParamValueLoader.NIL;
+        }
+        return new ParamValueLoader() {
+            @Override
+            public Object load(Object bean, ActContext<?> ctx, boolean noDefaultValue) {
+                String methodPath = ctx.methodPath();
+                Method curMethod = ctx.attribute(ActContext.ATTR_CUR_METHOD);
+                boolean methodIsCurrent = false;
+
+                Annotation anno = null;
+                if (S.notBlank(methodPath)) {
+                    String methodName = S.afterLast(methodPath, ".");
+                    Class<?> hostClass = Act.appClassForName(S.beforeLast(methodPath, "."));
+                    Method method = null;
+                    if (S.eq(methodName, curMethod.getName()) && $.eq(hostClass, curMethod.getDeclaringClass())) {
+                        method = curMethod;
+                        methodIsCurrent = true;
+                    } else {
+                        for (Method classMethod : hostClass.getMethods()) {
+                            if (S.eq(methodName, classMethod.getName())) {
+                                method = classMethod;
+                                break;
+                            }
+                        }
+                    }
+                    if (null != method) {
+                        anno = method.getAnnotation(annoType);
+                    }
+                }
+                if (null == anno && !methodIsCurrent) {
+                    anno = curMethod.getAnnotation(annoType);
+                }
+                return anno;
+            }
+
+            @Override
+            public String bindName() {
+                return null;
+            }
+        };
+    }
+
 
     protected abstract ParamValueLoader findContextSpecificLoader(
             String bindName,

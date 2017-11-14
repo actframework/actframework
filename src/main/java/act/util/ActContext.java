@@ -41,6 +41,12 @@ import javax.validation.ConstraintViolation;
 import java.util.*;
 
 public interface ActContext<CTX_TYPE extends ActContext> extends ParamValueProvider {
+    /**
+     * Used to store the {@link java.lang.reflect.Method} this context is trying
+     * to invoke right now. Note the method might be corresponding to the
+     * {@link #methodPath()} or not if the current method is an interceptor.
+     */
+    String ATTR_CUR_METHOD = "__ctx_cur_method__";
     App app();
     AppConfig config();
     CTX_TYPE accept(H.Format fmt);

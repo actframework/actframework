@@ -2,6 +2,7 @@
 
 **1.4.15**
 
+*
 * Add built-in API to report app version and act version #405
 * Update riotjs version and add riot-route.js #404
 

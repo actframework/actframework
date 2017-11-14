@@ -27,6 +27,7 @@ import act.job.JobContext;
 import act.job.meta.JobClassMetaInfo;
 import act.job.meta.JobMethodMetaInfo;
 import act.sys.Env;
+import act.util.ActContext;
 import act.util.ReflectedInvokerHelper;
 import com.esotericsoftware.reflectasm.MethodAccess;
 import org.osgl.$;
@@ -103,8 +104,10 @@ public class ReflectedJobInvoker<M extends JobMethodMetaInfo> extends $.F0<Objec
         if (disabled) {
             return null;
         }
-        Object job = jobClassInstance(app);
-        return invoke(job);
+        JobContext ctx = JobContext.current();
+        ctx.attribute(ActContext.ATTR_CUR_METHOD, method);
+        Object job = jobClassInstance(app, ctx);
+        return invoke(job, ctx);
     }
 
     private Class[] paramTypes() {
@@ -119,25 +122,26 @@ public class ReflectedJobInvoker<M extends JobMethodMetaInfo> extends $.F0<Objec
     }
 
 
-    private Object jobClassInstance(App app) {
+    private Object jobClassInstance(App app, JobContext ctx) {
         if (isStatic) {
             return null;
         }
         if (null != singleton) {
             return singleton;
         }
-        return null != paramValueLoaderService ? paramValueLoaderService.loadHostBean(jobClass, JobContext.current())
+        return null != paramValueLoaderService ?
+                paramValueLoaderService.loadHostBean(jobClass, ctx)
                 : app.getInstance(jobClass);
     }
 
-    private Object invoke(Object jobClassInstance) {
-        Object[] params = params(jobClassInstance);
+    private Object invoke(Object jobClassInstance, JobContext ctx) {
+        Object[] params = params(jobClassInstance, ctx);
         return null == methodAccess ? $.invokeStatic(method, params) : methodAccess.invoke(jobClassInstance, methodIndex, params);
     }
 
-    private Object[] params(Object job) {
+    private Object[] params(Object job, JobContext ctx) {
         if (null != paramValueLoaderService) {
-            return paramValueLoaderService.loadMethodParams(job, method, JobContext.current());
+            return paramValueLoaderService.loadMethodParams(job, method, ctx);
         }
         E.illegalStateIf(paramTypes().length > 0, "Cannot invoke job with parameters before app fully started");
         return new Object[0];
