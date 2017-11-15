@@ -386,30 +386,11 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
         return new ParamValueLoader() {
             @Override
             public Object load(Object bean, ActContext<?> ctx, boolean noDefaultValue) {
-                String methodPath = ctx.methodPath();
+                Method handlerMethod = ctx.handlerMethod();
                 Method curMethod = ctx.attribute(ActContext.ATTR_CUR_METHOD);
-                boolean methodIsCurrent = false;
+                boolean methodIsCurrent = handlerMethod == curMethod || null == curMethod;
 
-                Annotation anno = null;
-                if (S.notBlank(methodPath)) {
-                    String methodName = S.afterLast(methodPath, ".");
-                    Class<?> hostClass = Act.appClassForName(S.beforeLast(methodPath, "."));
-                    Method method = null;
-                    if (S.eq(methodName, curMethod.getName()) && $.eq(hostClass, curMethod.getDeclaringClass())) {
-                        method = curMethod;
-                        methodIsCurrent = true;
-                    } else {
-                        for (Method classMethod : hostClass.getMethods()) {
-                            if (S.eq(methodName, classMethod.getName())) {
-                                method = classMethod;
-                                break;
-                            }
-                        }
-                    }
-                    if (null != method) {
-                        anno = method.getAnnotation(annoType);
-                    }
-                }
+                Annotation anno = handlerMethod.getAnnotation(annoType);
                 if (null == anno && !methodIsCurrent) {
                     anno = curMethod.getAnnotation(annoType);
                 }

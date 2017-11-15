@@ -1,8 +1,8 @@
 # ActFramework Change Log
 
-**1.4.15**
+**1.5.0**
 
-*
+* Inject annotation of the handler method into the interceptor param list #406
 * Add built-in API to report app version and act version #405
 * Update riotjs version and add riot-route.js #404
 

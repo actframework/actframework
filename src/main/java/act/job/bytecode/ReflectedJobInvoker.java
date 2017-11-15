@@ -27,7 +27,6 @@ import act.job.JobContext;
 import act.job.meta.JobClassMetaInfo;
 import act.job.meta.JobMethodMetaInfo;
 import act.sys.Env;
-import act.util.ActContext;
 import act.util.ReflectedInvokerHelper;
 import com.esotericsoftware.reflectasm.MethodAccess;
 import org.osgl.$;
@@ -105,7 +104,7 @@ public class ReflectedJobInvoker<M extends JobMethodMetaInfo> extends $.F0<Objec
             return null;
         }
         JobContext ctx = JobContext.current();
-        ctx.attribute(ActContext.ATTR_CUR_METHOD, method);
+        ctx.handlerMethod(method);
         Object job = jobClassInstance(app, ctx);
         return invoke(job, ctx);
     }

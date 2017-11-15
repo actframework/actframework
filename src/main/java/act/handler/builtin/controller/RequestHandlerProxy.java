@@ -21,8 +21,8 @@ package act.handler.builtin.controller;
  */
 
 import act.Act;
-import act.Destroyable;
 import act.ActResponse;
+import act.Destroyable;
 import act.app.ActionContext;
 import act.app.App;
 import act.app.AppInterceptorManager;
@@ -54,6 +54,7 @@ import org.osgl.util.S;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.ListIterator;
@@ -88,6 +89,7 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
     private String controllerClassName;
     private String actionMethodName;
     private String actionPath;
+    private Method actionMethod;
 
     private volatile ControllerAction actionHandler = null;
     private C.List<BeforeInterceptor> beforeInterceptors = C.newList();
@@ -177,6 +179,7 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
     @Override
     public void handle(ActionContext context) {
         ensureAgentsReady();
+        context.handlerMethod(actionMethod);
         if (null != webSocketConnectionHandler) {
             webSocketConnectionHandler.handle(context);
             return;
@@ -381,6 +384,7 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
 //        }
         Act.Mode mode = Act.mode();
         actionHandler = mode.createRequestHandler(actionInfo, app);
+        actionMethod = actionHandler.invoker().invokeMethod();
         sessionFree = actionHandler.sessionFree();
         missingAuthenticationHandler = actionHandler.missingAuthenticationHandler();
         csrfFailureHandler = actionHandler.csrfFailureHandler();

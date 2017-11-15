@@ -38,6 +38,7 @@ import org.osgl.util.S;
 
 import javax.enterprise.context.RequestScoped;
 import javax.validation.ConstraintViolation;
+import java.lang.reflect.Method;
 import java.util.*;
 
 public interface ActContext<CTX_TYPE extends ActContext> extends ParamValueProvider {
@@ -153,6 +154,10 @@ public interface ActContext<CTX_TYPE extends ActContext> extends ParamValueProvi
 
     String methodPath();
 
+    Method handlerMethod();
+
+    CTX_TYPE handlerMethod(Method method);
+
     /**
      * Returns a reusable {@link S.Buffer} instance
      * @return an S.Buffer instance that can be reused
@@ -179,6 +184,7 @@ public interface ActContext<CTX_TYPE extends ActContext> extends ParamValueProvi
         private boolean noTemplateCache;
         private SimpleProgressGauge progress = new SimpleProgressGauge();
         private String jobId;
+        private Method handlerMethod;
         private String pattern;
 
         // (violation.propertyPath, violation)
@@ -227,6 +233,17 @@ public interface ActContext<CTX_TYPE extends ActContext> extends ParamValueProvi
         @Override
         public AppConfig config() {
             return app().config();
+        }
+
+        @Override
+        public Method handlerMethod() {
+            return handlerMethod;
+        }
+
+        @Override
+        public CTX handlerMethod(Method method) {
+            this.handlerMethod = method;
+            return me();
         }
 
         @Override

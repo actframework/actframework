@@ -161,13 +161,6 @@ public class CliContext extends ActContext.Base<CliContext> implements IASCIITab
     }
 
     public static final String ATTR_PWD = "__act_pwd__";
-    /**
-     * Used to cache current method to context.
-     *
-     * This is deprecated. Please use {@link ActContext#ATTR_CUR_METHOD} instead
-     */
-    @Deprecated
-    public static final String ATTR_METHOD = ActContext.ATTR_CUR_METHOD;
 
     private static final ContextLocal<CliContext> _local = $.contextLocal();
 

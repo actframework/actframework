@@ -228,6 +228,11 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         return handler.priority();
     }
 
+    @Override
+    public Method invokeMethod() {
+        return method;
+    }
+
     public interface ReflectedHandlerInvokerVisitor extends Visitor, $.Func2<Class<?>, Method, Void> {
     }
 

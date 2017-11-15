@@ -29,6 +29,8 @@ import act.util.MissingAuthenticationHandler;
 import act.util.Prioritised;
 import org.osgl.mvc.result.Result;
 
+import java.lang.reflect.Method;
+
 public interface ActionHandlerInvoker extends Prioritised, Destroyable {
     Result handle(ActionContext actionContext) throws Exception;
 
@@ -49,4 +51,6 @@ public interface ActionHandlerInvoker extends Prioritised, Destroyable {
     MissingAuthenticationHandler missingAuthenticationHandler();
 
     MissingAuthenticationHandler csrfFailureHandler();
+
+    Method invokeMethod();
 }
