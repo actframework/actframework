@@ -302,7 +302,9 @@ public class Job extends DestroyableBase implements Runnable {
         runFollowingJobs();
     }
 
-    protected void _before() {}
+    protected void _before() {
+        JobContext.init();
+    }
 
     protected void doJob() {
         try {

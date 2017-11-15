@@ -1,12 +1,15 @@
 # ActFramework Change Log
 
-**1.5.0**
+**1.5.1 15/Nov/2017**
+* `NullPointerException` when invoking job #407
+
+**1.5.0 15/Nov/2017**
 
 * Inject annotation of the handler method into the interceptor param list #406
 * Add built-in API to report app version and act version #405
 * Update riotjs version and add riot-route.js #404
 
-**1.4.14**
+**1.4.14 07/Nov/2017**
 
 * File download not working correctly #401
 * `NullPointerException` encountered with WebSocket Connection Event #400
@@ -47,7 +50,7 @@
 * Support running CLI Job in background #267 
 * `job.list` CLI command failure #355 
 
-1.4.10
+**1.4.10 21/Aug/2017**
 * catch up update to 1.3.13-LTS
 
 1.4.9
