@@ -20,8 +20,10 @@ package act.internal.util;
  * #L%
  */
 
+import act.Act;
 import org.osgl.$;
 import org.osgl.bootstrap.Version;
+import org.osgl.logging.Logger;
 import org.osgl.util.E;
 import org.osgl.util.S;
 
@@ -31,6 +33,8 @@ import java.io.*;
  * Describe an application's name, package and version
  */
 public class AppDescriptor implements Serializable {
+
+    private static final Logger LOGGER = Act.LOGGER;
 
     private String appName;
     private String packageName;
@@ -45,6 +49,10 @@ public class AppDescriptor implements Serializable {
      *      the app version
      */
     private AppDescriptor(String appName, String packageName, Version version) {
+        if (appName.startsWith("${")) {
+            LOGGER.warn("app name is substitute variable - fallback to default app name");
+            appName = S.afterLast(packageName, ".");
+        }
         this.appName = appName;
         this.packageName = packageName;
         this.version = version;

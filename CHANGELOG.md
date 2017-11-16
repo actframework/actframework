@@ -1,5 +1,8 @@
 # ActFramework Change Log
 
+**1.5.2 TBD**
+* Mal behavior of app running in dev mode with `.version` file #409
+
 **1.5.1 15/Nov/2017**
 * `NullPointerException` when invoking job #407
 
