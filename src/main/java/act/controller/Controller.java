@@ -883,7 +883,9 @@ public @interface Controller {
             if (actionContext.acceptJson()) {
                 return RenderJSON.of(actionContext.successStatus(), IO.readContentAsString(is));
             } else {
-                return new RenderBinary(is, null, true).status(actionContext.successStatus());
+                // name must be a blank string, `null` will trigger
+                // NPE in SObject lib
+                return new RenderBinary(is, "", true).status(actionContext.successStatus());
             }
         }
 
