@@ -121,6 +121,8 @@ public class RedirectToLoginUrl extends SingletonBase implements MissingAuthenti
         String url = context.cached(KEY_REFERER);
         if (S.blank(url)) {
             url = defLandingUrl;
+        } else {
+            context.evictCache(KEY_REFERER);
         }
         if (S.blank(url)) {
             url = "/";

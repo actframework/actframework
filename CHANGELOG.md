@@ -1,6 +1,9 @@
 # ActFramework Change Log
 
-**1.5.2 TBD**
+**1.5.3 TBD**
+* Evict original URL cache from session once redirection happened #414
+
+**1.5.2 17/Nov/2017**
 * Handle login redirect gracefully #412
 * `NPE` while returning an `InputStream` in an action handler #410
 * Mal behavior of app running in dev mode with `.version` file #409
