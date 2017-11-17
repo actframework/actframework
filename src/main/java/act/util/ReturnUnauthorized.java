@@ -37,7 +37,14 @@ public class ReturnUnauthorized implements MissingAuthenticationHandler {
         return Act.isDev() ? ActUnauthorized.create() : R;
     }
 
+    @Override
+    public void handle(ActionContext context) {
+        throw result(context);
+    }
+
     static Result result() {
         return Act.isDev() ? ActUnauthorized.create() : R;
     }
+
+
 }

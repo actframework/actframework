@@ -29,7 +29,19 @@ import org.osgl.mvc.result.Result;
  */
 public interface MissingAuthenticationHandler {
     /**
-     * The result to be thrown out when authentication is missing
+     * The result to be thrown out when authentication is missing.
+     *
+     * This method is deprecated. Please use {@link #handle(ActionContext)}
+     * instead.
      */
+    @Deprecated
     Result result(ActionContext context);
+
+    /**
+     * Throw out a {@link Result} when authentication is missing.
+     *
+     * @param context
+     *      The action context
+     */
+    void handle(ActionContext context);
 }

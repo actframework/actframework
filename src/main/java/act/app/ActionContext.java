@@ -37,6 +37,7 @@ import act.security.CORS;
 import act.util.ActContext;
 import act.util.MissingAuthenticationHandler;
 import act.util.PropertySpec;
+import act.util.RedirectToLoginUrl;
 import act.view.RenderAny;
 import org.osgl.$;
 import org.osgl.concurrent.ContextLocal;
@@ -787,6 +788,42 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
      */
     public void login(String username) {
         session().put(config().sessionKeyUsername(), username);
+    }
+
+    /**
+     * Login the user and redirect back to original URL
+     * @param username
+     *      the username
+     */
+    public void loginAndRedirectBack(String username) {
+        login(username);
+        RedirectToLoginUrl.redirectToOriginalUrl(this);
+    }
+
+    /**
+     * Login the user and redirect back to original URL. If no
+     * original URL found then redirect to `defaultLandingUrl`.
+     *
+     * @param username
+     *      The username
+     * @param defaultLandingUrl
+     *      the URL to be redirected if original URL not found
+     */
+    public void loginAndRedirectBack(String username, String defaultLandingUrl) {
+        login(username);
+        RedirectToLoginUrl.redirectToOriginalUrl(this, defaultLandingUrl);
+    }
+
+    /**
+     * Login the user and redirect to specified URL
+     * @param username
+     *      the username
+     * @param url
+     *      the URL to be redirected to
+     */
+    public void loginAndRedirect(String username, String url) {
+        login(username);
+        redirect(url);
     }
 
     /**

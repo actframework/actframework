@@ -24,6 +24,7 @@ import act.app.ActionContext;
 import act.app.App;
 import act.app.util.NamedPort;
 import act.conf.AppConfig;
+import act.controller.Controller;
 import act.route.Router;
 import org.osgl.$;
 import org.osgl.mvc.result.Redirect;
@@ -38,6 +39,8 @@ import java.util.Map;
  * {@link act.conf.AppConfigKey#URL_LOGIN}
  */
 public class RedirectToLoginUrl extends SingletonBase implements MissingAuthenticationHandler {
+
+    private static final String KEY_REFERER = "__act_referer__";
 
     private volatile Result R = null;
     private volatile Result R_AJAX = null;
@@ -73,6 +76,8 @@ public class RedirectToLoginUrl extends SingletonBase implements MissingAuthenti
 
     @Override
     public Result result(ActionContext context) {
+        cacheUrl(context);
+        context.dissolve();
         if (null != userDefined) {
             return userDefined;
         }
@@ -81,6 +86,11 @@ public class RedirectToLoginUrl extends SingletonBase implements MissingAuthenti
         } else {
             return _result(context);
         }
+    }
+
+    @Override
+    public void handle(ActionContext context) {
+        throw result(context);
     }
 
     private Result _ajaxResult(ActionContext context) {
@@ -100,5 +110,25 @@ public class RedirectToLoginUrl extends SingletonBase implements MissingAuthenti
 
     protected final boolean hasRouteTo(String url, Router router) {
         return null != router.findStaticGetHandler(url);
+    }
+
+    private void cacheUrl(ActionContext context) {
+        String url = context.req().url();
+        context.cache(KEY_REFERER, url, 60 * 5);
+    }
+
+    public static void redirectToOriginalUrl(ActionContext context, String defLandingUrl) {
+        String url = context.cached(KEY_REFERER);
+        if (S.blank(url)) {
+            url = defLandingUrl;
+        }
+        if (S.blank(url)) {
+            url = "/";
+        }
+        throw Controller.Util.redirect(url);
+    }
+
+    public static void redirectToOriginalUrl(ActionContext context) {
+        redirectToOriginalUrl(context, "/");
     }
 }

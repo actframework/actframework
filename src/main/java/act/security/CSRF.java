@@ -236,9 +236,9 @@ public class CSRF {
         }
 
         private static void raiseCsrfNotVerified(ActionContext context) {
-            MissingAuthenticationHandler handler = context.csrfFailureHandler();
             context.removeAttribute(ATTR_CSR_TOKEN_PREFETCH);
-            throw handler.result(context);
+            MissingAuthenticationHandler handler = context.csrfFailureHandler();
+            handler.handle(context);
         }
 
     }
