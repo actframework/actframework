@@ -3,6 +3,7 @@
 **1.5.3 TBD**
 * NPE encountered when CSRF protector redirect request to login page #415
 * Evict original URL cache from session once redirection happened #414
+* update fastjson to 1.2.41 #416
 
 **1.5.2 17/Nov/2017**
 * Handle login redirect gracefully #412
