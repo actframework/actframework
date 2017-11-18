@@ -883,6 +883,15 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
         if (handler.sessionFree()) {
             return;
         }
+        if (null == session) {
+            // only case is when CSRF token check failed
+            // while resolving session
+            // we need to generate new session anyway
+            // because it is required to cache the
+            // original URL
+            // see RedirectToLoginUrl
+            session = new H.Session();
+        }
         localeResolver.dissolve();
         app().eventBus().emit(new SessionWillDissolveEvent(this));
         try {

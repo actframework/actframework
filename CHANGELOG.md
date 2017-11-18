@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 **1.5.3 TBD**
+* NPE encountered when CSRF protector redirect request to login page #415
 * Evict original URL cache from session once redirection happened #414
 
 **1.5.2 17/Nov/2017**
