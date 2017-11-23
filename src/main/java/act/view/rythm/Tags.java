@@ -21,20 +21,26 @@ package act.view.rythm;
  */
 
 import act.Act;
+import act.Destroyable;
 import act.act_messages;
 import act.app.ActionContext;
 import act.i18n.I18n;
+import act.internal.util.ResourceChecksumManager;
+import act.job.OnAppStart;
 import act.route.Router;
 import act.util.ActContext;
+import act.util.DestroyableBase;
 import org.osgl.$;
 import org.osgl.Osgl;
 import org.osgl.exception.NotAppliedException;
 import org.osgl.util.E;
+import org.osgl.util.S;
 import org.rythmengine.RythmEngine;
 import org.rythmengine.template.JavaTagBase;
-import org.rythmengine.utils.S;
 
+import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+import javax.inject.Singleton;
 import javax.validation.ConstraintViolation;
 import java.util.HashMap;
 import java.util.List;
@@ -43,10 +49,17 @@ import java.util.Map;
 /**
  * Defines fast tags for Act app
  */
-public class Tags {
+@Singleton
+public class Tags extends DestroyableBase {
 
     @Inject
     private List<JavaTagBase> fastTags;
+
+    @OnAppStart
+    @Override
+    protected void releaseResources() {
+        Destroyable.Util.tryDestroyAll(fastTags, ApplicationScoped.class);
+    }
 
     public void register(RythmEngine engine) {
         for (JavaTagBase tag : fastTags) {
@@ -105,6 +118,68 @@ public class Tags {
             p(I18n.i18n(act_messages.class, msg, args));
         }
     }
+
+    // map path to resource checksum
+    private static Map<String, String> checksums = new HashMap<>();
+
+    public static class Resource extends JavaTagBase {
+
+        @Inject
+        private ResourceChecksumManager checksumManager;
+
+        @Override
+        public String __getName() {
+            return "resource";
+        }
+
+        @Override
+        protected void call(__ParameterList params, __Body body) {
+            E.illegalArgumentIf(params.size() < 1);
+            String path = params.get(0).value.toString();
+            call(path);
+        }
+
+        protected void call(String path) {
+            if (path.startsWith("http:") || path.startsWith("//")) {
+                // we don't process absolute path
+                p(path);
+                return;
+            }
+            if (Act.isDev()) {
+                path = path + (path.contains("?") ? '&' : '?');
+                path = path + "ts=" + $.ms();
+            } else {
+                String checksum = checksumManager.checksumOf(path);
+                if (!path.startsWith("/")) {
+                    path = '/' + path;
+                }
+                if (S.notBlank(checksum)) {
+                    String sep = path.contains("?") ? "&" : "?";
+                    path = S.concat(path, sep, "checksum=", checksum);
+                }
+            }
+            p(path);
+        }
+    }
+
+    public static class Asset extends Resource {
+
+        @Override
+        public String __getName() {
+            return "asset";
+        }
+
+        @Override
+        protected void call(__ParameterList params, __Body body) {
+            E.illegalArgumentIf(params.size() < 1);
+            String path = params.get(0).value.toString();
+            if (!path.startsWith("/asset/") && !path.startsWith("asset/")) {
+                path = org.osgl.util.S.pathConcat("asset", '/', path);
+            }
+            call(path);
+        }
+    }
+
 
     /**
      * Retrieve reverse routing URL path

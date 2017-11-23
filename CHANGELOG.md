@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 **1.6.0 TBD**
+* Support annotated routing directive #419
 * Add `findLatest()` method to `Dao` #402
 * Support inject file content into `String` or `ByteBuffer` #397
 * New static file/resource handler that are subject to authentication/session management #396
@@ -9,6 +10,7 @@
 * Add timestamp to default error response #274
 * Allow `AppJobManager.now` API accept job name parameter #268
 * support different redirect semantic #263
+* Request to support versioning of static resource mappings #210
 
 **1.5.3 18/Nov/2017**
 * NPE encountered when CSRF protector redirect request to login page #415

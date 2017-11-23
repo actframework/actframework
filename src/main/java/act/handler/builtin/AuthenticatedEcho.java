@@ -21,18 +21,14 @@ package act.handler.builtin;
  */
 
 import act.app.ActionContext;
-import act.app.App;
 
-import java.io.File;
-
-public class AuthenticatedFileGetter extends FileGetter {
-
-    public AuthenticatedFileGetter(String base, App app) {
-        super(base, app);
+public class AuthenticatedEcho extends Echo {
+    public AuthenticatedEcho(String msg) {
+        super(msg);
     }
 
-    public AuthenticatedFileGetter(File base) {
-        super(base);
+    public AuthenticatedEcho(String msg, String contentType) {
+        super(msg, contentType);
     }
 
     @Override
@@ -43,5 +39,4 @@ public class AuthenticatedFileGetter extends FileGetter {
     @Override
     public void prepareAuthentication(ActionContext context) {
     }
-
 }

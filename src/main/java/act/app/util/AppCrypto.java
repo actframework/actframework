@@ -25,11 +25,11 @@ import org.mindrot.jbcrypt.BCrypt;
 import org.osgl.exception.UnexpectedException;
 import org.osgl.logging.LogManager;
 import org.osgl.logging.Logger;
-import org.osgl.util.Charsets;
-import org.osgl.util.Crypto;
-import org.osgl.util.Token;
+import org.osgl.util.*;
 
+import java.io.InputStream;
 import java.security.InvalidKeyException;
+import java.security.MessageDigest;
 import java.security.SecureRandom;
 
 public class AppCrypto {
@@ -107,6 +107,29 @@ public class AppCrypto {
                 logger.error("Cannot encrypt/decrypt! Please download Java Crypto Extension pack from Oracle: http://www.oracle.com/technetwork/java/javase/tech/index-jsp-136007.html");
             }
             throw e;
+        }
+    }
+
+    public String checksum(InputStream is) {
+        try {
+            MessageDigest md = MessageDigest.getInstance("SHA1");
+            byte[] dataBytes = new byte[1024];
+
+            int nread;
+
+            while ((nread = is.read(dataBytes)) != -1) {
+                md.update(dataBytes, 0, nread);
+            }
+
+            byte[] mdbytes = md.digest();
+            S.Buffer sb = S.buffer();
+            for (int i = 0; i < mdbytes.length; i++) {
+                sb.append(Integer.toString((mdbytes[i] & 0xff) + 0x100, 16).substring(1));
+            }
+            return sb.toString();
+
+        } catch (Exception e) {
+            throw E.unexpected(e);
         }
     }
 

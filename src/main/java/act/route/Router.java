@@ -1,24 +1,24 @@
 package act.route;
 
-/*-
- * #%L
- * ACT Framework
- * %%
- * Copyright (C) 2014 - 2017 ActFramework
- * %%
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * 
- *      http://www.apache.org/licenses/LICENSE-2.0
- * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- * #L%
- */
+        /*-
+         * #%L
+         * ACT Framework
+         * %%
+         * Copyright (C) 2014 - 2017 ActFramework
+         * %%
+         * Licensed under the Apache License, Version 2.0 (the "License");
+         * you may not use this file except in compliance with the License.
+         * You may obtain a copy of the License at
+         *
+         *      http://www.apache.org/licenses/LICENSE-2.0
+         *
+         * Unless required by applicable law or agreed to in writing, software
+         * distributed under the License is distributed on an "AS IS" BASIS,
+         * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+         * See the License for the specific language governing permissions and
+         * limitations under the License.
+         * #L%
+         */
 
 import act.Act;
 import act.Destroyable;
@@ -47,7 +47,6 @@ import javax.enterprise.context.ApplicationScoped;
 import java.io.File;
 import java.io.PrintStream;
 import java.io.Serializable;
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.*;
 import java.util.regex.Matcher;
@@ -62,12 +61,10 @@ public class Router extends AppServiceBase<Router> {
     public interface Visitor {
         /**
          * Visit a route mapping in the router
-         * @param method
-         *      the HTTP method
-         * @param path
-         *      the URL path
-         * @param handler
-         *      the handler
+         *
+         * @param method  the HTTP method
+         * @param path    the URL path
+         * @param handler the handler
          */
         void visit(H.Method method, String path, RequestHandler handler);
     }
@@ -162,8 +159,7 @@ public class Router extends AppServiceBase<Router> {
      * Accept a {@link Visitor} to traverse route mapping in this
      * router
      *
-     * @param visitor
-     *          the visitor
+     * @param visitor the visitor
      */
     public void accept(Visitor visitor) {
         visit(_GET, H.Method.GET, visitor);
@@ -540,7 +536,8 @@ public class Router extends AppServiceBase<Router> {
 
     /**
      * Return full URL of reverse rout of specified action
-     * @param action the action path
+     *
+     * @param action     the action path
      * @param renderArgs the render arguments
      * @return the full URL as described above
      */
@@ -635,7 +632,7 @@ public class Router extends AppServiceBase<Router> {
     }
 
     private static boolean setContains(Set<String> set, String name) {
-        for (String s: set) {
+        for (String s : set) {
             if (s.contains(name)) return true;
         }
         return false;
@@ -700,10 +697,12 @@ public class Router extends AppServiceBase<Router> {
 
     private static class RequestHandlerInfo extends DelegateRequestHandler {
         private CharSequence action;
+
         protected RequestHandlerInfo(RequestHandler handler, CharSequence action) {
             super(handler);
             this.action = action;
         }
+
         RequestHandler theHandler() {
             return handler_;
         }
@@ -1261,91 +1260,114 @@ public class Router extends AppServiceBase<Router> {
         }
     }
 
-    private enum BuiltInHandlerResolver implements RequestHandlerResolver {
+    private enum BuiltInHandlerDecorator {
+        authenticated, external
+    }
+
+    private enum BuiltInHandlerResolver {
         echo() {
             @Override
-            public RequestHandler resolve(CharSequence msg, App app) {
-                return new Echo(msg.toString());
+            public RequestHandler resolve(CharSequence msg, App app, EnumSet<BuiltInHandlerDecorator> decorators) {
+                return decorators.contains(BuiltInHandlerDecorator.authenticated) ?
+                        new ContextualHandler(new AuthenticatedEcho(msg.toString())) :
+                        new Echo(msg.toString());
             }
         },
         redirect() {
             @Override
-            public RequestHandler resolve(CharSequence payload, App app) {
-                return new Redirect(payload.toString());
+            public RequestHandler resolve(CharSequence payload, App app, EnumSet<BuiltInHandlerDecorator> decorators) {
+                return decorators.contains(BuiltInHandlerDecorator.authenticated) ?
+                        new ContextualHandler(new AuthenticatedRedirect(payload.toString())) :
+                        new Redirect(payload.toString());
             }
         },
         moved() {
             @Override
-            public RequestHandler resolve(CharSequence payload, App app) {
-                return new Redirect(payload.toString());
+            public RequestHandler resolve(CharSequence payload, App app, EnumSet<BuiltInHandlerDecorator> decorators) {
+                return decorators.contains(BuiltInHandlerDecorator.authenticated) ?
+                        new ContextualHandler(new AuthenticatedRedirect(payload.toString())) :
+                        new Redirect(payload.toString());
             }
         },
         redirectdir() {
             @Override
-            public RequestHandler resolve(CharSequence payload, App app) {
-                return new RedirectDir(payload.toString());
+            public RequestHandler resolve(CharSequence payload, App app, EnumSet<BuiltInHandlerDecorator> decorators) {
+                return decorators.contains(BuiltInHandlerDecorator.authenticated) ?
+                        new ContextualHandler(new AuthenticatedRedirectDir(payload.toString())) :
+                        new RedirectDir(payload.toString());
             }
         },
         file() {
             @Override
-            public RequestHandler resolve(CharSequence base, App app) {
-                return new FileGetter(app.file(base.toString()));
+            public RequestHandler resolve(CharSequence base, App app, EnumSet<BuiltInHandlerDecorator> decorators) {
+                File file = decorators.contains(BuiltInHandlerDecorator.external) ?
+                        new File(base.toString()) :
+                        app.file(base.toString());
+                if (!file.canRead()) {
+                    LOGGER.warn("file not found: %s", file.getPath());
+                }
+                return decorators.contains(BuiltInHandlerDecorator.authenticated) ?
+                        new ContextualHandler(new AuthenticatedFileGetter(file)) :
+                        new FileGetter(file);
             }
         },
         authenticatedfile() {
             @Override
-            public RequestHandler resolve(CharSequence base, App app) {
+            public RequestHandler resolve(CharSequence base, App app, EnumSet<BuiltInHandlerDecorator> decorators) {
                 return new ContextualHandler(new AuthenticatedFileGetter(app.file(base.toString())));
             }
         },
         externalfile() {
             @Override
-            public RequestHandler resolve(CharSequence base, App app) {
+            public RequestHandler resolve(CharSequence base, App app, EnumSet<BuiltInHandlerDecorator> decorators) {
                 File file = new File(base.toString());
                 if (!file.canRead()) {
                     LOGGER.warn("External file not found: %s", file.getPath());
                 }
-                return new FileGetter(file);
+                return decorators.contains(BuiltInHandlerDecorator.authenticated) ?
+                        new ContextualHandler(new AuthenticatedFileGetter(file)) :
+                        new FileGetter(file);
             }
         },
         resource() {
             @Override
-            public RequestHandler resolve(CharSequence payload, App app) {
-                return new ResourceGetter(payload.toString());
+            public RequestHandler resolve(CharSequence payload, App app, EnumSet<BuiltInHandlerDecorator> decorators) {
+                return decorators.contains(BuiltInHandlerDecorator.authenticated) ?
+                        new ContextualHandler(new AuthenticatedResourceGetter(payload.toString())) :
+                        new ResourceGetter(payload.toString());
             }
-        },
-        authenticatedresource() {
-            @Override
-            public RequestHandler resolve(CharSequence payload, App app) {
-                return new ContextualHandler(new AuthenticatedResourceGetter(payload.toString()));
-            }
-        }
-        ;
+        };
+
+        protected abstract RequestHandler resolve(CharSequence payload, App app, EnumSet<BuiltInHandlerDecorator> decorators);
 
         private static RequestHandler tryResolve(CharSequence directive, CharSequence payload, App app) {
             String s = directive.toString().toLowerCase();
+            String resolver = s, sDecorators;
+            BuiltInHandlerResolver r;
+            EnumSet<BuiltInHandlerDecorator> decorators = EnumSet.noneOf(BuiltInHandlerDecorator.class);
+            int pos = s.indexOf('[');
+            if (pos > -1) {
+                if (pos > 0) {
+                    resolver = s.substring(0, pos);
+                    E.illegalArgumentIf(']' != s.charAt(s.length() - 1), "Invalid directive: %s", s);
+                    sDecorators = s.substring(pos + 1, s.length() - 1);
+                } else {
+                    int pos2 = s.indexOf(']');
+                    resolver = s.substring(pos2 + 1, s.length());
+                    sDecorators = s.substring(1, pos2);
+                }
+                for (String dec : sDecorators.split(S.COMMON_SEP)) {
+                    BuiltInHandlerDecorator decorator = BuiltInHandlerDecorator.valueOf(dec);
+                    decorators.add(decorator);
+                }
+            }
+            r = valueOf(resolver);
             try {
-                return valueOf(s).resolve(payload, app);
+                return r.resolve(payload, app, decorators);
             } catch (RuntimeException e) {
                 LOGGER.warn(e, "cannot resolve directive %s on payload: %s", directive, payload);
                 return null;
             }
-        }
-
-        @Override
-        public void destroy() {
-        }
-
-
-
-        @Override
-        public boolean isDestroyed() {
-            return true;
-        }
-
-        @Override
-        public Class<? extends Annotation> scope() {
-            return ApplicationScoped.class;
         }
     }
 
@@ -1353,6 +1375,7 @@ public class Router extends AppServiceBase<Router> {
         protected ContextualHandler(RequestHandlerBase next) {
             super(next);
         }
+
         @Override
         public void handle(ActionContext context) {
             context.attribute(ActionContext.ATTR_HANDLER, realHandler());

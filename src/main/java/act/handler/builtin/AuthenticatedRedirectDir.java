@@ -21,18 +21,10 @@ package act.handler.builtin;
  */
 
 import act.app.ActionContext;
-import act.app.App;
 
-import java.io.File;
-
-public class AuthenticatedFileGetter extends FileGetter {
-
-    public AuthenticatedFileGetter(String base, App app) {
-        super(base, app);
-    }
-
-    public AuthenticatedFileGetter(File base) {
-        super(base);
+public class AuthenticatedRedirectDir extends RedirectDir {
+    public AuthenticatedRedirectDir(String url) {
+        super(url);
     }
 
     @Override
@@ -43,5 +35,4 @@ public class AuthenticatedFileGetter extends FileGetter {
     @Override
     public void prepareAuthentication(ActionContext context) {
     }
-
 }
