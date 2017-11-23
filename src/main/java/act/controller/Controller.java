@@ -430,28 +430,11 @@ public @interface Controller {
         }
 
         public static Redirect redirect(String url, Object... args) {
-            url = S.fmt(url, args);
-            if (url.contains(".") || url.contains("(")) {
-                String inferFullActionPath = Router.inferFullActionPath(url);
-                if (inferFullActionPath != url) {
-                    url = ActionContext.current().router().reverseRoute(url);
-                }
-            } else {
-                if (!url.startsWith("/")) {
-                    ActionContext context = ActionContext.current();
-                    String urlContext = context.urlContext();
-                    if (S.notBlank(urlContext)) {
-                        url = S.pathConcat(urlContext, '/', url);
-                    }
-                }
-            }
-            return Redirect.of(url);
+            return Redirect.of(redirectUrl(url, args));
         }
 
         public static Redirect redirect(String url, Map reverseRoutingArguments) {
-            url = Router.inferFullActionPath(url);
-            url = ActionContext.current().router().reverseRoute(url, reverseRoutingArguments);
-            return Redirect.of(url);
+            return Redirect.of(redirectUrl(url, reverseRoutingArguments));
         }
 
         public static void redirectIf(boolean test, String url, Object... args) {
@@ -473,6 +456,84 @@ public @interface Controller {
         public static void redirectIfNot(boolean test, String url, Map reverseRoutingArguments) {
             redirectIf(!test, url, reverseRoutingArguments);
         }
+
+        public static MovedPermanently moved(String url, Object... args) {
+            return MovedPermanently.of(redirectUrl(url, args));
+        }
+
+        public static MovedPermanently moved(String url, Map reverseRoutingArguments) {
+            return MovedPermanently.of(redirectUrl(url, reverseRoutingArguments));
+        }
+
+        public static Found found(String url, Object ... args) {
+            return Found.of(redirectUrl(url, args));
+        }
+
+        public static Found found(String url, Map reverseRoutingArguments) {
+            return Found.of(redirectUrl(url, reverseRoutingArguments));
+        }
+
+        public static void foundIf(boolean test, String url, Object ... args) {
+            if (test) {
+                throw found(url, args);
+            }
+        }
+
+        public static void foundIfNot(boolean test, String url, Object ... args) {
+            foundIf(!test, url, args);
+        }
+
+        public static SeeOther seeOther(String url, Object... args) {
+            return SeeOther.of(redirectUrl(url, args));
+        }
+
+        public static SeeOther seeOther(String url, Map reverseRoutingArguments) {
+            return SeeOther.of(redirectUrl(url, reverseRoutingArguments));
+        }
+
+        public static void seeOtherIf(boolean test, String url, Object... args) {
+            if (test) {
+                throw seeOther(url, args);
+            }
+        }
+
+        public static void seeOtherIfNot(boolean test, String url, Object... args) {
+            seeOtherIf(!test, url, args);
+        }
+
+        public static TemporaryRedirect temporaryRedirect(String url, Object ... args) {
+            return TemporaryRedirect.of(redirectUrl(url, args));
+        }
+
+        public static TemporaryRedirect temporaryRedirect(String url, Map reverseRoutingArguments) {
+            return TemporaryRedirect.of(redirectUrl(url, reverseRoutingArguments));
+        }
+
+        private static String redirectUrl(String url, Object ... args) {
+            url = S.fmt(url, args);
+            if (url.contains(".") || url.contains("(")) {
+                String inferFullActionPath = Router.inferFullActionPath(url);
+                if (inferFullActionPath != url) {
+                    url = ActionContext.current().router().reverseRoute(url);
+                }
+            } else {
+                if (!url.startsWith("/")) {
+                    ActionContext context = ActionContext.current();
+                    String urlContext = context.urlContext();
+                    if (S.notBlank(urlContext)) {
+                        url = S.pathConcat(urlContext, '/', url);
+                    }
+                }
+            }
+            return url;
+        }
+
+        private static String redirectUrl(String url, Map reverseRoutingArguments) {
+            url = Router.inferFullActionPath(url);
+            url = ActionContext.current().router().reverseRoute(url, reverseRoutingArguments);
+            return url;
+        }
+
 
         /**
          * Returns a {@link RenderText} result with specified message template

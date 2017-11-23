@@ -204,7 +204,7 @@ public class Router extends AppServiceBase<Router> {
         if (null == blockIssueHandler) {
             return handler;
         }
-        if (handler instanceof StaticFileGetter || handler instanceof StaticResourceGetter) {
+        if (handler instanceof FileGetter || handler instanceof ResourceGetter) {
             return handler;
         }
         return blockIssueHandler;
@@ -1029,7 +1029,7 @@ public class Router extends AppServiceBase<Router> {
 
         Node handler(RequestHandler handler, RouteSource source) {
             this.routeSource = $.notNull(source);
-            this.handler = handler.requireResolveContext() ? new ContextualHandler((RequestHandlerBase) handler, this) : handler;
+            this.handler = handler.requireResolveContext() ? new ContextualHandler((RequestHandlerBase) handler) : handler;
             return this;
         }
 
@@ -1274,6 +1274,12 @@ public class Router extends AppServiceBase<Router> {
                 return new Redirect(payload.toString());
             }
         },
+        moved() {
+            @Override
+            public RequestHandler resolve(CharSequence payload, App app) {
+                return new Redirect(payload.toString());
+            }
+        },
         redirectdir() {
             @Override
             public RequestHandler resolve(CharSequence payload, App app) {
@@ -1283,13 +1289,13 @@ public class Router extends AppServiceBase<Router> {
         file() {
             @Override
             public RequestHandler resolve(CharSequence base, App app) {
-                return new StaticFileGetter(app.file(base.toString()));
+                return new FileGetter(app.file(base.toString()));
             }
         },
-        resource() {
+        authenticatedfile() {
             @Override
-            public RequestHandler resolve(CharSequence payload, App app) {
-                return new StaticResourceGetter(payload.toString());
+            public RequestHandler resolve(CharSequence base, App app) {
+                return new ContextualHandler(new AuthenticatedFileGetter(app.file(base.toString())));
             }
         },
         externalfile() {
@@ -1299,9 +1305,22 @@ public class Router extends AppServiceBase<Router> {
                 if (!file.canRead()) {
                     LOGGER.warn("External file not found: %s", file.getPath());
                 }
-                return new StaticFileGetter(file);
+                return new FileGetter(file);
             }
-        };
+        },
+        resource() {
+            @Override
+            public RequestHandler resolve(CharSequence payload, App app) {
+                return new ResourceGetter(payload.toString());
+            }
+        },
+        authenticatedresource() {
+            @Override
+            public RequestHandler resolve(CharSequence payload, App app) {
+                return new ContextualHandler(new AuthenticatedResourceGetter(payload.toString()));
+            }
+        }
+        ;
 
         private static RequestHandler tryResolve(CharSequence directive, CharSequence payload, App app) {
             String s = directive.toString().toLowerCase();
@@ -1331,7 +1350,7 @@ public class Router extends AppServiceBase<Router> {
     }
 
     private static class ContextualHandler extends DelegateRequestHandler {
-        protected ContextualHandler(RequestHandlerBase next, Node node) {
+        protected ContextualHandler(RequestHandlerBase next) {
             super(next);
         }
         @Override

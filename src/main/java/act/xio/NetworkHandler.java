@@ -27,8 +27,8 @@ import act.app.event.AppEventId;
 import act.app.util.NamedPort;
 import act.handler.RequestHandler;
 import act.handler.builtin.AlwaysNotFound;
-import act.handler.builtin.StaticFileGetter;
-import act.handler.builtin.StaticResourceGetter;
+import act.handler.builtin.FileGetter;
+import act.handler.builtin.ResourceGetter;
 import act.handler.builtin.controller.FastRequestHandler;
 import act.handler.builtin.controller.RequestHandlerProxy;
 import act.metric.Metric;
@@ -133,7 +133,7 @@ public class NetworkHandler extends DestroyableBase {
         final RequestHandler requestHandler = router().getInvoker(method, url, ctx);
         ctx.handler(requestHandler);
         timer.stop();
-        boolean resourceGetter = requestHandler instanceof StaticResourceGetter || requestHandler instanceof StaticFileGetter;
+        boolean resourceGetter = requestHandler instanceof ResourceGetter || requestHandler instanceof FileGetter;
         if (null != refreshError && !resourceGetter) {
             ctx.saveLocal();
             handleException(refreshError, ctx, "Error refreshing app");

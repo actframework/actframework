@@ -23,7 +23,7 @@ package act.route;
 import act.controller.ParamNames;
 import act.handler.RequestHandler;
 import act.handler.builtin.AlwaysNotFound;
-import act.handler.builtin.StaticFileGetter;
+import act.handler.builtin.FileGetter;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -51,7 +51,7 @@ public class RouterTest extends RouterTestBase {
 
     @Before
     public void prepare() {
-        staticDirHandler = Mockito.mock(StaticFileGetter.class);
+        staticDirHandler = Mockito.mock(FileGetter.class);
         when(staticDirHandler.supportPartialPath()).thenReturn(true);
     }
 
@@ -206,7 +206,7 @@ public class RouterTest extends RouterTestBase {
     public void routeWithStaticDir() {
         router.addMapping(GET, "/public", "file:/public");
         RequestHandler handler = router.getInvoker(GET, "/public/foo/bar.txt", ctx);
-        yes(handler instanceof StaticFileGetter);
+        yes(handler instanceof FileGetter);
         yes(handler.supportPartialPath());
         eq(new File(BASE, "/public"), fieldVal(handler, "base"));
     }
@@ -216,7 +216,7 @@ public class RouterTest extends RouterTestBase {
         routeWithStaticDir();
         router.addMapping(GET, "/public", "file:/private");
         RequestHandler handler = router.getInvoker(GET, "/public/foo/bar.txt", ctx);
-        yes(handler instanceof StaticFileGetter);
+        yes(handler instanceof FileGetter);
         yes(handler.supportPartialPath());
         eq(new File(BASE, "/private"), fieldVal(handler, "base"));
     }
@@ -226,7 +226,7 @@ public class RouterTest extends RouterTestBase {
         routeWithStaticDir();
         router.addMapping(GET, "/public", "file:/private", ACTION_ANNOTATION);
         RequestHandler handler = router.getInvoker(GET, "/public/foo/bar.txt", ctx);
-        yes(handler instanceof StaticFileGetter);
+        yes(handler instanceof FileGetter);
         yes(handler.supportPartialPath());
         eq(new File(BASE, "/public"), fieldVal(handler, "base"));
     }

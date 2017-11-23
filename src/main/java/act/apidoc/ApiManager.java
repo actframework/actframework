@@ -29,7 +29,7 @@ import act.app.util.NamedPort;
 import act.conf.AppConfig;
 import act.handler.RequestHandler;
 import act.handler.RequestHandlerBase;
-import act.handler.builtin.StaticResourceGetter;
+import act.handler.builtin.ResourceGetter;
 import act.handler.builtin.controller.RequestHandlerProxy;
 import act.route.Router;
 import org.osgl.http.H;
@@ -66,7 +66,7 @@ public class ApiManager extends AppServiceBase<ApiManager> {
             }
         });
         app.router().addMapping(H.Method.GET, "/~/apidoc/endpoint", new GetEndpointsHandler(this));
-        app.router().addMapping(H.Method.GET, "/~/apidoc", new StaticResourceGetter("asset/~act/apibook/index.html"));
+        app.router().addMapping(H.Method.GET, "/~/apidoc", new ResourceGetter("asset/~act/apibook/index.html"));
     }
 
     @Override

@@ -1,6 +1,16 @@
 # ActFramework Change Log
 
-**1.5.3 TBD**
+**1.6.0 TBD**
+* Add `findLatest()` method to `Dao` #402
+* Support inject file content into `String` or `ByteBuffer` #397
+* New static file/resource handler that are subject to authentication/session management #396
+* Cache template loaded in ViewManager #348
+* use underscore style token for enum class name in enum i18n key #333
+* Add timestamp to default error response #274
+* Allow `AppJobManager.now` API accept job name parameter #268
+* support different redirect semantic #263
+
+**1.5.3 18/Nov/2017**
 * NPE encountered when CSRF protector redirect request to login page #415
 * Evict original URL cache from session once redirection happened #414
 * update fastjson to 1.2.41 #416

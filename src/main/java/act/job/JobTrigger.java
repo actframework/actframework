@@ -69,7 +69,6 @@ public abstract class JobTrigger {
             LOGGER.trace("trigger on [%s]: %s", this, job);
         }
         job.trigger(this);
-        manager.addJob(job);
         schedule(manager, job);
     }
 

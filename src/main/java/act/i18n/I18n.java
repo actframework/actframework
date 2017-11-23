@@ -137,8 +137,15 @@ public class I18n {
     }
 
     public static String i18n(Locale locale, String bundleName, Enum<?> msgId) {
-        String key = S.newBuffer("enum.").append(msgId.getDeclaringClass().getSimpleName().toLowerCase()).append(".").append(msgId.name().toLowerCase()).toString();
-        return _i18n(true, locale, bundleName, key);
+        // #333 try `enum.transaction_type.pay_work=Pay work` first
+        String key = S.newBuffer("enum.").append(S.underscore(msgId.getDeclaringClass().getSimpleName())).append(".").append(msgId.name().toLowerCase()).toString();
+        String resolved = _i18n(true, locale, bundleName, key);
+        if (key == resolved || S.blank(resolved)) {
+            // not found? then try `enum.transactiontype.pay_work=Pay work`
+            key = S.newBuffer("enum.").append(msgId.getDeclaringClass().getSimpleName().toLowerCase()).append(".").append(msgId.name().toLowerCase()).toString();
+            resolved = _i18n(true, locale, bundleName, key);
+        }
+        return resolved;
     }
 
     public static Map<String, Object> i18n(Class<? extends Enum> enumClass) {

@@ -43,7 +43,7 @@ import act.event.AppEventListenerBase;
 import act.event.EventBus;
 import act.event.bytecode.SimpleEventListenerByteCodeScanner;
 import act.handler.RequestHandler;
-import act.handler.builtin.StaticResourceGetter;
+import act.handler.builtin.ResourceGetter;
 import act.handler.builtin.controller.FastRequestHandler;
 import act.inject.DependencyInjectionBinder;
 import act.inject.DependencyInjector;
@@ -1271,12 +1271,12 @@ public class App extends DestroyableBase {
         if (!config().builtInReqHandlerEnabled()) {
             return;
         }
-        router().addMapping(H.Method.GET, "/asset/", new StaticResourceGetter("asset"), RouteSource.BUILD_IN);
-        router().addMapping(H.Method.GET, "/~/asset/", new StaticResourceGetter("asset/~act"), RouteSource.BUILD_IN);
+        router().addMapping(H.Method.GET, "/asset/", new ResourceGetter("asset"), RouteSource.BUILD_IN);
+        router().addMapping(H.Method.GET, "/~/asset/", new ResourceGetter("asset/~act"), RouteSource.BUILD_IN);
         router().addContext("act.", "/~");
         if (config.cliOverHttp()) {
             Router router = router(AppConfig.PORT_CLI_OVER_HTTP);
-            router.addMapping(H.Method.GET, "/asset/", new StaticResourceGetter("asset"), RouteSource.BUILD_IN);
+            router.addMapping(H.Method.GET, "/asset/", new ResourceGetter("asset"), RouteSource.BUILD_IN);
         }
         SecureTicketCodec secureTicketCodec = config.secureTicketCodec();
         SecureTicketHandler secureTicketHandler = new SecureTicketHandler(secureTicketCodec);

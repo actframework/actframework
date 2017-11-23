@@ -129,9 +129,9 @@ public class ActErrorPageRender extends ErrorPageRenderer {
             return JSON.toJSONString(payload);
         }
         if (null == errorCode) {
-            return S.concat("{\"message\":\"", errorMsg, "\"}");
+            return S.concat("{\"ts\":", $.ms(),  ",\"message\":\"", errorMsg, "\"}");
         } else {
-            return S.concat("{\"code\":", S.string(errorCode), ",\"message\":\"", errorMsg, "\"}");
+            return S.concat("{\"ts\":", $.ms(), ",\"code\":", S.string(errorCode), ",\"message\":\"", errorMsg, "\"}");
         }
     }
 

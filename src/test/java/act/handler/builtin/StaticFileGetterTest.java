@@ -41,8 +41,8 @@ import static org.mockito.Mockito.when;
 public class StaticFileGetterTest extends ActTestBase {
     ActionContext ctx;
     MockResponse resp;
-    StaticFileGetter pathHandler;
-    StaticFileGetter fileHandler;
+    FileGetter pathHandler;
+    FileGetter fileHandler;
 
     @Before
     public void prepare() throws Exception {
@@ -61,8 +61,8 @@ public class StaticFileGetterTest extends ActTestBase {
         when(req.method()).thenReturn(H.Method.GET);
         ctx = ActionContext.create(mockApp, req, resp);
         when(req.context()).thenReturn(ctx);
-        pathHandler = new StaticFileGetter("/public", mockApp);
-        fileHandler = new StaticFileGetter("/public/foo/bar.txt", mockApp);
+        pathHandler = new FileGetter("/public", mockApp);
+        fileHandler = new FileGetter("/public/foo/bar.txt", mockApp);
     }
 
     @Test

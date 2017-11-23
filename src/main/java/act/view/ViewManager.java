@@ -44,7 +44,7 @@ public class ViewManager extends DestroyableBase {
     private Map<String, ActionViewVarDef> implicitActionViewVariables = new HashMap<>();
     private Map<String, MailerViewVarDef> implicitMailerViewVariables = new HashMap<>();
     private Map<String, VarDef> appDefined = new HashMap<>();
-    private Map<String, View> preferredViews = new HashMap<String, View>();
+    private Map<String, Template> templateCache = new HashMap<>();
     private boolean multiViews = false;
 
     void register(View view) {
@@ -128,25 +128,16 @@ public class ViewManager extends DestroyableBase {
                     context.templatePath(amendedPath);
                 }
             }
+        } else {
+            templateCache.put(path, template);
         }
         return template;
     }
 
     private Template getTemplate(ActContext context, AppConfig config, String path) {
-        String templatePath = S.ensureStartsWith(path, '/');
+        final String templatePath = S.ensureStartsWith(path, '/');
 
         Template template = null;
-
-        if (multiViews) {
-            View preferred = preferredViews.get(templatePath);
-            if (null != preferred && preferred.appliedTo(context)) {
-                template = preferred.loadTemplate(templatePath, context);
-                if (null != template) {
-                    context.cacheTemplate(template);
-                    return template;
-                }
-            }
-        }
 
         View defView = config.defaultView();
 
@@ -158,17 +149,13 @@ public class ViewManager extends DestroyableBase {
                 if (view == defView || !view.appliedTo(context)) continue;
                 template = view.loadTemplate(templatePath, context);
                 if (null != template) {
-                    if (multiViews) {
-                        preferredViews.put(templatePath, view);
-                    }
                     break;
                 }
             }
-        } else if (multiViews) {
-            preferredViews.put(templatePath, defView);
         }
         if (null != template) {
             context.cacheTemplate(template);
+            templateCache.put(path, template);
         }
         return template;
     }
@@ -184,7 +171,7 @@ public class ViewManager extends DestroyableBase {
 
     public void reset() {
         viewList.clear();
-        preferredViews.clear();
+        templateCache.clear();
     }
 
     @Override
@@ -198,8 +185,8 @@ public class ViewManager extends DestroyableBase {
         implicitMailerViewVariables.clear();
         implicitMailerViewVariables = null;
 
-        preferredViews.clear();
-        preferredViews = null;
+        templateCache.clear();
+        templateCache = null;
     }
 
     private boolean registered(View view) {

@@ -40,10 +40,10 @@ import java.util.*;
 import static org.osgl.http.H.Format.*;
 
 /**
- * Unlike a {@link act.handler.builtin.StaticFileGetter}, the
+ * Unlike a {@link FileGetter}, the
  * `StaticResourceGetter` read resource from jar packages
  */
-public class StaticResourceGetter extends FastRequestHandler {
+public class ResourceGetter extends FastRequestHandler {
 
     private static final char SEP = '/';
 
@@ -65,10 +65,10 @@ public class StaticResourceGetter extends FastRequestHandler {
     private Map<String, String> cachedContentType = new HashMap<>();
     private Map<String, Boolean> cachedFailures = new HashMap<>();
 
-    public StaticResourceGetter(String base) {
+    public ResourceGetter(String base) {
         String path = S.ensureStartsWith(base, SEP);
         this.base = path;
-        this.baseUrl = StaticFileGetter.class.getResource(path);
+        this.baseUrl = FileGetter.class.getResource(path);
         this.delegate = verifyBase(this.baseUrl, base);
         if (null == delegate) {
             this.isFolder = isFolder(this.baseUrl, path);
@@ -157,7 +157,7 @@ public class StaticResourceGetter extends FastRequestHandler {
                 loadPath = base;
             } else {
                 loadPath = S.pathConcat(base, SEP, path);
-                target = StaticFileGetter.class.getResource(loadPath);
+                target = FileGetter.class.getResource(loadPath);
                 if (null == target) {
                     throw NotFound.get();
                 }
@@ -165,7 +165,7 @@ public class StaticResourceGetter extends FastRequestHandler {
             if (preventFolderAccess(target, loadPath, context)) {
                 return;
             }
-            fmt = StaticFileGetter.contentType(target.getPath());
+            fmt = FileGetter.contentType(target.getPath());
             H.Response resp = context.prepareRespForWrite();
             resp.contentType(fmt.contentType());
             context.applyCorsSpec().applyContentType();
@@ -217,7 +217,7 @@ public class StaticResourceGetter extends FastRequestHandler {
             if (path.endsWith("/")) {
                 return true;
             }
-            URL url = StaticFileGetter.class.getResource(S.ensureEndsWith(path, "/"));
+            URL url = FileGetter.class.getResource(S.ensureEndsWith(path, "/"));
             return null != url;
         }
         return false;
@@ -227,7 +227,7 @@ public class StaticResourceGetter extends FastRequestHandler {
         if (Act.isDev()) {
             return;
         }
-        contentType = StaticFileGetter.contentType(baseUrl.getPath());
+        contentType = FileGetter.contentType(baseUrl.getPath());
         if (HTML == contentType || CSS == contentType || JAVASCRIPT == contentType
                 || TXT == contentType || CSV == contentType
                 || JSON == contentType || XML == contentType

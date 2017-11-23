@@ -34,16 +34,16 @@ import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.InputStream;
 
-public class StaticFileGetter extends FastRequestHandler {
+public class FileGetter extends FastRequestHandler {
 
     private File base;
     private FastRequestHandler delegate;
 
-    public StaticFileGetter(String base, App app) {
+    public FileGetter(String base, App app) {
         this(app.file(base));
     }
 
-    public StaticFileGetter(File base) {
+    public FileGetter(File base) {
         this.base = $.notNull(base);
         this.delegate = verifyBase(base);
     }

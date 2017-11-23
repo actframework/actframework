@@ -58,6 +58,20 @@ public interface Dao<ID_TYPE, MODEL_TYPE, QUERY_TYPE extends Dao.Query<MODEL_TYP
     MODEL_TYPE findById(ID_TYPE id);
 
     /**
+     * Find the last created record.
+     *
+     * @return  the last created record
+     */
+    MODEL_TYPE findLatest();
+
+    /**
+     * Find last modified record.
+     *
+     * @return last modified record.
+     */
+    MODEL_TYPE findLastModified();
+
+    /**
      * Find a collection of entities by fields and values.
      * <p>The fields is specified in a {@code String} separated by any
      * combination of the following separators</p>

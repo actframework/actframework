@@ -79,16 +79,37 @@ public class AppJobManager extends AppServiceBase<AppJobManager> {
     }
 
     public <T> Future<T> now(Callable<T> callable) {
-        return executor().submit(callable);
+        return now(randomJobId(), callable);
+    }
+
+    public <T> Future<T> now(String jobId, final Callable<T> callable) {
+        final Job job = wrap(jobId, callable);
+        return executor().submit(new Callable<T>() {
+            @Override
+            public T call() throws Exception {
+                job.run();
+                if (null != job.callableException) {
+                    throw job.callableException;
+                }
+                return (T) job.callableResult;
+            }
+        });
     }
 
     public void now(Runnable runnable) {
-        executor().submit(wrap(runnable));
+        now(randomJobId(), runnable);
+    }
+
+    public void now(String jobId, Runnable runnable) {
+        executor().submit(wrap(jobId, runnable));
     }
 
     public String now($.Function<ProgressGauge, ?> worker) {
-        Job job = wrap(worker);
-        addJob(job);
+        return now(randomJobId(), worker);
+    }
+
+    public String now(String jobId, $.Function<ProgressGauge, ?> worker) {
+        Job job = wrap(jobId, worker);
         executor().submit(job);
         return job.id();
     }
@@ -103,7 +124,6 @@ public class AppJobManager extends AppServiceBase<AppJobManager> {
      */
     public String prepare($.Function<ProgressGauge, ?> worker) {
         Job job = wrap(worker);
-        addJob(job);
         return job.id();
     }
 
@@ -260,15 +280,20 @@ public class AppJobManager extends AppServiceBase<AppJobManager> {
         }
     }
 
-    private void processDelayedJob(final Runnable runnable, boolean runImmediatelyIfEventDispatched) {
+    @Override
+    protected void warn(String format, Object... args) {
+        super.warn(format, args);
+    }
+
+    private void processDelayedJob(final Job job, boolean runImmediatelyIfEventDispatched) {
         if (runImmediatelyIfEventDispatched) {
             try {
-                runnable.run();
+                job.run();
             } catch (Exception e) {
                 Act.LOGGER.error(e, "Error running job");
             }
         } else {
-            now(runnable);
+            now(job);
         }
     }
 
@@ -344,7 +369,9 @@ public class AppJobManager extends AppServiceBase<AppJobManager> {
     }
 
     void addJob(Job job) {
-        jobs.put(job.id(), job);
+        String id = job.id();
+        E.illegalStateIf(jobs.containsKey(id), "job already registered: %s", id);
+        jobs.put(id, job);
     }
 
     void removeJob(Job job) {
@@ -372,7 +399,6 @@ public class AppJobManager extends AppServiceBase<AppJobManager> {
     private void createAppEventListener(AppEventId appEventId) {
         String jobId = appEventJobId(appEventId);
         Job job = new Job(jobId, this);
-        addJob(job);
         app().eventBus().bind(appEventId, new _AppEventListener(jobId, job));
     }
 
@@ -396,33 +422,37 @@ public class AppJobManager extends AppServiceBase<AppJobManager> {
         }
     }
 
-    private Runnable wrap(Runnable runnable) {
+    private Job wrap(Runnable runnable) {
         return new ContextualJob(randomJobId(), runnable);
+    }
+
+    private Job wrap(String name, Runnable runnable) {
+        return new ContextualJob(name, runnable);
+    }
+
+    private Job wrap(Callable callable) {
+        return new ContextualJob(randomJobId(), callable);
+    }
+
+    private Job wrap(String name, Callable callable) {
+        return new ContextualJob(name, callable);
     }
 
     private Job wrap($.Function<ProgressGauge, ?> worker) {
         return new ContextualJob(randomJobId(), worker);
     }
 
-    private Runnable wrap(final Callable callable) {
-        return new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    callable.call();
-                } catch (Exception e) {
-                    if (e instanceof RuntimeException) {
-                        throw (RuntimeException) e;
-                    }
-                    throw E.unexpected(e);
-                }
-            }
-        };
+    private Job wrap(String name, $.Function<ProgressGauge, ?> worker) {
+        return new ContextualJob(name, worker);
     }
 
     private class ContextualJob extends Job {
 
         private JobContext origin_ = JobContext.copy();
+
+        ContextualJob(String id, final Callable<?> callable) {
+            super(id, AppJobManager.this, callable);
+        }
 
         ContextualJob(String id, final Runnable runnable) {
             super(id, AppJobManager.this, new $.F0() {

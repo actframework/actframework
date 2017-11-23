@@ -22,7 +22,7 @@ package act.handler;
 
 import act.Destroyable;
 import act.app.ActionContext;
-import act.handler.builtin.StaticFileGetter;
+import act.handler.builtin.FileGetter;
 import act.security.CORS;
 import act.security.CSRF;
 import org.osgl.$;
@@ -58,7 +58,7 @@ public interface RequestHandler extends $.Function<ActionContext, Void>, Destroy
     /**
      * Indicate if this request handler support partial path lookup.
      * Usually this method should return {@code false}. However for
-     * certain request handler like {@link StaticFileGetter}
+     * certain request handler like {@link FileGetter}
      * they need to support partial path lookup. Take the example of
      * the following route mapping:
      * <p/>
@@ -79,7 +79,7 @@ public interface RequestHandler extends $.Function<ActionContext, Void>, Destroy
      * Returns if the handler require framework to resolve context. Usually it needs to
      * resolve the context so that handler can access request params, session/flash etc.
      * However some static handlers doesn't require framework to do those things, e.g.
-     * {@link StaticFileGetter}
+     * {@link FileGetter}
      */
     boolean requireResolveContext();
 

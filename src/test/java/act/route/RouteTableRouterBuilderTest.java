@@ -27,7 +27,7 @@ import act.handler.RequestHandlerResolver;
 import act.handler.builtin.AlwaysBadRequest;
 import act.handler.builtin.AlwaysNotFound;
 import act.handler.builtin.Echo;
-import act.handler.builtin.StaticFileGetter;
+import act.handler.builtin.FileGetter;
 import org.junit.Test;
 import org.mockito.Matchers;
 import org.mockito.Mockito;
@@ -94,7 +94,7 @@ public class RouteTableRouterBuilderTest extends RouterTestBase {
     public void withBuiltInHandler() {
         addRouteMap("GET /public file:/public");
         RequestHandler h = router.getInvoker(GET, "/public/file1.txt", ctx);
-        yes(h instanceof StaticFileGetter);
+        yes(h instanceof FileGetter);
         eq(new File("target/test-classes/public"), ActTestBase.fieldVal(h, "base"));
     }
 

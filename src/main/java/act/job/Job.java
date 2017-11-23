@@ -30,6 +30,7 @@ import act.util.ProgressGauge;
 import act.util.SimpleProgressGauge;
 import act.ws.WebSocketConnectionManager;
 import org.osgl.$;
+import org.osgl.Osgl;
 import org.osgl.exception.ConfigurationException;
 import org.osgl.exception.NotAppliedException;
 import org.osgl.exception.UnexpectedException;
@@ -38,8 +39,10 @@ import org.osgl.util.E;
 import org.osgl.util.S;
 
 import java.util.*;
+import java.util.concurrent.Callable;
 
 import static act.util.SimpleProgressGauge.wsJobProgressTag;
+import static org.osgl.Osgl.F0;
 
 /**
  * A `Job` is a piece of logic that can be run/scheduled in ActFramework
@@ -120,6 +123,8 @@ public class Job extends DestroyableBase implements Runnable {
     private AppJobManager manager;
     private JobTrigger trigger;
     private $.Func0<?> worker;
+    Object callableResult;
+    Exception callableException;
     // progress percentage
     private SimpleProgressGauge progress = new SimpleProgressGauge();
     private LockableJobList parallelJobs = new LockableJobList(this);
@@ -128,6 +133,26 @@ public class Job extends DestroyableBase implements Runnable {
 
     Job(String id, AppJobManager manager) {
         this(id, manager, ($.Func0<?>)null);
+    }
+
+    Job(String id, AppJobManager manager, final Callable<?> callable) {
+        this.id = id;
+        this.manager = $.notNull(manager);
+        this.oneTime = true;
+        this.app = manager.app();
+        this.jobProgressTag = wsJobProgressTag(id);
+        this.manager.addJob(this);
+        this.worker = new F0() {
+            @Override
+            public Object apply() throws NotAppliedException, Osgl.Break {
+                try {
+                    callableResult = callable.call();
+                } catch (Exception e) {
+                    callableException = e;
+                }
+                return null;
+            }
+        };
     }
 
     Job(String id, AppJobManager manager, $.Func0<?> worker) {
@@ -141,6 +166,7 @@ public class Job extends DestroyableBase implements Runnable {
         this.oneTime = oneTime;
         this.app = manager.app();
         this.jobProgressTag = wsJobProgressTag(id);
+        this.manager.addJob(this);
     }
 
     Job(String id, AppJobManager manager, $.Function<ProgressGauge, ?> worker) {
@@ -271,7 +297,7 @@ public class Job extends DestroyableBase implements Runnable {
                         if (cause instanceof RuntimeException) {
                             throw (RuntimeException) cause;
                         }
-                        throw e;
+                        throw E.unexpected(e);
                     } else {
                         logger.fatal(cause, "Fatal error executing job %s", id());
                     }
@@ -306,7 +332,7 @@ public class Job extends DestroyableBase implements Runnable {
         JobContext.init();
     }
 
-    protected void doJob() {
+    protected void doJob(){
         try {
             _before();
             if (null != worker) {
@@ -345,7 +371,7 @@ public class Job extends DestroyableBase implements Runnable {
     }
 
     private static Job of(String jobId, final Runnable runnable, AppJobManager manager, boolean oneTime) {
-        return new Job(jobId, manager, new $.F0() {
+        return new Job(jobId, manager, new F0() {
             @Override
             public Object apply() throws NotAppliedException, $.Break {
                 runnable.run();
