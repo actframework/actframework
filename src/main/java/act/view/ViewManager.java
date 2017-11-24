@@ -1,24 +1,24 @@
 package act.view;
 
-/*-
- * #%L
- * ACT Framework
- * %%
- * Copyright (C) 2014 - 2017 ActFramework
- * %%
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * 
- *      http://www.apache.org/licenses/LICENSE-2.0
- * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- * #L%
- */
+        /*-
+         * #%L
+         * ACT Framework
+         * %%
+         * Copyright (C) 2014 - 2017 ActFramework
+         * %%
+         * Licensed under the Apache License, Version 2.0 (the "License");
+         * you may not use this file except in compliance with the License.
+         * You may obtain a copy of the License at
+         *
+         *      http://www.apache.org/licenses/LICENSE-2.0
+         *
+         * Unless required by applicable law or agreed to in writing, software
+         * distributed under the License is distributed on an "AS IS" BASIS,
+         * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+         * See the License for the specific language governing permissions and
+         * limitations under the License.
+         * #L%
+         */
 
 import act.app.App;
 import act.conf.AppConfig;
@@ -116,22 +116,36 @@ public class ViewManager extends DestroyableBase {
         }
 
         AppConfig config = context.config();
-        TemplatePathResolver resolver = config.templatePathResolver();
-
-        String path = resolver.resolve(context);
-        Template template = getTemplate(context, config, path);
-        if (null == template) {
-            String amendedPath = resolver.resolveWithContextMethodPath(context);
-            if (S.neq(amendedPath, path)) {
-                template = getTemplate(context, config, amendedPath);
-                if (null != template) {
-                    context.templatePath(amendedPath);
-                }
-            }
+        Template template;
+        String templateContent = context.templateContent();
+        if (S.notEmpty(templateContent)) {
+            template = getInlineTemplate(context, config, templateContent);
         } else {
-            templateCache.put(path, template);
+            TemplatePathResolver resolver = config.templatePathResolver();
+
+            String path = resolver.resolve(context);
+            template = getTemplate(context, config, path);
+            if (null == template) {
+                String amendedPath = resolver.resolveWithContextMethodPath(context);
+                if (S.neq(amendedPath, path)) {
+                    template = getTemplate(context, config, amendedPath);
+                    if (null != template) {
+                        context.templatePath(amendedPath);
+                    }
+                }
+            } else {
+                templateCache.put(path, template);
+            }
         }
         return template;
+    }
+
+    private Template getInlineTemplate(ActContext context, AppConfig config, String content) {
+        View defView = config.defaultView();
+        if (null != defView && defView.appliedTo(context)) {
+            return defView.loadInlineTemplate(content, context);
+        }
+        return null;
     }
 
     private Template getTemplate(ActContext context, AppConfig config, String path) {

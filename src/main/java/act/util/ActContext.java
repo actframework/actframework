@@ -1,24 +1,24 @@
 package act.util;
 
-/*-
- * #%L
- * ACT Framework
- * %%
- * Copyright (C) 2014 - 2017 ActFramework
- * %%
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * 
- *      http://www.apache.org/licenses/LICENSE-2.0
- * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- * #L%
- */
+        /*-
+         * #%L
+         * ACT Framework
+         * %%
+         * Copyright (C) 2014 - 2017 ActFramework
+         * %%
+         * Licensed under the Apache License, Version 2.0 (the "License");
+         * you may not use this file except in compliance with the License.
+         * You may obtain a copy of the License at
+         *
+         *      http://www.apache.org/licenses/LICENSE-2.0
+         *
+         * Unless required by applicable law or agreed to in writing, software
+         * distributed under the License is distributed on an "AS IS" BASIS,
+         * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+         * See the License for the specific language governing permissions and
+         * limitations under the License.
+         * #L%
+         */
 
 import act.Destroyable;
 import act.act_messages;
@@ -48,33 +48,61 @@ public interface ActContext<CTX_TYPE extends ActContext> extends ParamValueProvi
      * {@link #methodPath()} or not if the current method is an interceptor.
      */
     String ATTR_CUR_METHOD = "__ctx_cur_method__";
+
     App app();
+
     AppConfig config();
+
     CTX_TYPE accept(H.Format fmt);
+
     H.Format accept();
+
     CTX_TYPE locale(Locale locale);
+
     Locale locale();
+
     Locale locale(boolean required);
+
     /**
-     * If {@link #templatePath(String) template path has been set before} then return
-     * the template path
+     * Returns the template path
+     *
+     * @return the template path
      */
     String templatePath();
+
+    /**
+     * Returns the template content
+     *
+     * @return the template content
+     */
+    String templateContent();
+
     /**
      * Set path to template file
+     *
      * @param path the path to template file
      * @return this {@code AppContext}
      */
     CTX_TYPE templatePath(String path);
 
     /**
+     * Set template content
+     *
+     * @param content the template content
+     * @return this `ActContext`
+     */
+    CTX_TYPE templateContent(String content);
+
+    /**
      * Returns the template context
+     *
      * @return template context
      */
     String templateContext();
 
     /**
      * Set template context
+     *
      * @param context the path to template context
      * @return this {@code ActContext}
      */
@@ -82,28 +110,44 @@ public interface ActContext<CTX_TYPE extends ActContext> extends ParamValueProvi
 
     /**
      * Check if the template path is implicit i.e. derived from {@link #methodPath()}
+     *
      * @return `true` if template path is implicit; `false` otherwise
      */
     boolean templatePathIsImplicit();
+
     Template cachedTemplate();
+
     CTX_TYPE cacheTemplate(Template template);
+
     <T> T renderArg(String name);
+
     /**
      * Returns all render arguments
      */
     Map<String, Object> renderArgs();
+
     CTX_TYPE renderArg(String name, Object val);
+
     CTX_TYPE addListener(Listener listener);
+
     CTX_TYPE addDestroyable(Destroyable resource);
+
     CTX_TYPE attribute(String name, Object attr);
+
     <T> T attribute(String name);
+
     Map<String, Object> attributes();
+
     CTX_TYPE removeAttribute(String name);
 
     CTX_TYPE addViolations(Map<String, ConstraintViolation> violations);
+
     CTX_TYPE addViolation(String property, ConstraintViolation violation);
+
     boolean hasViolation();
+
     Map<String, ConstraintViolation> violations();
+
     ConstraintViolation violation(String property);
 
     /**
@@ -123,10 +167,8 @@ public interface ActContext<CTX_TYPE extends ActContext> extends ParamValueProvi
     /**
      * Set data format pattern
      *
-     * @param pattern
-     *      the data format pattern
-     * @return
-     *      this context instance
+     * @param pattern the data format pattern
+     * @return this context instance
      */
     CTX_TYPE pattern(String pattern);
 
@@ -134,7 +176,7 @@ public interface ActContext<CTX_TYPE extends ActContext> extends ParamValueProvi
 
     String i18n(boolean ignoreError, String msgId, Object... args);
 
-    String i18n(String msgId, Object ... args);
+    String i18n(String msgId, Object... args);
 
     String i18n(Class<?> bundleSpec, String msgId, Object... args);
 
@@ -160,6 +202,7 @@ public interface ActContext<CTX_TYPE extends ActContext> extends ParamValueProvi
 
     /**
      * Returns a reusable {@link S.Buffer} instance
+     *
      * @return an S.Buffer instance that can be reused
      */
     S.Buffer strBuf();
@@ -172,6 +215,7 @@ public interface ActContext<CTX_TYPE extends ActContext> extends ParamValueProvi
             implements ActContext<CTX> {
         private App app;
         private String templatePath;
+        private String templateContent;
         private String templateContext;
         private Template template;
         private Map<String, Object> renderArgs;
@@ -264,8 +308,28 @@ public interface ActContext<CTX_TYPE extends ActContext> extends ParamValueProvi
         @Override
         public CTX templatePath(String templatePath) {
             this.template = null;
+            this.templateContent = null;
             this.templatePath = templatePath;
             return me();
+        }
+
+        @Override
+        public String templateContent() {
+            return templateContent;
+        }
+
+        @Override
+        public CTX templateContent(String content) {
+            this.template = null;
+            this.templateContent = content;
+            return me();
+        }
+
+        public CTX templateLiteral(String literal) {
+            if (S.empty(literal)) {
+                return me();
+            }
+            return isTemplatePath(literal) ? templatePath(literal) : templateContent(literal);
         }
 
         public String templateContext() {
@@ -281,6 +345,7 @@ public interface ActContext<CTX_TYPE extends ActContext> extends ParamValueProvi
         /**
          * Template path is implicit if {@link #templatePath(String)} is never called
          * on this context instance
+         *
          * @return `true` if template path is implicit
          */
         @Override
@@ -319,6 +384,7 @@ public interface ActContext<CTX_TYPE extends ActContext> extends ParamValueProvi
 
         /**
          * Default session id is `null`
+         *
          * @return the session id
          */
         public String sessionId() {
@@ -349,7 +415,7 @@ public interface ActContext<CTX_TYPE extends ActContext> extends ParamValueProvi
             return I18n.i18n(ignoreError, locale(true), msgId, args);
         }
 
-        public String i18n(String msgId, Object ... args) {
+        public String i18n(String msgId, Object... args) {
             return I18n.i18n(locale(true), msgId, args);
         }
 
@@ -527,6 +593,57 @@ public interface ActContext<CTX_TYPE extends ActContext> extends ParamValueProvi
         public static String dataPattern() {
             ActContext<?> current = currentContext();
             return null == current ? null : current.pattern();
+        }
+
+        /**
+         * Check if a given string is a template path or template content
+         * <p>
+         * If the string contains anyone the following characters then we assume it
+         * is content, otherwise it is path:
+         * <p>
+         * * space characters
+         * * non numeric-alphabetic characters except:
+         * ** dot "."
+         * ** dollar: "$"
+         *
+         * @param string the string to be tested
+         * @return `true` if the string literal is template content or `false` otherwise
+         */
+        private boolean isTemplatePath(String string) {
+            int sz = string.length();
+            if (sz == 0) {
+                return true;
+            }
+            for (int i = 0; i < sz; ++i) {
+                char c = string.charAt(i);
+                switch (c) {
+                    case ' ':
+                    case '\t':
+                    case '\b':
+                    case '<':
+                    case '>':
+                    case '(':
+                    case ')':
+                    case '[':
+                    case ']':
+                    case '{':
+                    case '}':
+                    case '!':
+                    case '@':
+                    case '#':
+                    case '*':
+                    case '?':
+                    case '%':
+                    case '|':
+                    case ',':
+                    case ':':
+                    case ';':
+                    case '^':
+                    case '&':
+                        return false;
+                }
+            }
+            return true;
         }
     }
 }

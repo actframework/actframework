@@ -249,7 +249,7 @@ public class SenderEnhancer extends MethodVisitor implements Opcodes {
                 }
                 AbstractInsnNode node = invokeNode.getPrevious();
                 List<LoadInsnInfo> loadInsnInfoList = C.newList();
-                String templatePath = null;
+                String templateLiteral = null;
                 while (null != node) {
                     int type = node.getType();
                     boolean breakWhile = false;
@@ -274,12 +274,12 @@ public class SenderEnhancer extends MethodVisitor implements Opcodes {
                             break;
                         case AbstractInsnNode.LDC_INSN:
                             LdcInsnNode ldc = (LdcInsnNode) node;
-                            if (null != templatePath) {
-                                logger.warn("Cannot have more than one template path parameter in the render call. Template path[%s] ignored", templatePath);
+                            if (null != templateLiteral) {
+                                logger.warn("Cannot have more than one template path parameter in the render call. Template path[%s] ignored", templateLiteral);
                             } else if (!(ldc.cst instanceof String)) {
                                 logger.warn("Template path must be strictly String type. Found: %s", ldc.cst);
                             } else {
-                                templatePath = ldc.cst.toString();
+                                templateLiteral = ldc.cst.toString();
                             }
                         default:
                     }
@@ -327,17 +327,17 @@ public class SenderEnhancer extends MethodVisitor implements Opcodes {
                 list.add(invokeRenderArg);
 
                 // setTemplatePath enhancement
-                if (null != templatePath) {
-                    LdcInsnNode insnNode = new LdcInsnNode(templatePath);
+                if (null != templateLiteral) {
+                    LdcInsnNode insnNode = new LdcInsnNode(templateLiteral);
                     list.add(insnNode);
-                    MethodInsnNode invokeTemplatePath = new MethodInsnNode(INVOKEVIRTUAL, AsmTypes.MAILER_CONTEXT_INTERNAL_NAME, TEMPLATE_PATH_NM, TEMPLATE_PATH_DESC, false);
+                    MethodInsnNode invokeTemplatePath = new MethodInsnNode(INVOKEVIRTUAL, AsmTypes.MAILER_CONTEXT_INTERNAL_NAME, TEMPLATE_LITERAL, TEMPLATE_LITERAL_DESC, false);
                     list.add(invokeTemplatePath);
                 } else {
                     String className = meta.classInfo().className();
                     String method = meta.name();
                     list.add(new LdcInsnNode(className));
                     list.add(new LdcInsnNode(method));
-                    list.add(new MethodInsnNode(INVOKEVIRTUAL, AsmTypes.MAILER_CONTEXT_INTERNAL_NAME, SENDER_PATH_NM, SENDER_PATH_DESC, false));
+                    list.add(new MethodInsnNode(INVOKEVIRTUAL, AsmTypes.MAILER_CONTEXT_INTERNAL_NAME, SENDER_PATH_NM, SENDER_LITERAL_DESC, false));
                 }
                 InsnNode pop = new InsnNode(POP);
                 list.add(pop);
@@ -508,10 +508,10 @@ public class SenderEnhancer extends MethodVisitor implements Opcodes {
     private static final String GET_MAILER_CTX_DESC = "()" + AsmTypes.MAILER_CONTEXT_DESC;
     private static final String RENDER_NM = "renderArg";
     private static final String RENDER_DESC = AsmTypes.methodDesc(MailerContext.class, String.class, Object.class);
-    private static final String TEMPLATE_PATH_NM = "templatePath";
+    private static final String TEMPLATE_LITERAL = "templateLiteral";
     private static final String SENDER_PATH_NM = "senderPath";
-    private static final String TEMPLATE_PATH_DESC = AsmTypes.methodDesc(MailerContext.class, String.class);
-    private static final String SENDER_PATH_DESC = AsmTypes.methodDesc(MailerContext.class, String.class, String.class);
+    private static final String TEMPLATE_LITERAL_DESC = AsmTypes.methodDesc(MailerContext.class, String.class);
+    private static final String SENDER_LITERAL_DESC = AsmTypes.methodDesc(MailerContext.class, String.class, String.class);
     private static final String RENDER_ARG_NAMES_NM = "__appRenderArgNames";
     private static final String RENDER_ARG_NAMES_DESC = AsmTypes.methodDesc(MailerContext.class, String.class);
 

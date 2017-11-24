@@ -89,6 +89,12 @@ public class RythmView extends View {
         return template;
     }
 
+    @Override
+    protected Template loadInlineTemplate(String content, ActContext context) {
+        RythmEngine engine = engines.get(context.app());
+        return new RythmTemplate(engine, content, true);
+    }
+
     public RythmEngine getEngine(App app) {
         RythmEngine engine = engines.get(app);
         if (null == engine) {

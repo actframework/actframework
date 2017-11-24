@@ -153,6 +153,12 @@ public class MailerContext extends ActContext.Base<MailerContext> {
     }
 
     @Override
+    public MailerContext templateLiteral(String literal) {
+        // Need to declare this method for bytecode enhancement
+        return super.templateLiteral(literal);
+    }
+
+    @Override
     public <T> T renderArg(String name) {
         return super.renderArg(name);
     }

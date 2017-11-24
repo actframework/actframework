@@ -283,7 +283,7 @@ public class HandlerEnhancer extends MethodVisitor implements Opcodes {
                 }
                 AbstractInsnNode node = invokeNode.getPrevious();
                 List<LoadInsnInfo> loadInsnInfoList = C.newList();
-                String templatePath = null;
+                String templateLiteral = null;
                 String renderArgName = null;
                 InsnList nodeList = new InsnList();
                 boolean invalidParam = false;
@@ -392,12 +392,12 @@ public class HandlerEnhancer extends MethodVisitor implements Opcodes {
                                 break;
                             }
                             LdcInsnNode ldc = (LdcInsnNode) node;
-                            if (null != templatePath) {
-                                logger.warn("Cannot have more than one template path parameter in the render call. Template path[%s] ignored", templatePath);
+                            if (null != templateLiteral) {
+                                logger.warn("Cannot have more than one template path parameter in the render call. Template path[%s] ignored", templateLiteral);
                             } else if (!(ldc.cst instanceof String)) {
                                 logger.warn("Template path must be strictly String type. Found: %s", ldc.cst);
                             } else {
-                                templatePath = ldc.cst.toString();
+                                templateLiteral = ldc.cst.toString();
                             }
                     }
                     if (breakWhile) {
@@ -408,7 +408,7 @@ public class HandlerEnhancer extends MethodVisitor implements Opcodes {
                 InsnList list = new InsnList();
                 int appCtxIdx = ctxIndex();
                 // setTemplatePath enhancement
-                if (null != templatePath) {
+                if (null != templateLiteral) {
                     if (appCtxIdx < 0) {
                         String appCtxFieldName = ctxFieldName();
                         if (null == appCtxFieldName) {
@@ -426,9 +426,9 @@ public class HandlerEnhancer extends MethodVisitor implements Opcodes {
                         list.add(lbl);
                         list.add(loadCtx);
                     }
-                    LdcInsnNode insnNode = new LdcInsnNode(templatePath);
+                    LdcInsnNode insnNode = new LdcInsnNode(templateLiteral);
                     list.add(insnNode);
-                    MethodInsnNode invokeTemplatePath = new MethodInsnNode(INVOKEVIRTUAL, AsmTypes.ACTION_CONTEXT_INTERNAL_NAME, TEMPLATE_PATH_NM, TEMPLATE_PATH_DESC, false);
+                    MethodInsnNode invokeTemplatePath = new MethodInsnNode(INVOKEVIRTUAL, AsmTypes.ACTION_CONTEXT_INTERNAL_NAME, TEMPLATE_LITERAL_NM, TEMPLATE_LITERAL_DESC, false);
                     list.add(invokeTemplatePath);
                     InsnNode pop = new InsnNode(POP);
                     list.add(pop);
@@ -567,8 +567,8 @@ public class HandlerEnhancer extends MethodVisitor implements Opcodes {
     private static final String GET_ACTION_CTX_DESC = "()" + AsmTypes.ACTION_CONTEXT_DESC;
     private static final String RENDER_NM = "renderArg";
     private static final String RENDER_DESC = AsmTypes.methodDesc(ActionContext.class, String.class, Object.class);
-    private static final String TEMPLATE_PATH_NM = "templatePath";
-    private static final String TEMPLATE_PATH_DESC = AsmTypes.methodDesc(ActionContext.class, String.class);
+    private static final String TEMPLATE_LITERAL_NM = "templateLiteral";
+    private static final String TEMPLATE_LITERAL_DESC = AsmTypes.methodDesc(ActionContext.class, String.class);
     private static final String RENDER_ARG_NAMES_NM = "__appRenderArgNames";
     private static final String RENDER_ARG_NAMES_DESC = AsmTypes.methodDesc(ActionContext.class, String.class);
 

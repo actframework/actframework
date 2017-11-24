@@ -260,6 +260,12 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
         return super.templatePath(templatePath);
     }
 
+    @Override
+    public ActionContext templateLiteral(String literal) {
+        // Need to declare this method for bytecode enhancement
+        return super.templateLiteral(literal);
+    }
+
     public ActionContext templateChangeListener($.Visitor<H.Format> listener) {
         this.templateChangeListener = $.notNull(listener);
         return this;

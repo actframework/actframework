@@ -32,7 +32,6 @@ import act.inject.DependencyInjector;
 import act.job.AppJobManager;
 import org.osgl.logging.LogManager;
 import org.osgl.logging.Logger;
-import org.osgl.mvc.result.Result;
 import org.osgl.util.C;
 import org.osgl.util.E;
 import org.osgl.util.S;
@@ -236,9 +235,6 @@ public class EventBus extends AppServiceBase<EventBus> {
                 l.on(e);
                 return true;
             }
-        } catch (Result r) {
-            // in case event listener needs to return a result back
-            throw r;
         } catch (RuntimeException x) {
             throw x;
         } catch (Exception x) {
