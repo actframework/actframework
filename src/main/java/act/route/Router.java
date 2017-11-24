@@ -51,6 +51,7 @@ import java.lang.reflect.Method;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 public class Router extends AppServiceBase<Router> {
 
@@ -938,9 +939,19 @@ public class Router extends AppServiceBase<Router> {
                         if (!targetNode.nodeValueBuilders.isEmpty()) {
                             for (CharSequence varName : targetNode.varNames) {
                                 String varNameStr = varName.toString();
-                                String varValue = matcher.group(varNameStr);
-                                if (S.notBlank(varValue)) {
-                                    context.urlPathParam(varNameStr, S.string(varValue));
+                                try {
+                                    String varValue = matcher.group(varNameStr);
+                                    if (S.notBlank(varValue)) {
+                                        context.urlPathParam(varNameStr, S.string(varValue));
+                                    }
+                                } catch (IllegalArgumentException e) {
+                                    if (e.getMessage().contains("No group with name")) {
+                                        String escaped = escapeUnderscore(varNameStr).toString();
+                                        String varValue = matcher.group(escaped);
+                                        if (S.notBlank(varValue)) {
+                                            context.urlPathParam(varNameStr, S.string(varValue));
+                                        }
+                                    }
                                 }
                             }
                         } else {
@@ -1187,10 +1198,31 @@ public class Router extends AppServiceBase<Router> {
                 }
             }
             if (null != pattern) {
-                pattern.set(Pattern.compile(patternStrBuilder.toString()));
+                String s = patternStrBuilder.toString();
+                try {
+                    pattern.set(Pattern.compile(s));
+                } catch (PatternSyntaxException e) {
+                    CharSequence escaped = escapeUnderscore(s);
+                    if (escaped == s) {
+                        throw e;
+                    }
+                    pattern.set(Pattern.compile(escaped.toString()));
+                }
             }
             patternTrait.set(patternTraitBuilder.toString());
             return true;
+        }
+
+        private static CharSequence escapeUnderscore(CharSequence s) {
+            boolean updated = false;
+            S.Buffer buf = S.buffer(s);
+            for (int i = 0, l = s.length(); i < l; ++i) {
+                if ('_' == s.charAt(i)) {
+                    buf.set(i, '7');
+                    updated = true;
+                }
+            }
+            return updated ? buf : s;
         }
 
         private static $.T2<? extends CharSequence, Pattern> parseVarBlock(StrBase name, int blockStart, int blockEnd) {

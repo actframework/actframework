@@ -12,6 +12,7 @@
 * support different redirect semantic #263
 * Request to support versioning of static resource mappings #210
 * Support inline template #289
+* Exception using underscore in a URL path variable name #295
 
 **1.5.3 18/Nov/2017**
 * NPE encountered when CSRF protector redirect request to login page #415
