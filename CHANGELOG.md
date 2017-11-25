@@ -6,8 +6,10 @@
 * Add `findLatest()` method to `Dao` #402
 * Support inject file content into `String` or `ByteBuffer` #397
 * New static file/resource handler that are subject to authentication/session management #396
+* Created.withLocation shall generate valid JSON string when `Accept` is `application/json` #349
 * Cache template loaded in ViewManager #348
 * use underscore style token for enum class name in enum i18n key #333
+* Support webjar #331
 * Support dynamic URL path variables #325
 * Add timestamp to default error response #274
 * Allow `AppJobManager.now` API accept job name parameter #268

@@ -72,7 +72,6 @@ import org.osgl.$;
 import org.osgl.Osgl;
 import org.osgl.bootstrap.Version;
 import org.osgl.cache.CacheService;
-import org.osgl.http.H;
 import org.osgl.http.HttpConfig;
 import org.osgl.logging.LogManager;
 import org.osgl.logging.Logger;
@@ -89,6 +88,7 @@ import java.lang.annotation.Annotation;
 import java.util.*;
 
 import static act.app.event.AppEventId.*;
+import static org.osgl.http.H.Method.GET;
 
 /**
  * {@code App} represents an application that is deployed in a Act container
@@ -1271,16 +1271,17 @@ public class App extends DestroyableBase {
         if (!config().builtInReqHandlerEnabled()) {
             return;
         }
-        router().addMapping(H.Method.GET, "/asset/", new ResourceGetter("asset"), RouteSource.BUILD_IN);
-        router().addMapping(H.Method.GET, "/~/asset/", new ResourceGetter("asset/~act"), RouteSource.BUILD_IN);
+        router().addMapping(GET, "/asset/", new ResourceGetter("asset"), RouteSource.BUILD_IN);
+        router().addMapping(GET, "/~/asset/", new ResourceGetter("asset/~act"), RouteSource.BUILD_IN);
+        router().addMapping(GET, "/webjars/", new ResourceGetter("META-INF/resources/webjars"), RouteSource.BUILD_IN);
         router().addContext("act.", "/~");
         if (config.cliOverHttp()) {
             Router router = router(AppConfig.PORT_CLI_OVER_HTTP);
-            router.addMapping(H.Method.GET, "/asset/", new ResourceGetter("asset"), RouteSource.BUILD_IN);
+            router.addMapping(GET, "/asset/", new ResourceGetter("asset"), RouteSource.BUILD_IN);
         }
         SecureTicketCodec secureTicketCodec = config.secureTicketCodec();
         SecureTicketHandler secureTicketHandler = new SecureTicketHandler(secureTicketCodec);
-        router().addMapping(H.Method.GET, "/~/ticket", secureTicketHandler);
+        router().addMapping(GET, "/~/ticket", secureTicketHandler);
     }
 
     private void initClassLoader() {
