@@ -124,20 +124,24 @@ public class RouterTest extends RouterTestBase {
         when(ctx.req()).thenReturn(req);
 
         when(req.path()).thenReturn("/svc/1234-abc");
+        when(ctx.urlPath()).thenReturn(UrlPath.of("/svc/1234-abc"));
         router.getInvoker(GET, "/svc/1234-abc", ctx).handle(ctx);
         verify(ctx).urlPathParam("id", "1234");
         verify(ctx).urlPathParam("name", "abc");
 
         when(req.path()).thenReturn("/svc/1234-abc/obj");
+        when(ctx.urlPath()).thenReturn(UrlPath.of("/svc/1234-abc/obj"));
         router.getInvoker(GET, "/svc/1234-abc/obj", ctx).handle(ctx);
         verify(ctx).urlPathParam("sid", "1234");
         verify(ctx).urlPathParam("sname", "abc");
 
         when(req.path()).thenReturn("/Persons/Joe/Parents;generations=147");
+        when(ctx.urlPath()).thenReturn(UrlPath.of("/Persons/Joe/Parents;generations=147"));
         router.getInvoker(GET, "/Persons/Joe/Parents;generations=147", ctx).handle(ctx);
         verify(ctx).urlPathParam("gen", "147");
 
         when(req.path()).thenReturn("/place/39.87381;-86.1399");
+        when(ctx.urlPath()).thenReturn(UrlPath.of("/place/39.87381;-86.1399"));
         router.getInvoker(GET, "/place/39.87381;-86.1399", ctx).handle(ctx);
         verify(ctx).urlPathParam("latitude", "39.87381");
         verify(ctx).urlPathParam("longitude", "-86.1399");

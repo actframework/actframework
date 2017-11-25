@@ -289,7 +289,7 @@ public class Router extends AppServiceBase<Router> {
     }
 
     @SuppressWarnings("FallThrough")
-    public void addMapping(H.Method method, CharSequence path, RequestHandler handler, RouteSource source) {
+    public void addMapping(final H.Method method, final CharSequence path, RequestHandler handler, final RouteSource source) {
         if (isTraceEnabled()) {
             trace("R+ %s %s | %s (%s)", method, path, handler, source);
         }
@@ -577,7 +577,7 @@ public class Router extends AppServiceBase<Router> {
         return node.findChild((StrBase) paths.get(len - 1));
     }
 
-    private Node _locate(H.Method method, CharSequence path, String action) {
+    private Node _locate(final H.Method method, final CharSequence path, String action) {
         Node node = root(method);
         E.unsupportedIf(null == node, "Method %s is not supported", method);
         assert null != node;
@@ -925,7 +925,7 @@ public class Router extends AppServiceBase<Router> {
         public Node child(CharSequence name, ActionContext context) {
             Node node = staticChildren.get(name);
             if (null == node && !dynamicChilds.isEmpty()) {
-                UrlPath path = new UrlPath(context.req().path());
+                UrlPath path = context.urlPath();
                 for (Node targetNode : dynamicChilds) {
                     for (Map.Entry<UrlPath, Node> entry : targetNode.dynamicAliases.entrySet()) {
                         if (entry.getKey().equals(path)) {
@@ -1007,7 +1007,7 @@ public class Router extends AppServiceBase<Router> {
             return childByMetaInfo(name);
         }
 
-        Node addChild(StrBase<?> name, CharSequence path, String action) {
+        Node addChild(StrBase<?> name, final CharSequence path, final String action) {
             name = name.trim();
             Node node = childByMetaInfo(name);
             if (null != node) {
@@ -1018,14 +1018,14 @@ public class Router extends AppServiceBase<Router> {
                 boolean isAlias = false;
                 for (Node targetNode : dynamicChilds) {
                     if (S.eq(targetNode.patternTrait, child.patternTrait)) {
-                        targetNode.dynamicAliases.put(new UrlPath(path), child);
+                        targetNode.dynamicAliases.put(UrlPath.of(path), child);
                         targetNode.dynamicReverseAliases.put(action, child);
                         isAlias = true;
                         break;
                     }
                 }
                 if (!isAlias) {
-                    child.dynamicAliases.put(new UrlPath(path), child);
+                    child.dynamicAliases.put(UrlPath.of(path), child);
                     child.dynamicReverseAliases.put(action, child);
                     dynamicChilds.add(child);
                 }

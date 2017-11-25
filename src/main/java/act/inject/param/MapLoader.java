@@ -27,6 +27,7 @@ import act.util.ActContext;
 import org.osgl.inject.BeanSpec;
 import org.osgl.mvc.result.BadRequest;
 import org.osgl.util.E;
+import org.osgl.util.S;
 import org.osgl.util.StringValueResolver;
 
 import java.lang.reflect.Type;
@@ -136,7 +137,23 @@ class MapLoader implements ParamValueLoader {
                 }
             }
         } else {
-            throw new BadRequest("Cannot load parameter, expected map, found:%s", node.value());
+            // try evaluate the Map instance from string value
+            // to support Matrix style URL path variable
+            String value = node.value();
+            if (S.notBlank(value)) {
+                String[] pairs = value.split(S.COMMON_SEP);
+                Class valClass = BeanSpec.rawTypeOf(valType);
+                for (String pair : pairs) {
+                    if (!pair.contains("=")) {
+                        throw new BadRequest("Cannot load parameter, expected map, found:%s", node.value());
+                    }
+                    String sKey = S.beforeFirst(pair, "=");
+                    String sVal = S.afterFirst(pair, "=");
+                    Object oKey = keyResolver.resolve(sKey);
+                    Object oVal = valueResolver.resolve(sVal);
+                    map.put(oKey, oVal);
+                }
+            }
         }
         return map;
     }

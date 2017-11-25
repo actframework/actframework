@@ -1,12 +1,14 @@
 # ActFramework Change Log
 
 **1.6.0 TBD**
+* Create an mechanism to load resource from config folder #420
 * Support annotated routing directive #419
 * Add `findLatest()` method to `Dao` #402
 * Support inject file content into `String` or `ByteBuffer` #397
 * New static file/resource handler that are subject to authentication/session management #396
 * Cache template loaded in ViewManager #348
 * use underscore style token for enum class name in enum i18n key #333
+* Support dynamic URL path variables #325
 * Add timestamp to default error response #274
 * Allow `AppJobManager.now` API accept job name parameter #268
 * support different redirect semantic #263

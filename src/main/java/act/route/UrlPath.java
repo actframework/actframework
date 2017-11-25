@@ -23,7 +23,9 @@ package act.route;
 import org.osgl.util.C;
 import org.osgl.util.S;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Encapsulate the logic to compare an incoming URL path with a route entry path.
@@ -31,13 +33,13 @@ import java.util.List;
  *     Note we can't do simple String match as route entry path might contains the dynamic part
  * </p>
  */
-class UrlPath {
+public class UrlPath {
 
     static final String DYNA_PART = "";
 
-    private List<String> parts = C.newList();
+    private final List<String> parts = C.newList();
 
-    UrlPath(CharSequence path) {
+    private UrlPath(CharSequence path) {
         String s = path.toString();
         String[] sa = s.split("/");
         for (String item: sa) {
@@ -48,10 +50,6 @@ class UrlPath {
                 parts.add(item);
             }
         }
-    }
-
-    boolean matches(CharSequence path) {
-        return equals(new UrlPath(path));
     }
 
     @Override
@@ -72,6 +70,17 @@ class UrlPath {
             return true;
         }
         return false;
+    }
+
+    private static Map<String, UrlPath> paths = new HashMap<>();
+
+    public static UrlPath of(CharSequence path) {
+        UrlPath urlPath = paths.get(path.toString());
+        if (null == urlPath) {
+            urlPath = new UrlPath(path);
+            paths.put(path.toString(), urlPath);
+        }
+        return urlPath;
     }
 
     private static boolean matches(CharSequence cs1, CharSequence cs2) {

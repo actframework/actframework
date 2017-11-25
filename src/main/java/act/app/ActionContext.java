@@ -33,6 +33,7 @@ import act.event.SystemEvent;
 import act.handler.RequestHandler;
 import act.i18n.LocaleResolver;
 import act.route.Router;
+import act.route.UrlPath;
 import act.security.CORS;
 import act.util.ActContext;
 import act.util.MissingAuthenticationHandler;
@@ -102,6 +103,7 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
     private String urlContext;
     private boolean byPassImplicitTemplateVariable;
     private int pathVarCount;
+    private UrlPath urlPath;
     private Set<String> pathVarNames = new HashSet<>();
 
 
@@ -234,8 +236,22 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
         return urlContext;
     }
 
-    // !!!IMPORTANT! the following methods needs to be kept to allow enhancer work correctly
+    /**
+     * Return a {@link UrlPath} of this context.
+     *
+     * Note this method is used only by {@link Router} for dynamic path
+     * matching.
+     *
+     * @return a {@link UrlPath} of this context
+     */
+    public UrlPath urlPath() {
+        if (null == urlPath) {
+            urlPath = UrlPath.of(req().path());
+        }
+        return urlPath;
+    }
 
+    // !!!IMPORTANT! the following methods needs to be kept to allow enhancer work correctly
     @Override
     public <T> T renderArg(String name) {
         return super.renderArg(name);

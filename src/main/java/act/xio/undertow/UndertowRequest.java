@@ -52,7 +52,12 @@ public class UndertowRequest extends RequestImplBase<UndertowRequest> {
 
     @Override
     public String path() {
-        return hse.getRequestPath();
+        // cannot use path as it cut the URI like
+        // "/gh/325/data/foo=3;bar=6/key/bar"
+        // to "/gh/325/data/foo=3"
+        // and put "bar=6/key/bar" as path parameters
+        //return hse.getRequestPath();
+        return hse.getRequestURI();
     }
 
     @Override

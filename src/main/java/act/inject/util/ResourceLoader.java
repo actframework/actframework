@@ -24,10 +24,15 @@ import act.Act;
 import act.app.App;
 import org.osgl.inject.BeanSpec;
 import org.osgl.inject.ValueLoader;
+import org.osgl.storage.ISObject;
+import org.osgl.storage.impl.SObject;
 import org.osgl.util.E;
 import org.osgl.util.IO;
 import org.osgl.util.S;
 
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.lang.reflect.Type;
 import java.net.URL;
 import java.nio.ByteBuffer;
@@ -35,7 +40,7 @@ import java.util.List;
 
 public class ResourceLoader<T> extends ValueLoader.Base<T> {
 
-    private Object resource;
+    protected Object resource;
 
     @Override
     protected void initialized() {
@@ -54,7 +59,7 @@ public class ResourceLoader<T> extends ValueLoader.Base<T> {
         return (T) resource;
     }
 
-    private void load(String resourcePath, BeanSpec spec) {
+    protected void load(String resourcePath, BeanSpec spec) {
         URL url = loadResource(resourcePath);
         E.unexpectedIf(null == url, "Resource not found: " + resourcePath);
         Class<?> rawType = spec.rawType();
@@ -76,6 +81,12 @@ public class ResourceLoader<T> extends ValueLoader.Base<T> {
             buffer.put(ba);
             buffer.flip();
             resource = buffer;
+        } else if (InputStream.class == rawType) {
+            resource = IO.is(url);
+        } else if (Reader.class == rawType) {
+            resource = new InputStreamReader(IO.is(url));
+        } else if (ISObject.class.isAssignableFrom(rawType)) {
+            resource = SObject.of(readContent(url));
         }
         if (null == resource) {
             E.unsupport("Unsupported target type: %s", spec);
