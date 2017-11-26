@@ -20,6 +20,7 @@ package act.view;
          * #L%
          */
 
+import act.Act;
 import act.app.App;
 import act.conf.AppConfig;
 import act.util.ActContext;
@@ -133,9 +134,31 @@ public class ViewManager extends DestroyableBase {
                         context.templatePath(amendedPath);
                     }
                 }
-            } else {
-                templateCache.put(path, template);
             }
+        }
+        return template;
+    }
+
+    public Template getTemplate(String path) {
+        final String templatePath = S.ensureStartsWith(path, '/');
+        Template template = null;
+
+        View defView = Act.appConfig().defaultView();
+
+        if (null != defView) {
+            template = defView.loadTemplate(templatePath);
+        }
+        if (null == template && multiViews) {
+            for (View view : viewList) {
+                if (view == defView) continue;
+                template = view.loadTemplate(templatePath);
+                if (null != template) {
+                    break;
+                }
+            }
+        }
+        if (null != template) {
+            templateCache.put(path, template);
         }
         return template;
     }
@@ -143,25 +166,29 @@ public class ViewManager extends DestroyableBase {
     private Template getInlineTemplate(ActContext context, AppConfig config, String content) {
         View defView = config.defaultView();
         if (null != defView && defView.appliedTo(context)) {
-            return defView.loadInlineTemplate(content, context);
+            return defView.loadInlineTemplate(content);
         }
         return null;
     }
 
     private Template getTemplate(ActContext context, AppConfig config, String path) {
+        Template template = templateCache.get(path);
+        if (null != template) {
+            return template;
+        }
+
         final String templatePath = S.ensureStartsWith(path, '/');
 
-        Template template = null;
 
         View defView = config.defaultView();
 
         if (null != defView && defView.appliedTo(context)) {
-            template = defView.loadTemplate(templatePath, context);
+            template = defView.loadTemplate(templatePath);
         }
         if (null == template && multiViews) {
             for (View view : viewList) {
                 if (view == defView || !view.appliedTo(context)) continue;
-                template = view.loadTemplate(templatePath, context);
+                template = view.loadTemplate(templatePath);
                 if (null != template) {
                     break;
                 }

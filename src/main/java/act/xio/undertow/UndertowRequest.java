@@ -26,6 +26,7 @@ import act.conf.AppConfig;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.server.handlers.Cookie;
 import io.undertow.util.HttpString;
+import org.osgl.util.Codec;
 import org.osgl.util.E;
 import org.osgl.util.IO;
 
@@ -36,6 +37,9 @@ import java.util.Deque;
 import java.util.Map;
 
 public class UndertowRequest extends RequestImplBase<UndertowRequest> {
+
+    private String path;
+
     @Override
     protected Class<UndertowRequest> _impl() {
         return UndertowRequest.class;
@@ -57,7 +61,10 @@ public class UndertowRequest extends RequestImplBase<UndertowRequest> {
         // to "/gh/325/data/foo=3"
         // and put "bar=6/key/bar" as path parameters
         //return hse.getRequestPath();
-        return hse.getRequestURI();
+        if (null == path) {
+            path = hse.getPathParameters().isEmpty() ? hse.getRelativePath() : Codec.decodeUrl(hse.getRequestURI());
+        }
+        return path;
     }
 
     @Override

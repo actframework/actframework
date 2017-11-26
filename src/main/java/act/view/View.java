@@ -69,7 +69,7 @@ public abstract class View extends AppServicePlugin {
      * @return the template instance or {@code null} if template not found
      */
     // TODO it shall not need context to load template, revise this interface to remove it
-    protected abstract Template loadTemplate(String resourcePath, ActContext context);
+    protected abstract Template loadTemplate(String resourcePath);
 
     /**
      * Sub class must implement this method to load the template from string literal
@@ -79,7 +79,7 @@ public abstract class View extends AppServicePlugin {
      * @return the template instance
      * @since 1.6
      */
-    protected abstract Template loadInlineTemplate(String content, ActContext context);
+    protected abstract Template loadInlineTemplate(String content);
 
     /**
      * Sub class could use this method initialize the implementation

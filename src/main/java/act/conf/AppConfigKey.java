@@ -32,10 +32,7 @@ import org.osgl.exception.NotAppliedException;
 import org.osgl.util.E;
 import org.osgl.util.S;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 
 /**
  * {@link App} configuration keys. General rules:
@@ -147,14 +144,14 @@ public enum AppConfigKey implements ConfigKey {
      * a cli session can exists after last user interaction
      * <p>Default value: {@code 300} seconds. e.g. 5 minutes</p>
      */
-    CLI_SESSION_EXPIRATION("cli.session.expiration"),
+    CLI_SESSION_EXPIRATION("cli.session.expiration.int"),
 
     /**
      * {@code cli.session.max} specifies the maximum number of cli threads
      * can exists concurrently
      * <p>Default value: {@code 3}</p>
      */
-    CLI_SESSION_MAX("cli.session.max"),
+    CLI_SESSION_MAX("cli.session.max.int"),
 
 
     /**
@@ -696,7 +693,7 @@ public enum AppConfigKey implements ConfigKey {
      *
      * Default value: `1024 * 10`, i.e. 10KB
      */
-    RESOURCE_PRELOAD_SIZE_LIMIT("resource.preload.size.limit"),
+    RESOURCE_PRELOAD_SIZE_LIMIT("resource.preload.size.limit.int"),
 
     /**
      * {@code scan_package}
@@ -847,7 +844,7 @@ public enum AppConfigKey implements ConfigKey {
      *
      * Default value: `1024 * 10`
      */
-    UPLOAD_IN_MEMORY_CACHE_THRESHOLD("upload.in_memory.threshold"),
+    UPLOAD_IN_MEMORY_CACHE_THRESHOLD("upload.in_memory.threshold.int"),
 
     /**
      * `act.url.context` specifies the app URL context.
@@ -968,11 +965,21 @@ public enum AppConfigKey implements ConfigKey {
         return helper.getConfiguration(this, configuration);
     }
 
-    private static Map<String, AppConfigKey> lookup = new HashMap<String, AppConfigKey>(50);
+    private static Map<String, AppConfigKey> lookup = new HashMap<>(50);
 
     static {
+        Set<String> suffixes = ConfigKeyHelper.suffixes();
         for (AppConfigKey k : values()) {
-            lookup.put(k.key().toLowerCase(), k);
+            lookup.put(k.name().toLowerCase(), k);
+            String key = k.key().toLowerCase();
+            lookup.put(key, k);
+            String suffix = S.afterLast(key, ".");
+            if (S.notBlank(suffix) && suffixes.contains(suffix)) {
+                Set<String> aliases = ConfigKeyHelper.aliases(key, suffix);
+                for (String alias : aliases) {
+                    lookup.put(alias, k);
+                }
+            }
         }
     }
 

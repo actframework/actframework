@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 **1.6.0 TBD**
+* Support `@Configuration` inject #421
 * Create an mechanism to load resource from config folder #420
 * Support annotated routing directive #419
 * Add `findLatest()` method to `Dao` #402

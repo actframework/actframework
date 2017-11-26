@@ -23,7 +23,6 @@ package act.view.rythm;
 import act.Act;
 import act.app.App;
 import act.conf.AppConfig;
-import act.util.ActContext;
 import act.view.Template;
 import act.view.VarDef;
 import act.view.View;
@@ -67,16 +66,17 @@ public class RythmView extends View {
     }
 
     @Override
-    protected Template loadTemplate(String resourcePath, ActContext context) {
+    protected Template loadTemplate(String resourcePath) {
+        App app = Act.app();
         if (isDev) {
-            return loadTemplateFromResource(resourcePath, context.app());
+            return loadTemplateFromResource(resourcePath, app);
         }
         if (missings.containsKey(resourcePath)) {
             return null;
         }
         Template template = templates.get(resourcePath);
         if (null == template) {
-            Template newTemplate = loadTemplateFromResource(resourcePath, context.app());
+            Template newTemplate = loadTemplateFromResource(resourcePath, app);
             if (null != newTemplate) {
                 template = templates.putIfAbsent(resourcePath, newTemplate);
                 if (null == template) {
@@ -90,8 +90,8 @@ public class RythmView extends View {
     }
 
     @Override
-    protected Template loadInlineTemplate(String content, ActContext context) {
-        RythmEngine engine = engines.get(context.app());
+    protected Template loadInlineTemplate(String content) {
+        RythmEngine engine = engines.get(Act.app());
         return new RythmTemplate(engine, content, true);
     }
 

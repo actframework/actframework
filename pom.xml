@@ -271,6 +271,12 @@
       <scope>test</scope>
     </dependency>
 
+    <dependency>
+      <groupId>com.auth0</groupId>
+      <artifactId>java-jwt</artifactId>
+      <version>3.3.0</version>
+    </dependency>
+
     <!-- TODO: can't update to mockito 2.x yet. See github issue #371 -->
     <dependency>
       <groupId>org.mockito</groupId>

@@ -26,6 +26,7 @@ import org.osgl.exception.ConfigurationException;
 import org.osgl.exception.NotAppliedException;
 import org.osgl.logging.L;
 import org.osgl.logging.Logger;
+import org.osgl.util.C;
 import org.osgl.util.S;
 
 import java.io.File;
@@ -93,7 +94,7 @@ class ConfigKeyHelper {
         if (key.endsWith(".long") || key.endsWith(".ttl")) {
             return (T) getX(configuration, key, suffixOf(key), defVal, F.TO_LONG);
         }
-        if (key.endsWith(".int") || key.endsWith(".len") || key.endsWith(".count") || key.endsWith(".times") || key.endsWith(".size")) {
+        if (key.endsWith(".int") || key.endsWith(".len") || key.endsWith(".count") || key.endsWith(".times") || key.endsWith(".size") || key.endsWith(".port")) {
             return (T) getX(configuration, key, suffixOf(key), defVal, F.TO_INT);
         }
         if (key.endsWith(".float")) {
@@ -103,6 +104,10 @@ class ConfigKeyHelper {
             return (T) getX(configuration, key, suffixOf(key), defVal, F.TO_DOUBLE);
         }
         return (T) getValFromAliases(configuration, key, null, defVal);
+    }
+
+    static Set<String> suffixes() {
+        return C.set(S.fastSplit("enabled,disabled,impl,dir,home,path,bool,boolean,long,ttl,port,int,len,count,times,size,float,double", ","));
     }
 
     <T> List<T> getImplList(String key, Map<String, ?> configuration, Class<T> c) {
@@ -403,7 +408,7 @@ class ConfigKeyHelper {
         return v;
     }
 
-    private Set<String> aliases(String key, String suffix) {
+    static Set<String> aliases(String key, String suffix) {
         Set<String> set = new HashSet<>();
         set.add(Config.PREFIX + key);
         set.add(key);

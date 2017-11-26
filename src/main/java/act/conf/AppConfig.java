@@ -36,12 +36,12 @@ import act.handler.UnknownHttpMethodProcessor;
 import act.handler.event.ResultEvent;
 import act.i18n.I18n;
 import act.security.CSRFProtector;
-import act.ws.DefaultSecureTicketCodec;
-import act.ws.SecureTicketCodec;
-import act.ws.UsernameSecureTicketCodec;
 import act.util.*;
 import act.view.TemplatePathResolver;
 import act.view.View;
+import act.ws.DefaultSecureTicketCodec;
+import act.ws.SecureTicketCodec;
+import act.ws.UsernameSecureTicketCodec;
 import org.osgl.$;
 import org.osgl.Osgl;
 import org.osgl.cache.CacheService;
@@ -49,20 +49,21 @@ import org.osgl.cache.CacheServiceProvider;
 import org.osgl.exception.ConfigurationException;
 import org.osgl.exception.NotAppliedException;
 import org.osgl.http.H;
-import org.osgl.logging.L;
-import org.osgl.logging.Logger;
 import org.osgl.mvc.MvcConfig;
 import org.osgl.util.*;
 import org.osgl.web.util.UserAgent;
 
 import javax.inject.Provider;
 import java.io.File;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
 
 import static act.conf.AppConfigKey.*;
+import static org.osgl.http.H.Header.Names.X_XSRF_TOKEN;
 
 public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> implements AppHolder<AppConfig<T>> {
 
@@ -114,19 +115,12 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     }
 
     public void preloadConfigurations() {
-        // preload frequently used configurations so
-        // that we do not need to synchronize on them
-        // and avoid the NPE
-        basicAuthenticationEnabled();
-        builtInReqHandlerEnabled();
-        corsEnabled();
-        sessionCookieName();
-        cookiePrefix();
-        encryptSession();
-        sessionMapper();
-        sessionKeyUsername();
-        sessionSecure();
-        sessionTtl();
+        for (Method method : AppConfig.class.getDeclaredMethods()) {
+            boolean isPublic = Modifier.isPublic(method.getModifiers());
+            if (isPublic && 0 == method.getParameterTypes().length && void.class != method.getReturnType() && Void.class != method.getReturnType()) {
+                $.invokeVirtual(this, method);
+            }
+        }
 
         MvcConfig.renderJsonOutputCharset(renderJsonOutputCharset());
         Osgl.Func0<H.Format> jsonContentProvider = jsonContentTypeProvider();
@@ -153,11 +147,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
 
     public boolean apiDocEnabled() {
         if (null == apiDoc) {
-            Boolean B = get(API_DOC_EABLED);
-            if (null == B) {
-                B = Act.isDev();
-            }
-            this.apiDoc = B;
+            this.apiDoc = get(API_DOC_EABLED, Act.isDev());
         }
         return this.apiDoc;
     }
@@ -177,11 +167,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
 
     public boolean basicAuthenticationEnabled() {
         if (null == basicAuth) {
-            Boolean B = get(BASIC_AUTHENTICATION);
-            if (null == B) {
-                B = Act.isDev();
-            }
-            this.basicAuth = B;
+            this.basicAuth = get(BASIC_AUTHENTICATION, Act.isDev());
         }
         return this.basicAuth;
     }
@@ -201,10 +187,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
 
     public boolean builtInReqHandlerEnabled() {
         if (null == builtInReqHandlerEnabled) {
-            builtInReqHandlerEnabled = get(BUILT_IN_REQ_HANDLER_ENABLED);
-            if (null == builtInReqHandlerEnabled) {
-                builtInReqHandlerEnabled = true;
-            }
+            builtInReqHandlerEnabled = get(BUILT_IN_REQ_HANDLER_ENABLED, true);
         }
         return builtInReqHandlerEnabled;
     }
@@ -224,11 +207,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
 
     public boolean corsEnabled() {
         if (null == cors) {
-            Boolean B = get(CORS);
-            if (null == B) {
-                B = false;
-            }
-            this.cors = B;
+            this.cors = get(CORS, false);
         }
         return this.cors;
     }
@@ -248,11 +227,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
 
     public String corsAllowOrigin() {
         if (null == corsOrigin) {
-            String s = get(CORS_ORIGIN);
-            if (S.blank(s)) {
-                s = "*";
-            }
-            corsOrigin = s;
+            corsOrigin = get(CORS_ORIGIN, "*");
         }
         return corsOrigin;
     }
@@ -272,11 +247,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
 
     private String corsHeaders() {
         if (null == corsHeaders) {
-            String s = get(CORS_HEADERS);
-            if (null == s) {
-                s = "Content-Type, X-HTTP-Method-Override, X-Requested-With";
-            }
-            corsHeaders = s;
+            corsHeaders = get(CORS_HEADERS, "Content-Type, X-HTTP-Method-Override, X-Requested-With");
         }
         return corsHeaders;
     }
@@ -296,11 +267,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
 
     public String corsExposeHeaders() {
         if (null == corsHeadersExpose) {
-            String s = get(CORS_HEADERS_EXPOSE);
-            if (null == s) {
-                s = corsHeaders();
-            }
-            corsHeadersExpose = s;
+            corsHeadersExpose = get(CORS_HEADERS_EXPOSE, corsHeaders());
         }
         return corsHeadersExpose;
     }
@@ -318,8 +285,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     }
     public Boolean corsOptionCheck() {
         if (null == corsOptionCheck) {
-            Boolean b = get(CORS_CHECK_OPTION_METHOD);
-            corsOptionCheck = null == b ? true : b;
+            corsOptionCheck = get(CORS_CHECK_OPTION_METHOD, true);
         }
         return corsOptionCheck;
     }
@@ -338,11 +304,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
 
     public String corsAllowHeaders() {
         if (null == corsHeadersAllowed) {
-            String s = get(CORS_HEADERS_ALLOWED);
-            if (null == s) {
-                s = corsHeaders();
-            }
-            corsHeadersAllowed = s;
+            corsHeadersAllowed = get(CORS_HEADERS_ALLOWED, corsHeaders());
         }
         return corsHeadersAllowed;
     }
@@ -363,11 +325,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
 
     public int corsMaxAge() {
         if (null == corsMaxAge) {
-            Integer I = getInteger(CORS_MAX_AGE);
-            if (null == I) {
-                I = 30 * 60;
-            }
-            corsMaxAge = I;
+            corsMaxAge = getInteger(CORS_MAX_AGE, 30 * 60);
         }
         return corsMaxAge;
     }
@@ -385,10 +343,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     }
     public boolean corsAllowCredentials() {
         if (null == corsAllowCredentials) {
-            corsAllowCredentials = get(CORS_ALLOW_CREDENTIALS);
-            if (null == corsAllowCredentials) {
-                corsAllowCredentials = false;
-            }
+            corsAllowCredentials = get(CORS_ALLOW_CREDENTIALS, false);
         }
         return corsAllowCredentials;
     }
@@ -408,11 +363,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
 
     public boolean csrfEnabled() {
         if (null == csrf) {
-            Boolean B = get(CSRF);
-            if (null == B) {
-                B = false;
-            }
-            this.csrf = B;
+            this.csrf = get(CSRF, false);
         }
         return this.csrf;
     }
@@ -432,11 +383,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
 
     public String csrfParamName() {
         if (null == csrfParamName) {
-            String s = get(CSRF_PARAM_NAME);
-            if (S.blank(s)) {
-                s = ActionContext.ATTR_CSRF_TOKEN;
-            }
-            csrfParamName = s;
+            csrfParamName = get(CSRF_PARAM_NAME, ActionContext.ATTR_CSRF_TOKEN);
         }
         return csrfParamName;
     }
@@ -457,15 +404,13 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     public CSRFProtector csrfProtector() {
         if (null == csrfProtector) {
             try {
-                csrfProtector = get(CSRF_PROTECTOR);
-                if (null == csrfProtector) {
-                    csrfProtector = CSRFProtector.Predefined.HMAC;
-                }
+                csrfProtector = get(CSRF_PROTECTOR, CSRFProtector.Predefined.HMAC);
             } catch (ConfigurationException e) {
                 Object obj = helper.getValFromAliases(raw, CSRF_PROTECTOR.key(), "impl", null);
                 if (null != obj) {
                     this.csrfProtector = CSRFProtector.Predefined.valueOfIgnoreCase(obj.toString());
                     if (null != csrfProtector) {
+                        set(CSRF_PROTECTOR, csrfProtector);
                         return this.csrfProtector;
                     }
                 }
@@ -490,11 +435,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
 
     public String csrfCookieName() {
         if (null == csrfCookieName) {
-            String s = get(CSRF_COOKIE_NAME);
-            if (S.blank(s)) {
-                s = cookieName("xsrf-token");
-            }
-            csrfCookieName = s;
+            csrfCookieName = get(CSRF_COOKIE_NAME, cookieName("xsrf-token"));
         }
         return csrfCookieName;
     }
@@ -514,11 +455,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
 
     public String csrfHeaderName() {
         if (null == csrfHeaderName) {
-            String s = get(CSRF_HEADER_NAME);
-            if (S.blank(s)) {
-                s = H.Header.Names.X_XSRF_TOKEN;
-            }
-            csrfHeaderName = s;
+            csrfHeaderName = get(CSRF_HEADER_NAME, X_XSRF_TOKEN);
         }
         return csrfHeaderName;
     }
@@ -538,10 +475,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
 
     public boolean cliEnabled() {
         if (null == cliEnabled) {
-            cliEnabled = get(CLI_ENABLED);
-            if (null == cliEnabled) {
-                cliEnabled = true;
-            }
+            cliEnabled = get(CLI_ENABLED, true);
         }
         return cliEnabled;
     }
@@ -562,11 +496,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
 
     public int cliTablePageSize() {
         if (-1 == cliTablePageSz) {
-            Integer I = getInteger(CLI_PAGE_SIZE_TABLE);
-            if (null == I) {
-                I = 22;
-            }
-            cliTablePageSz = I;
+            cliTablePageSz = getInteger(CLI_PAGE_SIZE_TABLE, 22);
         }
         return cliTablePageSz;
     }
@@ -587,11 +517,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
 
     public int cliJSONPageSize() {
         if (-1 == cliJSONPageSz) {
-            Integer I = getInteger(CLI_PAGE_SIZE_TABLE);
-            if (null == I) {
-                I = 22;
-            }
-            cliJSONPageSz = I;
+            cliJSONPageSz = getInteger(CLI_PAGE_SIZE_TABLE, 22);
         }
         return cliJSONPageSz;
     }
@@ -611,11 +537,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
 
     public boolean cliOverHttp() {
         if (null == cliOverHttp) {
-            Boolean B = get(CLI_OVER_HTTP);
-            if (null == B) {
-                B = false;
-            }
-            cliOverHttp = B;
+            cliOverHttp = get(CLI_OVER_HTTP, false);
         }
         return cliOverHttp;
     }
@@ -635,10 +557,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
 
     public CliOverHttpAuthority cliOverHttpAuthority() {
         if (null == cliOverHttpAuthority) {
-            cliOverHttpAuthority = get(CLI_OVER_HTTP_AUTHORITY);
-            if (null == cliOverHttpAuthority) {
-                cliOverHttpAuthority = new CliOverHttpAuthority.AllowAll();
-            }
+            cliOverHttpAuthority = get(CLI_OVER_HTTP_AUTHORITY, new CliOverHttpAuthority.AllowAll());
         }
         return cliOverHttpAuthority;
     }
@@ -658,8 +577,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
 
     public int cliOverHttpPort() {
         if (null == cliOverHttpPort) {
-            String s = get(CLI_OVER_HTTP_PORT);
-            cliOverHttpPort = null == s ? 5462 : Integer.parseInt(s);
+            cliOverHttpPort = get(CLI_OVER_HTTP_PORT, 5462);
         }
         return cliOverHttpPort;
     }
@@ -679,10 +597,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
 
     public String cliOverHttpTitle() {
         if (null == cliOverHttpTitle) {
-            cliOverHttpTitle = get(CLI_OVER_HTTP_TITLE);
-            if (null == cliOverHttpTitle) {
-                cliOverHttpTitle = "Cli Over Http";
-            }
+            cliOverHttpTitle = get(CLI_OVER_HTTP_TITLE, "Cli Over Http");
         }
         return cliOverHttpTitle;
     }
@@ -702,10 +617,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
 
     public boolean cliOverHttpSysCmdEnabled() {
         if (null == cliOverHttpSysCmd) {
-            cliOverHttpSysCmd = get(CLI_OVER_HTTP_SYS_CMD);
-            if (null == cliOverHttpSysCmd) {
-                cliOverHttpSysCmd = true;
-            }
+            cliOverHttpSysCmd = get(CLI_OVER_HTTP_SYS_CMD, true);
         }
         return cliOverHttpSysCmd;
     }
@@ -726,8 +638,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
 
     public int cliPort() {
         if (null == cliPort) {
-            String s = get(CLI_PORT);
-            cliPort = null == s ? 5461 : Integer.parseInt(s);
+            cliPort = get(CLI_PORT, 5461);
         }
         return cliPort;
     }
@@ -748,11 +659,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
 
     public int cliSessionExpiration() {
         if (-1 == cliSessionExpiration) {
-            Integer I = getInteger(CLI_SESSION_EXPIRATION);
-            if (null == I) {
-                I = 300;
-            }
-            cliSessionExpiration = I;
+            cliSessionExpiration = get(CLI_SESSION_EXPIRATION, 300);
         }
         return cliSessionExpiration;
     }
@@ -772,10 +679,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
 
     public String dspToken() {
         if (null == dspToken) {
-            dspToken = get(DOUBLE_SUBMISSION_PROTECT_TOKEN);
-            if (null == dspToken) {
-                dspToken = "act_dsp_token";
-            }
+            dspToken = get(DOUBLE_SUBMISSION_PROTECT_TOKEN, "act_dsp_token");
         }
         return dspToken;
     }
@@ -811,7 +715,12 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     private Provider<String> cookieDomainProvider() {
         if (null == cookieDomainProvider) {
             try {
-                cookieDomainProvider = get(COOKIE_DOMAIN_PROVIDER);
+                cookieDomainProvider = get(COOKIE_DOMAIN_PROVIDER, new Provider<String>() {
+                    @Override
+                    public String get() {
+                        return host();
+                    }
+                });
             } catch (ConfigurationException e) {
                 Object obj = helper.getValFromAliases(raw, COOKIE_DOMAIN_PROVIDER.key(), "impl", null);
                 String s = obj.toString();
@@ -826,14 +735,6 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
                     return cookieDomainProvider;
                 }
                 throw e;
-            }
-            if (null == cookieDomainProvider) {
-                cookieDomainProvider = new Provider<String>() {
-                    @Override
-                    public String get() {
-                        return host();
-                    }
-                };
             }
         }
         return cookieDomainProvider;
@@ -855,11 +756,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
 
     public int maxCliSession() {
         if (-1 == maxCliSession) {
-            Integer I = getInteger(CLI_SESSION_MAX);
-            if (null == I) {
-                I = 3;
-            }
-            maxCliSession = I;
+            maxCliSession = get(CLI_SESSION_MAX, 3);
         }
         return maxCliSession;
     }
@@ -878,10 +775,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     public boolean enumResolvingCaseSensitive() {
         synchronized (ENUM_RESOLVING_CASE_SENSITIVE) {
             if (null == enumResolvingCaseSensitive) {
-                enumResolvingCaseSensitive = get(ENUM_RESOLVING_CASE_SENSITIVE);
-                if (null == enumResolvingCaseSensitive) {
-                    enumResolvingCaseSensitive = false;
-                }
+                enumResolvingCaseSensitive = get(ENUM_RESOLVING_CASE_SENSITIVE, false);
             }
             return enumResolvingCaseSensitive;
         }
@@ -903,10 +797,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
 
     public View defaultView() {
         if (null == defViewName) {
-            defViewName = get(AppConfigKey.VIEW_DEFAULT);
-            if (null == defViewName) {
-                defViewName = "rythm";
-            }
+            defViewName = get(AppConfigKey.VIEW_DEFAULT, "rythm");
             defView = Act.viewManager().view(defViewName);
         }
         return defView;
@@ -928,10 +819,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
 
     public String xForwardedProtocol() {
         if (null == xForwardedProtocol) {
-            xForwardedProtocol = get(X_FORWARD_PROTOCOL);
-            if (null == xForwardedProtocol) {
-                xForwardedProtocol = "http";
-            }
+            xForwardedProtocol = get(X_FORWARD_PROTOCOL, "http");
         }
         return xForwardedProtocol;
     }
@@ -952,10 +840,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
 
     public Boolean contentSuffixAware() {
         if (null == contentSuffixAware) {
-            contentSuffixAware = get(CONTENT_SUFFIX_AWARE);
-            if (null == contentSuffixAware) {
-                contentSuffixAware = false;
-            }
+            contentSuffixAware = get(CONTENT_SUFFIX_AWARE, false);
         }
         return contentSuffixAware;
     }
@@ -975,12 +860,8 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
 
     public _SequenceNumberGenerator sequenceNumberGenerator() {
         if (null == seqGen) {
-            seqGen = get(DB_SEQ_GENERATOR);
-            if (null == seqGen) {
-                javax.inject.Provider<_SequenceNumberGenerator> provider = app().getInstance(SequenceNumberGenerator.Provider.class);
-                seqGen = provider.get();
-                logger.debug("Sequence number generator loaded: %s", seqGen.getClass().getName());
-            }
+            javax.inject.Provider<_SequenceNumberGenerator> provider = app().getInstance(SequenceNumberGenerator.Provider.class);
+            seqGen = get(DB_SEQ_GENERATOR, provider.get());
         }
         return seqGen;
     }
@@ -1000,10 +881,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
 
     public ErrorTemplatePathResolver errorTemplatePathResolver() {
         if (null == errorTemplatePathResolver) {
-            errorTemplatePathResolver = get(RESOLVER_ERROR_TEMPLATE_PATH);
-            if (null == errorTemplatePathResolver) {
-                errorTemplatePathResolver = new ErrorTemplatePathResolver.DefaultErrorTemplatePathResolver();
-            }
+            errorTemplatePathResolver = get(RESOLVER_ERROR_TEMPLATE_PATH, new ErrorTemplatePathResolver.DefaultErrorTemplatePathResolver());
         }
         return errorTemplatePathResolver;
     }
@@ -1025,11 +903,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
 
     public String host() {
         if (null == host) {
-            host = get(HOST);
-            if (null == host) {
-                logger.warn("host is not configured. Use localhost as hostname");
-                host = "localhost";
-            }
+            host = get(HOST, "localhost");
         }
         return host;
     }
@@ -1047,11 +921,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     }
     public boolean i18nEnabled() {
         if (null == i18nEnabled) {
-            Boolean b = get(I18N);
-            if (null == b) {
-                b = false;
-            }
-            i18nEnabled = b;
+            i18nEnabled = get(I18N, false);
         }
         return i18nEnabled;
     }
@@ -1069,11 +939,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     }
     public String localeParamName() {
         if (null == localeParamName) {
-            String s = get(I18N_LOCALE_PARAM_NAME);
-            if (S.blank(s)) {
-                s = "act_locale";
-            }
-            localeParamName = s;
+            localeParamName = get(I18N_LOCALE_PARAM_NAME, "act_locale");
         }
         return localeParamName;
     }
@@ -1092,11 +958,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     }
     public String localeCookieName() {
         if (null == localeCookieName) {
-            String s = get(I18N_LOCALE_COOKIE_NAME);
-            if (S.blank(s)) {
-                s = cookieName("locale");
-            }
-            localeCookieName = s;
+            localeCookieName = get(I18N_LOCALE_COOKIE_NAME, "locale");
         }
         return localeCookieName;
     }
@@ -1114,10 +976,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     }
     public int ipEffectiveBytes() {
         if (null == ipEffectiveBytes) {
-            ipEffectiveBytes = getInteger(ID_GEN_NODE_ID_EFFECTIVE_IP_BYTES);
-            if (null == ipEffectiveBytes) {
-                ipEffectiveBytes = 4;
-            }
+            ipEffectiveBytes = getInteger(ID_GEN_NODE_ID_EFFECTIVE_IP_BYTES, 4);
         }
         return ipEffectiveBytes;
     }
@@ -1134,10 +993,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     }
     public IdGenerator.NodeIdProvider nodeIdProvider() {
         if (null == nodeIdProvider) {
-            nodeIdProvider = get(ID_GEN_NODE_ID_PROVIDER);
-            if (null == nodeIdProvider) {
-                nodeIdProvider = new IdGenerator.NodeIdProvider.IpProvider(ipEffectiveBytes());
-            }
+            nodeIdProvider = get(ID_GEN_NODE_ID_PROVIDER, new IdGenerator.NodeIdProvider.IpProvider(ipEffectiveBytes()));
         }
         return nodeIdProvider;
     }
@@ -1155,10 +1011,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     }
     public String startIdFile() {
         if (null == startIdFile) {
-            startIdFile = get(ID_GEN_START_ID_FILE);
-            if (null == startIdFile) {
-                startIdFile = ".act.id-app";
-            }
+            startIdFile = get(ID_GEN_START_ID_FILE, ".act.id-app");
         }
         return startIdFile;
     }
@@ -1175,10 +1028,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     }
     public IdGenerator.StartIdProvider startIdProvider() {
         if (null == startIdProvider) {
-            startIdProvider = get(ID_GEN_START_ID_PROVIDER);
-            if (null == startIdProvider) {
-                startIdProvider = new IdGenerator.StartIdProvider.DefaultStartIdProvider(startIdFile());
-            }
+            startIdProvider = get(ID_GEN_START_ID_PROVIDER, new IdGenerator.StartIdProvider.DefaultStartIdProvider(startIdFile()));
         }
         return startIdProvider;
     }
@@ -1195,10 +1045,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     }
     public IdGenerator.SequenceProvider sequenceProvider() {
         if (null == sequenceProvider) {
-            sequenceProvider = get(ID_GEN_SEQ_ID_PROVIDER);
-            if (null == sequenceProvider) {
-                sequenceProvider = new IdGenerator.SequenceProvider.AtomicLongSeq();
-            }
+            sequenceProvider = get(ID_GEN_SEQ_ID_PROVIDER, new IdGenerator.SequenceProvider.AtomicLongSeq());
         }
         return sequenceProvider;
     }
@@ -1216,10 +1063,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     }
     public IdGenerator.LongEncoder longEncoder() {
         if (null == longEncoder) {
-            longEncoder = get(ID_GEN_LONG_ENCODER);
-            if (null == longEncoder) {
-                longEncoder = IdGenerator.SAFE_ENCODER;
-            }
+            longEncoder = get(ID_GEN_LONG_ENCODER, IdGenerator.SAFE_ENCODER);
         }
         return longEncoder;
     }
@@ -1237,10 +1081,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     }
     public String loginUrl() {
         if (null == loginUrl) {
-            loginUrl = get(URL_LOGIN);
-            if (null == loginUrl) {
-                loginUrl = "/login";
-            }
+            loginUrl = get(URL_LOGIN, "/login");
         }
         ActionContext context = ActionContext.current();
         if (null != context && context.isAjax()) {
@@ -1262,16 +1103,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     }
     public String ajaxLoginUrl() {
         if (null == ajaxLoginUrl) {
-            ajaxLoginUrl = get(URL_LOGIN_AJAX);
-            if (null == ajaxLoginUrl) {
-                ajaxLoginUrl = loginUrl;
-            }
-            if (null == ajaxLoginUrl) {
-                ajaxLoginUrl = get(URL_LOGIN);
-            }
-            if (null == ajaxLoginUrl) {
-                ajaxLoginUrl = "/login";
-            }
+            ajaxLoginUrl = get(URL_LOGIN_AJAX, loginUrl());
         }
         return ajaxLoginUrl;
     }
@@ -1290,7 +1122,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     }
     public String urlContext() {
         if (!urlContextInitialized) {
-            urlContext = get(URL_CONTEXT);
+            urlContext = get(URL_CONTEXT, null);
             if (null != urlContext) {
                 urlContext = urlContext.trim();
                 if (urlContext.length() == 0) {
@@ -1329,14 +1161,10 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     }
     public int httpMaxParams() {
         if (-1 == httpMaxParams) {
-            Integer I = getInteger(HTTP_MAX_PARAMS);
-            if (null == I) {
-                I = 128;
+            httpMaxParams = getInteger(HTTP_MAX_PARAMS, 128);
+            if (httpMaxParams < 0) {
+                throw new ConfigurationException("http.params.max setting cannot be negative number. Found: %s", httpMaxParams);
             }
-            if (I < 0) {
-                throw new ConfigurationException("http.params.max setting cannot be negative number. Found: %s", I);
-            }
-            httpMaxParams = I;
         }
         return httpMaxParams;
     }
@@ -1356,11 +1184,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
 
     public int jobPoolSize() {
         if (-1 == jobPoolSize) {
-            Integer I = getInteger(JOB_POOL_SIZE);
-            if (null == I) {
-                I = 10;
-            }
-            jobPoolSize = I;
+            jobPoolSize = getInteger(JOB_POOL_SIZE, 10);
         }
         return jobPoolSize;
     }
@@ -1381,8 +1205,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     
     public int httpExternalPort() {
         if (-1 == httpExternalPort) {
-            String s = get(HTTP_EXTERNAL_PORT);
-            httpExternalPort = null == s ? httpExternal() ? 80 : httpPort() : Integer.parseInt(s);
+            httpExternalPort = get(HTTP_EXTERNAL_PORT, httpExternal() ? 80 : httpPort());
         }
         return httpExternalPort;
     }
@@ -1402,8 +1225,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
 
     public boolean httpExternal() {
         if (null == httpExternal) {
-            Boolean b = get(HTTP_EXTERNAL_SERVER);
-            httpExternal = null == b ? Act.mode().isProd() : b;
+            httpExternal = get(HTTP_EXTERNAL_SERVER, Act.isProd());
         }
         return httpExternal;
     }
@@ -1424,8 +1246,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
 
     public int httpExternalSecurePort() {
         if (-1 == httpExternalSecurePort) {
-            String s = get(HTTP_EXTERNAL_SECURE_PORT);
-            httpExternalSecurePort = null == s ? httpExternal() ? 443 : httpPort() : Integer.parseInt(s);
+            httpExternalSecurePort = get(HTTP_EXTERNAL_SECURE_PORT, httpExternal() ? 443 : httpPort());
         }
         return httpExternalSecurePort;
     }
@@ -1446,8 +1267,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
 
     public int httpPort() {
         if (-1 == httpPort) {
-            String s = get(HTTP_PORT);
-            httpPort = null == s ? 5460 : Integer.parseInt(s);
+            httpPort = get(HTTP_PORT, 5460);
         }
         return httpPort;
     }
@@ -1467,11 +1287,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
 
     public boolean httpSecure() {
         if (null == httpSecure) {
-            Boolean B = get(HTTP_SECURE);
-            if (null == B) {
-                B = !Act.isDev() && S.neq(Act.profile(), "dev", S.IGNORECASE);
-            }
-            httpSecure = B;
+            httpSecure = get(HTTP_SECURE, !Act.isDev() && S.neq(Act.profile(), "dev", S.IGNORECASE));
         }
         return httpSecure;
     }
@@ -1493,8 +1309,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
 
     public int httpsPort() {
         if (-1 == httpsPort) {
-            String s = get(HTTPS_PORT);
-            httpsPort = null == s ? 5443 : Integer.parseInt(s);
+            httpsPort = get(HTTPS_PORT, 5443);
         }
         return httpsPort;
     }
@@ -1513,10 +1328,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     }
     public MissingAuthenticationHandler missingAuthenticationHandler() {
         if (null == mah) {
-            mah = get(HANDLER_MISSING_AUTHENTICATION);
-            if (null == mah) {
-                mah = app.getInstance(RedirectToLoginUrl.class);
-            }
+            mah = get(HANDLER_MISSING_AUTHENTICATION, app.getInstance(RedirectToLoginUrl.class));
         }
         return mah;
     }
@@ -1534,10 +1346,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     }
     public MissingAuthenticationHandler ajaxMissingAuthenticationHandler() {
         if (null == ajaxMah) {
-            ajaxMah = get(HANDLER_MISSING_AUTHENTICATION_AJAX);
-            if (null == ajaxMah) {
-                ajaxMah = missingAuthenticationHandler();
-            }
+            ajaxMah = get(HANDLER_MISSING_AUTHENTICATION_AJAX, missingAuthenticationHandler());
         }
         return ajaxMah;
     }
@@ -1555,10 +1364,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     }
     public MissingAuthenticationHandler csrfCheckFailureHandler() {
         if (null == csrfCheckFailureHandler) {
-            csrfCheckFailureHandler = get(HANDLER_CSRF_CHECK_FAILURE);
-            if (null == csrfCheckFailureHandler) {
-                csrfCheckFailureHandler = missingAuthenticationHandler();
-            }
+            csrfCheckFailureHandler = get(HANDLER_CSRF_CHECK_FAILURE, missingAuthenticationHandler());
         }
         return csrfCheckFailureHandler;
     }
@@ -1576,10 +1382,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     }
     public MissingAuthenticationHandler ajaxCsrfCheckFailureHandler() {
         if (null == ajaxCsrfCheckFailureHandler) {
-            ajaxCsrfCheckFailureHandler = get(HANDLER_AJAX_CSRF_CHECK_FAILURE);
-            if (null == ajaxCsrfCheckFailureHandler) {
-                ajaxCsrfCheckFailureHandler = csrfCheckFailureHandler();
-            }
+            ajaxCsrfCheckFailureHandler = get(HANDLER_AJAX_CSRF_CHECK_FAILURE, csrfCheckFailureHandler());
         }
         return ajaxCsrfCheckFailureHandler;
     }
@@ -1598,7 +1401,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
 
     public List<NamedPort> namedPorts() {
         if (null == namedPorts) {
-            String s = get(NAMED_PORTS);
+            String s = get(NAMED_PORTS, null);
             if (null == s) {
                 namedPorts = cliOverHttp() ? C.list(new NamedPort(PORT_CLI_OVER_HTTP, cliOverHttpPort())) : C.<NamedPort>list();
             } else {
@@ -1651,10 +1454,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
 
     public String encoding() {
         if (null == encoding) {
-            encoding = get(ENCODING);
-            if (null == encoding) {
-                encoding = StandardCharsets.UTF_8.name();
-            }
+            encoding = get(ENCODING, StandardCharsets.UTF_8.name());
         }
         return encoding;
     }
@@ -1675,11 +1475,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
 
     public String dateFormat() {
         if (null == dateFmt) {
-            dateFmt = get(FORMAT_DATE);
-            if (null == dateFmt) {
-                DateFormat formatter = DateFormat.getDateInstance();
-                dateFmt = ((SimpleDateFormat) formatter).toPattern();
-            }
+            dateFmt = get(FORMAT_DATE, ((SimpleDateFormat) DateFormat.getDateInstance()).toPattern());
         }
         return dateFmt;
     }
@@ -1700,11 +1496,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
 
     public String timeFormat() {
         if (null == timeFmt) {
-            timeFmt = get(FORMAT_TIME);
-            if (null == timeFmt) {
-                DateFormat formatter = DateFormat.getTimeInstance();
-                timeFmt = ((SimpleDateFormat) formatter).toPattern();
-            }
+            timeFmt = get(FORMAT_TIME, ((SimpleDateFormat) DateFormat.getTimeInstance()).toPattern());
         }
         return timeFmt;
     }
@@ -1725,11 +1517,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
 
     public String dateTimeFormat() {
         if (null == dateDateTimeFmt) {
-            dateDateTimeFmt = get(FORMAT_DATE_TIME);
-            if (null == dateDateTimeFmt) {
-                DateFormat formatter = DateFormat.getDateTimeInstance();
-                dateDateTimeFmt = ((SimpleDateFormat) formatter).toPattern();
-            }
+            dateDateTimeFmt = get(FORMAT_DATE_TIME, ((SimpleDateFormat) DateFormat.getDateTimeInstance()).toPattern());
         }
         return dateDateTimeFmt;
     }
@@ -1750,10 +1538,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
 
     public Locale locale() {
         if (null == locale) {
-            locale = get(LOCALE);
-            if (null == locale) {
-                locale = Locale.getDefault();
-            }
+            locale = get(LOCALE, Locale.getDefault());
         }
         return locale;
     }
@@ -1773,10 +1558,8 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
 
     public String sourceVersion() {
         if (null == sourceVersion) {
-            sourceVersion = get(AppConfigKey.SOURCE_VERSION);
-            if (null == sourceVersion) {
-                sourceVersion = "1." + $.JAVA_VERSION;
-            } else if (sourceVersion.startsWith("1.")) {
+            sourceVersion = get(AppConfigKey.SOURCE_VERSION, "1." + $.JAVA_VERSION);
+            if (sourceVersion.startsWith("1.")) {
                 sourceVersion = sourceVersion.substring(0, 3);
             }
         }
@@ -1798,10 +1581,8 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
 
     public String targetVersion() {
         if (null == targetVersion) {
-            targetVersion = get(TARGET_VERSION);
-            if (null == targetVersion) {
-                targetVersion = "1." + $.JAVA_VERSION;
-            } else if (targetVersion.startsWith("1.")) {
+            targetVersion = get(TARGET_VERSION, "1." + $.JAVA_VERSION);
+            if (targetVersion.startsWith("1.")) {
                 targetVersion = targetVersion.substring(0, 3);
             }
         }
@@ -1833,7 +1614,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
 
     public $.Predicate<String> appClassTester() {
         if (null == APP_CLASS_TESTER) {
-            String scanPackage = get(AppConfigKey.SCAN_PACKAGE);
+            String scanPackage = get(AppConfigKey.SCAN_PACKAGE, null);
             if (S.isBlank(scanPackage)) {
                 APP_CLASS_TESTER = SYSTEM_SCAN_LIST;
             } else {
@@ -1883,10 +1664,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
 
     public TemplatePathResolver templatePathResolver() {
         if (null == templatePathResolver) {
-            templatePathResolver = get(AppConfigKey.RESOLVER_TEMPLATE_PATH);
-            if (null == templatePathResolver) {
-                templatePathResolver = new TemplatePathResolver();
-            }
+            templatePathResolver = get(AppConfigKey.RESOLVER_TEMPLATE_PATH, new TemplatePathResolver());
         }
         return templatePathResolver;
     }
@@ -1908,10 +1686,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
 
     public String templateHome() {
         if (null == templateHome) {
-            templateHome = get(AppConfigKey.TEMPLATE_HOME);
-            if (null == templateHome) {
-                templateHome = "default";
-            }
+            templateHome = get(AppConfigKey.TEMPLATE_HOME, "default");
         }
         return templateHome;
     }
@@ -1933,7 +1708,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
 
     public String pingPath() {
         if (!pingPathResolved) {
-            pingPath = get(AppConfigKey.PING_PATH);
+            pingPath = get(AppConfigKey.PING_PATH, null);
             pingPathResolved = true;
         }
         return pingPath;
@@ -1976,7 +1751,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     }
     public Osgl.Func0<H.Format> jsonContentTypeProvider() {
         if (null == renderJsonIeFix) {
-            String contentType = get(RENDER_JSON_CONTENT_TYPE_IE);
+            String contentType = get(RENDER_JSON_CONTENT_TYPE_IE, null);
             if (null != contentType) {
                 setRenderJsonContenTypeIE(contentType);
             } else {
@@ -2000,10 +1775,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     }
     public boolean renderJsonOutputCharset() {
         if (null == renderJsonOutputCharset) {
-            renderJsonOutputCharset = get(RENDER_JSON_OUTPUT_CHARSET);
-            if (null == renderJsonOutputCharset) {
-                renderJsonOutputCharset = false;
-            }
+            renderJsonOutputCharset = get(RENDER_JSON_OUTPUT_CHARSET, false);
         }
         return renderJsonOutputCharset;
     }
@@ -2022,10 +1794,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
 
     public String serverHeader() {
         if (null == serverHeader) {
-            serverHeader = get(AppConfigKey.SERVER_HEADER);
-            if (null == serverHeader) {
-                serverHeader = "act";
-            }
+            serverHeader = get(AppConfigKey.SERVER_HEADER, "act");
         }
         return serverHeader;
     }
@@ -2047,11 +1816,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
 
     public String sessionKeyUsername() {
         if (null == sessionKeyUsername) {
-            String username = get(SESSION_KEY_USERNAME);
-            if (S.blank(username)) {
-                username = "username";
-            }
-            sessionKeyUsername = username;
+            sessionKeyUsername = get(SESSION_KEY_USERNAME, "username");
         }
         return sessionKeyUsername;
     }
@@ -2073,11 +1838,9 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
 
     private String cookiePrefix() {
         if (null == cookiePrefix) {
-            cookiePrefix = get(COOKIE_PREFIX);
-            if (null == cookiePrefix) {
-                cookiePrefix = S.concat(app().shortId(), "-");
-            }
+            cookiePrefix = get(COOKIE_PREFIX, S.concat(app().shortId(), "-"));
             cookiePrefix = cookiePrefix.trim().toLowerCase();
+            set(COOKIE_PREFIX, cookiePrefix);
         }
         return cookiePrefix;
     }
@@ -2143,10 +1906,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
 
     public int sessionTtl() {
         if (null == sessionTtl) {
-            sessionTtl = getInteger(AppConfigKey.SESSION_TTL);
-            if (null == sessionTtl) {
-                sessionTtl = 60 * 30;
-            }
+            sessionTtl = get(AppConfigKey.SESSION_TTL, 60 * 30);
         }
         return sessionTtl;
     }
@@ -2166,10 +1926,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
 
     public boolean persistSession() {
         if (null == sessionPersistent) {
-            sessionPersistent = get(AppConfigKey.SESSION_PERSISTENT_ENABLED);
-            if (null == sessionPersistent) {
-                sessionPersistent = false;
-            }
+            sessionPersistent = get(AppConfigKey.SESSION_PERSISTENT_ENABLED, false);
         }
         return sessionPersistent;
     }
@@ -2189,10 +1946,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
 
     public boolean encryptSession() {
         if (null == sessionEncrypt) {
-            sessionEncrypt = get(AppConfigKey.SESSION_ENCRYPT_ENABLED);
-            if (null == sessionEncrypt) {
-                sessionEncrypt = false;
-            }
+            sessionEncrypt = get(AppConfigKey.SESSION_ENCRYPT_ENABLED, false);
         }
         return sessionEncrypt;
     }
@@ -2212,7 +1966,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
 
     public SessionMapper sessionMapper() {
         if (null == sessionMapper) {
-            Object o = get(SESSION_MAPPER);
+            Object o = get(SESSION_MAPPER, null);
             if (null == o) {
                 // we might set header session mapper prefix
                 sessionMapperHeaderPrefix();
@@ -2220,6 +1974,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
             if (null == sessionMapper) {
                 sessionMapper = SessionMapper.DefaultSessionMapper.wrap((SessionMapper) o);
             }
+            set(SESSION_MAPPER, sessionMapper);
         }
         return sessionMapper;
     }
@@ -2238,7 +1993,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     }
     public String sessionMapperHeaderPrefix() {
         if (!sessionMapperHeaderPrefixSet) {
-            sessionMapperHeaderPrefix = get(SESSION_MAPPER_HEADER_PREFIX);
+            sessionMapperHeaderPrefix = get(SESSION_MAPPER_HEADER_PREFIX, null);
             sessionMapperHeaderPrefixSet = true;
             if (null != sessionMapperHeaderPrefix) {
                 this.sessionMapper = SessionMapper.DefaultSessionMapper.wrap(new SessionMapper.HeaderSessionMapper(sessionMapperHeaderPrefix));
@@ -2262,10 +2017,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
 
     public boolean sessionSecure() {
         if (null == sessionSecure) {
-            sessionSecure = get(AppConfigKey.SESSION_SECURE);
-            if (null == sessionSecure) {
-                sessionSecure = httpSecure();
-            }
+            sessionSecure = get(AppConfigKey.SESSION_SECURE, httpSecure());
         }
         return sessionSecure;
     }
@@ -2284,9 +2036,8 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     }
     public String secret() {
         if (null == secret) {
-            secret = get(AppConfigKey.SECRET);
-            if (null == secret) {
-                secret = "myawesomeapp";
+            secret = get(AppConfigKey.SECRET, "myawesomeapp");
+            if ("myawsomeapp".equals(secret)) {
                 logger.warn("Application secret key not set! You are in the dangerous zone!!!");
             }
         }
@@ -2317,7 +2068,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
                 return secureTicketCodec;
             }
             if (null == secureTicketCodecClass) {
-                secureTicketCodecClass = get(SECURE_TICKET_CODEC);
+                secureTicketCodecClass = get(SECURE_TICKET_CODEC, null);
                 if (null == secureTicketCodecClass) {
                     secureTicketCodec = app().getInstance(DefaultSecureTicketCodec.class);
                     return secureTicketCodec;
@@ -2340,7 +2091,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     private List<File> moduleBases;
     public List<File> moduleBases() {
         if (null == moduleBases) {
-            String v = get(AppConfigKey.MODULES);
+            String v = get(AppConfigKey.MODULES, null);
             moduleBases = processModules(v);
         }
         return moduleBases;
@@ -2379,10 +2130,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
 
     public boolean metricEnabled() {
         if (null == metricEnabled) {
-            metricEnabled = get(METRIC_ENABLED);
-            if (null == metricEnabled) {
-                metricEnabled = true;
-            }
+            metricEnabled = get(METRIC_ENABLED, true);
         }
         return metricEnabled;
     }
@@ -2413,11 +2161,12 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     public CacheService cacheService(String name) {
         if (null == csp) {
             try {
-                csp = get(AppConfigKey.CACHE_IMPL);
+                csp = get(AppConfigKey.CACHE_IMPL, null);
             } catch (ConfigurationException e) {
                 Object obj = helper.getValFromAliases(raw, AppConfigKey.CACHE_IMPL.toString(), "impl", null);
                 csp = CacheServiceProvider.Impl.valueOfIgnoreCase(obj.toString());
                 if (null != csp) {
+                    set(AppConfigKey.CACHE_IMPL, csp);
                     return csp.get(name);
                 }
                 throw e;
@@ -2444,10 +2193,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
 
     public String cacheName() {
         if (null == _cacheName) {
-            _cacheName = get(AppConfigKey.SESSION_KEY_USERNAME);
-            if (null == _cacheName) {
-                _cacheName = "_act_app_";
-            }
+            _cacheName = get(AppConfigKey.SESSION_KEY_USERNAME, "_act_app_");
         }
         return _cacheName;
     }
@@ -2467,10 +2213,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
 
     public String cacheNameSession() {
         if (null == _cacheNameSession) {
-            _cacheNameSession = get(AppConfigKey.CACHE_NAME_SESSION);
-            if (null == _cacheNameSession) {
-                _cacheNameSession = cacheName();
-            }
+            _cacheNameSession = get(AppConfigKey.CACHE_NAME_SESSION, cacheName());
         }
         return _cacheNameSession;
     }
@@ -2484,10 +2227,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
 
     public UnknownHttpMethodProcessor unknownHttpMethodProcessor() {
         if (null == _unknownHttpMethodProcessor) {
-            _unknownHttpMethodProcessor = get(AppConfigKey.HANDLER_UNKNOWN_HTTP_METHOD);
-            if (null == _unknownHttpMethodProcessor) {
-                _unknownHttpMethodProcessor = UnknownHttpMethodProcessor.METHOD_NOT_ALLOWED;
-            }
+            _unknownHttpMethodProcessor = get(AppConfigKey.HANDLER_UNKNOWN_HTTP_METHOD, UnknownHttpMethodProcessor.METHOD_NOT_ALLOWED);
         }
         return _unknownHttpMethodProcessor;
     }
@@ -2505,10 +2245,8 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     }
     public int resourcePreloadSizeLimit() {
         if (null == resourcePreloadSizeLimit) {
-            resourcePreloadSizeLimit = getInteger(RESOURCE_PRELOAD_SIZE_LIMIT);
-            if (null == resourcePreloadSizeLimit) {
-                resourcePreloadSizeLimit = 1024 * 10;
-            } else if (resourcePreloadSizeLimit <= 0) {
+            resourcePreloadSizeLimit = get(RESOURCE_PRELOAD_SIZE_LIMIT, 1024 * 10);
+            if (resourcePreloadSizeLimit <= 0) {
                 logger.warn("resource.preload.size.limit is set to zero or below, resource preload is disabled!");
             }
         }
@@ -2527,10 +2265,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     }
     public int uploadInMemoryCacheThreshold() {
         if (null == uploadInMemoryCacheThreshold) {
-            uploadInMemoryCacheThreshold = getInteger(UPLOAD_IN_MEMORY_CACHE_THRESHOLD);
-            if (null == uploadInMemoryCacheThreshold) {
-                uploadInMemoryCacheThreshold = 1024 * 10;
-            }
+            uploadInMemoryCacheThreshold = get(UPLOAD_IN_MEMORY_CACHE_THRESHOLD, 1024 * 10);
         }
         return uploadInMemoryCacheThreshold;
     }
@@ -2547,10 +2282,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     }
     public boolean supportSsl() {
         if (null == ssl) {
-            ssl = get(SSL);
-            if (null == ssl) {
-                ssl = false;
-            }
+            ssl = get(SSL, false);
         }
         return ssl;
     }
@@ -2569,10 +2301,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
 
     public String wsTicketKey() {
         if (null == wsTicketKey) {
-            wsTicketKey = get(WS_KEY_TICKET);
-            if (null == wsTicketKey) {
-                wsTicketKey = "ws_ticket";
-            }
+            wsTicketKey = get(WS_KEY_TICKET, "ws_ticket");
         }
         return wsTicketKey;
     }

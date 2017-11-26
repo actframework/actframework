@@ -79,7 +79,7 @@ public enum ActConfigKey implements ConfigKey {
      *
      * Default value: `0` meaning let the system decide the worker_threads number
      */
-    XIO_MAX_WORKER_THREADS("xio.worker_threads.max"),
+    XIO_MAX_WORKER_THREADS("xio.worker_threads.max.int"),
 
     /**
      * `act.xio.statistics.enabled`

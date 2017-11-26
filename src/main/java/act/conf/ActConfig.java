@@ -55,7 +55,7 @@ public class ActConfig extends Config<ActConfigKey> {
 
     public File home() {
         if (null == home) {
-            URI uri = get(HOME);
+            URI uri = get(HOME, null);
             if (null == uri) {
                 E.invalidConfiguration("valid act.home.dir expected");
             }
@@ -69,7 +69,7 @@ public class ActConfig extends Config<ActConfigKey> {
 
     public File appBase() {
         if (null == appBase) {
-            String s = get(APP_BASE);
+            String s = get(APP_BASE, null);
             appBase = new File(home(), s);
             validateDir(appBase, APP_BASE.key());
         }
@@ -79,12 +79,7 @@ public class ActConfig extends Config<ActConfigKey> {
     private Integer xioMaxWorkerThreads;
     public int xioMaxWorkerThreads() {
         if (null == xioMaxWorkerThreads) {
-            String s = get(XIO_MAX_WORKER_THREADS);
-            if (null == s) {
-                xioMaxWorkerThreads = 0;
-            } else {
-                xioMaxWorkerThreads = Integer.parseInt(s);
-            }
+            xioMaxWorkerThreads = get(XIO_MAX_WORKER_THREADS, 0);
         }
         return xioMaxWorkerThreads;
     }
@@ -93,10 +88,7 @@ public class ActConfig extends Config<ActConfigKey> {
     private Boolean xioStatistics;
     public boolean xioStatistics() {
         if (null == xioStatistics) {
-            xioStatistics = get(XIO_STATISTICS);
-            if (null == xioStatistics) {
-                xioStatistics = false;
-            }
+            xioStatistics = get(XIO_STATISTICS, false);
         }
         return xioStatistics;
     }

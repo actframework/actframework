@@ -70,15 +70,14 @@ public abstract class Config<E extends ConfigKey> extends DestroyableBase {
      * @param <T>
      * @return the configured item
      */
-    public <T> T get(ConfigKey key) {
+    public <T> T get(ConfigKey key, T def) {
         Object o = data.get(key);
         if (null == o) {
             o = key.val(raw);
-            if (null != o) {
-                data.put(key, o);
-            } else {
-                data.put(key, NULL);
+            if (null == o) {
+                o = null == def ? NULL : def;
             }
+            data.put(key, o);
         }
         if (o == NULL) {
             return null;
@@ -87,8 +86,12 @@ public abstract class Config<E extends ConfigKey> extends DestroyableBase {
         }
     }
 
-    public Integer getInteger(ConfigKey key) {
-        Object retVal = get(key);
+    public void set(ConfigKey key, Object val) {
+        data.put(key, val);
+    }
+
+    public Integer getInteger(ConfigKey key, Integer def) {
+        Object retVal = get(key, def);
         if (null == retVal) {
             return null;
         }
@@ -115,7 +118,6 @@ public abstract class Config<E extends ConfigKey> extends DestroyableBase {
         try {
             o = key.val(raw);
             if (null == o) {
-                data.put(key, NULL);
                 return false;
             }
             return true;
@@ -165,7 +167,7 @@ public abstract class Config<E extends ConfigKey> extends DestroyableBase {
         }
         ConfigKey rk = keyOf(key);
         if (null != rk) {
-            return get(rk);
+            return get(rk, null);
         } else {
             return AppConfigKey.helper.getConfiguration(key, null, raw);
         }
