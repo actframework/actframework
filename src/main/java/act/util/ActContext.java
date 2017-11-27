@@ -41,6 +41,8 @@ import javax.validation.ConstraintViolation;
 import java.lang.reflect.Method;
 import java.util.*;
 
+import static act.view.ViewManager.isTemplatePath;
+
 public interface ActContext<CTX_TYPE extends ActContext> extends ParamValueProvider {
     /**
      * Used to store the {@link java.lang.reflect.Method} this context is trying
@@ -595,55 +597,5 @@ public interface ActContext<CTX_TYPE extends ActContext> extends ParamValueProvi
             return null == current ? null : current.pattern();
         }
 
-        /**
-         * Check if a given string is a template path or template content
-         * <p>
-         * If the string contains anyone the following characters then we assume it
-         * is content, otherwise it is path:
-         * <p>
-         * * space characters
-         * * non numeric-alphabetic characters except:
-         * ** dot "."
-         * ** dollar: "$"
-         *
-         * @param string the string to be tested
-         * @return `true` if the string literal is template content or `false` otherwise
-         */
-        private boolean isTemplatePath(String string) {
-            int sz = string.length();
-            if (sz == 0) {
-                return true;
-            }
-            for (int i = 0; i < sz; ++i) {
-                char c = string.charAt(i);
-                switch (c) {
-                    case ' ':
-                    case '\t':
-                    case '\b':
-                    case '<':
-                    case '>':
-                    case '(':
-                    case ')':
-                    case '[':
-                    case ']':
-                    case '{':
-                    case '}':
-                    case '!':
-                    case '@':
-                    case '#':
-                    case '*':
-                    case '?':
-                    case '%':
-                    case '|':
-                    case ',':
-                    case ':':
-                    case ';':
-                    case '^':
-                    case '&':
-                        return false;
-                }
-            }
-            return true;
-        }
     }
 }

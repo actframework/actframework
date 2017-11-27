@@ -146,7 +146,7 @@ public class ViewManager extends DestroyableBase {
         View defView = Act.appConfig().defaultView();
 
         if (null != defView) {
-            template = defView.loadTemplate(templatePath);
+            template = !isTemplatePath(path) ? defView.loadInlineTemplate(path) : defView.loadTemplate(templatePath);
         }
         if (null == template && multiViews) {
             for (View view : viewList) {
@@ -242,5 +242,56 @@ public class ViewManager extends DestroyableBase {
                 return view.name().toUpperCase().equals(name.toUpperCase());
             }
         });
+    }
+
+    /**
+     * Check if a given string is a template path or template content
+     *
+     * If the string contains anyone the following characters then we assume it
+     * is content, otherwise it is path:
+     *
+     * * space characters
+     * * non numeric-alphabetic characters except:
+     * ** dot "."
+     * ** dollar: "$"
+     *
+     * @param string the string to be tested
+     * @return `true` if the string literal is template content or `false` otherwise
+     */
+    public static boolean isTemplatePath(String string) {
+        int sz = string.length();
+        if (sz == 0) {
+            return true;
+        }
+        for (int i = 0; i < sz; ++i) {
+            char c = string.charAt(i);
+            switch (c) {
+                case ' ':
+                case '\t':
+                case '\b':
+                case '<':
+                case '>':
+                case '(':
+                case ')':
+                case '[':
+                case ']':
+                case '{':
+                case '}':
+                case '!':
+                case '@':
+                case '#':
+                case '*':
+                case '?':
+                case '%':
+                case '|':
+                case ',':
+                case ':':
+                case ';':
+                case '^':
+                case '&':
+                    return false;
+            }
+        }
+        return true;
     }
 }
