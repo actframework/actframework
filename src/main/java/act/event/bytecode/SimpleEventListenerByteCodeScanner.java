@@ -152,7 +152,6 @@ public class SimpleEventListenerByteCodeScanner extends AppByteCodeScannerBase {
                                     return new AnnotationVisitor(ASM5, av0) {
                                         @Override
                                         public void visit(String name, Object value) {
-                                            super.visit(name, value);
                                             if (isOn) {
                                                 events.add(S.string(value).intern());
                                             } else {
@@ -160,6 +159,7 @@ public class SimpleEventListenerByteCodeScanner extends AppByteCodeScannerBase {
                                                 Class<?> c = $.classForName(type.getClassName(), app().classLoader());
                                                 events.add(c);
                                             }
+                                            super.visit(name, value);
                                         }
 
                                         @Override
@@ -187,6 +187,7 @@ public class SimpleEventListenerByteCodeScanner extends AppByteCodeScannerBase {
                                 } else if ("beforeAppStart".equals(name)) {
                                     beforeAppStart = Boolean.parseBoolean(S.string(value));
                                 }
+                                super.visit(name, value);
                             }
 
                             @Override

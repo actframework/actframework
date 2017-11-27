@@ -107,6 +107,7 @@ public class DataObjectEnhancer extends AppByteCodeEnhancer<DataObjectEnhancer> 
                             metaInfo.requireCallSuper();
                         }
                     }
+                    super.visit(name, value);
                 }
             };
         }

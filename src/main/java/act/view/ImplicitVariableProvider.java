@@ -160,10 +160,10 @@ public abstract class ImplicitVariableProvider implements Plugin {
                                 return new AnnotationVisitor(ASM5, av) {
                                     @Override
                                     public void visit(String name, Object value) {
-                                        super.visit(name, value);
                                         if ("value".equals(name)) {
                                             meta.varName = value.toString();
                                         }
+                                        super.visit(name, value);
                                     }
                                 };
                             }

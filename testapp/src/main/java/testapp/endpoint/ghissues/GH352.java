@@ -7,7 +7,7 @@ import org.osgl.mvc.annotation.Before;
 import org.osgl.mvc.annotation.GetAction;
 
 /**
- * Test `@ResponseStatus` annotation on direct return object
+ * Verify fix to #352 and #424
  */
 @UrlContext("352")
 @TemplateContext("352")
@@ -26,5 +26,10 @@ public class GH352 extends GithubIssueBase {
     @GetAction
     public String test(ViewManager viewManager) {
         return viewManager.getTemplate("/gh/352/test.html").render(context);
+    }
+
+    @GetAction("relative")
+    public String testRelativePath(ViewManager viewManager) {
+        return viewManager.getTemplate("test").render(context);
     }
 }

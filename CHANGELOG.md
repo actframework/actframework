@@ -1,6 +1,8 @@
 # ActFramework Change Log
 
 **1.6.0 TBD**
+* `@TemplateContext` shall inherit from parent class #424
+* `@Configuration` not works properly #423
 * Support `@Configuration` inject #421
 * Create an mechanism to load resource from config folder #420
 * Support annotated routing directive #419

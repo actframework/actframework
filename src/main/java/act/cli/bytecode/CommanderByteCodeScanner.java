@@ -167,7 +167,6 @@ public class CommanderByteCodeScanner extends AppByteCodeScannerBase {
 
                 @Override
                 public void visit(String name, Object value) {
-                    super.visit(name, value);
                     if ("value".equals(name)) {
                         String key = S.string(value);
                         if (S.blank(key)) {
@@ -176,6 +175,7 @@ public class CommanderByteCodeScanner extends AppByteCodeScannerBase {
                             sessionVariableName = key;
                         }
                     }
+                    super.visit(name, value);
                 }
 
                 @Override
@@ -280,7 +280,6 @@ public class CommanderByteCodeScanner extends AppByteCodeScannerBase {
                     return new AnnotationVisitor(ASM5, av) {
                         @Override
                         public void visit(String name, Object value) {
-                            super.visit(name, value);
                             if (S.eq("value", name) || S.eq("name", name)) {
                                 String commandName = S.string(value);
                                 if (S.empty(commandName)) {
@@ -290,14 +289,15 @@ public class CommanderByteCodeScanner extends AppByteCodeScannerBase {
                             } else if (S.eq("help", name)) {
                                 methodInfo.helpMsg(S.string(value));
                             }
+                            super.visit(name, value);
                         }
 
                         @Override
                         public void visitEnum(String name, String desc, String value) {
-                            super.visitEnum(name, desc, value);
                             if ("mode".equals(name)) {
                                 methodInfo.mode(Act.Mode.valueOf(value));
                             }
+                            super.visitEnum(name, desc, value);
                         }
 
                         @Override
@@ -331,24 +331,24 @@ public class CommanderByteCodeScanner extends AppByteCodeScannerBase {
                                 return new AnnotationVisitor(ASM5, av0) {
                                     @Override
                                     public void visit(String name, Object value) {
-                                        super.visit(name, value);
                                         propSpec.onValue(S.string(value));
+                                        super.visit(name, value);
                                     }
                                 };
                             } else if (S.eq("cli", name)) {
                                 return new AnnotationVisitor(ASM5, av0) {
                                     @Override
                                     public void visit(String name, Object value) {
-                                        super.visit(name, value);
                                         propSpec.onCli(S.string(value));
+                                        super.visit(name, value);
                                     }
                                 };
                             } else if (S.eq("http", name)) {
                                 return new AnnotationVisitor(ASM5, av0) {
                                     @Override
                                     public void visit(String name, Object value) {
-                                        super.visit(name, value);
                                         propSpec.onHttp(S.string(value));
+                                        super.visit(name, value);
                                     }
                                 };
                             } else {
@@ -387,6 +387,7 @@ public class CommanderByteCodeScanner extends AppByteCodeScannerBase {
                             if ("value".equals(name)) {
                                 attributeKey = S.string(value);
                             }
+                            super.visit(name, value);
                         }
 
                         @Override
@@ -476,8 +477,8 @@ public class CommanderByteCodeScanner extends AppByteCodeScannerBase {
                 return new AnnotationVisitor(ASM5, av) {
                     @Override
                     public void visit(String name, Object value) {
-                        super.visit(name, value);
                         specs.add((String) value);
+                        super.visit(name, value);
                     }
                 };
             }
@@ -486,7 +487,6 @@ public class CommanderByteCodeScanner extends AppByteCodeScannerBase {
 
         @Override
         public void visit(String name, Object value) {
-            super.visit(name, value);
             if (S.eq("group", name)) {
                 optionAnnoInfo.group((String) value);
             } else if (S.eq("defVal", name)) {
@@ -494,6 +494,7 @@ public class CommanderByteCodeScanner extends AppByteCodeScannerBase {
             } else if (S.eq("value", name) || S.eq("help", name)) {
                 optionAnnoInfo.help((String) value);
             }
+            super.visit(name, value);
         }
 
         @Override

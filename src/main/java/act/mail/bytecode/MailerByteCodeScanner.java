@@ -140,6 +140,7 @@ public class MailerByteCodeScanner extends AppByteCodeScannerBase {
                 if ("value".equals(name)) {
                     classInfo.configId(value.toString());
                 }
+                super.visit(name, value);
             }
         }
 
@@ -153,6 +154,7 @@ public class MailerByteCodeScanner extends AppByteCodeScannerBase {
                 if ("value".equals(name)) {
                     classInfo.templateContext(value.toString());
                 }
+                super.visit(name, value);
             }
         }
 
@@ -211,7 +213,6 @@ public class MailerByteCodeScanner extends AppByteCodeScannerBase {
                 }
                 info.returnType(Type.getReturnType(desc));
                 Type[] argTypes = Type.getArgumentTypes(desc);
-                boolean ctxByParam = false;
                 for (int i = 0; i < argTypes.length; ++i) {
                     Type type = argTypes[i];
                     HandlerParamMetaInfo param = new HandlerParamMetaInfo().type(type);
@@ -277,6 +278,7 @@ public class MailerByteCodeScanner extends AppByteCodeScannerBase {
                     if ("value".equals(name)) {
                         methodInfo.configId(value.toString());
                     }
+                    super.visit(name, value);
                 }
 
             }
@@ -292,6 +294,7 @@ public class MailerByteCodeScanner extends AppByteCodeScannerBase {
                     if ("value".equals(name)) {
                         methodInfo.templateContext(value.toString());
                     }
+                    super.visit(name, value);
                 }
 
             }

@@ -66,7 +66,8 @@ public final class ControllerClassMetaInfo extends DestroyableBase {
     private ControllerClassMetaInfo parent;
     private boolean isController;
     private boolean possibleController;
-    private String contextPath;
+    private String urlContext;
+    private String templateContext;
 
     public ControllerClassMetaInfo className(String name) {
         this.type = Type.getObjectType(name);
@@ -317,37 +318,71 @@ public final class ControllerClassMetaInfo extends DestroyableBase {
         buildHandlerLookup();
         return this;
     }
-
-    public String contextPath() {
+    
+    public String templateContext() {
         if (null != parent) {
-            if (S.notBlank(contextPath) && contextPath.length() > 1 && contextPath.startsWith("/")) {
-                return contextPath;
+            if (S.notBlank(templateContext) && templateContext.length() > 1 && templateContext.startsWith("/")) {
+                return templateContext;
             }
-            String parentContextPath = parent.contextPath();
-            if (null == contextPath) {
+            String parentContextPath = parent.templateContext();
+            if (null == templateContext) {
                 return parentContextPath;
             }
             if (null == parentContextPath) {
-                return contextPath;
+                return templateContext;
             }
             S.Buffer sb = S.newBuffer(parentContextPath);
             if (parentContextPath.endsWith("/")) {
                 sb.deleteCharAt(sb.length() - 1);
             }
-            if (!contextPath.startsWith("/")) {
+            if (!templateContext.startsWith("/")) {
                 sb.append("/");
             }
-            sb.append(contextPath);
+            sb.append(templateContext);
             return sb.toString();
         }
-        return contextPath;
+        return templateContext;
     }
 
-    public ControllerClassMetaInfo contextPath(String path) {
+    public String urlContext() {
+        if (null != parent) {
+            if (S.notBlank(urlContext) && urlContext.length() > 1 && urlContext.startsWith("/")) {
+                return urlContext;
+            }
+            String parentContextPath = parent.urlContext();
+            if (null == urlContext) {
+                return parentContextPath;
+            }
+            if (null == parentContextPath) {
+                return urlContext;
+            }
+            S.Buffer sb = S.newBuffer(parentContextPath);
+            if (parentContextPath.endsWith("/")) {
+                sb.deleteCharAt(sb.length() - 1);
+            }
+            if (!urlContext.startsWith("/")) {
+                sb.append("/");
+            }
+            sb.append(urlContext);
+            return sb.toString();
+        }
+        return urlContext;
+    }
+
+    public ControllerClassMetaInfo templateContext(String path) {
         if (S.blank(path)) {
-            contextPath = "/";
+            templateContext = "/";
         } else {
-            contextPath = path;
+            templateContext = path;
+        }
+        return this;
+    }
+
+    public ControllerClassMetaInfo urlContext(String path) {
+        if (S.blank(path)) {
+            urlContext = "/";
+        } else {
+            urlContext = path;
         }
         return this;
     }

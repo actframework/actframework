@@ -140,6 +140,16 @@ public class ViewManager extends DestroyableBase {
     }
 
     public Template getTemplate(String path) {
+        ActContext.Base ctx = ActContext.Base.currentContext();
+        if (null != ctx) {
+            String curPath = ctx.templatePath();
+            ctx.templateLiteral(path);
+            try {
+                return load(ctx);
+            } finally {
+                ctx.templatePath(curPath);
+            }
+        }
         final String templatePath = S.ensureStartsWith(path, '/');
         Template template = null;
 

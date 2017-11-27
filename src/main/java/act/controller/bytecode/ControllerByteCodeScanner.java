@@ -31,6 +31,7 @@ import act.asm.signature.SignatureVisitor;
 import act.conf.AppConfig;
 import act.controller.Controller;
 import act.controller.annotation.Port;
+import act.controller.annotation.TemplateContext;
 import act.controller.annotation.UrlContext;
 import act.controller.meta.*;
 import act.handler.builtin.controller.RequestHandlerProxy;
@@ -134,6 +135,9 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
             } else if (Type.getType(UrlContext.class).getDescriptor().equals(desc)) {
                 classInfo.isController(true);
                 return new UrlContextAnnotationVisitor(av);
+            } else if (Type.getType(TemplateContext.class).getDescriptor().equals(desc)) {
+                classInfo.isController(true);
+                return new TemplateContextAnnotationVisitor(av);
             } else if (Type.getType(Port.class).getDescriptor().equals(desc)) {
                 return new PortAnnotationVisitor(av);
             } else if (Type.getType(With.class).getDescriptor().equals(desc)) {
@@ -236,8 +240,9 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
             @Override
             public void visit(String name, Object value) {
                 if ("value".equals(name)) {
-                    classInfo.contextPath(value.toString());
+                    classInfo.urlContext(value.toString());
                 }
+                super.visit(name, value);
             }
 
             @Override
@@ -265,8 +270,23 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
             @Override
             public void visit(String name, Object value) {
                 if ("value".equals(name)) {
-                    classInfo.contextPath(value.toString());
+                    classInfo.urlContext(value.toString());
                 }
+                super.visit(name, value);
+            }
+        }
+
+        private class TemplateContextAnnotationVisitor extends AnnotationVisitor {
+            TemplateContextAnnotationVisitor(AnnotationVisitor av) {
+                super(ASM5, av);
+            }
+
+            @Override
+            public void visit(String name, Object value) {
+                if ("value".equals(name)) {
+                    classInfo.templateContext(value.toString());
+                }
+                super.visit(name, value);
             }
         }
 
@@ -379,24 +399,24 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
                                 return new AnnotationVisitor(ASM5, av0) {
                                     @Override
                                     public void visit(String name, Object value) {
-                                        super.visit(name, value);
                                         propSpec.onValue(S.string(value));
+                                        super.visit(name, value);
                                     }
                                 };
                             } else if (S.eq("cli", name)) {
                                 return new AnnotationVisitor(ASM5, av0) {
                                     @Override
                                     public void visit(String name, Object value) {
-                                        super.visit(name, value);
                                         propSpec.onCli(S.string(value));
+                                        super.visit(name, value);
                                     }
                                 };
                             } else if (S.eq("http", name)) {
                                 return new AnnotationVisitor(ASM5, av0) {
                                     @Override
                                     public void visit(String name, Object value) {
-                                        super.visit(name, value);
                                         propSpec.onHttp(S.string(value));
+                                        super.visit(name, value);
                                     }
                                 };
                             } else {
@@ -650,6 +670,7 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
                     @Override
                     public void visit(String name, Object value) {
                         exceptions.add(((Type) value).getClassName());
+                        super.visit(name, value);
                     }
 
                     @Override
@@ -684,20 +705,20 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
                         return new AnnotationVisitor(ASM5, av) {
                             @Override
                             public void visit(String name, Object value) {
-                                super.visit(name, value);
                                 paths.add((String) value);
+                                super.visit(name, value);
                             }
                         };
                     } else if ("methods".equals(name)) {
                         return new AnnotationVisitor(ASM5, av) {
                             @Override
                             public void visitEnum(String name, String desc, String value) {
-                                super.visitEnum(name, desc, value);
                                 String enumClass = Type.getType(desc).getClassName();
                                 if (H.Method.class.getName().equals(enumClass)) {
                                     H.Method method = H.Method.valueOf(value);
                                     httpMethods.add(method);
                                 }
+                                super.visitEnum(name, desc, value);
                             }
                         };
                     } else {
@@ -814,6 +835,7 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
                     if ("model".endsWith(name)) {
                         info.model((String) value);
                     }
+                    super.visit(name, value);
                 }
 
                 @Override
@@ -826,6 +848,7 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
                                 Type type = (Type) value;
                                 Class<? extends Binder> c = $.classForName(type.getClassName(), getClass().getClassLoader());
                                 info.binder(c);
+                                super.visit(name, value);
                             }
                         };
                     }
@@ -879,7 +902,7 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
         public void run() {
             final Set<String> contexts = new HashSet<>();
             if (!noRegister) {
-                String contextPath = classInfo.contextPath();
+                String contextPath = classInfo.urlContext();
                 String className = classInfo.className();
                 String action = WsEndpoint.PSEUDO_METHOD == methodName ? methodName : S.concat(className, ".", methodName);
                 registerOnContext(contextPath, action);
@@ -901,7 +924,7 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
                     String className = classNode.name();
                     ControllerClassMetaInfo subClassInfo = classLoader.controllerClassMetaInfo(className);
                     if (null != subClassInfo) {
-                        String subClassContextPath = subClassInfo.contextPath();
+                        String subClassContextPath = subClassInfo.urlContext();
                         if (null != subClassContextPath) {
                             if (!contexts.contains(subClassContextPath)) {
                                 registerOnContext(subClassContextPath, S.builder(subClassInfo.className()).append(".").append(methodName).toString());

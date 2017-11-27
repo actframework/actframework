@@ -172,11 +172,13 @@ public class GeneralAnnoInfo {
                 @Override
                 public void visitEnum(String ignore, String desc, String value) {
                     anno.putListAttribute(name, new EnumInfo(desc, value));
+                    super.visitEnum(ignore, desc, value);
                 }
 
                 @Override
                 public void visit(String ignore, Object value) {
                     anno.putListAttribute(name, value);
+                    super.visit(ignore, value);
                 }
             };
         }

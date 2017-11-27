@@ -16,4 +16,10 @@ public class GHIssue352 extends EndpointTester {
         bodyEq("Hello Act");
     }
 
+    @Test
+    public void testRelative() throws Exception {
+        url("/gh/352/relative").get();
+        bodyEq("<p>Hello Act</p>");
+    }
+
 }

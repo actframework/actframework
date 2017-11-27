@@ -28,7 +28,6 @@ import act.controller.CacheSupportMetaInfo;
 import act.controller.Controller;
 import act.controller.annotation.HandleCsrfFailure;
 import act.controller.annotation.HandleMissingAuthentication;
-import act.controller.annotation.TemplateContext;
 import act.controller.meta.*;
 import act.data.annotation.Pattern;
 import act.db.RequireDataBind;
@@ -118,7 +117,6 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
     private Map<Integer, String> outputParams;
     private boolean hasOutputVar;
     private String pattern;
-    private String templateContext;
     private boolean noTemplateCache;
     private MissingAuthenticationHandler missingAuthenticationHandler;
     private MissingAuthenticationHandler csrfFailureHandler;
@@ -205,7 +203,6 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
 
         initOutputVariables();
         initCacheParams();
-        checkTemplateContext();
         initMissingAuthenticationAndCsrfCheckHandler();
     }
 
@@ -283,14 +280,16 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
             context.disableTemplateCaching();
         }
 
-        String urlContext = this.controller.contextPath();
+        context.attribute("reflected_handler", this);
+        context.attribute(ActContext.ATTR_CUR_METHOD, method);
+
+        String urlContext = this.controller.urlContext();
         if (S.notBlank(urlContext)) {
             context.urlContext(urlContext);
         }
 
-        context.attribute("reflected_handler", this);
-        context.attribute(ActContext.ATTR_CUR_METHOD, method);
-        if (null != templateContext && context.state().isHandling()) {
+        String templateContext = this.controller.templateContext();
+        if (null != templateContext) {
             context.templateContext(templateContext);
         }
         preventDoubleSubmission(context);
@@ -529,18 +528,6 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
                 cacheFor.value(),
                 cacheFor.supportPost()
         );
-    }
-
-    private void checkTemplateContext() {
-        TemplateContext templateContext = method.getAnnotation(TemplateContext.class);
-        if (null != templateContext) {
-            this.templateContext = templateContext.value();
-        } else {
-            templateContext = controllerClass.getAnnotation(TemplateContext.class);
-            if (null != templateContext) {
-                this.templateContext = templateContext.value();
-            }
-        }
     }
 
     private void fillOutputVariables(Object controller, Object[] params, ActionContext context) {

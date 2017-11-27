@@ -154,8 +154,8 @@ public abstract class ClassDetector extends ByteCodeVisitor {
 
             @Override
             public void visit(String name, Object value) {
-                super.visit(name, value);
                 found = found || "value".equals(name) && (value instanceof Type) && ((Type) value).getClassName().equals(expected);
+                super.visit(name, value);
             }
         }
     }
@@ -217,7 +217,6 @@ public abstract class ClassDetector extends ByteCodeVisitor {
                 return new AnnotationVisitor(ASM5, av) {
                     @Override
                     public void visit(String name, Object value) {
-                        super.visit(name, value);
                         for (ClassDetector detector : unmatched) {
                             AnnotationVisitor av0 = detector.visitAnnotation(desc, visible);
                             av0.visit(name, value);
@@ -225,6 +224,7 @@ public abstract class ClassDetector extends ByteCodeVisitor {
                                 matches.add(detector);
                             }
                         }
+                        super.visit(name, value);
                     }
                 };
             }
