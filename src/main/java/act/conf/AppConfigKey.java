@@ -969,12 +969,13 @@ public enum AppConfigKey implements ConfigKey {
 
     static {
         Set<String> suffixes = ConfigKeyHelper.suffixes();
+        Set<String> nonAliasSuffixes = ConfigKeyHelper.nonAliasSuffixes();
         for (AppConfigKey k : values()) {
             lookup.put(k.name().toLowerCase(), k);
             String key = k.key().toLowerCase();
             lookup.put(key, k);
             String suffix = S.afterLast(key, ".");
-            if (S.notBlank(suffix) && suffixes.contains(suffix)) {
+            if (S.notBlank(suffix) && suffixes.contains(suffix) && !nonAliasSuffixes.contains(suffix)) {
                 Set<String> aliases = ConfigKeyHelper.aliases(key, suffix);
                 for (String alias : aliases) {
                     lookup.put(alias, k);

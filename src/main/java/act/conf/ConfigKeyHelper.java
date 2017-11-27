@@ -106,8 +106,14 @@ class ConfigKeyHelper {
         return (T) getValFromAliases(configuration, key, null, defVal);
     }
 
+    private static final Set<String> SUFFIXES = C.set(S.fastSplit("enabled,disabled,impl,dir,home,path,bool,boolean,long,ttl,port,int,len,count,times,size,float,double", ","));
     static Set<String> suffixes() {
-        return C.set(S.fastSplit("enabled,disabled,impl,dir,home,path,bool,boolean,long,ttl,port,int,len,count,times,size,float,double", ","));
+        return SUFFIXES;
+    }
+
+    private static final Set<String> NON_ALIAS_SUFFIXES = C.set(S.fastSplit("dir,home,path,ttl,port,len,count,times,size", ","));
+    static Set<String> nonAliasSuffixes() {
+        return NON_ALIAS_SUFFIXES;
     }
 
     <T> List<T> getImplList(String key, Map<String, ?> configuration, Class<T> c) {
@@ -412,7 +418,7 @@ class ConfigKeyHelper {
         Set<String> set = new HashSet<>();
         set.add(Config.PREFIX + key);
         set.add(key);
-        if (S.notBlank(suffix)) {
+        if (S.notBlank(suffix) && !nonAliasSuffixes().contains(suffix)) {
             if (key.contains(suffix)) {
                 String k0 = key.replace("." + suffix, "");
                 set.add(Config.PREFIX + k0);
