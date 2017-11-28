@@ -326,7 +326,16 @@ class ConfigKeyHelper {
     private static Integer toInt(Object v) {
         if (null == v) return null;
         if (v instanceof Number) return ((Number) v).intValue();
-        return Integer.parseInt(v.toString());
+        String s = v.toString();
+        if (s.contains("*")) {
+            List<String> sl = S.fastSplit(s, "*");
+            int n = 1;
+            for (String sn : sl) {
+                n *= Integer.parseInt(sn.trim());
+            }
+            return n;
+        }
+        return Integer.parseInt(s);
     }
 
     private static Float toFloat(Object v) {
