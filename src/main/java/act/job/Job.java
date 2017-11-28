@@ -181,6 +181,7 @@ public class Job extends DestroyableBase implements Runnable {
         this.oneTime = oneTime;
         this.app = manager.app();
         this.jobProgressTag = wsJobProgressTag(id);
+        this.manager.addJob(this);
     }
 
     public void setProgressGauge(ProgressGauge progressGauge) {
