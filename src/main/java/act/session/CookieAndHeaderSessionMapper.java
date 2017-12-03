@@ -20,13 +20,19 @@ package act.session;
  * #L%
  */
 
-import act.app.ActionContext;
-import org.osgl.http.H;
+import act.conf.AppConfig;
 
-public interface NewSessionMapper {
+import javax.inject.Inject;
+import javax.inject.Singleton;
 
-    void serializeSession(H.Session session, ActionContext context);
+@Singleton
+public class CookieAndHeaderSessionMapper extends CompoundSesssionMapper {
 
-    void deserialize(ActionContext context);
-
+    @Inject
+    public CookieAndHeaderSessionMapper(AppConfig config) {
+        super(
+                new CookieSessionMapper(config),
+                new HeaderTokenSessionMapper(config)
+        );
+    }
 }

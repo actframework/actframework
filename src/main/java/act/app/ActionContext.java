@@ -21,8 +21,8 @@ package act.app;
  */
 
 import act.Act;
-import act.Destroyable;
 import act.ActResponse;
+import act.Destroyable;
 import act.conf.AppConfig;
 import act.controller.ResponseCache;
 import act.data.MapUtil;
@@ -35,15 +35,12 @@ import act.i18n.LocaleResolver;
 import act.route.Router;
 import act.route.UrlPath;
 import act.security.CORS;
-import act.util.ActContext;
-import act.util.MissingAuthenticationHandler;
-import act.util.PropertySpec;
-import act.util.RedirectToLoginUrl;
+import act.session.SessionManager;
+import act.util.*;
 import act.view.RenderAny;
 import org.osgl.$;
 import org.osgl.concurrent.ContextLocal;
 import org.osgl.http.H;
-import org.osgl.http.H.Cookie;
 import org.osgl.mvc.result.Result;
 import org.osgl.storage.ISObject;
 import org.osgl.util.C;
@@ -105,6 +102,7 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
     private int pathVarCount;
     private UrlPath urlPath;
     private Set<String> pathVarNames = new HashSet<>();
+    private SessionManager sessionManager;
 
 
     @Inject
@@ -122,6 +120,7 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
         this.disableCsrf = req().method().safe();
         this.sessionKeyUsername = config.sessionKeyUsername();
         this.localeResolver = new LocaleResolver(this);
+        this.sessionManager = new SessionManager(config());
     }
 
     public State state() {
@@ -864,9 +863,10 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
         E.illegalStateIf(state != State.CREATED);
         boolean sessionFree = handler.sessionFree();
         attribute(ATTR_WAS_UNAUTHENTICATED, true);
+        H.Request req = req();
         if (!sessionFree) {
-            resolveSession();
-            resolveFlash();
+            resolveSession(req);
+            resolveFlash(req);
         }
         localeResolver.resolve();
         state = State.SESSION_RESOLVED;
@@ -917,8 +917,10 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
         localeResolver.dissolve();
         app().eventBus().emit(new SessionWillDissolveEvent(this));
         try {
-            dissolveFlash();
-            dissolveSession();
+            setCsrfCookieAndRenderArgs();
+            sessionManager.dissolveState(session(), flash(), resp());
+//            dissolveFlash();
+//            dissolveSession();
             state = State.SESSION_DISSOLVED;
         } finally {
             app().eventBus().emit(new SessionDissolvedEvent(this));
@@ -1061,28 +1063,32 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
         };
     }
 
-    private void resolveSession() {
-        this.session = Act.sessionManager().resolveSession(this);
+    private void resolveSession(H.Request req) {
+        preCheckCsrf();
+        //this.session = Act.sessionManager().resolveSession(this);
+        session = sessionManager.resolveSession(req);
+        checkCsrf(session);
     }
 
-    private void resolveFlash() {
-        this.flash = Act.sessionManager().resolveFlash(this);
+    private void resolveFlash(H.Request req) {
+        //this.flash = Act.sessionManager().resolveFlash(this);
+        flash = sessionManager.resolveFlash(req);
     }
 
-    private void dissolveSession() {
-        Cookie c = Act.sessionManager().dissolveSession(this);
-        if (null != c) {
-            config().sessionMapper().serializeSession(c, this);
-        }
-    }
-
-    private void dissolveFlash() {
-        Cookie c = Act.sessionManager().dissolveFlash(this);
-        if (null != c) {
-            config().sessionMapper().serializeFlash(c, this);
-        }
-    }
-
+//    private void dissolveSession() {
+//        Cookie c = Act.sessionManager().dissolveSession(this);
+//        if (null != c) {
+//            config().sessionMapper().serializeSession(c, this);
+//        }
+//    }
+//
+//    private void dissolveFlash() {
+//        Cookie c = Act.sessionManager().dissolveFlash(this);
+//        if (null != c) {
+//            config().sessionMapper().serializeFlash(c, this);
+//        }
+//    }
+//
     private static ContextLocal<ActionContext> _local = $.contextLocal();
 
     public static final String METHOD_GET_CURRENT = "current";
@@ -1142,7 +1148,7 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
 
     /**
      * This event is fired after session resolved and before any
-     * {@link act.util.SessionManager.Listener} get called
+     * {@link OldSessionManager.Listener} get called
      */
     public static class PreFireSessionResolvedEvent extends SessionEvent {
         public PreFireSessionResolvedEvent(H.Session session, ActionContext context) {
@@ -1152,7 +1158,7 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
 
     /**
      * This event is fired after session resolved and after all
-     * {@link act.util.SessionManager.Listener} get notified and
+     * {@link OldSessionManager.Listener} get notified and
      * in turn after all event listeners that listen to the
      * {@link PreFireSessionResolvedEvent} get notified
      */

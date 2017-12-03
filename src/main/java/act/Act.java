@@ -180,7 +180,7 @@ public final class Act {
     private static Network network;
     private static MetricPlugin metricPlugin;
     private static BytecodeEnhancerManager enhancerManager;
-    private static SessionManager sessionManager;
+    private static OldSessionManager sessionManager;
     private static AppCodeScannerPluginManager scannerPluginManager;
     private static DbManager dbManager;
     private static GenericPluginManager pluginManager;
@@ -259,7 +259,7 @@ public final class Act {
         return scannerPluginManager;
     }
 
-    public static SessionManager sessionManager() {
+    public static OldSessionManager sessionManager() {
         return sessionManager;
     }
 
@@ -815,7 +815,7 @@ public final class Act {
 
     private static void initSessionManager() {
         LOGGER.debug("initializing session manager ...");
-        sessionManager = new SessionManager();
+        sessionManager = new OldSessionManager();
     }
 
     private static void destroySessionManager() {

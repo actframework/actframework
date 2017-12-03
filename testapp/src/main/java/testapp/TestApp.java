@@ -5,6 +5,7 @@ import static testapp.TestApp.GLOBAL_CORS.*;
 import act.Act;
 import act.app.conf.AppConfigurator;
 import act.security.CSRFProtector;
+import act.session.CookieAndHeaderSessionMapper;
 
 /**
  * This class runs an ActFramework application with public endpoints to be
@@ -22,6 +23,7 @@ public class TestApp extends AppConfigurator<TestApp> {
     public void configure() {
         httpPort(6111);
         csrf().disable().protector(CSRFProtector.Predefined.RANDOM);
+        sessionMapper(new CookieAndHeaderSessionMapper(app().config()));
         cors()
                 .allowOrigin(ALLOW_ORIGIN)
                 .allowAndExposeHeaders(ALLOW_EXPOSE_HEADER)

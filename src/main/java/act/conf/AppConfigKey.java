@@ -771,21 +771,49 @@ public enum AppConfigKey implements ConfigKey {
     SESSION_KEY_USERNAME("session.key.username"),
 
     /**
-     * {@code session.mapper.impl} specify the implementation of {@link act.util.SessionMapper}
+     * {@code session.mapper.impl} specify the implementation of {@link act.session.SessionMapper}
      *
-     * <p>Default value: {@code act.util.SessionMapper.DefaultSessionMapper}</p>
+     * Default value: {@link act.session.CookieSessionMapper}
      */
     SESSION_MAPPER("session.mapper.impl"),
 
     /**
+     * `session.codec.impl` specify the implementation of {@link act.session.SessionCodec}
+     *
+     * Default value: {@link act.session.DefaultSessionCodec}
+     */
+    SESSION_CODEC("session.codec"),
+
+    /**
      * `session.mapper.header.prefix`
      *
-     * this configuration enables the {@link act.util.SessionMapper.HeaderSessionMapper}
-     * and set the prefix
+     * This setting is deprecated. Please use
+     * {@link #SESSION_MAPPER} instead.
      *
      * Default value: `null`
      */
+    @Deprecated
     SESSION_MAPPER_HEADER_PREFIX("session.mapper.header.prefix"),
+
+    /**
+     * `session.header.prefix`, specify the prefix of session
+     * header.
+     *
+     * This is only effective when {@link #SESSION_MAPPER} is set
+     * to {@link act.session.HeaderTokenSessionMapper} or any
+     * compound session mapper that support it.
+     *
+     * Default value: {@link act.session.HeaderTokenSessionMapper#DEF_HEADER_PREFIX}
+     */
+    SESSION_HEADER_PREFIX("session.header.prefix"),
+
+    /**
+     * `session.header.payload.prefix`, set the session payload prefix, e.g.
+     * `"Bearer "`.
+     *
+     * Default value: `` (blank string)
+     */
+    SESSION_HEADER_PAYLOAD_PREFIX("session.header.payload.prefix"),
 
     /**
      * {@code session.secure.enabled} specifies whether the session cookie should

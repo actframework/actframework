@@ -7,7 +7,7 @@ import org.osgl.http.H;
 import org.osgl.mvc.annotation.GetAction;
 
 @UrlContext("354")
-@TemplateContext("gh/354")
+@TemplateContext("354")
 public class GH354 extends GithubIssueBase {
 
     @ProvidesImplicitTemplateVariable

@@ -36,6 +36,10 @@ import act.handler.UnknownHttpMethodProcessor;
 import act.handler.event.ResultEvent;
 import act.i18n.I18n;
 import act.security.CSRFProtector;
+import act.session.CookieSessionMapper;
+import act.session.DefaultSessionCodec;
+import act.session.HeaderTokenSessionMapper;
+import act.session.SessionCodec;
 import act.util.*;
 import act.view.TemplatePathResolver;
 import act.view.View;
@@ -1957,24 +1961,16 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         }
     }
 
-    private SessionMapper sessionMapper = null;
+    private act.session.SessionMapper sessionMapper = null;
 
-    protected T sessionMapper(SessionMapper sessionMapper) {
+    protected T sessionMapper(act.session.SessionMapper sessionMapper) {
         this.sessionMapper = sessionMapper;
         return me();
     }
 
-    public SessionMapper sessionMapper() {
+    public act.session.SessionMapper sessionMapper() {
         if (null == sessionMapper) {
-            Object o = get(SESSION_MAPPER, null);
-            if (null == o) {
-                // we might set header session mapper prefix
-                sessionMapperHeaderPrefix();
-            }
-            if (null == sessionMapper) {
-                sessionMapper = SessionMapper.DefaultSessionMapper.wrap((SessionMapper) o);
-            }
-            set(SESSION_MAPPER, sessionMapper);
+            sessionMapper = get(SESSION_MAPPER, app().getInstance(CookieSessionMapper.class));
         }
         return sessionMapper;
     }
@@ -1985,27 +1981,42 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         }
     }
 
-    private String sessionMapperHeaderPrefix = null;
-    private boolean sessionMapperHeaderPrefixSet = false;
-    protected T sessionMapperHeaderPrefix(String prefix) {
-        this.sessionMapperHeaderPrefix = prefix;
+    private SessionCodec sessionCodec = null;
+
+    protected T sessionCodec(SessionCodec codec) {
+        this.sessionCodec = $.notNull(codec);
         return me();
     }
-    public String sessionMapperHeaderPrefix() {
-        if (!sessionMapperHeaderPrefixSet) {
-            sessionMapperHeaderPrefix = get(SESSION_MAPPER_HEADER_PREFIX, null);
-            sessionMapperHeaderPrefixSet = true;
-            if (null != sessionMapperHeaderPrefix) {
-                this.sessionMapper = SessionMapper.DefaultSessionMapper.wrap(new SessionMapper.HeaderSessionMapper(sessionMapperHeaderPrefix));
-            }
+
+    public SessionCodec sessionCodec() {
+        if (null == sessionCodec) {
+            sessionCodec = get(SESSION_CODEC, new DefaultSessionCodec(this));
         }
-        return sessionMapperHeaderPrefix;
+        return sessionCodec;
     }
-    private void _mergeSessionMapperHeaderPrefix(AppConfig config) {
-        if (!hasConfiguration(SESSION_MAPPER_HEADER_PREFIX)) {
-            this.sessionMapperHeaderPrefix = config.sessionMapperHeaderPrefix;
-            this.sessionMapperHeaderPrefixSet = config.sessionMapperHeaderPrefixSet;
+
+    private String sessionHeaderPrefix;
+    protected T sessionHeaderPrefix(String prefix) {
+        this.sessionHeaderPrefix = prefix;
+        return me();
+    }
+    public String sessionHeaderPrefix() {
+        if (null == sessionHeaderPrefix) {
+            sessionHeaderPrefix = get(SESSION_HEADER_PREFIX, HeaderTokenSessionMapper.DEF_HEADER_PREFIX);
         }
+        return sessionHeaderPrefix;
+    }
+
+    private String sessionHeaderPayloadPrefix = null;
+    protected T sessionHeaderPayloadPrefix(String prefix) {
+        this.sessionHeaderPayloadPrefix = prefix;
+        return me();
+    }
+    public String sessionHeaderPayloadPrefix() {
+        if (null == sessionHeaderPayloadPrefix) {
+            sessionHeaderPayloadPrefix = get(SESSION_HEADER_PAYLOAD_PREFIX, HeaderTokenSessionMapper.DEF_PAYLOAD_PREFIX);
+        }
+        return sessionHeaderPayloadPrefix;
     }
 
     private Boolean sessionSecure = null;
@@ -2355,100 +2366,14 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
             return;
         }
         mergeTracker.add(conf);
-        _mergeApiDocEnabled(conf);
-        _mergeBasicAuthentication(conf);
-        _mergeBuiltInReqHandler(conf);
-        _mergeCacheName(conf);
-        _mergeCors(conf);
-        _mergeCorsOrigin(conf);
-        _mergeCorsHeaders(conf);
-        _mergeCorsHeadersExpose(conf);
-        _mergeCorsHeadersAllowed(conf);
-        _mergeCorsMaxAge(conf);
-        _mergeCorsAllowCredential(conf);
-        _mergeCorsOptionCheck(conf);
-        _mergeCliEnabled(conf);
-        _mergeCliJSONPageSz(conf);
-        _mergeCliTablePageSz(conf);
-        _mergeCliOverHttp(conf);
-        _mergeCliOverHttpAuthority(conf);
-        _mergeCliOverHttpPort(conf);
-        _mergeCliOverHttpTitle(conf);
-        _mergeCliOverHttpSysCmd(conf);
-        _mergeCliPort(conf);
-        _mergeCliSessionExpiration(conf);
-        _mergeCsrf(conf);
-        _mergeCsrfParamName(conf);
-        _mergeCsrfHeaderName(conf);
-        _mergeCsrfCookieName(conf);
-        _mergeCsrfProtector(conf);
-        _mergeCsrfCheckFailureHandler(conf);
-        _mergeAjaxCsrfCheckFailureHandler(conf);
-        _mergeCookieDomain(conf);
-        _mergeMaxCliSession(conf);
-        _mergeDspToken(conf);
-        _mergeEnumResolvingCaseSensitive(conf);
-        _mergeXForwardedProtocol(conf);
-        _mergeHost(conf);
-        _mergeLoginUrl(conf);
-        _mergeAjaxLoginUrl(conf);
-        _mergeUrlContext(conf);
-        _mergeHttpMaxParams(conf);
-        _mergeJobPoolSize(conf);
-        _mergeMissingAuthenticationHandler(conf);
-        _mergeAjaxMissingAuthenticationHandler(conf);
-        _mergeHttpExternal(conf);
-        _mergeHttpExternalPort(conf);
-        _mergeHttpExternalSecurePort(conf);
-        _mergeHttpPort(conf);
-        _mergeHttpSecure(conf);
-        _mergeHttpsPort(conf);
-        _mergePorts(conf);
-        _mergeContentSuffixAware(conf);
-        _mergeSequenceNumberGenerator(conf);
-        _mergeErrorTemplatePathResolver(conf);
-        _mergeDateFmt(conf);
-        _mergeDateTimeFmt(conf);
-        _mergeMetricEnabled(conf);
-        _mergeTimeFmt(conf);
-        _mergeEncoding(conf);
-        _mergeNodeIdProvider(conf);
-        _mergeI18nEnabled(conf);
-        _mergeLocaleParamName(conf);
-        _mergeLocaleCookieName(conf);
-        _mergeIpEffectiveBytes(conf);
-        _mergeStartIdFile(conf);
-        _mergeStartIdProvider(conf);
-        _mergeSequenceProvider(conf);
-        _mergeLongEncoder(conf);
-        _mergeLocale(conf);
-        _mergeResourcePreloadSizeLimit(conf);
-        _mergeSourceVersion(conf);
-        _mergeTargetVersion(conf);
-        _mergeTemplatePathResolver(conf);
-        _mergeTemplateHome(conf);
-        _mergeDefaultView(conf);
-        _mergePingPath(conf);
-        _mergeRenderJsonContentTypeIE(conf);
-        _mergeRenderJsonOutputCharset(conf);
-        _mergeServerHeader(conf);
-        _mergeCookiePrefix(conf);
-        _mergeSessionCookieName(conf);
-        _mergeFlashCookieName(conf);
-        _mergeSessionTtl(conf);
-        _mergeSessionPersistent(conf);
-        _mergeSessionEncrpt(conf);
-        _mergeSessionSecure(conf);
-        _mergeSessionKeyUsername(conf);
-        _mergeSessionMapper(conf);
-        _mergeSessionMapperHeaderPrefix(conf);
-        _mergeSecret(conf);
-        _mergeSecureTicketCodec(conf);
-        _mergeCacheServiceProvider(conf);
-        _mergeUnknownHttpMethodHandler(conf);
-        _mergeUploadInMemoryCacheThreshold(conf);
-        _mergeSslSupport(conf);
-        _mergeWsTicketKey(conf);
+        for (Method method : AppConfig.class.getDeclaredMethods()) {
+            boolean isPrivate = Modifier.isPrivate(method.getModifiers());
+            if (isPrivate && method.getName().startsWith("_merge")) {
+                method.setAccessible(true);
+                $.invokeVirtual(this, method, conf);
+            }
+        }
+
 
         Set<String> keys = conf.propKeys();
         if (!keys.isEmpty()) {

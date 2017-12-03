@@ -12,7 +12,7 @@ import java.util.List;
  * Test `@ResponseStatus` annotation on direct return object
  */
 @UrlContext("287")
-@TemplateContext("gh/287")
+@TemplateContext("287")
 public class GH287 extends GithubIssueBase {
 
     @ProvidesImplicitTemplateVariable

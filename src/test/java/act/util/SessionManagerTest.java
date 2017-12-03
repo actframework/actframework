@@ -31,13 +31,13 @@ import org.osgl.http.H;
 import static org.mockito.Mockito.*;
 
 /**
- * Test {@link SessionManager}
+ * Test {@link OldSessionManager}
  */
 public class SessionManagerTest extends ActTestBase {
     App app;
     AppConfig config;
     AppCrypto crypto;
-    SessionManager.CookieResolver resolver;
+    OldSessionManager.CookieResolver resolver;
     H.Session session;
     H.Flash flash;
 
@@ -52,7 +52,7 @@ public class SessionManagerTest extends ActTestBase {
         when(app.sign(anyString())).thenCallRealMethod();
         when(app.encrypt(anyString())).thenCallRealMethod();
         when(app.decrypt(anyString())).thenCallRealMethod();
-        resolver = new SessionManager.CookieResolver(app);
+        resolver = new OldSessionManager.CookieResolver(app);
         session = new H.Session();
         session.put("foo", "bar");
         flash = new H.Flash();
@@ -80,7 +80,7 @@ public class SessionManagerTest extends ActTestBase {
     @Test
     public void testCryptoSession() {
         when(config.encryptSession()).thenReturn(true);
-        resolver = new SessionManager.CookieResolver(app);
+        resolver = new OldSessionManager.CookieResolver(app);
         String content = resolver.dissolveIntoCookieContent(session, true);
         H.Session session1 = new H.Session();
         resolver.resolveFromCookieContent(session1, content, true);
