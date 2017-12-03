@@ -51,7 +51,7 @@ public class SessionManager {
 
     public void dissolveState(H.Session session, H.Flash flash, H.Response response) {
         String encodedSession = codec.encodeSession(session);
-        String encodedFlash = codec.encodeFlash(flash);
+        String encodedFlash = flash.isEmpty() ? null : codec.encodeFlash(flash);
         mapper.write(encodedSession, encodedFlash, response);
     }
 

@@ -28,6 +28,7 @@ import act.event.EventBus;
 import act.job.AppJobManager;
 import act.metric.SimpleMetricPlugin;
 import act.route.Router;
+import act.session.SessionManager;
 import act.util.ClassNames;
 import org.junit.Ignore;
 import org.junit.runner.JUnitCore;
@@ -112,6 +113,10 @@ public class ActTestBase extends TestBase {
             @Override
             public Object answer(InvocationOnMock invocation) throws Throwable {
                 Object[] args = invocation.getArguments();
+                Class<?> cls = (Class) args[0];
+                if (SessionManager.class == cls) {
+                    return new SessionManager(mockAppConfig);
+                }
                 return $.newInstance((Class)args[0]);
             }
         });

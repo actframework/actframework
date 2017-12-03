@@ -644,6 +644,13 @@ public @interface Controller {
             return jsonMap(data);
         }
 
+        public static RenderJwt renderJwt() {
+            return RenderJwt.get();
+        }
+
+        public static RenderJwt jwt() {
+            return RenderJwt.get();
+        }
 
         /**
          * Returns a {@link RenderXML} result with specified message template

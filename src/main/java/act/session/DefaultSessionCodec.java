@@ -42,10 +42,10 @@ import static org.osgl.http.H.Session.KEY_EXPIRE_INDICATOR;
 @Singleton
 public class DefaultSessionCodec extends DestroyableBase implements SessionCodec {
 
-    private boolean sessionWillExpire;
-    private boolean encryptSession;
-    private int ttl;
-    private String pingPath;
+    private final boolean sessionWillExpire;
+    private final boolean encryptSession;
+    private final int ttl;
+    private final String pingPath;
     private App app;
 
     @Inject
@@ -96,7 +96,7 @@ public class DefaultSessionCodec extends DestroyableBase implements SessionCodec
             resolveFromCookieContent(session, encodedSession, true);
             newSession = false;
         }
-        processExpiration(session, $.ms(), newSession, request);
+        processExpiration(session, $.ms(), newSession, sessionWillExpire, ttl, pingPath, request);
         return session;
     }
 
@@ -148,41 +148,6 @@ public class DefaultSessionCodec extends DestroyableBase implements SessionCodec
             }
         }
     }
-
-    private H.Session processExpiration(H.Session session, long now, boolean newSession, H.Request request) {
-        if (!sessionWillExpire) return session;
-        long expiration = now + ttl;
-        if (newSession) {
-            // no previous cookie to restore; but we need to set the timestamp in the new cookie
-            // note we use `load` API instead of `put` because we don't want to set the dirty flag
-            // in this case
-            session.load(KEY_EXPIRATION, String.valueOf(expiration));
-        } else {
-            String s = session.get(KEY_EXPIRATION);
-            long oldTimestamp = null == s ? -1 : Long.parseLong(s);
-            long newTimestamp = expiration;
-            // Verify that the session contains a timestamp, and that it's not expired
-            if (oldTimestamp < 0) {
-                // invalid session, reset it
-                session = new H.Session();
-            } else {
-                if (oldTimestamp < now) {
-                    // Session expired
-                    session = new H.Session();
-                    session.put(KEY_EXPIRE_INDICATOR, true);
-                } else {
-                    session.remove(KEY_EXPIRE_INDICATOR);
-                    boolean skipUpdateExpiration = S.eq(pingPath, request.url());
-                    if (skipUpdateExpiration) {
-                        newTimestamp = oldTimestamp;
-                    }
-                }
-            }
-            session.put(KEY_EXPIRATION, newTimestamp);
-        }
-        return session;
-    }
-
 
     private List<char[]> split(char[] content, char separator) {
         int len = content.length;
@@ -237,4 +202,39 @@ public class DefaultSessionCodec extends DestroyableBase implements SessionCodec
         data = Codec.encodeUrl(data, Charsets.UTF_8);
         return data;
     }
+
+    static H.Session processExpiration(H.Session session, long now, boolean newSession, boolean sessionWillExpire, int ttl, String pingPath, H.Request request) {
+        if (!sessionWillExpire) return session;
+        long expiration = now + ttl;
+        if (newSession) {
+            // no previous cookie to restore; but we need to set the timestamp in the new cookie
+            // note we use `load` API instead of `put` because we don't want to set the dirty flag
+            // in this case
+            session.load(KEY_EXPIRATION, String.valueOf(expiration));
+        } else {
+            String s = session.get(KEY_EXPIRATION);
+            long oldTimestamp = null == s ? -1 : Long.parseLong(s);
+            long newTimestamp = expiration;
+            // Verify that the session contains a timestamp, and that it's not expired
+            if (oldTimestamp < 0) {
+                // invalid session, reset it
+                session = new H.Session();
+            } else {
+                if (oldTimestamp < now) {
+                    // Session expired
+                    session = new H.Session();
+                    session.put(KEY_EXPIRE_INDICATOR, true);
+                } else {
+                    session.remove(KEY_EXPIRE_INDICATOR);
+                    boolean skipUpdateExpiration = S.eq(pingPath, request.url());
+                    if (skipUpdateExpiration) {
+                        newTimestamp = oldTimestamp;
+                    }
+                }
+            }
+            session.put(KEY_EXPIRATION, newTimestamp);
+        }
+        return session;
+    }
+
 }

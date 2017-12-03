@@ -120,7 +120,7 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
         this.disableCsrf = req().method().safe();
         this.sessionKeyUsername = config.sessionKeyUsername();
         this.localeResolver = new LocaleResolver(this);
-        this.sessionManager = new SessionManager(config());
+        this.sessionManager = Act.getInstance(SessionManager.class);
     }
 
     public State state() {
@@ -874,7 +874,6 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
             handler.prepareAuthentication(this);
             EventBus eventBus = app().eventBus();
             eventBus.emit(new PreFireSessionResolvedEvent(session, this));
-            Act.sessionManager().fireSessionResolved(this);
             eventBus.emit(new SessionResolvedEvent(session, this));
             if (isLoggedIn()) {
                 attribute(ATTR_WAS_UNAUTHENTICATED, false);

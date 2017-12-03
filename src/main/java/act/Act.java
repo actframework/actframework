@@ -180,7 +180,6 @@ public final class Act {
     private static Network network;
     private static MetricPlugin metricPlugin;
     private static BytecodeEnhancerManager enhancerManager;
-    private static OldSessionManager sessionManager;
     private static AppCodeScannerPluginManager scannerPluginManager;
     private static DbManager dbManager;
     private static GenericPluginManager pluginManager;
@@ -259,10 +258,6 @@ public final class Act {
         return scannerPluginManager;
     }
 
-    public static OldSessionManager sessionManager() {
-        return sessionManager;
-    }
-
     public static AppManager applicationManager() {
         return appManager;
     }
@@ -294,7 +289,6 @@ public final class Act {
         initDbManager();
         initEnhancerManager();
         initViewManager();
-        initSessionManager();
         initAppCodeScannerPluginManager();
         loadPlugins();
         initNetworkLayer();
@@ -813,18 +807,6 @@ public final class Act {
         }
     }
 
-    private static void initSessionManager() {
-        LOGGER.debug("initializing session manager ...");
-        sessionManager = new OldSessionManager();
-    }
-
-    private static void destroySessionManager() {
-        if (null != sessionManager) {
-            sessionManager.destroy();
-            sessionManager = null;
-        }
-    }
-
     private static void initDbManager() {
         LOGGER.debug("initializing db manager ...");
         dbManager = new DbManager();
@@ -930,7 +912,6 @@ public final class Act {
         destroyApplicationManager();
         unloadPlugins();
         destroyAppCodeScannerPluginManager();
-        destroySessionManager();
         destroyViewManager();
         destroyEnhancerManager();
         destroyDbManager();

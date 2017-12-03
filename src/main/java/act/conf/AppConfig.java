@@ -1995,6 +1995,13 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         return sessionCodec;
     }
 
+    private void _mergeSessionCodec(AppConfig config) {
+        if (!hasConfiguration(AppConfigKey.SESSION_CODEC)) {
+            sessionCodec = config.sessionCodec;
+        }
+    }
+
+
     private String sessionHeaderPrefix;
     protected T sessionHeaderPrefix(String prefix) {
         this.sessionHeaderPrefix = prefix;
@@ -2017,6 +2024,11 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
             sessionHeaderPayloadPrefix = get(SESSION_HEADER_PAYLOAD_PREFIX, HeaderTokenSessionMapper.DEF_PAYLOAD_PREFIX);
         }
         return sessionHeaderPayloadPrefix;
+    }
+    private void _mergeSessionHeaderPayloadPrefix(AppConfig config) {
+        if (!hasConfiguration(AppConfigKey.SESSION_HEADER_PAYLOAD_PREFIX)) {
+            sessionHeaderPayloadPrefix = config.sessionHeaderPayloadPrefix;
+        }
     }
 
     private Boolean sessionSecure = null;
