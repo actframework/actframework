@@ -29,6 +29,8 @@ import act.conf.AppConfig;
 import act.i18n.I18n;
 import act.mail.MailerContext;
 import act.view.Template;
+import com.alibaba.fastjson.serializer.SerializeFilter;
+import com.alibaba.fastjson.serializer.SerializerFeature;
 import org.osgl.$;
 import org.osgl.http.H;
 import org.osgl.mvc.util.ParamValueProvider;
@@ -202,6 +204,14 @@ public interface ActContext<CTX_TYPE extends ActContext> extends ParamValueProvi
 
     CTX_TYPE handlerMethod(Method method);
 
+    CTX_TYPE fastjsonFilters(Class<? extends SerializeFilter>[] filters);
+
+    SerializeFilter[] fastjsonFilters();
+
+    CTX_TYPE fastjsonFeatures(SerializerFeature[] features);
+
+    SerializerFeature[] fastjsonFeatures();
+
     /**
      * Returns a reusable {@link S.Buffer} instance
      *
@@ -235,6 +245,8 @@ public interface ActContext<CTX_TYPE extends ActContext> extends ParamValueProvi
 
         // (violation.propertyPath, violation)
         private Map<String, ConstraintViolation> violations;
+        private Class<? extends SerializeFilter>[] fastjsonFilters;
+        private SerializerFeature[] fastjsonFeatures;
 
         public Base(App app) {
             E.NPE(app);
@@ -290,6 +302,32 @@ public interface ActContext<CTX_TYPE extends ActContext> extends ParamValueProvi
         public CTX handlerMethod(Method method) {
             this.handlerMethod = method;
             return me();
+        }
+        
+        public CTX fastjsonFilters(Class<? extends SerializeFilter>[] filters) {
+            this.fastjsonFilters = filters;
+            return me();
+        }
+        
+        public SerializeFilter[] fastjsonFilters() {
+            if (null == fastjsonFilters) {
+                return null;
+            }
+            int len = fastjsonFilters.length;
+            SerializeFilter[] filters = new SerializeFilter[len];
+            for (int i = 0; i < len; ++i) {
+                filters[i] = app().getInstance(fastjsonFilters[i]);
+            }
+            return filters;
+        }
+        
+        public CTX fastjsonFeatures(SerializerFeature[] features) {
+            this.fastjsonFeatures = features;
+            return me();
+        }
+        
+        public SerializerFeature[] fastjsonFeatures() {
+            return fastjsonFeatures;
         }
 
         @Override

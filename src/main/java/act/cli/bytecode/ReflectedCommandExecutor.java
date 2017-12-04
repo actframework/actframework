@@ -32,7 +32,11 @@ import act.inject.param.ParamValueLoaderManager;
 import act.job.AppJobManager;
 import act.job.TrackableWorker;
 import act.util.Async;
+import act.util.FastJsonFeature;
+import act.util.FastJsonFilter;
 import act.util.ProgressGauge;
+import com.alibaba.fastjson.serializer.SerializeFilter;
+import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.esotericsoftware.reflectasm.MethodAccess;
 import org.osgl.$;
 import org.osgl.util.E;
@@ -62,6 +66,8 @@ public class ReflectedCommandExecutor extends CommandExecutor {
     private boolean async;
     private ReportProgress reportProgress;
     private String pattern;
+    private Class<? extends SerializeFilter> filters[];
+    private SerializerFeature features[];
 
     public ReflectedCommandExecutor(CommandMethodMetaInfo methodMetaInfo, App app) {
         this.methodMetaInfo = $.notNull(methodMetaInfo);
@@ -75,6 +81,14 @@ public class ReflectedCommandExecutor extends CommandExecutor {
             this.method = commanderClass.getMethod(methodMetaInfo.methodName(), paramTypes);
             this.async = null != method.getAnnotation(Async.class);
             this.reportProgress = method.getAnnotation(ReportProgress.class);
+            FastJsonFilter filterAnno = method.getAnnotation(FastJsonFilter.class);
+            if (null != filterAnno) {
+                filters = filterAnno.value();
+            }
+            FastJsonFeature featureAnno = method.getAnnotation(FastJsonFeature.class);
+            if (null != featureAnno) {
+                features = featureAnno.value();
+            }
         } catch (NoSuchMethodException e) {
             throw E.unexpected(e);
         }
@@ -98,6 +112,8 @@ public class ReflectedCommandExecutor extends CommandExecutor {
         if (null != pattern) {
             context.pattern(pattern);
         }
+        context.fastjsonFeatures(features);
+        context.fastjsonFilters(filters);
         context.prepare(parsingContext);
         paramLoaderService.preParseOptions(method, methodMetaInfo, context);
         final Object cmd = commanderInstance(context);

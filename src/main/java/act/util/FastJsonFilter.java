@@ -20,20 +20,22 @@ package act.util;
  * #L%
  */
 
+import com.alibaba.fastjson.serializer.SerializeFilter;
+
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-/**
- * Annotate on a controller action handler to indicate the JSON result shall be
- * rendered with FastJson Circular Reference check disabled.
- *
- * This annotation is deprecated, please use {@link FastJsonFeature} instead
- */
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.TYPE, ElementType.METHOD})
-@Deprecated
-public @interface DisableFastJsonCircularReferenceDetect {
-    ThreadLocal<Boolean> option = new ThreadLocal<Boolean>();
+@Target({ElementType.METHOD})
+public @interface FastJsonFilter {
+
+    /**
+     * Specify FastJSON SerializeFilters
+     *
+     * @return classes that implements {@link SerializeFilter}
+     */
+    Class<? extends SerializeFilter>[] value();
+
 }

@@ -49,6 +49,8 @@ import act.view.*;
 import act.ws.WebSocketConnectionManager;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONException;
+import com.alibaba.fastjson.serializer.SerializeFilter;
+import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.esotericsoftware.reflectasm.MethodAccess;
 import org.osgl.$;
 import org.osgl.Osgl;
@@ -123,6 +125,8 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
     private boolean async;
     private boolean byPassImplicityTemplateVariable;
     private boolean forceDataBinding;
+    private Class<? extends SerializeFilter> filters[];
+    private SerializerFeature features[];
 
     private ReflectedHandlerInvoker(M handlerMetaInfo, App app) {
         this.app = app;
@@ -153,6 +157,15 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
             handlerIndex = methodAccess.getIndex(handlerMetaInfo.name(), paramTypes);
         } else {
             method.setAccessible(true);
+        }
+
+        FastJsonFilter filterAnno = method.getAnnotation(FastJsonFilter.class);
+        if (null != filterAnno) {
+            filters = filterAnno.value();
+        }
+        FastJsonFeature featureAnno = method.getAnnotation(FastJsonFeature.class);
+        if (null != featureAnno) {
+            features = featureAnno.value();
         }
 
         Pattern pattern = method.getAnnotation(Pattern.class);
@@ -265,6 +278,14 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
     public Result handle(final ActionContext context) throws Exception {
         if (disabled) {
             return ActNotFound.get();
+        }
+
+        if (null != filters) {
+            context.fastjsonFilters(filters);
+        }
+
+        if (null != features) {
+            context.fastjsonFeatures(features);
         }
 
         if (null != pattern) {

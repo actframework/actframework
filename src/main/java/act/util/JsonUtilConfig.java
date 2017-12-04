@@ -21,10 +21,10 @@ package act.util;
  */
 
 import act.app.App;
-import act.data.SObjectResolver;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.parser.ParserConfig;
 import com.alibaba.fastjson.serializer.SerializeConfig;
+import com.alibaba.fastjson.serializer.SerializeFilter;
 import com.alibaba.fastjson.serializer.SerializerFeature;
 import org.joda.time.DateTime;
 import org.joda.time.LocalDate;
@@ -36,10 +36,7 @@ import org.osgl.exception.NotAppliedException;
 import org.osgl.mvc.MvcConfig;
 import org.osgl.storage.ISObject;
 import org.osgl.storage.impl.SObject;
-import org.osgl.util.KV;
-import org.osgl.util.KVStore;
-import org.osgl.util.Keyword;
-import org.osgl.util.ValueObject;
+import org.osgl.util.*;
 
 public class JsonUtilConfig {
     public static void configure(App app) {
@@ -82,12 +79,23 @@ public class JsonUtilConfig {
                 if (null == o) {
                     return "{}";
                 }
-                Boolean b = DisableFastJsonCircularReferenceDetect.option.get();
-                if (null != b && b) {
-                    return JSON.toJSONString(o, SerializerFeature.WriteDateUseDateFormat, SerializerFeature.DisableCircularReferenceDetect);
-                } else {
-                    return JSON.toJSONString(o, SerializerFeature.WriteDateUseDateFormat);
+                ActContext<?> ctx = ActContext.Base.currentContext();
+                SerializeFilter[] filters = null;
+                SerializerFeature[] features = null;
+                if (null != ctx) {
+                    filters = ctx.fastjsonFilters();
+                    features = ctx.fastjsonFeatures();
                 }
+                Boolean b = DisableFastJsonCircularReferenceDetect.option.get();
+                C.Set<SerializerFeature> featureSet = C.newSet();
+                if (null != features) {
+                    featureSet.addAll(C.listOf(features));
+                }
+                featureSet.add(SerializerFeature.WriteDateUseDateFormat);
+                if (null != b && b) {
+                    featureSet.add(SerializerFeature.DisableCircularReferenceDetect);
+                }
+                return JSON.toJSONString(o, filters, featureSet.toArray(new SerializerFeature[featureSet.size()]));
             }
         });
     }

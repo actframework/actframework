@@ -51,7 +51,8 @@ public class SessionManager {
 
     public void dissolveState(H.Session session, H.Flash flash, H.Response response) {
         String encodedSession = codec.encodeSession(session);
-        String encodedFlash = flash.isEmpty() ? null : codec.encodeFlash(flash);
+        // flash could be null if precheck CSRF failed
+        String encodedFlash = null == flash || flash.isEmpty() ? null : codec.encodeFlash(flash);
         mapper.write(encodedSession, encodedFlash, response);
     }
 
