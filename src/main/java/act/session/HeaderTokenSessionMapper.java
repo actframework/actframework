@@ -44,7 +44,10 @@ public class HeaderTokenSessionMapper implements SessionMapper {
     public HeaderTokenSessionMapper(AppConfig config) {
         String prefix = config.sessionHeaderPrefix();
         String headerPrefix = S.blank(prefix) ? DEF_HEADER_PREFIX : prefix;
-        sessionHeader = S.pathConcat(headerPrefix, '-', "Session");
+        sessionHeader = config.sessionHeader();
+        if (null == sessionHeader) {
+            sessionHeader = S.pathConcat(headerPrefix, '-', "Session");
+        }
         flashHeader = S.pathConcat(headerPrefix, '-', "Flash");
         sessionPayloadPrefix = config.sessionHeaderPayloadPrefix();
         hasSessionPayloadPrefix = S.notBlank(sessionPayloadPrefix);

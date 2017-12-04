@@ -40,6 +40,8 @@ import java.io.UnsupportedEncodingException;
 import java.util.Date;
 import java.util.Map;
 
+import static org.osgl.http.H.Session.KEY_EXPIRATION;
+
 @Singleton
 @Lazy
 public class JsonWebTokenSessionCodec implements SessionCodec {
@@ -56,18 +58,34 @@ public class JsonWebTokenSessionCodec implements SessionCodec {
         } catch (UnsupportedEncodingException e) {
             throw E.unexpected(e);
         }
-        ttl = conf.sessionTtl();
+        ttl = conf.sessionTtl() * 1000;
         sessionWillExpire = ttl > 0;
         pingPath = conf .pingPath();
     }
 
     @Override
     public String encodeSession(H.Session session) {
+        if (null == session) {
+            return null;
+        }
+        boolean sessionChanged = session.changed();
+        if (!sessionChanged && (session.empty() || !sessionWillExpire)) {
+            // Nothing changed and no cookie-expire or empty, consequently send nothing back.
+            return null;
+        }
+        session.id(); // ensure session ID is generated
+        if (sessionWillExpire && !session.contains(KEY_EXPIRATION)) {
+            // session get cleared before
+            session.put(KEY_EXPIRATION, $.ms() + ttl);
+        }
         return builder(session, JWT.create().withJWTId(session.id())).sign(algorithm);
     }
 
     @Override
     public String encodeFlash(H.Flash flash) {
+        if (null == flash || flash.isEmpty()) {
+            return null;
+        }
         return builder(flash, JWT.create()).sign(algorithm);
     }
 
@@ -123,6 +141,8 @@ public class JsonWebTokenSessionCodec implements SessionCodec {
                     if (isSession) {
                         state.put(H.Session.KEY_ID, val);
                     }
+                } else if ("exp".equals(key)) {
+                    state.put(H.Session.KEY_EXPIRATION, entry.getValue().asLong());
                 } else if ("iss".equals(key)) {
                     // ignore
                 } else {

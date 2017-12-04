@@ -51,7 +51,7 @@ public class DefaultSessionCodec extends DestroyableBase implements SessionCodec
     @Inject
     public DefaultSessionCodec(AppConfig conf) {
         app = conf.app();
-        ttl = conf.sessionTtl();
+        ttl = conf.sessionTtl() * 1000;
         sessionWillExpire = ttl > 0;
         pingPath = conf .pingPath();
         encryptSession = conf.encryptSession();

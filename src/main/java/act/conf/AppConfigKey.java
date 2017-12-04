@@ -568,6 +568,19 @@ public enum AppConfigKey implements ConfigKey {
     JOB_POOL_SIZE("job.pool.size"),
 
     /**
+     * `jwt.enabled`, toggle JWT (JSON Web Token) support.
+     *
+     * Enable this configuration has the same effect of setting
+     *
+     * * {@link #SESSION_CODEC} - {@link act.session.JsonWebTokenSessionCodec}
+     * * {@link #SESSION_HEADER_PAYLOAD_PREFIX} - `Bearer `
+     * * {@link #SESSION_HEADER} - `Authorization`
+     *
+     * Default value: `false`
+     */
+    JWT("jwt.enabled"),
+
+    /**
      * {@code act.locale} specifies the application default locale
      * <p>Default value: {@link java.util.Locale#getDefault}</p>
      */
@@ -796,12 +809,30 @@ public enum AppConfigKey implements ConfigKey {
     SESSION_MAPPER_HEADER_PREFIX("session.mapper.header.prefix"),
 
     /**
+     * `session.header` - specify the session header name.
+     *
+     * Effective only when {@link act.session.SessionMapper} is
+     * {@link act.session.HeaderTokenSessionMapper}.
+     *
+     * If this configuration is set then {@link #SESSION_HEADER_PREFIX}
+     * is ignored for session header name.
+     *
+     * Default value: `null`
+     */
+    SESSION_HEADER("session.header"),
+
+    /**
      * `session.header.prefix`, specify the prefix of session
      * header.
      *
      * This is only effective when {@link #SESSION_MAPPER} is set
      * to {@link act.session.HeaderTokenSessionMapper} or any
      * compound session mapper that support it.
+     *
+     * If {@link #SESSION_HEADER} is not set, then header name of
+     * session token is `${session.header.prefix}-Session`.
+     *
+     * The flash header name is always `${flash.header.prefix}-Flash`.
      *
      * Default value: {@link act.session.HeaderTokenSessionMapper#DEF_HEADER_PREFIX}
      */

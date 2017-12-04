@@ -36,10 +36,7 @@ import act.handler.UnknownHttpMethodProcessor;
 import act.handler.event.ResultEvent;
 import act.i18n.I18n;
 import act.security.CSRFProtector;
-import act.session.CookieSessionMapper;
-import act.session.DefaultSessionCodec;
-import act.session.HeaderTokenSessionMapper;
-import act.session.SessionCodec;
+import act.session.*;
 import act.util.*;
 import act.view.TemplatePathResolver;
 import act.view.View;
@@ -119,9 +116,13 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     }
 
     public void preloadConfigurations() {
+        // ensure JWT get evaluated first to set
+        // default value for dependency settings
+        jwt();
+
         for (Method method : AppConfig.class.getDeclaredMethods()) {
             boolean isPublic = Modifier.isPublic(method.getModifiers());
-            if (isPublic && 0 == method.getParameterTypes().length && void.class != method.getReturnType() && Void.class != method.getReturnType()) {
+            if (isPublic && 0 == method.getParameterTypes().length && !"preloadConfigurations".equals(method.getName())) {
                 $.invokeVirtual(this, method);
             }
         }
@@ -932,6 +933,37 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     private void _mergeI18nEnabled(AppConfig conf) {
         if (!hasConfiguration(I18N)) {
             i18nEnabled = conf.i18nEnabled;
+        }
+    }
+
+    private Boolean jwt;
+    protected T jwt(boolean enabled) {
+        jwt = enabled;
+        return me();
+    }
+    public boolean jwt() {
+        if (null == jwt) {
+            jwt = get(JWT, false);
+            if (jwt) {
+                if (!hasConfiguration(SESSION_HEADER)) {
+                    sessionHeader("Authorization");
+                }
+                if (!hasConfiguration(SESSION_HEADER_PAYLOAD_PREFIX)) {
+                    sessionHeaderPayloadPrefix("Bearer ");
+                }
+                if (!hasConfiguration(SESSION_MAPPER)) {
+                    sessionMapper(new HeaderTokenSessionMapper(this));
+                }
+                if (!hasConfiguration(SESSION_CODEC)) {
+                    sessionCodec(new JsonWebTokenSessionCodec(this));
+                }
+            }
+        }
+        return jwt;
+    }
+    private void _mergeJWT(AppConfig config) {
+        if (!hasConfiguration(JWT)) {
+            jwt = config.jwt;
         }
     }
     
@@ -1963,9 +1995,8 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
 
     private act.session.SessionMapper sessionMapper = null;
 
-    protected T sessionMapper(act.session.SessionMapper sessionMapper) {
+    protected void sessionMapper(act.session.SessionMapper sessionMapper) {
         this.sessionMapper = sessionMapper;
-        return me();
     }
 
     public act.session.SessionMapper sessionMapper() {
@@ -1983,9 +2014,8 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
 
     private SessionCodec sessionCodec = null;
 
-    protected T sessionCodec(SessionCodec codec) {
+    protected void sessionCodec(SessionCodec codec) {
         this.sessionCodec = $.notNull(codec);
-        return me();
     }
 
     public SessionCodec sessionCodec() {
@@ -2001,6 +2031,25 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         }
     }
 
+    private String sessionHeader;
+    private boolean sessionHeaderSet;
+    protected void sessionHeader(String header) {
+        this.sessionHeader = header;
+        this.sessionHeaderSet = true;
+    }
+    public String sessionHeader() {
+        if (!sessionHeaderSet) {
+            sessionHeader = get(SESSION_HEADER, null);
+            sessionHeaderSet = true;
+        }
+        return sessionHeader;
+    }
+    private void _mergeSessionHeader(AppConfig conf) {
+        if (!hasConfiguration(SESSION_HEADER)) {
+            sessionHeader = conf.sessionHeader;
+            sessionHeaderSet = conf.sessionHeaderSet;
+        }
+    }
 
     private String sessionHeaderPrefix;
     protected T sessionHeaderPrefix(String prefix) {
@@ -2015,9 +2064,8 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     }
 
     private String sessionHeaderPayloadPrefix = null;
-    protected T sessionHeaderPayloadPrefix(String prefix) {
+    protected void sessionHeaderPayloadPrefix(String prefix) {
         this.sessionHeaderPayloadPrefix = prefix;
-        return me();
     }
     public String sessionHeaderPayloadPrefix() {
         if (null == sessionHeaderPayloadPrefix) {
