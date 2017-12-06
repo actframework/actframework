@@ -60,10 +60,6 @@ seeing Act in the 14 round test
 * A 3rd party [simple benchmark project](https://github.com/networknt/microservices-framework-benchmark) 
 shows Act's throughput is 20 times better than of Spring-boot in simple case
 
-## Project status
-
-- Current stable version: 1.3.3
-
 ## Install
 
 Add the following dependency into your `pom.xml` file
