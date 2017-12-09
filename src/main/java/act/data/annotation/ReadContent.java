@@ -34,7 +34,7 @@ import java.lang.annotation.Target;
 
 /**
  * Indicate if the parameter is a file path or resource URL, then read the content of the file into the parameter,
- * otherwise leave the parameter as it is unless {@link #forceRead()} is set to `true`
+ * otherwise leave the parameter as it is unless {@link #mercy()} is set to `true`
  *
  * Note this assumes the file or URL resource is a text file
  */

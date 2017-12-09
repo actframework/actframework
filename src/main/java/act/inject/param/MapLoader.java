@@ -142,7 +142,6 @@ class MapLoader implements ParamValueLoader {
             String value = node.value();
             if (S.notBlank(value)) {
                 String[] pairs = value.split(S.COMMON_SEP);
-                Class valClass = BeanSpec.rawTypeOf(valType);
                 for (String pair : pairs) {
                     if (!pair.contains("=")) {
                         throw new BadRequest("Cannot load parameter, expected map, found:%s", node.value());

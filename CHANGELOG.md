@@ -1,11 +1,16 @@
 # ActFramework Change Log
 
 **1.6.0 TBD**
+* ParamLoader: POJO instance not intialized if no field is set #429
+* Support loading `AdaptiveRecord` from form post data #428
+* java.lang.ClassCastException when ACT startup with session.ttl configuration #427
+* Support SerializeFilter when return entity through FastJSON #426
 * `@TemplateContext` shall inherit from parent class #424
 * `@Configuration` not works properly #423
 * Support `@Configuration` inject #421
 * Create an mechanism to load resource from config folder #420
 * Support annotated routing directive #419
+* Error encountered during app startup on JDK 7 #418
 * Add `findLatest()` method to `Dao` #402
 * Support inject file content into `String` or `ByteBuffer` #397
 * New static file/resource handler that are subject to authentication/session management #396

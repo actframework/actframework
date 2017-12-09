@@ -58,7 +58,7 @@ public class JsonWebTokenSessionCodec implements SessionCodec {
         } catch (UnsupportedEncodingException e) {
             throw E.unexpected(e);
         }
-        ttl = conf.sessionTtl() * 1000;
+        ttl = conf.sessionTtl();
         sessionWillExpire = ttl > 0;
         pingPath = conf .pingPath();
     }
@@ -141,8 +141,6 @@ public class JsonWebTokenSessionCodec implements SessionCodec {
                     if (isSession) {
                         state.put(H.Session.KEY_ID, val);
                     }
-                } else if ("exp".equals(key)) {
-                    state.put(H.Session.KEY_EXPIRATION, entry.getValue().asLong());
                 } else if ("iss".equals(key)) {
                     // ignore
                 } else {

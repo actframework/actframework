@@ -91,10 +91,10 @@ class ConfigKeyHelper {
         if (key.endsWith(".bool") || key.endsWith(".boolean")) {
             return (T) getX(configuration, key, suffixOf(key), defVal, F.TO_BOOLEAN);
         }
-        if (key.endsWith(".long") || key.endsWith(".ttl")) {
+        if (key.endsWith(".long")) {
             return (T) getX(configuration, key, suffixOf(key), defVal, F.TO_LONG);
         }
-        if (key.endsWith(".int") || key.endsWith(".len") || key.endsWith(".count") || key.endsWith(".times") || key.endsWith(".size") || key.endsWith(".port")) {
+        if (key.endsWith(".int") || key.endsWith(".ttl") || key.endsWith(".len") || key.endsWith(".count") || key.endsWith(".times") || key.endsWith(".size") || key.endsWith(".port")) {
             return (T) getX(configuration, key, suffixOf(key), defVal, F.TO_INT);
         }
         if (key.endsWith(".float")) {

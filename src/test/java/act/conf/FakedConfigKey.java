@@ -29,7 +29,7 @@ public enum FakedConfigKey implements ConfigKey {
     GATEWAY_ENABLED("gateway.enabled"),
     GATEWAY_DISABLED("gateway.disabled"),
     CONN_CNT("connection.count"),
-    CONN_TTL("connection.ttl"),
+    CONN_LONG("connection.long"),
     TIMEOUT("timeout.long"),
     DAYS("days.int"),
     HOME_TMP("tmp.dir"),

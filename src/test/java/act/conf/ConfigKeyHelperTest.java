@@ -91,10 +91,10 @@ public class ConfigKeyHelperTest extends ActTestBase {
 
     @Test
     public void fetchLong() {
-        put(FakedConfigKey.CONN_TTL, "100");
-        eq(100l, helper.getConfiguration(FakedConfigKey.CONN_TTL, conf));
-        conf.put(FakedConfigKey.CONN_TTL.key(), Long.MAX_VALUE);
-        eq(Long.MAX_VALUE, helper.getConfiguration(FakedConfigKey.CONN_TTL, conf));
+        put(FakedConfigKey.CONN_LONG, "100");
+        eq(100l, helper.getConfiguration(FakedConfigKey.CONN_LONG, conf));
+        conf.put(FakedConfigKey.CONN_LONG.key(), Long.MAX_VALUE);
+        eq(Long.MAX_VALUE, helper.getConfiguration(FakedConfigKey.CONN_LONG, conf));
     }
 
     @Test

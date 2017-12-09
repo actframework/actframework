@@ -28,7 +28,6 @@ import act.controller.ResponseCache;
 import act.data.MapUtil;
 import act.data.RequestBodyParser;
 import act.event.ActEvent;
-import act.event.EventBus;
 import act.event.SystemEvent;
 import act.handler.RequestHandler;
 import act.i18n.LocaleResolver;
@@ -36,7 +35,10 @@ import act.route.Router;
 import act.route.UrlPath;
 import act.security.CORS;
 import act.session.SessionManager;
-import act.util.*;
+import act.util.ActContext;
+import act.util.MissingAuthenticationHandler;
+import act.util.PropertySpec;
+import act.util.RedirectToLoginUrl;
 import act.view.RenderAny;
 import org.osgl.$;
 import org.osgl.concurrent.ContextLocal;
@@ -866,15 +868,14 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
         H.Request req = req();
         if (!sessionFree) {
             resolveSession(req);
+            app().eventBus().emit(new PreFireSessionResolvedEvent(session, this));
             resolveFlash(req);
         }
         localeResolver.resolve();
         state = State.SESSION_RESOLVED;
         if (!sessionFree) {
             handler.prepareAuthentication(this);
-            EventBus eventBus = app().eventBus();
-            eventBus.emit(new PreFireSessionResolvedEvent(session, this));
-            eventBus.emit(new SessionResolvedEvent(session, this));
+            app().eventBus().emit(new SessionResolvedEvent(session, this));
             if (isLoggedIn()) {
                 attribute(ATTR_WAS_UNAUTHENTICATED, false);
             }
@@ -1146,8 +1147,9 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
     }
 
     /**
-     * This event is fired after session resolved and before any
-     * {@link OldSessionManager.Listener} get called
+     * This event is fired after session resolved and before
+     * context state changed to {@link State#SESSION_RESOLVED}
+     * and in turn before {@link SessionResolvedEvent} is fired.
      */
     public static class PreFireSessionResolvedEvent extends SessionEvent {
         public PreFireSessionResolvedEvent(H.Session session, ActionContext context) {
@@ -1156,10 +1158,9 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
     }
 
     /**
-     * This event is fired after session resolved and after all
-     * {@link OldSessionManager.Listener} get notified and
-     * in turn after all event listeners that listen to the
-     * {@link PreFireSessionResolvedEvent} get notified
+     * This event is fired after session resolved after
+     * all event listeners that listen to the
+     * {@link PreFireSessionResolvedEvent} get notified.
      */
     public static class SessionResolvedEvent extends SessionEvent {
         public SessionResolvedEvent(H.Session session, ActionContext context) {

@@ -26,6 +26,7 @@ import act.app.App;
 import act.app.data.BinderManager;
 import act.app.data.StringValueResolverManager;
 import act.controller.ActionMethodParamAnnotationHandler;
+import act.db.AdaptiveRecord;
 import act.db.DbBind;
 import act.inject.DefaultValue;
 import act.inject.DependencyInjector;
@@ -538,6 +539,9 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
             Type valType = typeParams[1];
             return buildMapLoader(key, rawType, keyType, valType, targetSpec);
         }
+        if (AdaptiveRecord.class.isAssignableFrom(rawType)) {
+            return buildAdaptiveRecordLoader(key, rawType);
+        }
         return buildPojoLoader(key, rawType);
     }
 
@@ -587,6 +591,11 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
         return new MapLoader(key, mapClass, keyType, valType, targetSpec, injector, this);
     }
 
+    private ParamValueLoader buildAdaptiveRecordLoader(
+            final ParamKey key, final Class type) {
+        return new AdaptiveRecordLoader(key, type, this);
+    }
+
     static ParamTree paramTree() {
         return PARAM_TREE.get();
     }
@@ -602,39 +611,7 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
     }
 
     private ParamValueLoader buildPojoLoader(final ParamKey key, final Class type) {
-        final List<FieldLoader> fieldLoaders = fieldLoaders(key, type);
-        return new ParamValueLoader() {
-            @Override
-            public Object load(Object bean, ActContext<?> context, boolean noDefaultValue) {
-                final $.Var<Object> beanBag = $.var(bean);
-                $.Factory<Object> beanSource = new $.Factory<Object>() {
-                    @Override
-                    public Object create() {
-                        Object bean = beanBag.get();
-                        if (null == bean) {
-                            try {
-                                bean = injector.get(type);
-                            } catch (RuntimeException e) {
-                                throw e;
-                            } catch (Exception e) {
-                                throw new InjectException(e, "cannot instantiate %s", type);
-                            }
-                        }
-                        beanBag.set(bean);
-                        return bean;
-                    }
-                };
-                for (FieldLoader fl : fieldLoaders) {
-                    fl.applyTo(beanSource, context);
-                }
-                return beanBag.get();
-            }
-
-            @Override
-            public String bindName() {
-                return key.toString();
-            }
-        };
+        return new PojoLoader(key, type, this);
     }
 
     private ParamValueLoader findLoader(ParamKey paramKey, Field field) {
@@ -668,23 +645,7 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
         return buildLoader(key, field.getGenericType(), spec);
     }
 
-    private List<FieldLoader> fieldLoaders(ParamKey key, Class type) {
-        Class<?> current = type;
-        List<FieldLoader> fieldLoaders = C.newList();
-        while (null != current && !current.equals(Object.class)) {
-            for (Field field : current.getDeclaredFields()) {
-                if (shouldWaive(field)) {
-                    continue;
-                }
-                field.setAccessible(true);
-                fieldLoaders.add(fieldLoader(key, field));
-            }
-            current = current.getSuperclass();
-        }
-        return fieldLoaders;
-    }
-
-    private FieldLoader fieldLoader(ParamKey key, Field field) {
+    FieldLoader fieldLoader(ParamKey key, Field field) {
         return new FieldLoader(field, findLoader(key, field));
     }
 

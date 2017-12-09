@@ -41,6 +41,8 @@ class FieldLoader {
     public void applyTo($.Func0<Object> beanSource, ActContext context) {
         Object o = loader.load(null, context, true);
         if (null == o) {
+            // #429 ensure POJO instance get initialized
+            beanSource.apply();
             return;
         }
         try {
