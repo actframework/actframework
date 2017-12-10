@@ -574,6 +574,12 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
     }
 
     public ActionContext applyContentType() {
+        ActResponse resp = resp();
+        H.Format lastContentType = resp.lastContentType();
+        if (null != lastContentType && $.ne(H.Format.UNKNOWN, lastContentType)) {
+            resp.commitContentType();
+            return this;
+        }
         H.Request req = req();
         H.Format fmt = req.accept();
         if (H.Format.UNKNOWN == fmt) {

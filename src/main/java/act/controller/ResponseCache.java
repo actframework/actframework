@@ -130,6 +130,12 @@ public class ResponseCache extends ActResponse implements Serializable {
     }
 
     @Override
+    public ActResponse contentType(H.Format fmt) {
+        contentType = fmt.contentType();
+        return super.contentType(fmt);
+    }
+
+    @Override
     public H.Response initContentType(String type) {
         realResponse.initContentType(type);
         if (null == contentType) {

@@ -20,6 +20,7 @@ package act.handler.builtin;
  * #L%
  */
 
+import act.ActResponse;
 import act.app.ActionContext;
 import act.app.App;
 import act.controller.ParamNames;
@@ -83,9 +84,9 @@ public class FileGetter extends FastRequestHandler {
                 return;
             }
         }
-        H.Response resp = context.prepareRespForWrite();
+        ActResponse resp = context.prepareRespForWrite();
         fmt = contentType(file.getPath());
-        resp.contentType(fmt.contentType());
+        resp.contentType(fmt);
         context.applyCorsSpec().applyContentType();
         InputStream is = new BufferedInputStream(IO.is(file));
         IO.copy(is, resp.outputStream());

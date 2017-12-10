@@ -38,6 +38,7 @@ public abstract class ActResponse<T extends ActResponse> extends H.Response<T> {
     protected String charset;
     protected Locale locale;
     protected String contentType;
+    protected H.Format fmt;
     private boolean charsetSet;
 
     protected ActResponse() {}
@@ -72,6 +73,16 @@ public abstract class ActResponse<T extends ActResponse> extends H.Response<T> {
     @Override
     public T sendRedirect(String location) {
         throw new Redirect(location);
+    }
+
+    public T contentType(H.Format fmt) {
+        contentType(fmt.contentType());
+        this.fmt = fmt;
+        return me();
+    }
+
+    public H.Format lastContentType() {
+        return fmt;
     }
 
     /**

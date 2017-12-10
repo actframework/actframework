@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 **1.6.0 TBD**
+* css resource `Content-Type` not set in prod mode #430
 * ParamLoader: POJO instance not intialized if no field is set #429
 * Support loading `AdaptiveRecord` from form post data #428
 * java.lang.ClassCastException when ACT startup with session.ttl configuration #427

@@ -21,6 +21,7 @@ package act.handler.builtin;
  */
 
 import act.Act;
+import act.ActResponse;
 import act.app.ActionContext;
 import act.controller.ParamNames;
 import act.handler.builtin.controller.FastRequestHandler;
@@ -38,6 +39,7 @@ import java.nio.ByteBuffer;
 import java.util.*;
 
 import static org.osgl.http.H.Format.*;
+import static org.osgl.http.H.Header.Names.CACHE_CONTROL;
 
 /**
  * Unlike a {@link FileGetter}, the
@@ -54,7 +56,7 @@ public class ResourceGetter extends FastRequestHandler {
     private int preloadSizeLimit;
     private boolean isFolder;
     private ByteBuffer buffer;
-    private H.Format contentType;
+    private H.Format preloadedContentType;
     private boolean preloadFailure;
     private boolean preloaded;
     private String etag;
@@ -62,7 +64,7 @@ public class ResourceGetter extends FastRequestHandler {
     private Set<URL> folders = new HashSet<>();
     private Map<String, String> etags = new HashMap<>();
     private Map<String, ByteBuffer> cachedBuffers = new HashMap<>();
-    private Map<String, String> cachedContentType = new HashMap<>();
+    private Map<String, H.Format> cachedContentType = new HashMap<>();
     private Map<String, Boolean> cachedFailures = new HashMap<>();
 
     public ResourceGetter(String base) {
@@ -114,43 +116,58 @@ public class ResourceGetter extends FastRequestHandler {
     protected void handle(String path, ActionContext context) {
         H.Request req = context.req();
         if (Act.isProd()) {
+            ActResponse resp = context.prepareRespForWrite();
             if (preloaded) {
                 // this is a reloaded file resource
                 if (preloadFailure) {
                     AlwaysNotFound.INSTANCE.handle(context);
                 } else {
+                    resp.contentType(preloadedContentType);
                     if (req.etagMatches(etag)) {
                         AlwaysNotModified.INSTANCE.handle(context);
                     } else {
-                        H.Response resp = context.prepareRespForWrite();
-                        resp.contentType(contentType.contentType())
+                        H.Format contentType = cachedContentType.get(path);
+                        if (null == contentType) {
+                            contentType = req.contentType();
+                        }
+                        resp
+                                .contentType(contentType)
+                                .header(CACHE_CONTROL, "public, max-age=7200")
                                 .etag(this.etag)
                                 .writeContent(buffer.duplicate());
                     }
                 }
                 return;
             }
+
             if (cachedFailures.containsKey(path)) {
                 AlwaysNotFound.INSTANCE.handle(context);
                 return;
             }
 
             if (null != req.etag() && req.etagMatches(etags.get(path))) {
+                H.Format contentType = cachedContentType.get(path);
+                if (null == contentType) {
+                    contentType = req.contentType();
+                }
+                resp.contentType(contentType);
                 AlwaysNotModified.INSTANCE.handle(context);
                 return;
             }
         }
         ByteBuffer buffer = cachedBuffers.get(path);
         if (null != buffer) {
-            context.prepareRespForWrite()
+            context.resp()
                     .contentType(cachedContentType.get(path))
+                    .header(CACHE_CONTROL, "public, max-age=7200");
+            context.applyContentType();
+            context.prepareRespForWrite()
                     .etag(etags.get(path))
                     .writeContent(buffer.duplicate());
             return;
         }
         try {
             URL target;
-            H.Format fmt;
             String loadPath;
             if (S.blank(path)) {
                 target = baseUrl;
@@ -165,9 +182,12 @@ public class ResourceGetter extends FastRequestHandler {
             if (preventFolderAccess(target, loadPath, context)) {
                 return;
             }
-            fmt = FileGetter.contentType(target.getPath());
-            H.Response resp = context.prepareRespForWrite();
-            resp.contentType(fmt.contentType());
+            H.Format contentType = FileGetter.contentType(target.getPath());
+            ActResponse resp = context.prepareRespForWrite();
+            resp.contentType(contentType);
+            if (Act.isProd()) {
+                resp.header(CACHE_CONTROL, "public, max-age=7200");
+            }
             context.applyCorsSpec().applyContentType();
             try {
                 int n = IO.copy(target.openStream(), resp.outputStream());
@@ -180,7 +200,7 @@ public class ResourceGetter extends FastRequestHandler {
                             cachedFailures.put(path, true);
                         } else {
                             cachedBuffers.put(path, buffer);
-                            cachedContentType.put(path, fmt.contentType());
+                            cachedContentType.put(path, contentType);
                         }
                     }
                 }
@@ -227,7 +247,7 @@ public class ResourceGetter extends FastRequestHandler {
         if (Act.isDev()) {
             return;
         }
-        contentType = FileGetter.contentType(baseUrl.getPath());
+        H.Format contentType = FileGetter.contentType(baseUrl.getPath());
         if (HTML == contentType || CSS == contentType || JAVASCRIPT == contentType
                 || TXT == contentType || CSV == contentType
                 || JSON == contentType || XML == contentType
@@ -239,6 +259,7 @@ public class ResourceGetter extends FastRequestHandler {
             } else {
                 this.etag = etagBag.get();
             }
+            preloadedContentType = contentType;
             preloaded = true;
         }
     }
