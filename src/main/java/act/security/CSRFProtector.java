@@ -23,7 +23,7 @@ package act.security;
 import act.Act;
 import act.app.ActionContext;
 import act.app.App;
-import act.app.util.AppCrypto;
+import act.crypto.AppCrypto;
 import org.osgl.http.H;
 import org.osgl.util.S;
 

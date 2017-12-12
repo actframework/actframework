@@ -21,7 +21,7 @@ package act.internal.util;
  */
 
 import act.Act;
-import act.app.util.AppCrypto;
+import act.crypto.AppCrypto;
 import act.util.DestroyableBase;
 import org.osgl.$;
 import org.osgl.util.E;

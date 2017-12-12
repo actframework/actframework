@@ -1,4 +1,4 @@
-package act.ws;
+package act.crypto;
 
 /*-
  * #%L
@@ -20,23 +20,5 @@ package act.ws;
  * #L%
  */
 
-import act.crypto.AppCrypto;
-
-import javax.inject.Singleton;
-
-/**
- * Default implementation of {@link SecureTicketCodec}. This implementation
- * encode everything from the session object into the secure ticket
- */
-@Singleton
-public class DefaultSecureTicketCodec extends StringSecureTicketCodec {
-    public DefaultSecureTicketCodec() {
-        super();
-    }
-
-    public DefaultSecureTicketCodec(AppCrypto crypto) {
-        super(crypto);
-    }
-
-
+public class HMAC {
 }

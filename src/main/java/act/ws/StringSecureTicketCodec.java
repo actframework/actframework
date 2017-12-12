@@ -21,7 +21,7 @@ package act.ws;
  */
 
 import act.Act;
-import act.app.util.AppCrypto;
+import act.crypto.AppCrypto;
 import org.osgl.$;
 import org.osgl.util.Codec;
 import org.osgl.util.S;

@@ -200,11 +200,11 @@ public abstract class Config<E extends ConfigKey> extends DestroyableBase {
         return null;
     }
 
-    public Map rawConfiguration() {
+    public Map<String, Object> rawConfiguration() {
         return raw;
     }
 
-    public Map subSet(String prefix) {
+    public Map<String, Object> subSet(String prefix) {
         String prefix2 = "act." + prefix;
         Map<String, Object> subset = C.newMap();
         for (String key : raw.keySet()) {

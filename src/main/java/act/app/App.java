@@ -26,7 +26,7 @@ import act.apidoc.ApiManager;
 import act.app.data.BinderManager;
 import act.app.data.StringValueResolverManager;
 import act.app.event.AppEventId;
-import act.app.util.AppCrypto;
+import act.crypto.AppCrypto;
 import act.app.util.NamedPort;
 import act.boot.BootstrapClassLoader;
 import act.boot.app.BlockIssueSignal;

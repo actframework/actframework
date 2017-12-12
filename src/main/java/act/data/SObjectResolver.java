@@ -80,7 +80,7 @@ public class SObjectResolver extends StringValueResolverPlugin<SObject> {
             try {
                 return resolveFromBase64(value);
             } catch (Exception e) {
-                Act.LOGGER.warn(S.concat("Cannot resolve SObject from value", value));
+                Act.LOGGER.warn(S.concat("Cannot resolve SObject from value: ", value));
                 return null;
             }
         }

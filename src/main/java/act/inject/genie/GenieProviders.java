@@ -20,19 +20,28 @@ package act.inject.genie;
  * #L%
  */
 
+import act.Act;
 import act.app.App;
 import act.app.AppClassLoader;
+import act.conf.AppConfig;
+import act.inject.DependencyInjector;
 import act.util.ClassNode;
 import org.osgl.$;
 import org.osgl.Osgl;
+import org.osgl.inject.BeanSpec;
+import org.osgl.inject.InjectException;
 import org.osgl.inject.loader.AnnotatedElementLoader;
 import org.osgl.inject.loader.ConfigurationValueLoader;
 import org.osgl.inject.loader.TypedElementLoader;
 import org.osgl.util.C;
+import org.osgl.util.S;
 
 import javax.inject.Provider;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Type;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Integrate Genie with ActFramework
@@ -80,10 +89,74 @@ class GenieProviders {
         @Override
         public ConfigurationValueLoader get() {
             return new ConfigurationValueLoader() {
+
+                @Override
+                public Object get() {
+                    final AppConfig appConfig = app().config();
+                    DependencyInjector injector = Act.injector();
+                    final String confKey = value().toString();
+                    boolean isImpl = confKey.endsWith(".impl");
+                    if (this.spec.isInstanceOf(Map.class)) {
+                        String prefix = confKey.toString();
+                        Map<String, Object> confMap = appConfig.subSet(prefix);
+                        Map retVal = (Map) injector.get(spec.rawType());
+                        List<Type> typeParams = spec.typeParams();
+                        Type valType = null != typeParams && typeParams.size() > 1 ? typeParams.get(1) : Object.class;
+                        BeanSpec valSpec = BeanSpec.of(valType, injector);
+                        int pos = prefix.length() + 1;
+                        for (String key : confMap.keySet()) {
+                            Object val = confMap.get(key);
+                            retVal.put(key.substring(pos), null == val ? null : cast(S.string(val), valSpec, isImpl));
+                        }
+                        return retVal;
+                    } else if (this.spec.isInstanceOf(Collection.class)) {
+                        Object val;
+                        try {
+                            val = appConfig.get(confKey);
+                        } catch (Exception e) {
+                            val = appConfig.rawConfiguration().get(confKey);
+                        }
+                        if (spec.isInstance(val)) {
+                            return val;
+                        }
+                        return cast(null == val ? null : val.toString(), spec, isImpl);
+                    }
+                    return super.get();
+                }
+
                 @Override
                 protected Object conf(String s) {
                     return app().config().get(s);
                 }
+
+                private Object cast(String val, BeanSpec spec, boolean isImpl) {
+                    if (null == val) {
+                        return null;
+                    }
+                    if (spec.isInstanceOf(Collection.class)) {
+                        Collection retVal = (Collection<?>) Act.getInstance(spec.rawType());
+                        List<Type> typeParams = spec.typeParams();
+                        Type itemType = (null != typeParams && typeParams.size() > 0) ? typeParams.get(0) : Object.class;
+                        BeanSpec itemSpec = BeanSpec.of(itemType, Act.injector());
+                        for (String itemVal : S.fastSplit(S.string(val), ",")) {
+                            retVal.add(cast(itemVal, itemSpec, isImpl));
+                        }
+                        return retVal;
+                    } else {
+                        Class<?> type = spec.rawType();
+                        if (type.isInstance(val)) {
+                            return val;
+                        }
+                        if (isImpl) {
+                            return $.newInstance(val, Act.app().classLoader());
+                        }
+                        if ($.isSimpleType(type)) {
+                            return Act.app().resolverManager().resolve(val, type);
+                        }
+                    }
+                    throw new InjectException("Cannot cast value type[%s] to required type[%]", val.getClass(), spec);
+                }
+
             };
         }
     };

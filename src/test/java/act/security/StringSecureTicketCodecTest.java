@@ -21,7 +21,7 @@ package act.security;
  */
 
 import act.ActTestBase;
-import act.app.util.AppCrypto;
+import act.crypto.AppCrypto;
 import act.conf.AppConfig;
 import act.ws.StringSecureTicketCodec;
 import org.junit.Test;

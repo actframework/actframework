@@ -21,7 +21,7 @@ package act.ws;
  */
 
 import act.Act;
-import act.app.util.AppCrypto;
+import act.crypto.AppCrypto;
 import act.conf.AppConfig;
 
 /**

@@ -22,7 +22,7 @@ package act;
 
 import act.app.*;
 import act.app.event.AppEventId;
-import act.app.util.AppCrypto;
+import act.crypto.AppCrypto;
 import act.app.util.NamedPort;
 import act.boot.BootstrapClassLoader;
 import act.boot.PluginClassProvider;

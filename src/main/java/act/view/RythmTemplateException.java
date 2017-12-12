@@ -48,7 +48,7 @@ public class RythmTemplateException extends TemplateException {
         at org.apache.commons.codec.binary.Hex.decodeHex(Hex.java:82)
         at org.osgl.util.Codec.hexStringToByte(Codec.java:190)
         at org.osgl.util.Crypto.decryptAES(Crypto.java:243)
-        at act.app.util.AppCrypto.decrypt(AppCrypto.java:84)
+        at act.crypto.AppCrypto.decrypt(AppCrypto.java:84)
         at act.fsa.views.ViewsDemo.backendServerError(ViewsDemo.java:26)
         at act.fsa.views.ViewsDemo.rt(ViewsDemo.java:80) <-- ERROR SPOT
         at act_fsa_views_ViewsDemo_rythmTemplateRuntimeError_html__R_T_C__.build(act_fsa_views_ViewsDemo_rythmTemplateRuntimeError_html__R_T_C__.java:163)
