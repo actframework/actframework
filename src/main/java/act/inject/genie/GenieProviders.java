@@ -153,8 +153,13 @@ class GenieProviders {
                         if ($.isSimpleType(type)) {
                             return Act.app().resolverManager().resolve(val, type);
                         }
+                        // try impl anyway
+                        try {
+                            return $.newInstance(val, Act.app().classLoader());
+                        } catch (Exception e) {
+                            throw new InjectException("Cannot cast value type[%s] to required type[%]", val.getClass(), spec);
+                        }
                     }
-                    throw new InjectException("Cannot cast value type[%s] to required type[%]", val.getClass(), spec);
                 }
 
             };

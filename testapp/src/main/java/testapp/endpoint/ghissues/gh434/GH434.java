@@ -3,6 +3,7 @@ package testapp.endpoint.ghissues.gh434;
 import static org.osgl.util.E.illegalStateIf;
 
 import act.controller.annotation.UrlContext;
+import act.util.Stateless;
 import org.osgl.inject.annotation.Configuration;
 import org.osgl.mvc.annotation.GetAction;
 import testapp.endpoint.ghissues.GithubIssueBase;
@@ -15,15 +16,16 @@ import javax.inject.Inject;
  * Test `@With` on action methods
  */
 @UrlContext("434")
+@Stateless
 public class GH434 extends GithubIssueBase {
 
-    @Configuration("gh434.by_lang.impl")
+    @Configuration("gh434.by_lang")
     private Map<String, List<Service>> serviceByLang;
 
     @Inject
     private List<GreetingService> greetingServices;
 
-    @Configuration("gh434.svs_list.impl")
+    @Configuration("gh434.svs_list")
     private List<Service> configuredServices;
 
     @Configuration("gh434.setting")
