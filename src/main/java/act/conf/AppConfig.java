@@ -30,6 +30,7 @@ import act.app.conf.AppConfigurator;
 import act.app.event.AppEventId;
 import act.app.util.NamedPort;
 import act.cli.CliOverHttpAuthority;
+import act.crypto.HMAC;
 import act.db.util.SequenceNumberGenerator;
 import act.db.util._SequenceNumberGenerator;
 import act.handler.UnknownHttpMethodProcessor;
@@ -118,7 +119,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     public void preloadConfigurations() {
         // ensure JWT get evaluated first to set
         // default value for dependency settings
-        jwt();
+        jwtEnabled();
 
         for (Method method : AppConfig.class.getDeclaredMethods()) {
             boolean isPublic = Modifier.isPublic(method.getModifiers());
@@ -936,15 +937,15 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         }
     }
 
-    private Boolean jwt;
-    protected T jwt(boolean enabled) {
-        jwt = enabled;
+    private Boolean jwtEnabled;
+    protected T jwtEnabled(boolean enabled) {
+        jwtEnabled = enabled;
         return me();
     }
-    public boolean jwt() {
-        if (null == jwt) {
-            jwt = get(JWT, false);
-            if (jwt) {
+    public boolean jwtEnabled() {
+        if (null == jwtEnabled) {
+            jwtEnabled = get(JWT, false);
+            if (jwtEnabled) {
                 if (!hasConfiguration(SESSION_HEADER)) {
                     sessionHeader("Authorization");
                 }
@@ -955,18 +956,54 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
                     sessionMapper(new HeaderTokenSessionMapper(this));
                 }
                 if (!hasConfiguration(SESSION_CODEC)) {
-                    sessionCodec(new JsonWebTokenSessionCodec(this));
+                    sessionCodec(app().getInstance(JsonWebTokenSessionCodec.class));
                 }
             }
         }
-        return jwt;
+        return jwtEnabled;
     }
     private void _mergeJWT(AppConfig config) {
         if (!hasConfiguration(JWT)) {
-            jwt = config.jwt;
+            jwtEnabled = config.jwtEnabled;
         }
     }
-    
+
+    private HMAC jwtAlgo;
+    protected T jwtArgo(HMAC.Algorithm algo) {
+        jwtAlgo = new HMAC(secret(), algo);
+        return me();
+    }
+    public HMAC jwtAlgo() {
+        if (null == jwtAlgo) {
+            String algoKey = get(JWT_ALGO, "SHA256");
+            jwtAlgo = new HMAC(secret(), algoKey);
+        }
+        return jwtAlgo;
+    }
+    private void _mergeJWTAlgo(AppConfig config) {
+        if (!hasConfiguration(JWT_ALGO)) {
+            jwtAlgo = config.jwtAlgo;
+        }
+    }
+
+    private String jwtIssuer;
+    protected T jwtIssuer(String issuer) {
+        E.illegalArgumentIf(S.blank(issuer), "issuer cannot be empty");
+        jwtIssuer = issuer;
+        return me();
+    }
+    public String jwtIssuer() {
+        if (null == jwtIssuer) {
+            jwtIssuer = get(AppConfigKey.JWT_ISSUER, cookiePrefix().substring(0, cookiePrefix().length() - 1));
+        }
+        return jwtIssuer;
+    }
+    private void _mergeJwtIssuer(AppConfig config) {
+        if (!hasConfiguration(JWT_ISSUER)) {
+            jwtIssuer = config.jwtIssuer;
+        }
+    }
+
     private String localeParamName;
     protected T localeParamName(String name) {
         E.illegalArgumentIf(S.blank(name), "locale param name must not be empty");

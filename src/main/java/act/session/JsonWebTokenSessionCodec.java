@@ -1,66 +1,54 @@
 package act.session;
 
-/*-
- * #%L
- * ACT Framework
- * %%
- * Copyright (C) 2014 - 2017 ActFramework
- * %%
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- * 
- *      http://www.apache.org/licenses/LICENSE-2.0
- * 
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- * #L%
- */
+        /*-
+         * #%L
+         * ACT Framework
+         * %%
+         * Copyright (C) 2014 - 2017 ActFramework
+         * %%
+         * Licensed under the Apache License, Version 2.0 (the "License");
+         * you may not use this file except in compliance with the License.
+         * You may obtain a copy of the License at
+         *
+         *      http://www.apache.org/licenses/LICENSE-2.0
+         *
+         * Unless required by applicable law or agreed to in writing, software
+         * distributed under the License is distributed on an "AS IS" BASIS,
+         * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+         * See the License for the specific language governing permissions and
+         * limitations under the License.
+         * #L%
+         */
 
 import act.conf.AppConfig;
 import act.util.Lazy;
-import com.auth0.jwt.JWT;
-import com.auth0.jwt.JWTCreator;
-import com.auth0.jwt.JWTVerifier;
-import com.auth0.jwt.algorithms.Algorithm;
-import com.auth0.jwt.exceptions.JWTVerificationException;
-import com.auth0.jwt.interfaces.Claim;
-import com.auth0.jwt.interfaces.DecodedJWT;
 import org.osgl.$;
 import org.osgl.http.H;
-import org.osgl.util.E;
 import org.osgl.util.S;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import java.io.UnsupportedEncodingException;
-import java.util.Date;
 import java.util.Map;
 
+import static act.session.JWT.Payload.EXPIRES_AT;
+import static act.session.JWT.Payload.ISSUER;
 import static org.osgl.http.H.Session.KEY_EXPIRATION;
 
 @Singleton
 @Lazy
 public class JsonWebTokenSessionCodec implements SessionCodec {
 
-    private final Algorithm algorithm;
+    private JWT jwt;
     private final boolean sessionWillExpire;
     private final int ttl;
     private final String pingPath;
 
     @Inject
-    public JsonWebTokenSessionCodec(AppConfig conf) {
-        try {
-            algorithm = Algorithm.HMAC256(conf.secret());
-        } catch (UnsupportedEncodingException e) {
-            throw E.unexpected(e);
-        }
+    public JsonWebTokenSessionCodec(AppConfig conf, JWT jwt) {
         ttl = conf.sessionTtl();
         sessionWillExpire = ttl > 0;
-        pingPath = conf .pingPath();
+        pingPath = conf.pingPath();
+        this.jwt = $.notNull(jwt);
     }
 
     @Override
@@ -76,9 +64,9 @@ public class JsonWebTokenSessionCodec implements SessionCodec {
         session.id(); // ensure session ID is generated
         if (sessionWillExpire && !session.contains(KEY_EXPIRATION)) {
             // session get cleared before
-            session.put(KEY_EXPIRATION, $.ms() + ttl);
+            session.put(KEY_EXPIRATION, $.ms() + ttl * 1000);
         }
-        return builder(session, JWT.create().withJWTId(session.id())).sign(algorithm);
+        return populateToken(jwt.newToken(), session).toString(jwt);
     }
 
     @Override
@@ -86,7 +74,7 @@ public class JsonWebTokenSessionCodec implements SessionCodec {
         if (null == flash || flash.isEmpty()) {
             return null;
         }
-        return builder(flash, JWT.create()).sign(algorithm);
+        return populateToken(jwt.newToken(), flash).toString(jwt);
     }
 
     @Override
@@ -114,41 +102,36 @@ public class JsonWebTokenSessionCodec implements SessionCodec {
         return flash;
     }
 
-    private JWTCreator.Builder builder(H.KV<?> state, JWTCreator.Builder builder) {
+    private JWT.Token populateToken(JWT.Token token, H.KV<?> state) {
         for (String k : state.keySet()) {
             String v = state.get(k);
             if (H.Session.KEY_EXPIRATION.equals(k)) {
                 long l = Long.parseLong(v);
-                builder.withExpiresAt(new Date(l));
+                token.payload(EXPIRES_AT, l / 1000);
             } else if (H.Session.KEY_ID.equals(k)) {
                 // ignore this
             } else {
-                builder.withClaim(k, v);
+                token.payload(k, v);
             }
         }
-        return builder.withIssuer("act");
+        return token;
     }
 
-    private void resolveFromJwtToken(H.KV<?> state, String token, boolean isSession) {
-        JWTVerifier verifier = JWT.require(algorithm).withIssuer("act").build();
-        try {
-            DecodedJWT jwt = verifier.verify(token);
-            Map<String, Claim> claims = jwt.getClaims();
-            for (Map.Entry<String, Claim> entry : claims.entrySet()) {
-                String key = entry.getKey();
-                String val = entry.getValue().asString();
-                if ("jti".equals(key)) {
-                    if (isSession) {
-                        state.put(H.Session.KEY_ID, val);
-                    }
-                } else if ("iss".equals(key)) {
-                    // ignore
-                } else {
-                    state.put(key, val);
-                }
+    private void resolveFromJwtToken(H.KV<?> state, String tokenString, boolean isSession) {
+        JWT.Token token = jwt.deserialize(tokenString);
+        if (null == token) {
+            return;
+        }
+        for (Map.Entry<String, Object> entry : token.payloads().entrySet()) {
+            String key = entry.getKey();
+            Object val = entry.getValue();
+            if (isSession && "jti".equals(key)) {
+                state.put(H.Session.KEY_ID, val);
+            } else if (EXPIRES_AT.key().equals(key) || ISSUER.key().equals(key)) {
+                // ignore
+            } else {
+                state.put(key, val);
             }
-        } catch (JWTVerificationException e) {
-            // ignore
         }
     }
 

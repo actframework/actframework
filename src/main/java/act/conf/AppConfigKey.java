@@ -207,7 +207,7 @@ public enum AppConfigKey implements ConfigKey {
      * {@code act_session}, and user specifies the prefix {@code my_app}
      * then the session cookie name will be {@code my_app_session}.
      * <p>Note this setting also impact the {@link AppConfig#flashCookieName()}</p>
-     * <p>Default value: {@code act}</p>
+     * <p>Default value: {@link App#shortId()}</p>
      */
     COOKIE_PREFIX("cookie.prefix"),
 
@@ -579,6 +579,26 @@ public enum AppConfigKey implements ConfigKey {
      * Default value: `false`
      */
     JWT("jwt.enabled"),
+
+    /**
+     * `jwt.algo`, specify JWT sign algorithm.
+     *
+     * Available options:
+     * * SHA256
+     * * SHA384
+     * * SHA512
+     *
+     * Default value: SHA256
+     *
+     */
+    JWT_ALGO("jwt.algo"),
+
+    /**
+     * `jwt.issuer`, specify `iss` payload of JWT
+     *
+     * Default value: {@link #COOKIE_PREFIX}
+     */
+    JWT_ISSUER("jwt.issuer"),
 
     /**
      * {@code act.locale} specifies the application default locale
