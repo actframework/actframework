@@ -77,7 +77,7 @@ public class JWT extends SingletonBase {
         }
 
         public Token(String issuer) {
-            payloads.put(Payload.ISSUED_AT.key, issuer);
+            payloads.put(Payload.ISSUER.key, issuer);
             headers.put("typ", "JWT");
         }
 

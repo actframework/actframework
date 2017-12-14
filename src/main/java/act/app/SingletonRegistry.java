@@ -25,6 +25,7 @@ import act.app.event.AppEventId;
 import org.osgl.$;
 
 import javax.enterprise.context.ApplicationScoped;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -34,7 +35,7 @@ import java.util.concurrent.ConcurrentMap;
 public class SingletonRegistry extends AppServiceBase<SingletonRegistry> {
 
     private ConcurrentMap<Class<?>, Object> registry = new ConcurrentHashMap<Class<?>, Object>();
-    private ConcurrentHashMap<Class<?>, Class<?>> preRegistry = new ConcurrentHashMap<Class<?>, Class<?>>();
+    private ConcurrentHashMap<Class<?>, Class<?>> preRegistry = new ConcurrentHashMap<>();
     private boolean batchRegistered = false;
 
     SingletonRegistry(App app) {
@@ -73,7 +74,8 @@ public class SingletonRegistry extends AppServiceBase<SingletonRegistry> {
 
     private void doRegister() {
         batchRegistered = true;
-        for (Class<?> c : preRegistry.keySet()) {
+        for (Map.Entry<Class<?>, Class<?>> entry: preRegistry.entrySet()) {
+            Class<?> c = entry.getKey();
             registry.put(c, app().getInstance(c));
         }
         preRegistry.clear();
