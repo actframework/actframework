@@ -206,7 +206,7 @@ public class ClassNode extends DestroyableBase {
      * @param noAbstract specify if abstract class can be visited
      * @return this `ClassNode` instance
      */
-    public ClassNode visitTree($.Function<ClassNode, ?> visitor, final boolean publicOnly, final boolean noAbstract) {
+    public ClassNode visitTree($.Visitor<ClassNode> visitor, final boolean publicOnly, final boolean noAbstract) {
         return visitTree($.guardedVisitor(classNodeFilter(publicOnly, noAbstract), visitor));
     }
 
@@ -216,7 +216,7 @@ public class ClassNode extends DestroyableBase {
      * @param visitor the function that take `ClassNode` as argument
      * @return this `ClassNode` instance
      */
-    public ClassNode visitSubTree($.Function<ClassNode, ?> visitor) {
+    public ClassNode visitSubTree($.Visitor<ClassNode> visitor) {
         visitSubTree(visitor, new HashSet<ClassNode>());
         return this;
     }
@@ -229,7 +229,7 @@ public class ClassNode extends DestroyableBase {
      * @param noAbstract specify if abstract class can be visited
      * @return this `ClassNode` instance
      */
-    public ClassNode visitSubTree($.Function<ClassNode, ?> visitor, final boolean publicOnly, final boolean noAbstract) {
+    public ClassNode visitSubTree($.Visitor<ClassNode> visitor, final boolean publicOnly, final boolean noAbstract) {
         return visitSubTree($.guardedVisitor(classNodeFilter(publicOnly, noAbstract), visitor));
     }
 
@@ -239,7 +239,7 @@ public class ClassNode extends DestroyableBase {
      * @param visitor the function that take `ClassNode` as argument
      * @return this `ClassNode` instance
      */
-    public ClassNode visitPublicTreeNodes($.Function<ClassNode, ?> visitor) {
+    public ClassNode visitPublicTreeNodes($.Visitor<ClassNode> visitor) {
         return visitTree($.guardedVisitor(new $.Predicate<ClassNode>() {
             @Override
             public boolean test(ClassNode classNode) {
@@ -254,7 +254,7 @@ public class ClassNode extends DestroyableBase {
      * @param visitor the function that take `ClassNode` as argument
      * @return this `ClassNode` instance
      */
-    public ClassNode visitPublicSubTreeNodes($.Function<ClassNode, ?> visitor) {
+    public ClassNode visitPublicSubTreeNodes($.Visitor<ClassNode> visitor) {
         return visitSubTree($.guardedVisitor(new $.Predicate<ClassNode>() {
             @Override
             public boolean test(ClassNode classNode) {
@@ -269,7 +269,7 @@ public class ClassNode extends DestroyableBase {
      * @param visitor the function that take `ClassNode` as argument
      * @return this `ClassNode` instance
      */
-    public ClassNode visitPublicNotAbstractSubTreeNodes($.Function<ClassNode, ?> visitor) {
+    public ClassNode visitPublicNotAbstractSubTreeNodes($.Visitor<ClassNode> visitor) {
         return visitSubTree($.guardedVisitor(new $.Predicate<ClassNode>() {
             @Override
             public boolean test(ClassNode classNode) {
@@ -284,7 +284,7 @@ public class ClassNode extends DestroyableBase {
      * @param visitor the function that take `ClassNode` as argument
      * @return this `ClassNode` instance
      */
-    public ClassNode visitPublicNotAbstractTreeNodes($.Function<ClassNode, ?> visitor) {
+    public ClassNode visitPublicNotAbstractTreeNodes($.Visitor<ClassNode> visitor) {
         return visitTree($.guardedVisitor(new $.Predicate<ClassNode>() {
             @Override
             public boolean test(ClassNode classNode) {
@@ -308,7 +308,7 @@ public class ClassNode extends DestroyableBase {
      * @param visitor the function that take `ClassNode` as argument
      * @return this `ClassNode` instance
      */
-    public ClassNode visitAnnotatedClasses($.Function<ClassNode, ?> visitor) {
+    public ClassNode visitAnnotatedClasses($.Visitor<ClassNode> visitor) {
         for (ClassNode annotated : this.annotated) {
             visitor.apply(annotated);
         }
@@ -323,7 +323,7 @@ public class ClassNode extends DestroyableBase {
      * @param noAbstract specify whether abstract class shall be scanned
      * @return this `ClassNode` instance
      */
-    public ClassNode visitAnnotatedClasses($.Function<ClassNode, ?> visitor, boolean publicOnly, boolean noAbstract) {
+    public ClassNode visitAnnotatedClasses($.Visitor<ClassNode> visitor, boolean publicOnly, boolean noAbstract) {
         return visitAnnotatedClasses($.guardedVisitor(classNodeFilter(publicOnly, noAbstract), visitor));
     }
 
@@ -333,7 +333,7 @@ public class ClassNode extends DestroyableBase {
      * @param visitor the function that take `ClassNode` as argument
      * @return this `ClassNode` instance
      */
-    public ClassNode visitPublicAnnotatedClasses($.Function<ClassNode, ?> visitor) {
+    public ClassNode visitPublicAnnotatedClasses($.Visitor<ClassNode> visitor) {
         return visitAnnotatedClasses($.guardedVisitor(new $.Predicate<ClassNode>() {
             @Override
             public boolean test(ClassNode classNode) {
@@ -348,7 +348,7 @@ public class ClassNode extends DestroyableBase {
      * @param visitor the function that take `ClassNode` as argument
      * @return this `ClassNode` instance
      */
-    public ClassNode visitPublicNotAbstractAnnotatedClasses($.Function<ClassNode, ?> visitor) {
+    public ClassNode visitPublicNotAbstractAnnotatedClasses($.Visitor<ClassNode> visitor) {
         return visitAnnotatedClasses($.guardedVisitor(new $.Predicate<ClassNode>() {
             @Override
             public boolean test(ClassNode classNode) {

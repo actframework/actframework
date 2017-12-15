@@ -60,7 +60,7 @@ class AppNameInferer {
     private static String fromTokens(List<String> tokens) {
         C.List<String> filtered = NoisyWordsFilter.filter(tokens);
         String joined = S.join(".", filtered);
-        return Keyword.of(joined).header();
+        return Keyword.of(joined).httpHeader();
     }
 
     private static List<String> tokenOf(Class<?> entryClass) {
