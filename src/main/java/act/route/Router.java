@@ -1400,11 +1400,11 @@ public class Router extends AppServiceBase<Router> {
             try {
                 final RequestHandler h = r.resolve(payload, app, decorators);
                 if (decorators.contains(BuiltInHandlerDecorator.throttled)) {
-                    final ThrottleFilter throttleInterceptor = app.getInstance(ThrottleFilter.class);
+                    final ThrottleFilter throttleFilter = new ThrottleFilter(app.config().requestThrottle());
                     return new RequestHandlerBase() {
                         @Override
                         public void handle(ActionContext context) {
-                            Result r = throttleInterceptor.handle(context);
+                            Result r = throttleFilter.handle(context);
                             if (null == r) {
                                 h.handle(context);
                             }
