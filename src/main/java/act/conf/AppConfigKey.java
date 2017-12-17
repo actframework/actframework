@@ -22,6 +22,7 @@ package act.conf;
 
 import act.Act;
 import act.app.App;
+import act.controller.annotation.Throttled;
 import act.handler.UnknownHttpMethodProcessor;
 import act.view.TemplatePathResolver;
 import act.view.View;
@@ -677,6 +678,16 @@ public enum AppConfigKey implements ConfigKey {
      * specified with JVM argument {@code -Dprofile=<profile>}
      */
     PROFILE("profile"),
+
+    /**
+     * `req.throttle` specifies the maximum number of requests
+     * that can be handled per second from the same ip address
+     * when {@link Throttled}
+     * is specified on the action handler.
+     *
+     * Default value: `2`
+     */
+    REQUEST_THROTTLE("req.throttle.int"),
 
     /**
      * `render.json.output_charset`

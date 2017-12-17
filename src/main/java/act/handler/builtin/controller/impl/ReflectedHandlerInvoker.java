@@ -28,6 +28,8 @@ import act.controller.CacheSupportMetaInfo;
 import act.controller.Controller;
 import act.controller.annotation.HandleCsrfFailure;
 import act.controller.annotation.HandleMissingAuthentication;
+import act.controller.annotation.Throttled;
+import act.controller.builtin.ThrottleFilter;
 import act.controller.meta.*;
 import act.data.annotation.Pattern;
 import act.db.RequireDataBind;
@@ -122,6 +124,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
     private boolean noTemplateCache;
     private MissingAuthenticationHandler missingAuthenticationHandler;
     private MissingAuthenticationHandler csrfFailureHandler;
+    private ThrottleFilter throttleFilter;
     private boolean async;
     private boolean byPassImplicityTemplateVariable;
     private boolean forceDataBinding;
@@ -157,6 +160,15 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
             handlerIndex = methodAccess.getIndex(handlerMetaInfo.name(), paramTypes);
         } else {
             method.setAccessible(true);
+        }
+
+        Throttled throttleControl = method.getAnnotation(Throttled.class);
+        if (null != throttleControl) {
+            int throttle = throttleControl.value();
+            if (throttle < 1) {
+                throttle = app.config().requestThrottle();
+            }
+            throttleFilter = new ThrottleFilter(throttle);
         }
 
         FastJsonFilter filterAnno = method.getAnnotation(FastJsonFilter.class);
@@ -278,6 +290,13 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
     public Result handle(final ActionContext context) throws Exception {
         if (disabled) {
             return ActNotFound.get();
+        }
+
+        if (null != throttleFilter) {
+            Result throttleResult = throttleFilter.handle(context);
+            if (null != throttleResult) {
+                return throttleResult;
+            }
         }
 
         if (null != filters) {

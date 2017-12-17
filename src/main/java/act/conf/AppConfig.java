@@ -1794,6 +1794,24 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         }
     }
 
+    private Integer reqThrottle;
+    protected T requestThrottle(final int throttle) {
+        E.illegalArgumentIf(throttle < 1, "request throttle must be positive integer");
+        this.reqThrottle = throttle;
+        return me();
+    }
+    public int requestThrottle() {
+        if (null == reqThrottle) {
+            reqThrottle = get(REQUEST_THROTTLE, 2);
+        }
+        return reqThrottle;
+    }
+    private void _mergeReqThrottle(AppConfig config) {
+        if (!hasConfiguration(REQUEST_THROTTLE)) {
+            this.reqThrottle = config.reqThrottle;
+        }
+    }
+
     private Osgl.Func0<H.Format> jsonContentTypeProvider = null;
     private Boolean renderJsonIeFix = null;
     private H.Format jsonIE;

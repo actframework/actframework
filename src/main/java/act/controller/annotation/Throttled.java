@@ -27,6 +27,14 @@ import java.lang.annotation.*;
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Inherited
-@Target(ElementType.TYPE)
-public @interface ThrottleControl {
+@Target(ElementType.METHOD)
+public @interface Throttled {
+    /**
+     * The maximum number of requests per second initiated from the same ip address.
+     *
+     * Default value:
+     *
+     * @return the request throttle number
+     */
+    int value() default -1;
 }

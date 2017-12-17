@@ -28,9 +28,12 @@ import act.app.AppServiceBase;
 import act.cli.tree.TreeNode;
 import act.conf.AppConfig;
 import act.controller.ParamNames;
+import act.controller.builtin.ThrottleFilter;
 import act.handler.*;
 import act.handler.builtin.*;
 import act.handler.builtin.controller.RequestHandlerProxy;
+import act.security.CORS;
+import act.security.CSRF;
 import act.util.ActContext;
 import act.util.DestroyableBase;
 import act.ws.WsEndpoint;
@@ -41,6 +44,7 @@ import org.osgl.http.H;
 import org.osgl.http.util.Path;
 import org.osgl.logging.LogManager;
 import org.osgl.logging.Logger;
+import org.osgl.mvc.result.Result;
 import org.osgl.util.*;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -481,7 +485,6 @@ public class Router extends AppServiceBase<Router> {
         String scheme = secure ? "https" : "http";
 
         String domain = config.host();
-        String urlContext = config.urlContext();
 
         if (80 == port || 443 == port) {
             return S.concat(scheme, "://", domain);
@@ -1293,7 +1296,7 @@ public class Router extends AppServiceBase<Router> {
     }
 
     private enum BuiltInHandlerDecorator {
-        authenticated, external
+        authenticated, external, throttled
     }
 
     private enum BuiltInHandlerResolver {
@@ -1395,7 +1398,47 @@ public class Router extends AppServiceBase<Router> {
             }
             r = valueOf(resolver);
             try {
-                return r.resolve(payload, app, decorators);
+                final RequestHandler h = r.resolve(payload, app, decorators);
+                if (decorators.contains(BuiltInHandlerDecorator.throttled)) {
+                    final ThrottleFilter throttleInterceptor = app.getInstance(ThrottleFilter.class);
+                    return new RequestHandlerBase() {
+                        @Override
+                        public void handle(ActionContext context) {
+                            Result r = throttleInterceptor.handle(context);
+                            if (null == r) {
+                                h.handle(context);
+                            }
+                            r.apply(context.req(), context.resp());
+                        }
+
+                        @Override
+                        public void prepareAuthentication(ActionContext context) {
+                            h.prepareAuthentication(context);
+                        }
+
+                        @Override
+                        public boolean express(ActionContext context) {
+                            return h.express(context);
+                        }
+
+                        @Override
+                        public boolean sessionFree() {
+                            return h.sessionFree();
+                        }
+
+                        @Override
+                        public CORS.Spec corsSpec() {
+                            return h.corsSpec();
+                        }
+
+                        @Override
+                        public CSRF.Spec csrfSpec() {
+                            return h.csrfSpec();
+                        }
+                    };
+                } else {
+                    return h;
+                }
             } catch (RuntimeException e) {
                 LOGGER.warn(e, "cannot resolve directive %s on payload: %s", directive, payload);
                 return null;
