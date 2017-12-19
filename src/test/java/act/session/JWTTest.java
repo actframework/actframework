@@ -26,8 +26,8 @@ import com.auth0.jwt.algorithms.Algorithm;
 import org.junit.Before;
 import org.junit.Test;
 import org.osgl.$;
-import org.osgl.ut.TestBase;
 import org.osgl.util.S;
+import osgl.ut.TestBase;
 
 import java.util.Date;
 

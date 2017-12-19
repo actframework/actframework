@@ -22,10 +22,10 @@ package act.internal.util;
 
 import act.Act;
 import org.osgl.$;
-import org.osgl.bootstrap.Version;
 import org.osgl.logging.Logger;
 import org.osgl.util.E;
 import org.osgl.util.S;
+import osgl.version.Version;
 
 import java.io.*;
 

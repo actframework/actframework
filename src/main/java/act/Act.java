@@ -22,7 +22,6 @@ package act;
 
 import act.app.*;
 import act.app.event.AppEventId;
-import act.crypto.AppCrypto;
 import act.app.util.NamedPort;
 import act.boot.BootstrapClassLoader;
 import act.boot.PluginClassProvider;
@@ -32,6 +31,7 @@ import act.conf.*;
 import act.controller.meta.ActionMethodMetaInfo;
 import act.controller.meta.CatchMethodMetaInfo;
 import act.controller.meta.InterceptorMethodMetaInfo;
+import act.crypto.AppCrypto;
 import act.db.DbManager;
 import act.event.ActEvent;
 import act.event.ActEventListener;
@@ -51,13 +51,15 @@ import act.plugin.Plugin;
 import act.plugin.PluginScanner;
 import act.route.RouteSource;
 import act.sys.Env;
-import act.util.*;
+import act.util.AppCodeScannerPluginManager;
+import act.util.Banner;
+import act.util.ClassInfoRepository;
+import act.util.SysProps;
 import act.view.ViewManager;
 import act.xio.Network;
 import act.xio.NetworkHandler;
 import act.xio.undertow.UndertowNetwork;
 import org.osgl.$;
-import org.osgl.bootstrap.Version;
 import org.osgl.cache.CacheService;
 import org.osgl.exception.NotAppliedException;
 import org.osgl.exception.UnexpectedException;
@@ -65,6 +67,7 @@ import org.osgl.http.H;
 import org.osgl.logging.L;
 import org.osgl.logging.Logger;
 import org.osgl.util.*;
+import osgl.version.Version;
 
 import java.io.File;
 import java.io.IOException;
@@ -170,7 +173,7 @@ public final class Act {
         }
     }
 
-    public static final org.osgl.bootstrap.Version VERSION = org.osgl.bootstrap.Version.of(Act.class);
+    public static final osgl.version.Version VERSION = osgl.version.Version.of(Act.class);
     public static final Logger LOGGER = L.get(Act.class);
     private static ActConfig conf;
     private static Mode mode = Mode.PROD;

@@ -23,8 +23,8 @@ package act.inject.util;
 import org.junit.Before;
 import org.junit.Test;
 import org.osgl.inject.Genie;
-import org.osgl.ut.TestBase;
 import org.osgl.util.C;
+import osgl.ut.TestBase;
 
 import java.nio.ByteBuffer;
 import java.util.List;

@@ -21,7 +21,7 @@ package act.internal.util;
  */
 
 import org.junit.Test;
-import org.osgl.ut.TestBase;
+import osgl.ut.TestBase;
 
 public class JavaNamesTest extends TestBase {
 
