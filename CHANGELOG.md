@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
-**1.6.0 TBD**
+**1.6.0-RC1 19/Dec/2017**
+* Support throttle control #435
 * Enhance `@Configuration` injection #434
 * css resource `Content-Type` not set in prod mode #430
 * ParamLoader: POJO instance not intialized if no field is set #429

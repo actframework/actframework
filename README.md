@@ -6,63 +6,9 @@
 [![Build Status](https://travis-ci.org/actframework/actframework.svg?branch=1.4)](https://travis-ci.org/actframework/actframework)
 [![Javadocs](http://www.javadoc.io/badge/org.actframework/act.svg?color=blue)](http://www.javadoc.io/doc/org.actframework/act)
 
-## News
-* 18/Nov/2017 ACT [1.5.3](https://github.com/actframework/actframework/milestone/36?closed=1) released
-* 17/Nov/2017 ACT [1.5.2](https://github.com/actframework/actframework/milestone/35?closed=1) released
-* 15/Nov/2017 ACT [1.5.1](https://github.com/actframework/actframework/milestone/34?closed=1) released
-* 15/Nov/2017 ACT [1.5.0](https://github.com/actframework/actframework/milestone/33?closed=1) released
-* 07/Nov/2017 ACT [1.4.14](https://github.com/actframework/actframework/milestone/32?closed=1) released
-* 16/Oct/2017 ACT [1.4.13](https://github.com/actframework/actframework/milestone/31?closed=1) released
-* 13/Sep/2017 ACT [1.4.12](https://github.com/actframework/actframework/milestone/30?closed=1) released
-* 10/Sep/2017 ACT [1.4.11](https://github.com/actframework/actframework/milestone/28?closed=1) released - Catch up all changes in ACT 1.3.14-LTS
-* 10/Sep/2017 ACT [1.3.14-LTS](https://github.com/actframework/actframework/milestone/27?closed=1) released
-* 21/Aug/2017 ACT 1.4.10 released - Catch up bug fixes of ACT 1.3.13-LTS
-* 21/Aug/2017 ACT [1.3.13-LTS released](https://github.com/actframework/actframework/milestone/26?closed=1)
-* 20/Aug/2017 ACT 1.4.9 released - Catch up bug fixes of ACT 1.3.12-LTS
-* 20/Aug/2017 ACT [1.3.12-LTS released](https://github.com/actframework/actframework/milestone/25?closed=1)
-* 16/Aug/2017 ACT 1.4.8 released - Catch up bug fixes of ACT 1.3.11-LTS
-* 16/Aug/2017 [ACT 1.3.11-LTS released](https://github.com/actframework/actframework/milestone/24?closed=1)
-* 08/Aug/2017 ACT 1.4.7 released - Catch up bug fixes of ACT 1.3.10-LTS
-* 08/Aug/2017 [ACT 1.3.10-LTS released](https://github.com/actframework/actframework/milestone/22?closed=1)
-* 07/Aug/2017 ACT 1.4.6 released - Catch up bug fixes of ACT 1.3.9-LTS
-* 07/Aug/2017 [ACT 1.3.9-LTS released](https://github.com/actframework/actframework/milestone/20?closed=1)
-* 17/Jul/2017 ACT 1.4.5 released - Catch up bug fixes of ACT 1.3.8
-* 17/Jul/2017 [ACT 1.3.8 released](https://github.com/actframework/actframework/milestone/18?closed=1)
-* 06/Jul/2017 [ACT 1.4.4 released](https://github.com/actframework/actframework/milestone/16?closed=1)
-* 06/Jul/2017 [ACT 1.3.7 released](https://github.com/actframework/actframework/milestone/16?closed=1)
-* 29/Jun/2017 [ACT 1.4.3 released](https://github.com/actframework/actframework/milestone/14?closed=1)
-* 29/Jun/2017 [ACT 1.3.6 released](https://github.com/actframework/actframework/milestone/15?closed=1)
-* 25/Jun/2017 [ACT 1.4.2 released](https://github.com/actframework/actframework/milestone/12?closed=1)
-* 25/Jun/2017 [ACT 1.3.5 released](https://github.com/actframework/actframework/milestone/13?closed=1)
-* 14/Jun/2017 [ACT 1.4.1 released](https://github.com/actframework/actframework/milestone/11?closed=1)
-* 12/Jun/2017 ACT 1.4.0 released with [websocket support](http://actframework.org/doc/websocket.md)
-* 11/May/2017 [TechEmpower benchmark R14](https://techempower.com/benchmarks/) published. 
-    * Checkout ActFramework's performance in comparing with other full stack JVM web frameworks at [here](http://actframework.org/doc/techempower/r14)   
-* 10/May/2017 ACT 1.3.3 released
-* 05/May/2017 ACT 1.3.2 released
-* 04/May/2017 ACT 1.3.1 released
-* [02/May/2017 ACT 1.3.0 released](http://actframework.org/doc/releases/r1.3.0)
-* [24/Apr/2017 ACT 1.2.0 released](http://actframework.org/doc/releases/r1.2.0)
-* 17/Apr/2017 ACT 1.1.2 released
-* 14/Apr/2017 ACT 1.1.1 released
-* 10/Apr/2017 ACT 1.1.0 released
-* 03/Apr/2017 ACT 1.0.7 released
-* 27/Mar/2017 ACT 1.0.6 released
-* 20/Mar/2017 ACT 1.0.3 released
-* 13/Mar/2017 ACT 1.0.2 released
-* 09/Mar/2017 ACT 1.0.0 released
-* ACT 0.7.0-SNAPSHOT: rewrite JSR 303/349 Validation integration
-* A [TodoBackend](http://www.todobackend.com/) project written in ActFramework: http://github.com/greenlaw110/todomvc-act
-* Actframework 正式登录[码云](https://git.oschina.net/actframework/actframework)以及[开源中国](http://www.oschina.net/p/actframework)
-* Actframework [benchmark set](https://github.com/TechEmpower/FrameworkBenchmarks/tree/master/frameworks/Java/act) 
-accepted by [TechEmpower Benchmark](https://www.techempower.com/benchmarks/). Looking forward to
-seeing Act in the 14 round test
-* A 3rd party [simple benchmark project](https://github.com/networknt/microservices-framework-benchmark) 
-shows Act's throughput is 20 times better than of Spring-boot in simple case
-
 ## Project status
 
-- Current stable version: 1.3.3
+- Current stable version: 1.6.0-RC1
 
 ## Install
 

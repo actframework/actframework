@@ -1407,8 +1407,9 @@ public class Router extends AppServiceBase<Router> {
                             Result r = throttleFilter.handle(context);
                             if (null == r) {
                                 h.handle(context);
+                            } else {
+                                r.apply(context.req(), context.resp());
                             }
-                            r.apply(context.req(), context.resp());
                         }
 
                         @Override
