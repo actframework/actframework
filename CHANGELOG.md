@@ -1,5 +1,14 @@
 # ActFramework Change Log
 
+**1.6.0-RC3 28/Dec/2017**
+* Update osgl-tool to 1.5.2
+* Update osgl-genie to 1.3.2
+* Fix logic error in `DefaultSessionCodec` - session timeout processing not effective
+* Fix a few issues relevant to configuration loading
+
+**1.6.0-RC2 19/Dec/2017**
+* Update Version to osgl-version-2
+
 **1.6.0-RC1 19/Dec/2017**
 * Support throttle control #435
 * Enhance `@Configuration` injection #434

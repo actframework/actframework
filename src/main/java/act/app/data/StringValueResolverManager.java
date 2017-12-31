@@ -52,8 +52,8 @@ public class StringValueResolverManager extends AppServiceBase<StringValueResolv
         return this;
     }
 
-    public Object resolve(String strVal, Class<?> targetType) {
-        StringValueResolver r = resolver(targetType);
+    public <T> T resolve(String strVal, Class<T> targetType) {
+        StringValueResolver<T> r = resolver(targetType);
         return null != r ? r.resolve(strVal) : null;
     }
 

@@ -33,12 +33,14 @@ import org.osgl.inject.InjectException;
 import org.osgl.inject.loader.AnnotatedElementLoader;
 import org.osgl.inject.loader.ConfigurationValueLoader;
 import org.osgl.inject.loader.TypedElementLoader;
+import org.osgl.inject.util.ArrayLoader;
 import org.osgl.util.C;
 import org.osgl.util.S;
 
 import javax.inject.Provider;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -105,11 +107,14 @@ class GenieProviders {
                         BeanSpec valSpec = BeanSpec.of(valType, injector);
                         int pos = prefix.length() + 1;
                         for (String key : confMap.keySet()) {
+                            if (S.eq(key, prefix)) {
+                                continue;
+                            }
                             Object val = confMap.get(key);
                             retVal.put(key.substring(pos), null == val ? null : cast(S.string(val), valSpec, isImpl));
                         }
                         return retVal;
-                    } else if (this.spec.isInstanceOf(Collection.class)) {
+                    } else if (this.spec.isInstanceOf(Collection.class) || this.spec.isArray()) {
                         Object val;
                         try {
                             val = appConfig.get(confKey);
@@ -120,9 +125,19 @@ class GenieProviders {
                             return val;
                         }
                         return cast(null == val ? null : val.toString(), spec, isImpl);
+                    } else {
+                        if (S.isBlank(confKey)) {
+                            throw new InjectException(("Missing configuration key"));
+                        }
+                        Object conf = conf(confKey);
+                        if (null == conf) {
+                            return null;
+                        }
+                        return cast(S.string(conf), spec, isImpl);
                     }
-                    return super.get();
                 }
+
+
 
                 @Override
                 protected Object conf(String s) {
@@ -142,6 +157,14 @@ class GenieProviders {
                             retVal.add(cast(itemVal, itemSpec, isImpl));
                         }
                         return retVal;
+                    } else if (spec.isArray()) {
+                        List list = new ArrayList();
+                        Type itemType = spec.typeParams().get(0);
+                        BeanSpec itemSpec = BeanSpec.of(itemType, Act.injector());
+                        for (String itemVal : S.fastSplit(S.string(val), ",")) {
+                            list.add(cast(itemVal, itemSpec, isImpl));
+                        }
+                        return ArrayLoader.listToArray(list, (Class<?>)itemType);
                     } else {
                         Class<?> type = spec.rawType();
                         if (type.isInstance(val)) {
@@ -157,7 +180,7 @@ class GenieProviders {
                         try {
                             return $.newInstance(val, Act.app().classLoader());
                         } catch (Exception e) {
-                            throw new InjectException("Cannot cast value type[%s] to required type[%]", val.getClass(), spec);
+                            throw new InjectException("Cannot cast value type[%s] to required type[%s]", val.getClass(), spec);
                         }
                     }
                 }

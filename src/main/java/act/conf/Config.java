@@ -204,11 +204,14 @@ public abstract class Config<E extends ConfigKey> extends DestroyableBase {
         return raw;
     }
 
-    public Map<String, Object> subSet(String prefix) {
-        String prefix2 = "act." + prefix;
+    public Map<String, Object> subSet(String namespace) {
+        if (!namespace.endsWith(".")) {
+            namespace = namespace + ".";
+        }
+        String prefix2 = "act." + namespace;
         Map<String, Object> subset = C.newMap();
         for (String key : raw.keySet()) {
-            if (key.startsWith(prefix) || key.startsWith(prefix2)) {
+            if (key.startsWith(namespace) || key.startsWith(prefix2)) {
                 Object o = raw.get(key);
                 if (null == o) {
                     continue;

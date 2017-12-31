@@ -96,7 +96,7 @@ public class DefaultSessionCodec extends DestroyableBase implements SessionCodec
             resolveFromCookieContent(session, encodedSession, true);
             newSession = false;
         }
-        processExpiration(session, $.ms(), newSession, sessionWillExpire, ttl, pingPath, request);
+        session = processExpiration(session, $.ms(), newSession, sessionWillExpire, ttl, pingPath, request);
         return session;
     }
 
