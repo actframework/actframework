@@ -35,6 +35,7 @@ import act.mail.MailerContext;
 import act.util.ActContext;
 import act.util.ProgressGauge;
 import act.util.SimpleProgressGauge;
+import act.view.ViewManager;
 import act.ws.SecureTicketCodec;
 import act.ws.WebSocketContext;
 import org.osgl.$;
@@ -221,6 +222,13 @@ public final class ActProviders {
         @Override
         public CacheService get() {
             return app().cache();
+        }
+    };
+
+    public static final Provider<ViewManager> VIEW_MANAGER = new Provider<ViewManager>() {
+        @Override
+        public ViewManager get() {
+            return Act.viewManager();
         }
     };
 

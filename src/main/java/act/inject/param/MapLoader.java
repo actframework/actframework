@@ -24,6 +24,7 @@ import act.app.App;
 import act.app.data.StringValueResolverManager;
 import act.inject.DependencyInjector;
 import act.util.ActContext;
+import act.util.LogSupport;
 import org.osgl.$;
 import org.osgl.inject.BeanSpec;
 import org.osgl.mvc.result.BadRequest;
@@ -34,7 +35,7 @@ import org.osgl.util.StringValueResolver;
 import java.lang.reflect.Type;
 import java.util.*;
 
-class MapLoader implements ParamValueLoader {
+class MapLoader extends LogSupport implements ParamValueLoader {
 
     private final ParamKey key;
     private final Class<? extends Map> mapClass;
@@ -73,7 +74,7 @@ class MapLoader implements ParamValueLoader {
             this.valueResolver = resolverManager.resolver(valClass, BeanSpec.of(valType, injector));
         }
         if (null == valueResolver) {
-            throw new IllegalArgumentException("Map value type not resolvable: " + valClass.getName());
+            warn("Map value type not resolvable: " + valClass.getName());
         }
         this.keyResolver = resolverManager.resolver(this.keyClass, BeanSpec.of(this.keyClass, injector));
         if (null == keyResolver) {

@@ -133,6 +133,9 @@ class GenieProviders {
                         if (null == conf) {
                             return null;
                         }
+                        if (spec.isInstance(conf)) {
+                            return conf;
+                        }
                         return cast(S.string(conf), spec, isImpl);
                     }
                 }
@@ -159,12 +162,11 @@ class GenieProviders {
                         return retVal;
                     } else if (spec.isArray()) {
                         List list = new ArrayList();
-                        Type itemType = spec.typeParams().get(0);
-                        BeanSpec itemSpec = BeanSpec.of(itemType, Act.injector());
+                        BeanSpec itemSpec = spec.componentSpec();
                         for (String itemVal : S.fastSplit(S.string(val), ",")) {
                             list.add(cast(itemVal, itemSpec, isImpl));
                         }
-                        return ArrayLoader.listToArray(list, (Class<?>)itemType);
+                        return ArrayLoader.listToArray(list, itemSpec.rawType());
                     } else {
                         Class<?> type = spec.rawType();
                         if (type.isInstance(val)) {

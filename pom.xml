@@ -50,7 +50,7 @@
     <cdi-api.version>1.2</cdi-api.version>
     <commons-fileupload.version>1.3.2</commons-fileupload.version>
     <ecj.version>4.6.1</ecj.version>
-    <fastjson.version>1.2.43</fastjson.version>
+    <fastjson.version>1.2.44</fastjson.version>
     <bval.version>1.1.2</bval.version>
     <image4j.version>0.7</image4j.version>
     <jansi.version>1.16</jansi.version>
@@ -62,7 +62,7 @@
     <joda-time.version>2.9.9</joda-time.version>
     <okhttp.version>3.8.1</okhttp.version>
     <osgl-tool.version>1.5.2</osgl-tool.version>
-    <osgl-genie.version>1.3.2</osgl-genie.version>
+    <osgl-genie.version>1.3.3</osgl-genie.version>
     <osgl-http.version>1.2.0</osgl-http.version>
     <osgl-mvc.version>1.4.0</osgl-mvc.version>
     <osgl-storage.version>1.5.0</osgl-storage.version>
