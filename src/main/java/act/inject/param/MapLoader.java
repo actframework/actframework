@@ -24,6 +24,7 @@ import act.app.App;
 import act.app.data.StringValueResolverManager;
 import act.inject.DependencyInjector;
 import act.util.ActContext;
+import org.osgl.$;
 import org.osgl.inject.BeanSpec;
 import org.osgl.mvc.result.BadRequest;
 import org.osgl.util.E;
@@ -31,10 +32,7 @@ import org.osgl.util.S;
 import org.osgl.util.StringValueResolver;
 
 import java.lang.reflect.Type;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 class MapLoader implements ParamValueLoader {
 
@@ -66,8 +64,17 @@ class MapLoader implements ParamValueLoader {
         this.manager = manager;
         this.targetSpec = targetSpec;
         StringValueResolverManager resolverManager = App.instance().resolverManager();
-        Class<?> valClass = BeanSpec.rawTypeOf(valType);
-        this.valueResolver = resolverManager.resolver(valClass, BeanSpec.of(valClass, injector));
+        BeanSpec valSpec = BeanSpec.of(valType, injector);
+        Class<?> valClass = valSpec.rawType();
+        if (Collection.class.isAssignableFrom(valClass)) {
+            Class<? extends Collection> colClass = $.cast(valClass);
+            this.valueResolver = resolverManager.collectionResolver(colClass, (Class<?>)valSpec.typeParams().get(0), ',');
+        } else {
+            this.valueResolver = resolverManager.resolver(valClass, BeanSpec.of(valType, injector));
+        }
+        if (null == valueResolver) {
+            throw new IllegalArgumentException("Map value type not resolvable: " + valClass.getName());
+        }
         this.keyResolver = resolverManager.resolver(this.keyClass, BeanSpec.of(this.keyClass, injector));
         if (null == keyResolver) {
             throw new IllegalArgumentException("Map key type not resolvable: " + keyClass.getName());
@@ -141,7 +148,8 @@ class MapLoader implements ParamValueLoader {
             // to support Matrix style URL path variable
             String value = node.value();
             if (S.notBlank(value)) {
-                String[] pairs = value.split(S.COMMON_SEP);
+                // ";" has higher priority in common separators
+                String[] pairs = value.split(value.contains(";") ?  ";" : S.COMMON_SEP);
                 for (String pair : pairs) {
                     if (!pair.contains("=")) {
                         throw new BadRequest("Cannot load parameter, expected map, found:%s", node.value());

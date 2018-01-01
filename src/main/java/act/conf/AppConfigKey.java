@@ -690,6 +690,14 @@ public enum AppConfigKey implements ConfigKey {
     REQUEST_THROTTLE("req.throttle.int"),
 
     /**
+     * `req.throttle.expire.scale` - whether increase throttle reset
+     * expire time incrementally.
+     *
+     * Default value: `false`
+     */
+    REQUEST_THROTTLE_EXPIRE_SCALE("req.throttle.expire.scale.enabled"),
+
+    /**
      * `render.json.output_charset`
      *
      * Specifies output charset in `application/json` response header `Content-Type`

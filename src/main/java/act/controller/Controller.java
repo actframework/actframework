@@ -509,6 +509,14 @@ public @interface Controller {
             return TemporaryRedirect.of(redirectUrl(url, reverseRoutingArguments));
         }
 
+        public static PermanentRedirect permanentRedirect(String url, Object ... args) {
+            return PermanentRedirect.of(redirectUrl(url, args));
+        }
+
+        public static PermanentRedirect permanentRedirect(String url, Map reverseRoutingArguments) {
+            return PermanentRedirect.of(redirectUrl(url, reverseRoutingArguments));
+        }
+
         private static String redirectUrl(String url, Object ... args) {
             url = S.fmt(url, args);
             if (url.contains(".") || url.contains("(")) {

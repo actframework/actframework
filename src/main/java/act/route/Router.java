@@ -1158,7 +1158,7 @@ public class Router extends AppServiceBase<Router> {
                     varNames.add(varName);
                 }
                 Pattern pattern1 = t2._2;
-                String patternStr = ".*";
+                String patternStr = ".*?";
                 if (null != pattern1) {
                     patternStr = pattern1.pattern();
                 }
@@ -1400,7 +1400,8 @@ public class Router extends AppServiceBase<Router> {
             try {
                 final RequestHandler h = r.resolve(payload, app, decorators);
                 if (decorators.contains(BuiltInHandlerDecorator.throttled)) {
-                    final ThrottleFilter throttleFilter = new ThrottleFilter(app.config().requestThrottle());
+                    AppConfig config = app.config();
+                    final ThrottleFilter throttleFilter = new ThrottleFilter(config.requestThrottle(), config.requestThrottleExpireScale());
                     return new RequestHandlerBase() {
                         @Override
                         public void handle(ActionContext context) {

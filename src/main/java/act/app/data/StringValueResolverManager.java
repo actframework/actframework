@@ -28,8 +28,11 @@ import org.osgl.$;
 import org.osgl.storage.ISObject;
 import org.osgl.util.AnnotationAware;
 import org.osgl.util.C;
+import org.osgl.util.S;
 import org.osgl.util.StringValueResolver;
 
+import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 public class StringValueResolverManager extends AppServiceBase<StringValueResolverManager> {
@@ -56,6 +59,37 @@ public class StringValueResolverManager extends AppServiceBase<StringValueResolv
         StringValueResolver<T> r = resolver(targetType);
         return null != r ? r.resolve(strVal) : null;
     }
+
+    public <T extends Collection> StringValueResolver<T> collectionResolver(final Class<T> targetType, final Class<?> elementType, final char separator) {
+        final StringValueResolver elementResolver = resolver(elementType);
+        return new StringValueResolver<T>(targetType) {
+            @Override
+            public T resolve(String value) {
+                T col = app().getInstance(targetType);
+                List<String> parts = S.fastSplit(value, String.valueOf(separator));
+                for (String part : parts) {
+                    col.add(elementResolver.resolve(part));
+                }
+                return col;
+            }
+        };
+    }
+
+    public <T extends Collection> StringValueResolver<T> collectionResolver(final Class<T> targetType, final Class<?> elementType, final String separator) {
+        final StringValueResolver elementResolver = resolver(elementType);
+        return new StringValueResolver<T>(targetType) {
+            @Override
+            public T resolve(String value) {
+                T col = app().getInstance(targetType);
+                String[] parts = value.split(separator);
+                for (String part : parts) {
+                    col.add(elementResolver.resolve(part));
+                }
+                return col;
+            }
+        };
+    }
+
 
     public <T> StringValueResolver<T> resolver(final Class<T> targetType) {
         StringValueResolver<T> r = resolvers.get(targetType);

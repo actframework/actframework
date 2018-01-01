@@ -1812,6 +1812,23 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         }
     }
 
+    private Boolean reqThrottleExpireScale;
+    protected T requestThrottleExpireScale(final boolean enabled) {
+        this.reqThrottleExpireScale = enabled;
+        return me();
+    }
+    public boolean requestThrottleExpireScale() {
+        if (null == reqThrottleExpireScale) {
+            reqThrottleExpireScale = get(REQUEST_THROTTLE_EXPIRE_SCALE, false);
+        }
+        return reqThrottleExpireScale;
+    }
+    private void _mergeReqThrottleExpireScale(AppConfig config) {
+        if (!hasConfiguration(REQUEST_THROTTLE_EXPIRE_SCALE)) {
+            this.reqThrottleExpireScale = config.reqThrottleExpireScale;
+        }
+    }
+
     private Osgl.Func0<H.Format> jsonContentTypeProvider = null;
     private Boolean renderJsonIeFix = null;
     private H.Format jsonIE;

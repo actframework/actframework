@@ -21,7 +21,6 @@ package act.apidoc;
  */
 
 import act.db.DbBind;
-import com.sun.corba.se.spi.ior.ObjectId;
 import org.joda.time.ReadableInstant;
 import org.osgl.inject.BeanSpec;
 
@@ -66,7 +65,7 @@ class BeanSpecInterpreter {
         if (ReadableInstant.class.isAssignableFrom(rawType)) {
             return "datetime";
         }
-        if (ObjectId.class.isAssignableFrom(rawType)) {
+        if (rawType.getName().contains("ObjectId")) {
             return "id (String)";
         }
         return rawType.getSimpleName();

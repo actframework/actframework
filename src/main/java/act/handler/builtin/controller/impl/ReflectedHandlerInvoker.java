@@ -168,7 +168,8 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
             if (throttle < 1) {
                 throttle = app.config().requestThrottle();
             }
-            throttleFilter = new ThrottleFilter(throttle);
+            Throttled.ExpireScale expireScale = throttleControl.expireScale();
+            throttleFilter = new ThrottleFilter(throttle, expireScale.enabled());
         }
 
         FastJsonFilter filterAnno = method.getAnnotation(FastJsonFilter.class);

@@ -40,20 +40,36 @@ public class ThrottleFilter {
     @Configuration("act.req.throttle")
     private int throttle;
 
+    @Configuration("req.throttle.expire.scale.enabled")
+    private boolean expireScale;
+
     public ThrottleFilter() {
         cache = Act.app().cache("act.throttle");
     }
 
-    public ThrottleFilter(int throttle) {
+    public ThrottleFilter(int throttle, boolean expireScale) {
         E.illegalArgumentIf(throttle < 1);
         this.throttle = throttle;
+        this.expireScale = expireScale;
         this.cache = Act.app().cache("act.throttle");
     }
 
     public Result handle(ActionContext actionContext) {
         String key = cacheKey(actionContext);
-        if (throttle <= cache.incr(key, 1)) {
-            return TooManyRequests.get();
+        if (!expireScale) {
+            if (throttle <= cache.incr(key, 1)) {
+                return TooManyRequests.get();
+            }
+        } else {
+            Integer curReqCnt = cache.get(key);
+            if (null == curReqCnt) {
+                curReqCnt = 0;
+            }
+            int timeout = curReqCnt + 1;
+            cache.incr(key, timeout);
+            if (curReqCnt >= throttle) {
+                return TooManyRequests.get();
+            }
         }
         return null;
     }

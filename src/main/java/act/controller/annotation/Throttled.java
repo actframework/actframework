@@ -20,6 +20,8 @@ package act.controller.annotation;
  * #L%
  */
 
+import act.Act;
+
 import java.lang.annotation.*;
 
 /**
@@ -29,6 +31,36 @@ import java.lang.annotation.*;
 @Inherited
 @Target(ElementType.METHOD)
 public @interface Throttled {
+
+    enum ExpireScale {
+        /**
+         * Delegate to the configuration setting of {@link act.conf.AppConfigKey#REQUEST_THROTTLE_EXPIRE_SCALE}
+         */
+        DEFAULT() {
+            @Override
+            public boolean enabled() {
+                return Act.appConfig().requestThrottleExpireScale();
+            }
+        },
+        /**
+         * Enable request throttle reset timeout scale
+         */
+        ENABLED() {
+            @Override
+            public boolean enabled() {
+                return true;
+            }
+        },
+        /**
+         * Disable request throttle reset timeout scale
+         */
+        DISABLED;
+
+        public boolean enabled() {
+            return false;
+        }
+    }
+
     /**
      * The maximum number of requests per second initiated from the same ip address.
      *
@@ -37,4 +69,12 @@ public @interface Throttled {
      * @return the request throttle number
      */
     int value() default -1;
+
+    /**
+     * Enable/disable throttle reset timeout scale.
+     *
+     * Default value: {@link ExpireScale#DEFAULT}
+     * @return should we turn on request throttle reset timeout scale
+     */
+    ExpireScale expireScale() default ExpireScale.DEFAULT;
 }
