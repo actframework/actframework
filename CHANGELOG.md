@@ -1,8 +1,9 @@
 # ActFramework Change Log
 
-**1.6.0-RC3 28/Dec/2017**
+**1.6.0 28/Dec/2017**
 * Update osgl-tool to 1.5.2
-* Update osgl-genie to 1.3.2
+* Update osgl-genie to 1.3.3
+* Update fastjson to 1.2.44
 * Fix logic error in `DefaultSessionCodec` - session timeout processing not effective
 * Fix a few issues relevant to configuration loading
 

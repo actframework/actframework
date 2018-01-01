@@ -8,7 +8,7 @@
 
 ## Project status
 
-- Current stable version: 1.6.0-RC1
+- Current stable version: 1.6.0
 
 ## Install
 
