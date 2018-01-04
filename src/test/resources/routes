@@ -135,12 +135,12 @@ GET /shuju/zidongwancheng/weixinPermissions ZiDongWanChengFuwuqi.weixinPermissio
 GET     /favicon.ico                            404
 
 # Map static resources from the /yingyong/public folder to the /public path
-GET /lib/ staticDir:public/lib
-GET /bs/ staticDir:public/lib/bootstrap
-GET /img/ staticDir:public/images
-GET /public/ staticDir:public
-GET /js/ staticDir:public/javascripts
-GET /css/ staticDir:public/stylesheets
+#GET /lib/ staticDir:public/lib
+#GET /bs/ staticDir:public/lib/bootstrap
+#GET /img/ staticDir:public/images
+#GET /public/ staticDir:public
+#GET /js/ staticDir:public/javascripts
+#GET /css/ staticDir:public/stylesheets
 
 # chaojiyonghu luyou
 GET /adm/denglu ChaoJiYongHu.denglu

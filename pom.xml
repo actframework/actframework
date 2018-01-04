@@ -126,6 +126,13 @@
       <scope>test</scope>
     </dependency>
 
+    <dependency>
+      <groupId>com.google.code.maven-play-plugin.org.playframework</groupId>
+      <artifactId>play</artifactId>
+      <version>1.4.0</version>
+      <scope>test</scope>
+    </dependency>
+
     <!-- TODO: can't update to mockito 2.x yet. See github issue #371 -->
     <dependency>
       <groupId>org.mockito</groupId>

@@ -58,6 +58,8 @@ import act.mail.bytecode.MailerByteCodeScanner;
 import act.route.RouteSource;
 import act.route.RouteTableRouterBuilder;
 import act.route.Router;
+import act.session.CookieSessionMapper;
+import act.session.SessionManager;
 import act.util.*;
 import act.view.ActErrorResult;
 import act.view.ImplicitVariableProvider;
@@ -160,6 +162,19 @@ public class App extends DestroyableBase {
     };
     private final Version version;
     private List<HotReloadListener> hotReloadListeners = new ArrayList<>();
+
+    private App() {
+        this.version = Version.get();
+        this.appBase = new File(".");
+        this.layout = ProjectLayout.PredefinedLayout.MAVEN;
+        this.appHome = RuntimeDirs.home(this);
+        this.config = new AppConfig<>().app(this);
+        INST = this;
+        this.dependencyInjector = new GenieInjector(this);
+        this.singletonRegistry = new SingletonRegistry(this);
+        this.singletonRegistry.register(SessionManager.class, new SessionManager(this.config));
+        this.singletonRegistry.register(CookieSessionMapper.class, new CookieSessionMapper(this.config));
+    }
 
     protected App(File appBase, Version version, ProjectLayout layout) {
         this("MyApp", version, appBase, layout);
@@ -1371,4 +1386,8 @@ public class App extends DestroyableBase {
     }
 
 
+    // for unit test
+    public static App testInstance() {
+        return new App();
+    }
 }
