@@ -1422,7 +1422,9 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     }
     public MissingAuthenticationHandler missingAuthenticationHandler() {
         if (null == mah) {
-            mah = get(HANDLER_MISSING_AUTHENTICATION, app.getInstance(RedirectToLoginUrl.class));
+            RedirectToLoginUrl redirectToLoginUrl = app.getInstance(RedirectToLoginUrl.class);
+            MissingAuthenticationHandler defHandler = redirectToLoginUrl.hasLoginUrl() ? redirectToLoginUrl : app.getInstance(ReturnUnauthorized.class);
+            mah = get(HANDLER_MISSING_AUTHENTICATION, defHandler);
         }
         return mah;
     }

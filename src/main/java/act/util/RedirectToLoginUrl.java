@@ -47,6 +47,7 @@ public class RedirectToLoginUrl extends SingletonBase implements MissingAuthenti
     private final Map<String, Result> resultMap = new HashMap<String, Result>();
     private final Map<String, Result> ajaxResultMap = new HashMap<String, Result>();
     private final Redirect userDefined;
+    private boolean hasRouteToLoginUrl;
 
     public RedirectToLoginUrl(String url) {
         userDefined = new Redirect(url);
@@ -72,6 +73,10 @@ public class RedirectToLoginUrl extends SingletonBase implements MissingAuthenti
             resultMap.put(port.name(), result.get());
             ajaxResultMap.put(port.name(), ajaxResult.get());
         }
+    }
+
+    public boolean hasLoginUrl() {
+        return hasRouteToLoginUrl;
     }
 
     @Override
@@ -104,7 +109,8 @@ public class RedirectToLoginUrl extends SingletonBase implements MissingAuthenti
     }
 
     protected void findResults(String loginUrl, String ajaxLoginUrl, $.Var<Result> result, $.Var<Result> ajaxResult, Router router) {
-        result.set(hasRouteTo(loginUrl, router) ? new Redirect(loginUrl) : ReturnUnauthorized.result());
+        hasRouteToLoginUrl = hasRouteTo(loginUrl, router);
+        result.set(hasRouteToLoginUrl ? new Redirect(loginUrl) : ReturnUnauthorized.result());
         ajaxResult.set(S.eq(ajaxLoginUrl, loginUrl) ? R : hasRouteTo(ajaxLoginUrl, router) ? new Redirect(ajaxLoginUrl) : ReturnUnauthorized.result());
     }
 

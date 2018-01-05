@@ -46,13 +46,18 @@ public class SessionManager {
 
     public H.Flash resolveFlash(H.Request request) {
         String encodedFlash = mapper.readFlash(request);
-        return null == encodedFlash ? new H.Flash() : codec.decodeFlash(encodedFlash);
+        if (null != encodedFlash) {
+            H.Flash flash = codec.decodeFlash(encodedFlash);
+            flash.discard();
+            return flash;
+        }
+        return new H.Flash();
     }
 
     public void dissolveState(H.Session session, H.Flash flash, H.Response response) {
         String encodedSession = codec.encodeSession(session);
         // flash could be null if precheck CSRF failed
-        String encodedFlash = null == flash || flash.isEmpty() ? null : codec.encodeFlash(flash);
+        String encodedFlash = codec.encodeFlash(flash);
         mapper.write(encodedSession, encodedFlash, response);
     }
 

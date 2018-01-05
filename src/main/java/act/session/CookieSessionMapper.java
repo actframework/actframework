@@ -22,7 +22,6 @@ package act.session;
 
 import act.conf.AppConfig;
 import org.osgl.http.H;
-import org.osgl.util.S;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -69,10 +68,8 @@ public class CookieSessionMapper implements SessionMapper {
     }
 
     private void writeState(String state, String cookieName, H.Response response) {
-        if (S.notBlank(state)) {
-            H.Cookie cookie = createCookie(cookieName, state);
-            response.addCookie(cookie);
-        }
+        H.Cookie cookie = createCookie(cookieName, state);
+        response.addCookie(cookie);
     }
 
     private H.Cookie createCookie(String name, String value) {

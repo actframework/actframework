@@ -67,6 +67,15 @@ public class ActUnauthorized extends Unauthorized implements ActError {
         return sourceInfo;
     }
 
+    @Override
+    public StackTraceElement[] getStackTrace() {
+        StackTraceElement[] raw = super.getStackTrace();
+        int len = raw.length - 3;
+        StackTraceElement[] effective = new StackTraceElement[len];
+        System.arraycopy(raw, 3, effective, 0, len);
+        return effective;
+    }
+
     public List<String> stackTrace() {
         return Util.stackTraceOf(this);
     }
