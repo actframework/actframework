@@ -69,7 +69,7 @@
     <osgl-tool-ext.version>1.1.0</osgl-tool-ext.version>
     <osgl-ut.version>2.0.0-BETA-1</osgl-ut.version>
     <reflectasm.version>1.11.3</reflectasm.version>
-    <rythmengine.version>1.2.0</rythmengine.version>
+    <rythmengine.version>1.2.1</rythmengine.version>
     <validation-api.version>1.1.0.Final</validation-api.version>
     <undertow.version>1.4.20.Final</undertow.version>
     <zxing.javase.version>3.3.0</zxing.javase.version>
