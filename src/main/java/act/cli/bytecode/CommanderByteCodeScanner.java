@@ -317,6 +317,9 @@ public class CommanderByteCodeScanner extends AppByteCodeScannerBase {
                 } else if ($.eq(AsmTypes.TABLE_VIEW.asmType(), type)) {
                     methodInfo.view(CliView.TABLE);
                     return super.visitAnnotation(desc, visible);
+                } else if ($.eq(AsmTypes.JSON_VIEW_DEPRECATED.asmType(), type)) {
+                    methodInfo.view(CliView.JSON);
+                    return super.visitAnnotation(desc, visible);
                 } else if ($.eq(AsmTypes.JSON_VIEW.asmType(), type)) {
                     methodInfo.view(CliView.JSON);
                     return super.visitAnnotation(desc, visible);

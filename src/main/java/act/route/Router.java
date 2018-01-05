@@ -25,6 +25,7 @@ import act.Destroyable;
 import act.app.ActionContext;
 import act.app.App;
 import act.app.AppServiceBase;
+import act.app.RouterRegexMacroLookup;
 import act.cli.tree.TreeNode;
 import act.conf.AppConfig;
 import act.controller.ParamNames;
@@ -48,6 +49,7 @@ import org.osgl.mvc.result.Result;
 import org.osgl.util.*;
 
 import javax.enterprise.context.ApplicationScoped;
+import javax.validation.constraints.NotNull;
 import java.io.File;
 import java.io.PrintStream;
 import java.io.Serializable;
@@ -81,11 +83,11 @@ public class Router extends AppServiceBase<Router> {
 
     private static final Logger LOGGER = LogManager.get(Router.class);
 
-    Node _GET = Node.newRoot("GET");
-    Node _PUT = Node.newRoot("PUT");
-    Node _POST = Node.newRoot("POST");
-    Node _DEL = Node.newRoot("DELETE");
-    Node _PATCH = Node.newRoot("PATCH");
+    Node _GET;
+    Node _PUT;
+    Node _POST;
+    Node _DEL;
+    Node _PATCH;
 
     private Map<String, RequestHandlerResolver> resolvers = C.newMap();
 
@@ -138,6 +140,11 @@ public class Router extends AppServiceBase<Router> {
             this.port = appConfig.httpSecure() ? appConfig.httpExternalSecurePort() : appConfig.httpExternalPort();
         }
         this.optionHandlerFactory = new OptionsInfoBase(this);
+        _GET = Node.newRoot("GET", appConfig);
+        _PUT = Node.newRoot("PUT", appConfig);
+        _POST = Node.newRoot("POST", appConfig);
+        _DEL = Node.newRoot("DELETE", appConfig);
+        _PATCH = Node.newRoot("PATCH", appConfig);
     }
 
     @Override
@@ -231,7 +238,7 @@ public class Router extends AppServiceBase<Router> {
         RequestHandler handler = node.handler;
         if (null == handler) {
             for (Node targetNode : node.dynamicChilds) {
-                if (targetNode.pattern.matcher("").matches()) {
+                if (Node.MATCH_ALL == targetNode.patternTrait || targetNode.pattern.matcher("").matches()) {
                     return getInvokerFrom(targetNode);
                 }
             }
@@ -797,7 +804,7 @@ public class Router extends AppServiceBase<Router> {
     private static class Node extends DestroyableBase implements Serializable, TreeNode, Comparable<Node> {
 
         // used to pass a baq request result when dynamic regex matching failed
-        private static final Node BADREQUEST = new Node(Integer.MIN_VALUE) {
+        private static final Node BADREQUEST = new Node(Integer.MIN_VALUE, Act.appConfig()) {
             @Override
             boolean terminateRouteSearch() {
                 return true;
@@ -808,11 +815,13 @@ public class Router extends AppServiceBase<Router> {
             BADREQUEST.handler = AlwaysBadRequest.INSTANCE;
         }
 
-        static Node newRoot(String name) {
-            Node node = new Node(-1);
+        static Node newRoot(String name, AppConfig<?> config) {
+            Node node = new Node(-1, config);
             node.name = S.str(name);
             return node;
         }
+
+        static String MATCH_ALL = "(.*?)";
 
         private int id;
 
@@ -840,10 +849,12 @@ public class Router extends AppServiceBase<Router> {
         private Map<String, Node> dynamicReverseAliases = new HashMap<>();
         private RequestHandler handler;
         private RouteSource routeSource;
+        private RouterRegexMacroLookup macroLookup;
         private Map<String, Node> reverseRoutes = new HashMap<>();
 
-        private Node(int id) {
+        private Node(int id, AppConfig config) {
             this.id = id;
+            this.macroLookup = config.routerRegexMacroLookup();
             name = FastStr.EMPTY_STR;
             root = this;
         }
@@ -854,6 +865,7 @@ public class Router extends AppServiceBase<Router> {
             this.parent = parent;
             this.id = name.hashCode();
             this.root = parent.root;
+            this.macroLookup = parent.macroLookup;
             parseDynaName(name);
         }
 
@@ -935,6 +947,10 @@ public class Router extends AppServiceBase<Router> {
                             targetNode = entry.getValue();
                             break;
                         }
+                    }
+                    if (MATCH_ALL == targetNode.patternTrait) {
+                        context.urlPathParam(targetNode.varNames.get(0).toString(), name.toString());
+                        return targetNode;
                     }
                     Pattern pattern = targetNode.pattern;
                     Matcher matcher = null == pattern ? null : pattern.matcher(name);
@@ -1098,8 +1114,10 @@ public class Router extends AppServiceBase<Router> {
             if (!this.isDynamic) {
                 return;
             }
-            this.pattern = patternVar.get();
             this.patternTrait = patternTraitsVar.get();
+            if (MATCH_ALL != this.patternTrait) {
+                this.pattern = patternVar.get();
+            }
         }
 
         /*
@@ -1107,11 +1125,11 @@ public class Router extends AppServiceBase<Router> {
          * case two `{<regex>var_name}`, e.g /{<[a-b]+>foo>}
          * case three `foo-{var_name<regex>}-{var_name<regex}-bar...`
          */
-        static boolean parseDynaNameStyleB(
+        boolean parseDynaNameStyleB(
                 StrBase name,
                 List<CharSequence> varNames,
-                $.Var<Pattern> pattern,
-                $.Var<String> patternTrait,
+                @NotNull $.Var<Pattern> pattern,
+                @NotNull $.Var<String> patternTrait,
                 List<$.Transformer<Map<String, Object>, String>> nodeValueBuilders
         ) {
             int pos = name.indexOf('{');
@@ -1202,17 +1220,22 @@ public class Router extends AppServiceBase<Router> {
             }
             if (null != pattern) {
                 String s = patternStrBuilder.toString();
-                try {
+                String expanded = macroLookup.expand(s);
+                if (expanded != s) {
                     pattern.set(Pattern.compile(s));
-                } catch (PatternSyntaxException e) {
-                    CharSequence escaped = escapeUnderscore(s);
-                    if (escaped == s) {
-                        throw e;
+                } else {
+                    try {
+                        pattern.set(Pattern.compile(s));
+                    } catch (PatternSyntaxException e) {
+                        CharSequence escaped = escapeUnderscore(s);
+                        if (escaped == s) {
+                            throw e;
+                        }
+                        pattern.set(Pattern.compile(escaped.toString()));
                     }
-                    pattern.set(Pattern.compile(escaped.toString()));
                 }
             }
-            patternTrait.set(patternTraitBuilder.toString());
+            patternTrait.set(patternTraitBuilder.toString().intern());
             return true;
         }
 
@@ -1228,7 +1251,7 @@ public class Router extends AppServiceBase<Router> {
             return updated ? buf : s;
         }
 
-        private static $.T2<? extends CharSequence, Pattern> parseVarBlock(StrBase name, int blockStart, int blockEnd) {
+        private $.T2<? extends CharSequence, Pattern> parseVarBlock(StrBase name, int blockStart, int blockEnd) {
             int pos = name.indexOf('<', blockStart);
             if (pos < 0 || pos >= blockEnd) {
                 return $.T2(name.substr(blockStart, blockEnd), null);
@@ -1240,13 +1263,13 @@ public class Router extends AppServiceBase<Router> {
                 if (pos >= blockEnd) {
                     throw new RoutingException("Invalid route: " + name);
                 }
-                pattern = Pattern.compile(name.substring(blockStart + 1, pos));
+                pattern = Pattern.compile(macroLookup.expand(name.substring(blockStart + 1, pos)));
                 varName = name.substr(pos + 1, blockEnd);
             } else {
                 if (name.charAt(blockEnd - 1) != '>') {
                     throw new RoutingException("Invalid route: " + name);
                 }
-                pattern = Pattern.compile(name.substring(pos + 1, blockEnd - 1));
+                pattern = Pattern.compile(macroLookup.expand(name.substring(pos + 1, blockEnd - 1)));
                 varName = name.substr(blockStart, pos);
             }
             return $.T2(varName, pattern);
@@ -1257,7 +1280,7 @@ public class Router extends AppServiceBase<Router> {
          * case two: `:var_name`, e.g /:foo
          * case three: `var_name:`, e.g /foo:
          */
-        static boolean parseDynaNameStyleA(
+        boolean parseDynaNameStyleA(
                 StrBase name,
                 List<CharSequence> varNames,
                 $.Var<Pattern> pattern,
@@ -1284,7 +1307,8 @@ public class Router extends AppServiceBase<Router> {
                         varNames.add(name.substring(0, pos));
                     }
                     String patternStr = name.substring(pos + 1, name.length());
-                    if (null != pattern) {
+                    patternStr = macroLookup.expand(patternStr).intern();
+                    if (null != pattern && MATCH_ALL != patternStr) {
                         pattern.set(Pattern.compile(patternStr));
                     }
                     patternTrait.set(patternStr);

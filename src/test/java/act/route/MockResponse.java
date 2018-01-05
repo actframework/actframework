@@ -20,78 +20,71 @@ package act.route;
  * #L%
  */
 
-import act.RequestImplBase;
-import act.conf.AppConfig;
+import act.ActResponse;
 import org.osgl.http.H;
 
-import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.ByteBuffer;
+import java.util.Locale;
 
-public class MockRequest extends RequestImplBase<MockRequest> {
-    private H.Method method;
-    private String url;
-    public MockRequest(AppConfig config, H.Method method, String url) {
-        super(config);
-        this.method = method;
-        this.url = url;
+public class MockResponse extends ActResponse<MockResponse> {
+    @Override
+    protected Class<MockResponse> _impl() {
+        return MockResponse.class;
     }
 
     @Override
-    protected String methodName() {
-        return method.name();
-    }
-
-    @Override
-    protected Class<MockRequest> _impl() {
-        return MockRequest.class;
-    }
-
-    @Override
-    public String header(String name) {
+    protected OutputStream createOutputStream() {
         return null;
     }
 
     @Override
-    public Iterable<String> headers(String name) {
+    public MockResponse contentLength(long len) {
         return null;
     }
 
     @Override
-    public String path() {
-        return url;
+    protected void _setLocale(Locale loc) {
+
     }
 
     @Override
-    public String query() {
+    public Locale locale() {
         return null;
     }
 
     @Override
-    protected String _ip() {
+    public void addCookie(H.Cookie cookie) {
+
+    }
+
+    @Override
+    public boolean containsHeader(String name) {
+        return false;
+    }
+
+    @Override
+    public MockResponse header(String name, String value) {
         return null;
     }
 
     @Override
-    protected void _initCookieMap() {
-
-    }
-
-    @Override
-    protected InputStream createInputStream() {
+    public MockResponse status(int sc) {
         return null;
     }
 
     @Override
-    public String paramVal(String name) {
+    public MockResponse addHeader(String name, String value) {
         return null;
     }
 
     @Override
-    public String[] paramVals(String name) {
-        return new String[0];
+    public MockResponse writeContent(ByteBuffer buffer) {
+        return null;
     }
 
     @Override
-    public Iterable<String> paramNames() {
-        return null;
+    public void commit() {
+
     }
 }

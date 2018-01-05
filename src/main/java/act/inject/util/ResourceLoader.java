@@ -22,8 +22,15 @@ package act.inject.util;
 
 import act.Act;
 import act.app.App;
+import com.alibaba.fastjson.TypeReference;
+import org.osgl.$;
+import org.osgl.exception.UnexpectedException;
 import org.osgl.inject.BeanSpec;
+import org.osgl.inject.Genie;
+import org.osgl.inject.Injector;
 import org.osgl.inject.ValueLoader;
+import org.osgl.logging.LogManager;
+import org.osgl.logging.Logger;
 import org.osgl.storage.ISObject;
 import org.osgl.storage.impl.SObject;
 import org.osgl.util.E;
@@ -40,6 +47,8 @@ import java.util.List;
 
 public class ResourceLoader<T> extends ValueLoader.Base<T> {
 
+    protected static final Logger LOGGER = LogManager.get(ResourceLoader.class);
+
     protected Object resource;
 
     @Override
@@ -51,7 +60,7 @@ public class ResourceLoader<T> extends ValueLoader.Base<T> {
             path = path.substring(1);
         }
         E.unexpectedIf(S.blank(path), "resource path not specified");
-        load(path, spec);
+        resource = load(path, spec);
     }
 
     @Override
@@ -59,20 +68,66 @@ public class ResourceLoader<T> extends ValueLoader.Base<T> {
         return (T) resource;
     }
 
-    protected void load(String resourcePath, BeanSpec spec) {
+    private static Injector injector = Genie.create();
+
+    /**
+     * A static method to load resource content
+     *
+     * If any exception encountered during resource load, this method returns `null`
+     *
+     * @param path the relative path to the resource
+     * @param type the return value type
+     * @param <T> generic type of return value
+     * @return loaded resource or `null` if exception encountered.
+     */
+    public static <T> T load(String path, Class<T> type) {
+        return load(path, BeanSpec.of(type, injector));
+    }
+
+    /**
+     * A static method to load resource content
+     *
+     * If any exception encountered during resource load, this method returns `null`
+     *
+     * @param path the relative path to the resource
+     * @param typeReference the return value type
+     * @param <T> generic type of return value
+     * @return loaded resource or `null` if exception encountered.
+     */
+    public static <T> T load(String path, TypeReference<T> typeReference) {
+        BeanSpec spec = BeanSpec.of(typeReference.getType(), injector);
+        return load(path, spec);
+    }
+
+    /**
+     * Load resource content from given path into variable with
+     * type specified by `spec`.
+     *
+     * @param resourcePath the resource path
+     * @param spec {@link BeanSpec} specifies the return value type
+     * @return the resource content in a specified type or `null` if resource not found
+     * @throws UnexpectedException if return value type not supported
+     */
+    public static <T> T load(String resourcePath, BeanSpec spec) {
+        return $.cast(_load(resourcePath, spec));
+    }
+
+    protected static Object _load(String resourcePath, BeanSpec spec) {
         URL url = loadResource(resourcePath);
-        E.unexpectedIf(null == url, "Resource not found: " + resourcePath);
+        if (null == url) {
+            LOGGER.warn("resource not found: " + resourcePath);
+            return null;
+        }
         Class<?> rawType = spec.rawType();
         if (String.class == rawType) {
-            resource = IO.readContentAsString(url);
+            return IO.readContentAsString(url);
         } else if (byte[].class == rawType) {
-            resource = readContent(url);
+            return readContent(url);
         } else if (List.class.isAssignableFrom(rawType)) {
             List<Type> typeParams = spec.typeParams();
             if (!typeParams.isEmpty()) {
                 if (String.class == typeParams.get(0)) {
-                    resource = IO.readLines(url);
-                    return;
+                    return IO.readLines(url);
                 }
             }
         } else if (ByteBuffer.class == rawType) {
@@ -80,24 +135,22 @@ public class ResourceLoader<T> extends ValueLoader.Base<T> {
             ByteBuffer buffer = ByteBuffer.allocateDirect(ba.length);
             buffer.put(ba);
             buffer.flip();
-            resource = buffer;
+            return buffer;
         } else if (InputStream.class == rawType) {
-            resource = IO.is(url);
+            return IO.is(url);
         } else if (Reader.class == rawType) {
-            resource = new InputStreamReader(IO.is(url));
+            return new InputStreamReader(IO.is(url));
         } else if (ISObject.class.isAssignableFrom(rawType)) {
-            resource = SObject.of(readContent(url));
+            return SObject.of(readContent(url));
         }
-        if (null == resource) {
-            E.unsupport("Unsupported target type: %s", spec);
-        }
+        throw new UnexpectedException("return type not supported: " + spec);
     }
 
-    private byte[] readContent(URL url) {
+    private static byte[] readContent(URL url) {
         return IO.readContent(IO.is(url));
     }
 
-    private URL loadResource(String path) {
+    private static URL loadResource(String path) {
         App app = Act.app();
         if (null == app || null == app.classLoader()) {
             return ResourceLoader.class.getClassLoader().getResource(path);

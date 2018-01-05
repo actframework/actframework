@@ -1,5 +1,10 @@
 # ActFramework Change Log
 
+**1.6.1 TBD
+* Router - avoid regex matching when possible #442
+* Make `@JsonView` annotation an alias of `@ResponseContentType(H.Media.JSON)` #440
+* Support using MACRO for URL path regex definition #438
+
 **1.6.0 28/Dec/2017**
 * Update osgl-tool to 1.5.2
 * Update osgl-genie to 1.3.3

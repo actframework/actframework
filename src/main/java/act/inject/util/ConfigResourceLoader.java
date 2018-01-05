@@ -21,8 +21,16 @@ package act.inject.util;
  */
 
 import act.Act;
+import com.alibaba.fastjson.TypeReference;
+import org.osgl.$;
+import org.osgl.inject.BeanSpec;
+import org.osgl.inject.Genie;
+import org.osgl.inject.Injector;
+import org.osgl.util.C;
 import org.osgl.util.E;
 import org.osgl.util.S;
+
+import java.util.Map;
 
 public class ConfigResourceLoader extends ResourceLoader {
     @Override
@@ -35,15 +43,15 @@ public class ConfigResourceLoader extends ResourceLoader {
         if (path.startsWith("config/")) {
             path = path.substring(7);
         }
-        load(profileConfig(path), spec);
+        resource = ResourceLoader._load(profileConfig(path), spec);
         if (null == resource) {
-            load(commonConfig(path), spec);
+            resource = ResourceLoader._load(commonConfig(path), spec);
         }
         if (null == resource) {
-            load(confConfig(path), spec);
+            resource = ResourceLoader._load(confConfig(path), spec);
         }
         if (null == resource) {
-            load(path, spec);
+            resource = ResourceLoader._load(path, spec);
         }
     }
 
@@ -57,6 +65,58 @@ public class ConfigResourceLoader extends ResourceLoader {
 
     private String confConfig(String path) {
         return S.concat("conf/", path);
+    }
+
+    private static Injector injector = Genie.create();
+
+    /**
+     * A static method to load resource favor the profile configuration.
+     *
+     * If any exception encountered during resource load, this method returns `null`
+     *
+     * @param path the relative path to the resource
+     * @param type the return value type
+     * @param <T> generic type of return value
+     * @return loaded resource or `null` if exception encountered.
+     */
+    public static <T> T load(String path, Class<T> type) {
+        return __load(path, BeanSpec.of(type, injector));
+    }
+
+    /**
+     * A static method to load resource favor the profile configuration.
+     *
+     * If any exception encountered during resource load, this method returns `null`
+     *
+     * @param path the relative path to the resource
+     * @param typeReference the return value type
+     * @param <T> generic type of return value
+     * @return loaded resource or `null` if exception encountered.
+     */
+    public static <T> T load(String path, TypeReference<T> typeReference) {
+        BeanSpec spec = BeanSpec.of(typeReference.getType(), injector);
+        return __load(path, spec);
+    }
+
+    /**
+     * A static method to load resource favor the profile configuration.
+     *
+     * If any exception encountered during resource load, this method returns `null`
+     *
+     * @param path the relative path to the resource
+     * @param spec bean spec specifies return value type
+     * @param <T> generic type of return value
+     * @return loaded resource or `null` if exception encountered.
+     */
+    public static <T> T load(String path, BeanSpec spec) {
+        return __load(path, spec);
+    }
+
+    private static <T> T __load(String path, BeanSpec spec) {
+        Map<String, Object> option = C.map("value", path);
+        ConfigResourceLoader loader = new ConfigResourceLoader();
+        loader.init(option, spec);
+        return $.cast(loader.resource);
     }
 
 }

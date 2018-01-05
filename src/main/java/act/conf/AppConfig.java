@@ -22,10 +22,7 @@ package act.conf;
 
 import act.Act;
 import act.Constants;
-import act.app.ActionContext;
-import act.app.App;
-import act.app.AppHolder;
-import act.app.ProjectLayout;
+import act.app.*;
 import act.app.conf.AppConfigurator;
 import act.app.event.AppEventId;
 import act.app.util.NamedPort;
@@ -95,6 +92,8 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         });
     }
 
+    private RouterRegexMacroLookup routerRegexMacroLookup;
+
     /**
      * Construct a <code>AppConfig</code> with a map. The map is copied to
      * the original map of the configuration instance
@@ -103,6 +102,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
      */
     public AppConfig(Map<String, ?> configuration) {
         super(configuration);
+        routerRegexMacroLookup = new RouterRegexMacroLookup(this);
     }
 
     public AppConfig() {
@@ -133,10 +133,15 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         if (null != jsonContentTypeProvider) {
             MvcConfig.jsonMediaTypeProvider(jsonContentProvider);
         }
+
     }
 
     public App app() {
         return app;
+    }
+
+    public RouterRegexMacroLookup routerRegexMacroLookup() {
+        return routerRegexMacroLookup;
     }
 
     @Override

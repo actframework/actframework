@@ -25,7 +25,6 @@ import act.handler.RequestHandler;
 import act.handler.builtin.AlwaysNotFound;
 import act.handler.builtin.FileGetter;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.osgl.$;
@@ -64,7 +63,6 @@ public class RouterTest extends RouterTestBase {
 
     // #295 Exception using underscore in a URL path variable name
     @Test
-    @Ignore // this issue is not fixed yet
     public void testGH295() {
         router.addMapping(GET, "/foo/{var_name}", "Foo.bar");
         yes(router.isMapped(GET, "/foo/{var_name}"));
@@ -263,8 +261,10 @@ public class RouterTest extends RouterTestBase {
 
     @Test
     public void testAddingTwoRoutesWithSameDynamicPart() {
-        router.addMapping(GET, "/foo/{id}", "Controller.foo");
-        router.addMapping(GET, "/foo/{id}/bar", "Foo.bar");
+        router.addMapping(GET, "/foo/{id}", controller);
+        router.addMapping(GET, "/foo/{id}/bar", controller);
+        eq(controller, router.getInvoker(GET, "/foo/123", ctx));
+        eq(controller, router.getInvoker(GET, "/foo/something/bar", ctx));
     }
 
     @Test(expected = DuplicateRouteMappingException.class)

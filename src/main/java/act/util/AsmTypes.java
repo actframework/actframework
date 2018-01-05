@@ -63,11 +63,12 @@ public enum AsmTypes implements Opcodes {
     public static AsmType<Command> COMMAND = new AsmType<>(Command.class);
     public static AsmType<Optional> OPTIONAL = new AsmType<Optional>(Optional.class);
     public static AsmType<ReadContent> READ_FILE_CONTENT = new AsmType<ReadContent>(ReadContent.class);
-    public static AsmType<Required> REQUIRED = new AsmType<Required>(Required.class);
-    public static AsmType<TableView> TABLE_VIEW = new AsmType<TableView>(TableView.class);
-    public static AsmType<JsonView> JSON_VIEW = new AsmType<JsonView>(JsonView.class);
-    public static AsmType<TreeView> TREE_VIEW = new AsmType<TreeView>(TreeView.class);
-    public static AsmType<CsvView> CSV_VIEW = new AsmType<CsvView>(CsvView.class);
+    public static AsmType<Required> REQUIRED = new AsmType<>(Required.class);
+    public static AsmType<TableView> TABLE_VIEW = new AsmType<>(TableView.class);
+    public static AsmType<act.cli.JsonView> JSON_VIEW_DEPRECATED = new AsmType<act.cli.JsonView>(act.cli.JsonView.class);
+    public static AsmType<JsonView> JSON_VIEW = new AsmType<>(JsonView.class);
+    public static AsmType<TreeView> TREE_VIEW = new AsmType<>(TreeView.class);
+    public static AsmType<CsvView> CSV_VIEW = new AsmType<>(CsvView.class);
 
     public static AsmType<SubClassFinder> SUB_CLASS_FINDER = new AsmType<SubClassFinder>(SubClassFinder.class);
     public static AsmType<AnnotatedClassFinder> ANN_CLASS_FINDER = new AsmType<>(AnnotatedClassFinder.class);

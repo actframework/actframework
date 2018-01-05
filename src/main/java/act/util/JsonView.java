@@ -1,4 +1,4 @@
-package act.cli;
+package act.util;
 
 /*-
  * #%L
@@ -20,7 +20,7 @@ package act.cli;
  * #L%
  */
 
-import act.util.PropertySpec;
+import act.cli.TableView;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -51,13 +51,10 @@ import java.lang.annotation.Target;
  * When the command method is also used as HTTP request handler,
  * the response type will be set as `application/json`.
  *
- * This is deprecated. Please use {@link act.util.JsonView} instead
- *
  * @see TableView
  * @see PropertySpec
  */
-@Retention(RetentionPolicy.CLASS)
+@Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.METHOD, ElementType.TYPE})
-@Deprecated
 public @interface JsonView {
 }

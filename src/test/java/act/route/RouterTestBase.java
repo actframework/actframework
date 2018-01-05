@@ -27,10 +27,12 @@ import act.conf.AppConfig;
 import act.handler.RequestHandler;
 import act.handler.RequestHandlerResolver;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
 import java.io.File;
+import java.lang.reflect.Field;
 
 import static org.mockito.Mockito.*;
 
@@ -40,14 +42,11 @@ public abstract class RouterTestBase extends ActTestBase {
     protected RequestHandler controller;
     protected RequestHandlerResolver controllerLookup;
     protected ActionContext ctx;
-    protected App app;
+    protected static App app;
     protected static final File BASE = new File("target/test-classes");
 
-    @Before
-    public void _prepare() {
-        controller = mock(NamedMockHandler.class);
-        controllerLookup = mock(RequestHandlerResolver.class);
-        provisionControllerLookup(controllerLookup);
+    @BeforeClass
+    public static void prepareClass() throws Exception {
         AppConfig config = appConfig();
         app = mock(App.class);
         when(app.config()).thenReturn(config);
@@ -58,6 +57,16 @@ public abstract class RouterTestBase extends ActTestBase {
                 return new File(BASE, path);
             }
         });
+        Field f = App.class.getDeclaredField("INST");
+        f.setAccessible(true);
+        f.set(null, app);
+    }
+
+    @Before
+    public void _prepare() {
+        controller = mock(NamedMockHandler.class);
+        controllerLookup = mock(RequestHandlerResolver.class);
+        provisionControllerLookup(controllerLookup);
         router = new Router(controllerLookup, app);
         buildRouteMapping(router);
         ctx = mock(ActionContext.class);
@@ -70,7 +79,7 @@ public abstract class RouterTestBase extends ActTestBase {
 
     protected abstract void buildRouteMapping(Router router);
 
-    protected AppConfig appConfig() {
+    protected static AppConfig appConfig() {
         return new AppConfig();
     }
 

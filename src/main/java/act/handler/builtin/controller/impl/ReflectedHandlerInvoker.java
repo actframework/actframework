@@ -206,7 +206,20 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
             this.singleton = ReflectedInvokerHelper.tryGetSingleton(controllerClass, app);
         }
 
-        ResponseContentType contentType = getAnnotation(ResponseContentType.class);
+        if (null != controllerClass.getAnnotation(JsonView.class)) {
+            forceResponseContentType = H.MediaType.JSON.format();
+        }
+        // ResponseContentType takes priority of JsonView
+        ResponseContentType contentType = controllerClass.getAnnotation(ResponseContentType.class);
+        if (null != contentType) {
+            forceResponseContentType = contentType.value().format();
+        }
+
+        // method annotation takes priority of class annotation
+        if (null != method.getAnnotation(JsonView.class)) {
+            forceResponseContentType = H.MediaType.JSON.format();
+        }
+        contentType = method.getAnnotation(ResponseContentType.class);
         if (null != contentType) {
             forceResponseContentType = contentType.value().format();
         }
@@ -755,6 +768,10 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
             anno = controllerClass.getAnnotation(annoType);
         }
         return anno;
+    }
+
+    private boolean hasAnnotation(Class<? extends Annotation> annoType) {
+        return (null != method.getAnnotation(annoType)) || null != controllerClass.getAnnotation(annoType);
     }
 
     public static ControllerAction createControllerAction(ActionMethodMetaInfo meta, App app) {
