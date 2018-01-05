@@ -364,6 +364,22 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         }
     }
 
+    private String contentSecurityPolicy;
+    protected T contentSecurityPolicy(String policy) {
+        this.contentSecurityPolicy = policy;
+        return me();
+    }
+    public String contentSecurityPolicy() {
+        if (null == contentSecurityPolicy) {
+            contentSecurityPolicy = get(CONTENT_SECURITY_POLICY, null);
+        }
+        return contentSecurityPolicy;
+    }
+    private void _mergeCsp(AppConfig conf) {
+        if (!hasConfiguration(CONTENT_SECURITY_POLICY)) {
+            contentSecurityPolicy = conf.contentSecurityPolicy;
+        }
+    }
 
     private Boolean csrf;
 
@@ -2293,42 +2309,42 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         return appClassTester().test(className);
     }
 
-    private CacheServiceProvider csp = null;
+    private CacheServiceProvider cacheServiceProvider = null;
 
-    protected T cacheService(CacheServiceProvider csp) {
-        E.NPE(csp);
-        this.csp = csp;
+    protected T cacheService(CacheServiceProvider provider) {
+        E.NPE(provider);
+        this.cacheServiceProvider = provider;
         return me();
     }
 
-    protected T cacheService(Class<? extends CacheServiceProvider> csp) {
-        this.csp = $.newInstance(csp);
+    protected T cacheService(Class<? extends CacheServiceProvider> provider) {
+        this.cacheServiceProvider = $.newInstance(provider);
         return me();
     }
 
     public CacheService cacheService(String name) {
-        if (null == csp) {
+        if (null == cacheServiceProvider) {
             try {
-                csp = get(AppConfigKey.CACHE_IMPL, null);
+                cacheServiceProvider = get(AppConfigKey.CACHE_IMPL, null);
             } catch (ConfigurationException e) {
                 Object obj = helper.getValFromAliases(raw, AppConfigKey.CACHE_IMPL.toString(), "impl", null);
-                csp = CacheServiceProvider.Impl.valueOfIgnoreCase(obj.toString());
-                if (null != csp) {
-                    set(AppConfigKey.CACHE_IMPL, csp);
-                    return csp.get(name);
+                cacheServiceProvider = CacheServiceProvider.Impl.valueOfIgnoreCase(obj.toString());
+                if (null != cacheServiceProvider) {
+                    set(AppConfigKey.CACHE_IMPL, cacheServiceProvider);
+                    return cacheServiceProvider.get(name);
                 }
                 throw e;
             }
-            if (null == csp) {
-                csp = CacheServiceProvider.Impl.Auto;
+            if (null == cacheServiceProvider) {
+                cacheServiceProvider = CacheServiceProvider.Impl.Auto;
             }
         }
-        return csp.get(name);
+        return cacheServiceProvider.get(name);
     }
 
     private void _mergeCacheServiceProvider(AppConfig config) {
         if (!hasConfiguration(AppConfigKey.CACHE_IMPL)) {
-            csp = config.csp;
+            cacheServiceProvider = config.cacheServiceProvider;
         }
     }
 

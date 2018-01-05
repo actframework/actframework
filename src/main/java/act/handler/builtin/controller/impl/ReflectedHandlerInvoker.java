@@ -45,6 +45,7 @@ import act.job.AppJobManager;
 import act.job.TrackableWorker;
 import act.security.CORS;
 import act.security.CSRF;
+import act.security.CSP;
 import act.sys.Env;
 import act.util.*;
 import act.view.*;
@@ -107,6 +108,8 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
     private List<BeanSpec> paramSpecs;
     private CORS.Spec corsSpec;
     private CSRF.Spec csrfSpec;
+    private String csp;
+    private boolean disableCsp;
     private boolean isStatic;
     private Object singleton;
     private H.Format forceResponseContentType;
@@ -202,6 +205,19 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
 
         CSRF.Spec csrfSpec = CSRF.spec(method).chain(CSRF.spec(controllerClass));
         this.csrfSpec = csrfSpec;
+
+        CSP.Disable cspDisableAnno = getAnnotation(CSP.Disable.class);
+        if (null != cspDisableAnno) {
+            this.disableCsp = true;
+        }
+
+        if (!this.disableCsp) {
+            CSP cspAnno = getAnnotation(CSP.class);
+            if (null != cspAnno) {
+                this.csp = cspAnno.value();
+            }
+        }
+
         if (!isStatic) {
             this.singleton = ReflectedInvokerHelper.tryGetSingleton(controllerClass, app);
         }
@@ -425,6 +441,15 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
     @Override
     public CSRF.Spec csrfSpec() {
         return csrfSpec;
+    }
+
+    @Override
+    public String contentSecurityPolicy() {
+        return disableCsp ? null : csp;
+    }
+
+    public boolean disableContentSecurityPolicy() {
+        return disableCsp;
     }
 
     private void cacheJsonDTO(ActContext<?> context, JsonDTO dto) {

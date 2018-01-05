@@ -76,6 +76,14 @@ public class ControllerAction extends ActionHandler<ControllerAction> {
         return handlerInvoker.csrfSpec();
     }
 
+    public String contentSecurityPolicy() {
+        return handlerInvoker.contentSecurityPolicy();
+    }
+
+    public boolean disableContentSecurityPolicy() {
+        return handlerInvoker.disableContentSecurityPolicy();
+    }
+
     @Override
     public boolean sessionFree() {
         return handlerInvoker.sessionFree();

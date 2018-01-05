@@ -106,8 +106,17 @@ public interface RequestHandler extends $.Function<ActionContext, Void>, Destroy
     /**
      * Get CSRF specification that applied to this request handler
      *
-     * @return the CSRF specification applied to this requestion handler
+     * @return the CSRF specification applied to this request handler
      */
     CSRF.Spec csrfSpec();
+
+    /**
+     * Get `Content-Security-Policy` that applied to this request handler
+     *
+     * @return `Content-Security-Policy` that applied to this request handler
+     */
+    String contentSecurityPolicy();
+
+    boolean disableContentSecurityPolicy();
 
 }

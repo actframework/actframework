@@ -72,6 +72,16 @@ public class DelegateRequestHandler extends RequestHandlerBase {
     }
 
     @Override
+    public String contentSecurityPolicy() {
+        return handler_.contentSecurityPolicy();
+    }
+
+    @Override
+    public boolean disableContentSecurityPolicy() {
+        return handler_.disableContentSecurityPolicy();
+    }
+
+    @Override
     public boolean sessionFree() {
         return handler_.sessionFree();
     }

@@ -58,6 +58,16 @@ public abstract class FastRequestHandler extends RequestHandlerBase {
     }
 
     @Override
+    public String contentSecurityPolicy() {
+        return null;
+    }
+
+    @Override
+    public boolean disableContentSecurityPolicy() {
+        return false;
+    }
+
+    @Override
     public boolean sessionFree() {
         return true;
     }

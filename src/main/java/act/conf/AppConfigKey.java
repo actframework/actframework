@@ -289,6 +289,13 @@ public enum AppConfigKey implements ConfigKey {
     CONTENT_SUFFIX_AWARE("content_suffix.aware.enabled"),
 
     /**
+     * `act.csp` - global Content-Security-Policy header setting
+     *
+     * Default value: null
+     */
+    CONTENT_SECURITY_POLICY("csp"),
+
+    /**
      * {@code act.csrf.enabled} turn on/off global CSRF protect
      *
      * Default value: `true`

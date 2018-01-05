@@ -1461,6 +1461,16 @@ public class Router extends AppServiceBase<Router> {
                         public CSRF.Spec csrfSpec() {
                             return h.csrfSpec();
                         }
+
+                        @Override
+                        public String contentSecurityPolicy() {
+                            return h.contentSecurityPolicy();
+                        }
+
+                        @Override
+                        public boolean disableContentSecurityPolicy() {
+                            return h.disableContentSecurityPolicy();
+                        }
                     };
                 } else {
                     return h;

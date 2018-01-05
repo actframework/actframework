@@ -107,6 +107,16 @@ public abstract class RequestHandlerBase extends $.F1<ActionContext, Void> imple
     }
 
     @Override
+    public String contentSecurityPolicy() {
+        return null;
+    }
+
+    @Override
+    public boolean disableContentSecurityPolicy() {
+        return false;
+    }
+
+    @Override
     public void destroy() {
         if (destroyed) return;
         destroyed = true;

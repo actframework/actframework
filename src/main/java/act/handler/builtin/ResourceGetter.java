@@ -188,7 +188,7 @@ public class ResourceGetter extends FastRequestHandler {
             if (Act.isProd()) {
                 resp.header(CACHE_CONTROL, "public, max-age=7200");
             }
-            context.applyCorsSpec().applyContentType();
+            context.applyCorsSpec().applyContentSecurityPolicy().applyContentType();
             try {
                 int n = IO.copy(target.openStream(), resp.outputStream());
                 if (Act.isProd()) {

@@ -46,6 +46,10 @@ public interface ActionHandlerInvoker extends Prioritised, Destroyable {
 
     CSRF.Spec csrfSpec();
 
+    String contentSecurityPolicy();
+
+    boolean disableContentSecurityPolicy();
+
     CacheSupportMetaInfo cacheSupport();
 
     MissingAuthenticationHandler missingAuthenticationHandler();

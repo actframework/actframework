@@ -87,7 +87,7 @@ public class FileGetter extends FastRequestHandler {
         ActResponse resp = context.prepareRespForWrite();
         fmt = contentType(file.getPath());
         resp.contentType(fmt);
-        context.applyCorsSpec().applyContentType();
+        context.applyCorsSpec().applyContentSecurityPolicy().applyContentType();
         InputStream is = new BufferedInputStream(IO.is(file));
         IO.copy(is, resp.outputStream());
     }

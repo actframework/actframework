@@ -480,6 +480,18 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
     }
 
     @Override
+    public String contentSecurityPolicy() {
+        ensureAgentsReady();
+        return actionHandler.contentSecurityPolicy();
+    }
+
+    @Override
+    public boolean disableContentSecurityPolicy() {
+        ensureAgentsReady();
+        return actionHandler.disableContentSecurityPolicy();
+    }
+
+    @Override
     public CORS.Spec corsSpec() {
         ensureAgentsReady();
         return actionHandler.corsSpec();

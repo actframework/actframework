@@ -93,6 +93,7 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
     private LocaleResolver localeResolver;
     private boolean disableCors;
     private boolean disableCsrf;
+    private boolean disableCsp;
     private Boolean hasTemplate;
     private $.Visitor<H.Format> templateChangeListener;
     private H.Status forceResponseStatus;
@@ -539,6 +540,10 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
         this.disableCors = true;
     }
 
+    public void disableContentSecurityPolicy() {
+        this.disableCsp = true;
+    }
+
     /**
      * Apply content type to response with result provided.
      *
@@ -599,12 +604,38 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
         return this;
     }
 
+    public ActionContext applyContentSecurityPolicy() {
+        RequestHandler handler = handler();
+        if (null != handler) {
+            boolean disableCSP = handler.disableContentSecurityPolicy();
+            if (disableCSP) {
+                return this;
+            }
+            String csp = handler.contentSecurityPolicy();
+            if (S.notBlank(csp)) {
+                H.Response resp = resp();
+                resp.addHeaderIfNotAdded(CONTENT_SECURITY_POLICY, csp);
+            }
+        }
+        applyGlobalCspSetting();
+        return this;
+    }
+
     private void applyContentType(H.Format fmt) {
         if (null != fmt) {
             ActResponse resp = resp();
             resp.initContentType(fmt.contentType());
             resp.commitContentType();
         }
+    }
+
+    private void applyGlobalCspSetting() {
+        String csp = config().contentSecurityPolicy();
+        if (S.blank(csp)) {
+            return;
+        }
+        H.Response r = resp();
+        r.addHeaderIfNotAdded(CONTENT_SECURITY_POLICY, csp);
     }
 
     private void applyGlobalCorsSetting() {
