@@ -21,6 +21,7 @@ package act.view;
  */
 
 import act.Act;
+import act.ActResponse;
 import act.app.ActionContext;
 import act.mail.MailerContext;
 import org.osgl.http.H;
@@ -43,7 +44,9 @@ public abstract class TemplateBase implements Template {
             exposeImplicitVariables(renderArgs, context);
         }
         beforeRender(context);
-        merge(renderArgs, context.resp());
+        ActResponse resp = context.resp();
+        merge(renderArgs, resp);
+        resp.commit();
     }
 
     @Override
