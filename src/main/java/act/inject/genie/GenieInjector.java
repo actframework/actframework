@@ -95,7 +95,7 @@ public class GenieInjector extends DependencyInjectorBase<GenieInjector> {
 
     @Override
     public boolean isProvided(Class<?> type) {
-        return ActProviders.isProvided(type)
+        return !$.isSimpleType(type) && ActProviders.isProvided(type)
                 || type.isAnnotationPresent(Provided.class)
                 || type.isAnnotationPresent(Inject.class)
                 || type.isAnnotationPresent(Singleton.class)
@@ -104,7 +104,7 @@ public class GenieInjector extends DependencyInjectorBase<GenieInjector> {
 
     public boolean isProvided(BeanSpec beanSpec) {
         Class rawType = beanSpec.rawType();
-        return (ActProviders.isProvided(rawType)
+        boolean provided = (ActProviders.isProvided(rawType)
                 || null != beanSpec.getAnnotation(Inject.class)
                 || null != beanSpec.getAnnotation(Provided.class)
                 || null != beanSpec.getAnnotation(Context.class)
@@ -112,6 +112,11 @@ public class GenieInjector extends DependencyInjectorBase<GenieInjector> {
                 || beanSpec.isInstanceOf(SingletonBase.class)
                 || subjectToInject(beanSpec)
         );
+        return provided && (!($.isSimpleType(rawType) && !beanSpec.hasAnnotation()));
+    }
+
+    private boolean isPureSimpleType(BeanSpec spec, Class<?> rawType) {
+        return $.isSimpleType(rawType) && spec.qualifiers().isEmpty();
     }
 
     @Override

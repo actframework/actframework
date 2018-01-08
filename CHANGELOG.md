@@ -1,6 +1,10 @@
 # ActFramework Change Log
 
-**1.6.1 TBD
+**1.6.2 TBD**
+* Some view engine caused browser always loading when running in prod mode #447
+* Param binding - it shall not try to get provider for simple types. #449
+
+**1.6.1 06/Jan/2018**
 * Router - avoid regex matching when possible #442
 * Make `@JsonView` annotation an alias of `@ResponseContentType(H.Media.JSON)` #440
 * Support Content-Security-Policy header #439
