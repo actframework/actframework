@@ -24,8 +24,10 @@ import act.Act;
 import act.app.App;
 import act.app.AppClassLoader;
 import act.asm.Type;
+import act.controller.annotation.UrlContext;
 import act.handler.builtin.controller.ControllerAction;
 import act.handler.builtin.controller.Handler;
+import act.plugin.ControllerPlugin;
 import act.util.ClassInfoRepository;
 import act.util.ClassNode;
 import act.util.DestroyableBase;
@@ -36,9 +38,7 @@ import org.osgl.util.S;
 
 import javax.enterprise.context.ApplicationScoped;
 import java.lang.annotation.Annotation;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import static act.Destroyable.Util.destroyAll;
 
@@ -479,12 +479,21 @@ public final class ControllerClassMetaInfo extends DestroyableBase {
         handlerLookup = lookup;
     }
 
+    public static void registerMethodLookups(Map<Class<? extends Annotation>, H.Method> annotationMethodLookup, boolean noDefaultPath) {
+        METHOD_LOOKUP.putAll(annotationMethodLookup);
+        if (noDefaultPath) {
+            NO_DEF_PATH_ACTIONS.addAll(annotationMethodLookup.keySet());
+        }
+    }
+
+    public static void registerUrlContextAnnotation(ControllerPlugin.PathAnnotationSpec pathAnnotationInfo) {
+        URL_CONTEXT_ANNOTATIONS.put(pathAnnotationInfo.annoType(), pathAnnotationInfo);
+    }
+
     private static final C.Set<Class<? extends Annotation>> INTERCEPTOR_ANNOTATION_TYPES = C.set(
             Before.class, After.class, Catch.class, Finally.class);
 
-    public static final C.Set<H.Method> ACTION_METHODS = C.set(H.Method.GET, H.Method.POST, H.Method.PUT, H.Method.DELETE);
-
-    private static final Map<Class<? extends Action>, H.Method> METHOD_LOOKUP = C.newMap(
+    private static final Map<Class<? extends Annotation>, H.Method> METHOD_LOOKUP = C.newMap(
             GetAction.class, H.Method.GET,
             PostAction.class, H.Method.POST,
             PutAction.class, H.Method.PUT,
@@ -493,14 +502,34 @@ public final class ControllerClassMetaInfo extends DestroyableBase {
             WsAction.class, H.Method.GET
     );
 
+    private static final Set<Class<? extends Annotation>> NO_DEF_PATH_ACTIONS = new HashSet<>();
+
+    public static boolean noDefPath(Class<? extends Annotation> actionAnno) {
+        return NO_DEF_PATH_ACTIONS.contains(actionAnno);
+    }
+
+    // map annotype to support_absolute_path
+    private static final Map<Class<? extends Annotation>, ControllerPlugin.PathAnnotationSpec> URL_CONTEXT_ANNOTATIONS = new HashMap<>();
+
     public static boolean isActionAnnotation(Class<? extends Annotation> type) {
         return METHOD_LOOKUP.containsKey(type) || Action.class == type;
+    }
+
+    public static boolean isUrlContextAnnotation(Class<? extends Annotation> anno) {
+        return UrlContext.class == anno || URL_CONTEXT_ANNOTATIONS.containsKey(anno);
+    }
+
+    public static boolean isUrlContextAnnotationSupportAbsolutePath(Class<? extends Annotation> anno) {
+        return UrlContext.class == anno || URL_CONTEXT_ANNOTATIONS.get(anno).supportAbsolutePath();
+    }
+
+    public static boolean isUrlContextAnnotationSupportInheritance(Class<? extends Annotation> anno) {
+        return UrlContext.class == anno || URL_CONTEXT_ANNOTATIONS.get(anno).supportInheritance();
     }
 
     public static H.Method lookupHttpMethod(Class annotationClass) {
         return METHOD_LOOKUP.get(annotationClass);
     }
-
 
     public static boolean isActionUtilAnnotation(Class<? extends Annotation> type) {
         return ActionUtil.class == type;

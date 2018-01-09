@@ -43,6 +43,7 @@ import act.inject.param.ParamValueLoaderManager;
 import act.inject.param.ParamValueLoaderService;
 import act.job.AppJobManager;
 import act.job.TrackableWorker;
+import act.plugin.ControllerPlugin;
 import act.security.CORS;
 import act.security.CSRF;
 import act.security.CSP;
@@ -133,6 +134,8 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
     private boolean forceDataBinding;
     private Class<? extends SerializeFilter> filters[];
     private SerializerFeature features[];
+    private $.Function<ActionContext, Result> pluginBeforeHandler;
+    private $.Func2<Result, ActionContext, Result> pluginAfterHandler;
 
     private ReflectedHandlerInvoker(M handlerMetaInfo, App app) {
         this.app = app;
@@ -150,6 +153,8 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         } catch (NoSuchMethodException e) {
             throw E.unexpected(e);
         }
+        this.pluginBeforeHandler = ControllerPlugin.Manager.INST.beforeHandler(controllerClass, method);
+        this.pluginAfterHandler = ControllerPlugin.Manager.INST.afterHandler(controllerClass, method);
         this.disabled = this.disabled || !Env.matches(method);
         this.forceDataBinding = method.isAnnotationPresent(RequireDataBind.class);
         this.async = null != method.getAnnotation(Async.class);
@@ -329,6 +334,11 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
             }
         }
 
+        Result result = pluginBeforeHandler.apply(context);
+        if (null != result) {
+            return result;
+        }
+
         if (null != filters) {
             context.fastjsonFilters(filters);
         }
@@ -404,7 +414,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         }
 
         try {
-            return invoke(handler, context, controller, params);
+            return pluginAfterHandler.apply(invoke(handler, context, controller, params), context);
         } finally {
             if (hasOutputVar) {
                 fillOutputVariables(controller, params, context);

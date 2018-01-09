@@ -1,5 +1,8 @@
 # ActFramework Change Log
 
+**1.7.0**
+* Support plugin JAX-RS #448
+
 **1.6.2 TBD**
 * Some view engine caused browser always loading when running in prod mode #447
 * Param binding - it shall not try to get provider for simple types. #449

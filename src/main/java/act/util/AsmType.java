@@ -21,6 +21,7 @@ package act.util;
  */
 
 import act.asm.Type;
+import org.osgl.$;
 import org.osgl.util.E;
 
 public class AsmType<T> {
@@ -47,6 +48,16 @@ public class AsmType<T> {
 
     public String desc() {
         return type.getDescriptor();
+    }
+
+    public static <T> Class<T> classForDesc(String desc) {
+        Type type = Type.getType(desc);
+        return classForType(type);
+    }
+
+    public static <T> Class<T> classForType(Type type) {
+        String className = type.getClassName();
+        return $.classForName(className, AsmType.class.getClassLoader());
     }
 
 }

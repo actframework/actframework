@@ -32,7 +32,6 @@ import act.conf.AppConfig;
 import act.controller.Controller;
 import act.controller.annotation.Port;
 import act.controller.annotation.TemplateContext;
-import act.controller.annotation.UrlContext;
 import act.controller.meta.*;
 import act.handler.builtin.controller.RequestHandlerProxy;
 import act.route.RouteSource;
@@ -129,21 +128,22 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
         @Override
         public AnnotationVisitor visitAnnotation(String desc, boolean visible) {
             AnnotationVisitor av = super.visitAnnotation(desc, visible);
-            if (Type.getType(Controller.class).getDescriptor().equals(desc)) {
+            Class<? extends Annotation> c = AsmType.classForDesc(desc);
+            if (Controller.class == c) {
                 classInfo.isController(true);
                 return new ControllerAnnotationVisitor(av);
-            } else if (Type.getType(UrlContext.class).getDescriptor().equals(desc)) {
+            } else if (ControllerClassMetaInfo.isUrlContextAnnotation(c)) {
                 classInfo.isController(true);
-                return new UrlContextAnnotationVisitor(av);
-            } else if (Type.getType(TemplateContext.class).getDescriptor().equals(desc)) {
+                return new ClassUrlContextAnnotationVisitor(av, ControllerClassMetaInfo.isUrlContextAnnotationSupportInheritance(c));
+            } else if (TemplateContext.class == c) {
                 classInfo.isController(true);
                 return new TemplateContextAnnotationVisitor(av);
-            } else if (Type.getType(Port.class).getDescriptor().equals(desc)) {
+            } else if (Port.class == c) {
                 return new PortAnnotationVisitor(av);
-            } else if (Type.getType(With.class).getDescriptor().equals(desc)) {
+            } else if (With.class == c) {
                 classInfo.isController(true);
                 return new ClassWithAnnotationVisitor(av);
-            } else if (Type.getType(WsEndpoint.class).getDescriptor().equals(desc)) {
+            } else if (WsEndpoint.class == c) {
                 classInfo.isController(true);
                 return new WsEndpointAnnotationVisitor(av);
             }
@@ -262,15 +262,21 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
             }
         }
 
-        private class UrlContextAnnotationVisitor extends AnnotationVisitor {
-            UrlContextAnnotationVisitor(AnnotationVisitor av) {
+        private class ClassUrlContextAnnotationVisitor extends AnnotationVisitor {
+            private final boolean supportInheritance;
+            ClassUrlContextAnnotationVisitor(AnnotationVisitor av, boolean supportInheritance) {
                 super(ASM5, av);
+                this.supportInheritance = supportInheritance;
             }
 
             @Override
             public void visit(String name, Object value) {
                 if ("value".equals(name)) {
-                    classInfo.urlContext(value.toString());
+                    String pathComponent = value.toString();
+                    if (!supportInheritance && !pathComponent.startsWith("/")) {
+                        pathComponent = "/" + pathComponent;
+                    }
+                    classInfo.urlContext(pathComponent);
                 }
                 super.visit(name, value);
             }
@@ -324,6 +330,7 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
             private boolean disableJsonCircularRefDetect;
             private HandlerMethodMetaInfo methodInfo;
             private PropertySpec.MetaInfo propSpec;
+            List<String> paths = C.newList();
             private Map<Integer, List<ParamAnnoInfoTrait>> paramAnnoInfoList = C.newMap();
             private Map<Integer, List<GeneralAnnoInfo>> genericParamAnnoInfoList = C.newMap();
             private BitSet contextInfo = new BitSet();
@@ -351,8 +358,7 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
             public AnnotationVisitor visitAnnotation(String desc, boolean visible) {
                 AnnotationVisitor av = super.visitAnnotation(desc, visible);
                 Type type = Type.getType(desc);
-                String className = type.getClassName();
-                Class<? extends Annotation> c = $.classForName(className);
+                Class<? extends Annotation> c = AsmType.classForType(type);
                 if (Virtual.class.getName().equals(c.getName())) {
                     isVirtual.set(true);
                     return av;
@@ -375,7 +381,9 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
                         methodInfo.propertySpec(propSpec);
                     }
                     methodInfo.disableJsonCircularRefDetect(disableJsonCircularRefDetect);
-                    return new ActionAnnotationVisitor(av, ControllerClassMetaInfo.lookupHttpMethod(c), ControllerClassMetaInfo.isActionUtilAnnotation(c), isStatic);
+                    return new ActionAnnotationVisitor(av, ControllerClassMetaInfo.lookupHttpMethod(c), ControllerClassMetaInfo.isActionUtilAnnotation(c), isStatic, ControllerClassMetaInfo.noDefPath(c));
+                } else if (ControllerClassMetaInfo.isUrlContextAnnotation(c)) {
+                    return new MethodUrlContextAnnotationVisitor(av, ControllerClassMetaInfo.isUrlContextAnnotationSupportAbsolutePath(c));
                 } else if (ControllerClassMetaInfo.isInterceptorAnnotation(c)) {
                     checkMethodName(methodName);
                     markRequireScan();
@@ -682,20 +690,42 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
                 }
             }
 
+            private class MethodUrlContextAnnotationVisitor extends AnnotationVisitor {
+                private final boolean supportAbsolutePath;
+                MethodUrlContextAnnotationVisitor(AnnotationVisitor av, boolean supportAbsolutePath) {
+                    super(ASM5, av);
+                    this.supportAbsolutePath = supportAbsolutePath;
+                }
+
+                @Override
+                public void visit(String name, Object value) {
+                    if ("value".equals(name)) {
+                        String pathComponent = value.toString();
+                        if (!supportAbsolutePath && pathComponent.startsWith("/")) {
+                            pathComponent = pathComponent.substring(1);
+                        }
+                        paths.add(pathComponent);
+                    }
+                    super.visit(name, value);
+                }
+            }
+
+
             private class ActionAnnotationVisitor extends AnnotationVisitor implements Opcodes {
 
                 List<H.Method> httpMethods = C.newList();
-                List<String> paths = C.newList();
                 boolean isUtil;
                 boolean isStatic;
+                boolean noDefPath;
 
-                public ActionAnnotationVisitor(AnnotationVisitor av, H.Method method, boolean isUtil, boolean staticMethod) {
+                public ActionAnnotationVisitor(AnnotationVisitor av, H.Method method, boolean isUtil, boolean staticMethod, boolean noDefPath) {
                     super(ASM5, av);
                     if (null != method) {
                         httpMethods.add(method);
                     }
                     this.isUtil = isUtil;
                     this.isStatic = staticMethod;
+                    this.noDefPath = noDefPath;
                 }
 
                 @Override
@@ -737,7 +767,7 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
                         httpMethods.addAll(H.Method.actionMethods());
                     }
                     final List<Router> routers = routers();
-                    if (paths.isEmpty()) {
+                    if (!noDefPath && paths.isEmpty()) {
                         paths.add("");
                     }
 
