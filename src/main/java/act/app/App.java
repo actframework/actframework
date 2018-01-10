@@ -1024,6 +1024,7 @@ public class App extends DestroyableBase {
         HttpConfig.nonSecurePort(config.httpExternalPort());
         HttpConfig.defaultLocale(config.locale());
         HttpConfig.domain(config.host());
+        HttpConfig.setXForwardedAllowed("all");
     }
 
     // TODO: move this to somewhere that is more appropriate
