@@ -921,7 +921,7 @@ public @interface Controller {
                     return RenderHtml.of(status, s);
                 }
                 if (TXT == fmt || CSV == fmt) {
-                    return RenderText.of(status, fmt, status.toString());
+                    return RenderText.of(status, fmt, $.toString2(v), status.toString());
                 }
                 throw E.unexpected("Cannot apply text result to format: %s", fmt);
             }

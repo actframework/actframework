@@ -4,6 +4,7 @@
 * Support plugin JAX-RS #448
 
 **1.6.2 TBD**
+* Fault response for `txt/plain` response #456
 * Some view engine caused browser always loading when running in prod mode #447
 * Param binding - it shall not try to get provider for simple types. #449
 
