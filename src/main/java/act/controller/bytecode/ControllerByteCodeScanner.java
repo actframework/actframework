@@ -970,6 +970,9 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
 
         private void registerOnContext(String ctxPath, String action) {
             S.Buffer sb = S.newBuffer();
+            if (paths.isEmpty()) {
+                paths.add("");
+            }
             for (Router r : routers) {
                 for (String urlPath : paths) {
                     if (!urlPath.startsWith("/")) {
