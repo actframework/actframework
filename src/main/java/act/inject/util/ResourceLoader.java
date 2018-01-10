@@ -119,7 +119,9 @@ public class ResourceLoader<T> extends ValueLoader.Base<T> {
             return null;
         }
         Class<?> rawType = spec.rawType();
-        if (String.class == rawType) {
+        if (URL.class == rawType) {
+            return url;
+        } else if (String.class == rawType) {
             return IO.readContentAsString(url);
         } else if (byte[].class == rawType) {
             return readContent(url);
