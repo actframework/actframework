@@ -156,35 +156,35 @@ public class AppJobManager extends AppServiceBase<AppJobManager> {
     }
 
     public void every(String id, Runnable runnable, String interval) {
-        JobTrigger.every(interval).schedule(this, Job.multipleTimes(id, runnable, this));
+        JobTrigger.every(interval, false).schedule(this, Job.multipleTimes(id, runnable, this));
     }
 
     public void every(Runnable runnable, String interval) {
-        JobTrigger.every(interval).schedule(this, Job.multipleTimes(runnable, this));
+        JobTrigger.every(interval, false).schedule(this, Job.multipleTimes(runnable, this));
     }
 
     public void every(Runnable runnable, long interval, TimeUnit timeUnit) {
-        JobTrigger.every(interval, timeUnit).schedule(this, Job.multipleTimes(runnable, this));
+        JobTrigger.every(interval, timeUnit, false).schedule(this, Job.multipleTimes(runnable, this));
     }
 
     public void every(String id, Runnable runnable, long interval, TimeUnit timeUnit) {
-        JobTrigger.every(interval, timeUnit).schedule(this, Job.multipleTimes(id, runnable, this));
+        JobTrigger.every(interval, timeUnit, false).schedule(this, Job.multipleTimes(id, runnable, this));
     }
 
     public void fixedDelay(Runnable runnable, String interval) {
-        JobTrigger.every(interval).schedule(this, Job.multipleTimes(runnable, this));
+        JobTrigger.every(interval, false).schedule(this, Job.multipleTimes(runnable, this));
     }
 
     public void fixedDelay(String id, Runnable runnable, String interval) {
-        JobTrigger.every(interval).schedule(this, Job.multipleTimes(id, runnable, this));
+        JobTrigger.every(interval, false).schedule(this, Job.multipleTimes(id, runnable, this));
     }
 
     public void fixedDelay(Runnable runnable, long interval, TimeUnit timeUnit) {
-        JobTrigger.fixedDelay(interval, timeUnit).schedule(this, Job.multipleTimes(runnable, this));
+        JobTrigger.fixedDelay(interval, timeUnit, false).schedule(this, Job.multipleTimes(runnable, this));
     }
 
     public void fixedDelay(String id, Runnable runnable, long interval, TimeUnit timeUnit) {
-        JobTrigger.fixedDelay(interval, timeUnit).schedule(this, Job.multipleTimes(id, runnable, this));
+        JobTrigger.fixedDelay(interval, timeUnit, false).schedule(this, Job.multipleTimes(id, runnable, this));
     }
 
     private int parseTime(String timeDuration) {

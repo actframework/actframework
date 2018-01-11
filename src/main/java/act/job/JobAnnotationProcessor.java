@@ -69,9 +69,9 @@ public class JobAnnotationProcessor extends AppHolderBase<JobAnnotationProcessor
         } else if (AlongWith.class.isAssignableFrom(anno)) {
             registerAlongWith(job, value);
         } else if (Every.class.isAssignableFrom(anno)) {
-            registerEvery(job, evaluateExpression(value, anno));
+            registerEvery(job, evaluateExpression(value, anno), info.startImmediately);
         } else if (FixedDelay.class.isAssignableFrom(anno)) {
-            registerFixedDelay(job, evaluateExpression(value, anno));
+            registerFixedDelay(job, evaluateExpression(value, anno), info.startImmediately);
         } else if (InvokeAfter.class.isAssignableFrom(anno)) {
             registerInvokeAfter(job, value);
         } else if (InvokeBefore.class.isAssignableFrom(anno)) {
@@ -114,12 +114,12 @@ public class JobAnnotationProcessor extends AppHolderBase<JobAnnotationProcessor
         JobTrigger.alongWith(targetJobId).register(job, manager);
     }
 
-    private void registerEvery(Job job, String expression) {
-        JobTrigger.every(expression).register(job, manager);
+    private void registerEvery(Job job, String expression, boolean startImmediately) {
+        JobTrigger.every(expression, startImmediately).register(job, manager);
     }
 
-    private void registerFixedDelay(Job job, String expression) {
-        JobTrigger.fixedDelay(expression).register(job, manager);
+    private void registerFixedDelay(Job job, String expression, boolean startImmediately) {
+        JobTrigger.fixedDelay(expression, startImmediately).register(job, manager);
     }
 
     private void registerInvokeAfter(Job job, String targetJobId) {

@@ -55,4 +55,13 @@ public @interface FixedDelay {
      * @return the job id
      */
     String id() default "";
+
+    /**
+     * Specify the job shall start immediately after app started.
+     *
+     * Default value is `true`.
+     *
+     * @return whether the job shall start immediately after the app started
+     */
+    boolean startImmediately() default true;
 }

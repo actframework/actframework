@@ -21,29 +21,35 @@ package act.job.bytecode;
  */
 
 import act.app.event.AppEventId;
-import act.util.AnnotationUtil;
 import com.alibaba.fastjson.JSON;
 import org.osgl.$;
 
 import java.lang.annotation.Annotation;
+
+import static act.util.AnnotationUtil.tryGetDefaultValue;
 
 public class JobAnnoInfo {
     public String value;
     public AppEventId appEventId;
     public boolean async;
     public String id;
+    public boolean startImmediately;
     public Class<? extends Annotation> annotationType;
 
     JobAnnoInfo (Class <? extends Annotation> annoType) {
         this.annotationType = annoType;
-        Object v = AnnotationUtil.tryGetDefaultValue(annoType, "value");
+        Object v = tryGetDefaultValue(annoType, "value");
         if (v instanceof String) {
             this.value = (String) v;
         } else if (v instanceof AppEventId) {
             this.appEventId = (AppEventId) v;
         }
-        this.async = $.bool((Boolean) AnnotationUtil.tryGetDefaultValue(annoType, "async"));
-        this.id = (String) AnnotationUtil.tryGetDefaultValue(annoType, "id");
+        v = tryGetDefaultValue(annoType, "startImmediately");
+        if (null != v) {
+            this.startImmediately = $.bool(v);
+        }
+        this.async = $.bool((Boolean) tryGetDefaultValue(annoType, "async"));
+        this.id = (String) tryGetDefaultValue(annoType, "id");
     }
 
     @Override
