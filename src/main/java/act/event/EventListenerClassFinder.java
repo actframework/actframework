@@ -56,7 +56,7 @@ public class EventListenerClassFinder extends SubTypeFinder<ActEventListener> {
         Type[] ca = ptype.getActualTypeArguments();
         for (Type t : ca) {
             if (t instanceof Class) {
-                final Class tc = (Class) t;
+                final Class<? extends EventObject> tc = $.cast(t);
                 if (AppEvent.class.isAssignableFrom(tc)) {
                     AppEvent prototype = $.cast($.newInstance(tc, app));
                     AppEventListener listener = $.cast(app.getInstance(target));
@@ -64,6 +64,9 @@ public class EventListenerClassFinder extends SubTypeFinder<ActEventListener> {
                 } else if (ActEvent.class.isAssignableFrom(tc)) {
                     AppEventId bindOn = AppEventId.START;
                     BindOn bindOnSpec = target.getAnnotation(BindOn.class);
+                    if (null == bindOnSpec) {
+                        bindOnSpec = tc.getAnnotation(BindOn.class);
+                    }
                     if (null != bindOnSpec) {
                         bindOn = bindOnSpec.value();
                     }

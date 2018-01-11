@@ -120,7 +120,7 @@ public class DbServiceManager extends AppServiceBase<DbServiceManager> implement
         } else {
             eventBus.bind(DbServiceInitialized.class, new ActEventListenerBase<DbServiceInitialized>() {
                 @Override
-                public void on(DbServiceInitialized event) throws Exception {
+                public void on(DbServiceInitialized event) {
                     asyncInitializers.remove(event.source());
                     if (asyncInitializers.isEmpty()) {
                         daoInitializer.run();

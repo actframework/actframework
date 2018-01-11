@@ -47,7 +47,7 @@ public class ReflectedJobInvoker<M extends JobMethodMetaInfo> extends $.F0<Objec
     private App app;
     private ClassLoader cl;
     private JobClassMetaInfo classInfo;
-    private Class<?> jobClass;
+    private volatile Class<?> jobClass;
     private MethodAccess methodAccess;
     private M methodInfo;
     private int methodIndex;
@@ -65,7 +65,10 @@ public class ReflectedJobInvoker<M extends JobMethodMetaInfo> extends $.F0<Objec
         this.isStatic = handlerMetaInfo.isStatic();
     }
 
-    private void init() {
+    private synchronized void init() {
+        if (null != jobClass) {
+            return;
+        }
         disabled = false;
         jobClass = $.classForName(classInfo.className(), cl);
         disabled = disabled || !Env.matches(jobClass);

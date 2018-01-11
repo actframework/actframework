@@ -21,28 +21,31 @@ package act.data;
  */
 
 import act.conf.AppConfig;
-import org.osgl.logging.L;
-import org.osgl.logging.Logger;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import java.util.Date;
+import java.sql.Timestamp;
 
 @Singleton
-public class DateResolver extends DateResolverBase<Date> {
-    static Logger logger = L.get(DateResolver.class);
+public class SqlTimestampResolver extends DateResolverBase<Timestamp> {
 
     @Inject
-    public DateResolver(AppConfig config) {
+    public SqlTimestampResolver(AppConfig config) {
         super(config);
     }
 
-    public DateResolver(String pattern) {
+    public SqlTimestampResolver(String pattern) {
         super(pattern);
     }
 
     @Override
-    protected Date cast(Date date) {
-        return date;
+    protected String configuredPattern(AppConfig config) {
+        return config.dateTimeFormat();
     }
+
+    @Override
+    protected Timestamp cast(java.util.Date date) {
+        return new Timestamp(date.getTime());
+    }
+
 }

@@ -146,6 +146,9 @@ public class Tags extends DestroyableBase {
                 return;
             }
             if (Act.isDev()) {
+                if (!path.startsWith("/")) {
+                    path = '/' + path;
+                }
                 path = path + (path.contains("?") ? '&' : '?');
                 path = path + "ts=" + $.ms();
             } else {

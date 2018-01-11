@@ -109,6 +109,15 @@ public enum AppConfigKey implements ConfigKey {
     CACHE_NAME_SESSION("cache.name.session"),
 
     /**
+     * `cacheFor.dev.enabled`
+     *
+     * Specify whether `@CacheFor` annotation effective on `dev` mode.
+     *
+     * Default value: `false`
+     */
+    CACHE_FOR_ON_DEV("cacheFor.dev"),
+
+    /**
      * {@code act.cli.enabled}
      *
      * Turn on/off CLI server support

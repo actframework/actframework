@@ -26,23 +26,23 @@ import org.osgl.logging.Logger;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import java.util.Date;
+import java.sql.Date;
 
 @Singleton
-public class DateResolver extends DateResolverBase<Date> {
-    static Logger logger = L.get(DateResolver.class);
+public class SqlDateResolver extends DateResolverBase<Date> {
+    static Logger logger = L.get(SqlDateResolver.class);
 
     @Inject
-    public DateResolver(AppConfig config) {
+    public SqlDateResolver(AppConfig config) {
         super(config);
     }
 
-    public DateResolver(String pattern) {
+    public SqlDateResolver(String pattern) {
         super(pattern);
     }
 
     @Override
-    protected Date cast(Date date) {
-        return date;
+    protected Date cast(java.util.Date date) {
+        return new Date(date.getTime());
     }
 }

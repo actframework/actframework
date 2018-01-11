@@ -3,11 +3,20 @@
 **1.7.0**
 * Support plugin JAX-RS #448
 
-**1.6.2 TBD**
+**1.6.2 11/Jan/2018**
+* Add string resolver for `java.sql.Date` and `java.sql.Timestamp` #460
+* Make default Date format be date instead of date and time #459
 * Make `ResourceLoader` support URL type #457
 * Fault response for `txt/plain` response #456
-* Some view engine caused browser always loading when running in prod mode #447
+* Turn off `@CacheFor ` on `dev` mode #455
+* Support `X-Forwarded-For` to allow app get real remote ip when app is behind a reverse proxy #454
+* Customized `EbeanConfigLoaded` event listener not triggered #453
+* Param binding failure for `java.sql.TimeStamp` typed parameter #452
+* Allow it configure the first time the `@Every` job be invoked #451
+* `@Every` without specifying the time failed #450
 * Param binding - it shall not try to get provider for simple types. #449
+* Some view engine caused browser always loading when running in prod mode #447
+* rythm tag @resource @asset generated path shall start with `/` #445
 
 **1.6.1 06/Jan/2018**
 * Router - avoid regex matching when possible #442

@@ -123,7 +123,7 @@ public abstract class JobTrigger {
         if (S.blank(delay)) {
             throw E.invalidConfiguration("Cannot find configuration for delay: %s", anno.value());
         }
-        return fixedDelay(delay);
+        return fixedDelay(delay, anno.startImmediately());
     }
 
     static JobTrigger of(AppConfig config, Every anno) {
@@ -137,7 +137,7 @@ public abstract class JobTrigger {
         if (S.blank(duration)) {
             throw E.invalidConfiguration("Cannot find configuration for duration: %s", anno.value());
         }
-        return every(duration);
+        return every(duration, anno.startImmediately());
     }
 
     static JobTrigger of(AppConfig config, AlongWith anno) {
@@ -162,28 +162,28 @@ public abstract class JobTrigger {
         return new _Cron(expression);
     }
 
-    static JobTrigger fixedDelay(String duration) {
-        return new _FixedDelay(duration);
+    static JobTrigger fixedDelay(String duration, boolean startImmediately) {
+        return new _FixedDelay(duration, startImmediately);
     }
 
-    static JobTrigger fixedDelay(long seconds) {
-        return new _FixedDelay(seconds);
+    static JobTrigger fixedDelay(long seconds, boolean startImmediately) {
+        return new _FixedDelay(seconds, startImmediately);
     }
 
-    static JobTrigger fixedDelay(long interval, TimeUnit timeUnit) {
-        return new _FixedDelay(timeUnit.toSeconds(interval));
+    static JobTrigger fixedDelay(long interval, TimeUnit timeUnit, boolean startImmediately) {
+        return new _FixedDelay(timeUnit.toSeconds(interval), startImmediately);
     }
 
-    static JobTrigger every(String duration) {
-        return new _Every(duration);
+    static JobTrigger every(String duration, boolean startImmediately) {
+        return new _Every(duration, startImmediately);
     }
 
-    static JobTrigger every(long seconds) {
-        return new _Every(seconds, TimeUnit.SECONDS);
+    static JobTrigger every(long seconds, boolean startImmediately) {
+        return new _Every(seconds, TimeUnit.SECONDS, startImmediately);
     }
 
-    static JobTrigger every(long duration, TimeUnit timeUnit) {
-        return new _Every(duration, timeUnit);
+    static JobTrigger every(long duration, TimeUnit timeUnit, boolean startImmediately) {
+        return new _Every(duration, timeUnit, startImmediately);
     }
 
     static JobTrigger onAppStart(boolean async) {
@@ -198,8 +198,8 @@ public abstract class JobTrigger {
         return async ? alongWith(eventId) : after(eventId);
     }
 
-    static JobTrigger delayForSeconds(long seconds) {
-        return new _FixedDelay(seconds);
+    static JobTrigger delayForSeconds(long seconds, boolean startImmediately) {
+        return new _FixedDelay(seconds, startImmediately);
     }
 
     static JobTrigger alongWith(String jobId) {
@@ -270,23 +270,52 @@ public abstract class JobTrigger {
 
     private abstract static class _Periodical extends JobTrigger {
         protected long seconds;
-        _Periodical(String duration) {
+        protected boolean startImmediately;
+        _Periodical(String duration, boolean startImmediately) {
             E.illegalArgumentIf(S.blank(duration), "delay duration shall not be empty");
             seconds = Time.parseDuration(duration);
             E.illegalArgumentIf(seconds < 1, "delay duration shall not be zero or negative number");
+            this.startImmediately = startImmediately;
         }
-        _Periodical(long seconds) {
+        _Periodical(long seconds, boolean startImmediately) {
             E.illegalArgumentIf(seconds < 1, "delay duration cannot be zero or negative");
             this.seconds = seconds;
+            this.startImmediately = startImmediately;
         }
+
+        @Override
+        final void schedule(final AppJobManager manager, final Job job) {
+            traceSchedule(job);
+            App app = manager.app();
+            if (!app.isStarted()) {
+                app.eventBus().bindAsync(AppEventId.POST_START, new AppEventListenerBase() {
+                    @Override
+                    public void on(EventObject event) {
+                        runAndSchedule(manager, job);
+                    }
+                });
+            } else {
+                runAndSchedule(manager, job);
+            }
+        }
+
+        protected abstract void delayedSchedule(AppJobManager manager, Job job);
+
+        protected void runAndSchedule(AppJobManager manager, Job job) {
+            if (startImmediately) {
+                manager.now(job);
+            }
+            delayedSchedule(manager, job);
+        }
+
     }
 
     private static class _FixedDelay extends _Periodical {
-        _FixedDelay(String duration) {
-            super(duration);
+        _FixedDelay(String duration, boolean startImmediately) {
+            super(duration, startImmediately);
         }
-        _FixedDelay(long seconds) {
-            super(seconds);
+        _FixedDelay(long seconds, boolean startImmediately) {
+            super(seconds, startImmediately);
         }
 
         @Override
@@ -295,22 +324,7 @@ public abstract class JobTrigger {
         }
 
         @Override
-        void schedule(final AppJobManager manager, final Job job) {
-            traceSchedule(job);
-            App app = manager.app();
-            if (!app.isStarted()) {
-                app.eventBus().bindAsync(AppEventId.POST_START, new AppEventListenerBase() {
-                    @Override
-                    public void on(EventObject event) throws Exception {
-                        delayedSchedule(manager, job);
-                    }
-                });
-            } else {
-                delayedSchedule(manager, job);
-            }
-        }
-
-        private void delayedSchedule(AppJobManager manager, Job job) {
+        protected void delayedSchedule(AppJobManager manager, Job job) {
             ScheduledThreadPoolExecutor executor = manager.executor();
             ScheduledFuture future = executor.scheduleWithFixedDelay(job, seconds, seconds, TimeUnit.SECONDS);
             manager.futureScheduled(job.id(), future);
@@ -318,12 +332,12 @@ public abstract class JobTrigger {
     }
 
     private static class _Every extends _Periodical {
-        _Every(String duration) {
-            super(duration);
+        _Every(String duration, boolean startImmediately) {
+            super(duration, startImmediately);
         }
 
-        _Every(long duration, TimeUnit timeUnit) {
-            super(timeUnit.toSeconds(duration));
+        _Every(long duration, TimeUnit timeUnit, boolean startImmediately) {
+            super(timeUnit.toSeconds(duration), startImmediately);
         }
 
         @Override
@@ -332,22 +346,7 @@ public abstract class JobTrigger {
         }
 
         @Override
-        void schedule(final AppJobManager manager, final Job job) {
-            traceSchedule(job);
-            App app = manager.app();
-            if (!app.isStarted()) {
-                app.eventBus().bindAsync(AppEventId.POST_START, new AppEventListenerBase() {
-                    @Override
-                    public void on(EventObject event) throws Exception {
-                        delayedSchedule(manager, job);
-                    }
-                });
-            } else {
-                delayedSchedule(manager, job);
-            }
-        }
-
-        private void delayedSchedule(AppJobManager manager, Job job) {
+        protected void delayedSchedule(AppJobManager manager, Job job) {
             ScheduledThreadPoolExecutor executor = manager.executor();
             ScheduledFuture future = executor.scheduleAtFixedRate(job, seconds, seconds, TimeUnit.SECONDS);
             manager.futureScheduled(job.id(), future);
