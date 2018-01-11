@@ -8,7 +8,7 @@
 
 ## Install
 
-Add the following dependency into your `pom.xml` file
+Add `act-starter-parent` into into your `pom.xml` file
 
 ```xml
   <parent>
