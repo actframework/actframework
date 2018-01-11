@@ -11,21 +11,17 @@
 Add the following dependency into your `pom.xml` file
 
 ```xml
-<dependency>
-  <groupId>org.actframework</groupId>
-  <artifactId>act</artifactId>
-  <version>${current-version}</version>
-</dependency>
+  <parent>
+    <groupId>org.actframework</groupId>
+    <artifactId>act-starter-parent</artifactId>
+    <version>1.6.2.0</version>
+  </parent>
 ```
 
-Add the following snippet into your `pom.xml` file if you want to get SNAPSHOT version:
+Or you can start ActFramework from scratch by using [act-starter-kit](https://github.com/actframework/act-starter-kit):
 
-```xml
-<parent>
-  <groupId>org.sonatype.oss</groupId>
-  <artifactId>oss-parent</artifactId>
-  <version>7</version>
-</parent>
+```bash
+wget https://github.com/actframework/act-starter-kit/archive/master.zip && unzip master.zip && ./act-starter-kit-master/act-new.sh
 ```
 
 ## Features
@@ -205,7 +201,7 @@ public class User extends MorphiaAdaptiveRecord<User> {
     }
 
     public static void main(String[] args) throws Exception {
-        Act.start("RESTful Demo");
+        Act.start();
     }
 
 }
