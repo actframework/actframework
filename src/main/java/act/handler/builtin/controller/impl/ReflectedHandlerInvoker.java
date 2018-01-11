@@ -24,6 +24,7 @@ import act.Act;
 import act.app.ActionContext;
 import act.app.App;
 import act.app.AppClassLoader;
+import act.conf.AppConfig;
 import act.controller.CacheSupportMetaInfo;
 import act.controller.Controller;
 import act.controller.annotation.HandleCsrfFailure;
@@ -44,8 +45,8 @@ import act.inject.param.ParamValueLoaderService;
 import act.job.AppJobManager;
 import act.job.TrackableWorker;
 import act.security.CORS;
-import act.security.CSRF;
 import act.security.CSP;
+import act.security.CSRF;
 import act.sys.Env;
 import act.util.*;
 import act.view.*;
@@ -257,7 +258,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
                 method.isAnnotationPresent(NoImplicitTemplateVariable.class));
 
         initOutputVariables();
-        initCacheParams();
+        initCacheParams(app.config());
         initMissingAuthenticationAndCsrfCheckHandler();
     }
 
@@ -600,7 +601,11 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         return inst;
     }
 
-    private void initCacheParams() {
+    private void initCacheParams(AppConfig config) {
+        if (Act.isDev() && !config.cacheForOnDevMode()) {
+            cacheSupport = CacheSupportMetaInfo.disabled();
+            return;
+        }
         CacheFor cacheFor = method.getAnnotation(CacheFor.class);
         cacheSupport = null == cacheFor ? CacheSupportMetaInfo.disabled() :  CacheSupportMetaInfo.enabled(
                 new CacheKeyBuilder(cacheFor, S.concat(controllerClass.getName(), ".", method.getName())),

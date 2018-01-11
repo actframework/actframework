@@ -209,6 +209,24 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         }
     }
 
+    private Boolean cacheForOnDev;
+    protected T enableCacheForOnDevMode() {
+        cacheForOnDev = false;
+        return me();
+    }
+    public boolean cacheForOnDevMode() {
+        if (null == cacheForOnDev) {
+            cacheForOnDev = get(CACHE_FOR_ON_DEV, false);
+        }
+        return cacheForOnDev;
+    }
+    private void _mergeCacheForOnDev(AppConfig config){
+        if (!hasConfiguration(CACHE_FOR_ON_DEV)) {
+            cacheForOnDev = config.cacheForOnDev;
+        }
+    }
+
+
     private Boolean cors;
 
     protected T enableCors(boolean b) {
