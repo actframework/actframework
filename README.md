@@ -6,10 +6,6 @@
 [![Build Status](https://travis-ci.org/actframework/actframework.svg?branch=1.4)](https://travis-ci.org/actframework/actframework)
 [![Javadocs](http://www.javadoc.io/badge/org.actframework/act.svg?color=blue)](http://www.javadoc.io/doc/org.actframework/act)
 
-## Project status
-
-- Current stable version: 1.6.0
-
 ## Install
 
 Add the following dependency into your `pom.xml` file
