@@ -23,10 +23,10 @@ package act.job;
 import act.app.App;
 import act.app.AppHolderBase;
 import act.app.event.AppEventId;
+import act.job.bytecode.JobAnnoInfo;
 import act.job.bytecode.ReflectedJobInvoker;
 import act.job.meta.JobClassMetaInfo;
 import act.job.meta.JobMethodMetaInfo;
-import org.osgl.$;
 import org.osgl.logging.LogManager;
 import org.osgl.logging.Logger;
 import org.osgl.util.E;
@@ -46,9 +46,9 @@ public class JobAnnotationProcessor extends AppHolderBase<JobAnnotationProcessor
         manager = app.jobManager();
     }
 
-    public void register(final JobMethodMetaInfo method, final Class<? extends Annotation> anno, final Object v) {
+    public void register(final JobMethodMetaInfo method, final Class<? extends Annotation> anno, final JobAnnoInfo info) {
         if (LOGGER.isTraceEnabled()) {
-            LOGGER.trace("register job[%s] on anno[%s] with arg[%s]", method, anno, v);
+            LOGGER.trace("register job[%s] on anno[%s] with arg[%s]", method, anno, info);
         }
         if (isAbstract(method)) {
             app().jobManager().on(AppEventId.SINGLETON_PROVISIONED, new Runnable() {
@@ -56,42 +56,34 @@ public class JobAnnotationProcessor extends AppHolderBase<JobAnnotationProcessor
                 public void run() {
                     List<JobMethodMetaInfo> list = method.extendedJobMethodMetaInfoList(app());
                     for (JobMethodMetaInfo subMethodInfo : list) {
-                        register(subMethodInfo, anno, v);
+                        register(subMethodInfo, anno, info);
                     }
                 }
             });
             return;
         }
         Job job = createMethodJob(method);
+        String value = info.value;
         if (Cron.class.isAssignableFrom(anno)) {
-            registerCron(job, evaluateExpression(v.toString(), anno));
+            registerCron(job, evaluateExpression(value, anno));
         } else if (AlongWith.class.isAssignableFrom(anno)) {
-            registerAlongWith(job, v.toString());
+            registerAlongWith(job, value);
         } else if (Every.class.isAssignableFrom(anno)) {
-            registerEvery(job, evaluateExpression(v.toString(), anno));
+            registerEvery(job, evaluateExpression(value, anno));
         } else if (FixedDelay.class.isAssignableFrom(anno)) {
-            registerFixedDelay(job, evaluateExpression(v.toString(), anno));
+            registerFixedDelay(job, evaluateExpression(value, anno));
         } else if (InvokeAfter.class.isAssignableFrom(anno)) {
-            registerInvokeAfter(job, v.toString());
+            registerInvokeAfter(job, value);
         } else if (InvokeBefore.class.isAssignableFrom(anno)) {
-            registerInvokeBefore(job, v.toString());
+            registerInvokeBefore(job, value);
         } else if (OnAppStart.class.isAssignableFrom(anno)) {
-            boolean async = null == v ? false : (Boolean)v;
+            boolean async = info.async;
             registerOnAppStart(job, async);
         } else if (OnAppStop.class.isAssignableFrom(anno)) {
-            boolean async = null == v ? false : (Boolean) v;
+            boolean async = info.async;
             registerOnAppStop(job, async);
         } else if (OnAppEvent.class.isAssignableFrom(anno)) {
-            boolean async = false;
-            AppEventId appEventId;
-            if (v instanceof $.T2) {
-                $.T2<AppEventId, Boolean> t2 = $.cast(v);
-                appEventId = t2._1;
-                async = t2._2;
-            } else {
-                appEventId = $.cast(v);
-            }
-            registerOnAppEvent(job, appEventId, async);
+            registerOnAppEvent(job, info.appEventId, info.async);
         } else {
             throw E.unsupport("Unknown job annotation class: %s", anno.getName());
         }

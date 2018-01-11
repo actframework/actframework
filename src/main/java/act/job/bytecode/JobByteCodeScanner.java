@@ -196,8 +196,8 @@ public class JobByteCodeScanner extends AppByteCodeScannerBase {
 
             private class ActionAnnotationVisitor extends AnnotationVisitor implements Opcodes {
 
-                List<AnnoInfo> annoInfos = new ArrayList<>();
-                AnnoInfo currentInfo;
+                List<JobAnnoInfo> annoInfos = new ArrayList<>();
+                JobAnnoInfo currentInfo;
                 JobMethodMetaInfo method;
 
                 public ActionAnnotationVisitor(AnnotationVisitor av, Class<? extends Annotation> c, JobMethodMetaInfo methodMetaInfo) {
@@ -207,14 +207,14 @@ public class JobByteCodeScanner extends AppByteCodeScannerBase {
                 }
 
                 void add(Class<? extends Annotation> annotationClass) {
-                    currentInfo = new AnnoInfo(annotationClass);
+                    currentInfo = new JobAnnoInfo(annotationClass);
                     annoInfos.add(currentInfo);
                 }
 
                 @Override
                 public void visitEnum(String name, String desc, String value) {
                     if (desc.contains("AppEventId")) {
-                        this.currentInfo.value = AppEventId.valueOf(value);
+                        this.currentInfo.appEventId = AppEventId.valueOf(value);
                     }
                     super.visitEnum(name, desc, value);
                 }
@@ -222,9 +222,9 @@ public class JobByteCodeScanner extends AppByteCodeScannerBase {
                 @Override
                 public void visit(String name, Object value) {
                     if ("value".equals(name)) {
-                        this.currentInfo.value = value;
+                        this.currentInfo.value = value.toString();
                     } else if ("async".equals(name)) {
-                        this.currentInfo.async = value;
+                        this.currentInfo.async = $.bool(value);
                     } else if ("id".equals(name)) {
                         this.method.id(S.string(value));
                     }
@@ -232,28 +232,11 @@ public class JobByteCodeScanner extends AppByteCodeScannerBase {
                 }
 
                 public void doRegistration() {
-                    for (AnnoInfo info : annoInfos) {
-                        Object value = info.value;
-                        Object async = info.async;
-                        if (value != null && async != null) {
-                            value = $.T2(value, async);
-                        } else if (value == null) {
-                            value = async;
-                        }
-                        annotationProcessor.register(method, info.annotationType, value);
+                    for (JobAnnoInfo info : annoInfos) {
+                        annotationProcessor.register(method, info.annotationType, info);
                     }
                 }
             }
-        }
-    }
-
-    private static class AnnoInfo {
-        Object value;
-        Object async;
-        Class<? extends Annotation> annotationType;
-
-        AnnoInfo(Class <? extends Annotation> annoType) {
-            this.annotationType = annoType;
         }
     }
 

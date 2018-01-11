@@ -7,6 +7,7 @@
 * Fault response for `txt/plain` response #456
 * Support `X-Forwarded-For` to allow app get real remote ip when app is behind a reverse proxy #454
 * Param binding failure for `java.sql.TimeStamp` typed parameter #452
+* `@Every` without specifying the time failed #450
 * Some view engine caused browser always loading when running in prod mode #447
 * Param binding - it shall not try to get provider for simple types. #449
 

@@ -20,7 +20,10 @@ package act.util;
  * #L%
  */
 
+import org.osgl.$;
+
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
 
 public class AnnotationUtil {
     public static <T extends Annotation> T declaredAnnotation(Class c, Class<T> annoClass) {
@@ -71,5 +74,19 @@ public class AnnotationUtil {
         }
         targetClass = targetClass.getSuperclass();
         return null != targetClass ? getAnnotation(targetClass, annotationClass) : null;
+    }
+
+    public static Object defaultValue(Class<? extends Annotation> annoType, String methodName) {
+        Method method = $.getMethod(annoType, methodName);
+        return method.getDefaultValue();
+    }
+
+    public static Object tryGetDefaultValue(Class<? extends Annotation> annoType, String methodName) {
+        try {
+            return defaultValue(annoType, methodName);
+        } catch (Exception e) {
+            // ignore it
+            return null;
+        }
     }
 }
