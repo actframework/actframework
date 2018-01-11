@@ -6,6 +6,7 @@
 * Make `ResourceLoader` support URL type #457
 * Fault response for `txt/plain` response #456
 * Support `X-Forwarded-For` to allow app get real remote ip when app is behind a reverse proxy #454
+* Customized `EbeanConfigLoaded` event listener not triggered #453
 * Param binding failure for `java.sql.TimeStamp` typed parameter #452
 * Allow it configure the first time the `@Every` job be invoked #451
 * `@Every` without specifying the time failed #450
