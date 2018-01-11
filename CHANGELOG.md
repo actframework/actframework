@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 **1.6.2 TBD**
+* Add string resolver for `java.sql.Date` and `java.sql.Timestamp` #460
 * Make default Date format be date instead of date and time #459
 * Make `ResourceLoader` support URL type #457
 * Fault response for `txt/plain` response #456
