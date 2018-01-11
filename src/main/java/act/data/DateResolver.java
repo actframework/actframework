@@ -38,12 +38,14 @@ public class DateResolver extends StringValueResolver<Date> {
     static Logger logger = L.get(DateResolver.class);
 
     private DateFormat dateFormat;
+    private DateFormat dateFormat2;
 
     @Inject
     public DateResolver(AppConfig config) {
-        String pattern = config.dateTimeFormat();
+        String pattern = config.dateFormat();
         if (null == pattern || pattern.contains("8601") || pattern.contains("iso")) {
-            dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssX");
+            dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
+            dateFormat2 = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
         } else {
             dateFormat = new SimpleDateFormat(pattern);
         }
