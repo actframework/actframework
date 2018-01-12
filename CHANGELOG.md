@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 **1.7.0**
+* Update JPA api to 2.2
 * Support plugin JAX-RS #448
 
 **1.6.2 11/Jan/2018**
