@@ -20,6 +20,7 @@ package act.xio.undertow;
  * #L%
  */
 
+import act.ActResponse;
 import act.app.ActionContext;
 import io.undertow.io.*;
 import io.undertow.server.BlockingHttpExchange;
@@ -84,7 +85,7 @@ public class ActBlockingExchange implements BlockingHttpExchange {
                 UndertowRequest req = (UndertowRequest) ctx.req();
                 req.closeAndDrainRequest();
             } finally {
-                UndertowResponse resp = (UndertowResponse) ctx.resp();
+                ActResponse resp = ctx.resp();
                 resp.closeStreamAndWriter();
             }
         } else {

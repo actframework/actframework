@@ -74,6 +74,9 @@ import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
 import java.lang.reflect.Method;
+import java.net.Inet6Address;
+import java.net.InetAddress;
+import java.net.NetworkInterface;
 import java.net.URL;
 import java.util.List;
 import java.util.Map;
@@ -905,9 +908,14 @@ public final class Act {
         Method m = actClass.getDeclaredMethod("startup", byte[].class);
         m.setAccessible(true);
         $.invokeStatic(m, appDescriptor.toByteArray());
+        int port = $.invokeStatic(actClass, "httpPort");
+        LOGGER.info("app is ready at: http://%s:%s", getLocalIpAddr(), port);
         LOGGER.info("it takes %sms to start the app\n", $.ms() - ts);
     }
 
+    public static int httpPort() {
+        return app().config().httpPort();
+    }
 
     private static void shutdownAct() {
         clearPidFile();
@@ -988,9 +996,32 @@ public final class Act {
         return pidFile;
     }
 
+    // DONOT DELETE. this method is used by reflection
+    @SuppressWarnings("unused")
     private static void startup(byte[] appDescriptor) {
         AppDescriptor descriptor = AppDescriptor.deserializeFrom(appDescriptor);
         startup(descriptor);
+    }
+
+    private static String getLocalIpAddr() {
+        try {
+            for (NetworkInterface ni : C.list(NetworkInterface.getNetworkInterfaces())) {
+                if (ni.isLoopback() || !ni.isUp() || ni.isVirtual()) {
+                    continue;
+                }
+                for (InetAddress addr : C.list(ni.getInetAddresses())) {
+                    if (addr.isMulticastAddress() || addr.isLoopbackAddress() || addr.isLinkLocalAddress() || addr instanceof Inet6Address) {
+                        continue;
+                    }
+                    return (addr.getHostAddress());
+                }
+            }
+        } catch (Exception e) {
+            LOGGER.warn(e, "cannot determine local ip address");
+            return "localhost";
+        }
+        LOGGER.warn("cannot determine local ip address");
+        return "localhost";
     }
 
 

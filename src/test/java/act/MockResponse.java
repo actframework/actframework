@@ -83,6 +83,11 @@ public class MockResponse extends ActResponse<MockResponse> {
     }
 
     @Override
+    public void closeStreamAndWriter() {
+
+    }
+
+    @Override
     protected void _setContentType(String type) {
         this.contentType = type;
     }

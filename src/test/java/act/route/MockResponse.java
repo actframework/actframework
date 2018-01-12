@@ -87,4 +87,9 @@ public class MockResponse extends ActResponse<MockResponse> {
     public void commit() {
 
     }
+
+    @Override
+    public void closeStreamAndWriter() {
+
+    }
 }
