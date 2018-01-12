@@ -6,30 +6,22 @@
 [![Build Status](https://travis-ci.org/actframework/actframework.svg?branch=1.4)](https://travis-ci.org/actframework/actframework)
 [![Javadocs](http://www.javadoc.io/badge/org.actframework/act.svg?color=blue)](http://www.javadoc.io/doc/org.actframework/act)
 
-## Project status
-
-- Current stable version: 1.6.0
-
 ## Install
 
-Add the following dependency into your `pom.xml` file
+Add `act-starter-parent` into into your pom.xml file
 
 ```xml
-<dependency>
-  <groupId>org.actframework</groupId>
-  <artifactId>act</artifactId>
-  <version>${current-version}</version>
-</dependency>
+  <parent>
+    <groupId>org.actframework</groupId>
+    <artifactId>act-starter-parent</artifactId>
+    <version>1.6.2.1</version>
+  </parent>
 ```
 
-Add the following snippet into your `pom.xml` file if you want to get SNAPSHOT version:
+Or you can start ActFramework from scratch by using [act-starter-kit](https://github.com/actframework/act-starter-kit):
 
-```xml
-<parent>
-  <groupId>org.sonatype.oss</groupId>
-  <artifactId>oss-parent</artifactId>
-  <version>7</version>
-</parent>
+```bash
+wget https://github.com/actframework/act-starter-kit/archive/master.zip && unzip master.zip && ./act-starter-kit-master/act-new.sh
 ```
 
 ## Features
@@ -41,7 +33,7 @@ Add the following snippet into your `pom.xml` file if you want to get SNAPSHOT v
 - **Unbeatable development experience w/ great performance**
 
   - Never restart your app when you are developing. Act's dev mode provides hot reloading feature makes it the dream of every Java web app developer. Check out [this 3 mins video](https://www.youtube.com/watch?v=68Z-jTL6fDg) and feel it!
-  - According to [this 3rd party benchmark](https://github.com/networknt/microservices-framework-benchmark) Act beats most Java web framework on the market. In simple case Act can be 20 times faster than Springboot
+  - According to [TechEmpower Framework Benchmark](https://www.techempower.com/benchmarks/#section=data-r14&hw=ph&test=json&l=8vn05b&c=6&o=6) Act beats most full stack Java web framework on the market. In some cases Act can be over 10 times faster than Springboot
 
 - **Fully JSR330 Dependency Injection support**
 
@@ -53,6 +45,7 @@ Add the following snippet into your `pom.xml` file if you want to get SNAPSHOT v
   - [Awesome JSON/RESTful support](https://www.youtube.com/watch?v=B2RRSzYeo8c&t=4s)
   - [Built-in CORS support](http://actframework.org/doc/configuration.md#cors)
   - [Session/Header mapping](http://actframework.org/doc/configuration#session_mapper_impl) so you are not limited to cookie
+  - Built-in JWT support
 
 - **Uncompromising Security**
 
@@ -152,7 +145,7 @@ public class HelloWorldApp {
     }
 
     public static void main(String[] args) throws Exception {
-        Act.start("Hello World App");
+        Act.start();
     }
 
 }
@@ -209,7 +202,7 @@ public class User extends MorphiaAdaptiveRecord<User> {
     }
 
     public static void main(String[] args) throws Exception {
-        Act.start("RESTful Demo");
+        Act.start();
     }
 
 }
