@@ -551,7 +551,10 @@ public class Endpoint implements Comparable<Endpoint> {
                     try {
                         field.setAccessible(true);
                         val = generateSampleData(BeanSpec.of(field, Act.injector()), typeChain);
-                        field.set(obj, val);
+                        Class<?> valType = null == val ? null : val.getClass();
+                        if (null != valType && fieldType.isAssignableFrom(valType)) {
+                            field.set(obj, val);
+                        }
                     } catch (Exception e) {
                         LOGGER.warn("Error setting value[%s] to field[%s.%s]", val, type.getSimpleName(), field.getName());
                     }

@@ -122,7 +122,7 @@ public enum AppConfigKey implements ConfigKey {
      *
      * Turn on/off CLI server support
      *
-     * Default value: {@code true}
+     * Default value: `true` on dev mode and `false` on prod mode
      */
     CLI_ENABLED("cli.enabled"),
 

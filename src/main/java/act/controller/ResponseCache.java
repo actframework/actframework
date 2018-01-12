@@ -25,7 +25,8 @@ import org.osgl.$;
 import org.osgl.exception.UnexpectedIOException;
 import org.osgl.http.H;
 import org.osgl.storage.ISObject;
-import org.osgl.storage.impl.SObject;
+import org.osgl.util.Charsets;
+import org.osgl.util.IO;
 
 import java.io.OutputStream;
 import java.io.PrintWriter;
@@ -45,14 +46,15 @@ public class ResponseCache extends ActResponse implements Serializable {
     private Long len;
     private H.Status status;
 
-    private String content;
-    private byte[] binary;
+    private ByteBuffer buffer;
+    private OutputStreamCache osCache;
+    private WriterCache writerCache;
 
-    private transient H.Response realResponse;
+    private transient ActResponse realResponse;
 
     public ResponseCache() {}
 
-    public ResponseCache(H.Response realResponse) {
+    public ResponseCache(ActResponse realResponse) {
         this.realResponse = $.notNull(realResponse);
     }
 
@@ -79,10 +81,12 @@ public class ResponseCache extends ActResponse implements Serializable {
         if (null != status) {
             response.status(status);
         }
-        if (null != content) {
-            response.writeContent(content);
-        } else if (null != binary) {
-            response.writeBinary(SObject.of(binary));
+        if (null != buffer) {
+            response.writeContent(buffer.duplicate());
+        } else if (null != osCache) {
+            osCache.apply(response);
+        } else if (null != writerCache) {
+            writerCache.apply(response);
         }
     }
 
@@ -104,12 +108,14 @@ public class ResponseCache extends ActResponse implements Serializable {
 
     @Override
     public OutputStream outputStream() throws IllegalStateException, UnexpectedIOException {
-        return realResponse.outputStream();
+        osCache = new OutputStreamCache(realResponse.outputStream());
+        return osCache;
     }
 
     @Override
     public Writer writer() throws IllegalStateException, UnexpectedIOException {
-        return realResponse.writer();
+        writerCache = new WriterCache(realResponse.writer());
+        return writerCache;
     }
 
     @Override
@@ -197,14 +203,22 @@ public class ResponseCache extends ActResponse implements Serializable {
     @Override
     public H.Response writeBinary(ISObject binary) {
         realResponse.writeBinary(binary);
-        this.binary = binary.asByteArray();
+        byte[] ba = binary.asByteArray();
+        ByteBuffer buffer = ByteBuffer.allocateDirect(ba.length);
+        buffer.put(ba);
+        buffer.flip();
+        this.buffer = buffer;
         return this;
     }
 
     @Override
     public H.Response writeContent(String s) {
         realResponse.writeContent(s);
-        this.content = s;
+        byte[] ba = s.getBytes(Charsets.UTF_8);
+        ByteBuffer buffer = ByteBuffer.allocateDirect(ba.length);
+        buffer.put(ba);
+        buffer.flip();
+        this.buffer = buffer;
         return this;
     }
 
@@ -334,4 +348,13 @@ public class ResponseCache extends ActResponse implements Serializable {
         realResponse.commit();
     }
 
+    @Override
+    public void closeStreamAndWriter() {
+        if (null != writerCache) {
+            IO.close(writerCache);
+        } else if (null != osCache) {
+            IO.close(osCache);
+        }
+        realResponse.closeStreamAndWriter();
+    }
 }

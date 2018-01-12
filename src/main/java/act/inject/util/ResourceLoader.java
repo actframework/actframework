@@ -81,7 +81,11 @@ public class ResourceLoader<T> extends ValueLoader.Base<T> {
      * @return loaded resource or `null` if exception encountered.
      */
     public static <T> T load(String path, Class<T> type) {
-        return load(path, BeanSpec.of(type, injector));
+        return load(path, type, false);
+    }
+
+    public static <T> T load(String path, Class<T> type, boolean ignoreResourceNotFound) {
+        return load(path, BeanSpec.of(type, injector), ignoreResourceNotFound);
     }
 
     /**
@@ -95,9 +99,14 @@ public class ResourceLoader<T> extends ValueLoader.Base<T> {
      * @return loaded resource or `null` if exception encountered.
      */
     public static <T> T load(String path, TypeReference<T> typeReference) {
-        BeanSpec spec = BeanSpec.of(typeReference.getType(), injector);
-        return load(path, spec);
+        return load(path, typeReference, false);
     }
+
+    public static <T> T load(String path, TypeReference<T> typeReference, boolean ignoreResourceNotFound) {
+        BeanSpec spec = BeanSpec.of(typeReference.getType(), injector);
+        return load(path, spec, ignoreResourceNotFound);
+    }
+
 
     /**
      * Load resource content from given path into variable with
@@ -109,13 +118,19 @@ public class ResourceLoader<T> extends ValueLoader.Base<T> {
      * @throws UnexpectedException if return value type not supported
      */
     public static <T> T load(String resourcePath, BeanSpec spec) {
-        return $.cast(_load(resourcePath, spec));
+        return load(resourcePath, spec, false);
     }
 
-    protected static Object _load(String resourcePath, BeanSpec spec) {
+    public static <T> T load(String resourcePath, BeanSpec spec, boolean ignoreResourceNotFound) {
+        return $.cast(_load(resourcePath, spec, ignoreResourceNotFound));
+    }
+
+    protected static Object _load(String resourcePath, BeanSpec spec, boolean ignoreResourceNotFound) {
         URL url = loadResource(resourcePath);
         if (null == url) {
-            LOGGER.warn("resource not found: " + resourcePath);
+            if (!ignoreResourceNotFound) {
+                LOGGER.warn("resource not found: " + resourcePath);
+            }
             return null;
         }
         Class<?> rawType = spec.rawType();

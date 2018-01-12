@@ -96,6 +96,8 @@ public abstract class ActResponse<T extends ActResponse> extends H.Response<T> {
         header(H.Header.Names.CONTENT_TYPE, _getContentType());
     }
 
+    public abstract void closeStreamAndWriter();
+
     public boolean isClosed() {
         return closed;
     }

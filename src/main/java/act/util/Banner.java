@@ -218,9 +218,13 @@ public class Banner {
     }
 
     private static String poweredBy(int width, String actVersion, boolean center) {
-        String raw = S.concat("powered by @|bold ActFramework|@ ", actVersion);
-        String poweredBy = Ansi.ansi().render(raw).toString();
-        int pw = raw.length() - 9;
+        String poweredBy = "powered by ActFramework ";
+        int pw = poweredBy.length();
+        if (supportAnsi()) {
+            String raw = S.concat("powered by @|bold ActFramework|@ ", actVersion);
+            poweredBy = Ansi.ansi().render(raw).toString();
+            pw = raw.length() - 9;
+        }
         int gap = width - pw;
         gap = Math.max(gap, 0);
         if (gap == 0) {
@@ -230,6 +234,11 @@ public class Banner {
             gap = (gap + 1) / 2;
         }
         return S.concat(S.times(" ", gap), poweredBy);
+    }
+
+    private static boolean supportAnsi() {
+        // eclipse project does not support ansi
+        return !new File(".project").exists();
     }
 
 }

@@ -182,7 +182,7 @@ public class ViewManager extends DestroyableBase {
     }
 
     private Template getTemplate(ActContext context, AppConfig config, String path) {
-        Template template = templateCache.get(path);
+        Template template = cached(path);
         if (null != template) {
             return template;
         }
@@ -206,7 +206,7 @@ public class ViewManager extends DestroyableBase {
         }
         if (null != template) {
             context.cacheTemplate(template);
-            templateCache.put(path, template);
+            cache(path, template);
         }
         return template;
     }
@@ -252,6 +252,16 @@ public class ViewManager extends DestroyableBase {
                 return view.name().toUpperCase().equals(name.toUpperCase());
             }
         });
+    }
+
+    private Template cached(String key) {
+        return Act.isDev() ? null : templateCache.get(key);
+    }
+
+    private void cache(String key, Template template) {
+        if (Act.isProd()) {
+            templateCache.put(key, template);
+        }
     }
 
     /**

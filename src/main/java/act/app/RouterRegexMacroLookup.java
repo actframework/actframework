@@ -79,7 +79,7 @@ public class RouterRegexMacroLookup extends LogSupport {
         if (null == macroDefinitionFile) {
             macroDefinitionFile = MACRO_DEF_FILE;
         }
-        InputStream is = ConfigResourceLoader.load(macroDefinitionFile, InputStream.class);
+        InputStream is = ConfigResourceLoader.load(macroDefinitionFile, InputStream.class, true);
         if (null != is) {
             Properties properties = IO.loadProperties(is);
             this.macros.putAll((Map) properties);

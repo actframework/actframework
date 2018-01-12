@@ -4,6 +4,14 @@
 * Update JPA api to 2.2
 * Support plugin JAX-RS #448
 
+**1.6.3**
+* Template not reload after changed in `dev` mode #467
+* ApiManager prints a lot of warning messages #466
+* `ClassCastException` caused by `@CacheFor` #465
+* Show entry URL on the console #463
+* It displays control characters in the Eclipse console #462
+* Limit the access to CLI service #464
+
 **1.6.2 11/Jan/2018**
 * Add string resolver for `java.sql.Date` and `java.sql.Timestamp` #460
 * Make default Date format be date instead of date and time #459
