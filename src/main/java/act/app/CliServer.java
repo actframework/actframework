@@ -32,6 +32,7 @@ import org.osgl.util.C;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.List;
@@ -82,6 +83,12 @@ public class CliServer extends AppServiceBase<CliServer> implements Runnable {
             Socket socket;
             try {
                 socket = serverSocket.accept();
+                InetAddress addr = socket.getInetAddress();
+                if (!addr.isLoopbackAddress()) {
+                    logger.warn("remote connection request rejected: " + addr.getHostAddress());
+                    socket.close();
+                    continue;
+                }
                 CliSession session = new CliSession(socket, this);
                 sessions.put(session.id(), session);
                 executor.submit(session);
