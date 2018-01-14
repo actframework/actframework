@@ -23,8 +23,8 @@ package act.app;
 import act.util.SingletonBase;
 import org.joda.time.DateTime;
 import org.osgl.exception.ConfigurationException;
-import org.osgl.util.C;
 
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -37,7 +37,7 @@ public abstract class DaemonBase extends SingletonBase implements Daemon {
     private Exception lastError;
     private DateTime ts = DateTime.now();
     private DateTime errTs;
-    private Map<String, Object> attributes = C.newMap();
+    private Map<String, Object> attributes = new HashMap<>();
 
     @Override
     public final void restart() {
@@ -164,7 +164,7 @@ public abstract class DaemonBase extends SingletonBase implements Daemon {
     }
 
     public Map<String, Object> getAttributes() {
-        return C.newMap(attributes);
+        return attributes;
     }
 
     protected synchronized void onException(Exception e, String message, Object... args) {

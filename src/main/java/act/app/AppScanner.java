@@ -25,7 +25,6 @@ import act.internal.util.AppDescriptor;
 import org.osgl.$;
 import org.osgl.logging.L;
 import org.osgl.logging.Logger;
-import org.osgl.util.C;
 import org.osgl.util.E;
 import org.osgl.util.IO;
 import org.osgl.util.Iterators;
@@ -33,10 +32,7 @@ import org.osgl.util.Iterators;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 
 /**
  * Scan file system and construct {@link App} instances
@@ -48,8 +44,8 @@ public class AppScanner {
     public static AppScanner DEF_SCANNER = new AppScanner();
     public static AppScanner SINGLE_APP_SCANNER = new SingleAppScanner();
 
-    private final Map<String, ProjectLayoutProbe> buildFileProbeMap = C.newMap();
-    private final List<ProjectLayoutProbe> projectLayoutProbes = C.newList();
+    private final Map<String, ProjectLayoutProbe> buildFileProbeMap = new HashMap<>();
+    private final List<ProjectLayoutProbe> projectLayoutProbes = new ArrayList<>();
 
     protected AppScanner() {
     }

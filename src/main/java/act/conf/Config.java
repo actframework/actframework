@@ -209,7 +209,7 @@ public abstract class Config<E extends ConfigKey> extends DestroyableBase {
             namespace = namespace + ".";
         }
         String prefix2 = "act." + namespace;
-        Map<String, Object> subset = C.newMap();
+        Map<String, Object> subset = new HashMap<>();
         for (String key : raw.keySet()) {
             if (key.startsWith(namespace) || key.startsWith(prefix2)) {
                 Object o = raw.get(key);

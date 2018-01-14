@@ -125,7 +125,7 @@ public class JobByteCodeScanner extends AppByteCodeScannerBase {
                 this.access = access;
                 this.methodName = methodName;
                 Type[] arguments = Type.getArgumentTypes(desc);
-                paramTypes = C.newList();
+                paramTypes = new ArrayList<>();
                 if (null != arguments) {
                     for (Type type : arguments) {
                         paramTypes.add(type.getClassName());

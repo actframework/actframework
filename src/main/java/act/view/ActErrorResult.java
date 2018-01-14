@@ -33,11 +33,11 @@ import org.osgl.http.H;
 import org.osgl.mvc.annotation.ResponseStatus;
 import org.osgl.mvc.result.ErrorResult;
 import org.osgl.mvc.result.Result;
-import org.osgl.util.C;
 import org.osgl.util.E;
 import org.osgl.util.S;
 
 import javax.validation.ValidationException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -171,7 +171,7 @@ public class ActErrorResult extends ErrorResult implements ActError {
         populateSourceInfo(new RuntimeException());
     }
 
-    private static Map<Class<? extends Throwable>, $.Function<Throwable, Result>> x = C.newMap();
+    private static Map<Class<? extends Throwable>, $.Function<Throwable, Result>> x = new HashMap<>();
     static {
         $.Function<Throwable, Result> unsupported = new $.Transformer<Throwable, Result>() {
             @Override
@@ -200,7 +200,7 @@ public class ActErrorResult extends ErrorResult implements ActError {
         x.put(BindException.class, badRequest);
     }
 
-    private static Map<Class, Integer> userDefinedStatus = C.newMap();
+    private static Map<Class, Integer> userDefinedStatus = new HashMap<>();
 
     private static int userDefinedStatusCode(Class<? extends Throwable> exCls) {
         Integer I = userDefinedStatus.get(exCls);

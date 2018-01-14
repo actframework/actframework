@@ -37,6 +37,7 @@ import org.osgl.util.S;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -58,7 +59,7 @@ public class CommandMethodMetaInfo extends DestroyableBase {
     private InvokeType invokeType;
     private CommanderClassMetaInfo clsInfo;
     private PropertySpec.MetaInfo propertySpec;
-    private C.List<CommandParamMetaInfo> params = C.newList();
+    private List<CommandParamMetaInfo> params = new ArrayList<>();
     private ReturnTypeInfo returnType;
     private Set<String> optionLeads = C.newSet();
     private CliView view = CliView.TO_STRING;
@@ -120,7 +121,7 @@ public class CommandMethodMetaInfo extends DestroyableBase {
      * @see CliHandler#options()
      */
     public List<$.T2<String, String>> options(CommanderClassMetaInfo classMetaInfo, AppClassLoader classLoader) {
-        List<$.T2<String, String>> retVal = C.newList();
+        List<$.T2<String, String>> retVal = new ArrayList<>();
         for (CommandParamMetaInfo param : params) {
             OptionAnnoInfoBase opt = param.optionInfo();
             if (null != opt) {

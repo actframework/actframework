@@ -23,6 +23,7 @@ package act.internal.util;
 import org.osgl.util.C;
 import org.osgl.util.S;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -69,8 +70,8 @@ class NoisyWordsFilter {
      * @return
      *      filtered list of lowercase string tokens
      */
-    static C.List<String> filter(List<String> tokens) {
-        C.List<String> result = C.newList();
+    static List<String> filter(List<String> tokens) {
+        List<String> result = new ArrayList<>();
         Set<String> noise = noiseWords();
         for (String token : tokens) {
             if (S.blank(token)) {

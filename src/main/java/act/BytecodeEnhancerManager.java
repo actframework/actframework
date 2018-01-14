@@ -27,16 +27,16 @@ import act.util.AsmByteCodeEnhancer;
 import act.util.ByteCodeVisitor;
 import act.util.DestroyableBase;
 import org.osgl.$;
-import org.osgl.util.C;
 
 import javax.enterprise.context.ApplicationScoped;
+import java.util.ArrayList;
 import java.util.List;
 
 import static act.Destroyable.Util.tryDestroyAll;
 
 public class BytecodeEnhancerManager extends DestroyableBase {
-    private List<AppByteCodeEnhancer> appEnhancers = C.newList();
-    private List<AsmByteCodeEnhancer> generalEnhancers = C.newList();
+    private List<AppByteCodeEnhancer> appEnhancers = new ArrayList<>();
+    private List<AsmByteCodeEnhancer> generalEnhancers = new ArrayList<>();
 
     public BytecodeEnhancerManager() {
     }
@@ -64,7 +64,7 @@ public class BytecodeEnhancerManager extends DestroyableBase {
     }
 
     private List<AppByteCodeEnhancer> appFilter(App app, String className) {
-        List<AppByteCodeEnhancer> l = C.newList();
+        List<AppByteCodeEnhancer> l = new ArrayList<>();
         for (AppByteCodeEnhancer e : appEnhancers) {
             AppByteCodeEnhancer e0 = (AppByteCodeEnhancer) e.clone();
             e0.app(app);
@@ -76,7 +76,7 @@ public class BytecodeEnhancerManager extends DestroyableBase {
     }
 
     private List<AsmByteCodeEnhancer> generalFilter(String className) {
-        List<AsmByteCodeEnhancer> l = C.newList();
+        List<AsmByteCodeEnhancer> l = new ArrayList<>();
         for (AsmByteCodeEnhancer e : generalEnhancers) {
             AsmByteCodeEnhancer e0 = e.clone();
             if (e0.isTargetClass(className)) {

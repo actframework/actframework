@@ -64,7 +64,7 @@ public enum InterceptorType {
         return new InterceptorMethodMetaInfo(clsInfo);
     }
 
-    private static Map<Class<? extends Annotation>, InterceptorType> map = C.map(
+    private static Map<Class<? extends Annotation>, InterceptorType> map = C.Map(
             Before.class, BEFORE, After.class, AFTER,
             Catch.class, CATCH, Finally.class, FINALLY);
 

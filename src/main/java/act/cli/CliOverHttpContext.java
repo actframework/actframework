@@ -49,7 +49,7 @@ public class CliOverHttpContext extends CliContext {
                     val = val.replaceAll("[\n\r]+", "<br/>").trim();
                     if (val.contains(" ")) {
                         char quote = val.contains("\"") ? '\'' : '\\';
-                        val = S.quote(val, quote);
+                        val = S.wrap(val, quote);
                     }
                     if (s.contains(",")) {
                         s = S.before(s, ",");

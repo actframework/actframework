@@ -383,19 +383,23 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     }
 
     private String contentSecurityPolicy;
+    private boolean cspSet;
     protected T contentSecurityPolicy(String policy) {
         this.contentSecurityPolicy = policy;
+        cspSet = null != policy;
         return me();
     }
     public String contentSecurityPolicy() {
-        if (null == contentSecurityPolicy) {
+        if (!cspSet) {
             contentSecurityPolicy = get(CONTENT_SECURITY_POLICY, null);
+            cspSet = true;
         }
         return contentSecurityPolicy;
     }
     private void _mergeCsp(AppConfig conf) {
         if (!hasConfiguration(CONTENT_SECURITY_POLICY)) {
             contentSecurityPolicy = conf.contentSecurityPolicy;
+            cspSet = null != contentSecurityPolicy;
         }
     }
 
@@ -2285,7 +2289,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         if (S.blank(v)) {
             return C.list();
         } else {
-            List<File> files = C.newList();
+            List<File> files = new ArrayList<>();
             File base = app.base();
             for (String s: v.trim().split("[;:]+")) {
                 s = s.trim();

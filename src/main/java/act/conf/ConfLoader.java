@@ -42,7 +42,7 @@ import static act.conf.ConfigKey.KEY_COMMON_CONF_TAG;
 public abstract class ConfLoader<T extends Config> extends LogSupport {
 
     public T load() {
-        Map<String, ?> rawConf = C.newMap();
+        Map<String, ?> rawConf = new HashMap<>();
         Properties sysProps = System.getProperties();
         rawConf.putAll((Map) sysProps);
 
@@ -52,7 +52,7 @@ public abstract class ConfLoader<T extends Config> extends LogSupport {
 
     public T load(File resourceRoot) {
         // load conf from disk
-        Map<String, ?> rawConf = null == resourceRoot ? C.newMap() : loadConfFromDisk(resourceRoot);
+        Map<String, ?> rawConf = null == resourceRoot ? new HashMap<>() : loadConfFromDisk(resourceRoot);
 
         // load conf from System.properties
         Properties sysProps = System.getProperties();
@@ -167,7 +167,7 @@ public abstract class ConfLoader<T extends Config> extends LogSupport {
         } catch (IOException e) {
             warn(e, "error opening jar file: %s", jarFile);
         }
-        return C.newMap();
+        return new HashMap<>();
     }
 
     private boolean isAppProperties(String name, String profile) {
@@ -190,7 +190,7 @@ public abstract class ConfLoader<T extends Config> extends LogSupport {
         }
         if (!conf.canRead()) {
             logger.warn("Cannot read conf file[%s]", conf.getAbsolutePath());
-            return C.newMap();
+            return new HashMap<>();
         }
         InputStream is = IO.is(conf);
         Properties p = new Properties();
@@ -202,7 +202,7 @@ public abstract class ConfLoader<T extends Config> extends LogSupport {
         } finally {
             IO.close(is);
         }
-        return C.newMap();
+        return new HashMap<>();
     }
 
     // trim "act." from conf keys
@@ -218,10 +218,10 @@ public abstract class ConfLoader<T extends Config> extends LogSupport {
     private Map loadConfFromDir(File resourceDir) {
         if (!resourceDir.exists()) {
             logger.warn("Cannot read conf dir[%s]", resourceDir.getAbsolutePath());
-            return C.newMap();
+            return new HashMap<>();
         }
 
-        Map map = C.newMap();
+        Map map = new HashMap<>();
 
         /*
          * Load from resources root
@@ -265,9 +265,9 @@ public abstract class ConfLoader<T extends Config> extends LogSupport {
             }
         });
         if (null == confFiles) {
-            return C.map();
+            return C.Map();
         } else {
-            Map map = C.newMap();
+            Map map = new HashMap<>();
             int n = confFiles.length;
             for (int i = 0; i < n; ++i) {
                 map.putAll(loadConfFromFile(confFiles[i]));

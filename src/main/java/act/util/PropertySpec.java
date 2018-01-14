@@ -32,6 +32,7 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -224,7 +225,7 @@ public @interface PropertySpec {
         }
 
         public List<String> labels(List<String> outputs, ActContext context) {
-            List<String> retList = C.newList();
+            List<String> retList = new ArrayList<>();
             for (String f : outputs) {
                 retList.add(label(f, context));
             }

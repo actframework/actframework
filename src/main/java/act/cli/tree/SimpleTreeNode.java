@@ -24,6 +24,7 @@ import org.osgl.$;
 import org.osgl.util.C;
 import org.osgl.util.S;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -33,10 +34,10 @@ public class SimpleTreeNode implements TreeNode {
 
     private String id;
     private String label;
-    private C.List<TreeNode> children;
+    private List<TreeNode> children;
 
     public SimpleTreeNode() {
-        this.children = C.newList();
+        this.children = new ArrayList<>();
     }
 
     public SimpleTreeNode(String id) {

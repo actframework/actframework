@@ -33,6 +33,7 @@ import org.osgl.http.H;
 import org.osgl.util.C;
 import org.osgl.util.S;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -80,7 +81,7 @@ public class RouterAdmin {
 
                 @Override
                 public List<TreeNode> children() {
-                    List<TreeNode> l = C.newList();
+                    List<TreeNode> l = new ArrayList<>();
                     l.add(router._GET);
                     l.add(router._POST);
                     l.add(router._PUT);
@@ -98,7 +99,7 @@ public class RouterAdmin {
         final Router router = S.blank(portName) ? app.router() : app.router(portName);
         List<RouteInfo> list = router.debug();
         if (S.notBlank(q)) {
-            List<RouteInfo> toBeRemoved = C.newList();
+            List<RouteInfo> toBeRemoved = new ArrayList<>();
             for (RouteInfo info: list) {
                 if (info.path().matches(q) || S.string(info.handler()).matches(q)) {
                     continue;

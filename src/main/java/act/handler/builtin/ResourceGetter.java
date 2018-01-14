@@ -28,6 +28,7 @@ import act.handler.builtin.controller.FastRequestHandler;
 import org.osgl.$;
 import org.osgl.http.H;
 import org.osgl.mvc.result.NotFound;
+import org.osgl.util.E;
 import org.osgl.util.IO;
 import org.osgl.util.S;
 
@@ -68,6 +69,7 @@ public class ResourceGetter extends FastRequestHandler {
     private Map<String, Boolean> cachedFailures = new HashMap<>();
 
     public ResourceGetter(String base) {
+        E.illegalArgumentIf(S.blank(base), "empty resource string encountered");
         String path = S.ensureStartsWith(base, SEP);
         this.base = path;
         this.baseUrl = FileGetter.class.getResource(path);

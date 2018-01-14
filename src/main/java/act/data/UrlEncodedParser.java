@@ -63,7 +63,7 @@ public class UrlEncodedParser extends RequestBodyParser {
 
             // check if data is in JSON format
             if (data.startsWith("{") && data.endsWith("}") || data.startsWith("[") && data.endsWith("]")) {
-                return C.map(ActionContext.REQ_BODY, new String[]{data});
+                return C.Map(ActionContext.REQ_BODY, new String[]{data});
             }
 
             // data is o the form:

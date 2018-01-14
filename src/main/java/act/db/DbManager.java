@@ -22,13 +22,13 @@ package act.db;
 
 import act.util.DestroyableBase;
 import org.osgl.$;
-import org.osgl.util.C;
 
+import java.util.HashMap;
 import java.util.Map;
 
 public class DbManager extends DestroyableBase {
-    private Map<String, DbPlugin> plugins = C.newMap();
-    private Map<Class, TimestampGenerator> timestampGeneratorMap = C.newMap();
+    private Map<String, DbPlugin> plugins = new HashMap<>();
+    private Map<Class, TimestampGenerator> timestampGeneratorMap = new HashMap<>();
 
     synchronized void register(DbPlugin plugin) {
         plugins.put(plugin.getClass().getCanonicalName(), plugin);

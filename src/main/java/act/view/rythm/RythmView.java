@@ -35,6 +35,7 @@ import org.rythmengine.resource.ClasspathResourceLoader;
 import org.rythmengine.template.ITemplate;
 
 import java.io.File;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -150,7 +151,7 @@ public class RythmView extends View {
 
             @Override
             public Map<String, ?> getRenderArgDescriptions() {
-                Map<String, String> map = C.newMap();
+                Map<String, String> map = new HashMap<>();
                 for (VarDef var : Act.viewManager().implicitActionViewVariables()) {
                     map.put(var.name(), var.type());
                 }
@@ -165,7 +166,7 @@ public class RythmView extends View {
         });
 
         RythmEngine engine = new RythmEngine(p);
-        engine.resourceManager().addResourceLoader(new ClasspathResourceLoader(engine, "rythm"));
+        engine.resourceManager().prependResourceLoader(new ClasspathResourceLoader(engine, "rythm"));
 
         Tags tags = app.getInstance(Tags.class);
         tags.register(engine);

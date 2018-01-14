@@ -217,11 +217,11 @@ public class CommanderByteCodeScanner extends AppByteCodeScannerBase {
             private String signature;
             private boolean requireScan;
             private CommandMethodMetaInfo methodInfo;
-            private Map<Integer, ParamOptionAnnoInfo> optionAnnoInfoMap = C.newMap();
-            private Map<Integer, String> cliSessionAttributeMap = C.newMap();
+            private Map<Integer, ParamOptionAnnoInfo> optionAnnoInfoMap = new HashMap<>();
+            private Map<Integer, String> cliSessionAttributeMap = new HashMap<>();
             private BitSet contextInfo = new BitSet();
             private boolean isStatic;
-            private Map<Integer, Boolean> readFileContentFlags = C.newMap();
+            private Map<Integer, Boolean> readFileContentFlags = new HashMap<>();
             private Set<Integer> skipNaming = new HashSet<Integer>();
 
             private int paramIdShift = 0;
@@ -465,7 +465,7 @@ public class CommanderByteCodeScanner extends AppByteCodeScannerBase {
     }
 
     private static class OptionAnnotationVisitorBase extends AnnotationVisitor implements Opcodes {
-        protected List<String> specs = C.newList();
+        protected List<String> specs = new ArrayList<>();
         protected OptionAnnoInfoBase optionAnnoInfo;
 
         public OptionAnnotationVisitorBase(AnnotationVisitor av, boolean optional) {

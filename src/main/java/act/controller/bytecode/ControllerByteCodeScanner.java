@@ -330,9 +330,9 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
             private boolean disableJsonCircularRefDetect;
             private HandlerMethodMetaInfo methodInfo;
             private PropertySpec.MetaInfo propSpec;
-            List<String> paths = C.newList();
-            private Map<Integer, List<ParamAnnoInfoTrait>> paramAnnoInfoList = C.newMap();
-            private Map<Integer, List<GeneralAnnoInfo>> genericParamAnnoInfoList = C.newMap();
+            List<String> paths = new ArrayList<>();
+            private Map<Integer, List<ParamAnnoInfoTrait>> paramAnnoInfoList = new HashMap<>();
+            private Map<Integer, List<GeneralAnnoInfo>> genericParamAnnoInfoList = new HashMap<>();
             private BitSet contextInfo = new BitSet();
             private $.Var<Boolean> isVirtual = $.var(false);
             private HandlerWithAnnotationVisitor withAnnotationVisitor;
@@ -459,7 +459,7 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
                     GeneralAnnoInfo info = new GeneralAnnoInfo(type);
                     List<GeneralAnnoInfo> list = genericParamAnnoInfoList.get(parameter);
                     if (null == list) {
-                        list = C.newList();
+                        list = new ArrayList<>();
                         genericParamAnnoInfoList.put(parameter, list);
                     }
                     list.add(info);
@@ -669,7 +669,7 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
                 }
 
                 private class CatchValueVisitor extends AnnotationVisitor {
-                    List<String> exceptions = C.newList();
+                    List<String> exceptions = new ArrayList<>();
 
                     public CatchValueVisitor(AnnotationVisitor av) {
                         super(ASM5, av);
@@ -713,7 +713,8 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
 
             private class ActionAnnotationVisitor extends AnnotationVisitor implements Opcodes {
 
-                List<H.Method> httpMethods = C.newList();
+                List<H.Method> httpMethods = new ArrayList<>();
+                List<String> paths = new ArrayList<>();
                 boolean isUtil;
                 boolean isStatic;
                 boolean noDefPath;
@@ -795,7 +796,7 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
                 public void visitEnd() {
                     List<ParamAnnoInfoTrait> traits = paramAnnoInfoList.get(index);
                     if (null == traits) {
-                        traits = C.newList();
+                        traits = new ArrayList<>();
                         paramAnnoInfoList.put(index, traits);
                     } else {
                         for (ParamAnnoInfoTrait trait : traits) {
@@ -888,7 +889,7 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
         }
 
         private List<Router> routers() {
-            final List<Router> routers = C.newList();
+            final List<Router> routers = new ArrayList<>();
             if (null == ports || ports.length == 0) {
                 routers.add(app().router());
             } else {

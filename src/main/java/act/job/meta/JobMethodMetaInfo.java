@@ -32,11 +32,11 @@ import act.util.DestroyableBase;
 import org.osgl.$;
 import org.osgl.Osgl;
 import org.osgl.inject.BeanSpec;
-import org.osgl.util.C;
 import org.osgl.util.E;
 import org.osgl.util.S;
 
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.List;
 
 public class JobMethodMetaInfo extends DestroyableBase {
@@ -166,7 +166,7 @@ public class JobMethodMetaInfo extends DestroyableBase {
 
     public List<JobMethodMetaInfo> extendedJobMethodMetaInfoList(App app) {
         E.illegalStateIf(!classInfo().isAbstract(), "this job method meta info is not abstract");
-        final C.List<JobMethodMetaInfo> list = C.newList();
+        final List<JobMethodMetaInfo> list = new ArrayList<>();
         final JobClassMetaInfo clsInfo = classInfo();
         String clsName = clsInfo.className();
         ClassNode node = app.classLoader().classInfoRepository().node(clsName);

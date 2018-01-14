@@ -34,15 +34,15 @@ import act.util.ByteCodeVisitor;
 import org.osgl.$;
 import org.osgl.Osgl;
 import org.osgl.exception.NotAppliedException;
-import org.osgl.util.C;
 import org.osgl.util.S;
 
 import java.lang.annotation.Annotation;
+import java.util.ArrayList;
 import java.util.List;
 
 public class SimpleEventListenerByteCodeScanner extends AppByteCodeScannerBase {
 
-    private List<SimpleEventListenerMetaInfo> metaInfoList = C.newList();
+    private List<SimpleEventListenerMetaInfo> metaInfoList = new ArrayList<>();
 
     @Override
     protected void reset(String className) {
@@ -100,7 +100,7 @@ public class SimpleEventListenerByteCodeScanner extends AppByteCodeScannerBase {
             final boolean isVoid = "V".equals(returnType.toString());
             final boolean isPublicNotAbstract = AsmTypes.isPublicNotAbstract(access);
             Type[] arguments = Type.getArgumentTypes(desc);
-            final List<String> paramTypes = C.newList();
+            final List<String> paramTypes = new ArrayList<>();
             if (null != arguments) {
                 for (Type type : arguments) {
                     paramTypes.add(type.getClassName());
@@ -110,8 +110,8 @@ public class SimpleEventListenerByteCodeScanner extends AppByteCodeScannerBase {
             final boolean isStatic = AsmTypes.isStatic(access);
             return new MethodVisitor(ASM5, mv) {
 
-                private List<Object> events = C.newList();
-                private List<$.Func0> delayedEvents = C.newList();
+                private List<Object> events = new ArrayList<>();
+                private List<$.Func0> delayedEvents = new ArrayList<>();
                 private boolean isOnEvent = false;
                 private boolean beforeAppStart = false;
                 private boolean isAsync;

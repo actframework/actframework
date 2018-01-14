@@ -28,9 +28,9 @@ import act.util.DestroyableBase;
 import org.osgl.$;
 import org.osgl.logging.LogManager;
 import org.osgl.logging.Logger;
-import org.osgl.util.C;
 
 import java.lang.reflect.Type;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -39,7 +39,7 @@ public abstract class DaoInjectionListenerBase extends DestroyableBase implement
     protected Logger logger = LogManager.get(DaoInjectionListenerBase.class);
 
     // Map type parameter array to (Model type, service ID) pair
-    private Map<List<Type>, $.T2<Class, String>> svcIdCache = C.newMap();
+    private Map<List<Type>, $.T2<Class, String>> svcIdCache = new HashMap<>();
 
     @Override
     protected void releaseResources() {

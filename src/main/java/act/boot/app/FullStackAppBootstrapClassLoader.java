@@ -34,6 +34,7 @@ import java.lang.reflect.Modifier;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -70,9 +71,9 @@ public class FullStackAppBootstrapClassLoader extends BootstrapClassLoader imple
 
     private List<File> jars;
     private Long jarsChecksum;
-    private Map<String, byte[]> libBC = C.newMap();
-    private List<Class<?>> actClasses = C.newList();
-    private List<Class<?>> pluginClasses = new ArrayList<Class<?>>();
+    private Map<String, byte[]> libBC = new HashMap<>();
+    private List<Class<?>> actClasses = new ArrayList<>();
+    private List<Class<?>> pluginClasses = new ArrayList<>();
     private String lineSeparator = OS.get().lineSeparator();
     private static final $.Predicate<File> jarFilter = jarFilter();
 

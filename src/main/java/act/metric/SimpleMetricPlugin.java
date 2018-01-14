@@ -26,8 +26,8 @@ import act.plugin.AppServicePlugin;
 import org.osgl.$;
 import org.osgl.logging.LogManager;
 import org.osgl.logging.Logger;
-import org.osgl.util.C;
 
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -35,7 +35,7 @@ import java.util.Map;
  */
 public class SimpleMetricPlugin implements MetricPlugin {
 
-    private Map<String, Logger> enabledMap = C.newMap();
+    private Map<String, Logger> enabledMap = new HashMap<>();
     private SimpleMetricStore defaultMetricStore = new SimpleMetricStore(this);
     private Metric defaultMetric = new SimpleMetric(defaultMetricStore);
 

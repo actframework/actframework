@@ -29,9 +29,10 @@ import act.handler.builtin.controller.RequestHandlerProxy.GroupExceptionIntercep
 import act.handler.builtin.controller.RequestHandlerProxy.GroupFinallyInterceptor;
 import act.handler.builtin.controller.RequestHandlerProxy.GroupInterceptorWithResult;
 import org.osgl.mvc.result.Result;
-import org.osgl.util.C;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 
 import static act.handler.builtin.controller.RequestHandlerProxy.insertInterceptor;
 
@@ -39,10 +40,10 @@ import static act.handler.builtin.controller.RequestHandlerProxy.insertIntercept
  * Manage interceptors at App level
  */
 public class AppInterceptorManager extends AppServiceBase<AppInterceptorManager> {
-    private C.List<BeforeInterceptor> beforeInterceptors = C.newList();
-    private C.List<AfterInterceptor> afterInterceptors = C.newList();
-    private C.List<ExceptionInterceptor> exceptionInterceptors = C.newList();
-    private C.List<FinallyInterceptor> finallyInterceptors = C.newList();
+    private List<BeforeInterceptor> beforeInterceptors = new ArrayList<>();
+    private List<AfterInterceptor> afterInterceptors = new ArrayList<>();
+    private List<ExceptionInterceptor> exceptionInterceptors = new ArrayList<>();
+    private List<FinallyInterceptor> finallyInterceptors = new ArrayList<>();
 
     final GroupInterceptorWithResult BEFORE_INTERCEPTOR = new GroupInterceptorWithResult(beforeInterceptors);
     final GroupAfterInterceptor AFTER_INTERCEPTOR = new GroupAfterInterceptor(afterInterceptors);

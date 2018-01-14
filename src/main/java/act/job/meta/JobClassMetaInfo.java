@@ -28,6 +28,10 @@ import org.osgl.util.S;
 
 import javax.enterprise.context.ApplicationScoped;
 import java.lang.annotation.Annotation;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import static act.Destroyable.Util.destroyAll;
 
@@ -41,9 +45,9 @@ public final class JobClassMetaInfo extends DestroyableBase {
     private Type type;
     private Type superType;
     private boolean isAbstract = false;
-    private C.List<JobMethodMetaInfo> actions = C.newList();
+    private List<JobMethodMetaInfo> actions = new ArrayList<>();
     // actionLookup index job method by method name
-    private C.Map<String, JobMethodMetaInfo> actionLookup = null;
+    private Map<String, JobMethodMetaInfo> actionLookup = null;
     private boolean isJob;
 
     public JobClassMetaInfo className(String name) {
@@ -113,7 +117,7 @@ public final class JobClassMetaInfo extends DestroyableBase {
     }
 
     private void buildActionLookup() {
-        C.Map<String, JobMethodMetaInfo> lookup = C.newMap();
+        Map<String, JobMethodMetaInfo> lookup = new HashMap<>();
         for (JobMethodMetaInfo act : actions) {
             lookup.put(act.name(), act);
         }

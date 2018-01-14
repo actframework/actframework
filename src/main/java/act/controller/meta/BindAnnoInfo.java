@@ -22,13 +22,13 @@ package act.controller.meta;
 
 import act.app.App;
 import org.osgl.mvc.util.Binder;
-import org.osgl.util.C;
 import org.osgl.util.E;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class BindAnnoInfo extends ParamAnnoInfoTraitBase {
-    private List<Class<? extends Binder>> binders = C.newList();
+    private List<Class<? extends Binder>> binders = new ArrayList<>();
     private String model;
 
     public BindAnnoInfo(int index) {
@@ -47,7 +47,7 @@ public class BindAnnoInfo extends ParamAnnoInfoTraitBase {
     }
 
     public List<Binder> binder(App app) {
-        List<Binder> list = C.newList();
+        List<Binder> list = new ArrayList<>();
         for (Class<? extends Binder> binderClass: binders) {
             list.add(app.getInstance(binderClass));
         }

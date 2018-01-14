@@ -29,14 +29,14 @@ import act.data.SObjectBinder;
 import org.osgl.mvc.util.Binder;
 import org.osgl.storage.ISObject;
 import org.osgl.storage.impl.SObject;
-import org.osgl.util.C;
 
 import java.io.File;
+import java.util.HashMap;
 import java.util.Map;
 
 public class BinderManager extends AppServiceBase<BinderManager> {
 
-    private Map<Object, Binder> binders = C.newMap();
+    private Map<Object, Binder> binders = new HashMap<>();
 
     public BinderManager(App app) {
         super(app);

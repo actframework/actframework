@@ -85,7 +85,7 @@ public class RenderTemplate extends RenderAny {
         String s = req.accept().contentType();
         String encoding = resp.characterEncoding();
         if(S.notBlank(encoding)) {
-            s = S.concat(s, "; charset=", encoding.toLowerCase());
+            s = S.concat(s, "; charset=", encoding);
         }
 
         resp.initContentType(s);

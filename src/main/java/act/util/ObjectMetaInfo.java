@@ -26,8 +26,10 @@ import act.asm.Opcodes;
 import act.asm.Type;
 import act.data.annotation.Data;
 import org.osgl.$;
-import org.osgl.util.C;
 import org.osgl.util.S;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Datastructure captures a class's meta information in related to {@link DataObjectEnhancer}.
@@ -129,7 +131,7 @@ class ObjectMetaInfo implements Opcodes {
     private Type superType;
     private Type type;
     private boolean callSuper;
-    private C.List<FieldMetaInfo> fields = C.newList();
+    private List<FieldMetaInfo> fields = new ArrayList<>();
     private boolean hasEqualMethod = false;
     private boolean hasHashCodeMethod = false;
     private boolean hasToStringMethod = false;
@@ -151,7 +153,7 @@ class ObjectMetaInfo implements Opcodes {
         return superType;
     }
 
-    C.List<FieldMetaInfo> fields() {
+    List<FieldMetaInfo> fields() {
         return fields;
     }
 

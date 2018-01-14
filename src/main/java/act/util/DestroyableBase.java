@@ -22,26 +22,28 @@ package act.util;
 
 import act.Destroyable;
 import act.handler.builtin.controller.RequestHandlerProxy;
-import org.osgl.logging.LogManager;
-import org.osgl.logging.Logger;
-import org.osgl.util.C;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.context.NormalScope;
 import javax.enterprise.context.RequestScoped;
 import javax.enterprise.context.SessionScoped;
 import java.lang.annotation.Annotation;
+import java.util.ArrayList;
 import java.util.List;
 
 public abstract class DestroyableBase extends LogSupport implements Destroyable {
 
-    protected Logger logger = LogManager.get(getClass());
-
     private volatile boolean destroyed;
 
-    private List<Destroyable> subResources = C.newList();
+    private List<Destroyable> subResources = new ArrayList<>();
 
     private volatile Class<? extends Annotation> scope;
+
+    public DestroyableBase() {}
+
+    protected DestroyableBase(boolean noLogger) {
+        super(noLogger);
+    }
 
     @Override
     public final void destroy() {

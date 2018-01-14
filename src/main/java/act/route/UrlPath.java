@@ -20,9 +20,9 @@ package act.route;
  * #L%
  */
 
-import org.osgl.util.C;
 import org.osgl.util.S;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -37,7 +37,7 @@ public class UrlPath {
 
     static final String DYNA_PART = "";
 
-    private final List<String> parts = C.newList();
+    private final List<String> parts = new ArrayList<>();
 
     private UrlPath(CharSequence path) {
         String s = path.toString();

@@ -20,6 +20,8 @@ package act;
  * #L%
  */
 
+import act.handler.builtin.controller.RequestHandlerProxy;
+import act.handler.builtin.controller.impl.ReflectedHandlerInvoker;
 import org.osgl.util.IO;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -27,7 +29,9 @@ import javax.enterprise.context.RequestScoped;
 import javax.enterprise.context.SessionScoped;
 import java.io.Closeable;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
 import java.util.Collection;
+import java.util.Locale;
 
 public interface Destroyable {
     void destroy();
@@ -95,7 +99,7 @@ public interface Destroyable {
                 }
             }
 
-            col.clear();
+            //col.clear();
         }
 
         public static void tryDestroy(Object o) {
@@ -125,6 +129,16 @@ public interface Destroyable {
                 return true;
             }
             Class<?> c = o.getClass();
+            // performance tune - most frequent types in ActionContext
+            if (String.class == c || Method.class == c || Boolean.class == c) {
+                return false;
+            }
+            if (RequestHandlerProxy.class == c || ReflectedHandlerInvoker.class == c) {
+                return ApplicationScoped.class == scope;
+            }
+            if (Integer.class == c || Locale.class == c || Long.class == c || Double.class == c || Enum.class.isAssignableFrom(c)) {
+                return false;
+            }
             if (c.isAnnotationPresent(scope)) {
                 return true;
             }

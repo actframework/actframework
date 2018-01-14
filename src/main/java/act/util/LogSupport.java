@@ -28,7 +28,24 @@ import org.osgl.logging.Logger;
  */
 public class LogSupport {
 
-    protected final transient Logger logger = LogManager.get(getClass());
+    protected final transient Logger logger;
+
+    public LogSupport() {
+        this(false);
+    }
+
+    /**
+     * Used by sub class that want to implement it's own logging logic.
+     *
+     * Typically for class that generates massive number of instances and
+     * want to avoid creating logger every time.
+     *
+     * @param noLogger if `false` then logger will not be generated
+     */
+    protected LogSupport(boolean noLogger) {
+        logger = noLogger ? null : LogManager.get(getClass());
+    }
+
 
     protected void trace(String format, Object ... args) {
         logger.trace(format, args);

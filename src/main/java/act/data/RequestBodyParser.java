@@ -33,7 +33,7 @@ public abstract class RequestBodyParser {
 
     protected static final Logger logger = L.get(RequestBodyParser.class);
 
-    private static Map<H.Format, RequestBodyParser> parsers = C.newMap(
+    private static Map<H.Format, RequestBodyParser> parsers = C.Map(
             H.Format.FORM_MULTIPART_DATA, new ApacheMultipartParser(),
             H.Format.FORM_URL_ENCODED, new UrlEncodedParser(),
             H.Format.JSON, TextParser.INSTANCE,

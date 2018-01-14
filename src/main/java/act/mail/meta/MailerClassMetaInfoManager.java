@@ -22,9 +22,9 @@ package act.mail.meta;
 
 import act.asm.Type;
 import act.util.DestroyableBase;
-import org.osgl.util.C;
 
 import javax.enterprise.context.ApplicationScoped;
+import java.util.HashMap;
 import java.util.Map;
 
 import static act.Destroyable.Util.destroyAll;
@@ -32,7 +32,7 @@ import static act.Destroyable.Util.destroyAll;
 @ApplicationScoped
 public class MailerClassMetaInfoManager extends DestroyableBase {
 
-    private Map<String, MailerClassMetaInfo> mailers = C.newMap();
+    private Map<String, MailerClassMetaInfo> mailers = new HashMap<>();
 
     public MailerClassMetaInfoManager() {
     }

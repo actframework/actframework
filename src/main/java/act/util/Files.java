@@ -26,6 +26,7 @@ import org.osgl.util.C;
 import org.osgl.util.ListBuilder;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -67,7 +68,7 @@ public enum Files {
     }
 
     public static void filter(List<File> baseDirs, $.F1<String, Boolean> filter, $.F1<File, ?> visitor) {
-        C.List<File> files = C.newList();
+        List<File> files = new ArrayList<>();
         for (File baseDir : baseDirs) {
             files.addAll(C.listOf(baseDir.listFiles()));
         }

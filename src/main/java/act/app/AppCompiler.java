@@ -37,11 +37,11 @@ import org.eclipse.jdt.internal.compiler.env.NameEnvironmentAnswer;
 import org.eclipse.jdt.internal.compiler.impl.CompilerOptions;
 import org.eclipse.jdt.internal.compiler.problem.DefaultProblemFactory;
 import org.osgl.$;
-import org.osgl.util.C;
 import org.osgl.util.E;
 import org.osgl.util.S;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
@@ -53,7 +53,7 @@ import static org.eclipse.jdt.internal.compiler.impl.CompilerOptions.*;
  */
 class AppCompiler extends DestroyableBase {
 
-    Map<String, Boolean> packagesCache = C.newMap();
+    Map<String, Boolean> packagesCache = new HashMap<>();
     private DevModeClassLoader classLoader;
     private App app;
     private AppConfig conf;
@@ -75,7 +75,7 @@ class AppCompiler extends DestroyableBase {
     }
 
     private void configureCompilerOptions() {
-        Map<String, String> map = C.newMap();
+        Map<String, String> map = new HashMap<>();
         opt(map, OPTION_ReportMissingSerialVersion, IGNORE);
         opt(map, OPTION_LineNumberAttribute, GENERATE);
         opt(map, OPTION_SourceFileAttribute, GENERATE);

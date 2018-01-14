@@ -36,10 +36,7 @@ import javax.validation.constraints.Min;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @SuppressWarnings("unused")
 public class SysUtilAdmin {
@@ -57,8 +54,8 @@ public class SysUtilAdmin {
 
     @Command(name = "act.meminfo, act.mi", help = "Print memory info")
     public void memInfo(
-            @Optional("monitor memory usage") boolean monitor,
-            @Optional("human readable") boolean human,
+            @act.cli.Optional("monitor memory usage") boolean monitor,
+            @act.cli.Optional("human readable") boolean human,
             CliContext context
     ) {
         final int factor = human ? 1024 * 1024 : 1;
@@ -135,8 +132,8 @@ public class SysUtilAdmin {
     @Command(name = "act.ls, act.dir, act.ll", help = "List files in the current working directory")
     @PropertySpec("path as name,size,timestamp")
     public List<FileInfo> ls(
-            @Optional("specify the path to be listed") String path,
-            @Optional(lead = "-a", help = "display hidden files") boolean showHidden,
+            @act.cli.Optional("specify the path to be listed") String path,
+            @act.cli.Optional(lead = "-a", help = "display hidden files") boolean showHidden,
             String path2,
             CliContext ctx
     ) {
@@ -187,12 +184,12 @@ public class SysUtilAdmin {
     @Command(name = "act.cat", help = "print file content")
     public void cat(
             @Required(lead = "-f --url", help = "specify the file/resource URL to be printed out", errorTemplate = "error accessing file/resource at %s") SObject sobj,
-            @Optional(help = "specify the maximum lines to be printed out") int limit,
-            @Optional(help = "specify the begin line to be printed out", defVal = "0") @Min(0) int begin,
-            @Optional(help = "specify the end line to be printed out") int end,
-            @Optional(help = "specify begin end as range, e.g. 5-8") String range,
-            @Optional(lead = "-n,--line-number", help = "print line number") boolean printLineNumber,
-            @Optional(lead = "-q,--grep", help = "specify search criteria") String q,
+            @act.cli.Optional(help = "specify the maximum lines to be printed out") int limit,
+            @act.cli.Optional(help = "specify the begin line to be printed out", defVal = "0") @Min(0) int begin,
+            @act.cli.Optional(help = "specify the end line to be printed out") int end,
+            @act.cli.Optional(help = "specify begin end as range, e.g. 5-8") String range,
+            @act.cli.Optional(lead = "-n,--line-number", help = "print line number") boolean printLineNumber,
+            @act.cli.Optional(lead = "-q,--grep", help = "specify search criteria") String q,
             CliContext context
     ) {
         if (S.notBlank(range)) {
@@ -244,7 +241,7 @@ public class SysUtilAdmin {
     }
 
     private static List<FileInfo> dir(File file, boolean showHidden, CliContext context) {
-        C.List<FileInfo> list = C.newList();
+        List<FileInfo> list = new ArrayList<>();
         File[] files = file.listFiles();
         if (null == files) {
             context.println("Invalid dir: %s", file.getAbsolutePath());
@@ -257,7 +254,7 @@ public class SysUtilAdmin {
             }
             list.add(new FileInfo(parent, f0));
         }
-        list = list.sorted();
+        Collections.sort(list);
         return list;
     }
 

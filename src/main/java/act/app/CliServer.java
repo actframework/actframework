@@ -27,7 +27,6 @@ import act.cli.CliSession;
 import org.osgl.exception.ConfigurationException;
 import org.osgl.logging.LogManager;
 import org.osgl.logging.Logger;
-import org.osgl.util.C;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -35,6 +34,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -142,7 +142,7 @@ public class CliServer extends AppServiceBase<CliServer> implements Runnable {
                     monitorThread = Thread.currentThread();
                     int expiration = app().config().cliSessionExpiration();
                     while (running()) {
-                        List<CliSession> toBeRemoved = C.newList();
+                        List<CliSession> toBeRemoved = new ArrayList<>();
                         for (CliSession session : sessions.values()) {
                             if (session.expired(expiration)) {
                                 toBeRemoved.add(session);

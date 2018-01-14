@@ -24,6 +24,7 @@ import org.osgl.logging.L;
 import org.osgl.logging.Logger;
 import org.osgl.util.C;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -34,8 +35,8 @@ public class AppCodeScannerManager extends AppServiceBase<AppCodeScannerManager>
 
     private static final Logger logger = L.get(AppCodeScannerManager.class);
 
-    private C.List<AppSourceCodeScanner> sourceCodeScanners = C.newList();
-    private C.List<AppByteCodeScanner> byteCodeScanners = C.newList();
+    private List<AppSourceCodeScanner> sourceCodeScanners = new ArrayList<>();
+    private List<AppByteCodeScanner> byteCodeScanners = new ArrayList<>();
 
     public AppCodeScannerManager(App app) {
         super(app);

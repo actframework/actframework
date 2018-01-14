@@ -70,6 +70,7 @@ import org.osgl.util.C;
 import org.osgl.util.E;
 import org.osgl.util.S;
 
+import javax.enterprise.context.ApplicationScoped;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -81,6 +82,7 @@ import java.util.concurrent.ConcurrentMap;
  * Implement handler using
  * https://github.com/EsotericSoftware/reflectasm
  */
+@ApplicationScoped
 public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends DestroyableBase
         implements ActionHandlerInvoker, AfterInterceptorInvoker, ExceptionInterceptorInvoker {
 
@@ -411,7 +413,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
             WebSocketConnectionManager wscm = app.getInstance(WebSocketConnectionManager.class);
             wscm.subscribe(context.session(), SimpleProgressGauge.wsJobProgressTag(jobId));
             jobManager.now(jobId);
-            return new RenderJSON(C.map("jobId", jobId));
+            return new RenderJSON(C.Map("jobId", jobId));
         }
 
         try {

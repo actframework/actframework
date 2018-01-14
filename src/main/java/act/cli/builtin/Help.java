@@ -29,6 +29,7 @@ import org.fusesource.jansi.Ansi;
 import org.osgl.util.C;
 import org.osgl.util.S;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static org.osgl.Osgl.T2;
@@ -83,7 +84,7 @@ public class Help extends CliHandlerBase {
     }
 
     private void list(String search, String label, String fmt, List<String> commands, CliDispatcher dispatcher, CliContext context) {
-        List<String> lines = C.newList();
+        List<String> lines = new ArrayList<>();
         boolean noSearch = S.blank(search);
         if (noSearch) {
             lines.add(label.toUpperCase());
@@ -114,7 +115,7 @@ public class Help extends CliHandlerBase {
             // context.println("Unrecongized command: %s", command);
             return false;
         }
-        List<String> lines = C.newList();
+        List<String> lines = new ArrayList<>();
 
         List<String> names = dispatcher.names(handler);
         T2<String, String> commandLine = handler.commandLine();
@@ -170,7 +171,7 @@ public class Help extends CliHandlerBase {
 
     @Override
     public List<T2<String, String>> options() {
-        List<T2<String, String>> retList = C.newList();
+        List<T2<String, String>> retList = new ArrayList<>();
         retList.add(T2("-s --system", "list system commands"));
         retList.add(T2("-a --app", "list application commands"));
         return retList;

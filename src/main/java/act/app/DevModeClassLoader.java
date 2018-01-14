@@ -35,10 +35,7 @@ import org.osgl.util.C;
 import org.osgl.util.S;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import static act.app.App.F.*;
 
@@ -49,7 +46,7 @@ import static act.app.App.F.*;
 public class DevModeClassLoader extends AppClassLoader {
     private final static Logger logger = L.get(DevModeClassLoader.class);
 
-    private Map<String, Source> sources = C.newMap();
+    private Map<String, Source> sources = new HashMap<>();
     private final AppCompiler compiler;
 
     private List<FsChangeDetector> detectors = new ArrayList<>();
@@ -144,7 +141,7 @@ public class DevModeClassLoader extends AppClassLoader {
                     Source source = Source.ofFile(sourceRoot, file);
                     if (null != source) {
                         if (null == sources) {
-                            sources = C.newMap();
+                            sources = new HashMap<>();
                         }
                         sources.put(source.className(), source);
                     }
@@ -163,7 +160,7 @@ public class DevModeClassLoader extends AppClassLoader {
         Source source = Source.ofClass(sourceRoot, className);
         if (null != source) {
             if (null == sources) {
-                sources = C.newMap();
+                sources = new HashMap<>();
             }
             sources.put(source.className(), source);
         }
@@ -190,7 +187,7 @@ public class DevModeClassLoader extends AppClassLoader {
                 for (String className : sources.keySet()) {
                     classesNeedByteCodeScan.add(className);
                     logger.debug("scanning %s ...", className);
-                    List<AppSourceCodeScanner> l = C.newList();
+                    List<AppSourceCodeScanner> l = new ArrayList<>();
                     for (AppSourceCodeScanner scanner : scanners) {
                         if (scanner.start(className)) {
                             //LOGGER.trace("scanner %s added to the list", scanner.getClass().getName());
