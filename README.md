@@ -14,7 +14,7 @@ Add `act-starter-parent` into into your pom.xml file
   <parent>
     <groupId>org.actframework</groupId>
     <artifactId>act-starter-parent</artifactId>
-    <version>1.6.3.0</version>
+    <version>1.6.4.0</version>
   </parent>
 ```
 
