@@ -25,6 +25,8 @@ import org.osgl.util.C;
 import org.osgl.util.E;
 import org.osgl.util.S;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
@@ -49,8 +51,8 @@ public class CommandLineParser {
     public CommandLineParser(String line) {
         E.illegalArgumentIf(S.blank(line));
         raw = line.trim();
-        options = C.newMap();
-        List<String> sl = C.newList();
+        options = new HashMap<>();
+        List<String> sl = new ArrayList<>();
         Pattern ptn = choosePattern(raw);
         Matcher m = ptn.matcher(raw);
         while (m.find()) {
@@ -91,7 +93,7 @@ public class CommandLineParser {
 
     private void parse(List<String> tokens) {
         command = tokens.remove(0).intern();
-        arguments = C.newList();
+        arguments = new ArrayList<>();
         String lead = null;
         for (String cur : tokens) {
             // is cur token an number?

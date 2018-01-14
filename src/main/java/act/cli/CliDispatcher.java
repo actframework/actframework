@@ -37,6 +37,8 @@ import org.osgl.util.C;
 import org.osgl.util.E;
 import org.osgl.util.S;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -48,11 +50,11 @@ public class CliDispatcher extends AppServiceBase<CliDispatcher> {
     private static Logger logger = LogManager.get(CliDispatcher.class);
     private static final String NAME_PART_SEPARATOR = "[\\.\\-_]+";
 
-    private Map<String, CliHandler> registry = C.newMap();
-    private Map<String, String> shortCuts = C.newMap();
-    private Map<String, List<CliHandler>> ambiguousShortCuts = C.newMap();
-    private Map<CliHandler, List<String>> nameMap = C.newMap();
-    private Map<CliHandler, List<String>> shortCutMap = C.newMap();
+    private Map<String, CliHandler> registry = new HashMap<>();
+    private Map<String, String> shortCuts = new HashMap<>();
+    private Map<String, List<CliHandler>> ambiguousShortCuts = new HashMap<>();
+    private Map<CliHandler, List<String>> nameMap = new HashMap<>();
+    private Map<CliHandler, List<String>> shortCutMap = new HashMap<>();
 
     public CliDispatcher(App app) {
         super(app);
@@ -173,7 +175,7 @@ public class CliDispatcher extends AppServiceBase<CliDispatcher> {
     private void updateNameIndex(String name, CliHandler handler) {
         List<String> nameList = nameMap.get(handler);
         if (null == nameList) {
-            nameList = C.newList();
+            nameList = new ArrayList<>();
             nameMap.put(handler, nameList);
         }
         nameList.add(name);
@@ -182,7 +184,7 @@ public class CliDispatcher extends AppServiceBase<CliDispatcher> {
     private void registerShortCut(String name, CliHandler handler) {
         List<String> shortCutNames = shortCutMap.get(handler);
         if (null == shortCutNames) {
-            shortCutNames = C.newList();
+            shortCutNames = new ArrayList<>();
             shortCutMap.put(handler, shortCutNames);
         }
         for (int i = 0; i < 5; ++i) {
@@ -195,7 +197,7 @@ public class CliDispatcher extends AppServiceBase<CliDispatcher> {
                 list.add(handler);
             } else if (shortCuts.containsKey(shortCut)) {
                 shortCuts.remove(shortCut);
-                List<CliHandler> list = C.newList();
+                List<CliHandler> list = new ArrayList<>();
                 ambiguousShortCuts.put(shortCut, list);
                 for (List<String> ls : shortCutMap.values()) {
                     ls.remove(shortCut);

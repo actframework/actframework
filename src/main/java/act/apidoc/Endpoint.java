@@ -404,7 +404,7 @@ public class Endpoint implements Comparable<Endpoint> {
             return null;
         }
         if ($.isSimpleType(type)) {
-            sample = C.map("result", sample);
+            sample = C.Map("result", sample);
         }
         return JSON.toJSONString(sample, true);
     }

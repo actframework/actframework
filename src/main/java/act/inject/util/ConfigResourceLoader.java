@@ -135,7 +135,7 @@ public class ConfigResourceLoader extends ResourceLoader {
     }
 
     private static <T> T __load(String path, BeanSpec spec, boolean ignoreResourceNotFound) {
-        Map<String, Object> option = C.map("value", path);
+        Map<String, Object> option = C.Map("value", path);
         ConfigResourceLoader loader = new ConfigResourceLoader(ignoreResourceNotFound);
         loader.init(option, spec);
         return $.cast(loader.resource);

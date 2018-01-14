@@ -26,14 +26,14 @@ import org.osgl.Osgl;
 import org.osgl.exception.NotAppliedException;
 import org.osgl.logging.L;
 import org.osgl.logging.Logger;
-import org.osgl.util.*;
+import org.osgl.util.E;
+import org.osgl.util.FastStr;
+import org.osgl.util.IO;
+import org.osgl.util.S;
 
 import java.io.*;
 import java.net.URL;
-import java.util.Enumeration;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 
@@ -50,7 +50,7 @@ public enum Jars {
     }
 
     public static Map<String, byte[]> buildClassNameIndex(File dir, final $.Function<String, Boolean> ignoredClassNames) {
-        final Map<String, byte[]> idx = C.newMap();
+        final Map<String, byte[]> idx = new HashMap<>();
         F.JarEntryVisitor visitor = F.classNameIndexBuilder(idx, ignoredClassNames);
         scanDir(dir, visitor);
         return idx;
@@ -61,7 +61,7 @@ public enum Jars {
     }
 
     public static Map<String, byte[]> buildClassNameIndex(List<File> jars, final $.Func1<String, Boolean> ignoredClassNames) {
-        final Map<String, byte[]> idx = C.newMap();
+        final Map<String, byte[]> idx = new HashMap<>();
         F.JarEntryVisitor visitor = F.classNameIndexBuilder(idx, ignoredClassNames);
         scanList(jars, visitor);
         return idx;

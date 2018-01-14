@@ -27,14 +27,15 @@ import org.osgl.$;
 import org.osgl.util.C;
 import org.osgl.util.S;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class MetricInfoTree {
 
-    private C.Map<String, MetricInfo> infoMap = C.newMap();
+    private Map<String, MetricInfo> infoMap = new HashMap<>();
     private MetricInfoNode root;
-    private C.Map<String, MetricInfoNode> nodeMap = C.newMap();
+    private Map<String, MetricInfoNode> nodeMap = new HashMap<>();
     private TreeNodeFilter filter = null;
 
 

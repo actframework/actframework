@@ -216,7 +216,7 @@ public class HandlerEnhancer extends MethodVisitor implements Opcodes {
                 this.instructions = instructions;
                 this.itr = itr;
                 this.trans = trans;
-                this.handlers  = C.map(
+                this.handlers  = C.Map(
                         AbstractInsnNode.METHOD_INSN, new InvocationHandler(this, meta)
                 );
                 trans.lblList.add(start);
@@ -282,7 +282,7 @@ public class HandlerEnhancer extends MethodVisitor implements Opcodes {
                     logger.warn("local variable table info not found. ActionContext render args might not be automatically populated");
                 }
                 AbstractInsnNode node = invokeNode.getPrevious();
-                List<LoadInsnInfo> loadInsnInfoList = C.newList();
+                List<LoadInsnInfo> loadInsnInfoList = new ArrayList<>();
                 String templateLiteral = null;
                 String renderArgName = null;
                 InsnList nodeList = new InsnList();
@@ -346,7 +346,7 @@ public class HandlerEnhancer extends MethodVisitor implements Opcodes {
                                     renderArgName = segment.varName(vn.var);
                                 }
                             }
-                            nodeList.insert(node.clone(C.<LabelNode, LabelNode>map()));
+                            nodeList.insert(node.clone(C.<LabelNode, LabelNode>Map()));
                             break;
                         case METHOD_INSN:
                             if (invalidParam) {
@@ -365,7 +365,7 @@ public class HandlerEnhancer extends MethodVisitor implements Opcodes {
                                     invalidParam = true;
                                 }
                             }
-                            nodeList.insert(node.clone(C.<LabelNode, LabelNode>map()));
+                            nodeList.insert(node.clone(C.<LabelNode, LabelNode>Map()));
                             break;
                         case INT_INSN:
                             if (BIPUSH == node.getOpcode()) {
@@ -385,7 +385,7 @@ public class HandlerEnhancer extends MethodVisitor implements Opcodes {
                                 FieldInsnNode n = (FieldInsnNode) node;
                                 renderArgName = n.name;
                             }
-                            nodeList.insert(node.clone(C.<LabelNode, LabelNode>map()));
+                            nodeList.insert(node.clone(C.<LabelNode, LabelNode>Map()));
                             break;
                         case AbstractInsnNode.LDC_INSN:
                             if (invalidParam) {

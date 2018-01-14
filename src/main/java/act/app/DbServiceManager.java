@@ -246,7 +246,7 @@ public class DbServiceManager extends AppServiceBase<DbServiceManager> implement
                     logger.warn("DB service not initialized: need to specify default db service implementation");
                 } else {
                     logger.warn("DB configuration not found. Will try to init default service with the sole db plugin: %s", db);
-                    Map<String, String> svcConf = C.newMap();
+                    Map<String, String> svcConf = new HashMap<>();
                     String prefix = "db.";
                     for (String key : dbConf.keySet()) {
                         if (key.startsWith(prefix)) {
@@ -265,7 +265,7 @@ public class DbServiceManager extends AppServiceBase<DbServiceManager> implement
     }
 
     private void initService(String dbId, Map<String, String> conf) {
-        Map<String, String> svcConf = C.newMap();
+        Map<String, String> svcConf = new HashMap<>();
         String prefix = "db." + (S.blank(dbId) ? "" : dbId + ".");
         for (String key : conf.keySet()) {
             if (key.startsWith(prefix)) {

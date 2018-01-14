@@ -238,7 +238,7 @@ public interface ActContext<CTX_TYPE extends ActContext> extends ParamValueProvi
         private int fieldOutputVarCount;
         private S.Buffer strBuf;
         private boolean noTemplateCache;
-        private SimpleProgressGauge progress = new SimpleProgressGauge();
+        private volatile SimpleProgressGauge progress;
         private String jobId;
         private Method handlerMethod;
         private String pattern;
@@ -249,6 +249,11 @@ public interface ActContext<CTX_TYPE extends ActContext> extends ParamValueProvi
         private SerializerFeature[] fastjsonFeatures;
 
         public Base(App app) {
+            this(app, false);
+        }
+
+        protected Base(App app, boolean noLogger) {
+            super(noLogger);
             E.NPE(app);
             this.app = app;
             renderArgs = new HashMap<>();
@@ -522,7 +527,7 @@ public interface ActContext<CTX_TYPE extends ActContext> extends ParamValueProvi
 
         @Override
         public Map<String, Object> renderArgs() {
-            return C.newMap(renderArgs);
+            return renderArgs;
         }
 
         protected boolean hasRenderArgs() {
@@ -602,10 +607,17 @@ public interface ActContext<CTX_TYPE extends ActContext> extends ParamValueProvi
 
         public void setJobId(String jobId) {
             this.jobId = jobId;
-            app().jobManager().setJobProgressGauge(jobId, progress);
+            app().jobManager().setJobProgressGauge(jobId, progress());
         }
 
         public ProgressGauge progress() {
+            if (null == progress) {
+                synchronized (this) {
+                    if (null == progress) {
+                        progress = new SimpleProgressGauge();
+                    }
+                }
+            }
             return progress;
         }
 

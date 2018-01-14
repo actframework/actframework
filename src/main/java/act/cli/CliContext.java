@@ -168,7 +168,7 @@ public class CliContext extends ActContext.Base<CliContext> implements IASCIITab
 
     private String commandPath; // e.g. myapp.cli.ListUser
 
-    private Map<String, Object> commanderInstances = C.newMap();
+    private Map<String, Object> commanderInstances = new HashMap<>();
 
     private ConsoleReader console;
 
@@ -485,7 +485,7 @@ public class CliContext extends ActContext.Base<CliContext> implements IASCIITab
 
     public CliContext __commanderInstance(String className, Object instance) {
         if (null == commanderInstances) {
-            commanderInstances = C.newMap();
+            commanderInstances = new HashMap<>();
         }
         commanderInstances.put(className, instance);
         return this;

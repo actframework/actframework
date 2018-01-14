@@ -58,7 +58,7 @@ public class DataPropertyRepository extends AppServiceBase<DataPropertyRepositor
     /**
      * Map a list of property path to class name
      */
-    private Map<String, List<String>> repo = C.newMap();
+    private Map<String, List<String>> repo = new HashMap<>();
 
     private OutputFieldsCache outputFieldsCache = new OutputFieldsCache();
 
@@ -97,7 +97,7 @@ public class DataPropertyRepository extends AppServiceBase<DataPropertyRepositor
     private List<String> buildPropertyList(Class c) {
         Method[] ma = c.getMethods();
         String context = "";
-        List<String> retLst = C.newList();
+        List<String> retLst = new ArrayList<>();
         for (Method m: ma) {
             buildPropertyPath(context, m, retLst);
         }

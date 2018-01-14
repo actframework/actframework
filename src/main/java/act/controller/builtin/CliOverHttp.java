@@ -33,11 +33,11 @@ import org.osgl.mvc.annotation.Before;
 import org.osgl.mvc.annotation.GetAction;
 import org.osgl.mvc.annotation.PostAction;
 import org.osgl.mvc.result.Result;
-import org.osgl.util.C;
 
 import javax.inject.Inject;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import static act.controller.Controller.Util.*;
@@ -93,7 +93,7 @@ public class CliOverHttp {
     private List<String> mru() {
         List<String> mru = session.cached("cli_over_http_mru");
         if (null == mru) {
-            mru = C.newList();
+            mru = new ArrayList<>();
         }
         session.cache("cli_over_http_mru", mru, config.sessionTtl());
         return mru;

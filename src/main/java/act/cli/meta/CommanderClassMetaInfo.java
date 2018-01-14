@@ -29,7 +29,10 @@ import org.osgl.util.C;
 import org.osgl.util.S;
 
 import javax.enterprise.context.ApplicationScoped;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static act.Destroyable.Util.destroyAll;
 
@@ -52,11 +55,11 @@ public class CommanderClassMetaInfo extends DestroyableBase {
     private Type type;
     private Type superType;
     private boolean isAbstract = false;
-    private C.List<CommandMethodMetaInfo> commands = C.newList();
-    private C.Map<String, FieldOptionAnnoInfo> fieldOptionAnnoInfoMap = C.newMap();
-    private C.Map<String, SessionVariableAnnoInfo> fieldSessionVariableAnnoInfoMap = C.newMap();
+    private List<CommandMethodMetaInfo> commands = new ArrayList<>();
+    private Map<String, FieldOptionAnnoInfo> fieldOptionAnnoInfoMap = new HashMap<>();
+    private Map<String, SessionVariableAnnoInfo> fieldSessionVariableAnnoInfoMap = new HashMap<>();
     // commandLookup index command method by method name
-    private C.Map<String, CommandMethodMetaInfo> commandLookup = null;
+    private Map<String, CommandMethodMetaInfo> commandLookup = null;
     private CommanderClassMetaInfo parent;
     private String contextPath;
 
@@ -221,7 +224,7 @@ public class CommanderClassMetaInfo extends DestroyableBase {
     }
 
     private void buildCommandLookup() {
-        C.Map<String, CommandMethodMetaInfo> lookup = C.newMap();
+        Map<String, CommandMethodMetaInfo> lookup = new HashMap<>();
         for (CommandMethodMetaInfo command : commands) {
             String[] commandNames = command.commandName().split(NAME_SEPARATOR);
             for (String commandName : commandNames) {

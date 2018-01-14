@@ -26,10 +26,7 @@ import org.osgl.$;
 import org.osgl.util.*;
 
 import java.io.File;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.StringTokenizer;
+import java.util.*;
 
 /**
  * Encapsulate java srccode unit data including srccode code, byte code etc.
@@ -85,7 +82,7 @@ public class Source {
     // The byte code
     private byte[] bytes;
 
-    private Map<String, byte[]> innerBytes = C.newMap();
+    private Map<String, byte[]> innerBytes = new HashMap<>();
 
     private State state = State.CREATED;
 

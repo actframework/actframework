@@ -28,10 +28,10 @@ import act.asm.Type;
 import act.util.ClassInfoRepository;
 import act.util.ClassNode;
 import act.util.DestroyableBase;
-import org.osgl.util.C;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+import java.util.HashMap;
 import java.util.Map;
 
 import static act.Destroyable.Util.destroyAll;
@@ -39,7 +39,7 @@ import static act.Destroyable.Util.destroyAll;
 @ApplicationScoped
 public class ControllerClassMetaInfoManager extends DestroyableBase {
 
-    private Map<String, ControllerClassMetaInfo> controllers = C.newMap();
+    private Map<String, ControllerClassMetaInfo> controllers = new HashMap<>();
 
     @Inject
     public ControllerClassMetaInfoManager(App app) {

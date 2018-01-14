@@ -27,9 +27,10 @@ import act.route.Router;
 import act.security.CORS;
 import act.util.DestroyableBase;
 import org.osgl.http.H;
-import org.osgl.util.C;
 import org.osgl.util.S;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -64,8 +65,8 @@ public class OptionsInfoBase extends DestroyableBase {
         if (!router.app().config().corsEnabled()) {
             return UnknownHttpMethodHandler.INSTANCE;
         }
-        C.List<H.Method> allowMethods = C.newList();
-        C.List<CORS.Spec> corsSpecs = C.newList();
+        List<H.Method> allowMethods = new ArrayList<>();
+        List<CORS.Spec> corsSpecs = new ArrayList<>();
         for (H.Method method: router.supportedHttpMethods()) {
             RequestHandler handler;
             handler = router.getInvoker(method, path, context);

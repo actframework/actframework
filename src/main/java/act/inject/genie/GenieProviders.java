@@ -58,7 +58,7 @@ class GenieProviders {
             if (null == root) {
                 return C.list();
             }
-            final List<Class<?>> list = C.newList();
+            final List<Class<?>> list = new ArrayList<>();
             Osgl.Visitor<ClassNode> visitor = new Osgl.Visitor<ClassNode>() {
                 @Override
                 public void visit(ClassNode classNode) throws Osgl.Break {
@@ -202,7 +202,7 @@ class GenieProviders {
                     if (null == root) {
                         return C.list();
                     }
-                    final List<Class> list = C.newList();
+                    final List<Class> list = new ArrayList<>();
                     Osgl.Visitor<ClassNode> visitor = new Osgl.Visitor<ClassNode>() {
                         @Override
                         public void visit(ClassNode classNode) throws Osgl.Break {

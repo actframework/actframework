@@ -1,6 +1,14 @@
 # ActFramework Change Log
 
-**1.6.3**
+**1.6.4 14/Jan/2018**
+* Performance issue with Rythm #469
+    - update rythm-engine to 1.2.2
+* Other performance updates
+    - in act core code
+    - update osgl-genie to 1.3.4
+    - update osgl-http to 1.2.3
+
+**1.6.3 13/Jan/2018**
 * Template not reload after changed in `dev` mode #467
 * ApiManager prints a lot of warning messages #466
 * `ClassCastException` caused by `@CacheFor` #465

@@ -206,7 +206,7 @@ public enum CliView {
                 }
             }
 
-            List<SerializerFeature> featureList = C.newList();
+            List<SerializerFeature> featureList = new ArrayList<>();
             if (format) {
                 featureList.add(SerializerFeature.PrettyFormat);
             }
@@ -325,7 +325,7 @@ public enum CliView {
 
         private void buildHeaderLine(S.Buffer sb, List<String> outputFields, Map<String, String> labels) {
             if (null == labels) {
-                labels = C.newMap();
+                labels = new HashMap<>();
             }
             Iterator<String> itr = outputFields.iterator();
             String label = label(itr.next(), labels);

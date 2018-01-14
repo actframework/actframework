@@ -33,6 +33,8 @@ import org.osgl.util.E;
 import org.osgl.util.S;
 
 import java.lang.annotation.Annotation;
+import java.util.ArrayList;
+import java.util.List;
 
 public abstract class ClassDetector extends ByteCodeVisitor {
 
@@ -184,7 +186,7 @@ public abstract class ClassDetector extends ByteCodeVisitor {
                     return new FilteredClassDetector(classFilter);
                 }
             });
-            private C.List<ClassDetector> matches = C.newList();
+            private List<ClassDetector> matches = new ArrayList<>();
 
             @Override
             public int hashCode() {

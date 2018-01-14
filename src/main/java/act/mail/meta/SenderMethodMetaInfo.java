@@ -34,6 +34,7 @@ import org.osgl.util.C;
 import org.osgl.util.E;
 import org.osgl.util.S;
 
+import java.util.HashMap;
 import java.util.Map;
 
 public class SenderMethodMetaInfo extends DestroyableBase {
@@ -44,7 +45,7 @@ public class SenderMethodMetaInfo extends DestroyableBase {
     private C.List<HandlerParamMetaInfo> params = C.newList();
     private ReturnTypeInfo returnType;
     private String templateContext;
-    private Map<Label, Map<Integer, LocalVariableMetaInfo>> locals = C.newMap();
+    private Map<Label, Map<Integer, LocalVariableMetaInfo>> locals = new HashMap<>();
     private int appCtxLVT_id = -1;
 
     public SenderMethodMetaInfo(MailerClassMetaInfo clsInfo) {
@@ -154,7 +155,7 @@ public class SenderMethodMetaInfo extends DestroyableBase {
         Label start = local.start();
         Map<Integer, LocalVariableMetaInfo> m = locals.get(start);
         if (null == m) {
-            m = C.newMap();
+            m = new HashMap<>();
             locals.put(start, m);
         }
         int index = local.index();

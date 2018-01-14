@@ -911,7 +911,7 @@ public @interface Controller {
         public static Result inferPrimitiveResult(Object v, ActionContext actionContext, boolean requireJSON, boolean requireXML, boolean isArray) {
             H.Status status = actionContext.successStatus();
             if (requireJSON) {
-                return RenderJSON.of(status, C.map("result", v));
+                return RenderJSON.of(status, C.Map("result", v));
             } else if (requireXML) {
                 return RenderXML.of(status, S.concat("<result>", S.string(v), "</result>"));
             } else {

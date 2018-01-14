@@ -48,17 +48,13 @@ import org.osgl.logging.Logger;
 import org.osgl.mvc.result.BadRequest;
 import org.osgl.mvc.result.NotFound;
 import org.osgl.mvc.result.Result;
-import org.osgl.util.C;
 import org.osgl.util.E;
 import org.osgl.util.S;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import java.lang.reflect.Method;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.ListIterator;
-import java.util.Set;
+import java.util.*;
 import java.util.regex.Pattern;
 
 import static org.osgl.http.H.Method.GET;
@@ -69,12 +65,12 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
 
     private static Logger logger = L.get(RequestHandlerProxy.class);
 
-    private static final C.List<BeforeInterceptor> globalBeforeInterceptors = C.newList();
-    private static final C.List<AfterInterceptor> globalAfterInterceptors = C.newList();
-    private static final C.List<FinallyInterceptor> globalFinallyInterceptors = C.newList();
-    private static final C.List<ExceptionInterceptor> globalExceptionInterceptors = C.newList();
+    private static final List<BeforeInterceptor> globalBeforeInterceptors = new ArrayList<>();
+    private static final List<AfterInterceptor> globalAfterInterceptors = new ArrayList<>();
+    private static final List<FinallyInterceptor> globalFinallyInterceptors = new ArrayList<>();
+    private static final List<ExceptionInterceptor> globalExceptionInterceptors = new ArrayList<>();
     // for @Global on classes
-    private static final C.Set<GroupInterceptorMetaInfo> globalFreeStyleInterceptors = C.newSet();
+    private static final Set<GroupInterceptorMetaInfo> globalFreeStyleInterceptors = new HashSet<>();
     // for @Global on methods
     private static GroupInterceptorMetaInfo globalFreeStyleInterceptor = new GroupInterceptorMetaInfo();
 
@@ -92,10 +88,10 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
     private Method actionMethod;
 
     private volatile ControllerAction actionHandler = null;
-    private C.List<BeforeInterceptor> beforeInterceptors = C.newList();
-    private C.List<AfterInterceptor> afterInterceptors = C.newList();
-    private C.List<ExceptionInterceptor> exceptionInterceptors = C.newList();
-    private C.List<FinallyInterceptor> finallyInterceptors = C.newList();
+    private List<BeforeInterceptor> beforeInterceptors = new ArrayList<>();
+    private List<AfterInterceptor> afterInterceptors = new ArrayList<>();
+    private List<ExceptionInterceptor> exceptionInterceptors = new ArrayList<>();
+    private List<FinallyInterceptor> finallyInterceptors = new ArrayList<>();
 
     private boolean sessionFree;
     private boolean express;
@@ -595,7 +591,7 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
         }
     }
 
-    public static <T extends Handler> void insertInterceptor(C.List<T> list, T i) {
+    public static <T extends Handler> void insertInterceptor(List<T> list, T i) {
         int sz = list.size();
         if (0 == sz) {
             list.add(i);
@@ -621,9 +617,9 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
     }
 
     public static class GroupInterceptorWithResult {
-        private C.List<? extends ActionHandler> interceptors;
+        private List<? extends ActionHandler> interceptors;
 
-        public GroupInterceptorWithResult(C.List<? extends ActionHandler> interceptors) {
+        public GroupInterceptorWithResult(List<? extends ActionHandler> interceptors) {
             this.interceptors = interceptors;
         }
 
@@ -644,9 +640,9 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
     }
 
     public static class GroupAfterInterceptor {
-        private C.List<? extends AfterInterceptor> interceptors;
+        private List<? extends AfterInterceptor> interceptors;
 
-        public GroupAfterInterceptor(C.List<? extends AfterInterceptor> interceptors) {
+        public GroupAfterInterceptor(List<? extends AfterInterceptor> interceptors) {
             this.interceptors = interceptors;
         }
 
@@ -659,9 +655,9 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
     }
 
     public static class GroupFinallyInterceptor {
-        private C.List<? extends FinallyInterceptor> interceptors;
+        private List<? extends FinallyInterceptor> interceptors;
 
-        public GroupFinallyInterceptor(C.List<FinallyInterceptor> interceptors) {
+        public GroupFinallyInterceptor(List<FinallyInterceptor> interceptors) {
             this.interceptors = interceptors;
         }
 
@@ -675,9 +671,9 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
     }
 
     public static class GroupExceptionInterceptor {
-        private C.List<? extends ExceptionInterceptor> interceptors;
+        private List<? extends ExceptionInterceptor> interceptors;
 
-        public GroupExceptionInterceptor(C.List<? extends ExceptionInterceptor> interceptors) {
+        public GroupExceptionInterceptor(List<? extends ExceptionInterceptor> interceptors) {
             this.interceptors = interceptors;
         }
 

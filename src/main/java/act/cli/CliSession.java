@@ -33,7 +33,6 @@ import act.util.Banner;
 import act.util.DestroyableBase;
 import jline.console.ConsoleReader;
 import org.osgl.$;
-import org.osgl.util.C;
 import org.osgl.util.IO;
 import org.osgl.util.S;
 
@@ -44,6 +43,7 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.net.SocketException;
+import java.util.HashMap;
 import java.util.Map;
 
 public class CliSession extends DestroyableBase implements Runnable {
@@ -69,7 +69,7 @@ public class CliSession extends DestroyableBase implements Runnable {
      *     following commands. However it shall provide a command to exit the "context"
      * </p>
      */
-    private Map<String, Object> attributes = C.newMap();
+    private Map<String, Object> attributes = new HashMap<>();
 
     /**
      * Construct a CliOverHttp session

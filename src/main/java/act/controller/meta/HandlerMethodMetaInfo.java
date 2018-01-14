@@ -34,6 +34,7 @@ import org.osgl.util.C;
 import org.osgl.util.E;
 import org.osgl.util.S;
 
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -51,7 +52,7 @@ public abstract class HandlerMethodMetaInfo<T extends HandlerMethodMetaInfo> ext
     private boolean throwRenderResult;
     private PropertySpec.MetaInfo propertySpec;
     private boolean disableJsonCircularRefDetect = false;
-    private Map<Label, Map<Integer, LocalVariableMetaInfo>> locals = C.newMap();
+    private Map<Label, Map<Integer, LocalVariableMetaInfo>> locals = new HashMap<>();
     private int appCtxLVT_id = -1;
     private int ctxParamCnt = -1;
 
@@ -230,7 +231,7 @@ public abstract class HandlerMethodMetaInfo<T extends HandlerMethodMetaInfo> ext
         Label start = local.start();
         Map<Integer, LocalVariableMetaInfo> m = locals.get(start);
         if (null == m) {
-            m = C.newMap();
+            m = new HashMap<>();
             locals.put(start, m);
         }
         int index = local.index();

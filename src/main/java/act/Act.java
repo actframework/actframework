@@ -78,6 +78,8 @@ import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.jar.Attributes;
@@ -190,8 +192,8 @@ public final class Act {
     private static DbManager dbManager;
     private static GenericPluginManager pluginManager;
     private static AppServicePluginManager appPluginManager;
-    private static Map<String, Plugin> genericPluginRegistry = C.newMap();
-    private static Map<Class<? extends ActEvent>, List<ActEventListener>> listeners = C.newMap();
+    private static Map<String, Plugin> genericPluginRegistry = new HashMap<>();
+    private static Map<Class<? extends ActEvent>, List<ActEventListener>> listeners = new HashMap<>();
 
     public static Mode mode() {
         return mode;
@@ -361,7 +363,7 @@ public final class Act {
     public static synchronized <T extends ActEvent> void registerEventListener(Class<T> eventClass, ActEventListener<T> listener) {
         List<ActEventListener> list = listeners.get(eventClass);
         if (null == list) {
-            list = C.newList();
+            list = new ArrayList<>();
             listeners.put(eventClass, list);
         }
         if (!list.contains(listener)) {

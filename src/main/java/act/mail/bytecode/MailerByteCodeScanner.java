@@ -37,8 +37,8 @@ import act.util.GeneralAnnoInfo;
 import org.osgl.$;
 import org.osgl.logging.L;
 import org.osgl.logging.Logger;
-import org.osgl.util.C;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -167,8 +167,8 @@ public class MailerByteCodeScanner extends AppByteCodeScannerBase {
             private String signature;
             private boolean requireScan;
             private SenderMethodMetaInfo methodInfo;
-            private Map<Integer, List<ParamAnnoInfoTrait>> paramAnnoInfoList = C.newMap();
-            private Map<Integer, List<GeneralAnnoInfo>> genericParamAnnoInfoList = C.newMap();
+            private Map<Integer, List<ParamAnnoInfoTrait>> paramAnnoInfoList = new HashMap<>();
+            private Map<Integer, List<GeneralAnnoInfo>> genericParamAnnoInfoList = new HashMap<>();
 
             SenderMethodVisitor(MethodVisitor mv, int access, String methodName, String desc, String signature, String[] exceptions) {
                 super(ASM5, mv);

@@ -30,16 +30,17 @@ import act.util.SubClassFinder;
 import org.osgl.$;
 import org.osgl.Osgl;
 import org.osgl.inject.BeanSpec;
-import org.osgl.util.C;
 
 import javax.enterprise.context.ApplicationScoped;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public abstract class DependencyInjectorBase<DI extends DependencyInjectorBase<DI>> extends AppServiceBase<DI> implements DependencyInjector<DI> {
 
-    protected Map<Class, DependencyInjectionBinder> binders = C.newMap();
-    protected Map<Class, List<DependencyInjectionListener>> listeners = C.newMap();
+    protected Map<Class, DependencyInjectionBinder> binders = new HashMap<>();
+    protected Map<Class, List<DependencyInjectionListener>> listeners = new HashMap<>();
 
     public DependencyInjectorBase(App app) {
         this(app, false);
@@ -71,7 +72,7 @@ public abstract class DependencyInjectorBase<DI extends DependencyInjectorBase<D
         for (Class c : targets) {
             List<DependencyInjectionListener> list = listeners.get(c);
             if (null == list) {
-                final List<DependencyInjectionListener> list0 = C.newList();
+                final List<DependencyInjectionListener> list0 = new ArrayList<>();
                 list = list0;
                 final AppClassLoader cl = app().classLoader();
                 ClassNode node = cl.classInfoRepository().node(c.getName());

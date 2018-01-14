@@ -27,6 +27,7 @@ import org.osgl.$;
 import org.osgl.util.C;
 import org.osgl.util.S;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class HandlerParamMetaInfo {
@@ -36,7 +37,7 @@ public class HandlerParamMetaInfo {
     private boolean context;
     private ParamAnnoInfo paramAnno;
     private BindAnnoInfo bindAnno;
-    private List<GeneralAnnoInfo> generalAnnoInfoList = C.newList();
+    private List<GeneralAnnoInfo> generalAnnoInfoList = new ArrayList<>();
 
     public HandlerParamMetaInfo type(Type type) {
         this.type = type;

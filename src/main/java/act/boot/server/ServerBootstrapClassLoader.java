@@ -35,9 +35,7 @@ import org.osgl.util.E;
 
 import java.io.File;
 import java.lang.reflect.Modifier;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import static act.Constants.*;
 
@@ -52,9 +50,9 @@ public class ServerBootstrapClassLoader extends ClassLoader implements PluginCla
     private File lib;
     private File plugin;
 
-    private Map<String, byte[]> libBC = C.newMap();
-    private Map<String, byte[]> pluginBC = C.newMap();
-    private List<Class<?>> pluginClasses = C.newList();
+    private Map<String, byte[]> libBC = new HashMap<>();
+    private Map<String, byte[]> pluginBC = new HashMap<>();
+    private List<Class<?>> pluginClasses = new ArrayList<>();
 
     public ServerBootstrapClassLoader(ClassLoader parent) {
         super(parent);

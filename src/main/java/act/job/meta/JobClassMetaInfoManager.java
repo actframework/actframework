@@ -23,9 +23,10 @@ package act.job.meta;
 import act.asm.Type;
 import act.util.AsmTypes;
 import act.util.DestroyableBase;
-import org.osgl.util.C;
 
 import javax.enterprise.context.ApplicationScoped;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -34,8 +35,8 @@ import static act.Destroyable.Util.destroyAll;
 @ApplicationScoped
 public class JobClassMetaInfoManager extends DestroyableBase {
 
-    private Map<String, JobClassMetaInfo> jobs = C.newMap();
-    private Map<Type, List<JobClassMetaInfo>> subTypeInfo = C.newMap();
+    private Map<String, JobClassMetaInfo> jobs = new HashMap<>();
+    private Map<Type, List<JobClassMetaInfo>> subTypeInfo = new HashMap<>();
 
     public JobClassMetaInfoManager() {
     }
@@ -61,7 +62,7 @@ public class JobClassMetaInfoManager extends DestroyableBase {
                 if (null == superInfo) {
                     List<JobClassMetaInfo> subTypes = subTypeInfo.get(superType);
                     if (null == subTypes) {
-                        subTypes = C.newList();
+                        subTypes = new ArrayList<>();
                     }
                     subTypes.add(metaInfo);
                 }

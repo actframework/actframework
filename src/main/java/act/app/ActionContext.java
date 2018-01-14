@@ -43,6 +43,8 @@ import act.view.RenderAny;
 import org.osgl.$;
 import org.osgl.concurrent.ContextLocal;
 import org.osgl.http.H;
+import org.osgl.logging.LogManager;
+import org.osgl.logging.Logger;
 import org.osgl.mvc.result.Result;
 import org.osgl.storage.ISObject;
 import org.osgl.util.C;
@@ -53,6 +55,7 @@ import org.osgl.web.util.UserAgent;
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
 import javax.validation.ConstraintViolation;
+import java.lang.annotation.Annotation;
 import java.util.*;
 
 import static act.controller.Controller.Util.*;
@@ -64,6 +67,8 @@ import static org.osgl.http.H.Header.Names.*;
  */
 @RequestScoped
 public class ActionContext extends ActContext.Base<ActionContext> implements Destroyable {
+
+    private static final Logger LOGGER = LogManager.get(ActionContext.class);
 
     public static final String ATTR_CSRF_TOKEN = "__csrf__";
     public static final String ATTR_CSR_TOKEN_PREFETCH = "__csrf_prefetch__";
@@ -110,7 +115,7 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
 
     @Inject
     private ActionContext(App app, H.Request request, ActResponse<?> response) {
-        super(app);
+        super(app, true);
         E.NPE(app, request, response);
         request.context(this);
         response.context(this);
@@ -430,17 +435,13 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
 
     private Map<String, String[]> bodyParams() {
         if (null == bodyParams) {
-            synchronized (this) {
-                if (null == bodyParams) {
-                    Map<String, String[]> map = C.newMap();
-                    H.Method method = request.method();
-                    if (H.Method.POST == method || H.Method.PUT == method || H.Method.PATCH == method) {
-                        RequestBodyParser parser = RequestBodyParser.get(request);
-                        map = parser.parse(this);
-                    }
-                    bodyParams = map;
-                }
+            Map<String, String[]> map = new HashMap<>();
+            H.Method method = request.method();
+            if (H.Method.POST == method || H.Method.PUT == method || H.Method.PATCH == method) {
+                RequestBodyParser parser = RequestBodyParser.get(request);
+                map = parser.parse(this);
             }
+            bodyParams = map;
         }
         return bodyParams;
     }
@@ -673,7 +674,7 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
 
     public ActionContext __controllerInstance(String className, Object instance) {
         if (null == controllerInstances) {
-            controllerInstances = C.newMap();
+            controllerInstances = new HashMap<>();
         }
         controllerInstances.put(className, instance);
         return this;
@@ -987,6 +988,11 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
             this.uploads.clear();
         }
         this.state = State.DESTROYED;
+    }
+
+    @Override
+    public Class<? extends Annotation> scope() {
+        return RequestScoped.class;
     }
 
     public void saveLocal() {

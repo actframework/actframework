@@ -23,7 +23,6 @@ package act.util;
 import act.asm.*;
 import act.data.annotation.Data;
 import org.osgl.$;
-import org.osgl.util.C;
 import org.osgl.util.FastStr;
 import org.osgl.util.S;
 
@@ -167,7 +166,7 @@ public class DataObjectEnhancer extends AppByteCodeEnhancer<DataObjectEnhancer> 
             mv.visitJumpInsn(IFEQ, lbl_exit_with_false);
         }
         // call Osgl.eq(that.f1, this.f1)
-        C.List<ObjectMetaInfo.FieldMetaInfo> fields = metaInfo.fields();
+        List<ObjectMetaInfo.FieldMetaInfo> fields = metaInfo.fields();
         for (ObjectMetaInfo.FieldMetaInfo fi : fields) {
             fi.addEqualInstructions(host, mv, lbl_exit_with_false);
         }
@@ -192,7 +191,7 @@ public class DataObjectEnhancer extends AppByteCodeEnhancer<DataObjectEnhancer> 
     private void generateHashCodeMethod() {
         MethodVisitor mv = hashCodeMethodBegin(this);
         Type host = metaInfo.type();
-        C.List<ObjectMetaInfo.FieldMetaInfo> fields = metaInfo.fields();
+        List<ObjectMetaInfo.FieldMetaInfo> fields = metaInfo.fields();
         int fieldCount = fieldCount(fields);
         if (fieldCount < 6) {
             int cnt = 0;

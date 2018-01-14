@@ -24,9 +24,9 @@ import act.asm.Type;
 import act.util.DestroyableBase;
 import org.osgl.logging.LogManager;
 import org.osgl.logging.Logger;
-import org.osgl.util.C;
 
 import javax.enterprise.context.ApplicationScoped;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -37,8 +37,8 @@ public class CommanderClassMetaInfoManager extends DestroyableBase {
 
     private static final Logger logger = LogManager.get(CommanderClassMetaInfoManager.class);
 
-    private Map<String, CommanderClassMetaInfo> commands = C.newMap();
-    private Map<Type, List<CommanderClassMetaInfo>> subTypeInfo = C.newMap();
+    private Map<String, CommanderClassMetaInfo> commands = new HashMap<>();
+    private Map<Type, List<CommanderClassMetaInfo>> subTypeInfo = new HashMap<>();
 
     public CommanderClassMetaInfoManager() {
     }

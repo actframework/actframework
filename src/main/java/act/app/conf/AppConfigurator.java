@@ -43,8 +43,8 @@ public abstract class AppConfigurator<T extends AppConfigurator> extends AppConf
     protected static final H.Method PUT = H.Method.PUT;
     protected static final H.Method DELETE = H.Method.DELETE;
 
-    private transient Set<String> controllerClasses = C.newSet();
-    private Map<String, Object> userProps = C.newMap();
+    private transient Set<String> controllerClasses = new HashSet<>();
+    private Map<String, Object> userProps = new HashMap<>();
 
     @Override
     public boolean equals(Object obj) {

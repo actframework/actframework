@@ -28,8 +28,7 @@ import org.osgl.logging.Logger;
 import org.osgl.util.C;
 
 import java.io.File;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 /**
  * {@code FsChangeDetector} detects changes files in a folder and all sub folders.
@@ -39,10 +38,10 @@ public class FsChangeDetector {
 
     protected static Logger logger = L.get(FsChangeDetector.class);
 
-    private C.List<FsEventListener> listeners = C.newList();
+    private List<FsEventListener> listeners = new ArrayList<>();
     private final File dir;
     private final $.Predicate<String> fileNameFilter;
-    private final Map<String, Long> timestamps = C.newMap();
+    private final Map<String, Long> timestamps = new HashMap<>();
     private final int contextLen;
     private final String context;
     private final $.Var<Long> lastChecksum = $.var(0L);
@@ -58,11 +57,11 @@ public class FsChangeDetector {
 
     public FsChangeDetector(File file, $.Predicate<String> fileNameFilter, FsEventListener... listeners) {
         this(file, fileNameFilter);
-        this.listeners.append(C.listOf(listeners));
+        this.listeners.addAll(C.listOf(listeners));
     }
 
     public void registerListener(FsEventListener listener) {
-        listeners.append(listener);
+        listeners.add(listener);
     }
 
     public void detectChanges() {
@@ -85,7 +84,7 @@ public class FsChangeDetector {
     }
 
     private Map<String, Long> walkThrough(File file, $.Var<Long> checksum) {
-        Map<String, Long> map = C.newMap();
+        Map<String, Long> map = new HashMap<>();
         walkThrough(file, map, checksum);
         return map;
     }

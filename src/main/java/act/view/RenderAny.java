@@ -96,7 +96,7 @@ public class RenderAny extends Result {
             result = new RenderJSON(map);
         } else if (XML == fmt) {
             List<String> varNames = context.__appRenderArgNames();
-            Map<String, Object> map = C.newMap();
+            Map<String, Object> map = new HashMap<>();
             if (null != varNames && !varNames.isEmpty()) {
                 for (String name : varNames) {
                     map.put(name, context.renderArg(name));

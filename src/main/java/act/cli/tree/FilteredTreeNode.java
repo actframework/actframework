@@ -23,6 +23,7 @@ package act.cli.tree;
 import org.osgl.$;
 import org.osgl.util.C;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class FilteredTreeNode implements TreeNode {
@@ -52,7 +53,7 @@ public class FilteredTreeNode implements TreeNode {
 
     @Override
     public List<TreeNode> children() {
-        List<TreeNode> filteredChildren = C.newList();
+        List<TreeNode> filteredChildren = new ArrayList<>();
         C.List<TreeNode> pathToKid = path.append(theNode);
         for (TreeNode kid : theNode.children()) {
             if (hasAppliedChild(pathToKid, kid)) {

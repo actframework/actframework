@@ -190,7 +190,7 @@ public class Job extends DestroyableBase implements Runnable {
         progress.addListener(new ProgressGauge.Listener() {
             @Override
             public void onUpdate(ProgressGauge progressGauge) {
-                Map<String, ProgressGauge> payload = C.map("act_job_progress", progressGauge);
+                Map<String, ProgressGauge> payload = C.Map("act_job_progress", progressGauge);
                 app.getInstance(WebSocketConnectionManager.class).sendJsonToTagged(payload, jobProgressTag);
             }
         });

@@ -34,6 +34,7 @@ import java.lang.reflect.Array;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -58,8 +59,8 @@ public class GeneralAnnoInfo {
     }
 
     private Type type;
-    private Map<String, Object> attributes = C.newMap();
-    private Map<String, List<Object>> listAttributes = C.newMap();
+    private Map<String, Object> attributes = new HashMap<>();
+    private Map<String, List<Object>> listAttributes = new HashMap<>();
 
     public GeneralAnnoInfo(Type type) {
         E.NPE(type);
@@ -290,7 +291,7 @@ public class GeneralAnnoInfo {
         }
 
         private Map<String, Object> retrieveAnnotationValues(GeneralAnnoInfo info, Class<T> type) {
-            Map<String, Object> bag = C.newMap();
+            Map<String, Object> bag = new HashMap<>();
             for (String key : info.attributes.keySet()) {
                 bag.put(key, info.getAttribute(key));
             }

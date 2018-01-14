@@ -289,7 +289,7 @@ public class App extends DestroyableBase {
 
     public List<File> baseDirs() {
         if (null == baseDirs) {
-            baseDirs = C.newList();
+            baseDirs = new ArrayList<>();
             if (null != appBase && appBase.isDirectory()) {
                 baseDirs.add(appBase);
             }
@@ -327,7 +327,7 @@ public class App extends DestroyableBase {
     }
 
     public List<File> allSourceDirs(boolean requireTestProfile) {
-        List<File> dirs = C.newList();
+        List<File> dirs = new ArrayList<>();
         dirs.addAll(sourceDirs());
         if (!requireTestProfile || "test".equals(Act.profile())) {
             dirs.addAll(testSourceDirs());
@@ -336,7 +336,7 @@ public class App extends DestroyableBase {
     }
 
     public List<File> allResourceDirs(boolean requireTestProfile) {
-        List<File> dirs = C.newList();
+        List<File> dirs = new ArrayList<>();
         dirs.addAll(resourceDirs());
         if (!requireTestProfile || "test".equals(Act.profile())) {
             dirs.addAll(testResourceDirs());
@@ -345,7 +345,7 @@ public class App extends DestroyableBase {
     }
 
     public List<File> allLibDirs(boolean requireTestProfile) {
-        List<File> dirs = C.newList();
+        List<File> dirs = new ArrayList<>();
         dirs.addAll(libDirs());
         if (!requireTestProfile || "test".equals(Act.profile())) {
             dirs.addAll(testLibDirs());
@@ -1045,7 +1045,7 @@ public class App extends DestroyableBase {
         if (null != daemonRegistry) {
             Destroyable.Util.tryDestroyAll(daemonRegistry.values(), ApplicationScoped.class);
         }
-        daemonRegistry = C.newMap();
+        daemonRegistry = new HashMap<>();
         jobManager.on(AppEventId.START, new Runnable() {
             @Override
             public void run() {
@@ -1158,7 +1158,7 @@ public class App extends DestroyableBase {
 
     private void initRouters() {
         router = new Router(this);
-        moreRouters = C.newMap();
+        moreRouters = new HashMap<>();
         List<NamedPort> ports = config().namedPorts();
         for (NamedPort port : ports) {
             moreRouters.put(port, new Router(this, port.name()));

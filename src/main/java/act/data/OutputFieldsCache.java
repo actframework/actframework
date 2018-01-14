@@ -27,10 +27,7 @@ import act.util.PropertySpec;
 import org.osgl.$;
 import org.osgl.util.C;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.regex.Pattern;
 
 class OutputFieldsCache {
@@ -69,7 +66,7 @@ class OutputFieldsCache {
         }
     }
 
-    private Map<K, List<String>> cache = C.newMap();
+    private Map<K, List<String>> cache = new HashMap<>();
 
     public List<String> getOutputFields(PropertySpec.MetaInfo spec, Class<?> componentClass, ActContext context) {
         K k = new K(spec.excludedFields(context), spec.outputFields(context), componentClass);
@@ -86,7 +83,7 @@ class OutputFieldsCache {
         if ($.isSimpleType(type) && k.excluded.isEmpty() && k.outputs.isEmpty()) {
             return C.list();
         }
-        C.List<StringOrPattern> outputs = C.newList();
+        List<StringOrPattern> outputs = new ArrayList<>();
         boolean hasPattern = hasPattern(k.outputs, outputs);
         Set<String> excluded = k.excluded;
         if (hasPattern || outputs.isEmpty()) {
@@ -94,7 +91,7 @@ class OutputFieldsCache {
             List<String> allFields = repo.propertyListOf(k.componentType);
             if (!excluded.isEmpty()) {
                 List<String> finalOutputs;
-                List<StringOrPattern> lsp = C.newList();
+                List<StringOrPattern> lsp = new ArrayList<>();
                 boolean excludeHasPattern = hasPattern(excluded, lsp);
                 if (!excludeHasPattern) {
                     return C.list(allFields).without(excluded);
@@ -116,7 +113,7 @@ class OutputFieldsCache {
                     return allFields;
                 }
                 // excluded is empty and output fields has pattern
-                List<String> finalOutputs = C.newList();
+                List<String> finalOutputs = new ArrayList<>();
                 for (StringOrPattern sp: outputs) {
                     if (sp.isPattern()) {
                         Pattern p = sp.p();

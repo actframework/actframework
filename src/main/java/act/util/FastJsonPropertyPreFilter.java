@@ -43,7 +43,7 @@ public class FastJsonPropertyPreFilter implements PropertyPreFilter {
 
     private final Set<String> includes = new HashSet<String>();
     private final Set<String> excludes = new HashSet<String>();
-    private final List<String> fullPaths = C.newList();
+    private final List<String> fullPaths = new ArrayList<>();
 
     public FastJsonPropertyPreFilter(String... properties) {
         super();
@@ -192,7 +192,7 @@ public class FastJsonPropertyPreFilter implements PropertyPreFilter {
         return S.join("", paths).contains("*");
     }
 
-    private static Map<Collection<String>, List<StringOrPattern>> spCache = C.newMap();
+    private static Map<Collection<String>, List<StringOrPattern>> spCache = new HashMap<>();
 
     private boolean patternMatches(Set<String> paths, String path, boolean exclude) {
         List<StringOrPattern> spList = spList(paths);
@@ -215,7 +215,7 @@ public class FastJsonPropertyPreFilter implements PropertyPreFilter {
     private static List<StringOrPattern> spList(Collection<String> strings) {
         List<StringOrPattern> ret = spCache.get(strings);
         if (null == ret) {
-            ret = C.newList();
+            ret = new ArrayList<>();
             for (String s : strings) {
                 ret.add(new StringOrPattern(s));
             }

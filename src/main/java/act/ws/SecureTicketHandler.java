@@ -56,7 +56,7 @@ public class SecureTicketHandler extends RequestHandlerBase {
         resp.contentType(accept.contentType());
         String content;
         if (H.Format.JSON == accept) {
-            Map<String, Object> map = C.map("ticket", ticket);
+            Map<String, Object> map = C.Map("ticket", ticket);
             content = JSON.toJSONString(map);
         } else if (H.Format.XML == accept) {
             content = S.concat("<?xml version=\"1.0\" ?><ticket>", ticket.toString(), "</ticket>");

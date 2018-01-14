@@ -23,11 +23,11 @@ package act.cli;
 import act.app.App;
 import jline.console.completer.Completer;
 import jline.console.completer.StringsCompleter;
-import org.osgl.util.C;
 import org.osgl.util.S;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -42,7 +42,7 @@ public class CommandNameCompleter extends StringsCompleter implements Completer 
     }
 
     private static List<String> allCommandNames(CliDispatcher dispatcher) {
-        List<String> l = C.newList();
+        List<String> l = new ArrayList<>();
 
         List<String> appCommands = dispatcher.commands(false, true);
         l.addAll(appCommands);

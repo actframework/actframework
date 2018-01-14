@@ -23,12 +23,12 @@ package act.util;
 import act.Act;
 import act.app.*;
 import act.asm.AsmContext;
-import org.osgl.util.C;
 import org.osgl.util.E;
 import org.osgl.util.S;
 
 import java.lang.annotation.ElementType;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.List;
 
 public interface ActError {
@@ -53,7 +53,7 @@ public interface ActError {
         }
 
         public static List<String> stackTraceOf(Throwable t, ActError root) {
-            List<String> l = C.newList();
+            List<String> l = new ArrayList<>();
             while (null != t) {
                 StackTraceElement[] a = t.getStackTrace();
                 for (StackTraceElement e : a) {

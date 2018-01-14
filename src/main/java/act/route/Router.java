@@ -89,7 +89,7 @@ public class Router extends AppServiceBase<Router> {
     Node _DEL;
     Node _PATCH;
 
-    private Map<String, RequestHandlerResolver> resolvers = C.newMap();
+    private Map<String, RequestHandlerResolver> resolvers = new HashMap<>();
 
     private RequestHandlerResolver handlerLookup;
     // map action context to url context
@@ -345,11 +345,11 @@ public class Router extends AppServiceBase<Router> {
     }
 
     public String reverseRoute(String action, boolean fullUrl) {
-        return reverseRoute(action, C.<String, Object>map(), fullUrl);
+        return reverseRoute(action, new HashMap<String, Object>(), fullUrl);
     }
 
     public String reverseRoute(String action) {
-        return reverseRoute(action, C.<String, Object>map());
+        return reverseRoute(action, new HashMap<String, Object>());
     }
 
     public String reverseRoute(String action, Map<String, Object> args) {
@@ -657,7 +657,7 @@ public class Router extends AppServiceBase<Router> {
     }
 
     public List<RouteInfo> debug() {
-        List<RouteInfo> info = C.newList();
+        List<RouteInfo> info = new ArrayList<>();
         debug(info);
         return C.list(info).sorted();
     }

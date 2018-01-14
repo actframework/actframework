@@ -31,6 +31,9 @@ import org.osgl.util.E;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @ApplicationScoped
@@ -38,8 +41,8 @@ class AppServiceRegistry {
 
     private static Logger logger = LogManager.get(AppServiceRegistry.class);
 
-    private Map<Class<? extends AppService>, AppService> registry = C.newMap();
-    private C.List<AppService> appendix = C.newList();
+    private Map<Class<? extends AppService>, AppService> registry = new HashMap<>();
+    private List<AppService> appendix = new ArrayList<>();
     private App app;
 
     @Inject

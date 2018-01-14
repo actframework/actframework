@@ -21,13 +21,13 @@ package act.cli.util;
  */
 
 import com.alibaba.fastjson.serializer.NameFilter;
-import org.osgl.util.C;
 
+import java.util.HashMap;
 import java.util.Map;
 
 public class MappedFastJsonNameFilter implements NameFilter {
 
-    private Map<String, String> nameMaps = C.newMap();
+    private Map<String, String> nameMaps = new HashMap<>();
 
     /**
      * Construct a {@code MappedFastJsonNameFilter} with prop-name mapping

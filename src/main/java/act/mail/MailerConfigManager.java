@@ -24,10 +24,10 @@ import act.Destroyable;
 import act.app.App;
 import act.app.AppServiceBase;
 import act.conf.AppConfig;
-import org.osgl.util.C;
 
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+import java.util.HashMap;
 import java.util.Map;
 
 @ApplicationScoped
@@ -35,7 +35,7 @@ public class MailerConfigManager extends AppServiceBase<MailerConfigManager> {
 
     public static final String KEY_MAILER = "mailer";
 
-    private C.Map<String, MailerConfig> configMap = C.newMap();
+    private Map<String, MailerConfig> configMap = new HashMap<>();
 
     @Inject
     public MailerConfigManager(App app) {

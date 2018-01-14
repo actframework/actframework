@@ -27,17 +27,17 @@ import act.data.SObjectResolver;
 import org.osgl.$;
 import org.osgl.storage.ISObject;
 import org.osgl.util.AnnotationAware;
-import org.osgl.util.C;
 import org.osgl.util.S;
 import org.osgl.util.StringValueResolver;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class StringValueResolverManager extends AppServiceBase<StringValueResolverManager> {
 
-    private Map<Class, StringValueResolver> resolvers = C.newMap();
+    private Map<Class, StringValueResolver> resolvers = new HashMap<>();
 
     public StringValueResolverManager(App app) {
         super(app);

@@ -35,10 +35,7 @@ import javax.mail.PasswordAuthentication;
 import javax.mail.Session;
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 
 public class MailerConfig extends AppHolderBase {
 
@@ -142,7 +139,7 @@ public class MailerConfig extends AppHolderBase {
         if (S.blank(s)) {
             return C.list();
         }
-        List<InternetAddress> l = C.newList();
+        List<InternetAddress> l = new ArrayList<>();
         return MailerContext.canonicalRecipients(l, s);
     }
 

@@ -553,7 +553,7 @@ public class EventBus extends AppServiceBase<EventBus> {
         int len = ids.length;
         List[] l = new List[len];
         for (int i = 0; i < len; ++i) {
-            l[i] = C.newList();
+            l[i] = new ArrayList<>();
         }
         return l;
     }

@@ -24,11 +24,13 @@ import act.Destroyable;
 import act.util.DestroyableBase;
 import org.osgl.util.C;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class GenericPluginManager extends DestroyableBase {
-    private Map<Class<?>, List<?>> registry = C.newMap();
+    private Map<Class<?>, List<?>> registry = new HashMap<>();
 
     @Override
     protected void releaseResources() {
@@ -45,7 +47,7 @@ public class GenericPluginManager extends DestroyableBase {
     public synchronized <CT, ET extends CT> GenericPluginManager register(Class<CT> clazz, ET plugin) {
         List pluginList = registry.get(clazz);
         if (null == pluginList) {
-            pluginList = C.newList();
+            pluginList = new ArrayList<>();
             registry.put(clazz, pluginList);
         }
         pluginList.add(plugin);

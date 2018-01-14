@@ -81,7 +81,7 @@ public class AppClassLoader
 
     private final static Logger logger = L.get(AppClassLoader.class);
     private App app;
-    private Map<String, byte[]> libClsCache = C.newMap();
+    private Map<String, byte[]> libClsCache = new HashMap<>();
     private ClassInfoRepository classInfoRepository;
     private boolean destroyed;
     protected ControllerClassMetaInfoManager controllerInfo;
@@ -254,7 +254,7 @@ public class AppClassLoader
     protected void scanByteCode(Iterable<String> classes, $.Function<String, byte[]> bytecodeProvider) {
         logger.debug("start to scan bytecode ...");
         final AppCodeScannerManager scannerManager = app().scannerManager();
-        Map<String, List<AppByteCodeScanner>> dependencies = C.newMap();
+        Map<String, List<AppByteCodeScanner>> dependencies = new HashMap<>();
         for (String className : classes) {
             logger.debug("scanning %s ...", className);
             dependencies.remove(className);
@@ -265,8 +265,8 @@ public class AppClassLoader
             }
             libClsCache.put(className, ba);
             act.metric.Timer timer = metric.startTimer("act:classload:scan:bytecode:" + className);
-            List<ByteCodeVisitor> visitors = C.newList();
-            List<AppByteCodeScanner> scanners = C.newList();
+            List<ByteCodeVisitor> visitors = new ArrayList<>();
+            List<AppByteCodeScanner> scanners = new ArrayList<>();
             for (AppByteCodeScanner scanner : scannerManager.byteCodeScanners()) {
                 if (scanner.start(className)) {
                     //LOGGER.trace("scanner %s added to the list", scanner.getClass().getName());
@@ -312,7 +312,7 @@ public class AppClassLoader
                         logger.trace("dependencies[%s] found for %s by scanner %s", dependencyClass, className, scannerA);
                         List<AppByteCodeScanner> l = dependencies.get(dependencyClass);
                         if (null == l) {
-                            l = C.newList();
+                            l = new ArrayList<>();
                             dependencies.put(dependencyClass, l);
                         }
                         if (!l.contains(scanner)) l.add(scannerA);
@@ -326,7 +326,7 @@ public class AppClassLoader
             String className = dependencies.keySet().iterator().next();
             act.metric.Timer timer = metric.startTimer("act:classload:scan:bytecode:" + className);
             List<AppByteCodeScanner> scanners = dependencies.remove(className);
-            List<ByteCodeVisitor> visitors = C.newList();
+            List<ByteCodeVisitor> visitors = new ArrayList<>();
             for (AppByteCodeScanner scanner : scanners) {
                 scanner.start(className);
                 visitors.add(scanner.byteCodeVisitor());
@@ -353,7 +353,7 @@ public class AppClassLoader
                         logger.trace("dependencies[%s] found for %s by scanner %s", dependencyClass, className, scannerA);
                         List<AppByteCodeScanner> l = dependencies.get(dependencyClass);
                         if (null == l) {
-                            l = C.newList();
+                            l = new ArrayList<>();
                             dependencies.put(dependencyClass, l);
                         }
                         if (!l.contains(scanner)) l.add(scannerA);
@@ -370,8 +370,8 @@ public class AppClassLoader
     }
 
     private void preloadLib() {
-        final Map<String, byte[]> bytecodeIdx = C.newMap();
-        final Map<String, Properties> jarConf = C.newMap();
+        final Map<String, byte[]> bytecodeIdx = new HashMap<>();
+        final Map<String, Properties> jarConf = new HashMap<>();
         final $.Function<String, Boolean> ignoredClassNames = app().config().appClassTester().negate();
         Jars.F.JarEntryVisitor classNameIndexBuilder = Jars.F.classNameIndexBuilder(bytecodeIdx, ignoredClassNames);
         Jars.F.JarEntryVisitor confIndexBuilder = Jars.F.appConfigFileIndexBuilder(jarConf);

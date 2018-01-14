@@ -23,6 +23,7 @@ package act.app;
 import org.osgl.util.C;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -34,7 +35,7 @@ public abstract class AppByteCodeScannerBase extends AppCodeScannerBase implemen
     private Map<Class<? extends AppByteCodeScanner>, Set<String>> dependencyClasses;
 
     protected final void reset() {
-        dependencyClasses = C.newMap();
+        dependencyClasses = new HashMap<>();
     }
 
     protected final void addDependencyClass(String className) {

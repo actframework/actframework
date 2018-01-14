@@ -23,11 +23,12 @@ package act.controller.meta;
 import org.osgl.$;
 import org.osgl.util.C;
 
+import java.util.HashMap;
 import java.util.Map;
 
 public class ParamAnnoInfo extends ParamAnnoInfoTraitBase {
     private String bindName = "";
-    private Map<Class, Object> defValMap = C.newMap();
+    private Map<Class, Object> defValMap = new HashMap<>();
 
     public ParamAnnoInfo(int index) {
         super(index);
@@ -58,7 +59,7 @@ public class ParamAnnoInfo extends ParamAnnoInfoTraitBase {
         return $.cast(v);
     }
 
-    private static Map<Class, Class> primitiveTypes = C.map(
+    private static Map<Class, Class> primitiveTypes = C.Map(
             boolean.class, Boolean.class,
             byte.class, Byte.class,
             short.class, Short.class,

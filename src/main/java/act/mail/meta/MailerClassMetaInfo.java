@@ -22,10 +22,12 @@ package act.mail.meta;
 
 import act.asm.Type;
 import act.util.DestroyableBase;
-import org.osgl.util.C;
 import org.osgl.util.S;
 
 import javax.enterprise.context.ApplicationScoped;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 import static act.Destroyable.Util.destroyAll;
 
@@ -40,9 +42,9 @@ public final class MailerClassMetaInfo extends DestroyableBase {
     private boolean isAbstract = false;
     private String ctxField = null;
     private boolean ctxFieldIsPrivate = true;
-    private C.List<SenderMethodMetaInfo> senders = C.newList();
+    private List<SenderMethodMetaInfo> senders = new ArrayList<>();
     // mailerLookup index mailer method by method name
-    private C.Map<String, SenderMethodMetaInfo> mailerLookup = null;
+    private Map<String, SenderMethodMetaInfo> mailerLookup = null;
     private boolean isMailer;
     private String contextPath;
     private String templateContext;

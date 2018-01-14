@@ -24,10 +24,10 @@ import act.Act;
 import act.internal.util.AppDescriptor;
 import act.util.DestroyableBase;
 import org.osgl.$;
-import org.osgl.util.C;
 import org.osgl.util.E;
 
 import javax.enterprise.context.ApplicationScoped;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
@@ -40,7 +40,7 @@ import static act.Destroyable.Util.tryDestroyAll;
  */
 public class AppManager extends DestroyableBase {
 
-    private Map<Integer, App> byPort = C.newMap();
+    private Map<Integer, App> byPort = new HashMap<>();
 
     private AppManager() {
     }

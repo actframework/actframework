@@ -35,7 +35,7 @@ import java.util.Map;
  * Note only Immutable simple type supported
  */
 public class SimpleTypeInstanceFactory {
-    private static Map<Class, Object> prototypes = C.map(
+    private static Map<Class, Object> prototypes = C.Map(
             Boolean.class, Boolean.FALSE,
             boolean.class, Boolean.FALSE,
             Character.class, '\0',

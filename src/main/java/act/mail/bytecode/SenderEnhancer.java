@@ -36,6 +36,7 @@ import org.osgl.util.C;
 import org.osgl.util.E;
 import org.osgl.util.S;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
@@ -147,7 +148,7 @@ public class SenderEnhancer extends MethodVisitor implements Opcodes {
                 this.instructions = instructions;
                 this.itr = itr;
                 this.trans = trans;
-                this.handlers = C.map(
+                this.handlers = C.Map(
                         AbstractInsnNode.METHOD_INSN, new InvocationHandler(this, meta)
                 );
                 trans.lblList.add(start);
@@ -248,7 +249,7 @@ public class SenderEnhancer extends MethodVisitor implements Opcodes {
                     logger.warn("local variable table info not found. AppContext render args will not be automatically populated");
                 }
                 AbstractInsnNode node = invokeNode.getPrevious();
-                List<LoadInsnInfo> loadInsnInfoList = C.newList();
+                List<LoadInsnInfo> loadInsnInfoList = new ArrayList<>();
                 String templateLiteral = null;
                 while (null != node) {
                     int type = node.getType();

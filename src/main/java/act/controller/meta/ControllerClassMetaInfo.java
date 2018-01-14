@@ -36,9 +36,7 @@ import org.osgl.util.S;
 
 import javax.enterprise.context.ApplicationScoped;
 import java.lang.annotation.Annotation;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 import static act.Destroyable.Util.destroyAll;
 
@@ -55,13 +53,13 @@ public final class ControllerClassMetaInfo extends DestroyableBase {
     private boolean isAbstract = false;
     private String ctxField = null;
     private boolean ctxFieldIsPrivate = true;
-    private C.Set<String> withList = C.newSet();
-    private C.List<ActionMethodMetaInfo> actions = C.newList();
+    private Set<String> withList = C.newSet();
+    private List<ActionMethodMetaInfo> actions = new ArrayList<>();
     // actionLookup index action method by method name
-    private C.Map<String, ActionMethodMetaInfo> actionLookup = null;
+    private Map<String, ActionMethodMetaInfo> actionLookup = null;
     // handlerLookup index handler method by method name
     // handler could by action or any kind of interceptors
-    private C.Map<String, HandlerMethodMetaInfo> handlerLookup = null;
+    private Map<String, HandlerMethodMetaInfo> handlerLookup = null;
     GroupInterceptorMetaInfo interceptors = new GroupInterceptorMetaInfo();
     private ControllerClassMetaInfo parent;
     private boolean isController;
@@ -454,7 +452,7 @@ public final class ControllerClassMetaInfo extends DestroyableBase {
     }
 
     private void buildActionLookup() {
-        C.Map<String, ActionMethodMetaInfo> lookup = C.newMap();
+        Map<String, ActionMethodMetaInfo> lookup = new HashMap<>();
         for (ActionMethodMetaInfo act : actions) {
             lookup.put(act.name(), act);
         }
@@ -462,7 +460,7 @@ public final class ControllerClassMetaInfo extends DestroyableBase {
     }
 
     private void buildHandlerLookup() {
-        C.Map<String, HandlerMethodMetaInfo> lookup = C.newMap();
+        Map<String, HandlerMethodMetaInfo> lookup = new HashMap<>();
         lookup.putAll(actionLookup);
         for (InterceptorMethodMetaInfo info : beforeInterceptors()) {
             lookup.put(info.name(), info);
@@ -484,7 +482,7 @@ public final class ControllerClassMetaInfo extends DestroyableBase {
 
     public static final C.Set<H.Method> ACTION_METHODS = C.set(H.Method.GET, H.Method.POST, H.Method.PUT, H.Method.DELETE);
 
-    private static final Map<Class<? extends Action>, H.Method> METHOD_LOOKUP = C.newMap(
+    private static final Map<Class<? extends Action>, H.Method> METHOD_LOOKUP = C.Map(
             GetAction.class, H.Method.GET,
             PostAction.class, H.Method.POST,
             PutAction.class, H.Method.PUT,

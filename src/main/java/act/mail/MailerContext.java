@@ -58,11 +58,11 @@ public class MailerContext extends ActContext.Base<MailerContext> {
     private InternetAddress from;
     private String subject;
     private String content;
-    private List<InternetAddress> to = C.newList();
-    private List<InternetAddress> cc = C.newList();
-    private List<InternetAddress> bcc = C.newList();
+    private List<InternetAddress> to = new ArrayList<>();
+    private List<InternetAddress> cc = new ArrayList<>();
+    private List<InternetAddress> bcc = new ArrayList<>();
     private String confId;
-    private List<ISObject> attachments = C.newList();
+    private List<ISObject> attachments = new ArrayList<>();
     private String senderPath; // e.g. com.mycorp.myapp.mailer.AbcMailer.foo
 
     private static final ContextLocal<MailerContext> _local = $.contextLocal();
@@ -315,7 +315,7 @@ public class MailerContext extends ActContext.Base<MailerContext> {
     }
 
     private String debug(MimeMessage msg) throws Exception {
-        List<String> lines = C.newList();
+        List<String> lines = new ArrayList<>();
         lines.add(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>\n>> recipients");
         Address[] aa = msg.getAllRecipients();
         if (null != aa) {
@@ -419,7 +419,7 @@ public class MailerContext extends ActContext.Base<MailerContext> {
     }
 
     public static List<InternetAddress> canonicalRecipients(List<InternetAddress> l, String... recipients) {
-        if (null == l) l = C.newList();
+        if (null == l) l = new ArrayList<>();
         if (recipients.length == 0) return l;
         String s = S.join(",", recipients).replaceAll(SEP, ",");
         try {
