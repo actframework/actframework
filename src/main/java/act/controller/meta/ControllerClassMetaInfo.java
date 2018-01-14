@@ -495,7 +495,7 @@ public final class ControllerClassMetaInfo extends DestroyableBase {
 
     public static final C.Set<H.Method> ACTION_METHODS = C.set(H.Method.GET, H.Method.POST, H.Method.PUT, H.Method.DELETE);
 
-    private static final Map<Class<? extends Annotation>, H.Method> METHOD_LOOKUP = C.Map(
+    private static final Map<Class<? extends Annotation>, H.Method> METHOD_LOOKUP = C.newMap(
             GetAction.class, H.Method.GET,
             PostAction.class, H.Method.POST,
             PutAction.class, H.Method.PUT,
