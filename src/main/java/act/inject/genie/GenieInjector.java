@@ -24,7 +24,7 @@ import act.Act;
 import act.app.App;
 import act.app.AppClassLoader;
 import act.app.conf.AppConfigurator;
-import act.app.event.AppEventId;
+import act.app.event.SysEventId;
 import act.controller.ActionMethodParamAnnotationHandler;
 import act.inject.*;
 import act.sys.Env;
@@ -213,12 +213,12 @@ public class GenieInjector extends DependencyInjectorBase<GenieInjector> {
         return genie;
     }
 
-    @SubClassFinder(callOn = AppEventId.DEPENDENCY_INJECTOR_LOADED)
+    @SubClassFinder(callOn = SysEventId.DEPENDENCY_INJECTOR_LOADED)
     public static void foundModule(Class<? extends Module> moduleClass) {
         addModuleClass(moduleClass);
     }
 
-    @SubClassFinder(callOn = AppEventId.DEPENDENCY_INJECTOR_LOADED)
+    @SubClassFinder(callOn = SysEventId.DEPENDENCY_INJECTOR_LOADED)
     public static void foundConfigurator(Class<? extends AppConfigurator> configurator) {
         addModuleClass(configurator);
     }
@@ -229,7 +229,7 @@ public class GenieInjector extends DependencyInjectorBase<GenieInjector> {
         return (genie.hasProvider(clazz));
     }
 
-    @AnnotatedClassFinder(value = AutoBind.class, callOn = AppEventId.DEPENDENCY_INJECTOR_PROVISIONED, noAbstract = false)
+    @AnnotatedClassFinder(value = AutoBind.class, callOn = SysEventId.DEPENDENCY_INJECTOR_PROVISIONED, noAbstract = false)
     public static void foundAutoBinding(final Class<?> autoBinding) {
         // check if there are manual binding (via modules) for the class already
         if (hasBinding(autoBinding)) {
@@ -289,7 +289,7 @@ public class GenieInjector extends DependencyInjectorBase<GenieInjector> {
         }
     }
 
-    @AnnotatedClassFinder(value = ModuleTag.class, callOn = AppEventId.DEPENDENCY_INJECTOR_LOADED, noAbstract = false)
+    @AnnotatedClassFinder(value = ModuleTag.class, callOn = SysEventId.DEPENDENCY_INJECTOR_LOADED, noAbstract = false)
     public static void foundTaggedModule(Class<?> taggedModuleClass) {
         addModuleClass(taggedModuleClass);
     }
@@ -303,7 +303,7 @@ public class GenieInjector extends DependencyInjectorBase<GenieInjector> {
         genieInjector.addModule(moduleClass);
     }
 
-    @AnnotatedClassFinder(value = LoadValue.class, noAbstract = false, callOn = AppEventId.DEPENDENCY_INJECTOR_LOADED)
+    @AnnotatedClassFinder(value = LoadValue.class, noAbstract = false, callOn = SysEventId.DEPENDENCY_INJECTOR_LOADED)
     public static void foundValueLoader(Class<? extends Annotation> valueLoader) {
         App app = App.instance();
         GenieInjector genieInjector = app.injector();

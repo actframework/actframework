@@ -24,7 +24,7 @@ import act.Destroyable;
 import act.app.App;
 import act.app.AppClassLoader;
 import act.app.AppServiceBase;
-import act.app.event.AppEventId;
+import act.app.event.SysEventId;
 import act.util.ClassNode;
 import act.util.SubClassFinder;
 import org.osgl.$;
@@ -100,7 +100,7 @@ public abstract class DependencyInjectorBase<DI extends DependencyInjectorBase<D
     }
 
 
-    @SubClassFinder(value = DependencyInjectionListener.class, callOn = AppEventId.DEPENDENCY_INJECTOR_PROVISIONED)
+    @SubClassFinder(value = DependencyInjectionListener.class, callOn = SysEventId.DEPENDENCY_INJECTOR_PROVISIONED)
     public static void discoverDiListener(final Class<? extends DependencyInjectionListener> target) {
         App app = App.instance();
         DependencyInjector di = app.injector();

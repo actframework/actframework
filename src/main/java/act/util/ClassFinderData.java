@@ -21,7 +21,7 @@ package act.util;
  */
 
 import act.app.App;
-import act.app.event.AppEventId;
+import act.app.event.SysEventId;
 import act.sys.Env;
 import org.osgl.$;
 import org.osgl.Osgl;
@@ -120,7 +120,7 @@ public class ClassFinderData {
     /**
      * Define when to invoke the found logic
      */
-    private AppEventId when = AppEventId.DEPENDENCY_INJECTOR_PROVISIONED;
+    private SysEventId when = SysEventId.DEPENDENCY_INJECTOR_PROVISIONED;
     /**
      * Specify how to find the target classes by matching
      * the `what` class
@@ -172,7 +172,7 @@ public class ClassFinderData {
     }
 
     public ClassFinderData when(String loadOn) {
-        this.when = AppEventId.valueOf(loadOn);
+        this.when = SysEventId.valueOf(loadOn);
         return this;
     }
 

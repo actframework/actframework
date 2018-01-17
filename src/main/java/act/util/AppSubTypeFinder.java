@@ -21,7 +21,7 @@ package act.util;
  */
 
 import act.app.App;
-import act.app.event.AppEventId;
+import act.app.event.SysEventId;
 
 /**
  * An `AppSubTypeFinder` extends {@link SubTypeFinder} with an method to
@@ -35,7 +35,7 @@ public abstract class AppSubTypeFinder<T> extends SubTypeFinder<T> {
         registerSingleton();
     }
 
-    public AppSubTypeFinder(Class<T> target, AppEventId bindingEvent) {
+    public AppSubTypeFinder(Class<T> target, SysEventId bindingEvent) {
         super(target, bindingEvent);
         registerSingleton();
     }
@@ -48,7 +48,7 @@ public abstract class AppSubTypeFinder<T> extends SubTypeFinder<T> {
     public static class _AppSubTypeFinderFinder extends SubTypeFinder<AppSubTypeFinder> {
 
         public _AppSubTypeFinderFinder() {
-            super(AppSubTypeFinder.class, AppEventId.SINGLETON_PROVISIONED);
+            super(AppSubTypeFinder.class, SysEventId.SINGLETON_PROVISIONED);
         }
 
         @Override

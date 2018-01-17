@@ -25,8 +25,8 @@ import act.app.App;
 /**
  * Emitted after Application's router has been initialized and before route table loaded
  */
-public class AppRouterInitialized extends AppEvent {
+public class AppRouterInitialized extends SysEvent {
     public AppRouterInitialized(App source) {
-        super(AppEventId.ROUTER_INITIALIZED, source);
+        super(SysEventId.ROUTER_INITIALIZED, source);
     }
 }

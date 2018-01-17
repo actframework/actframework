@@ -20,6 +20,8 @@ package act.app.conf;
  * #L%
  */
 
+import act.app.event.SysEventId;
+
 import java.lang.annotation.*;
 
 /**
@@ -62,7 +64,7 @@ import java.lang.annotation.*;
  * 100
  * ```
  *
- * *Note* the static fields are populated on {@link act.app.event.AppEventId#START event},
+ * *Note* the static fields are populated on {@link SysEventId#START event},
  * meaning any logic in your application executed before app start shall NOT refer to
  * auto config class's configurable fields
  */

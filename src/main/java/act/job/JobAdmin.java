@@ -38,7 +38,7 @@ import java.util.List;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 /**
- * Provide admin service to act {@link AppJobManager}
+ * Provide admin service to act {@link JobManager}
  */
 @SuppressWarnings("unused")
 public class JobAdmin {
@@ -50,7 +50,7 @@ public class JobAdmin {
     @Command(value = "act.job.list", help = "List jobs")
     @PropertySpec(Job.BRIEF_VIEW)
     @TableView
-    public List<Job> listJobs(@Optional(lead = "-q") final String q, AppJobManager jobManager) {
+    public List<Job> listJobs(@Optional(lead = "-q") final String q, JobManager jobManager) {
         C.List<Job> jobs = jobManager.jobs().append(jobManager.virtualJobs());
         if (S.notBlank(q)) {
             jobs = jobs.filter(new $.Predicate<Job>() {
@@ -66,23 +66,23 @@ public class JobAdmin {
     @Command(value = "act.job.show", help = "Show job details")
     @JsonView
     @PropertySpec(Job.DETAIL_VIEW)
-    public Job getJob(@Required("specify job id") final String id, AppJobManager jobManager) {
+    public Job getJob(@Required("specify job id") final String id, JobManager jobManager) {
         return jobManager.jobById(id);
     }
 
     @Command(value = "act.job.progress", help = "Show job progress")
-    public int getJobProgress(@Required("specify job id") final String id, AppJobManager jobManager) {
+    public int getJobProgress(@Required("specify job id") final String id, JobManager jobManager) {
         Job job = jobManager.jobById(id);
         return null == job ? -1 : job.getProgressInPercent();
     }
 
     @Command(name = "act.job.cancel", help = "Cancel a job")
-    public void cancel(@Required("specify job id") String id, AppJobManager jobManager) {
+    public void cancel(@Required("specify job id") String id, JobManager jobManager) {
         jobManager.cancel(id);
     }
 
     @Command(value = "act.job.scheduler", help = "Show Job manager scheduler status")
-    public String getSchedulerStatus(AppJobManager jobManager) {
+    public String getSchedulerStatus(JobManager jobManager) {
         ScheduledThreadPoolExecutor executor = jobManager.executor();
         JSONObject json = new JSONObject();
         json.put("is terminating", executor.isTerminating());

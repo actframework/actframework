@@ -27,8 +27,8 @@ import act.app.App;
  *
  * **Note** this event will NOT be triggered after app reload in dev mode
  */
-public class ActStart extends AppEvent {
+public class ActStart extends SysEvent {
     public ActStart(App source) {
-        super(AppEventId.ACT_START, source);
+        super(SysEventId.ACT_START, source);
     }
 }

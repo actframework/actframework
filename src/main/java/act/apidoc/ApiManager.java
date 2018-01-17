@@ -24,7 +24,7 @@ import act.Act;
 import act.app.ActionContext;
 import act.app.App;
 import act.app.AppServiceBase;
-import act.app.event.AppEventId;
+import act.app.event.SysEventId;
 import act.app.util.NamedPort;
 import act.conf.AppConfig;
 import act.handler.RequestHandler;
@@ -59,7 +59,7 @@ public class ApiManager extends AppServiceBase<ApiManager> {
         if (!app.config().apiDocEnabled()) {
             return;
         }
-        app.jobManager().alongWith(AppEventId.POST_START, "compile-api-book", new Runnable() {
+        app.jobManager().alongWith(SysEventId.POST_START, "compile-api-book", new Runnable() {
             @Override
             public void run() {
                 load(app);

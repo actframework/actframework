@@ -30,6 +30,7 @@ import org.osgl.$;
 import org.osgl.inject.BeanSpec;
 import org.osgl.util.C;
 import org.osgl.util.E;
+import org.osgl.util.S;
 
 import java.lang.reflect.Method;
 import java.util.List;
@@ -38,18 +39,15 @@ public class ReflectedSimpleEventListener implements SimpleEventListener {
 
     private transient volatile Object host;
 
-    private final String className;
-    private final String methodName;
     private C.List<Class> paramTypes;
     private C.List<Class> providedParamTypes;
+    private final Class<?> hostClass;
     private final Method method;
     private final int providedParamSize;
     private final boolean isStatic;
     private final boolean isAsync;
 
     ReflectedSimpleEventListener(String className, String methodName, List<BeanSpec> paramTypes, boolean isStatic) {
-        this.className = $.notNull(className);
-        this.methodName = $.notNull(methodName);
         this.isStatic = isStatic;
         this.paramTypes = C.newList();
         this.providedParamTypes = C.newList();
@@ -77,10 +75,12 @@ public class ReflectedSimpleEventListener implements SimpleEventListener {
         for (int i = 0; i < argList.length; ++i) {
             argList[i] = paramTypes.get(i).rawType();
         }
-        method = $.getMethod($.classForName(className, Act.app().classLoader()), methodName, argList);
-        isAsync = EventBus.isAsync(method);
+        this.hostClass = Act.app().classForName(className);
+        this.method = $.getMethod(hostClass, methodName, argList);
+        this.isAsync = EventBus.isAsync(hostClass) || EventBus.isAsync(method);
     }
 
+    @Override
     public boolean isAsync() {
         return isAsync;
     }
@@ -106,6 +106,15 @@ public class ReflectedSimpleEventListener implements SimpleEventListener {
         }
     }
 
+    public List<Class> argumentTypes() {
+        return paramTypes;
+    }
+
+    @Override
+    public String toString() {
+        return S.fmt("%s.%s(%s)", hostClass, method.getName(), S.strip(paramTypes, "[", "]"));
+    }
+
     private Object host() {
         if (isStatic) {
             return null;
@@ -114,12 +123,13 @@ public class ReflectedSimpleEventListener implements SimpleEventListener {
                 synchronized (this) {
                     if (null == host) {
                         App app = App.instance();
-                        host = app.getInstance($.classForName(className, app.classLoader()));
+                        host = app.getInstance(hostClass);
                     }
                 }
             }
             return host;
         }
     }
+
 
 }

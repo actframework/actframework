@@ -25,8 +25,8 @@ import act.app.App;
 /**
  * Emitted after Application's {@link act.db.DbService db services} have been loaded
  */
-public class AppDbSvcLoaded extends AppEvent {
+public class AppDbSvcLoaded extends SysEvent {
     public AppDbSvcLoaded(App source) {
-        super(AppEventId.DB_SVC_LOADED, source);
+        super(SysEventId.DB_SVC_LOADED, source);
     }
 }

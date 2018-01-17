@@ -22,7 +22,7 @@ package act.view;
 
 import act.Act;
 import act.app.App;
-import act.app.event.AppEventId;
+import act.app.event.SysEventId;
 import act.plugin.AppServicePlugin;
 import act.util.ActContext;
 import org.osgl.http.H;
@@ -48,7 +48,7 @@ public abstract class View extends AppServicePlugin {
     @Override
     protected void applyTo(final App app) {
         Act.viewManager().register(this);
-        app.jobManager().on(AppEventId.CLASS_LOADER_INITIALIZED, new Runnable() {
+        app.jobManager().on(SysEventId.CLASS_LOADER_INITIALIZED, new Runnable() {
             @Override
             public void run() {
                 init(app);

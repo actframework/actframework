@@ -25,8 +25,8 @@ import act.app.App;
 /**
  * Emit right before emitting {@link AppStart} event
  */
-public class AppPreStart extends AppEvent {
+public class AppPreStart extends SysEvent {
     public AppPreStart(App source) {
-        super(AppEventId.PRE_START, source);
+        super(SysEventId.PRE_START, source);
     }
 }

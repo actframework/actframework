@@ -43,6 +43,7 @@ import java.io.Reader;
 import java.lang.reflect.Type;
 import java.net.URL;
 import java.nio.ByteBuffer;
+import java.util.Collection;
 import java.util.List;
 
 public class ResourceLoader<T> extends ValueLoader.Base<T> {
@@ -140,11 +141,20 @@ public class ResourceLoader<T> extends ValueLoader.Base<T> {
             return IO.readContentAsString(url);
         } else if (byte[].class == rawType) {
             return readContent(url);
-        } else if (List.class.isAssignableFrom(rawType)) {
+        } else if (List.class.equals(rawType)) {
             List<Type> typeParams = spec.typeParams();
             if (!typeParams.isEmpty()) {
                 if (String.class == typeParams.get(0)) {
                     return IO.readLines(url);
+                }
+            }
+        } else if (Collection.class.isAssignableFrom(rawType)) {
+            List<Type> typeParams = spec.typeParams();
+            if (!typeParams.isEmpty()) {
+                if (String.class == typeParams.get(0)) {
+                    Collection<String> col = Act.getInstance((Class<Collection<String>>)rawType);
+                    col.addAll(IO.readLines(url));
+                    return col;
                 }
             }
         } else if (ByteBuffer.class == rawType) {

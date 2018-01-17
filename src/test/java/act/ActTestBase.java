@@ -25,7 +25,7 @@ import act.app.App;
 import act.app.SingletonRegistry;
 import act.conf.AppConfig;
 import act.event.EventBus;
-import act.job.AppJobManager;
+import act.job.JobManager;
 import act.metric.SimpleMetricPlugin;
 import act.route.Router;
 import act.session.SessionManager;
@@ -81,7 +81,7 @@ public class ActTestBase extends TestBase {
     protected Router mockRouter;
     protected ActionContext mockActionContext;
     protected AppConfig mockAppConfig;
-    protected AppJobManager mockJobManager;
+    protected JobManager mockJobManager;
     protected SingletonRegistry mockSingletonRegistry;
     protected App mockApp;
     protected EventBus mockEventBus;
@@ -96,7 +96,7 @@ public class ActTestBase extends TestBase {
         f.set(null, mockApp);
         mockSingletonRegistry = mock(SingletonRegistry.class);
         //when(mockApp.singletonRegistry()).thenReturn(mockSingletonRegistry);
-        mockJobManager = mock(AppJobManager.class);
+        mockJobManager = mock(JobManager.class);
         when(mockApp.jobManager()).thenReturn(mockJobManager);
         mockEventBus = mock(EventBus.class);
         when(mockApp.eventBus()).thenReturn(mockEventBus);

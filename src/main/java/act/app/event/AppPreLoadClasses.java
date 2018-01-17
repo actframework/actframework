@@ -25,8 +25,8 @@ import act.app.App;
 /**
  * Emitted right before initializing {@link act.app.AppClassLoader}
  */
-public class AppPreLoadClasses extends AppEvent {
+public class AppPreLoadClasses extends SysEvent {
     public AppPreLoadClasses(App source) {
-        super(AppEventId.PRE_LOAD_CLASSES, source);
+        super(SysEventId.PRE_LOAD_CLASSES, source);
     }
 }

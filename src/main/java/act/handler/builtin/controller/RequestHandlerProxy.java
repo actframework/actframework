@@ -26,7 +26,7 @@ import act.Destroyable;
 import act.app.ActionContext;
 import act.app.App;
 import act.app.AppInterceptorManager;
-import act.app.event.AppEventId;
+import act.app.event.SysEventId;
 import act.controller.CacheSupportMetaInfo;
 import act.controller.ResponseCache;
 import act.controller.meta.*;
@@ -566,7 +566,7 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
         Collections.sort(globalExceptionInterceptors);
     }
 
-    @AnnotatedClassFinder(value = Global.class, callOn = AppEventId.PRE_START)
+    @AnnotatedClassFinder(value = Global.class, callOn = SysEventId.PRE_START)
     @SuppressWarnings("unused")
     public static void registerGlobalInterceptors(Class<?> interceptorClass) {
         App app = Act.app();

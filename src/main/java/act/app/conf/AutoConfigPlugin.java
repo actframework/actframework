@@ -23,9 +23,9 @@ package act.app.conf;
 import act.app.App;
 import act.app.AppByteCodeScanner;
 import act.app.data.StringValueResolverManager;
-import act.app.event.AppEventId;
+import act.app.event.SysEventId;
 import act.conf.AppConfig;
-import act.event.AppEventListenerBase;
+import act.event.SysEventListenerBase;
 import act.util.AnnotatedTypeFinder;
 import org.osgl.$;
 import org.osgl.exception.NotAppliedException;
@@ -54,7 +54,7 @@ public class AutoConfigPlugin extends AnnotatedTypeFinder {
         super(true, false, AutoConfig.class, new $.F2<App, String, Map<Class<? extends AppByteCodeScanner>, Set<String>>>() {
             @Override
             public Map<Class<? extends AppByteCodeScanner>, Set<String>> apply(final App app, final String className) throws NotAppliedException, $.Break {
-                app.eventBus().bind(AppEventId.PRE_START, new AppEventListenerBase() {
+                app.eventBus().bind(SysEventId.PRE_START, new SysEventListenerBase() {
                     @Override
                     public void on(EventObject event) throws Exception {
                         Class<?> autoConfigClass = $.classForName(className, app.classLoader());
@@ -109,7 +109,7 @@ public class AutoConfigPlugin extends AnnotatedTypeFinder {
             this.injector = app.injector();
             synchronized (AutoConfigLoader.class) {
                 allowChangeFinalField();
-                app.jobManager().on(AppEventId.START, new Runnable() {
+                app.jobManager().on(SysEventId.START, new Runnable() {
                     @Override
                     public void run() {
                         resetFinalFieldUpdate();

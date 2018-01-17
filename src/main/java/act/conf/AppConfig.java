@@ -24,7 +24,7 @@ import act.Act;
 import act.Constants;
 import act.app.*;
 import act.app.conf.AppConfigurator;
-import act.app.event.AppEventId;
+import act.app.event.SysEventId;
 import act.app.util.NamedPort;
 import act.cli.CliOverHttpAuthority;
 import act.crypto.HMAC;
@@ -2538,7 +2538,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
      * @param conf the application configurator
      */
     public void _merge(AppConfigurator conf) {
-        app.emit(AppEventId.CONFIG_PREMERGE);
+        app.emit(SysEventId.CONFIG_PREMERGE);
         if (mergeTracker.contains(conf)) {
             return;
         }

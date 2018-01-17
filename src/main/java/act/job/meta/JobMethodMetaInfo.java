@@ -22,7 +22,7 @@ package act.job.meta;
 
 import act.Act;
 import act.app.App;
-import act.app.event.AppEventId;
+import act.app.event.SysEventId;
 import act.asm.Type;
 import act.event.meta.SimpleEventListenerMetaInfo;
 import act.sys.meta.InvokeType;
@@ -51,7 +51,7 @@ public class JobMethodMetaInfo extends DestroyableBase {
     public JobMethodMetaInfo(final JobClassMetaInfo clsInfo, final List<String> paramTypes) {
         this.clsInfo = clsInfo;
         final App app = Act.app();
-        app.jobManager().on(AppEventId.DEPENDENCY_INJECTOR_PROVISIONED, new Runnable() {
+        app.jobManager().on(SysEventId.DEPENDENCY_INJECTOR_PROVISIONED, new Runnable() {
             @Override
             public void run() {
                 $.Var<Method> var = $.var();

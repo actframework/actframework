@@ -21,9 +21,9 @@ package act.job;
  */
 
 import act.app.App;
-import act.app.event.AppEventId;
+import act.app.event.SysEventId;
 import act.conf.AppConfig;
-import act.event.AppEventListenerBase;
+import act.event.SysEventListenerBase;
 import fc.cron.CronExpression;
 import org.joda.time.DateTime;
 import org.joda.time.Seconds;
@@ -40,9 +40,9 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-import static act.app.event.AppEventId.START;
-import static act.app.event.AppEventId.STOP;
-import static act.job.AppJobManager.appEventJobId;
+import static act.app.event.SysEventId.START;
+import static act.app.event.SysEventId.STOP;
+import static act.job.JobManager.sysEventJobId;
 
 /**
  * A `JobTrigger` triggers a {@link Job} to be executed
@@ -64,7 +64,7 @@ public abstract class JobTrigger {
         LOGGER.trace(msg, args);
     }
 
-    final void register(Job job, AppJobManager manager) {
+    final void register(Job job, JobManager manager) {
         if (LOGGER.isTraceEnabled()) {
             LOGGER.trace("trigger on [%s]: %s", this, job);
         }
@@ -72,9 +72,9 @@ public abstract class JobTrigger {
         schedule(manager, job);
     }
 
-    void scheduleFollowingCalls(AppJobManager manager, Job job) {}
+    void scheduleFollowingCalls(JobManager manager, Job job) {}
 
-    void schedule(AppJobManager manager, Job job) {}
+    void schedule(JobManager manager, Job job) {}
 
     void traceSchedule(Job job) {
         if (isTraceEnabled()) {
@@ -194,7 +194,7 @@ public abstract class JobTrigger {
         return async ? alongWith(STOP) : before(STOP);
     }
 
-    static JobTrigger onAppEvent(AppEventId eventId, boolean async) {
+    static JobTrigger onSysEvent(SysEventId eventId, boolean async) {
         return async ? alongWith(eventId) : after(eventId);
     }
 
@@ -206,24 +206,24 @@ public abstract class JobTrigger {
         return new _AlongWith(jobId);
     }
 
-    static JobTrigger alongWith(AppEventId appEvent) {
-        return new _AlongWith(appEventJobId(appEvent));
+    static JobTrigger alongWith(SysEventId sysEvent) {
+        return new _AlongWith(sysEventJobId(sysEvent));
     }
 
     static JobTrigger before(String jobId) {
         return new _Before(jobId);
     }
 
-    static JobTrigger before(AppEventId appEvent) {
-        return before(appEventJobId(appEvent));
+    static JobTrigger before(SysEventId sysEvent) {
+        return before(sysEventJobId(sysEvent));
     }
 
     static JobTrigger after(String jobId) {
         return new _After(jobId);
     }
 
-    static JobTrigger after(AppEventId appEvent) {
-        return after(appEventJobId(appEvent));
+    static JobTrigger after(SysEventId sysEvent) {
+        return after(sysEventJobId(sysEvent));
     }
 
     static class _Cron extends JobTrigger {
@@ -238,11 +238,11 @@ public abstract class JobTrigger {
         }
 
         @Override
-        void schedule(final AppJobManager manager, final Job job) {
+        void schedule(final JobManager manager, final Job job) {
             traceSchedule(job);
             App app = manager.app();
             if (!app.isStarted()) {
-                app.eventBus().bindAsync(AppEventId.POST_START, new AppEventListenerBase() {
+                app.eventBus().bindAsync(SysEventId.POST_START, new SysEventListenerBase() {
                     @Override
                     public void on(EventObject event) throws Exception {
                         delayedSchedule(manager, job);
@@ -253,7 +253,7 @@ public abstract class JobTrigger {
             }
         }
 
-        private void delayedSchedule(AppJobManager manager, Job job) {
+        private void delayedSchedule(JobManager manager, Job job) {
             DateTime now = DateTime.now();
             // add one seconds to prevent the next time be the current time (now)
             DateTime next = cronExpr.nextTimeAfter(now.plusSeconds(1));
@@ -263,7 +263,7 @@ public abstract class JobTrigger {
         }
 
         @Override
-        void scheduleFollowingCalls(AppJobManager manager, Job job) {
+        void scheduleFollowingCalls(JobManager manager, Job job) {
             schedule(manager, job);
         }
     }
@@ -284,11 +284,11 @@ public abstract class JobTrigger {
         }
 
         @Override
-        final void schedule(final AppJobManager manager, final Job job) {
+        final void schedule(final JobManager manager, final Job job) {
             traceSchedule(job);
             App app = manager.app();
             if (!app.isStarted()) {
-                app.eventBus().bindAsync(AppEventId.POST_START, new AppEventListenerBase() {
+                app.eventBus().bindAsync(SysEventId.POST_START, new SysEventListenerBase() {
                     @Override
                     public void on(EventObject event) {
                         runAndSchedule(manager, job);
@@ -299,9 +299,9 @@ public abstract class JobTrigger {
             }
         }
 
-        protected abstract void delayedSchedule(AppJobManager manager, Job job);
+        protected abstract void delayedSchedule(JobManager manager, Job job);
 
-        protected void runAndSchedule(AppJobManager manager, Job job) {
+        protected void runAndSchedule(JobManager manager, Job job) {
             if (startImmediately) {
                 manager.now(job);
             }
@@ -324,7 +324,7 @@ public abstract class JobTrigger {
         }
 
         @Override
-        protected void delayedSchedule(AppJobManager manager, Job job) {
+        protected void delayedSchedule(JobManager manager, Job job) {
             ScheduledThreadPoolExecutor executor = manager.executor();
             ScheduledFuture future = executor.scheduleWithFixedDelay(job, seconds, seconds, TimeUnit.SECONDS);
             manager.futureScheduled(job.id(), future);
@@ -346,7 +346,7 @@ public abstract class JobTrigger {
         }
 
         @Override
-        protected void delayedSchedule(AppJobManager manager, Job job) {
+        protected void delayedSchedule(JobManager manager, Job job) {
             ScheduledThreadPoolExecutor executor = manager.executor();
             ScheduledFuture future = executor.scheduleAtFixedRate(job, seconds, seconds, TimeUnit.SECONDS);
             manager.futureScheduled(job.id(), future);
@@ -361,7 +361,7 @@ public abstract class JobTrigger {
         }
 
         @Override
-        void schedule(AppJobManager manager, Job job) {
+        void schedule(JobManager manager, Job job) {
             traceSchedule(job);
             if (null == targetId) {
                 LOGGER.warn("Failed to register job because target job not found: %s. Will try again after app started", targetId);
@@ -376,7 +376,7 @@ public abstract class JobTrigger {
             }
         }
 
-        private void scheduleDelayedRegister(final AppJobManager manager, final Job job) {
+        private void scheduleDelayedRegister(final JobManager manager, final Job job) {
             final String id = delayedRegisterJobId(job);
             before(START).register(new Job(id, manager, new $.F0<Void>() {
                 @Override

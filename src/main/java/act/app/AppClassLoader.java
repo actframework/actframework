@@ -21,7 +21,7 @@ package act.app;
  */
 
 import act.Act;
-import act.app.event.AppEventId;
+import act.app.event.SysEventId;
 import act.app.util.EnvMatcher;
 import act.asm.AsmException;
 import act.asm.ClassReader;
@@ -35,7 +35,7 @@ import act.conf.AppConfig;
 import act.controller.meta.ControllerClassMetaInfo;
 import act.controller.meta.ControllerClassMetaInfoHolder;
 import act.controller.meta.ControllerClassMetaInfoManager;
-import act.event.AppEventListenerBase;
+import act.event.SysEventListenerBase;
 import act.exception.EnvNotMatchException;
 import act.job.meta.JobClassMetaInfo;
 import act.job.meta.JobClassMetaInfoManager;
@@ -50,7 +50,6 @@ import org.osgl.$;
 import org.osgl.exception.NotAppliedException;
 import org.osgl.logging.L;
 import org.osgl.logging.Logger;
-import org.osgl.util.C;
 import org.osgl.util.E;
 import org.osgl.util.IO;
 import org.osgl.util.S;
@@ -104,7 +103,7 @@ public class AppClassLoader
             return; // for unit test only
         }
         simpleBeanInfo  = new SimpleBean.MetaInfoManager(this);
-        app.eventBus().bind(AppEventId.APP_CODE_SCANNED, new AppEventListenerBase() {
+        app.eventBus().bind(SysEventId.APP_CODE_SCANNED, new SysEventListenerBase() {
 
             @Override
             public String id() {

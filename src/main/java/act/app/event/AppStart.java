@@ -25,8 +25,8 @@ import act.app.App;
 /**
  * Mark a Application Start event
  */
-public class AppStart extends AppEvent {
+public class AppStart extends SysEvent {
     public AppStart(App source) {
-        super(AppEventId.START, source);
+        super(SysEventId.START, source);
     }
 }

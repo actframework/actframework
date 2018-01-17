@@ -22,7 +22,7 @@ package act.app;
 
 import act.Act;
 import act.Destroyable;
-import act.app.event.AppEventId;
+import act.app.event.SysEventId;
 import act.cli.CliSession;
 import org.osgl.exception.ConfigurationException;
 import org.osgl.logging.LogManager;
@@ -161,7 +161,7 @@ public class CliServer extends AppServiceBase<CliServer> implements Runnable {
                     }
                 }
             });
-            app().jobManager().on(AppEventId.ACT_START, new Runnable() {
+            app().jobManager().on(SysEventId.ACT_START, new Runnable() {
                 @Override
                 public void run() {
                     Act.LOGGER.info("CLI server started on port: %s", port);

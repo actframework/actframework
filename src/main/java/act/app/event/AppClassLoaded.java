@@ -25,8 +25,8 @@ import act.app.App;
 /**
  * Emitted immediately when {@link App}'s class loader has loaded classes
  */
-public class AppClassLoaded extends AppEvent {
+public class AppClassLoaded extends SysEvent {
     public AppClassLoaded(App source) {
-        super(AppEventId.CLASS_LOADED, source);
+        super(SysEventId.CLASS_LOADED, source);
     }
 }

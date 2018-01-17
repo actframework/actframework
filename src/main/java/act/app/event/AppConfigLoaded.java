@@ -25,8 +25,8 @@ import act.app.App;
 /**
  * Emitted after Application's configuration has been loaded
  */
-public class AppConfigLoaded extends AppEvent {
+public class AppConfigLoaded extends SysEvent {
     public AppConfigLoaded(App source) {
-        super(AppEventId.CONFIG_LOADED, source);
+        super(SysEventId.CONFIG_LOADED, source);
     }
 }

@@ -29,7 +29,7 @@ import act.cli.meta.CommandParamMetaInfo;
 import act.data.annotation.Pattern;
 import act.inject.param.CliContextParamLoader;
 import act.inject.param.ParamValueLoaderManager;
-import act.job.AppJobManager;
+import act.job.JobManager;
 import act.job.TrackableWorker;
 import act.util.Async;
 import act.util.FastJsonFeature;
@@ -119,7 +119,7 @@ public class ReflectedCommandExecutor extends CommandExecutor {
         final Object cmd = commanderInstance(context);
         final Object[] params = params(cmd, context);
         if (async) {
-            AppJobManager jobManager = context.app().jobManager();
+            JobManager jobManager = context.app().jobManager();
             String jobId = jobManager.prepare(new TrackableWorker() {
                 @Override
                 protected void run(ProgressGauge progressGauge) {

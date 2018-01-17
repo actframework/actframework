@@ -219,11 +219,14 @@ public class Banner {
 
     private static String poweredBy(int width, String actVersion, boolean center) {
         String poweredBy = "powered by ActFramework ";
-        int pw = poweredBy.length();
+        int pw;
         if (supportAnsi()) {
             String raw = S.concat("powered by @|bold ActFramework|@ ", actVersion);
             poweredBy = Ansi.ansi().render(raw).toString();
             pw = raw.length() - 9;
+        } else {
+            poweredBy = poweredBy + actVersion;
+            pw = poweredBy.length();
         }
         int gap = width - pw;
         gap = Math.max(gap, 0);

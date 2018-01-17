@@ -1,18 +1,18 @@
 package testapp.endpoint;
 
+import static testapp.endpoint.SimpleEventListenerMarkerTestBed.MyEvent.USER_LOGGED_IN;
+
 import act.controller.Controller;
 import act.event.EventBus;
 import act.event.SimpleEventListener;
 import org.osgl.exception.UnexpectedException;
 import org.osgl.mvc.annotation.GetAction;
 
-import javax.inject.Singleton;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
-
-import static testapp.endpoint.SimpleEventListenerMarkerTestBed.MyEvent.USER_LOGGED_IN;
+import javax.inject.Singleton;
 
 /**
  * Support {@link act.event.SimpleEventListener.Marker} test
@@ -29,7 +29,7 @@ public class SimpleEventListenerMarkerTestBed extends Controller.Util {
     @Retention(RetentionPolicy.RUNTIME)
     @Target(ElementType.METHOD)
     public @interface OnMyEvent {
-        MyEvent value();
+        MyEvent[] value() default {};
     }
 
     private MyEvent eventReceived;

@@ -21,13 +21,13 @@ package act.event.bytecode;
  */
 
 import act.app.AppByteCodeScannerBase;
-import act.app.event.AppEventId;
+import act.app.event.SysEventId;
 import act.asm.AnnotationVisitor;
 import act.asm.MethodVisitor;
 import act.asm.Type;
 import act.event.*;
 import act.event.meta.SimpleEventListenerMetaInfo;
-import act.job.AppJobManager;
+import act.job.JobManager;
 import act.util.AsmTypes;
 import act.util.Async;
 import act.util.ByteCodeVisitor;
@@ -63,19 +63,15 @@ public class SimpleEventListenerByteCodeScanner extends AppByteCodeScannerBase {
     public void scanFinished(String className) {
         if (!metaInfoList.isEmpty()) {
             final EventBus eventBus = app().eventBus();
-            AppJobManager jobManager = app().jobManager();
+            JobManager jobManager = app().jobManager();
             for (final SimpleEventListenerMetaInfo metaInfo : metaInfoList) {
-                AppEventId hookOn = metaInfo.beforeAppStart() ? AppEventId.DEPENDENCY_INJECTOR_PROVISIONED : AppEventId.PRE_START;
+                SysEventId hookOn = metaInfo.beforeAppStart() ? SysEventId.DEPENDENCY_INJECTOR_PROVISIONED : SysEventId.PRE_START;
                 jobManager.on(hookOn, new Runnable() {
                     @Override
                     public void run() {
                         for (final Object event : metaInfo.events()) {
                             final boolean isStatic = metaInfo.isStatic();
-                            if (metaInfo.isAsync()) {
-                                eventBus.bindAsync(event, new ReflectedSimpleEventListener(metaInfo.className(), metaInfo.methodName(), metaInfo.paramTypes(), isStatic));
-                            } else {
-                                eventBus.bind(event, new ReflectedSimpleEventListener(metaInfo.className(), metaInfo.methodName(), metaInfo.paramTypes(), isStatic));
-                            }
+                            eventBus.bind(event, new ReflectedSimpleEventListener(metaInfo.className(), metaInfo.methodName(), metaInfo.paramTypes(), isStatic));
                         }
                     }
                 });

@@ -21,7 +21,7 @@ package act.inject.genie;
  */
 
 import act.app.AppByteCodeScannerBase;
-import act.app.event.AppEventId;
+import act.app.event.SysEventId;
 import act.util.ByteCodeVisitor;
 import org.osgl.$;
 
@@ -47,7 +47,7 @@ public class GenieModuleScanner extends AppByteCodeScannerBase {
     @Override
     public void scanFinished(final String className) {
         if (shouldRegister) {
-            app().jobManager().on(AppEventId.DEPENDENCY_INJECTOR_LOADED, new Runnable() {
+            app().jobManager().on(SysEventId.DEPENDENCY_INJECTOR_LOADED, new Runnable() {
                 @Override
                 public void run() {
                     GenieInjector.addModuleClass($.classForName(className, app().classLoader()));
