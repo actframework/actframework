@@ -22,7 +22,7 @@ package act.event.meta;
 
 import act.Act;
 import act.app.App;
-import act.app.event.AppEventId;
+import act.app.event.SysEventId;
 import act.inject.DependencyInjector;
 import org.osgl.$;
 import org.osgl.inject.BeanSpec;
@@ -71,7 +71,7 @@ public class SimpleEventListenerMetaInfo {
         this.async = async;
         this.isStatic = isStatic;
         this.beforeAppStart = beforeAppStart;
-        AppEventId hookOn = beforeAppStart ? AppEventId.DEPENDENCY_INJECTOR_LOADED : AppEventId.DEPENDENCY_INJECTOR_PROVISIONED;
+        SysEventId hookOn = beforeAppStart ? SysEventId.DEPENDENCY_INJECTOR_LOADED : SysEventId.DEPENDENCY_INJECTOR_PROVISIONED;
         app.jobManager().on(hookOn, new Runnable() {
             @Override
             public void run() {

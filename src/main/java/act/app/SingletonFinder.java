@@ -21,7 +21,7 @@ package act.app;
  */
 
 import act.Act;
-import act.app.event.AppEventId;
+import act.app.event.SysEventId;
 import act.util.*;
 import org.osgl.$;
 import org.osgl.Osgl;
@@ -49,12 +49,12 @@ public class SingletonFinder {
         registerSingleton(cls);
     }
 
-    @AnnotatedClassFinder(value = Stateless.class, callOn = AppEventId.PRE_START)
+    @AnnotatedClassFinder(value = Stateless.class, callOn = SysEventId.PRE_START)
     public static void foundStateless(Class<?> cls) {
         registerSingleton(cls);
     }
 
-    @AnnotatedClassFinder(value = InheritedStateless.class, callOn = AppEventId.PRE_START)
+    @AnnotatedClassFinder(value = InheritedStateless.class, callOn = SysEventId.PRE_START)
     public static void foundInheritedStateless(Class<?> cls) {
         final App app = App.instance();
         app.registerSingletonClass(cls);

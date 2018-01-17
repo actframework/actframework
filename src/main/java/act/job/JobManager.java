@@ -25,8 +25,8 @@ import act.Destroyable;
 import act.app.App;
 import act.app.AppServiceBase;
 import act.app.AppThreadFactory;
-import act.app.event.AppEventId;
-import act.event.AppEventListenerBase;
+import act.app.event.SysEventId;
+import act.event.SysEventListenerBase;
 import act.event.OnceEventListenerBase;
 import act.mail.MailerContext;
 import act.util.ProgressGauge;
@@ -47,23 +47,23 @@ import java.util.EventObject;
 import java.util.Map;
 import java.util.concurrent.*;
 
-public class AppJobManager extends AppServiceBase<AppJobManager> {
+public class JobManager extends AppServiceBase<JobManager> {
 
-    private static final Logger LOGGER = LogManager.get(AppJobManager.class);
+    private static final Logger LOGGER = LogManager.get(JobManager.class);
 
     private ScheduledThreadPoolExecutor executor;
     private ConcurrentMap<String, Job> jobs = new ConcurrentHashMap<String, Job>();
     private ConcurrentMap<String, ScheduledFuture> scheduled = new ConcurrentHashMap<>();
 
-    static String appEventJobId(AppEventId eventId) {
-        return S.concat("__act_app__", eventId.toString().toLowerCase());
+    static String sysEventJobId(SysEventId eventId) {
+        return S.concat("__act_sys__", eventId.toString().toLowerCase());
     }
 
-    public AppJobManager(App app) {
+    public JobManager(App app) {
         super(app);
         initExecutor(app);
-        for (AppEventId appEventId : AppEventId.values()) {
-            createAppEventListener(appEventId);
+        for (SysEventId sysEventId : SysEventId.values()) {
+            createSysEventListener(sysEventId);
         }
     }
 
@@ -214,20 +214,20 @@ public class AppJobManager extends AppServiceBase<AppJobManager> {
         return executor().schedule(callable, seconds.getSeconds(), TimeUnit.SECONDS);
     }
 
-    public void on(AppEventId appEvent, final Runnable runnable) {
-        on(appEvent, runnable, false);
+    public void on(SysEventId sysEvent, final Runnable runnable) {
+        on(sysEvent, runnable, false);
     }
 
-    public void on(AppEventId appEvent, final Runnable runnable, boolean runImmediatelyIfEventDispatched) {
-        on(appEvent, runnable.toString(), runnable, runImmediatelyIfEventDispatched);
+    public void on(SysEventId sysEvent, final Runnable runnable, boolean runImmediatelyIfEventDispatched) {
+        on(sysEvent, runnable.toString(), runnable, runImmediatelyIfEventDispatched);
     }
 
-    public void post(AppEventId appEvent, final Runnable runnable) {
-        post(appEvent, runnable, false);
+    public void post(SysEventId sysEvent, final Runnable runnable) {
+        post(sysEvent, runnable, false);
     }
 
-    public void post(AppEventId appEvent, final Runnable runnable, boolean runImmediatelyIfEventDispatched) {
-        Job job = jobById(appEventJobId(appEvent));
+    public void post(SysEventId sysEvent, final Runnable runnable, boolean runImmediatelyIfEventDispatched) {
+        Job job = jobById(sysEventJobId(sysEvent));
         if (null == job) {
             processDelayedJob(wrap(runnable), runImmediatelyIfEventDispatched);
         } else {
@@ -235,16 +235,16 @@ public class AppJobManager extends AppServiceBase<AppJobManager> {
         }
     }
 
-    public void on(AppEventId appEvent, String jobId, final Runnable runnable) {
-        on(appEvent, jobId, runnable, false);
+    public void on(SysEventId sysEvent, String jobId, final Runnable runnable) {
+        on(sysEvent, jobId, runnable, false);
     }
 
-    public void on(AppEventId appEvent, String jobId, final Runnable runnable, boolean runImmediatelyIfEventDispatched) {
+    public void on(SysEventId sysEvent, String jobId, final Runnable runnable, boolean runImmediatelyIfEventDispatched) {
         boolean traceEnabled = LOGGER.isTraceEnabled();
         if (traceEnabled) {
-            LOGGER.trace("binding job[%s] to app event: %s, run immediately if event dispatched: %s", jobId, appEvent, runImmediatelyIfEventDispatched);
+            LOGGER.trace("binding job[%s] to app event: %s, run immediately if event dispatched: %s", jobId, sysEvent, runImmediatelyIfEventDispatched);
         }
-        Job job = jobById(appEventJobId(appEvent));
+        Job job = jobById(sysEventJobId(sysEvent));
         if (null == job) {
             if (traceEnabled) {
                 LOGGER.trace("process delayed job: %s", jobId);
@@ -258,12 +258,12 @@ public class AppJobManager extends AppServiceBase<AppJobManager> {
         }
     }
 
-    public void post(AppEventId appEvent, String jobId, final Runnable runnable) {
-        post(appEvent, jobId, runnable, false);
+    public void post(SysEventId sysEvent, String jobId, final Runnable runnable) {
+        post(sysEvent, jobId, runnable, false);
     }
 
-    public void post(AppEventId appEvent, String jobId, final Runnable runnable, boolean runImmediatelyIfEventDispatched) {
-        Job job = jobById(appEventJobId(appEvent));
+    public void post(SysEventId sysEvent, String jobId, final Runnable runnable, boolean runImmediatelyIfEventDispatched) {
+        Job job = jobById(sysEventJobId(sysEvent));
         if (null == job) {
             processDelayedJob(wrap(runnable), runImmediatelyIfEventDispatched);
         } else {
@@ -271,8 +271,8 @@ public class AppJobManager extends AppServiceBase<AppJobManager> {
         }
     }
 
-    public void alongWith(AppEventId appEvent, String jobId, final Runnable runnable) {
-        Job job = jobById(appEventJobId(appEvent));
+    public void alongWith(SysEventId sysEvent, String jobId, final Runnable runnable) {
+        Job job = jobById(sysEventJobId(sysEvent));
         if (null == job) {
             processDelayedJob(wrap(runnable), false);
         } else {
@@ -314,15 +314,15 @@ public class AppJobManager extends AppServiceBase<AppJobManager> {
     }
 
     public void beforeAppStart(final Runnable runnable) {
-        on(AppEventId.START, runnable);
+        on(SysEventId.START, runnable);
     }
 
     public void afterAppStart(final Runnable runnable) {
-        post(AppEventId.START, runnable);
+        post(SysEventId.START, runnable);
     }
 
     public void beforeAppStop(final Runnable runnable) {
-        on(AppEventId.STOP, runnable);
+        on(SysEventId.STOP, runnable);
     }
 
     public SimpleProgressGauge progressGauge(String jobId) {
@@ -343,7 +343,7 @@ public class AppJobManager extends AppServiceBase<AppJobManager> {
     }
 
     C.List<Job> virtualJobs() {
-        final AppJobManager jobManager = Act.jobManager();
+        final JobManager jobManager = Act.jobManager();
         return C.list(scheduled.entrySet()).map(new $.Transformer<Map.Entry<String, ScheduledFuture>, Job>() {
             @Override
             public Job transform(Map.Entry<String, ScheduledFuture> entry) {
@@ -396,15 +396,15 @@ public class AppJobManager extends AppServiceBase<AppJobManager> {
         }
     }
 
-    private void createAppEventListener(AppEventId appEventId) {
-        String jobId = appEventJobId(appEventId);
+    private void createSysEventListener(SysEventId sysEventId) {
+        String jobId = sysEventJobId(sysEventId);
         Job job = new Job(jobId, this);
-        app().eventBus().bind(appEventId, new _AppEventListener(jobId, job));
+        app().eventBus().bind(sysEventId, new _SysEventListener(jobId, job));
     }
 
-    private static class _AppEventListener extends AppEventListenerBase {
+    private static class _SysEventListener extends SysEventListenerBase {
         private Runnable worker;
-        _AppEventListener(String id, Runnable worker) {
+        _SysEventListener(String id, Runnable worker) {
             super(id);
             this.worker = $.NPE(worker);
         }
@@ -451,11 +451,11 @@ public class AppJobManager extends AppServiceBase<AppJobManager> {
         private JobContext origin_ = JobContext.copy();
 
         ContextualJob(String id, final Callable<?> callable) {
-            super(id, AppJobManager.this, callable);
+            super(id, JobManager.this, callable);
         }
 
         ContextualJob(String id, final Runnable runnable) {
-            super(id, AppJobManager.this, new $.F0() {
+            super(id, JobManager.this, new $.F0() {
                 @Override
                 public Object apply() throws NotAppliedException, $.Break {
                     runnable.run();
@@ -466,7 +466,7 @@ public class AppJobManager extends AppServiceBase<AppJobManager> {
         }
 
         ContextualJob(String id, final $.Function<ProgressGauge, ?> worker) {
-            super(id, AppJobManager.this, worker);
+            super(id, JobManager.this, worker);
             foo();
         }
 

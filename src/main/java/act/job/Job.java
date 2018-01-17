@@ -22,8 +22,8 @@ package act.job;
 
 import act.Act;
 import act.app.App;
-import act.app.event.AppEventId;
-import act.event.AppEventListenerBase;
+import act.app.event.SysEventId;
+import act.event.SysEventListenerBase;
 import act.route.DuplicateRouteMappingException;
 import act.util.DestroyableBase;
 import act.util.ProgressGauge;
@@ -83,7 +83,7 @@ public class Job extends DestroyableBase implements Runnable {
             if (jobList.isEmpty()) {
                 return;
             }
-            final AppJobManager jobManager = async ? Act.jobManager() : null;
+            final JobManager jobManager = async ? Act.jobManager() : null;
             iterating = true;
             try {
                 for (final Job subJob : jobList) {
@@ -120,7 +120,7 @@ public class Job extends DestroyableBase implements Runnable {
     private App app;
     private boolean oneTime;
     private boolean executed;
-    private AppJobManager manager;
+    private JobManager manager;
     private JobTrigger trigger;
     private $.Func0<?> worker;
     Object callableResult;
@@ -131,11 +131,11 @@ public class Job extends DestroyableBase implements Runnable {
     private LockableJobList followingJobs = new LockableJobList(this);
     private LockableJobList precedenceJobs = new LockableJobList(this);
 
-    Job(String id, AppJobManager manager) {
+    Job(String id, JobManager manager) {
         this(id, manager, ($.Func0<?>)null);
     }
 
-    Job(String id, AppJobManager manager, final Callable<?> callable) {
+    Job(String id, JobManager manager, final Callable<?> callable) {
         this.id = id;
         this.manager = $.notNull(manager);
         this.oneTime = true;
@@ -155,11 +155,11 @@ public class Job extends DestroyableBase implements Runnable {
         };
     }
 
-    Job(String id, AppJobManager manager, $.Func0<?> worker) {
+    Job(String id, JobManager manager, $.Func0<?> worker) {
         this(id, manager, worker, true);
     }
 
-    Job(String id, AppJobManager manager, $.Func0<?> worker, boolean oneTime) {
+    Job(String id, JobManager manager, $.Func0<?> worker, boolean oneTime) {
         this.id = id;
         this.manager = $.NPE(manager);
         this.worker = worker;
@@ -169,11 +169,11 @@ public class Job extends DestroyableBase implements Runnable {
         this.manager.addJob(this);
     }
 
-    Job(String id, AppJobManager manager, $.Function<ProgressGauge, ?> worker) {
+    Job(String id, JobManager manager, $.Function<ProgressGauge, ?> worker) {
         this(id, manager, worker, true);
     }
 
-    Job(String id, AppJobManager manager, $.Function<ProgressGauge, ?> worker, boolean oneTime) {
+    Job(String id, JobManager manager, $.Function<ProgressGauge, ?> worker, boolean oneTime) {
         this.id = id;
         this.manager = $.notNull(manager);
         $.F1<ProgressGauge, ?> f1 = $.f1(worker);
@@ -315,7 +315,7 @@ public class Job extends DestroyableBase implements Runnable {
                     if (app.isStarted()) {
                         manager.removeJob(this);
                     } else {
-                        app.eventBus().bind(AppEventId.POST_START, new AppEventListenerBase() {
+                        app.eventBus().bind(SysEventId.POST_START, new SysEventListenerBase() {
                             @Override
                             public void on(EventObject event) throws Exception {
                                 manager.removeJob(Job.this);
@@ -363,7 +363,7 @@ public class Job extends DestroyableBase implements Runnable {
         parallelJobs.runSubJobs(true);
     }
 
-    protected final AppJobManager manager() {
+    protected final JobManager manager() {
         return manager;
     }
 
@@ -371,7 +371,7 @@ public class Job extends DestroyableBase implements Runnable {
         if (null != trigger) trigger.scheduleFollowingCalls(manager(), this);
     }
 
-    private static Job of(String jobId, final Runnable runnable, AppJobManager manager, boolean oneTime) {
+    private static Job of(String jobId, final Runnable runnable, JobManager manager, boolean oneTime) {
         return new Job(jobId, manager, new F0() {
             @Override
             public Object apply() throws NotAppliedException, $.Break {
@@ -381,23 +381,23 @@ public class Job extends DestroyableBase implements Runnable {
         }, oneTime);
     }
 
-    private static Job of(final Runnable runnable, AppJobManager manager, boolean oneTime) {
+    private static Job of(final Runnable runnable, JobManager manager, boolean oneTime) {
         return of(Act.cuid(), runnable, manager, oneTime);
     }
 
-    static Job once(final Runnable runnable, AppJobManager manager) {
+    static Job once(final Runnable runnable, JobManager manager) {
         return of(runnable, manager, true);
     }
 
-    static Job once(String jobId, final Runnable runnable, AppJobManager manager) {
+    static Job once(String jobId, final Runnable runnable, JobManager manager) {
         return of(jobId, runnable, manager, true);
     }
 
-    static Job multipleTimes(final Runnable runnable, AppJobManager manager) {
+    static Job multipleTimes(final Runnable runnable, JobManager manager) {
         return of(runnable, manager, false);
     }
 
-    static Job multipleTimes(String jobId, final Runnable runnable, AppJobManager manager) {
+    static Job multipleTimes(String jobId, final Runnable runnable, JobManager manager) {
         return of(jobId, runnable, manager, false);
     }
 

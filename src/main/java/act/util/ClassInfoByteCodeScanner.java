@@ -21,10 +21,10 @@ package act.util;
  */
 
 import act.app.AppByteCodeScannerBase;
-import act.app.event.AppEventId;
+import act.app.event.SysEventId;
 import act.asm.AnnotationVisitor;
 import act.asm.Type;
-import act.event.AppEventListenerBase;
+import act.event.SysEventListenerBase;
 
 import java.util.EventObject;
 
@@ -34,7 +34,7 @@ public class ClassInfoByteCodeScanner extends AppByteCodeScannerBase {
 
     @Override
     protected void onAppSet() {
-        app().eventBus().bind(AppEventId.CLASS_LOADER_INITIALIZED, new AppEventListenerBase("init-class-info-repo") {
+        app().eventBus().bind(SysEventId.CLASS_LOADER_INITIALIZED, new SysEventListenerBase("init-class-info-repo") {
             @Override
             public void on(EventObject event) {
                 classInfoRepository = app().classLoader().classInfoRepository();

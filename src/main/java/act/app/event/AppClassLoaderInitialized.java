@@ -25,8 +25,8 @@ import act.app.App;
 /**
  * Emitted immediately when {@link App}'s class loader instance initialized
  */
-public class AppClassLoaderInitialized extends AppEvent {
+public class AppClassLoaderInitialized extends SysEvent {
     public AppClassLoaderInitialized(App source) {
-        super(AppEventId.CLASS_LOADER_INITIALIZED, source);
+        super(SysEventId.CLASS_LOADER_INITIALIZED, source);
     }
 }

@@ -23,7 +23,7 @@ package act.controller.meta;
 import act.Act;
 import act.app.App;
 import act.app.AppClassLoader;
-import act.app.event.AppEventId;
+import act.app.event.SysEventId;
 import act.asm.Type;
 import act.util.ClassInfoRepository;
 import act.util.ClassNode;
@@ -43,7 +43,7 @@ public class ControllerClassMetaInfoManager extends DestroyableBase {
 
     @Inject
     public ControllerClassMetaInfoManager(App app) {
-        app.jobManager().on(AppEventId.APP_CODE_SCANNED, new Runnable() {
+        app.jobManager().on(SysEventId.APP_CODE_SCANNED, new Runnable() {
             @Override
             public void run() {
                 buildControllerHierarchies();

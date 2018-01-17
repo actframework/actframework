@@ -25,7 +25,7 @@ import act.Destroyable;
 import act.apidoc.ApiManager;
 import act.app.data.BinderManager;
 import act.app.data.StringValueResolverManager;
-import act.app.event.AppEventId;
+import act.app.event.SysEventId;
 import act.app.util.NamedPort;
 import act.boot.BootstrapClassLoader;
 import act.boot.app.BlockIssueSignal;
@@ -39,7 +39,7 @@ import act.crypto.AppCrypto;
 import act.data.DataPropertyRepository;
 import act.data.JodaDateTimeCodec;
 import act.data.util.ActPropertyHandlerFactory;
-import act.event.AppEventListenerBase;
+import act.event.SysEventListenerBase;
 import act.event.EventBus;
 import act.event.bytecode.SimpleEventListenerByteCodeScanner;
 import act.handler.RequestHandler;
@@ -51,7 +51,7 @@ import act.inject.genie.GenieInjector;
 import act.inject.genie.GenieModuleScanner;
 import act.inject.param.JsonDTOClassManager;
 import act.inject.param.ParamValueLoaderManager;
-import act.job.AppJobManager;
+import act.job.JobManager;
 import act.job.bytecode.JobByteCodeScanner;
 import act.mail.MailerConfigManager;
 import act.mail.bytecode.MailerByteCodeScanner;
@@ -89,7 +89,7 @@ import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.util.*;
 
-import static act.app.event.AppEventId.*;
+import static act.app.event.SysEventId.*;
 import static org.osgl.http.H.Method.GET;
 
 /**
@@ -126,7 +126,7 @@ public class App extends DestroyableBase {
     private EventBus eventBus;
     private AppCodeScannerManager scannerManager;
     private DbServiceManager dbServiceManager;
-    private AppJobManager jobManager;
+    private JobManager jobManager;
     private ApiManager apiManager;
     private CliServer cliServer;
     private MailerConfigManager mailerConfigManager;
@@ -144,8 +144,8 @@ public class App extends DestroyableBase {
     private CacheService cache;
     // used in dev mode only
     private CompilationException compilationException;
-    private AppEventId currentState;
-    private Set<AppEventId> eventEmitted;
+    private SysEventId currentState;
+    private Set<SysEventId> eventEmitted;
     private Thread mainThread;
     private Set<String> scanList;
     private List<File> baseDirs;
@@ -603,7 +603,7 @@ public class App extends DestroyableBase {
             emit(PRE_LOAD_CLASSES);
 
             initClassLoader();
-            emit(AppEventId.CLASS_LOADER_INITIALIZED);
+            emit(SysEventId.CLASS_LOADER_INITIALIZED);
             preloadClasses();
             try {
                 scanAppCodes();
@@ -817,7 +817,7 @@ public class App extends DestroyableBase {
         return eventBus;
     }
 
-    public AppJobManager jobManager() {
+    public JobManager jobManager() {
         return jobManager;
     }
 
@@ -944,7 +944,7 @@ public class App extends DestroyableBase {
         }
         appServiceRegistry.register(service);
         if (null != eventBus && !noDiBinder) {
-            eventBus.bind(AppEventId.DEPENDENCY_INJECTOR_LOADED, new AppEventListenerBase() {
+            eventBus.bind(SysEventId.DEPENDENCY_INJECTOR_LOADED, new SysEventListenerBase() {
                 @Override
                 public void on(EventObject event) throws Exception {
                     final App app = App.this;
@@ -960,15 +960,15 @@ public class App extends DestroyableBase {
         return this;
     }
 
-    public void emit(AppEventId appEvent) {
+    public void emit(SysEventId sysEvent) {
         if (logger.isTraceEnabled()) {
-            logger.trace(S.concat("emitting event: ", appEvent.name()));
+            logger.trace(S.concat("emitting event: ", sysEvent.name()));
         }
-        currentState = appEvent;
-        eventEmitted().add(appEvent);
+        currentState = sysEvent;
+        eventEmitted().add(sysEvent);
         EventBus bus = eventBus();
         if (null != bus) {
-            bus.emit(appEvent);
+            bus.emit(sysEvent);
         }
     }
 
@@ -976,15 +976,15 @@ public class App extends DestroyableBase {
         return new HashSet<String>(scanList);
     }
 
-    private Set<AppEventId> eventEmitted() {
+    private Set<SysEventId> eventEmitted() {
         return eventEmitted;
     }
 
-    public boolean eventEmitted(AppEventId appEvent) {
-        return eventEmitted().contains(appEvent);
+    public boolean eventEmitted(SysEventId sysEvent) {
+        return eventEmitted().contains(sysEvent);
     }
 
-    public AppEventId currentState() {
+    public SysEventId currentState() {
         return currentState;
     }
 
@@ -1046,7 +1046,7 @@ public class App extends DestroyableBase {
             Destroyable.Util.tryDestroyAll(daemonRegistry.values(), ApplicationScoped.class);
         }
         daemonRegistry = new HashMap<>();
-        jobManager.on(AppEventId.START, new Runnable() {
+        jobManager.on(SysEventId.START, new Runnable() {
             @Override
             public void run() {
                 jobManager.fixedDelay("daemon-keeper", new Runnable() {
@@ -1195,7 +1195,7 @@ public class App extends DestroyableBase {
     }
 
     private void initJobManager() {
-        jobManager = new AppJobManager(this);
+        jobManager = new JobManager(this);
     }
 
     private void shutdownJobManager() {

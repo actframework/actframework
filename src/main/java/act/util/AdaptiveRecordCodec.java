@@ -21,7 +21,7 @@ package act.util;
  */
 
 import act.Act;
-import act.app.event.AppEventId;
+import act.app.event.SysEventId;
 import act.db.AdaptiveRecord;
 import com.alibaba.fastjson.JSONException;
 import com.alibaba.fastjson.JSONObject;
@@ -30,7 +30,6 @@ import com.alibaba.fastjson.parser.deserializer.ObjectDeserializer;
 import com.alibaba.fastjson.serializer.*;
 import org.osgl.$;
 import org.osgl.inject.BeanSpec;
-import org.osgl.util.KVStore;
 
 import java.io.IOException;
 import java.lang.reflect.Type;
@@ -327,7 +326,7 @@ public class AdaptiveRecordCodec extends SerializeFilterable implements ObjectDe
         return JSONToken.LBRACE;
     }
 
-    @SubClassFinder(callOn = AppEventId.DEPENDENCY_INJECTOR_PROVISIONED)
+    @SubClassFinder(callOn = SysEventId.DEPENDENCY_INJECTOR_PROVISIONED)
     public static void foundActiveRecordClass(Class<? extends AdaptiveRecord> clazz) {
 
         AdaptiveRecordCodec codec = new AdaptiveRecordCodec();

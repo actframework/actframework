@@ -24,7 +24,7 @@ import act.Act;
 import act.app.App;
 import act.app.AppByteCodeScannerBase;
 import act.app.AppClassLoader;
-import act.app.event.AppEventId;
+import act.app.event.SysEventId;
 import act.asm.*;
 import act.asm.signature.SignatureReader;
 import act.asm.signature.SignatureVisitor;
@@ -199,7 +199,7 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
                              * Note we need to schedule route registration after all app code scanned because we need the
                              * parent context information be set on class meta info, which is done after controller scanning
                              */
-                            app().jobManager().on(AppEventId.APP_CODE_SCANNED, new RouteRegister(C.list(H.Method.GET), strings, WsEndpoint.PSEUDO_METHOD, routers, classInfo, false, $.var(false)));
+                            app().jobManager().on(SysEventId.APP_CODE_SCANNED, new RouteRegister(C.list(H.Method.GET), strings, WsEndpoint.PSEUDO_METHOD, routers, classInfo, false, $.var(false)));
 
                             super.visitEnd();
                         }
@@ -745,7 +745,7 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
                      * Note we need to schedule route registration after all app code scanned because we need the
                      * parent context information be set on class meta info, which is done after controller scanning
                      */
-                    app().jobManager().on(AppEventId.APP_CODE_SCANNED, new RouteRegister(httpMethods, paths, methodName, routers, classInfo, classInfo.isAbstract() && !isStatic, isVirtual));
+                    app().jobManager().on(SysEventId.APP_CODE_SCANNED, new RouteRegister(httpMethods, paths, methodName, routers, classInfo, classInfo.isAbstract() && !isStatic, isVirtual));
                 }
 
             }

@@ -42,7 +42,7 @@ import act.inject.param.JsonDTO;
 import act.inject.param.JsonDTOClassManager;
 import act.inject.param.ParamValueLoaderManager;
 import act.inject.param.ParamValueLoaderService;
-import act.job.AppJobManager;
+import act.job.JobManager;
 import act.job.TrackableWorker;
 import act.security.CORS;
 import act.security.CSP;
@@ -388,7 +388,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         }
 
         if (async) {
-            AppJobManager jobManager = context.app().jobManager();
+            JobManager jobManager = context.app().jobManager();
             String jobId = jobManager.prepare(new TrackableWorker() {
                 @Override
                 protected void run(ProgressGauge progressGauge) {

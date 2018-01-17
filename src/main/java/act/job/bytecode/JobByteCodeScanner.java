@@ -21,7 +21,7 @@ package act.job.bytecode;
  */
 
 import act.app.AppByteCodeScannerBase;
-import act.app.event.AppEventId;
+import act.app.event.SysEventId;
 import act.asm.AnnotationVisitor;
 import act.asm.MethodVisitor;
 import act.asm.Opcodes;
@@ -35,7 +35,6 @@ import act.sys.meta.EnvAnnotationVisitor;
 import act.util.AsmTypes;
 import act.util.ByteCodeVisitor;
 import org.osgl.$;
-import org.osgl.util.C;
 import org.osgl.util.E;
 import org.osgl.util.S;
 
@@ -213,8 +212,8 @@ public class JobByteCodeScanner extends AppByteCodeScannerBase {
 
                 @Override
                 public void visitEnum(String name, String desc, String value) {
-                    if (desc.contains("AppEventId")) {
-                        this.currentInfo.appEventId = AppEventId.valueOf(value);
+                    if (desc.contains("SysEventId")) {
+                        this.currentInfo.sysEventId = SysEventId.valueOf(value);
                     }
                     super.visitEnum(name, desc, value);
                 }

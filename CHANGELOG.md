@@ -1,5 +1,13 @@
 # ActFramework Change Log
 
+**1.7.0**
+* Missing actframework version in the banner text in dev mode with Eclipse project #478
+* Rename `AppEvent` to `SysEvent` #475
+* Improve simple event handler mechanism #473
+* Emit/trigger `EventObject` typed event through `EventBus #472
+* SimpleEventHandler mechanism does not work with `EventObject` #471
+* Allow `LoadResource` inject into Set of strings #470
+
 **1.6.4 14/Jan/2018**
 * Performance issue with Rythm #469
     - update rythm-engine to 1.2.2

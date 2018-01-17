@@ -20,7 +20,7 @@ package act.util;
  * #L%
  */
 
-import act.app.event.AppEventId;
+import act.app.event.SysEventId;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -65,10 +65,10 @@ public @interface AnnotatedClassFinder {
     /**
      * Specify when to execute the call back for a certain found class.
      * <p>
-     * By default the value of `callOn` is {@link AppEventId#DEPENDENCY_INJECTOR_PROVISIONED}
+     * By default the value of `callOn` is {@link SysEventId#DEPENDENCY_INJECTOR_PROVISIONED}
      *
      * @return the "When" to execute the callback logic
      */
-    AppEventId callOn() default AppEventId.DEPENDENCY_INJECTOR_PROVISIONED;
+    SysEventId callOn() default SysEventId.DEPENDENCY_INJECTOR_PROVISIONED;
 
 }

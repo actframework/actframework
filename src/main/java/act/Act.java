@@ -21,7 +21,7 @@ package act;
  */
 
 import act.app.*;
-import act.app.event.AppEventId;
+import act.app.event.SysEventId;
 import act.app.util.NamedPort;
 import act.boot.BootstrapClassLoader;
 import act.boot.PluginClassProvider;
@@ -42,7 +42,7 @@ import act.handler.builtin.controller.*;
 import act.handler.builtin.controller.impl.ReflectedHandlerInvoker;
 import act.inject.DependencyInjector;
 import act.internal.util.AppDescriptor;
-import act.job.AppJobManager;
+import act.job.JobManager;
 import act.metric.MetricPlugin;
 import act.metric.SimpleMetricPlugin;
 import act.plugin.AppServicePluginManager;
@@ -310,7 +310,7 @@ public final class Act {
             shutdownNetworkLayer();
             throw new UnexpectedException("App not found. Please make sure your app start directory is correct");
         }
-        emit(AppEventId.ACT_START);
+        emit(SysEventId.ACT_START);
         writePidFile();
     }
 
@@ -441,21 +441,21 @@ public final class Act {
     }
 
     /**
-     * Trigger an {@link act.app.event.AppEventId App event}
+     * Trigger an {@link SysEventId App event}
      *
-     * @param appEvent the app event
+     * @param sysEvent the app event
      */
-    public static void emit(AppEventId appEvent) {
-        App.instance().emit(appEvent);
+    public static void emit(SysEventId sysEvent) {
+        App.instance().emit(sysEvent);
     }
 
     /**
-     * Alias of {@link #emit(AppEventId)}
+     * Alias of {@link #emit(SysEventId)}
      *
-     * @param appEventId the app event
+     * @param sysEventId the app event
      */
-    public static void trigger(AppEventId appEventId) {
-        emit(appEventId);
+    public static void trigger(SysEventId sysEventId) {
+        emit(sysEventId);
     }
 
     /**
@@ -468,11 +468,11 @@ public final class Act {
     }
 
     /**
-     * Returns the {@link App app}'s {@link AppJobManager}
+     * Returns the {@link App app}'s {@link JobManager}
      *
      * @return the app's jobManager
      */
-    public static AppJobManager jobManager() {
+    public static JobManager jobManager() {
         return App.instance().jobManager();
     }
 

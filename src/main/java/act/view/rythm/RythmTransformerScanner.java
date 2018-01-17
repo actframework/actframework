@@ -22,7 +22,7 @@ package act.view.rythm;
 
 import act.Act;
 import act.app.AppByteCodeScannerBase;
-import act.app.event.AppEventId;
+import act.app.event.SysEventId;
 import act.asm.AnnotationVisitor;
 import act.asm.MethodVisitor;
 import act.asm.Type;
@@ -103,7 +103,7 @@ public class RythmTransformerScanner extends AppByteCodeScannerBase {
         public void visitEnd() {
             super.visitEnd();
             if (found) {
-                app().jobManager().on(AppEventId.PRE_START, new Runnable() {
+                app().jobManager().on(SysEventId.PRE_START, new Runnable() {
                     @Override
                     public void run() {
                         RythmView rythmView = (RythmView) Act.viewManager().view(RythmView.ID);

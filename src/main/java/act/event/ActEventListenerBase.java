@@ -20,7 +20,7 @@ package act.event;
  * #L%
  */
 
-import act.app.event.AppEventListener;
+import act.app.event.SysEventListener;
 import act.util.DestroyableBase;
 import org.osgl.util.S;
 
@@ -58,8 +58,8 @@ public abstract class ActEventListenerBase<EVENT_TYPE extends EventObject> exten
         if (this == obj) {
             return true;
         }
-        if (obj instanceof AppEventListener) {
-            AppEventListener that = (AppEventListener) obj;
+        if (obj instanceof SysEventListener) {
+            SysEventListener that = (SysEventListener) obj;
             return S.eq(that.id(), this.id());
         }
         return false;

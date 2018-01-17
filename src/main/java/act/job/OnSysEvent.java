@@ -20,7 +20,7 @@ package act.job;
  * #L%
  */
 
-import act.app.event.AppEventId;
+import act.app.event.SysEventId;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -28,18 +28,18 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Mark a method to be a job that must be run upon a certain {@link act.app.event.AppEventId app event}
+ * Mark a method to be a job that must be run upon a certain {@link SysEventId system event}
  * occurred
  */
 @Retention(RetentionPolicy.CLASS)
 @Target(ElementType.METHOD)
-public @interface OnAppEvent {
+public @interface OnSysEvent {
 
     /**
-     * Specify the {@link AppEventId app event id} the job should start with
+     * Specify the {@link SysEventId app event id} the job should start with
      * @return the event ID
      */
-    AppEventId value();
+    SysEventId value();
 
     /**
      * <p>Indicate if the job should be run synchronously with application

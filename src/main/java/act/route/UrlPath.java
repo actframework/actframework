@@ -52,6 +52,16 @@ public class UrlPath {
         }
     }
 
+    /**
+     * Check if the URL path is a built-in service url.
+     *
+     * A built in service URL starts with `~`
+     * @return `true` if the URL represented by this `UrlPath` is a built-in service URL
+     */
+    public boolean isBuiltIn() {
+        return !parts.isEmpty() && "~".equals(parts.get(0));
+    }
+
     @Override
     public boolean equals(Object obj) {
         if (obj == this) {

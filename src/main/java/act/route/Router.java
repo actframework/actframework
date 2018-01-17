@@ -675,7 +675,7 @@ public class Router extends AppServiceBase<Router> {
 
     private Node search(H.Method method, Iterator<CharSequence> path, ActionContext context) {
         Node node = root(method);
-        if (node.terminateRouteSearch()) {
+        if (node.terminateRouteSearch() && !context.urlPath().isBuiltIn()) {
             S.Buffer sb = S.newBuffer();
             while (path.hasNext()) {
                 sb.append('/').append(path.next());

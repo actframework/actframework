@@ -20,7 +20,8 @@ package act.event;
  * #L%
  */
 
-import act.app.event.AppEventId;
+import act.app.event.SysEventId;
+import act.app.event.SysEvent;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -36,11 +37,11 @@ import java.lang.annotation.Target;
 public @interface BindOn {
 
     /**
-     * Specify the ID of the {@link act.app.event.AppEvent} when
+     * Specify the ID of the {@link SysEvent} when
      * the binding should happen
      *
      * @return the app event ID
      */
-    AppEventId value();
+    SysEventId value();
 
 }

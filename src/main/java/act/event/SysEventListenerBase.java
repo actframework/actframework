@@ -1,4 +1,4 @@
-package act.app.event;
+package act.event;
 
 /*-
  * #%L
@@ -20,25 +20,16 @@ package act.app.event;
  * #L%
  */
 
-import act.app.App;
-import act.event.ActEvent;
-import act.event.SystemEvent;
+import act.app.event.SysEvent;
+import act.app.event.SysEventListener;
 
-public abstract class AppEvent extends ActEvent<App> implements SystemEvent {
-
-    private AppEventId id;
-
-    public AppEvent(AppEventId id, App source) {
-        super(source);
-        this.id = id;
+public abstract class SysEventListenerBase<EVENT_TYPE extends SysEvent> extends ActEventListenerBase<EVENT_TYPE> implements SysEventListener<EVENT_TYPE> {
+    public SysEventListenerBase(CharSequence id) {
+        super(id);
     }
 
-    @Override
-    public String toString() {
-        return id.name();
+    public SysEventListenerBase() {
+        super();
     }
 
-    public int id() {
-        return id.ordinal();
-    }
 }

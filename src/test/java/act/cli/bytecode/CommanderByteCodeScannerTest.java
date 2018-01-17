@@ -28,7 +28,7 @@ import act.asm.Type;
 import act.cli.CliDispatcher;
 import act.cli.meta.*;
 import act.handler.CliHandler;
-import act.job.AppJobManager;
+import act.job.JobManager;
 import act.util.AsmTypes;
 import act.util.Files;
 import act.util.PropertySpec;
@@ -52,7 +52,7 @@ public class CommanderByteCodeScannerTest extends ActTestBase {
     private CommanderClassMetaInfoManager infoSrc;
     private TestingAppClassLoader classLoader;
     private AppCodeScannerManager scannerManager;
-    private AppJobManager jobManager;
+    private JobManager jobManager;
     private CommanderByteCodeScanner scanner;
     private CliDispatcher dispatcher;
     private File base;
@@ -62,7 +62,7 @@ public class CommanderByteCodeScannerTest extends ActTestBase {
         super.setup();
         scanner = new CommanderByteCodeScanner();
         scannerManager = mock(AppCodeScannerManager.class);
-        jobManager = mock(AppJobManager.class);
+        jobManager = mock(JobManager.class);
         classLoader = new TestingAppClassLoader(mockApp);
         dispatcher = new CliDispatcher(mockApp);
         when(mockApp.classLoader()).thenReturn(classLoader);

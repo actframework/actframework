@@ -20,7 +20,7 @@ package act.app.conf;
  * #L%
  */
 
-import act.app.event.AppEventId;
+import act.app.event.SysEventId;
 import act.conf.AppConfig;
 import act.security.CSRFProtector;
 import act.util.LogSupport;
@@ -127,7 +127,7 @@ public abstract class AppConfigurator<T extends AppConfigurator> extends AppConf
         CsrfSetting(AppConfigurator conf) {
             this.conf = conf;
             this.enabled = true;
-            conf.app().jobManager().on(AppEventId.CONFIG_PREMERGE, new Runnable() {
+            conf.app().jobManager().on(SysEventId.CONFIG_PREMERGE, new Runnable() {
                 @Override
                 public void run() {
                     checkAndCommit();
@@ -191,7 +191,7 @@ public abstract class AppConfigurator<T extends AppConfigurator> extends AppConf
         CorsSetting(AppConfigurator conf) {
             this.conf = conf;
             this.enabled = true;
-            conf.app().jobManager().on(AppEventId.CONFIG_PREMERGE, new Runnable() {
+            conf.app().jobManager().on(SysEventId.CONFIG_PREMERGE, new Runnable() {
                 @Override
                 public void run() {
                     checkAndCommit();

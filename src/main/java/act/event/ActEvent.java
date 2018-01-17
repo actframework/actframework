@@ -75,7 +75,7 @@ public class ActEvent<T> extends EventObject {
      * @return the type of the event
      */
     public Class<? extends ActEvent<T>> eventType() {
-        return $.cast(getClass());
+        return $.cast(referType(getClass()));
     }
 
     public final T source() {
@@ -89,5 +89,22 @@ public class ActEvent<T> extends EventObject {
      */
     public final long timestamp() {
         return ts;
+    }
+
+    public static Class<? extends EventObject> typeOf(EventObject eventObject) {
+        if (eventObject instanceof ActEvent) {
+            return ((ActEvent<?>) eventObject).eventType();
+        } else {
+            return referType(eventObject.getClass());
+        }
+    }
+
+    private static Class<? extends EventObject> referType(Class<? extends EventObject> eventType) {
+        return eventType.isAnonymousClass() ? referType((Class<? extends EventObject>) eventType.getSuperclass()) : eventType;
+    }
+
+    public static void main(String[] args) {
+        Class<? extends EventObject> type = typeOf(new ActEvent<String>() {});
+        System.out.println(type);
     }
 }

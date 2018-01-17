@@ -20,7 +20,7 @@ package act.job.bytecode;
  * #L%
  */
 
-import act.app.event.AppEventId;
+import act.app.event.SysEventId;
 import com.alibaba.fastjson.JSON;
 import org.osgl.$;
 
@@ -30,7 +30,7 @@ import static act.util.AnnotationUtil.tryGetDefaultValue;
 
 public class JobAnnoInfo {
     public String value;
-    public AppEventId appEventId;
+    public SysEventId sysEventId;
     public boolean async;
     public String id;
     public boolean startImmediately;
@@ -41,8 +41,8 @@ public class JobAnnoInfo {
         Object v = tryGetDefaultValue(annoType, "value");
         if (v instanceof String) {
             this.value = (String) v;
-        } else if (v instanceof AppEventId) {
-            this.appEventId = (AppEventId) v;
+        } else if (v instanceof SysEventId) {
+            this.sysEventId = (SysEventId) v;
         }
         v = tryGetDefaultValue(annoType, "startImmediately");
         if (null != v) {

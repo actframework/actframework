@@ -23,7 +23,7 @@ package act.xio;
 import act.Act;
 import act.app.ActionContext;
 import act.app.App;
-import act.app.event.AppEventId;
+import act.app.event.SysEventId;
 import act.app.util.NamedPort;
 import act.handler.RequestHandler;
 import act.handler.builtin.AlwaysNotFound;
@@ -104,7 +104,7 @@ public class NetworkHandler extends DestroyableBase {
             try {
                 boolean updated = app.checkUpdates(false);
                 if (updated) {
-                    app.jobManager().on(AppEventId.POST_START, new Runnable() {
+                    app.jobManager().on(SysEventId.POST_START, new Runnable() {
                         @Override
                         public void run() {
                             handle(ctx, dispatcher);

@@ -25,8 +25,8 @@ import act.app.App;
 /**
  * Emitted right before merging {@link act.app.conf.AppConfigurator app custom config}
  */
-public class AppConfigPreMerge extends AppEvent {
+public class AppConfigPreMerge extends SysEvent {
     public AppConfigPreMerge(App source) {
-        super(AppEventId.CONFIG_PREMERGE, source);
+        super(SysEventId.CONFIG_PREMERGE, source);
     }
 }

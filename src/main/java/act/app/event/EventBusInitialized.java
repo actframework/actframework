@@ -25,8 +25,8 @@ import act.app.App;
 /**
  * Emitted after Application's {@link act.event.EventBus} has been initialized
  */
-public class EventBusInitialized extends AppEvent {
+public class EventBusInitialized extends SysEvent {
     public EventBusInitialized(App source) {
-        super(AppEventId.EVENT_BUS_INITIALIZED, source);
+        super(SysEventId.EVENT_BUS_INITIALIZED, source);
     }
 }

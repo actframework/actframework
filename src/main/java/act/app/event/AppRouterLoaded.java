@@ -25,8 +25,8 @@ import act.app.App;
 /**
  * Emitted after Application's router has been loaded
  */
-public class AppRouterLoaded extends AppEvent {
+public class AppRouterLoaded extends SysEvent {
     public AppRouterLoaded(App source) {
-        super(AppEventId.ROUTER_LOADED, source);
+        super(SysEventId.ROUTER_LOADED, source);
     }
 }

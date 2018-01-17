@@ -28,7 +28,7 @@ import act.asm.Type;
 import act.controller.meta.*;
 import act.event.EventBus;
 import act.inject.param.ParamValueLoaderManager;
-import act.job.AppJobManager;
+import act.job.JobManager;
 import act.job.bytecode.JobByteCodeScanner;
 import act.route.RouteSource;
 import act.util.ClassInfoRepository;
@@ -61,7 +61,7 @@ public class ControllerByteCodeScannerTest extends ActTestBase {
     private ClassInfoRepository classInfoRepository;
     private TestingAppClassLoader classLoader;
     private AppCodeScannerManager scannerManager;
-    private AppJobManager jobManager;
+    private JobManager jobManager;
     private ControllerByteCodeScanner controllerScanner;
     private JobByteCodeScanner jobScanner;
     private EventBus eventBus;
@@ -77,7 +77,7 @@ public class ControllerByteCodeScannerTest extends ActTestBase {
         classInfoRepository = mock(ClassInfoRepository.class);
         eventBus = mock(EventBus.class);
         when(mockApp.eventBus()).thenReturn(eventBus);
-        jobManager = new AppJobManager(mockApp);
+        jobManager = new JobManager(mockApp);
         classLoader = new TestingAppClassLoader(mockApp);
         $.setProperty(classLoader, classInfoRepository, "classInfoRepository");
         when(mockApp.classLoader()).thenReturn(classLoader);

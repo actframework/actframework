@@ -22,13 +22,13 @@ package act.app;
 
 import act.Act;
 import act.Destroyable;
-import act.app.event.AppEventId;
+import act.app.event.SysEventId;
 import act.conf.AppConfig;
 import act.db.*;
 import act.db.util.SequenceNumberGenerator;
 import act.db.util._SequenceNumberGenerator;
 import act.event.ActEventListenerBase;
-import act.event.AppEventListenerBase;
+import act.event.SysEventListenerBase;
 import act.event.EventBus;
 import act.util.ClassNode;
 import act.util.General;
@@ -110,11 +110,11 @@ public class DbServiceManager extends AppServiceBase<DbServiceManager> implement
 
         final EventBus eventBus = app.eventBus();
         if (asyncInitializers.isEmpty()) {
-            eventBus.bind(AppEventId.SINGLETON_PROVISIONED, new AppEventListenerBase() {
+            eventBus.bind(SysEventId.SINGLETON_PROVISIONED, new SysEventListenerBase() {
                 @Override
                 public void on(EventObject event) throws Exception {
                     daoInitializer.run();
-                    app.emit(AppEventId.DB_SVC_LOADED);
+                    app.emit(SysEventId.DB_SVC_LOADED);
                 }
             });
         } else {
@@ -124,7 +124,7 @@ public class DbServiceManager extends AppServiceBase<DbServiceManager> implement
                     asyncInitializers.remove(event.source());
                     if (asyncInitializers.isEmpty()) {
                         daoInitializer.run();
-                        app.emit(AppEventId.DB_SVC_LOADED);
+                        app.emit(SysEventId.DB_SVC_LOADED);
                     }
                 }
             });
@@ -136,7 +136,7 @@ public class DbServiceManager extends AppServiceBase<DbServiceManager> implement
     }
 
     private void configureSequenceGenerator(final App app) {
-        app.jobManager().on(AppEventId.DEPENDENCY_INJECTOR_PROVISIONED, new Runnable() {
+        app.jobManager().on(SysEventId.DEPENDENCY_INJECTOR_PROVISIONED, new Runnable() {
             @Override
             public void run() {
                 _SequenceNumberGenerator seqGen = app.config().sequenceNumberGenerator();

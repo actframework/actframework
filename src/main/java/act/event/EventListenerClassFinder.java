@@ -21,9 +21,9 @@ package act.event;
  */
 
 import act.app.App;
-import act.app.event.AppEvent;
-import act.app.event.AppEventId;
-import act.app.event.AppEventListener;
+import act.app.event.SysEvent;
+import act.app.event.SysEventId;
+import act.app.event.SysEventListener;
 import act.util.SubTypeFinder;
 import org.osgl.$;
 
@@ -57,12 +57,12 @@ public class EventListenerClassFinder extends SubTypeFinder<ActEventListener> {
         for (Type t : ca) {
             if (t instanceof Class) {
                 final Class<? extends EventObject> tc = $.cast(t);
-                if (AppEvent.class.isAssignableFrom(tc)) {
-                    AppEvent prototype = $.cast($.newInstance(tc, app));
-                    AppEventListener listener = $.cast(app.getInstance(target));
-                    app.eventBus().bind(AppEventId.values()[prototype.id()], listener);
+                if (SysEvent.class.isAssignableFrom(tc)) {
+                    SysEvent prototype = $.cast($.newInstance(tc, app));
+                    SysEventListener listener = $.cast(app.getInstance(target));
+                    app.eventBus().bind(SysEventId.values()[prototype.id()], listener);
                 } else if (ActEvent.class.isAssignableFrom(tc)) {
-                    AppEventId bindOn = AppEventId.START;
+                    SysEventId bindOn = SysEventId.START;
                     BindOn bindOnSpec = target.getAnnotation(BindOn.class);
                     if (null == bindOnSpec) {
                         bindOnSpec = tc.getAnnotation(BindOn.class);
@@ -70,7 +70,7 @@ public class EventListenerClassFinder extends SubTypeFinder<ActEventListener> {
                     if (null != bindOnSpec) {
                         bindOn = bindOnSpec.value();
                     }
-                    app.eventBus().bind(bindOn, new AppEventListenerBase() {
+                    app.eventBus().bind(bindOn, new SysEventListenerBase() {
                         @Override
                         public void on(EventObject event) throws Exception {
                             ActEventListener listener = app.getInstance(target);

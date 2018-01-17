@@ -21,7 +21,7 @@ package act.app;
  */
 
 import act.Destroyable;
-import act.app.event.AppEventId;
+import act.app.event.SysEventId;
 import org.osgl.$;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -45,7 +45,7 @@ public class SingletonRegistry extends AppServiceBase<SingletonRegistry> {
     synchronized void register(final Class<?> singletonClass) {
         if (!batchRegistered) {
             if (preRegistry.isEmpty()) {
-                app().jobManager().on(AppEventId.DEPENDENCY_INJECTOR_PROVISIONED, "register-singleton-instances", new Runnable() {
+                app().jobManager().on(SysEventId.DEPENDENCY_INJECTOR_PROVISIONED, "register-singleton-instances", new Runnable() {
                     @Override
                     public void run() {
                         doRegister();

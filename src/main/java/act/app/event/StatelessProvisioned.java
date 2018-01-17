@@ -25,8 +25,8 @@ import act.app.App;
 /**
  * Emitted immediately when {@link App}'s all component annotated with {@link act.util.Stateless} has been provisioned
  */
-public class StatelessProvisioned extends AppEvent {
+public class StatelessProvisioned extends SysEvent {
     public StatelessProvisioned(App source) {
-        super(AppEventId.STATELESS_PROVISIONED, source);
+        super(SysEventId.STATELESS_PROVISIONED, source);
     }
 }

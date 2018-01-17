@@ -127,7 +127,7 @@ public final class JobClassMetaInfo extends DestroyableBase {
     private static final C.Set<Class<? extends Annotation>> ACTION_ANNOTATION_TYPES = C.set(
             AlongWith.class, Cron.class, Every.class,
             FixedDelay.class, InvokeAfter.class, InvokeBefore.class,
-            OnAppStart.class, OnAppStop.class, OnAppEvent.class);
+            OnAppStart.class, OnAppStop.class, OnSysEvent.class);
 
     public static boolean isActionAnnotation(Class<? extends Annotation> type) {
         return ACTION_ANNOTATION_TYPES.contains(type);

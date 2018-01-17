@@ -22,7 +22,7 @@ package act.job;
 
 import act.app.App;
 import act.app.AppHolderBase;
-import act.app.event.AppEventId;
+import act.app.event.SysEventId;
 import act.job.bytecode.JobAnnoInfo;
 import act.job.bytecode.ReflectedJobInvoker;
 import act.job.meta.JobClassMetaInfo;
@@ -39,7 +39,7 @@ public class JobAnnotationProcessor extends AppHolderBase<JobAnnotationProcessor
 
     private static final Logger LOGGER = LogManager.get(JobAnnotationProcessor.class);
 
-    private AppJobManager manager;
+    private JobManager manager;
 
     public JobAnnotationProcessor(App app) {
         super(app);
@@ -51,7 +51,7 @@ public class JobAnnotationProcessor extends AppHolderBase<JobAnnotationProcessor
             LOGGER.trace("register job[%s] on anno[%s] with arg[%s]", method, anno, info);
         }
         if (isAbstract(method)) {
-            app().jobManager().on(AppEventId.SINGLETON_PROVISIONED, new Runnable() {
+            app().jobManager().on(SysEventId.SINGLETON_PROVISIONED, new Runnable() {
                 @Override
                 public void run() {
                     List<JobMethodMetaInfo> list = method.extendedJobMethodMetaInfoList(app());
@@ -82,8 +82,8 @@ public class JobAnnotationProcessor extends AppHolderBase<JobAnnotationProcessor
         } else if (OnAppStop.class.isAssignableFrom(anno)) {
             boolean async = info.async;
             registerOnAppStop(job, async);
-        } else if (OnAppEvent.class.isAssignableFrom(anno)) {
-            registerOnAppEvent(job, info.appEventId, info.async);
+        } else if (OnSysEvent.class.isAssignableFrom(anno)) {
+            registerOnSysEvent(job, info.sysEventId, info.async);
         } else {
             throw E.unsupport("Unknown job annotation class: %s", anno.getName());
         }
@@ -138,8 +138,8 @@ public class JobAnnotationProcessor extends AppHolderBase<JobAnnotationProcessor
         JobTrigger.onAppStop(async).register(job, manager);
     }
 
-    private void registerOnAppEvent(Job job, AppEventId appEventId, boolean async) {
-        JobTrigger.onAppEvent(appEventId, async).register(job, manager);
+    private void registerOnSysEvent(Job job, SysEventId sysEventId, boolean async) {
+        JobTrigger.onSysEvent(sysEventId, async).register(job, manager);
     }
 
     private boolean isAbstract(JobMethodMetaInfo method) {
