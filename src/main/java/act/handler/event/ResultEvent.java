@@ -59,7 +59,7 @@ public abstract class ResultEvent extends ActEvent<Result> implements SystemEven
                 public Void apply(Result result, H.Request<?> request, H.Response<?> response) throws NotAppliedException, Osgl.Break {
                     ActionContext context = request.context();
                     context.applyCorsSpec().applyContentSecurityPolicy().applyContentType(result);
-                    context.app().eventBus().trigger(new BeforeResultCommit(result, request, response));
+                    context.app().eventBus().emit(new BeforeResultCommit(result, request, response));
                     return null;
                 }
             };
@@ -70,7 +70,7 @@ public abstract class ResultEvent extends ActEvent<Result> implements SystemEven
                 @Override
                 public Void apply(Result result, H.Request<?> request, H.Response<?> response) throws NotAppliedException, Osgl.Break {
                     ActionContext context = request.context();
-                    context.app().eventBus().trigger(new AfterResultCommit(result, request, response));
+                    context.app().eventBus().emit(new AfterResultCommit(result, request, response));
                     return null;
                 }
             };

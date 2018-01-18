@@ -20,10 +20,16 @@ package act.ws;
  * #L%
  */
 
+import act.event.ActEvent;
+
 public class WebSocketCloseEvent extends WebSocketEventBase {
 
     public WebSocketCloseEvent(WebSocketContext context) {
         super(context);
     }
 
+    @Override
+    public Class<? extends ActEvent<WebSocketContext>> eventType() {
+        return WebSocketCloseEvent.class;
+    }
 }

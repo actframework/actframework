@@ -22,6 +22,7 @@ package act.db;
 
 import act.event.ActEvent;
 import act.event.SystemEvent;
+import org.osgl.$;
 
 /**
  * Raised by framework when calling {@link Dao#delete(Object)}
@@ -29,5 +30,10 @@ import act.event.SystemEvent;
 public class DeleteEvent<MODEL_TYPE> extends ActEvent<MODEL_TYPE> implements SystemEvent {
     public DeleteEvent(MODEL_TYPE source) {
         super(source);
+    }
+
+    @Override
+    public Class<? extends ActEvent<MODEL_TYPE>> eventType() {
+        return $.cast(DeleteEvent.class);
     }
 }

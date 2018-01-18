@@ -28,6 +28,7 @@ import io.undertow.server.HttpServerExchange;
 import io.undertow.util.HeaderMap;
 import io.undertow.util.Headers;
 import io.undertow.util.HttpString;
+import org.osgl.$;
 import org.osgl.exception.UnexpectedIOException;
 import org.osgl.http.H;
 import org.osgl.storage.ISObject;
@@ -54,8 +55,7 @@ public class UndertowResponse extends ActResponse<UndertowResponse> {
 
     public UndertowResponse(HttpServerExchange exchange, AppConfig config) {
         super(config);
-        E.NPE(exchange);
-        hse = exchange;
+        hse = $.notNull(exchange);
         header(H.Header.Names.SERVER, config.serverHeader());
     }
 

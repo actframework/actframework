@@ -130,7 +130,7 @@ public class EventBus extends AppServiceBase<EventBus> {
         private static Class<?> VARARG_TYPE = Object[].class;
 
         // create list of keys from event triggering id and argument list
-        static List<Key> keysOf(Object id, Object[] args, EventBus eventBus) {
+        static List<Key> keysOf(Class<?> idClass, Object id, Object[] args, EventBus eventBus) {
             List<Key> keys = new ArrayList<>();
             List<Class> argTypes = new ArrayList<>();
             List<Class> varArgTypes = new ArrayList<>();
@@ -150,9 +150,8 @@ public class EventBus extends AppServiceBase<EventBus> {
                 if (null != argTypes) {
                     keys.add(new Key(id, argTypes, args));
                 }
-                keys.add(new Key(id, varArgTypes, args));
+                keys.add(new Key(id, varArgTypes, new Object[]{args}));
             } else if (IdType.CLASS == type) {
-                Class<?> idClass = id instanceof Class ? (Class) id : id.getClass();
                 if (!eventBus.classesWithAdhocListeners.contains(idClass)) {
                     return C.list();
                 }
@@ -169,7 +168,7 @@ public class EventBus extends AppServiceBase<EventBus> {
             } else {
                 // the enum value
                 if (eventBus.enumsWithAdhocListeners.contains(id)) {
-                    keys.add(new Key(id, varArgTypes, args));
+                    keys.add(new Key(id, varArgTypes, new Object[]{args}));
                     if (null != argTypes) {
                         keys.add(new Key(id, argTypes, args));
                     }
@@ -219,6 +218,124 @@ public class EventBus extends AppServiceBase<EventBus> {
 
     }
 
+    private abstract static class EventContext<T> {
+        boolean asyncForAsync = true;
+        boolean asyncForSync = false;
+        Class<? extends T> eventType;
+        List<Key> keys;
+        List<Key> keysForOnceBus;
+        T event;
+        Object[] args;
+        EventContext(T event, Object[] args) {
+            this.event = event;
+            this.args = args;
+        }
+        EventContext(boolean asyncForAsync, boolean asyncForSync, T event, Object[] args) {
+            this(event, args);
+            this.asyncForAsync = asyncForAsync;
+            this.asyncForSync = asyncForSync;
+        }
+        final Class<? extends T> eventType() {
+            if (null == eventType) {
+                eventType = lookupEventType();
+            }
+            return eventType;
+        }
+        List<Key> keys(EventBus eventBus) {
+            if (eventBus.once) {
+                if (null == keysForOnceBus) {
+                    keysForOnceBus = Key.keysOf(eventType(), event, args, eventBus);
+                }
+                return keysForOnceBus;
+            } else {
+                if (null == keys) {
+                    keys = Key.keysOf(eventType(), event, args, eventBus);
+                }
+                return keys;
+            }
+        }
+        boolean hasArgs() {
+            return 0 < args.length;
+        }
+        boolean shouldCallActEventListeners(EventBus eventBus) {
+            return !hasArgs() && eventBus.eventsWithActListeners.contains(eventType());
+        }
+        Class<? extends T> lookupEventType() {
+            return $.cast(event.getClass());
+        }
+        abstract boolean shouldCallAdhocEventListeners(EventBus eventBus);
+    }
+
+    private static class EnumEventContext extends EventContext<Enum> {
+        EnumEventContext(Enum event, Object[] args) {
+            super(event, args);
+        }
+
+        EnumEventContext(boolean asyncForAsync, boolean asyncForSync, Enum event, Object[] args) {
+            super(asyncForAsync, asyncForSync, event, args);
+        }
+
+        @Override
+        Class<? extends Enum> lookupEventType() {
+            return event.getDeclaringClass();
+        }
+
+        @Override
+        boolean shouldCallAdhocEventListeners(EventBus eventBus) {
+            return eventBus.hasAdhocEventListenerFor(event);
+        }
+    }
+
+    private static class StringEventContext extends EventContext<String> {
+        StringEventContext(String event, Object[] args) {
+            super(event, args);
+        }
+
+        StringEventContext(boolean asyncForAsync, boolean asyncForSync, String event, Object[] args) {
+            super(asyncForAsync, asyncForSync, event, args);
+        }
+
+        @Override
+        boolean shouldCallAdhocEventListeners(EventBus eventBus) {
+            return eventBus.hasAdhocEventListenerFor(event);
+        }
+    }
+
+    private static class EventObjectContext<T extends EventObject> extends EventContext<T> {
+        EventObjectContext(T event, Object[] args) {
+            super(event, args);
+        }
+
+        EventObjectContext(boolean asyncForAsync, boolean asyncForSync, T event, Object[] args) {
+            super(asyncForAsync, asyncForSync, event, args);
+        }
+
+        @Override
+        Class<? extends T> lookupEventType() {
+            return $.cast(ActEvent.typeOf(event));
+        }
+
+        @Override
+        boolean shouldCallAdhocEventListeners(EventBus eventBus) {
+            return eventBus.hasAdhocEventListenerFor(event);
+        }
+    }
+
+    private static class ActEventContext extends EventObjectContext<ActEvent<?>> {
+        ActEventContext(ActEvent<?> event, Object[] args) {
+            super(event, args);
+        }
+
+        ActEventContext(boolean asyncForAsync, boolean asyncForSync, ActEvent<?> event, Object[] args) {
+            super(asyncForAsync, asyncForSync, event, args);
+        }
+
+        @Override
+        Class<? extends ActEvent<?>> lookupEventType() {
+            return ActEvent.typeOf(event);
+        }
+    }
+
     private static final Logger LOGGER = LogManager.get(EventBus.class);
 
     // is this event bus for one time event listener?
@@ -246,6 +363,7 @@ public class EventBus extends AppServiceBase<EventBus> {
     private final Set<Class<?>> classesWithAdhocListeners = new HashSet<>();
     private final Set<Enum> enumsWithAdhocListeners = new HashSet<>();
     private final Set<String> stringsWithAdhocListeners = new HashSet<>();
+    private final Set<Class<? extends EventObject>> eventsWithActListeners = new HashSet<>();
 
     // is this event bus for one time event listeners?
     private EventBus onceBus;
@@ -577,19 +695,7 @@ public class EventBus extends AppServiceBase<EventBus> {
      * @see SimpleEventListener
      */
     public EventBus emit(Enum<?> event, Object... args) {
-        if (isDestroyed()) {
-            return this;
-        }
-        List<Key> keys = null;
-        if (null != onceBus) {
-            if (onceBus.hasAdhocEventListenerFor(event)) {
-                keys = onceBus._emit(true, false, keys, event, args);
-            }
-        }
-        if (hasAdhocEventListenerFor(event)) {
-            _emit(true, false, keys, event, args);
-        }
-        return this;
+        return _emitWithOnceBus(eventContext(event, args));
     }
 
     /**
@@ -633,19 +739,7 @@ public class EventBus extends AppServiceBase<EventBus> {
      * @see SimpleEventListener
      */
     public EventBus emit(String event, Object... args) {
-        if (isDestroyed()) {
-            return this;
-        }
-        List<Key> keys = null;
-        if (null != onceBus) {
-            if (onceBus.hasAdhocEventListenerFor(event)) {
-                keys = onceBus._emit(true, false, keys, event, args);
-            }
-        }
-        if (hasAdhocEventListenerFor(event)) {
-            _emit(true, false, keys, event, args);
-        }
-        return this;
+        return _emitWithOnceBus(eventContext(event, args));
     }
 
     /**
@@ -702,27 +796,15 @@ public class EventBus extends AppServiceBase<EventBus> {
      * @see SimpleEventListener
      */
     public EventBus emit(EventObject event, Object... args) {
-        if (isDestroyed()) {
-            return this;
-        }
-        List<Key> keys = null;
-        if (null != onceBus) {
-            if (0 == args.length) {
-                onceBus.callOn(event, onceBus.asyncActEventListeners, true);
-                onceBus.callOn(event, onceBus.actEventListeners, false);
-            }
-            if (onceBus.hasAdhocEventListenerFor(event)) {
-                keys = onceBus._emit(true, false, keys, event, args);
-            }
-        }
-        if (0 == args.length) {
-            callOn(event, asyncActEventListeners, true);
-            callOn(event, actEventListeners, false);
-        }
-        if (hasAdhocEventListenerFor(event)) {
-            _emit(true, false, keys, event, args);
-        }
-        return this;
+        return _emitWithOnceBus(eventContext(event, args));
+    }
+
+    /**
+     * Overload {@link #emit(EventObject, Object...)} for performance tuning.
+     * @see #emit(EventObject, Object...)
+     */
+    public EventBus emit(ActEvent event, Object... args) {
+        return _emitWithOnceBus(eventContext(event, args));
     }
 
     /**
@@ -757,19 +839,7 @@ public class EventBus extends AppServiceBase<EventBus> {
      * @see #emit(Enum, Object...)
      */
     public EventBus emitAsync(Enum<?> event, Object... args) {
-        if (isDestroyed()) {
-            return this;
-        }
-        List<Key> keys = null;
-        if (null != onceBus) {
-            if (onceBus.hasAdhocEventListenerFor(event)) {
-                keys = onceBus._emit(true, true, keys, event, args);
-            }
-        }
-        if (hasAdhocEventListenerFor(event)) {
-            _emit(true, true, keys, event, args);
-        }
-        return this;
+        return _emitWithOnceBus(eventContextAsync(event, args));
     }
 
     /**
@@ -782,19 +852,7 @@ public class EventBus extends AppServiceBase<EventBus> {
      * @see #emit(String, Object...)
      */
     public EventBus emitAsync(String event, Object... args) {
-        if (isDestroyed()) {
-            return this;
-        }
-        List<Key> keys = null;
-        if (null != onceBus) {
-            if (onceBus.hasAdhocEventListenerFor(event)) {
-                keys = onceBus._emit(true, true, keys, event, args);
-            }
-        }
-        if (hasAdhocEventListenerFor(event)) {
-            _emit(true, true, keys, event, args);
-        }
-        return this;
+        return _emitWithOnceBus(eventContextAsync(event, args));
     }
 
     /**
@@ -807,27 +865,16 @@ public class EventBus extends AppServiceBase<EventBus> {
      * @see #emit(EventObject, Object...)
      */
     public EventBus emitAsync(EventObject event, Object... args) {
-        if (isDestroyed()) {
-            return this;
-        }
-        List<Key> keys = null;
-        if (null != onceBus) {
-            if (0 == args.length) {
-                onceBus.callOn(event, onceBus.asyncActEventListeners, true);
-                onceBus.callOn(event, onceBus.actEventListeners, true);
-            }
-            if (onceBus.hasAdhocEventListenerFor(event)) {
-                keys = onceBus._emit(true, true, keys, event, args);
-            }
-        }
-        if (0 == args.length) {
-            callOn(event, asyncActEventListeners, true);
-            callOn(event, actEventListeners, true);
-        }
-        if (hasAdhocEventListenerFor(event)) {
-            _emit(true, true, keys, event, args);
-        }
-        return this;
+        return _emitWithOnceBus(eventContextAsync(event, args));
+    }
+
+    /**
+     * Overload {@link #emitAsync(EventObject, Object...)} for performance
+     * tuning.
+     * @see #emitAsync(EventObject, Object...)
+     */
+    public EventBus emitAsync(ActEvent event, Object... args) {
+        return _emitWithOnceBus(eventContextAsync(event, args));
     }
 
     /**
@@ -862,19 +909,7 @@ public class EventBus extends AppServiceBase<EventBus> {
      * @see #emit(Enum, Object...)
      */
     public EventBus emitSync(Enum<?> event, Object... args) {
-        if (isDestroyed()) {
-            return this;
-        }
-        List<Key> keys = null;
-        if (null != onceBus) {
-            if (onceBus.hasAdhocEventListenerFor(event)) {
-                keys = onceBus._emit(false, false, keys, event, args);
-            }
-        }
-        if (hasAdhocEventListenerFor(event)) {
-            _emit(false, false, keys, event, args);
-        }
-        return this;
+        return _emitWithOnceBus(eventContextAsync(event, args));
     }
 
     /**
@@ -887,19 +922,7 @@ public class EventBus extends AppServiceBase<EventBus> {
      * @see #emit(String, Object...)
      */
     public EventBus emitSync(String event, Object... args) {
-        if (isDestroyed()) {
-            return this;
-        }
-        List<Key> keys = null;
-        if (null != onceBus) {
-            if (onceBus.hasAdhocEventListenerFor(event)) {
-                keys = onceBus._emit(false, false, keys, event, args);
-            }
-        }
-        if (hasAdhocEventListenerFor(event)) {
-            _emit(false, false, keys, event, args);
-        }
-        return this;
+        return _emitWithOnceBus(eventContextAsync(event, args));
     }
 
     /**
@@ -912,27 +935,15 @@ public class EventBus extends AppServiceBase<EventBus> {
      * @see #emit(EventObject, Object...)
      */
     public EventBus emitSync(EventObject event, Object... args) {
-        if (isDestroyed()) {
-            return this;
-        }
-        List<Key> keys = null;
-        if (null != onceBus) {
-            if (0 == args.length) {
-                onceBus.callOn(event, onceBus.asyncActEventListeners, false);
-                onceBus.callOn(event, onceBus.actEventListeners, false);
-            }
-            if (onceBus.hasAdhocEventListenerFor(event)) {
-                keys = onceBus._emit(false, false, keys, event, args);
-            }
-        }
-        if (0 == args.length) {
-            callOn(event, asyncActEventListeners, false);
-            callOn(event, actEventListeners, false);
-        }
-        if (hasAdhocEventListenerFor(event)) {
-            _emit(false, false, keys, event, args);
-        }
-        return this;
+        return _emitWithOnceBus(eventContextAsync(event, args));
+    }
+
+    /**
+     * Overload {@link #emitSync(EventObject, Object...)} for performance tuning.
+     * @see #emitSync(EventObject, Object...)
+     */
+    public EventBus emitSync(ActEvent event, Object... args) {
+        return _emitWithOnceBus(eventContextAsync(event, args));
     }
 
     /**
@@ -983,6 +994,13 @@ public class EventBus extends AppServiceBase<EventBus> {
     }
 
     /**
+     * Alias of {@link #emit(ActEvent, Object[])}.
+     */
+    public EventBus trigger(ActEvent event, Object... args) {
+        return emit(event, args);
+    }
+
+    /**
      * Alias of {@link #emitAsync(SysEventId)}.
      */
     public EventBus triggerAsync(SysEventId eventId) {
@@ -1007,6 +1025,13 @@ public class EventBus extends AppServiceBase<EventBus> {
      * Alias of {@link #emitAsync(EventObject, Object[])}.
      */
     public EventBus triggerAsync(EventObject event, Object... args) {
+        return emitAsync(event, args);
+    }
+
+    /**
+     * Alias of {@link #emitAsync(ActEvent, Object[])}.
+     */
+    public EventBus triggerAsync(ActEvent event, Object... args) {
         return emitAsync(event, args);
     }
 
@@ -1038,6 +1063,13 @@ public class EventBus extends AppServiceBase<EventBus> {
         return emitSync(event, args);
     }
 
+    /**
+     * Alias of {@link #emitSync(ActEvent, Object[])}.
+     */
+    public EventBus triggerSync(ActEvent event, Object... args) {
+        return emitSync(event, args);
+    }
+
     @SuppressWarnings("unchecked")
     private EventBus _bind(List[] listeners, SysEventId sysEventId, SysEventListener<?> l) {
         if (callNowIfEmitted(sysEventId, l)) {
@@ -1048,23 +1080,24 @@ public class EventBus extends AppServiceBase<EventBus> {
         return this;
     }
 
-    private synchronized EventBus _bind(final ConcurrentMap<Class<? extends EventObject>, List<ActEventListener>> listeners, final Class<? extends EventObject> c, final ActEventListener l, int ttl) {
-        List<ActEventListener> list = listeners.get(c);
+    private synchronized EventBus _bind(final ConcurrentMap<Class<? extends EventObject>, List<ActEventListener>> listeners, final Class<? extends EventObject> eventType, final ActEventListener listener, int ttl) {
+        eventsWithActListeners.add(eventType);
+        List<ActEventListener> list = listeners.get(eventType);
         if (null == list) {
             List<ActEventListener> newList = new ArrayList<>();
-            list = listeners.putIfAbsent(c, newList);
+            list = listeners.putIfAbsent(eventType, newList);
             if (null == list) {
                 list = newList;
             }
         }
-        if (!list.contains(l)) {
-            list.add(l);
+        if (!list.contains(listener)) {
+            list.add(listener);
             if (ttl > 0) {
                 app().jobManager().delay(new Runnable() {
                     @Override
                     public void run() {
                         synchronized (EventBus.this) {
-                            _unbind(listeners, c, l);
+                            _unbind(listeners, eventType, listener);
                         }
                     }
                 }, ttl, TimeUnit.SECONDS);
@@ -1119,9 +1152,6 @@ public class EventBus extends AppServiceBase<EventBus> {
     }
 
     private List<Key> _emit(boolean asyncForAsync, boolean asyncForSync, List<Key> keys, Object event, Object... args) {
-        if (null == keys) {
-            keys = Key.keysOf(event, args, this);
-        }
         if (keys.isEmpty()) {
             return keys;
         }
@@ -1176,6 +1206,49 @@ public class EventBus extends AppServiceBase<EventBus> {
                 callOn(listener, args);
             }
         }
+    }
+
+    private EventBus _emitWithOnceBus(StringEventContext context) {
+        if (isDestroyed()) {
+            return this;
+        }
+        if (null != onceBus) {
+            onceBus._emitWithOnceBus(context);
+        }
+        if (context.shouldCallAdhocEventListeners(this)) {
+            _emit(context.asyncForAsync, context.asyncForSync, context.keys(this), context.event, context.args);
+        }
+        return this;
+    }
+
+    private EventBus _emitWithOnceBus(EnumEventContext context) {
+        if (isDestroyed()) {
+            return this;
+        }
+        if (null != onceBus) {
+            onceBus._emitWithOnceBus(context);
+        }
+        if (context.shouldCallAdhocEventListeners(this)) {
+            _emit(context.asyncForAsync, context.asyncForSync, context.keys(this), context.event, context.args);
+        }
+        return this;
+    }
+
+    private EventBus _emitWithOnceBus(EventObjectContext<? extends EventObject> context) {
+        if (isDestroyed()) {
+            return this;
+        }
+        if (null != onceBus) {
+            onceBus._emitWithOnceBus(context);
+        }
+        if (context.shouldCallActEventListeners(this)) {
+            callOn(context.eventType(), context.event, asyncActEventListeners, context.asyncForAsync);
+            callOn(context.eventType(), context.event, actEventListeners, context.asyncForSync);
+        }
+        if (context.shouldCallAdhocEventListeners(this)) {
+            _emit(context.asyncForAsync, context.asyncForSync, context.keys(this), context.event, context.args);
+        }
+        return this;
     }
 
     private synchronized EventBus _unbind(Map<Class<? extends EventObject>, List<ActEventListener>> listeners, Class<? extends EventObject> c, ActEventListener l) {
@@ -1242,8 +1315,8 @@ public class EventBus extends AppServiceBase<EventBus> {
         callOn(event, ll, async);
     }
 
-    private void callOn(EventObject event, Map<Class<? extends EventObject>, List<ActEventListener>> listeners, boolean async) {
-        List<ActEventListener> list = listeners.get(ActEvent.typeOf(event));
+    private <EVT extends EventObject> void callOn(Class<? extends EventObject> eventType, EVT event, Map<Class<? extends EventObject>, List<ActEventListener>> listeners, boolean async) {
+        List<ActEventListener> list = listeners.get(eventType);
         callOn(event, list, async);
     }
 
@@ -1258,6 +1331,54 @@ public class EventBus extends AppServiceBase<EventBus> {
             return true;
         }
         return false;
+    }
+
+    private ActEventContext eventContext(ActEvent<?> event, Object... args) {
+        return new ActEventContext(event, args);
+    }
+
+    private EventObjectContext eventContext(EventObject event, Object... args) {
+        return new EventObjectContext(event, args);
+    }
+
+    private StringEventContext eventContext(String event, Object... args) {
+        return new StringEventContext(event, args);
+    }
+
+    private EnumEventContext eventContext(Enum event, Object... args) {
+        return new EnumEventContext(event, args);
+    }
+
+    private ActEventContext eventContextAsync(ActEvent<?> event, Object... args) {
+        return new ActEventContext(true, true, event, args);
+    }
+
+    private EventObjectContext eventContextAsync(EventObject event, Object... args) {
+        return new EventObjectContext(true, true, event, args);
+    }
+
+    private StringEventContext eventContextAsync(String event, Object... args) {
+        return new StringEventContext(true, true, event, args);
+    }
+
+    private EnumEventContext eventContextAsync(Enum event, Object... args) {
+        return new EnumEventContext(true, true, event, args);
+    }
+
+    private ActEventContext eventContextSync(ActEvent<?> event, Object... args) {
+        return new ActEventContext(false, false, event, args);
+    }
+
+    private EventObjectContext eventContextSync(EventObject event, Object... args) {
+        return new EventObjectContext(false, false, event, args);
+    }
+
+    private StringEventContext eventContextSync(String event, Object... args) {
+        return new StringEventContext(false, false, event, args);
+    }
+
+    private EnumEventContext eventContextSync(Enum event, Object... args) {
+        return new EnumEventContext(false, false, event, args);
     }
 
     private SysEvent[] initSysEventLookup(App app) {

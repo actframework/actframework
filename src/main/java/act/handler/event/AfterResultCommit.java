@@ -20,6 +20,7 @@ package act.handler.event;
  * #L%
  */
 
+import act.event.ActEvent;
 import org.osgl.http.H;
 import org.osgl.mvc.result.Result;
 
@@ -30,5 +31,10 @@ import org.osgl.mvc.result.Result;
 public class AfterResultCommit extends ResultEvent {
     public AfterResultCommit(Result result, H.Request request, H.Response response) {
         super(result, request, response);
+    }
+
+    @Override
+    public Class<? extends ActEvent<Result>> eventType() {
+        return AfterResultCommit.class;
     }
 }

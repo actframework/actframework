@@ -1036,7 +1036,7 @@ public @interface Controller {
                 //return requireJSON ? RenderJSON.of("{}") : requireXML ? RenderXML.of("<result></result>") : null;
                 return null;
             } else if ($.isSimpleType(v.getClass())) {
-                boolean isArray = meta.returnType().getDescriptor().startsWith("[");
+                boolean isArray = meta.isReturnArray();
                 return inferPrimitiveResult(v, context, requireJSON, requireXML, isArray);
             } else if (v instanceof InputStream) {
                 return inferResult((InputStream) v, context);

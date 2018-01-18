@@ -32,4 +32,8 @@ public class DbServiceInitialized extends ActEvent<DbService> {
         super(service);
     }
 
+    @Override
+    public Class<? extends ActEvent<DbService>> eventType() {
+        return DbServiceInitialized.class;
+    }
 }

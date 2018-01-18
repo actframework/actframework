@@ -141,6 +141,7 @@ public class App extends DestroyableBase {
     private WebSocketConnectionManager webSocketConnectionManager;
     private AppCrypto crypto;
     private IdGenerator idGenerator;
+    private SessionManager sessionManager;
     private CacheService cache;
     // used in dev mode only
     private CompilationException compilationException;
@@ -170,9 +171,10 @@ public class App extends DestroyableBase {
         this.appHome = RuntimeDirs.home(this);
         this.config = new AppConfig<>().app(this);
         INST = this;
+        this.sessionManager = new SessionManager(this.config);
         this.dependencyInjector = new GenieInjector(this);
         this.singletonRegistry = new SingletonRegistry(this);
-        this.singletonRegistry.register(SessionManager.class, new SessionManager(this.config));
+        this.singletonRegistry.register(SessionManager.class, this.sessionManager);
         this.singletonRegistry.register(CookieSessionMapper.class, new CookieSessionMapper(this.config));
     }
 
@@ -656,6 +658,7 @@ public class App extends DestroyableBase {
                 emit(DEPENDENCY_INJECTOR_PROVISIONED);
                 emit(SINGLETON_PROVISIONED);
                 config().preloadConfigurations();
+                initSessionManager();
                 Runnable runnable = new Runnable() {
                     @Override
                     public void run() {
@@ -783,6 +786,10 @@ public class App extends DestroyableBase {
 
     public AppInterceptorManager interceptorManager() {
         return interceptorManager;
+    }
+
+    public SessionManager sessionManager() {
+        return sessionManager;
     }
 
     public AppCodeScannerManager scannerManager() {
@@ -1177,6 +1184,11 @@ public class App extends DestroyableBase {
         if (null != eventBus) {
             eventBus.destroy();
         }
+    }
+
+    private void initSessionManager() {
+        sessionManager = new SessionManager(config);
+        singletonRegistry.register(SessionManager.class, sessionManager);
     }
 
     private void initCache() {

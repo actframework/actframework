@@ -41,4 +41,9 @@ public abstract class SysEvent extends ActEvent<App> implements SystemEvent {
     public int id() {
         return id.ordinal();
     }
+
+    @Override
+    public Class<? extends ActEvent<App>> eventType() {
+        return getClass();
+    }
 }

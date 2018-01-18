@@ -103,7 +103,7 @@ public class CliContextParamLoader extends ParamValueLoaderService {
                 return new String[0];
             }
         };
-        ctx.attribute(ActContext.ATTR_CUR_METHOD, method);
+        ctx.currentMethod(method);
         ParamValueLoader[] loaders = findMethodParamLoaders(method, commander, ctx, boolBag);
         methodRegistry.putIfAbsent(method, loaders);
         methodValidationConstraintLookup.put(method, boolBag.get());

@@ -31,4 +31,9 @@ public class CliSessionTerminate extends ActEvent<CliSession> implements SystemE
     public CliSessionTerminate(CliSession source) {
         super(source);
     }
+
+    @Override
+    public Class<? extends ActEvent<CliSession>> eventType() {
+        return CliSessionTerminate.class;
+    }
 }

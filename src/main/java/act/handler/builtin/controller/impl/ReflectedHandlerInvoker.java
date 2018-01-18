@@ -363,8 +363,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
             context.disableTemplateCaching();
         }
 
-        context.attribute("reflected_handler", this);
-        context.attribute(ActContext.ATTR_CUR_METHOD, method);
+        context.currentMethod(method);
 
         String urlContext = this.controller.urlContext();
         if (S.notBlank(urlContext)) {
@@ -427,7 +426,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
 
     @Override
     public Result handle(Result result, ActionContext actionContext) throws Exception {
-        actionContext.attribute(ActionContext.ATTR_RESULT, result);
+        actionContext.setResult(result);
         return handle(actionContext);
     }
 

@@ -43,6 +43,11 @@ public abstract class RequestImplBase<T extends H.Request> extends H.Request<T> 
     protected abstract String methodName();
 
     @Override
+    public String fullPath() {
+        return path();
+    }
+
+    @Override
     public String contextPath() {
         return "";
     }

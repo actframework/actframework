@@ -49,6 +49,7 @@ public abstract class HandlerMethodMetaInfo<T extends HandlerMethodMetaInfo> ext
     private C.List<HandlerParamMetaInfo> params = C.newList();
     private volatile String fullName;
     private ReturnTypeInfo returnType;
+    private boolean returnArray; // for performance tuning
     private boolean throwRenderResult;
     private PropertySpec.MetaInfo propertySpec;
     private boolean disableJsonCircularRefDetect = false;
@@ -71,6 +72,7 @@ public abstract class HandlerMethodMetaInfo<T extends HandlerMethodMetaInfo> ext
         this.actContextInjection = copy.actContextInjection;
         this.params = copy.params;
         this.returnType = copy.returnType;
+        this.returnArray = copy.returnArray;
         this.propertySpec = copy.propertySpec;
         this.disableJsonCircularRefDetect = copy.disableJsonCircularRefDetect;
         this.locals = copy.locals;
@@ -181,6 +183,7 @@ public abstract class HandlerMethodMetaInfo<T extends HandlerMethodMetaInfo> ext
 
     public T returnType(Type type) {
         returnType = ReturnTypeInfo.of(type);
+        returnArray = type.getDescriptor().startsWith("[");
         return me();
     }
 
@@ -195,6 +198,10 @@ public abstract class HandlerMethodMetaInfo<T extends HandlerMethodMetaInfo> ext
 
     public Type returnType() {
         return returnType.type();
+    }
+
+    public boolean isReturnArray() {
+        return returnArray;
     }
 
     public ReturnTypeInfo returnTypeInfo() {

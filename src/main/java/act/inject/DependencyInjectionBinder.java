@@ -55,4 +55,6 @@ public abstract class DependencyInjectionBinder<T> extends ActEvent implements P
     public T get() {
         return resolve(App.instance());
     }
+
+
 }

@@ -67,7 +67,7 @@ import static org.osgl.http.H.Header.Names.X_XSRF_TOKEN;
 public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> implements AppHolder<AppConfig<T>> {
 
     public static final String CONF_FILE_NAME = "app.conf";
-
+    public static final String CSRF_TOKEN_NAME = "__csrf__";
     public static final String PORT_CLI_OVER_HTTP = "__admin__";
 
     private App app;
@@ -432,7 +432,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
 
     public String csrfParamName() {
         if (null == csrfParamName) {
-            csrfParamName = get(CSRF_PARAM_NAME, ActionContext.ATTR_CSRF_TOKEN);
+            csrfParamName = get(CSRF_PARAM_NAME, CSRF_TOKEN_NAME);
         }
         return csrfParamName;
     }

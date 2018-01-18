@@ -91,6 +91,10 @@ public class ActEvent<T> extends EventObject {
         return ts;
     }
 
+    public static Class<? extends ActEvent<?>> typeOf(ActEvent<?> event) {
+        return event.eventType();
+    }
+
     public static Class<? extends EventObject> typeOf(EventObject eventObject) {
         if (eventObject instanceof ActEvent) {
             return ((ActEvent<?>) eventObject).eventType();
@@ -103,8 +107,4 @@ public class ActEvent<T> extends EventObject {
         return eventType.isAnonymousClass() ? referType((Class<? extends EventObject>) eventType.getSuperclass()) : eventType;
     }
 
-    public static void main(String[] args) {
-        Class<? extends EventObject> type = typeOf(new ActEvent<String>() {});
-        System.out.println(type);
-    }
 }

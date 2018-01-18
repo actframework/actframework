@@ -89,11 +89,11 @@ class UndertowWebSocketConnectionHandler extends WebSocketConnectionHandler {
                             WebSocketContext.current(wsCtx);
                             super.onClose(webSocketChannel, channel);
                             connection.destroy();
-                            context.app().eventBus().trigger(new WebSocketCloseEvent(wsCtx));
+                            context.app().eventBus().emit(new WebSocketCloseEvent(wsCtx));
                         }
                     });
                     channel.resumeReceives();
-                    Act.eventBus().trigger(new WebSocketConnectEvent(wsCtx));
+                    Act.eventBus().emit(new WebSocketConnectEvent(wsCtx));
                 }
 
             }).handleRequest(exchange);

@@ -34,9 +34,6 @@ import java.lang.annotation.*;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 
-import static act.app.ActionContext.ATTR_CSR_TOKEN_PREFETCH;
-import static act.app.ActionContext.ATTR_WAS_UNAUTHENTICATED;
-
 public class CSRF {
 
     /**
@@ -176,10 +173,10 @@ public class CSRF {
             if (!enabled) {
                 return;
             }
-            String token = context.attribute(ATTR_CSR_TOKEN_PREFETCH);
+            String token = context.csrfPrefetched();
             try {
                 if (!csrfProtector.verifyToken(token, session, app)) {
-                    context.removeAttribute(ATTR_CSR_TOKEN_PREFETCH);
+                    context.clearCsrfPrefetched();
                     raiseCsrfNotVerified(context);
                 }
             } catch (UnexpectedException e) {
@@ -217,7 +214,7 @@ public class CSRF {
         }
 
         private String retrieveCsrfToken(ActionContext context) {
-            String token = context.attribute(ATTR_CSR_TOKEN_PREFETCH);
+            String token = context.csrfPrefetched();
             if (S.blank(token)) {
                 token = context.req().header(headerName);
             }
@@ -225,18 +222,18 @@ public class CSRF {
                 token = context.paramVal(paramName);
             }
             if (S.notBlank(token)) {
-                context.attribute(ATTR_CSR_TOKEN_PREFETCH, token);
+                context.setCsrfPrefetched(token);
             }
             return token;
         }
 
         private static boolean justLoggedIn(ActionContext context) {
-            boolean wasUnauthenticated = context.attribute(ATTR_WAS_UNAUTHENTICATED);
+            boolean wasUnauthenticated = context.wasUnauthenticated();
             return wasUnauthenticated && context.isLoggedIn();
         }
 
         private static void raiseCsrfNotVerified(ActionContext context) {
-            context.removeAttribute(ATTR_CSR_TOKEN_PREFETCH);
+            context.clearCsrfPrefetched();
             MissingAuthenticationHandler handler = context.csrfFailureHandler();
             handler.handle(context);
         }

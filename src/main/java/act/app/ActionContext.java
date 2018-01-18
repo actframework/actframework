@@ -20,7 +20,6 @@ package act.app;
  * #L%
  */
 
-import act.Act;
 import act.ActResponse;
 import act.Destroyable;
 import act.conf.AppConfig;
@@ -70,11 +69,6 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
 
     private static final Logger LOGGER = LogManager.get(ActionContext.class);
 
-    public static final String ATTR_CSRF_TOKEN = "__csrf__";
-    public static final String ATTR_CSR_TOKEN_PREFETCH = "__csrf_prefetch__";
-    public static final String ATTR_WAS_UNAUTHENTICATED = "__was_unauthenticated__";
-    public static final String ATTR_HANDLER = "__act_handler__";
-    public static final String ATTR_RESULT = "__result__";
     public static final String ATTR_EXCEPTION = "__exception__";
     public static final String ATTR_CURRENT_FILE_INDEX = "__file_id__";
     public static final String REQ_BODY = "_body";
@@ -98,7 +92,6 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
     private LocaleResolver localeResolver;
     private boolean disableCors;
     private boolean disableCsrf;
-    private boolean disableCsp;
     private Boolean hasTemplate;
     private $.Visitor<H.Format> templateChangeListener;
     private H.Status forceResponseStatus;
@@ -111,6 +104,40 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
     private UrlPath urlPath;
     private Set<String> pathVarNames = new HashSet<>();
     private SessionManager sessionManager;
+
+    // -- replace attributres with fields -- perf tune
+    // -- ATTR_CSRF_PREFETCHED
+    private String csrfPrefetched;
+    public void setCsrfPrefetched(String csrf) {
+        csrfPrefetched = csrf;
+    }
+    public String csrfPrefetched() {
+        return csrfPrefetched;
+    }
+    public void clearCsrfPrefetched() {
+        csrfPrefetched = null;
+    }
+    // -- ATTR_WAS_UNAUTHENTICATED
+    private boolean wasUnauthenticated;
+    public boolean wasUnauthenticated() {
+        return wasUnauthenticated;
+    }
+    public void setWasUnauthenticated() {
+        wasUnauthenticated = true;
+    }
+    public void clearWasUnauthenticated() {
+        wasUnauthenticated = false;
+    }
+    // -- ATTR_HANDLER
+    // replaced with field handler
+    // -- ATTR_RESULT
+    private Result result;
+    public Result result() {
+        return result;
+    }
+    public void setResult(Result result) {
+        this.result = result;
+    }
 
 
     @Inject
@@ -128,7 +155,7 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
         this.disableCsrf = req().method().safe();
         this.sessionKeyUsername = config.sessionKeyUsername();
         this.localeResolver = new LocaleResolver(this);
-        this.sessionManager = Act.getInstance(SessionManager.class);
+        this.sessionManager = app.sessionManager();
     }
 
     public State state() {
@@ -541,10 +568,6 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
         this.disableCors = true;
     }
 
-    public void disableContentSecurityPolicy() {
-        this.disableCsp = true;
-    }
-
     /**
      * Apply content type to response with result provided.
      *
@@ -902,7 +925,7 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
     public void resolve() {
         E.illegalStateIf(state != State.CREATED);
         boolean sessionFree = handler.sessionFree();
-        attribute(ATTR_WAS_UNAUTHENTICATED, true);
+        setWasUnauthenticated();
         H.Request req = req();
         if (!sessionFree) {
             resolveSession(req);
@@ -915,7 +938,7 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
             handler.prepareAuthentication(this);
             app().eventBus().emit(new SessionResolvedEvent(session, this));
             if (isLoggedIn()) {
-                attribute(ATTR_WAS_UNAUTHENTICATED, false);
+                clearWasUnauthenticated();
             }
         }
     }
@@ -984,8 +1007,9 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
             this.flash = null;
             this.session = null;
             this.controllerInstances = null;
-            clearLocal();
+            this.result = null;
             this.uploads.clear();
+            ActionContext.clearLocal();
         }
         this.state = State.DESTROYED;
     }
@@ -1198,6 +1222,11 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
         public PreFireSessionResolvedEvent(H.Session session, ActionContext context) {
             super(session, context);
         }
+
+        @Override
+        public Class<? extends ActEvent<ActionContext>> eventType() {
+            return PreFireSessionResolvedEvent.class;
+        }
     }
 
     /**
@@ -1209,17 +1238,32 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
         public SessionResolvedEvent(H.Session session, ActionContext context) {
             super(session, context);
         }
+
+        @Override
+        public Class<? extends ActEvent<ActionContext>> eventType() {
+            return SessionResolvedEvent.class;
+        }
     }
 
     public static class SessionWillDissolveEvent extends ActionContextEvent {
         public SessionWillDissolveEvent(ActionContext source) {
             super(source);
         }
+
+        @Override
+        public Class<? extends ActEvent<ActionContext>> eventType() {
+            return SessionWillDissolveEvent.class;
+        }
     }
 
     public static class SessionDissolvedEvent extends ActionContextEvent {
         public SessionDissolvedEvent(ActionContext source) {
             super(source);
+        }
+
+        @Override
+        public Class<? extends ActEvent<ActionContext>> eventType() {
+            return SessionDissolvedEvent.class;
         }
     }
 }

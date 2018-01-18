@@ -31,4 +31,9 @@ public class ControllerMetaInfoRegistered extends ActEvent<ControllerClassMetaIn
     public ControllerMetaInfoRegistered(ControllerClassMetaInfo source) {
         super(source);
     }
+
+    @Override
+    public Class<? extends ActEvent<ControllerClassMetaInfo>> eventType() {
+        return ControllerMetaInfoRegistered.class;
+    }
 }

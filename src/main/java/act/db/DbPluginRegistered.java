@@ -27,4 +27,9 @@ public class DbPluginRegistered extends ActEvent<DbPlugin> implements SystemEven
     public DbPluginRegistered(DbPlugin source) {
         super(source);
     }
+
+    @Override
+    public Class<? extends ActEvent<DbPlugin>> eventType() {
+        return DbPluginRegistered.class;
+    }
 }

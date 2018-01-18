@@ -46,12 +46,6 @@ import java.util.*;
 import static act.view.ViewManager.isTemplatePath;
 
 public interface ActContext<CTX_TYPE extends ActContext> extends ParamValueProvider {
-    /**
-     * Used to store the {@link java.lang.reflect.Method} this context is trying
-     * to invoke right now. Note the method might be corresponding to the
-     * {@link #methodPath()} or not if the current method is an interceptor.
-     */
-    String ATTR_CUR_METHOD = "__ctx_cur_method__";
 
     App app();
 
@@ -200,9 +194,35 @@ public interface ActContext<CTX_TYPE extends ActContext> extends ParamValueProvi
 
     String methodPath();
 
+    /**
+     * The method that handles the current request.
+     * @return the handler method
+     */
     Method handlerMethod();
 
+    /**
+     * Set the {@link #handlerMethod()}
+     * @param method the handler method
+     * @return this context
+     */
     CTX_TYPE handlerMethod(Method method);
+
+    /**
+     * The method to be invoked in the current stage. Note the
+     * current method might be or not be the {@link #handlerMethod()}
+     * as current method could be an interceptor method rather than
+     * handler method.
+     * @return the current method
+     */
+    Method currentMethod();
+
+    /**
+     * Set the {@link #currentMethod()}.
+     *
+     * @param method the method to be invoked
+     * @return this context
+     */
+    CTX_TYPE currentMethod(Method method);
 
     CTX_TYPE fastjsonFilters(Class<? extends SerializeFilter>[] filters);
 
@@ -241,6 +261,7 @@ public interface ActContext<CTX_TYPE extends ActContext> extends ParamValueProvi
         private volatile SimpleProgressGauge progress;
         private String jobId;
         private Method handlerMethod;
+        private Method currentMethod;
         private String pattern;
 
         // (violation.propertyPath, violation)
@@ -308,7 +329,18 @@ public interface ActContext<CTX_TYPE extends ActContext> extends ParamValueProvi
             this.handlerMethod = method;
             return me();
         }
-        
+
+        @Override
+        public Method currentMethod() {
+            return currentMethod;
+        }
+
+        @Override
+        public CTX currentMethod(Method method) {
+            this.currentMethod = method;
+            return me();
+        }
+
         public CTX fastjsonFilters(Class<? extends SerializeFilter>[] filters) {
             this.fastjsonFilters = filters;
             return me();

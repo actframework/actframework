@@ -50,6 +50,11 @@ public class MailerContext extends ActContext.Base<MailerContext> {
         public InitEvent(MailerContext source) {
             super(source);
         }
+
+        @Override
+        public Class<? extends ActEvent<MailerContext>> eventType() {
+            return InitEvent.class;
+        }
     }
 
     private static final Logger logger = LogManager.get(MailerContext.class);

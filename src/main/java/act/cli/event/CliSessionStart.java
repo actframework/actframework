@@ -31,4 +31,9 @@ public class CliSessionStart extends ActEvent<CliSession> implements SystemEvent
     public CliSessionStart(CliSession source) {
         super(source);
     }
+
+    @Override
+    public Class<? extends ActEvent<CliSession>> eventType() {
+        return CliSessionStart.class;
+    }
 }

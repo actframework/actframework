@@ -78,7 +78,7 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
     private static final ParamValueLoader RESULT_LOADER = new ParamValueLoader() {
         @Override
         public Object load(Object bean, ActContext<?> context, boolean noDefaultValue) {
-            return context.attribute(ActionContext.ATTR_RESULT);
+            return ((ActionContext)context).result();
         }
 
         @Override
@@ -388,7 +388,7 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
             @Override
             public Object load(Object bean, ActContext<?> ctx, boolean noDefaultValue) {
                 Method handlerMethod = ctx.handlerMethod();
-                Method curMethod = ctx.attribute(ActContext.ATTR_CUR_METHOD);
+                Method curMethod = ctx.currentMethod();
                 boolean methodIsCurrent = handlerMethod == curMethod || null == curMethod;
 
                 Annotation anno = handlerMethod.getAnnotation(annoType);
