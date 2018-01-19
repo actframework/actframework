@@ -21,7 +21,9 @@ package act;
  */
 
 import act.cli.*;
+import act.handler.NonBlock;
 import act.sys.Env;
+import act.util.JsonView;
 import act.util.PropertySpec;
 import org.joda.time.LocalDateTime;
 import org.osgl.$;
@@ -112,16 +114,6 @@ public class SysUtilAdmin {
         System.gc();
         context.println("GC executed");
         memInfo(false, false, context);
-    }
-
-    @GetAction("version")
-    @Command(name = "act.version, act.ver", help = "Print app/actframework version")
-    @JsonView
-    public Object version() {
-        Map<String, Object> retVal = new HashMap<>();
-        retVal.put("act", Act.VERSION);
-        retVal.put("app", Act.appVersion());
-        return retVal;
     }
 
     @Command(name = "act.pwd", help = "Print name of the current working directory")

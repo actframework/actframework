@@ -91,7 +91,7 @@ public class ActEvent<T> extends EventObject {
         return ts;
     }
 
-    public static Class<? extends ActEvent<?>> typeOf(ActEvent<?> event) {
+    public static Class<? extends ActEvent<?>>  typeOf(ActEvent<?> event) {
         return event.eventType();
     }
 

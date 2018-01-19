@@ -20,33 +20,39 @@ package act;
  * #L%
  */
 
+import act.app.ActionContext;
+import act.handler.NonBlock;
 import org.osgl.$;
 import org.osgl.mvc.annotation.GetAction;
-import org.osgl.mvc.result.Result;
 import org.osgl.util.C;
 import org.osgl.util.IO;
 import org.rythmengine.utils.S;
 
+import javax.inject.Singleton;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
-import static act.controller.Controller.Util.text;
-
+@Singleton
 public final class Zen {
 
-    private Zen() {
-    }
-
     private static final List<String> WORDS = loadWords();
+
+    private Info.Unit zenInfo;
+
+    public Zen() {
+        String zenTxt = S.join("\n\n", WORDS);
+        zenInfo = new Info.Unit("zen", zenTxt);
+    }
 
     public static String wordsOfTheDay() {
         return $.random(WORDS);
     }
 
+    @NonBlock
     @GetAction("zen")
-    public static Result zen() {
-        return text(S.join("\n\n", WORDS));
+    public void zen(ActionContext context) {
+        zenInfo.applyTo(context);
     }
 
     private static List<String> loadWords() {

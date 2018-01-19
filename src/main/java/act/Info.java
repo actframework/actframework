@@ -22,38 +22,126 @@ package act;
 
 import act.app.ActionContext;
 import act.app.App;
+import act.cli.Command;
+import act.handler.NonBlock;
+import act.inject.param.NoBind;
 import act.sys.Env;
 import act.util.Banner;
+import act.util.JsonView;
+import com.alibaba.fastjson.JSON;
+import org.osgl.http.H;
 import org.osgl.mvc.annotation.GetAction;
+import org.osgl.util.C;
+import org.osgl.util.S;
 
-import static act.controller.Controller.Util.jsonMap;
-import static act.controller.Controller.Util.text;
+import javax.inject.Inject;
+import javax.inject.Singleton;
+import java.nio.ByteBuffer;
+import java.util.Map;
 
+import static act.util.ByteBuffers.wrap;
+
+@Singleton
+@SuppressWarnings("unused")
 public class Info {
 
-    @GetAction("info")
-    public static Object show(ActionContext context, App app) {
-        if (context.acceptJson()) {
-            String actVersion = Act.VERSION.getVersion();
-            String appVersion = Act.appVersion().getVersion();
-            String appName = app.name();
-            String pid = Env.PID.get();
-            String baseDir = app.base().getAbsolutePath();
-            String mode = Act.mode().name();
-            String profile = Act.profile();
-            String group = Act.nodeGroup();
-            return jsonMap(actVersion, appVersion, appName, pid, baseDir, mode, profile, group);
+    // a unit of information data
+    @NoBind
+    public static class Unit {
+        private static final String CNT_TXT = H.Format.TXT.contentType();
+        private static final String CNT_JSON = H.Format.JSON.contentType();
+        ByteBuffer json;
+        ByteBuffer txt;
+
+        public Unit(Map<String, Object> data) {
+            this(data, JSON.toJSONString(data));
         }
-        return text(Banner.cachedBanner());
+
+        public Unit(Map<String, Object> data, String txt) {
+            this.json = wrap(JSON.toJSONString(data));
+            this.txt = wrap(txt);
+        }
+
+        public Unit(String name, Object val) {
+            this.json = wrap(JSON.toJSONString(C.Map(name, val)));
+            this.txt = wrap(S.string(val));
+        }
+
+        public void applyTo(ActionContext context) {
+            H.Response resp = context.resp();
+            if (context.acceptJson()) {
+                resp.contentType(CNT_JSON);
+                resp.writeContent(json.duplicate());
+            } else {
+                resp.contentType(CNT_TXT);
+                resp.writeContent(txt.duplicate());
+            }
+        }
+    }
+
+    @NoBind
+    private Map<String, Object> versionData;
+    private Unit info;
+    private Unit pid;
+    private Unit version;
+
+    @Inject
+    public Info(App app) {
+        init(app);
+    }
+
+    @GetAction("info")
+    @NonBlock
+    public void show(ActionContext context) {
+        info.applyTo(context);
     }
 
     @GetAction("pid")
-    public static Object pid(ActionContext context) {
-        if (context.acceptJson()) {
-            String pid = Env.PID.get();
-            return jsonMap(pid);
-        }
-        return text(Env.PID.get());
+    @NonBlock
+    public void pid(ActionContext context) {
+        pid.applyTo(context);
     }
+
+    @NonBlock
+    @JsonView
+    @GetAction("version")
+    public void version(ActionContext context) {
+        version.applyTo(context);
+    }
+
+    @Command(name = "act.version, act.ver", help = "Print app/actframework version")
+    public Map<String, Object> getVersions() {
+        return versionData;
+    }
+
+    private void init(App app) {
+        initPidBuffer();
+        initInfoBuffer(app);
+        initVersion();
+    }
+
+    private void initPidBuffer() {
+        this.pid = new Unit("pid", Env.PID.get());
+    }
+
+    private void initInfoBuffer(App app) {
+        Map<String, Object> map = C.Map(
+                "actVersion", Act.VERSION.getVersion(),
+                "appVersion", Act.appVersion().getVersion(),
+                "appName", app.name(),
+                "pid", Env.PID.get(),
+                "baseDir", app.base().getAbsoluteFile(),
+                "mode", Act.mode().name(),
+                "profile", Act.profile(),
+                "group", Act.nodeGroup()
+        );
+        this.info = new Unit(map, Banner.cachedBanner());
+    }
+
+    private void initVersion() {
+        versionData = C.Map("act", Act.VERSION, "app", Act.appVersion());
+        version = new Unit(versionData);
+    }
+
 
 }

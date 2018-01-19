@@ -9,9 +9,9 @@ package act.handler.builtin;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -23,8 +23,8 @@ package act.handler.builtin;
 import act.app.ActionContext;
 import act.handler.ExpressHandler;
 import act.handler.builtin.controller.FastRequestHandler;
+import act.util.ByteBuffers;
 import org.osgl.http.H;
-import org.osgl.util.Charsets;
 import org.osgl.util.S;
 
 import java.nio.ByteBuffer;
@@ -40,7 +40,7 @@ public class Echo extends FastRequestHandler implements ExpressHandler {
     }
 
     public Echo(String msg, String contentType) {
-        this.buffer = wrap(msg);
+        this.buffer = ByteBuffers.wrap(msg);
         this.contentType = contentType;
         this.toString = "echo: " + msg;
     }
@@ -66,11 +66,4 @@ public class Echo extends FastRequestHandler implements ExpressHandler {
         return toString;
     }
 
-    private ByteBuffer wrap(String content) {
-        byte[] ba = content.getBytes(Charsets.UTF_8);
-        ByteBuffer buffer = ByteBuffer.allocateDirect(ba.length);
-        buffer.put(ba);
-        buffer.flip();
-        return buffer;
-    }
 }
