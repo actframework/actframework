@@ -2,6 +2,7 @@
 
 **1.7.0**
 * Update JPA api to 2.2
+* Improve built-in service performance by make them as nonblock when possible
 * DB: add annotation to mark created and last modified timestamp fields #480
 * Missing actframework version in the banner text in dev mode with Eclipse project #478
 * Rename `AppEvent` to `SysEvent` #475
