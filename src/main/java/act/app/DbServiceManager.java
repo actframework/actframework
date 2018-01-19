@@ -50,7 +50,7 @@ public class DbServiceManager extends AppServiceBase<DbServiceManager> implement
 
     private static Logger logger = LogManager.get(DbServiceManager.class);
 
-    public static final String DEFAULT = "default";
+    public static final String DEFAULT = DB.DEFAULT;
 
     // map service id to service instance
     private Map<String, DbService> serviceMap = new HashMap<>();

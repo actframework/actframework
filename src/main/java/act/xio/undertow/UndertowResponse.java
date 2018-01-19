@@ -43,20 +43,18 @@ import java.nio.channels.FileChannel;
 import java.util.Locale;
 
 public class UndertowResponse extends ActResponse<UndertowResponse> {
-    @Override
-    protected Class<UndertowResponse> _impl() {
-        return UndertowResponse.class;
-    }
+
+    private static final HttpString _SERVER = new HttpString(H.Header.Names.SERVER);
+    private static final HttpStringCache HEADER_NAMES = HttpStringCache.HEADER;
 
     private HttpServerExchange hse;
 
     private boolean endAsync;
 
-
     public UndertowResponse(HttpServerExchange exchange, AppConfig config) {
         super(config);
         hse = $.notNull(exchange);
-        header(H.Header.Names.SERVER, config.serverHeader());
+        hse.getResponseHeaders().put(_SERVER, config.serverHeader());
     }
 
     @Override
@@ -66,9 +64,8 @@ public class UndertowResponse extends ActResponse<UndertowResponse> {
 
     @Override
     public boolean containsHeader(String name) {
-        return hse.getResponseHeaders().contains(name);
+        return hse.getResponseHeaders().contains(HEADER_NAMES.get(name));
     }
-
 
     @Override
     public UndertowResponse contentLength(long len) {
@@ -118,29 +115,6 @@ public class UndertowResponse extends ActResponse<UndertowResponse> {
         return super.outputStream();
     }
 
-    private File tryGetFileFrom(ISObject sobj) {
-        String className = sobj.getClass().getSimpleName();
-        if (className.contains("FileSObject")) {
-            return sobj.asFile();
-        }
-        return null;
-    }
-
-    @Override
-    protected OutputStream createOutputStream() {
-        ensureBlocking();
-        return hse.getOutputStream();
-    }
-
-    @Override
-    protected void _setLocale(Locale loc) {
-        if (responseStarted()) {
-            return;
-        }
-        locale = loc;
-        hse.getResponseHeaders().put(Headers.CONTENT_LANGUAGE, loc.getLanguage() + "-" + loc.getCountry());
-    }
-
     @Override
     public Locale locale() {
         return locale;
@@ -156,7 +130,7 @@ public class UndertowResponse extends ActResponse<UndertowResponse> {
 
     @Override
     public UndertowResponse header(String name, String value) {
-        hse.getResponseHeaders().put(new HttpString(name), value);
+        hse.getResponseHeaders().put(HEADER_NAMES.get(name), value);
         return this;
     }
 
@@ -169,7 +143,7 @@ public class UndertowResponse extends ActResponse<UndertowResponse> {
     @Override
     public UndertowResponse addHeader(String name, String value) {
         HeaderMap map = hse.getResponseHeaders();
-        map.add(HttpString.tryFromString(name), value);
+        map.add(HEADER_NAMES.get(name), value);
         return this;
     }
 
@@ -195,6 +169,33 @@ public class UndertowResponse extends ActResponse<UndertowResponse> {
         }
     }
 
+    private File tryGetFileFrom(ISObject sobj) {
+        String className = sobj.getClass().getSimpleName();
+        if (className.contains("FileSObject")) {
+            return sobj.asFile();
+        }
+        return null;
+    }
+
+    @Override
+    protected OutputStream createOutputStream() {
+        ensureBlocking();
+        return hse.getOutputStream();
+    }
+
+    @Override
+    protected void _setLocale(Locale loc) {
+        if (responseStarted()) {
+            return;
+        }
+        locale = loc;
+        hse.getResponseHeaders().put(Headers.CONTENT_LANGUAGE, loc.getLanguage() + "-" + loc.getCountry());
+    }
+
+    @Override
+    protected Class<UndertowResponse> _impl() {
+        return UndertowResponse.class;
+    }
 
     private boolean responseStarted() {
         return hse.isResponseStarted();

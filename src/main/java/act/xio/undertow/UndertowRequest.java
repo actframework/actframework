@@ -25,7 +25,6 @@ import act.app.ActionContext;
 import act.conf.AppConfig;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.server.handlers.Cookie;
-import io.undertow.util.HttpString;
 import org.osgl.util.Codec;
 import org.osgl.util.E;
 import org.osgl.util.IO;
@@ -38,13 +37,9 @@ import java.util.Map;
 
 public class UndertowRequest extends RequestImplBase<UndertowRequest> {
 
+    private static final HttpStringCache HEADER_NAMES = HttpStringCache.HEADER;
+
     private String path;
-
-    @Override
-    protected Class<UndertowRequest> _impl() {
-        return UndertowRequest.class;
-    }
-
     private HttpServerExchange hse;
     private Map<String, Deque<String>> queryParams;
 
@@ -79,12 +74,12 @@ public class UndertowRequest extends RequestImplBase<UndertowRequest> {
 
     @Override
     public String header(String name) {
-        return hse.getRequestHeaders().get(name, 0);
+        return hse.getRequestHeaders().get(HEADER_NAMES.get(name), 0);
     }
 
     @Override
     public Iterable<String> headers(String name) {
-        return hse.getRequestHeaders().eachValue(HttpString.tryFromString(name));
+        return hse.getRequestHeaders().eachValue(HEADER_NAMES.get(name));
     }
 
     @Override
@@ -125,8 +120,6 @@ public class UndertowRequest extends RequestImplBase<UndertowRequest> {
         }
         return queryParams.keySet();
     }
-
-
 
     public void closeAndDrainRequest() {
         if (null != reader) {
@@ -174,6 +167,11 @@ public class UndertowRequest extends RequestImplBase<UndertowRequest> {
                 // Ignore bad cookie
             }
         }
+    }
+
+    @Override
+    protected Class<UndertowRequest> _impl() {
+        return UndertowRequest.class;
     }
 
     HttpServerExchange exchange() {

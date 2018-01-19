@@ -26,19 +26,10 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Used in multiple Database application to associate a DB engine with an
- * entity class
+ * Used to mark a field of a model class to be record the last
+ * time the model is updated and persisted into database.
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.TYPE, ElementType.FIELD})
-public @interface DB {
-    /**
-     * The DEFAULT db service ID
-     */
-    String DEFAULT = "default";
-    /**
-     * Specify the DB engine the entity of the class shall be landed.
-     * <p>Default value: "default"</p>
-     */
-    String value() default DEFAULT;
+@Target({ElementType.FIELD})
+public @interface LastModifiedAt {
 }
