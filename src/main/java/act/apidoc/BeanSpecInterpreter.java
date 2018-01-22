@@ -31,7 +31,7 @@ import java.util.List;
 import java.util.Map;
 
 class BeanSpecInterpreter {
-    String inteprete(BeanSpec beanSpec) {
+    String interpret(BeanSpec beanSpec) {
         if (beanSpec.hasAnnotation(DbBind.class)) {
             return "String";
         }
@@ -39,7 +39,7 @@ class BeanSpecInterpreter {
         if (Collection.class.isAssignableFrom(rawType)) {
             List<Type> types = beanSpec.typeParams();
             if (types.size() > 0) {
-                return inteprete(BeanSpec.of(types.get(0), null, beanSpec.injector())) + "[]";
+                return interpret(BeanSpec.of(types.get(0), null, beanSpec.injector())) + "[]";
             }
             return "any[]";
         }
@@ -48,8 +48,8 @@ class BeanSpecInterpreter {
             if (types.size() > 1) {
                 Type key = types.get(0);
                 Type val = types.get(1);
-                String keyStr = inteprete(BeanSpec.of(key, null, beanSpec.injector()));
-                String valStr = inteprete(BeanSpec.of(val, null, beanSpec.injector()));
+                String keyStr = interpret(BeanSpec.of(key, null, beanSpec.injector()));
+                String valStr = interpret(BeanSpec.of(val, null, beanSpec.injector()));
                 if ("String".equals(keyStr) && "Object".equals(valStr)) {
                     return "js object";
                 }

@@ -80,7 +80,7 @@ public class Endpoint implements Comparable<Endpoint> {
         }
 
         public String getType() {
-            return beanSpecInterpretor.inteprete(beanSpec);
+            return beanSpecInterpretor.interpret(beanSpec);
         }
 
         public String getDescription() {

@@ -41,6 +41,11 @@ enum NullMetric implements Metric {
         public long ns() {
             return 0;
         }
+
+        @Override
+        public void close() {
+            stop();
+        }
     };
 
     @Override

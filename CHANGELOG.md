@@ -2,6 +2,9 @@
 
 **1.7.0**
 * Update JPA api to 2.2
+* Do not `Set-Cookie` for session and flash if there is no state #484
+* EntityMetaInfo and scanner - support JPA plugin
+* Make `act.metric.Timer` be a `Closable` #483
 * Improve built-in service performance by make them as nonblock when possible
 * DB: add annotation to mark created and last modified timestamp fields #480
 * Missing actframework version in the banner text in dev mode with Eclipse project #478

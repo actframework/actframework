@@ -36,7 +36,6 @@ public class SimpleTimer implements Timer {
         this.name = $.notNull(name);
         this.metricStore = $.notNull(metricStore);
         this.start = $.ns();
-        metricStore.countOnce(name);
         metricStore.onTimerStart(name);
     }
 
@@ -56,4 +55,8 @@ public class SimpleTimer implements Timer {
         return duration;
     }
 
+    @Override
+    public void close() {
+        stop();
+    }
 }

@@ -20,10 +20,12 @@ package act.metric;
  * #L%
  */
 
+import java.io.Closeable;
+
 /**
  * A Timer that could be used to measure execution duration of a certain process
  */
-public interface Timer {
+public interface Timer extends Closeable {
 
     /**
      * Returns the name of the timer. The string returned should be
@@ -47,4 +49,12 @@ public interface Timer {
      */
     long ns();
 
+    /**
+     * Overwrite {@link Closeable#close()} without throwing out
+     * the {@link java.io.IOException}.
+     *
+     * Calling `Timer.close()` shall trigger {@link #stop()}.
+     */
+    @Override
+    void close();
 }

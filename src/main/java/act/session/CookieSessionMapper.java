@@ -68,6 +68,9 @@ public class CookieSessionMapper implements SessionMapper {
     }
 
     private void writeState(String state, String cookieName, H.Response response) {
+        if (null == state) {
+            return;
+        }
         H.Cookie cookie = createCookie(cookieName, state);
         response.addCookie(cookie);
     }

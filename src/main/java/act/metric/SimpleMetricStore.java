@@ -20,7 +20,6 @@ package act.metric;
  * #L%
  */
 
-import act.app.App;
 import act.util.LogSupport;
 import org.osgl.$;
 import org.osgl.logging.LogManager;
@@ -68,7 +67,7 @@ public class SimpleMetricStore implements MetricStore, Serializable {
 
     @Override
     public void countOnce(String name) {
-        E.illegalArgumentIf(S.blank(name), "");
+        E.illegalArgumentIf(S.blank(name), "name expected");
         countOnce_(name);
     }
 
@@ -94,6 +93,8 @@ public class SimpleMetricStore implements MetricStore, Serializable {
 
     @Override
     public void onTimerStart(String name) {
+        E.illegalArgumentIf(S.blank(name), "name expected");
+        countOnce_(name);
         logger(name).trace("Timer[%s] started", name);
     }
 

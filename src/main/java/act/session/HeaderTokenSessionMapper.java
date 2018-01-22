@@ -55,12 +55,15 @@ public class HeaderTokenSessionMapper implements SessionMapper {
 
     @Override
     public void write(String session, String flash, H.Response response) {
-        if (hasSessionPayloadPrefix) {
+        if (null != session && hasSessionPayloadPrefix) {
             session = S.concat(sessionPayloadPrefix, session);
         }
-        response
-                .header(sessionHeader, session)
-                .header(flashHeader, flash);
+        if (null != session) {
+            response.header(sessionHeader, session);
+        }
+        if (null != flash) {
+            response.header(flashHeader, flash);
+        }
     }
 
     @Override
