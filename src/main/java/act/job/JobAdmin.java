@@ -34,6 +34,7 @@ import org.osgl.util.C;
 import org.osgl.util.S;
 
 import javax.inject.Inject;
+import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 
@@ -43,6 +44,13 @@ import java.util.concurrent.ScheduledThreadPoolExecutor;
 @SuppressWarnings("unused")
 public class JobAdmin {
 
+    private static Comparator<Job> _UNIQ_JOB_FILTER = new Comparator<Job>() {
+        @Override
+        public int compare(Job o1, Job o2) {
+            return o1.id().compareTo(o2.id());
+        }
+    };
+
     /**
      * List all jobs in the job manager
      * @return a list of {@link Job jobs}
@@ -51,7 +59,7 @@ public class JobAdmin {
     @PropertySpec(Job.BRIEF_VIEW)
     @TableView
     public List<Job> listJobs(@Optional(lead = "-q") final String q, AppJobManager jobManager) {
-        C.List<Job> jobs = jobManager.jobs().append(jobManager.virtualJobs());
+        C.List<Job> jobs = jobManager.jobs().append(jobManager.virtualJobs()).unique(_UNIQ_JOB_FILTER);
         if (S.notBlank(q)) {
             jobs = jobs.filter(new $.Predicate<Job>() {
                 @Override

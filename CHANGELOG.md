@@ -1,5 +1,9 @@
 # ActFramework Change Log
 
+**1.6.5 23/Jan/2018
+* `job.list` system command not working #481
+* Update fastjson to 1.2.45
+
 **1.6.4 14/Jan/2018**
 * Performance issue with Rythm #469
     - update rythm-engine to 1.2.2

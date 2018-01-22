@@ -131,6 +131,11 @@ public class Job extends DestroyableBase implements Runnable {
     private LockableJobList followingJobs = new LockableJobList(this);
     private LockableJobList precedenceJobs = new LockableJobList(this);
 
+    private Job(String id) {
+        this.id = id;
+        this.jobProgressTag = wsJobProgressTag(id);
+    }
+
     Job(String id, AppJobManager manager) {
         this(id, manager, ($.Func0<?>)null);
     }
@@ -420,5 +425,11 @@ public class Job extends DestroyableBase implements Runnable {
 
     public JobTrigger trigger() {
         return trigger;
+    }
+
+    static Job virtualJob(String jobId, AppJobManager manager) {
+        Job job = new Job(jobId);
+        job.manager = manager;
+        return job;
     }
 }

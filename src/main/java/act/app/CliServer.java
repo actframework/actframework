@@ -168,6 +168,10 @@ public class CliServer extends AppServiceBase<CliServer> implements Runnable {
                 }
             });
         } catch (IOException e) {
+            Throwable t = e.getCause();
+            if (null != t && t.getMessage().contains("Address already in use")) {
+                throw new ConfigurationException("Cannot start app, port[%s] already occupied. Possible cause: another app instance is running", port);
+            }
             throw new ConfigurationException(e, "Cannot start CLI server on port: %s", port);
         }
     }

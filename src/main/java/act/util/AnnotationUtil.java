@@ -78,7 +78,7 @@ public class AnnotationUtil {
 
     public static Object defaultValue(Class<? extends Annotation> annoType, String methodName) {
         Method method = $.getMethod(annoType, methodName);
-        return method.getDefaultValue();
+        return null == method ? null : method.getDefaultValue();
     }
 
     public static Object tryGetDefaultValue(Class<? extends Annotation> annoType, String methodName) {
