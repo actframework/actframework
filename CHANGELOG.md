@@ -1,5 +1,8 @@
 # ActFramework Change Log
 
+**1.6.6 23/Jan/2018
+* `context.username()` returns `null` after upgrade act to 1.6.4 #485
+
 **1.6.5 23/Jan/2018
 * `job.list` system command not working #481
 * Update fastjson to 1.2.45

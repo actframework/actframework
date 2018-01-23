@@ -2381,7 +2381,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
 
     public String cacheName() {
         if (null == _cacheName) {
-            _cacheName = get(AppConfigKey.SESSION_KEY_USERNAME, "_act_app_");
+            _cacheName = get(AppConfigKey.CACHE_NAME, "_act_app_");
         }
         return _cacheName;
     }
