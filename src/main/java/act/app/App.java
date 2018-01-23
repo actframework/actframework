@@ -39,6 +39,7 @@ import act.crypto.AppCrypto;
 import act.data.DataPropertyRepository;
 import act.data.JodaDateTimeCodec;
 import act.data.util.ActPropertyHandlerFactory;
+import act.db.meta.EntityInfoByteCodeScanner;
 import act.db.meta.EntityMetaInfoRepo;
 import act.event.SysEventListenerBase;
 import act.event.EventBus;
@@ -1276,6 +1277,7 @@ public class App extends DestroyableBase {
         scannerManager.register(new SimpleBean.ByteCodeScanner());
         scannerManager.register(new SimpleEventListenerByteCodeScanner());
         scannerManager.register(new CommanderByteCodeScanner());
+        scannerManager.register(new EntityInfoByteCodeScanner());
         scannerManager.register(new RythmTransformerScanner());
         scannerManager.register(new ImplicitVariableProvider.TemplateVariableScanner(this));
     }
