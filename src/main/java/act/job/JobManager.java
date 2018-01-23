@@ -347,7 +347,7 @@ public class JobManager extends AppServiceBase<JobManager> {
         return C.list(scheduled.entrySet()).map(new $.Transformer<Map.Entry<String, ScheduledFuture>, Job>() {
             @Override
             public Job transform(Map.Entry<String, ScheduledFuture> entry) {
-                return new Job(entry.getKey(), jobManager);
+                return Job.virtualJob(entry.getKey(), jobManager);
             }
         });
     }
