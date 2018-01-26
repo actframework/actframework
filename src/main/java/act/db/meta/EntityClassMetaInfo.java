@@ -20,6 +20,9 @@ package act.db.meta;
  * #L%
  */
 
+import org.osgl.$;
+import org.osgl.util.E;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -31,21 +34,24 @@ public class EntityClassMetaInfo {
 
     private String className;
     private String entityName;
+    private EntityFieldMetaInfo idField;
+    private EntityFieldMetaInfo createdAtField;
+    private EntityFieldMetaInfo lastModifiedAtField;
     private Map<String, EntityFieldMetaInfo> fields = new HashMap<>();
 
-    public String getClassName() {
+    public String className() {
         return className;
     }
 
-    public void setClassName(String className) {
+    public void className(String className) {
         this.className = className;
     }
 
-    public String getEntityName() {
+    public String entityName() {
         return entityName;
     }
 
-    public void setEntityName(String entityName) {
+    public void entityName(String entityName) {
         this.entityName = entityName;
     }
 
@@ -53,12 +59,24 @@ public class EntityClassMetaInfo {
         return fields.get(fieldName);
     }
 
+    public EntityFieldMetaInfo createdAtField() {
+        return createdAtField;
+    }
+
+    public EntityFieldMetaInfo lastModifiedAtField() {
+        return lastModifiedAtField;
+    }
+
+    public EntityFieldMetaInfo idField() {
+        return idField;
+    }
+
     public EntityFieldMetaInfo getOrCreateFieldInfo(String fieldName) {
         EntityFieldMetaInfo fieldInfo = fields.get(fieldName);
         if (null == fieldInfo) {
-            fieldInfo = new EntityFieldMetaInfo();
-            fieldInfo.setClassName(className);
-            fieldInfo.setFieldName(fieldName);
+            fieldInfo = new EntityFieldMetaInfo(this);
+            fieldInfo.className(className);
+            fieldInfo.fieldName(fieldName);
             fields.put(fieldName, fieldInfo);
         }
         return fieldInfo;
@@ -76,7 +94,7 @@ public class EntityClassMetaInfo {
 
     @Override
     public int hashCode() {
-        return Objects.hash(className, entityName, fields);
+        return $.hc(className, entityName, fields);
     }
 
     @Override
@@ -88,5 +106,20 @@ public class EntityClassMetaInfo {
 
     void clear() {
         fields.clear();
+    }
+
+    void createdAtField(EntityFieldMetaInfo fieldInfo) {
+        E.illegalStateIf(null != createdAtField, "createdAt field already set");
+        this.createdAtField = $.notNull(fieldInfo);
+    }
+
+    void lastModifiedAtField(EntityFieldMetaInfo fieldInfo) {
+        E.illegalArgumentIfNot(null != lastModifiedAtField, "lastModifiedAt field already set");
+        this.lastModifiedAtField = $.notNull(fieldInfo);
+    }
+
+    void idField(EntityFieldMetaInfo fieldInfo) {
+        E.illegalArgumentIfNot(null != idField, "ID field already set");
+        this.idField = $.notNull(fieldInfo);
     }
 }

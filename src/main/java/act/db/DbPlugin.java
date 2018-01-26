@@ -22,19 +22,25 @@ package act.db;
 
 import act.Act;
 import act.app.App;
+import act.plugin.AppServicePlugin;
 import act.plugin.Plugin;
-import act.util.DestroyableBase;
 
 import java.util.Map;
 
 /**
  * The base class for Database Plugin
  */
-public abstract class DbPlugin extends DestroyableBase implements Plugin {
+public abstract class DbPlugin extends AppServicePlugin implements Plugin {
+
     @Override
     public void register() {
+        super.register();
         Act.dbManager().register(this);
         Act.trigger(new DbPluginRegistered(this));
+    }
+
+    @Override
+    protected void applyTo(App app) {
     }
 
     @Override
@@ -48,8 +54,5 @@ public abstract class DbPlugin extends DestroyableBase implements Plugin {
     }
 
     public abstract DbService initDbService(String id, App app, Map<String, String> conf);
-
-    public void afterDbServiceLoaded() {
-    }
 
 }

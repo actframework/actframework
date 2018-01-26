@@ -37,6 +37,8 @@ import act.db.RequireDataBind;
 import act.handler.NonBlock;
 import act.handler.PreventDoubleSubmission;
 import act.handler.builtin.controller.*;
+import act.handler.event.ReflectedHandlerInvokerInit;
+import act.handler.event.ReflectedHandlerInvokerInvoke;
 import act.inject.DependencyInjector;
 import act.inject.param.JsonDTO;
 import act.inject.param.JsonDTOClassManager;
@@ -139,6 +141,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
     private SerializerFeature features[];
     private $.Function<ActionContext, Result> pluginBeforeHandler;
     private $.Func2<Result, ActionContext, Result> pluginAfterHandler;
+    private Map<String, Object> attributes = new HashMap<>();
 
     private ReflectedHandlerInvoker(M handlerMetaInfo, App app) {
         this.app = app;
@@ -267,6 +270,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         initOutputVariables();
         initCacheParams(app.config());
         initMissingAuthenticationAndCsrfCheckHandler();
+        app.eventBus().emit(new ReflectedHandlerInvokerInit(this));
     }
 
     @Override
@@ -294,6 +298,15 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
     }
 
     public interface ReflectedHandlerInvokerVisitor extends Visitor, $.Func2<Class<?>, Method, Void> {
+    }
+
+    public ReflectedHandlerInvoker attribute(String key, Object value) {
+        attributes.put(key, value);
+        return this;
+    }
+
+    public <T> T attribute(String key) {
+        return $.cast(attributes.get(key));
     }
 
     @Override
@@ -341,6 +354,8 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         if (null != result) {
             return result;
         }
+
+        app.eventBus().emit(new ReflectedHandlerInvokerInvoke(this, context));
 
         if (null != filters) {
             context.fastjsonFilters(filters);
@@ -803,7 +818,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
     }
 
 
-    private <T extends Annotation> T getAnnotation(Class<T> annoType) {
+    public <T extends Annotation> T getAnnotation(Class<T> annoType) {
         T anno = method.getAnnotation(annoType);
         if (null == anno) {
             anno = controllerClass.getAnnotation(annoType);
@@ -811,7 +826,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         return anno;
     }
 
-    private boolean hasAnnotation(Class<? extends Annotation> annoType) {
+    public boolean hasAnnotation(Class<? extends Annotation> annoType) {
         return (null != method.getAnnotation(annoType)) || null != controllerClass.getAnnotation(annoType);
     }
 

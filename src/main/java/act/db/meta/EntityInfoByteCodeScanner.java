@@ -33,6 +33,7 @@ import org.osgl.util.S;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.Id;
 
 /**
  * Scans classes and build up index for quickly access the
@@ -45,6 +46,7 @@ public class EntityInfoByteCodeScanner extends AppByteCodeScannerBase {
 
     private static final String DESC_CREATED_AT = Type.getDescriptor(CreatedAt.class);
     private static final String DESC_LAST_MODIFIED_AT = Type.getDescriptor(LastModifiedAt.class);
+    private static final String DESC_ID = Type.getDescriptor(Id.class);
     private static final String DESC_ENTITY = Type.getDescriptor(Entity.class);
     private static final String DESC_COLUMN = Type.getDescriptor(Column.class);
 
@@ -76,6 +78,7 @@ public class EntityInfoByteCodeScanner extends AppByteCodeScannerBase {
         String entityName;
         boolean foundCreatedAt;
         boolean foundLastModifiedAt;
+        boolean foundId;
 
         @Override
         public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
@@ -129,6 +132,13 @@ public class EntityInfoByteCodeScanner extends AppByteCodeScannerBase {
                             repo.registerLastModifiedField(className, fieldName);
                         }
                         foundLastModifiedAt = true;
+                    } else if (S.eq(DESC_ID, desc)) {
+                        if (foundId) {
+                            LOGGER.warn("multiple @Id field found in class: " + className);
+                        } else {
+                            repo.registerIdField(className, fieldName);
+                        }
+                        foundId = true;
                     } else if (null != columnName && S.eq(DESC_COLUMN, desc)) {
                         return new AnnotationVisitor(ASM5, av) {
                             @Override

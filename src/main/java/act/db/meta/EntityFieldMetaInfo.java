@@ -20,6 +20,9 @@ package act.db.meta;
  * #L%
  */
 
+import org.osgl.$;
+import org.osgl.util.E;
+
 import java.util.Objects;
 
 /**
@@ -28,20 +31,34 @@ import java.util.Objects;
 public class EntityFieldMetaInfo {
 
     enum Trait {
-        CREATED, LAST_MODIFIED
+        CREATED, LAST_MODIFIED, ID
     }
 
     private Trait trait;
     private String className;
     private String fieldName;
     private String columnName;
+    private EntityClassMetaInfo classInfo;
 
-    public Trait getTrait() {
+    EntityFieldMetaInfo(EntityClassMetaInfo classInfo) {
+        this.classInfo = $.notNull(classInfo);
+    }
+
+    public Trait trait() {
         return trait;
     }
 
-    public void setTrait(Trait trait) {
-        this.trait = trait;
+    public void trait(Trait trait) {
+        this.trait = $.notNull(trait);
+        if (Trait.CREATED == trait) {
+            classInfo.createdAtField(this);
+        } else if (Trait.LAST_MODIFIED == trait) {
+            classInfo.lastModifiedAtField(this);
+        } else if (Trait.ID == trait) {
+            classInfo.idField(this);
+        } else {
+            throw E.unexpected("oops");
+        }
     }
 
     public boolean isCreatedAt() {
@@ -52,27 +69,27 @@ public class EntityFieldMetaInfo {
         return Trait.LAST_MODIFIED == trait;
     }
 
-    public String getClassName() {
+    public String className() {
         return className;
     }
 
-    public void setClassName(String className) {
+    public void className(String className) {
         this.className = className;
     }
 
-    public String getFieldName() {
+    public String fieldName() {
         return fieldName;
     }
 
-    public void setFieldName(String fieldName) {
+    public void fieldName(String fieldName) {
         this.fieldName = fieldName;
     }
 
-    public String getColumnName() {
+    public String columnName() {
         return columnName;
     }
 
-    public void setColumnName(String columnName) {
+    public void columnName(String columnName) {
         this.columnName = columnName;
     }
 

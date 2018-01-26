@@ -173,7 +173,7 @@ public abstract class ControllerPlugin implements Plugin {
 
         @Override
         protected Map<Class<? extends Annotation>, H.Method> annotationMethodLookup() {
-            return C.map();
+            return C.Map();
         }
 
         @Override

@@ -24,6 +24,7 @@ import act.app.security.SecurityContext;
 import act.inject.param.NoBind;
 import act.util.ActContext;
 import org.osgl.$;
+import org.osgl.util.C;
 import org.osgl.util.Generics;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -111,6 +112,36 @@ public abstract class DaoBase<ID_TYPE, MODEL_TYPE, QUERY_TYPE extends Dao.Query<
 
     protected final SecurityContext securityContext() {
         return secCtx;
+    }
+
+    @Override
+    public Iterable<MODEL_TYPE> findBy(String fields, Object... values) throws IllegalArgumentException {
+        return q(fields, values).fetch();
+    }
+
+    @Override
+    public MODEL_TYPE findOneBy(String fields, Object... values) throws IllegalArgumentException {
+        return q(fields, values).first();
+    }
+
+    @Override
+    public Iterable<MODEL_TYPE> findAll() {
+        return q().fetch();
+    }
+
+    @Override
+    public List<MODEL_TYPE> findAllAsList() {
+        return C.list(findAll());
+    }
+
+    @Override
+    public long count() {
+        return q().count();
+    }
+
+    @Override
+    public long countBy(String fields, Object... values) throws IllegalArgumentException {
+        return q(fields, values).count();
     }
 
     private void exploreTypes() {

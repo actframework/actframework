@@ -156,6 +156,7 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
         this.sessionKeyUsername = config.sessionKeyUsername();
         this.localeResolver = new LocaleResolver(this);
         this.sessionManager = app.sessionManager();
+        app.eventBus().trigger(new ActionContextCreated(this));
     }
 
     public State state() {
@@ -1012,6 +1013,7 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
             ActionContext.clearLocal();
         }
         this.state = State.DESTROYED;
+        app().eventBus().emit(new ActionContextDestroyed(this));
     }
 
     @Override
@@ -1197,6 +1199,18 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
 
         public ActionContext context() {
             return source();
+        }
+    }
+
+    public static class ActionContextCreated extends ActionContextEvent {
+        public ActionContextCreated(ActionContext source) {
+            super(source);
+        }
+    }
+
+    public static class ActionContextDestroyed extends ActionContextEvent {
+        public ActionContextDestroyed(ActionContext source) {
+            super(source);
         }
     }
 

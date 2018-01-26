@@ -22,14 +22,15 @@ package act.db.meta;
 
 import act.app.App;
 import act.app.AppServiceBase;
-import act.app.event.SysEventId;
 import act.db.CreatedAt;
 import act.db.LastModifiedAt;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import static act.db.meta.EntityFieldMetaInfo.Trait.CREATED;
+import static act.db.meta.EntityFieldMetaInfo.Trait.ID;
 import static act.db.meta.EntityFieldMetaInfo.Trait.LAST_MODIFIED;
 
 /**
@@ -41,35 +42,35 @@ import static act.db.meta.EntityFieldMetaInfo.Trait.LAST_MODIFIED;
  */
 public class EntityMetaInfoRepo extends AppServiceBase<EntityMetaInfoRepo> {
 
-    private Map<String, EntityClassMetaInfo> lookup = new HashMap<>();
-    private Map<Class, EntityClassMetaInfo> lookup2 = new HashMap<>();
+    Map<String, EntityClassMetaInfo> lookup = new HashMap<>();
+    Map<Class, EntityClassMetaInfo> lookup2 = new HashMap<>();
 
-    public EntityMetaInfoRepo(final App app) {
+    EntityMetaInfoRepo(final App app) {
         super(app);
-        app.jobManager().on(SysEventId.CLASS_LOADED, new Runnable() {
-            @Override
-            public void run() {
-                for (Map.Entry<String, EntityClassMetaInfo> entry : lookup.entrySet()) {
-                    Class<?> entityClass = app.classForName(entry.getKey());
-                    lookup2.put(entityClass, entry.getValue());
-                }
-            }
-        });
     }
 
     public void registerCreatedField(String className, String fieldName) {
         EntityClassMetaInfo info = getOrCreate(className);
-        info.getOrCreateFieldInfo(fieldName).setTrait(CREATED);
+        info.getOrCreateFieldInfo(fieldName).trait(CREATED);
     }
 
     public void registerLastModifiedField(String className, String fieldName) {
         EntityClassMetaInfo info = getOrCreate(className);
-        info.getOrCreateFieldInfo(fieldName).setTrait(LAST_MODIFIED);
+        info.getOrCreateFieldInfo(fieldName).trait(LAST_MODIFIED);
+    }
+
+    public void registerIdField(String className, String fieldName) {
+        EntityClassMetaInfo info = getOrCreate(className);
+        info.getOrCreateFieldInfo(fieldName).trait(ID);
     }
 
     public void registerColumnName(String className, String fieldName, String columnName) {
         EntityClassMetaInfo info = getOrCreate(className);
-        info.getOrCreateFieldInfo(fieldName).setColumnName(columnName);
+        info.getOrCreateFieldInfo(fieldName).columnName(columnName);
+    }
+
+    public Set<Class> entityClasses() {
+        return lookup2.keySet();
     }
 
     public EntityClassMetaInfo classMetaInfo(Class<?> entityClass) {
@@ -88,11 +89,16 @@ public class EntityMetaInfoRepo extends AppServiceBase<EntityMetaInfoRepo> {
         lookup.clear();
     }
 
+    void register(Class<?> entityClass, EntityClassMetaInfo info) {
+        lookup2.put(entityClass, info);
+        lookup.put(entityClass.getName(), info);
+    }
+
     private EntityClassMetaInfo getOrCreate(String className) {
         EntityClassMetaInfo info = lookup.get(className);
         if (null == info) {
             info = new EntityClassMetaInfo();
-            info.setClassName(className);
+            info.className(className);
             lookup.put(className, info);
         }
         return info;

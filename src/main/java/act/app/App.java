@@ -40,9 +40,9 @@ import act.data.DataPropertyRepository;
 import act.data.JodaDateTimeCodec;
 import act.data.util.ActPropertyHandlerFactory;
 import act.db.meta.EntityInfoByteCodeScanner;
-import act.db.meta.EntityMetaInfoRepo;
-import act.event.SysEventListenerBase;
+import act.db.meta.MasterEntityMetaInfoRepo;
 import act.event.EventBus;
+import act.event.SysEventListenerBase;
 import act.event.bytecode.SimpleEventListenerByteCodeScanner;
 import act.handler.RequestHandler;
 import act.handler.builtin.ResourceGetter;
@@ -139,7 +139,7 @@ public class App extends DestroyableBase {
     private DependencyInjector<?> dependencyInjector;
     private UploadFileStorageService uploadFileStorageService;
     private AppServiceRegistry appServiceRegistry;
-    private EntityMetaInfoRepo entityMetaInfoRepo;
+    private MasterEntityMetaInfoRepo entityMetaInfoRepo;
     private Map<String, Daemon> daemonRegistry;
     private WebSocketConnectionManager webSocketConnectionManager;
     private AppCrypto crypto;
@@ -828,7 +828,7 @@ public class App extends DestroyableBase {
         return eventBus;
     }
 
-    public EntityMetaInfoRepo entityMetaInfoRepo() {
+    public MasterEntityMetaInfoRepo entityMetaInfoRepo() {
         return entityMetaInfoRepo;
     }
 
@@ -1189,7 +1189,7 @@ public class App extends DestroyableBase {
     }
 
     private void initEntityMetaInfoRepo() {
-        entityMetaInfoRepo = new EntityMetaInfoRepo(this);
+        entityMetaInfoRepo = new MasterEntityMetaInfoRepo(this);
     }
 
     public void shutdownEventBus() {
