@@ -22,6 +22,7 @@ package act.db.meta;
 
 import org.osgl.$;
 import org.osgl.util.E;
+import org.osgl.util.S;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -45,6 +46,7 @@ public class EntityClassMetaInfo {
 
     public void className(String className) {
         this.className = className;
+        this.entityName = S.afterLast(className, className.contains("?") ? "?" : ".");
     }
 
     public String entityName() {
@@ -114,12 +116,12 @@ public class EntityClassMetaInfo {
     }
 
     void lastModifiedAtField(EntityFieldMetaInfo fieldInfo) {
-        E.illegalArgumentIfNot(null != lastModifiedAtField, "lastModifiedAt field already set");
+        E.illegalArgumentIf(null != lastModifiedAtField, "lastModifiedAt field already set");
         this.lastModifiedAtField = $.notNull(fieldInfo);
     }
 
     void idField(EntityFieldMetaInfo fieldInfo) {
-        E.illegalArgumentIfNot(null != idField, "ID field already set");
+        E.illegalArgumentIf(null != idField, "ID field already set");
         this.idField = $.notNull(fieldInfo);
     }
 }

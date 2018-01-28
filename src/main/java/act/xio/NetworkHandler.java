@@ -25,12 +25,15 @@ import act.app.ActionContext;
 import act.app.App;
 import act.app.event.SysEventId;
 import act.app.util.NamedPort;
+import act.event.EventBus;
 import act.handler.RequestHandler;
 import act.handler.builtin.AlwaysNotFound;
 import act.handler.builtin.FileGetter;
 import act.handler.builtin.ResourceGetter;
 import act.handler.builtin.controller.FastRequestHandler;
 import act.handler.builtin.controller.RequestHandlerProxy;
+import act.handler.event.PostHandle;
+import act.handler.event.PreHandle;
 import act.metric.Metric;
 import act.metric.MetricInfo;
 import act.metric.Timer;
@@ -146,7 +149,9 @@ public class NetworkHandler extends DestroyableBase {
                 String key = S.concat(MetricInfo.HTTP_HANDLER, ":", requestHandler.toString());
                 Timer timer = metric.startTimer(key);
                 ctx.saveLocal();
+                EventBus eventBus = app.eventBus();
                 try {
+                    eventBus.emit(new PreHandle(ctx));
                     requestHandler.handle(ctx);
                 } catch (Result r) {
                     if (isError(r)) {
@@ -174,6 +179,7 @@ public class NetworkHandler extends DestroyableBase {
                 } finally {
                     // we don't destroy ctx here in case it's been passed to
                     // another thread
+                    eventBus.emit(new PostHandle(ctx));
                     ActionContext.clearCurrent();
                     if (null != timer) {
                         timer.stop();

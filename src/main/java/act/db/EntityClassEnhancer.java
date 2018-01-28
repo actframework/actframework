@@ -26,6 +26,7 @@ import act.asm.AnnotationVisitor;
 import act.asm.MethodVisitor;
 import act.asm.Type;
 import act.util.AppByteCodeEnhancer;
+import act.util.ClassNode;
 import org.osgl.util.S;
 
 /**
@@ -34,6 +35,7 @@ import org.osgl.util.S;
 public class EntityClassEnhancer extends AppByteCodeEnhancer<EntityClassEnhancer> {
 
     private String classDesc;
+    private boolean isModel;
 
     private boolean daoMethodFound;
     private boolean daoClsMethodFound;
@@ -64,14 +66,19 @@ public class EntityClassEnhancer extends AppByteCodeEnhancer<EntityClassEnhancer
     public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
         super.visit(version, access, name, signature, superName, interfaces);
         classDesc = "L" + name + ";";
+        String className = Type.getType(classDesc).getClassName();
+        ClassNode node = app.classLoader().classInfoRepository().node(className);
+        isModel = node != null && node.hasInterface(Model.class.getName());
     }
 
     @Override
     public AnnotationVisitor visitAnnotation(String desc, boolean visible) {
-        Type type = Type.getType(desc);
-        for (DbService dbService : dbm().registeredServices()) {
-            if (type.equals(Type.getType(dbService.entityAnnotationType()))) {
-                isEntityClass = true;
+        if (isModel) {
+            Type type = Type.getType(desc);
+            for (DbService dbService : dbm().registeredServices()) {
+                if (type.equals(Type.getType(dbService.entityAnnotationType()))) {
+                    isEntityClass = true;
+                }
             }
         }
         return super.visitAnnotation(desc, visible);

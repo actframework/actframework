@@ -40,12 +40,12 @@ public abstract class DbPlugin extends AppServicePlugin implements Plugin {
     }
 
     @Override
-    protected void applyTo(App app) {
+    public int hashCode() {
+        return getClass().hashCode();
     }
 
     @Override
-    public int hashCode() {
-        return getClass().hashCode();
+    protected void applyTo(App app) {
     }
 
     @Override

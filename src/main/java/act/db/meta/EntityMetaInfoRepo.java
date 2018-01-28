@@ -29,9 +29,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import static act.db.meta.EntityFieldMetaInfo.Trait.CREATED;
-import static act.db.meta.EntityFieldMetaInfo.Trait.ID;
-import static act.db.meta.EntityFieldMetaInfo.Trait.LAST_MODIFIED;
+import static act.db.meta.EntityFieldMetaInfo.Trait.*;
 
 /**
  * Stores meta information about entity classes. At the moment there
@@ -47,6 +45,11 @@ public class EntityMetaInfoRepo extends AppServiceBase<EntityMetaInfoRepo> {
 
     EntityMetaInfoRepo(final App app) {
         super(app);
+    }
+
+    public void registerEntityName(String className, String entityName) {
+        EntityClassMetaInfo info = getOrCreate(className);
+        info.entityName(entityName);
     }
 
     public void registerCreatedField(String className, String fieldName) {

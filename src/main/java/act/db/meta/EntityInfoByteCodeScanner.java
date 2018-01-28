@@ -75,7 +75,6 @@ public class EntityInfoByteCodeScanner extends AppByteCodeScannerBase {
 
         boolean isEntity;
         String className;
-        String entityName;
         boolean foundCreatedAt;
         boolean foundLastModifiedAt;
         boolean foundId;
@@ -95,7 +94,7 @@ public class EntityInfoByteCodeScanner extends AppByteCodeScannerBase {
                     @Override
                     public void visit(String name, Object value) {
                         if ("name".equals(name)) {
-                            entityName = (String) value;
+                            repo.registerEntityName(className, (String) value);
                         }
                         super.visit(name, value);
                     }

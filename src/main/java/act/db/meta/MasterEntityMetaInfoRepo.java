@@ -42,7 +42,7 @@ public class MasterEntityMetaInfoRepo extends EntityMetaInfoRepo {
                     EntityClassMetaInfo info = entry.getValue();
                     register(entityClass, info);
                     DB db = entityClass.getAnnotation(DB.class);
-                    String dbId = null == db ? DB.DEFAULT : db.value().toUpperCase();
+                    String dbId = (null == db ? DB.DEFAULT : db.value()).toUpperCase();
                     EntityMetaInfoRepo repo = regions.get(dbId);
                     if (null == repo) {
                         repo = new EntityMetaInfoRepo(app);

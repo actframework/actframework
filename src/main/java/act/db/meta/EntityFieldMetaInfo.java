@@ -83,6 +83,7 @@ public class EntityFieldMetaInfo {
 
     public void fieldName(String fieldName) {
         this.fieldName = fieldName;
+        this.columnName = fieldName;
     }
 
     public String columnName() {

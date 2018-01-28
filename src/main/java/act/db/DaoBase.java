@@ -131,7 +131,7 @@ public abstract class DaoBase<ID_TYPE, MODEL_TYPE, QUERY_TYPE extends Dao.Query<
 
     @Override
     public List<MODEL_TYPE> findAllAsList() {
-        return C.list(findAll());
+        return C.newList(findAll());
     }
 
     @Override
