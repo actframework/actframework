@@ -20,6 +20,8 @@ package act.db.meta;
  * #L%
  */
 
+import act.util.ClassInfoRepository;
+import act.util.ClassNode;
 import org.osgl.$;
 import org.osgl.util.E;
 import org.osgl.util.S;
@@ -106,6 +108,16 @@ public class EntityClassMetaInfo {
                 '}';
     }
 
+    void mergeFromMappedSuperClasses(ClassInfoRepository classRepo, EntityMetaInfoRepo entityRepo) {
+        ClassNode node = classRepo.node(getClass().getName());
+        ClassNode parent = node.parent();
+        if (null != parent) {
+            mergeFrom(parent, entityRepo);
+        }
+    }
+
+
+
     void clear() {
         fields.clear();
     }
@@ -123,5 +135,29 @@ public class EntityClassMetaInfo {
     void idField(EntityFieldMetaInfo fieldInfo) {
         E.illegalArgumentIf(null != idField, "ID field already set");
         this.idField = $.notNull(fieldInfo);
+    }
+
+    private void mergeFrom(ClassNode parent, EntityMetaInfoRepo repo) {
+        EntityClassMetaInfo parentInfo = repo.classMetaInfo(parent.name());
+        if (null != parentInfo) {
+            if (null != idField) {
+                idField = parentInfo.idField;
+            }
+            if (null != createdAtField) {
+                createdAtField = parentInfo.createdAtField;
+            }
+            if (null != lastModifiedAtField) {
+                lastModifiedAtField = parentInfo.lastModifiedAtField;
+            }
+            for (Map.Entry<String, EntityFieldMetaInfo> entry : parentInfo.fields.entrySet()) {
+                if (!fields.containsKey(entry.getKey())) {
+                    fields.put(entry.getKey(), entry.getValue());
+                }
+            }
+        }
+        parent = parent.parent();
+        if (null != parent) {
+            mergeFrom(parent, repo);
+        }
     }
 }

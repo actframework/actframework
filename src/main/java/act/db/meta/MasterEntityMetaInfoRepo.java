@@ -9,9 +9,9 @@ package act.db.meta;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -23,6 +23,7 @@ package act.db.meta;
 import act.app.App;
 import act.app.event.SysEventId;
 import act.db.DB;
+import act.util.ClassInfoRepository;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -34,12 +35,15 @@ public class MasterEntityMetaInfoRepo extends EntityMetaInfoRepo {
 
     public MasterEntityMetaInfoRepo(final App app) {
         super(app);
+        final MasterEntityMetaInfoRepo me = this;
         app.jobManager().on(SysEventId.CLASS_LOADED, new Runnable() {
             @Override
             public void run() {
+                final ClassInfoRepository classRepo = app.classLoader().classInfoRepository();
                 for (Map.Entry<String, EntityClassMetaInfo> entry : lookup.entrySet()) {
                     Class<?> entityClass = app.classForName(entry.getKey());
                     EntityClassMetaInfo info = entry.getValue();
+                    info.mergeFromMappedSuperClasses(classRepo, me);
                     register(entityClass, info);
                     DB db = entityClass.getAnnotation(DB.class);
                     String dbId = (null == db ? DB.DEFAULT : db.value()).toUpperCase();

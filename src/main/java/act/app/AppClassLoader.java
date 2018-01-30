@@ -493,7 +493,7 @@ public class AppClassLoader
         enhancer.commitDownstream();
         ClassReader r = new ClassReader(bytecode);
         try {
-            r.accept(matcher, 0);
+            r.accept(matcher, ClassReader.EXPAND_FRAMES);
         } catch (EnvNotMatchException e) {
             return bytecode;
         } catch (AsmException e) {

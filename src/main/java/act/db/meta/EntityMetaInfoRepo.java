@@ -47,6 +47,10 @@ public class EntityMetaInfoRepo extends AppServiceBase<EntityMetaInfoRepo> {
         super(app);
     }
 
+    public void registerEntityOrMappedSuperClass(String className) {
+        getOrCreate(className);
+    }
+
     public void registerEntityName(String className, String entityName) {
         EntityClassMetaInfo info = getOrCreate(className);
         info.entityName(entityName);
@@ -70,6 +74,10 @@ public class EntityMetaInfoRepo extends AppServiceBase<EntityMetaInfoRepo> {
     public void registerColumnName(String className, String fieldName, String columnName) {
         EntityClassMetaInfo info = getOrCreate(className);
         info.getOrCreateFieldInfo(fieldName).columnName(columnName);
+    }
+
+    public boolean isRegistered(String className) {
+        return lookup.containsKey(className);
     }
 
     public Set<Class> entityClasses() {

@@ -34,6 +34,7 @@ import org.osgl.util.S;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
+import javax.persistence.MappedSuperclass;
 
 /**
  * Scans classes and build up index for quickly access the
@@ -48,6 +49,7 @@ public class EntityInfoByteCodeScanner extends AppByteCodeScannerBase {
     private static final String DESC_LAST_MODIFIED_AT = Type.getDescriptor(LastModifiedAt.class);
     private static final String DESC_ID = Type.getDescriptor(Id.class);
     private static final String DESC_ENTITY = Type.getDescriptor(Entity.class);
+    private static final String DESC_MAPPED_SUPERCLASS = Type.getDescriptor(MappedSuperclass.class);
     private static final String DESC_COLUMN = Type.getDescriptor(Column.class);
 
     private EntityMetaInfoRepo repo;
@@ -73,6 +75,7 @@ public class EntityInfoByteCodeScanner extends AppByteCodeScannerBase {
 
     private class _ByteCodeVisitor extends ByteCodeVisitor {
 
+        boolean isMappedSuperClass;
         boolean isEntity;
         String className;
         boolean foundCreatedAt;
@@ -88,17 +91,21 @@ public class EntityInfoByteCodeScanner extends AppByteCodeScannerBase {
         @Override
         public AnnotationVisitor visitAnnotation(String desc, boolean visible) {
             AnnotationVisitor av = super.visitAnnotation(desc, visible);
-            if (DESC_ENTITY.equals(desc)) {
-                isEntity = true;
-                return new AnnotationVisitor(ASM5, av) {
-                    @Override
-                    public void visit(String name, Object value) {
-                        if ("name".equals(name)) {
-                            repo.registerEntityName(className, (String) value);
+            isEntity = DESC_ENTITY.equals(desc);
+            isMappedSuperClass = !isEntity && DESC_MAPPED_SUPERCLASS.endsWith(desc);
+            if (isEntity || isMappedSuperClass) {
+                repo.registerEntityOrMappedSuperClass(className);
+                if (isEntity) {
+                    return new AnnotationVisitor(ASM5, av) {
+                        @Override
+                        public void visit(String name, Object value) {
+                            if ("name".equals(name)) {
+                                repo.registerEntityName(className, (String) value);
+                            }
+                            super.visit(name, value);
                         }
-                        super.visit(name, value);
-                    }
-                };
+                    };
+                }
             }
             return av;
         }
@@ -106,7 +113,7 @@ public class EntityInfoByteCodeScanner extends AppByteCodeScannerBase {
         @Override
         public FieldVisitor visitField(int access, String name, String desc, String signature, Object value) {
             FieldVisitor fv = super.visitField(access, name, desc, signature, value);
-            if (!isEntity) {
+            if (!isEntity && !isMappedSuperClass) {
                 return fv;
             }
             final String fieldName = name;
