@@ -22,6 +22,7 @@ package act.app;
 
 import act.ActResponse;
 import act.Destroyable;
+import act.Trace;
 import act.conf.AppConfig;
 import act.controller.ResponseCache;
 import act.data.MapUtil;
@@ -104,6 +105,7 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
     private UrlPath urlPath;
     private Set<String> pathVarNames = new HashSet<>();
     private SessionManager sessionManager;
+    private Trace.AccessLog accessLog;
 
     // -- replace attributres with fields -- perf tune
     // -- ATTR_CSRF_PREFETCHED
@@ -148,6 +150,7 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
         response.context(this);
         this.request = request;
         this.response = response;
+        this.accessLog = app.config().traceRequests() ? Trace.AccessLog.create(request) : null;
         this._init();
         this.state = State.CREATED;
         AppConfig config = app.config();
@@ -951,6 +954,12 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
             }
         }
         return super.locale(required);
+    }
+
+    public void logAccess(H.Response response) {
+        if (null != accessLog) {
+            accessLog.logWithResponseCode(response.statusCode());
+        }
     }
 
     /**

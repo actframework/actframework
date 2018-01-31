@@ -70,6 +70,7 @@ public abstract class ResultEvent extends ActEvent<Result> implements SystemEven
                 @Override
                 public Void apply(Result result, H.Request<?> request, H.Response<?> response) throws NotAppliedException, Osgl.Break {
                     ActionContext context = request.context();
+                    context.logAccess(response);
                     context.app().eventBus().emit(new AfterResultCommit(result, request, response));
                     return null;
                 }

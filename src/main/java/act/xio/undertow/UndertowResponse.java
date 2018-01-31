@@ -135,9 +135,8 @@ public class UndertowResponse extends ActResponse<UndertowResponse> {
     }
 
     @Override
-    public UndertowResponse status(int sc) {
+    public void _setStatusCode(int sc) {
         hse.setStatusCode(sc);
-        return this;
     }
 
     @Override

@@ -2276,6 +2276,41 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
             secureTicketCodecClass = config.secureTicketCodecClass;
         }
     }
+
+    private Boolean traceHandler;
+    protected T traceHandler(boolean enabled) {
+        this.traceHandler = enabled;
+        return me();
+    }
+    public boolean traceHandler() {
+        if (null == traceHandler) {
+            traceHandler = get(TRACE_HANDLER_ENABLED, false);
+        }
+        return traceHandler;
+    }
+    private void _mergeTraceHandler(AppConfig config) {
+        if (!hasConfiguration(TRACE_HANDLER_ENABLED)) {
+            this.traceHandler = config.traceHandler;
+        }
+    }
+
+    private Boolean traceRequest;
+    protected T traceRequests(boolean enabled) {
+        this.traceRequest = enabled;
+        return me();
+    }
+    public boolean traceRequests() {
+        if (null == traceRequest) {
+            traceRequest = get(TRACE_REQUEST_ENABLED, false);
+        }
+        return traceRequest;
+    }
+    private void _mergeTraceRequests(AppConfig config) {
+        if (!hasConfiguration(TRACE_REQUEST_ENABLED)) {
+            this.traceRequest = config.traceRequest;
+        }
+    }
+
     private List<File> moduleBases;
     public List<File> moduleBases() {
         if (null == moduleBases) {

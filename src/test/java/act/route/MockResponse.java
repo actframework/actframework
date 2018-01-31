@@ -69,8 +69,7 @@ public class MockResponse extends ActResponse<MockResponse> {
     }
 
     @Override
-    public MockResponse status(int sc) {
-        return null;
+    protected void _setStatusCode(int sc) {
     }
 
     @Override

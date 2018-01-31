@@ -21,6 +21,7 @@ package act.handler.builtin.controller.impl;
  */
 
 import act.Act;
+import act.Trace;
 import act.app.ActionContext;
 import act.app.App;
 import act.app.AppClassLoader;
@@ -137,6 +138,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
     private boolean async;
     private boolean byPassImplicityTemplateVariable;
     private boolean forceDataBinding;
+    private boolean traceHandler;
     private Class<? extends SerializeFilter> filters[];
     private SerializerFeature features[];
     private $.Function<ActionContext, Result> pluginBeforeHandler;
@@ -150,6 +152,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         this.controller = handlerMetaInfo.classInfo();
         this.controllerClass = $.classForName(controller.className(), cl);
         this.disabled = !Env.matches(controllerClass);
+        this.traceHandler = app.config().traceHandler();
         this.paramLoaderService = app.service(ParamValueLoaderManager.class).get(ActionContext.class);
         this.jsonDTOClassManager = app.service(JsonDTOClassManager.class);
 
@@ -749,10 +752,20 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
 
     private Result invoke(M handlerMetaInfo, ActionContext context, Object controller, Object[] params) throws Exception {
         Object result;
+        String invocationInfo = null;
         try {
+            if (traceHandler) {
+                invocationInfo = S.fmt("%s(%s)", handlerMetaInfo.fullName(), $.toString2(params));
+                Trace.LOGGER_HANDLER.trace(invocationInfo);
+            }
             result = null == methodAccess ? $.invokeStatic(method, params) : methodAccess.invoke(controller, handlerIndex, params);
         } catch (Result r) {
             result = r;
+        } catch (Exception e) {
+            if (traceHandler) {
+                Trace.LOGGER_HANDLER.trace(e, "error invoking %s", invocationInfo);
+            }
+            throw e;
         }
         if (context.resp().isClosed()) {
             return null;

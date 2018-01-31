@@ -40,6 +40,7 @@ public abstract class ActResponse<T extends ActResponse> extends H.Response<T> {
     protected String contentType;
     protected H.Format fmt;
     private boolean charsetSet;
+    protected int statusCode = -1;
 
     protected ActResponse() {}
 
@@ -104,6 +105,21 @@ public abstract class ActResponse<T extends ActResponse> extends H.Response<T> {
 
     protected void markClosed() {
         this.closed = true;
+    }
+
+    protected abstract void _setStatusCode(int sc);
+
+    @Override
+    public T status(int sc) {
+        E.illegalArgumentIf(sc < 100, "Invalid status code");
+        statusCode = sc;
+        _setStatusCode(sc);
+        return me();
+    }
+
+    @Override
+    public int statusCode() {
+        return statusCode;
     }
 
     protected void beforeWritingContent() {

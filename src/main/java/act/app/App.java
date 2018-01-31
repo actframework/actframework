@@ -1025,7 +1025,7 @@ public class App extends DestroyableBase {
             }
         }
         config.app(this);
-        configureLoggingLevels();
+        configureLoggingLevels(config);
         registerSingleton(AppConfig.class, config);
         registerValueObjectCodec();
         if (config.i18nEnabled()) {
@@ -1376,9 +1376,9 @@ public class App extends DestroyableBase {
         rythmView.registerFormatter(this, new JodaDateTimeFormatter());
     }
 
-    private void configureLoggingLevels() {
-        Map map = config().subSet("log.level");
-        map.putAll(config().subSet("act.log.level"));
+    private void configureLoggingLevels(AppConfig config) {
+        Map map = config.subSet("log.level");
+        map.putAll(config.subSet("act.log.level"));
         for (Object o : map.entrySet()) {
             Map.Entry<String, String> entry = $.cast(o);
             String key = entry.getKey();

@@ -2,10 +2,10 @@
 
 **1.7.0**
 * Update JPA api to 2.2
-* Do not `Set-Cookie` for session and flash if there is no state #484
 * EntityMetaInfo and scanner - support JPA plugin
-* Make `act.metric.Timer` be a `Closable` #483
 * Improve built-in service performance by make them as nonblock when possible
+* Do not `Set-Cookie` for session and flash if there is no state #484
+* Make `act.metric.Timer` be a `Closable` #483
 * DB: add annotation to mark created and last modified timestamp fields #480
 * Missing actframework version in the banner text in dev mode with Eclipse project #478
 * Rename `AppEvent` to `SysEvent` #475
@@ -14,6 +14,7 @@
 * SimpleEventHandler mechanism does not work with `EventObject` #471
 * Allow `LoadResource` inject into Set of strings #470
 * Support plugin JAX-RS #448
+* Trace handler call #238
 
 **1.6.6 23/Jan/2018
 * `context.username()` returns `null` after upgrade act to 1.6.4 #485

@@ -323,10 +323,9 @@ public class ResponseCache extends ActResponse implements Serializable {
     }
 
     @Override
-    public H.Response status(int sc) {
+    protected void _setStatusCode(int sc) {
         realResponse.status(sc);
         this.status = H.Status.of(sc);
-        return this;
     }
 
     @Override

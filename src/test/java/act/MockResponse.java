@@ -133,9 +133,8 @@ public class MockResponse extends ActResponse<MockResponse> {
     }
 
     @Override
-    public MockResponse status(int sc) {
+    protected void _setStatusCode(int sc) {
         this.status = sc;
-        return this;
     }
 
     @Override

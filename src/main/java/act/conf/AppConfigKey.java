@@ -936,7 +936,8 @@ public enum AppConfigKey implements ConfigKey {
      * {@code act.target.version} specifies the java version
      * of the compile target code. This configuration is used only
      * in dev mode.
-     * <p>Default value: 1.7</p>
+     *
+     * Default value: 1.7
      */
     TARGET_VERSION("target.version"),
 
@@ -944,10 +945,30 @@ public enum AppConfigKey implements ConfigKey {
      * {@code template.home} specifies where the view templates resides.
      * If not specified then will use the {@link View#name() view name
      * in lower case} as the template home if that view is used.
-     * <p/>
-     * <p>Default value: {@code default}</p>
+     *
+     * Default value: {@code default}
      */
     TEMPLATE_HOME("template.home"),
+
+    /**
+     * `trace.handler.enabled` turn on/off handle invocation calls.
+     *
+     * When this configuration is turned on, every call to the
+     * action handler/job handler/mail sender method will be logged.
+     *
+     * Default value: `false`
+     */
+    TRACE_HANDLER_ENABLED("trace.handler.enabled"),
+
+    /**
+     * `trace.request.enabled` turn on/off incoming request log
+     *
+     * When this configuration is turned on, every incoming request
+     * will be logged
+     *
+     * default value: `false`
+     */
+    TRACE_REQUEST_ENABLED("trace.request.enabled"),
 
     /**
      * `upload.in_memory.threshold`
