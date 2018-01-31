@@ -24,6 +24,7 @@ import act.app.ProjectLayout;
 
 import java.io.File;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Helper to build {@link ProjectLayout}
@@ -150,7 +151,7 @@ public class ProjectLayoutBuilder implements ProjectLayout {
     }
 
     @Override
-    public List<File> routeTables(File appBase) {
+    public Map<String, List<File>> routeTables(File appBase) {
         return _layout.routeTables(appBase);
     }
 

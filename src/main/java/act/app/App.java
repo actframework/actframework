@@ -1294,16 +1294,21 @@ public class App extends DestroyableBase {
     private void loadRoutes() {
         loadBuiltInRoutes();
         logger.debug("loading app routing table: %s ...", appBase.getPath());
-        List<File> routes;
+        Map<String, List<File>> routes;
         if (Act.isProd()) {
             routes = RuntimeDirs.routes(this);
         } else {
             routes = layout().routeTables(base());
         }
-        for (File route : routes) {
-            if (route.exists() && route.canRead() && route.isFile()) {
-                List<String> lines = IO.readLines(route);
-                new RouteTableRouterBuilder(lines).build(router);
+        for (Map.Entry<String, List<File>> entry : routes.entrySet()) {
+            String npName = entry.getKey();
+            List<File> routesFileList = entry.getValue();
+            Router router = S.eq(NamedPort.DEFAULT, npName) ? this.router : this.router(npName);
+            for (File route : routesFileList) {
+                if (route.exists() && route.canRead() && route.isFile()) {
+                    List<String> lines = IO.readLines(route);
+                    new RouteTableRouterBuilder(lines).build(router);
+                }
             }
         }
     }

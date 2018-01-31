@@ -21,16 +21,16 @@ package act.app;
  */
 
 import act.Act;
+import act.app.util.NamedPort;
 import org.osgl.$;
 import org.osgl.Osgl;
 import org.osgl.exception.NotAppliedException;
 import org.osgl.util.E;
+import org.osgl.util.S;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Properties;
+import java.util.*;
 
 import static act.app.ProjectLayout.Utils.file;
 import static act.app.RuntimeDirs.CLASSES;
@@ -241,20 +241,31 @@ public interface ProjectLayout {
         }
 
         @Override
-        public List<File> routeTables(File appBase) {
+        public Map<String, List<File>> routeTables(File appBase) {
+            Map<String, List<File>> map = new HashMap<>();
+            map.put(NamedPort.DEFAULT, routeTables(appBase, ROUTES_FILE));
+            for (NamedPort np : Act.app().config().namedPorts()) {
+                String npName = np.name();
+                String routesFile = S.concat("routes.", npName, ".conf");
+                map.put(npName, routeTables(appBase, routesFile));
+            }
+            return map;
+        }
+
+        private List<File> routeTables(File appBase, String routesFiile) {
             List<File> files = new ArrayList<>();
             File resourceBase = resource(appBase);
-            files.add(file(resourceBase, ROUTES_FILE));
+            files.add(file(resourceBase, routesFiile));
             File confBase = conf(appBase);
             if ($.eq(confBase, resourceBase)) {
                 // see https://github.com/actframework/actframework/issues/300
                 return files;
             }
-            files.add(file(confBase, ROUTES_FILE));
+            files.add(file(confBase, routesFiile));
             File commonBase = file(confBase, "common");
-            files.add(file(commonBase, ROUTES_FILE));
+            files.add(file(commonBase, routesFiile));
             File profileBase = file(confBase, Act.profile());
-            files.add(file(profileBase, ROUTES_FILE));
+            files.add(file(profileBase, routesFiile));
             return files;
         }
 
@@ -324,9 +335,10 @@ public interface ProjectLayout {
 
     /**
      * Returns the routing table file in relation to the
-     * {@code appBase} specified
+     * {@code appBase} specified. Files are organized by
+     * named port names
      */
-    List<File> routeTables(File appBase);
+    Map<String, List<File>> routeTables(File appBase);
 
     /**
      * Returns the app configuration location in relation to the
@@ -442,7 +454,14 @@ public interface ProjectLayout {
         }
 
         @Override
-        public List<File> routeTables(File appBase) {
+        public Map<String, List<File>> routeTables(File appBase) {
+            Map<String, List<File>> map = new HashMap<>();
+            map.put(NamedPort.DEFAULT, routeTables(appBase, routeTable));
+            // TODO support extended route table (i.e for named ports)
+            return map;
+        }
+
+        private List<File> routeTables(File appBase, String routeTable) {
             List<File> files = new ArrayList<>();
             files.add(file(appBase, routeTable));
             File confRoot = file(appBase, conf);

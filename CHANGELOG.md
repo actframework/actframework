@@ -15,6 +15,7 @@
 * Allow `LoadResource` inject into Set of strings #470
 * Support plugin JAX-RS #448
 * Trace handler call #238
+* Make it able to specify the named ports in routes configuration #183
 
 **1.6.6 23/Jan/2018
 * `context.username()` returns `null` after upgrade act to 1.6.4 #485

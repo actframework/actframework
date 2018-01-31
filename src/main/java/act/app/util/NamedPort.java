@@ -24,6 +24,9 @@ import org.osgl.util.E;
 import org.osgl.util.S;
 
 public class NamedPort {
+
+    public static final String DEFAULT = "default";
+
     private String name;
     private int port;
 
