@@ -13,6 +13,7 @@
 * Emit/trigger `EventObject` typed event through `EventBus #472
 * SimpleEventHandler mechanism does not work with `EventObject` #471
 * Allow `LoadResource` inject into Set of strings #470
+* Param binding - it shall not try to get provider for simple types #449
 * Support plugin JAX-RS #448
 * Trace handler call #238
 * Make it able to specify the named ports in routes configuration #183
