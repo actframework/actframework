@@ -22,6 +22,7 @@ package act.inject.util;
 
 import act.Act;
 import act.app.App;
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.TypeReference;
 import org.osgl.$;
 import org.osgl.exception.UnexpectedException;
@@ -127,6 +128,7 @@ public class ResourceLoader<T> extends ValueLoader.Base<T> {
     }
 
     protected static Object _load(String resourcePath, BeanSpec spec, boolean ignoreResourceNotFound) {
+        boolean isJson = resourcePath.endsWith(".json");
         URL url = loadResource(resourcePath);
         if (null == url) {
             if (!ignoreResourceNotFound) {
@@ -146,6 +148,8 @@ public class ResourceLoader<T> extends ValueLoader.Base<T> {
             if (!typeParams.isEmpty()) {
                 if (String.class == typeParams.get(0)) {
                     return IO.readLines(url);
+                } else if (isJson) {
+                    return JSON.parseObject(IO.readContentAsString(url), spec.type());
                 }
             }
         } else if (Collection.class.isAssignableFrom(rawType)) {
@@ -155,6 +159,8 @@ public class ResourceLoader<T> extends ValueLoader.Base<T> {
                     Collection<String> col = Act.getInstance((Class<Collection<String>>)rawType);
                     col.addAll(IO.readLines(url));
                     return col;
+                } else if (isJson) {
+                    return JSON.parseObject(IO.readContentAsString(url), spec.type());
                 }
             }
         } else if (ByteBuffer.class == rawType) {
@@ -170,7 +176,11 @@ public class ResourceLoader<T> extends ValueLoader.Base<T> {
         } else if (ISObject.class.isAssignableFrom(rawType)) {
             return SObject.of(readContent(url));
         }
-        throw new UnexpectedException("return type not supported: " + spec);
+        try {
+            return Act.app().resolverManager().resolve(IO.readContentAsString(url), rawType);
+        } catch (RuntimeException e) {
+            throw new UnexpectedException("return type not supported: " + spec);
+        }
     }
 
     private static byte[] readContent(URL url) {

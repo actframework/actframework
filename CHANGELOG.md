@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 **1.7.0**
+* ResourceLoader - support any object type #497
 * Update JPA api to 2.2
 * EntityMetaInfo and scanner - support JPA plugin
 * Improve built-in service performance by make them as nonblock when possible
