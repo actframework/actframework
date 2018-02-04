@@ -29,6 +29,7 @@ import org.osgl.util.C;
 
 import javax.enterprise.context.ApplicationScoped;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -190,4 +191,28 @@ public class ClassInfoRepository extends DestroyableBase {
         }
         return repo;
     }
+
+    public Comparator<String> parentClassFirst = new Comparator<String>() {
+        @Override
+        public int compare(String o1, String o2) {
+            ClassNode n1 = node(o1);
+            ClassNode n2 = node(o2);
+            if (n1 == null && n2 == null) {
+                return o1.compareTo(o2);
+            }
+            if (n1 == null) {
+                return -1;
+            }
+            if (n2 == null) {
+                return 1;
+            }
+            if (n1.isMyDescendant(n2)) {
+                return -1;
+            }
+            if (n2.isMyDescendant(n1)) {
+                return 1;
+            }
+            return o1.compareTo(o2);
+        }
+    };
 }

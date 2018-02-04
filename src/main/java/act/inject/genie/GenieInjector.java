@@ -167,7 +167,7 @@ public class GenieInjector extends DependencyInjectorBase<GenieInjector> {
         return set;
     }
 
-    private Genie genie() {
+    public Genie genie() {
         if (null == genie) {
             synchronized (this) {
                 if (null == genie) {

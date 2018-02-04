@@ -1,12 +1,13 @@
 # ActFramework Change Log
 
 **1.7.0**
-* ResourceLoader - support any object type #497
 * Update JPA api to 2.2
 * EntityMetaInfo and scanner - support JPA plugin
 * Improve built-in service performance by make them as nonblock when possible
+* ResourceLoader - support any object type #497
 * Do not `Set-Cookie` for session and flash if there is no state #484
 * Make `act.metric.Timer` be a `Closable` #483
+* Simplify measuring of method execution #482
 * DB: add annotation to mark created and last modified timestamp fields #480
 * Missing actframework version in the banner text in dev mode with Eclipse project #478
 * Rename `AppEvent` to `SysEvent` #475

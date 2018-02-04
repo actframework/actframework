@@ -57,6 +57,10 @@ import act.job.JobManager;
 import act.job.bytecode.JobByteCodeScanner;
 import act.mail.MailerConfigManager;
 import act.mail.bytecode.MailerByteCodeScanner;
+import act.metric.Metric;
+import act.metric.MetricContextScanner;
+import act.metric.MetricMetaInfoRepo;
+import act.metric.MetricProvider;
 import act.route.RouteSource;
 import act.route.RouteTableRouterBuilder;
 import act.route.Router;
@@ -142,6 +146,7 @@ public class App extends DestroyableBase {
     private MasterEntityMetaInfoRepo entityMetaInfoRepo;
     private Map<String, Daemon> daemonRegistry;
     private WebSocketConnectionManager webSocketConnectionManager;
+    private MetricMetaInfoRepo metricMetaInfoRepo;
     private AppCrypto crypto;
     private IdGenerator idGenerator;
     private SessionManager sessionManager;
@@ -595,6 +600,7 @@ public class App extends DestroyableBase {
             initApiManager();
             initCliDispatcher();
             initCliServer();
+            initMetricMetaInfoRepo();
             initEntityMetaInfoRepo();
 
             initWebSocketConnectionManager();
@@ -661,6 +667,7 @@ public class App extends DestroyableBase {
                 // are cleared
                 emit(DEPENDENCY_INJECTOR_PROVISIONED);
                 emit(SINGLETON_PROVISIONED);
+                registerMetricProvider();
                 config().preloadConfigurations();
                 initSessionManager();
                 Runnable runnable = new Runnable() {
@@ -707,6 +714,13 @@ public class App extends DestroyableBase {
      */
     public boolean isSingleton(Class<?> cls) {
         return null != singletonRegistry.get(cls) || hasSingletonAnnotation(cls);
+    }
+
+    private void registerMetricProvider() {
+        GenieInjector gi = this.injector();
+        MetricProvider mp = new MetricProvider();
+        gi.genie().registerNamedProvider(Metric.class, mp);
+        gi.genie().registerProvider(Metric.class, mp);
     }
 
     private boolean hasSingletonAnnotation(Class<?> cls) {
@@ -834,6 +848,10 @@ public class App extends DestroyableBase {
 
     public JobManager jobManager() {
         return jobManager;
+    }
+
+    public MetricMetaInfoRepo metricMetaInfoRepo() {
+        return metricMetaInfoRepo;
     }
 
     public <DI extends DependencyInjector> App injector(DI dependencyInjector) {
@@ -1054,6 +1072,10 @@ public class App extends DestroyableBase {
                 config().sequenceProvider(),
                 config().longEncoder()
         );
+    }
+
+    private void initMetricMetaInfoRepo() {
+        metricMetaInfoRepo = new MetricMetaInfoRepo(this);
     }
 
     private void initDaemonRegistry() {
@@ -1279,6 +1301,7 @@ public class App extends DestroyableBase {
         scannerManager.register(new CommanderByteCodeScanner());
         scannerManager.register(new EntityInfoByteCodeScanner());
         scannerManager.register(new RythmTransformerScanner());
+        scannerManager.register(new MetricContextScanner());
         scannerManager.register(new ImplicitVariableProvider.TemplateVariableScanner(this));
     }
 

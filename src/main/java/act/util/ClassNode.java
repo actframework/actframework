@@ -37,10 +37,11 @@ public class ClassNode extends DestroyableBase {
     private String canonicalName;
     private int modifiers;
     private ClassNode parent;
-    private transient Set<ClassNode> children = C.newSet();
+    private Set<ClassNode> children = new HashSet<>();
+    private Set<ClassNode> descendants = new HashSet<>();
     Map<String, ClassNode> interfaces = new HashMap<>();
-    Set<ClassNode> annotations = C.newSet();
-    Set<ClassNode> annotated = C.newSet();
+    Set<ClassNode> annotations = new HashSet<>();
+    Set<ClassNode> annotated = new HashSet<>();
 
     ClassNode(String name, int modifiers, ClassInfoRepository infoBase) {
         this(name, name.replace('$', '.'), modifiers, infoBase);
@@ -367,15 +368,6 @@ public class ClassNode extends DestroyableBase {
     }
 
     @Override
-    protected void releaseResources() {
-        children.clear();
-        interfaces.clear();
-        annotated.clear();
-        annotations.clear();
-        infoBase = null;
-    }
-
-    @Override
     public String toString() {
         return name;
     }
@@ -397,6 +389,24 @@ public class ClassNode extends DestroyableBase {
         return false;
     }
 
+    public boolean isMyDescendant(ClassNode node) {
+        return descendants.contains(node);
+    }
+
+    public boolean isMyAncestor(ClassNode node) {
+        return node.isMyDescendant(this);
+    }
+
+    @Override
+    protected void releaseResources() {
+        descendants.clear();
+        children.clear();
+        interfaces.clear();
+        annotated.clear();
+        annotations.clear();
+        infoBase = null;
+    }
+
     ClassNodeDTO toDTO() {
         return new ClassNodeDTO(this);
     }
@@ -406,6 +416,15 @@ public class ClassNode extends DestroyableBase {
         for (ClassNode intf : interfaces.values()) {
             node.addInterface(intf);
         }
+        addDescendant(node);
         return this;
+    }
+
+    private void addDescendant(ClassNode node) {
+        descendants.addAll(node.descendants);
+        descendants.add(node);
+        if (null != parent) {
+            parent.addDescendant(node);
+        }
     }
 }
