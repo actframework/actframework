@@ -38,11 +38,7 @@ abstract class StringValueResolverValueLoaderBase implements ParamValueLoader {
         this.paramKey = key;
         this.stringValueResolver = resolver;
         this.defSpec = def;
-        Object _defVal = defVal(param, type);
-        if (null == _defVal && null != def) {
-            _defVal = resolver.resolve(def.value());
-        }
-        this.defVal = _defVal;
+        this.defVal = null != def ? resolver.resolve(def.value()) : defVal(param, type);
     }
 
     @Override

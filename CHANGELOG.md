@@ -4,6 +4,7 @@
 * Update JPA api to 2.2
 * EntityMetaInfo and scanner - support JPA plugin
 * Improve built-in service performance by make them as nonblock when possible
+* `@DefaultValue` not working for primitive types #504
 * Create `act.util.CsvView` as an alias of `ResponseContentType(H.MediaType.CSV)` #503
 * Add suffix to download file for csv typed response #502
 * ResourceLoader - support any object type #497
