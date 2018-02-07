@@ -321,7 +321,7 @@ public enum CliView {
                 return (escape(data));
             } else {
                 if (data instanceof AdaptiveRecord) {
-                    return S.string(((AdaptiveRecord) data).getValue(prop));
+                    return escape(S.string(((AdaptiveRecord) data).getValue(prop)));
                 }
                 return escape($.getProperty(data, prop));
             }
