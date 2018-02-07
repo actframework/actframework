@@ -146,7 +146,7 @@ class CollectionLoader implements ParamValueLoader {
     }
 
     private ParamValueLoader buildChildLoader(ParamKey key) {
-        return manager.buildLoader(key, elementType, targetSpec);
+        return manager.buildLoader(key, targetSpec.componentSpec());
     }
 
     private static void addToCollection(Collection collection, int index, Object bean) {

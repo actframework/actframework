@@ -52,6 +52,18 @@ public class UrlPath {
         }
     }
 
+    public int size() {
+        return parts.size();
+    }
+
+    public String part(int index) {
+        return parts.get(index);
+    }
+
+    public String lastPart() {
+        return part(size() - 1);
+    }
+
     /**
      * Check if the URL path is a built-in service url.
      *

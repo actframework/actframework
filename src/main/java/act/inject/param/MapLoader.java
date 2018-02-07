@@ -181,6 +181,12 @@ class MapLoader extends LogSupport implements ParamValueLoader {
     }
 
     private ParamValueLoader buildChildLoader(ParamKey key) {
-        return manager.buildLoader(key, valType, targetSpec);
+        return manager.buildLoader(key, valueSpec());
+    }
+
+    private BeanSpec valueSpec() {
+        List<Type> typeParams = targetSpec.typeParams();
+        E.illegalArgumentIf(typeParams.size() != 2);
+        return BeanSpec.of(typeParams.get(1), targetSpec.injector());
     }
 }

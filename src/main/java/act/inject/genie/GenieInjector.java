@@ -94,6 +94,16 @@ public class GenieInjector extends DependencyInjectorBase<GenieInjector> {
     }
 
     @Override
+    public <T> void registerProvider(Class<? super T> type, Provider<? extends T> provider) {
+        genie().registerProvider(type, provider);
+    }
+
+    @Override
+    public <T> void registerNamedProvider(Class<? super T> type, NamedProvider<? extends T> provider) {
+        genie().registerNamedProvider(type, provider);
+    }
+
+    @Override
     public boolean isProvided(Class<?> type) {
         return !$.isSimpleType(type) && ActProviders.isProvided(type)
                 || type.isAnnotationPresent(Provided.class)
@@ -150,7 +160,7 @@ public class GenieInjector extends DependencyInjectorBase<GenieInjector> {
     }
 
     public boolean subjectToInject(BeanSpec spec) {
-        return genie().subjectToInject(spec);
+        return app().isSingleton(spec.rawType()) || genie().subjectToInject(spec);
     }
 
     private Set<Object> factories() {

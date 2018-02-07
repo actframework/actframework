@@ -239,6 +239,9 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         if (null != controllerClass.getAnnotation(JsonView.class)) {
             forceResponseContentType = H.MediaType.JSON.format();
         }
+        if (null != controllerClass.getAnnotation(CsvView.class)) {
+            forceResponseContentType = H.MediaType.CSV.format();
+        }
         // ResponseContentType takes priority of JsonView
         ResponseContentType contentType = controllerClass.getAnnotation(ResponseContentType.class);
         if (null != contentType) {
@@ -248,6 +251,9 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         // method annotation takes priority of class annotation
         if (null != method.getAnnotation(JsonView.class)) {
             forceResponseContentType = H.MediaType.JSON.format();
+        }
+        if (null != method.getAnnotation(CsvView.class)) {
+            forceResponseContentType = H.MediaType.CSV.format();
         }
         contentType = method.getAnnotation(ResponseContentType.class);
         if (null != contentType) {

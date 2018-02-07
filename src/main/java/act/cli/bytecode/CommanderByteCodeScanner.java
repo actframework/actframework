@@ -33,7 +33,6 @@ import act.util.PropertySpec;
 import org.osgl.$;
 import org.osgl.logging.L;
 import org.osgl.logging.Logger;
-import org.osgl.util.C;
 import org.osgl.util.E;
 import org.osgl.util.S;
 
@@ -308,6 +307,9 @@ public class CommanderByteCodeScanner extends AppByteCodeScannerBase {
                             super.visitEnd();
                         }
                     };
+                } else if ($.eq(AsmTypes.CSV_VIEW_DEPRECATED.asmType(), type)) {
+                    methodInfo.view(CliView.CSV);
+                    return super.visitAnnotation(desc, visible);
                 } else if ($.eq(AsmTypes.CSV_VIEW.asmType(), type)) {
                     methodInfo.view(CliView.CSV);
                     return super.visitAnnotation(desc, visible);

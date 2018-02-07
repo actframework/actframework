@@ -1,6 +1,7 @@
 package testapp.endpoint.binding.pojo;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.osgl.http.H;
@@ -9,6 +10,7 @@ import org.osgl.util.KVStore;
 import testapp.endpoint.EndPointTestContext;
 import testapp.endpoint.binding.ActionParameterBindingTestBase;
 import testapp.model.Contact;
+import testapp.model.Foo;
 
 public class PojoBindingTest extends ActionParameterBindingTestBase {
 
@@ -22,6 +24,23 @@ public class PojoBindingTest extends ActionParameterBindingTestBase {
     public void postFullContactMethodFormData() {
         Contact contact = prepareFullContact();
         // TODO finish form data test
+    }
+
+    @Test
+    public void testMapPojoBinding() throws Exception {
+        url("/pojo/fooMap").get(
+                "fooMap.x.id", "abc",
+                "fooMap.x.bar.id", "xyz",
+                "fooMap.y.id", "a123",
+                "fooMap.y.bar.id", "a000"
+        );
+        String body = resp().body().string();
+        JSONObject json = JSONObject.parseObject(body);
+        Foo x = json.getObject("x", Foo.class);
+        eq("abc", x.getId());
+        eq("xyz", x.getBar().getId());
+        Foo y = json.getObject("y", Foo.class);
+        eq("a000", y.getBar().getId());
     }
 
     @Test

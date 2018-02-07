@@ -21,8 +21,8 @@ package act.inject.param;
  */
 
 import act.app.App;
-import act.inject.HeaderVariable;
 import act.inject.DefaultValue;
+import act.inject.HeaderVariable;
 import org.osgl.$;
 import org.osgl.inject.BeanSpec;
 import org.osgl.inject.util.AnnotationUtil;
@@ -31,7 +31,6 @@ import org.osgl.mvc.annotation.Resolve;
 import org.osgl.util.StringValueResolver;
 
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Type;
 
 /**
  * Responsible for loading param value for {@link act.app.ActionContext}
@@ -45,18 +44,16 @@ class ActionContextParamLoader extends ParamValueLoaderService {
     @Override
     protected ParamValueLoader findContextSpecificLoader(
             String bindName,
-            Class<?> rawType,
-            BeanSpec spec,
-            Type type,
-            Annotation[] annotations
+            BeanSpec spec
     ) {
-        HeaderVariable headerVariable = filter(annotations, HeaderVariable.class);
+        HeaderVariable headerVariable = spec.getAnnotation(HeaderVariable.class);
         if (null != headerVariable) {
             return new HeaderValueLoader(headerVariable.value(), spec);
         }
 
         DefaultValue def = spec.getAnnotation(DefaultValue.class);
 
+        Class<?> rawType = spec.rawType();
         ParamValueLoader loader = binder(spec, bindName);
         if (null == loader) {
             Resolve resolve = spec.getAnnotation(Resolve.class);
@@ -103,7 +100,7 @@ class ActionContextParamLoader extends ParamValueLoaderService {
                 resolver = resolverManager.resolver(rawType, spec);
             }
 
-            loader = (null != resolver) ? new StringValueResolverValueLoader(ParamKey.of(bindName), resolver, param, def, rawType) : buildLoader(ParamKey.of(bindName), type, spec);
+            loader = (null != resolver) ? new StringValueResolverValueLoader(ParamKey.of(bindName), resolver, param, def, rawType) : buildLoader(ParamKey.of(bindName), spec);
         }
 
         return loader;

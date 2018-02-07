@@ -20,11 +20,14 @@ package act.view;
  * #L%
  */
 
+import act.app.ActionContext;
 import act.cli.view.CliView;
+import act.route.UrlPath;
 import act.util.ActContext;
 import act.util.PropertySpec;
 import org.osgl.http.H;
 import org.osgl.mvc.result.RenderContent;
+import org.osgl.util.S;
 
 /**
  * Render object as CSV
@@ -70,6 +73,16 @@ public class RenderCSV extends RenderContent {
     }
 
     private static String render(Object v, PropertySpec.MetaInfo spec, ActContext context) {
+        setDownloadHeader(context);
         return CliView.CSV.render(v, spec, context);
+    }
+
+    private static void setDownloadHeader(ActContext context) {
+        if (context instanceof ActionContext) {
+            ActionContext ctx = (ActionContext) context;
+            UrlPath path = ctx.urlPath();
+            String fileName = S.concat(S.underscore(path.lastPart()), ".csv");
+            ctx.resp().contentDisposition(fileName, false);
+        }
     }
 }

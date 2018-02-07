@@ -719,8 +719,8 @@ public class App extends DestroyableBase {
     private void registerMetricProvider() {
         GenieInjector gi = this.injector();
         MetricProvider mp = new MetricProvider();
-        gi.genie().registerNamedProvider(Metric.class, mp);
-        gi.genie().registerProvider(Metric.class, mp);
+        gi.registerNamedProvider(Metric.class, mp);
+        gi.registerProvider(Metric.class, mp);
     }
 
     private boolean hasSingletonAnnotation(Class<?> cls) {

@@ -29,6 +29,7 @@ import act.cli.util.CliCursor;
 import act.cli.util.MappedFastJsonNameFilter;
 import act.cli.util.TableCursor;
 import act.data.DataPropertyRepository;
+import act.db.AdaptiveRecord;
 import act.util.ActContext;
 import act.util.DisableFastJsonCircularReferenceDetect;
 import act.util.FastJsonPropertyPreFilter;
@@ -319,6 +320,9 @@ public enum CliView {
             if ("this".equals(prop)) {
                 return (escape(data));
             } else {
+                if (data instanceof AdaptiveRecord) {
+                    return S.string(((AdaptiveRecord) data).getValue(prop));
+                }
                 return escape($.getProperty(data, prop));
             }
         }

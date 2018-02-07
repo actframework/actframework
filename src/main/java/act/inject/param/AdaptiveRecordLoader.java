@@ -22,13 +22,14 @@ package act.inject.param;
 
 import act.db.AdaptiveRecord;
 import act.util.ActContext;
+import org.osgl.inject.BeanSpec;
 import org.osgl.util.S;
 
 import java.util.Set;
 
 class AdaptiveRecordLoader extends PojoLoader {
-    public AdaptiveRecordLoader(ParamKey key, Class type, ParamValueLoaderService service) {
-        super(key, type, service);
+    public AdaptiveRecordLoader(ParamKey key, BeanSpec spec, ParamValueLoaderService service) {
+        super(key, spec, service);
     }
 
     @Override

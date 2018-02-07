@@ -195,7 +195,7 @@ public class ReflectedCommandExecutor extends CommandExecutor {
     }
 
     private void buildParsingContext() {
-        CliContextParamLoader loader = (CliContextParamLoader) app.service(ParamValueLoaderManager.class).get(CliContext.class);
+        CliContextParamLoader loader = app.service(ParamValueLoaderManager.class).get(CliContext.class);
         this.parsingContext = loader.buildParsingContext(commanderClass, method, methodMetaInfo);
     }
 

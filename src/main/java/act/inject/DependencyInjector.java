@@ -23,6 +23,9 @@ package act.inject;
 import act.app.AppService;
 import org.osgl.inject.BeanSpec;
 import org.osgl.inject.Injector;
+import org.osgl.inject.NamedProvider;
+
+import javax.inject.Provider;
 
 public interface DependencyInjector<DI extends DependencyInjector<DI>> extends AppService<DI>, Injector {
 
@@ -37,6 +40,22 @@ public interface DependencyInjector<DI extends DependencyInjector<DI>> extends A
      * @param listener the dependency injection event listener
      */
     void registerDiListener(DependencyInjectionListener listener);
+
+    /**
+     * Register a {@link Provider} to the injector
+     * @param type the target type
+     * @param provider the provider
+     * @param <T> the type parameter of the target
+     */
+    <T> void registerProvider(Class<? super T> type, Provider<? extends T> provider);
+
+    /**
+     * Register a {@link NamedProvider} to the injector
+     * @param type the target object type
+     * @param provider the provider
+     * @param <T> the generic type of the target object
+     */
+    <T> void registerNamedProvider(Class<? super T> type, NamedProvider<? extends T> provider);
 
     /**
      * Report if a given type is a provided type (e.g. ActContext, All application services etc, DAO)

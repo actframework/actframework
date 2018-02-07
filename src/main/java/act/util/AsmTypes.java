@@ -68,6 +68,7 @@ public enum AsmTypes implements Opcodes {
     public static AsmType<act.cli.JsonView> JSON_VIEW_DEPRECATED = new AsmType<act.cli.JsonView>(act.cli.JsonView.class);
     public static AsmType<JsonView> JSON_VIEW = new AsmType<>(JsonView.class);
     public static AsmType<TreeView> TREE_VIEW = new AsmType<>(TreeView.class);
+    public static AsmType<act.cli.CsvView> CSV_VIEW_DEPRECATED = new AsmType<>(act.cli.CsvView.class);
     public static AsmType<CsvView> CSV_VIEW = new AsmType<>(CsvView.class);
 
     public static AsmType<SubClassFinder> SUB_CLASS_FINDER = new AsmType<SubClassFinder>(SubClassFinder.class);

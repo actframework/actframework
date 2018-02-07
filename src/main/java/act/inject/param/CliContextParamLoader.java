@@ -143,36 +143,34 @@ public class CliContextParamLoader extends ParamValueLoaderService {
     @Override
     protected ParamValueLoader findContextSpecificLoader(
             String bindName,
-            Class<?> rawType,
-            BeanSpec spec,
-            Type type,
-            Annotation[] annotations
+            BeanSpec spec
     ) {
-        boolean isArray = rawType.isArray();
-        StringValueResolver resolver = findResolver(spec, rawType, isArray); //= isArray ? resolverManager.resolver(rawType.getComponentType(), spec) : resolverManager.resolver(rawType, spec);
+        boolean isArray = spec.isArray();
+        StringValueResolver resolver = findResolver(spec, isArray); //= isArray ? resolverManager.resolver(rawType.getComponentType(), spec) : resolverManager.resolver(rawType, spec);
 
-        Required required = filter(annotations, Required.class);
-        Optional optional = null == required ? filter(annotations, Optional.class) : null;
+        Required required = spec.getAnnotation(Required.class);
+        Optional optional = null == required ? spec.getAnnotation(Optional.class) : null;
         if (null != required) {
             return new OptionLoader(bindName, required, resolver, spec);
         } else if (null != optional) {
             return new OptionLoader(bindName, optional, resolver, spec);
         }
-        return isArray ? new CliVarArgumentLoader(rawType.getComponentType(), resolver) : new CliArgumentLoader(resolver);
+        return isArray ? new CliVarArgumentLoader(spec.rawType().getComponentType(), resolver) : new CliArgumentLoader(resolver);
     }
 
-    private StringValueResolver findResolver(BeanSpec spec, Class rawType, boolean isArray) {
-        StringValueResolver resolver = findAnnotatedResolver(spec, rawType);
-        return null == resolver ? findImplictResolver(spec, rawType, isArray) : resolver;
+    private StringValueResolver findResolver(BeanSpec spec, boolean isArray) {
+        StringValueResolver resolver = findAnnotatedResolver(spec);
+        return null == resolver ? findImplictResolver(spec, isArray) : resolver;
     }
 
-    private StringValueResolver findAnnotatedResolver(BeanSpec spec, Class rawType) {
-        StringValueResolver resolver = findDirectAnnotatedResolver(spec, rawType);
-        return null == resolver ? findIndirectAnnotatedResolver(spec, rawType) : resolver;
+    private StringValueResolver findAnnotatedResolver(BeanSpec spec) {
+        StringValueResolver resolver = findDirectAnnotatedResolver(spec);
+        return null == resolver ? findIndirectAnnotatedResolver(spec) : resolver;
     }
 
-    private StringValueResolver findDirectAnnotatedResolver(BeanSpec spec, Class rawType) {
+    private StringValueResolver findDirectAnnotatedResolver(BeanSpec spec) {
         Resolve resolve = spec.getAnnotation(Resolve.class);
+        Class<?> rawType = spec.rawType();
         if (null != resolve) {
             Class<? extends StringValueResolver>[] resolvers = resolve.value();
             for (Class<? extends StringValueResolver> resolverClass : resolvers) {
@@ -185,8 +183,9 @@ public class CliContextParamLoader extends ParamValueLoaderService {
         return null;
     }
 
-    private StringValueResolver findIndirectAnnotatedResolver(BeanSpec spec, Class rawType) {
+    private StringValueResolver findIndirectAnnotatedResolver(BeanSpec spec) {
         Annotation[] aa = spec.allAnnotations();
+        Class<?> rawType = spec.rawType();
         for (Annotation a : aa) {
             Resolve resolve = AnnotationUtil.tagAnnotation(a, Resolve.class);
             if (null != resolve) {
@@ -203,8 +202,8 @@ public class CliContextParamLoader extends ParamValueLoaderService {
         return null;
     }
 
-    private StringValueResolver findImplictResolver(BeanSpec spec, Class rawType, boolean isArray) {
-        return isArray ? resolverManager.resolver(rawType.getComponentType(), spec) : resolverManager.resolver(rawType, spec);
+    private StringValueResolver findImplictResolver(BeanSpec spec, boolean isArray) {
+        return isArray ? resolverManager.resolver(spec.rawType().getComponentType(), spec) : resolverManager.resolver(spec.rawType(), spec);
     }
 
     @Override
@@ -241,7 +240,7 @@ public class CliContextParamLoader extends ParamValueLoaderService {
             String bindName = bindName(annotations, field.getName());
             BeanSpec spec = BeanSpec.of(type, annotations, bindName, injector);
             boolean provided = injector.isProvided(spec);
-            ParamValueLoader loader = provided ? ProvidedValueLoader.get(spec, injector) : findContextSpecificLoader(bindName, field.getDeclaringClass(), spec, type, annotations);
+            ParamValueLoader loader = provided ? ProvidedValueLoader.get(spec, injector) : findContextSpecificLoader(bindName, spec);
             if (loader instanceof OptionLoader) {
                 optionLoaders.add((OptionLoader) loader);
             }
@@ -263,7 +262,7 @@ public class CliContextParamLoader extends ParamValueLoaderService {
             if (null == bindName) {
                 bindName = methodMetaInfo.param(i).name();
             }
-            ParamValueLoader loader = findContextSpecificLoader(bindName, spec.rawType(), spec, type, annotations);
+            ParamValueLoader loader = findContextSpecificLoader(bindName, spec);
             if (loader instanceof OptionLoader) {
                 optionLoaders.add((OptionLoader) loader);
             } else if (!$.isSimpleType(spec.rawType())) {

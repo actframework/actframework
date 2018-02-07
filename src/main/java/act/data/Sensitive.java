@@ -1,4 +1,4 @@
-package act.cli;
+package act.data;
 
 /*-
  * #%L
@@ -20,7 +20,9 @@ package act.cli;
  * #L%
  */
 
-import act.util.PropertySpec;
+import act.asm.ClassVisitor;
+import act.util.AppByteCodeEnhancer;
+import org.osgl.util.S;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -28,31 +30,28 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * **Note** this is deprecated, please use `act.util.CsvView` instead
- *
- * Mark a command method return value shall be displayed using a csv file format. e.g
- *
- * ```
- * id,onetime,trigger
- * __act_app_stop,true,null
- * __act_app_app_act_plugin_loaded,true,null
- * ```
- *
- *
- * {@code CsvView} can be used in conjunction with {@link PropertySpec}
- * to export only specified fields
- *
- *
- * Note if a method is marked with neither {@link CsvView} nor
- * {@link JsonView} then the console will simply use
- * {@link Object#toString()} to present the data.
- *
- * @see JsonView
- * @see TableView
- * @see PropertySpec
+ * Mark a **String** typed field is sensitive.
+ * DB plugin should sense any field with this annotation so that
+ * sensitive data be encrypted when stored into database and
+ * decrypted after retrieving from database
  */
-@Retention(RetentionPolicy.CLASS)
+@Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
-@Deprecated
-public @interface CsvView {
+public @interface Sensitive {
+
+    class Enhancer extends AppByteCodeEnhancer<Enhancer> {
+        public Enhancer() {
+            super(S.F.startsWith("act.").negate());
+        }
+
+        public Enhancer(ClassVisitor cv) {
+            super(S.F.startsWith("act.").negate(), cv);
+        }
+
+        @Override
+        protected Class<Enhancer> subClass() {
+            return Enhancer.class;
+        }
+
+    }
 }

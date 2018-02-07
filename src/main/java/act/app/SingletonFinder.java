@@ -32,6 +32,7 @@ import org.osgl.util.E;
 
 import javax.inject.Singleton;
 import java.lang.annotation.Annotation;
+import java.lang.reflect.Modifier;
 
 /**
  * Find all classes annotated with {@link javax.inject.Singleton}
@@ -54,10 +55,12 @@ public class SingletonFinder {
         registerSingleton(cls);
     }
 
-    @AnnotatedClassFinder(value = InheritedStateless.class, callOn = SysEventId.PRE_START)
+    @AnnotatedClassFinder(value = InheritedStateless.class, callOn = SysEventId.PRE_START, noAbstract = false)
     public static void foundInheritedStateless(Class<?> cls) {
         final App app = App.instance();
-        app.registerSingletonClass(cls);
+        if (!Modifier.isAbstract(cls.getModifiers())) {
+            app.registerSingletonClass(cls);
+        }
         ClassInfoRepository repo = app.classLoader().classInfoRepository();
         ClassNode node = repo.node(cls.getName());
         node.visitPublicNotAbstractSubTreeNodes(new Osgl.Visitor<ClassNode>() {

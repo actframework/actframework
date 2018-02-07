@@ -250,7 +250,7 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
                 return null;
             }
         };
-        return decorate(loader, BeanSpec.of(beanClass, injector), beanClass.getDeclaredAnnotations(), false, true);
+        return decorate(loader, BeanSpec.of(beanClass, injector), false, true);
     }
 
     public static boolean shouldWaive(Field field) {
@@ -358,7 +358,7 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
         $.T2<Type, Annotation[]> key = $.T2(type, annotations);
         ParamValueLoader loader = paramRegistry.get(key);
         if (null == loader) {
-            ParamValueLoader newLoader = findLoader(spec, type, annotations, bindName);
+            ParamValueLoader newLoader = findLoader(bindName, spec);
             if (null != newLoader) {
                 // Cannot use spec as the key here because
                 // spec does not compare Scoped annotation
@@ -408,10 +408,7 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
 
     protected abstract ParamValueLoader findContextSpecificLoader(
             String bindName,
-            Class<?> rawType,
-            BeanSpec spec,
-            Type type,
-            Annotation[] annotations
+            BeanSpec spec
     );
 
     protected final ParamValueLoader binder(BeanSpec spec, String bindName) {
@@ -463,39 +460,37 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
     }
 
     private ParamValueLoader findLoader(
-            BeanSpec spec,
-            Type type,
-            Annotation[] annotations,
-            String bindName
+            String bindName,
+            BeanSpec spec
     ) {
         if (provided(spec, injector)) {
             return ProvidedValueLoader.get(spec, injector);
         }
-        if (null != filter(annotations, NoBind.class)) {
+        if (spec.hasAnnotation(NoBind.class)) {
             return null;
         }
         if (null == bindName) {
-            bindName = bindName(annotations, spec.name());
+            bindName = bindName(spec.allAnnotations(), spec.name());
         }
-        Class rawType = spec.rawType();
-        ParamValueLoader loader = findContextSpecificLoader(bindName, rawType, spec, type, annotations);
+        ParamValueLoader loader = findContextSpecificLoader(bindName, spec);
         if (null == loader) {
             return null;
         }
-        return decorate(loader, spec, annotations, supportJsonDecorator(), false);
+        return decorate(loader, spec, supportJsonDecorator(), false);
     }
 
-    ParamValueLoader buildLoader(final ParamKey key, final Type type, BeanSpec targetSpec) {
-        Class rawType = BeanSpec.rawTypeOf(type);
+    ParamValueLoader buildLoader(final ParamKey key, BeanSpec spec) {
+        Type type = spec.type();
+        Class rawType = spec.rawType();
         if (rawType.isArray()) {
-            return buildArrayLoader(key, rawType.getComponentType(), targetSpec);
+            return buildArrayLoader(key, rawType.getComponentType(), spec);
         }
         if (Collection.class.isAssignableFrom(rawType)) {
             Type elementType = Object.class;
             if (type instanceof ParameterizedType) {
                 elementType = ((ParameterizedType) type).getActualTypeArguments()[0];
             }
-            return buildCollectionLoader(key, rawType, elementType, targetSpec);
+            return buildCollectionLoader(key, rawType, elementType, spec);
         }
         if (Map.class.isAssignableFrom(rawType)) {
             Class<?> mapClass = rawType;
@@ -537,12 +532,12 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
 
             Type keyType = typeParams[0];
             Type valType = typeParams[1];
-            return buildMapLoader(key, rawType, keyType, valType, targetSpec);
+            return buildMapLoader(key, rawType, keyType, valType, spec);
         }
         if (AdaptiveRecord.class.isAssignableFrom(rawType)) {
-            return buildAdaptiveRecordLoader(key, rawType);
+            return buildAdaptiveRecordLoader(key, spec);
         }
-        return buildPojoLoader(key, rawType);
+        return buildPojoLoader(key, spec);
     }
 
     private ParamValueLoader buildArrayLoader(
@@ -592,8 +587,8 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
     }
 
     private ParamValueLoader buildAdaptiveRecordLoader(
-            final ParamKey key, final Class type) {
-        return new AdaptiveRecordLoader(key, type, this);
+            final ParamKey key, final BeanSpec spec) {
+        return new AdaptiveRecordLoader(key, spec, this);
     }
 
     static ParamTree paramTree() {
@@ -610,24 +605,15 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
         return tree;
     }
 
-    private ParamValueLoader buildPojoLoader(final ParamKey key, final Class type) {
-        return new PojoLoader(key, type, this);
+    private ParamValueLoader buildPojoLoader(final ParamKey key, final BeanSpec spec) {
+        return new PojoLoader(key, spec, this);
     }
 
-    private ParamValueLoader findLoader(ParamKey paramKey, Field field) {
-        BeanSpec spec = BeanSpec.of(field.getGenericType(), field.getDeclaredAnnotations(), injector);
-        Annotation[] annotations = field.getDeclaredAnnotations();
+    private ParamValueLoader findLoader(ParamKey paramKey, BeanSpec spec) {
         if (provided(spec, injector)) {
             return ProvidedValueLoader.get(spec, injector);
         }
-        String name = null;
-        Named named = filter(annotations, Named.class);
-        if (null != named) {
-            name = named.value();
-        }
-        if (S.blank(name)) {
-            name = field.getName();
-        }
+        String name = spec.name();
         ParamKey key = paramKey.child(name);
 
         ParamValueLoader loader = binder(spec, key.toString());
@@ -635,18 +621,18 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
             return loader;
         }
 
-        Class fieldType = field.getType();
+        Class fieldType = spec.rawType();
         StringValueResolver resolver = resolverManager.resolver(fieldType, spec);
         if (null != resolver) {
-            DefaultValue def = field.getAnnotation(DefaultValue.class);
+            DefaultValue def = spec.getAnnotation(DefaultValue.class);
             return new StringValueResolverValueLoader(key, resolver, null, def, fieldType);
         }
 
-        return buildLoader(key, field.getGenericType(), spec);
+        return buildLoader(key, spec);
     }
 
-    FieldLoader fieldLoader(ParamKey key, Field field) {
-        return new FieldLoader(field, findLoader(key, field));
+    FieldLoader fieldLoader(ParamKey key, Field field, BeanSpec fieldSpec) {
+        return new FieldLoader(field, findLoader(key, fieldSpec));
     }
 
     static <T extends Annotation> T filter(Annotation[] annotations, Class<T> annoType) {
@@ -661,7 +647,6 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
     private ParamValueLoader decorate(
             final ParamValueLoader loader,
             final BeanSpec spec,
-            final Annotation[] annotations,
             boolean useJsonDecorator,
             boolean useValidationDecorator
     ) {
@@ -693,7 +678,7 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
 
         }
 
-        return new ScopedParamValueLoader(validationDecorated, spec, scopeCacheSupport(annotations));
+        return new ScopedParamValueLoader(validationDecorated, spec, scopeCacheSupport(spec));
     }
 
     private boolean hasValidationConstraint(BeanSpec spec) {
@@ -738,24 +723,22 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
         return executableValidator;
     }
 
-    private static ScopeCacheSupport scopeCacheSupport(Annotation[] annotations) {
-        if (null != filter(annotations, RequestScoped.class) ||
-                null != filter(annotations, org.osgl.inject.annotation.RequestScoped.class)) {
+    private static ScopeCacheSupport scopeCacheSupport(BeanSpec spec) {
+        if (spec.hasAnnotation(RequestScoped.class) || spec.hasAnnotation(org.osgl.inject.annotation.RequestScoped.class)) {
             return RequestScope.INSTANCE;
-        } else if (sessionScoped(annotations)) {
+        } else if (sessionScoped(spec)) {
             return SessionScope.INSTANCE;
-        } else if (null != filter(annotations, Dependent.class) ||
-                null != filter(annotations, New.class)) {
+        } else if (spec.hasAnnotation(Dependent.class) || spec.hasAnnotation(New.class)) {
             return DependentScope.INSTANCE;
         }
         // Default to Request Scope
         return RequestScope.INSTANCE;
     }
 
-    static boolean sessionScoped(Annotation[] annotations) {
-        return null != filter(annotations, SessionScoped.class)
-                || null != filter(annotations, org.osgl.inject.annotation.SessionScoped.class)
-                || null != filter(annotations, SessionVariable.class);
+    static boolean sessionScoped(BeanSpec spec) {
+        return spec.hasAnnotation(SessionScoped.class)
+                || spec.hasAnnotation(org.osgl.inject.annotation.SessionScoped.class)
+                || spec.hasAnnotation(SessionVariable.class);
     }
 
     public static void waiveFields(String... fieldNames) {

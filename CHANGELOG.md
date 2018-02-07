@@ -4,7 +4,10 @@
 * Update JPA api to 2.2
 * EntityMetaInfo and scanner - support JPA plugin
 * Improve built-in service performance by make them as nonblock when possible
+* Create `act.util.CsvView` as an alias of `ResponseContentType(H.MediaType.CSV)` #503
+* Add suffix to download file for csv typed response #502
 * ResourceLoader - support any object type #497
+* Further simplify password field processing #491
 * Do not `Set-Cookie` for session and flash if there is no state #484
 * Make `act.metric.Timer` be a `Closable` #483
 * Simplify measuring of method execution #482

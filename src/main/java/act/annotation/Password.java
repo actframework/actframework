@@ -1,4 +1,4 @@
-package act.inject.param;
+package act.annotation;
 
 /*-
  * #%L
@@ -20,17 +20,20 @@ package act.inject.param;
  * #L%
  */
 
-import act.app.App;
-import org.osgl.inject.BeanSpec;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-public class JobContextParamLoader extends ParamValueLoaderService {
+/**
+ * Mark a field that stores password.
+ *
+ * ActFramework will generate setter for the password field so that
+ * it
+ */
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.FIELD)
+public @interface Password {
 
-    public JobContextParamLoader(App app) {
-        super(app);
-    }
 
-    @Override
-    protected ParamValueLoader findContextSpecificLoader(String bindName, BeanSpec spec) {
-        return null;
-    }
 }

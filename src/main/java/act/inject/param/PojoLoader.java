@@ -24,6 +24,7 @@ import act.inject.genie.GenieInjector;
 import act.util.ActContext;
 import act.util.LogSupport;
 import org.osgl.$;
+import org.osgl.inject.BeanSpec;
 import org.osgl.inject.InjectException;
 
 import java.lang.reflect.Field;
@@ -35,17 +36,19 @@ import static act.inject.param.ParamValueLoaderService.shouldWaive;
 class PojoLoader extends LogSupport implements ParamValueLoader {
 
     final ParamKey key;
-    final Class type;
+    final BeanSpec spec;
     final GenieInjector injector;
     final ParamValueLoaderService service;
+    final boolean provided;
     protected Map<String, FieldLoader> fieldLoaders;
 
-    public PojoLoader(ParamKey key, Class type, ParamValueLoaderService service) {
+    public PojoLoader(ParamKey key, BeanSpec spec, ParamValueLoaderService service) {
         this.key = $.notNull(key);
-        this.type = $.notNull(type);
+        this.spec = spec;
         this.injector = service.injector;
         this.service = service;
-        this.fieldLoaders = fieldLoaders(key, type);
+        this.provided = service.provided(spec, injector);
+        this.fieldLoaders = fieldLoaders(key, spec);
     }
 
     @Override
@@ -57,11 +60,11 @@ class PojoLoader extends LogSupport implements ParamValueLoader {
                 Object bean = beanBag.get();
                 if (null == bean) {
                     try {
-                        bean = injector.get(type);
+                        bean = provided ? injector.get(spec) : $.newInstance(spec.rawType());
                     } catch (RuntimeException e) {
                         throw e;
                     } catch (Exception e) {
-                        throw new InjectException(e, "cannot instantiate %s", type);
+                        throw new InjectException(e, "cannot instantiate %s", spec);
                     }
                 }
                 beanBag.set(bean);
@@ -79,8 +82,8 @@ class PojoLoader extends LogSupport implements ParamValueLoader {
         return key.toString();
     }
 
-    private Map<String, FieldLoader> fieldLoaders(ParamKey key, Class type) {
-        Class<?> current = type;
+    private Map<String, FieldLoader> fieldLoaders(ParamKey key, BeanSpec spec) {
+        Class<?> current = spec.rawType();
         Map<String, FieldLoader> fieldLoaders = new HashMap<>();
         while (null != current && !current.equals(Object.class)) {
             for (Field field : current.getDeclaredFields()) {
@@ -88,7 +91,8 @@ class PojoLoader extends LogSupport implements ParamValueLoader {
                     continue;
                 }
                 field.setAccessible(true);
-                fieldLoaders.put(field.getName(), service.fieldLoader(key, field));
+                String fieldName = field.getName();
+                fieldLoaders.put(fieldName, service.fieldLoader(key, field, spec.field(fieldName)));
             }
             current = current.getSuperclass();
         }

@@ -60,7 +60,7 @@ import java.util.regex.Pattern;
  * <p>
  *     When the result is to be presented on a {@link CliSession} and
  *     {@code PropertySpec} annotation is presented, either {@link act.cli.TableView}
- *     or {@link act.cli.JsonView} can be used to define the presenting style.
+ *     or {@link act.util.JsonView} can be used to define the presenting style.
  *     If both {@code TableView} and {@code JsonView} are found on the method
  *     then {@code JsonView} is the winner. If non of them is presented then
  *     {@code JsonView} will be used by default
@@ -73,7 +73,7 @@ import java.util.regex.Pattern;
  *     JSON string
  * </p>
  * @see act.cli.TableView
- * @see act.cli.JsonView
+ * @see act.util.JsonView
  * @see FastJsonPropertyPreFilter
  */
 @Retention(RetentionPolicy.CLASS)
