@@ -299,6 +299,7 @@ public final class Act {
         initViewManager();
         initAppCodeScannerPluginManager();
         loadPlugins();
+        enhancerManager().registered(); // so it can order the enhancers
         initNetworkLayer();
         initApplicationManager();
         LOGGER.info("loading application(s) ...");

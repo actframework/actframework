@@ -196,6 +196,8 @@ public interface SimpleBean {
 
     class ByteCodeEnhancer extends AppByteCodeEnhancer<ByteCodeEnhancer> {
 
+        public static final int PRIORITY = 9;
+
         private MetaInfoManager metaInfoManager;
         private ClassInfoRepository classInfoRepository;
         private boolean isSimpleBean = false;
@@ -218,6 +220,11 @@ public interface SimpleBean {
         @Override
         protected Class<ByteCodeEnhancer> subClass() {
             return ByteCodeEnhancer.class;
+        }
+
+        @Override
+        public int priority() {
+            return PRIORITY;
         }
 
         @Override

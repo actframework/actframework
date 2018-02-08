@@ -27,7 +27,7 @@ import org.osgl.logging.LogManager;
 import org.osgl.logging.Logger;
 import org.osgl.util.E;
 
-public abstract class AppByteCodeEnhancer<T extends AppByteCodeEnhancer> extends AsmByteCodeEnhancer<T> {
+public abstract class AppByteCodeEnhancer<T extends AppByteCodeEnhancer> extends AsmByteCodeEnhancer<T> implements Comparable<AppByteCodeEnhancer> {
     protected static Logger logger = LogManager.get(App.class);
     protected App app;
 
@@ -43,6 +43,23 @@ public abstract class AppByteCodeEnhancer<T extends AppByteCodeEnhancer> extends
         E.NPE(app);
         this.app = app;
         return this;
+    }
+
+    @Override
+    public int compareTo(AppByteCodeEnhancer o) {
+        int po = o.priority();
+        int p = priority();
+        if (po < p) {
+            return 1;
+        }
+        if (po > p) {
+            return -1;
+        }
+        return o.getClass().getName().compareTo(getClass().getName());
+    }
+
+    public int priority() {
+        return 0;
     }
 
 }

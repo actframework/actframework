@@ -30,6 +30,7 @@ import org.osgl.$;
 
 import javax.enterprise.context.ApplicationScoped;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import static act.Destroyable.Util.tryDestroyAll;
@@ -51,6 +52,10 @@ public class BytecodeEnhancerManager extends DestroyableBase {
 
     public void register(AppByteCodeEnhancer enhancer) {
         appEnhancers.add(enhancer);
+    }
+
+    public void registered() {
+        Collections.sort(appEnhancers);
     }
 
     public ByteCodeVisitor appEnhancer(App app, String className, $.Var<ClassWriter> cw) {
