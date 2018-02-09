@@ -909,7 +909,7 @@ public class EventBus extends AppServiceBase<EventBus> {
      * @see #emit(Enum, Object...)
      */
     public EventBus emitSync(Enum<?> event, Object... args) {
-        return _emitWithOnceBus(eventContextAsync(event, args));
+        return _emitWithOnceBus(eventContextSync(event, args));
     }
 
     /**
@@ -922,7 +922,7 @@ public class EventBus extends AppServiceBase<EventBus> {
      * @see #emit(String, Object...)
      */
     public EventBus emitSync(String event, Object... args) {
-        return _emitWithOnceBus(eventContextAsync(event, args));
+        return _emitWithOnceBus(eventContextSync(event, args));
     }
 
     /**
@@ -935,7 +935,7 @@ public class EventBus extends AppServiceBase<EventBus> {
      * @see #emit(EventObject, Object...)
      */
     public EventBus emitSync(EventObject event, Object... args) {
-        return _emitWithOnceBus(eventContextAsync(event, args));
+        return _emitWithOnceBus(eventContextSync(event, args));
     }
 
     /**
@@ -943,7 +943,7 @@ public class EventBus extends AppServiceBase<EventBus> {
      * @see #emitSync(EventObject, Object...)
      */
     public EventBus emitSync(ActEvent event, Object... args) {
-        return _emitWithOnceBus(eventContextAsync(event, args));
+        return _emitWithOnceBus(eventContextSync(event, args));
     }
 
     /**
