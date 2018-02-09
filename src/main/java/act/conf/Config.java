@@ -79,6 +79,7 @@ public abstract class Config<E extends ConfigKey> extends DestroyableBase {
             }
             data.put(key, o);
         }
+        debug("config[%s] loaded: ", key, o);
         if (o == NULL) {
             return null;
         } else {
@@ -231,5 +232,10 @@ public abstract class Config<E extends ConfigKey> extends DestroyableBase {
 
     protected abstract ConfigKey keyOf(String s);
 
-    private static final Object NULL = new Object();
+    private static final Object NULL = new Object() {
+        @Override
+        public String toString() {
+            return "null";
+        }
+    };
 }
