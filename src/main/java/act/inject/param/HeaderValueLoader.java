@@ -22,6 +22,7 @@ package act.inject.param;
 
 import act.app.ActionContext;
 import act.app.App;
+import act.inject.DefaultValue;
 import act.util.ActContext;
 import org.osgl.inject.BeanSpec;
 import org.osgl.inject.util.ArrayLoader;
@@ -59,7 +60,12 @@ class HeaderValueLoader implements ParamValueLoader {
         Class effectiveType = null != elementType ? elementType : targetType;
         this.stringValueResolver = App.instance().resolverManager().resolver(effectiveType, beanSpec);
         E.illegalArgumentIf(null == this.stringValueResolver, "Cannot find out StringValueResolver for %s", beanSpec);
-        this.defVal = StringValueResolverValueLoaderBase.defVal(null, effectiveType);
+        DefaultValue defValAnno = beanSpec.getAnnotation(DefaultValue.class);
+        if (null != defValAnno) {
+            this.defVal = stringValueResolver.resolve(defValAnno.value());
+        } else {
+            this.defVal = StringValueResolverValueLoaderBase.defVal(null, effectiveType);
+        }
     }
 
     @Override

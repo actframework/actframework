@@ -42,39 +42,39 @@ import java.util.Set;
 
 public enum AsmTypes implements Opcodes {
     ;
-    public static AsmType<Void> VOID = new AsmType<Void>(Void.class);
-    public static AsmType<Object> OBJECT = new AsmType<Object>(Object.class);
-    public static AsmType<String> STRING = new AsmType<String>(String.class);
-    public static AsmType<ActContext> ACT_CONTEXT = new AsmType<ActContext>(ActContext.class);
-    public static AsmType<ActionContext> ACTION_CONTEXT = new AsmType<ActionContext>(ActionContext.class);
-    public static AsmType<MailerContext> MAILER_CONTEXT = new AsmType<MailerContext>(MailerContext.class);
-    public static AsmType<App> APP = new AsmType<App>(App.class);
+    public static AsmType<Void> VOID = new AsmType<>(Void.class);
+    public static AsmType<Object> OBJECT = new AsmType<>(Object.class);
+    public static AsmType<String> STRING = new AsmType<>(String.class);
+    public static AsmType<ActContext> ACT_CONTEXT = new AsmType<>(ActContext.class);
+    public static AsmType<ActionContext> ACTION_CONTEXT = new AsmType<>(ActionContext.class);
+    public static AsmType<MailerContext> MAILER_CONTEXT = new AsmType<>(MailerContext.class);
+    public static AsmType<App> APP = new AsmType<>(App.class);
 
-    public static AsmType<AppConfig> APP_CONFIG = new AsmType<AppConfig>(AppConfig.class);
-    public static AsmType<Param> PARAM = new AsmType<Param>(Param.class);
-    public static AsmType<SessionVariable> CLI_SESSION_ATTRIBUTE = new AsmType<SessionVariable>(SessionVariable.class);
-    public static AsmType<Bind> BIND = new AsmType<Bind>(Bind.class);
-    public static AsmType<Context> CONTEXT = new AsmType<Context>(Context.class);
-    public static AsmType<Result> RESULT = new AsmType<Result>(Result.class);
+    public static AsmType<AppConfig> APP_CONFIG = new AsmType<>(AppConfig.class);
+    public static AsmType<Param> PARAM = new AsmType<>(Param.class);
+    public static AsmType<SessionVariable> CLI_SESSION_ATTRIBUTE = new AsmType<>(SessionVariable.class);
+    public static AsmType<Bind> BIND = new AsmType<>(Bind.class);
+    public static AsmType<Context> CONTEXT = new AsmType<>(Context.class);
+    public static AsmType<Result> RESULT = new AsmType<>(Result.class);
 
-    public static AsmType<PropertySpec> PROPERTY_SPEC = new AsmType<PropertySpec>(PropertySpec.class);
-    public static AsmType<DisableFastJsonCircularReferenceDetect> DISABLE_JSON_CIRCULAR_REF_DETECT = new AsmType<DisableFastJsonCircularReferenceDetect>(DisableFastJsonCircularReferenceDetect.class);
+    public static AsmType<PropertySpec> PROPERTY_SPEC = new AsmType<>(PropertySpec.class);
+    public static AsmType<DisableFastJsonCircularReferenceDetect> DISABLE_JSON_CIRCULAR_REF_DETECT = new AsmType<>(DisableFastJsonCircularReferenceDetect.class);
 
     public static AsmType<Command> COMMAND = new AsmType<>(Command.class);
-    public static AsmType<Optional> OPTIONAL = new AsmType<Optional>(Optional.class);
-    public static AsmType<ReadContent> READ_FILE_CONTENT = new AsmType<ReadContent>(ReadContent.class);
+    public static AsmType<Optional> OPTIONAL = new AsmType<>(Optional.class);
+    public static AsmType<ReadContent> READ_FILE_CONTENT = new AsmType<>(ReadContent.class);
     public static AsmType<Required> REQUIRED = new AsmType<>(Required.class);
     public static AsmType<TableView> TABLE_VIEW = new AsmType<>(TableView.class);
-    public static AsmType<act.cli.JsonView> JSON_VIEW_DEPRECATED = new AsmType<act.cli.JsonView>(act.cli.JsonView.class);
+    public static AsmType<act.cli.JsonView> JSON_VIEW_DEPRECATED = new AsmType<>(act.cli.JsonView.class);
     public static AsmType<JsonView> JSON_VIEW = new AsmType<>(JsonView.class);
     public static AsmType<TreeView> TREE_VIEW = new AsmType<>(TreeView.class);
     public static AsmType<act.cli.CsvView> CSV_VIEW_DEPRECATED = new AsmType<>(act.cli.CsvView.class);
     public static AsmType<CsvView> CSV_VIEW = new AsmType<>(CsvView.class);
 
-    public static AsmType<SubClassFinder> SUB_CLASS_FINDER = new AsmType<SubClassFinder>(SubClassFinder.class);
+    public static AsmType<SubClassFinder> SUB_CLASS_FINDER = new AsmType<>(SubClassFinder.class);
     public static AsmType<AnnotatedClassFinder> ANN_CLASS_FINDER = new AsmType<>(AnnotatedClassFinder.class);
 
-    public static AsmType<Provides> PROVIDES = new AsmType<Provides>(Provides.class);
+    public static AsmType<Provides> PROVIDES = new AsmType<>(Provides.class);
 
     public static AsmType<ProvidesImplicitTemplateVariable> TEMPLATE_VARIABLE = new AsmType<>(ProvidesImplicitTemplateVariable.class);
 

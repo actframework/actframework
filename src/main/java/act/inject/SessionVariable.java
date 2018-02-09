@@ -39,7 +39,11 @@ import java.lang.annotation.Target;
 public @interface SessionVariable {
 
     /**
-     * Specifies the session attribute key
+     * Specifies the session attribute key.
+     *
+     * If not specified then use the parameter name or field name as session attribute key
+     *
+     * @return the session attribute key
      */
-    String value();
+    String value() default "";
 }

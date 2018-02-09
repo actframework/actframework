@@ -38,7 +38,7 @@ public @interface HeaderVariable {
      *
      * Default value: "", meaning it shall
      * use the field name or parameter name to
-     * get the session attribute value
+     * get the header attribute value
      */
     String value() default "";
 }

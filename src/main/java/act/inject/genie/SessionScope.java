@@ -29,6 +29,7 @@ import act.inject.param.ScopeCacheSupport;
 import org.osgl.http.H;
 import org.osgl.inject.BeanSpec;
 import org.osgl.inject.ScopeCache;
+import org.osgl.util.S;
 
 public class SessionScope extends ScopeCacheSupport.Base implements ScopeCache.SessionScope, ScopeCacheSupport {
 
@@ -85,7 +86,10 @@ public class SessionScope extends ScopeCacheSupport.Base implements ScopeCache.S
     public String key(BeanSpec spec) {
         SessionVariable sessionVariable = spec.getAnnotation(SessionVariable.class);
         if (null != sessionVariable) {
-            return sessionVariable.value();
+            String key = sessionVariable.value();
+            if (S.notBlank(key)) {
+                return key;
+            }
         }
         return super.key(spec);
     }
