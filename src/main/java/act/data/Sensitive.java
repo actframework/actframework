@@ -20,6 +20,7 @@ package act.data;
  * #L%
  */
 
+import act.app.App;
 import act.asm.*;
 import act.util.AppByteCodeEnhancer;
 import act.util.SimpleBean;
@@ -75,7 +76,9 @@ public @interface Sensitive {
         private Set<String> sensitiveFieldsForGetter = new HashSet<>();
         private Set<String> sensitiveFieldsForSetter = new HashSet<>();
 
+        private SimpleBean.MetaInfoManager metaInfoManager;
         private String classInternalName;
+        private String className;
 
         public Enhancer() {
             super(S.F.startsWith("act.").negate());
@@ -86,8 +89,23 @@ public @interface Sensitive {
         }
 
         @Override
+        public AppByteCodeEnhancer app(App app) {
+            metaInfoManager = app.classLoader().simpleBeanInfoManager();
+            return super.app(app);
+        }
+
+        @Override
         protected Class<Enhancer> subClass() {
             return Enhancer.class;
+        }
+
+        @Override
+        protected void reset() {
+            sensitiveFieldsForSetter.clear();
+            sensitiveFieldsForGetter.clear();
+            className = null;
+            classInternalName = null;
+            super.reset();
         }
 
         @Override
@@ -98,6 +116,7 @@ public @interface Sensitive {
         @Override
         public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
             classInternalName = name;
+            className = Type.getObjectType(name).getClassName();
             super.visit(version, access, name, signature, superName, interfaces);
         }
 
@@ -111,6 +130,10 @@ public @interface Sensitive {
                     if (DESC_SENSITIVE.equals(desc)) {
                         sensitiveFieldsForGetter.add(name);
                         sensitiveFieldsForSetter.add(name);
+                        SimpleBean.MetaInfo simpleBeanMetaInfo = metaInfoManager.get(className);
+                        if (null != simpleBeanMetaInfo) {
+                            simpleBeanMetaInfo.addSensitiveField(name);
+                        }
                     }
                     return super.visitAnnotation(desc, visible);
                 }

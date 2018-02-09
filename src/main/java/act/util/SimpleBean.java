@@ -37,7 +37,9 @@ import org.osgl.util.S;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * ActFramework will do the following byte code enhancement to classes that are
@@ -57,12 +59,15 @@ public interface SimpleBean {
         // the class name
         private String className;
         // keep public non-static fields
-        private Map<String, $.T2<String, String>> publicFields = new HashMap<>();
+        private Map<String, $.T2<String, String>> publicFields;
+        // keep track @Sensitive fields
+        private Set<String> sensitiveFields;
 
         @Inject
         MetaInfo(String className, Map<String, $.T2<String, String>> publicFields) {
             this.className = className;
             this.publicFields = publicFields;
+            this.sensitiveFields = new HashSet<>();
         }
 
         public String getClassName() {
@@ -75,6 +80,14 @@ public interface SimpleBean {
 
         public Map<String, $.T2<String, String>> getPublicFields() {
             return C.map(publicFields);
+        }
+
+        public void addSensitiveField(String fieldName) {
+            sensitiveFields.add(fieldName);
+        }
+
+        public boolean isSensitive(String fieldName) {
+            return sensitiveFields.contains(fieldName);
         }
 
         public boolean hasPublicField() {
@@ -207,6 +220,7 @@ public interface SimpleBean {
         private boolean needDefaultConstructor = false;
         private String classDesc;
         private String superClassDesc;
+        private MetaInfo metaInfo;
 
         public ByteCodeEnhancer() {
             super(S.F.startsWith("act.").negate());
@@ -236,6 +250,7 @@ public interface SimpleBean {
             this.needDefaultConstructor = false;
             this.classDesc = null;
             this.superClassDesc = null;
+            this.metaInfo = null;
             super.reset();
         }
 
@@ -257,6 +272,7 @@ public interface SimpleBean {
                 superClassDesc = superName;
                 MetaInfo metaInfo = metaInfoManager.get(className);
                 if (null != metaInfo) {
+                    this.metaInfo = metaInfo;
                     Map<String, $.T2<String, String>> publicFields = metaInfo.publicFields;
                     if (!publicFields.isEmpty()) {
                         getters.putAll(publicFields);
@@ -378,6 +394,9 @@ public interface SimpleBean {
 
         private void addGetter(Map.Entry<String, $.T2<String, String>> field) {
             String name = field.getKey();
+            if (metaInfo.isSensitive(name)) {
+                return;
+            }
             String desc = field.getValue()._1;
             String signature = field.getValue()._2;
             if (null != signature) {
@@ -399,6 +418,9 @@ public interface SimpleBean {
 
         private void addSetter(Map.Entry<String, $.T2<String, String>> field) {
             String name = field.getKey();
+            if (metaInfo.isSensitive(name)) {
+                return;
+            }
             String desc = field.getValue()._1;
             String signature = field.getValue()._2;
 
