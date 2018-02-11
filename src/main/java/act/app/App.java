@@ -27,6 +27,7 @@ import act.app.data.BinderManager;
 import act.app.data.StringValueResolverManager;
 import act.app.event.SysEventId;
 import act.app.util.NamedPort;
+import act.asm.AsmException;
 import act.boot.BootstrapClassLoader;
 import act.boot.app.BlockIssueSignal;
 import act.cli.CliDispatcher;
@@ -157,6 +158,7 @@ public class App extends DestroyableBase {
     private CacheService cache;
     // used in dev mode only
     private CompilationException compilationException;
+    private AsmException asmException;
     private SysEventId currentState;
     private Set<SysEventId> eventEmitted;
     private Thread mainThread;
@@ -460,6 +462,8 @@ public class App extends DestroyableBase {
         classLoader.detectChanges();
         if (null != compilationException) {
             throw ActErrorResult.of(compilationException);
+        } else if (null != asmException) {
+            throw ActErrorResult.of(asmException);
         }
     }
 
@@ -625,8 +629,12 @@ public class App extends DestroyableBase {
             try {
                 scanAppCodes();
                 compilationException = null;
+                asmException = null;
             } catch (CompilationException e) {
                 compilationException = e;
+                throw ActErrorResult.of(e);
+            } catch (AsmException e) {
+                asmException = e;
                 throw ActErrorResult.of(e);
             }
         } catch (BlockIssueSignal e) {

@@ -3,7 +3,9 @@
 **1.7.0**
 * Update JPA api to 2.2
 * EntityMetaInfo and scanner - support JPA plugin
+* Update to act-asm-5.0.3 for precise line number in error reporting
 * Improve built-in service performance by make them as nonblock when possible
+* Error page not displayed if asm error raised during scanning phase #508
 * `@SessionVariable` binding failure #506
 * `@DefaultValue` not working for primitive types #504
 * Create `act.util.CsvView` as an alias of `ResponseContentType(H.MediaType.CSV)` #503

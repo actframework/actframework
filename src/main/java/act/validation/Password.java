@@ -31,7 +31,6 @@ import act.meta.ClassMetaInfoManager;
 import act.util.AppByteCodeEnhancer;
 import act.util.ByteCodeVisitor;
 import act.util.SimpleBean;
-import org.osgl.$;
 import org.osgl.util.C;
 import org.osgl.util.E;
 import org.osgl.util.S;
@@ -210,7 +209,7 @@ public @interface Password {
 
         @Override
         public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
-            MethodVisitor mv = super.visitMethod(access, name, desc, signature, exceptions);
+            MethodVisitor mv = new PasswordVerifierInvokeAdaptor(super.visitMethod(access, name, desc, signature, exceptions), metaInfo);
             if (!eligible || !DESC_CHAR_ARRAY.equals(desc)) {
                 return mv;
             }
@@ -320,6 +319,36 @@ public @interface Password {
         private static String setterName(String fieldName) {
             return "set" + S.capFirst(fieldName);
         }
+
+        private static class PasswordVerifierInvokeAdaptor extends MethodVisitor {
+            PasswordMetaInfo metaInfo;
+            public PasswordVerifierInvokeAdaptor(MethodVisitor mv, PasswordMetaInfo metaInfo) {
+                super(ASM5, mv);
+                this.metaInfo = metaInfo;
+            }
+
+            @Override
+            public void visitMethodInsn(int opcode, String owner, String name, String desc, boolean itf) {
+                if (INVOKESTATIC == opcode && !itf && "verifyPassword".equals(name) && "act/validation/Password$Verifier".equals(owner)) {
+                    if (null == metaInfo) {
+                        throw AsmException.of("Cannot call Password.Verifier.verifyPassword on object without a @Password field");
+                    }
+                    if ("([CLjava/lang/Object;)Z".equals(desc)) {
+                        if (!metaInfo.isSinglePasswordProvider()) {
+                            throw AsmException.of("Cannot call Password.Verifier.verifyPassword on object with multiple @Password fields without field name parameter");
+                        }
+                        super.visitMethodInsn(opcode, owner, name, "([CLact/internal/password/PasswordProvider;)Z", itf);
+                    } else if ("([CLjava/lang/Object;Ljava/lang/String;)Z".equals(desc)) {
+                        if (metaInfo.isSinglePasswordProvider()) {
+                            throw AsmException.of("It shall call Password.Verifier.verifyPassword on object with single @Password field without field name parameter");
+                        }
+                        super.visitMethodInsn(opcode, owner, name, "([CLact/internal/password/PasswordProvider;Ljava/lang/String;)Z", itf);
+                    }
+                } else {
+                    super.visitMethodInsn(opcode, owner, name, desc, itf);
+                }
+            }
+        }
     }
 
     /**
@@ -337,14 +366,19 @@ public @interface Password {
     class Verifier {
         public static boolean verifyPassword(char[] passwordText, Object passwordHolder) {
             E.illegalStateIfNot(passwordHolder instanceof PasswordProvider, "passwordHolder is not a PasswordProvider");
-            boolean ok = Act.crypto().verifyPassword(passwordText, ((PasswordProvider) passwordHolder).password());
+            return verifyPassword(passwordText, ((PasswordProvider) passwordHolder));
+        }
+        public static boolean verifyPassword(char[] passwordText, PasswordProvider passwordHolder) {
+            boolean ok = Act.crypto().verifyPassword(passwordText, passwordHolder.password());
             Arrays.fill(passwordText, '\0');
             return ok;
         }
         public static boolean verifyPassword(char[] passwordText, Object passwordHolder, String fieldName) {
             E.illegalStateIfNot(passwordHolder instanceof MultiplePasswordProvider, "passwordHolder is not a MultiplePasswordProvider");
-            MultiplePasswordProvider mpp = $.cast(passwordHolder);
-            boolean ok = Act.crypto().verifyPassword(passwordText, mpp.password(fieldName));
+            return verifyPassword(passwordText, (MultiplePasswordProvider) passwordHolder, fieldName);
+        }
+        public static boolean verifyPassword(char[] passwordText, MultiplePasswordProvider passwordHolder, String fieldName) {
+            boolean ok = Act.crypto().verifyPassword(passwordText, passwordHolder.password(fieldName));
             Arrays.fill(passwordText, '\0');
             return ok;
         }

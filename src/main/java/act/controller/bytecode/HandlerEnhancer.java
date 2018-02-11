@@ -95,6 +95,12 @@ public class HandlerEnhancer extends MethodVisitor implements Opcodes {
     }
 
     @Override
+    public void visitLineNumber(int line, Label start) {
+        super.visitLineNumber(line, start);
+        AsmContext.line(line);
+    }
+
+    @Override
     public void visitEnd() {
         if (notAction) {
             super.visitEnd();

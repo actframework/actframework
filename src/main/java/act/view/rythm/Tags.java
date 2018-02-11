@@ -62,6 +62,12 @@ public class Tags extends DestroyableBase {
     }
 
     public void register(RythmEngine engine) {
+        if (null == fastTags) {
+            // something wrong before Dependency Injector initialized
+            // register basic tags required by Error page template
+            engine.registerFastTag(new ActMessage());
+            return;
+        }
         for (JavaTagBase tag : fastTags) {
             engine.registerFastTag(tag);
         }
