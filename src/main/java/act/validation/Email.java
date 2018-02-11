@@ -31,7 +31,7 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 /**
  * The annotated element must be a valid email
- * Accepts any type.
+ * Accepts any CharSequence.
  */
 @Target({ METHOD, FIELD, ANNOTATION_TYPE, CONSTRUCTOR, PARAMETER })
 @Retention(RUNTIME)
@@ -54,7 +54,6 @@ public @interface Email {
     @Retention(RUNTIME)
     @Documented
     @interface List {
-
-        Email[] value();
+       Email[] value();
     }
 }

@@ -1,10 +1,10 @@
-package act.app;
+package act.internal.password;
 
 /*-
  * #%L
  * ACT Framework
  * %%
- * Copyright (C) 2014 - 2017 ActFramework
+ * Copyright (C) 2014 - 2018 ActFramework
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,23 +20,6 @@ package act.app;
  * #L%
  */
 
-import act.util.SubTypeFinder;
-
-/**
- * Find classes that implement {@link Daemon}, start them after {@link App application} is started
- */
-public class DaemonFinder extends SubTypeFinder<Daemon> {
-
-    public DaemonFinder() {
-        super(Daemon.class);
-    }
-
-    public DaemonFinder(Class<Daemon> target) {
-        super(target);
-    }
-
-    @Override
-    protected void found(final Class<? extends Daemon> target, final App app) {
-        app.registerDaemon(app.getInstance(target));
-    }
+public interface MultiplePasswordProvider {
+    char[] password(String name);
 }

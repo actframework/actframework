@@ -11,6 +11,7 @@ act.i18n.LocaleResolver
 act.inject.DependencyInjectorBase
 act.inject.genie.GenieInjector
 act.Info
+act.meta.ClassMetaInfoManager
 act.util.AdaptiveRecordCodec
 act.validation.ValidationPlugin
 act.Zen

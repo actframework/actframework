@@ -51,6 +51,7 @@ public class PluginScanner {
                 Plugin.InfoRepo.register(p);
             } catch (UnexpectedException e) {
                 // ignore: some plugin does not provide default constructor
+                logger.warn(e, "failed to register plugin: %s", c);
             }
         }
     }

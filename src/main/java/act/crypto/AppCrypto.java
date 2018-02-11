@@ -57,7 +57,7 @@ public class AppCrypto {
      * @param password the password
      * @return the password hash
      */
-    public String passwordHash(char[] password) {
+    public char[] passwordHash(char[] password) {
         return BCrypt.hashpw(password, BCrypt.gensalt());
     }
 
@@ -81,6 +81,14 @@ public class AppCrypto {
     public boolean verifyPassword(char[] password, String hash) {
         try {
             return BCrypt.checkpw(password, hash);
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    public boolean verifyPassword(char[] password, char[] hash) {
+        try {
+            return BCrypt.checkpw(password, new String(hash));
         } catch (Exception e) {
             return false;
         }

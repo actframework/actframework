@@ -66,9 +66,11 @@ import java.util.Set;
 @Target(ElementType.FIELD)
 public @interface Sensitive {
 
+    String ASM_DESC = Type.getType(Sensitive.class).getDescriptor();
+
     class Enhancer extends AppByteCodeEnhancer<Enhancer> {
 
-        private static final String DESC_SENSITIVE = Type.getType(Sensitive.class).getDescriptor();
+        private static final String DESC_SENSITIVE = Sensitive.ASM_DESC;
         private static final String DESC_STRING = Type.getType(String.class).getDescriptor();
         private static final String GETTER_DESC = S.concat("()", DESC_STRING);
         private static final String SETTER_DESC = S.concat("(", DESC_STRING, ")V");

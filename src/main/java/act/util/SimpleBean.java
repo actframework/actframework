@@ -30,8 +30,11 @@ import act.asm.ClassVisitor;
 import act.asm.FieldVisitor;
 import act.asm.MethodVisitor;
 import act.asm.Type;
+import act.internal.password.PasswordMetaInfo;
+import act.meta.ClassMetaInfoManager;
 import org.osgl.$;
 import org.osgl.util.C;
+import org.osgl.util.E;
 import org.osgl.util.S;
 
 import javax.enterprise.context.ApplicationScoped;
@@ -62,12 +65,14 @@ public interface SimpleBean {
         private Map<String, $.T2<String, String>> publicFields;
         // keep track @Sensitive fields
         private Set<String> sensitiveFields;
+        private Set<String> passwordFields;
 
         @Inject
         MetaInfo(String className, Map<String, $.T2<String, String>> publicFields) {
             this.className = className;
             this.publicFields = publicFields;
             this.sensitiveFields = new HashSet<>();
+            this.passwordFields = new HashSet<>();
         }
 
         public String getClassName() {
@@ -83,11 +88,21 @@ public interface SimpleBean {
         }
 
         public void addSensitiveField(String fieldName) {
+            E.illegalArgumentIf(passwordFields.contains(fieldName), "@Sensitive and @Password cannot be used together");
             sensitiveFields.add(fieldName);
+        }
+
+        public void addPasswordField(String fieldName) {
+            E.illegalArgumentIf(sensitiveFields.contains(fieldName), "@Sensitive and @Password cannot be used together");
+            passwordFields.add(fieldName);
         }
 
         public boolean isSensitive(String fieldName) {
             return sensitiveFields.contains(fieldName);
+        }
+
+        public boolean isPassword(String fieldName) {
+            return passwordFields.contains(fieldName);
         }
 
         public boolean hasPublicField() {
@@ -221,6 +236,8 @@ public interface SimpleBean {
         private String classDesc;
         private String superClassDesc;
         private MetaInfo metaInfo;
+        private ClassMetaInfoManager<PasswordMetaInfo> passwordMetaInfoManager;
+        private PasswordMetaInfo passwordMetaInfo;
 
         public ByteCodeEnhancer() {
             super(S.F.startsWith("act.").negate());
@@ -259,6 +276,7 @@ public interface SimpleBean {
             AppClassLoader classLoader = app.classLoader();
             classInfoRepository = classLoader.classInfoRepository();
             metaInfoManager = classLoader.simpleBeanInfoManager();
+            passwordMetaInfoManager = app.classMetaInfoManager(PasswordMetaInfo.class);
             return super.app(app);
         }
 
@@ -266,6 +284,7 @@ public interface SimpleBean {
         public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
             classDesc = name;
             String className = Type.getObjectType(name).getClassName();
+            passwordMetaInfo = passwordMetaInfoManager.get(className);
             isSimpleBean = metaInfoManager.isSimpleBean(className);
             if (isSimpleBean) {
                 needDefaultConstructor = true;
@@ -418,7 +437,7 @@ public interface SimpleBean {
 
         private void addSetter(Map.Entry<String, $.T2<String, String>> field) {
             String name = field.getKey();
-            if (metaInfo.isSensitive(name)) {
+            if (metaInfo.isSensitive(name) || null != passwordMetaInfo && passwordMetaInfo.isPasswordField(name)) {
                 return;
             }
             String desc = field.getValue()._1;

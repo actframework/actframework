@@ -57,6 +57,8 @@ import act.job.JobManager;
 import act.job.bytecode.JobByteCodeScanner;
 import act.mail.MailerConfigManager;
 import act.mail.bytecode.MailerByteCodeScanner;
+import act.meta.ClassMetaInfoBase;
+import act.meta.ClassMetaInfoManager;
 import act.metric.Metric;
 import act.metric.MetricContextScanner;
 import act.metric.MetricMetaInfoRepo;
@@ -67,6 +69,7 @@ import act.route.Router;
 import act.session.CookieSessionMapper;
 import act.session.SessionManager;
 import act.util.*;
+import act.validation.Password;
 import act.view.ActErrorResult;
 import act.view.ImplicitVariableProvider;
 import act.view.rythm.JodaDateTimeFormatter;
@@ -131,6 +134,7 @@ public class App extends DestroyableBase {
     private AppBuilder builder;
     private EventBus eventBus;
     private AppCodeScannerManager scannerManager;
+    private ClassMetaInfoRepo classMetaInfoRepo;
     private DbServiceManager dbServiceManager;
     private JobManager jobManager;
     private ApiManager apiManager;
@@ -602,6 +606,7 @@ public class App extends DestroyableBase {
             initCliServer();
             initMetricMetaInfoRepo();
             initEntityMetaInfoRepo();
+            initClassMetaInfoRepo();
 
             initWebSocketConnectionManager();
             initDbServiceManager();
@@ -705,6 +710,14 @@ public class App extends DestroyableBase {
 
     public AppBuilder builder() {
         return builder;
+    }
+
+    public <T extends ClassMetaInfoBase<T>> ClassMetaInfoManager<T> classMetaInfoManager(Class<T> metaInfoType) {
+        return classMetaInfoRepo.manager(metaInfoType);
+    }
+
+    public void register(ClassMetaInfoManager<?> classMetaInfoManager) {
+        classMetaInfoRepo.register(classMetaInfoManager);
     }
 
     /**
@@ -1244,6 +1257,10 @@ public class App extends DestroyableBase {
         jobManager = new JobManager(this);
     }
 
+    private void initClassMetaInfoRepo() {
+        classMetaInfoRepo = new ClassMetaInfoRepo(this);
+    }
+
     private void shutdownJobManager() {
         if (null != jobManager) {
             jobManager.destroy();
@@ -1296,6 +1313,7 @@ public class App extends DestroyableBase {
         scannerManager.register(new ControllerByteCodeScanner());
         scannerManager.register(new MailerByteCodeScanner());
         scannerManager.register(new JobByteCodeScanner());
+        scannerManager.register(new Password.ByteCodeScanner());
         scannerManager.register(new SimpleBean.ByteCodeScanner());
         scannerManager.register(new SimpleEventListenerByteCodeScanner());
         scannerManager.register(new CommanderByteCodeScanner());

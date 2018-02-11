@@ -79,7 +79,9 @@ public abstract class Config<E extends ConfigKey> extends DestroyableBase {
             }
             data.put(key, o);
         }
-        debug("config[%s] loaded: ", key, o);
+        if (isDebugEnabled()) {
+            debug("config[%s] loaded: %s", key, o);
+        }
         if (o == NULL) {
             return null;
         } else {

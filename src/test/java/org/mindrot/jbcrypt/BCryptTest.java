@@ -43,7 +43,8 @@ import org.junit.Test;
  * @author Damien Miller
  * @version 0.2
  */
-@Ignore
+
+@Ignore // ignore as it takes long time
 public class BCryptTest extends TestCase {
     String test_vectors[][] = {
             { "",

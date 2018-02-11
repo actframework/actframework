@@ -36,6 +36,8 @@ import act.i18n.I18n;
 import act.security.CSRFProtector;
 import act.session.*;
 import act.util.*;
+import act.validation.Password;
+import act.validation.PasswordSpec;
 import act.view.TemplatePathResolver;
 import act.view.View;
 import act.ws.DefaultSecureTicketCodec;
@@ -1507,6 +1509,36 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     private void _mergeAjaxCsrfCheckFailureHandler(AppConfig config) {
         if (!hasConfiguration(HANDLER_AJAX_CSRF_CHECK_FAILURE)) {
             csrfCheckFailureHandler = config.csrfCheckFailureHandler;
+        }
+    }
+
+    private Password.Validator defPasswordValidator;
+
+    protected T defPasswordValidator(Password.Validator validator) {
+        defPasswordValidator = $.notNull(validator);
+        return me();
+    }
+    protected T defPasswordSpec(String spec) {
+        _defPasswordSpec(spec);
+        return me();
+    }
+    public Password.Validator defPasswordValidator() {
+        if (null == defPasswordValidator) {
+            String s = get(PASSWORD_DEF_SPEC, Act.isDev() ? "a[3,]" : "aA0[6,]");
+            _defPasswordSpec(s);
+        }
+        return defPasswordValidator;
+    }
+    private void _defPasswordSpec(String spec) {
+        try {
+            defPasswordValidator = PasswordSpec.parse(spec);
+        } catch (IllegalArgumentException e) {
+            // try to check if the spec is a PasswordValidator
+            try {
+                defPasswordValidator = app.getInstance(spec);
+            } catch (Exception e2) {
+                throw new ConfigurationException("Password spec unrecognized: " + spec);
+            }
         }
     }
 

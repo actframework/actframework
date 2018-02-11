@@ -691,66 +691,13 @@ public class BCrypt {
         return ret;
     }
 
-    public static String hashpw(char[] password, String salt) {
-        BCrypt B;
-        String real_salt;
-        byte passwordb[], saltb[], hashed[];
-        char minor = (char)0;
-        int rounds, off = 0;
-        StringBuffer rs = new StringBuffer();
-
-        if (salt.charAt(0) != '$' || salt.charAt(1) != '2')
-            throw new IllegalArgumentException ("Invalid salt version");
-        if (salt.charAt(2) == '$')
-            off = 3;
-        else {
-            minor = salt.charAt(2);
-            if (minor != 'a' || salt.charAt(3) != '$')
-                throw new IllegalArgumentException ("Invalid salt revision");
-            off = 4;
-        }
-
-        // Extract number of rounds
-        if (salt.charAt(off + 2) > '$')
-            throw new IllegalArgumentException ("Missing salt rounds");
-        rounds = Integer.parseInt(salt.substring(off, off + 2));
-
-        real_salt = salt.substring(off + 3, off + 25);
-        if (minor >= 'a') {
-            char[] password2 = new char[password.length + 1];
-            System.arraycopy(password, 0, password2, 0, password.length);
-            wipe(password);
-            password2[password.length] = '\0';
-            passwordb = toBytes(password2);
-            wipe(password2);
-        } else {
-            passwordb = toBytes(password);
-            wipe(password);
-        }
-
-        saltb = decode_base64(real_salt, BCRYPT_SALT_LEN);
-
-        B = new BCrypt();
-        hashed = B.crypt_raw(passwordb, saltb, rounds,
-                (int[])bf_crypt_ciphertext.clone());
-        wipe(passwordb);
-
-        rs.append("$2");
-        if (minor >= 'a')
-            rs.append(minor);
-        rs.append("$");
-        if (rounds < 10)
-            rs.append("0");
-        if (rounds > 30) {
-            throw new IllegalArgumentException(
-                    "rounds exceeds maximum (30)");
-        }
-        rs.append(Integer.toString(rounds));
-        rs.append("$");
-        rs.append(encode_base64(saltb, saltb.length));
-        rs.append(encode_base64(hashed,
-                bf_crypt_ciphertext.length * 4 - 1));
-        return rs.toString();
+    public static char[] hashpw(char[] password, String salt) {
+        StringBuilder buf = new StringBuilder();
+        hashpw(password, salt, buf);
+        int len = buf.length();
+        char[] ca = new char[len];
+        buf.getChars(0, len, ca, 0);
+        return ca;
     }
 
     /**
@@ -761,7 +708,9 @@ public class BCrypt {
      * @return	the hashed password
      */
     public static String hashpw(String password, String salt) {
-        return hashpw(password.toCharArray(), salt);
+        StringBuilder buf = new StringBuilder();
+        hashpw(password.toCharArray(), salt, buf);
+        return buf.toString();
     }
 
     /**
@@ -827,7 +776,9 @@ public class BCrypt {
         byte hashed_bytes[];
         byte try_bytes[];
         try {
-            String try_pw = hashpw(plaintext, hashed);
+            StringBuilder buf = new StringBuilder();
+            hashpw(plaintext, hashed, buf);
+            String try_pw = buf.toString();
             hashed_bytes = hashed.getBytes("UTF-8");
             try_bytes = try_pw.getBytes("UTF-8");
         } catch (UnsupportedEncodingException uee) {
@@ -850,5 +801,66 @@ public class BCrypt {
      */
     public static boolean checkpw(String plaintext, String hashed) {
         return checkpw(plaintext.toCharArray(), hashed);
+    }
+
+
+    private static void hashpw(char[] password, String salt, StringBuilder rs) {
+        BCrypt B;
+        String real_salt;
+        byte passwordb[], saltb[], hashed[];
+        char minor = (char)0;
+        int rounds, off = 0;
+
+        if (salt.charAt(0) != '$' || salt.charAt(1) != '2')
+            throw new IllegalArgumentException ("Invalid salt version");
+        if (salt.charAt(2) == '$')
+            off = 3;
+        else {
+            minor = salt.charAt(2);
+            if (minor != 'a' || salt.charAt(3) != '$')
+                throw new IllegalArgumentException ("Invalid salt revision");
+            off = 4;
+        }
+
+        // Extract number of rounds
+        if (salt.charAt(off + 2) > '$')
+            throw new IllegalArgumentException ("Missing salt rounds");
+        rounds = Integer.parseInt(salt.substring(off, off + 2));
+
+        real_salt = salt.substring(off + 3, off + 25);
+        if (minor >= 'a') {
+            char[] password2 = new char[password.length + 1];
+            System.arraycopy(password, 0, password2, 0, password.length);
+            wipe(password);
+            password2[password.length] = '\0';
+            passwordb = toBytes(password2);
+            wipe(password2);
+        } else {
+            passwordb = toBytes(password);
+            wipe(password);
+        }
+
+        saltb = decode_base64(real_salt, BCRYPT_SALT_LEN);
+
+        B = new BCrypt();
+        hashed = B.crypt_raw(passwordb, saltb, rounds,
+                (int[])bf_crypt_ciphertext.clone());
+        wipe(passwordb);
+
+        rs.append("$2");
+        if (minor >= 'a')
+            rs.append(minor);
+        rs.append("$");
+        if (rounds < 10)
+            rs.append("0");
+        if (rounds > 30) {
+            throw new IllegalArgumentException(
+                    "rounds exceeds maximum (30)");
+        }
+        rs.append(Integer.toString(rounds));
+        rs.append("$");
+        rs.append(encode_base64(saltb, saltb.length));
+        rs.append(encode_base64(hashed,
+                bf_crypt_ciphertext.length * 4 - 1));
     }
 }

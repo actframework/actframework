@@ -24,6 +24,7 @@ import act.Act;
 import act.app.App;
 import act.controller.annotation.Throttled;
 import act.handler.UnknownHttpMethodProcessor;
+import act.validation.Password;
 import act.view.TemplatePathResolver;
 import act.view.View;
 import act.ws.DefaultSecureTicketCodec;
@@ -384,7 +385,6 @@ public enum AppConfigKey implements ConfigKey {
      */
     FORMAT_DATE("fmt.date"),
 
-
     /**
      * {@code act.fmt.date} specifies the default date and time format used to
      * lookup/output the date string
@@ -670,6 +670,25 @@ public enum AppConfigKey implements ConfigKey {
      * and shall not be specified in this namedPorts configuration</p>
      */
     NAMED_PORTS("namedPorts"),
+
+    /**
+     * `password.spec` specify default password spec which is used to
+     * validate user password.
+     *
+     * Default value:
+     *
+     * * dev mode: `a[3,]`, meaning require lower case letter and min length is 3 characters.
+     * * prod mode: `aA0[6,]`, meaning require lower case letter, uppercase letter,
+     * digit and min length is 6 characters.
+     *
+     * Developer can also specify a {@link Password.Validator} implementation
+     * class for this configuration, in which case, the framework will instantiate the user
+     * specified validator instead of {@link act.validation.PasswordSpec} as the default
+     * password validator.
+     *
+     * @see act.validation.PasswordSpec#parse(String)
+     */
+    PASSWORD_DEF_SPEC("password.spec"),
 
     /**
      * {@code ping.path} specify the ping path.
