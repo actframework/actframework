@@ -106,7 +106,7 @@ public class NetworkHandler extends DestroyableBase {
         if (Act.isDev()) {
             try {
                 boolean updated = app.checkUpdates(false);
-                if (updated) {
+                if (updated && !app.hasBlockIssue()) {
                     app.jobManager().on(SysEventId.POST_START, new Runnable() {
                         @Override
                         public void run() {

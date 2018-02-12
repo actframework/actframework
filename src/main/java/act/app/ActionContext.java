@@ -988,7 +988,7 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
         app().eventBus().emit(new SessionWillDissolveEvent(this));
         try {
             setCsrfCookieAndRenderArgs();
-            sessionManager.dissolveState(session(), flash(), resp());
+            sessionManager().dissolveState(session(), flash(), resp());
 //            dissolveFlash();
 //            dissolveSession();
             state = State.SESSION_DISSOLVED;
@@ -1141,14 +1141,20 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
 
     private void resolveSession(H.Request req) {
         preCheckCsrf();
-        //this.session = Act.sessionManager().resolveSession(this);
-        session = sessionManager.resolveSession(req);
+        session = sessionManager().resolveSession(req);
         checkCsrf(session);
     }
 
     private void resolveFlash(H.Request req) {
         //this.flash = Act.sessionManager().resolveFlash(this);
-        flash = sessionManager.resolveFlash(req);
+        flash = sessionManager().resolveFlash(req);
+    }
+
+    private SessionManager sessionManager() {
+        if (null == sessionManager) {
+            sessionManager = app().sessionManager();
+        }
+        return sessionManager;
     }
 
 //    private void dissolveSession() {
