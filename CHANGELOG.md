@@ -5,6 +5,7 @@
 * EntityMetaInfo and scanner - support JPA plugin
 * Update to act-asm-5.0.3 for precise line number in error reporting
 * Improve built-in service performance by make them as nonblock when possible
+* Command line param binding failed for `char[]` #511
 * `NullPointerException` after app reloaded from an ASM error in dev mode #509
 * Error page not displayed if asm error raised during scanning phase #508
 * `@SessionVariable` binding failure #506
@@ -20,6 +21,7 @@
 * DB: add annotation to mark created and last modified timestamp fields #480
 * Missing actframework version in the banner text in dev mode with Eclipse project #478
 * Rename `AppEvent` to `SysEvent` #475
+* Implement a rotation secret for Act application #474
 * Improve simple event handler mechanism #473
 * Emit/trigger `EventObject` typed event through `EventBus #472
 * SimpleEventHandler mechanism does not work with `EventObject` #471

@@ -22,6 +22,7 @@ package act.session;
 
 import act.app.App;
 import act.conf.AppConfig;
+import act.crypto.AppCrypto;
 import act.util.DestroyableBase;
 import org.osgl.$;
 import org.osgl.http.H;
@@ -47,6 +48,7 @@ public class DefaultSessionCodec extends DestroyableBase implements SessionCodec
     private final int ttl;
     private final String pingPath;
     private App app;
+    private RotationSecretProvider secretProvider;
 
     @Inject
     public DefaultSessionCodec(AppConfig conf) {
@@ -55,6 +57,7 @@ public class DefaultSessionCodec extends DestroyableBase implements SessionCodec
         sessionWillExpire = ttl > 0;
         pingPath = conf .pingPath();
         encryptSession = conf.encryptSession();
+        this.secretProvider = secretProvider;
     }
 
     @Override
@@ -235,6 +238,15 @@ public class DefaultSessionCodec extends DestroyableBase implements SessionCodec
             session.put(KEY_EXPIRATION, newTimestamp);
         }
         return session;
+    }
+
+    public static void main(String[] args) {
+        AppCrypto crypto = new AppCrypto("abc");
+        String s = "hello world";
+        String se = crypto.encrypt(s);
+        System.out.println(crypto.decrypt(se));
+        crypto = new AppCrypto("abc-213411253");
+        System.out.println(crypto.decrypt(se));
     }
 
 }

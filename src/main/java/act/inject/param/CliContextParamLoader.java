@@ -30,6 +30,7 @@ import act.cli.meta.CommandMethodMetaInfo;
 import act.cli.util.CommandLineParser;
 import act.util.ActContext;
 import org.osgl.$;
+import org.osgl.exception.UnexpectedException;
 import org.osgl.http.H;
 import org.osgl.inject.BeanSpec;
 import org.osgl.inject.util.AnnotationUtil;
@@ -38,10 +39,7 @@ import org.osgl.util.S;
 import org.osgl.util.StringValueResolver;
 
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.lang.reflect.Type;
+import java.lang.reflect.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -160,7 +158,7 @@ public class CliContextParamLoader extends ParamValueLoaderService {
 
     private StringValueResolver findResolver(BeanSpec spec, boolean isArray) {
         StringValueResolver resolver = findAnnotatedResolver(spec);
-        return null == resolver ? findImplictResolver(spec, isArray) : resolver;
+        return null == resolver ? findImplicitResolver(spec, isArray) : resolver;
     }
 
     private StringValueResolver findAnnotatedResolver(BeanSpec spec) {
@@ -202,8 +200,53 @@ public class CliContextParamLoader extends ParamValueLoaderService {
         return null;
     }
 
-    private StringValueResolver findImplictResolver(BeanSpec spec, boolean isArray) {
-        return isArray ? resolverManager.resolver(spec.rawType().getComponentType(), spec) : resolverManager.resolver(spec.rawType(), spec);
+    private StringValueResolver findImplicitResolver(final BeanSpec spec, boolean isArray) {
+        StringValueResolver resolver = resolverManager.resolver(spec.rawType(), spec);
+        if (null != resolver) {
+            return resolver;
+        } else if (isArray) {
+            final BeanSpec compSpec = spec.componentSpec();
+            final StringValueResolver<ArrayList> colResolver = resolverManager.collectionResolver(ArrayList.class, compSpec.rawType(), S.COMMON_SEP);
+            final boolean isPrimitive = $.isPrimitive(compSpec.rawType());
+            return new StringValueResolver() {
+                @Override
+                public Object resolve(String s) {
+                    List list = colResolver.resolve(s);
+                    int size = list.size();
+                    final Class<?> compType = compSpec.rawType();
+                    Object array = Array.newInstance(compType, size);
+                    for (int i = 0; i < size; ++i) {
+                        Object item = list.get(i);
+                        if (isPrimitive) {
+                            if (boolean.class == compType) {
+                                Array.setBoolean(array, i, ((Boolean)item).booleanValue());
+                            } else if (byte.class == compType) {
+                                Array.setByte(array, i, ((Byte) item).byteValue());
+                            } else if (char.class == compType) {
+                                Array.setChar(array, i, ((Character) item).charValue());
+                            } else if (double.class == compType) {
+                                Array.setDouble(array, i, ((Double) item).doubleValue());
+                            } else if (float.class == compType) {
+                                Array.setFloat(array, i, ((Float) item).floatValue());
+                            } else if (int.class == compType) {
+                                Array.setInt(array, i, ((Integer) item).intValue());
+                            } else if (long.class == compType) {
+                                Array.setLong(array, i, ((Long) item).longValue());
+                            } else if (short.class == compType) {
+                                Array.setShort(array, i, ((Short) item).shortValue());
+                            } else {
+                                throw new UnexpectedException("Unknown primitive type");
+                            }
+                        } else {
+                            Array.set(array, i, item);
+                        }
+                    }
+                    return array;
+                }
+            };
+        } else {
+            return null;
+        }
     }
 
     @Override

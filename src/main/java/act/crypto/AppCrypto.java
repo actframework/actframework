@@ -28,6 +28,7 @@ import org.osgl.logging.Logger;
 import org.osgl.util.*;
 
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
 import java.security.MessageDigest;
 import java.security.SecureRandom;
@@ -39,9 +40,15 @@ public class AppCrypto {
     private byte[] secret;
 
     private SecureRandom secureRandom = new SecureRandom();
+
+    protected AppCrypto() {}
+
+    public AppCrypto(String secret) {
+        this.secret = secret.getBytes(StandardCharsets.UTF_8);
+    }
     
     public AppCrypto(AppConfig config) {
-        secret = config.secret().getBytes(Charsets.UTF_8);
+        secret = config.secret().getBytes(StandardCharsets.UTF_8);
     }
 
     public String sign(String message) {

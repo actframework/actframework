@@ -93,8 +93,8 @@ public class StringValueResolverManager extends AppServiceBase<StringValueResolv
 
     public <T> StringValueResolver<T> resolver(final Class<T> targetType) {
         StringValueResolver<T> r = resolvers.get(targetType);
-        final Class<? extends Enum> clazz = $.cast(targetType);
         if (null == r && Enum.class.isAssignableFrom(targetType)) {
+            final Class<? extends Enum> clazz = $.cast(targetType);
             if (app().config().enumResolvingCaseSensitive()) {
                 r = new StringValueResolver<T>(targetType) {
                     @Override

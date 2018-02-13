@@ -802,6 +802,53 @@ public enum AppConfigKey implements ConfigKey {
     SECRET("secret"),
 
     /**
+     * `secret.rotate.enabled` turn on app secret rotation for session/flash
+     * token signing and encrypt.
+     *
+     * Default value: `false`
+     */
+    SECRET_ROTATE("secret.rotate.enabled"),
+
+    /**
+     * `secret.rotate.period` set the secret rotate period in terms of minute.
+     *
+     * **Note** the number of minute must be a factor of 60. Any number that
+     * is not the factor of 60 then it will be up rounded:
+     *
+     * * 1 -> 1
+     * * 2 -> 2
+     * * 3 -> 4
+     * * 4 -> 4
+     * * 5 -> 5
+     * * 6 -> 6
+     * * 7 -> 10
+     * * 8 -> 10
+     * * 33 -> 30
+     * * 50 -> 60
+     *
+     * the rotation period less than hour will be count from the beginning of
+     * the current hour.
+     *
+     * If the number minutes exceeds 60, then it must be a factor of 60 * 24. Any
+     * number if not will be rounded:
+     *
+     * * 65 -> 60
+     * * 60 * 3 -> 60 * 3
+     * * 60 * 5 -> 60 * 6
+     * * 60 * 7 -> 60 * 6
+     * * 60 * 10 -> 60 * 12 (half day)
+     *
+     * if the number of minutes equals of exceeds 120, the rotation period will
+     * be counted from the beginning of the day.
+     *
+     * The maximum period is `60 * 24`, i.e. 24 hours. Any setting exceed that number
+     * will be cut off down to 24 hours.
+     *
+     * Default value: `30` minutes, ie. half an hour
+     */
+    SECRET_ROTATE_PERIOD("secret.rotate.period"),
+
+    /**
      * `secure_ticket_codec`
      *
      * Specify the implementation of {@link SecureTicketCodec}

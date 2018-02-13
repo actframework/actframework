@@ -53,6 +53,7 @@ import org.osgl.http.H;
 import org.osgl.mvc.MvcConfig;
 import org.osgl.util.*;
 import org.osgl.web.util.UserAgent;
+import org.rythmengine.utils.Time;
 
 import javax.inject.Provider;
 import java.io.File;
@@ -2266,6 +2267,71 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     private void _mergeSecret(AppConfig config) {
         if (!hasConfiguration(AppConfigKey.SECRET)) {
             secret = config.secret;
+        }
+    }
+
+    private Boolean secretRotate = null;
+    protected T secretRotate(boolean enabled) {
+        secretRotate = enabled;
+        return me();
+    }
+    public boolean rotateSecret() {
+        if (null == secretRotate) {
+            secretRotate = get(SECRET_ROTATE, false);
+        }
+        return secretRotate;
+    }
+    private void _mergeSecretRotate(AppConfig config) {
+        if (!hasConfiguration(SECRET_ROTATE)) {
+            secretRotate = config.secretRotate;
+        }
+    }
+
+    private Integer secretRotatePeriod;
+
+    /**
+     * Set `secret.rotate.period` in terms of minute
+     *
+     * @param period the minutes between two secret rotate happening
+     * @return this config object
+     * @see AppConfigKey#SECRET_ROTATE_PERIOD
+     */
+    protected T secretRotatePeroid(int period) {
+        E.illegalArgumentIf(period < 1, "minimum secret.rotate.period is 1 (minute)");
+        secretRotatePeriod = period;
+        return me();
+    }
+    public int secretRotatePeriod() {
+        if (null == secretRotatePeriod) {
+            boolean validSetting = true;
+            String s = get(SECRET_ROTATE_PERIOD, "30");
+            int minutes;
+            if (!N.isInt(s)) {
+                int seconds = Time.parseDuration(s);
+                int reminder = seconds % 60;
+                if (0 != reminder) {
+                    validSetting = false;
+                    seconds += (60 - reminder);
+                }
+                minutes = seconds / 60;
+            } else {
+                minutes = Integer.parseInt(s);
+            }
+            if (minutes <= 0) {
+                validSetting = false;
+                minutes = 30;
+            }
+            secretRotatePeriod = RotationSecretProvider.roundToPeriod(minutes);
+            validSetting = validSetting && (secretRotatePeriod == minutes);
+            if (!validSetting) {
+                warn("invalid secret.rotate.period setting found: %s, system automatically set it to: %s", s, secretRotatePeriod);
+            }
+        }
+        return secretRotatePeriod;
+    }
+    private void _mergeSecretRotatePeriod(AppConfig config) {
+        if (!hasConfiguration(SECRET_ROTATE_PERIOD)) {
+            secretRotatePeriod = config.secretRotatePeriod;
         }
     }
 
