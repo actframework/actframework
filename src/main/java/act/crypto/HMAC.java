@@ -82,8 +82,8 @@ public class HMAC {
         token.header(JWT.Header.ALGO, algoName);
         String headers = token.headerJsonString();
         String payloads = token.payloadJsonString();
-        String encodedHeaders = Codec.encodeUrlSafeBase64(headers);
-        String encodedPayloads = Codec.encodeUrlSafeBase64(payloads);
+        String encodedHeaders = encodePart(headers);
+        String encodedPayloads = encodePart(payloads);
         StringBuilder buf = new StringBuilder(encodedHeaders)
                 .append(".")
                 .append(encodedPayloads);
@@ -97,7 +97,7 @@ public class HMAC {
 
     public String hash(byte[] bytes) {
         byte[] hashed = mac.doFinal(bytes);
-        return Codec.encodeUrlSafeBase64(hashed);
+        return encodePart(hashed);
     }
 
     public boolean verifyHash(String content, String hash) {
@@ -105,7 +105,7 @@ public class HMAC {
         int len = hash.length();
         int padding = 4 - len % 4;
         if (padding > 0) {
-            hash = S.concat(hash, S.times('.', padding));
+            hash = S.concat(hash, S.times(Codec.URL_SAFE_BASE64_PADDING_CHAR, padding));
         }
         return MessageDigest.isEqual(myHash, Codec.decodeUrlSafeBase64(hash));
     }
@@ -122,6 +122,13 @@ public class HMAC {
             algoLookup.put(algo.name().toUpperCase(), algo);
             algoLookup.put(algo.jwtName().toUpperCase(), algo);
         }
+    }
+
+    private static String encodePart(String part) {
+        return Codec.encodeUrlSafeBase64(part);
+    }
+    private static String encodePart(byte[] part) {
+        return Codec.encodeUrlSafeBase64(part);
     }
 
     public static void main(String[] args) {

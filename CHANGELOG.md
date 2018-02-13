@@ -5,6 +5,8 @@
 * EntityMetaInfo and scanner - support JPA plugin
 * Update to act-asm-5.0.3 for precise line number in error reporting
 * Improve built-in service performance by make them as nonblock when possible
+* `DefaultSessionCodec.processExpiration` error #513
+* JWT: sometimes JWT deserialization failed #512
 * Command line param binding failed for `char[]` #511
 * `NullPointerException` after app reloaded from an ASM error in dev mode #509
 * Error page not displayed if asm error raised during scanning phase #508

@@ -208,7 +208,7 @@ public class DefaultSessionCodec extends DestroyableBase implements SessionCodec
 
     static H.Session processExpiration(H.Session session, long now, boolean newSession, boolean sessionWillExpire, int ttl, String pingPath, H.Request request) {
         if (!sessionWillExpire) return session;
-        long expiration = now + ttl;
+        long expiration = now + ttl * 1000;
         if (newSession) {
             // no previous cookie to restore; but we need to set the timestamp in the new cookie
             // note we use `load` API instead of `put` because we don't want to set the dirty flag
