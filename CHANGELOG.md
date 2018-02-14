@@ -5,6 +5,9 @@
 * EntityMetaInfo and scanner - support JPA plugin
 * Update to act-asm-5.0.3 for precise line number in error reporting
 * Improve built-in service performance by make them as nonblock when possible
+* rename configuration `cli.session.expiration` to `cli.session.ttl` to make it comply to `session.ttl` configuration 
+* `ProgressGauge` API changes #516
+* `JsonView` on class has no effect to CLI command #515
 * `DefaultSessionCodec.processExpiration` error #513
 * JWT: sometimes JWT deserialization failed #512
 * Command line param binding failed for `char[]` #511

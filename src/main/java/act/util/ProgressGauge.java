@@ -74,9 +74,14 @@ public interface ProgressGauge {
     int maxHint();
 
     /**
-     * Mark the progress has been finished
+     * Check if the progress has been finished
      */
-    boolean done();
+    boolean isDone();
+
+    /**
+     * Mark the progress as done
+     */
+    void markAsDone();
 
     /**
      * Add an listener to this gauge that monitors the progress update

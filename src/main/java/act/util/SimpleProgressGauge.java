@@ -150,11 +150,16 @@ public class SimpleProgressGauge extends DestroyableBase implements ProgressGaug
     }
 
     @Override
-    public boolean done() {
+    public boolean isDone() {
         if (null != delegate) {
-            return delegate.done();
+            return delegate.isDone();
         }
         return currentSteps == maxHint;
+    }
+
+    @Override
+    public void markAsDone() {
+        stepTo(maxHint);
     }
 
     private void triggerUpdateEvent() {

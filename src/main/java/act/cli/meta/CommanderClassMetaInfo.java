@@ -22,6 +22,7 @@ package act.cli.meta;
 
 import act.app.AppClassLoader;
 import act.asm.Type;
+import act.cli.view.CliView;
 import act.sys.meta.SessionVariableAnnoInfo;
 import act.util.DestroyableBase;
 import org.osgl.$;
@@ -62,6 +63,7 @@ public class CommanderClassMetaInfo extends DestroyableBase {
     private Map<String, CommandMethodMetaInfo> commandLookup = null;
     private CommanderClassMetaInfo parent;
     private String contextPath;
+    private CliView view;
 
     public CommanderClassMetaInfo className(String name) {
         this.type = Type.getObjectType(name);
@@ -99,6 +101,15 @@ public class CommanderClassMetaInfo extends DestroyableBase {
     public CommanderClassMetaInfo superType(Type type) {
         superType = type;
         return this;
+    }
+
+    public CommanderClassMetaInfo view(CliView view) {
+        this.view = view;
+        return this;
+    }
+
+    public CliView view() {
+        return view;
     }
 
     public CommanderClassMetaInfo addFieldOptionAnnotationInfo(FieldOptionAnnoInfo info) {

@@ -62,7 +62,7 @@ public class CommandMethodMetaInfo extends DestroyableBase {
     private List<CommandParamMetaInfo> params = new ArrayList<>();
     private ReturnTypeInfo returnType;
     private Set<String> optionLeads = C.newSet();
-    private CliView view = CliView.TO_STRING;
+    private CliView view;
     private Act.Mode mode = Act.Mode.PROD;
     private int ctxParamCnt = -1;
 
@@ -90,7 +90,15 @@ public class CommandMethodMetaInfo extends DestroyableBase {
     }
 
     public CliView view() {
-        return view;
+        CliView view = this.view;
+        if (null != view) {
+            return view;
+        }
+        view = classInfo().view();
+        if (null != view) {
+            return view;
+        }
+        return CliView.TO_STRING;
     }
 
     public CommandMethodMetaInfo commandName(String name) {

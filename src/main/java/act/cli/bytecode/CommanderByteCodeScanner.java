@@ -88,6 +88,7 @@ public class CommanderByteCodeScanner extends AppByteCodeScannerBase {
     }
 
     private class _ByteCodeVisitor extends ByteCodeVisitor {
+
         @Override
         public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
             classInfo.className(name);
@@ -97,6 +98,32 @@ public class CommanderByteCodeScanner extends AppByteCodeScannerBase {
                 classInfo.setAbstract();
             }
             super.visit(version, access, name, signature, superName, interfaces);
+        }
+
+        @Override
+        public AnnotationVisitor visitAnnotation(String desc, boolean visible) {
+            AnnotationVisitor av = super.visitAnnotation(desc, visible);
+            Type type = Type.getType(desc);
+            if ($.eq(AsmTypes.CSV_VIEW_DEPRECATED.asmType(), type)) {
+                classInfo.view(CliView.CSV);
+                return av;
+            } else if ($.eq(AsmTypes.CSV_VIEW.asmType(), type)) {
+                classInfo.view(CliView.CSV);
+                return av;
+            } else if ($.eq(AsmTypes.TREE_VIEW.asmType(), type)) {
+                classInfo.view(CliView.TREE);
+                return av;
+            } else if ($.eq(AsmTypes.TABLE_VIEW.asmType(), type)) {
+                classInfo.view(CliView.TABLE);
+                return av;
+            } else if ($.eq(AsmTypes.JSON_VIEW_DEPRECATED.asmType(), type)) {
+                classInfo.view(CliView.JSON);
+                return av;
+            } else if ($.eq(AsmTypes.JSON_VIEW.asmType(), type)) {
+                classInfo.view(CliView.JSON);
+                return av;
+            }
+            return av;
         }
 
         @Override
@@ -309,22 +336,22 @@ public class CommanderByteCodeScanner extends AppByteCodeScannerBase {
                     };
                 } else if ($.eq(AsmTypes.CSV_VIEW_DEPRECATED.asmType(), type)) {
                     methodInfo.view(CliView.CSV);
-                    return super.visitAnnotation(desc, visible);
+                    return av;
                 } else if ($.eq(AsmTypes.CSV_VIEW.asmType(), type)) {
                     methodInfo.view(CliView.CSV);
-                    return super.visitAnnotation(desc, visible);
+                    return av;
                 } else if ($.eq(AsmTypes.TREE_VIEW.asmType(), type)) {
                     methodInfo.view(CliView.TREE);
-                    return super.visitAnnotation(desc, visible);
+                    return av;
                 } else if ($.eq(AsmTypes.TABLE_VIEW.asmType(), type)) {
                     methodInfo.view(CliView.TABLE);
-                    return super.visitAnnotation(desc, visible);
+                    return av;
                 } else if ($.eq(AsmTypes.JSON_VIEW_DEPRECATED.asmType(), type)) {
                     methodInfo.view(CliView.JSON);
-                    return super.visitAnnotation(desc, visible);
+                    return av;
                 } else if ($.eq(AsmTypes.JSON_VIEW.asmType(), type)) {
                     methodInfo.view(CliView.JSON);
-                    return super.visitAnnotation(desc, visible);
+                    return av;
                 } else if ($.eq(AsmTypes.PROPERTY_SPEC.asmType(), type)) {
                     final PropertySpec.MetaInfo propSpec = new PropertySpec.MetaInfo();
                     methodInfo.propertySpec(propSpec);

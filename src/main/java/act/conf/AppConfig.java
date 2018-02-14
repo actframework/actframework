@@ -711,13 +711,13 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
 
     public int cliSessionExpiration() {
         if (-1 == cliSessionExpiration) {
-            cliSessionExpiration = get(CLI_SESSION_EXPIRATION, 300);
+            cliSessionExpiration = get(CLI_SESSION_TTL, 300);
         }
         return cliSessionExpiration;
     }
 
     private void _mergeCliSessionExpiration(AppConfig conf) {
-        if (!hasConfiguration(CLI_SESSION_EXPIRATION)) {
+        if (!hasConfiguration(CLI_SESSION_TTL)) {
             cliSessionExpiration = conf.cliSessionExpiration;
         }
     }
