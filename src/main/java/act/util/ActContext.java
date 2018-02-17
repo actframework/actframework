@@ -156,18 +156,24 @@ public interface ActContext<CTX_TYPE extends ActContext> extends ParamValueProvi
     String sessionId();
 
     /**
-     * Returns data format pattern. Normally should be date time format
+     * Returns data format pattern. Normally should be date time format.
+     *
+     * This method is superseded by {@link #dateFormatPattern()}
      *
      * @return the data format pattern
      */
+    @Deprecated
     String pattern();
 
     /**
-     * Set data format pattern
+     * Set data format pattern.
+     *
+     * This method is superseded by {@link #dateFormatPattern(String)}
      *
      * @param pattern the data format pattern
      * @return this context instance
      */
+    @Deprecated
     CTX_TYPE pattern(String pattern);
 
     String _act_i18n(String msgId, Object... args);
@@ -232,6 +238,9 @@ public interface ActContext<CTX_TYPE extends ActContext> extends ParamValueProvi
 
     SerializerFeature[] fastjsonFeatures();
 
+    CTX_TYPE dateFormatPattern(String pattern);
+
+    String dateFormatPattern();
     /**
      * Returns a reusable {@link S.Buffer} instance
      *
@@ -268,6 +277,7 @@ public interface ActContext<CTX_TYPE extends ActContext> extends ParamValueProvi
         private Map<String, ConstraintViolation> violations;
         private Class<? extends SerializeFilter>[] fastjsonFilters;
         private SerializerFeature[] fastjsonFeatures;
+        private String dateFormatPattern;
 
         public Base(App app) {
             this(app, false);
@@ -365,6 +375,15 @@ public interface ActContext<CTX_TYPE extends ActContext> extends ParamValueProvi
         
         public SerializerFeature[] fastjsonFeatures() {
             return fastjsonFeatures;
+        }
+
+        public CTX dateFormatPattern(String pattern) {
+            this.dateFormatPattern = pattern;
+            return me();
+        }
+
+        public String dateFormatPattern() {
+            return this.dateFormatPattern;
         }
 
         @Override
@@ -674,9 +693,9 @@ public interface ActContext<CTX_TYPE extends ActContext> extends ParamValueProvi
             return null == ctx ? null : ctx.getClass();
         }
 
-        public static String dataPattern() {
+        public static String currentDateFormatPattern() {
             ActContext<?> current = currentContext();
-            return null == current ? null : current.pattern();
+            return null == current ? null : current.dateFormatPattern();
         }
 
     }

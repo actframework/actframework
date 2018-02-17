@@ -20,6 +20,7 @@ package act.data;
  * #L%
  */
 
+import act.data.annotation.DateFormatPattern;
 import act.data.annotation.Pattern;
 import act.util.ActContext;
 import org.joda.time.format.DateTimeFormat;
@@ -64,6 +65,10 @@ public abstract class JodaDateTimeCodecBase<T> extends StringValueResolver<T> im
 
     @Override
     public final StringValueResolver<T> amended(AnnotationAware beanSpec) {
+        DateFormatPattern dfp = beanSpec.getAnnotation(DateFormatPattern.class);
+        if (null != dfp) {
+            return create(dfp.value());
+        }
         Pattern pattern = beanSpec.getAnnotation(Pattern.class);
         return null == pattern ? this : create(pattern.value());
     }
@@ -85,8 +90,16 @@ public abstract class JodaDateTimeCodecBase<T> extends StringValueResolver<T> im
     protected abstract JodaDateTimeCodecBase<T> create(String pattern);
 
     protected final DateTimeFormatter formatter() {
-        String pattern = ActContext.Base.dataPattern();
-        return null == pattern ? this.formatter : formatter(pattern);
+        String pattern = ActContext.Base.currentDateFormatPattern();
+        return null == pattern ? this.formatter : formatter(sanitize(pattern));
+    }
+
+    protected String sanitize(String dateTimePattern) {
+        return dateTimePattern;
+    }
+
+    protected DateTimeFormatter defaultFormatter() {
+        return this.formatter;
     }
 
     private void formatter(DateTimeFormatter formatter) {
@@ -95,6 +108,9 @@ public abstract class JodaDateTimeCodecBase<T> extends StringValueResolver<T> im
     }
 
     private DateTimeFormatter formatter(String pattern) {
+        if (null == pattern) {
+            return defaultFormatter();
+        }
         return isIsoStandard(pattern) ? isoFormatter() : DateTimeFormat.forPattern(pattern);
     }
 

@@ -38,6 +38,8 @@ import org.osgl.storage.ISObject;
 import org.osgl.storage.impl.SObject;
 import org.osgl.util.*;
 
+import static com.alibaba.fastjson.JSON.DEFAULT_GENERATE_FEATURE;
+
 public class JsonUtilConfig {
     public static void configure(App app) {
         SerializeConfig config = SerializeConfig.getGlobalInstance();
@@ -82,9 +84,11 @@ public class JsonUtilConfig {
                 ActContext<?> ctx = ActContext.Base.currentContext();
                 SerializeFilter[] filters = null;
                 SerializerFeature[] features = null;
+                String dateFormatPattern = null;
                 if (null != ctx) {
                     filters = ctx.fastjsonFilters();
                     features = ctx.fastjsonFeatures();
+                    dateFormatPattern = ctx.dateFormatPattern();
                 }
                 Boolean b = DisableFastJsonCircularReferenceDetect.option.get();
                 C.Set<SerializerFeature> featureSet = C.newSet();
@@ -95,7 +99,17 @@ public class JsonUtilConfig {
                 if (null != b && b) {
                     featureSet.add(SerializerFeature.DisableCircularReferenceDetect);
                 }
-                return JSON.toJSONString(o, filters, featureSet.toArray(new SerializerFeature[featureSet.size()]));
+                return null == dateFormatPattern ?
+                        JSON.toJSONString(
+                                o, filters,
+                                featureSet.toArray(new SerializerFeature[featureSet.size()])) :
+                        JSON.toJSONString(
+                                o,
+                                SerializeConfig.globalInstance,
+                                filters,
+                                dateFormatPattern,
+                                DEFAULT_GENERATE_FEATURE,
+                                featureSet.toArray(new SerializerFeature[featureSet.size()]));
             }
         });
     }

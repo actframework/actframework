@@ -23,15 +23,12 @@ package act.data.annotation;
 import java.lang.annotation.*;
 
 /**
- * Specify the Date time format.
- *
- * This annotation is superseded by {@link DateFormatPattern}
+ * Specify the Date format.
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE, ElementType.PARAMETER, ElementType.FIELD, ElementType.METHOD})
-@Deprecated
-public @interface Pattern {
+public @interface DateFormatPattern {
     /**
      * The date time format value. E.g
      *

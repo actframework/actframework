@@ -33,6 +33,7 @@ import act.controller.annotation.HandleMissingAuthentication;
 import act.controller.annotation.Throttled;
 import act.controller.builtin.ThrottleFilter;
 import act.controller.meta.*;
+import act.data.annotation.DateFormatPattern;
 import act.data.annotation.Pattern;
 import act.db.RequireDataBind;
 import act.handler.NonBlock;
@@ -130,7 +131,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
     // (param index: output name)
     private Map<Integer, String> outputParams;
     private boolean hasOutputVar;
-    private String pattern;
+    private String dateFormatPattern;
     private boolean noTemplateCache;
     private MissingAuthenticationHandler missingAuthenticationHandler;
     private MissingAuthenticationHandler csrfFailureHandler;
@@ -198,9 +199,17 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
             features = featureAnno.value();
         }
 
-        Pattern pattern = method.getAnnotation(Pattern.class);
-        if (null != pattern) {
-            this.pattern = pattern.value();
+        DateFormatPattern dfp = method.getAnnotation(DateFormatPattern.class);
+        if (null != dfp) {
+            this.dateFormatPattern = dfp.value();
+        } else {
+            Pattern pattern = method.getAnnotation(Pattern.class);
+            if (null != pattern) {
+                this.dateFormatPattern = pattern.value();
+            }
+        }
+        if (null != this.dateFormatPattern) {
+            handlerMetaInfo.dateFormatPattern(this.dateFormatPattern);
         }
 
         sessionFree = method.isAnnotationPresent(SessionFree.class);
@@ -374,8 +383,8 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
             context.fastjsonFeatures(features);
         }
 
-        if (null != pattern) {
-            context.pattern(pattern);
+        if (null != dateFormatPattern) {
+            context.dateFormatPattern(dateFormatPattern);
         }
 
         if (byPassImplicityTemplateVariable && context.state().isHandling()) {
@@ -756,7 +765,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         }
     }
 
-    private Result invoke(M handlerMetaInfo, ActionContext context, Object controller, Object[] params) throws Exception {
+    private Result invoke(M handlerMetaInfo, ActionContext context, Object controller, Object[] params) {
         Object result;
         String invocationInfo = null;
         try {

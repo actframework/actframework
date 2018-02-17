@@ -64,4 +64,20 @@ public class JodaLocalDateCodec extends JodaReadablePatialCodecBase<LocalDate> {
         return LocalDate.now();
     }
 
+    @Override
+    protected String sanitize(String dateTimePattern) {
+        if (null == dateTimePattern) {
+            return null;
+        }
+        // ensure no time part
+        if (dateTimePattern.contains("M")
+                || dateTimePattern.contains("h")
+                || dateTimePattern.contains("H")
+                || dateTimePattern.contains("m")
+                || dateTimePattern.contains("s")
+                || dateTimePattern.contains("S")) {
+            return null;
+        }
+        return dateTimePattern;
+    }
 }

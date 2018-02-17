@@ -49,6 +49,7 @@ public abstract class HandlerMethodMetaInfo<T extends HandlerMethodMetaInfo> ext
     private C.List<HandlerParamMetaInfo> params = C.newList();
     private volatile String fullName;
     private ReturnTypeInfo returnType;
+    private String dateFormatPattern;
     private boolean returnArray; // for performance tuning
     private boolean throwRenderResult;
     private PropertySpec.MetaInfo propertySpec;
@@ -114,6 +115,15 @@ public abstract class HandlerMethodMetaInfo<T extends HandlerMethodMetaInfo> ext
             }
         }
         return fullName;
+    }
+
+    public T dateFormatPattern(String pattern) {
+        this.dateFormatPattern = pattern;
+        return me();
+    }
+
+    public String dateFormatPattern() {
+        return this.dateFormatPattern;
     }
 
     @Override

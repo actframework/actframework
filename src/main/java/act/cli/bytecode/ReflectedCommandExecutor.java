@@ -26,6 +26,7 @@ import act.cli.CommandExecutor;
 import act.cli.ReportProgress;
 import act.cli.meta.CommandMethodMetaInfo;
 import act.cli.meta.CommandParamMetaInfo;
+import act.data.annotation.DateFormatPattern;
 import act.data.annotation.Pattern;
 import act.inject.param.CliContextParamLoader;
 import act.inject.param.ParamValueLoaderManager;
@@ -65,7 +66,7 @@ public class ReflectedCommandExecutor extends CommandExecutor {
     private CliContext.ParsingContext parsingContext;
     private boolean async;
     private ReportProgress reportProgress;
-    private String pattern;
+    private String dateFormatPattern;
     private Class<? extends SerializeFilter> filters[];
     private SerializerFeature features[];
 
@@ -98,9 +99,14 @@ public class ReflectedCommandExecutor extends CommandExecutor {
         } else {
             method.setAccessible(true);
         }
-        Pattern pattern = method.getAnnotation(Pattern.class);
-        if (null != pattern) {
-            this.pattern = pattern.value();
+        DateFormatPattern dfp = method.getAnnotation(DateFormatPattern.class);
+        if (null != dfp) {
+            this.dateFormatPattern = dfp.value();
+        } else {
+            Pattern pattern = method.getAnnotation(Pattern.class);
+            if (null != pattern) {
+                this.dateFormatPattern = pattern.value();
+            }
         }
         this.paramLoaderService = app.service(ParamValueLoaderManager.class).get(CliContext.class);
         this.buildParsingContext();
@@ -109,8 +115,8 @@ public class ReflectedCommandExecutor extends CommandExecutor {
     @Override
     public Object execute(CliContext context) {
         context.handlerMethod(method);
-        if (null != pattern) {
-            context.pattern(pattern);
+        if (null != dateFormatPattern) {
+            context.dateFormatPattern(dateFormatPattern);
         }
         context.fastjsonFeatures(features);
         context.fastjsonFilters(filters);
