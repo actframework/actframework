@@ -36,6 +36,7 @@ import javax.inject.Singleton;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 import static org.osgl.http.H.Session.KEY_EXPIRATION;
 import static org.osgl.http.H.Session.KEY_EXPIRE_INDICATOR;
@@ -45,17 +46,17 @@ public class DefaultSessionCodec extends DestroyableBase implements SessionCodec
 
     private final boolean sessionWillExpire;
     private final boolean encryptSession;
-    private final int ttl;
+    private final int ttlInMillis;
     private final String pingPath;
     private RotateSecretCrypto crypto;
 
     @Inject
     public DefaultSessionCodec(AppConfig conf, RotateSecretCrypto crypto) {
-        ttl = conf.sessionTtl() * 1000;
-        sessionWillExpire = ttl > 0;
+        ttlInMillis = conf.sessionTtl() * 1000;
+        sessionWillExpire = ttlInMillis > 0;
         pingPath = conf .pingPath();
         encryptSession = conf.encryptSession();
-        this.crypto = crypto;
+        this.crypto = $.notNull(crypto);
     }
 
     @Override
@@ -76,7 +77,7 @@ public class DefaultSessionCodec extends DestroyableBase implements SessionCodec
         session.id(); // ensure session ID is generated
         if (sessionWillExpire && !session.contains(KEY_EXPIRATION)) {
             // session get cleared before
-            session.put(KEY_EXPIRATION, $.ms() + ttl);
+            session.put(KEY_EXPIRATION, $.ms() + ttlInMillis);
         }
         return dissolveIntoCookieContent(session, true);
     }
@@ -97,7 +98,7 @@ public class DefaultSessionCodec extends DestroyableBase implements SessionCodec
             resolveFromCookieContent(session, encodedSession, true);
             newSession = false;
         }
-        session = processExpiration(session, $.ms(), newSession, sessionWillExpire, ttl, pingPath, request);
+        session = processExpiration(session, $.ms(), newSession, sessionWillExpire, ttlInMillis, pingPath, request);
         return session;
     }
 
@@ -182,13 +183,15 @@ public class DefaultSessionCodec extends DestroyableBase implements SessionCodec
     private String dissolveIntoCookieContent(H.KV<?> kv, boolean isSession) {
         S.Buffer sb = S.buffer();
         int i = 0;
-        for (String k : kv.keySet()) {
+        for (Map.Entry<String, String> entry : kv.entrySet()) {
             if (i > 0) {
                 sb.append("\u0000");
             }
+            String k = entry.getKey();
+            String v = entry.getValue();
             sb.append(k);
             sb.append("\u0001");
-            sb.append(kv.get(k));
+            sb.append(v);
             i++;
         }
         String data = sb.toString();
@@ -203,9 +206,9 @@ public class DefaultSessionCodec extends DestroyableBase implements SessionCodec
         return data;
     }
 
-    static H.Session processExpiration(H.Session session, long now, boolean newSession, boolean sessionWillExpire, int ttl, String pingPath, H.Request request) {
+    static H.Session processExpiration(H.Session session, long now, boolean newSession, boolean sessionWillExpire, int ttlInMillis, String pingPath, H.Request request) {
         if (!sessionWillExpire) return session;
-        long expiration = now + ttl * 1000;
+        long expiration = now + ttlInMillis;
         if (newSession) {
             // no previous cookie to restore; but we need to set the timestamp in the new cookie
             // note we use `load` API instead of `put` because we don't want to set the dirty flag

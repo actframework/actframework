@@ -35,7 +35,7 @@ import java.security.SecureRandom;
 
 public class AppCrypto {
 
-    private static Logger logger = LogManager.get(AppCrypto.class);
+    protected static final Logger LOGGER = LogManager.get(AppCrypto.class);
 
     private byte[] secret;
 
@@ -107,7 +107,7 @@ public class AppCrypto {
         } catch (UnexpectedException e) {
             Throwable cause = e.getCause();
             if (cause instanceof InvalidKeyException) {
-                logger.error("Cannot encrypt/decrypt! Please download Java Crypto Extension pack from Oracle: http://www.oracle.com/technetwork/java/javase/tech/index-jsp-136007.html");
+                LOGGER.error("Cannot encrypt/decrypt! Please download Java Crypto Extension pack from Oracle: http://www.oracle.com/technetwork/java/javase/tech/index-jsp-136007.html");
             }
             throw e;
         }
@@ -119,7 +119,7 @@ public class AppCrypto {
         } catch (UnexpectedException e) {
             Throwable cause = e.getCause();
             if (cause instanceof InvalidKeyException) {
-                logger.error("Cannot encrypt/decrypt! Please download Java Crypto Extension pack from Oracle: http://www.oracle.com/technetwork/java/javase/tech/index-jsp-136007.html");
+                LOGGER.error("Cannot encrypt/decrypt! Please download Java Crypto Extension pack from Oracle: http://www.oracle.com/technetwork/java/javase/tech/index-jsp-136007.html");
             }
             throw e;
         }

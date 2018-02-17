@@ -20,6 +20,7 @@ package act.session;
  * #L%
  */
 
+import act.app.ActionContext;
 import act.conf.AppConfig;
 import org.osgl.http.H;
 
@@ -39,8 +40,9 @@ public class SessionManager {
         mapper = config.sessionMapper();
     }
 
-    public H.Session resolveSession(H.Request request) {
+    public H.Session resolveSession(H.Request request, ActionContext context) {
         String encodedSession = mapper.readSession(request);
+        context.encodedSessionToken = encodedSession;
         return null == encodedSession ? new H.Session() : codec.decodeSession(encodedSession, request);
     }
 

@@ -40,13 +40,13 @@ public class JsonWebTokenSessionCodec implements SessionCodec {
 
     private JWT jwt;
     private final boolean sessionWillExpire;
-    private final int ttl;
+    private final int ttlInMillis;
     private final String pingPath;
 
     @Inject
     public JsonWebTokenSessionCodec(AppConfig conf, JWT jwt) {
-        ttl = conf.sessionTtl();
-        sessionWillExpire = ttl > 0;
+        ttlInMillis = conf.sessionTtl() * 1000;
+        sessionWillExpire = ttlInMillis > 0;
         pingPath = conf.pingPath();
         this.jwt = $.notNull(jwt);
     }
@@ -64,7 +64,7 @@ public class JsonWebTokenSessionCodec implements SessionCodec {
         session.id(); // ensure session ID is generated
         if (sessionWillExpire && !session.contains(KEY_EXPIRATION)) {
             // session get cleared before
-            session.put(KEY_EXPIRATION, $.ms() + ttl * 1000);
+            session.put(KEY_EXPIRATION, $.ms() + ttlInMillis);
         }
         return populateToken(jwt.newToken(), session).toString(jwt);
     }
@@ -87,7 +87,7 @@ public class JsonWebTokenSessionCodec implements SessionCodec {
         }
         DefaultSessionCodec.processExpiration(
                 session, $.ms(), newSession,
-                sessionWillExpire, ttl, pingPath,
+                sessionWillExpire, ttlInMillis, pingPath,
                 request);
         return session;
     }
@@ -103,8 +103,9 @@ public class JsonWebTokenSessionCodec implements SessionCodec {
     }
 
     private JWT.Token populateToken(JWT.Token token, H.KV<?> state) {
-        for (String k : state.keySet()) {
-            String v = state.get(k);
+        for (Map.Entry<String, String> entry : state.entrySet()) {
+            String k = entry.getKey();
+            String v = entry.getValue();
             if (H.Session.KEY_EXPIRATION.equals(k)) {
                 long l = Long.parseLong(v);
                 token.payload(EXPIRES_AT, l / 1000);

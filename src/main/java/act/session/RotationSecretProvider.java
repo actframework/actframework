@@ -47,15 +47,15 @@ public class RotationSecretProvider {
         rawSecret = config.secret();
         rotateEnabled = config.rotateSecret();
         if (rotateEnabled) {
-            rotateSecret();
             int period = config.secretRotatePeriod();
             app.jobManager().every("secret-rotator", new Runnable() {
                 @Override
                 public void run() {
                     rotateSecret();
                 }
-            }, period, TimeUnit.SECONDS);
+            }, period, TimeUnit.MINUTES);
             periodInMinutes = period;
+            rotateSecret();
         }
     }
 
@@ -111,7 +111,7 @@ public class RotationSecretProvider {
     private void rotateSecret() {
         ensureRotateEnabled();
         lastSecret = curSecret;
-        curSecret = null == nextSecret ? nextSecret : calculateCurrentSecret();
+        curSecret = null != nextSecret ? nextSecret : calculateCurrentSecret();
         nextSecret = calculateNextSecret();
         if (null == lastSecret) {
             lastSecret = curSecret;
@@ -131,13 +131,18 @@ public class RotationSecretProvider {
         if (periodInMinutes > 60) {
             int periodInHours = periodInMinutes / 60;
             int hoursOfDay = DateTime.now().hourOfDay().get();
-            int reminder = hoursOfDay % periodInHours;
+            int period = hoursOfDay / periodInHours;
             trait = currentHourStart().getMillis() / 1000 / 60;
-            if (0 < reminder) {
-                trait -= (reminder * 60);
+            if (0 < period) {
+                trait += (period * 60);
             }
         } else {
+            int minutesOfHour = DateTime.now().minuteOfHour().get();
+            int period = minutesOfHour / periodInMinutes;
             trait = currentHourStart().getMillis() / 1000 / 60;
+            if (0 < period) {
+                trait += period;
+            }
         }
         if (forwardStep > 0) {
             trait += forwardStep * periodInMinutes;

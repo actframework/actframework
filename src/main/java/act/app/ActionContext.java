@@ -107,6 +107,9 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
     private SessionManager sessionManager;
     private Trace.AccessLog accessLog;
 
+    // see https://github.com/actframework/actframework/issues/492
+    public String encodedSessionToken;
+
     // -- replace attributres with fields -- perf tune
     // -- ATTR_CSRF_PREFETCHED
     private String csrfPrefetched;
@@ -1141,7 +1144,7 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
 
     private void resolveSession(H.Request req) {
         preCheckCsrf();
-        session = sessionManager().resolveSession(req);
+        session = sessionManager().resolveSession(req, this);
         checkCsrf(session);
     }
 
