@@ -6,7 +6,8 @@
 * Update to act-asm-5.0.3 for precise line number in error reporting
 * Improve built-in service performance by make them as nonblock when possible
 * rename configuration `cli.session.expiration` to `cli.session.ttl` to make it comply to `session.ttl` configuration
-* Simple event dispatching failed when param list contains Interface #518
+* testapp apidoc error #519
+* Simple event dispatching failed when event listener method argument list contains Interface #518
 * `Env.RequireMode` not working on route registration #517 
 * `ProgressGauge` API changes #516
 * `JsonView` on class has no effect to CLI command #515

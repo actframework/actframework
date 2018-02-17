@@ -424,7 +424,9 @@ public class Endpoint implements Comparable<Endpoint> {
             }
         } else if (Collection.class.isAssignableFrom(type)) {
             // TODO handle datetime component type
-            BeanSpec elementSpec = BeanSpec.of(spec.typeParams().get(0), null, Act.injector());
+            List<Type> typeParams = spec.typeParams();
+            Type elementType = typeParams.isEmpty() ? Object.class : typeParams.get(0);
+            BeanSpec elementSpec = BeanSpec.of(elementType, null, Act.injector());
             if ($.isSimpleType(elementSpec.rawType())) {
                 return bindName + "=" + generateSampleData(elementSpec, new HashSet<Class<?>>())
                         + "&" + bindName + "=" + generateSampleData(elementSpec, new HashSet<Class<?>>());
@@ -461,6 +463,9 @@ public class Endpoint implements Comparable<Endpoint> {
             if (void.class == type || Void.class == type || Result.class.isAssignableFrom(type)) {
                 return null;
             }
+            if (Object.class == type) {
+                return "<Any>";
+            }
             try {
                 if (type.isEnum()) {
                     Object[] ea = type.getEnumConstants();
@@ -476,6 +481,9 @@ public class Endpoint implements Comparable<Endpoint> {
                     Array.set(sample, 1, generateSampleData(BeanSpec.of(type.getComponentType(), Act.injector()), typeChain));
                     return sample;
                 } else if ($.isSimpleType(type)) {
+                    if (Enum.class == type) {
+                        return "<Any Enum>";
+                    }
                     if (!type.isPrimitive()) {
                         type = $.primitiveTypeOf(type);
                     }

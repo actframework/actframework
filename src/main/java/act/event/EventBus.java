@@ -132,12 +132,13 @@ public class EventBus extends AppServiceBase<EventBus> {
 
         private static ConcurrentMap<Class, Class> typeMap = new ConcurrentHashMap<>();
 
+        // checkout https://github.com/actframework/actframework/issues/518
         private static Class effectiveTypeOf(Object o) {
             return effectiveTypeOf(o.getClass());
         }
 
         private static Class effectiveTypeOf(Class<?> type) {
-            if (Object.class == type) {
+            if (null == type || Object.class == type) {
                 return type;
             }
             Class mappedType = typeMap.get(type);
@@ -150,10 +151,15 @@ public class EventBus extends AppServiceBase<EventBus> {
                         || type.isMemberClass()) {
                     Class[] ca = type.getInterfaces();
                     if (ca.length > 0) {
-                        mappedType = ca[0];
-                    } else {
+                        for (Class intf: ca) {
+                            if (Modifier.isPublic(intf.getModifiers())) {
+                                mappedType = intf;
+                            }
+                        }
+                    }
+                    if (null == mappedType) {
                         Class<?> parent = type.getSuperclass();
-                        mappedType = effectiveTypeOf(parent);
+                        mappedType = effectiveTypeOf((null == parent || Object.class == parent) ? type : parent);
                     }
                     typeMap.putIfAbsent(type, mappedType);
                 } else {
