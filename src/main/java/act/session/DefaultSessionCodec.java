@@ -20,9 +20,9 @@ package act.session;
  * #L%
  */
 
-import act.app.App;
 import act.conf.AppConfig;
 import act.crypto.AppCrypto;
+import act.crypto.RotateSecretCrypto;
 import act.util.DestroyableBase;
 import org.osgl.$;
 import org.osgl.http.H;
@@ -47,22 +47,20 @@ public class DefaultSessionCodec extends DestroyableBase implements SessionCodec
     private final boolean encryptSession;
     private final int ttl;
     private final String pingPath;
-    private App app;
-    private RotationSecretProvider secretProvider;
+    private RotateSecretCrypto crypto;
 
     @Inject
-    public DefaultSessionCodec(AppConfig conf) {
-        app = conf.app();
+    public DefaultSessionCodec(AppConfig conf, RotateSecretCrypto crypto) {
         ttl = conf.sessionTtl() * 1000;
         sessionWillExpire = ttl > 0;
         pingPath = conf .pingPath();
         encryptSession = conf.encryptSession();
-        this.secretProvider = secretProvider;
+        this.crypto = crypto;
     }
 
     @Override
     protected void releaseResources() {
-        app = null;
+        crypto = null;
     }
 
     @Override
@@ -118,7 +116,7 @@ public class DefaultSessionCodec extends DestroyableBase implements SessionCodec
         if (isSession) {
             if (encryptSession) {
                 try {
-                    data = app.decrypt(data);
+                    data = crypto.decrypt(data);
                 } catch (Exception e) {
                     return;
                 }
@@ -129,8 +127,7 @@ public class DefaultSessionCodec extends DestroyableBase implements SessionCodec
             }
             String sign = data.substring(0, firstDashIndex);
             data = data.substring(firstDashIndex + 1);
-            String sign1 = app.sign(data);
-            if (!sign.equals(sign1)) {
+            if (!crypto.verifySignature(data, sign)) {
                 return;
             }
         }
@@ -196,10 +193,10 @@ public class DefaultSessionCodec extends DestroyableBase implements SessionCodec
         }
         String data = sb.toString();
         if (isSession) {
-            String sign = app.sign(data);
+            String sign = crypto.sign(data);
             data = S.concat(sign, "-", data);
             if (encryptSession) {
-                data = app.encrypt(data);
+                data = crypto.encrypt(data);
             }
         }
         data = Codec.encodeUrl(data, Charsets.UTF_8);

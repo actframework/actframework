@@ -28,6 +28,7 @@ import act.app.event.SysEventId;
 import act.app.util.NamedPort;
 import act.cli.CliOverHttpAuthority;
 import act.crypto.HMAC;
+import act.crypto.RotateSecretHMAC;
 import act.db.util.SequenceNumberGenerator;
 import act.db.util._SequenceNumberGenerator;
 import act.handler.UnknownHttpMethodProcessor;
@@ -1022,7 +1023,11 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     public HMAC jwtAlgo() {
         if (null == jwtAlgo) {
             String algoKey = get(JWT_ALGO, "SHA256");
-            jwtAlgo = new HMAC(secret(), algoKey);
+            if (rotateSecret()) {
+                jwtAlgo = new RotateSecretHMAC(algoKey, app.getInstance(RotationSecretProvider.class));
+            } else {
+                jwtAlgo = new HMAC(secret(), algoKey);
+            }
         }
         return jwtAlgo;
     }
@@ -2170,7 +2175,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
 
     public SessionCodec sessionCodec() {
         if (null == sessionCodec) {
-            sessionCodec = get(SESSION_CODEC, new DefaultSessionCodec(this));
+            sessionCodec = get(SESSION_CODEC, app.getInstance(DefaultSessionCodec.class));
         }
         return sessionCodec;
     }

@@ -21,6 +21,7 @@ package act.sys;
  */
 
 import act.Act;
+import act.asm.Type;
 import org.osgl.util.C;
 import org.osgl.util.OS;
 import org.osgl.util.S;
@@ -225,6 +226,14 @@ public final class Env {
         return unless ^ profileMatches(profile);
     }
 
+    public static boolean modeMatches(String mode) {
+        return S.eq(mode, Act.mode().name(), S.IGNORECASE);
+    }
+
+    public static boolean modeMatches(String mode, boolean unless) {
+        return unless ^ modeMatches(mode);
+    }
+
     public static boolean matches(RequireGroup groupTag) {
         return groupMatches(groupTag.value(), groupTag.except());
     }
@@ -250,8 +259,21 @@ public final class Env {
             Env.RequireProfile.class, Env.RequireGroup.class, Env.RequireMode.class
     );
 
+    private static final C.Set<String> ENV_ANNO_DESCS = C.set(
+            Type.getType(Mode.class).getDescriptor(),
+            Type.getType(RequireMode.class).getDescriptor(),
+            Type.getType(Profile.class).getDescriptor(),
+            Type.getType(RequireProfile.class).getDescriptor(),
+            Type.getType(Group.class).getDescriptor(),
+            Type.getType(RequireGroup.class).getDescriptor()
+    );
+
     public static boolean isEnvAnnotation(Class<? extends Annotation> type) {
         return ENV_ANNOTATION_TYPES.contains(type);
+    }
+
+    public static boolean isEnvAnnoDescriptor(String descriptor) {
+        return ENV_ANNO_DESCS.contains(descriptor);
     }
 
     /**

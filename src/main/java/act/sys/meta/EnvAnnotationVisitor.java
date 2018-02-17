@@ -23,36 +23,42 @@ package act.sys.meta;
 import act.Act;
 import act.asm.AnnotationVisitor;
 import act.asm.Opcodes;
+import act.asm.Type;
 import act.sys.Env;
 import org.osgl.util.S;
-
-import java.lang.annotation.Annotation;
 
 /**
  * Scan `@Env.Mode`, `@Env.Profile`, `@Env.Group`
  */
 public class EnvAnnotationVisitor extends AnnotationVisitor implements Opcodes {
 
+    public static final String DESC_PROFILE = Type.getType(Env.Profile.class).getDescriptor();
+    public static final String DESC_REQUIRE_PROFILE = Type.getType(Env.RequireProfile.class).getDescriptor();
+    public static final String DESC_MODE = Type.getType(Env.Mode.class).getDescriptor();
+    public static final String DESC_REQUIRE_MODE = Type.getType(Env.RequireMode.class).getDescriptor();
+    public static final String DESC_GROUP = Type.getType(Env.Group.class).getDescriptor();
+    public static final String DESC_REQUIRE_GROUP = Type.getType(Env.RequireGroup.class).getDescriptor();
+
     private boolean matched = true;
     private boolean except = false;
-    private Class<? extends Annotation> type;
+    private String desc;
 
-    public EnvAnnotationVisitor(AnnotationVisitor annotationVisitor, Class<? extends Annotation> c) {
+    public EnvAnnotationVisitor(AnnotationVisitor annotationVisitor, String descriptor) {
         super(ASM5, annotationVisitor);
-        this.type = c;
+        this.desc = descriptor;
     }
 
     @Override
     public void visit(String name, Object value) {
         if ("value".equals(name)) {
             String s = S.string(value);
-            if (type == Env.RequireProfile.class || type == Env.Profile.class) {
+            if (S.eq(desc, DESC_REQUIRE_PROFILE) || S.eq(desc, DESC_PROFILE)) {
                 matched = Env.profileMatches(s);
-            } else if (type == Env.RequireGroup.class || type == Env.Group.class) {
+            } else if (S.eq(desc, DESC_REQUIRE_MODE) || S.eq(desc, DESC_MODE)) {
                 matched = Env.groupMatches(s);
+            } else if (S.eq(desc, DESC_REQUIRE_GROUP) || S.eq(desc, DESC_GROUP)) {
+                matched = Env.modeMatches(s);
             }
-        } else if ("except".equals(name)) {
-            except = (Boolean) value;
         } else if ("except".equals(name)) {
             except = (Boolean) value;
         }

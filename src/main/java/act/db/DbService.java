@@ -20,11 +20,12 @@ package act.db;
  * #L%
  */
 
-import act.Act;
 import act.app.App;
 import act.app.AppHolderBase;
+import act.db.meta.EntityMetaInfoRepo;
 import org.osgl.logging.LogManager;
 import org.osgl.logging.Logger;
+import org.osgl.util.C;
 import org.osgl.util.E;
 
 import java.lang.annotation.Annotation;
@@ -67,9 +68,9 @@ public abstract class DbService extends AppHolderBase<DbService> {
      *
      * @return model classes talk to this datasource
      */
-    public Set<Class> modelClasses() {
-        EntityClassRepository repo = Act.getInstance(EntityClassRepository.class);
-        return repo.modelClasses(id());
+    public Set<Class> entityClasses() {
+        EntityMetaInfoRepo repo = app().entityMetaInfoRepo().forDb(id);
+        return null == repo ? C.<Class>set() : repo.entityClasses();
     }
 
     @Override

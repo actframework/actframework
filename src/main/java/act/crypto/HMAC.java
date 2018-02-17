@@ -64,18 +64,28 @@ public class HMAC {
 
     private Mac mac;
     private String algoName;
+    protected Algorithm algo;
     private final Charset UTF_8 = Charset.forName("UTF-8");
 
-    public HMAC(String key, String algoKey) {
-        Algorithm algo = algoLookup.get(algoKey.toUpperCase());
+    protected HMAC(String algoKey) {
+        algo = algoLookup.get(algoKey.toUpperCase());
         E.illegalArgumentIf(null == algo, "Algorithm not found");
-        mac = algo.macOf(key);
         algoName = algo.jwtName();
     }
 
-    public HMAC(String key, Algorithm algo) {
+    protected HMAC(Algorithm algo) {
+        this.algoName = algo.jwtName();
+        this.algo = algo;
+    }
+
+    public HMAC(String key, String algoKey) {
+        this(algoKey);
         mac = algo.macOf(key);
-        algoName = algo.jwtName();
+    }
+
+    public HMAC(String key, Algorithm algo) {
+        this(algo);
+        mac = algo.macOf(key);
     }
 
     public String toString(JWT.Token token) {
@@ -96,18 +106,35 @@ public class HMAC {
     }
 
     public String hash(byte[] bytes) {
-        byte[] hashed = mac.doFinal(bytes);
+        byte[] hashed = doHash(bytes);
         return encodePart(hashed);
     }
 
+    protected byte[] doHash(byte[] bytes) {
+        return doHash(bytes, mac);
+    }
+
+    protected final byte[] doHash(byte[] bytes, Mac mac) {
+        return mac.doFinal(bytes);
+    }
+
     public boolean verifyHash(String content, String hash) {
-        byte[] myHash = mac.doFinal(content.getBytes(UTF_8));
         int len = hash.length();
         int padding = 4 - len % 4;
         if (padding > 0) {
             hash = S.concat(hash, S.times(Codec.URL_SAFE_BASE64_PADDING_CHAR, padding));
         }
-        return MessageDigest.isEqual(myHash, Codec.decodeUrlSafeBase64(hash));
+        byte[] yourHash = Codec.decodeUrlSafeBase64(hash);
+        return verifyHash(content.getBytes(UTF_8), yourHash);
+    }
+
+    protected boolean verifyHash(byte[] payload, byte[] hash) {
+        return verifyHash(payload, hash, mac);
+    }
+
+    protected final boolean verifyHash(byte[] payload, byte[] hash, Mac mac) {
+        byte[] myHash = doHash(payload, mac);
+        return MessageDigest.isEqual(myHash, hash);
     }
 
     public boolean verifyArgo(String algoName) {
@@ -124,22 +151,11 @@ public class HMAC {
         }
     }
 
-    private static String encodePart(String part) {
+    protected static String encodePart(String part) {
         return Codec.encodeUrlSafeBase64(part);
     }
-    private static String encodePart(byte[] part) {
+    protected static String encodePart(byte[] part) {
         return Codec.encodeUrlSafeBase64(part);
-    }
-
-    public static void main(String[] args) {
-        HMAC hmac = new HMAC("secret", "SHA256");
-        System.out.println(hmac.hash("Hello World"));
-
-        hmac = new HMAC("secret", "SHA384");
-        System.out.println(hmac.hash("Hello World"));
-
-        hmac = new HMAC("secret", "SHA512");
-        System.out.println(hmac.hash("Hello World"));
     }
 
 }

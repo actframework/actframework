@@ -22,10 +22,14 @@ package act.db;
 
 import act.Act;
 import act.app.App;
+import act.db.meta.MasterEntityMetaInfoRepo;
 import act.plugin.AppServicePlugin;
 import act.plugin.Plugin;
+import org.osgl.util.C;
 
+import java.lang.annotation.Annotation;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * The base class for Database Plugin
@@ -39,6 +43,15 @@ public abstract class DbPlugin extends AppServicePlugin implements Plugin {
         Act.trigger(new DbPluginRegistered(this));
     }
 
+    /**
+     * Sub class to override this method to return a set
+     * of annotation classes that marks on an entity(model) class
+     * @return entity class annotations
+     */
+    public Set<Class<? extends Annotation>> entityAnnotations() {
+        return C.set();
+    }
+
     @Override
     public int hashCode() {
         return getClass().hashCode();
@@ -46,6 +59,13 @@ public abstract class DbPlugin extends AppServicePlugin implements Plugin {
 
     @Override
     protected void applyTo(App app) {
+        Set<Class<? extends Annotation>> entityAnnotations = entityAnnotations();
+        if (!entityAnnotations.isEmpty()) {
+            MasterEntityMetaInfoRepo repo = app.entityMetaInfoRepo();
+            for (Class<? extends Annotation> annoType : entityAnnotations) {
+                repo.registerEntityAnnotation(annoType);
+            }
+        }
     }
 
     @Override

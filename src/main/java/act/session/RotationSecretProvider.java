@@ -39,13 +39,15 @@ public class RotationSecretProvider {
     private String curSecret;
     private String nextSecret;
     private int periodInMinutes;
+    private boolean rotateEnabled;
 
     @Inject
     public RotationSecretProvider(App app) {
         AppConfig<?> config = app.config();
         rawSecret = config.secret();
-        rotateSecret();
-        if (config.rotateSecret()) {
+        rotateEnabled = config.rotateSecret();
+        if (rotateEnabled) {
+            rotateSecret();
             int period = config.secretRotatePeriod();
             app.jobManager().every("secret-rotator", new Runnable() {
                 @Override
@@ -54,21 +56,29 @@ public class RotationSecretProvider {
                 }
             }, period, TimeUnit.SECONDS);
             periodInMinutes = period;
-        } else {
-            curSecret = rawSecret;
-            lastSecret = rawSecret;
         }
     }
 
-    public String secret() {
+    public boolean isRotateEnabled() {
+        return rotateEnabled;
+    }
+
+    public String rawSecret() {
+        return rawSecret;
+    }
+
+    public String curSecret() {
+        ensureRotateEnabled();
         return curSecret;
     }
 
     public String lastSecret() {
+        ensureRotateEnabled();
         return lastSecret;
     }
 
     public String nextSecret() {
+        ensureRotateEnabled();
         return nextSecret;
     }
 
@@ -99,6 +109,7 @@ public class RotationSecretProvider {
     }
 
     private void rotateSecret() {
+        ensureRotateEnabled();
         lastSecret = curSecret;
         curSecret = null == nextSecret ? nextSecret : calculateCurrentSecret();
         nextSecret = calculateNextSecret();
@@ -133,6 +144,11 @@ public class RotationSecretProvider {
         }
         return S.string(trait);
     }
+
+    private void ensureRotateEnabled() {
+        E.illegalStateIfNot(rotateEnabled, "secret rotate not enabled");
+    }
+
 
     private static DateTime currentHourStart() {
         return DateTime.now().withMinuteOfHour(0).withSecondOfMinute(0).withMillisOfSecond(0);

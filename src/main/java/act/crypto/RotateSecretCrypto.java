@@ -21,7 +21,7 @@ package act.crypto;
  */
 
 import act.session.RotationSecretProvider;
-import org.osgl.$;
+import org.osgl.util.S;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -30,15 +30,27 @@ import javax.inject.Singleton;
 public class RotateSecretCrypto extends AppCrypto {
 
     private RotationSecretProvider secretProvider;
+    private boolean rotationEnabled;
 
     @Inject
     public RotateSecretCrypto(RotationSecretProvider secretProvider) {
-        this.secretProvider = $.notNull(secretProvider);
+        super(secretProvider.rawSecret());
+        this.rotationEnabled = secretProvider.isRotateEnabled();
+        this.secretProvider = secretProvider;
     }
 
     @Override
     public String sign(String message) {
-        return super.sign(message);
+        return !rotationEnabled ? super.sign(message) : cur().sign(message);
+    }
+
+    public boolean verifySignature(String message, String signature) {
+        if (!rotationEnabled) {
+            return S.eq(signature, super.sign(message));
+        }
+        return S.eq(signature, cur().sign(message))
+                || S.eq(signature, prev().sign(message))
+                || S.eq(signature, next().sign(message));
     }
 
     @Override
@@ -68,11 +80,34 @@ public class RotateSecretCrypto extends AppCrypto {
 
     @Override
     public String encrypt(String message) {
-        return super.encrypt(message);
+        return !rotationEnabled ? super.encrypt(message) : cur().encrypt(message);
     }
 
     @Override
     public String decrypt(String message) {
-        return super.decrypt(message);
+        if (!rotationEnabled) {
+            return super.decrypt(message);
+        }
+        try {
+            return cur().decrypt(message);
+        } catch (Exception e) {
+            try {
+                return prev().decrypt(message);
+            } catch (Exception e1) {
+                return next().decrypt(message);
+            }
+        }
+    }
+
+    private AppCrypto cur() {
+        return new AppCrypto(secretProvider.curSecret());
+    }
+
+    private AppCrypto prev() {
+        return new AppCrypto(secretProvider.lastSecret());
+    }
+
+    private AppCrypto next() {
+        return new AppCrypto(secretProvider.nextSecret());
     }
 }

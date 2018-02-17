@@ -20,6 +20,7 @@ package act.db.meta;
  * #L%
  */
 
+import act.Act;
 import act.app.AppByteCodeScannerBase;
 import act.asm.AnnotationVisitor;
 import act.asm.FieldVisitor;
@@ -32,9 +33,7 @@ import org.osgl.logging.Logger;
 import org.osgl.util.S;
 
 import javax.persistence.Column;
-import javax.persistence.Entity;
 import javax.persistence.Id;
-import javax.persistence.MappedSuperclass;
 
 /**
  * Scans classes and build up index for quickly access the
@@ -48,8 +47,6 @@ public class EntityInfoByteCodeScanner extends AppByteCodeScannerBase {
     private static final String DESC_CREATED_AT = Type.getDescriptor(CreatedAt.class);
     private static final String DESC_LAST_MODIFIED_AT = Type.getDescriptor(LastModifiedAt.class);
     private static final String DESC_ID = Type.getDescriptor(Id.class);
-    private static final String DESC_ENTITY = Type.getDescriptor(Entity.class);
-    private static final String DESC_MAPPED_SUPERCLASS = Type.getDescriptor(MappedSuperclass.class);
     private static final String DESC_COLUMN = Type.getDescriptor(Column.class);
 
     private EntityMetaInfoRepo repo;
@@ -91,15 +88,14 @@ public class EntityInfoByteCodeScanner extends AppByteCodeScannerBase {
         @Override
         public AnnotationVisitor visitAnnotation(String desc, boolean visible) {
             AnnotationVisitor av = super.visitAnnotation(desc, visible);
-            isEntity = DESC_ENTITY.equals(desc);
-            isMappedSuperClass = !isEntity && DESC_MAPPED_SUPERCLASS.endsWith(desc);
+            isEntity = Act.app().entityMetaInfoRepo().isEntity(desc);
             if (isEntity || isMappedSuperClass) {
                 repo.registerEntityOrMappedSuperClass(className);
                 if (isEntity) {
                     return new AnnotationVisitor(ASM5, av) {
                         @Override
                         public void visit(String name, Object value) {
-                            if ("name".equals(name)) {
+                            if ("name".equals(name) || "value".equals(name)) {
                                 repo.registerEntityName(className, (String) value);
                             }
                             super.visit(name, value);

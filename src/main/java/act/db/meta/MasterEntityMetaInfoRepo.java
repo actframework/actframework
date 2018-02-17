@@ -22,21 +22,34 @@ package act.db.meta;
 
 import act.app.App;
 import act.app.event.SysEventId;
+import act.asm.Type;
 import act.db.DB;
+import act.job.JobManager;
 import act.util.ClassInfoRepository;
 
-import java.util.HashMap;
-import java.util.Map;
+import javax.inject.Inject;
+import javax.inject.Singleton;
+import javax.persistence.Entity;
+import javax.persistence.MappedSuperclass;
+import java.lang.annotation.Annotation;
+import java.util.*;
 
+@Singleton
 public class MasterEntityMetaInfoRepo extends EntityMetaInfoRepo {
 
     // map entity meta info repo to db id
     private Map<String, EntityMetaInfoRepo> regions = new HashMap<>();
 
+    private Set<String> entityAnnotations = new HashSet<>();
+
+    @Inject
     public MasterEntityMetaInfoRepo(final App app) {
         super(app);
+        registerEntityAnnotation(Entity.class);
+        registerEntityAnnotation(MappedSuperclass.class);
         final MasterEntityMetaInfoRepo me = this;
-        app.jobManager().on(SysEventId.CLASS_LOADED, new Runnable() {
+        JobManager jobManager = app.jobManager();
+        jobManager.on(SysEventId.CLASS_LOADED, new Runnable() {
             @Override
             public void run() {
                 final ClassInfoRepository classRepo = app.classLoader().classInfoRepository();
@@ -56,6 +69,20 @@ public class MasterEntityMetaInfoRepo extends EntityMetaInfoRepo {
                 }
             }
         });
+        jobManager.on(SysEventId.DEPENDENCY_INJECTOR_PROVISIONED, new Runnable() {
+            @Override
+            public void run() {
+                app.injector().registerNamedProvider(EntityMetaInfoRepo.class, app.getInstance(EntityMetaInfoRepo.Provider.class));
+            }
+        });
+    }
+
+    public void registerEntityAnnotation(Class<? extends Annotation> annoType) {
+        entityAnnotations.add(Type.getType(annoType).getDescriptor());
+    }
+
+    public boolean isEntity(String descriptor) {
+        return entityAnnotations.contains(descriptor);
     }
 
     public EntityMetaInfoRepo forDefaultDb() {

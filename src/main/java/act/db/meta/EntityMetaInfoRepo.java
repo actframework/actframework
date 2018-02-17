@@ -23,8 +23,12 @@ package act.db.meta;
 import act.app.App;
 import act.app.AppServiceBase;
 import act.db.CreatedAt;
+import act.db.DB;
 import act.db.LastModifiedAt;
+import act.util.Stateless;
+import org.osgl.inject.NamedProvider;
 
+import javax.inject.Inject;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -39,6 +43,24 @@ import static act.db.meta.EntityFieldMetaInfo.Trait.*;
  * * index field name by class name for {@link LastModifiedAt}
  */
 public class EntityMetaInfoRepo extends AppServiceBase<EntityMetaInfoRepo> {
+
+    @Stateless
+    public static class Provider implements javax.inject.Provider<EntityMetaInfoRepo>, NamedProvider<EntityMetaInfoRepo> {
+
+        @Inject
+        private MasterEntityMetaInfoRepo masterRepo;
+
+        @Override
+        public EntityMetaInfoRepo get() {
+            return get(DB.DEFAULT);
+        }
+
+        @Override
+        public EntityMetaInfoRepo get(String s) {
+            return masterRepo.forDb(s);
+        }
+    }
+
 
     Map<String, EntityClassMetaInfo> lookup = new HashMap<>();
     Map<Class, EntityClassMetaInfo> lookup2 = new HashMap<>();

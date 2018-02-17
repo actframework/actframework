@@ -152,7 +152,7 @@ public class JobByteCodeScanner extends AppByteCodeScannerBase {
                         }
                         return this.aav;
                     } else if (Env.isEnvAnnotation(c)) {
-                        this.eav = new EnvAnnotationVisitor(av, c);
+                        this.eav = new EnvAnnotationVisitor(av, desc);
                         return this.eav;
                     }
                 } catch (Exception e) {

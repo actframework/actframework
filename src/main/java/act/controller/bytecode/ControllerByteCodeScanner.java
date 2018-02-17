@@ -36,6 +36,8 @@ import act.controller.meta.*;
 import act.handler.builtin.controller.RequestHandlerProxy;
 import act.route.RouteSource;
 import act.route.Router;
+import act.sys.Env;
+import act.sys.meta.EnvAnnotationVisitor;
 import act.util.*;
 import act.ws.WsEndpoint;
 import org.osgl.$;
@@ -59,6 +61,8 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
     private Router router;
     private ControllerClassMetaInfo classInfo;
     private volatile ControllerClassMetaInfoManager classInfoBase;
+    private $.Var<Boolean> envMatches = $.var(true);
+    private EnvAnnotationVisitor eav;
 
     public ControllerByteCodeScanner() {
     }
@@ -146,6 +150,9 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
             } else if (WsEndpoint.class == c) {
                 classInfo.isController(true);
                 return new WsEndpointAnnotationVisitor(av);
+            } else if (Env.isEnvAnnoDescriptor(desc)) {
+                eav = new EnvAnnotationVisitor(av, desc);
+                return eav;
             }
             return super.visitAnnotation(desc, visible);
         }
@@ -159,6 +166,13 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
             String className = classInfo.className();
             boolean isRoutedMethod = router.isActionMethod(className, name);
             return new ActionMethodVisitor(isRoutedMethod, mv, access, name, desc, signature, exceptions);
+        }
+
+        @Override
+        public void visitEnd() {
+            if (null != eav && !eav.matched()) {
+                envMatches.set(false);
+            }
         }
 
         private boolean isEligibleMethod(int access, String name) {
@@ -199,7 +213,7 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
                              * Note we need to schedule route registration after all app code scanned because we need the
                              * parent context information be set on class meta info, which is done after controller scanning
                              */
-                            app().jobManager().on(SysEventId.APP_CODE_SCANNED, new RouteRegister(C.list(H.Method.GET), strings, WsEndpoint.PSEUDO_METHOD, routers, classInfo, false, $.var(false)));
+                            app().jobManager().on(SysEventId.APP_CODE_SCANNED, new RouteRegister(envMatches, C.list(H.Method.GET), strings, WsEndpoint.PSEUDO_METHOD, routers, classInfo, false, $.var(false)));
 
                             super.visitEnd();
                         }
@@ -338,6 +352,8 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
             private HandlerWithAnnotationVisitor withAnnotationVisitor;
             private $.Var<Boolean> isGlobal = $.var(false);
             private List<InterceptorAnnotationVisitor> interceptorAnnotationVisitors = new ArrayList<>();
+            private EnvAnnotationVisitor eav;
+            private $.Var<Boolean> envMatched = $.var(true);
 
             ActionMethodVisitor(boolean isRoutedMethod, MethodVisitor mv, int access, String methodName, String desc, String signature, String[] exceptions) {
                 super(ASM5, mv);
@@ -371,6 +387,10 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
                     classInfo.isController(true);
                     withAnnotationVisitor = new HandlerWithAnnotationVisitor(av);
                     return withAnnotationVisitor;
+                }
+                if (Env.isEnvAnnoDescriptor(desc)) {
+                    eav = new EnvAnnotationVisitor(av, desc);
+                    return eav;
                 }
                 if (ControllerClassMetaInfo.isActionAnnotation(c)) {
                     checkMethodName(methodName);
@@ -472,6 +492,9 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
                 if (!requireScan()) {
                     super.visitEnd();
                     return;
+                }
+                if (null != eav && !eav.matched()) {
+                    envMatched.set(false);
                 }
                 if (isGlobal.get()) {
                     for (InterceptorAnnotationVisitor visitor : interceptorAnnotationVisitors) {
@@ -776,7 +799,7 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
                      * Note we need to schedule route registration after all app code scanned because we need the
                      * parent context information be set on class meta info, which is done after controller scanning
                      */
-                    app().jobManager().on(SysEventId.APP_CODE_SCANNED, new RouteRegister(httpMethods, paths, methodName, routers, classInfo, classInfo.isAbstract() && !isStatic, isVirtual));
+                    app().jobManager().on(SysEventId.APP_CODE_SCANNED, new RouteRegister(envMatched, httpMethods, paths, methodName, routers, classInfo, classInfo.isAbstract() && !isStatic, isVirtual));
                 }
 
             }
@@ -918,8 +941,9 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
         List<H.Method> httpMethods;
         $.Var<Boolean> isVirtual;
         boolean noRegister; // do not register virtual method of an abstract class
+        $.Var<Boolean> envMatched;
 
-        RouteRegister(List<H.Method> methods, List<String> paths, String methodName, List<Router> routers, ControllerClassMetaInfo classInfo, boolean noRegister, $.Var<Boolean> isVirtual) {
+        RouteRegister($.Var<Boolean> envMatched, List<H.Method> methods, List<String> paths, String methodName, List<Router> routers, ControllerClassMetaInfo classInfo, boolean noRegister, $.Var<Boolean> isVirtual) {
             this.routers = routers;
             this.paths = paths;
             this.methodName = methodName;
@@ -927,10 +951,14 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
             this.httpMethods = methods;
             this.noRegister = noRegister;
             this.isVirtual = isVirtual;
+            this.envMatched = envMatched;
         }
 
         @Override
         public void run() {
+            if (!envMatched.get()) {
+                return;
+            }
             final Set<String> contexts = new HashSet<>();
             if (!noRegister) {
                 String contextPath = classInfo.urlContext();
