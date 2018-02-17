@@ -14,6 +14,7 @@
 * `DefaultSessionCodec.processExpiration` error #513
 * JWT: sometimes JWT deserialization failed #512
 * Command line param binding failed for `char[]` #511
+* Make API doc TOC organised by HTTP method and URL path #510
 * `NullPointerException` after app reloaded from an ASM error in dev mode #509
 * Error page not displayed if asm error raised during scanning phase #508
 * `@SessionVariable` binding failure #506
