@@ -70,8 +70,7 @@ public class JodaLocalDateCodec extends JodaReadablePatialCodecBase<LocalDate> {
             return null;
         }
         // ensure no time part
-        if (dateTimePattern.contains("M")
-                || dateTimePattern.contains("h")
+        if (dateTimePattern.contains("h")
                 || dateTimePattern.contains("H")
                 || dateTimePattern.contains("m")
                 || dateTimePattern.contains("s")
