@@ -40,6 +40,7 @@ import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
+import java.lang.reflect.Modifier;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -129,6 +130,39 @@ public class EventBus extends AppServiceBase<EventBus> {
 
         private static Class<?> VARARG_TYPE = Object[].class;
 
+        private static ConcurrentMap<Class, Class> typeMap = new ConcurrentHashMap<>();
+
+        private static Class effectiveTypeOf(Object o) {
+            return effectiveTypeOf(o.getClass());
+        }
+
+        private static Class effectiveTypeOf(Class<?> type) {
+            if (Object.class == type) {
+                return type;
+            }
+            Class mappedType = typeMap.get(type);
+            if (null == mappedType) {
+                int modifiers = type.getModifiers();
+                if (!Modifier.isPublic(modifiers)
+                        || !Modifier.isStatic(modifiers)
+                        || type.isAnonymousClass()
+                        || type.isLocalClass()
+                        || type.isMemberClass()) {
+                    Class[] ca = type.getInterfaces();
+                    if (ca.length > 0) {
+                        mappedType = ca[0];
+                    } else {
+                        Class<?> parent = type.getSuperclass();
+                        mappedType = effectiveTypeOf(parent);
+                    }
+                    typeMap.putIfAbsent(type, mappedType);
+                } else {
+                    typeMap.putIfAbsent(type, type);
+                }
+            }
+            return mappedType;
+        }
+
         // create list of keys from event triggering id and argument list
         static List<Key> keysOf(Class<?> idClass, Object id, Object[] args, EventBus eventBus) {
             List<Key> keys = new ArrayList<>();
@@ -140,7 +174,7 @@ public class EventBus extends AppServiceBase<EventBus> {
                     argTypes = null;
                     break;
                 }
-                argTypes.add(arg.getClass());
+                argTypes.add(effectiveTypeOf(arg));
             }
             IdType type = typeOf(id);
             if (IdType.STRING == type) {
