@@ -5,7 +5,7 @@
 * EntityMetaInfo and scanner - support JPA plugin
 * Update to act-asm-5.0.3 for precise line number in error reporting
 * Improve built-in service performance by make them as nonblock when possible
-* #497 - Make it able to load into File and Path typed fields
+* Support `DirectoryIndex` for file `ResourceGetter` and `FileGetter` #521
 * rename configuration `cli.session.expiration` to `cli.session.ttl` to make it comply to `session.ttl` configuration
 * testapp apidoc error #519
 * Simple event dispatching failed when event listener method argument list contains Interface #518
