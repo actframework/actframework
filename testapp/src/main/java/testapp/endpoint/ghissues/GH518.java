@@ -4,14 +4,13 @@ import act.controller.annotation.UrlContext;
 import act.event.EventBus;
 import act.event.On;
 import org.osgl.mvc.annotation.GetAction;
-import org.osgl.storage.ISObject;
 import org.osgl.storage.impl.SObject;
 
 @UrlContext("518")
 public class GH518 extends GithubIssueBase{
 
     @On("ECHO")
-    public void eventHandler(ISObject sobj) {
+    public void eventHandler(SObject sobj) {
         throw renderText(sobj.asString());
     }
 

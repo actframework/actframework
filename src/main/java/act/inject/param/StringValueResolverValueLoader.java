@@ -40,7 +40,7 @@ public class StringValueResolverValueLoader extends StringValueResolverValueLoad
     public Object load(Object bean, ActContext<?> context, boolean noDefaultValue) {
         if (paramKey.isSimple()) {
             String value = context.paramVal(paramKey.name());
-            Object obj = (null == value) ? null : stringValueResolver.resolve(value);
+            Object obj = stringValueResolver.resolve(value);
             return (null == obj) && !noDefaultValue ? defVal : obj;
         }
         ParamTree paramTree = ParamValueLoaderService.paramTree();

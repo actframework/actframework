@@ -145,7 +145,6 @@ public class EventBus extends AppServiceBase<EventBus> {
             if (null == mappedType) {
                 int modifiers = type.getModifiers();
                 if (!Modifier.isPublic(modifiers)
-                        || !Modifier.isStatic(modifiers)
                         || type.isAnonymousClass()
                         || type.isLocalClass()
                         || type.isMemberClass()) {
@@ -164,6 +163,7 @@ public class EventBus extends AppServiceBase<EventBus> {
                     typeMap.putIfAbsent(type, mappedType);
                 } else {
                     typeMap.putIfAbsent(type, type);
+                    mappedType = type;
                 }
             }
             return mappedType;
