@@ -1,6 +1,6 @@
 # ActFramework Change Log
 
-**1.7.0**
+**1.7.0** 19/Feb/2018
 * Update JPA api to 2.2
 * EntityMetaInfo and scanner - support JPA plugin
 * Update to act-asm-5.0.3 for precise line number in error reporting
