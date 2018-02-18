@@ -23,6 +23,7 @@
 * Create `act.util.CsvView` as an alias of `ResponseContentType(H.MediaType.CSV)` #503
 * Add suffix to download file for csv typed response #502
 * ResourceLoader - support any object type #497
+* `ClassCastException` with Ehcache #495
 * Further simplify password field processing #491
 * Encrypt sensitive data in persistent storage #490
 * Do not `Set-Cookie` for session and flash if there is no state #484

@@ -590,7 +590,6 @@ public class App extends DestroyableBase {
             loadConfig();
             emit(CONFIG_LOADED);
 
-            initCache();
             initDataPropertyRepository();
             initCrypto();
             initIdGenerator();
@@ -625,6 +624,7 @@ public class App extends DestroyableBase {
 
             initClassLoader();
             emit(SysEventId.CLASS_LOADER_INITIALIZED);
+            initCache();
             preloadClasses();
             try {
                 scanAppCodes();

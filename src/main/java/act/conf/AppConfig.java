@@ -2486,6 +2486,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
 
     public CacheService cacheService(String name) {
         if (null == cacheServiceProvider) {
+            CacheServiceProvider.Impl.setClassLoader(app().classLoader());
             try {
                 cacheServiceProvider = get(AppConfigKey.CACHE_IMPL, null);
             } catch (ConfigurationException e) {
