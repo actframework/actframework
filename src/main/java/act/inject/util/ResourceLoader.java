@@ -38,12 +38,16 @@ import org.osgl.util.E;
 import org.osgl.util.IO;
 import org.osgl.util.S;
 
+import java.io.File;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.lang.reflect.Type;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.ByteBuffer;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.List;
 
@@ -169,12 +173,20 @@ public class ResourceLoader<T> extends ValueLoader.Base<T> {
             buffer.put(ba);
             buffer.flip();
             return buffer;
+        } else if (Path.class.isAssignableFrom(rawType)) {
+            try {
+                return Paths.get(url.toURI());
+            } catch (URISyntaxException exception) {
+                throw E.unexpected(exception);
+            }
+        } else if (File.class.isAssignableFrom(rawType)) {
+            return new File(url.getFile());
+        } else if (ISObject.class.isAssignableFrom(rawType)) {
+            return SObject.of(readContent(url));
         } else if (InputStream.class == rawType) {
             return IO.is(url);
         } else if (Reader.class == rawType) {
             return new InputStreamReader(IO.is(url));
-        } else if (ISObject.class.isAssignableFrom(rawType)) {
-            return SObject.of(readContent(url));
         }
         try {
             return Act.app().resolverManager().resolve(IO.readContentAsString(url), rawType);
