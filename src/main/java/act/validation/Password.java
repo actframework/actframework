@@ -51,7 +51,7 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
  * The annotated element must be a valid password.
  * Accepts `char[]` type.
  */
-@Target({ METHOD, FIELD, ANNOTATION_TYPE, CONSTRUCTOR, PARAMETER })
+@Target({FIELD, PARAMETER})
 @Retention(RUNTIME)
 @Documented
 @Constraint(validatedBy = PasswordHandler.class)
@@ -103,10 +103,12 @@ public @interface Password {
                 @Override
                 public FieldVisitor visitField(int access, final String name, final String desc, String signature, Object value) {
                     FieldVisitor fv = super.visitField(access, name, desc, signature, value);
+                    final String fieldDesc = desc;
                     return new FieldVisitor(ASM5, fv) {
                         @Override
                         public AnnotationVisitor visitAnnotation(String desc, boolean visible) {
                             if (Password.ASM_DESC.equals(desc)) {
+                                E.illegalStateIfNot("[C".equals(fieldDesc), "@Password works on char[] typed field only");
                                 manager().getOrCreate(className).addPasswordField(name, desc);
                             }
                             return super.visitAnnotation(desc, visible);
