@@ -1009,6 +1009,7 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
         super.releaseResources();
         PropertySpec.current.remove();
         if (this.state != State.DESTROYED) {
+            sessionManager = null;
             this.allParams = null;
             this.extraParams = null;
             this.requestParamCache = null;
@@ -1154,7 +1155,8 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
     }
 
     private SessionManager sessionManager() {
-        if (null == sessionManager) {
+        if (null == sessionManager || sessionManager.isDestroyed()) {
+            // in case session manager get destroyed during hot reload
             sessionManager = app().sessionManager();
         }
         return sessionManager;

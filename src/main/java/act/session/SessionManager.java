@@ -22,13 +22,14 @@ package act.session;
 
 import act.app.ActionContext;
 import act.conf.AppConfig;
+import act.util.DestroyableBase;
 import org.osgl.http.H;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
 @Singleton
-public class SessionManager {
+public class SessionManager extends DestroyableBase {
 
     private SessionCodec codec;
 
