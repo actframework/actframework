@@ -1,5 +1,8 @@
 # ActFramework Change Log
 
+**1.7.1** 
+* Allow normal action handler support partial path #523
+
 **1.7.0** 19/Feb/2018
 * Update JPA api to 2.2
 * EntityMetaInfo and scanner - support JPA plugin

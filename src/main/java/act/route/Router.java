@@ -699,6 +699,11 @@ public class Router extends AppServiceBase<Router> {
                     }
                     break;
                 } else if (node.ignoreRestParts()) {
+                    S.Buffer sb = S.newBuffer();
+                    while (path.hasNext()) {
+                        sb.append('/').append(path.next());
+                    }
+                    context.param(ParamNames.PATH, sb.toString());
                     break;
                 }
             }

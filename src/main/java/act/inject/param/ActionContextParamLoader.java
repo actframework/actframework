@@ -57,6 +57,10 @@ class ActionContextParamLoader extends ParamValueLoaderService {
             return new SessionValueLoader(sessionVariable.value(), spec);
         }
 
+        if (spec.hasAnnotation(PartialPath.class)) {
+            return new PartialPathLoader(bindName);
+        }
+
         DefaultValue def = spec.getAnnotation(DefaultValue.class);
 
         Class<?> rawType = spec.rawType();
