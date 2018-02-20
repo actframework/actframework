@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 **1.7.1** 
+* `EventBus.Key.effectiveTypeOf` cause stackoverflow in Event sample #525
 * NPE running config sample #524
 * Allow normal action handler support partial path #523
 

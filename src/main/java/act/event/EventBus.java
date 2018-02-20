@@ -158,7 +158,7 @@ public class EventBus extends AppServiceBase<EventBus> {
                     }
                     if (null == mappedType) {
                         Class<?> parent = type.getSuperclass();
-                        mappedType = effectiveTypeOf((null == parent || Object.class == parent) ? type : parent);
+                        mappedType = (null == parent || Object.class == parent) ? type : effectiveTypeOf(parent);
                     }
                     typeMap.putIfAbsent(type, mappedType);
                 } else {
