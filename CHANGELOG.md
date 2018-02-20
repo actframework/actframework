@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 **1.7.1** 
+* NPE running config sample #524
 * Allow normal action handler support partial path #523
 
 **1.7.0** 19/Feb/2018

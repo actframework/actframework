@@ -108,7 +108,7 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
     final GroupExceptionInterceptor EXCEPTION_INTERCEPTOR = new GroupExceptionInterceptor(exceptionInterceptors);
 
     @Inject
-    public RequestHandlerProxy(String actionMethodName, App app) {
+    public RequestHandlerProxy(final String actionMethodName, final App app) {
         int pos = actionMethodName.lastIndexOf('.');
         final String ERR = "Invalid controller action: %s";
         E.illegalArgumentIf(pos < 0, ERR, actionMethodName);
@@ -117,7 +117,16 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
         this.actionMethodName = actionMethodName.substring(pos + 1);
         E.illegalArgumentIf(S.isEmpty(this.actionMethodName), ERR, actionMethodName);
         this.actionPath = actionMethodName;
-        cache = app.config().cacheService("action_proxy");
+        if (app.classLoader() != null) {
+            cache = app.config().cacheService("action_proxy");
+        } else {
+            app.jobManager().on(SysEventId.CLASS_LOADER_INITIALIZED, new Runnable() {
+                @Override
+                public void run() {
+                    cache = app.config().cacheService("action_proxy");
+                }
+            });
+        }
         this.app = app;
         this.appInterceptor = app.interceptorManager();
     }
