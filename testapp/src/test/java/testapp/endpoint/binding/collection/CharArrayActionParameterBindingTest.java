@@ -1,9 +1,11 @@
 package testapp.endpoint.binding.collection;
 
+import org.junit.Ignore;
 import org.osgl.util.C;
 
 import java.util.List;
 
+@Ignore
 public class CharArrayActionParameterBindingTest extends PrimitiveTypeArrayActionParameterBindingTestBase<Character> {
 
     @Override
