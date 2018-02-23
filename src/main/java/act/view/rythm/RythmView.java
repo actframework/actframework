@@ -27,6 +27,7 @@ import act.view.Template;
 import act.view.VarDef;
 import act.view.View;
 import org.osgl.util.C;
+import org.osgl.util.S;
 import org.rythmengine.Rythm;
 import org.rythmengine.RythmEngine;
 import org.rythmengine.extension.IFormatter;
@@ -166,7 +167,13 @@ public class RythmView extends View {
         });
 
         RythmEngine engine = new RythmEngine(p);
-        engine.resourceManager().prependResourceLoader(new ClasspathResourceLoader(engine, "rythm"));
+        engine.resourceManager().prependResourceLoader(new ClasspathResourceLoader(engine, ID));
+        if (config.defaultView() == this) {
+            String home = config.templateHome();
+            if (S.neq("default", home) && S.neq(ID, home)) {
+                engine.resourceManager().prependResourceLoader(new ClasspathResourceLoader(engine, home));
+            }
+        }
 
         Tags tags = app.getInstance(Tags.class);
         tags.register(engine);
