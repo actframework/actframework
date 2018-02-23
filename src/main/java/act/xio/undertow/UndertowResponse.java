@@ -76,16 +76,30 @@ public class UndertowResponse extends ActResponse<UndertowResponse> {
     @Override
     public UndertowResponse writeContent(String s) {
         beforeWritingContent();
-        hse.getResponseSender().send(s);
-        afterWritingContent();
+        try {
+            hse.getResponseSender().send(s);
+            endAsync = true;
+            afterWritingContent();
+        } catch (RuntimeException e) {
+            endAsync = false;
+            afterWritingContent();
+            throw e;
+        }
         return this;
     }
 
     @Override
     public UndertowResponse writeContent(ByteBuffer byteBuffer) {
         beforeWritingContent();
-        hse.getResponseSender().send(byteBuffer);
-        afterWritingContent();
+        try {
+            hse.getResponseSender().send(byteBuffer);
+            endAsync = true;
+            afterWritingContent();
+        } catch (RuntimeException e) {
+            endAsync = false;
+            afterWritingContent();
+            throw e;
+        }
         return this;
     }
 
@@ -97,16 +111,19 @@ public class UndertowResponse extends ActResponse<UndertowResponse> {
             byte[] ba = binary.asByteArray();
             ByteBuffer buffer = ByteBuffer.wrap(ba);
             hse.getResponseSender().send(buffer);
+            endAsync = true;
+            afterWritingContent();
         } else {
             try {
                 hse.getResponseSender().transferFrom(FileChannel.open(file.toPath()), IoCallback.END_EXCHANGE);
                 endAsync = true;
+                afterWritingContent();
             } catch (IOException e) {
                 endAsync = false;
+                afterWritingContent();
                 throw E.ioException(e);
             }
         }
-        afterWritingContent();
         return this;
     }
 

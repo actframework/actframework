@@ -22,14 +22,9 @@ package act.handler.builtin.controller;
 
 import act.app.ActionContext;
 import act.controller.CacheSupportMetaInfo;
-import act.handler.builtin.controller.impl.ReflectedHandlerInvoker;
 import act.security.CORS;
 import act.security.CSRF;
 import act.util.MissingAuthenticationHandler;
-import act.view.ActBadRequest;
-import act.view.ActNotFound;
-import org.osgl.mvc.result.BadRequest;
-import org.osgl.mvc.result.NotFound;
 import org.osgl.mvc.result.Result;
 
 /**
@@ -51,20 +46,6 @@ public class ControllerAction extends ActionHandler<ControllerAction> {
     @Override
     public Result handle(ActionContext actionContext) throws Exception {
         return handlerInvoker.handle(actionContext);
-    }
-
-    public NotFound notFoundOnMethod(String message) {
-        if (handlerInvoker instanceof ReflectedHandlerInvoker) {
-            return ((ReflectedHandlerInvoker) handlerInvoker).notFoundOnMethod(message);
-        }
-        return ActNotFound.create();
-    }
-
-    public BadRequest badRequestOnMethod(String message) {
-        if (handlerInvoker instanceof ReflectedHandlerInvoker) {
-            return ((ReflectedHandlerInvoker) handlerInvoker).badRequestOnMethod(message);
-        }
-        return ActBadRequest.create();
     }
 
     @Override

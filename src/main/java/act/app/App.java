@@ -174,6 +174,11 @@ public class App extends DestroyableBase {
             E.illegalArgumentIf(null == blockIssue);
             blockIssue.apply(context.req(), context.prepareRespForWrite());
         }
+
+        @Override
+        public String toString() {
+            return "fatal error: block issue found";
+        }
     };
     private final Version version;
     private List<HotReloadListener> hotReloadListeners = new ArrayList<>();

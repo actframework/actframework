@@ -48,6 +48,7 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import java.net.URL;
 import java.util.Collection;
 import java.util.Map;
 
@@ -256,114 +257,432 @@ public @interface Controller {
             notFoundIf(!test, msg, args);
         }
 
+        /**
+         *  Returns a {@link BadRequest} instance.
+         *
+         * @return a bad request response
+         */
         public static BadRequest badRequest() {
             return ActBadRequest.create();
         }
 
+        /**
+         * Returns a {@link BadRequest} instance along with error message.
+         * @param msg the message pattern
+         * @param args the message argument
+         * @return a bad request with error message
+         */
         public static BadRequest badRequest(String msg, Object... args) {
             return ActBadRequest.create(msg, args);
         }
 
+        /**
+         * Throws out a {@link BadRequest} if test evaluated to `true`.
+         * @param test the test
+         */
         public static void badRequestIf(boolean test) {
             if (test) {
                 throw ActBadRequest.create();
             }
         }
 
+        /**
+         * Throws out a {@link BadRequest} with error message if test evaluated to `true`.
+         * @param test the test
+         * @param msg the error message pattern
+         * @param args the error message arguments
+         */
         public static void badRequestIf(boolean test, String msg, Object... args) {
             if (test) {
                 throw ActBadRequest.create(msg, args);
             }
         }
 
+        /**
+         * Throws out a {@link BadRequest} if test string {@link S#blank(String)}.
+         * @param test the string to be checked
+         */
         public static void badRequestIfBlank(String test) {
             if (S.blank(test)) {
                 throw ActBadRequest.create();
             }
         }
 
+        /**
+         * Throws out a {@link BadRequest} with error message if test string is blank
+         * @param test the string to be checked
+         * @param msg the error message pattern
+         * @param args the error message argument
+         */
         public static void badRequestIfBlank(String test, String msg, Object... args) {
             if (S.blank(test)) {
                 throw ActBadRequest.create(msg, args);
             }
         }
 
+        /**
+         * Throws out a {@link BadRequest} if test object is `null`
+         * @param test the object to be checked
+         */
         public static void badRequestIfNull(Object test) {
             if (null == test) {
                 throw ActBadRequest.create();
             }
         }
 
+        /**
+         * Throws out a {@link BadRequest} with error message if test object is null
+         * @param test the object to be checked
+         * @param msg the error message pattern
+         * @param args the error message argument
+         */
         public static void badRequestIfNull(Object test, String msg, Object... args) {
             if (null == test) {
                 throw ActBadRequest.create(msg, args);
             }
         }
 
+        /**
+         * Throws out a {@link BadRequest} if test evaluated to `false`.
+         * @param test the test
+         */
         public static void badRequestIfNot(boolean test) {
             if (!test) {
                 throw ActBadRequest.create();
             }
         }
 
+        /**
+         * Throws out a {@link BadRequest} with error message if test evaluated to `false`.
+         * @param test the test
+         * @param msg the error message pattern
+         * @param args the error message arguments
+         */
         public static void badRequestIfNot(boolean test, String msg, Object... args) {
             badRequestIf(!test, msg, args);
         }
 
+        /**
+         * Returns a {@link BadRequest} instance with error code specified.
+         * @param code the error code
+         * @return the bad request instance
+         */
+        public static BadRequest badRequest(int code) {
+            return ActBadRequest.create(code);
+        }
+
+        /**
+         * Returns a {@link BadRequest} instance with error code and message specified.
+         * @param code the error code
+         * @param msg the error message pattern
+         * @param args the error message arguments
+         * @return the bad request
+         */
+        public static BadRequest badRequest(int code, String msg, Object... args) {
+            return ActBadRequest.create(code, msg, args);
+        }
+
+        /**
+         * Throws out a {@link BadRequest} with error code if `test` evaluated to `true`.
+         * @param test the test
+         * @param code the error code
+         */
+        public static void badRequestIf(boolean test, int code) {
+            if (test) {
+                throw ActBadRequest.create(code);
+            }
+        }
+
+        /**
+         * Throws out a {@link BadRequest} with error code and message if `test` evaluated to `true`.
+         * @param test the test
+         * @param msg the error message pattern
+         * @param args the error message arguments
+         * @param code the error code
+         */
+        public static void badRequestIf(boolean test, int code, String msg, Object... args) {
+            if (test) {
+                throw ActBadRequest.create(code, msg, args);
+            }
+        }
+
+        /**
+         * Throws out a {@link BadRequest} with error code if `test` string {@link S#blank(String) is blank}.
+         * @param test the test string
+         * @param code the error code
+         */
+        public static void badRequestIfBlank(String test, int code) {
+            if (S.blank(test)) {
+                throw ActBadRequest.create(code);
+            }
+        }
+
+        /**
+         * Throws out a {@link BadRequest} with error code and message if `test` string {@link S#blank(String) is blank}.
+         * @param test the test string
+         * @param msg the error message pattern
+         * @param args the error message arguments
+         * @param code the error code
+         */
+        public static void badRequestIfBlank(String test, int code, String msg, Object... args) {
+            if (S.blank(test)) {
+                throw ActBadRequest.create(code, msg, args);
+            }
+        }
+
+        /**
+         * Throws out a {@link BadRequest} with error code if `test` is `null`.
+         * @param test the test object
+         * @param code the error code
+         */
+        public static void badRequestIfNull(Object test, int code) {
+            if (null == test) {
+                throw ActBadRequest.create(code);
+            }
+        }
+
+        /**
+         * Throws out a {@link BadRequest} with error code and message if `test` is `null`.
+         * @param test the test object
+         * @param msg the error message pattern
+         * @param args the error message arguments
+         * @param code the error code
+         */
+        public static void badRequestIfNull(Object test, int code, String msg, Object... args) {
+            if (null == test) {
+                throw ActBadRequest.create(code, msg, args);
+            }
+        }
+
+        /**
+         * Throws out a {@link BadRequest} with error code if `test` is `false`.
+         * @param test the test object
+         * @param code the error code
+         */
+        public static void badRequestIfNot(boolean test, int code) {
+            if (!test) {
+                throw ActBadRequest.create(code);
+            }
+        }
+
+        /**
+         * Throws out a {@link BadRequest} with error code and message if `test` is `false`.
+         * @param test the test object
+         * @param msg the error message pattern
+         * @param args the error message arguments
+         * @param code the error code
+         */
+        public static void badRequestIfNot(boolean test, int code, String msg, Object... args) {
+            badRequestIf(!test, code, msg, args);
+        }
+
+        /**
+         * Returns a {@link Conflict} instance.
+         * @return a 409 Conflict result
+         */
         public static Conflict conflict() {
             return ActConflict.create();
         }
 
+        /**
+         * Returns a {@link Conflict} instance with error message.
+         * @param message the error message pattern
+         * @param args  the error message arguments
+         * @return a 409 Conflict result
+         */
         public static Conflict conflict(String message, Object... args) {
             return ActConflict.create(message, args);
         }
 
+        /**
+         * Throws out a {@link Conflict} if `test` is `true`.
+         * @param test the test
+         */
         public static void conflictIf(boolean test) {
             if (test) {
                 throw ActConflict.create();
             }
         }
 
+        /**
+         * Throws out a {@link Conflict} with error message specified if `test` is `true`.
+         * @param test the test
+         * @param message the error message pattern
+         * @param args  the error message arguments
+         */
         public static void conflictIf(boolean test, String message, Object... args) {
             if (test) {
                 throw ActConflict.create(message, args);
             }
         }
 
+        /**
+         * Throws out a {@link Conflict} if `test` is `false`.
+         * @param test the test
+         */
         public static void conflictIfNot(boolean test) {
             conflictIf(!test);
         }
 
+        /**
+         * Throws out a {@link Conflict} with error message specified if `test` is `false`.
+         * @param test the test
+         * @param message the error message pattern
+         * @param args  the error message arguments
+         */
         public static void conflictIfNot(boolean test, String message, Object... args) {
             conflictIf(!test, message, args);
         }
 
+        /**
+         * Returns a {@link Conflict} instance with error code.
+         * @param code the error message code
+         * @return a 409 Conflict result
+         */
+        public static Conflict conflict(int code) {
+            return ActConflict.create(code);
+        }
+
+        /**
+         * Returns a {@link Conflict} instance with error code and message specified.
+         * @param code the error message code
+         * @param message the error message pattern
+         * @param args  the error message arguments
+         * @return a 409 Conflict result
+         */
+        public static Conflict conflict(int code, String message, Object... args) {
+            return ActConflict.create(code, message, args);
+        }
+
+        /**
+         * Throws out a {@link Conflict} with error code if `test` is `true`.
+         * @param test the test
+         * @param code the error code
+         */
+        public static void conflictIf(boolean test, int code) {
+            if (test) {
+                throw ActConflict.create(code);
+            }
+        }
+
+        /**
+         * Throws out a {@link Conflict} with error code and message if `test` is `true`.
+         * @param test the test
+         * @param message the error message pattern
+         * @param args  the error message arguments
+         * @param code the error code
+         */
+        public static void conflictIf(boolean test, int code, String message, Object... args) {
+            if (test) {
+                throw ActConflict.create(code, message, args);
+            }
+        }
+
+        /**
+         * Throws out a {@link Conflict} with error code if `test` is `false`.
+         * @param test the test
+         * @param code the error code
+         */
+        public static void conflictIfNot(boolean test, int code) {
+            conflictIf(!test, code);
+        }
+
+        /**
+         * Throws out a {@link Conflict} with error code and message if `test` is `false`.
+         * @param test the test
+         * @param message the error message pattern
+         * @param args  the error message arguments
+         * @param code the error code
+         */
+        public static void conflictIfNot(boolean test, int code, String message, Object... args) {
+            conflictIf(!test, code, message, args);
+        }
+
+        /**
+         * Returns a {@link Unauthorized} instance.
+         * @return a 401 Unauthorized result
+         */
         public static Unauthorized unauthorized() {
             return ActUnauthorized.create();
         }
 
+        /**
+         * Returns a {@link Unauthorized} instance with `realm` specified.
+         * @param realm  the realm of the `Unauthorized` response
+         * @return a 401 Unauthorized result
+         */
         public static Unauthorized unauthorized(String realm) {
             return ActUnauthorized.create(realm);
         }
 
+        /**
+         * Returns a {@link Unauthorized} instance with `realm` and `digest` specified.
+         * @param realm  the realm of the `Unauthorized` response
+         * @param digest whether apply digest
+         * @return a 401 Unauthorized result
+         */
+        public static Unauthorized unauthorized(String realm, boolean digest) {
+            return ActUnauthorized.create(realm, digest);
+        }
+
+        /**
+         * Throws out an {@link Unauthorized} instance if `test ` is `true`.
+         * @param test the test
+         */
         public static void unauthorizedIf(boolean test) {
             if (test) {
                 throw ActUnauthorized.create();
             }
         }
 
+        /**
+         * Throws out an {@link Unauthorized} instance with `realm` specified if `test ` is `true`.
+         * @param test the test
+         * @param realm the realm
+         */
         public static void unauthorizedIf(boolean test, String realm) {
             if (test) {
                 throw ActUnauthorized.create(realm);
             }
         }
 
+        /**
+         * Throws out an {@link Unauthorized} instance with `realm` and `digest` specified if `test ` is `true`.
+         * @param test the test
+         * @param realm the realm
+         * @param digest whether apply digest
+         */
+        public static void unauthorizedIf(boolean test, String realm, boolean digest) {
+            if (test) {
+                throw ActUnauthorized.create(realm, digest);
+            }
+        }
+
+        /**
+         * Throws out an {@link Unauthorized} instance if `test ` is `false`.
+         * @param test the test
+         */
         public static void unauthorizedIfNot(boolean test) {
             unauthorizedIf(!test);
         }
 
+        /**
+         * Throws out an {@link Unauthorized} instance with `realm` specified if `test ` is `false`.
+         * @param test the test
+         * @param realm the realm
+         */
         public static void unauthorizedIfNot(boolean test, String realm) {
             unauthorizedIf(!test, realm);
+        }
+
+        /**
+         * Throws out an {@link Unauthorized} instance with `realm` and `digest` specified if `test ` is `false`.
+         * @param test the test
+         * @param realm the realm
+         * @param digest whether apply digest
+         */
+        public static void unauthorizedIfNot(boolean test, String realm, boolean digest) {
+            unauthorizedIf(!test, realm, digest);
         }
 
         /**
@@ -427,6 +746,70 @@ public @interface Controller {
          */
         public static void forbiddenIfNot(boolean test, String msg, Object... args) {
             forbiddenIf(!test, msg, args);
+        }
+
+
+        /**
+         * Returns a {@link Forbidden} result
+         */
+        public static Forbidden forbidden(int code) {
+            return ActForbidden.create(code);
+        }
+
+        /**
+         * Returns a {@link Forbidden} result with custom message
+         * template and arguments. The final message is rendered with
+         * the template and arguments using {@link String#format(String, Object...)}
+         *
+         * @param msg  the message template
+         * @param args the message argument
+         */
+        public static Forbidden forbidden(String msg, int code, Object... args) {
+            return ActForbidden.create(msg, args);
+        }
+
+        /**
+         * Throws a {@link Forbidden} result if the test condition is {@code true}
+         *
+         * @param test the test condition
+         */
+        public static void forbiddenIf(boolean test, int code) {
+            if (test) {
+                throw ActForbidden.create(code);
+            }
+        }
+
+        /**
+         * Throws a {@link Forbidden} result if the test condition is {@code false}
+         *
+         * @param test the test condition
+         */
+        public static void forbiddenIfNot(boolean test, int code) {
+            forbiddenIf(!test, code);
+        }
+
+        /**
+         * Throws a {@link Forbidden} result if test condition is {@code true}
+         *
+         * @param test the test condition
+         * @param msg  the message format template
+         * @param args the message format arguments
+         */
+        public static void forbiddenIf(boolean test, int code, String msg, Object... args) {
+            if (test) {
+                throw ActForbidden.create(code, msg, args);
+            }
+        }
+
+        /**
+         * Throws a {@link Forbidden} result if the test condition is {@code false}
+         *
+         * @param test the test condition
+         * @param msg  the message format template
+         * @param args the message format arguments
+         */
+        public static void forbiddenIfNot(boolean test, int code, String msg, Object... args) {
+            forbiddenIf(!test, code, msg, args);
         }
 
         public static Redirect redirect(String url, Object... args) {
@@ -751,6 +1134,33 @@ public @interface Controller {
          */
         public static RenderBinary renderBinary($.Function<OutputStream, ?> outputStreamWriter) {
             return binary(outputStreamWriter);
+        }
+
+        /**
+         * Returns a {@link RenderBinary} result with a URL. The result will render
+         * the binary using "attachment" content disposition.
+         *
+         * @param url the URL to be rendered
+         * @return a `RenderBinary` result as described above
+         */
+        public static RenderBinary download(URL url) {
+            String file = url.getPath();
+            String fileName = S.afterLast(file, "/");
+            return new RenderBinary(IO.is(url), fileName, false);
+        }
+
+        /**
+         * Returns a {@link RenderBinary} result with a URL. The result will render
+         * the binary using "attachment" content disposition.
+         *
+         * @param url
+     *          the URL to be rendered
+         * @param attachmentName
+         *      the attachment name
+         * @return a `RenderBinary` result as described above
+         */
+        public static RenderBinary download(URL url, String attachmentName) {
+            return new RenderBinary(IO.is(url), attachmentName, false);
         }
 
         /**

@@ -27,42 +27,68 @@ import org.osgl.mvc.result.Conflict;
 
 import java.util.List;
 
+import static act.util.ActError.Util.errorMessage;
+import static act.util.ActError.Util.loadSourceInfo;
+import static org.osgl.http.H.Status.CONFLICT;
+
 public class ActConflict extends Conflict implements ActError {
 
     private SourceInfo sourceInfo;
 
     public ActConflict() {
-        super();
+        super(errorMessage(CONFLICT));
         if (Act.isDev()) {
-            loadSourceInfo();
+            sourceInfo = loadSourceInfo(ActConflict.class);
         }
     }
 
     public ActConflict(String message, Object... args) {
-        super(message, args);
+        super(errorMessage(CONFLICT, message, args));
         if (Act.isDev()) {
-            loadSourceInfo();
+            sourceInfo = loadSourceInfo(ActConflict.class);
         }
     }
 
     public ActConflict(Throwable cause, String message, Object ... args) {
-        super(cause, message, args);
+        super(cause, errorMessage(CONFLICT, message, args));
         if (Act.isDev()) {
-            loadSourceInfo();
+            sourceInfo = loadSourceInfo(cause, ActConflict.class);
         }
     }
 
     public ActConflict(Throwable cause) {
-        super(cause);
+        super(cause, errorMessage(CONFLICT));
         if (Act.isDev()) {
-            loadSourceInfo();
+            sourceInfo = loadSourceInfo(cause, ActConflict.class);
         }
     }
 
-    private void loadSourceInfo() {
-        doFillInStackTrace();
-        Throwable cause = getCause();
-        sourceInfo = Util.loadSourceInfo(null == cause ? getStackTrace() : cause.getStackTrace(), ActConflict.class);
+    public ActConflict(int errorCode) {
+        super(errorCode, errorMessage(CONFLICT));
+        if (Act.isDev()) {
+            sourceInfo = loadSourceInfo(ActConflict.class);
+        }
+    }
+
+    public ActConflict(int errorCode, String message, Object... args) {
+        super(errorCode, errorMessage(CONFLICT, message, args));
+        if (Act.isDev()) {
+            sourceInfo = loadSourceInfo(ActConflict.class);
+        }
+    }
+
+    public ActConflict(int errorCode, Throwable cause, String message, Object... args) {
+        super(errorCode, cause, errorMessage(CONFLICT, message, args));
+        if (Act.isDev()) {
+            sourceInfo = loadSourceInfo(cause, ActConflict.class);
+        }
+    }
+
+    public ActConflict(int errorCode, Throwable cause) {
+        super(errorCode, cause, errorMessage(CONFLICT));
+        if (Act.isDev()) {
+            sourceInfo = loadSourceInfo(cause, ActConflict.class);
+        }
     }
 
     @Override
@@ -98,5 +124,22 @@ public class ActConflict extends Conflict implements ActError {
 
     public static Conflict create(Throwable cause) {
         return Act.isDev() ? new ActConflict(cause) : Conflict.of(cause);
+    }
+
+
+    public static Conflict create(int code) {
+        return Act.isDev() ? new ActConflict(code) : Conflict.of(code);
+    }
+
+    public static Conflict create(int code, String msg, Object... args) {
+        return Act.isDev() ? new ActConflict(code, msg, args) : Conflict.of(code, msg, args);
+    }
+
+    public static Conflict create(int code, Throwable cause, String msg, Object ... args) {
+        return Act.isDev() ? new ActConflict(code, cause, msg, args) : Conflict.of(code, cause, msg, args);
+    }
+
+    public static Conflict create(int code, Throwable cause) {
+        return Act.isDev() ? new ActConflict(code, cause) : Conflict.of(code, cause);
     }
 }

@@ -67,6 +67,11 @@ public class SecureTicketHandler extends RequestHandlerBase {
     }
 
     @Override
+    public String toString() {
+        return "secure ticket handler";
+    }
+
+    @Override
     public void prepareAuthentication(ActionContext context) {
 
     }

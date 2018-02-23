@@ -101,11 +101,11 @@
     if (btn.className == 'expanded') {
       tbl.className = 'hide';
       btn.className = 'collapsed';
-      btn.innerText = 'show';
+      btn.innerText = '@actMsg("e404.open")';
     } else {
       tbl.className = '';
       btn.className = 'expanded';
-      btn.innerText = 'hide';
+      btn.innerText = '@actMsg("e404.hide")';
     }
   }
   @if(null != sourceInfo || null != templateSourceInfo) {

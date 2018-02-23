@@ -27,6 +27,8 @@ import org.osgl.mvc.result.Unauthorized;
 
 import java.util.List;
 
+import static act.util.ActError.Util.loadSourceInfo;
+
 public class ActUnauthorized extends Unauthorized implements ActError {
 
     private SourceInfo sourceInfo;
@@ -34,28 +36,22 @@ public class ActUnauthorized extends Unauthorized implements ActError {
     public ActUnauthorized() {
         super();
         if (Act.isDev()) {
-            loadSourceInfo();
+            sourceInfo = loadSourceInfo(ActUnauthorized.class);
         }
     }
 
     public ActUnauthorized(String realm) {
         super(realm);
         if (Act.isDev()) {
-            loadSourceInfo();
+            sourceInfo = loadSourceInfo(ActUnauthorized.class);
         }
     }
 
     public ActUnauthorized(String realm, boolean digest) {
         super(realm, digest);
         if (Act.isDev()) {
-            loadSourceInfo();
+            sourceInfo = loadSourceInfo(ActUnauthorized.class);
         }
-    }
-
-    private void loadSourceInfo() {
-        doFillInStackTrace();
-        Throwable cause = getCause();
-        sourceInfo = Util.loadSourceInfo(null == cause ? getStackTrace() : cause.getStackTrace(), ActUnauthorized.class);
     }
 
     @Override

@@ -56,6 +56,11 @@ public class UnknownHttpMethodHandler extends FastRequestHandler implements Seri
     }
 
     @Override
+    public String toString() {
+        return "unknown http method handler: " + configured(Act.appConfig()).getClass().getSimpleName();
+    }
+
+    @Override
     public boolean express(ActionContext context) {
         return configured(null) instanceof ExpressHandler;
     }

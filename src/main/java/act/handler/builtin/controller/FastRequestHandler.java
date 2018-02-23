@@ -45,6 +45,11 @@ public abstract class FastRequestHandler extends RequestHandlerBase {
         public boolean express(ActionContext context) {
             return true;
         }
+
+        @Override
+        public String toString() {
+            return "dumb handler";
+        }
     };
 
     @Override

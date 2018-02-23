@@ -24,58 +24,71 @@ import act.Act;
 import act.app.SourceInfo;
 import act.util.ActError;
 import org.osgl.mvc.result.BadRequest;
-import org.osgl.util.S;
 
-import java.lang.reflect.Method;
 import java.util.List;
+
+import static act.util.ActError.Util.errorMessage;
+import static act.util.ActError.Util.loadSourceInfo;
+import static org.osgl.http.H.Status.BAD_REQUEST;
 
 public class ActBadRequest extends BadRequest implements ActError {
 
     private SourceInfo sourceInfo;
 
     public ActBadRequest() {
-        super();
+        super(errorMessage(BAD_REQUEST));
         if (Act.isDev()) {
-            loadSourceInfo();
+            sourceInfo = loadSourceInfo(ActBadRequest.class);
         }
     }
 
     public ActBadRequest(String message, Object... args) {
-        super(message, args);
+        super(errorMessage(BAD_REQUEST, message, args));
         if (Act.isDev()) {
-            loadSourceInfo();
-        }
-    }
-
-    public ActBadRequest(Method method, String message, Object... args) {
-        super(null == message ? S.fmt("bad request on invoking %s.%s()", method.getDeclaringClass().getName(), method.getName()) : message);
-        if (Act.isDev()) {
-            loadSourceInfo(method);
+            sourceInfo = loadSourceInfo(ActBadRequest.class);
         }
     }
 
     public ActBadRequest(Throwable cause, String message, Object ... args) {
-        super(cause, message, args);
+        super(cause, errorMessage(BAD_REQUEST, message, args));
         if (Act.isDev()) {
-            loadSourceInfo();
+            sourceInfo = loadSourceInfo(cause, ActBadRequest.class);
         }
     }
 
     public ActBadRequest(Throwable cause) {
-        super(cause);
+        super(cause, errorMessage(BAD_REQUEST));
         if (Act.isDev()) {
-            loadSourceInfo();
+            sourceInfo = loadSourceInfo(cause, ActBadRequest.class);
         }
     }
 
-    private void loadSourceInfo() {
-        doFillInStackTrace();
-        Throwable cause = getCause();
-        sourceInfo = Util.loadSourceInfo(null == cause ? getStackTrace() : cause.getStackTrace(), ActBadRequest.class);
+    public ActBadRequest(int errorCode) {
+        super(errorCode, errorMessage(BAD_REQUEST));
+        if (Act.isDev()) {
+            sourceInfo = loadSourceInfo(ActBadRequest.class);
+        }
     }
 
-    private void loadSourceInfo(Method method) {
-        sourceInfo = Util.loadSourceInfo(method);
+    public ActBadRequest(int errorCode, String message, Object... args) {
+        super(errorCode, errorMessage(BAD_REQUEST, message, args));
+        if (Act.isDev()) {
+            sourceInfo = loadSourceInfo(ActBadRequest.class);
+        }
+    }
+
+    public ActBadRequest(int errorCode, Throwable cause, String message, Object... args) {
+        super(errorCode, cause, errorMessage(BAD_REQUEST, message, args));
+        if (Act.isDev()) {
+            sourceInfo = loadSourceInfo(cause, ActBadRequest.class);
+        }
+    }
+
+    public ActBadRequest(int errorCode, Throwable cause) {
+        super(errorCode, cause, errorMessage(BAD_REQUEST));
+        if (Act.isDev()) {
+            sourceInfo = loadSourceInfo(cause, ActBadRequest.class);
+        }
     }
 
     @Override
@@ -83,7 +96,6 @@ public class ActBadRequest extends BadRequest implements ActError {
         Throwable cause = super.getCause();
         return null == cause ? this : cause;
     }
-
 
     public SourceInfo sourceInfo() {
         return sourceInfo;
@@ -103,21 +115,31 @@ public class ActBadRequest extends BadRequest implements ActError {
     }
 
     public static BadRequest create(String msg, Object... args) {
-        return Act.isDev() ? new ActBadRequest(msg, args) : BadRequest.of
-                (msg, args);
+        return Act.isDev() ? new ActBadRequest(msg, args) : BadRequest.of(msg, args);
     }
-
-    public static BadRequest create(Method method, String message) {
-        return Act.isDev() ? new ActBadRequest(method, message) : BadRequest.get();
-    }
-
-
 
     public static BadRequest create(Throwable cause, String msg, Object ... args) {
-        return Act.isDev() ? new ActBadRequest(cause, msg, args) : new BadRequest(cause, msg, args);
+        return Act.isDev() ? new ActBadRequest(cause, msg, args) : BadRequest.of(cause, msg, args);
     }
 
     public static BadRequest create(Throwable cause) {
-        return Act.isDev() ? new ActBadRequest(cause) : new BadRequest(cause);
+        return Act.isDev() ? new ActBadRequest(cause) : BadRequest.of(cause);
     }
+
+    public static BadRequest create(int code) {
+        return Act.isDev() ? new ActBadRequest(code) : BadRequest.of(code);
+    }
+
+    public static BadRequest create(int code, String msg, Object... args) {
+        return Act.isDev() ? new ActBadRequest(code, msg, args) : BadRequest.of(code, msg, args);
+    }
+
+    public static BadRequest create(int code, Throwable cause, String msg, Object ... args) {
+        return Act.isDev() ? new ActBadRequest(code, cause, msg, args) : BadRequest.of(code, cause, msg, args);
+    }
+
+    public static BadRequest create(int code, Throwable cause) {
+        return Act.isDev() ? new ActBadRequest(code, cause) : BadRequest.of(code, cause);
+    }
+
 }

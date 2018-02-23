@@ -24,58 +24,43 @@ import act.Act;
 import act.app.SourceInfo;
 import act.util.ActError;
 import org.osgl.mvc.result.NotFound;
-import org.osgl.util.S;
 
-import java.lang.reflect.Method;
 import java.util.List;
+
+import static act.util.ActError.Util.errorMessage;
+import static act.util.ActError.Util.loadSourceInfo;
+import static org.osgl.http.H.Status.NOT_FOUND;
 
 public class ActNotFound extends NotFound implements ActError {
 
     private SourceInfo sourceInfo;
 
     public ActNotFound() {
-        super();
+        super(errorMessage(NOT_FOUND));
         if (Act.isDev()) {
-            loadSourceInfo();
+            sourceInfo = loadSourceInfo(ActNotFound.class);
         }
     }
 
     public ActNotFound(String message, Object... args) {
-        super(message, args);
+        super(errorMessage(NOT_FOUND, message, args));
         if (Act.isDev()) {
-            loadSourceInfo();
-        }
-    }
-
-    public ActNotFound(Method method, String message) {
-        super(null == message ? S.fmt("null value returned from %s.%s()", method.getDeclaringClass().getName(), method.getName()) : message);
-        if (Act.isDev()) {
-            loadSourceInfo(method);
+            sourceInfo = loadSourceInfo(ActNotFound.class);
         }
     }
 
     public ActNotFound(Throwable cause, String message, Object ... args) {
-        super(cause, message, args);
+        super(cause, errorMessage(NOT_FOUND, message, args));
         if (Act.isDev()) {
-            loadSourceInfo();
+            sourceInfo = loadSourceInfo(cause, ActNotFound.class);
         }
     }
 
     public ActNotFound(Throwable cause) {
-        super(cause);
+        super(cause, errorMessage(NOT_FOUND));
         if (Act.isDev()) {
-            loadSourceInfo();
+            sourceInfo = loadSourceInfo(cause, ActNotFound.class);
         }
-    }
-
-    private void loadSourceInfo() {
-        doFillInStackTrace();
-        Throwable cause = getCause();
-        sourceInfo = Util.loadSourceInfo(null == cause ? getStackTrace() : cause.getStackTrace(), ActNotFound.class);
-    }
-
-    private void loadSourceInfo(Method method) {
-        sourceInfo = Util.loadSourceInfo(method);
     }
 
     @Override
@@ -103,10 +88,6 @@ public class ActNotFound extends NotFound implements ActError {
 
     public static NotFound create(String msg, Object... args) {
         return Act.isDev() ? new ActNotFound(msg, args) : NotFound.of(msg, args);
-    }
-
-    public static NotFound create(Method method, String message) {
-        return Act.isDev() ? new ActNotFound(method, message) : NotFound.get();
     }
 
     public static NotFound create(Throwable cause, String msg, Object ... args) {

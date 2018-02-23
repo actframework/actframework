@@ -27,44 +27,69 @@ import org.osgl.mvc.result.NotImplemented;
 
 import java.util.List;
 
+import static act.util.ActError.Util.errorMessage;
+import static act.util.ActError.Util.loadSourceInfo;
+import static org.osgl.http.H.Status.NOT_IMPLEMENTED;
+
 public class ActNotImplemented extends NotImplemented implements ActError {
 
     private SourceInfo sourceInfo;
 
     public ActNotImplemented() {
-        super();
+        super(errorMessage(NOT_IMPLEMENTED));
         if (Act.isDev()) {
-            loadSourceInfo();
+            sourceInfo = loadSourceInfo(ActNotImplemented.class);
         }
     }
 
     public ActNotImplemented(String message, Object... args) {
-        super(message, args);
+        super(errorMessage(NOT_IMPLEMENTED, message, args));
         if (Act.isDev()) {
-            loadSourceInfo();
+            sourceInfo = loadSourceInfo(ActNotImplemented.class);
         }
     }
 
     public ActNotImplemented(Throwable cause, String message, Object ... args) {
-        super(cause, message, args);
+        super(cause, errorMessage(NOT_IMPLEMENTED, message, args));
         if (Act.isDev()) {
-            loadSourceInfo();
+            sourceInfo = loadSourceInfo(ActNotImplemented.class);
         }
     }
 
     public ActNotImplemented(Throwable cause) {
-        super(cause);
+        super(cause, errorMessage(NOT_IMPLEMENTED));
         if (Act.isDev()) {
-            loadSourceInfo();
+            sourceInfo = loadSourceInfo(cause, ActNotImplemented.class);
         }
     }
 
-    private void loadSourceInfo() {
-        doFillInStackTrace();
-        Throwable cause = getCause();
-        sourceInfo = Util.loadSourceInfo(null == cause ? getStackTrace() : cause.getStackTrace(), ActNotImplemented.class);
+    public ActNotImplemented(int code) {
+        super(code, errorMessage(NOT_IMPLEMENTED));
+        if (Act.isDev()) {
+            sourceInfo = loadSourceInfo(ActNotImplemented.class);
+        }
     }
 
+    public ActNotImplemented(int code, String message, Object... args) {
+        super(code, errorMessage(NOT_IMPLEMENTED, message, args));
+        if (Act.isDev()) {
+            sourceInfo = loadSourceInfo(ActNotImplemented.class);
+        }
+    }
+
+    public ActNotImplemented(int code, Throwable cause, String message, Object ... args) {
+        super(code, cause, errorMessage(NOT_IMPLEMENTED, message, args));
+        if (Act.isDev()) {
+            sourceInfo = loadSourceInfo(ActNotImplemented.class);
+        }
+    }
+
+    public ActNotImplemented(int code, Throwable cause) {
+        super(code, cause, errorMessage(NOT_IMPLEMENTED));
+        if (Act.isDev()) {
+            sourceInfo = loadSourceInfo(cause, ActNotImplemented.class);
+        }
+    }
 
     @Override
     public Throwable getCauseOrThis() {
@@ -99,5 +124,21 @@ public class ActNotImplemented extends NotImplemented implements ActError {
 
     public static NotImplemented create(Throwable cause) {
         return Act.isDev() ? new ActNotImplemented(cause) : NotImplemented.of(cause);
+    }
+
+    public static NotImplemented create(int code) {
+        return Act.isDev() ? new ActNotImplemented(code) : NotImplemented.of(code);
+    }
+
+    public static NotImplemented create(int code, String msg, Object... args) {
+        return Act.isDev() ? new ActNotImplemented(code, msg, args) : NotImplemented.of(code, msg, args);
+    }
+
+    public static NotImplemented create(int code, Throwable cause, String msg, Object ... args) {
+        return Act.isDev() ? new ActNotImplemented(code, cause, msg, args) : NotImplemented.of(code, cause, msg, args);
+    }
+
+    public static NotImplemented create(int code, Throwable cause) {
+        return Act.isDev() ? new ActNotImplemented(code, cause) : NotImplemented.of(code, cause);
     }
 }

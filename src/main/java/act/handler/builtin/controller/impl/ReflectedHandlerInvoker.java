@@ -426,7 +426,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
 
         if (failOnViolation && context.hasViolation()) {
             String msg = context.violationMessage(";");
-            return new BadRequest(msg);
+            return ActBadRequest.create(msg);
         }
 
         if (async) {
@@ -790,21 +790,13 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
             // handler invoker return `null`
             // and there are return type of the action method signature
             // and the return type is **NOT** Result
-            return notFoundOnMethod(null);
+            return ActNotFound.create();
         }
         boolean hasTemplate = checkTemplate(context);
         if (hasTemplate && result instanceof RenderAny) {
             result = RenderTemplate.INSTANCE;
         }
         return Controller.Util.inferResult(handlerMetaInfo, result, context, hasTemplate);
-    }
-
-    public NotFound notFoundOnMethod(String message) {
-        return ActNotFound.create(method, message);
-    }
-
-    public BadRequest badRequestOnMethod(String message) {
-        return ActBadRequest.create(method, message);
     }
 
     public boolean checkTemplate(ActionContext context) {

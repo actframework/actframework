@@ -43,4 +43,9 @@ public class OptionsRequestHandler extends FastRequestHandler implements Express
         context.prepareRespForWrite().status(H.Status.NO_CONTENT);
         context.applyCorsSpec();
     }
+
+    @Override
+    public String toString() {
+        return "OPTIONS handler";
+    }
 }

@@ -36,6 +36,6 @@ public class AlwaysNotImplemented extends FastRequestHandler implements ExpressH
 
     @Override
     public String toString() {
-        return "error: forbidden";
+        return "error: not implemented";
     }
 }

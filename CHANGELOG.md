@@ -1,6 +1,11 @@
 # ActFramework Change Log
 
-**1.7.1** 
+**1.7.2** 
+* Large content sent to response get truncated #531
+* Extends error response to allow user defined code #530
+* Add `Controller.Util.download(URL)` helper method #529
+
+**1.7.1** 21/Feb/2018 
 * `EventBus.Key.effectiveTypeOf` cause stackoverflow in Event sample #525
 * NPE running config sample #524
 * Allow normal action handler support partial path #523

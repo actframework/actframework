@@ -63,7 +63,6 @@ public class RythmTemplateException extends TemplateException {
         throw E.unsupport();
     }
 
-    @Override
     protected void populateSourceInfo(Throwable t) {
         org.rythmengine.exception.RythmException re = (org.rythmengine.exception.RythmException) t;
         sourceInfo = sourceInfo(re, true);

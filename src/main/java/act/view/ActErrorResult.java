@@ -41,71 +41,70 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static act.util.ActError.Util.errorMessage;
+import static act.util.ActError.Util.loadSourceInfo;
+import static org.osgl.http.H.Status.INTERNAL_SERVER_ERROR;
+
 public class ActErrorResult extends ErrorResult implements ActError {
 
     protected SourceInfo sourceInfo;
 
     public ActErrorResult(H.Status status) {
-        super(status);
+        super(status, errorMessage(status));
         init();
         populateSourceInfo();
     }
 
     public ActErrorResult(H.Status status, String message, Object ... args) {
-        super(status, message, args);
+        super(status, errorMessage(status, message, args));
         init();
         populateSourceInfo();
     }
 
     public ActErrorResult(H.Status status, int errorCode) {
-        super(status, errorCode);
+        super(status, errorCode, errorMessage(status));
         init();
         populateSourceInfo();
     }
 
     public ActErrorResult(H.Status status, int errorCode, String message, Object... args) {
-        super(status, errorCode, message, args);
+        super(status, errorCode, errorMessage(status, message, args));
         init();
         populateSourceInfo();
     }
 
     public ActErrorResult(Throwable cause) {
-        super(H.Status.INTERNAL_SERVER_ERROR, cause);
+        super(INTERNAL_SERVER_ERROR, cause, errorMessage(INTERNAL_SERVER_ERROR));
         init();
         populateSourceInfo(cause);
     }
 
     private ActErrorResult(AsmException exception, boolean scanning) {
-        super(H.Status.INTERNAL_SERVER_ERROR, exception.getCause(), errorMsg(exception, scanning));
+        super(INTERNAL_SERVER_ERROR, exception.getCause(), errorMsg(exception, scanning));
         init();
         populateSourceInfo(exception.context());
     }
 
-    private static String errorMsg(AsmException exception, boolean scanning) {
-        String userMsg = exception.getLocalizedMessage();
-        return (S.blank(userMsg)) ? S.concat("Error ", scanning ? "scanning" : "enhancing", " bytecode at ", exception.context().toString()) : userMsg;
-    }
-
     public ActErrorResult(H.Status status, Throwable cause) {
-        super(status, cause);
+        super(status, cause, errorMessage(status));
         init();
         populateSourceInfo(cause);
     }
 
     public ActErrorResult(H.Status status, Throwable cause, String message, Object... args) {
-        super(status, cause, message, args);
+        super(status, cause, errorMessage(status, message, args));
         init();
         populateSourceInfo(cause);
     }
 
     public ActErrorResult(H.Status status, int errorCode, Throwable cause, String message, Object ... args) {
-        super(status, errorCode, cause, message, args);
+        super(status, errorCode, cause, errorMessage(status, message, args));
         init();
         populateSourceInfo(cause);
     }
 
     public ActErrorResult(H.Status status, int errorCode, Throwable cause) {
-        super(status, errorCode, cause);
+        super(status, errorCode, cause, errorMessage(status));
         init();
         populateSourceInfo(cause);
     }
@@ -138,26 +137,18 @@ public class ActErrorResult extends ErrorResult implements ActError {
 
     protected void init() {}
 
-    protected void populateSourceInfo(Throwable t) {
+    protected void populateSourceInfo(Throwable cause) {
         if (!Act.isDev()) {
             return;
         }
-        if (t instanceof SourceInfo) {
-            this.sourceInfo = (SourceInfo)t;
-        } else {
-            DevModeClassLoader cl = (DevModeClassLoader) App.instance().classLoader();
-            for (StackTraceElement stackTraceElement : t.getStackTrace()) {
-                int line = stackTraceElement.getLineNumber();
-                if (line <= 0) {
-                    continue;
-                }
-                Source source = cl.source(stackTraceElement.getClassName());
-                if (null == source) {
-                    continue;
-                }
-                sourceInfo = new SourceInfoImpl(source, line);
-            }
+        sourceInfo = loadSourceInfo(cause, getClass());
+    }
+
+    private void populateSourceInfo() {
+        if (!Act.isDev()) {
+            return;
         }
+        sourceInfo = loadSourceInfo(new RuntimeException(), getClass());
     }
 
     protected void populateSourceInfo(AsmContext context) {
@@ -165,10 +156,6 @@ public class ActErrorResult extends ErrorResult implements ActError {
             return;
         }
         this.sourceInfo = Util.loadSourceInfo(context);
-    }
-
-    private void populateSourceInfo() {
-        populateSourceInfo(new RuntimeException());
     }
 
     private static Map<Class<? extends Throwable>, $.Function<Throwable, Result>> x = new HashMap<>();
@@ -220,7 +207,7 @@ public class ActErrorResult extends ErrorResult implements ActError {
         if (t instanceof Result) {
             return (Result) t;
         } else if (t instanceof org.rythmengine.exception.RythmException) {
-            return Act.isDev() ? new RythmTemplateException((org.rythmengine.exception.RythmException) t) : ErrorResult.of(H.Status.INTERNAL_SERVER_ERROR);
+            return Act.isDev() ? new RythmTemplateException((org.rythmengine.exception.RythmException) t) : ErrorResult.of(INTERNAL_SERVER_ERROR);
         } else if (t instanceof AsmException) {
             return new ActErrorResult((AsmException) t, true);
         } else {
@@ -334,4 +321,9 @@ public class ActErrorResult extends ErrorResult implements ActError {
         return t;
     }
 
+
+    private static String errorMsg(AsmException exception, boolean scanning) {
+        String userMsg = exception.getLocalizedMessage();
+        return (S.blank(userMsg)) ? S.concat("Error ", scanning ? "scanning" : "enhancing", " bytecode at ", exception.context().toString()) : userMsg;
+    }
 }

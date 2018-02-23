@@ -92,6 +92,11 @@ public abstract class RequestHandlerBase extends $.F1<ActionContext, Void> imple
     }
 
     @Override
+    public String toString() {
+        return getClass().getName();
+    }
+
+    @Override
     public boolean sessionFree() {
         return sessionFree;
     }
@@ -139,6 +144,11 @@ public abstract class RequestHandlerBase extends $.F1<ActionContext, Void> imple
 
             @Override
             public void prepareAuthentication(ActionContext context) {
+            }
+
+            @Override
+            public String toString() {
+                return handler.toString();
             }
         }.setSessionFree().noContextResoving();
     }

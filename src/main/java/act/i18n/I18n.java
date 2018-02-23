@@ -21,6 +21,7 @@ package act.i18n;
  */
 
 import act.Act;
+import act.act_messages;
 import act.util.ActContext;
 import org.osgl.$;
 import org.osgl.Osgl;
@@ -83,6 +84,9 @@ public class I18n {
     private static String _i18n(boolean ignoreError, Locale locale, String bundleName, String msgId, Object... args) {
         if (null == msgId) {
             return "";
+        }
+        if (bundleName.startsWith("act.")) {
+            bundleName = act_messages.class.getName();
         }
         ResourceBundle bundle;
         try {

@@ -27,44 +27,69 @@ import org.osgl.mvc.result.Forbidden;
 
 import java.util.List;
 
+import static act.util.ActError.Util.errorMessage;
+import static act.util.ActError.Util.loadSourceInfo;
+import static org.osgl.http.H.Status.FORBIDDEN;
+
 public class ActForbidden extends Forbidden implements ActError {
 
     private SourceInfo sourceInfo;
 
     public ActForbidden() {
-        super();
+        super(errorMessage(FORBIDDEN));
         if (Act.isDev()) {
-            loadSourceInfo();
+            sourceInfo = loadSourceInfo(ActForbidden.class);
         }
     }
 
     public ActForbidden(String message, Object... args) {
-        super(message, args);
+        super(errorMessage(FORBIDDEN, message, args));
         if (Act.isDev()) {
-            loadSourceInfo();
+            sourceInfo = loadSourceInfo(ActForbidden.class);
         }
     }
 
     public ActForbidden(Throwable cause, String message, Object ... args) {
-        super(cause, message, args);
+        super(cause, errorMessage(FORBIDDEN, message, args));
         if (Act.isDev()) {
-            loadSourceInfo();
+            sourceInfo = loadSourceInfo(ActForbidden.class);
         }
     }
 
     public ActForbidden(Throwable cause) {
-        super(cause);
+        super(cause, errorMessage(FORBIDDEN));
         if (Act.isDev()) {
-            loadSourceInfo();
+            sourceInfo = loadSourceInfo(ActForbidden.class);
         }
     }
 
-    private void loadSourceInfo() {
-        doFillInStackTrace();
-        Throwable cause = getCause();
-        sourceInfo = Util.loadSourceInfo(null == cause ? getStackTrace() : cause.getStackTrace(), ActForbidden.class);
+    public ActForbidden(int code) {
+        super(code, errorMessage(FORBIDDEN));
+        if (Act.isDev()) {
+            sourceInfo = loadSourceInfo(ActForbidden.class);
+        }
     }
 
+    public ActForbidden(int code, String message, Object... args) {
+        super(code, errorMessage(FORBIDDEN, message, args));
+        if (Act.isDev()) {
+            sourceInfo = loadSourceInfo(ActForbidden.class);
+        }
+    }
+
+    public ActForbidden(int code, Throwable cause, String message, Object ... args) {
+        super(code, cause, errorMessage(FORBIDDEN, message, args));
+        if (Act.isDev()) {
+            sourceInfo = loadSourceInfo(ActForbidden.class);
+        }
+    }
+
+    public ActForbidden(int code, Throwable cause) {
+        super(code, cause, errorMessage(FORBIDDEN));
+        if (Act.isDev()) {
+            sourceInfo = loadSourceInfo(ActForbidden.class);
+        }
+    }
 
     @Override
     public Throwable getCauseOrThis() {
@@ -99,5 +124,21 @@ public class ActForbidden extends Forbidden implements ActError {
 
     public static Forbidden create(Throwable cause) {
         return Act.isDev() ? new ActForbidden(cause) : Forbidden.of(cause);
+    }
+
+    public static Forbidden create(int code) {
+        return Act.isDev() ? new ActForbidden(code) : Forbidden.of(code);
+    }
+
+    public static Forbidden create(int code, String msg, Object... args) {
+        return Act.isDev() ? new ActForbidden(code, msg, args) : Forbidden.of(code, msg, args);
+    }
+
+    public static Forbidden create(int code, Throwable cause, String msg, Object ... args) {
+        return Act.isDev() ? new ActForbidden(code, cause, msg, args) : Forbidden.of(code, cause, msg, args);
+    }
+
+    public static Forbidden create(int code, Throwable cause) {
+        return Act.isDev() ? new ActForbidden(code, cause) : Forbidden.of(code, cause);
     }
 }

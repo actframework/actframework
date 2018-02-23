@@ -140,6 +140,11 @@ public abstract class WebSocketConnectionHandler extends RequestHandlerBase {
         }
     }
 
+    @Override
+    public String toString() {
+        return "websocket connection handler";
+    }
+
     /**
      * This method is used by {@link act.handler.builtin.controller.RequestHandlerProxy}
      * to check if a handler is WS handler or GET handler

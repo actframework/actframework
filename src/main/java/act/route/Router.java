@@ -1443,6 +1443,11 @@ public class Router extends AppServiceBase<Router> {
                         }
 
                         @Override
+                        public String toString() {
+                            return h.toString();
+                        }
+
+                        @Override
                         public void prepareAuthentication(ActionContext context) {
                             h.prepareAuthentication(context);
                         }

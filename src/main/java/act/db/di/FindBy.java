@@ -24,16 +24,12 @@ import act.Act;
 import act.app.ActionContext;
 import act.app.App;
 import act.db.Dao;
-import act.handler.DelegateRequestHandler;
-import act.handler.RequestHandler;
-import act.handler.builtin.controller.RequestHandlerProxy;
 import act.inject.param.JsonDTO;
 import act.inject.param.ParamValueLoaderService;
 import act.util.ActContext;
-import org.osgl.$;
+import act.view.ActBadRequest;
+import act.view.ActNotFound;
 import org.osgl.inject.ValueLoader;
-import org.osgl.mvc.result.BadRequest;
-import org.osgl.mvc.result.NotFound;
 import org.osgl.util.*;
 
 import javax.validation.constraints.NotNull;
@@ -126,35 +122,11 @@ public class FindBy extends ValueLoader.Base {
         if (notNull) {
             if (null == value) {
                 String errMsg = Act.appConfig().i18nEnabled() ? ctx._act_i18n("e400.db_bind.missing_request_param", requestParamName) : "missing required parameter: " + requestParamName;
-                if (!Act.isDev() || !(ctx instanceof ActionContext)) {
-                    throw BadRequest.of(errMsg);
-                }
-                ActionContext actionContext = $.cast(ctx);
-                RequestHandler handler = actionContext.handler();
-                if (handler instanceof DelegateRequestHandler) {
-                    handler = ((DelegateRequestHandler) handler).realHandler();
-                }
-                if (handler instanceof RequestHandlerProxy) {
-                    RequestHandlerProxy proxy = $.cast(handler);
-                    throw proxy.badRequestOnMethod(errMsg);
-                }
-                throw BadRequest.of(errMsg);
+                throw ActBadRequest.create(errMsg);
             }
             if (null == obj) {
                 String errMsg = Act.appConfig().i18nEnabled() ? ctx._act_i18n("e404.db_bind.not_found", queryFieldName, value) : "db record not found by " + queryFieldName + " using value: " + value;
-                if (!Act.isDev() || !(ctx instanceof ActionContext)) {
-                    throw NotFound.of(errMsg);
-                }
-                ActionContext actionContext = $.cast(ctx);
-                RequestHandler handler = actionContext.handler();
-                if (handler instanceof DelegateRequestHandler) {
-                    handler = ((DelegateRequestHandler) handler).realHandler();
-                }
-                if (handler instanceof RequestHandlerProxy) {
-                    RequestHandlerProxy proxy = $.cast(handler);
-                    throw proxy.notFoundOnMethod(errMsg);
-                }
-                throw NotFound.of(errMsg);
+                throw ActNotFound.create(errMsg);
             }
         }
         return obj;

@@ -40,6 +40,11 @@ public class NamedMockHandler extends RequestHandlerBase {
         result.set(this.name);
     }
 
+    @Override
+    public String toString() {
+        return name;
+    }
+
     public static String getName() {
         return result.get();
     }

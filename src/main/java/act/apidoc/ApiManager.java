@@ -114,6 +114,11 @@ public class ApiManager extends AppServiceBase<ApiManager> {
         public void prepareAuthentication(ActionContext context) {
 
         }
+
+        @Override
+        public String toString() {
+            return "API doc handler";
+        }
     }
 
 
