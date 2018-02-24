@@ -40,9 +40,7 @@ import javax.validation.Payload;
 import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 import static java.lang.annotation.ElementType.*;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
@@ -211,7 +209,7 @@ public @interface Password {
 
         @Override
         public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
-            MethodVisitor mv = new PasswordVerifierInvokeAdaptor(super.visitMethod(access, name, desc, signature, exceptions), metaInfo);
+            MethodVisitor mv = new PasswordVerifierInvokeAdaptor(super.visitMethod(access, name, desc, signature, exceptions), metaInfoManager);
             if (!eligible || !DESC_CHAR_ARRAY.equals(desc)) {
                 return mv;
             }
@@ -323,32 +321,236 @@ public @interface Password {
         }
 
         private static class PasswordVerifierInvokeAdaptor extends MethodVisitor {
-            PasswordMetaInfo metaInfo;
-            public PasswordVerifierInvokeAdaptor(MethodVisitor mv, PasswordMetaInfo metaInfo) {
+
+            private static class LastInsnInfo {
+                private String fieldDesc;
+                private int varIndex = -1;
+                private String methodDesc;
+                PasswordMetaInfo metaInfo(Map<Integer, String> localVarTable, ClassMetaInfoManager<PasswordMetaInfo> metaInfoManager) {
+                    String className;
+                    try {
+                        if (null != fieldDesc) {
+                            className = Type.getType(fieldDesc).getClassName();
+                        } else if (varIndex > -1) {
+                            className = Type.getType(localVarTable.get(varIndex)).getClassName();
+                        } else {
+                            String desc = S.afterLast(")", methodDesc);
+                            className = Type.getType(desc).getClassName();
+                        }
+                        PasswordMetaInfo metaInfo = metaInfoManager.get(className);
+                        if (null == metaInfo) {
+                            throw new AsmException("Cannot find password meta info");
+                        }
+                        return metaInfo;
+                    } catch (Exception e) {
+                        throw new AsmException(e);
+                    }
+                }
+                boolean isVarIndex() {
+                    return varIndex > -1;
+                }
+            }
+
+            // Map var index to var descriptor
+            private Map<Integer, String> localVarTable = new HashMap<>();
+
+            private LastInsnInfo lastInsnInfo;
+
+            private static class CallContext {
+                int varIndex;
+                int lineNumber;
+                String methodDescriptor;
+
+                public CallContext(int varIndex, int lineNumber, String methodDescriptor) {
+                    this.varIndex = varIndex;
+                    this.lineNumber = lineNumber;
+                    this.methodDescriptor = methodDescriptor;
+                }
+            }
+
+            private java.util.List<CallContext> callContexts = new ArrayList<>();
+
+            private ClassMetaInfoManager<PasswordMetaInfo> metaInfoManager;
+
+            public PasswordVerifierInvokeAdaptor(MethodVisitor mv, ClassMetaInfoManager<PasswordMetaInfo> metaInfoManager) {
                 super(ASM5, mv);
-                this.metaInfo = metaInfo;
+                this.metaInfoManager = metaInfoManager;
+            }
+
+            @Override
+            public void visitInsn(int opcode) {
+                lastInsnInfo = null;
+                super.visitInsn(opcode);
+            }
+
+            @Override
+            public void visitIntInsn(int opcode, int operand) {
+                lastInsnInfo = null;
+                super.visitIntInsn(opcode, operand);
+            }
+
+            @Override
+            public void visitVarInsn(int opcode, int var) {
+                if (ALOAD == opcode) {
+                    lastInsnInfo = new LastInsnInfo();
+                    lastInsnInfo.varIndex = var;
+                } else {
+                    lastInsnInfo = null;
+                }
+                super.visitVarInsn(opcode, var);
+            }
+
+            @Override
+            public void visitTypeInsn(int opcode, String type) {
+                lastInsnInfo = null;
+                super.visitTypeInsn(opcode, type);
+            }
+
+            @Override
+            public void visitFieldInsn(int opcode, String owner, String name, String desc) {
+                lastInsnInfo = new LastInsnInfo();
+                lastInsnInfo.fieldDesc = desc;
+                super.visitFieldInsn(opcode, owner, name, desc);
+            }
+
+            @Override
+            public void visitInvokeDynamicInsn(String name, String desc, Handle bsm, Object... bsmArgs) {
+                lastInsnInfo = null;
+                super.visitInvokeDynamicInsn(name, desc, bsm, bsmArgs);
+            }
+
+            @Override
+            public void visitJumpInsn(int opcode, Label label) {
+                lastInsnInfo = null;
+                super.visitJumpInsn(opcode, label);
+            }
+
+            @Override
+            public void visitLabel(Label label) {
+                lastInsnInfo = null;
+                super.visitLabel(label);
+            }
+
+            @Override
+            public AnnotationVisitor visitInsnAnnotation(int typeRef, TypePath typePath, String desc, boolean visible) {
+                lastInsnInfo = null;
+                return super.visitInsnAnnotation(typeRef, typePath, desc, visible);
+            }
+
+            @Override
+            public void visitFrame(int type, int nLocal, Object[] local, int nStack, Object[] stack) {
+                lastInsnInfo = null;
+                super.visitFrame(type, nLocal, local, nStack, stack);
+            }
+
+            @Override
+            public void visitLdcInsn(Object cst) {
+                lastInsnInfo = null;
+                super.visitLdcInsn(cst);
+            }
+
+            @Override
+            public void visitIincInsn(int var, int increment) {
+                lastInsnInfo = null;
+                super.visitIincInsn(var, increment);
+            }
+
+            @Override
+            public void visitMethodInsn(int opcode, String owner, String name, String desc) {
+                visitMethodInsn(opcode, owner, name, desc, false);
+            }
+
+            @Override
+            public void visitTableSwitchInsn(int min, int max, Label dflt, Label... labels) {
+                lastInsnInfo = null;
+                super.visitTableSwitchInsn(min, max, dflt, labels);
+            }
+
+            @Override
+            public void visitLookupSwitchInsn(Label dflt, int[] keys, Label[] labels) {
+                lastInsnInfo = null;
+                super.visitLookupSwitchInsn(dflt, keys, labels);
+            }
+
+            @Override
+            public void visitMultiANewArrayInsn(String desc, int dims) {
+                lastInsnInfo = null;
+                super.visitMultiANewArrayInsn(desc, dims);
+            }
+
+            @Override
+            public void visitLineNumber(int line, Label start) {
+                lastInsnInfo = null;
+                super.visitLineNumber(line, start);
+            }
+
+            @Override
+            public void visitLocalVariable(String name, String desc, String signature, Label start, Label end, int index) {
+                localVarTable.put(index, desc);
+                super.visitLocalVariable(name, desc, signature, start, end, index);
             }
 
             @Override
             public void visitMethodInsn(int opcode, String owner, String name, String desc, boolean itf) {
                 if (INVOKESTATIC == opcode && !itf && "verifyPassword".equals(name) && "act/validation/Password$Verifier".equals(owner)) {
-                    if (null == metaInfo) {
-                        throw AsmException.of("Cannot call Password.Verifier.verifyPassword on object without a @Password field");
+                    PasswordMetaInfo metaInfo = null;
+                    if (!lastInsnInfo.isVarIndex()) {
+                        metaInfo = null == lastInsnInfo ? null : lastInsnInfo.metaInfo(localVarTable, metaInfoManager);
+                        if (null == metaInfo) {
+                            throw AsmException.of("Cannot call Password.Verifier.verifyPassword on object without a @Password field");
+                        }
+                    } else {
+                        CallContext ctx = new CallContext(lastInsnInfo.varIndex, AsmContext.line(), desc);
+                        callContexts.add(ctx);
                     }
                     if ("([CLjava/lang/Object;)Z".equals(desc)) {
-                        if (!metaInfo.isSinglePasswordProvider()) {
+                        if (null != metaInfo && !metaInfo.isSinglePasswordProvider()) {
                             throw AsmException.of("Cannot call Password.Verifier.verifyPassword on object with multiple @Password fields without field name parameter");
                         }
                         super.visitMethodInsn(opcode, owner, name, "([CLact/internal/password/PasswordProvider;)Z", itf);
                     } else if ("([CLjava/lang/Object;Ljava/lang/String;)Z".equals(desc)) {
-                        if (metaInfo.isSinglePasswordProvider()) {
+                        if (null != metaInfo && metaInfo.isSinglePasswordProvider()) {
                             throw AsmException.of("It shall call Password.Verifier.verifyPassword on object with single @Password field without field name parameter");
                         }
                         super.visitMethodInsn(opcode, owner, name, "([CLact/internal/password/PasswordProvider;Ljava/lang/String;)Z", itf);
+                    } else {
+                        throw AsmException.of("Unknown Password.Verifier.verifyPassword call: " + desc);
                     }
                 } else {
+                    lastInsnInfo = new LastInsnInfo();
+                    lastInsnInfo.methodDesc = desc;
                     super.visitMethodInsn(opcode, owner, name, desc, itf);
                 }
+            }
+
+            @Override
+            public void visitEnd() {
+                if (localVarTable.isEmpty()) {
+                    logger.warn("Local Variable Table is empty. Cannot verify Password.Verifier.verifyPassword call");
+                } else if (!callContexts.isEmpty()) {
+                    for (CallContext ctx : callContexts) {
+                        AsmContext.line(ctx.lineNumber);
+                        String varDesc = localVarTable.get(ctx.varIndex);
+                        if (null == varDesc) {
+                            throw AsmException.of("Cannot find var descriptor by var index: " + ctx.varIndex);
+                        }
+                        String className = Type.getType(varDesc).getClassName();
+                        PasswordMetaInfo metaInfo = metaInfoManager.get(className);
+                        if (null == metaInfo) {
+                            throw AsmException.of("Cannot call Password.Verifier.verifyPassword on object without a @Password field");
+                        }
+                        if ("([CLjava/lang/Object;)Z".equals(ctx.methodDescriptor)) {
+                            if (!metaInfo.isSinglePasswordProvider()) {
+                                throw AsmException.of("It shall call Password.Verifier.verifyPassword on object with single @Password field without field name parameter");
+                            }
+                        } else if ("([CLjava/lang/Object;Ljava/lang/String;)Z".equals(ctx.methodDescriptor)) {
+                            if (metaInfo.isSinglePasswordProvider()) {
+                                throw AsmException.of("It shall call Password.Verifier.verifyPassword on object with single @Password field without field name parameter");
+                            }
+                        }
+                    }
+                }
+                super.visitEnd();
             }
         }
     }

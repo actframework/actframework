@@ -47,6 +47,7 @@ public abstract class ClassMetaInfoManager<INFO extends ClassMetaInfoBase<INFO>>
     @Override
     protected void applyTo(App app) {
         app.register(this);
+        map.clear();
     }
 
     public INFO getOrCreate(String className) {
