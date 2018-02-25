@@ -1,6 +1,8 @@
 # ActFramework Change Log
 
 **1.7.2** 
+* EntityMetaInfo framework - Support capture EntityListener annotation #535
+* Add `TimestampGenerator` for `java.sql.Time` and `java.sql.Timestamp` #534
 * Cannot call Password.Verifier.verifyPassword on object without a @Password field #528
 * Running `Config` sample project in prod mode cannot find template #527
 * Large content sent to response get truncated #531

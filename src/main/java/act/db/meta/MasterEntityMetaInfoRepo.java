@@ -30,6 +30,7 @@ import act.util.ClassInfoRepository;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.persistence.Entity;
+import javax.persistence.EntityListeners;
 import javax.persistence.MappedSuperclass;
 import java.lang.annotation.Annotation;
 import java.util.*;
@@ -42,11 +43,14 @@ public class MasterEntityMetaInfoRepo extends EntityMetaInfoRepo {
 
     private Set<String> entityAnnotations = new HashSet<>();
 
+    private Set<String> entityListenerAnnotations = new HashSet<>();
+
     @Inject
     public MasterEntityMetaInfoRepo(final App app) {
         super(app);
         registerEntityAnnotation(Entity.class);
         registerEntityAnnotation(MappedSuperclass.class);
+        registerEntityListenerAnnotation(EntityListeners.class);
         final MasterEntityMetaInfoRepo me = this;
         JobManager jobManager = app.jobManager();
         jobManager.on(SysEventId.CLASS_LOADED, new Runnable() {
@@ -81,8 +85,16 @@ public class MasterEntityMetaInfoRepo extends EntityMetaInfoRepo {
         entityAnnotations.add(Type.getType(annoType).getDescriptor());
     }
 
+    public void registerEntityListenerAnnotation(Class<? extends Annotation> annoType) {
+        entityListenerAnnotations.add(Type.getType(annoType).getDescriptor());
+    }
+
     public boolean isEntity(String descriptor) {
         return entityAnnotations.contains(descriptor);
+    }
+
+    public boolean isEntityListener(String descriptor) {
+        return entityListenerAnnotations.contains(descriptor);
     }
 
     public EntityMetaInfoRepo forDefaultDb() {

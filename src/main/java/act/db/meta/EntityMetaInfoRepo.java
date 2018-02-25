@@ -78,6 +78,11 @@ public class EntityMetaInfoRepo extends AppServiceBase<EntityMetaInfoRepo> {
         info.entityName(entityName);
     }
 
+    public void markEntityListenersFound(String className) {
+        EntityClassMetaInfo info = getOrCreate(className);
+        info.foundEntityListenersAnnotation();
+    }
+
     public void registerCreatedField(String className, String fieldName) {
         EntityClassMetaInfo info = getOrCreate(className);
         info.getOrCreateFieldInfo(fieldName).trait(CREATED);

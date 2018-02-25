@@ -37,6 +37,7 @@ public class EntityClassMetaInfo {
 
     private String className;
     private String entityName;
+    private boolean hasEntityListeners;
     private EntityFieldMetaInfo idField;
     private EntityFieldMetaInfo createdAtField;
     private EntityFieldMetaInfo lastModifiedAtField;
@@ -57,6 +58,10 @@ public class EntityClassMetaInfo {
 
     public void entityName(String entityName) {
         this.entityName = entityName;
+    }
+
+    public void foundEntityListenersAnnotation() {
+        hasEntityListeners = true;
     }
 
     public EntityFieldMetaInfo fieldInfo(String fieldName) {
@@ -84,6 +89,10 @@ public class EntityClassMetaInfo {
             fields.put(fieldName, fieldInfo);
         }
         return fieldInfo;
+    }
+
+    public boolean hasEntityListeners() {
+        return hasEntityListeners;
     }
 
     @Override
@@ -116,10 +125,9 @@ public class EntityClassMetaInfo {
         }
     }
 
-
-
     void clear() {
         fields.clear();
+        hasEntityListeners = false;
     }
 
     void createdAtField(EntityFieldMetaInfo fieldInfo) {

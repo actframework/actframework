@@ -20,7 +20,6 @@ package act.db.meta;
  * #L%
  */
 
-import act.Act;
 import act.app.AppByteCodeScannerBase;
 import act.asm.AnnotationVisitor;
 import act.asm.FieldVisitor;
@@ -78,17 +77,19 @@ public class EntityInfoByteCodeScanner extends AppByteCodeScannerBase {
         boolean foundCreatedAt;
         boolean foundLastModifiedAt;
         boolean foundId;
+        MasterEntityMetaInfoRepo metaInfoRepo;
 
         @Override
         public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
             super.visit(version, access, name, signature, superName, interfaces);
             className = Type.getObjectType(name).getClassName();
+            metaInfoRepo = app().entityMetaInfoRepo();
         }
 
         @Override
         public AnnotationVisitor visitAnnotation(String desc, boolean visible) {
             AnnotationVisitor av = super.visitAnnotation(desc, visible);
-            isEntity = Act.app().entityMetaInfoRepo().isEntity(desc);
+            isEntity = metaInfoRepo.isEntity(desc);
             if (isEntity || isMappedSuperClass) {
                 repo.registerEntityOrMappedSuperClass(className);
                 if (isEntity) {
@@ -102,6 +103,8 @@ public class EntityInfoByteCodeScanner extends AppByteCodeScannerBase {
                         }
                     };
                 }
+            } else if (metaInfoRepo.isEntityListener(desc)) {
+                repo.markEntityListenersFound(className);
             }
             return av;
         }

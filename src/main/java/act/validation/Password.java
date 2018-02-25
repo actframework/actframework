@@ -526,7 +526,9 @@ public @interface Password {
             @Override
             public void visitEnd() {
                 if (localVarTable.isEmpty()) {
-                    logger.warn("Local Variable Table is empty. Cannot verify Password.Verifier.verifyPassword call");
+                    if (!callContexts.isEmpty()) {
+                        logger.warn("Local Variable Table is empty. Cannot verify Password.Verifier.verifyPassword call");
+                    }
                 } else if (!callContexts.isEmpty()) {
                     for (CallContext ctx : callContexts) {
                         AsmContext.line(ctx.lineNumber);
