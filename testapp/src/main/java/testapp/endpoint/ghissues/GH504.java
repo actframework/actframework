@@ -12,4 +12,9 @@ public class GH504 extends GithubIssueBase{
         return n;
     }
 
+    @GetAction("no_def")
+    public int testNoDef(int n) {
+        return n;
+    }
+
 }

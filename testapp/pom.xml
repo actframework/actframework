@@ -70,7 +70,7 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-    <act.version>1.7.1-SNAPSHOT</act.version>
+    <act.version>1.7.3-SNAPSHOT</act.version>
     <act.storage.version>[0.13.0, 2.0.0)</act.storage.version>
     <act.morphia.version>1.4.0</act.morphia.version>
     <app.entry>testapp.TestApp</app.entry>

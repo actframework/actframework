@@ -1,5 +1,8 @@
 # ActFramework Change Log
 
+**1.7.3**
+* Fix regression issue with #504
+
 **1.7.2** 
 * EntityMetaInfo framework - Support capture EntityListener annotation #535
 * Add `TimestampGenerator` for `java.sql.Time` and `java.sql.Timestamp` #534
