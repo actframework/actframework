@@ -1,5 +1,8 @@
 # ActFramework Change Log
 
+**1.7.4** 
+* notFoundIfNull return Content-Type as text/html #537
+
 **1.7.3**
 * Fix regression issue with #504
 

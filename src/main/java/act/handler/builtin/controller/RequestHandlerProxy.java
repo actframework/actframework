@@ -45,6 +45,7 @@ import org.osgl.exception.UnexpectedException;
 import org.osgl.http.H;
 import org.osgl.logging.L;
 import org.osgl.logging.Logger;
+import org.osgl.mvc.result.ErrorResult;
 import org.osgl.mvc.result.Result;
 import org.osgl.util.E;
 import org.osgl.util.S;
@@ -291,6 +292,9 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
             } else {
                 H.Request req = context.req();
                 ActResponse<?> resp = context.prepareRespForWrite();
+                if (result instanceof ErrorResult) {
+                    resp.contentType(req.accept());
+                }
                 result.apply(req, resp);
             }
         } catch (RuntimeException e) {
