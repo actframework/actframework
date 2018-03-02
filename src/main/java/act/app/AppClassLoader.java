@@ -410,7 +410,7 @@ public class AppClassLoader
     }
 
     protected byte[] loadAppClassFromDisk(String name) {
-        File base = new File(app().layout().target(app().base()), "classes");
+        File base = RuntimeDirs.classes(app);
         if (base.canRead() && base.isDirectory()) {
             String path = ClassNames.classNameToClassFileName(name);
             File classFile = new File(base, path);

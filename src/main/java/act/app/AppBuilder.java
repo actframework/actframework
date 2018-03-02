@@ -79,19 +79,9 @@ class AppBuilder {
 
     private void copyFiles() {
         copyLibs();
-        copyAssets();
         copyResources();
         copyConf();
         copyRoutes();
-    }
-
-    void copyAssets() {
-        File asset = layout.asset(appBase);
-        if (null == asset || !asset.canRead()) {
-            return;
-        }
-        verifyDir(asset, "asset", false);
-        IO.copyDirectory(asset, tgtAsset);
     }
 
     void copyResources() {

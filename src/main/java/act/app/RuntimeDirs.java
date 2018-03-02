@@ -53,11 +53,12 @@ public enum RuntimeDirs {
     }
 
     public static File resource(App app) {
-        return Act.isDev() ? app.layout().resource(app.base()) : classes(app);
+        //return Act.isDev() ? app.layout().resource(app.base()) : classes(app);
+        return app.layout().resource(Act.isDev() ? app.base() : app.home());
     }
 
     public static File conf(App app) {
-        File confBase = Act.isDev() ? app.layout().resource(app.base()) : classes(app);
+        File confBase = app.layout().resource(Act.isDev() ? app.base() : app.home()); //Act.isDev() ? app.layout().resource(app.base()) : classes(app);
         File file = new File(confBase, CONF);
         return file.exists() ? file : confBase;
     }
@@ -85,10 +86,10 @@ public enum RuntimeDirs {
     }
 
     public static File classes(App app) {
-        File file = new File(app.home(), CLASSES);
+        File file = new File(app.home(), app.layout().classes());
         if (!file.exists()) {
             // suppose we starts PROD mode from IDE
-            file = new File(app.layout().target(app.home()), CLASSES);
+            file = new File(app.layout().target(app.home()), app.layout().classes());
         }
         return file;
     }

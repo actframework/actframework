@@ -1,8 +1,11 @@
 # ActFramework Change Log
 
 **1.7.4** 
-* notFoundIfNull return Content-Type as text/html #537
+* `ProjectLayout` - provide layout for gradle_groovy combination #541
+* Cannot run a groovy program even in PROD mode #540
 * Implement new response output model #539
+* Param binding failure for `List<Foo>` style parameters #538
+* notFoundIfNull return Content-Type as text/html #537
 
 **1.7.3**
 * Fix regression issue with #504

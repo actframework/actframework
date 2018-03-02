@@ -887,6 +887,11 @@ public final class Act {
         E.unexpectedIf(sa.length < 3, "Whoops!");
         StackTraceElement ste = sa[2];
         String className = ste.getClassName();
+        if ("act.Act$start".equals(className)) {
+            // groovy launched app
+            ste = sa[6];
+            className = ste.getClassName();
+        }
         E.unexpectedIf(!className.contains("."), "The main class must have package name to use Act");
         return $.classForName(className);
     }

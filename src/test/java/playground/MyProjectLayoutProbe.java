@@ -69,7 +69,7 @@ public class MyProjectLayoutProbe extends BuildFileProbe.FileParser implements P
             }
 
             @Override
-            public File asset(File appBase) {
+            public String classes() {
                 return null;
             }
 

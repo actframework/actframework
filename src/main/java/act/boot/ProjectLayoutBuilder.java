@@ -31,15 +31,12 @@ import java.util.Map;
  */
 public class ProjectLayoutBuilder implements ProjectLayout {
 
-    private String appBase;
-
     private String src;
     private String tstSrc;
     private String rsrc;
     private String tstRsrc;
     private String lib;
     private String tstLib;
-    private String asset;
     private String tgt;
     private String routeTable;
     private String conf;
@@ -86,12 +83,6 @@ public class ProjectLayoutBuilder implements ProjectLayout {
         return this;
     }
 
-    public ProjectLayoutBuilder asset(String asset) {
-        this.asset = asset;
-        _refresh();
-        return this;
-    }
-
     public ProjectLayoutBuilder target(String tgt) {
         this.tgt = tgt;
         _refresh();
@@ -131,6 +122,11 @@ public class ProjectLayoutBuilder implements ProjectLayout {
     }
 
     @Override
+    public String classes() {
+        return _layout.classes();
+    }
+
+    @Override
     public File lib(File appBase) {
         return _layout.lib(appBase);
     }
@@ -138,11 +134,6 @@ public class ProjectLayoutBuilder implements ProjectLayout {
     @Override
     public File testLib(File appBase) {
         return _layout.testLib(appBase);
-    }
-
-    @Override
-    public File asset(File appBase) {
-        return _layout.asset(appBase);
     }
 
     @Override
@@ -161,6 +152,6 @@ public class ProjectLayoutBuilder implements ProjectLayout {
     }
 
     public ProjectLayout toLayout() {
-        return new ProjectLayout.CustomizedProjectLayout(src, tstSrc, rsrc, tstRsrc, lib, tstLib, asset, tgt, routeTable, conf);
+        return new ProjectLayout.CustomizedProjectLayout(src, tstSrc, rsrc, tstRsrc, lib, tstLib, tgt, routeTable, conf);
     }
 }

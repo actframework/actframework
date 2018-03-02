@@ -118,9 +118,8 @@ public interface ProjectLayout {
             }
 
             @Override
-            public File asset(File appBase) {
-                String asset = Act.isDev() ? "src/main/asset" : "asset";
-                return file(appBase, asset);
+            public String classes() {
+                return RuntimeDirs.CLASSES;
             }
 
             @Override
@@ -128,6 +127,106 @@ public interface ProjectLayout {
                 return file(appBase, "target");
             }
 
+        },
+
+        GRADLE_GROOVY() {
+            @Override
+            public File source(File appBase) {
+                return file(appBase, "src/main/groovy");
+            }
+
+            @Override
+            public File testSource(File appBase) {
+                return file(appBase, "src/test/groovy");
+            }
+
+            @Override
+            public File resource(File appBase) {
+                if (Act.isDev()) {
+                    return file(appBase, "src/main/resources");
+                }
+                return file(target(appBase), "resources/main");
+            }
+
+            @Override
+            public File testResource(File appBase) {
+                if (Act.isDev()) {
+                    return file(appBase, "src/test/resources");
+                }
+                return file(target(appBase), "resources/test");
+            }
+
+            @Override
+            public File lib(File appBase) {
+                String lib = Act.isDev() ? "src/main/lib" : "libs";
+                return file(appBase, lib);
+            }
+
+            @Override
+            public File testLib(File appBase) {
+                String lib = Act.isDev() ? "src/test/lib" : "test-libs";
+                return file(appBase, lib);
+            }
+
+            @Override
+            public String classes() {
+                return "classes/groovy/main";
+            }
+
+            @Override
+            public File target(File appBase) {
+                return file(appBase, "build");
+            }
+        },
+
+        GRADLE_GROOVY_IDEA() {
+            @Override
+            public File source(File appBase) {
+                return file(appBase, "src/main/groovy");
+            }
+
+            @Override
+            public File testSource(File appBase) {
+                return file(appBase, "src/test/groovy");
+            }
+
+            @Override
+            public File resource(File appBase) {
+                if (Act.isDev()) {
+                    return file(appBase, "src/main/resources");
+                }
+                return file(appBase, "out/production/resources");
+            }
+
+            @Override
+            public File testResource(File appBase) {
+                if (Act.isDev()) {
+                    return file(appBase, "src/test/resources");
+                }
+                return file(appBase, "out/test/resources");
+            }
+
+            @Override
+            public File lib(File appBase) {
+                String lib = Act.isDev() ? "src/main/lib" : "libs";
+                return file(appBase, lib);
+            }
+
+            @Override
+            public File testLib(File appBase) {
+                String lib = Act.isDev() ? "src/test/lib" : "test-libs";
+                return file(appBase, lib);
+            }
+
+            @Override
+            public String classes() {
+                return "classes";
+            }
+
+            @Override
+            public File target(File appBase) {
+                return file(appBase, "out/production");
+            }
         },
 
         PKG() {
@@ -162,8 +261,8 @@ public interface ProjectLayout {
             }
 
             @Override
-            public File asset(File appBase) {
-                return file(appBase, "asset");
+            public String classes() {
+                return RuntimeDirs.CLASSES;
             }
 
             @Override
@@ -222,8 +321,8 @@ public interface ProjectLayout {
             }
 
             @Override
-            public File asset(File appBase) {
-                return file(appBase, "public");
+            public String classes() {
+                return RuntimeDirs.CLASSES;
             }
 
             @Override
@@ -322,10 +421,9 @@ public interface ProjectLayout {
     File testLib(File appBase);
 
     /**
-     * Returns asset folder which contains public accessible files like js/css/img etc
-     * in relation to the {@code appBase} specified
+     * Returns classes folder path that is related to the app base
      */
-    File asset(File appBase);
+    String classes();
 
     /**
      * Returns the build target folder in relation to the
@@ -368,7 +466,9 @@ public interface ProjectLayout {
             // try source path
             File src = layout.source(dir);
             if (null != src && src.canRead() && src.isDirectory()) {
-                return true;
+                // try target path
+                File tgt = layout.target(dir);
+                return (null != tgt && tgt.canRead() && tgt.isDirectory());
             }
             return false;
         }
@@ -394,11 +494,10 @@ public interface ProjectLayout {
             String testLib = _get("testLib", p);
             String resource = _get("resource", p);
             String testResource = _get("testResource", p);
-            String asset = _get("asset", p);
             String routes = _get("routes", p);
             String conf = _get("conf", p);
             String target = _get("target", p);
-            return new CustomizedProjectLayout(source, testSource, resource, testResource, lib, testLib, asset, target, routes, conf);
+            return new CustomizedProjectLayout(source, testSource, resource, testResource, lib, testLib, target, routes, conf);
         }
 
         private static String _get(String key, Properties p) {
@@ -416,18 +515,16 @@ public interface ProjectLayout {
         private String routeTable;
         private String conf;
         private String target;
-        private String asset;
         private String resource;
         private String testResource;
 
-        public CustomizedProjectLayout(String src, String testSource, String resource, String testResource, String lib, String testLib, String asset, String tgt, String routeTable, String conf) {
+        public CustomizedProjectLayout(String src, String testSource, String resource, String testResource, String lib, String testLib, String tgt, String routeTable, String conf) {
             this.source = src;
             this.testSource = testSource;
             this.resource = resource;
             this.testResource = testResource;
             this.lib = lib;
             this.testLib = testLib;
-            this.asset = asset;
             this.target = tgt;
             this.routeTable = routeTable;
             this.conf = conf;
@@ -482,8 +579,8 @@ public interface ProjectLayout {
         }
 
         @Override
-        public File asset(File appBase) {
-            return file(appBase, asset);
+        public String classes() {
+            return RuntimeDirs.CLASSES;
         }
 
         @Override
