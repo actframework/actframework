@@ -86,7 +86,7 @@ public class ActBlockingExchange implements BlockingHttpExchange {
                 req.closeAndDrainRequest();
             } finally {
                 ActResponse resp = ctx.resp();
-                resp.closeStreamAndWriter();
+                resp.close();
             }
         } else {
             try {

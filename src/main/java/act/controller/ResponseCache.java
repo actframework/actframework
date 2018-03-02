@@ -27,6 +27,7 @@ import org.osgl.http.H;
 import org.osgl.storage.ISObject;
 import org.osgl.util.Charsets;
 import org.osgl.util.IO;
+import org.osgl.util.Output;
 
 import java.io.OutputStream;
 import java.io.PrintWriter;
@@ -249,6 +250,11 @@ public class ResponseCache extends ActResponse implements Serializable {
     }
 
     @Override
+    protected Output createOutput() {
+        return null;
+    }
+
+    @Override
     protected OutputStream createOutputStream() {
         return null;
     }
@@ -347,13 +353,4 @@ public class ResponseCache extends ActResponse implements Serializable {
         realResponse.commit();
     }
 
-    @Override
-    public void closeStreamAndWriter() {
-        if (null != writerCache) {
-            IO.close(writerCache);
-        } else if (null != osCache) {
-            IO.close(osCache);
-        }
-        realResponse.closeStreamAndWriter();
-    }
 }

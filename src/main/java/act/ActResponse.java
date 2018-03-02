@@ -97,7 +97,11 @@ public abstract class ActResponse<T extends ActResponse> extends H.Response<T> {
         header(H.Header.Names.CONTENT_TYPE, _getContentType());
     }
 
-    public abstract void closeStreamAndWriter();
+    @Override
+    public void close() {
+        super.close();
+        markClosed();
+    }
 
     public boolean isClosed() {
         return closed;
@@ -122,7 +126,7 @@ public abstract class ActResponse<T extends ActResponse> extends H.Response<T> {
         return statusCode;
     }
 
-    protected void beforeWritingContent() {
+    public void beforeWritingContent() {
         if (ready) {
             return;
         }
@@ -131,7 +135,7 @@ public abstract class ActResponse<T extends ActResponse> extends H.Response<T> {
         MvcConfig.applyBeforeCommitResultHandler(Ok.get(), ctx.req(), this);
     }
 
-    protected void afterWritingContent() {
+    public void afterWritingContent() {
         if (ready) {
             return;
         }

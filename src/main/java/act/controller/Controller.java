@@ -35,15 +35,11 @@ import org.osgl.Osgl;
 import org.osgl.http.H;
 import org.osgl.mvc.result.*;
 import org.osgl.storage.ISObject;
-import org.osgl.util.C;
-import org.osgl.util.E;
-import org.osgl.util.IO;
-import org.osgl.util.S;
+import org.osgl.util.*;
 
 import javax.inject.Inject;
 import java.io.File;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -1123,16 +1119,16 @@ public @interface Controller {
          * @param outputStreamWriter the delayed writer
          * @return the result
          */
-        public static RenderBinary binary($.Function<OutputStream, ?> outputStreamWriter) {
+        public static RenderBinary binary($.Visitor<Output> outputStreamWriter) {
             return new RenderBinary(outputStreamWriter);
         }
 
         /**
-         * Alias of {@link #binary(Osgl.Function)}
+         * Alias of {@link #binary(Osgl.Visitor)}
          * @param outputStreamWriter the delayed writer
          * @return the result
          */
-        public static RenderBinary renderBinary($.Function<OutputStream, ?> outputStreamWriter) {
+        public static RenderBinary renderBinary($.Visitor<Output> outputStreamWriter) {
             return binary(outputStreamWriter);
         }
 
@@ -1467,9 +1463,6 @@ public @interface Controller {
                     }
                     PropertySpec.MetaInfo propertySpec = PropertySpec.MetaInfo.withCurrent(meta, context);
                     try {
-                        if (null == propertySpec) {
-                            return RenderJSON.of(status, v);
-                        }
                         return FilteredRenderJSON.get(status, v, propertySpec, context);
                     } finally {
                         if (meta.disableJsonCircularRefDetect()) {

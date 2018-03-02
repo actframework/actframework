@@ -25,8 +25,11 @@ import act.cli.view.CliView;
 import act.route.UrlPath;
 import act.util.ActContext;
 import act.util.PropertySpec;
+import org.osgl.$;
+import org.osgl.Osgl;
 import org.osgl.http.H;
 import org.osgl.mvc.result.RenderContent;
+import org.osgl.util.Output;
 import org.osgl.util.S;
 
 /**
@@ -41,40 +44,61 @@ public class RenderCSV extends RenderContent {
         }
 
         @Override
+        public $.Visitor<Output> contentWriter() {
+            return payload().contentWriter;
+        }
+
+        @Override
         public long timestamp() {
             return payload().timestamp;
         }
     };
 
-    private ActContext context;
-
     private RenderCSV() {
         super(H.Format.CSV);
     }
 
-    public RenderCSV(Object v, PropertySpec.MetaInfo spec, ActContext context) {
-        super(render(v, spec, context), H.Format.CSV);
-        this.context = context;
+    public RenderCSV(final Object v, final PropertySpec.MetaInfo spec, final ActContext context) {
+        super(new $.Visitor<Output>() {
+            @Override
+            public void visit(Output output) throws Osgl.Break {
+                render(output, v, spec, context);
+            }
+        }, H.Format.CSV);
     }
 
-    public RenderCSV(H.Status status, Object v, PropertySpec.MetaInfo spec, ActContext context) {
-        super(status, render(v, spec, context), H.Format.CSV);
-        this.context = context;
+    public RenderCSV(H.Status status, final Object v, final PropertySpec.MetaInfo spec, final ActContext context) {
+        super(status, new $.Visitor<Output>() {
+            @Override
+            public void visit(Output output) throws Osgl.Break {
+                render(output, v, spec, context);
+            }
+        }, H.Format.CSV);
     }
 
-    public static RenderCSV get(Object v, PropertySpec.MetaInfo spec, ActContext context) {
-        touchPayload().message(render(v, spec, context));
+    public static RenderCSV get(final Object v, final PropertySpec.MetaInfo spec, final ActContext context) {
+        touchPayload().contentWriter(new $.Visitor<Output>() {
+            @Override
+            public void visit(Output output) throws Osgl.Break {
+                render(output, v, spec, context);
+            }
+        });
         return _INSTANCE;
     }
 
-    public static RenderCSV get(H.Status status, Object v, PropertySpec.MetaInfo spec, ActContext context) {
-        touchPayload().message(render(v, spec, context)).status(status);
+    public static RenderCSV get(H.Status status, final Object v, final PropertySpec.MetaInfo spec, final ActContext context) {
+        touchPayload().status(status).contentWriter(new $.Visitor<Output>() {
+            @Override
+            public void visit(Output output) throws Osgl.Break {
+                render(output, v, spec, context);
+            }
+        });
         return _INSTANCE;
     }
 
-    private static String render(Object v, PropertySpec.MetaInfo spec, ActContext context) {
+    private static void render(Output output, Object v, PropertySpec.MetaInfo spec, ActContext context) {
         setDownloadHeader(context);
-        return CliView.CSV.render(v, spec, context);
+        CliView.CSV.render(output, v, spec, context);
     }
 
     private static void setDownloadHeader(ActContext context) {

@@ -23,6 +23,7 @@ package act;
 import org.osgl.exception.UnexpectedIOException;
 import org.osgl.http.H;
 import org.osgl.util.E;
+import org.osgl.util.Output;
 
 import java.io.ByteArrayOutputStream;
 import java.io.OutputStream;
@@ -56,6 +57,11 @@ public class MockResponse extends ActResponse<MockResponse> {
     }
 
     @Override
+    protected Output createOutput() {
+        throw E.tbd();
+    }
+
+    @Override
     public String characterEncoding() {
         return encoding;
     }
@@ -79,11 +85,6 @@ public class MockResponse extends ActResponse<MockResponse> {
 
     @Override
     public void commit() {
-
-    }
-
-    @Override
-    public void closeStreamAndWriter() {
 
     }
 

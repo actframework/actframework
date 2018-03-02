@@ -22,6 +22,7 @@ package act.route;
 
 import act.ActResponse;
 import org.osgl.http.H;
+import org.osgl.util.Output;
 
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
@@ -35,6 +36,11 @@ public class MockResponse extends ActResponse<MockResponse> {
 
     @Override
     protected OutputStream createOutputStream() {
+        return null;
+    }
+
+    @Override
+    protected Output createOutput() {
         return null;
     }
 
@@ -87,8 +93,4 @@ public class MockResponse extends ActResponse<MockResponse> {
 
     }
 
-    @Override
-    public void closeStreamAndWriter() {
-
-    }
 }

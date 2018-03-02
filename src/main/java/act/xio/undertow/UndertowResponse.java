@@ -23,7 +23,9 @@ package act.xio.undertow;
 import act.ActResponse;
 import act.app.ActionContext;
 import act.conf.AppConfig;
+import io.undertow.io.DefaultIoCallback;
 import io.undertow.io.IoCallback;
+import io.undertow.io.Sender;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.util.HeaderMap;
 import io.undertow.util.Headers;
@@ -34,6 +36,7 @@ import org.osgl.http.H;
 import org.osgl.storage.ISObject;
 import org.osgl.util.E;
 import org.osgl.util.IO;
+import org.osgl.util.Output;
 
 import java.io.File;
 import java.io.IOException;
@@ -50,11 +53,17 @@ public class UndertowResponse extends ActResponse<UndertowResponse> {
     private HttpServerExchange hse;
 
     private boolean endAsync;
+    private Sender sender;
 
     public UndertowResponse(HttpServerExchange exchange, AppConfig config) {
         super(config);
         hse = $.notNull(exchange);
         hse.getResponseHeaders().put(_SERVER, config.serverHeader());
+    }
+
+    @Override
+    protected Output createOutput() {
+        return new UndertowResponseOutput(this);
     }
 
     @Override
@@ -73,11 +82,19 @@ public class UndertowResponse extends ActResponse<UndertowResponse> {
         return this;
     }
 
+    Sender sender() {
+        if (null == sender) {
+            sender = hse.getResponseSender();
+            endAsync = true;
+        }
+        return sender;
+    }
+
     @Override
     public UndertowResponse writeContent(String s) {
         beforeWritingContent();
         try {
-            hse.getResponseSender().send(s);
+            sender().send(s);
             endAsync = true;
             afterWritingContent();
         } catch (RuntimeException e) {
@@ -88,11 +105,29 @@ public class UndertowResponse extends ActResponse<UndertowResponse> {
         return this;
     }
 
+    public void writeContentPart(String s) {
+        try {
+            sender().send(s, WRITE_PART_CALLBACK);
+        } catch (RuntimeException e) {
+            endAsync = false;
+            throw e;
+        }
+    }
+
+    public void writeContentPart(ByteBuffer buffer) {
+        try {
+            sender().send(buffer, WRITE_PART_CALLBACK);
+        } catch (RuntimeException e) {
+            endAsync = false;
+            throw e;
+        }
+    }
+
     @Override
     public UndertowResponse writeContent(ByteBuffer byteBuffer) {
         beforeWritingContent();
         try {
-            hse.getResponseSender().send(byteBuffer);
+            sender().send(byteBuffer);
             endAsync = true;
             afterWritingContent();
         } catch (RuntimeException e) {
@@ -110,12 +145,12 @@ public class UndertowResponse extends ActResponse<UndertowResponse> {
         if (null == file) {
             byte[] ba = binary.asByteArray();
             ByteBuffer buffer = ByteBuffer.wrap(ba);
-            hse.getResponseSender().send(buffer);
+            sender().send(buffer);
             endAsync = true;
             afterWritingContent();
         } else {
             try {
-                hse.getResponseSender().transferFrom(FileChannel.open(file.toPath()), IoCallback.END_EXCHANGE);
+                sender().transferFrom(FileChannel.open(file.toPath()), IoCallback.END_EXCHANGE);
                 endAsync = true;
                 afterWritingContent();
             } catch (IOException e) {
@@ -141,6 +176,8 @@ public class UndertowResponse extends ActResponse<UndertowResponse> {
     public void commit() {
         if (!endAsync) {
             hse.endExchange();
+        } else {
+            sender.close(IoCallback.END_EXCHANGE);
         }
         markClosed();
     }
@@ -161,14 +198,6 @@ public class UndertowResponse extends ActResponse<UndertowResponse> {
         HeaderMap map = hse.getResponseHeaders();
         map.add(HEADER_NAMES.get(name), value);
         return this;
-    }
-
-    public void closeStreamAndWriter() {
-        if (writer != null) {
-            IO.close(writer);
-        } else {
-            IO.close(outputStream());
-        }
     }
 
     public void freeResources() {
@@ -217,4 +246,10 @@ public class UndertowResponse extends ActResponse<UndertowResponse> {
         return hse.isResponseStarted();
     }
 
+    private static final IoCallback WRITE_PART_CALLBACK = new DefaultIoCallback() {
+        @Override
+        public void onComplete(HttpServerExchange exchange, Sender sender) {
+            // do not close the exchange
+        }
+    };
 }
