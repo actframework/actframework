@@ -186,6 +186,13 @@ public class GenieInjector extends DependencyInjectorBase<GenieInjector> {
                     for (Map.Entry<Class, DependencyInjectionBinder> entry : binders.entrySet()) {
                         genie.registerProvider(entry.getKey(), entry.getValue());
                     }
+                    $.F2<Class, NamedProvider, Void> namedProviderRegister = new $.F2<Class, NamedProvider, Void>()  {
+                        @Override
+                        public Void apply(Class aClass, NamedProvider namedProvider) throws NotAppliedException, Osgl.Break {
+                            genie.registerNamedProvider(aClass, namedProvider);
+                            return null;
+                        }
+                    };
                     $.F2<Class, Provider, Void> register = new $.F2<Class, Provider, Void>() {
                         @Override
                         public Void apply(Class aClass, Provider provider) throws NotAppliedException, Osgl.Break {
@@ -207,6 +214,8 @@ public class GenieInjector extends DependencyInjectorBase<GenieInjector> {
 
                     ActProviders.registerBuiltInProviders(ActProviders.class, register);
                     ActProviders.registerBuiltInProviders(GenieProviders.class, register);
+                    ActProviders.registerBuiltInNamedProviders(ActProviders.class, namedProviderRegister);
+                    ActProviders.registerBuiltInNamedProviders(GenieProviders.class, namedProviderRegister);
                     for (Class<? extends Annotation> injectTag : injectTags) {
                         genie.registerInjectTag(injectTag);
                     }

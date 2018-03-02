@@ -43,6 +43,7 @@ import org.osgl.Osgl;
 import org.osgl.cache.CacheService;
 import org.osgl.exception.NotAppliedException;
 import org.osgl.http.H;
+import org.osgl.inject.NamedProvider;
 import org.osgl.logging.Logger;
 import org.osgl.util.C;
 import org.osgl.util.E;
@@ -66,6 +67,13 @@ public final class ActProviders {
     private static Set<Class> providedTypes = C.newSet();
 
     static {
+        registerBuiltInNamedProviders(ActProviders.class, new $.F2<Class, NamedProvider, Void>() {
+            @Override
+            public Void apply(Class aClass, NamedProvider provider) throws NotAppliedException, Osgl.Break {
+                providedTypes.add(aClass);
+                return null;
+            }
+        });
         registerBuiltInProviders(ActProviders.class, new $.F2<Class, Provider, Void>() {
             @Override
             public Void apply(Class aClass, Provider provider) throws NotAppliedException, Osgl.Break {
@@ -225,6 +233,13 @@ public final class ActProviders {
         }
     };
 
+    public static final NamedProvider<CacheService> APP_NAMED_CACHE_SERVICE = new NamedProvider<CacheService>() {
+        @Override
+        public CacheService get(String name) {
+            return app().cache(name);
+        }
+    };
+
     public static final Provider<ViewManager> VIEW_MANAGER = new Provider<ViewManager>() {
         @Override
         public ViewManager get() {
@@ -264,6 +279,24 @@ public final class ActProviders {
                     if (type instanceof ParameterizedType) {
                         ParameterizedType ptype = $.cast(field.getGenericType());
                         Provider<?> provider = $.cast(field.get(null));
+                        register.apply((Class) ptype.getActualTypeArguments()[0], provider);
+                    }
+                }
+            } catch (Exception e) {
+                throw E.unexpected(e);
+            }
+        }
+    }
+
+    public static void registerBuiltInNamedProviders(Class<?> providersClass, $.Func2<Class, NamedProvider, ?> register) {
+        for (Field field : providersClass.getDeclaredFields()) {
+            try {
+                if (NamedProvider.class.isAssignableFrom(field.getType())) {
+                    field.setAccessible(true);
+                    Type type = field.getGenericType();
+                    if (type instanceof ParameterizedType) {
+                        ParameterizedType ptype = $.cast(field.getGenericType());
+                        NamedProvider<?> provider = $.cast(field.get(null));
                         register.apply((Class) ptype.getActualTypeArguments()[0], provider);
                     }
                 }
