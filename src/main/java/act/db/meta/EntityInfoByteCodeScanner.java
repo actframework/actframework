@@ -22,6 +22,7 @@ package act.db.meta;
 
 import act.app.AppByteCodeScannerBase;
 import act.asm.AnnotationVisitor;
+import act.asm.ClassVisitor;
 import act.asm.FieldVisitor;
 import act.asm.Type;
 import act.db.CreatedAt;
@@ -73,11 +74,19 @@ public class EntityInfoByteCodeScanner extends AppByteCodeScannerBase {
 
         boolean isMappedSuperClass;
         boolean isEntity;
+        boolean isEntityListener;
         String className;
         boolean foundCreatedAt;
         boolean foundLastModifiedAt;
         boolean foundId;
         MasterEntityMetaInfoRepo metaInfoRepo;
+
+        public _ByteCodeVisitor(ClassVisitor cv) {
+            super(cv);
+        }
+
+        public _ByteCodeVisitor() {
+        }
 
         @Override
         public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
@@ -89,22 +98,28 @@ public class EntityInfoByteCodeScanner extends AppByteCodeScannerBase {
         @Override
         public AnnotationVisitor visitAnnotation(String desc, boolean visible) {
             AnnotationVisitor av = super.visitAnnotation(desc, visible);
-            isEntity = metaInfoRepo.isEntity(desc);
-            if (isEntity || isMappedSuperClass) {
-                repo.registerEntityOrMappedSuperClass(className);
-                if (isEntity) {
-                    return new AnnotationVisitor(ASM5, av) {
-                        @Override
-                        public void visit(String name, Object value) {
-                            if ("name".equals(name) || "value".equals(name)) {
-                                repo.registerEntityName(className, (String) value);
+            if (!isEntity && !isMappedSuperClass) {
+                isEntity = metaInfoRepo.isEntity(desc);
+                isMappedSuperClass = metaInfoRepo.isMappedSuperClass(desc);
+                if (isEntity || isMappedSuperClass) {
+                    repo.registerEntityOrMappedSuperClass(className);
+                    if (isEntity) {
+                        return new AnnotationVisitor(ASM5, av) {
+                            @Override
+                            public void visit(String name, Object value) {
+                                if ("name".equals(name) || "value".equals(name)) {
+                                    repo.registerEntityName(className, (String) value);
+                                }
+                                super.visit(name, value);
                             }
-                            super.visit(name, value);
-                        }
-                    };
+                        };
+                    }
                 }
-            } else if (metaInfoRepo.isEntityListener(desc)) {
-                repo.markEntityListenersFound(className);
+            } else if (!isEntityListener) {
+                isEntityListener = metaInfoRepo.isEntityListener(desc);
+                if (isEntityListener) {
+                    repo.markEntityListenersFound(className);
+                }
             }
             return av;
         }

@@ -42,14 +42,14 @@ public class MasterEntityMetaInfoRepo extends EntityMetaInfoRepo {
     private Map<String, EntityMetaInfoRepo> regions = new HashMap<>();
 
     private Set<String> entityAnnotations = new HashSet<>();
-
+    private Set<String> mappedSuperClassAnnotations = new HashSet<>();
     private Set<String> entityListenerAnnotations = new HashSet<>();
 
     @Inject
     public MasterEntityMetaInfoRepo(final App app) {
         super(app);
         registerEntityAnnotation(Entity.class);
-        registerEntityAnnotation(MappedSuperclass.class);
+        registerMappedSuperClassAnnotation(MappedSuperclass.class);
         registerEntityListenerAnnotation(EntityListeners.class);
         final MasterEntityMetaInfoRepo me = this;
         JobManager jobManager = app.jobManager();
@@ -85,12 +85,20 @@ public class MasterEntityMetaInfoRepo extends EntityMetaInfoRepo {
         entityAnnotations.add(Type.getType(annoType).getDescriptor());
     }
 
+    public void registerMappedSuperClassAnnotation(Class<? extends Annotation> annoType) {
+        mappedSuperClassAnnotations.add(Type.getType(annoType).getDescriptor());
+    }
+
     public void registerEntityListenerAnnotation(Class<? extends Annotation> annoType) {
         entityListenerAnnotations.add(Type.getType(annoType).getDescriptor());
     }
 
     public boolean isEntity(String descriptor) {
         return entityAnnotations.contains(descriptor);
+    }
+
+    public boolean isMappedSuperClass(String descriptor) {
+        return mappedSuperClassAnnotations.contains(descriptor);
     }
 
     public boolean isEntityListener(String descriptor) {
