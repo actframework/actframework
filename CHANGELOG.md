@@ -1,6 +1,6 @@
 # ActFramework Change Log
 
-**1.7.4** 
+**1.8.0** 
 * `MasterEntityMetaInfoRepo` - support `MappedSuperClass` annotation registration #543
 * Add `NamedProvider` for `CacheService` #542
 * `ProjectLayout` - provide layout for gradle_groovy combination #541
