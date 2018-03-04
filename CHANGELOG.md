@@ -1,6 +1,9 @@
 # ActFramework Change Log
 
-**1.8.0**
+**1.8.1** 5/Mar/2018
+* NPE running feature-test sample project #544
+
+**1.8.0** 4/Mar/2018
 * update osgl-tool to 1.7.0
 * update osgl-genie to 1.5.0
 * update osgl-http to 1.4.0

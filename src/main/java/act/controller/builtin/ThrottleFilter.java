@@ -22,6 +22,8 @@ package act.controller.builtin;
 
 import act.Act;
 import act.app.ActionContext;
+import act.app.App;
+import act.app.event.SysEventId;
 import org.osgl.cache.CacheService;
 import org.osgl.http.H;
 import org.osgl.inject.annotation.Configuration;
@@ -35,6 +37,8 @@ import javax.inject.Singleton;
 @Singleton
 public class ThrottleFilter {
 
+    public static final String CACHE_NAME = "act.throttle";
+
     private CacheService cache;
 
     @Configuration("act.req.throttle")
@@ -44,14 +48,26 @@ public class ThrottleFilter {
     private boolean expireScale;
 
     public ThrottleFilter() {
-        cache = Act.app().cache("act.throttle");
+        final App app = Act.app();
+        app.jobManager().on(SysEventId.CLASS_LOADER_INITIALIZED, new Runnable() {
+            @Override
+            public void run() {
+                cache = app.cache(CACHE_NAME);
+            }
+        }, true);
     }
 
     public ThrottleFilter(int throttle, boolean expireScale) {
         E.illegalArgumentIf(throttle < 1);
         this.throttle = throttle;
         this.expireScale = expireScale;
-        this.cache = Act.app().cache("act.throttle");
+        final App app = Act.app();
+        app.jobManager().on(SysEventId.CLASS_LOADER_INITIALIZED, new Runnable() {
+            @Override
+            public void run() {
+                cache = app.cache(CACHE_NAME);
+            }
+        }, true);
     }
 
     public Result handle(ActionContext actionContext) {
