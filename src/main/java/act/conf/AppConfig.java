@@ -528,7 +528,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
 
     public boolean cliEnabled() {
         if (null == cliEnabled) {
-            cliEnabled = get(CLI_ENABLED, Act.isDev());
+            cliEnabled = get(CLI_ENABLED, true);
         }
         return cliEnabled;
     }

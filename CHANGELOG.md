@@ -1,7 +1,13 @@
 # ActFramework Change Log
 
 **1.8.0**
+* update osgl-tool to 1.7.0
+* update osgl-genie to 1.5.0
+* update osgl-http to 1.4.0
+* update osgl-mvc to 1.5.0
 * update undertow to 1.4.23.Final
+* By default enable CLI on PROD mode
+    - we will disable CLI in the high security starter kit by default. 
 * Make @Configuration working on publice static properties #536 
 * `MasterEntityMetaInfoRepo` - support `MappedSuperClass` annotation registration #543
 * Add `NamedProvider` for `CacheService` #542
