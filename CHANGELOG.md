@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 **1.8.0**
+* update undertow to 1.4.23.Final
 * Make @Configuration working on publice static properties #536 
 * `MasterEntityMetaInfoRepo` - support `MappedSuperClass` annotation registration #543
 * Add `NamedProvider` for `CacheService` #542
