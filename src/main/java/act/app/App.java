@@ -35,6 +35,7 @@ import act.cli.bytecode.CommanderByteCodeScanner;
 import act.conf.AppConfLoader;
 import act.conf.AppConfig;
 import act.conf.AppConfigKey;
+import act.conf.ConfigurationByteCodeScanner;
 import act.controller.bytecode.ControllerByteCodeScanner;
 import act.crypto.AppCrypto;
 import act.data.DataPropertyRepository;
@@ -1334,6 +1335,7 @@ public class App extends DestroyableBase {
         scannerManager.register(new RythmTransformerScanner());
         scannerManager.register(new MetricContextScanner());
         scannerManager.register(new ImplicitVariableProvider.TemplateVariableScanner(this));
+        scannerManager.register(new ConfigurationByteCodeScanner());
     }
 
     private void loadDependencyInjector() {

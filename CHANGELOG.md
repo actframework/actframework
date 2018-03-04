@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
-**1.8.0** 
+**1.8.0**
+* Make @Configuration working on publice static properties #536 
 * `MasterEntityMetaInfoRepo` - support `MappedSuperClass` annotation registration #543
 * Add `NamedProvider` for `CacheService` #542
 * `ProjectLayout` - provide layout for gradle_groovy combination #541

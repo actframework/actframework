@@ -48,8 +48,6 @@ public class AutoConfigPlugin extends AnnotatedTypeFinder {
 
     private static final Logger logger = LogManager.get(AutoConfigPlugin.class);
 
-    private static Field modifiersField;
-
     public AutoConfigPlugin() {
         super(true, false, AutoConfig.class, new $.F2<App, String, Map<Class<? extends AppByteCodeScanner>, Set<String>>>() {
             @Override
@@ -64,23 +62,6 @@ public class AutoConfigPlugin extends AnnotatedTypeFinder {
                 return null;
             }
         });
-    }
-
-    private static void allowChangeFinalField() {
-        try {
-            modifiersField = Field.class.getDeclaredField("modifiers");
-            modifiersField.setAccessible(true);
-        } catch (Exception e) {
-            throw E.unexpected(e);
-        }
-    }
-
-    private static void resetFinalFieldUpdate() {
-        try {
-            modifiersField.setAccessible(false);
-        } catch (Exception e) {
-            throw E.unexpected(e);
-        }
     }
 
     /**
@@ -107,36 +88,6 @@ public class AutoConfigPlugin extends AnnotatedTypeFinder {
             this.ns = (autoConfigClass.getAnnotation(AutoConfig.class)).value();
             this.resolverManager = app.resolverManager();
             this.injector = app.injector();
-            synchronized (AutoConfigLoader.class) {
-                allowChangeFinalField();
-                app.jobManager().on(SysEventId.START, new Runnable() {
-                    @Override
-                    public void run() {
-                        resetFinalFieldUpdate();
-                    }
-                });
-            }
-        }
-
-        private boolean turnOffFinal(Field field) {
-            field.setAccessible(true);
-            if (Modifier.isFinal(field.getModifiers())) {
-                try {
-                    modifiersField.setInt(field, field.getModifiers() & ~Modifier.FINAL);
-                } catch (Exception e) {
-                    throw E.unexpected(e);
-                }
-                return true;
-            }
-            return false;
-        }
-
-        private void turnOnFinal(Field field) {
-            try {
-                modifiersField.setInt(field, field.getModifiers() | Modifier.FINAL);
-            } catch (Exception e) {
-                throw E.unexpected(e);
-            }
         }
 
         void load() {
@@ -174,20 +125,15 @@ public class AutoConfigPlugin extends AnnotatedTypeFinder {
                 }
             }
             BeanSpec spec = BeanSpec.of(f, injector);
-            boolean isFinal = false;
             try {
-                isFinal = turnOffFinal(f);
                 setField(f, null, key, val, spec);
             } catch (Exception e) {
                 throw E.invalidConfiguration(e, "Error get configuration " + key + ": " + e.getMessage());
-            } finally {
-                if (isFinal) {
-                    turnOnFinal(f);
-                }
             }
         }
 
         private void setField(Field f, Object host, String key, Object val, BeanSpec spec) throws Exception {
+            f.setAccessible(true);
             if (spec.isInstanceOf($.Val.class)) {
                 $.Val value = $.cast(f.get(host));
                 Field fVal = $.Var.class.getDeclaredField("v");
