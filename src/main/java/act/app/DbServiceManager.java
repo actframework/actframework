@@ -58,7 +58,7 @@ public class DbServiceManager extends AppServiceBase<DbServiceManager> implement
     // map model class to dao class
     private Map<Class<?>, Dao> modelDaoMap = new HashMap<>();
 
-    private Dictionary<DbService, DbService> asyncInitializers = new Hashtable<>();
+    private final Dictionary<DbService, DbService> asyncInitializers = new Hashtable<>();
 
     private String firstInstance = DEFAULT;
 
@@ -121,10 +121,12 @@ public class DbServiceManager extends AppServiceBase<DbServiceManager> implement
             eventBus.bind(DbServiceInitialized.class, new ActEventListenerBase<DbServiceInitialized>() {
                 @Override
                 public void on(DbServiceInitialized event) {
-                    asyncInitializers.remove(event.source());
-                    if (asyncInitializers.isEmpty()) {
-                        daoInitializer.run();
-                        app.emit(SysEventId.DB_SVC_LOADED);
+                    synchronized (asyncInitializers) {
+                        asyncInitializers.remove(event.source());
+                        if (asyncInitializers.isEmpty()) {
+                            daoInitializer.run();
+                            app.emit(SysEventId.DB_SVC_LOADED);
+                        }
                     }
                 }
             });
@@ -140,14 +142,12 @@ public class DbServiceManager extends AppServiceBase<DbServiceManager> implement
             @Override
             public void run() {
                 _SequenceNumberGenerator seqGen = app.config().sequenceNumberGenerator();
-                //seqGen.configure(app.config(), DbServiceManager.this);
                 SequenceNumberGenerator.registerImpl(seqGen);
             }
         });
     }
 
     private void prepareAsyncInitializers() {
-        asyncInitializers = new Hashtable<>();
         for (Map.Entry<String, DbService> entry : serviceMap.entrySet()) {
             DbService service = entry.getValue();
             if (service.initAsynchronously()) {

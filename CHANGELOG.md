@@ -4,6 +4,7 @@
 * update commons.fileupload to 1.3.3 #549
 * Ebean <model> is not enchaned? #545
 * NPE running feature-test sample project #544
+* if use multiple datasource,throw class registered warning/error when app start #468
 
 **1.8.0** 4/Mar/2018
 * update osgl-tool to 1.7.0
