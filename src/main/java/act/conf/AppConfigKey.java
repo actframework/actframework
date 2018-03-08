@@ -1173,8 +1173,8 @@ public enum AppConfigKey implements ConfigKey {
         Set<String> suffixes = ConfigKeyHelper.suffixes();
         Set<String> nonAliasSuffixes = ConfigKeyHelper.nonAliasSuffixes();
         for (AppConfigKey k : values()) {
-            lookup.put(k.name().toLowerCase(), k);
-            String key = k.key().toLowerCase();
+            lookup.put(k.name().toUpperCase(), k);
+            String key = k.key().toUpperCase();
             lookup.put(key, k);
             String suffix = S.afterLast(key, ".");
             if (S.notBlank(suffix) && suffixes.contains(suffix) && !nonAliasSuffixes.contains(suffix)) {
@@ -1194,7 +1194,7 @@ public enum AppConfigKey implements ConfigKey {
      */
     public static AppConfigKey valueOfIgnoreCase(String s) {
         E.illegalArgumentIf(S.blank(s), "config key cannot be empty");
-        return lookup.get(s.trim().toLowerCase());
+        return lookup.get(s.trim().toUpperCase());
     }
 
 }

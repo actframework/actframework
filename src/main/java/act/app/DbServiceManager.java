@@ -28,8 +28,8 @@ import act.db.*;
 import act.db.util.SequenceNumberGenerator;
 import act.db.util._SequenceNumberGenerator;
 import act.event.ActEventListenerBase;
-import act.event.SysEventListenerBase;
 import act.event.EventBus;
+import act.event.SysEventListenerBase;
 import act.util.ClassNode;
 import act.util.General;
 import org.osgl.$;
@@ -40,10 +40,10 @@ import org.osgl.util.C;
 import org.osgl.util.E;
 import org.osgl.util.S;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
 import java.lang.annotation.Annotation;
 import java.util.*;
+import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
 
 @ApplicationScoped
 public class DbServiceManager extends AppServiceBase<DbServiceManager> implements DaoLocator {
@@ -207,7 +207,7 @@ public class DbServiceManager extends AppServiceBase<DbServiceManager> implement
         Map<String, String> dbConf = config.subSet("db.");
         if (dbConf.isEmpty()) {
             if (null == db) {
-                logger.warn("DB service not intialized: need to specify default db service implementation");
+                logger.warn("DB service not initialized: need to specify default db service implementation");
                 return;
             } else {
                 logger.warn("DB configuration not found. Will try to init default service with the sole db plugin: %s", db);
@@ -224,6 +224,7 @@ public class DbServiceManager extends AppServiceBase<DbServiceManager> implement
                 initService(dbId, dbConf);
             }
             firstInstance = sa[0];
+            app().entityMetaInfoRepo().setDefaultAlias(firstInstance);
             app().service(EntityClassRepository.class).setDefaultAlias(firstInstance);
         }
         if (serviceMap.containsKey(DEFAULT)) return;

@@ -27,13 +27,16 @@ import act.db.DB;
 import act.job.JobManager;
 import act.util.ClassInfoRepository;
 
+import java.lang.annotation.Annotation;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.persistence.Entity;
 import javax.persistence.EntityListeners;
 import javax.persistence.MappedSuperclass;
-import java.lang.annotation.Annotation;
-import java.util.*;
 
 @Singleton
 public class MasterEntityMetaInfoRepo extends EntityMetaInfoRepo {
@@ -44,6 +47,7 @@ public class MasterEntityMetaInfoRepo extends EntityMetaInfoRepo {
     private Set<String> entityAnnotations = new HashSet<>();
     private Set<String> mappedSuperClassAnnotations = new HashSet<>();
     private Set<String> entityListenerAnnotations = new HashSet<>();
+    private String defaultAlias;
 
     @Inject
     public MasterEntityMetaInfoRepo(final App app) {
@@ -93,6 +97,11 @@ public class MasterEntityMetaInfoRepo extends EntityMetaInfoRepo {
         entityListenerAnnotations.add(Type.getType(annoType).getDescriptor());
     }
 
+    public void setDefaultAlias(String defaultAlias) {
+        this.defaultAlias = defaultAlias;
+    }
+
+
     public boolean isEntity(String descriptor) {
         return entityAnnotations.contains(descriptor);
     }
@@ -110,6 +119,22 @@ public class MasterEntityMetaInfoRepo extends EntityMetaInfoRepo {
     }
 
     public EntityMetaInfoRepo forDb(String dbId) {
-        return regions.get(null == dbId ? DB.DEFAULT : dbId.toUpperCase());
+        final String DEF = DB.DEFAULT.toUpperCase();
+        if (null == dbId) {
+            dbId = DEF;
+        } else {
+            dbId = dbId.toUpperCase();
+        }
+        EntityMetaInfoRepo repo = regions.get(dbId);
+        if (null == repo && null != defaultAlias) {
+            final String DEF_ALIAS = defaultAlias.toUpperCase();
+            if (DEF.equals(dbId)) {
+                dbId = DEF_ALIAS;
+            } else if (DEF_ALIAS.equals(dbId)) {
+                dbId = DEF;
+            }
+            repo = regions.get(dbId);
+        }
+        return repo;
     }
 }

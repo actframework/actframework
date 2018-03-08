@@ -184,9 +184,9 @@ public abstract class Config<E extends ConfigKey> extends DestroyableBase {
         if (null != t) {
             return t;
         }
-        key = key.toLowerCase();
+        key = key.toUpperCase();
         for (Map.Entry<String, Object> entries : raw.entrySet()) {
-            if (entries.getKey().toLowerCase().equals(key)) {
+            if (entries.getKey().toUpperCase().equals(key)) {
                 Object o = entries.getValue();
                 if (o instanceof String) {
                     return (T) AppConfigKey.helper.evaluate(o.toString(), raw);

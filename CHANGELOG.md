@@ -1,6 +1,8 @@
 # ActFramework Change Log
 
-**1.8.1** 5/Mar/2018
+**1.8.1**
+* update commons.fileupload to 1.3.3 #549
+* Ebean <model> is not enchaned? #545
 * NPE running feature-test sample project #544
 
 **1.8.0** 4/Mar/2018
