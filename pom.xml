@@ -62,11 +62,11 @@
     <progressbar.version>0.5.5</progressbar.version>
     <joda-time.version>2.9.9</joda-time.version>
     <okhttp.version>3.10.0</okhttp.version>
-    <osgl-tool.version>1.7.0</osgl-tool.version>
-    <osgl-cache.version>1.2.0</osgl-cache.version>
+    <osgl-tool.version>1.7.1-SNAPSHOT</osgl-tool.version>
+    <osgl-cache.version>1.2.1-SNAPSHOT</osgl-cache.version>
     <osgl-genie.version>1.5.0</osgl-genie.version>
     <osgl-http.version>1.4.0</osgl-http.version>
-    <osgl-mvc.version>1.5.0</osgl-mvc.version>
+    <osgl-mvc.version>1.5.1-SNAPSHOT</osgl-mvc.version>
     <osgl-storage.version>1.5.0</osgl-storage.version>
     <osgl-tool-ext.version>1.1.0</osgl-tool-ext.version>
     <osgl-ut.version>2.0.0-BETA-1</osgl-ut.version>
