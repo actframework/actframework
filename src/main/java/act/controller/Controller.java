@@ -20,6 +20,8 @@ package act.controller;
  * #L%
  */
 
+import static org.osgl.http.H.Format.*;
+
 import act.Act;
 import act.app.ActionContext;
 import act.conf.AppConfigKey;
@@ -37,7 +39,6 @@ import org.osgl.mvc.result.*;
 import org.osgl.storage.ISObject;
 import org.osgl.util.*;
 
-import javax.inject.Inject;
 import java.io.File;
 import java.io.InputStream;
 import java.lang.annotation.ElementType;
@@ -47,8 +48,7 @@ import java.lang.annotation.Target;
 import java.net.URL;
 import java.util.Collection;
 import java.util.Map;
-
-import static org.osgl.http.H.Format.*;
+import javax.inject.Inject;
 
 /**
  * Mark a class as Controller, which contains at least one of the following:
@@ -1326,7 +1326,7 @@ public @interface Controller {
                     String s = isArray ? $.toString2(v) : v.toString();
                     return RenderHtml.of(status, s);
                 }
-                if (TXT == fmt || CSV == fmt) {
+                if (fmt.isText()) {
                     return RenderText.of(status, fmt, $.toString2(v), status.toString());
                 }
                 throw E.unexpected("Cannot apply text result to format: %s", fmt);

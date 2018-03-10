@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 **1.8.1**
+* Cannot apply text result to format: javascript #555
 * Random `NullPointerException` on act-1.6.6 #553
 * update commons.fileupload to 1.3.3 #549
 * Ebean <model> is not enchaned? #545
