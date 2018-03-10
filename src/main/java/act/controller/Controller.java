@@ -20,7 +20,7 @@ package act.controller;
  * #L%
  */
 
-import static org.osgl.http.H.Format.*;
+import static org.osgl.http.H.Format.HTML;
 
 import act.Act;
 import act.app.ActionContext;
@@ -806,6 +806,11 @@ public @interface Controller {
          */
         public static void forbiddenIfNot(boolean test, int code, String msg, Object... args) {
             forbiddenIf(!test, code, msg, args);
+        }
+
+        public static void forward(String url) {
+            ActionContext ctx = ActionContext.current();
+            ctx.forward(url);
         }
 
         public static Redirect redirect(String url, Object... args) {

@@ -62,6 +62,10 @@ public class UndertowRequest extends RequestImplBase<UndertowRequest> {
         return path;
     }
 
+    public void forward(final String path) {
+        this.path = path;
+    }
+
     @Override
     public String query() {
         return hse.getQueryString();

@@ -20,6 +20,9 @@ package act.app;
  * #L%
  */
 
+import static act.controller.Controller.Util.*;
+import static org.osgl.http.H.Header.Names.*;
+
 import act.ActResponse;
 import act.Destroyable;
 import act.Trace;
@@ -30,6 +33,7 @@ import act.data.RequestBodyParser;
 import act.event.ActEvent;
 import act.event.SystemEvent;
 import act.handler.RequestHandler;
+import act.handler.event.PreHandle;
 import act.i18n.LocaleResolver;
 import act.route.Router;
 import act.route.UrlPath;
@@ -40,6 +44,7 @@ import act.util.MissingAuthenticationHandler;
 import act.util.PropertySpec;
 import act.util.RedirectToLoginUrl;
 import act.view.RenderAny;
+import act.xio.undertow.UndertowRequest;
 import org.osgl.$;
 import org.osgl.concurrent.ContextLocal;
 import org.osgl.http.H;
@@ -52,14 +57,11 @@ import org.osgl.util.E;
 import org.osgl.util.S;
 import org.osgl.web.util.UserAgent;
 
+import java.lang.annotation.Annotation;
+import java.util.*;
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
 import javax.validation.ConstraintViolation;
-import java.lang.annotation.Annotation;
-import java.util.*;
-
-import static act.controller.Controller.Util.*;
-import static org.osgl.http.H.Header.Names.*;
 
 /**
  * {@code AppContext} encapsulate contextual properties needed by
@@ -289,6 +291,22 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
             urlPath = UrlPath.of(req().path());
         }
         return urlPath;
+    }
+
+    public void forward(String url) {
+        E.illegalArgumentIfNot(url.startsWith("/"), "forward URL must starts with single '/'");
+        E.illegalArgumentIf(url.startsWith("//"), "forward URL must starts with single `/`");
+        E.unexpectedIfNot(H.Method.GET == req().method(), "forward only support on HTTP GET request");
+        uploads.clear();
+        extraParams.clear();
+        bodyParams = null;
+        urlPath = UrlPath.of(url);
+        UndertowRequest req = $.cast(req());
+        state = State.CREATED;
+        req.forward(url);
+        final RequestHandler requestHandler = router.getInvoker(H.Method.GET, url, this);
+        app().eventBus().emit(new PreHandle(this));
+        requestHandler.handle(this);
     }
 
     // !!!IMPORTANT! the following methods needs to be kept to allow enhancer work correctly
