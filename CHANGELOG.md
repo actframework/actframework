@@ -1,9 +1,12 @@
 # ActFramework Change Log
 
-**1.8.1** 11/Mar/2018
+**1.8.2**
 * ResourceLoader: support loading json file into Map or other POJO #559
 * Support `@DefaultValue` with `@Configuration` #558
 * `StackOverflowError` encountered when `SimpleBean` field name does not follow Java convention #546
+
+
+**1.8.1** 11/Mar/2018
 * Support request forward #556
 * Cannot apply text result to format: javascript #555
 * Random `NullPointerException` on act-1.6.6 #553
