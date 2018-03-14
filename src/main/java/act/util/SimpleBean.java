@@ -26,10 +26,7 @@ import act.app.App;
 import act.app.AppByteCodeScannerBase;
 import act.app.AppClassLoader;
 import act.app.event.SysEventId;
-import act.asm.ClassVisitor;
-import act.asm.FieldVisitor;
-import act.asm.MethodVisitor;
-import act.asm.Type;
+import act.asm.*;
 import act.internal.password.PasswordMetaInfo;
 import act.meta.ClassMetaInfoManager;
 import org.osgl.$;
@@ -37,12 +34,13 @@ import org.osgl.util.C;
 import org.osgl.util.E;
 import org.osgl.util.S;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
+import javax.inject.Named;
 
 /**
  * ActFramework will do the following byte code enhancement to classes that are
@@ -66,13 +64,15 @@ public interface SimpleBean {
         // keep track @Sensitive fields
         private Set<String> sensitiveFields;
         private Set<String> passwordFields;
+        private Map<String, String> fieldAliases;
 
         @Inject
-        MetaInfo(String className, Map<String, $.T2<String, String>> publicFields) {
+        MetaInfo(String className, Map<String, $.T2<String, String>> publicFields, Map<String, String> aliases) {
             this.className = className;
             this.publicFields = publicFields;
             this.sensitiveFields = new HashSet<>();
             this.passwordFields = new HashSet<>();
+            this.fieldAliases = aliases;
         }
 
         public String getClassName() {
@@ -99,6 +99,11 @@ public interface SimpleBean {
 
         public boolean isSensitive(String fieldName) {
             return sensitiveFields.contains(fieldName);
+        }
+
+        public String aliasOf(String fieldName) {
+            String s = fieldAliases.get(fieldName);
+            return null == s ? fieldName : s;
         }
 
         public boolean isPassword(String fieldName) {
@@ -181,10 +186,12 @@ public interface SimpleBean {
 
         private static class SimpleBeanByteCodeVisitor extends ByteCodeVisitor {
 
+            private static final String NAMED_DESC = Type.getType(Named.class).getDescriptor();
             private String className;
             private boolean isPublicClass;
             // key: (desc, signature)
             private Map<String, $.T2<String, String>> publicFields = new HashMap<>();
+            private Map<String, String> aliases = new HashMap<>();
 
             @Override
             public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
@@ -196,11 +203,37 @@ public interface SimpleBean {
             }
 
             @Override
-            public FieldVisitor visitField(int access, String name, String desc, String signature, Object value) {
+            public FieldVisitor visitField(int access, final String name, String desc, String signature, Object value) {
+                FieldVisitor fv = super.visitField(access, name, desc, signature, value);
                 if (isPublicClass && AsmTypes.isPublic(access) && !AsmTypes.isStatic(access)) {
                     publicFields.put(name, $.T2(desc, signature));
+                    return new FieldVisitor(ASM5, fv) {
+                        private String alias;
+                        @Override
+                        public AnnotationVisitor visitAnnotation(String desc, boolean visible) {
+                            AnnotationVisitor av = super.visitAnnotation(desc, visible);
+                            if (NAMED_DESC.equals(desc)) {
+                                return new AnnotationVisitor(ASM5, av) {
+                                    @Override
+                                    public void visit(String name, Object value) {
+                                        alias = S.string(value);
+                                    }
+                                };
+                            }
+                            return av;
+                        }
+
+                        @Override
+                        public void visitEnd() {
+                            if (null != alias && S.neq(name, alias)) {
+                                aliases.put(name, alias);
+                                aliases.put(alias, name);
+                            }
+                            super.visitEnd();
+                        }
+                    };
                 }
-                return super.visitField(access, name, desc, signature, value);
+                return fv;
             }
 
             @Override
@@ -211,7 +244,7 @@ public interface SimpleBean {
                         public void run() {
                             SimpleBean.MetaInfoManager metaInfoManager = Act.app().classLoader().simpleBeanInfoManager();
                             if (metaInfoManager.isSimpleBean(className)) {
-                                MetaInfo metaInfo = new MetaInfo(className, publicFields);
+                                MetaInfo metaInfo = new MetaInfo(className, publicFields, aliases);
                                 metaInfoManager.register(metaInfo);
                             }
                         }
@@ -288,8 +321,8 @@ public interface SimpleBean {
             isSimpleBean = metaInfoManager.isSimpleBean(className);
             if (isSimpleBean) {
                 needDefaultConstructor = true;
-                superClassDesc = superName;
                 MetaInfo metaInfo = metaInfoManager.get(className);
+                superClassDesc = superName;
                 if (null != metaInfo) {
                     this.metaInfo = metaInfo;
                     Map<String, $.T2<String, String>> publicFields = metaInfo.publicFields;
@@ -327,11 +360,13 @@ public interface SimpleBean {
             if (null != getter) {
                 // found getter for the field
                 getters.remove(getter);
+                getters.remove(metaInfo.aliasOf(getter));
             }
             String setter = fieldNameFromGetterSetter(name, false);
             if (null != setter) {
                 // found setter for the field
                 setters.remove(setter);
+                getters.remove(metaInfo.aliasOf(setter));
             }
             return mv;
         }
@@ -516,7 +551,7 @@ public interface SimpleBean {
 
             @Override
             public void visitFieldInsn(int opcode, String owner, String name, String desc) {
-                if (isSimpleBeanProperty(owner, name) && !insideGetterSetter(owner, name)) {
+                if (shouldReplaceWithGetterOrSetter(owner, name)) {
                     switch (opcode) {
                         case PUTFIELD:
                             visitMethodInsn(INVOKEVIRTUAL, owner, setterName(name), "(" + desc + ")V");
@@ -532,7 +567,7 @@ public interface SimpleBean {
                 }
             }
 
-            private boolean isSimpleBeanProperty(String owner, String name) {
+            private boolean shouldReplaceWithGetterOrSetter(String owner, String name) {
                 ClassNode node = classInfoRepository.node(owner);
                 if (null == node || !node.hasInterface(SimpleBean.class.getName())) {
                     return false;
@@ -541,7 +576,7 @@ public interface SimpleBean {
                 MetaInfo metaInfo = metaInfoManager.get(ownerClass);
                 while (true) {
                     if (null != metaInfo && metaInfo.publicFields.containsKey(name)) {
-                        return true;
+                        return !insideGetterSetter(owner, name, metaInfo.aliasOf(name));
                     }
                     node = node.parent();
                     if (null == node) {
@@ -551,8 +586,8 @@ public interface SimpleBean {
                 }
             }
 
-            private boolean insideGetterSetter(String owner, String name) {
-                return !(null == fieldName || S.neq(classDesc, owner) || S.neq(fieldName, name));
+            private boolean insideGetterSetter(String owner, String name, String alias) {
+                return !(null == fieldName || S.neq(classDesc, owner) || (S.neq(fieldName, name) && S.neq(fieldName, alias)));
             }
         }
     }

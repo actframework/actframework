@@ -22,6 +22,7 @@ package act.inject.util;
 
 import act.Act;
 import act.app.App;
+import act.app.data.StringValueResolverManager;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.TypeReference;
 import org.osgl.$;
@@ -132,13 +133,16 @@ public class ResourceLoader<T> extends ValueLoader.Base<T> {
     }
 
     protected static Object _load(String resourcePath, BeanSpec spec, boolean ignoreResourceNotFound) {
-        boolean isJson = resourcePath.endsWith(".json");
         URL url = loadResource(resourcePath);
         if (null == url) {
             if (!ignoreResourceNotFound) {
                 LOGGER.warn("resource not found: " + resourcePath);
             }
             return null;
+        }
+        boolean isJson = resourcePath.endsWith(".json");
+        if (isJson) {
+            return JSON.parseObject(IO.readContentAsString(url), spec.type());
         }
         Class<?> rawType = spec.rawType();
         if (URL.class == rawType) {
@@ -159,12 +163,21 @@ public class ResourceLoader<T> extends ValueLoader.Base<T> {
         } else if (Collection.class.isAssignableFrom(rawType)) {
             List<Type> typeParams = spec.typeParams();
             if (!typeParams.isEmpty()) {
+                Collection col = (Collection)Act.getInstance(rawType);
                 if (String.class == typeParams.get(0)) {
-                    Collection<String> col = Act.getInstance((Class<Collection<String>>)rawType);
                     col.addAll(IO.readLines(url));
                     return col;
-                } else if (isJson) {
-                    return JSON.parseObject(IO.readContentAsString(url), spec.type());
+                } else {
+                    StringValueResolverManager resolverManager = Act.app().resolverManager();
+                    try {
+                        Class componentType = spec.componentSpec().rawType();
+                        List<String> stringList = IO.readLines(url);
+                        for (String line : stringList) {
+                            col.add(resolverManager.resolve(line, componentType));
+                        }
+                    } catch (RuntimeException e) {
+                        throw new UnexpectedException("return type not supported: " + spec);
+                    }
                 }
             }
         } else if (ByteBuffer.class == rawType) {

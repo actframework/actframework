@@ -25,6 +25,7 @@ import act.app.event.SysEventId;
 import act.asm.AnnotationVisitor;
 import act.asm.FieldVisitor;
 import act.asm.Type;
+import act.inject.DefaultValue;
 import act.inject.DependencyInjector;
 import act.util.AsmTypes;
 import act.util.ByteCodeVisitor;
@@ -107,6 +108,7 @@ public class ConfigurationByteCodeScanner extends AppByteCodeScannerBase {
                     String fieldName = entry.getKey();
                     String conf = entry.getValue();
                     Field field = $.fieldOf(theClass, fieldName, false);
+                    DefaultValue defaultValue = field.getAnnotation(DefaultValue.class);
                     field.setAccessible(true);
                     Class<?> fieldType = field.getType();
                     boolean isConst = false;
@@ -120,7 +122,11 @@ public class ConfigurationByteCodeScanner extends AppByteCodeScannerBase {
                         isVal = true;
                     }
                     ConfigurationValueLoader loader = app().getInstance(ConfigurationValueLoader.class);
-                    loader.init(C.Map("value", conf), valueSpec);
+                    Map<String, String> map = C.newMap("value", conf);
+                    if (null != defaultValue) {
+                        map.put("defaultValue", defaultValue.value());
+                    }
+                    loader.init(map, valueSpec);
                     Object value = loader.get();
                     try {
                         if (isConst) {

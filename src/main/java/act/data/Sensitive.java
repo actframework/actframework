@@ -32,6 +32,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Mark a **String** typed field is sensitive.
@@ -79,6 +80,7 @@ public @interface Sensitive {
         private Set<String> sensitiveFieldsForSetter = new HashSet<>();
 
         private SimpleBean.MetaInfoManager metaInfoManager;
+        private SimpleBean.MetaInfo metaInfo;
         private String classInternalName;
         private String className;
 
@@ -107,6 +109,7 @@ public @interface Sensitive {
             sensitiveFieldsForGetter.clear();
             className = null;
             classInternalName = null;
+            metaInfo = null;
             super.reset();
         }
 
@@ -119,6 +122,7 @@ public @interface Sensitive {
         public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
             classInternalName = name;
             className = Type.getObjectType(name).getClassName();
+            metaInfo = metaInfoManager.get(className);
             super.visit(version, access, name, signature, superName, interfaces);
         }
 
@@ -132,9 +136,8 @@ public @interface Sensitive {
                     if (DESC_SENSITIVE.equals(desc)) {
                         sensitiveFieldsForGetter.add(name);
                         sensitiveFieldsForSetter.add(name);
-                        SimpleBean.MetaInfo simpleBeanMetaInfo = metaInfoManager.get(className);
-                        if (null != simpleBeanMetaInfo) {
-                            simpleBeanMetaInfo.addSensitiveField(name);
+                        if (null != metaInfo) {
+                            metaInfo.addSensitiveField(name);
                         }
                     }
                     return super.visitAnnotation(desc, visible);
@@ -143,39 +146,55 @@ public @interface Sensitive {
         }
 
         @Override
-        public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
-            MethodVisitor mv = super.visitMethod(access, name, desc, signature, exceptions);
-            final String fieldName = fieldNameFromGetterOrSetter(name);
-            final boolean isSetter = null != fieldName && name.startsWith("s");
+        public MethodVisitor visitMethod(int access, final String methodName, final String methodDesc, String signature, String[] exceptions) {
+            MethodVisitor mv = super.visitMethod(access, methodName, methodDesc, signature, exceptions);
+            String fieldName = fieldNameFromGetterOrSetter(methodName);
+            final String mappedFieldName = null != metaInfo ? metaInfo.aliasOf(fieldName) : fieldName;
+            final boolean isSetter = null != fieldName && methodName.startsWith("s");
             Set<String> backlog = isSetter ? sensitiveFieldsForSetter : sensitiveFieldsForGetter;
-            return null == fieldName || !backlog.contains(fieldName) ? mv : new MethodVisitor(ASM5, mv) {
+            return null == fieldName || !(backlog.contains(mappedFieldName)) ? mv : new MethodVisitor(ASM5, mv) {
                 @Override
                 public void visitCode() {
+                    if (!generatingMethods.get()) {
+                        if (isSetter) {
+                            logger.warn(methodName + "(" + Type.getType(methodDesc).getArgumentTypes()[0].getClassName() + ") rewritten for @Sensitive field: " + mappedFieldName);
+                        } else {
+                            logger.warn(methodName + "() rewritten for @Sensitive field: " + mappedFieldName);
+                        }
+                    }
                     if (isSetter) {
-                        visitSetterCode(fieldName, this);
-                        sensitiveFieldsForSetter.remove(fieldName);
+                        visitSetterCode(mappedFieldName, this);
+                        sensitiveFieldsForSetter.remove(mappedFieldName);
                     } else {
-                        visitGetterCode(fieldName, this);
-                        sensitiveFieldsForGetter.remove(fieldName);
+                        visitGetterCode(mappedFieldName, this);
+                        sensitiveFieldsForGetter.remove(mappedFieldName);
                     }
                 }
             };
         }
 
+        private static final AtomicBoolean generatingMethods = new AtomicBoolean(false);
+
         @Override
         public void visitEnd() {
             super.visitEnd();
             for (final String field: sensitiveFieldsForGetter) {
-                MethodVisitor mv = visitMethod(
-                        ACC_PUBLIC,
-                        getterName(field),
-                        GETTER_DESC,
-                        null,
-                        null);
-                mv.visitCode();
-                visitGetterCode(field, mv);
+                generatingMethods.set(true);
+                try {
+                    MethodVisitor mv = visitMethod(
+                            ACC_PUBLIC,
+                            getterName(field),
+                            GETTER_DESC,
+                            null,
+                            null);
+                    mv.visitCode();
+                } finally {
+                    generatingMethods.set(false);
+                }
             }
             for (final String field : sensitiveFieldsForSetter) {
+                generatingMethods.set(true);
+                try {
                 MethodVisitor mv = visitMethod(
                         ACC_PUBLIC,
                         setterName(field),
@@ -183,7 +202,9 @@ public @interface Sensitive {
                         null,
                         null);
                 mv.visitCode();
-                visitSetterCode(field, mv);
+                } finally {
+                    generatingMethods.set(false);
+                }
             }
         }
 

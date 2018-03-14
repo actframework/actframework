@@ -24,6 +24,7 @@ import act.Act;
 import act.app.App;
 import act.app.AppClassLoader;
 import act.conf.AppConfig;
+import act.inject.DefaultValue;
 import act.inject.DependencyInjector;
 import act.util.ClassNode;
 import org.osgl.$;
@@ -37,13 +38,13 @@ import org.osgl.inject.util.ArrayLoader;
 import org.osgl.util.C;
 import org.osgl.util.S;
 
-import javax.inject.Provider;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import javax.inject.Provider;
 
 /**
  * Integrate Genie with ActFramework
@@ -93,13 +94,27 @@ class GenieProviders {
             return new ConfigurationValueLoader() {
 
                 @Override
+                protected void initialized() {
+                    super.initialized();
+                    if (S.notBlank(defaultValue)) {
+                        // default value set through `@Configuration` annotation
+                        return;
+                    }
+                    DefaultValue defaultValue = this.spec.getAnnotation(DefaultValue.class);
+                    if (null != defaultValue) {
+                        // default value set through `@DefaultValue` annotation
+                        this.defaultValue = defaultValue.value();
+                    }
+                }
+
+                @Override
                 public Object get() {
                     final AppConfig appConfig = app().config();
                     DependencyInjector injector = Act.injector();
                     final String confKey = value().toString();
                     boolean isImpl = confKey.endsWith(".impl");
                     if (this.spec.isInstanceOf(Map.class)) {
-                        String prefix = confKey.toString();
+                        String prefix = confKey;
                         Map<String, Object> confMap = appConfig.subSet(prefix);
                         Map retVal = (Map) injector.get(spec.rawType());
                         List<Type> typeParams = spec.typeParams();
@@ -129,7 +144,7 @@ class GenieProviders {
                         if (S.isBlank(confKey)) {
                             throw new InjectException(("Missing configuration key"));
                         }
-                        Object conf = conf(confKey);
+                        Object conf = conf(confKey, defaultValue());
                         if (null == conf) {
                             return null;
                         }
@@ -143,8 +158,9 @@ class GenieProviders {
 
 
                 @Override
-                protected Object conf(String s) {
-                    return app().config().get(s);
+                protected Object conf(String s, String defaultValue) {
+                    Object o = app().config().get(s);
+                    return null == o ? defaultValue : o;
                 }
 
                 private Object cast(String val, BeanSpec spec, boolean isImpl) {
