@@ -20,6 +20,8 @@ package act.inject.param;
  * #L%
  */
 
+import act.Act;
+import act.data.Sensitive;
 import act.util.ActContext;
 import org.osgl.$;
 import org.osgl.inject.InjectException;
@@ -32,21 +34,24 @@ import java.lang.reflect.Field;
 class FieldLoader {
     private final Field field;
     private final ParamValueLoader loader;
+    private boolean sensitive;
 
     FieldLoader(Field field, ParamValueLoader loader) {
-        this.field = $.notNull(field);
+        this.sensitive = String.class == field.getType() && null != field.getAnnotation(Sensitive.class);
+        this.field = field;
         this.loader = $.notNull(loader);
     }
 
     public void applyTo($.Func0<Object> beanSource, ActContext context) {
-        Object o = loader.load(null, context, true);
-        if (null == o) {
-            // #429 ensure POJO instance get initialized
+        Object fieldValue = loader.load(null, context, true);
+        // #429 ensure POJO instance get initialized
+        Object bean = beanSource.apply();
+        if (null == fieldValue) {
             beanSource.apply();
             return;
         }
         try {
-            field.set(beanSource.apply(), o);
+            field.set(bean, sensitive ? Act.crypto().encrypt((String)fieldValue) : fieldValue);
         } catch (Exception e) {
             throw new InjectException(e);
         }

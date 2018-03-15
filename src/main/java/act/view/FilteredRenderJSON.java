@@ -78,8 +78,7 @@ public class FilteredRenderJSON extends RenderContent {
         } else if (v instanceof $.Visitor) {
             touchPayload().status(status).contentWriter(($.Visitor) v);
         } else {
-            touchPayload().contentWriter(MvcConfig.jsonSerializer(v));
-            touchPayload().status(status).contentWriter(new JsonUtilConfig.JsonWriter(v, spec, false, context));
+            touchPayload().status(status).contentWriter(MvcConfig.jsonSerializer(v));
         }
         return _INSTANCE;
     }

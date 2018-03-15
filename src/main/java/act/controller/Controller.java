@@ -1468,7 +1468,7 @@ public @interface Controller {
                     }
                     PropertySpec.MetaInfo propertySpec = PropertySpec.MetaInfo.withCurrent(meta, context);
                     try {
-                        return FilteredRenderJSON.get(status, v, propertySpec, context);
+                        return null == propertySpec ? RenderJSON.of(status, v) : FilteredRenderJSON.get(status, v, propertySpec, context);
                     } finally {
                         if (meta.disableJsonCircularRefDetect()) {
                             DisableFastJsonCircularReferenceDetect.option.set(false);

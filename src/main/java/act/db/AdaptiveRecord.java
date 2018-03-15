@@ -23,6 +23,7 @@ package act.db;
 import act.Act;
 import act.app.App;
 import act.plugin.AppServicePlugin;
+import act.util.SimpleBean;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import org.osgl.$;
@@ -383,9 +384,11 @@ public interface AdaptiveRecord<ID_TYPE, MODEL_TYPE extends AdaptiveRecord> exte
         public Map<String, $.Function> fieldGetters;
         public Map<String, $.Func2> fieldSetters;
         public Map<String, $.Func2> fieldMergers;
+        private SimpleBean.MetaInfo metaInfo;
 
         public MetaInfo(Class<? extends AdaptiveRecord> clazz) {
             this.className = clazz.getName();
+            this.metaInfo = Act.app().classLoader().simpleBeanInfoManager().get(className);
             this.arClass = clazz;
             this.discoverProperties(clazz);
         }
@@ -425,10 +428,14 @@ public interface AdaptiveRecord<ID_TYPE, MODEL_TYPE extends AdaptiveRecord> exte
             Injector injector = Act.app().injector();
             for (final Method m : clazz.getMethods()) {
                 String name = propertyName(m);
+                String alias;
+                final boolean hasAlias;
                 if (S.blank(name)) {
                     continue;
                 } else {
                     name = S.lowerFirst(name);
+                    alias = null == metaInfo ? name : metaInfo.aliasOf(name);
+                    hasAlias = name != alias;
                     if ("idAsStr".equals(name)) {
                         // special case for MorphiaModel
                         continue;
@@ -450,32 +457,55 @@ public interface AdaptiveRecord<ID_TYPE, MODEL_TYPE extends AdaptiveRecord> exte
                     fieldType = fieldClass;
                 }
                 if (null == paramClass) {
-                    getterFieldSpecs.put(name, BeanSpec.of(fieldType, m.getDeclaredAnnotations(), name, injector));
+                    BeanSpec spec = BeanSpec.of(fieldType, m.getDeclaredAnnotations(), name, injector);
+                    getterFieldSpecs.put(name, spec);
                     getterFieldClasses.put(name, fieldClass);
+                    if (hasAlias) {
+                        getterFieldSpecs.put(alias, spec);
+                        getterFieldClasses.put(alias, fieldClass);
+                    }
                 } else {
                     BeanSpec existingSpec = setterFieldSpecs.get(name);
+                    if (null == existingSpec && hasAlias) {
+                        existingSpec = setterFieldSpecs.get(alias);
+                    }
                     if (null != existingSpec) {
                         // we need to infer the type from field in this case
                         Field field = $.fieldOf(clazz, name, true);
                         if (null != field) {
-                            setterFieldSpecs.put(name, BeanSpec.of(field, injector));
+                            BeanSpec spec = BeanSpec.of(field, injector);
+                            setterFieldSpecs.put(name, spec);
                             setterFieldClasses.put(name, field.getType());
+                            if (hasAlias) {
+                                setterFieldSpecs.put(alias, spec);
+                                setterFieldClasses.put(alias, field.getType());
+                            }
                         } else {
                             if (fieldClass == Object.class) {
                                 // ignore
                             } else if (existingSpec.rawType() == Object.class) {
-                                setterFieldSpecs.put(name, BeanSpec.of(fieldType, m.getDeclaredAnnotations(), name, injector));
+                                BeanSpec spec = BeanSpec.of(fieldType, m.getDeclaredAnnotations(), name, injector);
+                                setterFieldSpecs.put(name, spec);
                                 setterFieldClasses.put(name, fieldClass);
+                                if (hasAlias) {
+                                    setterFieldSpecs.put(alias, spec);
+                                    setterFieldClasses.put(alias, fieldClass);
+                                }
                             }
                         }
                     } else {
-                        setterFieldSpecs.put(name, BeanSpec.of(fieldType, m.getDeclaredAnnotations(), name, injector));
+                        BeanSpec spec = BeanSpec.of(fieldType, m.getDeclaredAnnotations(), name, injector);
+                        setterFieldSpecs.put(name, spec);
                         setterFieldClasses.put(name, fieldClass);
+                        if (hasAlias) {
+                            setterFieldSpecs.put(alias, spec);
+                            setterFieldClasses.put(alias, fieldClass);
+                        }
                     }
                 }
                 if (null != paramClass) {
                     final String fieldName = name;
-                    fieldSetters.put(name, new Osgl.Func2() {
+                    $.Func2 fn = new Osgl.Func2() {
                         @Override
                         public Object apply(Object host, Object value) throws NotAppliedException, Osgl.Break {
                             BeanSpec spec = setterFieldSpecs.get(fieldName);
@@ -489,8 +519,12 @@ public interface AdaptiveRecord<ID_TYPE, MODEL_TYPE extends AdaptiveRecord> exte
                             $.invokeVirtual(host, m, value);
                             return null;
                         }
-                    });
-                    fieldMergers.put(name, new Osgl.Func2() {
+                    };
+                    fieldSetters.put(name, fn);
+                    if (hasAlias) {
+                        fieldSetters.put(alias, fn);
+                    }
+                    fn = new Osgl.Func2() {
                         @Override
                         public Object apply(Object host, Object value) throws NotAppliedException, Osgl.Break {
                             BeanSpec spec = setterFieldSpecs.get(fieldName);
@@ -509,14 +543,22 @@ public interface AdaptiveRecord<ID_TYPE, MODEL_TYPE extends AdaptiveRecord> exte
                             $.invokeVirtual(host, m, value);
                             return null;
                         }
-                    });
+                    };
+                    fieldMergers.put(name, fn);
+                    if (hasAlias) {
+                        fieldMergers.put(alias, fn);
+                    }
                 } else {
-                    fieldGetters.put(name, new Osgl.F1() {
+                    $.F1 fn = new Osgl.F1() {
                         @Override
                         public Object apply(Object host) throws NotAppliedException, Osgl.Break {
                             return $.invokeVirtual(host, m);
                         }
-                    });
+                    };
+                    fieldGetters.put(name, fn);
+                    if (hasAlias) {
+                        fieldGetters.put(alias, fn);
+                    }
                 }
             }
         }

@@ -155,7 +155,8 @@ public @interface Sensitive {
             return null == fieldName || !(backlog.contains(mappedFieldName)) ? mv : new MethodVisitor(ASM5, mv) {
                 @Override
                 public void visitCode() {
-                    if (!generatingMethods.get()) {
+                    boolean generating = generatingMethods.get();
+                    if (!generating) {
                         if (isSetter) {
                             logger.warn(methodName + "(" + Type.getType(methodDesc).getArgumentTypes()[0].getClassName() + ") rewritten for @Sensitive field: " + mappedFieldName);
                         } else {
@@ -164,10 +165,14 @@ public @interface Sensitive {
                     }
                     if (isSetter) {
                         visitSetterCode(mappedFieldName, this);
-                        sensitiveFieldsForSetter.remove(mappedFieldName);
+                        if (!generating) {
+                            sensitiveFieldsForSetter.remove(mappedFieldName);
+                        }
                     } else {
                         visitGetterCode(mappedFieldName, this);
-                        sensitiveFieldsForGetter.remove(mappedFieldName);
+                        if (!generating) {
+                            sensitiveFieldsForGetter.remove(mappedFieldName);
+                        }
                     }
                 }
             };

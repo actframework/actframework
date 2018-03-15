@@ -22,6 +22,7 @@ package act.util;
 
 import act.Act;
 import act.Destroyable;
+import act.annotations.Alias;
 import act.app.App;
 import act.app.AppByteCodeScannerBase;
 import act.app.AppClassLoader;
@@ -40,7 +41,6 @@ import java.util.Map;
 import java.util.Set;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
-import javax.inject.Named;
 
 /**
  * ActFramework will do the following byte code enhancement to classes that are
@@ -186,7 +186,7 @@ public interface SimpleBean {
 
         private static class SimpleBeanByteCodeVisitor extends ByteCodeVisitor {
 
-            private static final String NAMED_DESC = Type.getType(Named.class).getDescriptor();
+            private static final String ALIAS_DESC = Type.getType(Alias.class).getDescriptor();
             private String className;
             private boolean isPublicClass;
             // key: (desc, signature)
@@ -212,7 +212,7 @@ public interface SimpleBean {
                         @Override
                         public AnnotationVisitor visitAnnotation(String desc, boolean visible) {
                             AnnotationVisitor av = super.visitAnnotation(desc, visible);
-                            if (NAMED_DESC.equals(desc)) {
+                            if (ALIAS_DESC.equals(desc)) {
                                 return new AnnotationVisitor(ASM5, av) {
                                     @Override
                                     public void visit(String name, Object value) {

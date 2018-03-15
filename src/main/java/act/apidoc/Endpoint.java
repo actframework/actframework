@@ -24,6 +24,7 @@ import act.Act;
 import act.app.DevModeClassLoader;
 import act.app.Source;
 import act.app.data.StringValueResolverManager;
+import act.data.Sensitive;
 import act.handler.RequestHandler;
 import act.handler.builtin.controller.RequestHandlerProxy;
 import act.handler.builtin.controller.impl.ReflectedHandlerInvoker;
@@ -42,12 +43,12 @@ import org.osgl.mvc.result.Result;
 import org.osgl.storage.ISObject;
 import org.osgl.util.*;
 
-import javax.validation.constraints.NotNull;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.*;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.*;
+import javax.validation.constraints.NotNull;
 
 /**
  * An `Endpoint` represents an API that provides specific service
@@ -474,6 +475,10 @@ public class Endpoint implements Comparable<Endpoint> {
                 } else if (Locale.class == type) {
                     return Locale.getDefault();
                 } else if (String.class == type) {
+                    String mockValue = S.random(5);
+                    if (spec.hasAnnotation(Sensitive.class)) {
+                        return Act.crypto().encrypt(mockValue);
+                    }
                     return S.random(5);
                 } else if (type.isArray()) {
                     Object sample = Array.newInstance(type.getComponentType(), 2);
