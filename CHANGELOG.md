@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 **1.8.2**
+* Download file not working properly #562
 * Error with sending large response: UT000043: Data is already being sent. You must wait for the completion callback to be be invoked before calling send() again #560
 * ResourceLoader: support loading json file into Map or other POJO #559
 * Support `@DefaultValue` with `@Configuration` #558

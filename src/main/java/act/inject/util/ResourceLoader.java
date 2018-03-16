@@ -141,9 +141,6 @@ public class ResourceLoader<T> extends ValueLoader.Base<T> {
             return null;
         }
         boolean isJson = resourcePath.endsWith(".json");
-        if (isJson) {
-            return JSON.parseObject(IO.readContentAsString(url), spec.type());
-        }
         Class<?> rawType = spec.rawType();
         if (URL.class == rawType) {
             return url;
@@ -200,6 +197,9 @@ public class ResourceLoader<T> extends ValueLoader.Base<T> {
             return IO.is(url);
         } else if (Reader.class == rawType) {
             return new InputStreamReader(IO.is(url));
+        }
+        if (isJson) {
+            return JSON.parseObject(IO.readContentAsString(url), spec.type());
         }
         try {
             return Act.app().resolverManager().resolve(IO.readContentAsString(url), rawType);

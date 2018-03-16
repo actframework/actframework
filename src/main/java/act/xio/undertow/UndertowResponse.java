@@ -47,6 +47,7 @@ import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.charset.StandardCharsets;
 import java.util.Locale;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -141,6 +142,9 @@ public class UndertowResponse extends ActResponse<UndertowResponse> {
     private boolean endAsync;
     private Sender sender;
     private ReentrantLock lock;
+    private boolean isPartialMode;
+    private AtomicBoolean partialSent = new AtomicBoolean();
+    private AtomicBoolean closeExchange = new AtomicBoolean(false);
     private IoCallback ioCallback = new DefaultIoCallback() {
         @Override
         public void onComplete(HttpServerExchange exchange, Sender sender) {
@@ -148,6 +152,10 @@ public class UndertowResponse extends ActResponse<UndertowResponse> {
                 lock.lock();
                 buffer.partSent();
                 lock.unlock();
+            } else if (closeExchange.get()) {
+                exchange.endExchange();
+            } else {
+                partialSent.set(true);
             }
         }
 
@@ -218,8 +226,10 @@ public class UndertowResponse extends ActResponse<UndertowResponse> {
     }
 
     public void writeContentPart(ByteBuffer buffer) {
+        isPartialMode = true;
         try {
             if (null != buffer) {
+                partialSent.set(false);
                 sender().send(buffer, ioCallback);
             } else {
                 this.buffer.sendOrBuf(buffer, sender());
@@ -290,8 +300,12 @@ public class UndertowResponse extends ActResponse<UndertowResponse> {
         } else {
             if (null != buffer) {
                 buffer.sendThroughFinalPart(sender());
-            } else {
-                sender().close(IoCallback.END_EXCHANGE);
+            } else if (isPartialMode) {
+                if (partialSent.get()) {
+                    hse.endExchange();
+                } else {
+                    closeExchange.set(true);
+                }
             }
         }
         markClosed();
