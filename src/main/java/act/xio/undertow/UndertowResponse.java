@@ -9,9 +9,9 @@ package act.xio.undertow;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -33,6 +33,8 @@ import io.undertow.util.HttpString;
 import org.osgl.$;
 import org.osgl.exception.UnexpectedIOException;
 import org.osgl.http.H;
+import org.osgl.logging.LogManager;
+import org.osgl.logging.Logger;
 import org.osgl.storage.ISObject;
 import org.osgl.util.E;
 import org.osgl.util.IO;
@@ -43,9 +45,93 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
+import java.nio.charset.StandardCharsets;
 import java.util.Locale;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class UndertowResponse extends ActResponse<UndertowResponse> {
+
+    protected static Logger LOGGER = LogManager.get(UndertowResponse.class);
+
+    private static class Buffer {
+        boolean isSending;
+        ByteBuffer buffer;
+        IoCallback callback;
+        ReentrantLock lock;
+        Condition finalPartToGo;
+
+        Buffer(IoCallback callback, ReentrantLock lock) {
+            this.callback = $.notNull(callback);
+            this.isSending = true;
+            this.lock = lock;
+        }
+
+        void sendOrBuf(String content, Sender sender) {
+            sendOrBuf(ByteBuffer.wrap(content.getBytes(StandardCharsets.UTF_8)), sender);
+        }
+
+        void sendOrBuf(ByteBuffer content, Sender sender) {
+            lock.lock();
+            try {
+                if (null == buffer) {
+                    buffer = content;
+                } else {
+                    ByteBuffer merged = ByteBuffer.allocate(buffer.limit() + content.limit());
+                    merged.put(buffer).put(content).flip();
+                    buffer = merged;
+                }
+                if (!isSending) {
+                    isSending = true;
+                    ByteBuffer buffer = this.buffer;
+                    this.buffer = null;
+                    sender.send(buffer, callback);
+                }
+            } finally {
+                lock.unlock();
+            }
+        }
+
+        void sendThroughFinalPart(Sender sender) {
+            if (null == this.buffer) {
+                return;
+            }
+            lock.lock();
+            try {
+                if (!isSending) {
+                    isSending = true;
+                    sender.send(this.buffer);
+                } else {
+                    finalPartToGo = lock.newCondition();
+                    while (isSending) {
+                        try {
+                            finalPartToGo.await();
+                        } catch (InterruptedException e) {
+                            Thread.currentThread().interrupt();
+                            throw E.unexpected(e);
+                        }
+                    }
+                    ByteBuffer buffer = this.buffer;
+                    this.buffer = null;
+                    sender.send(buffer, callback);
+                }
+            } finally {
+                lock.unlock();
+            }
+        }
+
+        void partSent() {
+            isSending = false;
+            if (null != finalPartToGo) {
+                finalPartToGo.signal();
+            }
+        }
+
+        private void clear() {
+            isSending = false;
+            buffer = null;
+        }
+    }
 
     private static final HttpString _SERVER = new HttpString(H.Header.Names.SERVER);
     private static final HttpStringCache HEADER_NAMES = HttpStringCache.HEADER;
@@ -54,6 +140,27 @@ public class UndertowResponse extends ActResponse<UndertowResponse> {
 
     private boolean endAsync;
     private Sender sender;
+    private ReentrantLock lock;
+    private IoCallback ioCallback = new DefaultIoCallback() {
+        @Override
+        public void onComplete(HttpServerExchange exchange, Sender sender) {
+            if (null != lock) {
+                lock.lock();
+                buffer.partSent();
+                lock.unlock();
+            }
+        }
+
+        @Override
+        public void onException(HttpServerExchange exchange, Sender sender, IOException exception) {
+            if (null != buffer) {
+                buffer.clear();
+                buffer = null;
+            }
+            super.onException(exchange, sender, exception);
+        }
+    };
+    private Buffer buffer;
 
     public UndertowResponse(HttpServerExchange exchange, AppConfig config) {
         super(config);
@@ -106,17 +213,21 @@ public class UndertowResponse extends ActResponse<UndertowResponse> {
     }
 
     public void writeContentPart(String s) {
-        try {
-            sender().send(s, WRITE_PART_CALLBACK);
-        } catch (RuntimeException e) {
-            endAsync = false;
-            throw e;
-        }
+        ByteBuffer buffer = ByteBuffer.wrap(s.getBytes(StandardCharsets.UTF_8));
+        writeContentPart(buffer);
     }
 
     public void writeContentPart(ByteBuffer buffer) {
         try {
-            sender().send(buffer, WRITE_PART_CALLBACK);
+            if (null != buffer) {
+                sender().send(buffer, ioCallback);
+            } else {
+                this.buffer.sendOrBuf(buffer, sender());
+            }
+        } catch (IllegalStateException e) {
+            lock = new ReentrantLock();
+            this.buffer = new Buffer(ioCallback, lock);
+            this.buffer.sendOrBuf(buffer, sender());
         } catch (RuntimeException e) {
             endAsync = false;
             throw e;
@@ -177,7 +288,11 @@ public class UndertowResponse extends ActResponse<UndertowResponse> {
         if (!endAsync) {
             hse.endExchange();
         } else {
-            sender.close(IoCallback.END_EXCHANGE);
+            if (null != buffer) {
+                buffer.sendThroughFinalPart(sender());
+            } else {
+                sender().close(IoCallback.END_EXCHANGE);
+            }
         }
         markClosed();
     }
@@ -246,10 +361,4 @@ public class UndertowResponse extends ActResponse<UndertowResponse> {
         return hse.isResponseStarted();
     }
 
-    private static final IoCallback WRITE_PART_CALLBACK = new DefaultIoCallback() {
-        @Override
-        public void onComplete(HttpServerExchange exchange, Sender sender) {
-            // do not close the exchange
-        }
-    };
 }

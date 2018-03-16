@@ -25,10 +25,10 @@ import act.util.ActContext;
 import act.util.JsonUtilConfig;
 import act.util.PropertySpec;
 import org.osgl.$;
-import org.osgl.Osgl;
 import org.osgl.http.H;
-import org.osgl.mvc.MvcConfig;
+import org.osgl.http.Http;
 import org.osgl.mvc.result.RenderContent;
+import org.osgl.mvc.result.RenderJSON;
 import org.osgl.util.Output;
 
 /**
@@ -36,7 +36,7 @@ import org.osgl.util.Output;
  * allows {@link act.util.PropertySpec} to be applied to control the
  * output fields
  */
-public class FilteredRenderJSON extends RenderContent {
+public class FilteredRenderJSON extends RenderJSON {
 
     public static final FilteredRenderJSON _INSTANCE = new FilteredRenderJSON() {
         @Override
@@ -45,13 +45,35 @@ public class FilteredRenderJSON extends RenderContent {
         }
 
         @Override
-        public Osgl.Visitor<Output> contentWriter() {
+        public $.Visitor<Output> contentWriter() {
             return payload().contentWriter;
+        }
+
+        @Override
+        public Http.Status status() {
+            Http.Status status = payload().status;
+            return null == status ? super.status() : status;
         }
 
         @Override
         public long timestamp() {
             return payload().timestamp;
+        }
+
+        @Override
+        public boolean isOutputEncoding() {
+            return payload().outputEncoding();
+        }
+
+        @Override
+        public RenderContent setOutputEncoding(boolean outputEncoding) {
+            payload().outputEncoding(outputEncoding);
+            return this;
+        }
+
+        @Override
+        public H.Format format() {
+            return H.Format.JSON;
         }
     };
 
@@ -60,16 +82,22 @@ public class FilteredRenderJSON extends RenderContent {
     }
 
     public FilteredRenderJSON(final Object v, final PropertySpec.MetaInfo spec, final ActContext context) {
-        super(new JsonUtilConfig.JsonWriter(v, spec, false, context), H.Format.JSON);
-    }
-
-    public static FilteredRenderJSON get(final Object v, final PropertySpec.MetaInfo spec, final ActionContext context) {
-        touchPayload().contentWriter(new JsonUtilConfig.JsonWriter(v, spec, false, context));
-        return _INSTANCE;
+        super(new JsonUtilConfig.JsonWriter(v, spec, false, context));
     }
 
     public FilteredRenderJSON(H.Status status, final Object v, final PropertySpec.MetaInfo spec, final ActContext context) {
-        super(status, new JsonUtilConfig.JsonWriter(v, spec, false, context), H.Format.JSON);
+        super(status, new JsonUtilConfig.JsonWriter(v, spec, false, context));
+    }
+
+    public static FilteredRenderJSON get(final Object v, final PropertySpec.MetaInfo spec, final ActionContext context) {
+        if (v instanceof String) {
+            touchPayload().message((String) v);
+        } else if (v instanceof $.Visitor) {
+            touchPayload().contentWriter(($.Visitor) v);
+        } else {
+            touchPayload().contentWriter(new JsonUtilConfig.JsonWriter(v, spec, false, context));
+        }
+        return _INSTANCE;
     }
 
     public static FilteredRenderJSON get(H.Status status, final Object v, final PropertySpec.MetaInfo spec, final ActionContext context) {
@@ -78,7 +106,7 @@ public class FilteredRenderJSON extends RenderContent {
         } else if (v instanceof $.Visitor) {
             touchPayload().status(status).contentWriter(($.Visitor) v);
         } else {
-            touchPayload().status(status).contentWriter(MvcConfig.jsonSerializer(v));
+            touchPayload().status(status).contentWriter(new JsonUtilConfig.JsonWriter(v, spec, false, context));
         }
         return _INSTANCE;
     }

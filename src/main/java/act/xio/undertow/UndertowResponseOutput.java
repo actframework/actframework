@@ -20,7 +20,6 @@ package act.xio.undertow;
  * #L%
  */
 
-import io.undertow.io.Sender;
 import org.osgl.util.Output;
 
 import java.io.OutputStream;
@@ -30,19 +29,19 @@ import java.nio.ByteBuffer;
 public class UndertowResponseOutput implements Output {
 
     private UndertowResponse resp;
-    private Sender sender;
 
     public UndertowResponseOutput(UndertowResponse resp) {
         this.resp = resp;
-        this.sender = resp.sender();
     }
 
     @Override
     public void open() {
+        resp.beforeWritingContent();
     }
 
     @Override
     public void close() {
+        resp.afterWritingContent();
     }
 
     @Override

@@ -20,6 +20,8 @@ package act.util;
  * #L%
  */
 
+import static com.alibaba.fastjson.JSON.DEFAULT_GENERATE_FEATURE;
+
 import act.app.App;
 import act.cli.util.MappedFastJsonNameFilter;
 import act.data.DataPropertyRepository;
@@ -46,8 +48,6 @@ import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
-
-import static com.alibaba.fastjson.JSON.DEFAULT_GENERATE_FEATURE;
 
 public class JsonUtilConfig {
 
