@@ -20,14 +20,14 @@ package act.view;
  * #L%
  */
 
+import static act.util.ActError.Util.loadSourceInfo;
+
 import act.Act;
 import act.app.SourceInfo;
 import act.util.ActError;
 import org.osgl.mvc.result.Unauthorized;
 
 import java.util.List;
-
-import static act.util.ActError.Util.loadSourceInfo;
 
 public class ActUnauthorized extends Unauthorized implements ActError {
 
@@ -36,6 +36,7 @@ public class ActUnauthorized extends Unauthorized implements ActError {
     public ActUnauthorized() {
         super();
         if (Act.isDev()) {
+            doFillInStackTrace();
             sourceInfo = loadSourceInfo(ActUnauthorized.class);
         }
     }
@@ -66,6 +67,9 @@ public class ActUnauthorized extends Unauthorized implements ActError {
     @Override
     public StackTraceElement[] getStackTrace() {
         StackTraceElement[] raw = super.getStackTrace();
+        if (raw.length < 3) {
+            return raw;
+        }
         int len = raw.length - 3;
         StackTraceElement[] effective = new StackTraceElement[len];
         System.arraycopy(raw, 3, effective, 0, len);
