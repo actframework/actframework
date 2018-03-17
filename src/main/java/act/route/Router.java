@@ -48,8 +48,6 @@ import org.osgl.logging.Logger;
 import org.osgl.mvc.result.Result;
 import org.osgl.util.*;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.validation.constraints.NotNull;
 import java.io.File;
 import java.io.PrintStream;
 import java.io.Serializable;
@@ -58,6 +56,8 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
+import javax.enterprise.context.ApplicationScoped;
+import javax.validation.constraints.NotNull;
 
 public class Router extends AppServiceBase<Router> {
 
@@ -305,6 +305,17 @@ public class Router extends AppServiceBase<Router> {
             trace("R+ %s %s | %s (%s)", method, path, handler, source);
         }
         Node node = _locate(method, path, handler.toString());
+        if (null == node.handler) {
+            Set<Node> conflicts = node.conflicts();
+            if (!conflicts.isEmpty()) {
+                for (Node conflict : conflicts) {
+                    if (null != conflict.handler) {
+                        node = conflict;
+                        break;
+                    }
+                }
+            }
+        }
         if (null == node.handler) {
             handler = prepareReverseRoutes(handler, node);
             node.handler(handler, source);
@@ -848,6 +859,7 @@ public class Router extends AppServiceBase<Router> {
         // --- references
         private Node root;
         private Node parent;
+        private transient Node conflictNode;
         private List<Node> dynamicChilds = new ArrayList<>();
         private Map<CharSequence, Node> staticChildren = new HashMap<>();
         private Map<UrlPath, Node> dynamicAliases = new HashMap<>();
@@ -917,17 +929,52 @@ public class Router extends AppServiceBase<Router> {
             return isDynamic;
         }
 
-        boolean metaInfoMatches(StrBase string) {
+        public Set<Node> conflicts() {
+            Set<Node> nodes = new HashSet<>();
+            findOutConflictNodes(nodes);
+            return nodes;
+        }
+
+        private void findOutConflictNodes(Set<Node> nodes) {
+            if (null != conflictNode) {
+                nodes.add(conflictNode);
+            }
+            if (this.root == this || this.parent == null) {
+                return;
+            }
+            // track back to parents
+            // so that we can flag thing like
+            // /foo/{foo}/xyz and /foo/{bar}/xyz
+            Set<Node> parentConflictNodes = new HashSet<>();
+            parent.findOutConflictNodes(parentConflictNodes);
+            for (Node parentConflictNode : parentConflictNodes) {
+                Node staticNode = parentConflictNode.staticChildren.get(name);
+                if (null != staticNode) {
+                    nodes.add(staticNode);
+                    continue;
+                }
+                for (Node dynamicNode: parentConflictNode.dynamicChilds) {
+                    if (metaInfoConflict(dynamicNode.name)) {
+                        nodes.add(dynamicNode);
+                    }
+                }
+            }
+        }
+
+        boolean metaInfoMatchesExactly(StrBase string) {
             return this.isDynamic && $.eq(string, name);
-//            $.Var<String> patternTraitsVar = $.var();
-//
-//            boolean isDynamic = parseDynaNameStyleA(string, null, null, patternTraitsVar);
-//
-//            isDynamic = isDynamic || parseDynaNameStyleB(
-//                    string, null, null,
-//                    patternTraitsVar, null);
-//
-//            return isDynamic && patternTrait.equals(patternTraitsVar.get());
+        }
+
+        boolean metaInfoConflict(StrBase string) {
+            $.Var<String> patternTraitsVar = $.var();
+
+            boolean isDynamic = parseDynaNameStyleA(string, null, null, patternTraitsVar);
+
+            isDynamic = isDynamic || parseDynaNameStyleB(
+                    string, null, null,
+                    patternTraitsVar, null);
+
+            return isDynamic && patternTrait.equals(patternTraitsVar.get());
         }
 
         public boolean matches(CharSequence chars) {
@@ -1014,11 +1061,23 @@ public class Router extends AppServiceBase<Router> {
             staticChildren.clear();
         }
 
-        Node childByMetaInfo(StrBase s) {
+        Node childByMetaInfoExactMatching(StrBase s) {
             Node node = staticChildren.get(s);
             if (null == node && !dynamicChilds.isEmpty()) {
                 for (Node targetNode : dynamicChilds) {
-                    if (targetNode.metaInfoMatches(s)) {
+                    if (targetNode.metaInfoMatchesExactly(s)) {
+                        return targetNode;
+                    }
+                }
+            }
+            return node;
+        }
+
+        Node childByMetaInfoConflictMatching(StrBase s) {
+            Node node = staticChildren.get(s);
+            if (null == node && !dynamicChilds.isEmpty()) {
+                for (Node targetNode : dynamicChilds) {
+                    if (targetNode.metaInfoConflict(s)) {
                         return targetNode;
                     }
                 }
@@ -1028,16 +1087,18 @@ public class Router extends AppServiceBase<Router> {
 
         Node findChild(StrBase<?> name) {
             name = name.trim();
-            return childByMetaInfo(name);
+            return childByMetaInfoExactMatching(name);
         }
 
         Node addChild(StrBase<?> name, final CharSequence path, final String action) {
             name = name.trim();
-            Node node = childByMetaInfo(name);
+            Node node = childByMetaInfoExactMatching(name);
             if (null != node) {
                 return node;
             }
+            Node conflictNode = childByMetaInfoConflictMatching(name);
             Node child = new Node(name, this);
+            child.conflictNode = conflictNode;
             if (child.isDynamic()) {
                 boolean isAlias = false;
                 for (Node targetNode : dynamicChilds) {

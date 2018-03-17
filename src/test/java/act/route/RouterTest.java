@@ -20,6 +20,11 @@ package act.route;
  * #L%
  */
 
+import static act.route.RouteSource.*;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+import static org.osgl.http.H.Method.GET;
+
 import act.controller.ParamNames;
 import act.handler.RequestHandler;
 import act.handler.builtin.AlwaysNotFound;
@@ -35,11 +40,6 @@ import org.osgl.http.H;
 import org.osgl.util.C;
 
 import java.io.File;
-
-import static act.route.RouteSource.*;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-import static org.osgl.http.H.Method.GET;
 
 public class RouterTest extends RouterTestBase {
     private RequestHandler staticDirHandler;
@@ -66,6 +66,37 @@ public class RouterTest extends RouterTestBase {
     public void testGH295() {
         router.addMapping(GET, "/foo/{var_name}", "Foo.bar");
         yes(router.isMapped(GET, "/foo/{var_name}"));
+    }
+
+    // Different URL variable name caused duplicate routes not been reported
+    @Test(expected = DuplicateRouteMappingException.class)
+    public void testGH561() {
+        router.addMapping(GET, "/foo/{a}", "Foo.bar", RouteSource.ACTION_ANNOTATION);
+        router.addMapping(GET, "/foo/{b}", "Foo.foo", RouteSource.ACTION_ANNOTATION);
+    }
+
+    @Test
+    public void testGH561_0() {
+        router.addMapping(GET, "/foo/{<[a-z]+>a}", "Foo.bar", RouteSource.ACTION_ANNOTATION);
+        router.addMapping(GET, "/foo/{<[0-9]+>b}", "Foo.foo", RouteSource.ACTION_ANNOTATION);
+    }
+
+    @Test(expected = DuplicateRouteMappingException.class)
+    public void testGH561_extended() {
+        router.addMapping(GET, "/foo/{a}/b", "Foo.bar", RouteSource.ACTION_ANNOTATION);
+        router.addMapping(GET, "/foo/{b}/b", "Foo.foo", RouteSource.ACTION_ANNOTATION);
+    }
+
+    @Test(expected = DuplicateRouteMappingException.class)
+    public void testGH561_extended2() {
+        router.addMapping(GET, "/foo/{<[0-9]{4}>a}/b", "Foo.bar", RouteSource.ACTION_ANNOTATION);
+        router.addMapping(GET, "/foo/{<[0-9]{4}>y}/b", "Foo.foo", RouteSource.ACTION_ANNOTATION);
+    }
+
+    @Test
+    public void testGH561_extended3() {
+        router.addMapping(GET, "/foo/{<[0-9]{5}>a}/b", "Foo.bar", RouteSource.ACTION_ANNOTATION);
+        router.addMapping(GET, "/foo/{<[0-9]{4}>y}/b", "Foo.foo", RouteSource.ACTION_ANNOTATION);
     }
 
     @Test
