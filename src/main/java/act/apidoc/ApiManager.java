@@ -20,6 +20,8 @@ package act.apidoc;
  * #L%
  */
 
+import static act.controller.Controller.Util.renderJson;
+
 import act.Act;
 import act.app.ActionContext;
 import act.app.App;
@@ -38,8 +40,6 @@ import org.osgl.logging.Logger;
 
 import java.util.SortedSet;
 import java.util.TreeSet;
-
-import static act.controller.Controller.Util.renderJson;
 
 /**
  * Keep track endpoints defined in the system
@@ -65,8 +65,10 @@ public class ApiManager extends AppServiceBase<ApiManager> {
                 load(app);
             }
         });
-        app.router().addMapping(H.Method.GET, "/~/apidoc/endpoint", new GetEndpointsHandler(this));
-        app.router().addMapping(H.Method.GET, "/~/apidoc", new ResourceGetter("asset/~act/apibook/index.html"));
+        app.router().addMapping(H.Method.GET, "/~/apibook/endpoint", new GetEndpointsHandler(this));
+        ResourceGetter apidocHandler = new ResourceGetter("asset/~act/apibook/index.html");
+        app.router().addMapping(H.Method.GET, "/~/apibook", apidocHandler);
+        app.router().addMapping(H.Method.GET, "/~/apidoc", apidocHandler);
     }
 
     @Override

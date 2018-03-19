@@ -89,25 +89,24 @@ public class FilteredRenderJSON extends RenderJSON {
         super(status, new JsonUtilConfig.JsonWriter(v, spec, false, context));
     }
 
-    public static FilteredRenderJSON get(final Object v, final PropertySpec.MetaInfo spec, final ActionContext context) {
+    public static FilteredRenderJSON of(final Object v, final PropertySpec.MetaInfo spec, final ActionContext context) {
         if (v instanceof String) {
             touchPayload().message((String) v);
         } else if (v instanceof $.Visitor) {
             touchPayload().contentWriter(($.Visitor) v);
         } else {
+            if (context.isLargeResponse() || v instanceof Iterable) {
+                touchPayload().contentWriter(new JsonUtilConfig.JsonWriter(v, spec, false, context));
+            } else {
+                touchPayload().stringContentProducer(new JsonUtilConfig.JsonWriter(v, spec, false, context).asContentProducer());
+            }
             touchPayload().contentWriter(new JsonUtilConfig.JsonWriter(v, spec, false, context));
         }
         return _INSTANCE;
     }
 
-    public static FilteredRenderJSON get(H.Status status, final Object v, final PropertySpec.MetaInfo spec, final ActionContext context) {
-        if (v instanceof String) {
-            touchPayload().status(status).message((String) v);
-        } else if (v instanceof $.Visitor) {
-            touchPayload().status(status).contentWriter(($.Visitor) v);
-        } else {
-            touchPayload().status(status).contentWriter(new JsonUtilConfig.JsonWriter(v, spec, false, context));
-        }
-        return _INSTANCE;
+    public static FilteredRenderJSON of(H.Status status, final Object v, final PropertySpec.MetaInfo spec, final ActionContext context) {
+        touchPayload().status(status);
+        return of(v, spec, context);
     }
 }

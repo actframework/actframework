@@ -137,7 +137,7 @@
             self.fetchEndpoints()
         })
         fetchEndpoints() {
-            $.getJSON('/~/apidoc/endpoint', function(endpoints) {
+            $.getJSON('/~/apibook/endpoint', function(endpoints) {
                 self.endpoints = endpoints
                 self.update()
                 riot.store.trigger('endpoints-fetched', endpoints);

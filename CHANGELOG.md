@@ -1,6 +1,10 @@
 # ActFramework Change Log
 
 **1.8.2**
+* Improve the performance of direct output model #568
+* Revert response output framework for small response #567
+* `NoSuchMethodError` with Morphia entity #565
+* API Doc error during app start #564
 * Different URL variable name caused duplicate routes not been reported #561
 * `ActUnauthorized` caused `java.lang.NegativeArraySizeException` in dev mode #563
 * Download file not working properly #562

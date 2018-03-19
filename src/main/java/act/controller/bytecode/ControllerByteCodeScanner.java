@@ -400,7 +400,6 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
                     if (null != propSpec) {
                         methodInfo.propertySpec(propSpec);
                     }
-                    methodInfo.disableJsonCircularRefDetect(disableJsonCircularRefDetect);
                     return new ActionAnnotationVisitor(av, ControllerClassMetaInfo.lookupHttpMethod(c), ControllerClassMetaInfo.isActionUtilAnnotation(c), isStatic, ControllerClassMetaInfo.noDefPath(c));
                 } else if (ControllerClassMetaInfo.isUrlContextAnnotation(c)) {
                     return new MethodUrlContextAnnotationVisitor(av, ControllerClassMetaInfo.isUrlContextAnnotationSupportAbsolutePath(c));
@@ -452,12 +451,6 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
                             }
                         }
                     };
-                } else if ($.eq(AsmTypes.DISABLE_JSON_CIRCULAR_REF_DETECT.asmType(), type)) {
-                    if (null != methodInfo) {
-                        methodInfo.disableJsonCircularRefDetect(true);
-                    } else {
-                        disableJsonCircularRefDetect = true;
-                    }
                 }
                 //markNotTargetClass();
                 return av;

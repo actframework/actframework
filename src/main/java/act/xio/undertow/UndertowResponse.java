@@ -35,6 +35,7 @@ import org.osgl.exception.UnexpectedIOException;
 import org.osgl.http.H;
 import org.osgl.logging.LogManager;
 import org.osgl.logging.Logger;
+import org.osgl.mvc.util.BufferedOutput;
 import org.osgl.storage.ISObject;
 import org.osgl.util.E;
 import org.osgl.util.IO;
@@ -178,7 +179,7 @@ public class UndertowResponse extends ActResponse<UndertowResponse> {
 
     @Override
     protected Output createOutput() {
-        return new UndertowResponseOutput(this);
+        return BufferedOutput.wrap(new UndertowResponseOutput(this));
     }
 
     @Override
@@ -295,6 +296,13 @@ public class UndertowResponse extends ActResponse<UndertowResponse> {
 
     @Override
     public void commit() {
+        if (null != this.output) {
+            output.flush();
+        } else if (null != this.outputStream) {
+            IO.flush(outputStream);
+        } else if (null != this.writer) {
+            IO.flush(writer);
+        }
         if (!endAsync) {
             hse.endExchange();
         } else {

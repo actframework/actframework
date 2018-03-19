@@ -23,6 +23,8 @@ package act.event;
 import org.osgl.$;
 
 import java.util.EventObject;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * An {@code ActEvent} is a generic version of {@link EventObject}
@@ -30,9 +32,11 @@ import java.util.EventObject;
  */
 public class ActEvent<T> extends EventObject {
 
+    protected static final Object SOURCE_PLACEHODER = new Object();
+
     private final long ts;
 
-    protected static final Object SOURCE_PLACEHODER = new Object();
+    private Class<? extends ActEvent<T>> eventType;
 
     /**
      * This constructor allows sub class to construct a Self source event, e.g.
@@ -44,6 +48,7 @@ public class ActEvent<T> extends EventObject {
     protected ActEvent() {
         super(SOURCE_PLACEHODER);
         ts = $.ms();
+
     }
 
     /**
@@ -54,6 +59,7 @@ public class ActEvent<T> extends EventObject {
     public ActEvent(T source) {
         super(source);
         ts = $.ms();
+        eventType = $.cast(referType(getClass()));
     }
 
     /**
@@ -75,7 +81,7 @@ public class ActEvent<T> extends EventObject {
      * @return the type of the event
      */
     public Class<? extends ActEvent<T>> eventType() {
-        return $.cast(referType(getClass()));
+        return eventType;
     }
 
     public final T source() {
@@ -103,8 +109,15 @@ public class ActEvent<T> extends EventObject {
         }
     }
 
+    private static Map<Class, Class> referTypes = new HashMap<>();
+
     private static Class<? extends EventObject> referType(Class<? extends EventObject> eventType) {
-        return eventType.isAnonymousClass() ? referType((Class<? extends EventObject>) eventType.getSuperclass()) : eventType;
+        Class<? extends EventObject> referType = referTypes.get(eventType);
+        if (null == referType) {
+            referType = eventType.isAnonymousClass() ? referType((Class<? extends EventObject>) eventType.getSuperclass()) : eventType;
+            referTypes.put(eventType, referType);
+        }
+        return referType;
     }
 
 }

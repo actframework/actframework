@@ -20,6 +20,9 @@ package act.conf;
  * #L%
  */
 
+import static act.conf.AppConfigKey.*;
+import static org.osgl.http.H.Header.Names.X_XSRF_TOKEN;
+
 import act.Act;
 import act.Constants;
 import act.app.*;
@@ -34,6 +37,7 @@ import act.db.util._SequenceNumberGenerator;
 import act.handler.UnknownHttpMethodProcessor;
 import act.handler.event.ResultEvent;
 import act.i18n.I18n;
+import act.internal.util.StrBufRetentionLimitCalculator;
 import act.security.CSRFProtector;
 import act.session.*;
 import act.util.*;
@@ -46,6 +50,7 @@ import act.ws.SecureTicketCodec;
 import act.ws.UsernameSecureTicketCodec;
 import org.osgl.$;
 import org.osgl.Osgl;
+import org.osgl.OsglConfig;
 import org.osgl.cache.CacheService;
 import org.osgl.cache.CacheServiceProvider;
 import org.osgl.exception.ConfigurationException;
@@ -56,7 +61,6 @@ import org.osgl.util.*;
 import org.osgl.web.util.UserAgent;
 import org.rythmengine.utils.Time;
 
-import javax.inject.Provider;
 import java.io.File;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -64,9 +68,7 @@ import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
-
-import static act.conf.AppConfigKey.*;
-import static org.osgl.http.H.Header.Names.X_XSRF_TOKEN;
+import javax.inject.Provider;
 
 public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> implements AppHolder<AppConfig<T>> {
 
@@ -77,6 +79,16 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     private App app;
 
     static {
+        MvcConfig.registerAlarmListener(MvcConfig.ALARM_BIG_CONTENT_ENCOUNTERED, new $.Func0() {
+            @Override
+            public Object apply() throws NotAppliedException, Osgl.Break {
+                ActionContext ctx = ActionContext.current();
+                if (null != ctx) {
+                    ctx.setLargeResponseHint();
+                }
+                return null;
+            }
+        });
         MvcConfig.errorPageRenderer(new ActErrorPageRender());
         MvcConfig.beforeCommitResultHandler(ResultEvent.BEFORE_COMMIT_HANDLER);
         MvcConfig.afterCommitResultHandler(ResultEvent.AFTER_COMMIT_HANDLER);
@@ -138,6 +150,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
             MvcConfig.jsonMediaTypeProvider(jsonContentProvider);
         }
 
+        OsglConfig.setStringBufferRententionLimit(strBufRetentionLimit());
     }
 
     public App app() {
@@ -1518,6 +1531,24 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         }
     }
 
+    private Integer strBufRetentionLimit;
+    protected T strBufRetentionLimit(int limit) {
+        strBufRetentionLimit = limit;
+        return me();
+    }
+    public int strBufRetentionLimit() {
+        if (null == strBufRetentionLimit) {
+            StrBufRetentionLimitCalculator calc = new StrBufRetentionLimitCalculator();
+            strBufRetentionLimit = get(OSGL_STRBUF_RETENTION_LIMIT, 1024 * calc.calculate());
+        }
+        return strBufRetentionLimit;
+    }
+    private void _mergeStrBufRetentionLimit(AppConfig config) {
+        if (!hasConfiguration(OSGL_STRBUF_RETENTION_LIMIT)) {
+            strBufRetentionLimit = config.strBufRetentionLimit;
+        }
+    }
+
     private Password.Validator defPasswordValidator;
 
     protected T defPasswordValidator(Password.Validator validator) {
@@ -1977,6 +2008,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     }
 
     private String serverHeader;
+    private static final String DEF_SERVER_HEADER = "act/" + Act.VERSION.getProjectVersion();
 
     protected T serverHeader(String header) {
         serverHeader = header;
@@ -1985,7 +2017,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
 
     public String serverHeader() {
         if (null == serverHeader) {
-            serverHeader = get(AppConfigKey.SERVER_HEADER, "act");
+            serverHeader = get(AppConfigKey.SERVER_HEADER, DEF_SERVER_HEADER);
         }
         return serverHeader;
     }

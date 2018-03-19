@@ -317,7 +317,7 @@ public enum AppConfigKey implements ConfigKey {
      * {@code act.csrf.param_name} specifies the http request param name
      * used to convey the csrf token
      *
-     * Default value: the value of {@link act.app.ActionContext#ATTR_CSRF_TOKEN}
+     * Default value: the value of {@link AppConfig#CSRF_TOKEN_NAME}
      */
     CSRF_PARAM_NAME("csrf.param_name"),
 
@@ -671,6 +671,14 @@ public enum AppConfigKey implements ConfigKey {
      * and shall not be specified in this namedPorts configuration</p>
      */
     NAMED_PORTS("namedPorts"),
+
+    /**
+     * `strbuf.retention.limit` set the maximum size of threadlocal instance
+     * of {@link S.Buffer} before it get dropped.
+     *
+     * Default value: 1024 * 8 (i.e. 8k)
+     */
+    OSGL_STRBUF_RETENTION_LIMIT("strbuf.retention.limit"),
 
     /**
      * `password.spec` specify default password spec which is used to

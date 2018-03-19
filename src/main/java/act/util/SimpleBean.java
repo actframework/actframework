@@ -366,7 +366,7 @@ public interface SimpleBean {
             if (null != setter) {
                 // found setter for the field
                 setters.remove(setter);
-                getters.remove(metaInfo.aliasOf(setter));
+                setters.remove(metaInfo.aliasOf(setter));
             }
             return mv;
         }

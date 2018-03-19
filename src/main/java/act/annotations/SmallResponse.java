@@ -1,10 +1,10 @@
-package act.util;
+package act.annotations;
 
 /*-
  * #%L
  * ACT Framework
  * %%
- * Copyright (C) 2014 - 2017 ActFramework
+ * Copyright (C) 2014 - 2018 ActFramework
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -26,14 +26,16 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Annotate on a controller action handler to indicate the JSON result shall be
- * rendered with FastJson Circular Reference check disabled.
+ * Mark on a action handler method indicate the method
+ * returns small response
  *
- * This annotation is deprecated, please use {@link FastJsonFeature} instead
+ * For small response the framework will process result
+ * into a final string in the memory before sending it
+ * to the response.
+ *
+ * @see LargeResponse
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.TYPE, ElementType.METHOD})
-@Deprecated
-public @interface DisableFastJsonCircularReferenceDetect {
-    ThreadLocal<Boolean> option = new ThreadLocal<Boolean>();
+@Target(ElementType.METHOD)
+public @interface SmallResponse {
 }

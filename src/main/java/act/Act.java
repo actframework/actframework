@@ -20,6 +20,8 @@ package act;
  * #L%
  */
 
+import static act.Destroyable.Util.tryDestroy;
+
 import act.app.*;
 import act.app.event.SysEventId;
 import act.app.util.NamedPort;
@@ -64,10 +66,11 @@ import org.osgl.cache.CacheService;
 import org.osgl.exception.NotAppliedException;
 import org.osgl.exception.UnexpectedException;
 import org.osgl.http.H;
-import org.osgl.logging.L;
+import org.osgl.logging.LogManager;
 import org.osgl.logging.Logger;
 import org.osgl.util.*;
 import osgl.version.Version;
+import osgl.version.Versioned;
 
 import java.io.File;
 import java.io.IOException;
@@ -85,12 +88,15 @@ import java.util.Map;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 
-import static act.Destroyable.Util.tryDestroy;
-
 /**
  * The Act runtime and facade
  */
+@Versioned
 public final class Act {
+
+    public static final Version VERSION = Version.of(Act.class);
+
+    public static final Logger LOGGER = LogManager.get(Act.class);
 
     /**
      * Used to set/get system property to communicate the app jar file if
@@ -178,8 +184,6 @@ public final class Act {
         }
     }
 
-    public static final osgl.version.Version VERSION = osgl.version.Version.of(Act.class);
-    public static final Logger LOGGER = L.get(Act.class);
     private static ActConfig conf;
     private static Mode mode = Mode.PROD;
     private static String nodeGroup = "";

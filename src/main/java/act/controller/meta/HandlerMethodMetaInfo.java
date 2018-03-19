@@ -53,7 +53,6 @@ public abstract class HandlerMethodMetaInfo<T extends HandlerMethodMetaInfo> ext
     private boolean returnArray; // for performance tuning
     private boolean throwRenderResult;
     private PropertySpec.MetaInfo propertySpec;
-    private boolean disableJsonCircularRefDetect = false;
     private Map<Label, Map<Integer, LocalVariableMetaInfo>> locals = new HashMap<>();
     private int appCtxLVT_id = -1;
     private int ctxParamCnt = -1;
@@ -75,7 +74,6 @@ public abstract class HandlerMethodMetaInfo<T extends HandlerMethodMetaInfo> ext
         this.returnType = copy.returnType;
         this.returnArray = copy.returnArray;
         this.propertySpec = copy.propertySpec;
-        this.disableJsonCircularRefDetect = copy.disableJsonCircularRefDetect;
         this.locals = copy.locals;
         this.appCtxLVT_id = copy.appCtxLVT_id;
         this.ctxParamCnt = copy.ctxParamCnt;
@@ -148,15 +146,6 @@ public abstract class HandlerMethodMetaInfo<T extends HandlerMethodMetaInfo> ext
 
     public ActContextInjection appContextInjection() {
         return actContextInjection;
-    }
-
-    public T disableJsonCircularRefDetect(boolean b) {
-        disableJsonCircularRefDetect = b;
-        return me();
-    }
-
-    public boolean disableJsonCircularRefDetect() {
-        return disableJsonCircularRefDetect;
     }
 
     public T invokeStaticMethod() {

@@ -57,6 +57,7 @@ public class JsonUtilConfig {
         private SerializerFeature[] features;
         private SerializeFilter[] filters;
         private String dateFormatPattern;
+        private boolean disableCircularReferenceDetect;
         private boolean hasPropFilter;
 
         public JsonWriter(Object v, PropertySpec.MetaInfo spec, boolean format, ActContext context) {
@@ -82,6 +83,10 @@ public class JsonUtilConfig {
                 this.filters = initFilters(v, spec, context);
                 this.features = initFeatures(format, context);
             }
+        }
+
+        public void disableCircularReferenceDetect() {
+            disableCircularReferenceDetect = true;
         }
 
         private SerializeFilter[] initFilters(Object v, PropertySpec.MetaInfo spec, ActContext context) {
@@ -122,8 +127,7 @@ public class JsonUtilConfig {
                     }
                 }
             }
-            Boolean b = DisableFastJsonCircularReferenceDetect.option.get();
-            if (null != b && b) {
+            if (disableCircularReferenceDetect) {
                 featureSet.add(SerializerFeature.DisableCircularReferenceDetect);
             }
             featureSet.add(SerializerFeature.WriteDateUseDateFormat);
@@ -180,6 +184,18 @@ public class JsonUtilConfig {
             } catch (IOException e) {
                 throw E.ioException(e);
             }
+        }
+
+        public $.Func0<String> asContentProducer() {
+            final JsonWriter me = this;
+            return new $.Func0<String>() {
+                @Override
+                public String apply() throws NotAppliedException, Osgl.Break {
+                    S.Buffer buf = S.buffer();
+                    me.visit(buf);
+                    return buf.toString();
+                }
+            };
         }
     }
 

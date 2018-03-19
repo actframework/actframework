@@ -20,6 +20,8 @@ package act.util;
          * #L%
          */
 
+import static act.view.ViewManager.isTemplatePath;
+
 import act.Destroyable;
 import act.act_messages;
 import act.app.ActionContext;
@@ -38,12 +40,10 @@ import org.osgl.util.C;
 import org.osgl.util.E;
 import org.osgl.util.S;
 
-import javax.enterprise.context.RequestScoped;
-import javax.validation.ConstraintViolation;
 import java.lang.reflect.Method;
 import java.util.*;
-
-import static act.view.ViewManager.isTemplatePath;
+import javax.enterprise.context.RequestScoped;
+import javax.validation.ConstraintViolation;
 
 public interface ActContext<CTX_TYPE extends ActContext> extends ParamValueProvider {
 
@@ -291,7 +291,7 @@ public interface ActContext<CTX_TYPE extends ActContext> extends ParamValueProvi
             attributes = new HashMap<>();
             listenerList = new ArrayList<>();
             destroyableList = new ArrayList<>();
-            strBuf = S.newBuffer();
+            strBuf = S.newSizedBuffer(app.config().strBufRetentionLimit());
             violations = new HashMap<>();
         }
 

@@ -33,6 +33,7 @@ import act.data.RequestBodyParser;
 import act.event.ActEvent;
 import act.event.SystemEvent;
 import act.handler.RequestHandler;
+import act.handler.builtin.controller.impl.ReflectedHandlerInvoker;
 import act.handler.event.PreHandle;
 import act.i18n.LocaleResolver;
 import act.route.Router;
@@ -103,11 +104,13 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
     private MissingAuthenticationHandler forceCsrfCheckingFailureHandler;
     private String urlContext;
     private boolean byPassImplicitTemplateVariable;
+    private boolean isLargeResponse;
     private int pathVarCount;
     private UrlPath urlPath;
     private Set<String> pathVarNames = new HashSet<>();
     private SessionManager sessionManager;
     private Trace.AccessLog accessLog;
+    private ReflectedHandlerInvoker reflectedHandlerInvoker;
 
     // see https://github.com/actframework/actframework/issues/492
     public String encodedSessionToken;
@@ -419,6 +422,24 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
 
     public boolean isOptionsMethod() {
         return req().method() == H.Method.OPTIONS;
+    }
+
+    public void setLargeResponse() {
+        isLargeResponse = true;
+    }
+
+    public void setReflectedHandlerInvoker(ReflectedHandlerInvoker invoker) {
+        this.reflectedHandlerInvoker = invoker;
+    }
+
+    public void setLargeResponseHint() {
+        if (null != reflectedHandlerInvoker) {
+            reflectedHandlerInvoker.setLargeResponseHint();
+        }
+    }
+
+    public boolean isLargeResponse() {
+        return isLargeResponse;
     }
 
     public String username() {

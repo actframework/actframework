@@ -146,8 +146,11 @@ public class NetworkHandler extends DestroyableBase {
         NetworkJob job = new NetworkJob() {
             @Override
             public void run() {
-                String key = S.concat(MetricInfo.HTTP_HANDLER, ":", requestHandler.toString());
-                Timer timer = metric.startTimer(key);
+                Timer timer = Metric.NULL_METRIC.startTimer("null");
+                if (metric != Metric.NULL_METRIC) {
+                    String key = S.concat(MetricInfo.HTTP_HANDLER, ":", requestHandler.toString());
+                    timer = metric.startTimer(key);
+                }
                 ctx.saveLocal();
                 EventBus eventBus = app.eventBus();
                 try {
@@ -181,9 +184,7 @@ public class NetworkHandler extends DestroyableBase {
                     // another thread
                     eventBus.emit(new PostHandle(ctx));
                     ActionContext.clearCurrent();
-                    if (null != timer) {
-                        timer.stop();
-                    }
+                    timer.stop();
                 }
             }
         };

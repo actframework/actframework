@@ -27,6 +27,7 @@ import act.util.ActContext;
 import act.util.PropertySpec;
 import org.osgl.$;
 import org.osgl.Osgl;
+import org.osgl.exception.NotAppliedException;
 import org.osgl.http.H;
 import org.osgl.mvc.result.RenderContent;
 import org.osgl.util.Output;
@@ -76,7 +77,7 @@ public class RenderCSV extends RenderContent {
         }, H.Format.CSV);
     }
 
-    public static RenderCSV get(final Object v, final PropertySpec.MetaInfo spec, final ActContext context) {
+    public static RenderCSV of(final Object v, final PropertySpec.MetaInfo spec, final ActContext context) {
         touchPayload().contentWriter(new $.Visitor<Output>() {
             @Override
             public void visit(Output output) throws Osgl.Break {
@@ -86,13 +87,25 @@ public class RenderCSV extends RenderContent {
         return _INSTANCE;
     }
 
-    public static RenderCSV get(H.Status status, final Object v, final PropertySpec.MetaInfo spec, final ActContext context) {
-        touchPayload().status(status).contentWriter(new $.Visitor<Output>() {
-            @Override
-            public void visit(Output output) throws Osgl.Break {
-                render(output, v, spec, context);
-            }
-        });
+    public static RenderCSV of(H.Status status, final Object v, final PropertySpec.MetaInfo spec, final ActionContext context) {
+        Payload payload = touchPayload().status(status);
+        if (context.isLargeResponse()) {
+            payload.contentWriter(new $.Visitor<Output>() {
+                @Override
+                public void visit(Output output) throws Osgl.Break {
+                    render(output, v, spec, context);
+                }
+            });
+        } else {
+            payload.stringContentProducer(new $.Func0<String>() {
+                @Override
+                public String apply() throws NotAppliedException, Osgl.Break {
+                    S.Buffer buf = S.buffer();
+                    render(buf, v, spec, context);
+                    return buf.toString();
+                }
+            });
+        }
         return _INSTANCE;
     }
 

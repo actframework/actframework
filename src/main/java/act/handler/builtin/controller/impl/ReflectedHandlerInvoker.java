@@ -22,6 +22,8 @@ package act.handler.builtin.controller.impl;
 
 import act.Act;
 import act.Trace;
+import act.annotations.LargeResponse;
+import act.annotations.SmallResponse;
 import act.app.ActionContext;
 import act.app.App;
 import act.app.AppClassLoader;
@@ -69,18 +71,21 @@ import org.osgl.inject.BeanSpec;
 import org.osgl.mvc.annotation.ResponseContentType;
 import org.osgl.mvc.annotation.ResponseStatus;
 import org.osgl.mvc.annotation.SessionFree;
-import org.osgl.mvc.result.*;
+import org.osgl.mvc.result.BadRequest;
+import org.osgl.mvc.result.Conflict;
+import org.osgl.mvc.result.RenderJSON;
+import org.osgl.mvc.result.Result;
 import org.osgl.util.C;
 import org.osgl.util.E;
 import org.osgl.util.S;
 
-import javax.enterprise.context.ApplicationScoped;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import javax.enterprise.context.ApplicationScoped;
 
 /**
  * Implement handler using
@@ -140,6 +145,8 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
     private boolean byPassImplicityTemplateVariable;
     private boolean forceDataBinding;
     private boolean traceHandler;
+    private boolean isLargeResponse;
+    private boolean forceSmallResponse;
     private Class<? extends SerializeFilter> filters[];
     private SerializerFeature features[];
     private $.Function<ActionContext, Result> pluginBeforeHandler;
@@ -188,6 +195,13 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
             }
             Throttled.ExpireScale expireScale = throttleControl.expireScale();
             throttleFilter = new ThrottleFilter(throttle, expireScale.enabled());
+        }
+
+        this.isLargeResponse = method.getAnnotation(LargeResponse.class) != null;
+        this.forceSmallResponse = method.getAnnotation(SmallResponse.class) != null;
+        if (isLargeResponse && forceSmallResponse) {
+            warn("found both @LargeResponse and @SmallResponse, will ignore @SmallResponse");
+            forceSmallResponse = false;
         }
 
         FastJsonFilter filterAnno = method.getAnnotation(FastJsonFilter.class);
@@ -356,7 +370,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         return csrfFailureHandler;
     }
 
-    public Result handle(final ActionContext context) throws Exception {
+    public Result handle(final ActionContext context) {
         if (disabled) {
             return ActNotFound.get();
         }
@@ -373,7 +387,12 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
             return result;
         }
 
+        context.setReflectedHandlerInvoker(this);
         app.eventBus().emit(new ReflectedHandlerInvokerInvoke(this, context));
+
+        if (isLargeResponse) {
+            context.setLargeResponse();
+        }
 
         if (null != filters) {
             context.fastjsonFilters(filters);
@@ -495,6 +514,12 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
 
     public boolean disableContentSecurityPolicy() {
         return disableCsp;
+    }
+
+    public void setLargeResponseHint() {
+        if (!this.forceSmallResponse) {
+            this.isLargeResponse = true;
+        }
     }
 
     private void cacheJsonDTO(ActContext<?> context, JsonDTO dto) {
