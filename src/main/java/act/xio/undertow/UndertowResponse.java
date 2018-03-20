@@ -40,6 +40,7 @@ import org.osgl.storage.ISObject;
 import org.osgl.util.E;
 import org.osgl.util.IO;
 import org.osgl.util.Output;
+import org.osgl.util.OutputStreamOutput;
 
 import java.io.File;
 import java.io.IOException;
@@ -179,7 +180,7 @@ public class UndertowResponse extends ActResponse<UndertowResponse> {
 
     @Override
     protected Output createOutput() {
-        return BufferedOutput.wrap(new UndertowResponseOutput(this));
+        return BufferedOutput.wrap(hse.isBlocking() ? new OutputStreamOutput(createOutputStream()) : new UndertowResponseOutput(this));
     }
 
     @Override
@@ -201,7 +202,7 @@ public class UndertowResponse extends ActResponse<UndertowResponse> {
     Sender sender() {
         if (null == sender) {
             sender = hse.getResponseSender();
-            endAsync = true;
+            endAsync = !hse.isBlocking();
         }
         return sender;
     }
@@ -211,7 +212,7 @@ public class UndertowResponse extends ActResponse<UndertowResponse> {
         beforeWritingContent();
         try {
             sender().send(s);
-            endAsync = true;
+            endAsync = !hse.isBlocking();
             afterWritingContent();
         } catch (RuntimeException e) {
             endAsync = false;
@@ -250,7 +251,7 @@ public class UndertowResponse extends ActResponse<UndertowResponse> {
         beforeWritingContent();
         try {
             sender().send(byteBuffer);
-            endAsync = true;
+            endAsync = !hse.isBlocking();
             afterWritingContent();
         } catch (RuntimeException e) {
             endAsync = false;
@@ -268,12 +269,12 @@ public class UndertowResponse extends ActResponse<UndertowResponse> {
             byte[] ba = binary.asByteArray();
             ByteBuffer buffer = ByteBuffer.wrap(ba);
             sender().send(buffer);
-            endAsync = true;
+            endAsync = !hse.isBlocking();
             afterWritingContent();
         } else {
             try {
                 sender().transferFrom(FileChannel.open(file.toPath()), IoCallback.END_EXCHANGE);
-                endAsync = true;
+                endAsync = !hse.isBlocking();
                 afterWritingContent();
             } catch (IOException e) {
                 endAsync = false;
