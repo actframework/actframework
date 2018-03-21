@@ -35,7 +35,7 @@ import org.osgl.exception.UnexpectedIOException;
 import org.osgl.http.H;
 import org.osgl.logging.LogManager;
 import org.osgl.logging.Logger;
-import org.osgl.mvc.util.BufferedOutput;
+import org.osgl.util.BufferedOutput;
 import org.osgl.storage.ISObject;
 import org.osgl.util.E;
 import org.osgl.util.IO;
@@ -180,7 +180,7 @@ public class UndertowResponse extends ActResponse<UndertowResponse> {
 
     @Override
     protected Output createOutput() {
-        return BufferedOutput.wrap(hse.isBlocking() ? new OutputStreamOutput(createOutputStream()) : new UndertowResponseOutput(this));
+        return BufferedOutput.wrap(blocking() ? new OutputStreamOutput(createOutputStream()) : new UndertowResponseOutput(this));
     }
 
     @Override
@@ -202,7 +202,7 @@ public class UndertowResponse extends ActResponse<UndertowResponse> {
     Sender sender() {
         if (null == sender) {
             sender = hse.getResponseSender();
-            endAsync = !hse.isBlocking();
+            endAsync = !blocking();
         }
         return sender;
     }
@@ -212,7 +212,7 @@ public class UndertowResponse extends ActResponse<UndertowResponse> {
         beforeWritingContent();
         try {
             sender().send(s);
-            endAsync = !hse.isBlocking();
+            endAsync = !blocking();
             afterWritingContent();
         } catch (RuntimeException e) {
             endAsync = false;
@@ -251,7 +251,7 @@ public class UndertowResponse extends ActResponse<UndertowResponse> {
         beforeWritingContent();
         try {
             sender().send(byteBuffer);
-            endAsync = !hse.isBlocking();
+            endAsync = !blocking();
             afterWritingContent();
         } catch (RuntimeException e) {
             endAsync = false;
@@ -269,12 +269,12 @@ public class UndertowResponse extends ActResponse<UndertowResponse> {
             byte[] ba = binary.asByteArray();
             ByteBuffer buffer = ByteBuffer.wrap(ba);
             sender().send(buffer);
-            endAsync = !hse.isBlocking();
+            endAsync = !blocking();
             afterWritingContent();
         } else {
             try {
                 sender().transferFrom(FileChannel.open(file.toPath()), IoCallback.END_EXCHANGE);
-                endAsync = !hse.isBlocking();
+                endAsync = !blocking();
                 afterWritingContent();
             } catch (IOException e) {
                 endAsync = false;
@@ -300,9 +300,9 @@ public class UndertowResponse extends ActResponse<UndertowResponse> {
         if (null != this.output) {
             output.flush();
         } else if (null != this.outputStream) {
-            IO.flush(outputStream);
+            IO.close(outputStream);
         } else if (null != this.writer) {
-            IO.flush(writer);
+            IO.close(writer);
         }
         if (!endAsync) {
             hse.endExchange();
@@ -347,7 +347,7 @@ public class UndertowResponse extends ActResponse<UndertowResponse> {
     }
 
     private void ensureBlocking() {
-        if (!hse.isBlocking()) {
+        if (!blocking()) {
             hse.startBlocking(new ActBlockingExchange(hse, ActionContext.current()));
         }
     }
@@ -382,6 +382,10 @@ public class UndertowResponse extends ActResponse<UndertowResponse> {
 
     private boolean responseStarted() {
         return hse.isResponseStarted();
+    }
+    
+    private boolean blocking() {
+        return hse.isBlocking();
     }
 
 }

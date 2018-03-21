@@ -1,10 +1,8 @@
 package testapp.model;
 
-import act.util.DisableFastJsonCircularReferenceDetect;
 
 import java.util.List;
 
-@DisableFastJsonCircularReferenceDetect
 public class Bar {
     private String id;
     private int n;
