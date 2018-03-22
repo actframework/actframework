@@ -1560,7 +1560,6 @@ public class Router extends AppServiceBase<Router> {
 
         @Override
         public void handle(ActionContext context) {
-            //context.attribute(ActionContext.ATTR_HANDLER, realHandler());
             context.handler(realHandler());
             context.resolve();
             super.handle(context);
