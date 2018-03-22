@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 **1.8.2**
+* API doc index not correct #573
 * Use nonblocking I/O for body parsing when possible #572
 * Improve the performance of direct output model #568
 * Revert response output framework for small response #567

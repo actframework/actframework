@@ -9,19 +9,19 @@
                     </li>
                 </virtual>
                 <li class="toc">POST</li>
-                <virtual each="{GET}">
+                <virtual each="{POST}">
                     <li>
                         <a href="#{id}" title="{description}">{path}</a>
                     </li>
                 </virtual>
                 <li class="toc">PUT</li>
-                <virtual each="{GET}">
+                <virtual each="{PUT}">
                     <li>
                         <a href="#{id}" title="{description}">{path}</a>
                     </li>
                 </virtual>
                 <li class="toc">DELETE</li>
-                <virtual each="{GET}">
+                <virtual each="{DELETE}">
                     <li>
                         <a href="#{id}" title="{description}">{path}</a>
                     </li>
