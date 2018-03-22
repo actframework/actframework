@@ -92,6 +92,18 @@
       <resource>
         <directory>src/main/resources</directory>
         <filtering>true</filtering>
+        <excludes>
+          <exclude>bigfile</exclude>
+          <exclude>smallfile</exclude>
+        </excludes>
+      </resource>
+      <resource>
+        <directory>src/main/resources</directory>
+        <filtering>false</filtering>
+        <includes>
+          <include>bigfile</include>
+          <include>smallfile</include>
+        </includes>
       </resource>
     </resources>
 

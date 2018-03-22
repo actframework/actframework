@@ -20,6 +20,8 @@ package act.route;
  * #L%
  */
 
+import static org.mockito.Mockito.*;
+
 import act.ActTestBase;
 import act.app.ActionContext;
 import act.app.App;
@@ -33,8 +35,6 @@ import org.mockito.stubbing.Answer;
 
 import java.io.File;
 import java.lang.reflect.Field;
-
-import static org.mockito.Mockito.*;
 
 public abstract class RouterTestBase extends ActTestBase {
 
@@ -70,7 +70,9 @@ public abstract class RouterTestBase extends ActTestBase {
         router = new Router(controllerLookup, app);
         buildRouteMapping(router);
         ctx = mock(ActionContext.class);
+        when(ctx.router()).thenReturn(router);
         when(ctx.app()).thenReturn(app);
+        doCallRealMethod().when(ctx).proceedWithHandler(any(RequestHandler.class));
     }
 
     protected void provisionControllerLookup(RequestHandlerResolver controllerLookup) {

@@ -20,7 +20,9 @@ package act;
  * #L%
  */
 
+import act.app.ActionContext;
 import act.conf.AppConfig;
+import act.handler.RequestHandler;
 import org.osgl.$;
 import org.osgl.http.H;
 import org.osgl.util.E;
@@ -87,6 +89,8 @@ public abstract class RequestImplBase<T extends H.Request> extends H.Request<T> 
         }
         return secure;
     }
+
+    public abstract void receiveFullBytesAndProceed(final ActionContext context, final RequestHandler handler);
 
     private boolean parseSecureXHeaders() {
         String s = header(H.Header.Names.X_FORWARDED_PROTO);

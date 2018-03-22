@@ -21,7 +21,9 @@ package act.route;
  */
 
 import act.RequestImplBase;
+import act.app.ActionContext;
 import act.conf.AppConfig;
+import act.handler.RequestHandler;
 import org.osgl.http.H;
 
 import java.io.InputStream;
@@ -73,6 +75,11 @@ public class MockRequest extends RequestImplBase<MockRequest> {
     @Override
     protected void _initCookieMap() {
 
+    }
+
+    @Override
+    public void receiveFullBytesAndProceed(ActionContext context, RequestHandler handler) {
+        //handler.handle(context);
     }
 
     @Override

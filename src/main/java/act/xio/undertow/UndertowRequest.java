@@ -23,12 +23,15 @@ package act.xio.undertow;
 import act.RequestImplBase;
 import act.app.ActionContext;
 import act.conf.AppConfig;
+import act.handler.RequestHandler;
+import io.undertow.io.Receiver;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.server.handlers.Cookie;
 import org.osgl.util.Codec;
 import org.osgl.util.E;
 import org.osgl.util.IO;
 
+import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
@@ -41,6 +44,7 @@ public class UndertowRequest extends RequestImplBase<UndertowRequest> {
 
     private String path;
     private HttpServerExchange hse;
+    private byte[] body;
     private Map<String, Deque<String>> queryParams;
 
     public UndertowRequest(HttpServerExchange exchange, AppConfig config) {
@@ -88,10 +92,25 @@ public class UndertowRequest extends RequestImplBase<UndertowRequest> {
 
     @Override
     public InputStream createInputStream() throws IllegalStateException {
+        if (null != body) {
+            return new ByteArrayInputStream(body);
+        }
         if (!hse.isBlocking()) {
             hse.startBlocking(new ActBlockingExchange(hse, ActionContext.current()));
         }
         return hse.getInputStream();
+    }
+
+    public void receiveFullBytesAndProceed(final ActionContext context, final RequestHandler handler) {
+        ActionContext.clearLocal();
+        hse.getRequestReceiver().receiveFullBytes(new Receiver.FullBytesCallback() {
+            @Override
+            public void handle(HttpServerExchange exchange, byte[] message) {
+                body = message;
+                context.saveLocal();
+                handler.handle(context);
+            }
+        });
     }
 
     @Override

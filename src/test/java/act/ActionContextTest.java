@@ -20,7 +20,11 @@ package act;
  * #L%
  */
 
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import act.app.ActionContext;
+import act.route.Router;
 import org.junit.Before;
 import org.junit.Test;
 import org.osgl.http.H;
@@ -28,9 +32,6 @@ import org.osgl.util.C;
 
 import java.util.Arrays;
 import java.util.Map;
-
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 public class ActionContextTest extends ActTestBase {
 
@@ -49,6 +50,7 @@ public class ActionContextTest extends ActTestBase {
 
         ActResponse resp = mock(ActResponse.class);
         ctx = ActionContext.create(mockApp, req, resp);
+        ctx.router(mock(Router.class));
     }
 
     @Test

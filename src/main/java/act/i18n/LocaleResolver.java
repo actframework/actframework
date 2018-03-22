@@ -28,8 +28,8 @@ import org.osgl.http.H;
 import org.osgl.mvc.annotation.PostAction;
 import org.osgl.util.S;
 
-import javax.inject.Inject;
 import java.util.Locale;
+import javax.inject.Inject;
 
 /**
  * Responsible for setting up client Locale for the context
@@ -145,7 +145,7 @@ public class LocaleResolver {
     }
 
     private Locale resolveFromParam() {
-        String s = context.paramVal(config.localeParamName());
+        String s = context.paramValwithoutBodyParsing(config.localeParamName());
         Locale locale = parseStr(s);
         if (null != locale) {
             resolvedFromParam = true;

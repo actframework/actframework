@@ -100,6 +100,7 @@ public class Router extends AppServiceBase<Router> {
     private String portId;
     private int port;
     private OptionsInfoBase optionHandlerFactory;
+    private Set<RequestHandler> requireBodyParsing = new HashSet<>();
 
     private void initControllerLookup(RequestHandlerResolver lookup) {
         if (null == lookup) {
@@ -195,6 +196,11 @@ public class Router extends AppServiceBase<Router> {
         for (Node child : node.staticChildren.values()) {
             visit(child, method, visitor);
         }
+    }
+
+    // Mark handler as require body parsing
+    public void markRequireBodyParsing(RequestHandler handler) {
+        requireBodyParsing.add(handler);
     }
 
     // --- routing ---
@@ -1562,7 +1568,11 @@ public class Router extends AppServiceBase<Router> {
         public void handle(ActionContext context) {
             context.handler(realHandler());
             context.resolve();
-            super.handle(context);
+            Router router = context.router();
+            if (router.requireBodyParsing.contains(handler_)) {
+                context.markRequireBodyParsing();
+            }
+            context.proceedWithHandler(this.handler_);
         }
     }
 

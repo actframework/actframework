@@ -25,6 +25,7 @@ import static org.osgl.http.H.Header.Names.*;
 
 import act.ActResponse;
 import act.Destroyable;
+import act.RequestImplBase;
 import act.Trace;
 import act.conf.AppConfig;
 import act.controller.ResponseCache;
@@ -111,6 +112,7 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
     private SessionManager sessionManager;
     private Trace.AccessLog accessLog;
     private ReflectedHandlerInvoker reflectedHandlerInvoker;
+    private boolean requireBodyParsing;
 
     // see https://github.com/actframework/actframework/issues/492
     public String encodedSessionToken;
@@ -383,6 +385,10 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
         return this;
     }
 
+    public void markRequireBodyParsing() {
+        requireBodyParsing = true;
+    }
+
     public int pathVarCount() {
         return pathVarCount;
     }
@@ -490,6 +496,21 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
         return val;
     }
 
+    public String paramValwithoutBodyParsing(String name) {
+        String val = extraParams.get(name);
+        if (null != val) {
+            return val;
+        }
+        val = request.paramVal(name);
+        if (null == val && null != bodyParams) {
+            String[] sa = getBody(name);
+            if (null != sa && sa.length > 0) {
+                val = sa[0];
+            }
+        }
+        return val;
+    }
+
     public String[] paramVals(String name) {
         String val = extraParams.get(name);
         if (null != val) {
@@ -514,6 +535,7 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
                 map = parser.parse(this);
             }
             bodyParams = map;
+            router.markRequireBodyParsing(handler);
         }
         return bodyParams;
     }
@@ -969,6 +991,7 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
      */
     public void resolve() {
         E.illegalStateIf(state != State.CREATED);
+        localeResolver.resolve();
         boolean sessionFree = handler.sessionFree();
         setWasUnauthenticated();
         H.Request req = req();
@@ -977,7 +1000,6 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
             app().eventBus().emit(new PreFireSessionResolvedEvent(session, this));
             resolveFlash(req);
         }
-        localeResolver.resolve();
         state = State.SESSION_RESOLVED;
         if (!sessionFree) {
             handler.prepareAuthentication(this);
@@ -985,6 +1007,14 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
             if (isLoggedIn()) {
                 clearWasUnauthenticated();
             }
+        }
+    }
+
+    public void proceedWithHandler(RequestHandler handler) {
+        if (requireBodyParsing) {
+            ((RequestImplBase) req()).receiveFullBytesAndProceed(this, handler);
+        } else {
+            handler.handle(this);
         }
     }
 

@@ -48,7 +48,7 @@ public class ActEvent<T> extends EventObject {
     protected ActEvent() {
         super(SOURCE_PLACEHODER);
         ts = $.ms();
-
+        eventType = $.cast(referType(getClass()));
     }
 
     /**

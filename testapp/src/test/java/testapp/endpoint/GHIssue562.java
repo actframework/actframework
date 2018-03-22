@@ -1,7 +1,10 @@
 package testapp.endpoint;
 
+import okhttp3.MediaType;
+import okhttp3.RequestBody;
 import org.junit.Test;
 import org.osgl.util.IO;
+import org.osgl.util.S;
 
 public class GHIssue562 extends EndpointTester {
 
@@ -23,7 +26,7 @@ public class GHIssue562 extends EndpointTester {
 
     @Test
     public void testGetBigBinaryBlocking() throws Exception {
-        url("/gh/562/big").post();
+        url("/gh/562/big").post().body(RequestBody.create(MediaType.parse("application/octet-stream"), S.random(1024 * 512)));
         eq(bigChecksum, IO.checksum(resp().body().byteStream()));
     }
 
