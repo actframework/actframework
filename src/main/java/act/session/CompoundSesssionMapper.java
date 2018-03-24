@@ -39,6 +39,16 @@ public class CompoundSesssionMapper implements SessionMapper {
     }
 
     @Override
+    public void writeExpiration(long expiration, H.Response response) {
+        for (SessionMapper mapper : sessionMappers) {
+            mapper.writeExpiration(expiration, response);
+            // all mapper shall use the same expiration output logic
+            // so we just break it out here
+            break;
+        }
+    }
+
+    @Override
     public void write(String session, String flash, H.Response response) {
         for (SessionMapper mapper : sessionMappers) {
             mapper.write(session, flash, response);

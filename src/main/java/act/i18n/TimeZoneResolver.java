@@ -36,16 +36,29 @@ public class TimeZoneResolver extends Controller.Util {
     @PostAction("i18n/timezone")
     @Description("Set timezone into session. The value should be offset to UTC in minutes")
     public static void updateTimezoneOffset(
-            @Description("the timezone offset") int offset,
+            @Description("the timezone offset to UTC in minutes") int offset,
             H.Session session
     ) {
         session.put(SESSION_KEY, offset);
     }
 
+    /**
+     * Returns timezone offset from {@link H.Session#current() current session}.
+     *
+     * @return the offset to UTC time in minutes
+     */
     public static int timezoneOffset() {
         return timezoneOffset(H.Session.current());
     }
 
+    /**
+     * Returns timezone offset from a session instance. The offset is
+     * in minutes to UTC time
+     *
+     * @param session
+     *      the session instance
+     * @return the offset to UTC time in minutes
+     */
     public static int timezoneOffset(H.Session session) {
         String s = null != session ? session.get(SESSION_KEY) : null;
         return S.notBlank(s) ? Integer.parseInt(s) : serverTimezoneOffset();

@@ -32,6 +32,7 @@ import javax.inject.Singleton;
 @Singleton
 public class CookieSessionMapper implements SessionMapper {
 
+    private ExpirationMapper expirationMapper;
     private String sessionCookieName;
     private String flashCookieName;
     private String cookieDomain;
@@ -49,6 +50,12 @@ public class CookieSessionMapper implements SessionMapper {
         persistentSession = conf.persistSession();
         ttl = conf.sessionTtl();
         sessionWillExpire = ttl > 0;
+        expirationMapper = new ExpirationMapper(conf);
+    }
+
+    @Override
+    public void writeExpiration(long expiration, H.Response response) {
+        expirationMapper.writeExpiration(expiration, response);
     }
 
     @Override

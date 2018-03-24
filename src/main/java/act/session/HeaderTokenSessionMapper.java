@@ -39,6 +39,7 @@ public class HeaderTokenSessionMapper implements SessionMapper {
     private String flashHeader;
     private String sessionPayloadPrefix;
     private boolean hasSessionPayloadPrefix;
+    private SessionMapper.ExpirationMapper expirationMapper;
 
     @Inject
     public HeaderTokenSessionMapper(AppConfig config) {
@@ -51,6 +52,12 @@ public class HeaderTokenSessionMapper implements SessionMapper {
         flashHeader = S.pathConcat(headerPrefix, '-', "Flash");
         sessionPayloadPrefix = config.sessionHeaderPayloadPrefix();
         hasSessionPayloadPrefix = S.notBlank(sessionPayloadPrefix);
+        expirationMapper = new ExpirationMapper(config);
+    }
+
+    @Override
+    public void writeExpiration(long expiration, H.Response response) {
+        expirationMapper.writeExpiration(expiration, response);
     }
 
     @Override

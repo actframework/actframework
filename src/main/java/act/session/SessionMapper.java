@@ -20,6 +20,11 @@ package act.session;
  * #L%
  */
 
+import act.conf.AppConfig;
+import org.joda.time.DateTimeZone;
+import org.joda.time.LocalDateTime;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
 import org.osgl.http.H;
 
 /**
@@ -28,6 +33,20 @@ import org.osgl.http.H;
  * {@link org.osgl.http.H.Request request}
  */
 public interface SessionMapper {
+
+    /**
+     * Write session expiration date/time into {@link H.Response response}.
+     *
+     * The expiration will use date time format as specified in
+     * <a href="https://tools.ietf.org/html/rfc7231#section-7.1.1.1">rfc-7231</a>
+     *
+     * @param expiration
+     *      the expiration in milliseconds
+     * @param response
+     *      the response to which the expiration to be written
+     */
+    void writeExpiration(long expiration, H.Response response);
+
     /**
      * Write serialized session and flash state into {@link H.Response response}.
      *
@@ -61,4 +80,32 @@ public interface SessionMapper {
      *      flash state found in the request using this mapper
      */
     String readFlash(H.Request request);
+
+    class ExpirationMapper {
+        private static DateTimeFormatter format = DateTimeFormat.forPattern("E, dd MMM Y HH:mm:ss");
+        boolean enabled;
+        String headerName;
+
+        ExpirationMapper (AppConfig conf) {
+            enabled = conf.sessionOutputExpiration();
+            if (enabled) {
+                headerName = conf.headerExpiration();
+            }
+        }
+
+        public void writeExpiration(long expiration, H.Response response) {
+            if (!enabled) {
+                return;
+            }
+            response.header(headerName, expirationInIMF(expiration));
+        }
+
+        private static String expirationInIMF(long expirationInMillis) {
+            LocalDateTime localDateTime = new LocalDateTime(expirationInMillis, DateTimeZone.UTC);
+            return format.print(localDateTime) + " GMT";
+        }
+
+    }
+
+
 }

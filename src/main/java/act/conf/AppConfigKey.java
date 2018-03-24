@@ -441,6 +441,15 @@ public enum AppConfigKey implements ConfigKey {
     HANDLER_UNKNOWN_HTTP_METHOD("handler.unknown_http_method.impl"),
 
     /**
+     * `header.expiration` specifies the expiration header name.
+     *
+     * This is only effective when {@link #SESSION_OUTPUT_EXPIRATION} is effective.
+     *
+     * Default value: `Expires`
+     */
+    HEADER_EXPIRATION("header.expiration"),
+
+    /**
      * {@code act.host} specifies the host the application
      * reside on.
      * <p/>
@@ -874,6 +883,18 @@ public enum AppConfigKey implements ConfigKey {
     SERVER_HEADER("server.header"),
 
     /**
+     * `session.outputExpiration.enabled` turn on/off expiration output to
+     * response header.
+     *
+     * This setting only effective when it is using token to
+     * map session payload.
+     *
+     * Default value: `true`
+     *
+     */
+    SESSION_OUTPUT_EXPIRATION("session.outputExpiration.enabled"),
+
+    /**
      * {@code session.ttl} specifies the session duration in seconds.
      * If user failed to interact with server for amount of time that
      * exceeds the setting then the session will be destroyed
@@ -949,6 +970,7 @@ public enum AppConfigKey implements ConfigKey {
      *
      * Default value: `null`
      */
+    // TODO: change it to `header.session`
     SESSION_HEADER("session.header"),
 
     /**

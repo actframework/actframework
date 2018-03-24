@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 **1.8.2**
+* Allow output session token expiration time through response header #575
 * API Doc - parsing JavaDoc to generate descriptive content #576
 * API doc index not correct #573
 * Use nonblocking I/O for body parsing when possible #572

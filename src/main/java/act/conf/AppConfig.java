@@ -958,6 +958,26 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         }
     }
 
+    private String headerExpiration;
+
+    protected T headerExpiration(String headerName) {
+        headerExpiration = headerName.trim();
+        return me();
+    }
+
+    public String headerExpiration() {
+        if (null == headerExpiration) {
+            headerExpiration = get(AppConfigKey.HEADER_EXPIRATION, H.Header.Names.EXPIRES);
+        }
+        return headerExpiration;
+    }
+
+    private void _mergeHeaderExpiration(AppConfig config) {
+        if (!hasConfiguration(HEADER_EXPIRATION)) {
+            headerExpiration = config.headerExpiration;
+        }
+    }
+
     private String host = null;
 
     protected T host(String hostname) {
@@ -2218,11 +2238,26 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         }
     }
 
+    private Boolean sessionOutputExpiration;
+
+    protected T sessionOutputExpiration(boolean enabled) {
+        sessionOutputExpiration = enabled;
+        return me();
+    }
+
+    public boolean sessionOutputExpiration() {
+        if (null == sessionOutputExpiration) {
+            sessionOutputExpiration = get(SESSION_OUTPUT_EXPIRATION, true);
+        }
+        return sessionOutputExpiration;
+    }
+
     private String sessionHeader;
     private boolean sessionHeaderSet;
-    protected void sessionHeader(String header) {
+    protected T sessionHeader(String header) {
         this.sessionHeader = header;
         this.sessionHeaderSet = true;
+        return me();
     }
     public String sessionHeader() {
         if (!sessionHeaderSet) {

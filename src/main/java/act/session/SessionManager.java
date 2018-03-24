@@ -61,6 +61,10 @@ public class SessionManager extends DestroyableBase {
         String encodedSession = codec.encodeSession(session);
         // flash could be null if precheck CSRF failed
         String encodedFlash = codec.encodeFlash(flash);
+        long expiry = session.expiry();
+        if (expiry > 0) {
+            mapper.writeExpiration(session.expiry(), response);
+        }
         mapper.write(encodedSession, encodedFlash, response);
     }
 
