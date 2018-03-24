@@ -54,6 +54,7 @@
     <bval.version>1.1.2</bval.version>
     <image4j.version>0.7</image4j.version>
     <jansi.version>1.16</jansi.version>
+    <javaparser.version>2.4.0</javaparser.version>
     <javax.inject.version>1</javax.inject.version>
     <javax.mail.version>1.5.0-b01</javax.mail.version>
     <jfiglet.version>0.0.8</jfiglet.version>
@@ -172,6 +173,12 @@
       <groupId>javax.enterprise</groupId>
       <artifactId>cdi-api</artifactId>
       <version>${cdi-api.version}</version>
+    </dependency>
+
+    <dependency>
+      <groupId>com.github.javaparser</groupId>
+      <artifactId>javaparser-core</artifactId>
+      <version>${javaparser.version}</version>
     </dependency>
 
     <dependency>

@@ -20,6 +20,7 @@ package act.i18n;
  * #L%
  */
 
+import act.apidoc.Description;
 import act.controller.Controller;
 import org.osgl.http.H;
 import org.osgl.mvc.annotation.PostAction;
@@ -33,7 +34,11 @@ public class TimeZoneResolver extends Controller.Util {
     public static final String SESSION_KEY = "__tz__";
 
     @PostAction("i18n/timezone")
-    public static void updateTimezoneOffset(int offset, H.Session session) {
+    @Description("Set timezone into session. The value should be offset to UTC in minutes")
+    public static void updateTimezoneOffset(
+            @Description("the timezone offset") int offset,
+            H.Session session
+    ) {
         session.put(SESSION_KEY, offset);
     }
 
@@ -51,4 +56,7 @@ public class TimeZoneResolver extends Controller.Util {
         return -(cal.get(Calendar.ZONE_OFFSET) + cal.get(Calendar.DST_OFFSET)) / (1000 * 60);
     }
 
+    public static void main(String[] args) {
+        System.out.println(serverTimezoneOffset());
+    }
 }

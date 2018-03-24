@@ -20,6 +20,7 @@ package act;
  * #L%
  */
 
+import act.apidoc.Description;
 import act.app.ActionContext;
 import act.handler.NonBlock;
 import org.osgl.$;
@@ -28,10 +29,10 @@ import org.osgl.util.C;
 import org.osgl.util.IO;
 import org.rythmengine.utils.S;
 
-import javax.inject.Singleton;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import javax.inject.Singleton;
 
 @Singleton
 public final class Zen {
@@ -51,6 +52,7 @@ public final class Zen {
 
     @NonBlock
     @GetAction("zen")
+    @Description("Get my zen words (禅语)")
     public void zen(ActionContext context) {
         zenInfo.applyTo(context);
     }

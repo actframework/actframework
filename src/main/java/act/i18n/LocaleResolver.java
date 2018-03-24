@@ -20,6 +20,7 @@ package act.i18n;
  * #L%
  */
 
+import act.apidoc.Description;
 import act.app.ActionContext;
 import act.conf.AppConfig;
 import act.controller.Controller;
@@ -53,6 +54,7 @@ public class LocaleResolver {
     private boolean reset;
     private boolean resolvedFromParam;
 
+    @Description("Set locale to the session. The parameter name is configured with default value act_locale, it must be put as a query parameter instead of form field")
     @PostAction("i18n/locale")
     public static void updateLocale(H.Request request) {
         // there is no logic needed as locale has been processed built-in logic already

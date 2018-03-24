@@ -1,9 +1,8 @@
 <endpoint-list>
     <div class="endpoint" each={ endpoints }>
-        <a id="{ id }"></a>
-        <h3 class="desc">{ description }</h3>
-        <pre class="code">[{ method }] { path }</pre>
-        <br/>
+        <a class="id" id="{ xid }">&nbsp;</a>
+        <pre class="code">[{ httpMethod }] { path }</pre>
+        <div class="desc">{ description }</div>
         <div class="param-list">
             <h4>Parameters</h4>
             <div class="param-list-body">
@@ -49,13 +48,20 @@
             <pre class="code">{ returnSample }</pre>
         </div>
     </div>
+    <div id='bottom-padding'>&nbsp;</div>
     <style>
+        a.id {
+            display:block;
+            margin-bottom: 50px;
+        }
+
         h3, h4, h5 {
             margin-bottom: 0.2em;
         }
 
-        h3.desc {
-            margin-top: 80px;
+        div.desc {
+            margin-top: 10px;
+            margin-bottom: 10px;
         }
 
         a[id] {
@@ -127,6 +133,10 @@
             background: #444;
             max-width: 800px;
             margin: 16px 0 16px 0;
+        }
+
+        #bottom-padding {
+            padding-bottom: 1024px;
         }
     </style>
     <script>

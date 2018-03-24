@@ -21,8 +21,6 @@ package act.apidoc;
  */
 
 import act.Act;
-import act.app.DevModeClassLoader;
-import act.app.Source;
 import act.app.data.StringValueResolverManager;
 import act.data.Sensitive;
 import act.handler.RequestHandler;
@@ -86,6 +84,10 @@ public class Endpoint implements Comparable<Endpoint> {
 
         public String getDescription() {
             return description;
+        }
+
+        public void setDescription(String description) {
+            this.description = description;
         }
 
         public boolean isRequired() {
@@ -152,7 +154,7 @@ public class Endpoint implements Comparable<Endpoint> {
     /**
      * The HTTP method
      */
-    private H.Method method;
+    private H.Method httpMethod;
 
     /**
      * The URL path
@@ -185,9 +187,10 @@ public class Endpoint implements Comparable<Endpoint> {
 
     private String sampleJsonPost;
     private String sampleQuery;
+    private Class<?> controllerClass;
 
-    Endpoint(int port, H.Method method, String path, RequestHandler handler) {
-        this.method = $.notNull(method);
+    Endpoint(int port, H.Method httpMethod, String path, RequestHandler handler) {
+        this.httpMethod = $.notNull(httpMethod);
         this.path = $.notNull(path);
         this.handler = handler.toString();
         this.port = port;
@@ -200,11 +203,22 @@ public class Endpoint implements Comparable<Endpoint> {
         if (0 != n) {
             return n;
         }
-        return method.ordinal() - o.method.ordinal();
+        return httpMethod.ordinal() - o.httpMethod.ordinal();
     }
 
     public String getId() {
         return id;
+    }
+
+    /**
+     * Returns extends id. This is the concatenation of
+     * {@link #httpMethod} and {@link #id}. This will
+     * be used by the frontend UI.
+     *
+     * @return the extended id
+     */
+    public String getXid() {
+        return S.concat(httpMethod, id.replace('.', '_'));
     }
 
     public Scheme getScheme() {
@@ -215,8 +229,8 @@ public class Endpoint implements Comparable<Endpoint> {
         return port;
     }
 
-    public H.Method getMethod() {
-        return method;
+    public H.Method getHttpMethod() {
+        return httpMethod;
     }
 
     public String getPath() {
@@ -229,6 +243,10 @@ public class Endpoint implements Comparable<Endpoint> {
 
     public String getDescription() {
         return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     public List<ParamInfo> getParams() {
@@ -258,6 +276,10 @@ public class Endpoint implements Comparable<Endpoint> {
         return sampleQuery;
     }
 
+    public Class<?> controllerClass() {
+        return controllerClass;
+    }
+
     private void explore(RequestHandler handler) {
         RequestHandlerProxy proxy = $.cast(handler);
         ReflectedHandlerInvoker invoker = $.cast(proxy.actionHandler().invoker());
@@ -272,16 +294,10 @@ public class Endpoint implements Comparable<Endpoint> {
         if (!Modifier.isStatic(method.getModifiers())) {
             exploreParamInfo(controllerClass);
         }
+        this.controllerClass = controllerClass;
     }
 
     private String methodDescription(Method method) {
-        if (Act.isDev()) {
-            DevModeClassLoader cl = $.cast(Act.app().classLoader());
-            Source source = cl.source(method.getDeclaringClass());
-            if (null != source) {
-                // TODO find method description from comments in source file
-            }
-        }
         return id(method);
     }
 
@@ -325,7 +341,7 @@ public class Endpoint implements Comparable<Endpoint> {
                 } else {
                     sample = generateSampleData(info.beanSpec, new HashSet<Class<?>>());
                 }
-                if (H.Method.GET == this.method) {
+                if (H.Method.GET == this.httpMethod) {
                     String query = generateSampleQuery(info.beanSpec, info.bindName);
                     if (S.notBlank(query)) {
                         sampleQuery.add(query);
@@ -378,7 +394,7 @@ public class Endpoint implements Comparable<Endpoint> {
             }
             return new ParamInfo(name, BeanSpec.of(String.class, Act.injector()), name + " id");
         }
-        String description = spec.rawType().getSimpleName();
+        String description = "";
         Description descAnno = spec.getAnnotation(Description.class);
         if (null != descAnno) {
             description = descAnno.value();

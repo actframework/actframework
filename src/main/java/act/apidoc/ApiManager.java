@@ -23,9 +23,11 @@ package act.apidoc;
 import static act.controller.Controller.Util.renderJson;
 
 import act.Act;
-import act.app.ActionContext;
-import act.app.App;
-import act.app.AppServiceBase;
+import act.apidoc.Endpoint.ParamInfo;
+import act.apidoc.javadoc.Javadoc;
+import act.apidoc.javadoc.JavadocBlockTag;
+import act.apidoc.javadoc.JavadocParser;
+import act.app.*;
 import act.app.event.SysEventId;
 import act.app.util.NamedPort;
 import act.conf.AppConfig;
@@ -34,12 +36,24 @@ import act.handler.RequestHandlerBase;
 import act.handler.builtin.ResourceGetter;
 import act.handler.builtin.controller.RequestHandlerProxy;
 import act.route.Router;
+import com.github.javaparser.JavaParser;
+import com.github.javaparser.ast.CompilationUnit;
+import com.github.javaparser.ast.Node;
+import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
+import com.github.javaparser.ast.body.MethodDeclaration;
+import com.github.javaparser.ast.body.TypeDeclaration;
+import com.github.javaparser.ast.comments.Comment;
+import com.github.javaparser.ast.comments.JavadocComment;
+import com.github.javaparser.ast.expr.AnnotationExpr;
+import org.osgl.$;
 import org.osgl.http.H;
 import org.osgl.logging.LogManager;
 import org.osgl.logging.Logger;
+import org.osgl.util.C;
+import org.osgl.util.IO;
+import org.osgl.util.S;
 
-import java.util.SortedSet;
-import java.util.TreeSet;
+import java.util.*;
 
 /**
  * Keep track endpoints defined in the system
@@ -77,26 +91,119 @@ public class ApiManager extends AppServiceBase<ApiManager> {
     }
 
     public void load(App app) {
-        Act.LOGGER.info("start compiling API book");
+        LOGGER.info("start compiling API book");
         Router router = app.router();
         AppConfig config = app.config();
-        load(router, null, config);
+        Set<Class> controllerClasses = new HashSet<>();
+        load(router, null, config, controllerClasses);
         for (NamedPort port : app.config().namedPorts()) {
             router = app.router(port);
-            load(router, port, config);
+            load(router, port, config, controllerClasses);
+        }
+        if (Act.isDev()) {
+            exploreDescriptions(controllerClasses);
         }
     }
 
-    private void load(Router router, NamedPort port, AppConfig config) {
+    private void load(Router router, NamedPort port, AppConfig config, final Set<Class> controllerClasses) {
         final int portNumber = null == port ? config.httpExternalPort() : port.port();
+        final boolean isDev = Act.isDev();
         router.accept(new Router.Visitor() {
             @Override
             public void visit(H.Method method, String path, RequestHandler handler) {
                 if ((handler instanceof RequestHandlerProxy)) {
-                    endpoints.add(new Endpoint(portNumber, method, path, handler));
+                    Endpoint endpoint = new Endpoint(portNumber, method, path, handler);
+                    endpoints.add(endpoint);
+                    if (isDev) {
+                        controllerClasses.add(endpoint.controllerClass());
+                    }
                 }
             }
         });
+    }
+
+    private void exploreDescriptions(Set<Class> controllerClasses) {
+        DevModeClassLoader cl = $.cast(Act.app().classLoader());
+        Map<String, Javadoc> methodJavaDocs = new HashMap<>();
+        for (Class controllerClass: controllerClasses) {
+            Source src = cl.source(controllerClass);
+            if (null == src) {
+                continue;
+            }
+            try {
+                CompilationUnit compilationUnit = JavaParser.parse(IO.reader(src.code()), true);
+                List<TypeDeclaration> types = compilationUnit.getTypes();
+                for (TypeDeclaration type : types) {
+                    if (type instanceof ClassOrInterfaceDeclaration) {
+                        exploreDeclaration((ClassOrInterfaceDeclaration) type, methodJavaDocs, "");
+                    }
+                }
+            } catch (Exception e) {
+                LOGGER.warn(e, "error parsing source for " + controllerClass);
+            }
+        }
+        for (Endpoint endpoint : endpoints) {
+            Javadoc javadoc = methodJavaDocs.get(endpoint.getId());
+            if (null != javadoc) {
+                String desc = javadoc.getDescription().toText();
+                if (S.notBlank(desc)) {
+                    endpoint.setDescription(desc);
+                }
+                List<ParamInfo> params = endpoint.getParams();
+                if (params.isEmpty()) {
+                    continue;
+                }
+                Map<String, ParamInfo> paramLookup = new HashMap<>();
+                for (ParamInfo param : params) {
+                    paramLookup.put(param.getName(), param);
+                }
+                List<JavadocBlockTag> blockTags = javadoc.getBlockTags();
+                for (JavadocBlockTag tag : blockTags) {
+                    if ("param".equals(tag.getTagName())) {
+                        String paramName = tag.getName().get();
+                        ParamInfo paramInfo = paramLookup.get(paramName);
+                        if (null != paramInfo) {
+                            paramInfo.setDescription(tag.getContent().toText());
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private static final Set<String> actionAnnotations = C.set("Action", "GetAction", "PostAction", "PutAction", "DeleteAction");
+
+    private void exploreDeclaration(ClassOrInterfaceDeclaration classDeclaration, Map<String, Javadoc> methodJavaDocs, String prefix) {
+        String className = classDeclaration.getName();
+        String newPrefix = S.blank(prefix) ? className : S.concat(prefix, ".", className);
+        for (Node node : classDeclaration.getChildrenNodes()) {
+            if (node instanceof ClassOrInterfaceDeclaration) {
+                exploreDeclaration((ClassOrInterfaceDeclaration) node, methodJavaDocs, newPrefix);
+            } else if (node instanceof MethodDeclaration) {
+                MethodDeclaration methodDeclaration = (MethodDeclaration) node;
+                List<AnnotationExpr> annoList = methodDeclaration.getAnnotations();
+                boolean needJavadoc = false;
+                if (null != annoList && !annoList.isEmpty()) {
+                    for (AnnotationExpr anno : annoList) {
+                        String annoName = anno.getName().getName();
+                        if (actionAnnotations.contains(annoName)) {
+                            needJavadoc = true;
+                            break;
+                        }
+                    }
+                }
+                if (!needJavadoc) {
+                    continue;
+                }
+                Comment comment = methodDeclaration.getComment();
+                if (!(comment instanceof JavadocComment)) {
+                    continue;
+                }
+                JavadocComment javadocComment = (JavadocComment) comment;
+                Javadoc javadoc = JavadocParser.parse(javadocComment);
+                methodJavaDocs.put(S.concat(newPrefix, ".", methodDeclaration.getName()), javadoc);
+            }
+        }
     }
 
     private class GetEndpointsHandler extends RequestHandlerBase {

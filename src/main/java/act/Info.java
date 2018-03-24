@@ -20,6 +20,9 @@ package act;
  * #L%
  */
 
+import static act.util.ByteBuffers.wrap;
+
+import act.apidoc.Description;
 import act.app.ActionContext;
 import act.app.App;
 import act.cli.Command;
@@ -34,12 +37,10 @@ import org.osgl.mvc.annotation.GetAction;
 import org.osgl.util.C;
 import org.osgl.util.S;
 
-import javax.inject.Inject;
-import javax.inject.Singleton;
 import java.nio.ByteBuffer;
 import java.util.Map;
-
-import static act.util.ByteBuffers.wrap;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 
 @Singleton
 @SuppressWarnings("unused")
@@ -92,12 +93,14 @@ public class Info {
 
     @GetAction("info")
     @NonBlock
+    @Description("Show application info including version, scan package, base dir and profile")
     public void show(ActionContext context) {
         info.applyTo(context);
     }
 
     @GetAction("pid")
     @NonBlock
+    @Description("Get process id")
     public void pid(ActionContext context) {
         pid.applyTo(context);
     }
@@ -105,6 +108,7 @@ public class Info {
     @NonBlock
     @JsonView
     @GetAction("version")
+    @Description("Get version info in JSON format. This include both application version and actframework version.")
     public void version(ActionContext context) {
         version.applyTo(context);
     }

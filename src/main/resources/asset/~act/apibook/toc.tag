@@ -5,25 +5,25 @@
                 <li class="toc">GET</li>
                 <virtual each="{GET}">
                     <li>
-                        <a href="#{id}" title="{description}">{path}</a>
+                        <a href="#{xid}" title="{description}">{path}</a>
                     </li>
                 </virtual>
                 <li class="toc">POST</li>
                 <virtual each="{POST}">
                     <li>
-                        <a href="#{id}" title="{description}">{path}</a>
+                        <a href="#{xid}" title="{description}">{path}</a>
                     </li>
                 </virtual>
                 <li class="toc">PUT</li>
                 <virtual each="{PUT}">
                     <li>
-                        <a href="#{id}" title="{description}">{path}</a>
+                        <a href="#{xid}" title="{description}">{path}</a>
                     </li>
                 </virtual>
                 <li class="toc">DELETE</li>
                 <virtual each="{DELETE}">
                     <li>
-                        <a href="#{id}" title="{description}">{path}</a>
+                        <a href="#{xid}" title="{description}">{path}</a>
                     </li>
                 </virtual>
             </ul>
@@ -84,7 +84,7 @@
         self.buildTree = function(endpoints) {
             for (var i = 0, j = endpoints.length; i < j; ++i) {
                 var endpoint = endpoints[i]
-                var handlers = self[endpoint.method]
+                var handlers = self[endpoint.httpMethod]
                 if (!handlers) {
                     continue
                 }
