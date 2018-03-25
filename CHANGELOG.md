@@ -1,6 +1,11 @@
 # ActFramework Change Log
 
-**1.8.2**
+**1.8.2** 25/Mar/2018
+* update osgl-tool to 1.8.2
+* update osgl-http to 1.5.1
+* update osgl-mvc to 1.5.3
+* update osgl-cache to 1.3.2
+* update osgl-logging to 1.1.2
 * Allow output session token expiration time through response header #575
 * API Doc - parsing JavaDoc to generate descriptive content #576
 * API doc index not correct #573
