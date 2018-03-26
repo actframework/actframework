@@ -28,8 +28,6 @@ import org.osgl.exception.ConfigurationException;
 import org.osgl.logging.LogManager;
 import org.osgl.logging.Logger;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.ServerSocket;
@@ -41,6 +39,8 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicBoolean;
+import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
 
 /**
  * Servicing CLI session
@@ -84,7 +84,7 @@ public class CliServer extends AppServiceBase<CliServer> implements Runnable {
             try {
                 socket = serverSocket.accept();
                 InetAddress addr = socket.getInetAddress();
-                if (!addr.isLoopbackAddress()) {
+                if (!addr.isLoopbackAddress() && !addr.isSiteLocalAddress() && !addr.isLinkLocalAddress()) {
                     logger.warn("remote connection request rejected: " + addr.getHostAddress());
                     socket.close();
                     continue;

@@ -1,5 +1,8 @@
 # ActFramework Change Log
 
+**1.8.3** 27/Mar/2018
+* `CliServer` - allow site local ip to access #577
+
 **1.8.2** 25/Mar/2018
 * update osgl-tool to 1.8.2
 * update osgl-http to 1.5.1
