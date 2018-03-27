@@ -24,6 +24,7 @@ import static act.apidoc.javadoc.Utils.nextWord;
 
 import com.github.javaparser.ast.comments.JavadocComment;
 import org.osgl.util.S;
+import org.osgl.util.VM;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -150,7 +151,10 @@ public class JavadocParser {
      * @return content with all kinds of EOL characters replaced by endOfLineCharacter
      */
     public static String normalizeEolInTextBlock(String content, String endOfLineCharacter) {
-        return content
-                .replaceAll("\\R", endOfLineCharacter);
+        String regex = "\\R";
+        if (VM.VERSION < 8) {
+            regex = "[(\\r\\n)\\n\\r]";
+        }
+        return content.replaceAll(regex, endOfLineCharacter);
     }
 }
