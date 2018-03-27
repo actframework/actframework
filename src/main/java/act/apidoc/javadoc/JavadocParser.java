@@ -109,11 +109,11 @@ public class JavadocParser {
                 if (line.length() > (asteriskIndex + 1)) {
                     char c = line.charAt(asteriskIndex + 1);
                     if (c == ' ' || c == '\t') {
-                        cleanedLines.add(S.trim(line.substring(asteriskIndex + 2)));
+                        cleanedLines.add(line.substring(asteriskIndex + 2));
                         continue;
                     }
                 }
-                cleanedLines.add(S.trim(line.substring(asteriskIndex + 1)));
+                cleanedLines.add(line.substring(asteriskIndex + 1));
             }
         }
         // if the first starts with a space, remove it

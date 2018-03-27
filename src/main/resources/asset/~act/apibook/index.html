@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>apibook - { appName } </title>
+    <link rel="stylesheet" href="/~/asset/css/highlight.min.css">
     <style>
         body {
             background-color: #222;
@@ -44,6 +45,10 @@
 <script src="/~/asset/js/jquery.js"></script>
 <script src="/~/asset/js/jquery.ext.js"></script>
 <script src="/~/asset/js/riotjs.js"></script>
+<script src="/~/asset/js/highlight.min.js"></script>
+<script src="/~/asset/js/highlight.java.min.js"></script>
+<script src="/~/asset/js/markdown-it.min.js"></script>
+<script type="riot/tag" src="/~/asset/apibook/raw.tag"></script>
 <script type="riot/tag" src="/~/asset/apibook/apibook.tag"></script>
 <script type="riot/tag" src="/~/asset/apibook/endpoint_list.tag"></script>
 <script type="riot/tag" src="/~/asset/apibook/toc.tag"></script>
@@ -53,6 +58,21 @@
     }
     riot.store = new Store()
     riot.mount('*');
+    riot.md = markdownit({
+        html: true,
+        highlight: function (code, lang) {
+            if (lang && hljs.getLanguage(lang)) {
+                try {
+                    return hljs.highlight(lang, code).value;
+                } catch (__) {}
+            } else {
+                console.log("lang not supported: " + lang)
+            }
+
+            return ''; // use external default escaping
+        }
+    });
+
 </script>
 </body>
 </html>

@@ -1,5 +1,8 @@
 # ActFramework Change Log
 
+**1.8.4** 28/Mar/2018
+* API doc enhancement - support markdown syntax in description #579
+
 **1.8.3** 27/Mar/2018
 * `CliServer` - allow site local ip to access #577
 

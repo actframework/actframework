@@ -2,7 +2,7 @@
     <div class="endpoint" each={ endpoints }>
         <a class="id" id="{ xid }">&nbsp;</a>
         <pre class="code">[{ httpMethod }] { path }</pre>
-        <div class="desc">{ description }</div>
+        <div class="desc"><raw html={ richDesc }></raw></div>
         <div class="param-list">
             <h4>Parameters</h4>
             <div class="param-list-body">
@@ -118,6 +118,27 @@
             font-weight: 300;
         }
 
+        .endpoint > .desc h1, .endpoint > .desc h2, .endpoint > .desc h3, .endpoint > .desc h4 {
+            font-weight: bold;
+        }
+
+        .endpoint > .desc h1 {
+            font-size: 20px;
+        }
+        .endpoint > .desc h2 {
+            font-size: 18px;
+        }
+        .endpoint > .desc h3 {
+            font-size: 16px;
+        }
+        .endpoint > .desc h4, .endpoint > .desc h5 {
+            font-size: 14px;
+        }
+
+        .endpoint > .desc code {
+            font-size: 14px;
+        }
+
         pre.code {
             padding: 10pt;
             background: #444;
@@ -138,6 +159,7 @@
         #bottom-padding {
             padding-bottom: 1024px;
         }
+
     </style>
     <script>
         var self = this
@@ -148,6 +170,10 @@
         })
         fetchEndpoints() {
             $.getJSON('/~/apibook/endpoint', function(endpoints) {
+                for(var i = 0, j = endpoints.length; i < j; ++i) {
+                    var endpoint = endpoints[i];
+                    endpoint.richDesc = riot.md.render(endpoint.description);
+                }
                 self.endpoints = endpoints
                 self.update()
                 riot.store.trigger('endpoints-fetched', endpoints);
