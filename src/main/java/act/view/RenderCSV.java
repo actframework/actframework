@@ -26,12 +26,12 @@ import act.route.UrlPath;
 import act.util.ActContext;
 import act.util.PropertySpec;
 import org.osgl.$;
-import org.osgl.Osgl;
 import org.osgl.exception.NotAppliedException;
 import org.osgl.http.H;
 import org.osgl.mvc.result.RenderContent;
-import org.osgl.util.Output;
 import org.osgl.util.S;
+
+import java.io.Writer;
 
 /**
  * Render object as CSV
@@ -45,7 +45,7 @@ public class RenderCSV extends RenderContent {
         }
 
         @Override
-        public $.Visitor<Output> contentWriter() {
+        public $.Visitor<Writer> contentWriter() {
             return payload().contentWriter;
         }
 
@@ -60,28 +60,28 @@ public class RenderCSV extends RenderContent {
     }
 
     public RenderCSV(final Object v, final PropertySpec.MetaInfo spec, final ActContext context) {
-        super(new $.Visitor<Output>() {
+        super(new $.Visitor<Writer>() {
             @Override
-            public void visit(Output output) throws Osgl.Break {
-                render(output, v, spec, context);
+            public void visit(Writer writer) throws $.Break {
+                render(writer, v, spec, context);
             }
         }, H.Format.CSV);
     }
 
     public RenderCSV(H.Status status, final Object v, final PropertySpec.MetaInfo spec, final ActContext context) {
-        super(status, new $.Visitor<Output>() {
+        super(status, new $.Visitor<Writer>() {
             @Override
-            public void visit(Output output) throws Osgl.Break {
-                render(output, v, spec, context);
+            public void visit(Writer writer) throws $.Break {
+                render(writer, v, spec, context);
             }
         }, H.Format.CSV);
     }
 
     public static RenderCSV of(final Object v, final PropertySpec.MetaInfo spec, final ActContext context) {
-        touchPayload().contentWriter(new $.Visitor<Output>() {
+        touchPayload().contentWriter(new $.Visitor<Writer>() {
             @Override
-            public void visit(Output output) throws Osgl.Break {
-                render(output, v, spec, context);
+            public void visit(Writer writer) throws $.Break {
+                render(writer, v, spec, context);
             }
         });
         return _INSTANCE;
@@ -90,18 +90,18 @@ public class RenderCSV extends RenderContent {
     public static RenderCSV of(H.Status status, final Object v, final PropertySpec.MetaInfo spec, final ActionContext context) {
         Payload payload = touchPayload().status(status);
         if (context.isLargeResponse()) {
-            payload.contentWriter(new $.Visitor<Output>() {
+            payload.contentWriter(new $.Visitor<Writer>() {
                 @Override
-                public void visit(Output output) throws Osgl.Break {
-                    render(output, v, spec, context);
+                public void visit(Writer writer) throws $.Break {
+                    render(writer, v, spec, context);
                 }
             });
         } else {
             payload.stringContentProducer(new $.Func0<String>() {
                 @Override
-                public String apply() throws NotAppliedException, Osgl.Break {
+                public String apply() throws NotAppliedException, $.Break {
                     S.Buffer buf = S.buffer();
-                    render(buf, v, spec, context);
+                    render($.convert(buf).to(Writer.class), v, spec, context);
                     return buf.toString();
                 }
             });
@@ -109,9 +109,9 @@ public class RenderCSV extends RenderContent {
         return _INSTANCE;
     }
 
-    private static void render(Output output, Object v, PropertySpec.MetaInfo spec, ActContext context) {
+    private static void render(Writer writer, Object v, PropertySpec.MetaInfo spec, ActContext context) {
         setDownloadHeader(context);
-        CliView.CSV.render(output, v, spec, context);
+        CliView.CSV.render(writer, v, spec, context);
     }
 
     private static void setDownloadHeader(ActContext context) {

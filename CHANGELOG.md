@@ -1,5 +1,11 @@
 # ActFramework Change Log
 
+
+**1.8.5**
+* Support output binary content by returning `byte[]` #586
+* It cannot direct output text or binary content #585
+* update osgl-tool to 1.9.0
+
 **1.8.4** 28/Mar/2018
 * API doc pattern compilation error on Java7 #584
 * API doc enhancement - support markdown syntax in description #579

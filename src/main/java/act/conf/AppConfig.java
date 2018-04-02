@@ -145,12 +145,12 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         }
 
         MvcConfig.renderJsonOutputCharset(renderJsonOutputCharset());
-        Osgl.Func0<H.Format> jsonContentProvider = jsonContentTypeProvider();
+        $.Func0<H.Format> jsonContentProvider = jsonContentTypeProvider();
         if (null != jsonContentTypeProvider) {
             MvcConfig.jsonMediaTypeProvider(jsonContentProvider);
         }
 
-        OsglConfig.setStringBufferRententionLimit(strBufRetentionLimit());
+        OsglConfig.setThreadLocalBufferLimit(strBufRetentionLimit());
     }
 
     public App app() {

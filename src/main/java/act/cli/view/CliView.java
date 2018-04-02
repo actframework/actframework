@@ -32,12 +32,10 @@ import act.util.ActContext;
 import act.util.JsonUtilConfig;
 import act.util.PropertySpec;
 import org.osgl.$;
-import org.osgl.util.C;
-import org.osgl.util.E;
-import org.osgl.util.Output;
-import org.osgl.util.S;
+import org.osgl.util.*;
 import org.rythmengine.utils.Escape;
 
+import java.io.Writer;
 import java.util.*;
 
 /**
@@ -51,7 +49,7 @@ public enum CliView {
     TABLE() {
         @Override
         @SuppressWarnings("unchecked")
-        public void render(Output output, Object result, PropertySpec.MetaInfo spec, ActContext context) {
+        public void render(Writer writer, Object result, PropertySpec.MetaInfo spec, ActContext context) {
 
             if (null == result) {
                 return;
@@ -101,7 +99,7 @@ public enum CliView {
                 itemsFound = cursor.records();
                 appendix = cursor.hasNext() ? "\nType \"it\" for more" : "";
             }
-            output.append(S.concat(tableString, "Items found: ", S.string(itemsFound), appendix));
+            IO.write(S.concat(tableString, "Items found: ", S.string(itemsFound), appendix), writer);
         }
 
     },
@@ -119,25 +117,25 @@ public enum CliView {
      */
     TREE() {
         @Override
-        public void render(Output output, Object result, PropertySpec.MetaInfo spec, ActContext context) {
+        public void render(Writer writer, Object result, PropertySpec.MetaInfo spec, ActContext context) {
             if (result instanceof TreeNode) {
-                toTreeString(output, (TreeNode) result);
+                toTreeString(writer, (TreeNode) result);
             } else if (result instanceof Iterable) {
-                TABLE.render(output, result, spec, context);
+                TABLE.render(writer, result, spec, context);
             } else if (null != spec) {
-                JSON.render(output, result, spec, context);
+                JSON.render(writer, result, spec, context);
             } else {
-                output.append(S.string(result));
+                IO.write(S.string(result), writer);
             }
         }
 
-        private void toTreeString(Output output, TreeNode result) {
-            buildTree(output, result, "", true);
+        private void toTreeString(Writer writer, TreeNode result) {
+            buildTree(writer, result, "", true);
         }
 
-        private void buildTree(Output output, TreeNode node, String prefix, boolean isTrail) {
+        private void buildTree(Writer writer, TreeNode node, String prefix, boolean isTrail) {
             StringBuilder sb = S.newBuilder().append(prefix).append(isTrail ? "└── " : "├── ").append(node.label()).append("\n");
-            output.append(sb);
+            IO.write(sb, writer);
             List<TreeNode> children = node.children();
             int sz = children.size();
             if (sz == 0) {
@@ -146,9 +144,9 @@ public enum CliView {
             final String subPrefix = S.newBuilder().append(prefix).append(isTrail ? "    " : "│   ").toString();
             for (int i = 0; i < sz - 1; ++i) {
                 TreeNode child = children.get(i);
-                buildTree(output, child, subPrefix, false);
+                buildTree(writer, child, subPrefix, false);
             }
-            buildTree(output, children.get(sz - 1), subPrefix, true);
+            buildTree(writer, children.get(sz - 1), subPrefix, true);
         }
     },
 
@@ -157,7 +155,7 @@ public enum CliView {
      */
     XML() {
         @Override
-        public void render(Output output, Object result, PropertySpec.MetaInfo spec, ActContext context) {
+        public void render(Writer writer, Object result, PropertySpec.MetaInfo spec, ActContext context) {
             throw E.unsupport();
         }
     },
@@ -167,12 +165,12 @@ public enum CliView {
      */
     JSON() {
         @Override
-        public void render(Output output, Object result, PropertySpec.MetaInfo spec, ActContext context) {
-            render(output, result, spec, context, context instanceof CliContext);
+        public void render(Writer writer, Object result, PropertySpec.MetaInfo spec, ActContext context) {
+            render(writer, result, spec, context, context instanceof CliContext);
         }
 
-        public void render(Output output, Object result, PropertySpec.MetaInfo spec, ActContext context, boolean format) {
-            new JsonUtilConfig.JsonWriter(result, spec, format, context).apply(output);
+        public void render(Writer writer, Object result, PropertySpec.MetaInfo spec, ActContext context, boolean format) {
+            new JsonUtilConfig.JsonWriter(result, spec, format, context).apply(writer);
         }
     },
 
@@ -181,22 +179,22 @@ public enum CliView {
      */
     TO_STRING() {
         @Override
-        public void render(Output output, Object result, PropertySpec.MetaInfo filter, ActContext context) {
+        public void render(Writer writer, Object result, PropertySpec.MetaInfo filter, ActContext context) {
             if (result instanceof Iterable) {
-                TABLE.render(output, result, filter, context);
+                TABLE.render(writer, result, filter, context);
             } else if (result instanceof TreeNode) {
-                TREE.render(output, result, filter, context);
+                TREE.render(writer, result, filter, context);
             } else if (null != filter) {
-                JSON.render(output, result, filter, context);
+                JSON.render(writer, result, filter, context);
             } else {
-                output.append(S.string(result));
+                IO.write(S.string(result), writer);
             }
         }
     },
 
     CSV() {
         @Override
-        public void render(Output output, Object result, PropertySpec.MetaInfo spec, ActContext context) {
+        public void render(Writer writer, Object result, PropertySpec.MetaInfo spec, ActContext context) {
             if (null == result) {
                 return;
             }
@@ -239,13 +237,13 @@ public enum CliView {
                 spec.onValue("-not_exists");
             }
             List<String> outputFields = repo.outputFields(spec, componentType, context);
-            output.append(buildHeaderLine(outputFields, spec.labelMapping()));
-            output.append($.OS.lineSeparator());
-            output.append(buildDataLine(firstElement, outputFields));
+            IO.write(buildHeaderLine(outputFields, spec.labelMapping()), writer);
+            IO.write($.OS.lineSeparator(), writer);
+            IO.write(buildDataLine(firstElement, outputFields), writer);
             while (iterator.hasNext()) {
-                output.append($.OS.lineSeparator());
-                output.append(buildDataLine(iterator.next(), outputFields));
-                output.flush();
+                IO.write($.OS.lineSeparator(), writer);
+                IO.write(buildDataLine(iterator.next(), outputFields), writer);
+                IO.flush(writer);
             }
         }
 
@@ -303,13 +301,13 @@ public enum CliView {
 
     };
 
-    public void render(Output out, Object result, PropertySpec.MetaInfo spec, ActContext context) {
+    public void render(Writer writer, Object result, PropertySpec.MetaInfo spec, ActContext context) {
         throw E.unsupport();
     }
 
     public final String render(Object result, PropertySpec.MetaInfo spec, ActContext context) {
         S.Buffer sb = S.buffer();
-        render(sb, result, spec, context);
+        render($.convert(sb).to(Writer.class), result, spec, context);
         return sb.toString();
     }
 

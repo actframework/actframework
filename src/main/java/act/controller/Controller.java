@@ -33,7 +33,6 @@ import act.util.JsonUtilConfig.JsonWriter;
 import act.util.PropertySpec;
 import act.view.*;
 import org.osgl.$;
-import org.osgl.Osgl;
 import org.osgl.http.H;
 import org.osgl.mvc.result.*;
 import org.osgl.storage.ISObject;
@@ -1331,7 +1330,7 @@ public @interface Controller {
         }
 
         /**
-         * Alias of {@link #binary(Osgl.Visitor)}
+         * Alias of {@link #binary($.Visitor)}
          *
          * @param outputStreamWriter
          *         the delayed writer
@@ -1543,9 +1542,18 @@ public @interface Controller {
         public static Result inferPrimitiveResult(Object v, ActionContext actionContext, boolean requireJSON, boolean requireXML, boolean isArray) {
             H.Status status = actionContext.successStatus();
             if (requireJSON) {
+                if (isArray) {
+                    return RenderJSON.of(status, $.toString2(v));
+                }
                 return RenderJSON.of(status, C.Map("result", v));
             } else if (requireXML) {
                 return RenderXML.of(status, S.concat("<result>", S.string(v), "</result>"));
+            } else if (v instanceof byte[]) {
+                H.Format fmt = actionContext.accept();
+                if (H.Format.UNKNOWN == fmt) {
+                    actionContext.resp().contentType("application/octet-stream");
+                }
+                return new RenderBinary((byte[]) v);
             } else {
                 H.Format fmt = actionContext.accept();
                 if (HTML == fmt || H.Format.UNKNOWN == fmt) {

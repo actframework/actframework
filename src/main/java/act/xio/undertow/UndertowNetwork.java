@@ -42,7 +42,6 @@ import org.xnio.channels.AcceptingChannel;
 import org.xnio.ssl.SslConnection;
 import org.xnio.ssl.XnioSsl;
 
-import javax.net.ssl.*;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.InetSocketAddress;
@@ -51,6 +50,7 @@ import java.nio.file.Paths;
 import java.security.KeyStore;
 import java.util.ArrayList;
 import java.util.List;
+import javax.net.ssl.*;
 
 /**
  * Implement {@link Network} using undertow
@@ -132,8 +132,8 @@ public class UndertowNetwork extends NetworkBase {
     }
 
     private XnioWorker createWorker() throws IOException {
-        ioThreads = Runtime.getRuntime().availableProcessors() * 2;
-        int workerThreads = ioThreads * 8;
+        ioThreads = Act.isDev() ? 2 : Runtime.getRuntime().availableProcessors() * 2;
+        int workerThreads = Act.isDev() ? 4 : ioThreads * 8;
         int maxWorkerThreads = Act.conf().xioMaxWorkerThreads();
         if (maxWorkerThreads > 0) {
             workerThreads = Math.min(maxWorkerThreads, workerThreads);

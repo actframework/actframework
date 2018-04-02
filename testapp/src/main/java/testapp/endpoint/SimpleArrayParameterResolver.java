@@ -1,11 +1,10 @@
 package testapp.endpoint;
 
 import act.controller.Controller;
-import org.osgl.http.H;
+import act.util.JsonView;
 import org.osgl.mvc.annotation.Action;
 import testapp.model.RGB;
 
-import java.lang.annotation.ElementType;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.List;
@@ -40,6 +39,7 @@ public class SimpleArrayParameterResolver extends Controller.Util {
     }
 
     @Action("byte_pa")
+    @JsonView
     public byte[] bytePA(byte[] v) {
         return v;
     }

@@ -25,7 +25,6 @@ import static com.alibaba.fastjson.JSON.DEFAULT_GENERATE_FEATURE;
 import act.app.App;
 import act.cli.util.MappedFastJsonNameFilter;
 import act.data.DataPropertyRepository;
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.parser.ParserConfig;
 import com.alibaba.fastjson.serializer.*;
 import org.joda.time.DateTime;
@@ -40,10 +39,7 @@ import org.osgl.storage.ISObject;
 import org.osgl.storage.impl.SObject;
 import org.osgl.util.*;
 
-import java.io.IOException;
-import java.io.OutputStream;
 import java.io.Writer;
-import java.nio.charset.StandardCharsets;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -51,7 +47,7 @@ import java.util.Set;
 
 public class JsonUtilConfig {
 
-    public static class JsonWriter extends $.Visitor<org.osgl.util.Output> {
+    public static class JsonWriter extends $.Visitor<Writer> {
 
         private final Object v;
         private SerializerFeature[] features;
@@ -166,24 +162,12 @@ public class JsonUtilConfig {
         }
 
         @Override
-        public void visit(org.osgl.util.Output output) throws Osgl.Break {
-            try {
-                if (v instanceof CharSequence) {
-                    output.append((CharSequence) v);
-                    return;
-                }
-                if (output instanceof OutputStream) {
-                    OutputStream os = (OutputStream) output;
-                    JSON.writeJSONString(os, StandardCharsets.UTF_8, v, SerializeConfig.globalInstance, filters, dateFormatPattern, DEFAULT_GENERATE_FEATURE, features);
-                } else if (output instanceof Writer) {
-                    Writer w = (Writer) output;
-                    writeJson(w, v, SerializeConfig.globalInstance, filters, dateFormatPattern, DEFAULT_GENERATE_FEATURE, features);
-                } else {
-                    writeJson(output.asWriter(), v, SerializeConfig.globalInstance, filters, dateFormatPattern, DEFAULT_GENERATE_FEATURE, features);
-                }
-            } catch (IOException e) {
-                throw E.ioException(e);
+        public void visit(Writer writer) throws $.Break {
+            if (v instanceof CharSequence) {
+                IO.write((CharSequence) v, writer);
+                return;
             }
+            writeJson(writer, v, SerializeConfig.globalInstance, filters, dateFormatPattern, DEFAULT_GENERATE_FEATURE, features);
         }
 
         public $.Func0<String> asContentProducer() {
@@ -192,7 +176,7 @@ public class JsonUtilConfig {
                 @Override
                 public String apply() throws NotAppliedException, Osgl.Break {
                     S.Buffer buf = S.buffer();
-                    me.visit(buf);
+                    me.visit($.convert(buf).to(Writer.class));
                     return buf.toString();
                 }
             };
@@ -233,10 +217,10 @@ public class JsonUtilConfig {
         parserConfig.putDeserializer(ISObject.class, sObjectCodec);
         parserConfig.putDeserializer(SObject.class, sObjectCodec);
 
-        MvcConfig.jsonSerializer(new $.Func2<org.osgl.util.Output, Object, Void>() {
+        MvcConfig.jsonSerializer(new $.Func2<Writer, Object, Void>() {
             @Override
-            public Void apply(org.osgl.util.Output appendable, Object v) throws NotAppliedException, Osgl.Break {
-                new JsonWriter(v, null, false, ActContext.Base.currentContext()).apply(appendable);
+            public Void apply(Writer writer, Object v) throws NotAppliedException, $.Break {
+                new JsonWriter(v, null, false, ActContext.Base.currentContext()).apply(writer);
                 return null;
             }
         });
@@ -244,12 +228,12 @@ public class JsonUtilConfig {
 
     // FastJSON does not provide the API so we have to create our own
     private static final void writeJson(Writer os, //
-                                       Object object, //
-                                       SerializeConfig config, //
-                                       SerializeFilter[] filters, //
-                                       String dateFormat, //
-                                       int defaultFeatures, //
-                                       SerializerFeature... features) {
+                                        Object object, //
+                                        SerializeConfig config, //
+                                        SerializeFilter[] filters, //
+                                        String dateFormat, //
+                                        int defaultFeatures, //
+                                        SerializerFeature... features) {
         SerializeWriter writer = new SerializeWriter(os, defaultFeatures, features);
 
         try {

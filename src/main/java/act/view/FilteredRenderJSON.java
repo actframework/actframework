@@ -31,6 +31,8 @@ import org.osgl.mvc.result.RenderContent;
 import org.osgl.mvc.result.RenderJSON;
 import org.osgl.util.Output;
 
+import java.io.Writer;
+
 /**
  * An enhanced version of {@link org.osgl.mvc.result.RenderJSON} that
  * allows {@link act.util.PropertySpec} to be applied to control the
@@ -45,7 +47,7 @@ public class FilteredRenderJSON extends RenderJSON {
         }
 
         @Override
-        public $.Visitor<Output> contentWriter() {
+        public $.Visitor<Writer> contentWriter() {
             return payload().contentWriter;
         }
 
