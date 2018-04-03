@@ -108,16 +108,22 @@ public class ApiManager extends AppServiceBase<ApiManager> {
     private void load(Router router, NamedPort port, AppConfig config, final Set<Class> controllerClasses) {
         final int portNumber = null == port ? config.httpExternalPort() : port.port();
         final boolean isDev = Act.isDev();
+        final boolean hideBuiltIn = app().config().isHideBuiltInEndpointsInApiDoc();
         router.accept(new Router.Visitor() {
             @Override
             public void visit(H.Method method, String path, RequestHandler handler) {
-                if ((handler instanceof RequestHandlerProxy)) {
+                if (showEndpoint(path, handler)) {
                     Endpoint endpoint = new Endpoint(portNumber, method, path, handler);
                     endpoints.add(endpoint);
                     if (isDev) {
                         controllerClasses.add(endpoint.controllerClass());
                     }
                 }
+            }
+
+            private boolean showEndpoint(String path, RequestHandler handler) {
+                return (handler instanceof RequestHandlerProxy)
+                        && !(hideBuiltIn && path.startsWith("/~/"));
             }
         });
     }

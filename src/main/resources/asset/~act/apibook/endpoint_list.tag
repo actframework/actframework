@@ -116,6 +116,7 @@
 
         .endpoint > .desc {
             font-weight: 300;
+            max-width: 800px;
         }
 
         .endpoint > .desc h1, .endpoint > .desc h2, .endpoint > .desc h3, .endpoint > .desc h4 {

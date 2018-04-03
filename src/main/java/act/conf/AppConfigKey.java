@@ -63,6 +63,14 @@ public enum AppConfigKey implements ConfigKey {
     API_DOC_EABLED("api_doc.enabled"),
 
     /**
+     * `act.api_doc.built_in.hide` turns on/off built-in endpoints in
+     * API doc.
+     *
+     * Default value: `false`
+     */
+    API_DOC_HIDE_BUILT_IN_ENDPOINTS("api_doc.built_in.hide.enabled"),
+
+    /**
      * {@code act.basic_authentication.enabled} turn on/off Basic Authentication
      * in Act application.
      *

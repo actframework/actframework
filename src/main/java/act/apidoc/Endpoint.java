@@ -190,8 +190,8 @@ public class Endpoint implements Comparable<Endpoint> {
     private Class<?> controllerClass;
 
     Endpoint(int port, H.Method httpMethod, String path, RequestHandler handler) {
-        this.httpMethod = $.notNull(httpMethod);
-        this.path = $.notNull(path);
+        this.httpMethod = $.requireNotNull(httpMethod);
+        this.path = $.requireNotNull(path);
         this.handler = handler.toString();
         this.port = port;
         explore(handler);

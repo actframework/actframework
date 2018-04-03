@@ -186,6 +186,24 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         }
     }
 
+    private Boolean apiDocBuiltInHide;
+
+    protected T hideBuiltInEndpointsInApiDoc(boolean b) {
+        this.apiDocBuiltInHide = b;
+        return me();
+    }
+    public boolean isHideBuiltInEndpointsInApiDoc() {
+        if (null == apiDocBuiltInHide) {
+            apiDocBuiltInHide = get(API_DOC_HIDE_BUILT_IN_ENDPOINTS, false);
+        }
+        return apiDocBuiltInHide;
+    }
+    private void _mergeHideBuiltInEndpointsInApiDoc(AppConfig conf) {
+        if (!hasConfiguration(API_DOC_HIDE_BUILT_IN_ENDPOINTS)) {
+            this.apiDocBuiltInHide = conf.apiDocBuiltInHide;
+        }
+    }
+
     private Boolean basicAuth;
 
     protected T enableBasicAuthentication(boolean b) {

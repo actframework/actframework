@@ -1,7 +1,10 @@
 # ActFramework Change Log
 
+**1.8.6**
+* API Doc - make it able to hide system endpoints #589
+* API doc - set maximum length for the description width #588
 
-**1.8.5**
+**1.8.5** 02/Apr/2018
 * Support output binary content by returning `byte[]` #586
 * It cannot direct output text or binary content #585
 * update osgl-tool to 1.9.0
