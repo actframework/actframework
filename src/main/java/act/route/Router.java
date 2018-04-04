@@ -310,6 +310,16 @@ public class Router extends AppServiceBase<Router> {
         if (isTraceEnabled()) {
             trace("R+ %s %s | %s (%s)", method, path, handler, source);
         }
+        if (!app().config().builtInReqHandlerEnabled()) {
+            String sPath = path.toString();
+            if (sPath.startsWith("/~/")) {
+                // disable built-in handlers except those might impact application behaviour
+                // apibook is allowed here as it only available on dev mode
+                if (!(sPath.contains("asset") || sPath.contains("i18n") || sPath.contains("job") || sPath.contains("api") || sPath.contains("ticket"))) {
+                    return;
+                }
+            }
+        }
         Node node = _locate(method, path, handler.toString());
         if (null == node.handler) {
             Set<Node> conflicts = node.conflicts();

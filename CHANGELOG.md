@@ -1,6 +1,8 @@
 # ActFramework Change Log
 
 **1.8.6**
+* built_in_req_handler.enabled` configuration issue #590
+* It does not print warning message for app without secret configured #592
 * API Doc - failed to generate sample data for List typed embedded data structure #591
 * API Doc - make it able to hide system endpoints #589
 * API doc - set maximum length for the description width #588

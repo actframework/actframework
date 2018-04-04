@@ -291,7 +291,7 @@ public interface ActContext<CTX_TYPE extends ActContext> extends ParamValueProvi
             attributes = new HashMap<>();
             listenerList = new ArrayList<>();
             destroyableList = new ArrayList<>();
-            strBuf = S.newSizedBuffer(app.config().strBufRetentionLimit());
+            strBuf = S.newSizedBuffer(app.config().threadLocalBufRetentionLimit());
             violations = new HashMap<>();
         }
 

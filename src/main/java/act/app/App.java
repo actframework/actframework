@@ -20,6 +20,9 @@ package act.app;
  * #L%
  */
 
+import static act.app.event.SysEventId.*;
+import static org.osgl.http.H.Method.GET;
+
 import act.Act;
 import act.Destroyable;
 import act.apidoc.ApiManager;
@@ -93,15 +96,12 @@ import org.osgl.util.*;
 import org.rythmengine.utils.I18N;
 import osgl.version.Version;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Singleton;
 import java.io.File;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.util.*;
-
-import static act.app.event.SysEventId.*;
-import static org.osgl.http.H.Method.GET;
+import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Singleton;
 
 /**
  * {@code App} represents an application that is deployed in a Act container
@@ -1370,9 +1370,6 @@ public class App extends DestroyableBase {
     }
 
     private void loadBuiltInRoutes() {
-        if (!config().builtInReqHandlerEnabled()) {
-            return;
-        }
         router().addMapping(GET, "/asset/", new ResourceGetter("asset"), RouteSource.BUILD_IN);
         router().addMapping(GET, "/~/asset/", new ResourceGetter("asset/~act"), RouteSource.BUILD_IN);
         router().addMapping(GET, "/webjars/", new ResourceGetter("META-INF/resources/webjars"), RouteSource.BUILD_IN);

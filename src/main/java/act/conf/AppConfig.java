@@ -150,7 +150,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
             MvcConfig.jsonMediaTypeProvider(jsonContentProvider);
         }
 
-        OsglConfig.setThreadLocalBufferLimit(strBufRetentionLimit());
+        OsglConfig.setThreadLocalBufferLimit(threadLocalBufRetentionLimit());
     }
 
     public App app() {
@@ -1569,21 +1569,21 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         }
     }
 
-    private Integer strBufRetentionLimit;
-    protected T strBufRetentionLimit(int limit) {
-        strBufRetentionLimit = limit;
+    private Integer threadlocalBufRetentionLimit;
+    protected T threadLocalBufRetentionLimit(int limit) {
+        threadlocalBufRetentionLimit = limit;
         return me();
     }
-    public int strBufRetentionLimit() {
-        if (null == strBufRetentionLimit) {
+    public int threadLocalBufRetentionLimit() {
+        if (null == threadlocalBufRetentionLimit) {
             StrBufRetentionLimitCalculator calc = new StrBufRetentionLimitCalculator();
-            strBufRetentionLimit = get(OSGL_STRBUF_RETENTION_LIMIT, 1024 * calc.calculate());
+            threadlocalBufRetentionLimit = get(OSGL_THREADLOCAL_BUF_LIMIT, 1024 * calc.calculate());
         }
-        return strBufRetentionLimit;
+        return threadlocalBufRetentionLimit;
     }
     private void _mergeStrBufRetentionLimit(AppConfig config) {
-        if (!hasConfiguration(OSGL_STRBUF_RETENTION_LIMIT)) {
-            strBufRetentionLimit = config.strBufRetentionLimit;
+        if (!hasConfiguration(OSGL_THREADLOCAL_BUF_LIMIT)) {
+            threadlocalBufRetentionLimit = config.threadlocalBufRetentionLimit;
         }
     }
 
@@ -2348,7 +2348,7 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
     public String secret() {
         if (null == secret) {
             secret = get(AppConfigKey.SECRET, "myawesomeapp");
-            if ("myawsomeapp".equals(secret)) {
+            if ("myawesomeapp".equals(secret)) {
                 logger.warn("Application secret key not set! You are in the dangerous zone!!!");
             }
         }

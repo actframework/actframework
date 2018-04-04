@@ -273,7 +273,7 @@ public enum AppConfigKey implements ConfigKey {
     CORS_HEADERS_EXPOSE("cors.headers.expose"),
 
     /**
-     * {@code act.cors.headers.expose} specify `Access-Control-Allow-Headers`.
+     * {@code act.cors.headers.allowed} specify `Access-Control-Allow-Headers`.
      * Note this setting will overwrite the setting of {@link #CORS_HEADERS} if
      * it is set
      *
@@ -299,8 +299,8 @@ public enum AppConfigKey implements ConfigKey {
      * {@code act.content_suffix.aware.enabled}
      * <p>
      *     Once enabled then the framework automatically recognize request with content suffix.
-     *     E.g. {@code /customer/123/json} or {@code /customer/123.json} will match the
-     *     route {@code /customer/123} and set the request {@code Accept} header to
+     *     E.g. {@code /customer/123/json} will match the route {@code /customer/123}
+     *     and set the request {@code Accept} header to
      *     {@code application/json}
      * </p>
      * <p>Default value: {@code false}</p>
@@ -445,6 +445,8 @@ public enum AppConfigKey implements ConfigKey {
      * implements {@link UnknownHttpMethodProcessor} that process
      * the HTTP methods that are not recognized by {@link act.route.Router},
      * e.g. "OPTION", "PATCH" etc
+     *
+     * Default value: {@link UnknownHttpMethodProcessor#METHOD_NOT_ALLOWED}
      */
     HANDLER_UNKNOWN_HTTP_METHOD("handler.unknown_http_method.impl"),
 
@@ -584,7 +586,8 @@ public enum AppConfigKey implements ConfigKey {
     /**
      * {@code act.idgen.seq_id.provider.impl} specifies the {@link act.util.IdGenerator.SequenceProvider}
      * implementation for {@link App#idGenerator}
-     * <p>Default value: {@link act.util.IdGenerator.SequenceProvider.AtomicLongSeq}</p>
+     *
+     * Default value: {@link act.util.IdGenerator.SequenceProvider.AtomicLongSeq}
      */
     ID_GEN_SEQ_ID_PROVIDER("idgen.seq_id.provider.impl"),
 
@@ -678,24 +681,28 @@ public enum AppConfigKey implements ConfigKey {
      * {@code act.namedPorts} specifies a list of port names this
      * application listen to. These are additional ports other than
      * the default {@link #HTTP_PORT}
-     * <p/>
+     *
      * The list is specified as
-     * <pre><code>
+     *
+     * ```
      * act.namedPorts=admin:8888;ipc:8899
-     * </code></pre>
-     * <p>Default value: {@code null}</p>
-     * <p>Note, the default port that specified in {@link #HTTP_PORT} configuration
-     * and shall not be specified in this namedPorts configuration</p>
+     * ```
+     *
+     * Default value: `null`
+     *
+     * Note, the default port that specified in {@link #HTTP_PORT} configuration
+     * and shall not be specified in this namedPorts configuration
      */
     NAMED_PORTS("namedPorts"),
 
     /**
-     * `strbuf.retention.limit` set the maximum size of threadlocal instance
-     * of {@link S.Buffer} before it get dropped.
+     * `threadlocal_buf.limit` set the maximum size of thread local instance
+     * of {@link S.Buffer} and {@link org.osgl.util.ByteArrayBuffer} before it
+     * get dropped.
      *
      * Default value: 1024 * 8 (i.e. 8k)
      */
-    OSGL_STRBUF_RETENTION_LIMIT("strbuf.retention.limit"),
+    OSGL_THREADLOCAL_BUF_LIMIT("threadlocal_buf.limit"),
 
     /**
      * `password.spec` specify default password spec which is used to
@@ -789,7 +796,7 @@ public enum AppConfigKey implements ConfigKey {
 
     /**
      * {@code resolver.template_path.impl} specifies the class that
-     * implements {@link TemplatePathResolver}. Application
+     * extends {@link TemplatePathResolver}. Application
      * developer could use this configuration to add some flexibility to
      * template path resolving logic, e.g. different home for different locale
      * or different home for different device type etc.
