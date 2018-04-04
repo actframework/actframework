@@ -1,6 +1,6 @@
 # ActFramework Change Log
 
-**1.8.6**
+**1.8.6** 04/Apr/2018
 * built_in_req_handler.enabled` configuration issue #590
 * It does not print warning message for app without secret configured #592
 * API Doc - failed to generate sample data for List typed embedded data structure #591
