@@ -891,9 +891,9 @@ public enum AppConfigKey implements ConfigKey {
     SECURE_TICKET_CODEC("secure_ticket_codec"),
 
     /**
-     * {@code server.header}
-     * Specifies the server header to be output to the response
-     * <p>Default value: {@code act}</p>
+     * `server.header` specifies the server header to be output to the response
+     *
+     * Default value: `act/${act-version}`
      */
     SERVER_HEADER("server.header"),
 
@@ -910,35 +910,34 @@ public enum AppConfigKey implements ConfigKey {
     SESSION_OUTPUT_EXPIRATION("session.outputExpiration.enabled"),
 
     /**
-     * {@code session.ttl} specifies the session duration in seconds.
+     * `session.ttl` specifies the session duration in seconds.
      * If user failed to interact with server for amount of time that
      * exceeds the setting then the session will be destroyed
      *
-     * <p>Default value: {@code 60 * 30} i.e half an hour</p>
+     * Default value: `60 * 30` i.e half an hour
      */
     SESSION_TTL("session.ttl"),
 
     /**
-     * {@code session.persistent.enabled}
-     * Specify whether the system
+     * `session.persistent.enabled` specify whether the system
      * should treat session cookie as persistent cookie. If this setting
      * is enabled, then the user's session will not be destroyed after
      * browser closed.
      *
-     * <p>Default value: {@code false}</p>
+     * Default value: `false`
      *
      * See <a href="http://en.wikipedia.org/wiki/HTTP_cookie#Persistent_cookie">HTTP_cookie</a>
      */
     SESSION_PERSISTENT_ENABLED("session.persistent.enabled"),
 
     /**
-     * {@code session.encrypted.enabled} specify whether the system should
+     * `session.encrypted.enabled` specify whether the system should
      * encrypt the key/value pairs in the session cookie. Enable session
      * encryption will greatly improve the security but with the cost
      * of additional CPU usage and a little bit longer time on request
      * processing.
      *
-     * <p>Default value: {@code false}</p>
+     * Default value: `false`
      */
     SESSION_ENCRYPT_ENABLED("session.encrypt.enabled"),
 
@@ -950,18 +949,18 @@ public enum AppConfigKey implements ConfigKey {
     SESSION_KEY_USERNAME("session.key.username"),
 
     /**
-     * {@code session.mapper.impl} specify the implementation of {@link act.session.SessionMapper}
+     * `session.mapper.impl` specifies the implementation of {@link act.session.SessionMapper}
      *
      * Default value: {@link act.session.CookieSessionMapper}
      */
     SESSION_MAPPER("session.mapper.impl"),
 
     /**
-     * `session.codec.impl` specify the implementation of {@link act.session.SessionCodec}
+     * `session.codec.impl` specifies the implementation of {@link act.session.SessionCodec}
      *
      * Default value: {@link act.session.DefaultSessionCodec}
      */
-    SESSION_CODEC("session.codec"),
+    SESSION_CODEC("session.codec.impl"),
 
     /**
      * `session.mapper.header.prefix`
@@ -1014,24 +1013,25 @@ public enum AppConfigKey implements ConfigKey {
     SESSION_HEADER_PAYLOAD_PREFIX("session.header.payload.prefix"),
 
     /**
-     * {@code session.secure.enabled} specifies whether the session cookie should
+     * `session.secure.enabled` specifies whether the session cookie should
      * be set as secure. Enable secure session will cause session cookie only
      * effective in https connection. Literally this will enforce the web site to run
      * default by https.
      *
-     * <p>Default value: {@code true}</p>
+     * Default value: `true`
      *
-     * <p><b>Note</b> when {@link Act Act server} is running in {@link Act.Mode#DEV mode}
-     * session http only will be disabled without regarding to the {@code session.secure.enabled}
-     * setting</p>
+     * **Note** when {@link Act Act server} is running in {@link Act.Mode#DEV mode}
+     * session http only will be disabled without regarding to the `session.secure.enabled`
+     * setting
      */
     SESSION_SECURE("session.secure.enabled"),
 
     /**
-     * {@code act.source.version} specifies the java version
+     * `source.version` specifies the java version
      * of the src code. This configuration is used only
      * in dev mode.
-     * <p>Default value: 1.7</p>
+     *
+     * Default value: 1.7
      */
     SOURCE_VERSION("source.version"),
 
@@ -1045,20 +1045,19 @@ public enum AppConfigKey implements ConfigKey {
     SSL("ssl.enabled"),
 
     /**
-     * {@code act.target.version} specifies the java version
-     * of the compile target code. This configuration is used only
-     * in dev mode.
+     * `target.version` specifies the java version of the compile
+     * target code. This configuration is used only in dev mode.
      *
      * Default value: 1.7
      */
     TARGET_VERSION("target.version"),
 
     /**
-     * {@code template.home} specifies where the view templates resides.
+     * `template.home` specifies where the view templates resides.
      * If not specified then will use the {@link View#name() view name
      * in lower case} as the template home if that view is used.
      *
-     * Default value: {@code default}
+     * Default value: `default`
      */
     TEMPLATE_HOME("template.home"),
 
@@ -1094,7 +1093,7 @@ public enum AppConfigKey implements ConfigKey {
     UPLOAD_IN_MEMORY_CACHE_THRESHOLD("upload.in_memory.threshold.int"),
 
     /**
-     * `act.url.context` specifies the app URL context.
+     * `url.context` specifies the app URL context.
      *
      * If this configuration is specified then all route configured will
      * be attached to the configured context path.
@@ -1104,25 +1103,27 @@ public enum AppConfigKey implements ConfigKey {
     URL_CONTEXT("url.context"),
 
     /**
-     * {@code url.login} specifies the login URL which is used
+     * `url.login` specifies the login URL which is used
      * by {@link act.util.RedirectToLoginUrl}
-     * <p>Default value: {@code /login}</p>
+     *
+     * Default value: `/login`
      */
     URL_LOGIN("url.login"),
 
     /**
-     * {@code url.login.ajax} specifies the login URL which is used
+     * `url.login.ajax` specifies the login URL which is used
      * by {@link act.util.RedirectToLoginUrl} when request is AJAX
-     * <p>Default value: the value of {@link #URL_LOGIN}</p>
+     *
+     * Default value: the value of {@link #URL_LOGIN}
      */
     URL_LOGIN_AJAX("url.login.ajax"),
 
     /**
-     * {@code act.view.default} specifies the default view solution. If there
+     * `view.default` specifies the default view solution. If there
      * are multiple views registered and default view are available, then
      * it will be used at priority to load the templates
-     * <p/>
-     * <p>Default value: {@code rythm}</p>
+     *
+     * Default value: `rythm`
      */
     VIEW_DEFAULT("view.default"),
 

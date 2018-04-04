@@ -20,19 +20,19 @@ package act.session;
          * #L%
          */
 
+import static act.session.JWT.Payload.EXPIRES_AT;
+import static act.session.JWT.Payload.ISSUER;
+import static org.osgl.http.H.Session.KEY_EXPIRATION;
+
 import act.conf.AppConfig;
 import act.util.Lazy;
 import org.osgl.$;
 import org.osgl.http.H;
 import org.osgl.util.S;
 
+import java.util.Map;
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import java.util.Map;
-
-import static act.session.JWT.Payload.EXPIRES_AT;
-import static act.session.JWT.Payload.ISSUER;
-import static org.osgl.http.H.Session.KEY_EXPIRATION;
 
 @Singleton
 @Lazy
@@ -48,7 +48,7 @@ public class JsonWebTokenSessionCodec implements SessionCodec {
         ttlInMillis = conf.sessionTtl() * 1000;
         sessionWillExpire = ttlInMillis > 0;
         pingPath = conf.pingPath();
-        this.jwt = $.notNull(jwt);
+        this.jwt = $.requireNotNull(jwt);
     }
 
     @Override
