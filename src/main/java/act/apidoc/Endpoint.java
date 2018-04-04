@@ -339,7 +339,7 @@ public class Endpoint implements Comparable<Endpoint> {
                 if (null != info.defaultValue) {
                     sample = resolver.resolve(info.defaultValue, info.beanSpec.rawType());
                 } else {
-                    sample = generateSampleData(info.beanSpec, new HashSet<Class<?>>());
+                    sample = generateSampleData(info.beanSpec, new HashSet<BeanSpec>());
                 }
                 if (H.Method.GET == this.httpMethod) {
                     String query = generateSampleQuery(info.beanSpec, info.bindName);
@@ -416,7 +416,7 @@ public class Endpoint implements Comparable<Endpoint> {
         if (Result.class.isAssignableFrom(type)) {
             return null;
         }
-        Object sample = generateSampleData(spec, new HashSet<Class<?>>());
+        Object sample = generateSampleData(spec, new HashSet<BeanSpec>());
         if (null == sample) {
             return null;
         }
@@ -429,15 +429,15 @@ public class Endpoint implements Comparable<Endpoint> {
     private static String generateSampleQuery(BeanSpec spec, String bindName) {
         Class<?> type = spec.rawType();
         if ($.isSimpleType(type)) {
-            return bindName + "=" + generateSampleData(spec, new HashSet<Class<?>>());
+            return bindName + "=" + generateSampleData(spec, new HashSet<BeanSpec>());
         }
         if (type.isArray()) {
             // TODO handle datetime component type
             Class<?> elementType = type.getComponentType();
             BeanSpec elementSpec = BeanSpec.of(elementType, Act.injector());
             if ($.isSimpleType(elementType)) {
-                return bindName + "=" + generateSampleData(elementSpec, new HashSet<Class<?>>())
-                        + "&" + bindName + "=" + generateSampleData(elementSpec, new HashSet<Class<?>>());
+                return bindName + "=" + generateSampleData(elementSpec, new HashSet<BeanSpec>())
+                        + "&" + bindName + "=" + generateSampleData(elementSpec, new HashSet<BeanSpec>());
             }
         } else if (Collection.class.isAssignableFrom(type)) {
             // TODO handle datetime component type
@@ -445,8 +445,8 @@ public class Endpoint implements Comparable<Endpoint> {
             Type elementType = typeParams.isEmpty() ? Object.class : typeParams.get(0);
             BeanSpec elementSpec = BeanSpec.of(elementType, null, Act.injector());
             if ($.isSimpleType(elementSpec.rawType())) {
-                return bindName + "=" + generateSampleData(elementSpec, new HashSet<Class<?>>())
-                        + "&" + bindName + "=" + generateSampleData(elementSpec, new HashSet<Class<?>>());
+                return bindName + "=" + generateSampleData(elementSpec, new HashSet<BeanSpec>())
+                        + "&" + bindName + "=" + generateSampleData(elementSpec, new HashSet<BeanSpec>());
             }
         } else if (Map.class.isAssignableFrom(type)) {
             LOGGER.warn("Map not supported yet");
@@ -470,12 +470,12 @@ public class Endpoint implements Comparable<Endpoint> {
         return S.join("&", queryPairs);
     }
 
-    private static Object generateSampleData(BeanSpec spec, Set<Class<?>> typeChain) {
-        Class<?> type = spec.rawType();
-        if (typeChain.contains(type)) {
+    private static Object generateSampleData(BeanSpec spec, Set<BeanSpec> typeChain) {
+        if (typeChain.contains(spec)) {
             return null; // circular reference detected
         }
-        typeChain.add(type);
+        Class<?> type = spec.rawType();
+        typeChain.add(spec);
         try {
             if (void.class == type || Void.class == type || Result.class.isAssignableFrom(type)) {
                 return null;
