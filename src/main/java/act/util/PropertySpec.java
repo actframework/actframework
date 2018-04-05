@@ -76,7 +76,7 @@ import java.util.regex.Pattern;
  * @see act.util.JsonView
  * @see FastJsonPropertyPreFilter
  */
-@Retention(RetentionPolicy.CLASS)
+@Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
 public @interface PropertySpec {
     /**
@@ -138,7 +138,7 @@ public @interface PropertySpec {
     /**
      * Capture the {@code PropertySpec} annotation meta info in bytecode scanning phase
      */
-    public class MetaInfo {
+    class MetaInfo {
         // split "fn as firstName" into "fn" and "firstName"
         private static Pattern p = Pattern.compile("\\s+as\\s+", Pattern.CASE_INSENSITIVE);
 
@@ -224,6 +224,11 @@ public @interface PropertySpec {
             return null == spec ? C.<String>list() : spec.outputs();
         }
 
+        public List<String> outputFieldsForHttp() {
+            Spec spec = httpSpec();
+            return null == spec ? C.<String>list() : spec.outputs();
+        }
+
         public List<String> labels(List<String> outputs, ActContext context) {
             List<String> retList = new ArrayList<>();
             for (String f : outputs) {
@@ -241,12 +246,22 @@ public @interface PropertySpec {
         }
 
         public Set<String> excludedFields(ActContext context) {
-            return C.set(spec(context).excluded());
+            Spec spec = spec(context);
+            return null == spec ? C.<String>set() : C.set(spec.excluded());
+        }
+
+        public Set<String> excludeFieldsForHttp() {
+            Spec spec = httpSpec();
+            return null == spec ? C.<String>set() : C.set(spec.excluded());
         }
 
         public String label(String field, ActContext context) {
             String lbl = spec(context).labels().get(field);
             return null == lbl ? field : lbl;
+        }
+
+        private Spec httpSpec() {
+            return null == http || http.isEmpty() ? common : http;
         }
 
         private Spec spec(ActContext context) {

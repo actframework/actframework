@@ -140,25 +140,10 @@ public class JsonUtilConfig {
             FastJsonPropertyPreFilter propertyFilter = new FastJsonPropertyPreFilter();
             List<String> outputs = spec.outputFields(context);
             Set<String> excluded = spec.excludedFields(context);
-            if (excluded.isEmpty()) {
-                if (outputs.isEmpty()) {
-                    propertyFilter = null; // no filter defined actually
-                } else {
-                    // output fields only applied when excluded fields not presented
-                    propertyFilter.addIncludes(outputs);
-                    if (FastJsonPropertyPreFilter.hasPattern(outputs)) {
-                        // TODO: handle the case when result is an Iterable
-                        propertyFilter.setFullPaths(context.app().service(DataPropertyRepository.class).propertyListOf(v.getClass()));
-                    }
-                }
-            } else {
-                propertyFilter.addExcludes(excluded);
-                if (FastJsonPropertyPreFilter.hasPattern(excluded)) {
-                    // TODO: handle the case when result is an Iterable
-                    propertyFilter.setFullPaths(context.app().service(DataPropertyRepository.class).propertyListOf(v.getClass()));
-                }
+            if (outputs.isEmpty() && excluded.isEmpty()) {
+                return null;
             }
-            return propertyFilter;
+            return new FastJsonPropertyPreFilter(v.getClass(), outputs, excluded, context.app().service(DataPropertyRepository.class));
         }
 
         @Override

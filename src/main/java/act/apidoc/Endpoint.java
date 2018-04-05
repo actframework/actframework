@@ -22,6 +22,7 @@ package act.apidoc;
 
 import act.Act;
 import act.app.data.StringValueResolverManager;
+import act.data.DataPropertyRepository;
 import act.data.Sensitive;
 import act.handler.RequestHandler;
 import act.handler.builtin.controller.RequestHandlerProxy;
@@ -29,6 +30,8 @@ import act.handler.builtin.controller.impl.ReflectedHandlerInvoker;
 import act.inject.DefaultValue;
 import act.inject.DependencyInjector;
 import act.inject.param.ParamValueLoaderService;
+import act.util.FastJsonPropertyPreFilter;
+import act.util.PropertySpec;
 import act.validation.NotBlank;
 import com.alibaba.fastjson.JSON;
 import org.apache.bval.constraints.NotEmpty;
@@ -168,6 +171,8 @@ public class Endpoint implements Comparable<Endpoint> {
      */
     private String handler;
 
+    FastJsonPropertyPreFilter fastJsonPropertyPreFilter;
+
     /**
      * The description
      */
@@ -285,8 +290,24 @@ public class Endpoint implements Comparable<Endpoint> {
         ReflectedHandlerInvoker invoker = $.cast(proxy.actionHandler().invoker());
         Class<?> controllerClass = invoker.controllerClass();
         Method method = invoker.method();
-        this.id = id(method);
         returnType = method.getReturnType();
+        PropertySpec pspec = method.getAnnotation(PropertySpec.class);
+        if (null != pspec) {
+            PropertySpec.MetaInfo propSpec = new PropertySpec.MetaInfo();
+            for (String v : pspec.value()) {
+                propSpec.onValue(v);
+            }
+            for (String v : pspec.http()) {
+                propSpec.onValue(v);
+            }
+            List<String> outputs = propSpec.outputFieldsForHttp();
+            Set<String> excluded = propSpec.excludeFieldsForHttp();
+            if (!(outputs.isEmpty() && excluded.isEmpty())) {
+                fastJsonPropertyPreFilter = new FastJsonPropertyPreFilter(returnType, outputs, excluded, Act.app().service(DataPropertyRepository.class));
+            }
+            // just ignore cli value here
+        }
+        this.id = id(method);
         returnSample = generateSampleJson(BeanSpec.of(method.getGenericReturnType(), null, Act.injector()));
         Description descAnno = method.getAnnotation(Description.class);
         this.description = null == descAnno ? methodDescription(method) : descAnno.value();
@@ -339,10 +360,10 @@ public class Endpoint implements Comparable<Endpoint> {
                 if (null != info.defaultValue) {
                     sample = resolver.resolve(info.defaultValue, info.beanSpec.rawType());
                 } else {
-                    sample = generateSampleData(info.beanSpec, new HashSet<BeanSpec>());
+                    sample = generateSampleData(info.beanSpec, new HashSet<Type>(), new ArrayList<String>());
                 }
                 if (H.Method.GET == this.httpMethod) {
-                    String query = generateSampleQuery(info.beanSpec, info.bindName);
+                    String query = generateSampleQuery(info.beanSpec.withoutName(), info.bindName, new HashSet<Type>(), C.<String>newList());
                     if (S.notBlank(query)) {
                         sampleQuery.add(query);
                     }
@@ -411,12 +432,12 @@ public class Endpoint implements Comparable<Endpoint> {
         return false;
     }
 
-    private static String generateSampleJson(BeanSpec spec) {
+    private String generateSampleJson(BeanSpec spec) {
         Class<?> type = spec.rawType();
         if (Result.class.isAssignableFrom(type)) {
             return null;
         }
-        Object sample = generateSampleData(spec, new HashSet<BeanSpec>());
+        Object sample = generateSampleData(spec, new HashSet<Type>(), new ArrayList<String>());
         if (null == sample) {
             return null;
         }
@@ -426,18 +447,30 @@ public class Endpoint implements Comparable<Endpoint> {
         return JSON.toJSONString(sample, true);
     }
 
-    private static String generateSampleQuery(BeanSpec spec, String bindName) {
+    private String generateSampleQuery(BeanSpec spec, String bindName, Set<Type> typeChain, List<String> nameChain) {
         Class<?> type = spec.rawType();
+        String specName = spec.name();
+        if (S.notBlank(specName)) {
+            nameChain.add(specName);
+        }
         if ($.isSimpleType(type)) {
-            return bindName + "=" + generateSampleData(spec, new HashSet<BeanSpec>());
+            Object o = generateSampleData(spec, typeChain, nameChain);
+            if (null == o) {
+                return "";
+            }
+            return bindName + "=" + o;
         }
         if (type.isArray()) {
             // TODO handle datetime component type
             Class<?> elementType = type.getComponentType();
             BeanSpec elementSpec = BeanSpec.of(elementType, Act.injector());
             if ($.isSimpleType(elementType)) {
-                return bindName + "=" + generateSampleData(elementSpec, new HashSet<BeanSpec>())
-                        + "&" + bindName + "=" + generateSampleData(elementSpec, new HashSet<BeanSpec>());
+                Object o = generateSampleData(elementSpec, typeChain, nameChain);
+                if (null == o) {
+                    return "";
+                }
+                return bindName + "=" + o
+                        + "&" + bindName + "=" + generateSampleData(elementSpec, typeChain, nameChain);
             }
         } else if (Collection.class.isAssignableFrom(type)) {
             // TODO handle datetime component type
@@ -445,8 +478,12 @@ public class Endpoint implements Comparable<Endpoint> {
             Type elementType = typeParams.isEmpty() ? Object.class : typeParams.get(0);
             BeanSpec elementSpec = BeanSpec.of(elementType, null, Act.injector());
             if ($.isSimpleType(elementSpec.rawType())) {
-                return bindName + "=" + generateSampleData(elementSpec, new HashSet<BeanSpec>())
-                        + "&" + bindName + "=" + generateSampleData(elementSpec, new HashSet<BeanSpec>());
+                Object o = generateSampleData(elementSpec, typeChain, nameChain);
+                if (null == o) {
+                    return "";
+                }
+                return bindName + "=" + o
+                        + "&" + bindName + "=" + generateSampleData(elementSpec, typeChain, nameChain);
             }
         } else if (Map.class.isAssignableFrom(type)) {
             LOGGER.warn("Map not supported yet");
@@ -464,74 +501,102 @@ public class Endpoint implements Comparable<Endpoint> {
                 continue;
             }
             String fieldBindName = bindName + "." + field.getName();
-            String pair = generateSampleQuery(BeanSpec.of(field, Act.injector()), fieldBindName);
-            queryPairs.add(pair);
+            String pair = generateSampleQuery(BeanSpec.of(field, Act.injector()), fieldBindName, C.newSet(typeChain), C.newList(nameChain));
+            if (S.notBlank(pair)) {
+                queryPairs.add(pair);
+            }
         }
-        return S.join("&", queryPairs);
+        return S.join(queryPairs).by("&").get();
     }
 
-    private static Object generateSampleData(BeanSpec spec, Set<BeanSpec> typeChain) {
-        if (typeChain.contains(spec)) {
-            return null; // circular reference detected
+    private static boolean isCollection(Type type) {
+        if (type instanceof Class) {
+            Class clazz = $.cast(type);
+            if (Iterable.class.isAssignableFrom(clazz)) {
+                return true;
+            }
+            return false;
         }
-        Class<?> type = spec.rawType();
-        typeChain.add(spec);
-        try {
-            if (void.class == type || Void.class == type || Result.class.isAssignableFrom(type)) {
+        if (type instanceof ParameterizedType) {
+            ParameterizedType ptype = $.cast(type);
+            return isCollection(ptype.getRawType());
+        }
+        return false;
+    }
+
+    private Object generateSampleData(BeanSpec spec, Set<Type> typeChain, List<String> nameChain) {
+        Type type = spec.type();
+        if (typeChain.contains(type) && !isCollection(type)) {
+            return S.concat(spec.name(), ":", type); // circular reference detected
+        }
+        typeChain.add(type);
+        String name = spec.name();
+        if (S.notBlank(name)) {
+            nameChain.add(name);
+        }
+        if (null != fastJsonPropertyPreFilter) {
+            String path = S.join(nameChain).by(".").get();
+            if (!fastJsonPropertyPreFilter.matches(path)) {
                 return null;
             }
-            if (Object.class == type) {
+        }
+        Class<?> classType = spec.rawType();
+        try {
+            if (void.class == classType || Void.class == classType || Result.class.isAssignableFrom(classType)) {
+                return null;
+            }
+            if (Object.class == classType) {
                 return "<Any>";
             }
             try {
-                if (type.isEnum()) {
-                    Object[] ea = type.getEnumConstants();
+                if (classType.isEnum()) {
+                    Object[] ea = classType.getEnumConstants();
                     int len = ea.length;
                     return 0 < len ? ea[N.randInt(len)] : null;
-                } else if (Locale.class == type) {
+                } else if (Locale.class == classType) {
                     return Locale.getDefault();
-                } else if (String.class == type) {
+                } else if (String.class == classType) {
                     String mockValue = S.random(5);
                     if (spec.hasAnnotation(Sensitive.class)) {
                         return Act.crypto().encrypt(mockValue);
                     }
                     return S.random(5);
-                } else if (type.isArray()) {
-                    Object sample = Array.newInstance(type.getComponentType(), 2);
-                    Array.set(sample, 0, generateSampleData(BeanSpec.of(type.getComponentType(), Act.injector()), typeChain));
-                    Array.set(sample, 1, generateSampleData(BeanSpec.of(type.getComponentType(), Act.injector()), typeChain));
+                } else if (classType.isArray()) {
+                    Object sample = Array.newInstance(classType.getComponentType(), 2);
+                    Array.set(sample, 0, generateSampleData(BeanSpec.of(classType.getComponentType(), Act.injector()), C.newSet(typeChain), C.newList(nameChain)));
+                    Array.set(sample, 1, generateSampleData(BeanSpec.of(classType.getComponentType(), Act.injector()), C.newSet(typeChain), C.newList(nameChain)));
                     return sample;
-                } else if ($.isSimpleType(type)) {
-                    if (Enum.class == type) {
+                } else if ($.isSimpleType(classType)) {
+                    if (Enum.class == classType) {
                         return "<Any Enum>";
                     }
-                    if (!type.isPrimitive()) {
-                        type = $.primitiveTypeOf(type);
+                    if (!classType.isPrimitive()) {
+                        classType = $.primitiveTypeOf(classType);
                     }
-                    return StringValueResolver.predefined().get(type).resolve(null);
-                } else if (LocalDateTime.class.isAssignableFrom(type)) {
+                    return StringValueResolver.predefined().get(classType).resolve(null);
+                } else if (LocalDateTime.class.isAssignableFrom(classType)) {
                     return LocalDateTime.now();
-                } else if (DateTime.class.isAssignableFrom(type)) {
+                } else if (DateTime.class.isAssignableFrom(classType)) {
                     return DateTime.now();
-                } else if (LocalDate.class.isAssignableFrom(type)) {
+                } else if (LocalDate.class.isAssignableFrom(classType)) {
                     return LocalDate.now();
-                } else if (LocalTime.class.isAssignableFrom(type)) {
+                } else if (LocalTime.class.isAssignableFrom(classType)) {
                     return LocalTime.now();
-                } else if (Date.class.isAssignableFrom(type)) {
+                } else if (Date.class.isAssignableFrom(classType)) {
                     return new Date();
-                } else if (type.getName().contains(".ObjectId")) {
+                } else if (classType.getName().contains(".ObjectId")) {
                     return "<id>";
-                } else if (BigDecimal.class == type) {
+                } else if (BigDecimal.class == classType) {
                     return BigDecimal.valueOf(1.1);
-                } else if (BigInteger.class == type) {
+                } else if (BigInteger.class == classType) {
                     return BigInteger.valueOf(1);
-                } else if (ISObject.class.isAssignableFrom(type)) {
+                } else if (ISObject.class.isAssignableFrom(classType)) {
                     return null;
-                } else if (Map.class.isAssignableFrom(type)) {
-                    Map map = $.cast(Act.getInstance(type));
+                } else if (Map.class.isAssignableFrom(classType)) {
+                    Map map = $.cast(Act.getInstance(classType));
                     List<Type> typeParams = spec.typeParams();
                     if (typeParams.isEmpty()) {
-                        typeParams = Generics.typeParamImplementations(type, Map.class);
+                        typeParams = Generics.typeParamImplementations(classType, Map.class);
                     }
                     if (typeParams.size() < 2) {
                         map.put(S.random(), S.random());
@@ -540,34 +605,34 @@ public class Endpoint implements Comparable<Endpoint> {
                         Type keyType = typeParams.get(0);
                         Type valType = typeParams.get(1);
                         map.put(
-                                generateSampleData(BeanSpec.of(keyType, null, Act.injector()), typeChain),
-                                generateSampleData(BeanSpec.of(valType, null, Act.injector()), typeChain));
+                                generateSampleData(BeanSpec.of(keyType, null, Act.injector()), C.newSet(typeChain), C.newList(nameChain)),
+                                generateSampleData(BeanSpec.of(valType, null, Act.injector()), C.newSet(typeChain), C.newList(nameChain)));
                         map.put(
-                                generateSampleData(BeanSpec.of(keyType, null, Act.injector()), typeChain),
-                                generateSampleData(BeanSpec.of(valType, null, Act.injector()), typeChain));
+                                generateSampleData(BeanSpec.of(keyType, null, Act.injector()), C.newSet(typeChain), C.newList(nameChain)),
+                                generateSampleData(BeanSpec.of(valType, null, Act.injector()), C.newSet(typeChain), C.newList(nameChain)));
                     }
-                } else if (Iterable.class.isAssignableFrom(type)) {
-                    Collection col = $.cast(Act.getInstance(type));
+                } else if (Iterable.class.isAssignableFrom(classType)) {
+                    Collection col = $.cast(Act.getInstance(classType));
                     List<Type> typeParams = spec.typeParams();
                     if (typeParams.isEmpty()) {
-                        typeParams = Generics.typeParamImplementations(type, Map.class);
+                        typeParams = Generics.typeParamImplementations(classType, Map.class);
                     }
                     if (typeParams.isEmpty()) {
                         col.add(S.random());
                     } else {
                         Type componentType = typeParams.get(0);
-                        col.add(generateSampleData(BeanSpec.of(componentType, null, Act.injector()), typeChain));
-                        col.add(generateSampleData(BeanSpec.of(componentType, null, Act.injector()), typeChain));
+                        col.add(generateSampleData(BeanSpec.of(componentType, null, Act.injector()), C.newSet(typeChain), C.newList(nameChain)));
+                        col.add(generateSampleData(BeanSpec.of(componentType, null, Act.injector()), C.newSet(typeChain), C.newList(nameChain)));
                     }
                     return col;
                 }
 
-                if (null != stringValueResolver(type)) {
+                if (null != stringValueResolver(classType)) {
                     return S.random(5);
                 }
 
-                Object obj = Act.getInstance(type);
-                List<Field> fields = $.fieldsOf(type);
+                Object obj = Act.getInstance(classType);
+                List<Field> fields = $.fieldsOf(classType);
                 for (Field field : fields) {
                     if (Modifier.isStatic(field.getModifiers())) {
                         continue;
@@ -579,22 +644,22 @@ public class Endpoint implements Comparable<Endpoint> {
                     Object val = null;
                     try {
                         field.setAccessible(true);
-                        val = generateSampleData(BeanSpec.of(field, Act.injector()), typeChain);
+                        val = generateSampleData(BeanSpec.of(field, Act.injector()), C.newSet(typeChain), C.newList(nameChain));
                         Class<?> valType = null == val ? null : val.getClass();
                         if (null != valType && fieldType.isAssignableFrom(valType)) {
                             field.set(obj, val);
                         }
                     } catch (Exception e) {
-                        LOGGER.warn("Error setting value[%s] to field[%s.%s]", val, type.getSimpleName(), field.getName());
+                        LOGGER.warn("Error setting value[%s] to field[%s.%s]", val, classType.getSimpleName(), field.getName());
                     }
                 }
                 return obj;
             } catch (Exception e) {
-                LOGGER.warn("error generating sample data for type: %s", type);
+                LOGGER.warn("error generating sample data for type: %s", classType);
                 return null;
             }
         } finally {
-            typeChain.remove(type);
+            //typeChain.remove(classType);
         }
     }
 

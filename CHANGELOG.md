@@ -1,5 +1,9 @@
 # ActFramework Change Log
 
+**1.8.7**
+* `@PropertySpec` annotation not effective in API doc generated sample data #594
+* Duplicated class/attribute in endpoint will be ignored #593
+
 **1.8.6** 04/Apr/2018
 * built_in_req_handler.enabled` configuration issue #590
 * It does not print warning message for app without secret configured #592

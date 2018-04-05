@@ -20,10 +20,10 @@ package act.util;
  * #L%
  */
 
+import act.data.DataPropertyRepository;
 import act.data.util.StringOrPattern;
 import com.alibaba.fastjson.serializer.JSONSerializer;
 import com.alibaba.fastjson.serializer.PropertyPreFilter;
-import org.osgl.util.C;
 import org.osgl.util.FastStr;
 import org.osgl.util.S;
 
@@ -44,6 +44,27 @@ public class FastJsonPropertyPreFilter implements PropertyPreFilter {
     private final Set<String> includes = new HashSet<String>();
     private final Set<String> excludes = new HashSet<String>();
     private final List<String> fullPaths = new ArrayList<>();
+
+    public FastJsonPropertyPreFilter(Class<?> beanClass, List<String> outputs, Set<String> excluded, DataPropertyRepository dataPropertyRepository) {
+        if (excluded.isEmpty()) {
+            if (outputs.isEmpty()) {
+                return; // no filter defined actually
+            } else {
+                // output fields only applied when excluded fields not presented
+                addIncludes(outputs);
+                if (FastJsonPropertyPreFilter.hasPattern(outputs)) {
+                    // TODO: handle the case when result is an Iterable
+                    setFullPaths(dataPropertyRepository.propertyListOf(beanClass));
+                }
+            }
+        } else {
+            addExcludes(excluded);
+            if (FastJsonPropertyPreFilter.hasPattern(excluded)) {
+                // TODO: handle the case when result is an Iterable
+                setFullPaths(dataPropertyRepository.propertyListOf(beanClass));
+            }
+        }
+    }
 
     public FastJsonPropertyPreFilter(String... properties) {
         super();
@@ -157,6 +178,10 @@ public class FastJsonPropertyPreFilter implements PropertyPreFilter {
         FastStr fs = FastStr.of(serializer.getContext().toString()).append('.').append(name);
         path = fs.substring(fs.indexOf('.') + 1); // skip the first "."
 
+        return matches(path);
+    }
+
+    public boolean matches(String path) {
         return !matches(excludes, path, true) && (includes.isEmpty() || matches(includes, path, false));
     }
 
