@@ -18,7 +18,13 @@ Add `act-starter-parent` into into your pom.xml file
   </parent>
 ```
 
-Or you can start ActFramework from scratch by using [act-starter-kit](https://github.com/actframework/act-starter-kit):
+Or use maven archetype to start an new project:
+
+```
+mvn archetype:generate -DarchetypeGroupId=org.actframework -DarchetypeArtifactId=archetype-quickstart -DarchetypeVersion=1.8.7.0 -B -DgroupId=com.mycom.helloworld -DartifactId=helloworld -DappName=helloworld
+```
+
+Or start an new project using [act-starter-kit](https://github.com/actframework/act-starter-kit):
 
 ```bash
 wget https://github.com/actframework/act-starter-kit/archive/master.zip && unzip master.zip && ./act-starter-kit-master/act-new.sh
