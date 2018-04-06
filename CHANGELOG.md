@@ -3,6 +3,8 @@
 **1.8.7**
 * `@PropertySpec` annotation not effective in API doc generated sample data #594
 * Duplicated class/attribute in endpoint will be ignored #593
+* update osgl-tool to 1.10.0
+* update osgl-genie to 1.7.0
 
 **1.8.6** 04/Apr/2018
 * built_in_req_handler.enabled` configuration issue #590
