@@ -1,6 +1,8 @@
 # ActFramework Change Log
 
 **1.8.8**
+* DateTime return result not formatted as configured #604
+* DateTime return result is not a valid JSON string #605
 * Response Headers contains unreadable code #601
 * Make `Router` injection support `@Named` #603
 * It shall inject active Router instead of default router #602

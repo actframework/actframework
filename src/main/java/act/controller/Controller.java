@@ -28,6 +28,7 @@ import act.conf.AppConfigKey;
 import act.controller.meta.HandlerMethodMetaInfo;
 import act.data.Versioned;
 import act.route.Router;
+import act.util.$$;
 import act.util.FastJsonIterable;
 import act.util.JsonUtilConfig.JsonWriter;
 import act.util.PropertySpec;
@@ -1540,7 +1541,7 @@ public @interface Controller {
             return r;
         }
 
-        public static Result inferPrimitiveResult(Object v, ActionContext actionContext, boolean requireJSON, boolean requireXML, boolean isArray) {
+        public static Result inferPrimitiveResult(Object v, ActionContext actionContext, boolean requireJSON, boolean requireXML, boolean isArray, boolean isDateTime) {
             H.Status status = actionContext.successStatus();
             if (requireJSON) {
                 if (isArray) {
@@ -1557,12 +1558,12 @@ public @interface Controller {
                 return new RenderBinary((byte[]) v);
             } else {
                 H.Format fmt = actionContext.accept();
+                String s = $$.toString(v, isDateTime, isArray);
                 if (HTML == fmt || H.Format.UNKNOWN == fmt) {
-                    String s = isArray ? $.toString2(v) : v.toString();
                     return RenderHtml.of(status, s);
                 }
                 if (fmt.isText()) {
-                    return RenderText.of(status, fmt, $.toString2(v), status.toString());
+                    return RenderText.of(status, fmt, s, status.toString());
                 }
                 throw E.unexpected("Cannot apply text result to format: %s", fmt);
             }
@@ -1684,9 +1685,10 @@ public @interface Controller {
                 return null;
             }
             Class vCls = v.getClass();
-            if ($.isSimpleType(vCls)) {
+            boolean isDateTimeType = $$.isDateTimeType(vCls);
+            if ($.isSimpleType(vCls) || isDateTimeType) {
                 boolean isArray = vCls.isArray();
-                return inferPrimitiveResult(v, context, requireJSON, requireXML, isArray);
+                return inferPrimitiveResult(v, context, requireJSON, requireXML, isArray, isDateTimeType);
             } else if (v instanceof InputStream) {
                 return inferResult((InputStream) v, context);
             } else if (v instanceof File) {
@@ -1719,7 +1721,7 @@ public @interface Controller {
                     return RenderCSV.of(status, v, propertySpec, context);
                 } else {
                     boolean isArray = vCls.isArray();
-                    return inferPrimitiveResult(v, context, false, requireXML, isArray);
+                    return inferPrimitiveResult(v, context, false, requireXML, isArray, isDateTimeType);
                 }
             }
         }
