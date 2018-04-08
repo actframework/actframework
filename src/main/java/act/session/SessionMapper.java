@@ -27,6 +27,8 @@ import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 import org.osgl.http.H;
 
+import java.util.Locale;
+
 /**
  * A `StateMapper` maps serialized state (from session/flash) to
  * {@link org.osgl.http.H.Response response} or from
@@ -82,7 +84,7 @@ public interface SessionMapper {
     String readFlash(H.Request request);
 
     class ExpirationMapper {
-        private static DateTimeFormatter format = DateTimeFormat.forPattern("E, dd MMM Y HH:mm:ss");
+        private static DateTimeFormatter format = DateTimeFormat.forPattern("E, dd MMM Y HH:mm:ss").withLocale(Locale.ENGLISH);
         boolean enabled;
         String headerName;
 

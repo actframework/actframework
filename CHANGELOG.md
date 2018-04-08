@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 **1.8.8**
+* Response Headers contains unreadable code #601
 * Make `Router` injection support `@Named` #603
 * It shall inject active Router instead of default router #602
 * JSON response for array type result is not consistent #595
