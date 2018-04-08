@@ -34,6 +34,7 @@ import act.controller.annotation.Port;
 import act.controller.annotation.TemplateContext;
 import act.controller.meta.*;
 import act.handler.builtin.controller.RequestHandlerProxy;
+import act.route.DuplicateRouteMappingException;
 import act.route.RouteSource;
 import act.route.Router;
 import act.sys.Env;
@@ -991,6 +992,7 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
         }
 
         private void registerOnContext(String ctxPath, String action) {
+            RouteSource routeSource = action.startsWith("act.") ? RouteSource.BUILD_IN : RouteSource.ACTION_ANNOTATION;
             S.Buffer sb = S.newBuffer();
             if (paths.isEmpty()) {
                 paths.add("");
@@ -1013,7 +1015,9 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
                     }
                     for (H.Method m : httpMethods) {
                         try {
-                            r.addMapping(m, urlPath, action, RouteSource.ACTION_ANNOTATION);
+                            r.addMapping(m, urlPath, action, routeSource);
+                        } catch (DuplicateRouteMappingException e) {
+                            Act.app().setBlockIssue(e);
                         } catch (RuntimeException e) {
                             logger.error(e, "add router mapping failed: \n\tmethod[%s]\n\turl path: %s\n\taction: %s", m, urlPath, action);
                         }

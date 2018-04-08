@@ -22,10 +22,7 @@ package act.route;
 
 import act.Act;
 import act.Destroyable;
-import act.app.ActionContext;
-import act.app.App;
-import act.app.AppServiceBase;
-import act.app.RouterRegexMacroLookup;
+import act.app.*;
 import act.cli.tree.TreeNode;
 import act.conf.AppConfig;
 import act.controller.ParamNames;
@@ -59,7 +56,7 @@ import java.util.regex.PatternSyntaxException;
 import javax.enterprise.context.ApplicationScoped;
 import javax.validation.constraints.NotNull;
 
-public class Router extends AppServiceBase<Router> {
+public class Router extends AppHolderBase<Router> {
 
     /**
      * A visitor can be passed to the router to traverse
@@ -351,8 +348,8 @@ public class Router extends AppServiceBase<Router> {
                     break;
                 case EXIT:
                     throw new DuplicateRouteMappingException(
-                            new RouteInfo(method, path.toString(), node.handler()),
-                            new RouteInfo(method, path.toString(), handler)
+                            new RouteInfo(method, path.toString(), node.handler(), existing),
+                            new RouteInfo(method, path.toString(), handler, source)
                     );
                 default:
                     throw E.unsupport();
@@ -1139,7 +1136,7 @@ public class Router extends AppServiceBase<Router> {
         }
 
         Node handler(RequestHandler handler, RouteSource source) {
-            this.routeSource = $.notNull(source);
+            this.routeSource = $.requireNotNull(source);
             this.handler = handler.requireResolveContext() ? new ContextualHandler((RequestHandlerBase) handler) : handler;
             return this;
         }

@@ -20,6 +20,8 @@ package act.route;
  * #L%
  */
 
+import org.osgl.util.E;
+
 /**
  * Enumerate the source where the route mapping come from.
  * <p>
@@ -41,26 +43,22 @@ package act.route;
  */
 public enum RouteSource {
 
-    BUILD_IN() {
+    BUILD_IN("Built in service") {
         @Override
         Router.ConflictResolver onConflict(RouteSource existingRoute) {
-            switch (existingRoute) {
-                case BUILD_IN:
-                    return Router.ConflictResolver.EXIT;
-                default:
-                    return Router.ConflictResolver.SKIP;
-            }
+            return Router.ConflictResolver.EXIT;
         }
     },
 
     /**
      * The route mapping from route table file
      */
-    ROUTE_TABLE() {
+    ROUTE_TABLE("Route table") {
         @Override
         Router.ConflictResolver onConflict(RouteSource existingRoute) {
             switch (existingRoute) {
                 case APP_CONFIG:
+                case BUILD_IN:
                     return Router.ConflictResolver.EXIT;
                 case ACTION_ANNOTATION:
                     return Router.ConflictResolver.OVERWRITE;
@@ -73,11 +71,12 @@ public enum RouteSource {
     /**
      * The route mapping come from action annotation
      */
-    ACTION_ANNOTATION() {
+    ACTION_ANNOTATION("Action annotation") {
         @Override
         Router.ConflictResolver onConflict(RouteSource existingRoute) {
             switch (existingRoute) {
                 case ACTION_ANNOTATION:
+                case BUILD_IN:
                     return Router.ConflictResolver.EXIT;
                 case ROUTE_TABLE:
                 case APP_CONFIG:
@@ -91,10 +90,11 @@ public enum RouteSource {
     /**
      * The route mapping from programed configuration
      */
-    APP_CONFIG() {
+    APP_CONFIG("App configured") {
         @Override
         Router.ConflictResolver onConflict(RouteSource existingRoute) {
             switch (existingRoute) {
+                case BUILD_IN:
                 case APP_CONFIG:
                     return Router.ConflictResolver.EXIT;
                 default:
@@ -106,7 +106,7 @@ public enum RouteSource {
     /**
      * The route mapping com from admin console instruction
      */
-    ADMIN_OVERWRITE() {
+    ADMIN_OVERWRITE("Admin overwrite") {
         @Override
         Router.ConflictResolver onConflict(RouteSource existingRoute) {
             return Router.ConflictResolver.OVERWRITE_WARN;
@@ -116,13 +116,23 @@ public enum RouteSource {
     /**
      * The route mapping com from admin console add instruction
      */
-    ADMIN_ADD() {
+    ADMIN_ADD("Admin added") {
         @Override
         Router.ConflictResolver onConflict(RouteSource existingRoute) {
             return Router.ConflictResolver.EXIT;
         }
     },
     ;
+
+    private String desc;
+
+    RouteSource(String desc) {
+        this.desc = desc;
+    }
+
+    public String getDescription() {
+        return desc;
+    }
 
     abstract Router.ConflictResolver onConflict(RouteSource existingRoute);
 }

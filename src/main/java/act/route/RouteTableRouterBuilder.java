@@ -21,6 +21,8 @@ package act.route;
  */
 
 import act.Act;
+import act.app.App;
+import act.app.event.SysEventId;
 import org.osgl.http.H;
 import org.osgl.http.util.Path;
 import org.osgl.util.C;
@@ -123,9 +125,15 @@ public class RouteTableRouterBuilder implements RouterBuilder {
             if (S.blank(line)) continue;
             try {
                 process(line, router);
-            } catch (RuntimeException e) {
+            } catch (final RuntimeException e) {
                 if (Act.isDev()) {
-                    router.app().setBlockIssue(e);
+                    final App app = router.app();
+                    app.jobManager().on(SysEventId.PRE_START, new Runnable() {
+                        @Override
+                        public void run() {
+                            app.setBlockIssue(e);
+                        }
+                    });
                 } else {
                     throw e;
                 }

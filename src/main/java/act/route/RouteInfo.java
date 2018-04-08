@@ -32,8 +32,13 @@ import org.osgl.util.S;
  * Used to expose Router table for debugging purpose
  */
 public class RouteInfo extends $.T3<String, String, String> implements Comparable<RouteInfo> {
+    private RouteSource routeSource;
     public RouteInfo(H.Method method, String path, RequestHandler handler) {
         super(method.name(), path, handler.toString());
+    }
+    public RouteInfo(H.Method method, String path, RequestHandler handler, RouteSource routeSource) {
+        this(method, path, handler);
+        this.routeSource = $.requireNotNull(routeSource);
     }
     public String method() {
         return _1;
@@ -64,7 +69,8 @@ public class RouteInfo extends $.T3<String, String, String> implements Comparabl
 
     @Override
     public String toString() {
-        return S.fmt("[%s %s] -> [%s]", method(), path(), compactHandler());
+        return null != routeSource ? S.fmt("[%s %s] -> [%s] added by %s", method(), path(), compactHandler(), routeSource.getDescription()) :
+                S.fmt("[%s %s] -> [%s]", method(), path(), compactHandler());
     }
 
     @Override
@@ -80,6 +86,7 @@ public class RouteInfo extends $.T3<String, String, String> implements Comparabl
         return handler().compareTo(routeInfo.handler());
     }
 
+    // used by Error template
     public static RouteInfo of(ActionContext context) {
         H.Method m = context.req().method();
         String path = context.req().url();

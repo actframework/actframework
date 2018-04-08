@@ -23,15 +23,16 @@ package act.inject;
 import act.Act;
 import act.app.ActionContext;
 import act.app.App;
-import act.crypto.AppCrypto;
 import act.cli.CliContext;
 import act.cli.CliOverHttpContext;
 import act.cli.CliSession;
 import act.conf.AppConfig;
+import act.crypto.AppCrypto;
 import act.db.Dao;
 import act.event.EventBus;
 import act.job.JobContext;
 import act.mail.MailerContext;
+import act.route.Router;
 import act.util.ActContext;
 import act.util.ProgressGauge;
 import act.util.SimpleProgressGauge;
@@ -49,12 +50,12 @@ import org.osgl.util.C;
 import org.osgl.util.E;
 import org.osgl.web.util.UserAgent;
 
-import javax.inject.Provider;
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.Locale;
 import java.util.Set;
+import javax.inject.Provider;
 
 /**
  * Name space of built in providers
@@ -237,6 +238,22 @@ public final class ActProviders {
         @Override
         public CacheService get(String name) {
             return app().cache(name);
+        }
+    };
+
+    public static final Provider<Router> ROUTER_PROVIDER = new Provider<Router>() {
+        @Override
+        public Router get() {
+            ActionContext ctx = ActionContext.current();
+            return null == ctx ? Act.app().router() : ctx.router();
+        }
+    };
+
+    public static final NamedProvider<Router> NAMED_ROUTER_PROVIDER = new NamedProvider<Router>() {
+        @Override
+        public Router get(String name) {
+            Router router = Act.app().router(name);
+            return null == router ? (Router) Act.injector().get(Router.class) : router;
         }
     };
 

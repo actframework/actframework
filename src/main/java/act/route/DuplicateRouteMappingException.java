@@ -30,8 +30,8 @@ public class DuplicateRouteMappingException extends ActAppException {
     private RouteInfo newRouteMapping;
 
     public DuplicateRouteMappingException(RouteInfo existingRoute, RouteInfo newRoute) {
-        existingRouteMapping = $.notNull(existingRoute);
-        newRouteMapping = $.notNull(newRoute);
+        this.existingRouteMapping = $.requireNotNull(existingRoute);
+        this.newRouteMapping = $.requireNotNull(newRoute);
     }
 
     @Override

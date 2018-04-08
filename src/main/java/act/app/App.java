@@ -1380,7 +1380,7 @@ public class App extends DestroyableBase {
         }
         SecureTicketCodec secureTicketCodec = config.secureTicketCodec();
         SecureTicketHandler secureTicketHandler = new SecureTicketHandler(secureTicketCodec);
-        router().addMapping(GET, "/~/ticket", secureTicketHandler);
+        router().addMapping(GET, "/~/ticket", secureTicketHandler, RouteSource.BUILD_IN);
     }
 
     private void initClassLoader() {

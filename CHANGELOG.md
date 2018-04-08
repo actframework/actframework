@@ -1,7 +1,11 @@
 # ActFramework Change Log
 
 **1.8.8**
+* Make `Router` injection support `@Named` #603
+* It shall inject active Router instead of default router #602
 * JSON response for array type result is not consistent #595
+* System builtin route mapping added with wrong route source #597
+* It shall not allow application to overwrite built-in service route mapping #598
 
 **1.8.7** 06/Apr/2018
 * `@PropertySpec` annotation not effective in API doc generated sample data #594
