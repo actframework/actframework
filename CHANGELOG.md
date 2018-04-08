@@ -1,6 +1,9 @@
 # ActFramework Change Log
 
-**1.8.7**
+**1.8.8**
+* JSON response for array type result is not consistent #595
+
+**1.8.7** 06/Apr/2018
 * `@PropertySpec` annotation not effective in API doc generated sample data #594
 * Duplicated class/attribute in endpoint will be ignored #593
 * update osgl-tool to 1.10.0

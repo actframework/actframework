@@ -1682,8 +1682,10 @@ public @interface Controller {
                 // the following code breaks before handler without returning result
                 //return requireJSON ? RenderJSON.of("{}") : requireXML ? RenderXML.of("<result></result>") : null;
                 return null;
-            } else if ($.isSimpleType(v.getClass())) {
-                boolean isArray = meta.isReturnArray();
+            }
+            Class vCls = v.getClass();
+            if ($.isSimpleType(vCls)) {
+                boolean isArray = vCls.isArray();
                 return inferPrimitiveResult(v, context, requireJSON, requireXML, isArray);
             } else if (v instanceof InputStream) {
                 return inferResult((InputStream) v, context);
@@ -1716,7 +1718,7 @@ public @interface Controller {
                     PropertySpec.MetaInfo propertySpec = PropertySpec.MetaInfo.withCurrent(meta, context);
                     return RenderCSV.of(status, v, propertySpec, context);
                 } else {
-                    boolean isArray = meta.returnType().getDescriptor().startsWith("[");
+                    boolean isArray = vCls.isArray();
                     return inferPrimitiveResult(v, context, false, requireXML, isArray);
                 }
             }

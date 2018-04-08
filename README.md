@@ -21,13 +21,19 @@ Add `act-starter-parent` into into your pom.xml file
 Or use maven archetype to start an new project:
 
 ```
-mvn archetype:generate -DarchetypeGroupId=org.actframework -DarchetypeArtifactId=archetype-quickstart -DarchetypeVersion=1.8.7.0 -B -DgroupId=com.mycom.helloworld -DartifactId=helloworld -DappName=helloworld
+mvn archetype:generate -B \
+    -DgroupId=com.mycom.helloworld \
+    -DartifactId=helloworld \
+    -DappName=helloworld \
+    -DarchetypeGroupId=org.actframework \
+    -DarchetypeArtifactId=archetype-quickstart \
+    -DarchetypeVersion=1.8.7.2
 ```
 
-Or start an new project using [act-starter-kit](https://github.com/actframework/act-starter-kit):
+**tips** don't forget replace the `groupId`, `artifactId` and `appName` in the above script, or you can use interactive mode to generate your project:
 
-```bash
-wget https://github.com/actframework/act-starter-kit/archive/master.zip && unzip master.zip && ./act-starter-kit-master/act-new.sh
+```
+mvn archetype:generate -DarchetypeGroupId=org.actframework -DarchetypeArtifactId=archetype-quickstart -DarchetypeVersion=1.8.7.2
 ```
 
 ## Features
