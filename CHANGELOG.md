@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 **1.8.8**
+* Date format not applied when returned type is `DateTime[]` #610
 * DateTime return result not formatted as configured #604
 * DateTime return result is not a valid JSON string #605
 * Response Headers contains unreadable code #601

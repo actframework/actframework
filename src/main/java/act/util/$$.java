@@ -9,9 +9,9 @@ package act.util;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -31,8 +31,10 @@ import org.joda.time.LocalDateTime;
 import org.joda.time.LocalTime;
 import org.osgl.$;
 import org.osgl.util.C;
+import org.osgl.util.S;
 import org.osgl.util.ValueObject;
 
+import java.lang.reflect.Array;
 import java.sql.Time;
 import java.util.Date;
 import java.util.Map;
@@ -58,12 +60,32 @@ public class $$ {
 
     public static String toString(Object v, boolean isDateTimeType, boolean isArray) {
         if (isArray) {
-            return $.toString2(v);
+            int len = Array.getLength(v);
+            if (0 == len) {
+                return "[]";
+            }
+            S.Buffer buf = S.buffer();
+            buf.append("[");
+            buf.append(toString(Array.get(v, 0)));
+            for (int i = 1; i < len; ++i) {
+                buf.append(", ");
+                buf.append(toString(Array.get(v, i)));
+            }
+            buf.append("]");
+            return buf.toString();
         } else if (isDateTimeType) {
             ValueObject.Codec codec = codecs.get(v.getClass());
             return null == codec ? v.toString() : codec.toString(v);
         }
         return v.toString();
+    }
+
+    public static String toString(Object v) {
+        if (null == v) {
+            return "";
+        }
+        Class<?> c = v.getClass();
+        return toString(v, isDateTimeType(c), c.isArray());
     }
 
 }
