@@ -39,7 +39,7 @@ class FieldLoader {
     FieldLoader(Field field, ParamValueLoader loader) {
         this.sensitive = String.class == field.getType() && null != field.getAnnotation(Sensitive.class);
         this.field = field;
-        this.loader = $.notNull(loader);
+        this.loader = $.requireNotNull(loader);
     }
 
     public void applyTo($.Func0<Object> beanSource, ActContext context) {

@@ -20,6 +20,8 @@ package act.inject.param;
  * #L%
  */
 
+import static act.inject.param.ParamValueLoaderService.shouldWaive;
+
 import act.inject.genie.GenieInjector;
 import act.util.ActContext;
 import act.util.LogSupport;
@@ -31,8 +33,6 @@ import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
 
-import static act.inject.param.ParamValueLoaderService.shouldWaive;
-
 class PojoLoader extends LogSupport implements ParamValueLoader {
 
     final ParamKey key;
@@ -43,7 +43,7 @@ class PojoLoader extends LogSupport implements ParamValueLoader {
     protected Map<String, FieldLoader> fieldLoaders;
 
     public PojoLoader(ParamKey key, BeanSpec spec, ParamValueLoaderService service) {
-        this.key = $.notNull(key);
+        this.key = $.requireNotNull(key);
         this.spec = spec;
         this.injector = service.injector;
         this.service = service;

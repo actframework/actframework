@@ -24,9 +24,9 @@ import org.osgl.$;
 import org.osgl.util.E;
 import org.osgl.util.Generics;
 
-import javax.inject.Provider;
 import java.lang.reflect.Type;
 import java.util.List;
+import javax.inject.Provider;
 
 /**
  * App implemented {@link javax.inject.Provider} can extends this base class to automatically register to injector
@@ -42,7 +42,7 @@ public abstract class ActProvider<T> implements Provider<T> {
     }
 
     protected ActProvider(Class<T> targetType) {
-        this.targetType = $.notNull(targetType);
+        this.targetType = $.requireNotNull(targetType);
     }
 
     public Class<T> targetType() {

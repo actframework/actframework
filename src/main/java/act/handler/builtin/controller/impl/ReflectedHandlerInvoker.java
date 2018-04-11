@@ -390,6 +390,12 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         context.setReflectedHandlerInvoker(this);
         app.eventBus().emit(new ReflectedHandlerInvokerInvoke(this, context));
 
+        if (fieldsAndParamsCount == 1) {
+            context.allowIgnoreParamNamespace();
+        } else {
+            context.disallowIgnoreParamNamespace();
+        }
+
         if (isLargeResponse) {
             context.setLargeResponse();
         }

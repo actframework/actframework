@@ -113,6 +113,7 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
     private Trace.AccessLog accessLog;
     private ReflectedHandlerInvoker reflectedHandlerInvoker;
     private boolean requireBodyParsing;
+    private boolean allowIgnoreParamNamespace;
 
     // see https://github.com/actframework/actframework/issues/492
     public String encodedSessionToken;
@@ -389,6 +390,14 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
         requireBodyParsing = true;
     }
 
+    public void allowIgnoreParamNamespace() {
+        allowIgnoreParamNamespace = true;
+    }
+
+    public void disallowIgnoreParamNamespace() {
+        allowIgnoreParamNamespace = false;
+    }
+
     public int pathVarCount() {
         return pathVarCount;
     }
@@ -482,6 +491,11 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
 
     @Override
     public String paramVal(String name) {
+        String val = _paramVal(name);
+        return null != val ? val : allowIgnoreParamNamespace && name.contains(".") ? _paramVal(S.cut(name).afterFirst(".")) : null;
+    }
+
+    private String _paramVal(String name) {
         String val = extraParams.get(name);
         if (null != val) {
             return val;

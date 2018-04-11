@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 **1.8.8**
+* Param binding: allow it to ignore missing namespace when there is only one param to bind #618
 * @On(async = true) not work #611
 * Issue with global URL context setting #614
 * Date format not applied when returned type is `DateTime[]` #610
