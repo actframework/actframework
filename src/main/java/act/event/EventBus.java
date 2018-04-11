@@ -36,8 +36,6 @@ import org.osgl.util.C;
 import org.osgl.util.E;
 import org.osgl.util.S;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Modifier;
@@ -45,6 +43,8 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
+import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
 
 /**
  * The event bus manages event binding and distribution.
@@ -54,7 +54,6 @@ public class EventBus extends AppServiceBase<EventBus> {
 
     // The key to index adhoc event listeners
     private static class Key {
-        private static Logger logger = LogManager.get(EventBus.class);
         private enum IdType {
             STRING, ENUM, CLASS
         }

@@ -47,7 +47,7 @@ public class ReflectedSimpleEventListener implements SimpleEventListener {
     private final boolean isStatic;
     private final boolean isAsync;
 
-    ReflectedSimpleEventListener(String className, String methodName, List<BeanSpec> paramTypes, boolean isStatic) {
+    ReflectedSimpleEventListener(String className, String methodName, List<BeanSpec> paramTypes, boolean isStatic, boolean isAsync) {
         this.isStatic = isStatic;
         this.paramTypes = C.newList();
         this.providedParamTypes = C.newList();
@@ -77,7 +77,7 @@ public class ReflectedSimpleEventListener implements SimpleEventListener {
         }
         this.hostClass = Act.app().classForName(className);
         this.method = $.getMethod(hostClass, methodName, argList);
-        this.isAsync = EventBus.isAsync(hostClass) || EventBus.isAsync(method);
+        this.isAsync = isAsync || EventBus.isAsync(hostClass) || EventBus.isAsync(method);
     }
 
     @Override

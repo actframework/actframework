@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 **1.8.8**
+* @On(async = true) not work #611
 * Issue with global URL context setting #614
 * Date format not applied when returned type is `DateTime[]` #610
 * DateTime return result not formatted as configured #604

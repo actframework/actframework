@@ -71,7 +71,7 @@ public class SimpleEventListenerByteCodeScanner extends AppByteCodeScannerBase {
                     public void run() {
                         for (final Object event : metaInfo.events()) {
                             final boolean isStatic = metaInfo.isStatic();
-                            eventBus.bind(event, new ReflectedSimpleEventListener(metaInfo.className(), metaInfo.methodName(), metaInfo.paramTypes(), isStatic));
+                            eventBus.bind(event, new ReflectedSimpleEventListener(metaInfo.className(), metaInfo.methodName(), metaInfo.paramTypes(), isStatic, metaInfo.isAsync()));
                         }
                     }
                 });
