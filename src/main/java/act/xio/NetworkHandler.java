@@ -246,7 +246,10 @@ public class NetworkHandler extends DestroyableBase {
         }
 
         @Override
-        public String apply(H.Request request, String s) throws NotAppliedException, Osgl.Break {
+        public String apply(H.Request request, String s) throws NotAppliedException, $.Break {
+            if (s.startsWith("/~/")) {
+                return s;
+            }
             if (s.length() < contextLen || !s.startsWith(context)) {
                 throw NotFound.get();
             }

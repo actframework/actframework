@@ -317,6 +317,13 @@ public final class Act {
         }
         emit(SysEventId.ACT_START);
         writePidFile();
+        int port = httpPort();
+        String urlContext = appConfig().urlContext();
+        if (null == urlContext) {
+            LOGGER.info("app is ready at: http://%s:%s", getLocalIpAddr(), port);
+        } else {
+            LOGGER.info("app is ready at: http://%s:%s%s", getLocalIpAddr(), port, urlContext);
+        }
     }
 
     public static void shutdown(App app) {
@@ -920,8 +927,6 @@ public final class Act {
         Method m = actClass.getDeclaredMethod("startup", byte[].class);
         m.setAccessible(true);
         $.invokeStatic(m, appDescriptor.toByteArray());
-        int port = $.invokeStatic(actClass, "httpPort");
-        LOGGER.info("app is ready at: http://%s:%s", getLocalIpAddr(), port);
         LOGGER.info("it takes %sms to start the app\n", $.ms() - ts);
     }
 

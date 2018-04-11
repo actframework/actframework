@@ -196,7 +196,8 @@ public class Endpoint implements Comparable<Endpoint> {
 
     Endpoint(int port, H.Method httpMethod, String path, RequestHandler handler) {
         this.httpMethod = $.requireNotNull(httpMethod);
-        this.path = $.requireNotNull(path);
+        String urlContext = Act.appConfig().urlContext();
+        this.path = null == urlContext || path.startsWith("/~/") ? $.requireNotNull(path) : S.concat(urlContext, $.requireNotNull(path));
         this.handler = handler.toString();
         this.port = port;
         explore(handler);
