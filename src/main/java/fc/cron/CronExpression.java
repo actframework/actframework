@@ -17,9 +17,9 @@ package fc.cron;
 
 /*-
  * #%L
- * ACT Framework
+ * frode-carlsen/cron
  * %%
- * Copyright (C) 2014 - 2017 ActFramework
+ * Copyright (C) 2014 - 2017 frode-carlsen
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -35,6 +35,8 @@ package fc.cron;
  * #L%
  */
 
+import static org.joda.time.DateTimeConstants.DAYS_PER_WEEK;
+
 import org.joda.time.DateTime;
 import org.joda.time.LocalDate;
 import org.joda.time.MutableDateTime;
@@ -45,8 +47,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import static org.joda.time.DateTimeConstants.DAYS_PER_WEEK;
 
 /**
  * Parser for unix-like cron expressions: Cron expressions allow specifying combinations of criteria for time

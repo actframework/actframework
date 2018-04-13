@@ -23,9 +23,9 @@ package org.mindrot.jbcrypt;
 
 /*-
  * #%L
- * ACT Framework
+ * jeremyh/BCrypt
  * %%
- * Copyright (C) 2014 - 2017 ActFramework
+ * Copyright (C) 2006 Damien Miller <djm@mindrot.org>
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
