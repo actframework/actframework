@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 **1.8.8**
+* Session expiration time shall not be output using `Expires` header #623
 * Param binding: allow it to ignore missing namespace when there is only one param to bind #618
 * @On(async = true) not work #611
 * Issue with global URL context setting #614

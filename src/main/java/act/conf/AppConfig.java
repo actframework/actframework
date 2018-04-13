@@ -70,7 +70,7 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 import javax.inject.Provider;
 
-public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> implements AppHolder<AppConfig<T>> {
+public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> implements AppHolder<AppConfig<T>> {
 
     public static final String CONF_FILE_NAME = "app.conf";
     public static final String CSRF_TOKEN_NAME = "__csrf__";
@@ -976,23 +976,23 @@ public class AppConfig<T extends AppConfigurator> extends Config<AppConfigKey> i
         }
     }
 
-    private String headerExpiration;
+    private String headerSessionExpiration;
 
-    protected T headerExpiration(String headerName) {
-        headerExpiration = headerName.trim();
+    protected T headerSessionExpiration(String headerName) {
+        headerSessionExpiration = headerName.trim();
         return me();
     }
 
-    public String headerExpiration() {
-        if (null == headerExpiration) {
-            headerExpiration = get(AppConfigKey.HEADER_EXPIRATION, H.Header.Names.EXPIRES);
+    public String headerSessionExpiration() {
+        if (null == headerSessionExpiration) {
+            headerSessionExpiration = get(AppConfigKey.HEADER_SESSION_EXPIRATION, "Act-Session-Expires");
         }
-        return headerExpiration;
+        return headerSessionExpiration;
     }
 
-    private void _mergeHeaderExpiration(AppConfig config) {
-        if (!hasConfiguration(HEADER_EXPIRATION)) {
-            headerExpiration = config.headerExpiration;
+    private void _mergeHeaderSessionExpiration(AppConfig config) {
+        if (!hasConfiguration(HEADER_SESSION_EXPIRATION)) {
+            headerSessionExpiration = config.headerSessionExpiration;
         }
     }
 

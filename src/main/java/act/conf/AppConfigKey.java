@@ -451,13 +451,13 @@ public enum AppConfigKey implements ConfigKey {
     HANDLER_UNKNOWN_HTTP_METHOD("handler.unknown_http_method.impl"),
 
     /**
-     * `header.expiration` specifies the expiration header name.
+     * `header.session.expiration` specifies the session expiration header name.
      *
      * This is only effective when {@link #SESSION_OUTPUT_EXPIRATION} is effective.
      *
-     * Default value: `Expires`
+     * Default value: `Act-Session-Expires`
      */
-    HEADER_EXPIRATION("header.expiration"),
+    HEADER_SESSION_EXPIRATION("header.session.expiration"),
 
     /**
      * {@code act.host} specifies the host the application

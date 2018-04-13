@@ -91,7 +91,7 @@ public interface SessionMapper {
         ExpirationMapper (AppConfig conf) {
             enabled = conf.sessionOutputExpiration();
             if (enabled) {
-                headerName = conf.headerExpiration();
+                headerName = conf.headerSessionExpiration();
             }
         }
 
