@@ -62,6 +62,7 @@ import act.inject.genie.GenieModuleScanner;
 import act.inject.param.JsonDTOClassManager;
 import act.inject.param.ParamValueLoaderManager;
 import act.inject.param.ParamValueLoaderService;
+import act.inject.param.ProvidedValueLoader;
 import act.job.JobManager;
 import act.job.bytecode.JobByteCodeScanner;
 import act.mail.MailerConfigManager;
@@ -598,6 +599,7 @@ public class App extends DestroyableBase {
         FastJsonPropertyPreFilter.classInit(this);
         ActErrorResult.classInit(this);
         ActProviders.classInit(this);
+        ProvidedValueLoader.classInit(this);
         GenieFactoryFinder.classInit(this);
 
         mainThread = Thread.currentThread();
