@@ -25,6 +25,7 @@ import org.joda.time.LocalDate;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
 
+import java.util.Locale;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
@@ -66,17 +67,11 @@ public class JodaLocalDateCodec extends JodaReadablePatialCodecBase<LocalDate> {
 
     @Override
     protected String sanitize(String dateTimePattern) {
-        if (null == dateTimePattern) {
-            return null;
-        }
-        // ensure no time part
-        if (dateTimePattern.contains("h")
-                || dateTimePattern.contains("H")
-                || dateTimePattern.contains("m")
-                || dateTimePattern.contains("s")
-                || dateTimePattern.contains("S")) {
-            return null;
-        }
-        return dateTimePattern;
+        return DateTimeType.DATE.sanitizePattern(dateTimePattern);
+    }
+
+    @Override
+    protected String dateTimePattern(AppConfig config, Locale locale) {
+        return config.localizedDateFormat(locale);
     }
 }

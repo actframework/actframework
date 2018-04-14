@@ -32,6 +32,8 @@ import act.app.util.NamedPort;
 import act.cli.CliOverHttpAuthority;
 import act.crypto.HMAC;
 import act.crypto.RotateSecretHMAC;
+import act.data.DateTimeStyle;
+import act.data.DateTimeType;
 import act.db.util.SequenceNumberGenerator;
 import act.db.util._SequenceNumberGenerator;
 import act.handler.UnknownHttpMethodProcessor;
@@ -68,6 +70,8 @@ import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import javax.inject.Provider;
 
 public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> implements AppHolder<AppConfig<T>> {
@@ -81,7 +85,7 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
     static {
         MvcConfig.registerAlarmListener(MvcConfig.ALARM_BIG_CONTENT_ENCOUNTERED, new $.Func0() {
             @Override
-            public Object apply() throws NotAppliedException, Osgl.Break {
+            public Object apply() throws NotAppliedException, $.Break {
                 ActionContext ctx = ActionContext.current();
                 if (null != ctx) {
                     ctx.setLargeResponseHint();
@@ -1700,7 +1704,19 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
 
     public String dateFormat() {
         if (null == dateFmt) {
-            dateFmt = get(FORMAT_DATE, ((SimpleDateFormat) DateFormat.getDateInstance()).toPattern());
+            dateFmt = get(FORMAT_DATE, null);
+            if (null == dateFmt) {
+                dateFmt = ((SimpleDateFormat) DateFormat.getDateInstance(DateFormat.DEFAULT, locale())).toPattern();
+            } else if (S.eq(dateFmt, "long", S.IGNORECASE)) {
+                dateStyle = DateTimeStyle.LONG;
+                dateFmt = ((SimpleDateFormat) DateFormat.getDateInstance(DateFormat.LONG, locale())).toPattern();
+            } else if (S.eq(dateFmt, "medium", S.IGNORECASE)) {
+                dateStyle = DateTimeStyle.MEDIUM;
+                dateFmt = ((SimpleDateFormat) DateFormat.getDateInstance(DateFormat.LONG, locale())).toPattern();
+            } else if (S.eq(dateFmt, "short", S.IGNORECASE)) {
+                dateStyle = DateTimeStyle.SHORT;
+                dateFmt = ((SimpleDateFormat) DateFormat.getDateInstance(DateFormat.SHORT, locale())).toPattern();
+            }
         }
         return dateFmt;
     }
@@ -1708,8 +1724,25 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
     private void _mergeDateFmt(AppConfig conf) {
         if (!hasConfiguration(FORMAT_DATE)) {
             dateFmt = conf.dateFmt;
+            dateStyle = conf.dateStyle;
         }
     }
+
+    private Map<Locale, String> localizedDateFormats = new HashMap<>();
+
+    public String localizedDateFormat(Locale locale) {
+        String s = localizedDateFormats.get(locale);
+        if (null == s) {
+            if (locale.equals(locale())) {
+                s = dateFormat();
+            } else {
+                s = getLocalizedDateTimePattern(locale, DateTimeType.DATE);
+            }
+            localizedDateFormats.put(locale, s);
+        }
+        return s;
+    }
+
 
     private String timeFmt = null;
 
@@ -1721,7 +1754,19 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
 
     public String timeFormat() {
         if (null == timeFmt) {
-            timeFmt = get(FORMAT_TIME, ((SimpleDateFormat) DateFormat.getTimeInstance()).toPattern());
+            timeFmt = get(FORMAT_TIME, null);
+            if (null == timeFmt) {
+                timeFmt = ((SimpleDateFormat) DateFormat.getTimeInstance(DateFormat.DEFAULT, locale())).toPattern();
+            } else if (S.eq(timeFmt, "long", S.IGNORECASE)) {
+                timeStyle = DateTimeStyle.LONG;
+                timeFmt = ((SimpleDateFormat) DateFormat.getTimeInstance(DateFormat.LONG, locale())).toPattern();
+            } else if (S.eq(timeFmt, "medium", S.IGNORECASE)) {
+                timeStyle = DateTimeStyle.MEDIUM;
+                timeFmt = ((SimpleDateFormat) DateFormat.getTimeInstance(DateFormat.LONG, locale())).toPattern();
+            } else if (S.eq(timeFmt, "short", S.IGNORECASE)) {
+                timeStyle = DateTimeStyle.SHORT;
+                timeFmt = ((SimpleDateFormat) DateFormat.getTimeInstance(DateFormat.SHORT, locale())).toPattern();
+            }
         }
         return timeFmt;
     }
@@ -1729,29 +1774,73 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
     private void _mergeTimeFmt(AppConfig conf) {
         if (!hasConfiguration(FORMAT_TIME)) {
             timeFmt = conf.timeFmt;
+            timeStyle = conf.timeStyle;
         }
     }
 
-    private String dateDateTimeFmt = null;
+    private Map<Locale, String> localizedTimeFormat = new HashMap<>();
+
+    public String localizedTimeFormat(Locale locale) {
+        String s = localizedTimeFormat.get(locale);
+        if (null == s) {
+            if (locale.equals(locale())) {
+                s = timeFormat();
+            } else {
+                s = getLocalizedDateTimePattern(locale, DateTimeType.TIME);
+            }
+            localizedTimeFormat.put(locale, s);
+        }
+        return s;
+    }
+    
+
+    private String dateTimeFmt = null;
 
     protected T dateTimeFormat(String fmt) {
         E.illegalArgumentIf(S.blank(fmt), "Date time format cannot be empty");
-        this.dateDateTimeFmt = fmt;
+        this.dateTimeFmt = fmt;
         return me();
     }
 
     public String dateTimeFormat() {
-        if (null == dateDateTimeFmt) {
-            dateDateTimeFmt = get(FORMAT_DATE_TIME, ((SimpleDateFormat) DateFormat.getDateTimeInstance()).toPattern());
+        if (null == dateTimeFmt) {
+            dateTimeFmt = get(FORMAT_DATE_TIME, null);
+            if (null == dateTimeFmt) {
+                dateTimeFmt = ((SimpleDateFormat) DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.DEFAULT, locale())).toPattern();
+            } else if (S.eq(dateTimeFmt, "long", S.IGNORECASE)) {
+                dateTimeStyle = DateTimeStyle.LONG;
+                dateTimeFmt = ((SimpleDateFormat) DateFormat.getDateTimeInstance(DateFormat.LONG, DateFormat.LONG, locale())).toPattern();
+            } else if (S.eq(dateTimeFmt, "medium", S.IGNORECASE)) {
+                dateTimeStyle = DateTimeStyle.MEDIUM;
+                dateTimeFmt = ((SimpleDateFormat) DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.MEDIUM, locale())).toPattern();
+            } else if (S.eq(dateTimeFmt, "short", S.IGNORECASE)) {
+                dateTimeStyle = DateTimeStyle.SHORT;
+                dateTimeFmt = ((SimpleDateFormat) DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT, locale())).toPattern();
+            }
         }
-        return dateDateTimeFmt;
+        return dateTimeFmt;
     }
 
     private void _mergeDateTimeFmt(AppConfig conf) {
         if (!hasConfiguration(FORMAT_DATE_TIME)) {
-            dateDateTimeFmt = conf.dateDateTimeFmt;
+            dateTimeFmt = conf.dateTimeFmt;
         }
     }
+    private Map<Locale, String> localizedDateTimeFormats = new HashMap<>();
+
+    public String localizedDateTimeFormat(Locale locale) {
+        String s = localizedDateTimeFormats.get(locale);
+        if (null == s) {
+            if (locale.equals(locale())) {
+                s = dateTimeFormat();
+            } else {
+                s = getLocalizedDateTimePattern(locale, DateTimeType.DATE_TIME);
+            }
+            localizedDateTimeFormats.put(locale, s);
+        }
+        return s;
+    }
+
 
     private Locale locale = null;
 
@@ -2798,5 +2887,66 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
 
     private String cookieName(String suffix) {
         return S.concat(cookiePrefix(), suffix);
+    }
+
+
+    private ConcurrentMap<$.T2<Locale, DateTimeType>, String> localizedDateTimePatterns = new ConcurrentHashMap<>();
+
+    private String getLocalizedDateTimePattern(Locale locale, DateTimeType dateTimeType) {
+        $.T2<Locale, DateTimeType> key = $.T2(locale, dateTimeType);
+        String s = localizedDateTimePatterns.get(key);
+        if (null != s) {
+            return s;
+        }
+        String localStr = locale.toString().toLowerCase();
+        String conf = S.concat("fmt.", localStr, dateTimeType.suffix());
+        s = get(conf);
+        if (null == s) {
+            boolean canSplit = localStr.contains("_");
+            if (canSplit) {
+                s = get(S.concat("fmt.", S.replace('_').with('-').in(localStr), dateTimeType.suffix()));
+                if (null == s) {
+                    s = get(S.concat("fmt.", S.cut(localStr).after("_"), dateTimeType.suffix()));
+                    if (null == s) {
+                        s = get(S.concat("fmt.", S.cut(localStr).before("_"), dateTimeType.suffix()));
+                    }
+                }
+            }
+        }
+        if (null == s) {
+            DateTimeStyle style = dateTimeStyle;
+            if (dateTimeType == DateTimeType.DATE) {
+                style = dateStyle;
+            } else if (dateTimeType == DateTimeType.TIME) {
+                style = timeStyle;
+            }
+            s = dateTimeType.defaultPattern(style, locale);
+        } else {
+            if (S.eq("long", s, S.IGNORECASE)) {
+                s = dateTimeType.defaultPattern(DateTimeStyle.LONG, locale);
+            } else if (S.eq("medium", s, S.IGNORECASE)) {
+                s = dateTimeType.defaultPattern(DateTimeStyle.MEDIUM, locale);
+            } else if (S.eq("short", s, S.IGNORECASE)) {
+                s = dateTimeType.defaultPattern(DateTimeStyle.SHORT, locale);
+            }
+        }
+        localizedDateTimePatterns.putIfAbsent(key, s);
+        return s;
+    }
+
+
+    private DateTimeStyle dateTimeStyle;
+    public DateTimeStyle dateTimeStyle() {
+        return dateTimeStyle;
+    }
+
+    private DateTimeStyle dateStyle;
+    public DateTimeStyle dateStyle() {
+        return dateStyle;
+    }
+
+    private DateTimeStyle timeStyle;
+    public DateTimeStyle timeStyle() {
+        return timeStyle;
     }
 }

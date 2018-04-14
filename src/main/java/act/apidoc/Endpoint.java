@@ -22,6 +22,7 @@ package act.apidoc;
 
 import act.Act;
 import act.app.data.StringValueResolverManager;
+import act.conf.AppConfig;
 import act.data.DataPropertyRepository;
 import act.data.Sensitive;
 import act.handler.RequestHandler;
@@ -193,13 +194,16 @@ public class Endpoint implements Comparable<Endpoint> {
     private String sampleJsonPost;
     private String sampleQuery;
     private Class<?> controllerClass;
+    private Locale defLocale;
 
     Endpoint(int port, H.Method httpMethod, String path, RequestHandler handler) {
+        AppConfig conf = Act.appConfig();
         this.httpMethod = $.requireNotNull(httpMethod);
-        String urlContext = Act.appConfig().urlContext();
+        String urlContext = conf.urlContext();
         this.path = null == urlContext || path.startsWith("/~/") ? $.requireNotNull(path) : S.concat(urlContext, $.requireNotNull(path));
         this.handler = handler.toString();
         this.port = port;
+        this.defLocale = conf.locale();
         explore(handler);
     }
 
@@ -555,7 +559,7 @@ public class Endpoint implements Comparable<Endpoint> {
                     int len = ea.length;
                     return 0 < len ? ea[N.randInt(len)] : null;
                 } else if (Locale.class == classType) {
-                    return Locale.getDefault();
+                    return (defLocale);
                 } else if (String.class == classType) {
                     String mockValue = S.random(5);
                     if (spec.hasAnnotation(Sensitive.class)) {

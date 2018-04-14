@@ -162,7 +162,7 @@ public enum ActConfigKey implements ConfigKey {
         return helper.getConfiguration(this, configuration);
     }
 
-    private static Map<String, ActConfigKey> lookup = new HashMap<String, ActConfigKey>(50);
+    private static Map<String, ActConfigKey> lookup = new HashMap<>(50);
 
     static {
         for (ActConfigKey k : values()) {

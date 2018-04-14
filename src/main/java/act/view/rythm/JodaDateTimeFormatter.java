@@ -28,11 +28,11 @@ import java.util.Locale;
 
 public class JodaDateTimeFormatter implements IFormatter {
     @Override
-    public String format(Object o, String pattern, Locale locale, String s1) {
+    public String format(Object o, String pattern, Locale locale, String timezone) {
         if (o instanceof ReadableInstant) {
-            return JodaTransformers.format((ReadableInstant) o, pattern);
+            return JodaTransformers.format((ReadableInstant) o, pattern, locale, timezone);
         } else if (o instanceof ReadablePartial) {
-            return JodaTransformers.format((ReadablePartial) o, pattern);
+            return JodaTransformers.format((ReadablePartial) o, pattern, locale, timezone);
         }
         return null;
     }

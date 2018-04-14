@@ -52,12 +52,16 @@ import act.event.bytecode.SimpleEventListenerByteCodeScanner;
 import act.handler.RequestHandler;
 import act.handler.builtin.ResourceGetter;
 import act.handler.builtin.controller.FastRequestHandler;
+import act.i18n.I18n;
+import act.inject.ActProviders;
 import act.inject.DependencyInjectionBinder;
 import act.inject.DependencyInjector;
+import act.inject.genie.GenieFactoryFinder;
 import act.inject.genie.GenieInjector;
 import act.inject.genie.GenieModuleScanner;
 import act.inject.param.JsonDTOClassManager;
 import act.inject.param.ParamValueLoaderManager;
+import act.inject.param.ParamValueLoaderService;
 import act.job.JobManager;
 import act.job.bytecode.JobByteCodeScanner;
 import act.mail.MailerConfigManager;
@@ -71,6 +75,7 @@ import act.metric.MetricProvider;
 import act.route.RouteSource;
 import act.route.RouteTableRouterBuilder;
 import act.route.Router;
+import act.route.UrlPath;
 import act.session.CookieSessionMapper;
 import act.session.SessionManager;
 import act.util.*;
@@ -100,6 +105,7 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.util.*;
+import java.util.concurrent.ConcurrentMap;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Singleton;
 
@@ -140,6 +146,7 @@ public class App extends DestroyableBase {
     private DbServiceManager dbServiceManager;
     private JobManager jobManager;
     private ApiManager apiManager;
+    private ManagedCollectionService managedCollectionService;
     private CliServer cliServer;
     private MailerConfigManager mailerConfigManager;
     private StringValueResolverManager resolverManager;
@@ -583,6 +590,16 @@ public class App extends DestroyableBase {
         initScanlist();
         initServiceResourceManager();
         reload();
+
+        managedCollectionService = new ManagedCollectionService(this);
+        I18n.classInit(this);
+        ParamValueLoaderService.classInit(this);
+        JodaTransformers.classInit(this);
+        FastJsonPropertyPreFilter.classInit(this);
+        ActErrorResult.classInit(this);
+        ActProviders.classInit(this);
+        GenieFactoryFinder.classInit(this);
+
         mainThread = Thread.currentThread();
         restarting = mainThread.getName().contains("job");
         eventEmitted = C.newSet();
@@ -948,6 +965,18 @@ public class App extends DestroyableBase {
         return dependencyInjector.get(clz);
     }
 
+    public <K, V> Map<K, V> createMap() {
+        return managedCollectionService.createMap();
+    }
+
+    public <K, V> ConcurrentMap<K, V> createConcurrentMap() {
+        return managedCollectionService.createConcurrentMap();
+    }
+
+    public <E> Set<E> createSet() {
+        return managedCollectionService.createSet();
+    }
+
     /**
      * Load/get a class by name using the app's {@link #classLoader()}
      *
@@ -1221,6 +1250,7 @@ public class App extends DestroyableBase {
     }
 
     private void initRouters() {
+        UrlPath.classInit(this);
         router = new Router(this);
         moreRouters = new HashMap<>();
         List<NamedPort> ports = config().namedPorts();
@@ -1234,6 +1264,7 @@ public class App extends DestroyableBase {
     }
 
     private void initEventBus() {
+        EventBus.classInit(this);
         eventBus = new EventBus(this);
     }
 

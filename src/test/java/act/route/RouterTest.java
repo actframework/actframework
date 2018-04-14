@@ -30,6 +30,7 @@ import act.handler.RequestHandler;
 import act.handler.builtin.AlwaysNotFound;
 import act.handler.builtin.FileGetter;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.osgl.$;
@@ -43,6 +44,11 @@ import java.io.File;
 
 public class RouterTest extends RouterTestBase {
     private RequestHandler staticDirHandler;
+
+    @BeforeClass
+    public static void classInit() {
+        UrlPath.testClassInit();
+    }
 
     @Override
     protected void buildRouteMapping(Router router) {

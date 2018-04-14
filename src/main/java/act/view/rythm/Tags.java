@@ -38,13 +38,13 @@ import org.osgl.util.S;
 import org.rythmengine.RythmEngine;
 import org.rythmengine.template.JavaTagBase;
 
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 import javax.validation.ConstraintViolation;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 /**
  * Defines fast tags for Act app
@@ -124,9 +124,6 @@ public class Tags extends DestroyableBase {
             p(I18n.i18n(act_messages.class, msg, args));
         }
     }
-
-    // map path to resource checksum
-    private static Map<String, String> checksums = new HashMap<>();
 
     public static class Resource extends JavaTagBase {
 

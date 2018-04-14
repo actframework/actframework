@@ -20,8 +20,13 @@ package act.view;
  * #L%
  */
 
+import static act.util.ActError.Util.errorMessage;
+import static act.util.ActError.Util.loadSourceInfo;
+import static org.osgl.http.H.Status.INTERNAL_SERVER_ERROR;
+
 import act.Act;
-import act.app.*;
+import act.app.App;
+import act.app.SourceInfo;
 import act.asm.AsmContext;
 import act.asm.AsmException;
 import act.exception.BindException;
@@ -36,14 +41,10 @@ import org.osgl.mvc.result.Result;
 import org.osgl.util.E;
 import org.osgl.util.S;
 
-import javax.validation.ValidationException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import static act.util.ActError.Util.errorMessage;
-import static act.util.ActError.Util.loadSourceInfo;
-import static org.osgl.http.H.Status.INTERNAL_SERVER_ERROR;
+import javax.validation.ValidationException;
 
 public class ActErrorResult extends ErrorResult implements ActError {
 
@@ -187,7 +188,11 @@ public class ActErrorResult extends ErrorResult implements ActError {
         x.put(BindException.class, badRequest);
     }
 
-    private static Map<Class, Integer> userDefinedStatus = new HashMap<>();
+    private static Map<Class, Integer> userDefinedStatus;
+
+    public static void classInit(App app) {
+        userDefinedStatus = app.createMap();
+    }
 
     private static int userDefinedStatusCode(Class<? extends Throwable> exCls) {
         Integer I = userDefinedStatus.get(exCls);

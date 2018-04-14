@@ -21,6 +21,7 @@ package act.data;
  */
 
 import act.conf.AppConfig;
+import act.util.ActContext;
 import org.osgl.logging.L;
 import org.osgl.logging.Logger;
 import org.osgl.util.S;
@@ -30,25 +31,36 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Locale;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 public abstract class DateResolverBase<T extends Date> extends StringValueResolver<T> {
     static Logger logger = L.get(DateResolverBase.class);
 
+    private ConcurrentMap<Locale, DateFormat> localizedDateFormats = new ConcurrentHashMap<>();
+
     protected DateFormat dateFormat;
     protected DateFormat dateFormat2;
+    private boolean i18n;
+    private Locale defLocale;
+    protected AppConfig config;
 
     public DateResolverBase(AppConfig config) {
+        this.i18n = config.i18nEnabled();
+        this.config = config;
+        this.defLocale = config.locale();
         String pattern = configuredPattern(config);
         if (null == pattern || pattern.contains("8601") || pattern.contains("iso")) {
-            dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
-            dateFormat2 = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
+            this.dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
+            this.dateFormat2 = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
         } else {
-            dateFormat = new SimpleDateFormat(pattern);
+            this.dateFormat = new SimpleDateFormat(pattern);
         }
     }
 
     public DateResolverBase(String pattern) {
-        dateFormat = new SimpleDateFormat(pattern);
+        this.dateFormat = new SimpleDateFormat(pattern);
     }
 
     @Override
@@ -69,7 +81,8 @@ public abstract class DateResolverBase<T extends Date> extends StringValueResolv
 
     protected abstract T cast(Date date);
 
-    private Date parse(String value){
+    private Date parse(String value) {
+        DateFormat dateFormat = dateFormat();
         try {
             return dateFormat.parse(value);
         } catch (ParseException e) {
@@ -86,5 +99,36 @@ public abstract class DateResolverBase<T extends Date> extends StringValueResolv
         }
     }
 
+    private DateFormat dateFormat() {
+        ActContext ctx = ActContext.Base.currentContext();
+        String pattern = null == ctx ? null : ctx.dateFormatPattern();
+        if (S.notBlank(pattern)) {
+            return new SimpleDateFormat(pattern);
+        }
+        if (!i18n) {
+            return dateFormat;
+        }
+        if (null == ctx) {
+            return dateFormat;
+        }
+        Locale locale = ctx.locale();
+        if (null == locale) {
+            return dateFormat;
+        }
+        if (locale.equals(defLocale)) {
+            return dateFormat;
+        }
+        return dateFormat(locale);
+    }
+
+    protected DateFormat dateFormat(Locale locale) {
+        DateFormat dateFormat = localizedDateFormats.get(locale);
+        if (null == dateFormat) {
+            String s = config.localizedDateFormat(locale);
+            dateFormat = new SimpleDateFormat(s);
+            localizedDateFormats.putIfAbsent(locale, dateFormat);
+        }
+        return dateFormat;
+    }
 
 }

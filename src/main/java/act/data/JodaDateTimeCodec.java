@@ -25,6 +25,10 @@ import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
@@ -64,4 +68,17 @@ public class JodaDateTimeCodec extends JodaReadableInstantCodecBase<DateTime> {
         return DateTime.now();
     }
 
+    @Override
+    protected String dateTimePattern(AppConfig config, Locale locale) {
+        return config.localizedDateTimeFormat(locale);
+    }
+
+    public static void main(String[] args) {
+        Date today;
+        String result;
+        SimpleDateFormat formatter;
+
+        Locale currentLocale = Locale.TRADITIONAL_CHINESE;
+        System.out.println(((SimpleDateFormat) DateFormat.getDateTimeInstance(DateFormat.LONG, DateFormat.LONG, Locale.CHINA)).toPattern());
+    }
 }

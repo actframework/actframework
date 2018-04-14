@@ -4,7 +4,7 @@ package act.data;
  * #%L
  * ACT Framework
  * %%
- * Copyright (C) 2014 - 2017 ActFramework
+ * Copyright (C) 2014 - 2018 ActFramework
  * %%
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,33 +20,19 @@ package act.data;
  * #L%
  */
 
-import act.conf.AppConfig;
-
-import java.sql.Date;
 import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Locale;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import javax.inject.Inject;
-import javax.inject.Singleton;
 
-@Singleton
-public class SqlDateResolver extends DateResolverBase<Date> {
+public enum DateTimeStyle {
 
+    LONG(DateFormat.LONG), MEDIUM(DateFormat.MEDIUM), SHORT(DateFormat.SHORT);
 
-    @Inject
-    public SqlDateResolver(AppConfig config) {
-        super(config);
+    private int id;
+    DateTimeStyle(int id) {
+        this.id = id;
     }
 
-    public SqlDateResolver(String pattern) {
-        super(pattern);
-    }
-
-    @Override
-    protected Date cast(java.util.Date date) {
-        return new Date(date.getTime());
+    public int id() {
+        return id;
     }
 
 }

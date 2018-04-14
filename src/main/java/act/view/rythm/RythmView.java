@@ -20,6 +20,8 @@ package act.view.rythm;
  * #L%
  */
 
+import static org.rythmengine.conf.RythmConfigurationKey.*;
+
 import act.Act;
 import act.app.App;
 import act.conf.AppConfig;
@@ -42,8 +44,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-
-import static org.rythmengine.conf.RythmConfigurationKey.*;
 
 /**
  * Implement a view with Rythm Template Engine
@@ -93,7 +93,7 @@ public class RythmView extends View {
 
     @Override
     protected Template loadInlineTemplate(String content) {
-        RythmEngine engine = engines.get(Act.app());
+        RythmEngine engine = getEngine(Act.app());
         return new RythmTemplate(engine, content, true);
     }
 
@@ -124,6 +124,7 @@ public class RythmView extends View {
         p.put(ENGINE_PLUGIN_VERSION.getKey(), Act.VERSION.getVersion());
         p.put(ENGINE_CLASS_LOADER_PARENT_IMPL.getKey(), app.classLoader());
         p.put(HOME_TMP.getKey(), createTempHome(app));
+        p.put(I18N_LOCALE.getKey(), config.locale());
 
         Map map = config.rawConfiguration();
         for (Object k : map.keySet()) {
@@ -167,6 +168,7 @@ public class RythmView extends View {
         });
 
         RythmEngine engine = new RythmEngine(p);
+        engine.setDateFormatFactory(new DateFormatFactory(config));
         engine.resourceManager().prependResourceLoader(new ClasspathResourceLoader(engine, ID));
         if (config.defaultView() == this) {
             String home = config.templateHome();

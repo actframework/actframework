@@ -20,15 +20,22 @@ package act.conf;
  * #L%
  */
 
+import static org.mockito.Matchers.argThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import act.Act;
 import act.ActTestBase;
 import act.app.conf.AutoConfig;
 import act.app.conf.AutoConfigPlugin;
 import act.app.data.StringValueResolverManager;
+import act.inject.ActProviders;
+import act.inject.genie.GenieFactoryFinder;
 import act.inject.genie.GenieInjector;
 import act.plugin.GenericPluginManager;
 import org.hamcrest.Description;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.mockito.ArgumentMatcher;
 import org.osgl.$;
@@ -38,10 +45,6 @@ import org.osgl.util.Const;
 
 import java.lang.reflect.Field;
 import java.util.List;
-
-import static org.mockito.Matchers.argThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 public class AutoConfigPluginTest extends ActTestBase {
 
@@ -53,6 +56,12 @@ public class AutoConfigPluginTest extends ActTestBase {
     private H.Method enumVal = H.Method.CONNECT;
     private StringValueResolverManager resolverManager;
     private GenieInjector injector;
+
+    @BeforeClass
+    public static void classBefore() {
+        GenieFactoryFinder.testClassInit();
+        ActProviders.testClassInit();
+    }
 
     @Before
     public void before() throws Exception {

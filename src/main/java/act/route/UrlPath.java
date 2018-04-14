@@ -20,6 +20,7 @@ package act.route;
  * #L%
  */
 
+import act.app.App;
 import org.osgl.util.S;
 
 import java.util.ArrayList;
@@ -94,7 +95,15 @@ public class UrlPath {
         return false;
     }
 
-    private static Map<String, UrlPath> paths = new HashMap<>();
+    private static Map<String, UrlPath> paths;
+
+    public static void classInit(App app) {
+        paths = app.createMap();
+    }
+
+    public static void testClassInit() {
+        paths = new HashMap<>();
+    }
 
     public static UrlPath of(CharSequence path) {
         UrlPath urlPath = paths.get(path.toString());

@@ -20,6 +20,11 @@ package act.route;
  * #L%
  */
 
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.when;
+import static org.osgl.http.H.Method.GET;
+
 import act.ActTestBase;
 import act.app.App;
 import act.handler.RequestHandler;
@@ -28,6 +33,7 @@ import act.handler.builtin.AlwaysBadRequest;
 import act.handler.builtin.AlwaysNotFound;
 import act.handler.builtin.Echo;
 import act.handler.builtin.FileGetter;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.mockito.Matchers;
 import org.mockito.Mockito;
@@ -39,14 +45,14 @@ import org.osgl.mvc.result.NotFound;
 
 import java.io.File;
 
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.when;
-import static org.osgl.http.H.Method.GET;
-
 public class RouteTableRouterBuilderTest extends RouterTestBase {
 
     private RouteTableRouterBuilder builder;
+
+    @BeforeClass
+    public static void classInit() {
+        UrlPath.testClassInit();
+    }
 
     @Override
     protected void provisionControllerLookup(RequestHandlerResolver controllerLookup) {

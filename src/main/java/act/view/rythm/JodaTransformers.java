@@ -20,23 +20,93 @@ package act.view.rythm;
  * #L%
  */
 
+import act.Act;
+import act.app.App;
+import act.conf.AppConfig;
+import act.data.DateTimeType;
+import act.util.ActContext;
 import org.joda.time.*;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
+import org.osgl.$;
+import org.osgl.util.S;
 import org.rythmengine.extension.Transformer;
 import org.rythmengine.template.ITemplate;
 
 import java.util.Locale;
+import java.util.Objects;
+import java.util.concurrent.ConcurrentMap;
 
 public class JodaTransformers {
 
-    static String format(ReadableInstant dateTime, String pattern) {
-        DateTimeFormatter formatter = DateTimeFormat.forPattern(pattern);
+    private static class Key {
+        private DateTimeType type;
+        private Locale locale;
+        private String timezone;
+        private String pattern;
+
+        public Key(DateTimeType type, Locale locale, String timezone, String pattern) {
+            this.type = type;
+            this.locale = locale;
+            this.timezone = timezone;
+            this.pattern = pattern;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            Key key = (Key) o;
+            return type == key.type &&
+                    Objects.equals(pattern, key.pattern) &&
+                    Objects.equals(locale, key.locale) &&
+                    Objects.equals(timezone, key.timezone);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(type, locale, timezone, pattern);
+        }
+    }
+
+    public static void classInit(App app) {
+        formatters = app.createConcurrentMap();
+    }
+
+    private static ConcurrentMap<Key, DateTimeFormatter> formatters;
+
+    private static DateTimeFormatter formatter(DateTimeType type, String pattern, Locale locale, String timezone) {
+        Key key = new Key(type, locale, timezone, pattern);
+        DateTimeFormatter formatter = formatters.get(key);
+        if (null == formatter) {
+            formatter = type.defaultJodaFormatter();
+            AppConfig config = Act.appConfig();
+            if (null == locale) {
+                ActContext ctx = ActContext.Base.currentContext();
+                locale = null == ctx ? config.locale() : ctx.locale(true);
+            }
+            if (config.i18nEnabled() && $.ne(locale, config.locale())) {
+                if (S.blank(pattern)) {
+                    pattern = type.defaultPattern(config, locale);
+                }
+                formatter = DateTimeFormat.forPattern(pattern).withLocale(locale);
+                if (S.notBlank(timezone)) {
+                    formatter = formatter.withZone(DateTimeZone.forID(timezone));
+                }
+            }
+            formatters.putIfAbsent(key, formatter);
+        }
+        return formatter;
+    }
+
+    static String format(ReadableInstant dateTime, String pattern, Locale locale, String timezone) {
+        DateTimeFormatter formatter = formatter(DateTimeType.DATE_TIME, pattern, locale, timezone);
         return formatter.print(dateTime);
     }
 
-    static String format(ReadablePartial dateTime, String pattern) {
-        DateTimeFormatter formatter = DateTimeFormat.forPattern(pattern);
+    static String format(ReadablePartial dateTime, String pattern, Locale locale, String timezone) {
+        DateTimeType type = DateTimeType.of(dateTime);
+        DateTimeFormatter formatter = formatter(type, pattern, locale, timezone);
         return formatter.print(dateTime);
     }
 
@@ -46,8 +116,8 @@ public class JodaTransformers {
     }
 
     public static String shortStyle(ITemplate template, DateTime dateTime) {
-        Locale locale = null == template ? Locale.getDefault() : template.__curLocale();
-        return format(dateTime, DateTimeFormat.patternForStyle("SS", locale));
+        Locale locale = null == template ? Act.appConfig().locale() : template.__curLocale();
+        return format(dateTime, DateTimeFormat.patternForStyle("SS", locale), locale, null);
     }
 
     @Transformer(requireTemplate = true)
@@ -56,8 +126,8 @@ public class JodaTransformers {
     }
 
     public static String mediumStyle(ITemplate template, DateTime dateTime) {
-        Locale locale = null == template ? Locale.getDefault() : template.__curLocale();
-        return format(dateTime, DateTimeFormat.patternForStyle("MM", locale));
+        Locale locale = null == template ? Act.appConfig().locale() : template.__curLocale();
+        return format(dateTime, DateTimeFormat.patternForStyle("MM", locale), locale, null);
     }
 
     @Transformer(requireTemplate = true)
@@ -66,8 +136,8 @@ public class JodaTransformers {
     }
 
     public static String longStyle(ITemplate template, DateTime dateTime) {
-        Locale locale = null == template ? Locale.getDefault() : template.__curLocale();
-        return format(dateTime, DateTimeFormat.patternForStyle("LL", locale));
+        Locale locale = null == template ? Act.appConfig().locale() : template.__curLocale();
+        return format(dateTime, DateTimeFormat.patternForStyle("LL", locale), locale, null);
     }
 
     @Transformer(requireTemplate = true)
@@ -76,8 +146,8 @@ public class JodaTransformers {
     }
 
     public static String shortStyle(ITemplate template, LocalDateTime dateTime) {
-        Locale locale = null == template ? Locale.getDefault() : template.__curLocale();
-        return format(dateTime, DateTimeFormat.patternForStyle("SS", locale));
+        Locale locale = null == template ? Act.appConfig().locale() : template.__curLocale();
+        return format(dateTime, DateTimeFormat.patternForStyle("SS", locale), locale, null);
     }
 
     @Transformer(requireTemplate = true)
@@ -86,8 +156,8 @@ public class JodaTransformers {
     }
 
     public static String mediumStyle(ITemplate template, LocalDateTime dateTime) {
-        Locale locale = null == template ? Locale.getDefault() : template.__curLocale();
-        return format(dateTime, DateTimeFormat.patternForStyle("MM", locale));
+        Locale locale = null == template ? Act.appConfig().locale() : template.__curLocale();
+        return format(dateTime, DateTimeFormat.patternForStyle("MM", locale), locale, null);
     }
 
     @Transformer(requireTemplate = true)
@@ -96,8 +166,8 @@ public class JodaTransformers {
     }
 
     public static String longStyle(ITemplate template, LocalDateTime dateTime) {
-        Locale locale = null == template ? Locale.getDefault() : template.__curLocale();
-        return format(dateTime, DateTimeFormat.patternForStyle("LL", locale));
+        Locale locale = null == template ? Act.appConfig().locale() : template.__curLocale();
+        return format(dateTime, DateTimeFormat.patternForStyle("LL", locale), locale, null);
     }
 
     @Transformer(requireTemplate = true)
@@ -106,8 +176,8 @@ public class JodaTransformers {
     }
 
     public static String shortStyle(ITemplate template, LocalDate LocalDate) {
-        Locale locale = null == template ? Locale.getDefault() : template.__curLocale();
-        return format(LocalDate, DateTimeFormat.patternForStyle("S-", locale));
+        Locale locale = null == template ? Act.appConfig().locale() : template.__curLocale();
+        return format(LocalDate, DateTimeFormat.patternForStyle("S-", locale), locale, null);
     }
 
     @Transformer(requireTemplate = true)
@@ -116,8 +186,8 @@ public class JodaTransformers {
     }
 
     public static String mediumStyle(ITemplate template, LocalDate LocalDate) {
-        Locale locale = null == template ? Locale.getDefault() : template.__curLocale();
-        return format(LocalDate, DateTimeFormat.patternForStyle("M-", locale));
+        Locale locale = null == template ? Act.appConfig().locale() : template.__curLocale();
+        return format(LocalDate, DateTimeFormat.patternForStyle("M-", locale), locale, null);
     }
 
     @Transformer(requireTemplate = true)
@@ -126,8 +196,8 @@ public class JodaTransformers {
     }
 
     public static String longStyle(ITemplate template, LocalDate LocalDate) {
-        Locale locale = null == template ? Locale.getDefault() : template.__curLocale();
-        return format(LocalDate, DateTimeFormat.patternForStyle("L-", locale));
+        Locale locale = null == template ? Act.appConfig().locale() : template.__curLocale();
+        return format(LocalDate, DateTimeFormat.patternForStyle("L-", locale), locale, null);
     }
 
 
@@ -137,8 +207,8 @@ public class JodaTransformers {
     }
 
     public static String shortStyle(ITemplate template, LocalTime LocalTime) {
-        Locale locale = null == template ? Locale.getDefault() : template.__curLocale();
-        return format(LocalTime, DateTimeFormat.patternForStyle("-S", locale));
+        Locale locale = null == template ? Act.appConfig().locale() : template.__curLocale();
+        return format(LocalTime, DateTimeFormat.patternForStyle("-S", locale), locale, null);
     }
 
     @Transformer(requireTemplate = true)
@@ -147,8 +217,8 @@ public class JodaTransformers {
     }
 
     public static String mediumStyle(ITemplate template, LocalTime LocalTime) {
-        Locale locale = null == template ? Locale.getDefault() : template.__curLocale();
-        return format(LocalTime, DateTimeFormat.patternForStyle("-M", locale));
+        Locale locale = null == template ? Act.appConfig().locale() : template.__curLocale();
+        return format(LocalTime, DateTimeFormat.patternForStyle("-M", locale), locale, null);
     }
 
     @Transformer(requireTemplate = true)
@@ -157,8 +227,8 @@ public class JodaTransformers {
     }
 
     public static String longStyle(ITemplate template, LocalTime LocalTime) {
-        Locale locale = null == template ? Locale.getDefault() : template.__curLocale();
-        return format(LocalTime, DateTimeFormat.patternForStyle("-L", locale));
+        Locale locale = null == template ? Act.appConfig().locale() : template.__curLocale();
+        return format(LocalTime, DateTimeFormat.patternForStyle("-L", locale), locale, null);
     }
 
 }

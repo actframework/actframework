@@ -22,6 +22,7 @@ package act.i18n;
 
 import act.Act;
 import act.act_messages;
+import act.app.App;
 import act.util.ActContext;
 import org.osgl.$;
 import org.osgl.Osgl;
@@ -35,7 +36,6 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.text.MessageFormat;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 public class I18n {
@@ -212,7 +212,11 @@ public class I18n {
     }
 
     private static Set<String> standardsAnnotationMethods = C.newSet(C.list("declaringClass", "hashCode", "toString", "ordinal", "name", "class"));
-    private static ConcurrentMap<Class<? extends Enum>, Map<String, $.Function<Object, Object>>> enumPropertyGetterCache = new ConcurrentHashMap<>();
+    private static ConcurrentMap<Class<? extends Enum>, Map<String, $.Function<Object, Object>>> enumPropertyGetterCache;
+
+    public static void classInit(App app) {
+        enumPropertyGetterCache = app.createConcurrentMap();
+    }
 
     private static Map<String, $.Function<Object, Object>> enumPropertyGetters(Class<? extends Enum> enumClass) {
         Map<String, $.Function<Object, Object>> map = enumPropertyGetterCache.get(enumClass);

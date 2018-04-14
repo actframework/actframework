@@ -24,6 +24,7 @@ import act.ActTestBase;
 import act.data.DataPropertyRepository;
 import com.alibaba.fastjson.JSON;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.osgl.util.C;
 
@@ -38,6 +39,11 @@ public class FastJsonPropertyPreFilterTest extends ActTestBase {
     private Foo foo2;
     private DataPropertyRepository repo;
     private List<String> fooProps;
+
+    @BeforeClass
+    public static void classInit() {
+        FastJsonPropertyPreFilter.testClassInit();
+    }
 
     @Before
     public void prepare() throws Exception {

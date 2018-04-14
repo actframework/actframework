@@ -21,6 +21,7 @@ package act.inject.param;
  */
 
 import act.Destroyable;
+import act.app.App;
 import act.app.AppServiceBase;
 import act.inject.DependencyInjector;
 import act.inject.genie.GenieInjector;
@@ -29,10 +30,9 @@ import act.util.DestroyableBase;
 import act.util.SingletonBase;
 import org.osgl.inject.BeanSpec;
 
+import java.util.concurrent.ConcurrentMap;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Singleton;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 
 public class ProvidedValueLoader extends DestroyableBase implements ParamValueLoader {
     private DependencyInjector<?> injector;
@@ -76,7 +76,11 @@ public class ProvidedValueLoader extends DestroyableBase implements ParamValueLo
         lookup.clear();
     }
 
-    private static ConcurrentMap<BeanSpec, ProvidedValueLoader> lookup = new ConcurrentHashMap<BeanSpec, ProvidedValueLoader>();
+    private static ConcurrentMap<BeanSpec, ProvidedValueLoader> lookup;
+
+    public static void classInit(App app) {
+        lookup = app.createConcurrentMap();
+    }
 
     public static ProvidedValueLoader get(BeanSpec beanSpec, DependencyInjector<?> injector) {
         ProvidedValueLoader loader = lookup.get(beanSpec);

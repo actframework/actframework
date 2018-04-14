@@ -1501,6 +1501,11 @@ public class EventBus extends AppServiceBase<EventBus> {
     }
 
 
+    public static void classInit(App app) {
+        Key.typeMap = app.createConcurrentMap();
+    }
+
+
     public static boolean isAsync(AnnotatedElement c) {
         Annotation[] aa = c.getAnnotations();
         for (Annotation a : aa) {

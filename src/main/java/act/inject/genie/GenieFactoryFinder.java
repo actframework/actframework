@@ -20,6 +20,7 @@ package act.inject.genie;
  * #L%
  */
 
+import act.app.App;
 import act.app.AppByteCodeScannerBase;
 import act.asm.AnnotationVisitor;
 import act.asm.MethodVisitor;
@@ -37,7 +38,7 @@ import java.util.Set;
  */
 public class GenieFactoryFinder extends AppByteCodeScannerBase {
 
-    private static Set<String> factories = new HashSet<>();
+    private static Set<String> factories;
 
     private boolean isFactory;
 
@@ -83,6 +84,14 @@ public class GenieFactoryFinder extends AppByteCodeScannerBase {
     @Override
     protected boolean shouldScan(String className) {
         return true;
+    }
+
+    public static void classInit(App app) {
+        factories = app.createSet();
+    }
+
+    public static void testClassInit() {
+        factories = new HashSet<>();
     }
 
     static Set<String> factories() {

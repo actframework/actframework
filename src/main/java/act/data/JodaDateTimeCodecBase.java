@@ -20,27 +20,42 @@ package act.data;
  * #L%
  */
 
+import act.Act;
+import act.conf.AppConfig;
 import act.data.annotation.DateFormatPattern;
 import act.data.annotation.Pattern;
 import act.util.ActContext;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 import org.osgl.$;
-import org.osgl.util.AnnotationAware;
-import org.osgl.util.S;
-import org.osgl.util.StringValueResolver;
-import org.osgl.util.ValueObject;
+import org.osgl.util.*;
+
+import java.util.Locale;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 public abstract class JodaDateTimeCodecBase<T> extends StringValueResolver<T> implements ValueObject.Codec<T> {
 
-    private DateTimeFormatter formatter;
+    private ConcurrentMap<Locale, DateTimeFormatter> localizedDateFormats = new ConcurrentHashMap<>();
+    private boolean i18n;
+    private Locale defLocale;
+    protected DateTimeFormatter formatter;
+    private AppConfig conf;
 
     public JodaDateTimeCodecBase(DateTimeFormatter formatter) {
-        formatter(formatter);
+        E.NPE(formatter);
+        conf = Act.appConfig();
+        i18n = conf.i18nEnabled();
+        defLocale = conf.locale();
+        initFormatter(formatter);
     }
 
     public JodaDateTimeCodecBase(String pattern) {
-        formatter(formatter(pattern));
+        E.illegalArgumentIf(S.blank(pattern));
+        conf = Act.appConfig();
+        i18n = conf.i18nEnabled();
+        defLocale = conf.locale();
+        initFormatter(formatter(pattern, defLocale));
     }
 
     @Override
@@ -90,9 +105,37 @@ public abstract class JodaDateTimeCodecBase<T> extends StringValueResolver<T> im
     protected abstract JodaDateTimeCodecBase<T> create(String pattern);
 
     protected final DateTimeFormatter formatter() {
-        String pattern = ActContext.Base.currentDateFormatPattern();
-        return null == pattern ? this.formatter : formatter(sanitize(pattern));
+        ActContext ctx = ActContext.Base.currentContext();
+        String pattern = null == ctx ? null : ctx.dateFormatPattern();
+        if (S.notBlank(pattern)) {
+            String sanitizedPattern = sanitize(pattern);
+            if (null != sanitizedPattern) {
+                return formatter(sanitizedPattern, ctx.locale(true));
+            }
+        }
+        DateTimeFormatter formatter = defaultFormatter();
+        if (!i18n) {
+            return formatter;
+        }
+        if (null == ctx) {
+            return formatter;
+        }
+        Locale locale = ctx.locale();
+        if (null == locale) {
+            return formatter;
+        }
+        if (locale.equals(defLocale)) {
+            return formatter;
+        }
+        DateTimeFormatter localizedFormatter = localizedDateFormats.get(locale);
+        if (null == localizedFormatter) {
+            localizedFormatter = formatter(dateTimePattern(conf, locale), locale);
+            localizedDateFormats.putIfAbsent(locale, localizedFormatter);
+        }
+        return localizedFormatter;
     }
+
+    protected abstract String dateTimePattern(AppConfig config, Locale locale);
 
     protected String sanitize(String dateTimePattern) {
         return dateTimePattern;
@@ -102,16 +145,16 @@ public abstract class JodaDateTimeCodecBase<T> extends StringValueResolver<T> im
         return this.formatter;
     }
 
-    private void formatter(DateTimeFormatter formatter) {
-        this.formatter = $.notNull(formatter);
+    private void initFormatter(DateTimeFormatter formatter) {
+        this.formatter = $.requireNotNull(formatter);
         verify();
     }
 
-    private DateTimeFormatter formatter(String pattern) {
-        if (null == pattern) {
+    private DateTimeFormatter formatter(String pattern, Locale locale) {
+        if (S.blank(pattern)) {
             return defaultFormatter();
         }
-        return isIsoStandard(pattern) ? isoFormatter() : DateTimeFormat.forPattern(pattern);
+        return (isIsoStandard(pattern) ? isoFormatter() : DateTimeFormat.forPattern(pattern)).withLocale(locale);
     }
 
     public static boolean isIsoStandard(String pattern) {

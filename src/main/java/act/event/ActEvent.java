@@ -20,6 +20,7 @@ package act.event;
  * #L%
  */
 
+import act.app.App;
 import org.osgl.$;
 
 import java.util.EventObject;
@@ -110,6 +111,10 @@ public class ActEvent<T> extends EventObject {
     }
 
     private static Map<Class, Class> referTypes = new HashMap<>();
+
+    public static void classInit(App app) {
+
+    }
 
     private static Class<? extends EventObject> referType(Class<? extends EventObject> eventType) {
         Class<? extends EventObject> referType = referTypes.get(eventType);

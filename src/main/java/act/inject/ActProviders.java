@@ -40,19 +40,18 @@ import act.view.ViewManager;
 import act.ws.SecureTicketCodec;
 import act.ws.WebSocketContext;
 import org.osgl.$;
-import org.osgl.Osgl;
 import org.osgl.cache.CacheService;
 import org.osgl.exception.NotAppliedException;
 import org.osgl.http.H;
 import org.osgl.inject.NamedProvider;
 import org.osgl.logging.Logger;
-import org.osgl.util.C;
 import org.osgl.util.E;
 import org.osgl.web.util.UserAgent;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import java.util.HashSet;
 import java.util.Locale;
 import java.util.Set;
 import javax.inject.Provider;
@@ -65,19 +64,29 @@ public final class ActProviders {
 
     private ActProviders() {}
 
-    private static Set<Class> providedTypes = C.newSet();
+    private static Set<Class> providedTypes;
 
-    static {
+    public static void classInit(App app) {
+        providedTypes = app.createSet();
+        init(providedTypes);
+    }
+
+    public static void testClassInit() {
+        providedTypes = new HashSet<>();
+        init(providedTypes);
+    }
+
+    private static void init(final Set<Class> providedTypes) {
         registerBuiltInNamedProviders(ActProviders.class, new $.F2<Class, NamedProvider, Void>() {
             @Override
-            public Void apply(Class aClass, NamedProvider provider) throws NotAppliedException, Osgl.Break {
+            public Void apply(Class aClass, NamedProvider provider) throws NotAppliedException, $.Break {
                 providedTypes.add(aClass);
                 return null;
             }
         });
         registerBuiltInProviders(ActProviders.class, new $.F2<Class, Provider, Void>() {
             @Override
-            public Void apply(Class aClass, Provider provider) throws NotAppliedException, Osgl.Break {
+            public Void apply(Class aClass, Provider provider) throws NotAppliedException, $.Break {
                 providedTypes.add(aClass);
                 return null;
             }

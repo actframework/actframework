@@ -21,16 +21,13 @@ package act.data;
  */
 
 import act.conf.AppConfig;
-import org.osgl.logging.L;
-import org.osgl.logging.Logger;
 
+import java.util.Date;
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import java.util.Date;
 
 @Singleton
 public class DateResolver extends DateResolverBase<Date> {
-    static Logger logger = L.get(DateResolver.class);
 
     @Inject
     public DateResolver(AppConfig config) {

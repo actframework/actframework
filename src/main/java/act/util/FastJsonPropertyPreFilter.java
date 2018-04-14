@@ -20,6 +20,7 @@ package act.util;
  * #L%
  */
 
+import act.app.App;
 import act.data.DataPropertyRepository;
 import act.data.util.StringOrPattern;
 import com.alibaba.fastjson.serializer.JSONSerializer;
@@ -217,7 +218,15 @@ public class FastJsonPropertyPreFilter implements PropertyPreFilter {
         return S.join("", paths).contains("*");
     }
 
-    private static Map<Collection<String>, List<StringOrPattern>> spCache = new HashMap<>();
+    private static Map<Collection<String>, List<StringOrPattern>> spCache;
+
+    public static void classInit(App app) {
+        spCache = app.createMap();
+    }
+
+    public static void testClassInit() {
+        spCache = new HashMap<>();
+    }
 
     private boolean patternMatches(Set<String> paths, String path, boolean exclude) {
         List<StringOrPattern> spList = spList(paths);

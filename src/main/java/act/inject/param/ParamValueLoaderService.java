@@ -50,6 +50,11 @@ import org.osgl.mvc.result.Result;
 import org.osgl.mvc.util.Binder;
 import org.osgl.util.*;
 
+import java.lang.annotation.Annotation;
+import java.lang.reflect.*;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.context.Dependent;
 import javax.enterprise.context.RequestScoped;
@@ -60,11 +65,6 @@ import javax.inject.Provider;
 import javax.inject.Singleton;
 import javax.validation.*;
 import javax.validation.executable.ExecutableValidator;
-import java.lang.annotation.Annotation;
-import java.lang.reflect.*;
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 
 /**
  * Manage {@link ParamValueLoader} grouped by Method
@@ -265,7 +265,11 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
                 || Object.class.equals(field.getDeclaringClass());
     }
 
-    private static ConcurrentMap<Class, Boolean> noBindCache = new ConcurrentHashMap<>();
+    private static ConcurrentMap<Class, Boolean> noBindCache;
+
+    public static void classInit(App app) {
+        noBindCache = app.createConcurrentMap();
+    }
 
     private static boolean noBind(Class c) {
         Boolean b = noBindCache.get(c);

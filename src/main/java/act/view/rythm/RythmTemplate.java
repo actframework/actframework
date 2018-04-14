@@ -45,7 +45,7 @@ public class RythmTemplate extends TemplateBase {
     }
 
     public RythmTemplate(RythmEngine engine, String literal, boolean inline) {
-        this.engine = $.notNull(engine);
+        this.engine = $.requireNotNull(engine);
         this.literal = literal;
         this.inline = inline;
     }
@@ -58,7 +58,7 @@ public class RythmTemplate extends TemplateBase {
 
     @Override
     protected void beforeRender(MailerContext context) {
-        Locale locale = context.locale();
+        Locale locale = context.locale(true);
         engine = engine.prepare(locale);
     }
 

@@ -25,6 +25,7 @@ import org.joda.time.LocalTime;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
 
+import java.util.Locale;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
@@ -50,8 +51,12 @@ public class JodaLocalTimeCodec extends JodaReadablePatialCodecBase<LocalTime> {
 
     @Override
     protected LocalTime parse(DateTimeFormatter formatter, String value) {
-        String amended = (isIso && !value.endsWith("Z")) ? value + "Z" : value;
-        return formatter.parseLocalTime(amended);
+        if (formatter == super.formatter) {
+            // in the default case we might want to patch the value
+            String amended = (isIso && !value.endsWith("Z")) ? value + "Z" : value;
+            return formatter.parseLocalTime(amended);
+        }
+        return formatter.parseLocalTime(value);
     }
 
     @Override
@@ -71,26 +76,11 @@ public class JodaLocalTimeCodec extends JodaReadablePatialCodecBase<LocalTime> {
 
     @Override
     protected String sanitize(String dateTimePattern) {
-        if (null == dateTimePattern) {
-            return null;
-        }
-        // ensure no date part
-        if (dateTimePattern.contains("M")
-                || dateTimePattern.contains("y")
-                || dateTimePattern.contains("d")
-                || dateTimePattern.contains("Y")
-                || dateTimePattern.contains("c")
-                || dateTimePattern.contains("e")
-                || dateTimePattern.contains("x")
-                || dateTimePattern.contains("C")
-                || dateTimePattern.contains("D")
-                || dateTimePattern.contains("F")
-                || dateTimePattern.contains("w")
-                || dateTimePattern.contains("W")
-                || dateTimePattern.contains("k")
-                || dateTimePattern.contains("K")) {
-            return null;
-        }
-        return dateTimePattern;
+        return DateTimeType.TIME.sanitizePattern(dateTimePattern);
+    }
+
+    @Override
+    protected String dateTimePattern(AppConfig config, Locale locale) {
+        return config.localizedTimeFormat(locale);
     }
 }

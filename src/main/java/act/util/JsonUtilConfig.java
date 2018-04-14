@@ -22,8 +22,10 @@ package act.util;
 
 import static com.alibaba.fastjson.JSON.DEFAULT_GENERATE_FEATURE;
 
+import act.Act;
 import act.app.App;
 import act.cli.util.MappedFastJsonNameFilter;
+import act.conf.AppConfig;
 import act.data.DataPropertyRepository;
 import com.alibaba.fastjson.parser.ParserConfig;
 import com.alibaba.fastjson.serializer.*;
@@ -40,10 +42,9 @@ import org.osgl.storage.impl.SObject;
 import org.osgl.util.*;
 
 import java.io.Writer;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 public class JsonUtilConfig {
 
@@ -52,7 +53,7 @@ public class JsonUtilConfig {
         private final Object v;
         private SerializerFeature[] features;
         private SerializeFilter[] filters;
-        private String dateFormatPattern;
+        private DateFormat dateFormat;
         private boolean disableCircularReferenceDetect;
         private boolean hasPropFilter;
 
@@ -75,7 +76,13 @@ public class JsonUtilConfig {
                 }
             } else {
                 this.v = v;
-                this.dateFormatPattern = null == context ? null : context.dateFormatPattern();
+                AppConfig config = Act.appConfig();
+                Locale locale = null == context ? config.locale() : context.locale(true);
+                String dateFormatPattern = null == context ? null : context.dateFormatPattern();
+                if (S.blank(dateFormatPattern)) {
+                    dateFormatPattern = config.localizedDateTimeFormat(locale);
+                }
+                this.dateFormat = new SimpleDateFormat(dateFormatPattern, locale);
                 this.filters = initFilters(v, spec, context);
                 this.features = initFeatures(format, context);
             }
@@ -152,7 +159,7 @@ public class JsonUtilConfig {
                 IO.write((CharSequence) v, writer);
                 return;
             }
-            writeJson(writer, v, SerializeConfig.globalInstance, filters, dateFormatPattern, DEFAULT_GENERATE_FEATURE, features);
+            writeJson(writer, v, SerializeConfig.globalInstance, filters, dateFormat, DEFAULT_GENERATE_FEATURE, features);
         }
 
         public $.Func0<String> asContentProducer() {
@@ -216,7 +223,7 @@ public class JsonUtilConfig {
                                         Object object, //
                                         SerializeConfig config, //
                                         SerializeFilter[] filters, //
-                                        String dateFormat, //
+                                        DateFormat dateFormat, //
                                         int defaultFeatures, //
                                         SerializerFeature... features) {
         SerializeWriter writer = new SerializeWriter(os, defaultFeatures, features);
@@ -224,7 +231,7 @@ public class JsonUtilConfig {
         try {
             JSONSerializer serializer = new JSONSerializer(writer, config);
 
-            if (dateFormat != null && dateFormat.length() != 0) {
+            if (dateFormat != null) {
                 serializer.setDateFormat(dateFormat);
                 serializer.config(SerializerFeature.WriteDateUseDateFormat, true);
             }
