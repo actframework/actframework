@@ -272,6 +272,7 @@ public interface ActContext<CTX_TYPE extends ActContext> extends ParamValueProvi
         private Method handlerMethod;
         private Method currentMethod;
         private String pattern;
+        private List<String> renderArgNames;
 
         // (violation.propertyPath, violation)
         private Map<String, ConstraintViolation> violations;
@@ -465,6 +466,22 @@ public interface ActContext<CTX_TYPE extends ActContext> extends ParamValueProvi
                 this.template = template;
             }
             return me();
+        }
+
+        /**
+         * Called by bytecode enhancer to set the name list of the render arguments that is update
+         * by the enhancer
+         *
+         * @param names the render argument names separated by ","
+         * @return this AppContext
+         */
+        public CTX __appRenderArgNames(String names) {
+            renderArgNames = C.listOf(names.split(","));
+            return me();
+        }
+
+        public List<String> __appRenderArgNames() {
+            return renderArgNames;
         }
 
         @Override

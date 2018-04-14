@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 **1.8.8**
+* `render(...)` renders `__arg_names__` in the final result for JSON type output #626
 * Support different date time format for different locale #607
 * `me.tongfei.progressbar` runs on Java8 only #622
 * Session expiration time shall not be output using `Expires` header #623

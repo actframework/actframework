@@ -769,11 +769,7 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
      * @return this AppContext
      */
     public ActionContext __appRenderArgNames(String names) {
-        return renderArg("__arg_names__", C.listOf(names.split(",")));
-    }
-
-    public List<String> __appRenderArgNames() {
-        return renderArg("__arg_names__");
+        return super.__appRenderArgNames(names);
     }
 
     public ActionContext __controllerInstance(String className, Object instance) {

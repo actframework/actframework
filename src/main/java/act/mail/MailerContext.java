@@ -39,10 +39,10 @@ import org.osgl.util.C;
 import org.osgl.util.E;
 import org.osgl.util.S;
 
-import javax.mail.*;
-import javax.mail.internet.*;
 import java.io.File;
 import java.util.*;
+import javax.mail.*;
+import javax.mail.internet.*;
 
 public class MailerContext extends ActContext.Base<MailerContext> {
 
@@ -185,11 +185,7 @@ public class MailerContext extends ActContext.Base<MailerContext> {
      * @return this AppContext
      */
     public MailerContext __appRenderArgNames(String names) {
-        return renderArg("__arg_names__", C.listOf(names.split(",")));
-    }
-
-    public List<String> __appRenderArgNames() {
-        return renderArg("__arg_names__");
+        return super.__appRenderArgNames(names);
     }
 
     public H.Format contentType() {

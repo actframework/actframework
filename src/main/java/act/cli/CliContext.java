@@ -20,6 +20,8 @@ package act.cli;
  * #L%
  */
 
+import static act.cli.ReportProgress.Type.BAR;
+
 import act.app.ActionContext;
 import act.app.App;
 import act.cli.ascii_table.ASCIITableHeader;
@@ -41,7 +43,6 @@ import org.osgl.$;
 import org.osgl.cache.CacheService;
 import org.osgl.concurrent.ContextLocal;
 import org.osgl.http.H;
-import org.osgl.util.C;
 import org.osgl.util.E;
 import org.osgl.util.S;
 import org.xnio.streams.WriterOutputStream;
@@ -52,8 +53,6 @@ import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import static act.cli.ReportProgress.Type.BAR;
 
 public class CliContext extends ActContext.Base<CliContext> implements IASCIITable {
 
@@ -508,22 +507,6 @@ public class CliContext extends ActContext.Base<CliContext> implements IASCIITab
     @Override
     public Map<String, Object> renderArgs() {
         return super.renderArgs();
-    }
-
-    /**
-     * Called by bytecode enhancer to set the name list of the render arguments that is update
-     * by the enhancer
-     * @param names the render argument names separated by ","
-     * @return this AppContext
-     */
-    @SuppressWarnings("unused")
-    public CliContext __appRenderArgNames(String names) {
-        return renderArg("__arg_names__", C.listOf(names.split(",")));
-    }
-
-    @SuppressWarnings("unused")
-    public List<String> __appRenderArgNames() {
-        return renderArg("__arg_names__");
     }
 
     private synchronized IASCIITable tbl() {
