@@ -1,7 +1,7 @@
 package testapp.endpoint;
 
 import act.controller.Controller;
-import act.data.annotation.Pattern;
+import act.data.annotation.DateFormatPattern;
 import com.alibaba.fastjson.JSON;
 import org.joda.time.DateTime;
 import org.osgl.mvc.annotation.GetAction;
@@ -14,7 +14,7 @@ import java.util.Map;
 public class BindingWithAnnotationTestBed {
 
     @GetAction("datetime")
-    public DateTime dateTime(@Pattern("yyyyMMdd") DateTime dateTime) {
+    public DateTime dateTime(@DateFormatPattern("yyyyMMdd") DateTime dateTime) {
         return dateTime;
     }
 

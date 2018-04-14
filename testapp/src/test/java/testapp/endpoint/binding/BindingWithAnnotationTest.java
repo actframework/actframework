@@ -12,12 +12,13 @@ import java.io.IOException;
 public class BindingWithAnnotationTest extends EndpointTester {
 
     private DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyyMMdd");
+    private DateTimeFormatter printer = DateTimeFormat.mediumDateTime();
 
     @Test
     public void testDateTimeHappyPath() throws IOException {
         url("/bwa/datetime").param("dateTime", "19980221");
         DateTime dateTime = formatter.parseDateTime("19980221");
-        eq(dateTime.toString(), resp().body().string());
+        eq(printer.print(dateTime), resp().body().string());
     }
 
     @Test(expected = BadRequest.class)
