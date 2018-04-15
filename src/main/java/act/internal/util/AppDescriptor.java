@@ -143,7 +143,7 @@ public class AppDescriptor implements Serializable {
         }
         E.illegalArgumentIf(!JavaNames.isPackageOrClassName(effectPackageName),
                 "valid package name expected. found: " + effectPackageName);
-        return new AppDescriptor(ensureAppName(appName, effectPackageName, $.notNull(appVersion)),
+        return new AppDescriptor(ensureAppName(appName, effectPackageName, $.requireNotNull(appVersion)),
                 packageName,
                 appVersion);
     }
@@ -167,7 +167,7 @@ public class AppDescriptor implements Serializable {
      *      an `AppDescriptor`
      */
     public static AppDescriptor of(String appName, Class<?> entryClass, Version appVersion) {
-        return new AppDescriptor(ensureAppName(appName, entryClass, $.notNull(appVersion)),
+        return new AppDescriptor(ensureAppName(appName, entryClass, $.requireNotNull(appVersion)),
                 JavaNames.packageNameOf(entryClass),
                 appVersion);
     }

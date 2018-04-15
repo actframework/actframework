@@ -791,7 +791,7 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
     }
 
     protected T cookieDomainProvider(Provider<String> provider) {
-        this.cookieDomainProvider = $.notNull(provider);
+        this.cookieDomainProvider = $.requireNotNull(provider);
         return me();
     }
 

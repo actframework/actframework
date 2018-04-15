@@ -65,7 +65,7 @@ public class UndertowResponse extends ActResponse<UndertowResponse> {
         Condition finalPartToGo;
 
         Buffer(IoCallback callback, ReentrantLock lock) {
-            this.callback = $.notNull(callback);
+            this.callback = $.requireNotNull(callback);
             this.isSending = true;
             this.lock = lock;
         }
