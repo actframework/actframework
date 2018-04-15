@@ -1116,6 +1116,7 @@ public class App extends DestroyableBase {
         HttpConfig.defaultLocale(config.locale());
         HttpConfig.domain(config.host());
         HttpConfig.setXForwardedAllowed("all");
+        HttpConfig.setCurrentStateStore(new HttpCurrentStateStore());
     }
 
     // TODO: move this to somewhere that is more appropriate
