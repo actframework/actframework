@@ -20,6 +20,9 @@ package act.session;
  * #L%
  */
 
+import static org.osgl.http.H.Session.KEY_EXPIRATION;
+import static org.osgl.http.H.Session.KEY_EXPIRE_INDICATOR;
+
 import act.conf.AppConfig;
 import act.crypto.AppCrypto;
 import act.crypto.RotateSecretCrypto;
@@ -31,15 +34,12 @@ import org.osgl.util.Charsets;
 import org.osgl.util.Codec;
 import org.osgl.util.S;
 
-import javax.inject.Inject;
-import javax.inject.Singleton;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-
-import static org.osgl.http.H.Session.KEY_EXPIRATION;
-import static org.osgl.http.H.Session.KEY_EXPIRE_INDICATOR;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 
 @Singleton
 public class DefaultSessionCodec extends DestroyableBase implements SessionCodec {
@@ -56,7 +56,7 @@ public class DefaultSessionCodec extends DestroyableBase implements SessionCodec
         sessionWillExpire = ttlInMillis > 0;
         pingPath = conf .pingPath();
         encryptSession = conf.encryptSession();
-        this.crypto = $.notNull(crypto);
+        this.crypto = $.requireNotNull(crypto);
     }
 
     @Override

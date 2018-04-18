@@ -9,9 +9,9 @@ package act.xio.undertow;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -27,25 +27,44 @@ import act.handler.RequestHandler;
 import io.undertow.io.Receiver;
 import io.undertow.server.HttpServerExchange;
 import io.undertow.server.handlers.Cookie;
-import org.osgl.util.Codec;
-import org.osgl.util.E;
-import org.osgl.util.IO;
+import io.undertow.util.HttpString;
+import org.osgl.util.*;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
-import java.util.Deque;
-import java.util.Map;
+import java.util.*;
 
 public class UndertowRequest extends RequestImplBase<UndertowRequest> {
 
     private static final HttpStringCache HEADER_NAMES = HttpStringCache.HEADER;
+    private static final Set<HttpString> PROTECTED_HEADER_NAMES = C.set(
+            HEADER_NAMES.get("Authorization"),
+            HEADER_NAMES.get("User-Agent"),
+            HEADER_NAMES.get("Referer"),
+            HEADER_NAMES.get("Cookie"),
+            HEADER_NAMES.get("Host"),
+            HEADER_NAMES.get("Proxy-Authorization"),
+            HEADER_NAMES.get("X-Forwarded-For"),
+            HEADER_NAMES.get("X-Forwarded-Host"),
+            HEADER_NAMES.get("X-Forwarded-Proto"),
+            HEADER_NAMES.get("X-ATT-DeviceId"),
+            HEADER_NAMES.get("X-Wap-Profile"),
+            HEADER_NAMES.get("Proxy-Connection"),
+            HEADER_NAMES.get("X-UIDH"),
+            HEADER_NAMES.get("Host"),
+            HEADER_NAMES.get("Proxy-Client-Ip"),
+            HEADER_NAMES.get("Wl-Proxy-Client-Ip"),
+            HEADER_NAMES.get("HTTP_CLIENT_IP"),
+            HEADER_NAMES.get("HTTP_X_FORWARDED_FOR")
+    );
 
     private String path;
     private HttpServerExchange hse;
     private byte[] body;
     private Map<String, Deque<String>> queryParams;
+    private Map<HttpString, String> headerCache = new HashMap<>();
 
     public UndertowRequest(HttpServerExchange exchange, AppConfig config) {
         super(config);
@@ -82,12 +101,31 @@ public class UndertowRequest extends RequestImplBase<UndertowRequest> {
 
     @Override
     public String header(String name) {
-        return hse.getRequestHeaders().get(HEADER_NAMES.get(name), 0);
+        HttpString key = HEADER_NAMES.get(name);
+        String val = headerCache.get(key);
+        if (null == val) {
+            if (!PROTECTED_HEADER_NAMES.contains(key)) {
+                val = paramVal(headerQueryKey(name));
+            }
+            if (null == val) {
+                val = hse.getRequestHeaders().get(key, 0);
+            }
+            headerCache.put(key, val);
+        }
+        return val;
+    }
+
+    private String headerQueryKey(String header) {
+        return S.concat("act_header_", S.underscore(header.toLowerCase()));
     }
 
     @Override
     public Iterable<String> headers(String name) {
-        return hse.getRequestHeaders().eachValue(HEADER_NAMES.get(name));
+        Iterable<String> vals = C.listOf(paramVals(headerQueryKey(name)));
+        if (((List) vals).isEmpty()) {
+            vals = hse.getRequestHeaders().eachValue(HEADER_NAMES.get(name));
+        }
+        return vals;
     }
 
     @Override
@@ -201,5 +239,10 @@ public class UndertowRequest extends RequestImplBase<UndertowRequest> {
         return hse;
     }
 
+    public static void main(String[] args) {
+        HttpString a = HEADER_NAMES.get("X-Forwarded-For");
+        HttpString b = HEADER_NAMES.get("x-forwarded-for");
+        System.out.println(a.equals(b));
+    }
 
 }

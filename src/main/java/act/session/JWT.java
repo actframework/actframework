@@ -31,12 +31,12 @@ import org.osgl.util.Codec;
 import org.osgl.util.E;
 import org.osgl.util.S;
 
-import javax.inject.Inject;
-import javax.inject.Singleton;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 
 @Singleton
 public class JWT extends SingletonBase {
@@ -146,8 +146,8 @@ public class JWT extends SingletonBase {
     }
 
     public JWT(HMAC hmac, String issuer) {
-        this.hmac = $.notNull(hmac);
-        this.issuer = $.notNull(issuer);
+        this.hmac = $.requireNotNull(hmac);
+        this.issuer = $.requireNotNull(issuer);
     }
 
     public Token newToken() {

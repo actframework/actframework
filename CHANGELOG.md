@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 **1.8.8**
+* Support getting Header value from query parameters #631
 * `H.Request.current()` returns `null` #628
 * `render(...)` renders `__arg_names__` in the final result for JSON type output #626
 * Support different date time format for different locale #607
