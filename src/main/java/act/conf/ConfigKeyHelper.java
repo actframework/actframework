@@ -71,6 +71,7 @@ class ConfigKeyHelper {
         return getConfiguration(key, defVal, configuration);
     }
     <T> T getConfiguration(String key, $.F0<?> defVal, Map<String, ?> configuration) {
+        key = Config.canonical(key);
         if (key.endsWith(".enabled") || key.endsWith(".disabled")) {
             String key0 = S.beforeLast(key, ".");
             Boolean B = getEnabled(key0, configuration, defVal);
@@ -390,7 +391,11 @@ class ConfigKeyHelper {
             }
             String expression = s.substring(n0, n);
             if (S.notBlank(expression)) {
-                Object o = getConfiguration(expression, null, map);
+                // in case getting from Env variable
+                Object o = map.get(expression);
+                if (null == o) {
+                    o = getConfiguration(expression, null, map);
+                }
                 if (null != o) {
                     sb.append(o);
                 } else {

@@ -1159,7 +1159,7 @@ public enum AppConfigKey implements ConfigKey {
     }
 
     AppConfigKey(String key, Object defVal) {
-        this.key = key;
+        this.key = Config.canonical(key);
         this.defVal = defVal;
     }
 
@@ -1237,7 +1237,7 @@ public enum AppConfigKey implements ConfigKey {
             if (S.notBlank(suffix) && suffixes.contains(suffix) && !nonAliasSuffixes.contains(suffix)) {
                 Set<String> aliases = ConfigKeyHelper.aliases(key, suffix);
                 for (String alias : aliases) {
-                    lookup.put(alias, k);
+                    lookup.put(Config.canonical(alias), k);
                 }
             }
         }
@@ -1251,7 +1251,7 @@ public enum AppConfigKey implements ConfigKey {
      */
     public static AppConfigKey valueOfIgnoreCase(String s) {
         E.illegalArgumentIf(S.blank(s), "config key cannot be empty");
-        return lookup.get(s.trim().toUpperCase());
+        return lookup.get(Config.canonical(s));
     }
 
 }

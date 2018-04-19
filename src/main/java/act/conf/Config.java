@@ -21,9 +21,10 @@ package act.conf;
  */
 
 import act.util.DestroyableBase;
+import org.osgl.$;
 import org.osgl.exception.ConfigurationException;
 import org.osgl.exception.UnexpectedNewInstanceException;
-import org.osgl.util.C;
+import org.osgl.util.Keyword;
 import org.osgl.util.S;
 
 import java.util.HashMap;
@@ -157,7 +158,7 @@ public abstract class Config<E extends ConfigKey> extends DestroyableBase {
     /**
      * Look up configuration by a <code>String<code/> key. If the String key
      * can be converted into {@link AppConfigKey rythm configuration key}, then
-     * it is converted and call to {@link #get(ConfigKey)} method. Otherwise
+     * it is converted and call to {@link #get(ConfigKey, Object)} method. Otherwise
      * the original configuration map is used to fetch the value from the string key
      *
      * @param key
@@ -177,30 +178,8 @@ public abstract class Config<E extends ConfigKey> extends DestroyableBase {
     }
 
     public <T> T getIgnoreCase(String key) {
-        if (key.startsWith(PREFIX)) {
-            key = key.substring(PREFIX_LEN);
-        }
-        T t = get(key);
-        if (null != t) {
-            return t;
-        }
-        key = key.toUpperCase();
-        for (Map.Entry<String, Object> entries : raw.entrySet()) {
-            if (entries.getKey().toUpperCase().equals(key)) {
-                Object o = entries.getValue();
-                if (o instanceof String) {
-                    return (T) AppConfigKey.helper.evaluate(o.toString(), raw);
-                }
-                return (T) o;
-            } else if (entries.getKey().replace('_', '.').equals(key.replace('_', '.'))) {
-                Object o = entries.getValue();
-                if (o instanceof String) {
-                    return (T) AppConfigKey.helper.evaluate(o.toString(), raw);
-                }
-                return (T) o;
-            }
-        }
-        return null;
+        // because of #635 we just return get(key)
+        return get(key);
     }
 
     public Map<String, Object> rawConfiguration() {
@@ -208,6 +187,7 @@ public abstract class Config<E extends ConfigKey> extends DestroyableBase {
     }
 
     public Map<String, Object> subSet(String namespace) {
+        namespace = Config.canonical(namespace);
         if (!namespace.endsWith(".")) {
             namespace = namespace + ".";
         }
@@ -234,10 +214,19 @@ public abstract class Config<E extends ConfigKey> extends DestroyableBase {
 
     protected abstract ConfigKey keyOf(String s);
 
+    public static String canonical(String key) {
+        return Keyword.of(key).dotted();
+    }
+
+    public static boolean matches(String k1, String k2) {
+        return $.eq(Keyword.of(k1), Keyword.of(k2));
+    }
+
     private static final Object NULL = new Object() {
         @Override
         public String toString() {
             return "null";
         }
     };
+
 }

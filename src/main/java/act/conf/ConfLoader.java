@@ -55,13 +55,24 @@ public abstract class ConfLoader<T extends Config> extends LogSupport {
 
     public T load(File resourceRoot) {
         // load conf from disk
-        Map<String, ?> rawConf = null == resourceRoot ? new HashMap<>() : loadConfFromDisk(resourceRoot);
+        Map<String, Object> rawConf = null == resourceRoot ? new HashMap<>() : loadConfFromDisk(resourceRoot);
 
         // load conf from System.properties
         Properties sysProps = System.getProperties();
         rawConf.putAll((Map) sysProps);
 
+        // load conf from Environment variable
+        Map<String, String> envMap = System.getenv();
+        for (Map.Entry<String, String> entry : envMap.entrySet()) {
+            String key = entry.getKey();
+            if (key.startsWith("act_env_")) {
+                key = Config.canonical(key.substring(8));
+                rawConf.put(key, entry.getValue());
+            }
+        }
+
         // strip off "act." prefix if has any
+        // canonical all keys
         rawConf = processConf(rawConf);
         processScanPackage(rawConf);
 
@@ -162,7 +173,9 @@ public abstract class ConfLoader<T extends Config> extends LogSupport {
                         trace("loading app properties from jar entry: %s", entry.getKey());
                     }
                     p.load(jar.getInputStream(entry.getValue()));
-                    conf.putAll(p);
+                    for (Map.Entry<Object, Object> pEntry: p.entrySet()) {
+                        conf.put(Config.canonical(S.string(entry.getKey())), entry.getValue());
+                    }
                 } catch (IOException e) {
                     logger.warn("Error loading %s from jar file: %s", entry.getKey(), jarFile);
                 }
@@ -196,7 +209,7 @@ public abstract class ConfLoader<T extends Config> extends LogSupport {
             logger.warn("Cannot read conf file[%s]", conf.getAbsolutePath());
             return new HashMap<>();
         }
-        InputStream is = IO.is(conf);
+        InputStream is = IO.inputStream(conf);
         Properties p = new Properties();
         try {
             p.load(is);
@@ -215,7 +228,7 @@ public abstract class ConfLoader<T extends Config> extends LogSupport {
         for (String s : conf.keySet()) {
             Object o = conf.get(s);
             if (s.startsWith("act.")) s = s.substring(4);
-            m.put(s, o);
+            m.put(Config.canonical(s), o);
         }
         return m;
     }

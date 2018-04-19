@@ -10,6 +10,7 @@ DEBUG_PORT=5005
 PROFILE=
 SYS_PROP=
 HELP=0
+export act_env_gh636_conf=bar
 
 # As long as there is at least one more argument, keep looping
 while [[ $# -gt 0 ]]; do

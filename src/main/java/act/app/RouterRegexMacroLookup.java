@@ -21,6 +21,7 @@ package act.app;
  */
 
 import act.conf.AppConfig;
+import act.conf.Config;
 import act.inject.util.ConfigResourceLoader;
 import act.util.LogSupport;
 import org.osgl.util.IO;
@@ -82,7 +83,9 @@ public class RouterRegexMacroLookup extends LogSupport {
         InputStream is = ConfigResourceLoader.load(macroDefinitionFile, InputStream.class, true);
         if (null != is) {
             Properties properties = IO.loadProperties(is);
-            this.macros.putAll((Map) properties);
+            for (Map.Entry entry : properties.entrySet()) {
+                this.macros.put(Config.canonical(S.string(entry.getKey())), S.string(entry.getValue()));
+            }
         }
     }
 
@@ -104,7 +107,7 @@ public class RouterRegexMacroLookup extends LogSupport {
         if (!isMacro(macro)) {
             return macro;
         }
-        String definition = macros.get(macro);
+        String definition = macros.get(Config.canonical(macro));
         if (null == definition) {
             warn("possible missing definition of macro[%s]", macro);
         }

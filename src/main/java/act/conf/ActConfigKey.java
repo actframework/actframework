@@ -106,7 +106,7 @@ public enum ActConfigKey implements ConfigKey {
     }
 
     ActConfigKey(String key, Object defVal) {
-        this.key = key;
+        this.key = Config.canonical(key);
         this.defVal = defVal;
     }
 
@@ -166,7 +166,7 @@ public enum ActConfigKey implements ConfigKey {
 
     static {
         for (ActConfigKey k : values()) {
-            lookup.put(k.key().toUpperCase(), k);
+            lookup.put(k.key(), k);
         }
     }
 
@@ -178,7 +178,7 @@ public enum ActConfigKey implements ConfigKey {
      */
     public static ActConfigKey valueOfIgnoreCase(String s) {
         if (S.empty(s)) throw new IllegalArgumentException();
-        return lookup.get(s.trim().toUpperCase());
+        return lookup.get(Config.canonical(s));
     }
 
 }

@@ -24,6 +24,7 @@ import act.Act;
 import act.app.App;
 import act.app.AppClassLoader;
 import act.conf.AppConfig;
+import act.conf.Config;
 import act.inject.DefaultValue;
 import act.inject.DependencyInjector;
 import act.util.ClassNode;
@@ -60,7 +61,7 @@ class GenieProviders {
                 return C.list();
             }
             final List<Class<?>> list = new ArrayList<>();
-            Osgl.Visitor<ClassNode> visitor = new Osgl.Visitor<ClassNode>() {
+            $.Visitor<ClassNode> visitor = new Osgl.Visitor<ClassNode>() {
                 @Override
                 public void visit(ClassNode classNode) throws Osgl.Break {
                     Class c = $.classForName(classNode.name(), cl);
@@ -111,7 +112,7 @@ class GenieProviders {
                 public Object get() {
                     final AppConfig appConfig = app().config();
                     DependencyInjector injector = Act.injector();
-                    final String confKey = value().toString();
+                    final String confKey = Config.canonical(value().toString());
                     boolean isImpl = confKey.endsWith(".impl");
                     if (this.spec.isInstanceOf(Map.class)) {
                         String prefix = confKey;
@@ -122,7 +123,7 @@ class GenieProviders {
                         BeanSpec valSpec = BeanSpec.of(valType, injector);
                         int pos = prefix.length() + 1;
                         for (String key : confMap.keySet()) {
-                            if (S.eq(key, prefix)) {
+                            if (Config.matches(key, prefix)) {
                                 continue;
                             }
                             Object val = confMap.get(key);
