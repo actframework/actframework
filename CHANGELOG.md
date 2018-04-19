@@ -1,6 +1,8 @@
 # ActFramework Change Log
 
 **1.8.8**
+* `scan_package` setting in configuration file is not effective #634
+* Passing multiple packages in `Act.start(String, String)` trigger `IllegalArgumentException` #633
 * Support getting Header value from query parameters #631
 * `H.Request.current()` returns `null` #628
 * `render(...)` renders `__arg_names__` in the final result for JSON type output #626

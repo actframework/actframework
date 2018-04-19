@@ -917,7 +917,7 @@ public final class Act {
         }
         String packageName = appDescriptor.getPackageName();
         LOGGER.debug("run fullstack application with package[%s] %s", packageName, profile);
-        final String SCAN_PACKAGE = AppConfigKey.SCAN_PACKAGE.key();
+        final String SCAN_PACKAGE = AppConfigKey.SCAN_PACKAGE_SYS.key();
         if (S.notBlank(packageName)) {
             System.setProperty(SCAN_PACKAGE, packageName);
         }

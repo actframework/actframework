@@ -209,7 +209,8 @@ public class AppDescriptor implements Serializable {
      *      an `AppDescriptor` instance
      */
     public static AppDescriptor of(String appName, String packageName) {
-        return of(appName, packageName, Version.ofPackage(packageName));
+        String[] packages = packageName.split(S.COMMON_SEP);
+        return of(appName, packageName, Version.ofPackage(packages[0]));
     }
 
     /**

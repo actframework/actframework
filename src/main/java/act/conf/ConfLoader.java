@@ -20,6 +20,8 @@ package act.conf;
  * #L%
  */
 
+import static act.conf.ConfigKey.KEY_COMMON_CONF_TAG;
+
 import act.Act;
 import act.app.ProjectLayout;
 import act.app.RuntimeDirs;
@@ -29,12 +31,13 @@ import org.osgl.util.C;
 import org.osgl.util.IO;
 import org.osgl.util.S;
 
-import java.io.*;
+import java.io.File;
+import java.io.FilenameFilter;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.*;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
-
-import static act.conf.ConfigKey.KEY_COMMON_CONF_TAG;
 
 /**
  * Loading configurations from conf file or conf dir
@@ -60,6 +63,7 @@ public abstract class ConfLoader<T extends Config> extends LogSupport {
 
         // strip off "act." prefix if has any
         rawConf = processConf(rawConf);
+        processScanPackage(rawConf);
 
         // initialize the configuration with all loaded data
         return create(rawConf);
@@ -214,6 +218,13 @@ public abstract class ConfLoader<T extends Config> extends LogSupport {
             m.put(s, o);
         }
         return m;
+    }
+    private void processScanPackage(Map rawConfig) {
+        String scanPackage = (String) rawConfig.get(AppConfigKey.SCAN_PACKAGE.key());
+        if (null == scanPackage) {
+            Object v = rawConfig.get(AppConfigKey.SCAN_PACKAGE_SYS.key());
+            rawConfig.put(AppConfigKey.SCAN_PACKAGE.key(), v);
+        }
     }
     private Map loadConfFromDir(File resourceDir) {
         if (!resourceDir.exists()) {

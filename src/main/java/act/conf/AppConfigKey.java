@@ -827,6 +827,17 @@ public enum AppConfigKey implements ConfigKey {
     SCAN_PACKAGE("scan_package"),
 
     /**
+     * `scan_package.sys`
+     *
+     * **Note** Not to be used by application.
+     *
+     * This is Used by ActFramework only. When app started it will either
+     * get the specified scan package from parameter, or infer scan package
+     * from calling class.
+     */
+    SCAN_PACKAGE_SYS("scan_package.sys"),
+
+    /**
      * {@code secret}
      * Specifies the secret key the application used to do general
      * encrypt/decrypt/sign etc
