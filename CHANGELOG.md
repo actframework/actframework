@@ -1,6 +1,8 @@
 # ActFramework Change Log
 
 **1.8.8**
+* Support bind to Cookie directly #638
+* Dependency Injection with generic type #637
 * Support passing settings via environment variable #636
 * Use canonical property key #635
 * `scan_package` setting in configuration file is not effective #634

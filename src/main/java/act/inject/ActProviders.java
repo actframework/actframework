@@ -46,6 +46,7 @@ import org.osgl.http.H;
 import org.osgl.inject.NamedProvider;
 import org.osgl.logging.Logger;
 import org.osgl.util.E;
+import org.osgl.util.S;
 import org.osgl.web.util.UserAgent;
 
 import java.lang.reflect.Field;
@@ -247,6 +248,18 @@ public final class ActProviders {
         @Override
         public CacheService get(String name) {
             return app().cache(name);
+        }
+    };
+
+    public static final NamedProvider<H.Cookie> COOKIE = new NamedProvider<H.Cookie>() {
+        @Override
+        public H.Cookie get(String s) {
+            ActionContext ctx = ActionContext.current();
+            if (null == ctx) {
+                return null;
+            }
+            H.Request req = ctx.req();
+            return null == req ? null : req.cookie(S.ensure(s).strippedOff("", "Cookie"));
         }
     };
 
