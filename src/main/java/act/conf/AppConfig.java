@@ -860,6 +860,7 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
         enumResolvingCaseSensitive = b;
         return me();
     }
+    @Deprecated
     public boolean enumResolvingCaseSensitive() {
         synchronized (ENUM_RESOLVING_CASE_SENSITIVE) {
             if (null == enumResolvingCaseSensitive) {
@@ -871,6 +872,25 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
     private void _mergeEnumResolvingCaseSensitive(AppConfig conf) {
         if (!hasConfiguration(ENUM_RESOLVING_CASE_SENSITIVE)) {
             enumResolvingCaseSensitive = conf.enumResolvingCaseSensitive;
+        }
+    }
+
+    private Boolean enumResolvingExactMatch;
+    protected T enumResolvingExactMatch(boolean b) {
+        enumResolvingExactMatch = b;
+        return me();
+    }
+    public boolean enumResolvingExactMatch() {
+        synchronized (ENUM_RESOLVING_EXACT_MATCH) {
+            if (null == enumResolvingExactMatch) {
+                enumResolvingExactMatch = get(ENUM_RESOLVING_EXACT_MATCH, enumResolvingCaseSensitive());
+            }
+            return enumResolvingExactMatch;
+        }
+    }
+    private void _mergeEnumResolvingExactMatch(AppConfig config) {
+        if (!hasConfiguration(ENUM_RESOLVING_EXACT_MATCH)) {
+            enumResolvingExactMatch = config.enumResolvingExactMatch;
         }
     }
 

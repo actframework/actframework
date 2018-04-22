@@ -27,6 +27,7 @@ import act.data.SObjectResolver;
 import org.osgl.$;
 import org.osgl.storage.ISObject;
 import org.osgl.util.AnnotationAware;
+import org.osgl.util.E;
 import org.osgl.util.S;
 import org.osgl.util.StringValueResolver;
 
@@ -95,11 +96,13 @@ public class StringValueResolverManager extends AppServiceBase<StringValueResolv
         StringValueResolver<T> r = resolvers.get(targetType);
         if (null == r && Enum.class.isAssignableFrom(targetType)) {
             final Class<? extends Enum> clazz = $.cast(targetType);
-            if (app().config().enumResolvingCaseSensitive()) {
+            if (app().config().enumResolvingExactMatch()) {
                 r = new StringValueResolver<T>(targetType) {
                     @Override
                     public T resolve(String value) {
-                        //TODO should we handle exception here?
+                        if (null == value) {
+                            return null;
+                        }
                         return (T)Enum.valueOf(clazz, value);
                     }
                 };
@@ -107,7 +110,12 @@ public class StringValueResolverManager extends AppServiceBase<StringValueResolv
                 r = new StringValueResolver<T>(targetType) {
                     @Override
                     public T resolve(String value) {
-                        return (T) $.asEnum(clazz, value);
+                        if (null == value) {
+                            return null;
+                        }
+                        T result = (T) $.asEnum(clazz, value);
+                        E.illegalArgumentIf(null == result, "No matching enum value of " + targetType.getCanonicalName() + " by string: " + value);
+                        return result;
                     }
                 };
             }

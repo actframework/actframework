@@ -1,6 +1,9 @@
 # ActFramework Change Log
 
 **1.8.8**
+* Enum resolving - support non-exact keyword based matching #643
+* Enum resolving - it shall respond with `400 Bad Request` if resolving failed #642
+* `NullPointerException` while resolving `int[]` from Query parameter #641
 * Support bind to Cookie directly #638
 * Dependency Injection with generic type #637
 * Support passing settings via environment variable #636

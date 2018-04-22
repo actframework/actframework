@@ -384,8 +384,21 @@ public enum AppConfigKey implements ConfigKey {
      * allow enum resolving for request parameters to ignore case
      *
      * Default value: `false` meaning enum resolving is case insensitive
+     *
+     * This is deprecated since v1.8.8, use {@link #ENUM_RESOLVING_EXACT_MATCH}
+     * instead
      */
+    @Deprecated
     ENUM_RESOLVING_CASE_SENSITIVE("enum.resolving.case_sensitive"),
+
+    /**
+     * `act.enum.resolving.exact_match` specifies whether it
+     * allow enum resolving for request parameters to match enum name
+     * exactly.
+     *
+     * Default value: `false`, meaning enum resolving is based on keyword matching
+     */
+    ENUM_RESOLVING_EXACT_MATCH("enum.resolving.exact_match"),
 
     /**
      * {@code act.fmt.date} specifies the default date format used to
