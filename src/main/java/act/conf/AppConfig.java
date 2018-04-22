@@ -1714,7 +1714,7 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
         }
     }
 
-    private String dateFmt = null;
+    private volatile String dateFmt = null;
 
     protected T dateFormat(String fmt) {
         E.illegalArgumentIf(S.blank(fmt), "Date format cannot be empty");
@@ -1724,18 +1724,23 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
 
     public String dateFormat() {
         if (null == dateFmt) {
-            dateFmt = get(FORMAT_DATE, null);
-            if (null == dateFmt) {
-                dateFmt = ((SimpleDateFormat) DateFormat.getDateInstance(DateFormat.DEFAULT, locale())).toPattern();
-            } else if (S.eq(dateFmt, "long", S.IGNORECASE)) {
-                dateStyle = DateTimeStyle.LONG;
-                dateFmt = ((SimpleDateFormat) DateFormat.getDateInstance(DateFormat.LONG, locale())).toPattern();
-            } else if (S.eq(dateFmt, "medium", S.IGNORECASE)) {
-                dateStyle = DateTimeStyle.MEDIUM;
-                dateFmt = ((SimpleDateFormat) DateFormat.getDateInstance(DateFormat.LONG, locale())).toPattern();
-            } else if (S.eq(dateFmt, "short", S.IGNORECASE)) {
-                dateStyle = DateTimeStyle.SHORT;
-                dateFmt = ((SimpleDateFormat) DateFormat.getDateInstance(DateFormat.SHORT, locale())).toPattern();
+            synchronized (this) {
+                if (null == dateFmt) {
+                    dateStyle = DateTimeStyle.MEDIUM;
+                    dateFmt = get(FORMAT_DATE, null);
+                    if (null == dateFmt) {
+                        dateFmt = ((SimpleDateFormat) DateFormat.getDateInstance(DateFormat.DEFAULT, locale())).toPattern();
+                    } else if (S.eq(dateFmt, "long", S.IGNORECASE)) {
+                        dateStyle = DateTimeStyle.LONG;
+                        dateFmt = ((SimpleDateFormat) DateFormat.getDateInstance(DateFormat.LONG, locale())).toPattern();
+                    } else if (S.eq(dateFmt, "medium", S.IGNORECASE)) {
+                        dateStyle = DateTimeStyle.MEDIUM;
+                        dateFmt = ((SimpleDateFormat) DateFormat.getDateInstance(DateFormat.LONG, locale())).toPattern();
+                    } else if (S.eq(dateFmt, "short", S.IGNORECASE)) {
+                        dateStyle = DateTimeStyle.SHORT;
+                        dateFmt = ((SimpleDateFormat) DateFormat.getDateInstance(DateFormat.SHORT, locale())).toPattern();
+                    }
+                }
             }
         }
         return dateFmt;
@@ -1764,7 +1769,7 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
     }
 
 
-    private String timeFmt = null;
+    private volatile String timeFmt = null;
 
     protected T timeFormat(String fmt) {
         E.illegalArgumentIf(S.blank(fmt), "Time format cannot be empty");
@@ -1774,18 +1779,23 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
 
     public String timeFormat() {
         if (null == timeFmt) {
-            timeFmt = get(FORMAT_TIME, null);
-            if (null == timeFmt) {
-                timeFmt = ((SimpleDateFormat) DateFormat.getTimeInstance(DateFormat.DEFAULT, locale())).toPattern();
-            } else if (S.eq(timeFmt, "long", S.IGNORECASE)) {
-                timeStyle = DateTimeStyle.LONG;
-                timeFmt = ((SimpleDateFormat) DateFormat.getTimeInstance(DateFormat.LONG, locale())).toPattern();
-            } else if (S.eq(timeFmt, "medium", S.IGNORECASE)) {
-                timeStyle = DateTimeStyle.MEDIUM;
-                timeFmt = ((SimpleDateFormat) DateFormat.getTimeInstance(DateFormat.LONG, locale())).toPattern();
-            } else if (S.eq(timeFmt, "short", S.IGNORECASE)) {
-                timeStyle = DateTimeStyle.SHORT;
-                timeFmt = ((SimpleDateFormat) DateFormat.getTimeInstance(DateFormat.SHORT, locale())).toPattern();
+            synchronized (this) {
+                if (null == timeFmt) {
+                    timeStyle = DateTimeStyle.MEDIUM;
+                    timeFmt = get(FORMAT_TIME, null);
+                    if (null == timeFmt) {
+                        timeFmt = ((SimpleDateFormat) DateFormat.getTimeInstance(DateFormat.DEFAULT, locale())).toPattern();
+                    } else if (S.eq(timeFmt, "long", S.IGNORECASE)) {
+                        timeStyle = DateTimeStyle.LONG;
+                        timeFmt = ((SimpleDateFormat) DateFormat.getTimeInstance(DateFormat.LONG, locale())).toPattern();
+                    } else if (S.eq(timeFmt, "medium", S.IGNORECASE)) {
+                        timeStyle = DateTimeStyle.MEDIUM;
+                        timeFmt = ((SimpleDateFormat) DateFormat.getTimeInstance(DateFormat.LONG, locale())).toPattern();
+                    } else if (S.eq(timeFmt, "short", S.IGNORECASE)) {
+                        timeStyle = DateTimeStyle.SHORT;
+                        timeFmt = ((SimpleDateFormat) DateFormat.getTimeInstance(DateFormat.SHORT, locale())).toPattern();
+                    }
+                }
             }
         }
         return timeFmt;
@@ -1814,7 +1824,7 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
     }
     
 
-    private String dateTimeFmt = null;
+    private volatile String dateTimeFmt = null;
 
     protected T dateTimeFormat(String fmt) {
         E.illegalArgumentIf(S.blank(fmt), "Date time format cannot be empty");
@@ -1824,18 +1834,23 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
 
     public String dateTimeFormat() {
         if (null == dateTimeFmt) {
-            dateTimeFmt = get(FORMAT_DATE_TIME, null);
-            if (null == dateTimeFmt) {
-                dateTimeFmt = ((SimpleDateFormat) DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.DEFAULT, locale())).toPattern();
-            } else if (S.eq(dateTimeFmt, "long", S.IGNORECASE)) {
-                dateTimeStyle = DateTimeStyle.LONG;
-                dateTimeFmt = ((SimpleDateFormat) DateFormat.getDateTimeInstance(DateFormat.LONG, DateFormat.LONG, locale())).toPattern();
-            } else if (S.eq(dateTimeFmt, "medium", S.IGNORECASE)) {
-                dateTimeStyle = DateTimeStyle.MEDIUM;
-                dateTimeFmt = ((SimpleDateFormat) DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.MEDIUM, locale())).toPattern();
-            } else if (S.eq(dateTimeFmt, "short", S.IGNORECASE)) {
-                dateTimeStyle = DateTimeStyle.SHORT;
-                dateTimeFmt = ((SimpleDateFormat) DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT, locale())).toPattern();
+            synchronized (this) {
+                if (null == dateTimeFmt) {
+                    dateTimeStyle = DateTimeStyle.MEDIUM;
+                    dateTimeFmt = get(FORMAT_DATE_TIME, null);
+                    if (null == dateTimeFmt) {
+                        dateTimeFmt = ((SimpleDateFormat) DateFormat.getDateTimeInstance(DateFormat.DEFAULT, DateFormat.DEFAULT, locale())).toPattern();
+                    } else if (S.eq(dateTimeFmt, "long", S.IGNORECASE)) {
+                        dateTimeStyle = DateTimeStyle.LONG;
+                        dateTimeFmt = ((SimpleDateFormat) DateFormat.getDateTimeInstance(DateFormat.LONG, DateFormat.LONG, locale())).toPattern();
+                    } else if (S.eq(dateTimeFmt, "medium", S.IGNORECASE)) {
+                        dateTimeStyle = DateTimeStyle.MEDIUM;
+                        dateTimeFmt = ((SimpleDateFormat) DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.MEDIUM, locale())).toPattern();
+                    } else if (S.eq(dateTimeFmt, "short", S.IGNORECASE)) {
+                        dateTimeStyle = DateTimeStyle.SHORT;
+                        dateTimeFmt = ((SimpleDateFormat) DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT, locale())).toPattern();
+                    }
+                }
             }
         }
         return dateTimeFmt;
@@ -2934,11 +2949,11 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
             }
         }
         if (null == s) {
-            DateTimeStyle style = dateTimeStyle;
+            DateTimeStyle style = dateTimeStyle();
             if (dateTimeType == DateTimeType.DATE) {
-                style = dateStyle;
+                style = dateStyle();
             } else if (dateTimeType == DateTimeType.TIME) {
-                style = timeStyle;
+                style = timeStyle();
             }
             s = dateTimeType.defaultPattern(style, locale);
         } else {
@@ -2955,18 +2970,39 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
     }
 
 
-    private DateTimeStyle dateTimeStyle;
+    private volatile DateTimeStyle dateTimeStyle;
     public DateTimeStyle dateTimeStyle() {
+        if (null == dateTimeStyle) {
+            synchronized (this) {
+                if (null == dateTimeStyle) {
+                    dateTimeFormat();
+                }
+            }
+        }
         return dateTimeStyle;
     }
 
-    private DateTimeStyle dateStyle;
+    private volatile DateTimeStyle dateStyle;
     public DateTimeStyle dateStyle() {
+        if (null == dateStyle) {
+            synchronized (this) {
+                if (null == dateStyle) {
+                    dateFormat();
+                }
+            }
+        }
         return dateStyle;
     }
 
-    private DateTimeStyle timeStyle;
+    private volatile DateTimeStyle timeStyle;
     public DateTimeStyle timeStyle() {
+        if (null == timeStyle) {
+            synchronized (this) {
+                if (null == timeStyle) {
+                    timeFormat();
+                }
+            }
+        }
         return timeStyle;
     }
 }

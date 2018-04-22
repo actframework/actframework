@@ -22,9 +22,9 @@ package act.data;
 
 import act.conf.AppConfig;
 
+import java.sql.Timestamp;
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import java.sql.Timestamp;
 
 @Singleton
 public class SqlTimestampResolver extends DateResolverBase<Timestamp> {
@@ -36,11 +36,6 @@ public class SqlTimestampResolver extends DateResolverBase<Timestamp> {
 
     public SqlTimestampResolver(String pattern) {
         super(pattern);
-    }
-
-    @Override
-    protected String configuredPattern(AppConfig config) {
-        return config.dateTimeFormat();
     }
 
     @Override
