@@ -80,7 +80,7 @@ public class JsonUtilConfig {
                 Locale locale = null == context ? config.locale() : context.locale(true);
                 String dateFormatPattern = null == context ? null : context.dateFormatPattern();
                 if (S.blank(dateFormatPattern)) {
-                    dateFormatPattern = config.localizedDateTimeFormat(locale);
+                    dateFormatPattern = config.i18nEnabled() ? config.localizedDateTimeFormat(locale) : config.dateTimeFormat();
                 }
                 this.dateFormat = new SimpleDateFormat(dateFormatPattern, locale);
                 this.filters = initFilters(v, spec, context);
