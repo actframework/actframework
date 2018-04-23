@@ -76,7 +76,7 @@ public abstract class DateResolverBase<T extends Date> extends StringValueResolv
     }
 
     protected String configuredPattern(AppConfig config) {
-        return config.dateTimeFormat();
+        return config.dateTimePattern();
     }
 
     protected abstract T cast(Date date);
@@ -132,7 +132,7 @@ public abstract class DateResolverBase<T extends Date> extends StringValueResolv
     }
 
     protected String localizedPattern(Locale locale) {
-        return config.localizedDateTimeFormat(locale);
+        return config.localizedDateTimePattern(locale);
     }
 
 }

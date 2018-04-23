@@ -1,7 +1,7 @@
 # ActFramework Change Log
 
 **1.8.8**
-* fmt.date in app.properties #645
+* JSON Writer shall use default date/time pattern setting when i18n is not enabled - related to #645
 * Enum resolving - support non-exact keyword based matching #643
 * Enum resolving - it shall respond with `400 Bad Request` if resolving failed #642
 * `NullPointerException` while resolving `int[]` from Query parameter #641

@@ -50,7 +50,7 @@ public class DateFormatFactory implements IDateFormatFactory {
         df = cache.get(key);
         if (null == df) {
             if (null == pattern) {
-                pattern = config.localizedDateTimeFormat(locale);
+                pattern = config.localizedDateTimePattern(locale);
             }
             df = new SimpleDateFormat(pattern, locale);
             if (null != timezone) {

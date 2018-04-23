@@ -39,12 +39,12 @@ public enum DateTimeType {
     DATE() {
         @Override
         public String defaultPattern(AppConfig config) {
-            return config.dateFormat();
+            return config.datePattern();
         }
 
         @Override
         public String defaultPattern(AppConfig config, Locale locale) {
-            return config.localizedDateFormat(locale);
+            return config.localizedDatePattern(locale);
         }
 
         @Override
@@ -66,12 +66,12 @@ public enum DateTimeType {
     TIME() {
         @Override
         public String defaultPattern(AppConfig config) {
-            return config.timeFormat();
+            return config.timePattern();
         }
 
         @Override
         public String defaultPattern(AppConfig config, Locale locale) {
-            return config.localizedTimeFormat(locale);
+            return config.localizedTimePattern(locale);
         }
 
         @Override
@@ -93,12 +93,12 @@ public enum DateTimeType {
     DATE_TIME() {
         @Override
         public String defaultPattern(AppConfig config) {
-            return config.dateTimeFormat();
+            return config.dateTimePattern();
         }
 
         @Override
         public String defaultPattern(AppConfig config, Locale locale) {
-            return config.localizedDateTimeFormat(locale);
+            return config.localizedDateTimePattern(locale);
         }
 
         @Override

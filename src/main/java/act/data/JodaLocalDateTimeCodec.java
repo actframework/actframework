@@ -46,7 +46,7 @@ public class JodaLocalDateTimeCodec extends JodaReadablePatialCodecBase<LocalDat
 
     @Inject
     public JodaLocalDateTimeCodec(AppConfig config) {
-        this(config.dateTimeFormat());
+        this(config.dateTimePattern());
     }
 
     @Override
@@ -72,6 +72,6 @@ public class JodaLocalDateTimeCodec extends JodaReadablePatialCodecBase<LocalDat
 
     @Override
     protected String dateTimePattern(AppConfig config, Locale locale) {
-        return config.localizedDateTimeFormat(locale);
+        return config.localizedDateTimePattern(locale);
     }
 }

@@ -80,9 +80,15 @@ public class JsonUtilConfig {
                 Locale locale = null == context ? config.locale() : context.locale(true);
                 String dateFormatPattern = null == context ? null : context.dateFormatPattern();
                 if (S.blank(dateFormatPattern)) {
-                    dateFormatPattern = config.i18nEnabled() ? config.localizedDateTimeFormat(locale) : config.dateTimeFormat();
+                    if (!config.i18nEnabled() || locale.equals(config.locale())) {
+                        this.dateFormat = config.dateTimeFormat();
+                    } else {
+                        dateFormatPattern = config.localizedDateTimePattern(locale);
+                        this.dateFormat = new SimpleDateFormat(dateFormatPattern, locale);
+                    }
+                } else {
+                    this.dateFormat = new SimpleDateFormat(dateFormatPattern, locale);
                 }
-                this.dateFormat = new SimpleDateFormat(dateFormatPattern, locale);
                 this.filters = initFilters(v, spec, context);
                 this.features = initFeatures(format, context);
             }
