@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 **1.8.8**
+* `ActionContext.loginAndRedirect` does not trigger redirect to happen #648
 * Add act version info in the error page in dev mode #639
 * JSON Writer shall use default date/time pattern setting when i18n is not enabled - related to #645
 * Enum resolving - support non-exact keyword based matching #643

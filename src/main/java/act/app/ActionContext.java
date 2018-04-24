@@ -984,7 +984,7 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
      */
     public void loginAndRedirect(String username, String url) {
         login(username);
-        redirect(url);
+        throw redirect(url);
     }
 
     /**
