@@ -174,7 +174,7 @@ public class UndertowResponse extends ActResponse<UndertowResponse> {
 
     public UndertowResponse(HttpServerExchange exchange, AppConfig config) {
         super(config);
-        hse = $.notNull(exchange);
+        hse = $.requireNotNull(exchange);
         hse.getResponseHeaders().put(_SERVER, config.serverHeader());
     }
 

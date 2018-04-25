@@ -47,7 +47,7 @@ public class Echo extends FastRequestHandler implements ExpressHandler {
 
     @Override
     public void handle(ActionContext context) {
-        H.Response resp = context.prepareRespForWrite();
+        H.Response resp = context.resp();
         if (S.notBlank(contentType)) {
             resp.contentType(contentType);
         }

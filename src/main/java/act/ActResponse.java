@@ -24,8 +24,6 @@ import act.app.ActionContext;
 import act.conf.AppConfig;
 import org.osgl.$;
 import org.osgl.http.H;
-import org.osgl.logging.LogManager;
-import org.osgl.logging.Logger;
 import org.osgl.mvc.MvcConfig;
 import org.osgl.mvc.result.Ok;
 import org.osgl.mvc.result.Redirect;
