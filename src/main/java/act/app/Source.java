@@ -154,7 +154,7 @@ public class Source {
     }
 
     void compiled(byte[] bytecode) {
-        this.bytes = $.notNull(bytecode);
+        this.bytes = $.requireNotNull(bytecode);
         updateState(State.COMPILED);
     }
 
@@ -163,7 +163,7 @@ public class Source {
     }
 
     void enhanced(byte[] bytecode) {
-        this.bytes = $.notNull(bytecode);
+        this.bytes = $.requireNotNull(bytecode);
         updateState(State.ENHANCED);
     }
 

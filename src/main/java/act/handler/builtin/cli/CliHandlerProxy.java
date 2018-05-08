@@ -49,9 +49,9 @@ public final class CliHandlerProxy extends CliHandlerBase {
     private volatile CommandExecutor executor = null;
 
     public CliHandlerProxy(CommanderClassMetaInfo classMetaInfo, CommandMethodMetaInfo metaInfo, App app) {
-        this.methodMetaInfo = $.notNull(metaInfo);
-        this.classMetaInfo = $.notNull(classMetaInfo);
-        this.app = $.notNull(app);
+        this.methodMetaInfo = $.requireNotNull(metaInfo);
+        this.classMetaInfo = $.requireNotNull(classMetaInfo);
+        this.app = $.requireNotNull(app);
     }
 
     @Override

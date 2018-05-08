@@ -36,9 +36,9 @@ public class FilteredTreeNode implements TreeNode {
     }
 
     public FilteredTreeNode(List<TreeNode> path, TreeNode theNode, TreeNodeFilter filter) {
-        this.theNode = $.notNull(theNode);
-        this.filter = $.notNull(filter);
-        this.path = C.list($.notNull(path));
+        this.theNode = $.requireNotNull(theNode);
+        this.filter = $.requireNotNull(filter);
+        this.path = C.list($.requireNotNull(path));
     }
 
     @Override

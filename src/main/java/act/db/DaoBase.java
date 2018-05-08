@@ -53,9 +53,9 @@ public abstract class DaoBase<ID_TYPE, MODEL_TYPE, QUERY_TYPE extends Dao.Query<
     }
 
     public DaoBase(Class<ID_TYPE> idType, Class<MODEL_TYPE> modelType) {
-        this.idType = $.notNull(idType);
+        this.idType = $.requireNotNull(idType);
         this.idClass = Generics.classOf(idType);
-        this.modelType = $.notNull(modelType);
+        this.modelType = $.requireNotNull(modelType);
         this.modelClass = Generics.classOf(modelType);
     }
 

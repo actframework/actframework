@@ -66,7 +66,7 @@ public abstract class HandlerMethodMetaInfo<T extends HandlerMethodMetaInfo> ext
      */
     protected HandlerMethodMetaInfo(HandlerMethodMetaInfo copy, ControllerClassMetaInfo clsInfo) {
         E.illegalArgumentIf(!clsInfo.isMyAncestor(copy.classInfo()));
-        this.clsInfo = $.notNull(clsInfo);
+        this.clsInfo = $.requireNotNull(clsInfo);
         this.name = copy.name;
         this.invokeType = copy.invokeType;
         this.actContextInjection = copy.actContextInjection;

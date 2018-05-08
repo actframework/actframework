@@ -30,7 +30,7 @@ public class ActStringValueResolver extends Osgl.F2<String, Class<?>, Object> {
     private App app;
 
     public ActStringValueResolver(App app) {
-        this.app = $.notNull(app);
+        this.app = $.requireNotNull(app);
     }
 
     @Override

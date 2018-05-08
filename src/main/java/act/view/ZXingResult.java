@@ -54,7 +54,7 @@ public class ZXingResult extends Result {
 
     public ZXingResult(String content, BarcodeFormat barcodeFormat, ErrorCorrectionLevel errorCorrectionLevel) {
         super(H.Status.OK, content);
-        this.barcodeFormat = $.notNull(barcodeFormat);
+        this.barcodeFormat = $.requireNotNull(barcodeFormat);
         this.errorCorrectionLevel = errorCorrectionLevel;
         setDefaultDimension();
     }

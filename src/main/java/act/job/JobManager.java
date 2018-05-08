@@ -26,15 +26,14 @@ import act.app.App;
 import act.app.AppServiceBase;
 import act.app.AppThreadFactory;
 import act.app.event.SysEventId;
-import act.event.SysEventListenerBase;
 import act.event.OnceEventListenerBase;
+import act.event.SysEventListenerBase;
 import act.mail.MailerContext;
 import act.util.ProgressGauge;
 import act.util.SimpleProgressGauge;
 import org.joda.time.DateTime;
 import org.joda.time.Seconds;
 import org.osgl.$;
-import org.osgl.Osgl;
 import org.osgl.exception.NotAppliedException;
 import org.osgl.logging.LogManager;
 import org.osgl.logging.Logger;
@@ -130,10 +129,10 @@ public class JobManager extends AppServiceBase<JobManager> {
     /**
      * Run a job by ID now
      * @param jobId the job ID
-     * @see #prepare(Osgl.Function)
+     * @see #prepare($.Function)
      */
     public void now(String jobId) {
-        Job job = $.notNull(jobById(jobId));
+        Job job = $.requireNotNull(jobById(jobId));
         executor().submit(job);
     }
 

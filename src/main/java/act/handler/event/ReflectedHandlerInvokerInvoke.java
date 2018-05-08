@@ -37,7 +37,7 @@ public class ReflectedHandlerInvokerInvoke extends ActEvent<ReflectedHandlerInvo
 
     public ReflectedHandlerInvokerInvoke(ReflectedHandlerInvoker source, ActionContext context) {
         super(source);
-        this.context = $.notNull(context);
+        this.context = $.requireNotNull(context);
     }
 
     public ActionContext context() {

@@ -45,7 +45,7 @@ public class CacheSupportMetaInfo {
         meta.enabled = true;
         meta.ttl = ttl;
         meta.supportPost = supportPost;
-        meta.keyGenerator = $.notNull(keyGenerator);
+        meta.keyGenerator = $.requireNotNull(keyGenerator);
         return meta;
     }
 }

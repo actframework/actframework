@@ -363,7 +363,7 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
                 break;
             }
         }
-        return new ActionMethodMetaInfo($.notNull(actionInfo), ctrlInfo);
+        return new ActionMethodMetaInfo($.requireNotNull(actionInfo), ctrlInfo);
     }
 
     private WebSocketConnectionHandler tryGenerateWebSocketConnectionHandler(ActionMethodMetaInfo methodInfo) {

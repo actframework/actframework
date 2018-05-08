@@ -78,7 +78,7 @@ public abstract class WebSocketConnectionHandler extends RequestHandlerBase {
     }
 
     public WebSocketConnectionHandler(ActionMethodMetaInfo methodInfo, WebSocketConnectionManager manager) {
-        this.connectionManager = $.notNull(manager);
+        this.connectionManager = $.requireNotNull(manager);
         if (null == methodInfo) {
             this.isWsHandler = false;
             this.disabled = true;
@@ -86,7 +86,7 @@ public abstract class WebSocketConnectionHandler extends RequestHandlerBase {
         }
         App app = manager.app();
         this.cl = app.classLoader();
-        this.handler = $.notNull(methodInfo);
+        this.handler = $.requireNotNull(methodInfo);
         this.controller = handler.classInfo();
 
         this.paramLoaderService = app.service(ParamValueLoaderManager.class).get(WebSocketContext.class);

@@ -132,17 +132,17 @@ public class EntityClassMetaInfo {
 
     void createdAtField(EntityFieldMetaInfo fieldInfo) {
         E.illegalStateIf(null != createdAtField, "createdAt field already set");
-        this.createdAtField = $.notNull(fieldInfo);
+        this.createdAtField = $.requireNotNull(fieldInfo);
     }
 
     void lastModifiedAtField(EntityFieldMetaInfo fieldInfo) {
         E.illegalArgumentIf(null != lastModifiedAtField, "lastModifiedAt field already set");
-        this.lastModifiedAtField = $.notNull(fieldInfo);
+        this.lastModifiedAtField = $.requireNotNull(fieldInfo);
     }
 
     void idField(EntityFieldMetaInfo fieldInfo) {
         E.illegalArgumentIf(null != idField, "ID field already set");
-        this.idField = $.notNull(fieldInfo);
+        this.idField = $.requireNotNull(fieldInfo);
     }
 
     private void mergeFrom(ClassNode parent, EntityMetaInfoRepo repo) {

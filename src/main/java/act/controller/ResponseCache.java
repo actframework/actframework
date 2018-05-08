@@ -56,7 +56,7 @@ public class ResponseCache extends ActResponse implements Serializable {
     public ResponseCache() {}
 
     public ResponseCache(ActResponse realResponse) {
-        this.realResponse = $.notNull(realResponse);
+        this.realResponse = $.requireNotNull(realResponse);
     }
 
     public void applyTo(ActResponse response) {

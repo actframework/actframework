@@ -33,7 +33,7 @@ public abstract class MapCodec<T extends Map<String, Object>> implements ValueOb
     private Class<T> targetClass;
 
     public MapCodec(Class<T> targetClass) {
-        this.targetClass = $.notNull(targetClass);
+        this.targetClass = $.requireNotNull(targetClass);
     }
 
     @Override

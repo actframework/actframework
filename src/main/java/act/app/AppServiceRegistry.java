@@ -47,7 +47,7 @@ class AppServiceRegistry {
 
     @Inject
     AppServiceRegistry(App app) {
-        this.app = $.notNull(app);
+        this.app = $.requireNotNull(app);
     }
 
     synchronized void register(final AppService service) {

@@ -84,7 +84,7 @@ public class MetricInfoTree {
         private boolean isRoot;
 
         MetricInfoNode(MetricInfo info) {
-            this.info = $.notNull(info);
+            this.info = $.requireNotNull(info);
             this.isRoot = !addToParent();
         }
 
@@ -130,7 +130,7 @@ public class MetricInfoTree {
         $.Function<MetricInfo, String> labelGetter;
 
         NodeDecorator($.Function<MetricInfo, String> labelGetter) {
-            this.labelGetter = $.notNull(labelGetter);
+            this.labelGetter = $.requireNotNull(labelGetter);
         }
 
         TreeNode decorate(final MetricInfoNode node) {

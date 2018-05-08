@@ -40,7 +40,7 @@ SimpleRestfulServiceBase<
     private DAO_TYPE dao;
 
     public SimpleRestfulServiceBase(DAO_TYPE dao) {
-        this.dao = $.notNull(dao);
+        this.dao = $.requireNotNull(dao);
     }
 
     @GetAction

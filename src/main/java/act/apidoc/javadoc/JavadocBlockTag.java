@@ -45,7 +45,6 @@ package act.apidoc.javadoc;
 import static act.apidoc.javadoc.Utils.nextWord;
 
 import org.osgl.$;
-import org.osgl.Lang;
 import org.osgl.util.S;
 
 /**
@@ -102,7 +101,7 @@ public class JavadocBlockTag {
 
     private Type type;
     private JavadocDescription content;
-    private Lang.Option<String> name = $.none();
+    private $.Option<String> name = $.none();
     private String tagName;
 
     public JavadocBlockTag(Type type, String content) {
@@ -132,7 +131,7 @@ public class JavadocBlockTag {
         return content;
     }
 
-    public Lang.Option<String> getName() {
+    public $.Option<String> getName() {
         return name;
     }
 

@@ -41,7 +41,7 @@ public class EntityFieldMetaInfo {
     private EntityClassMetaInfo classInfo;
 
     EntityFieldMetaInfo(EntityClassMetaInfo classInfo) {
-        this.classInfo = $.notNull(classInfo);
+        this.classInfo = $.requireNotNull(classInfo);
     }
 
     public Trait trait() {
@@ -49,7 +49,7 @@ public class EntityFieldMetaInfo {
     }
 
     public void trait(Trait trait) {
-        this.trait = $.notNull(trait);
+        this.trait = $.requireNotNull(trait);
         if (Trait.CREATED == trait) {
             classInfo.createdAtField(this);
         } else if (Trait.LAST_MODIFIED == trait) {

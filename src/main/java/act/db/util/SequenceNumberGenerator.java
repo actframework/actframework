@@ -39,7 +39,7 @@ public class SequenceNumberGenerator {
     private static volatile  _SequenceNumberGenerator impl;
 
     public static void registerImpl(_SequenceNumberGenerator impl) {
-        SequenceNumberGenerator.impl = $.notNull(impl);
+        SequenceNumberGenerator.impl = $.requireNotNull(impl);
     }
 
     public static long next(String name) {

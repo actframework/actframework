@@ -36,7 +36,7 @@ public class SimpleProgressGauge extends DestroyableBase implements ProgressGaug
     private List<Listener> listeners = new ArrayList<>();
 
     private SimpleProgressGauge(ProgressGauge delegate) {
-        this.delegate = $.notNull(delegate);
+        this.delegate = $.requireNotNull(delegate);
     }
 
     public SimpleProgressGauge(int maxHint) {

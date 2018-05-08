@@ -67,7 +67,8 @@ public class JobAnnotationProcessor extends AppHolderBase<JobAnnotationProcessor
         if (Cron.class.isAssignableFrom(anno)) {
             registerCron(job, evaluateExpression(value, anno));
         } else if (AlongWith.class.isAssignableFrom(anno)) {
-            registerAlongWith(job, value);
+            int delayInSeconds = info.delayInSeconds;
+            registerAlongWith(job, value, delayInSeconds);
         } else if (Every.class.isAssignableFrom(anno)) {
             registerEvery(job, evaluateExpression(value, anno), info.startImmediately);
         } else if (FixedDelay.class.isAssignableFrom(anno)) {
@@ -78,7 +79,8 @@ public class JobAnnotationProcessor extends AppHolderBase<JobAnnotationProcessor
             registerInvokeBefore(job, value);
         } else if (OnAppStart.class.isAssignableFrom(anno)) {
             boolean async = info.async;
-            registerOnAppStart(job, async);
+            int delayInSeconds = info.delayInSeconds;
+            registerOnAppStart(job, async, delayInSeconds);
         } else if (OnAppStop.class.isAssignableFrom(anno)) {
             boolean async = info.async;
             registerOnAppStop(job, async);
@@ -110,8 +112,12 @@ public class JobAnnotationProcessor extends AppHolderBase<JobAnnotationProcessor
         JobTrigger.cron(expression).register(job, manager);
     }
 
-    private void registerAlongWith(Job job, String targetJobId) {
-        JobTrigger.alongWith(targetJobId).register(job, manager);
+    private void registerAlongWith(Job job, String targetJobId, int delayInSeconds) {
+        if (delayInSeconds > 0) {
+            JobTrigger.delayAfter(targetJobId, delayInSeconds).register(job, manager);
+        } else {
+            JobTrigger.alongWith(targetJobId).register(job, manager);
+        }
     }
 
     private void registerEvery(Job job, String expression, boolean startImmediately) {
@@ -130,8 +136,8 @@ public class JobAnnotationProcessor extends AppHolderBase<JobAnnotationProcessor
         JobTrigger.before(targetJobId).register(job, manager);
     }
 
-    private void registerOnAppStart(Job job, boolean async) {
-        JobTrigger.onAppStart(async).register(job, manager);
+    private void registerOnAppStart(Job job, boolean async, int delayInSeconds) {
+        JobTrigger.onAppStart(async, delayInSeconds).register(job, manager);
     }
 
     private void registerOnAppStop(Job job, boolean async) {

@@ -34,7 +34,7 @@ public abstract class AppHolderBase<T extends AppHolderBase> extends Destroyable
     }
 
     protected AppHolderBase(App app) {
-        this.app = $.notNull(app);
+        this.app = $.requireNotNull(app);
     }
 
     public T app(App app) {

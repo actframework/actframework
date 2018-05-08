@@ -30,7 +30,7 @@ public class CacheParams {
     public String key;
 
     public CacheParams(String key, int ttl) {
-        this.key = $.notNull(key);
+        this.key = $.requireNotNull(key);
         this.ttl = ttl;
     }
 }

@@ -90,7 +90,7 @@ public class I18n {
         }
         ResourceBundle bundle;
         try {
-            bundle = ResourceBundle.getBundle(bundleName, $.notNull(locale), Act.app().classLoader());
+            bundle = ResourceBundle.getBundle(bundleName, $.requireNotNull(locale), Act.app().classLoader());
         } catch (MissingResourceException e) {
             return msgId;
         }

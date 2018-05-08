@@ -56,7 +56,7 @@ public class SimpleMetricStore implements MetricStore, Serializable {
     private transient boolean dataSync = true;
 
     public SimpleMetricStore(SimpleMetricPlugin plugin) {
-        this.plugin = $.notNull(plugin);
+        this.plugin = $.requireNotNull(plugin);
         synchronizer = new FileSynchronizer();
         SimpleMetricStore persisted = synchronizer.read();
         if (null != persisted) {

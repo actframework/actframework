@@ -20,6 +20,9 @@ package act.job;
  * #L%
  */
 
+import static act.util.SimpleProgressGauge.wsJobProgressTag;
+import static org.osgl.Osgl.F0;
+
 import act.Act;
 import act.app.App;
 import act.app.event.SysEventId;
@@ -40,9 +43,6 @@ import org.osgl.util.S;
 
 import java.util.*;
 import java.util.concurrent.Callable;
-
-import static act.util.SimpleProgressGauge.wsJobProgressTag;
-import static org.osgl.Osgl.F0;
 
 /**
  * A `Job` is a piece of logic that can be run/scheduled in ActFramework
@@ -142,7 +142,7 @@ public class Job extends DestroyableBase implements Runnable {
 
     Job(String id, JobManager manager, final Callable<?> callable) {
         this.id = id;
-        this.manager = $.notNull(manager);
+        this.manager = $.requireNotNull(manager);
         this.oneTime = true;
         this.app = manager.app();
         this.jobProgressTag = wsJobProgressTag(id);
@@ -180,7 +180,7 @@ public class Job extends DestroyableBase implements Runnable {
 
     Job(String id, JobManager manager, $.Function<ProgressGauge, ?> worker, boolean oneTime) {
         this.id = id;
-        this.manager = $.notNull(manager);
+        this.manager = $.requireNotNull(manager);
         $.F1<ProgressGauge, ?> f1 = $.f1(worker);
         this.worker = f1.curry(progress);
         this.oneTime = oneTime;

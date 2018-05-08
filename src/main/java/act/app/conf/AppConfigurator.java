@@ -162,7 +162,7 @@ public abstract class AppConfigurator<T extends AppConfigurator> extends AppConf
         }
 
         public CsrfSetting protector(CSRFProtector protector) {
-            this.protector = $.notNull(protector);
+            this.protector = $.requireNotNull(protector);
             return this;
         }
 

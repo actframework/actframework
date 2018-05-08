@@ -1,6 +1,8 @@
 # ActFramework Change Log
 
 **1.8.8**
+* Add helper methods to `LogSupport` for line printing #659
+* Allow set delay time for `@OnAppStart` and `@AlongWith` #658
 * `echo` handler shall set `Content-Type` header #650
 * `ActionContext.loginAndRedirect` does not trigger redirect to happen #648
 * Add act version info in the error page in dev mode #639

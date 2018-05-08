@@ -85,7 +85,7 @@ public class CommandMethodMetaInfo extends DestroyableBase {
     }
 
     public CommandMethodMetaInfo view(CliView view) {
-        this.view = $.notNull(view);
+        this.view = $.requireNotNull(view);
         return this;
     }
 

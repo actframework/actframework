@@ -35,7 +35,7 @@ public class CompoundSesssionMapper implements SessionMapper {
     }
 
     public CompoundSesssionMapper(List<SessionMapper> mappers) {
-        this.sessionMappers = $.notNull(mappers);
+        this.sessionMappers = $.requireNotNull(mappers);
     }
 
     @Override

@@ -44,6 +44,17 @@ public @interface OnAppStart {
     boolean async() default false;
 
     /**
+     * Specify the delay in seconds.
+     *
+     * Once this is set and the delay seconds is greater than 0, the job will
+     * be start after `delay` seconds after app started. And the job will
+     * be executed asynchronously.
+     *
+     * @return the delay time in seconds
+     */
+    int delayInSeconds() default -1;
+
+    /**
      * Specify the ID of the scheduled job. Default value: empty string
      * @return the job id
      */

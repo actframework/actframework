@@ -37,7 +37,7 @@ public class UndertowWebSocketConnection extends DestroyableBase implements WebS
     private final String username;
 
     public UndertowWebSocketConnection(WebSocketChannel channel, H.Session session) {
-        this.channel = $.notNull(channel);
+        this.channel = $.requireNotNull(channel);
         this.sessionId = session.id();
         this.username = session.get(Act.appConfig().sessionKeyUsername());
     }

@@ -72,9 +72,9 @@ public class CollectionASCIITableAware<T> implements IASCIITableAware {
 		if (objList != null && !objList.isEmpty() && properties != null && !properties.isEmpty()) {
 			//Populate header
 			String header;
-			headers = new ArrayList<ASCIITableHeader>(properties.size());
+			headers = new ArrayList<>(properties.size());
 			int titleSize = title.size();
-			properties = new ArrayList<String>(properties);
+			properties = new ArrayList<>(properties);
 			for (int i = 0 ; i < properties.size() ; i ++) {
 				String prop = properties.get(i);
 				header = prop;

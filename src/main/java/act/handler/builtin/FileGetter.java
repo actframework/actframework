@@ -45,7 +45,7 @@ public class FileGetter extends FastRequestHandler {
     }
 
     public FileGetter(File base) {
-        this.base = $.notNull(base);
+        this.base = $.requireNotNull(base);
         this.delegate = verifyBase(base);
     }
 

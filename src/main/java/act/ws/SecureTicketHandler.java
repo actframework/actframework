@@ -45,7 +45,7 @@ public class SecureTicketHandler extends RequestHandlerBase {
 
     @Inject
     public SecureTicketHandler(SecureTicketCodec codec) {
-        this.secureTicketCodec = $.notNull(codec);
+        this.secureTicketCodec = $.requireNotNull(codec);
     }
 
     @Override

@@ -89,7 +89,7 @@ public interface SecureTicketCodec<T> {
         public Base() {this(C.<String>set());}
 
         public Base(Collection<String> keys) {
-            this.keys = C.set($.notNull(keys));
+            this.keys = C.set($.requireNotNull(keys));
         }
 
         public Base(String ... keys) {

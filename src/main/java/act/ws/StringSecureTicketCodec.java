@@ -58,22 +58,22 @@ public class StringSecureTicketCodec extends SecureTicketCodec.Base<String> {
     }
 
     public StringSecureTicketCodec(AppCrypto crypto) {
-        this.crypto = $.notNull(crypto);
+        this.crypto = $.requireNotNull(crypto);
     }
 
     public StringSecureTicketCodec(AppCrypto crypto, Collection<String> keys) {
         super(keys);
-        this.crypto = $.notNull(crypto);
+        this.crypto = $.requireNotNull(crypto);
     }
 
     public StringSecureTicketCodec(AppCrypto crypto, String... keys) {
         super(keys);
-        this.crypto = $.notNull(crypto);
+        this.crypto = $.requireNotNull(crypto);
     }
 
     public StringSecureTicketCodec(AppCrypto crypto, String keys) {
         super(keys);
-        this.crypto = $.notNull(crypto);
+        this.crypto = $.requireNotNull(crypto);
     }
 
     @Override

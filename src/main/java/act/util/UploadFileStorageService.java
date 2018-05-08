@@ -131,7 +131,7 @@ public class UploadFileStorageService extends FileSystemService {
             }
             buf = new byte[threshold];
             this.threshold = threshold;
-            this.file = $.notNull(file);
+            this.file = $.requireNotNull(file);
         }
 
         @Override

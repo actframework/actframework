@@ -228,6 +228,8 @@ public class JobByteCodeScanner extends AppByteCodeScannerBase {
                         this.method.id(S.string(value));
                     } else if ("startImmediately".equals(name)) {
                         this.currentInfo.startImmediately = Boolean.parseBoolean(value.toString());
+                    } else if ("delayInSeconds".equals(name)) {
+                        this.currentInfo.delayInSeconds = Integer.parseInt(value.toString());
                     }
                     super.visit(name, value);
                 }

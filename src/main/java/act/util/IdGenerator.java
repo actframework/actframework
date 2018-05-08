@@ -330,10 +330,10 @@ public class IdGenerator {
      * Create a default IdGenerator with specified node id provider, start id provider and sequence provider:
      */
     public IdGenerator(NodeIdProvider nodeIdProvider, StartIdProvider startIdProvider, SequenceProvider sequenceProvider, LongEncoder longEncoder) {
-        this.nodeIdProvider = $.notNull(nodeIdProvider);
-        this.startIdProvider = $.notNull(startIdProvider);
-        this.sequenceProvider = $.notNull(sequenceProvider);
-        this.longEncoder = $.notNull(longEncoder);
+        this.nodeIdProvider = $.requireNotNull(nodeIdProvider);
+        this.startIdProvider = $.requireNotNull(startIdProvider);
+        this.sequenceProvider = $.requireNotNull(sequenceProvider);
+        this.longEncoder = $.requireNotNull(longEncoder);
     }
 
     /**

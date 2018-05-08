@@ -20,6 +20,10 @@ package act.job;
  * #L%
  */
 
+import static act.app.event.SysEventId.START;
+import static act.app.event.SysEventId.STOP;
+import static act.job.JobManager.sysEventJobId;
+
 import act.app.App;
 import act.app.event.SysEventId;
 import act.conf.AppConfig;
@@ -39,10 +43,6 @@ import java.util.EventObject;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-
-import static act.app.event.SysEventId.START;
-import static act.app.event.SysEventId.STOP;
-import static act.job.JobManager.sysEventJobId;
 
 /**
  * A `JobTrigger` triggers a {@link Job} to be executed
@@ -97,6 +97,10 @@ public abstract class JobTrigger {
     }
 
     static JobTrigger of(AppConfig config, OnAppStart anno) {
+        int delayInSeconds = anno.delayInSeconds();
+        if (delayInSeconds > 0) {
+            return delayAfter(START, delayInSeconds);
+        }
         if (anno.async()) {
             return alongWith(START);
         } else {
@@ -143,7 +147,12 @@ public abstract class JobTrigger {
     static JobTrigger of(AppConfig config, AlongWith anno) {
         String id = anno.value();
         E.illegalArgumentIf(S.blank(id), "associate job ID cannot be empty");
-        return new _AlongWith(id);
+        int delayInSeconds = anno.delayInSeconds();
+        if (delayInSeconds > 0) {
+            return new _DelayAfter(id, delayInSeconds);
+        } else {
+            return new _AlongWith(id);
+        }
     }
 
     static JobTrigger of(AppConfig config, InvokeAfter anno) {
@@ -186,7 +195,10 @@ public abstract class JobTrigger {
         return new _Every(duration, timeUnit, startImmediately);
     }
 
-    static JobTrigger onAppStart(boolean async) {
+    static JobTrigger onAppStart(boolean async, int delayInSeconds) {
+        if (delayInSeconds > 0) {
+            return delayAfter(START, delayInSeconds);
+        }
         return async ? alongWith(START) : after(START);
     }
 
@@ -224,6 +236,14 @@ public abstract class JobTrigger {
 
     static JobTrigger after(SysEventId sysEvent) {
         return after(sysEventJobId(sysEvent));
+    }
+
+    static JobTrigger delayAfter(String jobId, int delayInSeconds) {
+        return new _DelayAfter(jobId, delayInSeconds);
+    }
+
+    static JobTrigger delayAfter(SysEventId sysEvent, int delayInSeconds) {
+        return delayAfter(sysEventJobId(sysEvent), delayInSeconds);
     }
 
     static class _Cron extends JobTrigger {
@@ -444,6 +464,31 @@ public abstract class JobTrigger {
         @Override
         void associate(Job theJob, Job toJob) {
             toJob.addFollowingJob(theJob);
+        }
+    }
+
+    private static class _DelayAfter extends _AssociatedTo {
+
+        private int delayInSeconds;
+
+        _DelayAfter(String targetId, int delayInSeconds) {
+            super(targetId);
+            this.delayInSeconds = delayInSeconds;
+        }
+
+        @Override
+        public String toString() {
+            return S.concat("delay %ss after ", delayInSeconds, targetId);
+        }
+
+        @Override
+        void associate(final Job theJob, final Job toJob) {
+            toJob.addPrecedenceJob(new Job(toJob.id() + "-delay-" + delayInSeconds, toJob.manager()) {
+                @Override
+                public void run() {
+                    toJob.manager().delay(theJob, delayInSeconds, TimeUnit.SECONDS);
+                }
+            });
         }
     }
 

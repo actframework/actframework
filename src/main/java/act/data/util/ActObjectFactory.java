@@ -30,7 +30,7 @@ public class ActObjectFactory extends Osgl.F1<Class<?>, Object> {
     private App app;
 
     public ActObjectFactory(App app) {
-        this.app = $.notNull(app);
+        this.app = $.requireNotNull(app);
     }
 
     @Override

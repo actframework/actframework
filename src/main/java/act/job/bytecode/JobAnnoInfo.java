@@ -20,18 +20,19 @@ package act.job.bytecode;
  * #L%
  */
 
+import static act.util.AnnotationUtil.tryGetDefaultValue;
+
 import act.app.event.SysEventId;
 import com.alibaba.fastjson.JSON;
 import org.osgl.$;
 
 import java.lang.annotation.Annotation;
 
-import static act.util.AnnotationUtil.tryGetDefaultValue;
-
 public class JobAnnoInfo {
     public String value;
     public SysEventId sysEventId;
     public boolean async;
+    public int delayInSeconds;
     public String id;
     public boolean startImmediately;
     public Class<? extends Annotation> annotationType;
@@ -48,8 +49,12 @@ public class JobAnnoInfo {
         if (null != v) {
             this.startImmediately = $.bool(v);
         }
-        this.async = $.bool((Boolean) tryGetDefaultValue(annoType, "async"));
+        this.async = $.bool(tryGetDefaultValue(annoType, "async"));
         this.id = (String) tryGetDefaultValue(annoType, "id");
+        v = tryGetDefaultValue(annoType, "delayInSeconds");
+        if (null != v) {
+            this.delayInSeconds = (Integer) v;
+        }
     }
 
     @Override

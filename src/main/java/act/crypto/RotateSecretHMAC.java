@@ -32,7 +32,7 @@ public class RotateSecretHMAC extends HMAC {
 
     public RotateSecretHMAC(String algoKey, RotationSecretProvider secretProvider) {
         super(secretProvider.rawSecret(), algoKey);
-        this.secretProvider = $.notNull(secretProvider);
+        this.secretProvider = $.requireNotNull(secretProvider);
         this.rotateEnabled = secretProvider.isRotateEnabled();
     }
 

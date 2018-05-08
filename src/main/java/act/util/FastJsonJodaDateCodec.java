@@ -34,10 +34,10 @@ import com.alibaba.fastjson.serializer.ObjectSerializer;
 import com.alibaba.fastjson.serializer.SerializeWriter;
 import org.joda.time.*;
 
-import javax.inject.Inject;
-import javax.inject.Singleton;
 import java.io.IOException;
 import java.lang.reflect.Type;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 
 @Singleton
 public class FastJsonJodaDateCodec extends DestroyableBase implements ObjectSerializer, ObjectDeserializer {
@@ -52,6 +52,18 @@ public class FastJsonJodaDateCodec extends DestroyableBase implements ObjectSeri
     @Inject
     public FastJsonJodaDateCodec(App app) {
         this.app = app;
+    }
+
+    public FastJsonJodaDateCodec(
+            JodaDateTimeCodec dateTimeCodec,
+            JodaLocalDateCodec localDateCodec,
+            JodaLocalTimeCodec localTimeCodec,
+            JodaLocalDateTimeCodec localDateTimeCodec
+    ) {
+        this.dateTimeCodec = dateTimeCodec;
+        this.localDateCodec = localDateCodec;
+        this.localTimeCodec = localTimeCodec;
+        this.localDateTimeCodec = localDateTimeCodec;
     }
 
     @SuppressWarnings("unchecked")

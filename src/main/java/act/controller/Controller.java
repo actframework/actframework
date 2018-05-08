@@ -34,7 +34,6 @@ import act.util.JsonUtilConfig.JsonWriter;
 import act.util.PropertySpec;
 import act.view.*;
 import org.osgl.$;
-import org.osgl.Lang;
 import org.osgl.http.H;
 import org.osgl.mvc.result.*;
 import org.osgl.storage.ISObject;
@@ -1332,7 +1331,7 @@ public @interface Controller {
         }
 
         /**
-         * Alias of {@link #binary(Lang.Visitor)}
+         * Alias of {@link #binary($.Visitor)}
          *
          * @param outputStreamWriter
          *         the delayed writer

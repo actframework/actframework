@@ -238,7 +238,7 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
     }
 
     public ActionContext router(Router router) {
-        this.router = $.notNull(router);
+        this.router = $.requireNotNull(router);
         return this;
     }
 
@@ -347,7 +347,7 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
     }
 
     public ActionContext templateChangeListener($.Visitor<H.Format> listener) {
-        this.templateChangeListener = $.notNull(listener);
+        this.templateChangeListener = $.requireNotNull(listener);
         return this;
     }
 
@@ -595,7 +595,7 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
     }
 
     public ActionContext forceResponseStatus(H.Status status) {
-        this.forceResponseStatus = $.notNull(status);
+        this.forceResponseStatus = $.requireNotNull(status);
         return this;
     }
 

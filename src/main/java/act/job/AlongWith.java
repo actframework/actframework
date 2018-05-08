@@ -42,4 +42,16 @@ public @interface AlongWith {
      * @return the job id
      */
     String id() default "";
+
+
+    /**
+     * Specify the delay in seconds.
+     *
+     * Once this is set and the delay seconds is greater than 0, the job will
+     * be start after `delay` seconds after target job invoked. And the job will
+     * be executed asynchronously.
+     *
+     * @return the delay time in seconds
+     */
+    int delayInSeconds() default -1;
 }

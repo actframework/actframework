@@ -29,7 +29,7 @@ public class SimpleMetric implements Metric {
     private MetricStore metricStore;
 
     public SimpleMetric(MetricStore metricStore) {
-        this.metricStore = $.notNull(metricStore);
+        this.metricStore = $.requireNotNull(metricStore);
     }
 
     @Override

@@ -44,7 +44,7 @@ public class MetricEnhancer extends AppByteCodeEnhancer<MetricEnhancer> {
     // for unit testing
     MetricEnhancer(MetricMetaInfoRepo repo, ClassVisitor cv) {
         super(S.F.startsWith("act.").negate(), cv);
-        this.repo = $.notNull(repo);
+        this.repo = $.requireNotNull(repo);
     }
 
     public MetricEnhancer(ClassVisitor cv) {

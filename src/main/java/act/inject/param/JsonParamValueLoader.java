@@ -48,8 +48,8 @@ class JsonParamValueLoader implements ParamValueLoader {
     private boolean isPathVariable;
 
     JsonParamValueLoader(ParamValueLoader fallBack, BeanSpec spec, DependencyInjector<?> injector) {
-        this.fallBack = $.notNull(fallBack);
-        this.spec = $.notNull(spec);
+        this.fallBack = $.requireNotNull(fallBack);
+        this.spec = $.requireNotNull(spec);
         this.defValProvider = findDefValProvider(spec, injector);
         ActionContext ctx = ActionContext.current();
         if (null != ctx) {

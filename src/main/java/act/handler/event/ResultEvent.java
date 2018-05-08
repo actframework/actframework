@@ -37,8 +37,8 @@ public abstract class ResultEvent extends ActEvent<Result> implements SystemEven
 
     public ResultEvent(Result result, H.Request req, H.Response resp) {
         super(result);
-        this.req = $.notNull(req);
-        this.resp = $.notNull(resp);
+        this.req = $.requireNotNull(req);
+        this.resp = $.requireNotNull(resp);
     }
 
     public Result result() {

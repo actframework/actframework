@@ -61,6 +61,7 @@ import act.view.ViewManager;
 import act.xio.Network;
 import act.xio.NetworkHandler;
 import act.xio.undertow.UndertowNetwork;
+import org.joda.time.*;
 import org.osgl.$;
 import org.osgl.cache.CacheService;
 import org.osgl.exception.NotAppliedException;
@@ -69,6 +70,7 @@ import org.osgl.http.H;
 import org.osgl.logging.LogManager;
 import org.osgl.logging.Logger;
 import org.osgl.util.*;
+import org.osgl.util.converter.TypeConverterRegistry;
 import osgl.version.Version;
 import osgl.version.Versioned;
 
@@ -294,6 +296,7 @@ public final class Act {
     public static void startup(AppDescriptor descriptor) {
         processEnvironment(descriptor);
         Banner.print(descriptor);
+        registerTypeConverters();
         loadConfig();
         initMetricPlugin();
         initPluginManager();
@@ -752,6 +755,36 @@ public final class Act {
         }
     }
 
+    public static void registerTypeConverters() {
+        TypeConverterRegistry.INSTANCE.register(new $.TypeConverter<ReadableInstant, Long>() {
+            @Override
+            public Long convert(ReadableInstant o) {
+                return o.getMillis();
+            }
+        }).register(new $.TypeConverter<Long, DateTime>() {
+            @Override
+            public DateTime convert(Long o) {
+                return new DateTime().withMillis(o);
+            }
+        }).register(new $.TypeConverter<DateTime, LocalDateTime>() {
+            @Override
+            public LocalDateTime convert(DateTime o) {
+                return o.toLocalDateTime();
+            }
+        }).register(new $.TypeConverter<DateTime, LocalDate>() {
+            @Override
+            public LocalDate convert(DateTime o) {
+                return o.toLocalDate();
+            }
+        }).register(new $.TypeConverter<DateTime, LocalTime>() {
+            @Override
+            public LocalTime convert(DateTime o) {
+                return o.toLocalTime();
+            }
+        })
+        ;
+    }
+
     private static void loadConfig() {
         LOGGER.debug("loading configuration ...");
 
@@ -981,7 +1014,7 @@ public final class Act {
             }
         }
         try {
-            IO.writeContent(pid, new File(pidFile));
+            IO.write(pid, new File(pidFile));
             Runtime.getRuntime().addShutdownHook(new Thread() {
                 @Override
                 public void run() {

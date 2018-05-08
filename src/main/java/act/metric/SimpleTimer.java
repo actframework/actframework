@@ -33,8 +33,8 @@ public class SimpleTimer implements Timer {
     private long duration;
 
     public SimpleTimer(String name, MetricStore metricStore) {
-        this.name = $.notNull(name);
-        this.metricStore = $.notNull(metricStore);
+        this.name = $.requireNotNull(name);
+        this.metricStore = $.requireNotNull(metricStore);
         this.start = $.ns();
         metricStore.onTimerStart(name);
     }

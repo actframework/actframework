@@ -22,11 +22,18 @@ package act.util;
 
 import org.osgl.logging.LogManager;
 import org.osgl.logging.Logger;
+import org.osgl.util.S;
 
 /**
  * Provides logging support utility methods to extended classes.
  */
 public class LogSupport {
+
+    public static final String DOUBLE_DASHED_LINE = S.times('=', 80);
+    public static final String DASHED_LINE = S.times('-', 80);
+    public static final String STAR_LINE = S.times('*', 80);
+    public static final String HASH_SYMBOL_LINE = S.times('#', 80);
+    public static final String TILD_LINE = S.times('~', 80);
 
     protected final transient Logger logger;
 
@@ -46,6 +53,92 @@ public class LogSupport {
         logger = noLogger ? null : LogManager.get(getClass());
     }
 
+    /**
+     * Print a line of 80 `=` chars
+     */
+    protected void printDoubleDashedLine() {
+        info(DOUBLE_DASHED_LINE);
+    }
+
+    /**
+     * Print a line of 80 `-` chars
+     */
+    protected void printDashedLine() {
+        info(DASHED_LINE);
+    }
+
+    /**
+     * Print a line of 80 `*` chars
+     */
+    protected void printStarLine() {
+        info(STAR_LINE);
+    }
+
+    /**
+     * Print a line of 80 `#` chars
+     */
+    protected void printHashSimbolLine() {
+        info(HASH_SYMBOL_LINE);
+    }
+
+    /**
+     * Print a line of 80 `~` chars
+     */
+    protected void printTildLine() {
+        info(TILD_LINE);
+    }
+
+    /**
+     * Print a blank line
+     */
+    protected void println() {
+        info("");
+    }
+
+    /**
+     * Print formatted string in the center of 80 chars line, left and right padded.
+     *
+     * @param format
+     *      The string format pattern
+     * @param args
+     *      The string format arguments
+     */
+    protected void printCenter(String format, Object... args) {
+        String text = S.fmt(format, args);
+        info(S.center(text, 80));
+    }
+
+    /**
+     * Print the lead string followed by centered formatted string. The whole
+     * length of the line is 80 chars.
+     *
+     * Example:
+     *
+     * ```java
+     * printCenterWithLead(" *", "Hello %s", "World");
+     * ```
+     *
+     * will print something like
+     *
+     * ```
+     *  *              Hello World
+     * ```
+     *
+     * Note the above is just a demo, the exact number of whitespace might not be correct.
+     *
+     *
+     * @param lead
+     *      the lead string
+     * @param format
+     *      The string format pattern
+     * @param args
+     *      The string format arguments
+     */
+    protected void printCenterWithLead(String lead, String format, Object ... args) {
+        String text = S.fmt(format, args);
+        int len = 80 - lead.length();
+        info(S.concat(lead, S.center(text, len)));
+    }
 
     protected void trace(String format, Object ... args) {
         logger.trace(format, args);

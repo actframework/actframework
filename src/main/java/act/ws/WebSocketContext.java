@@ -54,9 +54,9 @@ public class WebSocketContext extends ActContext.Base<WebSocketContext> implemen
     ) {
         super(app);
         this.url = url;
-        this.connection = $.notNull(connection);
-        this.manager = $.notNull(manager);
-        this.actionContext = $.notNull(actionContext);
+        this.connection = $.requireNotNull(connection);
+        this.manager = $.requireNotNull(manager);
+        this.actionContext = $.requireNotNull(actionContext);
         _local.set(this);
     }
 

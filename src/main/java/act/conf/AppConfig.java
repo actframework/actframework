@@ -155,6 +155,13 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
         }
 
         OsglConfig.setThreadLocalBufferLimit(threadLocalBufRetentionLimit());
+        OsglConfig.setInstanceFactory(new $.Function<Class, Object>() {
+            final App app = Act.app();
+            @Override
+            public Object apply(Class aClass) throws NotAppliedException, $.Break {
+                return app.getInstance(aClass);
+            }
+        });
     }
 
     public App app() {
@@ -485,7 +492,7 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
     private CSRFProtector csrfProtector;
 
     protected T csrfProtector(CSRFProtector protector) {
-        this.csrfProtector = $.notNull(protector);
+        this.csrfProtector = $.requireNotNull(protector);
         return me();
     }
 
@@ -1614,7 +1621,7 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
     private Password.Validator defPasswordValidator;
 
     protected T defPasswordValidator(Password.Validator validator) {
-        defPasswordValidator = $.notNull(validator);
+        defPasswordValidator = $.requireNotNull(validator);
         return me();
     }
     protected T defPasswordSpec(String spec) {
@@ -2425,7 +2432,7 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
     private SessionCodec sessionCodec = null;
 
     protected void sessionCodec(SessionCodec codec) {
-        this.sessionCodec = $.notNull(codec);
+        this.sessionCodec = $.requireNotNull(codec);
     }
 
     public SessionCodec sessionCodec() {
@@ -2613,11 +2620,11 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
     private volatile SecureTicketCodec secureTicketCodec;
     private String secureTicketCodecClass;
     protected T secureTicketCodec(String secureTicketCodecClass) {
-        this.secureTicketCodecClass = $.notNull(secureTicketCodecClass);
+        this.secureTicketCodecClass = $.requireNotNull(secureTicketCodecClass);
         return me();
     }
     protected T secureTicketCodec(SecureTicketCodec codec) {
-        this.secureTicketCodec = $.notNull(codec);
+        this.secureTicketCodec = $.requireNotNull(codec);
         return me();
     }
     public SecureTicketCodec secureTicketCodec() {
@@ -2818,7 +2825,7 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
     private UnknownHttpMethodProcessor _unknownHttpMethodProcessor = null;
 
     protected T unknownHttpMethodProcessor(UnknownHttpMethodProcessor handler) {
-        this._unknownHttpMethodProcessor = $.notNull(handler);
+        this._unknownHttpMethodProcessor = $.requireNotNull(handler);
         return me();
     }
 

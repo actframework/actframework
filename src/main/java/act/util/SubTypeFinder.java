@@ -50,7 +50,7 @@ public abstract class SubTypeFinder<T> extends AppServicePlugin {
 
     public SubTypeFinder(Class<T> target, SysEventId bindingEvent) {
         this(target);
-        this.bindingEvent = $.notNull(bindingEvent);
+        this.bindingEvent = $.requireNotNull(bindingEvent);
     }
 
     protected abstract void found(Class<? extends T> target, App app);

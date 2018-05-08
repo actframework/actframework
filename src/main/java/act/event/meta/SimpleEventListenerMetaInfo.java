@@ -64,8 +64,8 @@ public class SimpleEventListenerMetaInfo {
         E.illegalArgumentIf(eventCnt > 0 & delayedEventCnt > 0);
         this.events = events;
         this.delayedEvents = delayedEvents;
-        this.className = $.notNull(className);
-        this.methodName = $.notNull(methodName);
+        this.className = $.requireNotNull(className);
+        this.methodName = $.requireNotNull(methodName);
         this.asyncMethodName = asyncMethodName;
 
         this.async = async;

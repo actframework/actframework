@@ -71,7 +71,7 @@ public class ReflectedCommandExecutor extends CommandExecutor {
     private SerializerFeature features[];
 
     public ReflectedCommandExecutor(CommandMethodMetaInfo methodMetaInfo, App app) {
-        this.methodMetaInfo = $.notNull(methodMetaInfo);
+        this.methodMetaInfo = $.requireNotNull(methodMetaInfo);
         this.app = $.NPE(app);
         this.cl = app.classLoader();
         this.paramTypes = paramTypes();
