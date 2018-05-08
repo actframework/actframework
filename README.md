@@ -25,7 +25,6 @@ Or use maven archetype to start an new project:
 mvn archetype:generate -B \
     -DgroupId=com.mycom.helloworld \
     -DartifactId=helloworld \
-    -DappName=helloworld \
     -DarchetypeGroupId=org.actframework \
     -DarchetypeArtifactId=archetype-quickstart \
     -DarchetypeVersion=1.8.7.3
@@ -37,7 +36,6 @@ To start an new project for RESTful service:
 mvn archetype:generate -B \
     -DgroupId=com.mycom.helloworld \
     -DartifactId=helloworld \
-    -DappName=helloworld \
     -DarchetypeGroupId=org.actframework \
     -DarchetypeArtifactId=archetype-simple-restful-service \
     -DarchetypeVersion=1.8.7.3
