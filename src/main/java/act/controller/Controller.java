@@ -1331,7 +1331,7 @@ public @interface Controller {
         }
 
         /**
-         * Alias of {@link #binary($.Visitor)}
+         * Alias of {@link #binary(org.osgl.Lang.Visitor)}
          *
          * @param outputStreamWriter
          *         the delayed writer

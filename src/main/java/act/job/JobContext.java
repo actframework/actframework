@@ -121,7 +121,7 @@ public class JobContext extends ActContext.Base<JobContext> {
      * Get value by key from the JobContext of current thread
      * @param key the key
      * @param <T> the val type
-     * @return
+     * @return attribute value associated with `key` in this job context
      */
     public static <T> T get(String key) {
         return (T) m().get(key);

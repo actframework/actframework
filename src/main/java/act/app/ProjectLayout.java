@@ -20,6 +20,11 @@ package act.app;
  * #L%
  */
 
+import static act.app.ProjectLayout.Utils.file;
+import static act.app.RuntimeDirs.CLASSES;
+import static act.app.RuntimeDirs.CONF;
+import static act.route.RouteTableRouterBuilder.ROUTES_FILE;
+
 import act.Act;
 import act.app.util.NamedPort;
 import org.osgl.$;
@@ -31,11 +36,6 @@ import org.osgl.util.S;
 import java.io.File;
 import java.io.IOException;
 import java.util.*;
-
-import static act.app.ProjectLayout.Utils.file;
-import static act.app.RuntimeDirs.CLASSES;
-import static act.app.RuntimeDirs.CONF;
-import static act.route.RouteTableRouterBuilder.ROUTES_FILE;
 
 /**
  * Defines the project file structure supported by Act.
@@ -383,10 +383,10 @@ public interface ProjectLayout {
     File source(File appBase);
 
     /**
-     * Returns Java source code file root in test scope in relation
+     * Returns test source code file root in test scope in relation
      * to the {@code appBase}
      * @param appBase
-     * @return
+     * @return test source code file root
      */
     File testSource(File appBase);
 
@@ -395,16 +395,16 @@ public interface ProjectLayout {
      * {@code appBase} specified
      *
      * @param appBase
-     * @return
+     * @return resource file root
      */
     File resource(File appBase);
 
     /**
-     * Returns Resource files root in test scope in relation to the
+     * Returns test resource files root in test scope in relation to the
      * {@code appBase} specified
      *
      * @param appBase
-     * @return
+     * @return test resource file root
      */
     File testResource(File appBase);
 
