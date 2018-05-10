@@ -177,6 +177,10 @@ public class NetworkHandler extends DestroyableBase {
 
                     ctx.prepareRespForWrite().addHeaderIfNotAdded(H.Header.Names.CONTENT_TYPE, fmt.contentType());
                     r.apply(req, ctx.prepareRespForWrite());
+                } catch (IllegalStateException e) {
+                    if (!S.is(e.getMessage()).contains("UT000002: The response has already been started")) {
+                        handleException(e, ctx, "Error handling network request");
+                    }
                 } catch (Exception e) {
                     handleException(e, ctx, "Error handling network request");
                 } finally {

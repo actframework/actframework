@@ -1,7 +1,9 @@
 # ActFramework Change Log
 
 **1.8.8**
-* update osgl-tool to 1.11.2
+* Clean up extra error logs #661
+* A weird `ClassCastException` #660
+* update osgl-tool to 1.11.3
 * Add helper methods to `LogSupport` for line printing #659
 * Allow set delay time for `@OnAppStart` and `@AlongWith` #658
 * `echo` handler shall set `Content-Type` header #650

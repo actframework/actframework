@@ -6,9 +6,7 @@ public class GHIssue657 extends EndpointTester {
 
     @Test
     public void testList1() throws Exception {
-        url("/gh/657/1").get();
-        String s = resp().body().string();
-        System.out.println(s);
+        url("/gh/657/1").header("accept", "application/json").get();
         bodyContains("2018");
     }
 
