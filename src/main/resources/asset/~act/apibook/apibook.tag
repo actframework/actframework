@@ -29,6 +29,9 @@
             overflow-x: hidden;
             position: absolute;
         }
+        @media print {
+            .header {display: none;}
+        }
     </style>
     <script>
         var self = this

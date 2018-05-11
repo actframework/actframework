@@ -1,6 +1,8 @@
 # ActFramework Change Log
 
 **1.8.8**
+* API doc - it shall change the styling for print media #608
+* update riotjs to 3.10, jquery to 3.3.1
 * Clean up extra error logs #661
 * A weird `ClassCastException` #660
 * update osgl-tool to 1.11.3

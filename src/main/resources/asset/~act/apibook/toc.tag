@@ -30,6 +30,11 @@
         </div>
     </div>
     <style>
+        @media print {
+            #toc-container {
+                display: none;
+            }
+        }
         #toc-container {
             width: 24%;
             position: fixed;

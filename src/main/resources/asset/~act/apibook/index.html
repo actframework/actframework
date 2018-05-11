@@ -5,6 +5,21 @@
     <title>apibook - { appName } </title>
     <link rel="stylesheet" href="/~/asset/css/highlight.min.css">
     <style>
+        @media print {
+            @page {size: landscape}
+            body {
+                background-color: #fff !important;
+                color: #444 !important;
+            }
+            pre.code {
+                font-size: 8px;
+            }
+            h4 {
+                text-decoration: underline !important;
+                font-size: 15px !important;
+                font-weight: bold !important;
+            }
+        }
         body {
             background-color: #222;
             color: #f1f1f1;

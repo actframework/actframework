@@ -116,7 +116,7 @@
 
         .endpoint > .desc {
             font-weight: 300;
-            max-width: 800px;
+            max-width: 1280px;
         }
 
         .endpoint > .desc h1, .endpoint > .desc h2, .endpoint > .desc h3, .endpoint > .desc h4 {
@@ -143,7 +143,7 @@
         pre.code {
             padding: 10pt;
             background: #444;
-            max-width: 800px;
+            max-width: 1280px;
             font-size: 12pt;
             line-height: 1.5;
             overflow-x: auto;
@@ -153,7 +153,7 @@
         .param-list-body {
             padding: 10px;
             background: #444;
-            max-width: 800px;
+            max-width: 1280px;
             margin: 16px 0 16px 0;
         }
 
@@ -161,6 +161,19 @@
             padding-bottom: 1024px;
         }
 
+        @media print {
+            pre.code {
+                font-family: "Envy Code R", Consolas, Menlo, Monaco, "Lucida Console", "Liberation Mono", "DejaVu Sans Mono", "Bitstream Vera Sans Mono", "Courier New", monospace;
+                max-width: 1600px;
+            }
+            .endpoint > pre.code {
+                border: 1px solid black;
+            }
+            .return-sample pre.code,
+            .post-sample pre.code {
+                font-size: 9px;
+            }
+        }
     </style>
     <script>
         var self = this
