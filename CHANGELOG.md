@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 **1.8.8**
+* Add `getResource(String)` and getResourceAsStream(String)` method to `Act` and `App` #662
 * API doc - it shall change the styling for print media #608
 * update riotjs to 3.10, jquery to 3.3.1
 * Clean up extra error logs #661

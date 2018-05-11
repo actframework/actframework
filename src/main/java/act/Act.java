@@ -76,6 +76,7 @@ import osgl.version.Versioned;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
 import java.lang.reflect.Method;
@@ -531,6 +532,34 @@ public final class Act {
      */
     public static <T> T getInstance(Class<? extends T> clz) {
         return app().getInstance(clz);
+    }
+
+    /**
+     * Find a resource by given name.
+     *
+     * This call delegate to {@link App#getResource(String)} on
+     * {@link #app()}.
+     *
+     * @param name
+     *      the resource name
+     * @return the `URL` if found, or `null` if resource not found
+     */
+    public static URL getResource(String name) {
+        return app().getResource(name);
+    }
+
+    /**
+     * Returns an input stream for reading the specified resource.
+     *
+     * This will call {@link App#getResourceAsStream(String)} on
+     * {@link #app()}.
+     *
+     * @param name
+     *      The resource name
+     * @return the input stream to the resource or `null` if resource not found
+     */
+    public static InputStream getResourceAsStream(String name) {
+        return app().getResourceAsStream(name);
     }
 
     // --- Spark style API for application to hook action handler to a certain http request endpoint

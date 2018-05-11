@@ -104,7 +104,9 @@ import osgl.version.Version;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.annotation.Annotation;
+import java.net.URL;
 import java.util.*;
 import java.util.concurrent.ConcurrentMap;
 import javax.enterprise.context.ApplicationScoped;
@@ -965,6 +967,34 @@ public class App extends DestroyableBase {
             return $.newInstance(clz);
         }
         return dependencyInjector.get(clz);
+    }
+
+    /**
+     * Finds the resource with the given name.
+     *
+     * This call delegate to {@link ClassLoader#getResource(String)}
+     * on {@link #classLoader() App classloader}.
+     *
+     * @param name
+     *      the resource name
+     * @return `URL` to the resource if found or `null` if not found.
+     */
+    public URL getResource(String name) {
+        return classLoader().getResource(name);
+    }
+
+    /**
+     * Returns an input stream for reading the specified resource.
+     *
+     * This will call {@link ClassLoader#getResourceAsStream(String)}
+     * on {@link #classLoader()}.
+     *
+     * @param name
+     *      the resource name
+     * @return the input stream to the resource or `null` if resource not found
+     */
+    public InputStream getResourceAsStream(String name) {
+        return classLoader().getResourceAsStream(name);
     }
 
     public <K, V> Map<K, V> createMap() {
