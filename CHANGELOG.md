@@ -5,7 +5,7 @@
 * update riotjs to 3.10, jquery to 3.3.1
 * Clean up extra error logs #661
 * A weird `ClassCastException` #660
-* update osgl-tool to 1.11.3
+* update osgl-tool to 1.11.4
 * Add helper methods to `LogSupport` for line printing #659
 * Allow set delay time for `@OnAppStart` and `@AlongWith` #658
 * `echo` handler shall set `Content-Type` header #650
