@@ -1,12 +1,12 @@
 # ActFramework Change Log
 
 **1.8.8**
+* update osgl-tool to 1.12.0, osgl-http to 1.6.1, osgl-mvc to 1.7.0
 * Add `getResource(String)` and getResourceAsStream(String)` method to `Act` and `App` #662
 * API doc - it shall change the styling for print media #608
 * update riotjs to 3.10, jquery to 3.3.1
 * Clean up extra error logs #661
 * A weird `ClassCastException` #660
-* update osgl-tool to 1.11.4
 * Add helper methods to `LogSupport` for line printing #659
 * Allow set delay time for `@OnAppStart` and `@AlongWith` #658
 * `echo` handler shall set `Content-Type` header #650

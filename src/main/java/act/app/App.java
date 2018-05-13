@@ -1094,7 +1094,7 @@ public class App extends DestroyableBase {
     }
 
     public Set<String> scanList() {
-        return new HashSet<String>(scanList);
+        return new HashSet<>(scanList);
     }
 
     private Set<SysEventId> eventEmitted() {
