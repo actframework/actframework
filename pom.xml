@@ -62,7 +62,7 @@
     <jpa.version>1.0.0.Final</jpa.version>
     <joda-time.version>2.9.9</joda-time.version>
     <okhttp.version>3.10.0</okhttp.version>
-    <osgl-tool.version>1.12.0</osgl-tool.version>
+    <osgl-tool.version>1.13.0-SNAPSHOT</osgl-tool.version>
     <osgl-cache.version>1.3.3</osgl-cache.version>
     <osgl-genie.version>1.7.2</osgl-genie.version>
     <osgl-http.version>1.6.1</osgl-http.version>
