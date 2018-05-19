@@ -155,7 +155,7 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
         }
 
         OsglConfig.setThreadLocalBufferLimit(threadLocalBufRetentionLimit());
-        OsglConfig.setInstanceFactory(new $.Function<Class, Object>() {
+        OsglConfig.registerGlobalInstanceFactory(new $.Function<Class, Object>() {
             final App app = Act.app();
             @Override
             public Object apply(Class aClass) throws NotAppliedException, $.Break {

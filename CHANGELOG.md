@@ -1,6 +1,14 @@
 # ActFramework Change Log
 
 **1.8.8-RC5** 13/May/2018
+* update osgl library dependencies
+    - osgl-tool to 1.13.1
+    - osgl-cache to 1.4.0
+    - osgl-genie to 1.7.3
+    - osgl-http to 1.7.0
+    - osgl-mvc to 1.7.1
+    - osgl-storage to 1.6.0
+    - osgl-tool-ext to 1.1.4
 * Restructure response processing logic #665
 * Major performance degrade in latest TFB test #663
     - Get rid of ActContext.strBuf. It is not really useful and allocate too much memory
