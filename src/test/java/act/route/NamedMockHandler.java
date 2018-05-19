@@ -29,10 +29,10 @@ public class NamedMockHandler extends RequestHandlerBase {
 
     private String name;
 
-    private static final ThreadLocal<String> result = new ThreadLocal<String>();
+    private static final ThreadLocal<String> result = new ThreadLocal<>();
 
-    public NamedMockHandler(CharSequence name) {
-        this.name = name.toString();
+    public NamedMockHandler(String name) {
+        this.name = name;
     }
 
     @Override

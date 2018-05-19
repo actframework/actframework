@@ -46,7 +46,7 @@ public abstract class TemplateBase implements Template {
         beforeRender(context);
         ActResponse resp = context.resp();
         merge(renderArgs, resp);
-        resp.commit();
+        //resp.commit();
     }
 
     @Override

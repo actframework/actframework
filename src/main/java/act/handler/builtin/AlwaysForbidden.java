@@ -31,7 +31,7 @@ public class AlwaysForbidden extends FastRequestHandler implements ExpressHandle
 
     @Override
     public void handle(ActionContext context) {
-        Forbidden.get().apply(context.req(), context.prepareRespForWrite());
+        Forbidden.get().apply(context.req(), context.prepareRespForResultEvaluation());
     }
 
     @Override

@@ -52,7 +52,7 @@ public class UnknownHttpMethodHandler extends FastRequestHandler implements Seri
             logger.error(e, "Error calling global after interceptor");
             result = ActErrorResult.of(e);
         }
-        result.apply(context.req(), context.prepareRespForWrite());
+        result.apply(context.req(), context.prepareRespForResultEvaluation());
     }
 
     @Override
@@ -63,6 +63,11 @@ public class UnknownHttpMethodHandler extends FastRequestHandler implements Seri
     @Override
     public boolean express(ActionContext context) {
         return configured(null) instanceof ExpressHandler;
+    }
+
+    @Override
+    public boolean skipEvents(ActionContext context) {
+        return true;
     }
 
     private UnknownHttpMethodProcessor configured(AppConfig config) {

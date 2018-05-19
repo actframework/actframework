@@ -52,7 +52,7 @@ public class SecureTicketHandler extends RequestHandlerBase {
     public void handle(ActionContext context) {
         Object ticket = secureTicketCodec.createTicket(context.session());
         H.Format accept = context.accept();
-        H.Response resp = context.prepareRespForWrite();
+        H.Response resp = context.prepareRespForResultEvaluation();
         resp.contentType(accept.contentType());
         String content;
         if (H.Format.JSON == accept) {

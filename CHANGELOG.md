@@ -1,6 +1,10 @@
 # ActFramework Change Log
 
-**1.8.8-RC4** 13/May/2018
+**1.8.8-RC5** 13/May/2018
+* Restructure response processing logic #665
+* Major performance degrade in latest TFB test #663
+    - Get rid of ActContext.strBuf. It is not really useful and allocate too much memory
+    - Make header overwrite by request parameters an optional feature
 * update osgl-tool to 1.12.0, osgl-http to 1.6.1, osgl-mvc to 1.7.0
 * Add `getResource(String)` and getResourceAsStream(String)` method to `Act` and `App` #662
 * API doc - it shall change the styling for print media #608

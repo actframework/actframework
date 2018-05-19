@@ -114,6 +114,8 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
     private ReflectedHandlerInvoker reflectedHandlerInvoker;
     private boolean requireBodyParsing;
     private boolean allowIgnoreParamNamespace;
+    private boolean consumed;
+    private boolean readyForDestroy;
 
     // see https://github.com/actframework/actframework/issues/492
     public String encodedSessionToken;
@@ -151,7 +153,6 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
     public void setResult(Result result) {
         this.result = result;
     }
-
 
     @Inject
     private ActionContext(App app, H.Request request, ActResponse<?> response) {
@@ -192,9 +193,29 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
         return response;
     }
 
-    public ActResponse<?> prepareRespForWrite() {
-        response.markReady();
+    public ActResponse<?> prepareRespForResultEvaluation() {
+        response.onResult();
         return response;
+    }
+
+    public boolean skipEvents() {
+        return handler().skipEvents(this);
+    }
+
+    public void markAsConsumed() {
+        consumed = true;
+    }
+
+    public boolean isConsumed() {
+        return consumed;
+    }
+
+    public void markAsReadyForClose() {
+        readyForDestroy = true;
+    }
+
+    public boolean isReadyForDestroy() {
+        return readyForDestroy;
     }
 
     public H.Cookie cookie(String name) {
@@ -311,7 +332,9 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
         state = State.CREATED;
         req.forward(url);
         final RequestHandler requestHandler = router.getInvoker(H.Method.GET, url, this);
-        app().eventBus().emit(new PreHandle(this));
+        if (!skipEvents()) {
+            app().eventBus().emit(new PreHandle(this));
+        }
         requestHandler.handle(this);
     }
 
@@ -728,7 +751,7 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
 
     private void applyContentType(H.Format fmt) {
         if (null != fmt) {
-            ActResponse resp = resp();
+            ActResponse resp = response;
             resp.initContentType(fmt.contentType());
             resp.commitContentType();
         }
@@ -751,7 +774,7 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
         if (!conf.corsEnabled()) {
             return;
         }
-        H.Response r = resp();
+        H.Response r = response;
         r.addHeaderIfNotAdded(ACCESS_CONTROL_ALLOW_ORIGIN, conf.corsAllowOrigin());
         if (request.method() == H.Method.OPTIONS || !conf.corsOptionCheck()) {
             r.addHeaderIfNotAdded(ACCESS_CONTROL_ALLOW_HEADERS, conf.corsAllowHeaders());

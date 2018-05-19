@@ -46,7 +46,7 @@ public class OptionsInfoBase extends DestroyableBase {
         this.router = router;
     }
 
-    public RequestHandler optionHandler(CharSequence path, ActionContext context) {
+    public RequestHandler optionHandler(String path, ActionContext context) {
         String s = S.string(path);
         RequestHandler handler = handlers.get(s);
         if (null == handler) {
@@ -61,7 +61,7 @@ public class OptionsInfoBase extends DestroyableBase {
         return handler;
     }
 
-    private RequestHandler createHandler(CharSequence path, ActionContext context) {
+    private RequestHandler createHandler(String path, ActionContext context) {
         if (!router.app().config().corsEnabled()) {
             return UnknownHttpMethodHandler.INSTANCE;
         }

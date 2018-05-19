@@ -56,6 +56,19 @@ public interface RequestHandler extends $.Function<ActionContext, Void>, Destroy
     boolean express(ActionContext context);
 
     /**
+     * If this method returns `true` then the following events will not get triggered:
+     *
+     * * {@link act.handler.event.PreHandle}
+     * * {@link act.handler.event.BeforeResultCommit}
+     * * {@link act.handler.event.AfterResultCommit}
+     * * {@link act.handler.event.PostHandle}
+     *
+     * @param context the action context.
+     * @return `true` if it shall skip triggering result commit events for this handler.
+     */
+    boolean skipEvents(ActionContext context);
+
+    /**
      * Indicate if this request handler support partial path lookup.
      * Usually this method should return {@code false}. However for
      * certain request handler like {@link FileGetter}

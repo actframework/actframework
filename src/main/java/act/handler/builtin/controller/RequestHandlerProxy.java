@@ -20,6 +20,9 @@ package act.handler.builtin.controller;
  * #L%
  */
 
+import static org.osgl.http.H.Method.GET;
+import static org.osgl.http.H.Method.POST;
+
 import act.Act;
 import act.ActResponse;
 import act.Destroyable;
@@ -50,14 +53,11 @@ import org.osgl.mvc.result.Result;
 import org.osgl.util.E;
 import org.osgl.util.S;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
 import java.lang.reflect.Method;
 import java.util.*;
 import java.util.regex.Pattern;
-
-import static org.osgl.http.H.Method.GET;
-import static org.osgl.http.H.Method.POST;
+import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
 
 @ApplicationScoped
 public final class RequestHandlerProxy extends RequestHandlerBase {
@@ -94,6 +94,7 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
 
     private boolean sessionFree;
     private boolean express;
+    private boolean skipEvents;
     private boolean supportCache;
     private CacheSupportMetaInfo cacheSupport;
     private MissingAuthenticationHandler missingAuthenticationHandler;
@@ -189,7 +190,7 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
                 cacheKey = cacheSupport.cacheKey(context);
                 ResponseCache cached = this.cache.get(cacheKey);
                 if (null != cached) {
-                    cached.applyTo(context.prepareRespForWrite());
+                    cached.applyTo(context.prepareRespForResultEvaluation());
                     return;
                 }
                 context.enableCache();
@@ -238,8 +239,6 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
                 handleFinally(context);
             } catch (Exception e) {
                 logger.error(e, "Error invoking final handler");
-            } finally {
-                context.destroy();
             }
         }
     }
@@ -263,6 +262,11 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
     @Override
     public boolean express(ActionContext context) {
         return express;
+    }
+
+    @Override
+    public boolean skipEvents(ActionContext context) {
+        return skipEvents;
     }
 
     protected final void registerBeforeInterceptor(BeforeInterceptor interceptor) {
@@ -291,7 +295,7 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
                 any.apply(context);
             } else {
                 H.Request req = context.req();
-                ActResponse<?> resp = context.prepareRespForWrite();
+                ActResponse<?> resp = context.prepareRespForResultEvaluation();
                 if (result instanceof ErrorResult) {
                     resp.contentType(req.accept());
                 }
@@ -388,6 +392,7 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
         missingAuthenticationHandler = actionHandler.missingAuthenticationHandler();
         csrfFailureHandler = actionHandler.csrfFailureHandler();
         express = actionHandler.express();
+        skipEvents = actionHandler.skipEvents();
         cacheSupport = actionHandler.cacheSupport();
         supportCache = cacheSupport.enabled;
 

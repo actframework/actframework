@@ -109,6 +109,11 @@ public class RouteInfo extends $.T3<String, String, String> implements Comparabl
         }
 
         @Override
+        public boolean skipEvents(ActionContext context) {
+            return true;
+        }
+
+        @Override
         public String toString() {
             return "unknown";
         }

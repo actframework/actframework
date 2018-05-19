@@ -37,7 +37,7 @@ public class RedirectDir extends FastRequestHandler implements ExpressHandler {
 
     @Override
     public void handle(ActionContext context) {
-        H.Response resp = context.prepareRespForWrite();
+        H.Response resp = context.prepareRespForResultEvaluation();
         if (context.isAjax()) {
             resp.status(H.Status.FOUND_AJAX);
         } else {

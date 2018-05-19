@@ -222,7 +222,7 @@ public class ApiManager extends AppServiceBase<ApiManager> {
 
         @Override
         public void handle(ActionContext context) {
-            renderJson(api.endpoints).apply(context.req(), context.prepareRespForWrite());
+            renderJson(api.endpoints).apply(context.req(), context.prepareRespForResultEvaluation());
         }
 
         @Override

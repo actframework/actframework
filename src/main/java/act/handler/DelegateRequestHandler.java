@@ -43,6 +43,11 @@ public class DelegateRequestHandler extends RequestHandlerBase {
     }
 
     @Override
+    public boolean skipEvents(ActionContext context) {
+        return handler_.skipEvents(context);
+    }
+
+    @Override
     public void handle(ActionContext context) {
         handler_.handle(context);
     }

@@ -33,7 +33,7 @@ import java.util.Locale;
 
 public abstract class ActResponse<T extends ActResponse> extends H.Response<T> {
 
-    private boolean ready;
+    private boolean onResult;
     private boolean closed;
     protected String charset;
     protected Locale locale;
@@ -87,10 +87,10 @@ public abstract class ActResponse<T extends ActResponse> extends H.Response<T> {
     }
 
     /**
-     * Mark the framework is ready to write to the response.
+     * This response is ready for Result evaluation.
      */
-    public void markReady() {
-       this.ready = true;
+    public void onResult() {
+       this.onResult = true;
     }
 
     public void commitContentType() {
@@ -109,6 +109,8 @@ public abstract class ActResponse<T extends ActResponse> extends H.Response<T> {
 
     protected void markClosed() {
         this.closed = true;
+        ActionContext ctx = context();
+        ctx.markAsReadyForClose();
     }
 
     protected abstract void _setStatusCode(int sc);
@@ -126,22 +128,24 @@ public abstract class ActResponse<T extends ActResponse> extends H.Response<T> {
         return statusCode;
     }
 
-    public void beforeWritingContent() {
-        if (ready) {
-            return;
+    public ActResponse beforeWritingContent() {
+        if (onResult) {
+            return this;
         }
         ActionContext ctx = context();
         ctx.dissolve();
         MvcConfig.applyBeforeCommitResultHandler(Ok.get(), ctx.req(), this);
+        return this;
     }
 
-    public void afterWritingContent() {
-        if (ready) {
-            return;
+    public ActResponse afterWritingContent() {
+        ActionContext ctx = context();
+        if (onResult) {
+            return this;
         }
         commit();
-        ActionContext ctx = context();
         MvcConfig.applyAfterCommitResultHandler(Ok.get(), ctx.req(), this);
+        return this;
     }
 
     @Override

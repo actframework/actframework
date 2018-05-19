@@ -473,6 +473,24 @@ public enum AppConfigKey implements ConfigKey {
     HEADER_SESSION_EXPIRATION("header.session.expiration"),
 
     /**
+     * `act.header.overwrite` turn on/off HTTP HEADER overwrite.
+     *
+     * Once this config is turned on, then it can overwrite header
+     * with HTTP Query parameter or HTTP post form field. The naming
+     * convention of the param/field is:
+     *
+     * ```
+     * act_header_<header_name_in_lowercase_and_underscore>
+     * ```
+     *
+     * For example, if it needs to overwrite `Content-Type`, use
+     * `act_header_content_type` as the query parameter name.
+     *
+     * Default value: `false`
+     */
+    HEADER_OVERWRITE("header.overwrite.enabled"),
+
+    /**
      * {@code act.host} specifies the host the application
      * reside on.
      * <p/>

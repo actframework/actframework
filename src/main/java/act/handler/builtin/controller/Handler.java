@@ -64,6 +64,8 @@ public abstract class Handler<T extends Handler> extends DestroyableBase impleme
 
     public abstract boolean express();
 
+    public abstract boolean skipEvents();
+
     public interface Visitor {
         ActionHandlerInvoker.Visitor invokerVisitor();
     }

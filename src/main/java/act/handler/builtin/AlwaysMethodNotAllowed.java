@@ -31,7 +31,7 @@ public class AlwaysMethodNotAllowed extends FastRequestHandler implements Expres
 
     @Override
     public void handle(ActionContext context) {
-        MethodNotAllowed.get().apply(context.req(), context.prepareRespForWrite());
+        MethodNotAllowed.get().apply(context.req(), context.prepareRespForResultEvaluation());
     }
 
     @Override

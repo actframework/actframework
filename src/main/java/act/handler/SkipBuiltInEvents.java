@@ -20,9 +20,20 @@ package act.handler;
  * #L%
  */
 
-import act.Destroyable;
-import act.app.App;
+import act.app.ActionContext;
 
-public interface RequestHandlerResolver extends Destroyable {
-    RequestHandler resolve(String payload, App app);
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
+/**
+ * Mark a request handling method shall skip result commit events triggering
+ *
+ * When an action handler created from the method will be treated as
+ * {@link RequestHandler#skipEvents(ActionContext)} returns `true`.
+ */
+@Retention(RetentionPolicy.RUNTIME)
+@Target(ElementType.METHOD)
+public @interface SkipBuiltInEvents {
 }

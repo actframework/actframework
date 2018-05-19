@@ -31,7 +31,7 @@ public class AlwaysNotImplemented extends FastRequestHandler implements ExpressH
 
     @Override
     public void handle(ActionContext context) {
-        NotImplemented.get().apply(context.req(), context.prepareRespForWrite());
+        NotImplemented.get().apply(context.req(), context.prepareRespForResultEvaluation());
     }
 
     @Override

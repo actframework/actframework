@@ -20,6 +20,8 @@ package act.security;
  * #L%
  */
 
+import static org.osgl.http.H.Header.Names.*;
+
 import act.Act;
 import act.app.ActionContext;
 import org.osgl.$;
@@ -34,8 +36,6 @@ import java.lang.annotation.*;
 import java.lang.reflect.Method;
 import java.lang.reflect.Type;
 import java.util.Collection;
-
-import static org.osgl.http.H.Header.Names.*;
 
 /**
  * Provice CORS header manipulation methods
@@ -258,11 +258,11 @@ public class CORS {
         }
 
         @Override
-        public void visit(ActionContext context) throws Osgl.Break {
+        public void visit(ActionContext context) throws $.Break {
             applyTo(context);
         }
 
-        public void applyTo(ActionContext context) throws Osgl.Break {
+        public void applyTo(ActionContext context) throws $.Break {
             if (!effective) {
                 return;
             }

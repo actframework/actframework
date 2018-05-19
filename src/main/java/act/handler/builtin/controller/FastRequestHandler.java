@@ -47,6 +47,11 @@ public abstract class FastRequestHandler extends RequestHandlerBase {
         }
 
         @Override
+        public boolean skipEvents(ActionContext context) {
+            return true;
+        }
+
+        @Override
         public String toString() {
             return "dumb handler";
         }

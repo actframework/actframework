@@ -142,9 +142,9 @@ public class RouteTableRouterBuilder implements RouterBuilder {
     }
 
     private void process(String line, Router router) {
-        Iterator<CharSequence> itr = Path.tokenizer(Unsafe.bufOf(line), 0, ' ', '\u0000');
+        Iterator<String> itr = Path.tokenizer(Unsafe.bufOf(line), 0, ' ', '\u0000');
         final String UNKNOWN = S.fmt("route configuration not recognized: %s", line);
-        CharSequence method = null, path = null;
+        String method = null, path = null;
         S.Buffer action = S.newBuffer();
         if (itr.hasNext()) {
             method = itr.next();
@@ -163,15 +163,15 @@ public class RouteTableRouterBuilder implements RouterBuilder {
         }
         if ("*".contentEquals(method)) {
             for (H.Method m : Router.supportedHttpMethods()) {
-                router.addMapping(m, path, action, RouteSource.ROUTE_TABLE);
+                router.addMapping(m, path, action.toString(), RouteSource.ROUTE_TABLE);
             }
         } else {
-            String s = method.toString();
+            String s = method;
             if ("context".equalsIgnoreCase(s) || "ctx".equalsIgnoreCase(s)) {
-                router.addContext(action.toString(), path.toString());
+                router.addContext(action.toString(), path);
             } else {
                 H.Method m = H.Method.valueOfIgnoreCase(s);
-                router.addMapping(m, path, action, RouteSource.ROUTE_TABLE);
+                router.addMapping(m, path, action.toString(), RouteSource.ROUTE_TABLE);
             }
         }
     }

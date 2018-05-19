@@ -84,6 +84,11 @@ public class ControllerAction extends ActionHandler<ControllerAction> {
     }
 
     @Override
+    public boolean skipEvents() {
+        return handlerInvoker.skipEvents();
+    }
+
+    @Override
     public void accept(Visitor visitor) {
         handlerInvoker.accept(visitor.invokerVisitor());
     }

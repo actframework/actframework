@@ -241,12 +241,6 @@ public interface ActContext<CTX_TYPE extends ActContext> extends ParamValueProvi
     CTX_TYPE dateFormatPattern(String pattern);
 
     String dateFormatPattern();
-    /**
-     * Returns a reusable {@link S.Buffer} instance
-     *
-     * @return an S.Buffer instance that can be reused
-     */
-    S.Buffer strBuf();
 
     interface Listener {
         void onDestroy(ActContext context);
@@ -265,7 +259,6 @@ public interface ActContext<CTX_TYPE extends ActContext> extends ParamValueProvi
         private Map<String, Object> attributes;
         private Locale locale;
         private int fieldOutputVarCount;
-        private S.Buffer strBuf;
         private boolean noTemplateCache;
         private volatile SimpleProgressGauge progress;
         private String jobId;
@@ -292,7 +285,6 @@ public interface ActContext<CTX_TYPE extends ActContext> extends ParamValueProvi
             attributes = new HashMap<>();
             listenerList = new ArrayList<>();
             destroyableList = new ArrayList<>();
-            strBuf = S.newSizedBuffer(app.config().threadLocalBufRetentionLimit());
             violations = new HashMap<>();
         }
 
@@ -639,11 +631,6 @@ public interface ActContext<CTX_TYPE extends ActContext> extends ParamValueProvi
         public CTX addDestroyable(Destroyable resource) {
             destroyableList.add(resource);
             return me();
-        }
-
-        @Override
-        public S.Buffer strBuf() {
-            return strBuf.consumed() ? strBuf.reset() : S.newBuffer();
         }
 
         @Override

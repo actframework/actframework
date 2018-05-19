@@ -20,6 +20,9 @@ package act.handler.builtin;
  * #L%
  */
 
+import static org.osgl.http.H.Format.*;
+import static org.osgl.http.H.Header.Names.CACHE_CONTROL;
+
 import act.Act;
 import act.ActResponse;
 import act.app.ActionContext;
@@ -41,9 +44,6 @@ import java.nio.ByteBuffer;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-
-import static org.osgl.http.H.Format.*;
-import static org.osgl.http.H.Header.Names.CACHE_CONTROL;
 
 /**
  * Unlike a {@link FileGetter}, the
@@ -109,6 +109,16 @@ public class ResourceGetter extends FastRequestHandler {
                         || (null != context.req().etag() && context.req().etagMatches(etags.get(path))));
     }
 
+    /**
+     * No result commit events triggering for resource getter.
+     * @param context the action context
+     * @return `true`
+     */
+    @Override
+    public boolean skipEvents(ActionContext context) {
+        return true;
+    }
+
     @Override
     public void handle(ActionContext context) {
         if (null != delegate) {
@@ -127,7 +137,7 @@ public class ResourceGetter extends FastRequestHandler {
     protected void handle(String path, ActionContext context) {
         H.Request req = context.req();
         if (Act.isProd()) {
-            ActResponse resp = context.prepareRespForWrite();
+            ActResponse resp = context.prepareRespForResultEvaluation();
             if (preloaded) {
                 // this is a reloaded file resource
                 if (preloadFailure) {
@@ -170,9 +180,7 @@ public class ResourceGetter extends FastRequestHandler {
         if (null != buffer) {
             context.resp()
                     .contentType(cachedContentType.get(path))
-                    .header(CACHE_CONTROL, "public, max-age=7200");
-            context.applyContentType();
-            context.prepareRespForWrite()
+                    .header(CACHE_CONTROL, "public, max-age=7200")
                     .etag(etags.get(path))
                     .writeContent(buffer.duplicate());
             return;
@@ -207,7 +215,7 @@ public class ResourceGetter extends FastRequestHandler {
                 return;
             }
             H.Format contentType = FileGetter.contentType(target.getPath());
-            ActResponse resp = context.prepareRespForWrite();
+            ActResponse resp = context.prepareRespForResultEvaluation();
             resp.contentType(contentType);
             if (Act.isProd()) {
                 resp.header(CACHE_CONTROL, "public, max-age=7200");

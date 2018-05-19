@@ -183,7 +183,7 @@ public class App extends DestroyableBase {
         @Override
         public void handle(ActionContext context) {
             E.illegalArgumentIf(null == blockIssue);
-            blockIssue.apply(context.req(), context.prepareRespForWrite());
+            blockIssue.apply(context.req(), context.prepareRespForResultEvaluation());
         }
 
         @Override

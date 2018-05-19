@@ -54,6 +54,17 @@ public class FileGetter extends FastRequestHandler {
         return null != delegate;
     }
 
+    /**
+     * No result commit event triggering for file getter
+     *
+     * @param context the action context.
+     * @return `true`
+     */
+    @Override
+    public boolean skipEvents(ActionContext context) {
+        return true;
+    }
+
     @Override
     protected void releaseResources() {
         base = null;
@@ -84,7 +95,7 @@ public class FileGetter extends FastRequestHandler {
                 return;
             }
         }
-        ActResponse resp = context.prepareRespForWrite();
+        ActResponse resp = context.prepareRespForResultEvaluation();
         fmt = contentType(file.getPath());
         resp.contentType(fmt);
         context.applyCorsSpec().applyContentSecurityPolicy().applyContentType();

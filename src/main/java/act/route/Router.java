@@ -91,7 +91,7 @@ public class Router extends AppHolderBase<Router> {
     private RequestHandlerResolver handlerLookup;
     // map action context to url context
     // for example `act.` -> `/~`
-    private Map<CharSequence, String> urlContexts = new HashMap<>();
+    private Map<String, String> urlContexts = new HashMap<>();
     private Set<String> actionNames = new HashSet<>();
     private AppConfig appConfig;
     private String portId;
@@ -103,7 +103,7 @@ public class Router extends AppHolderBase<Router> {
         if (null == lookup) {
             lookup = new RequestHandlerResolverBase() {
                 @Override
-                public RequestHandler resolve(CharSequence payload, App app) {
+                public RequestHandler resolve(String payload, App app) {
                     if (S.eq(WsEndpoint.PSEUDO_METHOD, payload.toString())) {
                         return Act.network().createWebSocketConnectionHandler();
                     }
@@ -201,15 +201,16 @@ public class Router extends AppHolderBase<Router> {
     }
 
     // --- routing ---
-    public RequestHandler getInvoker(H.Method method, CharSequence path, ActionContext context) {
+    public RequestHandler getInvoker(H.Method method, String path, ActionContext context) {
         context.router(this);
         if (method == H.Method.OPTIONS) {
             return optionHandlerFactory.optionHandler(path, context);
         }
-        if (Arrays.binarySearch(targetMethods, method) < 0) {
+        Node node = root(method, false);
+        if (null == node) {
             return UnknownHttpMethodHandler.INSTANCE;
         }
-        Node node = search(method, Path.tokenizer(Unsafe.bufOf(path)), context);
+        node = search(node, Path.tokenizer(Unsafe.bufOf(path)), context);
         RequestHandler handler = getInvokerFrom(node);
         RequestHandler blockIssueHandler = app().blockIssueHandler();
         if (null == blockIssueHandler) {
@@ -222,10 +223,10 @@ public class Router extends AppHolderBase<Router> {
     }
 
     public RequestHandler findStaticGetHandler(String url) {
-        Iterator<CharSequence> path = Path.tokenizer(Unsafe.bufOf(url));
+        Iterator<String> path = Path.tokenizer(Unsafe.bufOf(url));
         Node node = root(H.Method.GET);
         while (null != node && path.hasNext()) {
-            CharSequence nodeName = path.next();
+            String nodeName = path.next();
             node = node.staticChildren.get(nodeName);
             if (null == node || node.terminateRouteSearch()) {
                 break;
@@ -277,10 +278,10 @@ public class Router extends AppHolderBase<Router> {
         EXIT
     }
 
-    private CharSequence withUrlContext(CharSequence path, CharSequence action) {
+    private String withUrlContext(String path, String action) {
         String sAction = action.toString();
         String urlContext = null;
-        for (CharSequence key : urlContexts.keySet()) {
+        for (String key : urlContexts.keySet()) {
             String sKey = key.toString();
             if (sAction.startsWith(sKey)) {
                 urlContext = urlContexts.get(key);
@@ -290,20 +291,20 @@ public class Router extends AppHolderBase<Router> {
         return null == urlContext ? path : S.pathConcat(urlContext, '/', path.toString());
     }
 
-    public void addMapping(H.Method method, CharSequence path, CharSequence action) {
+    public void addMapping(H.Method method, String path, String action) {
         addMapping(method, withUrlContext(path, action), resolveActionHandler(action), RouteSource.ROUTE_TABLE);
     }
 
-    public void addMapping(H.Method method, CharSequence path, CharSequence action, RouteSource source) {
+    public void addMapping(H.Method method, String path, String action, RouteSource source) {
         addMapping(method, withUrlContext(path, action), resolveActionHandler(action), source);
     }
 
-    public void addMapping(H.Method method, CharSequence path, RequestHandler handler) {
+    public void addMapping(H.Method method, String path, RequestHandler handler) {
         addMapping(method, path, handler, RouteSource.ROUTE_TABLE);
     }
 
     @SuppressWarnings("FallThrough")
-    public void addMapping(final H.Method method, final CharSequence path, RequestHandler handler, final RouteSource source) {
+    public void addMapping(final H.Method method, final String path, RequestHandler handler, final RouteSource source) {
         if (isTraceEnabled()) {
             trace("R+ %s %s | %s (%s)", method, path, handler, source);
         }
@@ -360,7 +361,7 @@ public class Router extends AppHolderBase<Router> {
     private RequestHandler prepareReverseRoutes(RequestHandler handler, Node node) {
         if (handler instanceof RequestHandlerInfo) {
             RequestHandlerInfo info = (RequestHandlerInfo) handler;
-            CharSequence action = info.action;
+            String action = info.action;
             Node root = node.root;
             root.reverseRoutes.put(action.toString(), node);
             handler = info.theHandler();
@@ -586,15 +587,15 @@ public class Router extends AppHolderBase<Router> {
         return $.invokeVirtual(this, M_FULL_URL, path, args);
     }
 
-    boolean isMapped(H.Method method, CharSequence path) {
+    boolean isMapped(H.Method method, String path) {
         return null != _search(method, path);
     }
 
-    private static String routeInfo(H.Method method, CharSequence path, Object handler) {
+    private static String routeInfo(H.Method method, String path, Object handler) {
         return S.fmt("[%s %s] - > [%s]", method, path, handler);
     }
 
-    private Node _search(H.Method method, CharSequence path) {
+    private Node _search(H.Method method, String path) {
         Node node = root(method);
         assert node != null;
         E.unsupportedIf(null == node, "Method %s is not supported", method);
@@ -602,16 +603,16 @@ public class Router extends AppHolderBase<Router> {
             return node;
         }
         String sUrl = path.toString();
-        List<CharSequence> paths = Path.tokenize(Unsafe.bufOf(sUrl));
+        List<String> paths = Path.tokenize(Unsafe.bufOf(sUrl));
         int len = paths.size();
         for (int i = 0; i < len - 1; ++i) {
-            node = node.findChild((StrBase) paths.get(i));
+            node = node.findChild(paths.get(i));
             if (null == node) return null;
         }
-        return node.findChild((StrBase) paths.get(len - 1));
+        return node.findChild(paths.get(len - 1));
     }
 
-    private Node _locate(final H.Method method, final CharSequence path, String action) {
+    private Node _locate(final H.Method method, final String path, String action) {
         Node node = root(method);
         E.unsupportedIf(null == node, "Method %s is not supported", method);
         assert null != node;
@@ -620,23 +621,23 @@ public class Router extends AppHolderBase<Router> {
             return node;
         }
         String sUrl = path.toString();
-        List<CharSequence> paths = Path.tokenize(Unsafe.bufOf(sUrl));
+        List<String> paths = Path.tokenize(Unsafe.bufOf(sUrl));
         int len = paths.size();
         for (int i = 0; i < len - 1; ++i) {
-            CharSequence part = paths.get(i);
+            String part = paths.get(i);
             if (checkIgnoreRestParts(node, part)) {
                 return node;
             }
-            node = node.addChild((StrBase) part, path, action);
+            node = node.addChild(part, path, action);
         }
-        CharSequence part = paths.get(len - 1);
+        String part = paths.get(len - 1);
         if (checkIgnoreRestParts(node, part)) {
             return node;
         }
-        return node.addChild((StrBase) part, path, action);
+        return node.addChild(part, path, action);
     }
 
-    private boolean checkIgnoreRestParts(Node node, CharSequence nextPart) {
+    private boolean checkIgnoreRestParts(Node node, String nextPart) {
         boolean shouldIgnoreRests = S.eq(IGNORE_NOTATION, S.string(nextPart));
         E.invalidConfigurationIf(node.ignoreRestParts() && !shouldIgnoreRests, "Bad route configuration: parts appended to route that ends with \"...\"");
         E.invalidConfigurationIf(shouldIgnoreRests && !node.children().isEmpty(), "Bad route configuration: \"...\" appended to node that has children");
@@ -697,10 +698,10 @@ public class Router extends AppHolderBase<Router> {
         return targetMethods;
     }
 
-    private Node search(H.Method method, Iterator<CharSequence> path, ActionContext context) {
-        Node node = root(method);
+    private Node search(Node rootNode, Iterator<String> path, ActionContext context) {
+        Node node = rootNode;
         if (node.terminateRouteSearch() && !context.urlPath().isBuiltIn()) {
-            S.Buffer sb = S.newBuffer();
+            S.Buffer sb = S.buffer();
             while (path.hasNext()) {
                 sb.append('/').append(path.next());
             }
@@ -708,14 +709,14 @@ public class Router extends AppHolderBase<Router> {
             return node;
         }
         while (null != node && path.hasNext()) {
-            CharSequence nodeName = path.next();
+            String nodeName = path.next();
             node = node.child(nodeName, context);
             if (null != node) {
                 if (node.terminateRouteSearch()) {
                     if (!path.hasNext()) {
                         context.param(ParamNames.PATH, "");
                     } else {
-                        S.Buffer sb = S.newBuffer();
+                        S.Buffer sb = S.buffer();
                         while (path.hasNext()) {
                             sb.append('/').append(path.next());
                         }
@@ -723,7 +724,7 @@ public class Router extends AppHolderBase<Router> {
                     }
                     break;
                 } else if (node.ignoreRestParts()) {
-                    S.Buffer sb = S.newBuffer();
+                    S.Buffer sb = S.buffer();
                     while (path.hasNext()) {
                         sb.append('/').append(path.next());
                     }
@@ -736,9 +737,9 @@ public class Router extends AppHolderBase<Router> {
     }
 
     private static class RequestHandlerInfo extends DelegateRequestHandler {
-        private CharSequence action;
+        private String action;
 
-        protected RequestHandlerInfo(RequestHandler handler, CharSequence action) {
+        protected RequestHandlerInfo(RequestHandler handler, String action) {
             super(handler);
             this.action = action;
         }
@@ -753,7 +754,7 @@ public class Router extends AppHolderBase<Router> {
         }
     }
 
-    private RequestHandlerInfo resolveActionHandler(CharSequence action) {
+    private RequestHandlerInfo resolveActionHandler(String action) {
         $.T2<String, String> t2 = splitActionStr(action);
         String directive = t2._1, payload = t2._2;
 
@@ -778,7 +779,7 @@ public class Router extends AppHolderBase<Router> {
         }
     }
 
-    private $.T2<String, String> splitActionStr(CharSequence action) {
+    private $.T2<String, String> splitActionStr(String action) {
         FastStr fs = FastStr.of(action);
         FastStr fs1 = fs.beforeFirst(':');
         FastStr fs2 = fs1.isEmpty() ? fs : fs.substr(fs1.length() + 1);
@@ -786,6 +787,10 @@ public class Router extends AppHolderBase<Router> {
     }
 
     private Node root(H.Method method) {
+        return root(method, true);
+    }
+
+    private Node root(H.Method method, boolean reportError) {
         switch (method) {
             case GET:
                 return _GET;
@@ -798,7 +803,10 @@ public class Router extends AppHolderBase<Router> {
             case PATCH:
                 return _PATCH;
             default:
-                throw E.unexpected("HTTP Method not supported: %s", method);
+                if (reportError) {
+                    throw E.unexpected("HTTP Method not supported: %s", method);
+                }
+                return null;
         }
     }
 
@@ -846,7 +854,7 @@ public class Router extends AppHolderBase<Router> {
 
         static Node newRoot(String name, AppConfig<?> config) {
             Node node = new Node(-1, config);
-            node.name = S.str(name);
+            node.name = name;
             return node;
         }
 
@@ -857,7 +865,7 @@ public class Router extends AppHolderBase<Router> {
         private boolean isDynamic;
 
         // --- for static node
-        private StrBase name;
+        private String name;
 
         // ignore all the rest in URL when routing
         private boolean ignoreRestParts;
@@ -865,7 +873,7 @@ public class Router extends AppHolderBase<Router> {
         // --- for dynamic node
         private Pattern pattern;
         private String patternTrait;
-        private List<CharSequence> varNames = new ArrayList<>();
+        private List<String> varNames = new ArrayList<>();
         // used to build the node value for reverse routing
         private List<$.Transformer<Map<String, Object>, String>> nodeValueBuilders = new ArrayList<>();
 
@@ -874,7 +882,7 @@ public class Router extends AppHolderBase<Router> {
         private Node parent;
         private transient Node conflictNode;
         private List<Node> dynamicChilds = new ArrayList<>();
-        private Map<CharSequence, Node> staticChildren = new HashMap<>();
+        private Map<String, Node> staticChildren = new HashMap<>();
         private Map<UrlPath, Node> dynamicAliases = new HashMap<>();
         private Map<String, Node> dynamicReverseAliases = new HashMap<>();
         private RequestHandler handler;
@@ -885,11 +893,11 @@ public class Router extends AppHolderBase<Router> {
         private Node(int id, AppConfig config) {
             this.id = id;
             this.macroLookup = config.routerRegexMacroLookup();
-            name = FastStr.EMPTY_STR;
+            name = "";
             root = this;
         }
 
-        Node(StrBase name, Node parent) {
+        Node(String name, Node parent) {
             E.NPE(name);
             this.name = name;
             this.parent = parent;
@@ -974,11 +982,11 @@ public class Router extends AppHolderBase<Router> {
             }
         }
 
-        boolean metaInfoMatchesExactly(StrBase string) {
+        boolean metaInfoMatchesExactly(String string) {
             return this.isDynamic && $.eq(string, name);
         }
 
-        boolean metaInfoConflict(StrBase string) {
+        boolean metaInfoConflict(String string) {
             $.Var<String> patternTraitsVar = $.var();
 
             boolean isDynamic = parseDynaNameStyleA(string, null, null, patternTraitsVar);
@@ -990,7 +998,7 @@ public class Router extends AppHolderBase<Router> {
             return isDynamic && patternTrait.equals(patternTraitsVar.get());
         }
 
-        public boolean matches(CharSequence chars) {
+        public boolean matches(String chars) {
             if (!isDynamic()) return name.contentEquals(chars);
             return (null == pattern) || pattern.matcher(chars).matches();
         }
@@ -1002,7 +1010,7 @@ public class Router extends AppHolderBase<Router> {
             return list.append(dynamicChilds);
         }
 
-        public Node child(CharSequence name, ActionContext context) {
+        public Node child(String name, ActionContext context) {
             Node node = staticChildren.get(name);
             if (null == node && !dynamicChilds.isEmpty()) {
                 UrlPath path = context.urlPath();
@@ -1021,7 +1029,7 @@ public class Router extends AppHolderBase<Router> {
                     Matcher matcher = null == pattern ? null : pattern.matcher(name);
                     if (null != matcher && matcher.matches()) {
                         if (!targetNode.nodeValueBuilders.isEmpty()) {
-                            for (CharSequence varName : targetNode.varNames) {
+                            for (String varName : targetNode.varNames) {
                                 String varNameStr = varName.toString();
                                 try {
                                     String varValue = matcher.group(varNameStr);
@@ -1039,7 +1047,7 @@ public class Router extends AppHolderBase<Router> {
                                 }
                             }
                         } else {
-                            CharSequence varName = targetNode.varNames.get(0);
+                            String varName = targetNode.varNames.get(0);
                             context.urlPathParam(varName.toString(), S.string(name));
                         }
                         return targetNode;
@@ -1074,7 +1082,7 @@ public class Router extends AppHolderBase<Router> {
             staticChildren.clear();
         }
 
-        Node childByMetaInfoExactMatching(StrBase s) {
+        Node childByMetaInfoExactMatching(String s) {
             Node node = staticChildren.get(s);
             if (null == node && !dynamicChilds.isEmpty()) {
                 for (Node targetNode : dynamicChilds) {
@@ -1086,7 +1094,7 @@ public class Router extends AppHolderBase<Router> {
             return node;
         }
 
-        Node childByMetaInfoConflictMatching(StrBase s) {
+        Node childByMetaInfoConflictMatching(String s) {
             Node node = staticChildren.get(s);
             if (null == node && !dynamicChilds.isEmpty()) {
                 for (Node targetNode : dynamicChilds) {
@@ -1098,12 +1106,12 @@ public class Router extends AppHolderBase<Router> {
             return node;
         }
 
-        Node findChild(StrBase<?> name) {
+        Node findChild(String name) {
             name = name.trim();
             return childByMetaInfoExactMatching(name);
         }
 
-        Node addChild(StrBase<?> name, final CharSequence path, final String action) {
+        Node addChild(String name, final String path, final String action) {
             name = name.trim();
             Node node = childByMetaInfoExactMatching(name);
             if (null != node) {
@@ -1183,7 +1191,7 @@ public class Router extends AppHolderBase<Router> {
             }
         }
 
-        private void parseDynaName(StrBase name) {
+        private void parseDynaName(String name) {
             $.Var<Pattern> patternVar = $.var();
             $.Var<String> patternTraitsVar = $.var();
             boolean isDynamic = parseDynaNameStyleA(name, varNames, patternVar, patternTraitsVar);
@@ -1205,8 +1213,8 @@ public class Router extends AppHolderBase<Router> {
          * case three `foo-{var_name<regex>}-{var_name<regex}-bar...`
          */
         boolean parseDynaNameStyleB(
-                StrBase name,
-                List<CharSequence> varNames,
+                String name,
+                List<String> varNames,
                 @NotNull $.Var<Pattern> pattern,
                 @NotNull $.Var<String> patternTrait,
                 List<$.Transformer<Map<String, Object>, String>> nodeValueBuilders
@@ -1221,7 +1229,7 @@ public class Router extends AppHolderBase<Router> {
             S.Buffer patternTraitBuilder = S.buffer();
             S.Buffer patternStrBuilder = null == pattern ? null : S.buffer();
             while (leftPos >= 0 & leftPos < len) {
-                final StrBase literal = name.substr(lastPos, leftPos);
+                final String literal = name.substring(lastPos, leftPos);
                 if (!literal.isEmpty()) {
                     patternTraitBuilder.append(literal);
                     if (null != pattern) {
@@ -1249,8 +1257,8 @@ public class Router extends AppHolderBase<Router> {
                 if (pos < 0) {
                     throw new RuntimeException("Invalid node: " + name);
                 }
-                $.T2<? extends CharSequence, Pattern> t2 = parseVarBlock(name, leftPos + 1, pos);
-                final CharSequence varName = t2._1;
+                $.T2<? extends String, Pattern> t2 = parseVarBlock(name, leftPos + 1, pos);
+                final String varName = t2._1;
                 if (null != varNames) {
                     varNames.add(varName);
                 }
@@ -1276,13 +1284,14 @@ public class Router extends AppHolderBase<Router> {
                 lastPos = pos + 1;
                 leftPos = name.indexOf('{', lastPos);
             }
-            StrBase literal = name.substr(lastPos, name.length());
+            String literal = name.substring(lastPos, name.length());
             if (!literal.isEmpty()) {
-                if (literal.charAt(literal.length() - 1) == '}') {
-                    literal = literal.tail(-1);
+                int literalLen = literal.length();
+                if (literal.charAt(literalLen - 1) == '}') {
+                    literal = literal.substring(0, literalLen - 1);
                 }
                 if (!literal.isEmpty()) {
-                    final StrBase finalLiteral = literal;
+                    final String finalLiteral = literal;
                     patternTraitBuilder.append(literal);
                     if (null != patternStrBuilder) {
                         patternStrBuilder.append(literal);
@@ -1306,7 +1315,7 @@ public class Router extends AppHolderBase<Router> {
                     try {
                         pattern.set(Pattern.compile(s));
                     } catch (PatternSyntaxException e) {
-                        CharSequence escaped = escapeUnderscore(s);
+                        String escaped = escapeUnderscore(s);
                         if (escaped == s) {
                             throw e;
                         }
@@ -1318,7 +1327,7 @@ public class Router extends AppHolderBase<Router> {
             return true;
         }
 
-        private static CharSequence escapeUnderscore(CharSequence s) {
+        private static String escapeUnderscore(String s) {
             boolean updated = false;
             S.Buffer buf = S.buffer(s);
             for (int i = 0, l = s.length(); i < l; ++i) {
@@ -1327,29 +1336,29 @@ public class Router extends AppHolderBase<Router> {
                     updated = true;
                 }
             }
-            return updated ? buf : s;
+            return updated ? buf.toString() : s;
         }
 
-        private $.T2<? extends CharSequence, Pattern> parseVarBlock(StrBase name, int blockStart, int blockEnd) {
+        private $.T2<? extends String, Pattern> parseVarBlock(String name, int blockStart, int blockEnd) {
             int pos = name.indexOf('<', blockStart);
             if (pos < 0 || pos >= blockEnd) {
-                return $.T2(name.substr(blockStart, blockEnd), null);
+                return $.T2(name.substring(blockStart, blockEnd), null);
             }
             Pattern pattern;
-            StrBase varName;
+            String varName;
             if (pos == blockStart) {
                 pos = name.indexOf('>', blockStart);
                 if (pos >= blockEnd) {
                     throw new RoutingException("Invalid route: " + name);
                 }
                 pattern = Pattern.compile(macroLookup.expand(name.substring(blockStart + 1, pos)));
-                varName = name.substr(pos + 1, blockEnd);
+                varName = name.substring(pos + 1, blockEnd);
             } else {
                 if (name.charAt(blockEnd - 1) != '>') {
                     throw new RoutingException("Invalid route: " + name);
                 }
                 pattern = Pattern.compile(macroLookup.expand(name.substring(pos + 1, blockEnd - 1)));
-                varName = name.substr(blockStart, pos);
+                varName = name.substring(blockStart, pos);
             }
             return $.T2(varName, pattern);
         }
@@ -1360,8 +1369,8 @@ public class Router extends AppHolderBase<Router> {
          * case three: `var_name:`, e.g /foo:
          */
         boolean parseDynaNameStyleA(
-                StrBase name,
-                List<CharSequence> varNames,
+                String name,
+                List<String> varNames,
                 $.Var<Pattern> pattern,
                 $.Var<String> patternTrait
         ) {
@@ -1405,7 +1414,7 @@ public class Router extends AppHolderBase<Router> {
     private enum BuiltInHandlerResolver {
         echo() {
             @Override
-            public RequestHandler resolve(CharSequence msg, App app, EnumSet<BuiltInHandlerDecorator> decorators) {
+            public RequestHandler resolve(String msg, App app, EnumSet<BuiltInHandlerDecorator> decorators) {
                 return decorators.contains(BuiltInHandlerDecorator.authenticated) ?
                         new ContextualHandler(new AuthenticatedEcho(msg.toString())) :
                         new Echo(msg.toString());
@@ -1413,7 +1422,7 @@ public class Router extends AppHolderBase<Router> {
         },
         redirect() {
             @Override
-            public RequestHandler resolve(CharSequence payload, App app, EnumSet<BuiltInHandlerDecorator> decorators) {
+            public RequestHandler resolve(String payload, App app, EnumSet<BuiltInHandlerDecorator> decorators) {
                 return decorators.contains(BuiltInHandlerDecorator.authenticated) ?
                         new ContextualHandler(new AuthenticatedRedirect(payload.toString())) :
                         new Redirect(payload.toString());
@@ -1421,7 +1430,7 @@ public class Router extends AppHolderBase<Router> {
         },
         moved() {
             @Override
-            public RequestHandler resolve(CharSequence payload, App app, EnumSet<BuiltInHandlerDecorator> decorators) {
+            public RequestHandler resolve(String payload, App app, EnumSet<BuiltInHandlerDecorator> decorators) {
                 return decorators.contains(BuiltInHandlerDecorator.authenticated) ?
                         new ContextualHandler(new AuthenticatedRedirect(payload.toString())) :
                         new Redirect(payload.toString());
@@ -1429,7 +1438,7 @@ public class Router extends AppHolderBase<Router> {
         },
         redirectdir() {
             @Override
-            public RequestHandler resolve(CharSequence payload, App app, EnumSet<BuiltInHandlerDecorator> decorators) {
+            public RequestHandler resolve(String payload, App app, EnumSet<BuiltInHandlerDecorator> decorators) {
                 return decorators.contains(BuiltInHandlerDecorator.authenticated) ?
                         new ContextualHandler(new AuthenticatedRedirectDir(payload.toString())) :
                         new RedirectDir(payload.toString());
@@ -1437,7 +1446,7 @@ public class Router extends AppHolderBase<Router> {
         },
         file() {
             @Override
-            public RequestHandler resolve(CharSequence base, App app, EnumSet<BuiltInHandlerDecorator> decorators) {
+            public RequestHandler resolve(String base, App app, EnumSet<BuiltInHandlerDecorator> decorators) {
                 File file = decorators.contains(BuiltInHandlerDecorator.external) ?
                         new File(base.toString()) :
                         app.file(base.toString());
@@ -1451,13 +1460,13 @@ public class Router extends AppHolderBase<Router> {
         },
         authenticatedfile() {
             @Override
-            public RequestHandler resolve(CharSequence base, App app, EnumSet<BuiltInHandlerDecorator> decorators) {
+            public RequestHandler resolve(String base, App app, EnumSet<BuiltInHandlerDecorator> decorators) {
                 return new ContextualHandler(new AuthenticatedFileGetter(app.file(base.toString())));
             }
         },
         externalfile() {
             @Override
-            public RequestHandler resolve(CharSequence base, App app, EnumSet<BuiltInHandlerDecorator> decorators) {
+            public RequestHandler resolve(String base, App app, EnumSet<BuiltInHandlerDecorator> decorators) {
                 File file = new File(base.toString());
                 if (!file.canRead()) {
                     LOGGER.warn("External file not found: %s", file.getPath());
@@ -1469,16 +1478,16 @@ public class Router extends AppHolderBase<Router> {
         },
         resource() {
             @Override
-            public RequestHandler resolve(CharSequence payload, App app, EnumSet<BuiltInHandlerDecorator> decorators) {
+            public RequestHandler resolve(String payload, App app, EnumSet<BuiltInHandlerDecorator> decorators) {
                 return decorators.contains(BuiltInHandlerDecorator.authenticated) ?
                         new ContextualHandler(new AuthenticatedResourceGetter(payload.toString())) :
                         new ResourceGetter(payload.toString());
             }
         };
 
-        protected abstract RequestHandler resolve(CharSequence payload, App app, EnumSet<BuiltInHandlerDecorator> decorators);
+        protected abstract RequestHandler resolve(String payload, App app, EnumSet<BuiltInHandlerDecorator> decorators);
 
-        private static RequestHandler tryResolve(CharSequence directive, CharSequence payload, App app) {
+        private static RequestHandler tryResolve(String directive, String payload, App app) {
             String s = directive.toString().toLowerCase();
             String resolver = s, sDecorators;
             BuiltInHandlerResolver r;
@@ -1512,7 +1521,7 @@ public class Router extends AppHolderBase<Router> {
                             if (null == r) {
                                 h.handle(context);
                             } else {
-                                r.apply(context.req(), context.resp());
+                                r.apply(context.req(), context.prepareRespForResultEvaluation());
                             }
                         }
 
@@ -1529,6 +1538,11 @@ public class Router extends AppHolderBase<Router> {
                         @Override
                         public boolean express(ActionContext context) {
                             return h.express(context);
+                        }
+
+                        @Override
+                        public boolean skipEvents(ActionContext context) {
+                            return h.skipEvents(context);
                         }
 
                         @Override

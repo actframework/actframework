@@ -28,8 +28,8 @@ import org.osgl.exception.NotAppliedException;
 import org.osgl.logging.LogManager;
 import org.osgl.logging.Logger;
 
-import javax.enterprise.context.ApplicationScoped;
 import java.lang.annotation.Annotation;
+import javax.enterprise.context.ApplicationScoped;
 
 public abstract class RequestHandlerBase extends $.F1<ActionContext, Void> implements RequestHandler {
 
@@ -59,6 +59,18 @@ public abstract class RequestHandlerBase extends $.F1<ActionContext, Void> imple
 
     @Override
     public boolean express(ActionContext context) {
+        return express;
+    }
+
+    /**
+     * By default an {@link #express(ActionContext) express} handler will
+     * skip result commit events triggering.
+     *
+     * @param context the action context.
+     * @return result of {@link #express(ActionContext)}
+     */
+    @Override
+    public boolean skipEvents(ActionContext context) {
         return express;
     }
 

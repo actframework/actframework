@@ -27,7 +27,6 @@ import org.osgl.mvc.result.RenderBinary;
 import org.osgl.mvc.result.RenderJSON;
 import org.osgl.mvc.result.Result;
 import org.osgl.storage.ISObject;
-import org.osgl.util.C;
 import org.osgl.util.E;
 import org.osgl.util.S;
 
@@ -107,7 +106,7 @@ public class RenderAny extends Result {
             if (!ignoreMissingTemplate) {
                 throw E.unsupport("Template[%s] not found", context.templatePath());
             }
-            context.nullValueResultIgnoreRenderArgs().apply(context.req(), context.prepareRespForWrite());
+            context.nullValueResultIgnoreRenderArgs().apply(context.req(), context.prepareRespForResultEvaluation());
             return;
         } else if (PDF == fmt || XLS == fmt || XLSX == fmt || DOC == fmt || DOCX == fmt) {
             List<String> varNames = context.__appRenderArgNames();
@@ -132,7 +131,7 @@ public class RenderAny extends Result {
             }
         }
         if (null != result) {
-            ActResponse<?> resp = context.prepareRespForWrite();
+            ActResponse<?> resp = context.prepareRespForResultEvaluation();
             result.status(context.successStatus()).apply(context.req(), resp);
         } else {
             throw E.unexpected("Unknown accept content type: %s", fmt.contentType());

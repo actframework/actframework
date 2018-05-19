@@ -20,11 +20,12 @@ package act.util;
  * #L%
  */
 
+import static org.osgl.http.H.Format.*;
+
 import act.Act;
 import act.app.ActionContext;
 import act.view.Template;
 import act.view.ViewManager;
-import com.alibaba.fastjson.JSON;
 import org.osgl.$;
 import org.osgl.http.H;
 import org.osgl.mvc.ErrorPageRenderer;
@@ -34,10 +35,6 @@ import org.osgl.util.S;
 
 import java.util.HashMap;
 import java.util.Map;
-
-import static org.osgl.http.H.Format.CSV;
-import static org.osgl.http.H.Format.HTML;
-import static org.osgl.http.H.Format.XML;
 
 public class ActErrorPageRender extends ErrorPageRenderer {
 
@@ -79,7 +76,7 @@ public class ActErrorPageRender extends ErrorPageRenderer {
                         , "</title></head><body><h1>"
                         , header, "</h1></body></html>");
             } else if (H.Format.XML == accept) {
-                S.Buffer sb = context.strBuf();
+                S.Buffer sb = S.buffer();
                 sb.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?><error>");
                 if (null != errorCode) {
                     sb.append("<code>").append(errorCode).append("</code");
@@ -126,7 +123,7 @@ public class ActErrorPageRender extends ErrorPageRenderer {
     private String jsonContent(ErrorResult error, Integer errorCode, String errorMsg) {
         Object payload = error.attachment();
         if (null != payload) {
-            return JSON.toJSONString(payload);
+            return com.alibaba.fastjson.JSON.toJSONString(payload);
         }
         if (null == errorCode) {
             return S.concat("{\"ts\":", $.ms(),  ",\"message\":\"", errorMsg, "\"}");

@@ -56,10 +56,12 @@ public abstract class ResultEvent extends ActEvent<Result> implements SystemEven
     public static final $.Func3<Result, H.Request<?>, H.Response<?>, Void> BEFORE_COMMIT_HANDLER =
             new $.F3<Result, H.Request<?>, H.Response<?>, Void>() {
                 @Override
-                public Void apply(Result result, H.Request<?> request, H.Response<?> response) throws NotAppliedException, Osgl.Break {
+                public Void apply(Result result, H.Request<?> request, H.Response<?> response) throws NotAppliedException, $.Break {
                     ActionContext context = request.context();
                     context.applyCorsSpec().applyContentSecurityPolicy().applyContentType(result);
-                    context.app().eventBus().emit(new BeforeResultCommit(result, request, response));
+                    if (!context.skipEvents()) {
+                        context.app().eventBus().emit(new BeforeResultCommit(result, request, response));
+                    }
                     return null;
                 }
             };
@@ -71,7 +73,9 @@ public abstract class ResultEvent extends ActEvent<Result> implements SystemEven
                 public Void apply(Result result, H.Request<?> request, H.Response<?> response) throws NotAppliedException, Osgl.Break {
                     ActionContext context = request.context();
                     context.logAccess(response);
-                    context.app().eventBus().emit(new AfterResultCommit(result, request, response));
+                    if (!context.skipEvents()) {
+                        context.app().eventBus().emit(new AfterResultCommit(result, request, response));
+                    }
                     return null;
                 }
             };

@@ -42,6 +42,8 @@ public interface ActionHandlerInvoker extends Prioritised, Destroyable {
 
     boolean express();
 
+    boolean skipEvents();
+
     CORS.Spec corsSpec();
 
     CSRF.Spec csrfSpec();

@@ -41,13 +41,13 @@ import org.osgl.mvc.annotation.Bind;
 import org.osgl.mvc.annotation.Param;
 import org.osgl.util.E;
 
-import javax.inject.Inject;
-import javax.inject.Provider;
-import javax.inject.Singleton;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
 import java.util.*;
+import javax.inject.Inject;
+import javax.inject.Provider;
+import javax.inject.Singleton;
 
 public class GenieInjector extends DependencyInjectorBase<GenieInjector> {
 
@@ -165,6 +165,10 @@ public class GenieInjector extends DependencyInjectorBase<GenieInjector> {
 
     private Set<Object> factories() {
         Set<String> factories = GenieFactoryFinder.factories();
+        if (null == factories) {
+            // unit testing
+            factories = new HashSet<>();
+        }
         int len = factories.size();
         Set<Object> set = new HashSet<>();
         if (0 == len) {

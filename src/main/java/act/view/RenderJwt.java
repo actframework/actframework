@@ -40,11 +40,11 @@ public class RenderJwt extends RenderAny {
         context.accept(H.Format.JSON);
         JsonWebTokenSessionCodec codec = Act.getInstance(JsonWebTokenSessionCodec.class);
         String token = codec.encodeSession(context.session());
-        H.Request req = context.req();
+        //H.Request req = context.req();
         H.Response resp = context.resp();
-        applyBeforeCommitHandler(req, resp);
+        //applyBeforeCommitHandler(req, resp);
         resp.writeContent(S.concat("{\"token\":\"", token, "\"}"));
-        applyAfterCommitHandler(req, resp);
+        //applyAfterCommitHandler(req, resp);
     }
 
     public static RenderJwt get() {

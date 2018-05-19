@@ -154,7 +154,9 @@ public class NetworkHandler extends DestroyableBase {
                 ctx.saveLocal();
                 EventBus eventBus = app.eventBus();
                 try {
-                    eventBus.emit(new PreHandle(ctx));
+                    if (!ctx.skipEvents()) {
+                        eventBus.emit(new PreHandle(ctx));
+                    }
                     requestHandler.handle(ctx);
                 } catch (Result r) {
                     if (isError(r)) {
@@ -175,8 +177,8 @@ public class NetworkHandler extends DestroyableBase {
                         fmt = req.contentType();
                     }
 
-                    ctx.prepareRespForWrite().addHeaderIfNotAdded(H.Header.Names.CONTENT_TYPE, fmt.contentType());
-                    r.apply(req, ctx.prepareRespForWrite());
+                    ctx.prepareRespForResultEvaluation().addHeaderIfNotAdded(H.Header.Names.CONTENT_TYPE, fmt.contentType());
+                    r.apply(req, ctx.prepareRespForResultEvaluation());
                 } catch (IllegalStateException e) {
                     if (!S.is(e.getMessage()).contains("UT000002: The response has already been started")) {
                         handleException(e, ctx, "Error handling network request");
@@ -184,9 +186,13 @@ public class NetworkHandler extends DestroyableBase {
                 } catch (Exception e) {
                     handleException(e, ctx, "Error handling network request");
                 } finally {
-                    // we don't destroy ctx here in case it's been passed to
-                    // another thread
-                    eventBus.emit(new PostHandle(ctx));
+                    if (!ctx.skipEvents()) {
+                        eventBus.emit(new PostHandle(ctx));
+                    }
+                    if (ctx.isReadyForDestroy()) {
+                        ctx.destroy();
+                        // otherwise the ctx get transferred to another thread
+                    }
                     ActionContext.clearCurrent();
                     timer.stop();
                 }
@@ -220,7 +226,7 @@ public class NetworkHandler extends DestroyableBase {
         if (null == ctx.handler()) {
             ctx.handler(FastRequestHandler.DUMB);
         }
-        r.apply(ctx.req(), ctx.prepareRespForWrite());
+        r.apply(ctx.req(), ctx.prepareRespForResultEvaluation());
     }
 
     @Override

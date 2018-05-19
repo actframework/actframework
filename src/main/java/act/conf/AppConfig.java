@@ -1007,6 +1007,24 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
         }
     }
 
+    private Boolean headerOverwrite;
+    protected T allowHeaderOverwrite(boolean b) {
+        headerOverwrite = b;
+        return me();
+    }
+    public boolean allowHeaderOverwrite() {
+        if (null == headerOverwrite) {
+            headerOverwrite = get(HEADER_OVERWRITE, false);
+        }
+        return headerOverwrite;
+    }
+    private void _mergeHeaderOverwrite(AppConfig config) {
+        if (!hasConfiguration(HEADER_OVERWRITE)) {
+            headerOverwrite = config.headerOverwrite;
+        }
+    }
+
+
     private String headerSessionExpiration;
 
     protected T headerSessionExpiration(String headerName) {
@@ -2417,7 +2435,7 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
     }
 
     public act.session.SessionMapper sessionMapper() {
-        if (null == sessionMapper) {
+        if (null == sessionMapper && null != app.injector()) {
             sessionMapper = get(SESSION_MAPPER, app().getInstance(CookieSessionMapper.class));
         }
         return sessionMapper;
@@ -2437,7 +2455,12 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
 
     public SessionCodec sessionCodec() {
         if (null == sessionCodec) {
-            sessionCodec = get(SESSION_CODEC, app.getInstance(DefaultSessionCodec.class));
+            if (null == app.injector()) {
+                // unit testing
+                sessionCodec = null;
+            } else {
+                sessionCodec = get(SESSION_CODEC, app.getInstance(DefaultSessionCodec.class));
+            }
         }
         return sessionCodec;
     }

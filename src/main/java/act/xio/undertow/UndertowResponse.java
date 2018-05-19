@@ -210,14 +210,18 @@ public class UndertowResponse extends ActResponse<UndertowResponse> {
     @Override
     public UndertowResponse writeContent(String s) {
         beforeWritingContent();
-        try {
-            sender().send(s);
-            endAsync = !blocking();
+        if ("" == s) {
             afterWritingContent();
-        } catch (RuntimeException e) {
-            endAsync = false;
-            afterWritingContent();
-            throw e;
+        } else {
+            try {
+                sender().send(s);
+                endAsync = !blocking();
+                afterWritingContent();
+            } catch (RuntimeException e) {
+                endAsync = false;
+                afterWritingContent();
+                throw e;
+            }
         }
         return this;
     }

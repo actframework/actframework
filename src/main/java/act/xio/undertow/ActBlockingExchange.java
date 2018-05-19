@@ -29,7 +29,6 @@ import io.undertow.servlet.core.BlockingWriterSenderImpl;
 import io.undertow.util.AttachmentKey;
 import org.osgl.http.H;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
@@ -78,7 +77,7 @@ public class ActBlockingExchange implements BlockingHttpExchange {
     }
 
     @Override
-    public void close() throws IOException {
+    public void close() {
         ActionContext ctx = ctx();
         if (!exchange.isComplete()) {
             try {

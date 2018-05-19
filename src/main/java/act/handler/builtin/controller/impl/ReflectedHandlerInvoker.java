@@ -40,6 +40,7 @@ import act.data.annotation.Pattern;
 import act.db.RequireDataBind;
 import act.handler.NonBlock;
 import act.handler.PreventDoubleSubmission;
+import act.handler.SkipBuiltInEvents;
 import act.handler.builtin.controller.*;
 import act.handler.event.ReflectedHandlerInvokerInit;
 import act.handler.event.ReflectedHandlerInvokerInvoke;
@@ -118,6 +119,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
     private String singleJsonFieldName;
     private boolean sessionFree;
     private boolean express;
+    private boolean skipEvents;
     private List<BeanSpec> paramSpecs;
     private CORS.Spec corsSpec;
     private CSRF.Spec csrfSpec;
@@ -228,6 +230,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
 
         sessionFree = method.isAnnotationPresent(SessionFree.class);
         express = method.isAnnotationPresent(NonBlock.class);
+        skipEvents = method.isAnnotationPresent(SkipBuiltInEvents.class);
         noTemplateCache = method.isAnnotationPresent(Template.NoCache.class);
 
         paramCount = handler.paramCount();
@@ -502,6 +505,11 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
     @Override
     public boolean express() {
         return express;
+    }
+
+    @Override
+    public boolean skipEvents() {
+        return skipEvents;
     }
 
     public CORS.Spec corsSpec() {
@@ -925,6 +933,11 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         }
 
         @Override
+        public boolean skipEvents() {
+            return invoker.skipEvents();
+        }
+
+        @Override
         public void accept(Visitor visitor) {
             invoker.accept(visitor.invokerVisitor());
         }
@@ -967,6 +980,11 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         @Override
         public boolean express() {
             return invoker.express();
+        }
+
+        @Override
+        public boolean skipEvents() {
+            return invoker.skipEvents();
         }
 
         @Override
@@ -1022,6 +1040,11 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         }
 
         @Override
+        public boolean skipEvents() {
+            return invoker.skipEvents();
+        }
+
+        @Override
         public void accept(ActionHandlerInvoker.Visitor visitor) {
             invoker.accept(visitor);
         }
@@ -1069,6 +1092,11 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         @Override
         public boolean express() {
             return invoker.express();
+        }
+
+        @Override
+        public boolean skipEvents() {
+            return invoker.skipEvents();
         }
 
         @Override

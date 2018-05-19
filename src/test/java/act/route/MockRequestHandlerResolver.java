@@ -26,7 +26,7 @@ import act.handler.RequestHandlerResolverBase;
 
 public class MockRequestHandlerResolver extends RequestHandlerResolverBase {
     @Override
-    public RequestHandler resolve(CharSequence payload, App app) {
+    public RequestHandler resolve(String payload, App app) {
         return new NamedMockHandler(payload);
     }
 }

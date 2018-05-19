@@ -61,6 +61,7 @@ public class UndertowRequest extends RequestImplBase<UndertowRequest> {
     );
 
     private String path;
+    private boolean headerOverwrite;
     private HttpServerExchange hse;
     private byte[] body;
     private Map<String, Deque<String>> queryParams;
@@ -70,6 +71,7 @@ public class UndertowRequest extends RequestImplBase<UndertowRequest> {
         super(config);
         E.NPE(exchange);
         hse = exchange;
+        headerOverwrite = config.allowHeaderOverwrite();
     }
 
     @Override
@@ -104,7 +106,7 @@ public class UndertowRequest extends RequestImplBase<UndertowRequest> {
         HttpString key = HEADER_NAMES.get(name);
         String val = headerCache.get(key);
         if (null == val) {
-            if (!PROTECTED_HEADER_NAMES.contains(key)) {
+            if (headerOverwrite && !PROTECTED_HEADER_NAMES.contains(key)) {
                 val = paramVal(headerQueryKey(name));
             }
             if (null == val) {
@@ -121,6 +123,9 @@ public class UndertowRequest extends RequestImplBase<UndertowRequest> {
 
     @Override
     public Iterable<String> headers(String name) {
+        if (!headerOverwrite) {
+            return hse.getRequestHeaders().eachValue(HEADER_NAMES.get(name));
+        }
         Iterable<String> vals = C.listOf(paramVals(headerQueryKey(name)));
         if (((List) vals).isEmpty()) {
             vals = hse.getRequestHeaders().eachValue(HEADER_NAMES.get(name));

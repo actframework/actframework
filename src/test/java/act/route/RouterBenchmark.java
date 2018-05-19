@@ -20,6 +20,9 @@ package act.route;
  * #L%
  */
 
+import static org.osgl.http.H.Method.GET;
+import static org.osgl.http.H.Method.POST;
+
 import act.Act;
 import act.BenchmarkBase;
 import act.app.ActionContext;
@@ -32,7 +35,6 @@ import act.handler.builtin.AlwaysNotFound;
 import act.plugin.GenericPluginManager;
 import com.carrotsearch.junitbenchmarks.BenchmarkOptions;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.osgl.http.H;
 import org.osgl.mvc.result.NotFound;
@@ -48,11 +50,7 @@ import java.lang.reflect.Field;
 import java.net.URL;
 import java.util.Map;
 
-import static org.osgl.http.H.Method.GET;
-import static org.osgl.http.H.Method.POST;
-
-@BenchmarkOptions(warmupRounds = 1, benchmarkRounds = 10)
-@Ignore
+@BenchmarkOptions(warmupRounds = 1, benchmarkRounds = 100 * 100)
 public class RouterBenchmark extends BenchmarkBase {
 
     private static Router router;
@@ -71,6 +69,7 @@ public class RouterBenchmark extends BenchmarkBase {
             throw E.unexpected(e);
         }
         app = App.testInstance();
+        UrlPath.testClassInit();
         config = app.config();
         RequestHandlerResolver controllerLookup = new MockRequestHandlerResolver();
         router = new Router(controllerLookup, app);
@@ -146,6 +145,16 @@ public class RouterBenchmark extends BenchmarkBase {
     @Test
     public void play_HitAtEnding() {
         runTest(false, GET, "/adm/weixinyingyong/%s/", S.random());
+    }
+
+    @Test
+    public void osgl_shortStaticUrl() {
+        runTest(true, GET, "/cm");
+    }
+
+    @Test
+    public void play_shortStaticUrl() {
+        runTest(false, GET, "/cm");
     }
 
     @Test

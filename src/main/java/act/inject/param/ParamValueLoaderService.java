@@ -187,7 +187,7 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
                 if (!violations.isEmpty()) {
                     Map<String, ConstraintViolation> map = new HashMap<>();
                     for (ConstraintViolation v : violations) {
-                        S.Buffer buf = ctx.strBuf();
+                        S.Buffer buf = S.buffer();
                         for (Path.Node node : v.getPropertyPath()) {
                             if (node.getKind() == ElementKind.METHOD) {
                                 continue;

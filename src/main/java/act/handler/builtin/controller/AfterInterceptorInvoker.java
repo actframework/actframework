@@ -33,4 +33,5 @@ public interface AfterInterceptorInvoker extends Prioritised, Destroyable {
     CORS.Spec corsSpec();
     boolean sessionFree();
     boolean express();
+    boolean skipEvents();
 }
