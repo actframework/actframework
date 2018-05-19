@@ -1,8 +1,8 @@
 # ActFramework Change Log
 
-**1.8.8-RC5** 13/May/2018
+**1.8.8-RC6** 20/May/2018
 * update osgl library dependencies
-    - osgl-tool to 1.13.1
+    - osgl-tool to 1.13.2
     - osgl-cache to 1.4.0
     - osgl-genie to 1.7.3
     - osgl-http to 1.7.0
