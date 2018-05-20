@@ -91,7 +91,6 @@ import act.ws.SecureTicketCodec;
 import act.ws.SecureTicketHandler;
 import act.ws.WebSocketConnectionManager;
 import org.osgl.$;
-import org.osgl.Osgl;
 import org.osgl.cache.CacheService;
 import org.osgl.http.HttpConfig;
 import org.osgl.logging.LogManager;
@@ -1461,7 +1460,7 @@ public class App extends DestroyableBase {
 
     private void initResolverManager() {
         resolverManager = new StringValueResolverManager(this);
-        Osgl.propertyHandlerFactory = new ActPropertyHandlerFactory(this);
+        $.propertyHandlerFactory = new ActPropertyHandlerFactory(this);
     }
 
     private void initBinderManager() {

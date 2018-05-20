@@ -25,7 +25,6 @@ import static org.osgl.http.H.Header.Names.*;
 import act.Act;
 import act.app.ActionContext;
 import org.osgl.$;
-import org.osgl.Osgl;
 import org.osgl.http.H;
 import org.osgl.inject.BeanSpec;
 import org.osgl.util.C;
@@ -166,12 +165,12 @@ public class CORS {
         public static final Spec DUMB = new Spec() {
 
             @Override
-            public void visit(ActionContext context) throws Osgl.Break {
+            public void visit(ActionContext context) throws $.Break {
                 // do nothing implementation
             }
 
             @Override
-            public void applyTo(ActionContext context) throws Osgl.Break {
+            public void applyTo(ActionContext context) throws $.Break {
                 // do nothing implementation
             }
         };
@@ -313,7 +312,7 @@ public class CORS {
                 }
 
                 @Override
-                public void applyTo(ActionContext context) throws Osgl.Break {
+                public void applyTo(ActionContext context) throws $.Break {
                     me.visit(context);
                     next.visit(context);
                 }

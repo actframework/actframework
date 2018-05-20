@@ -24,15 +24,14 @@ import act.Act;
 import act.app.event.SysEventId;
 import act.util.*;
 import org.osgl.$;
-import org.osgl.Osgl;
 import org.osgl.inject.Injector;
 import org.osgl.logging.LogManager;
 import org.osgl.logging.Logger;
 import org.osgl.util.E;
 
-import javax.inject.Singleton;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Modifier;
+import javax.inject.Singleton;
 
 /**
  * Find all classes annotated with {@link javax.inject.Singleton}
@@ -63,9 +62,9 @@ public class SingletonFinder {
         }
         ClassInfoRepository repo = app.classLoader().classInfoRepository();
         ClassNode node = repo.node(cls.getName());
-        node.visitPublicNotAbstractSubTreeNodes(new Osgl.Visitor<ClassNode>() {
+        node.visitPublicNotAbstractSubTreeNodes(new $.Visitor<ClassNode>() {
             @Override
-            public void visit(ClassNode classNode) throws Osgl.Break {
+            public void visit(ClassNode classNode) throws $.Break {
                 String name = classNode.name();
                 Class<?> cls = $.classForName(name, app.classLoader());
                 if (!stopInheritedScope(cls)) {

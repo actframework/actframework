@@ -25,7 +25,6 @@ import act.act_messages;
 import act.app.App;
 import act.util.ActContext;
 import org.osgl.$;
-import org.osgl.Osgl;
 import org.osgl.exception.NotAppliedException;
 import org.osgl.logging.LogManager;
 import org.osgl.logging.Logger;
@@ -240,9 +239,9 @@ public class I18n {
             if (standardsAnnotationMethods.contains(name)) {
                 continue;
             }
-            map.put(method.getName(), new Osgl.Function<Object, Object>() {
+            map.put(method.getName(), new $.Function<Object, Object>() {
                 @Override
-                public Object apply(Object o) throws NotAppliedException, Osgl.Break {
+                public Object apply(Object o) throws NotAppliedException, $.Break {
                     return $.invokeVirtual(o, method);
                 }
             });

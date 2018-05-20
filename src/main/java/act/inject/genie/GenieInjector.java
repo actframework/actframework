@@ -30,7 +30,6 @@ import act.inject.*;
 import act.sys.Env;
 import act.util.*;
 import org.osgl.$;
-import org.osgl.Osgl;
 import org.osgl.exception.ConfigurationException;
 import org.osgl.exception.NotAppliedException;
 import org.osgl.inject.*;
@@ -192,14 +191,14 @@ public class GenieInjector extends DependencyInjectorBase<GenieInjector> {
                     }
                     $.F2<Class, NamedProvider, Void> namedProviderRegister = new $.F2<Class, NamedProvider, Void>()  {
                         @Override
-                        public Void apply(Class aClass, NamedProvider namedProvider) throws NotAppliedException, Osgl.Break {
+                        public Void apply(Class aClass, NamedProvider namedProvider) throws NotAppliedException, $.Break {
                             genie.registerNamedProvider(aClass, namedProvider);
                             return null;
                         }
                     };
                     $.F2<Class, Provider, Void> register = new $.F2<Class, Provider, Void>() {
                         @Override
-                        public Void apply(Class aClass, Provider provider) throws NotAppliedException, Osgl.Break {
+                        public Void apply(Class aClass, Provider provider) throws NotAppliedException, $.Break {
                             genie.registerProvider(aClass, provider);
                             return null;
                         }
@@ -265,7 +264,7 @@ public class GenieInjector extends DependencyInjectorBase<GenieInjector> {
         final Set<Class<?>> candidates = new LinkedHashSet<>();
         root.visitPublicNotAbstractSubTreeNodes(new $.Visitor<ClassNode>() {
             @Override
-            public void visit(ClassNode classNode) throws Osgl.Break {
+            public void visit(ClassNode classNode) throws $.Break {
                 try {
                     Class<?> clazz = $.classForName(classNode.name(), cl);
                     if (Env.matches(clazz)) {

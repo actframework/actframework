@@ -28,14 +28,13 @@ import act.app.event.SysEventId;
 import act.util.ClassNode;
 import act.util.SubClassFinder;
 import org.osgl.$;
-import org.osgl.Osgl;
 import org.osgl.inject.BeanSpec;
 
-import javax.enterprise.context.ApplicationScoped;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import javax.enterprise.context.ApplicationScoped;
 
 public abstract class DependencyInjectorBase<DI extends DependencyInjectorBase<DI>> extends AppServiceBase<DI> implements DependencyInjector<DI> {
 
@@ -78,7 +77,7 @@ public abstract class DependencyInjectorBase<DI extends DependencyInjectorBase<D
                 ClassNode node = cl.classInfoRepository().node(c.getName());
                 node.visitPublicNotAbstractTreeNodes(new $.Visitor<ClassNode>() {
                     @Override
-                    public void visit(ClassNode classNode) throws Osgl.Break {
+                    public void visit(ClassNode classNode) throws $.Break {
                         listeners.put($.classForName(classNode.name(), cl), list0);
                     }
                 });

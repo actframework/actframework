@@ -165,7 +165,7 @@ public class DataObjectEnhancer extends AppByteCodeEnhancer<DataObjectEnhancer> 
             mv.visitMethodInsn(INVOKESPECIAL, metaInfo.superType().getInternalName(), "equals", "(Ljava/lang/Object;)Z", false);
             mv.visitJumpInsn(IFEQ, lbl_exit_with_false);
         }
-        // call Osgl.eq(that.f1, this.f1)
+        // call $.eq(that.f1, this.f1)
         List<ObjectMetaInfo.FieldMetaInfo> fields = metaInfo.fields();
         for (ObjectMetaInfo.FieldMetaInfo fi : fields) {
             fi.addEqualInstructions(host, mv, lbl_exit_with_false);

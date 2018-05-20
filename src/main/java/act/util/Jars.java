@@ -22,7 +22,6 @@ package act.util;
 
 import act.conf.ConfLoader;
 import org.osgl.$;
-import org.osgl.Osgl;
 import org.osgl.exception.NotAppliedException;
 import org.osgl.logging.L;
 import org.osgl.logging.Logger;
@@ -209,7 +208,7 @@ public enum Jars {
                 }
 
                 @Override
-                public Void apply(JarFile jarFile, JarEntry jarEntry) throws NotAppliedException, Osgl.Break {
+                public Void apply(JarFile jarFile, JarEntry jarEntry) throws NotAppliedException, $.Break {
                     try {
                         String fileName = jarEntry.getName();
                         if (fileName.startsWith("conf/")) {

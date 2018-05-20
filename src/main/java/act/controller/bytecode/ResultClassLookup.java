@@ -25,12 +25,10 @@ import act.util.ClassInfoRepository;
 import act.util.ClassNode;
 import act.view.*;
 import org.osgl.$;
-import org.osgl.Osgl;
 import org.osgl.mvc.result.*;
 
 import java.util.HashSet;
 import java.util.Set;
-import java.util.logging.Filter;
 
 // For quickly check if a class is children/descendant of org.osgl.mvc.Result
 class ResultClassLookup {
@@ -53,8 +51,8 @@ class ResultClassLookup {
             add(
                     Ok.class, NotFound.class, ErrorResult.class, NotAcceptable.class, Forbidden.class,
                     NotImplemented.class, BadRequest.class, Conflict.class, MethodNotAllowed.class,
-                    Unauthorized.class, ServerError.class, NotModified.class, RenderBinary.class,
-                    Accepted.class, Created.class, NoResult.class, Redirect.class, RenderTemplate.class,
+                    Unauthorized.class, ServerError.class, InternalServerError.class, NotModified.class, RenderBinary.class,
+                    Accepted.class, Created.class, NoResult.class, NoContent.class, Redirect.class, RenderTemplate.class,
                     RenderAny.class, ZXingResult.class, RenderJsonMap.class, RenderJSON.class,
                     RenderContent.class, RenderXML.class, RenderCSV.class, RenderHtml.class,
                     FilteredRenderJSON.class, FilteredRenderXML.class, RenderText.class
@@ -62,7 +60,7 @@ class ResultClassLookup {
         } else {
             resultNode.visitPublicSubTreeNodes(new $.Visitor<ClassNode>() {
                 @Override
-                public void visit(ClassNode classNode) throws Osgl.Break {
+                public void visit(ClassNode classNode) throws $.Break {
                     _set.add(classNode.name());
                 }
             });

@@ -51,7 +51,6 @@ import act.ws.DefaultSecureTicketCodec;
 import act.ws.SecureTicketCodec;
 import act.ws.UsernameSecureTicketCodec;
 import org.osgl.$;
-import org.osgl.Osgl;
 import org.osgl.OsglConfig;
 import org.osgl.cache.CacheService;
 import org.osgl.cache.CacheServiceProvider;
@@ -154,6 +153,7 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
             MvcConfig.jsonMediaTypeProvider(jsonContentProvider);
         }
 
+        OsglConfig.internalCache().clear();
         OsglConfig.setThreadLocalBufferLimit(threadLocalBufRetentionLimit());
         OsglConfig.registerGlobalInstanceFactory(new $.Function<Class, Object>() {
             final App app = Act.app();
@@ -2191,7 +2191,7 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
         }
     }
 
-    private Osgl.Func0<H.Format> jsonContentTypeProvider = null;
+    private $.Func0<H.Format> jsonContentTypeProvider = null;
     private Boolean renderJsonIeFix = null;
     private H.Format jsonIE;
     protected T renderJsonContentTypeIE(final String contentType) {
@@ -2205,9 +2205,9 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
         }
         renderJsonIeFix = true;
         jsonIE = H.Format.of("json_ie", contentType);
-        jsonContentTypeProvider = new Osgl.Func0<H.Format>() {
+        jsonContentTypeProvider = new $.Func0<H.Format>() {
             @Override
-            public H.Format apply() throws NotAppliedException, Osgl.Break {
+            public H.Format apply() throws NotAppliedException, $.Break {
                 ActionContext context = ActionContext.current();
                 if (null != context) {
                     UserAgent ua = context.userAgent();

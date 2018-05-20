@@ -30,7 +30,6 @@ import act.sys.meta.ReturnTypeInfo;
 import act.util.ClassNode;
 import act.util.DestroyableBase;
 import org.osgl.$;
-import org.osgl.Osgl;
 import org.osgl.inject.BeanSpec;
 import org.osgl.util.E;
 import org.osgl.util.S;
@@ -174,9 +173,9 @@ public class JobMethodMetaInfo extends DestroyableBase {
             return list;
         }
         final JobMethodMetaInfo me = this;
-        node.visitTree(new Osgl.Visitor<ClassNode>() {
+        node.visitTree(new $.Visitor<ClassNode>() {
             @Override
-            public void visit(ClassNode classNode) throws Osgl.Break {
+            public void visit(ClassNode classNode) throws $.Break {
                 if (!classNode.isAbstract() && classNode.isPublic()) {
                     JobClassMetaInfo subClsInfo = new JobClassMetaInfo().className(classNode.name());
                     JobMethodMetaInfo subMethodInfo = new JobMethodMetaInfo(subClsInfo, JobMethodMetaInfo.this);

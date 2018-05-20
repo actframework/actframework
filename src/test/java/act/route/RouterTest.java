@@ -34,7 +34,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.osgl.$;
-import org.osgl.Osgl;
 import org.osgl.exception.ConfigurationException;
 import org.osgl.exception.NotAppliedException;
 import org.osgl.http.H;
@@ -314,7 +313,7 @@ public class RouterTest extends RouterTestBase {
     public void testReverseRoute() {
         router.addMapping(GET, "/foo/bar", "pkg.Foo.bar");
         eq(router.reverseRoute("pkg.Foo.bar"), "/foo/bar");
-        eq(router.reverseRoute("pkg.Foo.bar", C.<String, Object>map("foo", "bar")), "/foo/bar?foo=bar");
+        eq(router.reverseRoute("pkg.Foo.bar", C.<String, Object>Map("foo", "bar")), "/foo/bar?foo=bar");
     }
 
     @Test
@@ -322,8 +321,8 @@ public class RouterTest extends RouterTestBase {
         router.addMapping(GET, "/foo/{foo}", "pkg.Foo.foo");
         router.addMapping(GET, "/foo/{fooId}/bar/{barId}", "pkg.Foo.bar");
         eq(router.reverseRoute("pkg.Foo.bar"), "/foo/-/bar/-");
-        eq(router.reverseRoute("pkg.Foo.bar", C.<String, Object>map("fooId", 1, "barId", 3)), "/foo/1/bar/3");
-        eq(router.reverseRoute("pkg.Foo.foo", C.<String, Object>map("foo", 1)), "/foo/1");
+        eq(router.reverseRoute("pkg.Foo.bar", C.<String, Object>Map("fooId", 1, "barId", 3)), "/foo/1/bar/3");
+        eq(router.reverseRoute("pkg.Foo.foo", C.<String, Object>Map("foo", 1)), "/foo/1");
     }
 
     @Test
@@ -331,8 +330,8 @@ public class RouterTest extends RouterTestBase {
         router.addMapping(GET, "/foo/{fooId}-{barId}", "pkg.Foo.bar");
         router.addMapping(GET, "/foo/{foo}.htm", "pkg.Foo.foo");
         //eq(router.reverseRoute("pkg.Foo.bar"), "/foo/---");
-        eq(router.reverseRoute("pkg.Foo.bar", C.<String, Object>map("fooId", 1, "barId", 3)), "/foo/1-3");
-        eq(router.reverseRoute("pkg.Foo.foo", C.<String, Object>map("foo", 1)), "/foo/1.htm");
+        eq(router.reverseRoute("pkg.Foo.bar", C.<String, Object>Map("fooId", 1, "barId", 3)), "/foo/1-3");
+        eq(router.reverseRoute("pkg.Foo.foo", C.<String, Object>Map("foo", 1)), "/foo/1.htm");
     }
 
     @Test
@@ -340,7 +339,7 @@ public class RouterTest extends RouterTestBase {
         final String currentActionPath = "com.my.comp.proj_a.controller.MyController.login";
         $.Func0<String> provider = new $.Func0<String>() {
             @Override
-            public String apply() throws NotAppliedException, Osgl.Break {
+            public String apply() throws NotAppliedException, $.Break {
                 return currentActionPath;
             }
         };

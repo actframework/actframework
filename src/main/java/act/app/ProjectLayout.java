@@ -28,7 +28,6 @@ import static act.route.RouteTableRouterBuilder.ROUTES_FILE;
 import act.Act;
 import act.app.util.NamedPort;
 import org.osgl.$;
-import org.osgl.Osgl;
 import org.osgl.exception.NotAppliedException;
 import org.osgl.util.E;
 import org.osgl.util.S;
@@ -606,41 +605,41 @@ public interface ProjectLayout {
     }
 
 
-    public enum F {
+    enum F {
         ;
         public static $.F2<File, ProjectLayout, File> SRC = new $.F2<File, ProjectLayout, File>() {
             @Override
-            public File apply(File base, ProjectLayout layout) throws NotAppliedException, Osgl.Break {
+            public File apply(File base, ProjectLayout layout) throws NotAppliedException, $.Break {
                 return layout.source(base);
             }
         };
         public static $.F2<File, ProjectLayout, File> RSRC = new $.F2<File, ProjectLayout, File>() {
             @Override
-            public File apply(File base, ProjectLayout layout) throws NotAppliedException, Osgl.Break {
+            public File apply(File base, ProjectLayout layout) throws NotAppliedException, $.Break {
                 return layout.resource(base);
             }
         };
         public static $.F2<File, ProjectLayout, File> LIB = new $.F2<File, ProjectLayout, File>() {
             @Override
-            public File apply(File base, ProjectLayout layout) throws NotAppliedException, Osgl.Break {
+            public File apply(File base, ProjectLayout layout) throws NotAppliedException, $.Break {
                 return layout.lib(base);
             }
         };
         public static $.F2<File, ProjectLayout, File> TST_SRC = new $.F2<File, ProjectLayout, File>() {
             @Override
-            public File apply(File base, ProjectLayout layout) throws NotAppliedException, Osgl.Break {
+            public File apply(File base, ProjectLayout layout) throws NotAppliedException, $.Break {
                 return layout.testSource(base);
             }
         };
         public static $.F2<File, ProjectLayout, File> TST_RSRC = new $.F2<File, ProjectLayout, File>() {
             @Override
-            public File apply(File base, ProjectLayout layout) throws NotAppliedException, Osgl.Break {
+            public File apply(File base, ProjectLayout layout) throws NotAppliedException, $.Break {
                 return layout.testResource(base);
             }
         };
         public static $.F2<File, ProjectLayout, File> TST_LIB = new $.F2<File, ProjectLayout, File>() {
             @Override
-            public File apply(File base, ProjectLayout layout) throws NotAppliedException, Osgl.Break {
+            public File apply(File base, ProjectLayout layout) throws NotAppliedException, $.Break {
                 return layout.testLib(base);
             }
         };

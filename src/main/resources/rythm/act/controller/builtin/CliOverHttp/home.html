@@ -73,7 +73,7 @@
     @for(String cmd: commandList) {
     @{
     act.handler.CliHandler handler = dispatcher.handler(cmd);
-    Osgl.T2
+    $.T2
     <String
     , String> commandLine = handler.commandLine();
     }

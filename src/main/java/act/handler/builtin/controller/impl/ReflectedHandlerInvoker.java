@@ -107,7 +107,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
     private ConcurrentMap<H.Format, Boolean> templateAvailabilityCache = new ConcurrentHashMap<>();
     private $.Visitor<H.Format> templateChangeListener = new $.Visitor<H.Format>() {
         @Override
-        public void visit(H.Format format) throws Osgl.Break {
+        public void visit(H.Format format) throws $.Break {
             templateAvailabilityCache.remove(format);
         }
     };
@@ -1131,7 +1131,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         }
 
         @Override
-        public String apply(ActionContext context) throws NotAppliedException, Osgl.Break {
+        public String apply(ActionContext context) throws NotAppliedException, $.Break {
             TreeMap<String, String> keyValues = keyValues(context);
             S.Buffer buffer = S.newBuffer(base);
             for (Map.Entry<String, String> entry : keyValues.entrySet()) {

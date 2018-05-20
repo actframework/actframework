@@ -22,10 +22,9 @@ package act.data.util;
 
 import act.app.App;
 import org.osgl.$;
-import org.osgl.Osgl;
 import org.osgl.exception.NotAppliedException;
 
-public class ActObjectFactory extends Osgl.F1<Class<?>, Object> {
+public class ActObjectFactory extends $.F1<Class<?>, Object> {
 
     private App app;
 
@@ -34,7 +33,7 @@ public class ActObjectFactory extends Osgl.F1<Class<?>, Object> {
     }
 
     @Override
-    public Object apply(Class<?> aClass) throws NotAppliedException, Osgl.Break {
+    public Object apply(Class<?> aClass) throws NotAppliedException, $.Break {
         return app.getInstance(aClass);
     }
 }

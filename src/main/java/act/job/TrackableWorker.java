@@ -22,12 +22,11 @@ package act.job;
 
 import act.util.ProgressGauge;
 import org.osgl.$;
-import org.osgl.Osgl;
 import org.osgl.exception.NotAppliedException;
 
 public abstract class TrackableWorker extends $.F1<ProgressGauge, Object> {
     @Override
-    public Object apply(ProgressGauge progressGauge) throws NotAppliedException, Osgl.Break {
+    public Object apply(ProgressGauge progressGauge) throws NotAppliedException, $.Break {
         run(progressGauge);
         return null;
     }

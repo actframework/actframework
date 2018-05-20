@@ -20,6 +20,8 @@ package act.cli.builtin;
  * #L%
  */
 
+import static org.osgl.$.T2;
+
 import act.cli.CliContext;
 import act.cli.CliDispatcher;
 import act.cli.util.CommandLineParser;
@@ -31,8 +33,6 @@ import org.osgl.util.S;
 
 import java.util.ArrayList;
 import java.util.List;
-
-import static org.osgl.Osgl.T2;
 
 public class Help extends CliHandlerBase {
 

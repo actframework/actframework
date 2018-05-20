@@ -31,7 +31,6 @@ import act.route.Router;
 import act.util.ActContext;
 import act.util.DestroyableBase;
 import org.osgl.$;
-import org.osgl.Osgl;
 import org.osgl.exception.NotAppliedException;
 import org.osgl.util.E;
 import org.osgl.util.S;
@@ -211,7 +210,7 @@ public class Tags extends DestroyableBase {
         // See https://github.com/actframework/actframework/issues/108#infer_reference
         private static $.Func0<String> INFER_REFERENCE_PROVIDER = new $.Func0<String>() {
             @Override
-            public String apply() throws NotAppliedException, Osgl.Break {
+            public String apply() throws NotAppliedException, $.Break {
                 ActContext context = ActContext.Base.currentContext();
                 E.illegalStateIf(null == context, "Cannot get full action path reference outside of act context");
                 /*

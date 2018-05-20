@@ -21,7 +21,7 @@ package act.job;
  */
 
 import static act.util.SimpleProgressGauge.wsJobProgressTag;
-import static org.osgl.Osgl.F0;
+import static org.osgl.$.F0;
 
 import act.Act;
 import act.app.App;
@@ -33,7 +33,6 @@ import act.util.ProgressGauge;
 import act.util.SimpleProgressGauge;
 import act.ws.WebSocketConnectionManager;
 import org.osgl.$;
-import org.osgl.Osgl;
 import org.osgl.exception.ConfigurationException;
 import org.osgl.exception.NotAppliedException;
 import org.osgl.exception.UnexpectedException;
@@ -149,7 +148,7 @@ public class Job extends DestroyableBase implements Runnable {
         this.manager.addJob(this);
         this.worker = new F0() {
             @Override
-            public Object apply() throws NotAppliedException, Osgl.Break {
+            public Object apply() throws NotAppliedException, $.Break {
                 try {
                     callableResult = callable.call();
                 } catch (Exception e) {

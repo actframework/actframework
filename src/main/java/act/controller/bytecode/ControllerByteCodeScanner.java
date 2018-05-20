@@ -42,7 +42,6 @@ import act.sys.meta.EnvAnnotationVisitor;
 import act.util.*;
 import act.ws.WsEndpoint;
 import org.osgl.$;
-import org.osgl.Osgl;
 import org.osgl.http.H;
 import org.osgl.mvc.annotation.With;
 import org.osgl.mvc.util.Binder;
@@ -973,7 +972,7 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
             ClassNode node = classLoader.classInfoRepository().node(classInfo.className());
             node.visitSubTree(new $.Visitor<ClassNode>() {
                 @Override
-                public void visit(ClassNode classNode) throws Osgl.Break {
+                public void visit(ClassNode classNode) throws $.Break {
                     String className = classNode.name();
                     ControllerClassMetaInfo subClassInfo = classLoader.controllerClassMetaInfo(className);
                     if (null != subClassInfo) {

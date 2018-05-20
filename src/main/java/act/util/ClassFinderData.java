@@ -24,7 +24,6 @@ import act.app.App;
 import act.app.event.SysEventId;
 import act.sys.Env;
 import org.osgl.$;
-import org.osgl.Osgl;
 import org.osgl.logging.LogManager;
 import org.osgl.logging.Logger;
 import org.osgl.util.S;
@@ -83,7 +82,7 @@ public class ClassFinderData {
             }
             $.Visitor<ClassNode> visitor = new $.Visitor<ClassNode>() {
                 @Override
-                public void visit(ClassNode classNode) throws Osgl.Break {
+                public void visit(ClassNode classNode) throws $.Break {
                     ClassLoader cl = app.classLoader();
                     if (data.className.startsWith("act.")) {
                         cl = cl.getParent();

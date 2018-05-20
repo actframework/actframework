@@ -390,7 +390,7 @@ public class Router extends AppHolderBase<Router> {
 
     public static final $.Func0<String> DEF_ACTION_PATH_PROVIDER = new $.Func0<String>() {
         @Override
-        public String apply() throws NotAppliedException, Osgl.Break {
+        public String apply() throws NotAppliedException, $.Break {
             ActContext context = ActContext.Base.currentContext();
             E.illegalStateIf(null == context, "cannot use shortcut action path outside of a act context");
             return context.methodPath();

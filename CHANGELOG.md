@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
-**1.8.8-RC6** 20/May/2018
+**1.8.8-RC7** 20/May/2018
+* It shall clear OSGL Config's internal cache on app restart #666
 * update osgl library dependencies
     - osgl-tool to 1.13.2
     - osgl-cache to 1.4.0

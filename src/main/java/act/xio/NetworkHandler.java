@@ -41,7 +41,6 @@ import act.route.Router;
 import act.util.DestroyableBase;
 import act.view.ActErrorResult;
 import org.osgl.$;
-import org.osgl.Osgl;
 import org.osgl.exception.NotAppliedException;
 import org.osgl.http.H;
 import org.osgl.logging.LogManager;
@@ -240,7 +239,7 @@ public class NetworkHandler extends DestroyableBase {
 
     private static $.Func2<H.Request, String, String> DUMB_CONTENT_SUFFIX_SENSOR = new $.Func2<H.Request, String, String>() {
         @Override
-        public String apply(H.Request request, String s) throws NotAppliedException, Osgl.Break {
+        public String apply(H.Request request, String s) throws NotAppliedException, $.Break {
             return s;
         }
     };
@@ -306,7 +305,7 @@ public class NetworkHandler extends DestroyableBase {
         private static final char[] xlsx = {'x', 'l', 's'};
 
         @Override
-        public String apply(H.Request req, String url) throws NotAppliedException, Osgl.Break {
+        public String apply(H.Request req, String url) throws NotAppliedException, $.Break {
             $.Var<H.Format> fmtBag = $.var();
             String processedUrl = process(url, fmtBag);
             H.Format fmt = fmtBag.get();

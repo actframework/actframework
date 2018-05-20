@@ -24,7 +24,6 @@ import act.app.ActionContext;
 import act.event.ActEvent;
 import act.event.SystemEvent;
 import org.osgl.$;
-import org.osgl.Osgl;
 import org.osgl.exception.NotAppliedException;
 import org.osgl.http.H;
 import org.osgl.mvc.result.Result;
@@ -70,7 +69,7 @@ public abstract class ResultEvent extends ActEvent<Result> implements SystemEven
     public static final $.Func3<Result, H.Request<?>, H.Response<?>, Void> AFTER_COMMIT_HANDLER =
             new $.F3<Result, H.Request<?>, H.Response<?>, Void>() {
                 @Override
-                public Void apply(Result result, H.Request<?> request, H.Response<?> response) throws NotAppliedException, Osgl.Break {
+                public Void apply(Result result, H.Request<?> request, H.Response<?> response) throws NotAppliedException, $.Break {
                     ActionContext context = request.context();
                     context.logAccess(response);
                     if (!context.skipEvents()) {

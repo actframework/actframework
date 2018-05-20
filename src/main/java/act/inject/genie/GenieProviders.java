@@ -29,7 +29,6 @@ import act.inject.DefaultValue;
 import act.inject.DependencyInjector;
 import act.util.ClassNode;
 import org.osgl.$;
-import org.osgl.Osgl;
 import org.osgl.inject.BeanSpec;
 import org.osgl.inject.InjectException;
 import org.osgl.inject.loader.AnnotatedElementLoader;
@@ -61,9 +60,9 @@ class GenieProviders {
                 return C.list();
             }
             final List<Class<?>> list = new ArrayList<>();
-            $.Visitor<ClassNode> visitor = new Osgl.Visitor<ClassNode>() {
+            $.Visitor<ClassNode> visitor = new $.Visitor<ClassNode>() {
                 @Override
-                public void visit(ClassNode classNode) throws Osgl.Break {
+                public void visit(ClassNode classNode) throws $.Break {
                     Class c = $.classForName(classNode.name(), cl);
                     list.add(c);
                 }
@@ -220,9 +219,9 @@ class GenieProviders {
                         return C.list();
                     }
                     final List<Class> list = new ArrayList<>();
-                    Osgl.Visitor<ClassNode> visitor = new Osgl.Visitor<ClassNode>() {
+                    $.Visitor<ClassNode> visitor = new $.Visitor<ClassNode>() {
                         @Override
-                        public void visit(ClassNode classNode) throws Osgl.Break {
+                        public void visit(ClassNode classNode) throws $.Break {
                             Class c = $.classForName(classNode.name(), cl);
                             list.add(c);
                         }

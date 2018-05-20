@@ -30,7 +30,7 @@ import act.cli.meta.CommandMethodMetaInfo;
 import act.cli.meta.CommanderClassMetaInfo;
 import act.handler.CliHandler;
 import act.handler.builtin.cli.CliHandlerProxy;
-import org.osgl.Osgl;
+import org.osgl.$;
 import org.osgl.logging.LogManager;
 import org.osgl.logging.Logger;
 import org.osgl.util.C;
@@ -136,7 +136,7 @@ public class CliDispatcher extends AppServiceBase<CliDispatcher> {
                 list.add(s);
             }
         }
-        return list.sorted(new Osgl.Comparator<String>() {
+        return list.sorted(new $.Comparator<String>() {
             @Override
             public int compare(String o1, String o2) {
                 boolean b1 = (o1.startsWith("act."));

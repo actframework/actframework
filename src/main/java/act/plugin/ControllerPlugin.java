@@ -23,7 +23,6 @@ package act.plugin;
 import act.app.ActionContext;
 import act.controller.meta.ControllerClassMetaInfo;
 import org.osgl.$;
-import org.osgl.Osgl;
 import org.osgl.exception.NotAppliedException;
 import org.osgl.http.H;
 import org.osgl.mvc.result.Result;
@@ -88,7 +87,7 @@ public abstract class ControllerPlugin implements Plugin {
 
     private static final $.Func2<Result, ActionContext, Result> DUMB_AFTER_HANDLER = new $.F2<Result, ActionContext, Result>() {
         @Override
-        public Result apply(Result result, ActionContext context) throws NotAppliedException, Osgl.Break {
+        public Result apply(Result result, ActionContext context) throws NotAppliedException, $.Break {
             return result;
         }
     };
@@ -137,7 +136,7 @@ public abstract class ControllerPlugin implements Plugin {
                 default:
                     return new $.Function<ActionContext, Result>() {
                         @Override
-                        public Result apply(ActionContext context) throws NotAppliedException, Osgl.Break {
+                        public Result apply(ActionContext context) throws NotAppliedException, $.Break {
                             for (ControllerPlugin plugin: controllerPlugins) {
                                 Result result = plugin.beforeHandler(controllerClass, actionMethod).apply(context);
                                 if (null != result) {
@@ -161,7 +160,7 @@ public abstract class ControllerPlugin implements Plugin {
                 default:
                     return new $.Func2<Result, ActionContext, Result>() {
                         @Override
-                        public Result apply(Result result, ActionContext context) throws NotAppliedException, Osgl.Break {
+                        public Result apply(Result result, ActionContext context) throws NotAppliedException, $.Break {
                             for (ControllerPlugin plugin: controllerPlugins) {
                                 result = plugin.afterHandler(controllerClass, actionMethod).apply(result, context);
                             }

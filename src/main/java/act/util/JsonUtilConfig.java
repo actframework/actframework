@@ -34,7 +34,6 @@ import org.joda.time.LocalDate;
 import org.joda.time.LocalDateTime;
 import org.joda.time.LocalTime;
 import org.osgl.$;
-import org.osgl.Osgl;
 import org.osgl.exception.NotAppliedException;
 import org.osgl.mvc.MvcConfig;
 import org.osgl.storage.ISObject;
@@ -172,7 +171,7 @@ public class JsonUtilConfig {
             final JsonWriter me = this;
             return new $.Func0<String>() {
                 @Override
-                public String apply() throws NotAppliedException, Osgl.Break {
+                public String apply() throws NotAppliedException, $.Break {
                     S.Buffer buf = S.buffer();
                     me.visit($.convert(buf).to(Writer.class));
                     return buf.toString();

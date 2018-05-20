@@ -27,7 +27,6 @@ import act.util.Stateless;
 import act.xio.WebSocketConnection;
 import com.alibaba.fastjson.JSON;
 import org.osgl.$;
-import org.osgl.Osgl;
 import org.osgl.http.H;
 import org.osgl.logging.LogManager;
 import org.osgl.logging.Logger;
@@ -78,7 +77,7 @@ public class WebSocketConnectionManager extends AppServiceBase<WebSocketConnecti
     public void subscribe(H.Session session, final String tag) {
         sessionRegistry().accept(session.id(), new $.Visitor<WebSocketConnection>() {
             @Override
-            public void visit(WebSocketConnection connection) throws Osgl.Break {
+            public void visit(WebSocketConnection connection) throws $.Break {
                 byTag.register(tag, connection);
             }
         });

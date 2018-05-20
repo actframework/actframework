@@ -32,7 +32,6 @@ import act.util.AsmTypes;
 import act.util.Async;
 import act.util.ByteCodeVisitor;
 import org.osgl.$;
-import org.osgl.Osgl;
 import org.osgl.exception.NotAppliedException;
 import org.osgl.util.S;
 
@@ -163,7 +162,7 @@ public class SimpleEventListenerByteCodeScanner extends AppByteCodeScannerBase {
                                             final String enumClassName = Type.getType(desc).getClassName();
                                             delayedEvents.add(new $.Func0() {
                                                 @Override
-                                                public Object apply() throws NotAppliedException, Osgl.Break {
+                                                public Object apply() throws NotAppliedException, $.Break {
                                                     Class<? extends Enum> enumClass = $.classForName(enumClassName, app().classLoader());
                                                     return (Enum.valueOf(enumClass, value));
                                                 }
@@ -192,7 +191,7 @@ public class SimpleEventListenerByteCodeScanner extends AppByteCodeScannerBase {
                                     final String enumClassName = Type.getType(desc).getClassName();
                                     delayedEvents.add(new $.Func0() {
                                         @Override
-                                        public Object apply() throws NotAppliedException, Osgl.Break {
+                                        public Object apply() throws NotAppliedException, $.Break {
                                             Class<? extends Enum> enumClass = $.classForName(enumClassName, app().classLoader());
                                             return (Enum.valueOf(enumClass, value));
                                         }

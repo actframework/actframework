@@ -27,7 +27,6 @@ import act.util.SimpleBean;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import org.osgl.$;
-import org.osgl.Osgl;
 import org.osgl.exception.NotAppliedException;
 import org.osgl.inject.BeanSpec;
 import org.osgl.inject.Injector;
@@ -253,7 +252,7 @@ public interface AdaptiveRecord<ID_TYPE, MODEL_TYPE extends AdaptiveRecord> exte
             return set;
         }
 
-        public static Set<Map.Entry<String, Object>> entrySet(AdaptiveRecord ar, Osgl.Function<BeanSpec, Boolean> function) {
+        public static Set<Map.Entry<String, Object>> entrySet(AdaptiveRecord ar, $.Function<BeanSpec, Boolean> function) {
             Map<String, Object> kv = ar.internalMap();
             if (!hasFields(ar)) {
                 return kv.entrySet();
@@ -505,9 +504,9 @@ public interface AdaptiveRecord<ID_TYPE, MODEL_TYPE extends AdaptiveRecord> exte
                 }
                 if (null != paramClass) {
                     final String fieldName = name;
-                    $.Func2 fn = new Osgl.Func2() {
+                    $.Func2 fn = new $.Func2() {
                         @Override
-                        public Object apply(Object host, Object value) throws NotAppliedException, Osgl.Break {
+                        public Object apply(Object host, Object value) throws NotAppliedException, $.Break {
                             BeanSpec spec = setterFieldSpecs.get(fieldName);
                             if (null != value && !spec.isInstance(value)) {
                                 if (value instanceof String) {
@@ -524,9 +523,9 @@ public interface AdaptiveRecord<ID_TYPE, MODEL_TYPE extends AdaptiveRecord> exte
                     if (hasAlias) {
                         fieldSetters.put(alias, fn);
                     }
-                    fn = new Osgl.Func2() {
+                    fn = new $.Func2() {
                         @Override
-                        public Object apply(Object host, Object value) throws NotAppliedException, Osgl.Break {
+                        public Object apply(Object host, Object value) throws NotAppliedException, $.Break {
                             BeanSpec spec = setterFieldSpecs.get(fieldName);
                             if (null != value && !spec.isInstance(value)) {
                                 if (value instanceof String) {
@@ -549,9 +548,9 @@ public interface AdaptiveRecord<ID_TYPE, MODEL_TYPE extends AdaptiveRecord> exte
                         fieldMergers.put(alias, fn);
                     }
                 } else {
-                    $.F1 fn = new Osgl.F1() {
+                    $.F1 fn = new $.F1() {
                         @Override
-                        public Object apply(Object host) throws NotAppliedException, Osgl.Break {
+                        public Object apply(Object host) throws NotAppliedException, $.Break {
                             return $.invokeVirtual(host, m);
                         }
                     };
