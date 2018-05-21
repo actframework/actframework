@@ -330,14 +330,19 @@ public final class Act {
         }
     }
 
-    public static void shutdown(App app) {
+    public static void shutdown(final App app) {
         if (null == appManager) {
             return;
         }
-        if (!appManager.unload(app)) {
-            app.destroy();
-        }
-        shutdownAct();
+        new Thread() {
+            @Override
+            public void run() {
+                if (!appManager.unload(app)) {
+                    app.destroy();
+                }
+                shutdownAct();
+            }
+        }.start();
     }
 
     public static RequestServerRestart requestRestart() {
