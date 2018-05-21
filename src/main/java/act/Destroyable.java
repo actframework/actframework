@@ -24,14 +24,14 @@ import act.handler.builtin.controller.RequestHandlerProxy;
 import act.handler.builtin.controller.impl.ReflectedHandlerInvoker;
 import org.osgl.util.IO;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.context.RequestScoped;
-import javax.enterprise.context.SessionScoped;
 import java.io.Closeable;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Locale;
+import javax.enterprise.context.ApplicationScoped;
+import javax.enterprise.context.RequestScoped;
+import javax.enterprise.context.SessionScoped;
 
 public interface Destroyable {
     void destroy();
@@ -90,8 +90,13 @@ public interface Destroyable {
             }
             for (Object o : col) {
                 if (inScope(o, scope)) {
-                    if (o instanceof Destroyable) {
-                        ((Destroyable) o).destroy();
+                    try {
+                        if (o instanceof Destroyable) {
+                            ((Destroyable) o).destroy();
+                        }
+                    } catch (Exception e) {
+                        Act.LOGGER.warn(e, "Error encountered destroying instance of %s", o.getClass().getName());
+                        // keep destroy next one
                     }
                     if (o instanceof Closeable) {
                         IO.close((Closeable) o);
