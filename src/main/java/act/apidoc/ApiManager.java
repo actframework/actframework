@@ -103,6 +103,7 @@ public class ApiManager extends AppServiceBase<ApiManager> {
         if (Act.isDev()) {
             exploreDescriptions(controllerClasses);
         }
+        LOGGER.info("API book compiled");
     }
 
     private void load(Router router, NamedPort port, AppConfig config, final Set<Class> controllerClasses) {
