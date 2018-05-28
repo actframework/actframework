@@ -49,8 +49,8 @@ public abstract class Config<E extends ConfigKey> extends DestroyableBase {
      * @param configuration
      */
     public Config(Map<String, ?> configuration) {
-        raw = new HashMap<String, Object>(configuration);
-        data = new HashMap<ConfigKey, Object>(configuration.size());
+        raw = new HashMap<>(configuration);
+        data = new HashMap<>(configuration.size());
     }
 
     public Config() {

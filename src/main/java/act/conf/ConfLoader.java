@@ -228,6 +228,7 @@ public abstract class ConfLoader<T extends Config> extends LogSupport {
         for (String s : conf.keySet()) {
             Object o = conf.get(s);
             if (s.startsWith("act.")) s = s.substring(4);
+            m.put(s, o);
             m.put(Config.canonical(s), o);
         }
         return m;

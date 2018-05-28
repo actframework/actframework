@@ -27,10 +27,10 @@ import org.osgl.$;
 import org.osgl.util.C;
 import org.osgl.util.Generics;
 
-import javax.enterprise.context.ApplicationScoped;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Type;
 import java.util.List;
+import javax.enterprise.context.ApplicationScoped;
 
 // We can't do this atm, otherwise app developer cannot use EbeanDao, or MorphiaDao directly
 //@InheritedStateless

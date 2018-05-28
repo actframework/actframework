@@ -1,6 +1,8 @@
 # ActFramework Change Log
 
 **1.8.8-RC8**
+* Param loading process shall take OSGL global mapping filter into consideration #672
+* It shall keep original config key string while processing it into canonical form #669
 * Print out `API book compiled` when running in dev mode #668
 * It shall ignore Exception raised during app shutdown process #667
 * It shall clear OSGL Config's internal cache on app restart #666

@@ -149,7 +149,6 @@ public class JsonUtilConfig {
             if (null == spec) {
                 return null;
             }
-            FastJsonPropertyPreFilter propertyFilter = new FastJsonPropertyPreFilter();
             List<String> outputs = spec.outputFields(context);
             Set<String> excluded = spec.excludedFields(context);
             if (outputs.isEmpty() && excluded.isEmpty()) {
@@ -173,7 +172,7 @@ public class JsonUtilConfig {
                 @Override
                 public String apply() throws NotAppliedException, $.Break {
                     S.Buffer buf = S.buffer();
-                    me.visit($.convert(buf).to(Writer.class));
+                    me.visit(buf);
                     return buf.toString();
                 }
             };

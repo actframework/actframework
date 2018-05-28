@@ -37,6 +37,7 @@ import act.inject.genie.RequestScope;
 import act.inject.genie.SessionScope;
 import act.util.*;
 import org.osgl.$;
+import org.osgl.OsglConfig;
 import org.osgl.exception.UnexpectedException;
 import org.osgl.inject.BeanSpec;
 import org.osgl.inject.InjectException;
@@ -255,14 +256,17 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
 
     public static boolean shouldWaive(Field field) {
         int modifiers = field.getModifiers();
-        return Modifier.isStatic(modifiers)
-                || Modifier.isTransient(modifiers)
-                || noBind(field.getDeclaringClass())
+        if (Modifier.isTransient(modifiers) || Modifier.isStatic(modifiers)) {
+            return true;
+        }
+        String fieldName = field.getName();
+        return noBind(field.getDeclaringClass())
                 || field.isAnnotationPresent(NoBind.class)
                 || field.isAnnotationPresent(Stateless.class)
                 || field.isAnnotationPresent(Global.class)
-                || fieldBlackList.contains(field.getName())
-                || Object.class.equals(field.getDeclaringClass());
+                || fieldBlackList.contains(fieldName)
+                || Object.class.equals(field.getDeclaringClass())
+                || OsglConfig.globalMappingFilter_shouldIgnore(fieldName);
     }
 
     private static ConcurrentMap<Class, Boolean> noBindCache;
