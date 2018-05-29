@@ -7,7 +7,7 @@
 * It shall ignore Exception raised during app shutdown process #667
 * It shall clear OSGL Config's internal cache on app restart #666
 * update osgl library dependencies
-    - osgl-tool to 1.13.2
+    - osgl-tool to 1.14.0
     - osgl-cache to 1.4.0
     - osgl-genie to 1.7.3
     - osgl-http to 1.7.0

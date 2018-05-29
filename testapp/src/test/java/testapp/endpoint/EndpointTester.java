@@ -1,6 +1,8 @@
 package testapp.endpoint;
 
 import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONObject;
 import okhttp3.*;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -154,6 +156,14 @@ public class EndpointTester extends TestBase {
 
     protected void bodyContains(String s) throws IOException {
         yes(resp().body().string().contains(s));
+    }
+
+    protected JSONArray bodyJSONArray() throws IOException {
+        return JSON.parseArray(resp().body().string());
+    }
+
+    protected JSONObject bodyJSONObject() throws IOException {
+        return JSON.parseObject(resp().body().string());
     }
 
     protected void bodyEq(String s) throws IOException {
