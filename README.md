@@ -27,7 +27,7 @@ mvn archetype:generate -B \
     -DartifactId=helloworld \
     -DarchetypeGroupId=org.actframework \
     -DarchetypeArtifactId=archetype-quickstart \
-    -DarchetypeVersion=1.8.8.4
+    -DarchetypeVersion=1.8.8.5
 ```
 
 To start an new project for RESTful service:
@@ -38,19 +38,19 @@ mvn archetype:generate -B \
     -DartifactId=helloservice \
     -DarchetypeGroupId=org.actframework \
     -DarchetypeArtifactId=archetype-simple-restful-service \
-    -DarchetypeVersion=1.8.8.4
+    -DarchetypeVersion=1.8.8.5
 ```
 
 **tips** don't forget replace the `groupId`, `artifactId` and `appName` in the above script, or you can use interactive mode to generate your project:
 
 ```
-mvn archetype:generate -DarchetypeGroupId=org.actframework -DarchetypeArtifactId=archetype-quickstart -DarchetypeVersion=1.8.8.4
+mvn archetype:generate -DarchetypeGroupId=org.actframework -DarchetypeArtifactId=archetype-quickstart -DarchetypeVersion=1.8.8.5
 ```
 
 Or 
 
 ```
-mvn archetype:generate -DarchetypeGroupId=org.actframework -DarchetypeArtifactId=archetype-simple-restful-service -DarchetypeVersion=1.8.8.4
+mvn archetype:generate -DarchetypeGroupId=org.actframework -DarchetypeArtifactId=archetype-simple-restful-service -DarchetypeVersion=1.8.8.5
 ```
 
 For RESTful service project
