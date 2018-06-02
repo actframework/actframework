@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
-**1.8.8-RC8**
+**1.8.8-RC9**
+* Add API to `Act` to support shutdown Act with an optional exit status code #673
 * Param loading process shall take OSGL global mapping filter into consideration #672
 * It shall keep original config key string while processing it into canonical form #669
 * Print out `API book compiled` when running in dev mode #668

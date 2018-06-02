@@ -532,6 +532,11 @@ public class App extends DestroyableBase {
         Act.shutdown(this);
     }
 
+    public void shutdown(int exitCode) {
+        System.out.println("about to shutdown app with exit code: " + exitCode);
+        Act.shutdown(this, exitCode);
+    }
+
     @Override
     protected void releaseResources() {
         // shall not interrupt main thread
