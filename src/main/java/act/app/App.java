@@ -533,7 +533,6 @@ public class App extends DestroyableBase {
     }
 
     public void shutdown(int exitCode) {
-        System.out.println("about to shutdown app with exit code: " + exitCode);
         Act.shutdown(this, exitCode);
     }
 
