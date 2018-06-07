@@ -40,6 +40,7 @@ public abstract class ActResponse<T extends ActResponse> extends H.Response<T> {
     protected String contentType;
     protected H.Format fmt;
     private boolean charsetSet;
+    private boolean committed;
     protected int statusCode = -1;
 
     protected ActResponse() {}
@@ -140,9 +141,10 @@ public abstract class ActResponse<T extends ActResponse> extends H.Response<T> {
 
     public ActResponse afterWritingContent() {
         ActionContext ctx = context();
-        if (onResult) {
+        if (committed) {
             return this;
         }
+        committed = true;
         commit();
         MvcConfig.applyAfterCommitResultHandler(Ok.get(), ctx.req(), this);
         return this;

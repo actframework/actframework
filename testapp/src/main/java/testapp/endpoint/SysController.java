@@ -10,7 +10,7 @@ public class SysController {
 
     @GetAction("/shutdown")
     public void shutdown(final @Provided App app) {
-        app.jobManager().now(app::shutdown);
+        app.jobManager().now((Runnable) app::shutdown);
     }
 
     @GetAction("/ping")

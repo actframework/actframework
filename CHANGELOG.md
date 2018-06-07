@@ -1,6 +1,9 @@
 # ActFramework Change Log
 
 **1.8.8-RC9**
+* Update to osgl-mvc 1.7.2 to fix #678
+* Fix the logic on output response through a Writer to support the fix of #676
+* `RenderCSV` shall check `Result.stringContentProducer` #677
 * Add API to `Act` to support shutdown Act with an optional exit status code #673
 * Param loading process shall take OSGL global mapping filter into consideration #672
 * It shall keep original config key string while processing it into canonical form #669
