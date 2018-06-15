@@ -84,7 +84,7 @@ public interface SimpleBean {
         }
 
         public Map<String, $.T2<String, String>> getPublicFields() {
-            return C.map(publicFields);
+            return C.Map(publicFields);
         }
 
         public void addSensitiveField(String fieldName) {

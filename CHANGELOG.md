@@ -11,13 +11,13 @@
 * It shall ignore Exception raised during app shutdown process #667
 * It shall clear OSGL Config's internal cache on app restart #666
 * update osgl library dependencies
-    - osgl-tool to 1.14.0
-    - osgl-cache to 1.4.0
-    - osgl-genie to 1.7.3
-    - osgl-http to 1.7.0
-    - osgl-mvc to 1.7.1
-    - osgl-storage to 1.6.0
-    - osgl-tool-ext to 1.1.4
+    - osgl-tool to 1.15.1
+    - osgl-cache to 1.5.0
+    - osgl-genie to 1.8.0
+    - osgl-http to 1.8.0
+    - osgl-mvc to 1.8.0
+    - osgl-storage to 1.7.0
+    - osgl-tool-ext to 1.2.0
 * Restructure response processing logic #665
 * Major performance degrade in latest TFB test #663
     - Get rid of ActContext.strBuf. It is not really useful and allocate too much memory

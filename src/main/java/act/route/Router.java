@@ -36,7 +36,6 @@ import act.util.ActContext;
 import act.util.DestroyableBase;
 import act.ws.WsEndpoint;
 import org.osgl.$;
-import org.osgl.Osgl;
 import org.osgl.exception.NotAppliedException;
 import org.osgl.http.H;
 import org.osgl.http.util.Path;

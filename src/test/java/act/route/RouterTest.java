@@ -353,7 +353,7 @@ public class RouterTest extends RouterTestBase {
         router.addMapping(GET, "/abc/134/foo/{a}", "pkg.Foo.any", ACTION_ANNOTATION);
         router.addMapping(GET, "/abc/134/foo/bar", "pkg.Foo.bar", ACTION_ANNOTATION);
         router.addMapping(GET, "/abc/134/foo/zee", "pkg.Foo.zee", ACTION_ANNOTATION);
-        eq("/abc/134/foo/abc", router.reverseRoute("pkg.Foo.any", C.<String, Object>map("a", "abc")));
+        eq("/abc/134/foo/abc", router.reverseRoute("pkg.Foo.any", C.<String, Object>Map("a", "abc")));
         eq("/abc/134/foo/bar", router.reverseRoute("pkg.Foo.bar"));
         eq("/abc/134/foo/zee", router.reverseRoute("pkg.Foo.zee"));
     }

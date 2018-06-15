@@ -20,6 +20,9 @@ package act.app;
  * #L%
  */
 
+import static act.util.ClassInfoRepository.canonicalName;
+import static org.osgl.Lang.requireNotNull;
+
 import act.Act;
 import act.app.event.SysEventId;
 import act.app.util.EnvMatcher;
@@ -54,16 +57,13 @@ import org.osgl.util.E;
 import org.osgl.util.IO;
 import org.osgl.util.S;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.InputStream;
 import java.lang.annotation.Annotation;
 import java.util.*;
-
-import static act.util.ClassInfoRepository.canonicalName;
-import static org.osgl.$.notNull;
+import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
 
 /**
  * The top level class loader to load a specific application classes into JVM
@@ -93,7 +93,7 @@ public class AppClassLoader
     @Inject
     public AppClassLoader(final App app) {
         super(Act.class.getClassLoader());
-        this.app = notNull(app);
+        this.app = requireNotNull(app);
         ClassInfoRepository actClassInfoRepository = Act.classInfoRepository();
         if (null != actClassInfoRepository) {
             this.classInfoRepository = new AppClassInfoRepository(app, actClassInfoRepository);
@@ -404,7 +404,7 @@ public class AppClassLoader
 
     protected void preloadClassFile(File base, File file) {
         ByteArrayOutputStream baos = new ByteArrayOutputStream((int) file.length());
-        IO.copy(IO.is(file), baos);
+        IO.copy(IO.inputStream(file), baos);
         byte[] bytes = baos.toByteArray();
         libClsCache.put(ClassNames.sourceFileNameToClassName(base, file.getAbsolutePath().replace(".class", ".java")), bytes);
     }

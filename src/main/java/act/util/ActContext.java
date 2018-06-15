@@ -652,7 +652,7 @@ public interface ActContext<CTX_TYPE extends ActContext> extends ParamValueProvi
 
         @Override
         public Map<String, ConstraintViolation> violations() {
-            return C.map(this.violations);
+            return C.Map(this.violations);
         }
 
         @Override

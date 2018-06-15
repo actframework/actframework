@@ -76,11 +76,11 @@ public class GeneralAnnoInfo {
     }
 
     public Map<String, Object> attributes() {
-        return C.map(attributes);
+        return C.Map(attributes);
     }
 
     public Map<String, List<Object>> listAttributes() {
-        return C.map(listAttributes);
+        return C.Map(listAttributes);
     }
 
     public GeneralAnnoInfo addAnnotation(String name, Type type) {
