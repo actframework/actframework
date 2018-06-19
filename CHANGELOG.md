@@ -1,7 +1,16 @@
 # ActFramework Change Log
 
-**1.8.8-RC9**
-* Update to osgl-mvc 1.7.2 to fix #678
+**1.8.8-RC10**
+* JWT token expiration is not effect #688
+* Customized `StringValueResolver` not work #687
+* JobContext: support parent #686
+* Job - emit events when JobContext created or destroyed #685
+* Param binding - need to treat `@Password` annotated field #684
+* Classloading: it shall automatically add inner class into management for managed class #683
+* Classloading: the logic to determine classes eligible to enhancement is not clear #682
+* Parameter binding: bind an ID string to an entity field #681
+* Revert changes to "#429" #680
+* Update to osgl-mvc 1.8.0 to fix #678
 * Fix the logic on output response through a Writer to support the fix of #676
 * `RenderCSV` shall check `Result.stringContentProducer` #677
 * Add API to `Act` to support shutdown Act with an optional exit status code #673

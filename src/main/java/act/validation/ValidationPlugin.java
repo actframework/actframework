@@ -20,21 +20,21 @@ package act.validation;
  * #L%
  */
 
-import act.Act;
 import act.app.App;
-import act.inject.ActProvider;
 import act.plugin.AppServicePlugin;
 
+import javax.inject.Singleton;
 import javax.validation.Configuration;
 import javax.validation.Validation;
 import javax.validation.Validator;
 import javax.validation.ValidatorFactory;
 
+@Singleton
 public class ValidationPlugin extends AppServicePlugin {
 
     private Configuration config;
     private ValidatorFactory factory;
-    private Validator validator;
+    public Validator validator;
 
     @Override
     protected void applyTo(App app) {
@@ -56,14 +56,6 @@ public class ValidationPlugin extends AppServicePlugin {
             factory = config.buildValidatorFactory();
         }
         validator = factory.getValidator();
-    }
-
-    public static class ValidatorProvider extends ActProvider<Validator> {
-        @Override
-        public Validator get() {
-            ValidationPlugin plugin = Act.singleton(ValidationPlugin.class);
-            return plugin.validator;
-        }
     }
 
 }

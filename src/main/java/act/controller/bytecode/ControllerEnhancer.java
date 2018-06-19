@@ -39,7 +39,6 @@ public class ControllerEnhancer extends AppByteCodeEnhancer<ControllerEnhancer> 
     private String className;
 
     public ControllerEnhancer() {
-        super(null);
     }
 
     public ControllerEnhancer(ClassVisitor cv, ControllerClassMetaInfoHolder infoHolder) {

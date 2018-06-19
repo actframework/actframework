@@ -15,7 +15,7 @@ public class OutputParamTest extends EndpointTester {
 
     @Test
     public void itShallOutputSpecificParamsWithOutputAnnotation() throws IOException {
-        request("/output-params/specific", C.map("param1", "Tom", "param2", 123, "field1", false));
+        request("/output-params/specific", C.Map("param1", "Tom", "param2", 123, "field1", false));
         eq("Tom", retVal.getString("param1"));
         eq(false, retVal.getBoolean("field1"));
         no(retVal.containsKey("param2"));
@@ -23,7 +23,7 @@ public class OutputParamTest extends EndpointTester {
 
     @Test
     public void itShallOutputAllParamsWithOutputRequestParamsAnnotation() throws IOException {
-        request("/output-params/all", C.map("param1", "Tom", "param2", 123, "field1", false));
+        request("/output-params/all", C.Map("param1", "Tom", "param2", 123, "field1", false));
         eq("Tom", retVal.getString("param1"));
         eq(123, retVal.getInteger("param2"));
         eq(false, retVal.getBoolean("field1"));

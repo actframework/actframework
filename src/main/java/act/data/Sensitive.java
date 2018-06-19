@@ -85,7 +85,6 @@ public @interface Sensitive {
         private String className;
 
         public Enhancer() {
-            super(S.F.startsWith("act.").negate());
         }
 
         public Enhancer(ClassVisitor cv) {

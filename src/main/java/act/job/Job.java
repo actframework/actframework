@@ -26,6 +26,7 @@ import static org.osgl.$.F0;
 import act.Act;
 import act.app.App;
 import act.app.event.SysEventId;
+import act.event.EventBus;
 import act.event.SysEventListenerBase;
 import act.route.DuplicateRouteMappingException;
 import act.util.DestroyableBase;
@@ -120,6 +121,7 @@ public class Job extends DestroyableBase implements Runnable {
     private boolean oneTime;
     private boolean executed;
     private JobManager manager;
+    private final EventBus eventBus;
     private JobTrigger trigger;
     private $.Func0<?> worker;
     Object callableResult;
@@ -133,6 +135,7 @@ public class Job extends DestroyableBase implements Runnable {
     private Job(String id) {
         this.id = id;
         this.jobProgressTag = wsJobProgressTag(id);
+        this.eventBus = Act.eventBus();
     }
 
     Job(String id, JobManager manager) {
@@ -146,6 +149,7 @@ public class Job extends DestroyableBase implements Runnable {
         this.app = manager.app();
         this.jobProgressTag = wsJobProgressTag(id);
         this.manager.addJob(this);
+        this.eventBus = app.eventBus();
         this.worker = new F0() {
             @Override
             public Object apply() throws NotAppliedException, $.Break {
@@ -169,6 +173,7 @@ public class Job extends DestroyableBase implements Runnable {
         this.worker = worker;
         this.oneTime = oneTime;
         this.app = manager.app();
+        this.eventBus = app.eventBus();
         this.jobProgressTag = wsJobProgressTag(id);
         this.manager.addJob(this);
     }
@@ -184,6 +189,7 @@ public class Job extends DestroyableBase implements Runnable {
         this.worker = f1.curry(progress);
         this.oneTime = oneTime;
         this.app = manager.app();
+        this.eventBus = app.eventBus();
         this.jobProgressTag = wsJobProgressTag(id);
         this.manager.addJob(this);
     }
@@ -280,7 +286,7 @@ public class Job extends DestroyableBase implements Runnable {
             }
             doJob();
         } catch (Throwable e) {
-            boolean isFatal = FATAL_EXCEPTIONS.contains(e.getClass());
+            boolean isFatal = FATAL_EXCEPTIONS.contains(e.getClass()) || Error.class.isInstance(e);
             Throwable cause = e;
             if (!isFatal) {
                 cause = e.getCause();
@@ -334,16 +340,17 @@ public class Job extends DestroyableBase implements Runnable {
     }
 
     protected void _before() {
-        JobContext.init();
     }
 
     protected void doJob(){
+        JobContext.init();
         try {
             _before();
             if (null != worker) {
                 worker.apply();
             }
         } finally {
+            JobContext.clear();
             scheduleNextInvocation();
             _finally();
         }

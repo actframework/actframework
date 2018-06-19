@@ -11,7 +11,7 @@ public class LongTypeMapValBindingTest extends SimpleTypeMapValBindingTestBase<L
 
     @Override
     public Map<String, Long> nonEmptyMap() {
-        return C.map("a", Long.MAX_VALUE, "b", Long.MIN_VALUE, "c", 0L);
+        return C.Map("a", Long.MAX_VALUE, "b", Long.MIN_VALUE, "c", 0L);
     }
 
 }

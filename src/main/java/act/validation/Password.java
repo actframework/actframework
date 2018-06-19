@@ -20,6 +20,9 @@ package act.validation;
  * #L%
  */
 
+import static java.lang.annotation.ElementType.*;
+import static java.lang.annotation.RetentionPolicy.RUNTIME;
+
 import act.Act;
 import act.app.App;
 import act.app.AppByteCodeScannerBase;
@@ -35,15 +38,12 @@ import org.osgl.util.C;
 import org.osgl.util.E;
 import org.osgl.util.S;
 
-import javax.validation.Constraint;
-import javax.validation.Payload;
 import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 import java.util.*;
-
-import static java.lang.annotation.ElementType.*;
-import static java.lang.annotation.RetentionPolicy.RUNTIME;
+import javax.validation.Constraint;
+import javax.validation.Payload;
 
 /**
  * The annotated element must be a valid password.
@@ -143,7 +143,6 @@ public @interface Password {
         private boolean isSinglePasswordProvider;
 
         public Enhancer() {
-            super(S.F.startsWith("act.").negate());
         }
 
         public Enhancer(ClassVisitor cv) {

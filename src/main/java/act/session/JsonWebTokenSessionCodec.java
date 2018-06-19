@@ -85,7 +85,7 @@ public class JsonWebTokenSessionCodec implements SessionCodec {
             resolveFromJwtToken(session, encodedSession, true);
             newSession = false;
         }
-        DefaultSessionCodec.processExpiration(
+        session = DefaultSessionCodec.processExpiration(
                 session, $.ms(), newSession,
                 sessionWillExpire, ttlInMillis, pingPath,
                 request);
@@ -128,8 +128,12 @@ public class JsonWebTokenSessionCodec implements SessionCodec {
             Object val = entry.getValue();
             if (isSession && "jti".equals(key)) {
                 state.put(H.Session.KEY_ID, val);
-            } else if (EXPIRES_AT.key().equals(key) || ISSUER.key().equals(key)) {
+            } else if ( ISSUER.key().equals(key)) {
                 // ignore
+            } else if (EXPIRES_AT.key().equals(key)) {
+                Number number = (Number) val;
+                long exp = number.longValue() * 1000;
+                state.put(H.Session.KEY_EXPIRATION, exp);
             } else {
                 state.put(key, val);
             }

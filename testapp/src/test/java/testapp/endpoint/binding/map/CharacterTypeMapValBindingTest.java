@@ -12,7 +12,7 @@ public class CharacterTypeMapValBindingTest extends SimpleTypeMapValBindingTestB
 
     @Override
     public Map<String, Character> nonEmptyMap() {
-        return C.map("a", 'a', "b", 'b', "c", 'c');
+        return C.Map("a", 'a', "b", 'b', "c", 'c');
     }
 
 }

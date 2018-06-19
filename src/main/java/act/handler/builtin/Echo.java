@@ -52,13 +52,6 @@ public class Echo extends FastRequestHandler implements ExpressHandler {
         resp.writeContent(buffer.duplicate());
     }
 
-    public String readContent() {
-        ByteBuffer copy = buffer.duplicate();
-        byte[] bytes = new byte[copy.remaining()];
-        copy.get(bytes);
-        return new String(bytes);
-    }
-
     @Override
     public String toString() {
         return toString;

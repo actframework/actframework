@@ -28,6 +28,7 @@ import act.app.data.StringValueResolverManager;
 import act.controller.ActionMethodParamAnnotationHandler;
 import act.db.AdaptiveRecord;
 import act.db.DbBind;
+import act.db.di.FindBy;
 import act.inject.DefaultValue;
 import act.inject.DependencyInjector;
 import act.inject.SessionVariable;
@@ -37,6 +38,7 @@ import act.inject.genie.RequestScope;
 import act.inject.genie.SessionScope;
 import act.util.*;
 import org.osgl.$;
+import org.osgl.Lang;
 import org.osgl.OsglConfig;
 import org.osgl.exception.UnexpectedException;
 import org.osgl.inject.BeanSpec;
@@ -64,6 +66,8 @@ import javax.enterprise.inject.New;
 import javax.inject.Named;
 import javax.inject.Provider;
 import javax.inject.Singleton;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToOne;
 import javax.validation.*;
 import javax.validation.executable.ExecutableValidator;
 
@@ -640,6 +644,20 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
     }
 
     FieldLoader fieldLoader(ParamKey key, Field field, BeanSpec fieldSpec) {
+        if (field.isAnnotationPresent(ManyToOne.class) || field.isAnnotationPresent(OneToOne.class)) {
+            final FindBy findBy = new FindBy();
+            Map map = new HashMap<>();
+            map.put("byId", true);
+            findBy.init(map, BeanSpec.of(field, Act.injector()));
+            Lang.TypeConverter<Object, Object> converter = new Lang.TypeConverter<Object, Object>() {
+                @Override
+                public Object convert(Object s) {
+                    findBy.setOnetimeValue(S.string(s));
+                    return findBy.get();
+                }
+            };
+            return new FieldLoader(field, findLoader(key, fieldSpec), findLoader(key, BeanSpec.of(String.class, new Annotation[]{}, fieldSpec.name(), fieldSpec.injector())), converter);
+        }
         return new FieldLoader(field, findLoader(key, fieldSpec));
     }
 

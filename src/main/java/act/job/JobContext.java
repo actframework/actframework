@@ -20,8 +20,11 @@ package act.job;
  * #L%
  */
 
+import act.Act;
 import act.app.ActionContext;
 import act.app.App;
+import act.job.event.JobContextDestroyed;
+import act.job.event.JobContextInitialized;
 import act.util.ActContext;
 import org.osgl.http.H;
 import org.osgl.util.E;
@@ -38,15 +41,23 @@ public class JobContext extends ActContext.Base<JobContext> {
 
     private static ThreadLocal<JobContext> current_ = new ThreadLocal<JobContext>();
 
-    private JobContext() {
+    private JobContext parent;
+
+    private JobContext(JobContext parent) {
         super(App.instance());
-        ActContext<?> actContext = ActContext.Base.currentContext();
-        if (null != actContext) {
-            bag_.put("locale", actContext.locale());
-            if (actContext instanceof ActionContext) {
-                H.Session session = ((ActionContext) actContext).session();
-                if (null != session) {
-                    bag_.put("session", session);
+        current_.set(this);
+        this.parent = parent;
+        if (null != parent) {
+            bag_.putAll(parent.bag_);
+        } else {
+            ActContext<?> actContext = ActContext.Base.currentContext();
+            if (null != actContext) {
+                bag_.put("locale", actContext.locale());
+                if (actContext instanceof ActionContext) {
+                    H.Session session = ((ActionContext) actContext).session();
+                    if (null != session) {
+                        bag_.put("session", session);
+                    }
                 }
             }
         }
@@ -102,18 +113,27 @@ public class JobContext extends ActContext.Base<JobContext> {
      * Init JobContext of current thread
      */
     static void init() {
-        clear();
-        current_.set(new JobContext());
+        JobContext parent = current_.get();
+        JobContext ctx = new JobContext(parent);
+        if (null == parent) {
+            Act.eventBus().trigger(new JobContextInitialized(ctx));
+        }
     }
 
     /**
      * Clear JobContext of current thread
      */
     static void clear() {
-        JobContext ctxt = current_.get();
-        if (null != ctxt) {
-            ctxt.bag_.clear();
-            current_.remove();
+        JobContext ctx = current_.get();
+        if (null != ctx) {
+            ctx.bag_.clear();
+            JobContext parent = ctx.parent;
+            if (null != parent) {
+                current_.set(parent);
+            } else {
+                current_.remove();
+                Act.eventBus().trigger(new JobContextDestroyed(ctx));
+            }
         }
     }
 
@@ -160,7 +180,7 @@ public class JobContext extends ActContext.Base<JobContext> {
      * @return the copy of current job context or an empty job context
      */
     static JobContext copy() {
-        JobContext ctxt = new JobContext();
+        JobContext ctxt = new JobContext(null);
         JobContext current = current_.get();
         if (null != current) {
             ctxt.bag_.putAll(current.bag_);

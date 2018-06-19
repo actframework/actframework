@@ -273,7 +273,6 @@ public interface SimpleBean {
         private PasswordMetaInfo passwordMetaInfo;
 
         public ByteCodeEnhancer() {
-            super(S.F.startsWith("act.").negate());
         }
 
         public ByteCodeEnhancer(ClassVisitor cv) {

@@ -11,7 +11,7 @@ public class StringTypeMapValBindingTest extends SimpleTypeMapValBindingTestBase
 
     @Override
     public Map<String, String> nonEmptyMap() {
-        return C.map("a", "Abc", "b", "aBc", "c", "abC");
+        return C.Map("a", "Abc", "b", "aBc", "c", "abC");
     }
 
 }

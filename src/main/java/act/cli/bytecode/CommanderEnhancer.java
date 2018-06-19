@@ -28,7 +28,6 @@ import act.cli.meta.CommandMethodMetaInfo;
 import act.cli.meta.CommanderClassMetaInfo;
 import act.cli.meta.CommanderClassMetaInfoHolder;
 import act.util.AppByteCodeEnhancer;
-import org.osgl.$;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -40,7 +39,6 @@ public class CommanderEnhancer extends AppByteCodeEnhancer<CommanderEnhancer> {
     private CommanderClassMetaInfo metaInfo;
 
     public CommanderEnhancer() {
-        super($.F.<String>yes());
     }
 
     @Override

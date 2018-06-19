@@ -26,7 +26,7 @@ public class HelloCli {
     @Command("foobar")
     @JsonView
     public Map fooBar(@Required(group = "foobar") Integer bar) {
-        return C.map("foo", foo, "color", color, "bar", bar);
+        return C.Map("foo", foo, "color", color, "bar", bar);
     }
 
 }

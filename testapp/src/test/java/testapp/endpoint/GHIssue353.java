@@ -40,7 +40,7 @@ public class GHIssue353 extends EndpointTester {
         assertNotNull(user2._id());
         checkRespCode();
         reset();
-        Map<String, String> updates = C.map("name", "Donald Mickey");
+        Map<String, String> updates = C.Map("name", "Donald Mickey");
         url("/gh/353/" + user2.getIdAsStr()).accept(H.Format.JSON).postJSON(updates).put();
         s = resp().body().string();
         User user3 = JSON.parseObject(s, User.class);

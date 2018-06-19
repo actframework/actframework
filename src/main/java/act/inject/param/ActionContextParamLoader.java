@@ -71,7 +71,15 @@ class ActionContextParamLoader extends ParamValueLoaderService {
                 Class<? extends StringValueResolver>[] resolvers = resolve.value();
                 for (Class<? extends StringValueResolver> resolverClass : resolvers) {
                     StringValueResolver resolver = injector.get(resolverClass);
-                    if (rawType.isAssignableFrom(resolver.targetType())) {
+                    Class<?> targetType = resolver.targetType();
+                    boolean matches = rawType.isAssignableFrom(targetType);
+                    if (!matches) {
+                        Class<?> rawType2 = $.wrapperClassOf(rawType);
+                        if (rawType != rawType2) {
+                            matches = rawType2.isAssignableFrom(targetType);
+                        }
+                    }
+                    if (matches) {
                         loader = new StringValueResolverValueLoader(ParamKey.of(bindName), resolver, null, def, rawType);
                     }
                 }
@@ -87,7 +95,15 @@ class ActionContextParamLoader extends ParamValueLoaderService {
                     for (Class<? extends StringValueResolver> resolverClass : resolvers) {
                         StringValueResolver resolver = injector.get(resolverClass);
                         resolver.attributes($.evaluate(a));
-                        if (rawType.isAssignableFrom(resolver.targetType())) {
+                        Class<?> targetType = resolver.targetType();
+                        boolean matches = rawType.isAssignableFrom(targetType);
+                        if (!matches) {
+                            Class<?> rawType2 = $.wrapperClassOf(rawType);
+                            if (rawType != rawType2) {
+                                matches = rawType2.isAssignableFrom(targetType);
+                            }
+                        }
+                        if (matches) {
                             loader = new StringValueResolverValueLoader(ParamKey.of(bindName), resolver, null, def, rawType);
                             break;
                         }
