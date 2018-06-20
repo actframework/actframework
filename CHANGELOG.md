@@ -1,6 +1,6 @@
 # ActFramework Change Log
 
-**1.8.8-RC10**
+**1.8.8-RC10** 19/Jum/2018
 * JWT token expiration is not effect #688
 * Customized `StringValueResolver` not work #687
 * JobContext: support parent #686
