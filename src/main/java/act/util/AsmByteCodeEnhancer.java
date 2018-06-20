@@ -36,6 +36,15 @@ public abstract class AsmByteCodeEnhancer<T extends AsmByteCodeEnhancer> extends
 
     protected abstract Class<T> subClass();
 
+    protected AsmByteCodeEnhancer() {
+        this.targetClassPredicate = new $.Predicate<String>() {
+            @Override
+            public boolean test(String s) {
+                return Act.appConfig().needEnhancement(s);
+            }
+        };
+    }
+
     protected AsmByteCodeEnhancer($.Predicate<String> targetClassPredicate) {
         this.targetClassPredicate = targetClassPredicate;
     }

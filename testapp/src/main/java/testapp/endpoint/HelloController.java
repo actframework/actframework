@@ -31,7 +31,7 @@ public class HelloController extends Controller.Util {
     @SessionFree
     @GetAction("/hello3")
     public Map<String, String> hello3() {
-        return C.map("hello", "hello");
+        return C.Map("hello", "hello");
     }
 
     @SessionFree

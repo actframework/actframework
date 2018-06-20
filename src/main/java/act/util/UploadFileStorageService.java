@@ -198,7 +198,7 @@ public class UploadFileStorageService extends FileSystemService {
             if (!dir.exists() && !dir.mkdirs()) {
                 throw E.ioException("Cannot create dir: " + dir.getAbsolutePath());
             }
-            return IO.buffered(IO.os(file));
+            return IO.buffered(IO.outputStream(file));
         }
     }
 

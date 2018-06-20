@@ -27,7 +27,7 @@ public class HelloControllerTest extends EndpointTester {
     @Test
     public void testHello3() throws Exception {
         url("hello3");
-        bodyEq(C.map("hello", "hello"));
+        bodyEq(C.Map("hello", "hello"));
         verifyGlobalCORS();
     }
 

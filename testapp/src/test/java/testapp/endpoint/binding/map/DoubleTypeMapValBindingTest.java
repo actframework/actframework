@@ -12,7 +12,7 @@ public class DoubleTypeMapValBindingTest extends SimpleTypeMapValBindingTestBase
 
     @Override
     public Map<String, Double> nonEmptyMap() {
-        return C.map("a", Double.MAX_VALUE, "b", Double.MIN_VALUE, "c", 0.02d);
+        return C.Map("a", Double.MAX_VALUE, "b", Double.MIN_VALUE, "c", 0.02d);
     }
 
     @Ignore

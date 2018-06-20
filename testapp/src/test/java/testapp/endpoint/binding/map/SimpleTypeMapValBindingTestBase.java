@@ -1,5 +1,7 @@
 package testapp.endpoint.binding.map;
 
+import static testapp.endpoint.ParamEncoding.*;
+
 import org.junit.Test;
 import org.osgl.util.C;
 import testapp.endpoint.EndPointTestContext.RequestMethod;
@@ -8,10 +10,6 @@ import testapp.endpoint.binding.ActionParameterBindingTestBase;
 
 import java.util.Map;
 import java.util.TreeMap;
-
-import static testapp.endpoint.ParamEncoding.FOUR;
-import static testapp.endpoint.ParamEncoding.JSON;
-import static testapp.endpoint.ParamEncoding.TWO;
 
 public abstract class SimpleTypeMapValBindingTestBase<T> extends ActionParameterBindingTestBase {
     protected static final String PARAM = "v";
@@ -94,52 +92,52 @@ public abstract class SimpleTypeMapValBindingTestBase<T> extends ActionParameter
 
     @Test
     public final void testEmptyMapGetTwo() throws Exception {
-        _verify("{}", path_v, C.<String, T>map(), RequestMethod.GET, TWO);
+        _verify("{}", path_v, C.<String, T>Map(), RequestMethod.GET, TWO);
     }
 
     @Test
     public final void testEmptyMapGetFour() throws Exception {
-        _verify("{}", path_v, C.<String, T>map(), RequestMethod.GET, FOUR);
+        _verify("{}", path_v, C.<String, T>Map(), RequestMethod.GET, FOUR);
     }
 
     @Test
     public final void testEmptyMapPostTwo() throws Exception {
-        _verify("{}", path_v, C.<String, T>map(), RequestMethod.POST_FORM_DATA, TWO);
+        _verify("{}", path_v, C.<String, T>Map(), RequestMethod.POST_FORM_DATA, TWO);
     }
 
     @Test
     public final void testEmptyMapPostFour() throws Exception {
-        _verify("{}", path_v, C.<String, T>map(), RequestMethod.POST_FORM_DATA, FOUR);
+        _verify("{}", path_v, C.<String, T>Map(), RequestMethod.POST_FORM_DATA, FOUR);
     }
 
     @Test
     public final void testEmptyMapPostJson() throws Exception {
-        _verify("{}", path_v, C.<String, T>map(), RequestMethod.POST_JSON, JSON);
+        _verify("{}", path_v, C.<String, T>Map(), RequestMethod.POST_JSON, JSON);
     }
 
     @Test
     public final void testTypedKeyEmptyMapGetTwo() throws Exception {
-        _verify("{}", path_k, C.<String, T>map(), RequestMethod.GET, TWO);
+        _verify("{}", path_k, C.<String, T>Map(), RequestMethod.GET, TWO);
     }
 
     @Test
     public final void testTypedKeyEmptyMapGetFour() throws Exception {
-        _verify("{}", path_k, C.<String, T>map(), RequestMethod.GET, FOUR);
+        _verify("{}", path_k, C.<String, T>Map(), RequestMethod.GET, FOUR);
     }
 
     @Test
     public final void testTypedKeyEmptyMapPostTwo() throws Exception {
-        _verify("{}", path_k, C.<String, T>map(), RequestMethod.POST_FORM_DATA, TWO);
+        _verify("{}", path_k, C.<String, T>Map(), RequestMethod.POST_FORM_DATA, TWO);
     }
 
     @Test
     public final void testTypedKeyEmptyMapPostFour() throws Exception {
-        _verify("{}", path_k, C.<String, T>map(), RequestMethod.POST_FORM_DATA, FOUR);
+        _verify("{}", path_k, C.<String, T>Map(), RequestMethod.POST_FORM_DATA, FOUR);
     }
 
     @Test
     public final void testTypedKeyEmptyMapPostJson() throws Exception {
-        _verify("{}", path_k, C.<String, T>map(), RequestMethod.POST_JSON, JSON);
+        _verify("{}", path_k, C.<String, T>Map(), RequestMethod.POST_JSON, JSON);
     }
 
     @Test

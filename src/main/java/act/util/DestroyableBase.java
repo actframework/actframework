@@ -23,13 +23,13 @@ package act.util;
 import act.Destroyable;
 import act.handler.builtin.controller.RequestHandlerProxy;
 
+import java.lang.annotation.Annotation;
+import java.util.ArrayList;
+import java.util.List;
 import javax.enterprise.context.ApplicationScoped;
 import javax.enterprise.context.NormalScope;
 import javax.enterprise.context.RequestScoped;
 import javax.enterprise.context.SessionScoped;
-import java.lang.annotation.Annotation;
-import java.util.ArrayList;
-import java.util.List;
 
 public abstract class DestroyableBase extends LogSupport implements Destroyable {
 
@@ -51,7 +51,9 @@ public abstract class DestroyableBase extends LogSupport implements Destroyable 
             return;
         }
         destroyed = true;
-        Destroyable.Util.destroyAll(subResources, scope());
+        if (!subResources.isEmpty()) {
+            Destroyable.Util.destroyAll(subResources, scope());
+        }
         releaseResources();
     }
 

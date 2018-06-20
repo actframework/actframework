@@ -27,7 +27,7 @@ public class GH232 extends GithubIssueBase {
     @GetAction("map/{s}")
     @ResponseStatus(STATUS_CREATED)
     public Object testMap(String s) {
-        return C.map("s", s);
+        return C.Map("s", s);
     }
 
 }

@@ -80,11 +80,11 @@ public class IdGenerator {
                     String s = IO.readContentAsString(file);
                     long seq = Long.parseLong(s);
                     seq = seq + 1;
-                    IO.writeContent(S.str(seq), file);
+                    IO.write(S.str(seq), file);
                     id = (seq);
                 } else {
                     id = 0;
-                    IO.writeContent(Long.toString(id), file);
+                    IO.write(Long.toString(id), file);
                 }
             }
 

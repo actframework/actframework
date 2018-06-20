@@ -11,7 +11,7 @@ public class ShortTypeMapValBindingTest extends SimpleTypeMapValBindingTestBase<
 
     @Override
     public Map<String, Short> nonEmptyMap() {
-        return C.map("a", Short.MAX_VALUE, "b", Short.MIN_VALUE, "c", (short)0);
+        return C.Map("a", Short.MAX_VALUE, "b", Short.MIN_VALUE, "c", (short)0);
     }
 
 }

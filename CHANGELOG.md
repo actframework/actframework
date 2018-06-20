@@ -1,19 +1,32 @@
 # ActFramework Change Log
 
-**1.8.8-RC8**
+**1.8.8-RC10** 19/Jum/2018
+* JWT token expiration is not effect #688
+* Customized `StringValueResolver` not work #687
+* JobContext: support parent #686
+* Job - emit events when JobContext created or destroyed #685
+* Param binding - need to treat `@Password` annotated field #684
+* Classloading: it shall automatically add inner class into management for managed class #683
+* Classloading: the logic to determine classes eligible to enhancement is not clear #682
+* Parameter binding: bind an ID string to an entity field #681
+* Revert changes to "#429" #680
+* Update to osgl-mvc 1.8.0 to fix #678
+* Fix the logic on output response through a Writer to support the fix of #676
+* `RenderCSV` shall check `Result.stringContentProducer` #677
+* Add API to `Act` to support shutdown Act with an optional exit status code #673
 * Param loading process shall take OSGL global mapping filter into consideration #672
 * It shall keep original config key string while processing it into canonical form #669
 * Print out `API book compiled` when running in dev mode #668
 * It shall ignore Exception raised during app shutdown process #667
 * It shall clear OSGL Config's internal cache on app restart #666
 * update osgl library dependencies
-    - osgl-tool to 1.14.0
-    - osgl-cache to 1.4.0
-    - osgl-genie to 1.7.3
-    - osgl-http to 1.7.0
-    - osgl-mvc to 1.7.1
-    - osgl-storage to 1.6.0
-    - osgl-tool-ext to 1.1.4
+    - osgl-tool to 1.15.1
+    - osgl-cache to 1.5.0
+    - osgl-genie to 1.8.0
+    - osgl-http to 1.8.0
+    - osgl-mvc to 1.8.0
+    - osgl-storage to 1.7.0
+    - osgl-tool-ext to 1.2.0
 * Restructure response processing logic #665
 * Major performance degrade in latest TFB test #663
     - Get rid of ActContext.strBuf. It is not really useful and allocate too much memory

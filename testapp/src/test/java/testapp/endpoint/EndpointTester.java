@@ -208,7 +208,7 @@ public class EndpointTester extends TestBase {
 
     protected Map<String, Object> prepareJsonData(String key, Object val, Object ... otherPairs) {
         Map<String, Object> params = C.newMap(key, val);
-        Map<String, Object> otherParams = C.map(otherPairs);
+        Map<String, Object> otherParams = C.Map(otherPairs);
         params.putAll(otherParams);
         return params;
     }

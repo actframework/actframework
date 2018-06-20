@@ -238,11 +238,11 @@ public @interface PropertySpec {
         }
 
         public Map<String, String> labelMapping() {
-            return C.map(common.labels());
+            return C.Map(common.labels());
         }
 
         public Map<String, String> labelMapping(ActContext context) {
-            return C.map(spec(context).labels());
+            return C.Map(spec(context).labels());
         }
 
         public Set<String> excludedFields(ActContext context) {

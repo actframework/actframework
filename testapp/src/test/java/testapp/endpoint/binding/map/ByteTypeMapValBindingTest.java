@@ -11,7 +11,7 @@ public class ByteTypeMapValBindingTest extends SimpleTypeMapValBindingTestBase<B
 
     @Override
     public Map<String, Byte> nonEmptyMap() {
-        return C.map("a", 0, "b", 1, "c", 2);
+        return C.Map("a", 0, "b", 1, "c", 2);
     }
 
 }

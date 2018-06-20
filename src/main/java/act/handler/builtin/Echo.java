@@ -41,24 +41,15 @@ public class Echo extends FastRequestHandler implements ExpressHandler {
 
     public Echo(String msg, String contentType) {
         this.buffer = ByteBuffers.wrap(msg);
-        this.contentType = contentType;
+        this.contentType = S.blank(contentType) ? H.Format.TXT.contentType() : contentType;
         this.toString = "echo: " + msg;
     }
 
     @Override
     public void handle(ActionContext context) {
         H.Response resp = context.resp();
-        if (S.notBlank(contentType)) {
-            resp.contentType(contentType);
-        }
+        resp.contentType(contentType);
         resp.writeContent(buffer.duplicate());
-    }
-
-    public String readContent() {
-        ByteBuffer copy = buffer.duplicate();
-        byte[] bytes = new byte[copy.remaining()];
-        copy.get(bytes);
-        return new String(bytes);
     }
 
     @Override

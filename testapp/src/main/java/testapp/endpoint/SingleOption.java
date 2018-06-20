@@ -1,12 +1,12 @@
 package testapp.endpoint;
 
 import act.cli.Command;
-import act.cli.JsonView;
 import act.cli.Required;
+import act.util.JsonView;
 import org.osgl.util.C;
 
-import javax.enterprise.context.SessionScoped;
 import java.util.Map;
+import javax.enterprise.context.SessionScoped;
 
 public class SingleOption {
     @Required
@@ -16,7 +16,7 @@ public class SingleOption {
     @Command("foo")
     @JsonView
     public Map fooOnly() {
-        return C.map("foo", foo);
+        return C.Map("foo", foo);
     }
 
     protected String foo() {

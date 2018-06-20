@@ -12,7 +12,7 @@ public class EnumTypeMapValBindingTest extends SimpleTypeMapValBindingTestBase<R
 
     @Override
     public Map<String, RGB> nonEmptyMap() {
-        return C.map("a", RGB.R, "b", RGB.G, "c", RGB.B);
+        return C.Map("a", RGB.R, "b", RGB.G, "c", RGB.B);
     }
 
 }

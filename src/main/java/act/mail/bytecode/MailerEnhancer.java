@@ -29,7 +29,6 @@ import act.mail.meta.MailerClassMetaInfoHolder;
 import act.mail.meta.SenderMethodMetaInfo;
 import act.util.AppByteCodeEnhancer;
 import org.osgl.$;
-import org.osgl.util.S;
 
 /**
  * Enhance mailer class
@@ -40,7 +39,6 @@ public class MailerEnhancer extends AppByteCodeEnhancer<MailerEnhancer> {
     private String className;
 
     public MailerEnhancer() {
-        super(S.F.startsWith("act.").negate().or(S.F.startsWith("act.fsa")));
     }
 
     public MailerEnhancer(ClassVisitor cv, MailerClassMetaInfoHolder infoHolder) {

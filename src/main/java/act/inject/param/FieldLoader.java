@@ -23,7 +23,9 @@ package act.inject.param;
 import act.Act;
 import act.data.Sensitive;
 import act.util.ActContext;
+import act.validation.Password;
 import org.osgl.$;
+import org.osgl.Lang;
 import org.osgl.inject.InjectException;
 
 import java.lang.reflect.Field;
@@ -33,25 +35,58 @@ import java.lang.reflect.Field;
  */
 class FieldLoader {
     private final Field field;
+    private final boolean isString;
     private final ParamValueLoader loader;
-    private boolean sensitive;
+    private final ParamValueLoader stringValueLoader;
+    private final boolean isSensitive;
+    private final boolean isPassword;
+    private Lang.TypeConverter<Object, Object> converter;
 
-    FieldLoader(Field field, ParamValueLoader loader) {
-        this.sensitive = String.class == field.getType() && null != field.getAnnotation(Sensitive.class);
+    FieldLoader(Field field, ParamValueLoader loader, ParamValueLoader stringValueLoader, Lang.TypeConverter<Object, Object> converter) {
+        Class<?> type = field.getType();
+        boolean isString = String.class == type;
+        boolean isCharArray = char[].class == field.getType();
+        this.isString = isString;
+        this.isSensitive = isString && null != field.getAnnotation(Sensitive.class);
+        this.isPassword = (isString || isCharArray) && null != field.getAnnotation(Password.class);
         this.field = field;
         this.loader = $.requireNotNull(loader);
+        this.stringValueLoader = stringValueLoader;
+        this.converter = converter;
+    }
+
+    FieldLoader(Field field, ParamValueLoader loader) {
+        this(field, loader, null, null);
     }
 
     public void applyTo($.Func0<Object> beanSource, ActContext context) {
         Object fieldValue = loader.load(null, context, true);
+        if (null == fieldValue && null != converter) {
+            // try converter
+            Object o = stringValueLoader.load(null, context, true);
+            if (null != o) {
+                fieldValue = converter.convert(o);
+            }
+        }
         // #429 ensure POJO instance get initialized
-        Object bean = beanSource.apply();
         if (null == fieldValue) {
-            beanSource.apply();
+            // counter effect to #429 - We don't want to leave an empty reference for JPA model entities
+            //beanSource.apply();
             return;
         }
         try {
-            field.set(bean, sensitive ? Act.crypto().encrypt((String)fieldValue) : fieldValue);
+            if (isSensitive) {
+                fieldValue = Act.crypto().encrypt((String)fieldValue);
+            } else if (isPassword) {
+                if (isString) {
+                    fieldValue = Act.crypto().passwordHash((String) fieldValue);
+                } else {
+                    char[] ca = $.convert(fieldValue).to(char[].class);
+                    fieldValue = Act.crypto().passwordHash(ca);
+                }
+            }
+            Object bean = beanSource.apply();
+            field.set(bean, fieldValue);
         } catch (Exception e) {
             throw new InjectException(e);
         }

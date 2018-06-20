@@ -41,7 +41,8 @@ public class RenderCSV extends RenderContent {
     private static RenderCSV _INSTANCE = new RenderCSV() {
         @Override
         public String content() {
-            return payload().message;
+            Payload payload = payload();
+            return null == payload.stringContentProducer ? payload.message : payload.stringContentProducer.apply();
         }
 
         @Override

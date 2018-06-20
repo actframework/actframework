@@ -28,7 +28,7 @@ public class GHIssue301 extends EndpointTester {
 
     private void create(String name, int age) throws Exception {
         reset();
-        Map<String, Object> payload = C.map("name", name, "age", age);
+        Map<String, Object> payload = C.Map("name", name, "age", age);
         url("/gh/301").postJSON(payload);
         checkRespCode();
     }

@@ -20,6 +20,9 @@ package act.app;
  * #L%
  */
 
+import static act.util.ClassInfoRepository.canonicalName;
+import static org.osgl.Lang.requireNotNull;
+
 import act.Act;
 import act.app.event.SysEventId;
 import act.app.util.EnvMatcher;
@@ -54,16 +57,13 @@ import org.osgl.util.E;
 import org.osgl.util.IO;
 import org.osgl.util.S;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.InputStream;
 import java.lang.annotation.Annotation;
 import java.util.*;
-
-import static act.util.ClassInfoRepository.canonicalName;
-import static org.osgl.$.notNull;
+import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
 
 /**
  * The top level class loader to load a specific application classes into JVM
@@ -93,7 +93,7 @@ public class AppClassLoader
     @Inject
     public AppClassLoader(final App app) {
         super(Act.class.getClassLoader());
-        this.app = notNull(app);
+        this.app = requireNotNull(app);
         ClassInfoRepository actClassInfoRepository = Act.classInfoRepository();
         if (null != actClassInfoRepository) {
             this.classInfoRepository = new AppClassInfoRepository(app, actClassInfoRepository);
@@ -404,7 +404,7 @@ public class AppClassLoader
 
     protected void preloadClassFile(File base, File file) {
         ByteArrayOutputStream baos = new ByteArrayOutputStream((int) file.length());
-        IO.copy(IO.is(file), baos);
+        IO.copy(IO.inputStream(file), baos);
         byte[] bytes = baos.toByteArray();
         libClsCache.put(ClassNames.sourceFileNameToClassName(base, file.getAbsolutePath().replace(".class", ".java")), bytes);
     }
@@ -481,7 +481,7 @@ public class AppClassLoader
     }
 
     private byte[] asmEnhance(String className, byte[] bytecode) {
-        if (!enhanceEligible(className)) return bytecode;
+        if (!isSystemClass(className)) return bytecode;
         $.Var<ClassWriter> cw = $.var(null);
         ByteCodeVisitor enhancer = Act.enhancerManager().appEnhancer(app, className, cw);
         if (null == enhancer) {
@@ -591,14 +591,14 @@ public class AppClassLoader
         static $.Predicate<String> SYS_CLASS_NAME = new $.Predicate<String>() {
             @Override
             public boolean test(String s) {
-                return s.startsWith("java") || s.startsWith("org.osgl.");
+                return isSystemClass(s);
             }
         };
         static $.Predicate<String> SAFE_CLASS = S.F.endsWith(".class").and(SYS_CLASS_NAME.negate());
     }
 
-    protected static boolean enhanceEligible(String name) {
-        boolean sys = name.startsWith("java") || name.startsWith("com.google") || name.startsWith("org.apache") || name.startsWith("org.springframework");
+    public static boolean isSystemClass(String name) {
+        boolean sys = name.startsWith("java.") || name.startsWith("javax.") || name.startsWith("com.google") || name.startsWith("org.apache") || name.startsWith("org.springframework") || name.startsWith("sun.") || name.startsWith("org.osgl.") || name.startsWith("osgl.");
         return !sys;
     }
 }

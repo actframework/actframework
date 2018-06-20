@@ -38,7 +38,6 @@ public class MetricEnhancer extends AppByteCodeEnhancer<MetricEnhancer> {
     private MetricMetaInfoRepo repo;
 
     public MetricEnhancer() {
-        super(S.F.startsWith("act.").negate());
     }
 
     // for unit testing

@@ -27,13 +27,13 @@ import com.alibaba.fastjson.TypeReference;
 import org.osgl.$;
 import org.osgl.util.C;
 
-import javax.enterprise.context.ApplicationScoped;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import javax.enterprise.context.ApplicationScoped;
 
 /**
  * The repository to keep class information
@@ -84,7 +84,7 @@ public class ClassInfoRepository extends DestroyableBase {
     }
 
     public Map<String, ClassNode> classes() {
-        return C.map(classes);
+        return C.Map(classes);
     }
 
     public String toJSON() {

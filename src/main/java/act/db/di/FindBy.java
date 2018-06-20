@@ -32,9 +32,9 @@ import act.view.ActNotFound;
 import org.osgl.inject.ValueLoader;
 import org.osgl.util.*;
 
-import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.Collection;
+import javax.validation.constraints.NotNull;
 
 public class FindBy extends ValueLoader.Base {
 
@@ -46,6 +46,7 @@ public class FindBy extends ValueLoader.Base {
     private boolean byId;
     private Class<?> rawType;
     private boolean notNull;
+    private String onetimeValue;
 
     @Override
     protected void initialized() {
@@ -73,11 +74,16 @@ public class FindBy extends ValueLoader.Base {
         }
     }
 
+    public void setOnetimeValue(String s) {
+        onetimeValue = s;
+    }
+
     @Override
     public Object get() {
         ActContext ctx = ActContext.Base.currentContext();
         E.illegalStateIf(null == ctx);
-        String value = resolve(requestParamName, ctx);
+        String value = null == onetimeValue ? resolve(requestParamName, ctx) : onetimeValue;
+        onetimeValue = null;
         if (S.empty(value)) {
             if (findOne) {
                 return ensureNotNull(null, value, ctx);

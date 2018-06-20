@@ -49,7 +49,7 @@ public class PojoBindingTest extends ActionParameterBindingTestBase {
         context.expected(JSON.toJSONString(contact))
                 .url(processUrl("ctct"))
                 .accept(H.Format.JSON)
-                .jsonBody(C.map("contact", contact))
+                .jsonBody(C.Map("contact", contact))
                 .method(EndPointTestContext.RequestMethod.POST_JSON)
                 .applyTo(this);
     }

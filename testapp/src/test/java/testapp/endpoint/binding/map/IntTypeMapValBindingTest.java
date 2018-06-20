@@ -11,7 +11,7 @@ public class IntTypeMapValBindingTest extends SimpleTypeMapValBindingTestBase<In
 
     @Override
     public Map<String, Integer> nonEmptyMap() {
-        return C.map("a", Integer.MAX_VALUE, "b", Integer.MIN_VALUE, "c", 0);
+        return C.Map("a", Integer.MAX_VALUE, "b", Integer.MIN_VALUE, "c", 0);
     }
 
 }

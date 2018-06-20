@@ -11,7 +11,7 @@ public class InheritedOption extends SingleOption {
     @Command("foo2")
     @JsonView
     public Map fooOnly() {
-        return C.map("foo", foo());
+        return C.Map("foo", foo());
     }
 
 }

@@ -331,6 +331,10 @@ public final class Act {
     }
 
     public static void shutdown(final App app) {
+        shutdown(app, 0);
+    }
+
+    public static void shutdown(final App app, final int exitCode) {
         if (null == appManager) {
             return;
         }
@@ -340,7 +344,7 @@ public final class Act {
                 if (!appManager.unload(app)) {
                     app.destroy();
                 }
-                shutdownAct();
+                shutdownAct(exitCode);
             }
         }.start();
     }
@@ -1001,7 +1005,7 @@ public final class Act {
         return app().config().httpPort();
     }
 
-    private static void shutdownAct() {
+    private static void shutdownAct(int exitCode) {
         clearPidFile();
         shutdownNetworkLayer();
         destroyApplicationManager();
@@ -1015,6 +1019,9 @@ public final class Act {
         destroyMetricPlugin();
         unloadConfig();
         destroyNetworkLayer();
+        if (0 != exitCode) {
+            System.exit(exitCode);
+        }
     }
 
 

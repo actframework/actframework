@@ -2039,7 +2039,7 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
                 return true;
             }
             for (String scan: scanList) {
-                if (s.matches(scan)) {
+                if (s.startsWith(scan + "$") || s.matches(scan)) {
                     return true;
                 }
             }

@@ -67,7 +67,7 @@ public abstract class AppByteCodeScannerBase extends AppCodeScannerBase implemen
 
     @Override
     public final Map<Class<? extends AppByteCodeScanner>, Set<String>> dependencyClasses() {
-        return C.map(dependencyClasses);
+        return C.Map(dependencyClasses);
     }
 
 }

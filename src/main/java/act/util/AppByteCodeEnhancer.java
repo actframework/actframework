@@ -31,6 +31,9 @@ public abstract class AppByteCodeEnhancer<T extends AppByteCodeEnhancer> extends
     protected static Logger logger = LogManager.get(App.class);
     protected App app;
 
+    protected AppByteCodeEnhancer() {
+    }
+
     protected AppByteCodeEnhancer($.Predicate<String> targetClassPredicate) {
         super(targetClassPredicate);
     }

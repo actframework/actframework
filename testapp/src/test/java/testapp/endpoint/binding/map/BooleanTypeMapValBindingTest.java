@@ -11,7 +11,7 @@ public class BooleanTypeMapValBindingTest extends SimpleTypeMapValBindingTestBas
 
     @Override
     public Map<String, Boolean> nonEmptyMap() {
-        return C.map("a", true, "b", false, "c", true);
+        return C.Map("a", true, "b", false, "c", true);
     }
 
 }

@@ -35,16 +35,13 @@ import org.osgl.exception.UnexpectedIOException;
 import org.osgl.http.H;
 import org.osgl.logging.LogManager;
 import org.osgl.logging.Logger;
-import org.osgl.util.BufferedOutput;
 import org.osgl.storage.ISObject;
-import org.osgl.util.E;
-import org.osgl.util.IO;
-import org.osgl.util.Output;
-import org.osgl.util.OutputStreamOutput;
+import org.osgl.util.*;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.Writer;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.charset.StandardCharsets;
@@ -365,7 +362,16 @@ public class UndertowResponse extends ActResponse<UndertowResponse> {
     }
 
     @Override
+    protected Writer createWriter() {
+        return blocking() ? super.createWriter() : new UndertowResponseOutput(this);
+    }
+
+    @Override
     protected OutputStream createOutputStream() {
+        return blocking() ? createBlockingOutputStream() : new UndertowResponseOutputStream(this);
+    }
+
+    private OutputStream createBlockingOutputStream() {
         ensureBlocking();
         return hse.getOutputStream();
     }

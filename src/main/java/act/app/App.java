@@ -532,6 +532,10 @@ public class App extends DestroyableBase {
         Act.shutdown(this);
     }
 
+    public void shutdown(int exitCode) {
+        Act.shutdown(this, exitCode);
+    }
+
     @Override
     protected void releaseResources() {
         // shall not interrupt main thread
