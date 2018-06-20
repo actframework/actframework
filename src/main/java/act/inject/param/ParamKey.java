@@ -79,6 +79,15 @@ class ParamKey {
         return seq[size - 1];
     }
 
+    ParamKey withoutNamespace() {
+        if (1 == size) {
+            return null;
+        }
+        String[] sa = new String[size - 1];
+        System.arraycopy(seq, 1, sa, 0, size - 1);
+        return ParamKey.of(sa);
+    }
+
     ParamKey parent() {
         if (1 == size) {
             return null;

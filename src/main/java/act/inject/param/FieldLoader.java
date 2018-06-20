@@ -35,6 +35,7 @@ import java.lang.reflect.Field;
  */
 class FieldLoader {
     private final Field field;
+    private final Class<?> fieldType;
     private final boolean isString;
     private final ParamValueLoader loader;
     private final ParamValueLoader stringValueLoader;
@@ -45,11 +46,12 @@ class FieldLoader {
     FieldLoader(Field field, ParamValueLoader loader, ParamValueLoader stringValueLoader, Lang.TypeConverter<Object, Object> converter) {
         Class<?> type = field.getType();
         boolean isString = String.class == type;
-        boolean isCharArray = char[].class == field.getType();
+        boolean isCharArray = char[].class == type;
         this.isString = isString;
         this.isSensitive = isString && null != field.getAnnotation(Sensitive.class);
         this.isPassword = (isString || isCharArray) && null != field.getAnnotation(Password.class);
         this.field = field;
+        this.fieldType = type;
         this.loader = $.requireNotNull(loader);
         this.stringValueLoader = stringValueLoader;
         this.converter = converter;
@@ -72,6 +74,10 @@ class FieldLoader {
         if (null == fieldValue) {
             // counter effect to #429 - We don't want to leave an empty reference for JPA model entities
             //beanSource.apply();
+            // #689 initialize field if it is an array or a container
+            if (fieldType.isArray()) {
+                return;
+            }
             return;
         }
         try {

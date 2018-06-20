@@ -85,7 +85,7 @@ class CollectionLoader implements ParamValueLoader {
         ParamTree tree = ParamValueLoaderService.ensureParamTree(context);
         ParamTreeNode node = tree.node(key);
         if (null == node) {
-            return noDefaultValue ? null : injector.get(collectionClass);
+            return injector.get(collectionClass);
         }
         Collection collection = null == bean ? injector.get(collectionClass) : (Collection) bean;
         if (node.isList()) {

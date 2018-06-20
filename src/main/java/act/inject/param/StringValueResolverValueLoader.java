@@ -20,8 +20,9 @@ package act.inject.param;
  * #L%
  */
 
-import act.util.ActContext;
+import act.app.ActionContext;
 import act.inject.DefaultValue;
+import act.util.ActContext;
 import org.osgl.mvc.annotation.Param;
 import org.osgl.util.E;
 import org.osgl.util.StringValueResolver;
@@ -45,7 +46,7 @@ public class StringValueResolverValueLoader extends StringValueResolverValueLoad
         }
         ParamTree paramTree = ParamValueLoaderService.paramTree();
         if (null != paramTree) {
-            return load(paramTree);
+            return load(paramTree, context);
         }
         HttpRequestParamEncode encode = encodeShare.get();
         if (null == encode) {
@@ -74,10 +75,21 @@ public class StringValueResolverValueLoader extends StringValueResolverValueLoad
         return (null == value) ? null : stringValueResolver.resolve(value);
     }
 
-    private Object load(ParamTree tree) {
+    private Object load(ParamTree tree, ActContext context) {
         ParamTreeNode node = tree.node(paramKey);
         if (null == node) {
-            return null;
+            if (context instanceof ActionContext) {
+                ActionContext actx = (ActionContext) context;
+                if (actx.isAllowIgnoreParamNamespace()) {
+                    ParamKey withoutNamespace = paramKey.withoutNamespace();
+                    if (null != withoutNamespace) {
+                        node = tree.node(withoutNamespace);
+                    }
+                }
+            }
+            if (null == node) {
+                return null;
+            }
         }
         if (!node.isLeaf()) {
             throw E.unexpected("Expect leaf node, found: \n%s", node.debug());

@@ -1,6 +1,8 @@
 # ActFramework Change Log
 
-**1.8.8-RC10** 19/Jum/2018
+**1.8.8-RC11** 20/Jun/2018
+* `ActionContext.allowIgnoreParamNamespace` not effective when POJO has collection typed fields #690
+* ParamLoader: POJO array or container field shall be initialized even if no request data for them #689
 * JWT token expiration is not effect #688
 * Customized `StringValueResolver` not work #687
 * JobContext: support parent #686

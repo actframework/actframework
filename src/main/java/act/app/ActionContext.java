@@ -413,6 +413,10 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
         requireBodyParsing = true;
     }
 
+    public boolean isAllowIgnoreParamNamespace() {
+        return allowIgnoreParamNamespace;
+    }
+
     public void allowIgnoreParamNamespace() {
         allowIgnoreParamNamespace = true;
     }
