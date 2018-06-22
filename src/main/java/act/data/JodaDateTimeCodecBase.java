@@ -30,6 +30,8 @@ import org.joda.time.format.DateTimeFormatter;
 import org.osgl.$;
 import org.osgl.util.*;
 
+import java.lang.reflect.Type;
+import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -41,9 +43,10 @@ public abstract class JodaDateTimeCodecBase<T> extends StringValueResolver<T> im
     private Locale defLocale;
     protected DateTimeFormatter formatter;
     private AppConfig conf;
+    private Class<?> dateTimeType;
 
     public JodaDateTimeCodecBase(DateTimeFormatter formatter) {
-        E.NPE(formatter);
+        exploreDateTimeType();
         conf = Act.appConfig();
         i18n = conf.i18nEnabled();
         defLocale = conf.locale();
@@ -51,6 +54,7 @@ public abstract class JodaDateTimeCodecBase<T> extends StringValueResolver<T> im
     }
 
     public JodaDateTimeCodecBase(String pattern) {
+        exploreDateTimeType();
         E.illegalArgumentIf(S.blank(pattern));
         conf = Act.appConfig();
         i18n = conf.i18nEnabled();
@@ -70,7 +74,18 @@ public abstract class JodaDateTimeCodecBase<T> extends StringValueResolver<T> im
 
     @Override
     public final T resolve(String value) {
-        return S.blank(value) ? null : parse(formatter(), value);
+        if (S.blank(value)) {
+            return null;
+        }
+        // for #691
+        int len = value.length();
+        if (9 == len || 10 == len) {
+            if (S.isIntOrLong(value)) {
+                long epoc = Long.parseLong(value);
+                return (T) $.convert(epoc).to(dateTimeType);
+            }
+        }
+        return parse(formatter(), value);
     }
 
     public final String toJSONString(T o) {
@@ -84,8 +99,15 @@ public abstract class JodaDateTimeCodecBase<T> extends StringValueResolver<T> im
         if (null != dfp) {
             return create(dfp.value());
         }
-        Pattern pattern = beanSpec.getAnnotation(Pattern.class);
-        return null == pattern ? this : create(pattern.value());
+        String format = null;
+        DateFormatPattern pattern = beanSpec.getAnnotation(DateFormatPattern.class);
+        if (null == pattern) {
+            Pattern patternLegacy = beanSpec.getAnnotation(Pattern.class);
+            format = null == patternLegacy ? null : patternLegacy.value();
+        } else {
+            format = pattern.value();
+        }
+        return null == format ? this : create(format);
     }
 
     protected abstract T parse(DateTimeFormatter formatter, String value);
@@ -148,6 +170,11 @@ public abstract class JodaDateTimeCodecBase<T> extends StringValueResolver<T> im
     private void initFormatter(DateTimeFormatter formatter) {
         this.formatter = $.requireNotNull(formatter);
         verify();
+    }
+
+    private void exploreDateTimeType() {
+        List<Type> types = Generics.typeParamImplementations(getClass(), StringValueResolver.class);
+        dateTimeType = (Class<?>) types.get(0);
     }
 
     private DateTimeFormatter formatter(String pattern, Locale locale) {
