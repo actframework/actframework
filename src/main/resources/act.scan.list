@@ -4,6 +4,7 @@ act.app.SingletonFinder
 act.app.util.SimpleRestfulServiceBase
 act.app.conf.AppConfigPlugin
 act.controller.builtin.CliOverHttp
+act.controller.captcha.CaptchaService
 act.db.DbBind
 act.handler.builtin.controller.RequestHandlerProxy
 act.i18n.TimeZoneResolver

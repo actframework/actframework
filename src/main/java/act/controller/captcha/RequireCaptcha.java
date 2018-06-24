@@ -1,4 +1,4 @@
-package act;
+package act.controller.captcha;
 
 /*-
  * #%L
@@ -20,9 +20,19 @@ package act;
  * #L%
  */
 
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
 /**
- * Tag class used to specify the resource bundle in {@link act.i18n.I18n} APIs
+ * Mark an request handler method as CAPTCHA protection is required.
+ *
+ * This annotation should be added to only POST/PUT request handler.
+ * Adding this annotation to GET request handler method will not effect.
  */
-public final class act_messages {
-    private act_messages() {}
+@Retention(RetentionPolicy.CLASS)
+@Target(ElementType.METHOD)
+public @interface RequireCaptcha {
+
 }

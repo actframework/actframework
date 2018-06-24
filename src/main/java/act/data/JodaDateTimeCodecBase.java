@@ -99,7 +99,7 @@ public abstract class JodaDateTimeCodecBase<T> extends StringValueResolver<T> im
         if (null != dfp) {
             return create(dfp.value());
         }
-        String format = null;
+        String format;
         DateFormatPattern pattern = beanSpec.getAnnotation(DateFormatPattern.class);
         if (null == pattern) {
             Pattern patternLegacy = beanSpec.getAnnotation(Pattern.class);

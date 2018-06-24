@@ -34,6 +34,7 @@ import act.controller.annotation.HandleCsrfFailure;
 import act.controller.annotation.HandleMissingAuthentication;
 import act.controller.annotation.Throttled;
 import act.controller.builtin.ThrottleFilter;
+import act.controller.captcha.RequireCaptcha;
 import act.controller.meta.*;
 import act.data.annotation.DateFormatPattern;
 import act.data.annotation.Pattern;
@@ -125,6 +126,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
     private String csp;
     private boolean disableCsp;
     private boolean isStatic;
+    private boolean requireCaptcha;
     private Object singleton;
     private H.Format forceResponseContentType;
     private H.Status forceResponseStatus;
@@ -188,6 +190,10 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
             method.setAccessible(true);
         }
 
+        if (method.isAnnotationPresent(RequireCaptcha.class)) {
+            this.requireCaptcha = true;
+        }
+
         Throttled throttleControl = method.getAnnotation(Throttled.class);
         if (null != throttleControl) {
             int throttle = throttleControl.value();
@@ -214,13 +220,13 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
             features = featureAnno.value();
         }
 
-        DateFormatPattern dfp = method.getAnnotation(DateFormatPattern.class);
-        if (null != dfp) {
-            this.dateFormatPattern = dfp.value();
+        DateFormatPattern pattern = method.getAnnotation(DateFormatPattern.class);
+        if (null != pattern) {
+            this.dateFormatPattern = pattern.value();
         } else {
-            Pattern pattern = method.getAnnotation(Pattern.class);
-            if (null != pattern) {
-                this.dateFormatPattern = pattern.value();
+            Pattern patternLegacy = method.getAnnotation(Pattern.class);
+            if (null != patternLegacy) {
+                this.dateFormatPattern = patternLegacy.value();
             }
         }
         if (null != this.dateFormatPattern) {
@@ -389,6 +395,10 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
             return result;
         }
 
+        if (requireCaptcha) {
+            context.markAsRequireCaptcha();
+        }
+
         context.setReflectedHandlerInvoker(this);
         app.eventBus().emit(new ReflectedHandlerInvokerInvoke(this, context));
 
@@ -451,6 +461,8 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
 
         final Object[] params = params(controller, context);
 
+        context.ensureCaptcha();
+        
         if (failOnViolation && context.hasViolation()) {
             String msg = context.violationMessage(";");
             return ActBadRequest.create(msg);

@@ -40,6 +40,7 @@ import act.conf.AppConfig;
 import act.conf.AppConfigKey;
 import act.conf.ConfigurationByteCodeScanner;
 import act.controller.bytecode.ControllerByteCodeScanner;
+import act.controller.captcha.CaptchaPluginManager;
 import act.crypto.AppCrypto;
 import act.data.DataPropertyRepository;
 import act.data.JodaDateTimeCodec;
@@ -52,6 +53,7 @@ import act.event.bytecode.SimpleEventListenerByteCodeScanner;
 import act.handler.RequestHandler;
 import act.handler.builtin.ResourceGetter;
 import act.handler.builtin.controller.FastRequestHandler;
+import act.httpclient.HttpClientService;
 import act.i18n.I18n;
 import act.inject.ActProviders;
 import act.inject.DependencyInjectionBinder;
@@ -137,6 +139,7 @@ public class App extends DestroyableBase {
     private File appHome;
     private Router router;
     private CliDispatcher cliDispatcher;
+    private CaptchaPluginManager captchaPluginManager;
     private Map<NamedPort, Router> moreRouters;
     private AppConfig<?> config;
     private AppClassLoader classLoader;
@@ -156,6 +159,7 @@ public class App extends DestroyableBase {
     private BinderManager binderManager;
     private AppInterceptorManager interceptorManager;
     private DependencyInjector<?> dependencyInjector;
+    private HttpClientService httpClientService;
     private UploadFileStorageService uploadFileStorageService;
     private AppServiceRegistry appServiceRegistry;
     private MasterEntityMetaInfoRepo entityMetaInfoRepo;
@@ -390,6 +394,10 @@ public class App extends DestroyableBase {
 
     public CliDispatcher cliDispatcher() {
         return cliDispatcher;
+    }
+
+    public CaptchaPluginManager captchaSessionGeneratorManager() {
+        return captchaPluginManager;
     }
 
     public Router router() {
@@ -635,6 +643,8 @@ public class App extends DestroyableBase {
             loadRoutes();
             emit(ROUTER_LOADED);
             initApiManager();
+            initHttpClientService();
+            initCaptchaPluginManager();
             initCliDispatcher();
             initCliServer();
             initMetricMetaInfoRepo();
@@ -891,6 +901,10 @@ public class App extends DestroyableBase {
 
     public EventBus eventBus() {
         return eventBus;
+    }
+
+    public HttpClientService httpClientService() {
+        return httpClientService;
     }
 
     public MasterEntityMetaInfoRepo entityMetaInfoRepo() {
@@ -1273,6 +1287,10 @@ public class App extends DestroyableBase {
         }
     }
 
+    private void initCaptchaPluginManager() {
+        captchaPluginManager = new CaptchaPluginManager(this);
+    }
+
     private void initCliServer() {
         if (config().cliEnabled()) {
             cliServer = new CliServer(this);
@@ -1361,6 +1379,10 @@ public class App extends DestroyableBase {
 
     private void initInterceptorManager() {
         interceptorManager = new AppInterceptorManager(this);
+    }
+
+    private void initHttpClientService() {
+        httpClientService = new HttpClientService(this);
     }
 
     private void initScannerManager() {

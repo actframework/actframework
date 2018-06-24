@@ -62,13 +62,16 @@ import org.osgl.util.*;
 import org.osgl.web.util.UserAgent;
 import org.rythmengine.utils.Time;
 
+import java.awt.*;
 import java.io.File;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import javax.inject.Provider;
@@ -272,6 +275,83 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
         }
     }
 
+    private Integer captchaWidth;
+    protected T captchaWidth(int w) {
+        this.captchaWidth = w;
+        return me();
+    }
+    public int captchaWidth() {
+        if (null == captchaWidth) {
+            captchaWidth = getInteger(CAPTCHA_WIDTH, 200);
+        }
+        return captchaWidth;
+    }
+    private void _mergeCaptchaWidth(AppConfig config){
+        if (!hasConfiguration(CAPTCHA_WIDTH)) {
+            captchaWidth = config.captchaWidth;
+        }
+    }
+    private Integer captchaHeight;
+    protected T captchaHeight(int h) {
+        this.captchaHeight = h;
+        return me();
+    }
+    public int captchaHeight() {
+        if (null == captchaHeight) {
+            captchaHeight = getInteger(CAPTCHA_HEIGHT, 70);
+        }
+        return captchaHeight;
+    }
+    private void _mergeCaptchaHeight(AppConfig config){
+        if (!hasConfiguration(CAPTCHA_HEIGHT)) {
+            captchaHeight = config.captchaHeight;
+        }
+    }
+
+    private Color captchaBgColor;
+    protected T captchaBgColor(Color color) {
+        this.captchaBgColor = color;
+        return me();
+    }
+    public Color captchaBgColor() {
+        if (null == captchaBgColor) {
+            String s = get(CAPTCHA_BG_COLOR, "white");
+            Field f = $.fieldOf(Color.class, s, false);
+            if (null == f) {
+                warn("Invalid captcha.background.color found: " + s);
+                info("will use white as captcha.background.color");
+                captchaBgColor = Color.WHITE;
+            } else {
+                captchaBgColor = $.getFieldValue(null, f);
+            }
+        }
+        return captchaBgColor;
+    }
+    private void _mergeCaptchaBgColor(AppConfig config) {
+        if (!hasConfiguration(CAPTCHA_BG_COLOR)) {
+            captchaBgColor = config.captchaBgColor;
+        }
+    }
+
+    private String reCaptchaSecret;
+    protected T reCaptchaSecret(String secret) {
+        this.reCaptchaSecret = secret;
+        return me();
+    }
+    public String reCaptchaSecret() {
+        if (null != reCaptchaSecret) {
+            reCaptchaSecret = get(CAPTCHA_RECAPTCHA_SECRET, "");
+        }
+        return reCaptchaSecret;
+    }
+    public boolean reCaptchaActivated() {
+        return S.notBlank(reCaptchaSecret());
+    }
+    private void _mergeReCaptchaSecret(AppConfig config) {
+        if (!hasConfiguration(CAPTCHA_RECAPTCHA_SECRET)) {
+            reCaptchaSecret = config.reCaptchaSecret;
+        }
+    }
 
     private Boolean cors;
 

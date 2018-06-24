@@ -29,6 +29,7 @@ import act.RequestImplBase;
 import act.Trace;
 import act.conf.AppConfig;
 import act.controller.ResponseCache;
+import act.controller.captcha.CaptchaViolation;
 import act.data.MapUtil;
 import act.data.RequestBodyParser;
 import act.event.ActEvent;
@@ -57,6 +58,7 @@ import org.osgl.storage.ISObject;
 import org.osgl.util.C;
 import org.osgl.util.E;
 import org.osgl.util.S;
+import org.osgl.util.Token;
 import org.osgl.web.util.UserAgent;
 
 import java.lang.annotation.Annotation;
@@ -106,6 +108,7 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
     private String urlContext;
     private boolean byPassImplicitTemplateVariable;
     private boolean isLargeResponse;
+    private boolean requireCaptcha;
     private int pathVarCount;
     private UrlPath urlPath;
     private Set<String> pathVarNames = new HashSet<>();
@@ -261,6 +264,51 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
     public ActionContext router(Router router) {
         this.router = $.requireNotNull(router);
         return this;
+    }
+
+    public void markAsRequireCaptcha() {
+        this.requireCaptcha = true;
+    }
+
+    public void ensureCaptcha() {
+        if (!subjectToCaptchaProtection()) {
+            return;
+        }
+        if (verifyReCaptcha()) {
+            return;
+        }
+        if (!verifyActCaptcha()) {
+            addViolation("captcha", new CaptchaViolation());
+        }
+    }
+
+    private boolean verifyReCaptcha() {
+        return app().httpClientService().verifyReCaptchaResponse(this);
+    }
+
+    private boolean verifyActCaptcha() {
+        String token = paramVal("a-captcha-token");
+        if (S.blank(token)) {
+            return false;
+        }
+        String answer = paramVal("a-captcha-answer");
+        if (S.blank(answer)) {
+            return false;
+        }
+        Token theToken = app().crypto().parseToken(token);
+        if (!theToken.isValid()) {
+            return false;
+        }
+        theToken.consume();
+        return S.eq(answer, theToken.id());
+    }
+
+    private boolean subjectToCaptchaProtection() {
+        if (!requireCaptcha) {
+            return false;
+        }
+        H.Method method = req().method();
+        return method == H.Method.POST || method == H.Method.PUT || method == H.Method.PATCH;
     }
 
     public MissingAuthenticationHandler missingAuthenticationHandler() {

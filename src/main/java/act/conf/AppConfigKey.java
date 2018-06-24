@@ -127,6 +127,44 @@ public enum AppConfigKey implements ConfigKey {
     CACHE_FOR_ON_DEV("cacheFor.dev"),
 
     /**
+     * `captcha.width`
+     *
+     * Specify the width of the captcha image
+     *
+     * Default value: 200
+     */
+    CAPTCHA_WIDTH("captcha.width"),
+
+    /**
+     * `captcha.height`
+     *
+     * Specify the height of the captcha image
+     *
+     * Default value: 70
+     */
+    CAPTCHA_HEIGHT("captcha.height"),
+
+    /**
+     * `captcha.background.color`
+     *
+     * Specify the background color of the captcha image.
+     *
+     * It shall be valid color constant name defined in {@link java.awt.Color} class.
+     *
+     * Default value: white
+     */
+    CAPTCHA_BG_COLOR("captcha.background.color"),
+
+    /**
+     * `captcha.recaptcha.secret` - specifies your
+     * site's google reCAPTCHA secret.
+     *
+     * Once this is setup, then it enables reCAPTCHA server
+     * side verification.
+     */
+    CAPTCHA_RECAPTCHA_SECRET("captcha.recaptcha.secret"),
+
+    /**
      * {@code act.cli.enabled}
      *
      * Turn on/off CLI server support

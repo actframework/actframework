@@ -21,6 +21,7 @@ package act.crypto;
  */
 
 import act.conf.AppConfig;
+import act.util.Stateless;
 import org.mindrot.jbcrypt.BCrypt;
 import org.osgl.exception.UnexpectedException;
 import org.osgl.logging.LogManager;
@@ -33,6 +34,7 @@ import java.security.InvalidKeyException;
 import java.security.MessageDigest;
 import java.security.SecureRandom;
 
+@Stateless
 public class AppCrypto {
 
     protected static final Logger LOGGER = LogManager.get(AppCrypto.class);
