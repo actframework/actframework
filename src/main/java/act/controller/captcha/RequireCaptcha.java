@@ -31,7 +31,7 @@ import java.lang.annotation.Target;
  * This annotation should be added to only POST/PUT request handler.
  * Adding this annotation to GET request handler method will not effect.
  */
-@Retention(RetentionPolicy.CLASS)
+@Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
 public @interface RequireCaptcha {
 

@@ -20,10 +20,14 @@ package act.controller.captcha.render;
  * #L%
  */
 
+import static org.osgl.util.Img.F.randomPixels;
+import static org.osgl.util.N.randInt;
+
 import act.controller.captcha.render.img.*;
 import org.osgl.$;
 import org.osgl.util.Img;
 
+import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.List;
@@ -33,22 +37,51 @@ import javax.inject.Singleton;
 @Singleton
 public class DefaultImageRender implements CaptchaImageRender {
 
-    private List<Img.Filter> filters = new ArrayList<>();
+    private List<Img.Filter> optionalA = new ArrayList<>();
+    private List<Img.Filter> optionalB = new ArrayList<>();
 
     @Inject
     private BackgroundGenerator backgroundGenerator;
 
     public DefaultImageRender() {
-        filters.add(new CurvesFilter());
-        filters.add(new DoubleRippleFilter());
-        filters.add(new RippleFilter());
-        filters.add(new WobbleFilter());
-        filters.add(new MarbleFilter());
+        optionalB.add(new CurvesFilter());
+        optionalA.add(new WobbleFilter());
+        optionalB.add(new DoubleRippleFilter());
+
+        optionalA.add(new RippleFilter());
+        optionalA.add(new MarbleFilter());
     }
 
     @Override
     public BufferedImage render(String text) {
-        List<? extends Img.Processor> processors = $.randomSubList(filters);
-        return Img.source(backgroundGenerator).text(text).pipeline(processors).get();
+        List<? extends Img.Processor> processors = $.random(true, false) ? optionalA : optionalB;
+        return Img.source(backgroundGenerator)
+                .text(text)
+                .color(Img.Random.darkColor())
+                .makeNoise()
+                .setMaxLines(2 + randInt(5))
+                .setMaxLineWidth(3)
+                .pipeline(processors)
+                .get();
+    }
+
+    public static void main(String[] args) {
+        DefaultImageRender r = new DefaultImageRender();
+        Img.source(randomPixels(200, 70, Color.WHITE))
+                .text("Hello World")
+                .color(Img.Random.darkColor())
+                .makeNoise()
+                .setMaxLines(7)
+                .setMaxLineWidth(3)
+                .pipeline(r.optionalA)
+                .writeTo("/tmp/1/x.png");
+        Img.source(randomPixels(200, 70, Color.WHITE))
+                .text("Hello World")
+                .color(Img.Random.darkColor())
+                .makeNoise()
+                .setMaxLines(7)
+                .setMaxLineWidth(3)
+                .pipeline(r.optionalB)
+                .writeTo("/tmp/1/y.png");
     }
 }

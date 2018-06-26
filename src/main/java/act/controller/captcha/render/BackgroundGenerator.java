@@ -45,7 +45,7 @@ public class BackgroundGenerator extends $.Producer<BufferedImage> {
 
     @Override
     public BufferedImage produce() {
-        return Img.F.background(w, h, bgColor).produce();
+        return Img.source(Img.F.background(w, h, bgColor).get()).get();
     }
 
 }

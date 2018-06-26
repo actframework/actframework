@@ -88,16 +88,20 @@ public class ClassFinderData {
                         cl = cl.getParent();
                     }
                     Class<?> targetClass = $.classForName(classNode.name(), app.classLoader());
+                    Object param = targetClass;
+                    if (data.paramIsInstance) {
+                        param = app.getInstance(targetClass);
+                    }
                     if (!Env.matches(targetClass)) {
                         logger.debug("ignore target class[%s]: environment spec not matching", targetClass);
                         return;
                     }
                     if (data.isStatic) {
                         Class<?> host = $.classForName(data.className, cl);
-                        $.invokeStatic(host, data.methodName, targetClass);
+                        $.invokeStatic(host, data.methodName, param);
                     } else {
                         Object host = app.getInstance(data.className);
-                        $.invokeVirtual(host, data.methodName, targetClass);
+                        $.invokeVirtual(host, data.methodName, param);
                     }
                 }
             };
@@ -138,6 +142,10 @@ public class ClassFinderData {
      */
     private String className;
     /**
+     * Report if param is an instance of a class
+     */
+    private boolean paramIsInstance;
+    /**
      * The name of the method that defines the found callback logic
      */
     private String methodName;
@@ -161,6 +169,11 @@ public class ClassFinderData {
         return this;
     }
 
+    public ClassFinderData paramIsInstance(boolean b) {
+        this.paramIsInstance = b;
+        return this;
+    }
+
     public ClassFinderData noAbstract(boolean b) {
         this.noAbstract = b;
         return this;
@@ -180,10 +193,11 @@ public class ClassFinderData {
         return this;
     }
 
-    public ClassFinderData callback(String className, String methodName, boolean isStatic) {
+    public ClassFinderData callback(String className, String methodName, boolean isStatic, boolean paramIsInstance) {
         this.className = className;
         this.methodName = methodName;
         this.isStatic = isStatic;
+        this.paramIsInstance = paramIsInstance;
         return this;
     }
 

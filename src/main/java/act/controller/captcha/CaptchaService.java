@@ -20,7 +20,9 @@ package act.controller.captcha;
  * #L%
  */
 
-import act.app.ActionContext;
+import static org.osgl.http.H.Format.JPG;
+import static org.osgl.http.H.Header.Names.CACHE_CONTROL;
+
 import act.controller.Controller;
 import act.controller.annotation.UrlContext;
 import act.controller.captcha.render.CaptchaImageRender;
@@ -31,6 +33,7 @@ import act.util.SubClassFinder;
 import org.osgl.Lang;
 import org.osgl.http.H;
 import org.osgl.mvc.annotation.GetAction;
+import org.osgl.mvc.result.Result;
 import org.osgl.util.Img;
 import org.osgl.util.Output;
 
@@ -58,21 +61,22 @@ public class CaptchaService extends Controller.Util {
     @GetAction()
     @NonBlock
     @JsonView
-    public CaptchaSession randomSession(ActionContext context) {
+    public CaptchaSession randomSession(H.Response resp) {
+        resp.addHeader(CACHE_CONTROL, "no-store");
         return pluginManager.randomGenerator().generate();
     }
 
     @GetAction("{encrypted}")
-    public void renderMedia(String encrypted) {
+    public Result renderMedia(String encrypted) {
         try {
             final String text = crypto.decrypt(encrypted);
-            renderBinary(new Lang.Visitor<Output>() {
+            return renderBinary(new Lang.Visitor<Output>() {
                 @Override
                 public void visit(Output output) throws Lang.Break {
                     CaptchaImageRender imageRender = pluginManager.randomImageRender();
-                    Img.source(imageRender.render(text)).writeTo(Output.Adaptors.asOutputStream(output), H.Format.JPG.contentType());
+                    Img.source(imageRender.render(text)).writeTo(Output.Adaptors.asOutputStream(output), JPG.contentType());
                 }
-            });
+            }).contentType(JPG);
         } catch (Exception e) {
             throw notFound();
         }

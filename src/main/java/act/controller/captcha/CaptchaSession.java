@@ -75,7 +75,8 @@ public class CaptchaSession implements Serializable {
      * Returns an encrypted token combined with answer.
      */
     public String getToken() {
-        return Act.app().crypto().generateToken(answer);
+        String id = null == answer ? text : answer;
+        return Act.app().crypto().generateToken(id);
     }
 
     public String getMediaUrl() {

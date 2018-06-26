@@ -1,0 +1,10 @@
+#act_captcha_dock, #act_captcha_dock div {
+  position: relative;
+}
+.act_captcha_title {display: none;}
+img.act_captcha_icon {
+  position: relative;
+  top: 7px;
+  width: 24px;
+  cursor: pointer;
+}

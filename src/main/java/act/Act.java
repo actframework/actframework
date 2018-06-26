@@ -61,6 +61,8 @@ import act.view.ViewManager;
 import act.xio.Network;
 import act.xio.NetworkHandler;
 import act.xio.undertow.UndertowNetwork;
+import com.sun.imageio.plugins.gif.GIFImageWriter;
+import com.sun.imageio.plugins.gif.GIFImageWriterSpi;
 import org.joda.time.*;
 import org.osgl.$;
 import org.osgl.cache.CacheService;
@@ -74,6 +76,9 @@ import org.osgl.util.converter.TypeConverterRegistry;
 import osgl.version.Version;
 import osgl.version.Versioned;
 
+import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -90,6 +95,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
+import javax.imageio.IIOImage;
+import javax.imageio.ImageWriteParam;
+import javax.imageio.ImageWriter;
+import javax.imageio.stream.MemoryCacheImageOutputStream;
 
 /**
  * The Act runtime and facade
@@ -1135,4 +1144,16 @@ public final class Act {
 //        // run `mvn javadoc:javadoc -Prelease -Ddebug=true` to generate options and packages file
 //        com.sun.tools.javadoc.Main.execute(args);
 //    }
+
+    public static void main(String[] args) throws Exception {
+        BufferedImage trackPixel = new BufferedImage(1, 1, BufferedImage.TYPE_4BYTE_ABGR);
+        trackPixel.setRGB(0, 0, new Color(0, 0, 0, 0).getRGB());
+        GIFImageWriterSpi spi = new GIFImageWriterSpi();
+        ImageWriter writer = new GIFImageWriter(spi);
+        ImageWriteParam params = writer.getDefaultWriteParam();
+        IIOImage img = new IIOImage(trackPixel, null, null);
+        ByteArrayOutputStream os = new ByteArrayOutputStream();
+        writer.setOutput(new MemoryCacheImageOutputStream(os));
+        writer.write(null, img, params);
+    }
 }

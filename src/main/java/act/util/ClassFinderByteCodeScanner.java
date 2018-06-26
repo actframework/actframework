@@ -20,13 +20,14 @@ package act.util;
  * #L%
  */
 
+import static act.util.ClassFinderData.By.ANNOTATION;
+import static act.util.ClassFinderData.By.SUPER_TYPE;
+
 import act.app.AppByteCodeScannerBase;
 import act.asm.AnnotationVisitor;
 import act.asm.MethodVisitor;
 import act.asm.Type;
-
-import static act.util.ClassFinderData.By.ANNOTATION;
-import static act.util.ClassFinderData.By.SUPER_TYPE;
+import org.osgl.util.S;
 
 /**
  * Scans all public non-abstract methods for {@link SubClassFinder}
@@ -63,13 +64,14 @@ public class ClassFinderByteCodeScanner extends AppByteCodeScannerBase {
         }
 
         @Override
-        public MethodVisitor visitMethod(int access, String name, String desc, final String signature, String[] exceptions) {
-            MethodVisitor mv = super.visitMethod(access, name, desc, signature, exceptions);
+        public MethodVisitor visitMethod(int access, String name, final String methodDesc, final String signature, String[] exceptions) {
+            MethodVisitor mv = super.visitMethod(access, name, methodDesc, signature, exceptions);
             if (null == className || !AsmTypes.isPublicNotAbstract(access)) {
                 return mv;
             }
             final String methodName = name;
             final boolean isStatic = AsmTypes.isStatic(access);
+            final boolean paramIsInstance = null == signature;
             return new MethodVisitor(ASM5, mv) {
                 @Override
                 public AnnotationVisitor visitAnnotation(final String desc, boolean visible) {
@@ -112,10 +114,10 @@ public class ClassFinderByteCodeScanner extends AppByteCodeScannerBase {
                         @Override
                         public void visitEnd() {
                             if (SUPER_TYPE == how && !finder.whatSpecified()) {
-                                finder.what(classNameFromMethodSignature());
+                                finder.what(classNameFromMethod(null != signature ? signature : methodDesc));
                             }
                             finder.how(how);
-                            finder.callback(className, methodName, isStatic);
+                            finder.callback(className, methodName, isStatic, paramIsInstance);
                             if (finder.isValid()) {
                                 finder.scheduleFind();
                             }
@@ -128,7 +130,25 @@ public class ClassFinderByteCodeScanner extends AppByteCodeScannerBase {
                          * And we need to get the type descriptor "Lorg/osgl/aaa/AAAPersistentService;"
                          * from inside
                          */
-                        private String classNameFromMethodSignature() {
+                        private String classNameFromMethod(String spec) {
+                            if (spec.contains("<")) {
+                                return classNameFromMethodSignature(spec);
+                            } else {
+                                return classNameFromMethodDesc(spec);
+                            }
+                        }
+
+                        private String classNameFromMethodDesc(String desc) {
+                            String s = desc.substring(1); // skip to first `(`
+                            s = S.cut(s).beforeFirst(";"); // till the first `;`
+                            if (s.startsWith("+")) {
+                                // this is an interface?
+                                s = s.substring(1);
+                            }
+                            return Type.getType(s + ";").getClassName();
+                        }
+
+                        private String classNameFromMethodSignature(String signature) {
                             String descriptor = signature.substring(18);
                             descriptor = descriptor.substring(0, descriptor.length() - 4);
                             if (descriptor.startsWith("+")) {

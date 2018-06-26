@@ -92,7 +92,7 @@ public class ArithmeticGenerator implements CaptchaSessionGenerator {
 
         @Override
         public String toString() {
-            return S.concat(first, o1, second, o2, third);
+            return S.concat(first, o1, second, o2, third, " = ?");
         }
     }
 

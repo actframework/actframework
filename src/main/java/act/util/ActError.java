@@ -83,8 +83,11 @@ public interface ActError {
 
         private static SourceInfo _loadSourceInfo(StackTraceElement[] sa, Class<? extends ActError> errorClass) {
             int len = sa.length;
-            StackTraceElement[] caller = new StackTraceElement[len - 1];
-            System.arraycopy(sa, 1, caller, 0, len - 1);
+            StackTraceElement[] caller = sa;
+            if (len > 0) {
+                caller = new StackTraceElement[len - 1];
+                System.arraycopy(sa, 1, caller, 0, len - 1);
+            }
 
             ActContext ctx = ActContext.Base.currentContext();
             if (null == ctx) {
