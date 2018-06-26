@@ -46,7 +46,7 @@ public class CaptchaService extends Controller.Util {
     private AppCrypto crypto;
 
     @Inject
-    private CaptchaPluginManager pluginManager;
+    private CaptchaManager pluginManager;
 
     @SubClassFinder
     public void foundSessionGenerator(CaptchaSessionGenerator generator) {

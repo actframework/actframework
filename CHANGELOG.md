@@ -1,6 +1,8 @@
 # ActFramework Change Log
 
 **1.8.8**
+* Allow developer to configure app cache default TTL #696
+* Provide a mechanism to disable CAPTCHA protection #694
 * Allow binding epoch time millis directly to date types #691
 * `ActionContext.allowIgnoreParamNamespace` not effective when POJO has collection typed fields #690
 * ParamLoader: POJO array or container field shall be initialized even if no request data for them #689

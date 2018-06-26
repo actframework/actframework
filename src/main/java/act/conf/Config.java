@@ -188,9 +188,7 @@ public abstract class Config<E extends ConfigKey> extends DestroyableBase {
 
     public Map<String, Object> subSet(String namespace) {
         namespace = Config.canonical(namespace);
-        if (!namespace.endsWith(".")) {
-            namespace = namespace + ".";
-        }
+        namespace = S.ensure(namespace).endWith(".");
         String prefix2 = "act." + namespace;
         Map<String, Object> subset = new HashMap<>();
         for (String key : raw.keySet()) {

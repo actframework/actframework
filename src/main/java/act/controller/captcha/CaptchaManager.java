@@ -30,13 +30,28 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Stateless
-public class CaptchaPluginManager extends AppServiceBase<CaptchaPluginManager> {
+public class CaptchaManager extends AppServiceBase<CaptchaManager> {
 
     private List<CaptchaSessionGenerator> generators = new ArrayList<>();
     private List<CaptchaImageRender> imageRender = new ArrayList<>();
 
-    public CaptchaPluginManager(App app) {
+    // so we can allow end to end test to by pass CAPTCHA protection
+    private boolean disabled;
+
+    public CaptchaManager(App app) {
         super(app);
+    }
+
+    public boolean disabled() {
+        return disabled;
+    }
+
+    public void disable() {
+        this.disabled = true;
+    }
+
+    public void enable() {
+        this.disabled = false;
     }
 
     public void registerGenerator(CaptchaSessionGenerator generator) {

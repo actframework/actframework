@@ -271,6 +271,9 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
     }
 
     public void ensureCaptcha() {
+        if (app().captchaManager().disabled()) {
+            return;
+        }
         if (!subjectToCaptchaProtection()) {
             return;
         }

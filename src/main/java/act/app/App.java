@@ -40,7 +40,7 @@ import act.conf.AppConfig;
 import act.conf.AppConfigKey;
 import act.conf.ConfigurationByteCodeScanner;
 import act.controller.bytecode.ControllerByteCodeScanner;
-import act.controller.captcha.CaptchaPluginManager;
+import act.controller.captcha.CaptchaManager;
 import act.crypto.AppCrypto;
 import act.data.DataPropertyRepository;
 import act.data.JodaDateTimeCodec;
@@ -139,7 +139,7 @@ public class App extends DestroyableBase {
     private File appHome;
     private Router router;
     private CliDispatcher cliDispatcher;
-    private CaptchaPluginManager captchaPluginManager;
+    private CaptchaManager captchaManager;
     private Map<NamedPort, Router> moreRouters;
     private AppConfig<?> config;
     private AppClassLoader classLoader;
@@ -396,8 +396,8 @@ public class App extends DestroyableBase {
         return cliDispatcher;
     }
 
-    public CaptchaPluginManager captchaSessionGeneratorManager() {
-        return captchaPluginManager;
+    public CaptchaManager captchaManager() {
+        return captchaManager;
     }
 
     public Router router() {
@@ -1288,7 +1288,7 @@ public class App extends DestroyableBase {
     }
 
     private void initCaptchaPluginManager() {
-        captchaPluginManager = new CaptchaPluginManager(this);
+        captchaManager = new CaptchaManager(this);
     }
 
     private void initCliServer() {

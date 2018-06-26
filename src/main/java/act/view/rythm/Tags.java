@@ -9,9 +9,9 @@ package act.view.rythm;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -24,6 +24,7 @@ import act.Act;
 import act.Destroyable;
 import act.act_messages;
 import act.app.ActionContext;
+import act.app.App;
 import act.i18n.I18n;
 import act.internal.util.ResourceChecksumManager;
 import act.job.OnAppStart;
@@ -121,6 +122,31 @@ public class Tags extends DestroyableBase {
                 args = new Object[0];
             }
             p(I18n.i18n(act_messages.class, msg, args));
+        }
+    }
+
+    public static class Cached extends JavaTagBase {
+        @Inject
+        private App app;
+
+        @Override
+        public String __getName() {
+            return "appCached";
+        }
+
+        @Override
+        protected void call(__ParameterList params, __Body body) {
+            int paramNumber = params.size();
+            switch (paramNumber) {
+                case 1:
+                    p(app.cache().get(S.string(params.get(0).value)));
+                    return;
+                case 2:
+                    p(app.cache(S.string(params.get(1).value)).get(S.string(params.get(0).value)));
+                    return;
+                default:
+                    throw new IllegalArgumentException("@appCached support 1 or 2 string type parameter");
+            }
         }
     }
 

@@ -100,6 +100,13 @@ public enum AppConfigKey implements ConfigKey {
     CACHE_IMPL("cache.impl"),
 
     /**
+     * `act.cache.ttl` specifies the default TTL for default cache.
+     *
+     * Default value: 60s
+     */
+    CACHE_TTL("cache.ttl"),
+
+    /**
      * {@code act.cache.name}
      *
      * Specify the default cache name
