@@ -2611,13 +2611,14 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
         }
     }
 
-    private Boolean sessionPassThrough;
+    private boolean sessionPassThrough;
+    private boolean sessionPassThroughSet; // use this to save auto-box of sessionPassThrough flag
     protected T sessionPassThrough(boolean b) {
         sessionPassThrough = b;
         return me();
     }
     public boolean sessionPassThrough() {
-        if (null == sessionPassThrough) {
+        if (!sessionPassThroughSet) {
             sessionPassThrough = get(SESSION_PASS_THROUGH, false);
         }
         return sessionPassThrough;
