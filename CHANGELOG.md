@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 **1.8.8**
+* Add pass-through mode to wave session resolution #697
 * Allow developer to configure app cache default TTL #696
 * Provide a mechanism to disable CAPTCHA protection #694
 * Allow binding epoch time millis directly to date types #691

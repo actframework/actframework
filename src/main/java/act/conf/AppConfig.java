@@ -2611,7 +2611,24 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
         }
     }
 
-    private Boolean sessionPersistent = null;
+    private Boolean sessionPassThrough;
+    protected T sessionPassThrough(boolean b) {
+        sessionPassThrough = b;
+        return me();
+    }
+    public boolean sessionPassThrough() {
+        if (null == sessionPassThrough) {
+            sessionPassThrough = get(SESSION_PASS_THROUGH, false);
+        }
+        return sessionPassThrough;
+    }
+    private void _mergeSessionPassThrough(AppConfig config) {
+        if (!hasConfiguration(SESSION_PASS_THROUGH)) {
+            sessionPassThrough = config.sessionPassThrough;
+        }
+    }
+
+    private Boolean sessionPersistent;
 
     protected T sessionPersistent(boolean persistenSession) {
         sessionPersistent = persistenSession;

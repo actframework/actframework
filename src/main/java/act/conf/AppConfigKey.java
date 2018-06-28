@@ -997,6 +997,14 @@ public enum AppConfigKey implements ConfigKey {
     SESSION_OUTPUT_EXPIRATION("session.outputExpiration.enabled"),
 
     /**
+     * `session.pass_through` turn on/off session pass through mode.
+     *
+     * When session pass_through is turned on the framework will not
+     * tried to resolve or serialize the session
+     */
+    SESSION_PASS_THROUGH("session.pass_through.enabled"),
+
+    /**
      * `session.ttl` specifies the session duration in seconds.
      * If user failed to interact with server for amount of time that
      * exceeds the setting then the session will be destroyed

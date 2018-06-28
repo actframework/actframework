@@ -96,6 +96,7 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
     private RequestHandler handler;
     private UserAgent ua;
     private String sessionKeyUsername;
+    private boolean sessionPassThrough;
     private LocaleResolver localeResolver;
     private boolean disableCors;
     private boolean disableCsrf;
@@ -172,6 +173,7 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
         this.disableCors = !config.corsEnabled();
         this.disableCsrf = req().method().safe();
         this.sessionKeyUsername = config.sessionKeyUsername();
+        this.sessionPassThrough = config.sessionPassThrough();
         this.localeResolver = new LocaleResolver(this);
         this.sessionManager = app.sessionManager();
     }
@@ -1080,7 +1082,7 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
     public void resolve() {
         E.illegalStateIf(state != State.CREATED);
         localeResolver.resolve();
-        boolean sessionFree = handler.sessionFree();
+        boolean sessionFree = handler.sessionFree() || sessionPassThrough;
         setWasUnauthenticated();
         H.Request req = req();
         if (!sessionFree) {
@@ -1132,7 +1134,7 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
         if (state == State.SESSION_DISSOLVED) {
             return;
         }
-        if (handler.sessionFree()) {
+        if (handler.sessionFree() || sessionPassThrough) {
             return;
         }
         if (null == session) {
