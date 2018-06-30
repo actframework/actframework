@@ -1557,6 +1557,13 @@ public @interface Controller {
                 return new RenderBinary((byte[]) v);
             } else {
                 H.Format fmt = actionContext.accept();
+                if (H.Format.UNKNOWN == fmt) {
+                    // use JSON by default
+                    if (isArray) {
+                        return RenderJSON.of(status, $.toString2(v));
+                    }
+                    return RenderJSON.of(status, C.Map("result", v));
+                }
                 String s = $$.toString(v, isDateTime, isArray);
                 if (HTML == fmt || H.Format.UNKNOWN == fmt) {
                     return RenderHtml.of(status, s);
@@ -1697,7 +1704,7 @@ public @interface Controller {
             } else if (v instanceof Map) {
                 return RenderJSON.of(status, v);
             } else {
-                if (requireJSON) {
+                if (requireJSON || H.Format.UNKNOWN == context.req().accept()) {
                     boolean isIterable = v instanceof Iterable;
                     if (isIterable) {
                         v = new FastJsonIterable((Iterable) v);

@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 **1.8.8**
+* When `Accept` is not specified or unknown then use JSON as the output content type #704
 * Make `SessionFree`, `NonBlock` and `SkipBuiltInEvents` annotation support at class level #703
 * Add pass-through mode to wave session resolution #697
 * Allow developer to configure app cache default TTL #696
