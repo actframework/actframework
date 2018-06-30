@@ -77,9 +77,14 @@ public class UndertowResponseOutput extends Writer implements Output {
     }
 
     public UndertowResponseOutput append(char str[], int offset, int len) {
-        char[] payload = new char[len];
-        System.arraycopy(str, offset, payload, 0, len);
-        byte[] bytes = toBytes(payload);
+        byte[] bytes;
+        if (0 == offset && len == str.length) {
+            bytes = toBytes(str);
+        } else {
+            char[] payload = new char[len];
+            System.arraycopy(str, offset, payload, 0, len);
+            bytes = toBytes(payload);
+        }
         return append(bytes);
     }
 
@@ -136,8 +141,6 @@ public class UndertowResponseOutput extends Writer implements Output {
         ByteBuffer byteBuffer = Charset.forName("UTF-8").encode(charBuffer);
         byte[] bytes = Arrays.copyOfRange(byteBuffer.array(),
                 byteBuffer.position(), byteBuffer.limit());
-        Arrays.fill(charBuffer.array(), '\u0000'); // clear sensitive data
-        Arrays.fill(byteBuffer.array(), (byte) 0); // clear sensitive data
         return bytes;
     }
 }

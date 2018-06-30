@@ -363,7 +363,9 @@ public class UndertowResponse extends ActResponse<UndertowResponse> {
 
     @Override
     protected Writer createWriter() {
-        return blocking() ? super.createWriter() : new UndertowResponseOutput(this);
+        // TODO #698 - understand why the following line cause performance issue
+        //return blocking() ? super.createWriter() : new UndertowResponseOutput(this);
+        return super.createWriter();
     }
 
     @Override
