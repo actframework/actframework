@@ -1,4 +1,4 @@
-package act.handler;
+package act.controller;
 
 /*-
  * #%L
@@ -9,9 +9,9 @@ package act.handler;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -26,12 +26,14 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Mark a class method as non-block method.
+ * Mark a class as an express controller.
  *
- * When an action handler created from an non-block
- * method the handler will be treated as an {@link ExpressHandler}
+ * All request handlers in an express controller are automated treated as marked by:
+ * * {@link act.handler.NonBlock}
+ * * {@link org.osgl.mvc.annotation.SessionFree}
+ * * {@link act.handler.SkipBuiltInEvents}
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.METHOD, ElementType.TYPE})
-public @interface NonBlock {
+@Target(ElementType.TYPE)
+public @interface ExpressController {
 }

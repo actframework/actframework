@@ -30,6 +30,7 @@ import act.app.AppClassLoader;
 import act.conf.AppConfig;
 import act.controller.CacheSupportMetaInfo;
 import act.controller.Controller;
+import act.controller.ExpressController;
 import act.controller.annotation.HandleCsrfFailure;
 import act.controller.annotation.HandleMissingAuthentication;
 import act.controller.annotation.Throttled;
@@ -233,9 +234,15 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
             handlerMetaInfo.dateFormatPattern(this.dateFormatPattern);
         }
 
-        sessionFree = method.isAnnotationPresent(SessionFree.class);
-        express = method.isAnnotationPresent(NonBlock.class);
-        skipEvents = method.isAnnotationPresent(SkipBuiltInEvents.class);
+        if (controllerClass.isAnnotationPresent(ExpressController.class)) {
+            sessionFree = true;
+            express = true;
+            skipEvents = true;
+        } else {
+            sessionFree = hasAnnotation(SessionFree.class);
+            express = hasAnnotation(NonBlock.class);
+            skipEvents = hasAnnotation(SkipBuiltInEvents.class);
+        }
         noTemplateCache = method.isAnnotationPresent(Template.NoCache.class);
 
         paramCount = handler.paramCount();
