@@ -242,6 +242,9 @@ public interface ActContext<CTX_TYPE extends ActContext> extends ParamValueProvi
 
     String dateFormatPattern();
 
+    boolean isDisableCircularReferenceDetect();
+
+
     interface Listener {
         void onDestroy(ActContext context);
     }
@@ -272,6 +275,7 @@ public interface ActContext<CTX_TYPE extends ActContext> extends ParamValueProvi
         private Class<? extends SerializeFilter>[] fastjsonFilters;
         private SerializerFeature[] fastjsonFeatures;
         private String dateFormatPattern;
+        private boolean disableCircularReferenceDetect = true;
 
         public Base(App app) {
             this(app, false);
@@ -559,6 +563,16 @@ public interface ActContext<CTX_TYPE extends ActContext> extends ParamValueProvi
         public Map<String, Object> i18n(Class<?> bundleSpec, Class<? extends Enum> enumClass, boolean outputProperties) {
             return I18n.i18n(locale(true), bundleSpec, enumClass, outputProperties);
         }
+
+        public CTX enableCircularReferenceDetect() {
+            disableCircularReferenceDetect = false;
+            return me();
+        }
+
+        public boolean isDisableCircularReferenceDetect() {
+            return disableCircularReferenceDetect;
+        }
+
 
         protected CTX me() {
             return (CTX) this;

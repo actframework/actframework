@@ -156,6 +156,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
     private $.Function<ActionContext, Result> pluginBeforeHandler;
     private $.Func2<Result, ActionContext, Result> pluginAfterHandler;
     private Map<String, Object> attributes = new HashMap<>();
+    private boolean enableCircularReferenceDetect;
 
     private ReflectedHandlerInvoker(M handlerMetaInfo, App app) {
         this.app = app;
@@ -220,6 +221,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         if (null != featureAnno) {
             features = featureAnno.value();
         }
+        enableCircularReferenceDetect = hasAnnotation(EnableCircularReferenceDetect.class);
 
         DateFormatPattern pattern = method.getAnnotation(DateFormatPattern.class);
         if (null != pattern) {
@@ -404,6 +406,10 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
 
         if (requireCaptcha) {
             context.markAsRequireCaptcha();
+        }
+
+        if (enableCircularReferenceDetect) {
+            context.enableCircularReferenceDetect();
         }
 
         context.setReflectedHandlerInvoker(this);
@@ -611,10 +617,10 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
             return body;
         }
         String theName = singleJsonFieldName(context);
-        int theNameLen = theName.length();
         if (null == theName) {
             return body;
         }
+        int theNameLen = theName.length();
         body = body.trim();
         boolean needPatch = body.charAt(0) == '[';
         if (!needPatch) {

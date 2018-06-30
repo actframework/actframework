@@ -53,8 +53,7 @@ public class JsonUtilConfig {
         private SerializerFeature[] features;
         private SerializeFilter[] filters;
         private DateFormat dateFormat;
-        private boolean disableCircularReferenceDetect;
-        private boolean hasPropFilter;
+        private boolean disableCircularReferenceDetect = true;
 
         public JsonWriter(Object v, PropertySpec.MetaInfo spec, boolean format, ActContext context) {
             if (null == v) {
@@ -88,21 +87,15 @@ public class JsonUtilConfig {
                 } else {
                     this.dateFormat = new SimpleDateFormat(dateFormatPattern, locale);
                 }
+                this.disableCircularReferenceDetect = context.isDisableCircularReferenceDetect();
                 this.filters = initFilters(v, spec, context);
                 this.features = initFeatures(format, context);
             }
         }
 
-        public void disableCircularReferenceDetect() {
-            disableCircularReferenceDetect = true;
-        }
-
         private SerializeFilter[] initFilters(Object v, PropertySpec.MetaInfo spec, ActContext context) {
             Set<SerializeFilter> filterSet = new LinkedHashSet<>();
             FastJsonPropertyPreFilter propertyFilter = initPropertyPreFilter(v, spec, context);
-            if (null != propertyFilter) {
-                hasPropFilter = true;
-            }
             if (null != spec && null != context) {
                 MappedFastJsonNameFilter nameFilter = new MappedFastJsonNameFilter(spec.labelMapping(context));
                 filterSet.add(nameFilter);
@@ -216,7 +209,8 @@ public class JsonUtilConfig {
         MvcConfig.jsonSerializer(new $.Func2<Writer, Object, Void>() {
             @Override
             public Void apply(Writer writer, Object v) throws NotAppliedException, $.Break {
-                new JsonWriter(v, null, false, ActContext.Base.currentContext()).apply(writer);
+                ActContext ctx = ActContext.Base.currentContext();
+                new JsonWriter(v, null, false, ctx).apply(writer);
                 return null;
             }
         });

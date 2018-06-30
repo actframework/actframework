@@ -1,6 +1,8 @@
 # ActFramework Change Log
 
 **1.8.8**
+* Create an annotation to force application to add `DisableCircularReferenceDetect` to FastJSON #706
+* Add `DisableCircularReferenceDetect` feature to FastJSON by default #705
 * When `Accept` is not specified or unknown then use JSON as the output content type #704
 * Make `SessionFree`, `NonBlock` and `SkipBuiltInEvents` annotation support at class level #703
 * Add pass-through mode to wave session resolution #697

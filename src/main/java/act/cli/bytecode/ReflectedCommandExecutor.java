@@ -32,16 +32,14 @@ import act.inject.param.CliContextParamLoader;
 import act.inject.param.ParamValueLoaderManager;
 import act.job.JobManager;
 import act.job.TrackableWorker;
-import act.util.Async;
-import act.util.FastJsonFeature;
-import act.util.FastJsonFilter;
-import act.util.ProgressGauge;
+import act.util.*;
 import com.alibaba.fastjson.serializer.SerializeFilter;
 import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.esotericsoftware.reflectasm.MethodAccess;
 import org.osgl.$;
 import org.osgl.util.E;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
 
 /**
@@ -69,6 +67,7 @@ public class ReflectedCommandExecutor extends CommandExecutor {
     private String dateFormatPattern;
     private Class<? extends SerializeFilter> filters[];
     private SerializerFeature features[];
+    private boolean enableCircularReferenceDetect = false;
 
     public ReflectedCommandExecutor(CommandMethodMetaInfo methodMetaInfo, App app) {
         this.methodMetaInfo = $.requireNotNull(methodMetaInfo);
@@ -109,6 +108,7 @@ public class ReflectedCommandExecutor extends CommandExecutor {
             }
         }
         this.paramLoaderService = app.service(ParamValueLoaderManager.class).get(CliContext.class);
+        this.enableCircularReferenceDetect = hasAnnotation(EnableCircularReferenceDetect.class);
         this.buildParsingContext();
     }
 
@@ -121,6 +121,9 @@ public class ReflectedCommandExecutor extends CommandExecutor {
         context.fastjsonFeatures(features);
         context.fastjsonFilters(filters);
         context.prepare(parsingContext);
+        if (enableCircularReferenceDetect) {
+            context.enableCircularReferenceDetect();
+        }
         paramLoaderService.preParseOptions(method, methodMetaInfo, context);
         final Object cmd = commanderInstance(context);
         final Object[] params = params(cmd, context);
@@ -198,6 +201,10 @@ public class ReflectedCommandExecutor extends CommandExecutor {
             result = $.invokeStatic(method, params);
         }
         return result;
+    }
+
+    private boolean hasAnnotation(Class<? extends Annotation> type) {
+        return method.isAnnotationPresent(type) || commanderClass.isAnnotationPresent(type);
     }
 
     private void buildParsingContext() {
