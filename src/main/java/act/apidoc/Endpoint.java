@@ -43,6 +43,7 @@ import org.osgl.inject.BeanSpec;
 import org.osgl.logging.Logger;
 import org.osgl.mvc.result.Result;
 import org.osgl.storage.ISObject;
+import org.osgl.storage.impl.SObject;
 import org.osgl.util.*;
 
 import java.lang.annotation.Annotation;
@@ -195,6 +196,7 @@ public class Endpoint implements Comparable<Endpoint> {
     private String sampleQuery;
     private Class<?> controllerClass;
     private Locale defLocale;
+    private transient SampleDataProviderManager sampleDataProviderManager;
 
     Endpoint(int port, H.Method httpMethod, String path, RequestHandler handler) {
         AppConfig conf = Act.appConfig();
@@ -204,6 +206,7 @@ public class Endpoint implements Comparable<Endpoint> {
         this.handler = handler.toString();
         this.port = port;
         this.defLocale = conf.locale();
+        this.sampleDataProviderManager = Act.app().sampleDataProviderManager();
         explore(handler);
     }
 
@@ -497,7 +500,9 @@ public class Endpoint implements Comparable<Endpoint> {
             return bindName + "=<datetime>";
         }
         if (null != stringValueResolver(type)) {
-            return bindName + "=" + S.random(5);
+            SampleData.Category anno = spec.getAnnotation(SampleData.Category.class);
+            SampleDataCategory category = null != anno ? anno.value() : null;
+            return bindName + "=" + sampleDataProviderManager.getSampleData(category, bindName, String.class);
         }
         List<String> queryPairs = new ArrayList<>();
         List<Field> fields = $.fieldsOf(type);
@@ -545,6 +550,8 @@ public class Endpoint implements Comparable<Endpoint> {
                 return null;
             }
         }
+        SampleData.Category anno = spec.getAnnotation(SampleData.Category.class);
+        SampleDataCategory category = null != anno ? anno.value() : null;
         Class<?> classType = spec.rawType();
         try {
             if (void.class == classType || Void.class == classType || Result.class.isAssignableFrom(classType)) {
@@ -561,11 +568,11 @@ public class Endpoint implements Comparable<Endpoint> {
                 } else if (Locale.class == classType) {
                     return (defLocale);
                 } else if (String.class == classType) {
-                    String mockValue = S.random(5);
+                    String mockValue = sampleDataProviderManager.getSampleData(category, name, String.class);
                     if (spec.hasAnnotation(Sensitive.class)) {
                         return Act.crypto().encrypt(mockValue);
                     }
-                    return S.random(5);
+                    return mockValue;
                 } else if (classType.isArray()) {
                     Object sample = Array.newInstance(classType.getComponentType(), 2);
                     Array.set(sample, 0, generateSampleData(BeanSpec.of(classType.getComponentType(), Act.injector()), C.newSet(typeChain), C.newList(nameChain)));
@@ -580,23 +587,21 @@ public class Endpoint implements Comparable<Endpoint> {
                     }
                     return StringValueResolver.predefined().get(classType).resolve(null);
                 } else if (LocalDateTime.class.isAssignableFrom(classType)) {
-                    return LocalDateTime.now();
+                    return sampleDataProviderManager.getSampleData(category, name, LocalDateTime.class);
                 } else if (DateTime.class.isAssignableFrom(classType)) {
-                    return DateTime.now();
+                    return sampleDataProviderManager.getSampleData(category, name, DateTime.class);
                 } else if (LocalDate.class.isAssignableFrom(classType)) {
-                    return LocalDate.now();
+                    return sampleDataProviderManager.getSampleData(category, name, LocalDate.class);
                 } else if (LocalTime.class.isAssignableFrom(classType)) {
                     return LocalTime.now();
                 } else if (Date.class.isAssignableFrom(classType)) {
-                    return new Date();
-                } else if (classType.getName().contains(".ObjectId")) {
-                    return "<id>";
+                    return sampleDataProviderManager.getSampleData(category, name, Date.class);
                 } else if (BigDecimal.class == classType) {
                     return BigDecimal.valueOf(1.1);
                 } else if (BigInteger.class == classType) {
                     return BigInteger.valueOf(1);
                 } else if (ISObject.class.isAssignableFrom(classType)) {
-                    return null;
+                    return SObject.of("blob data");
                 } else if (Map.class.isAssignableFrom(classType)) {
                     Map map = $.cast(Act.getInstance(classType));
                     List<Type> typeParams = spec.typeParams();
@@ -632,11 +637,12 @@ public class Endpoint implements Comparable<Endpoint> {
                     return col;
                 }
 
-                if (null != stringValueResolver(classType)) {
-                    return S.random(5);
+                Object obj = sampleDataProviderManager.getSampleData(category, name, classType);
+                if (null != obj) {
+                    return obj;
                 }
 
-                Object obj = Act.getInstance(classType);
+                obj = Act.getInstance(classType);
                 List<Field> fields = $.fieldsOf(classType);
                 for (Field field : fields) {
                     if (Modifier.isStatic(field.getModifiers())) {

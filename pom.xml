@@ -91,23 +91,28 @@
         <directory>src/main/resources</directory>
         <filtering>true</filtering>
         <includes>
-          <include>**/act.scan.list</include>
-          <include>**/aaa.authenticate.list</include>
           <include>**/*.version</include>
           <include>**/*.properties</include>
           <include>**/*.xml</include>
           <include>**/*.csv</include>
+          <include>**/*.list</include>
           <include>**/*.txt</include>
           <include>**/*.css</include>
           <include>**/*.js</include>
-          <include>**/*.png</include>
-          <include>**/*.jpg</include>
-          <include>**/*.gif</include>
           <include>**/*.json</include>
           <include>**/*.html</include>
           <include>**/*.tag</include>
           <include>rythm/**</include>
           <include>*.flf</include>
+        </includes>
+      </resource>
+      <resource>
+        <directory>src/main/resources</directory>
+        <filtering>false</filtering>
+        <includes>
+          <include>**/*.gif</include>
+          <include>**/*.png</include>
+          <include>**/*.jpg</include>
         </includes>
       </resource>
     </resources>

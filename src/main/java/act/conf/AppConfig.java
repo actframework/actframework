@@ -235,7 +235,7 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
 
     public boolean isHideBuiltInEndpointsInApiDoc() {
         if (null == apiDocBuiltInHide) {
-            apiDocBuiltInHide = get(API_DOC_HIDE_BUILT_IN_ENDPOINTS, false);
+            apiDocBuiltInHide = get(API_DOC_HIDE_BUILT_IN_ENDPOINTS, true);
         }
         return apiDocBuiltInHide;
     }

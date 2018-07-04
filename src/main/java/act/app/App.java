@@ -26,6 +26,7 @@ import static org.osgl.http.H.Method.GET;
 import act.Act;
 import act.Destroyable;
 import act.apidoc.ApiManager;
+import act.apidoc.SampleDataProviderManager;
 import act.app.data.BinderManager;
 import act.app.data.StringValueResolverManager;
 import act.app.event.SysEventId;
@@ -166,6 +167,7 @@ public class App extends DestroyableBase {
     private Map<String, Daemon> daemonRegistry;
     private WebSocketConnectionManager webSocketConnectionManager;
     private MetricMetaInfoRepo metricMetaInfoRepo;
+    private SampleDataProviderManager sampleDataProviderManager;
     private AppCrypto crypto;
     private IdGenerator idGenerator;
     private SessionManager sessionManager;
@@ -643,6 +645,7 @@ public class App extends DestroyableBase {
             loadRoutes();
             emit(ROUTER_LOADED);
             initApiManager();
+            initSampleDataProviderManager();
             initHttpClientService();
             initCaptchaPluginManager();
             initCliDispatcher();
@@ -831,6 +834,10 @@ public class App extends DestroyableBase {
 
     public File resource(String path) {
         return new File(this.layout().resource(appBase), path);
+    }
+
+    public SampleDataProviderManager sampleDataProviderManager() {
+        return sampleDataProviderManager;
     }
 
     public void registerDaemon(Daemon daemon) {
@@ -1368,6 +1375,10 @@ public class App extends DestroyableBase {
 
     private void initApiManager() {
         apiManager = new ApiManager(this);
+    }
+
+    private void initSampleDataProviderManager() {
+        sampleDataProviderManager = new SampleDataProviderManager(this);
     }
 
     private void initScanlist() {

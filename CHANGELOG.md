@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 **1.8.8**
+* API doc - provide a mechanism allow plugin sample data generator #709
 * Create an annotation to force application to add `DisableCircularReferenceDetect` to FastJSON #706
 * Add `DisableCircularReferenceDetect` feature to FastJSON by default #705
 * When `Accept` is not specified or unknown then use JSON as the output content type #704
