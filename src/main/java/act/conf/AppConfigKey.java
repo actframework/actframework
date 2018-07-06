@@ -985,6 +985,14 @@ public enum AppConfigKey implements ConfigKey {
     SERVER_HEADER("server.header"),
 
     /**
+     * `server.header.user-app.enabled` specifies whether use app name and
+     * version as the server header.
+     *
+     * Default value: `true`
+     */
+    SERVER_HEADER_USE_APP("server.header.use-app.enabled"),
+
+    /**
      * `session.outputExpiration.enabled` turn on/off expiration output to
      * response header.
      *

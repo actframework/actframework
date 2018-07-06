@@ -61,6 +61,7 @@ import org.osgl.mvc.MvcConfig;
 import org.osgl.util.*;
 import org.osgl.web.util.UserAgent;
 import org.rythmengine.utils.Time;
+import osgl.version.Version;
 
 import java.awt.*;
 import java.io.File;
@@ -2480,6 +2481,19 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
 
     private String serverHeader;
     private static final String DEF_SERVER_HEADER = "act/" + Act.VERSION.getProjectVersion();
+    private static String DEF_APP_SERVER_HEADER = appServerHeader();
+    private static String appServerHeader() {
+        App app = Act.app();
+        if (null == app) {
+            return "app/1.0";
+        }
+        String shortId = app.shortId();
+        if (null == shortId) {
+            shortId = "app";
+        }
+        Version version = app.version();
+        return shortId + "/" + (null == version ? "1.0" : version.getProjectVersion());
+    }
 
     protected T serverHeader(String header) {
         serverHeader = header;
@@ -2488,7 +2502,7 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
 
     public String serverHeader() {
         if (null == serverHeader) {
-            serverHeader = get(AppConfigKey.SERVER_HEADER, DEF_SERVER_HEADER);
+            serverHeader = get(AppConfigKey.SERVER_HEADER, serverHeaderUseApp() ? DEF_APP_SERVER_HEADER : DEF_SERVER_HEADER);
         }
         return serverHeader;
     }
@@ -2496,6 +2510,23 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
     private void _mergeServerHeader(AppConfig config) {
         if (!hasConfiguration(AppConfigKey.SERVER_HEADER)) {
             serverHeader = config.serverHeader;
+        }
+    }
+
+    private Boolean serverHeaderUseApp;
+    protected T serverHeaderUseApp(boolean b) {
+        serverHeaderUseApp = b;
+        return me();
+    }
+    private boolean serverHeaderUseApp() {
+        if (null == serverHeaderUseApp) {
+            serverHeaderUseApp = get(AppConfigKey.SERVER_HEADER_USE_APP, true);
+        }
+        return serverHeaderUseApp;
+    }
+    private void _mergeServerHeaderUseApp(AppConfig config) {
+        if (!hasConfiguration(SERVER_HEADER_USE_APP)) {
+            serverHeaderUseApp = config.serverHeaderUseApp;
         }
     }
 
