@@ -146,7 +146,10 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
 
         for (Method method : AppConfig.class.getDeclaredMethods()) {
             boolean isPublic = Modifier.isPublic(method.getModifiers());
-            if (isPublic && 0 == method.getParameterTypes().length && !"preloadConfigurations".equals(method.getName())) {
+            if (!isPublic || method.isAnnotationPresent(Lazy.class)) {
+                continue;
+            }
+            if (0 == method.getParameterTypes().length && !"preloadConfigurations".equals(method.getName())) {
                 $.invokeVirtual(this, method);
             }
         }
@@ -2706,6 +2709,7 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
         this.sessionMapper = sessionMapper;
     }
 
+    @Lazy
     public act.session.SessionMapper sessionMapper() {
         if (null == sessionMapper && null != app.injector()) {
             sessionMapper = get(SESSION_MAPPER, app().getInstance(CookieSessionMapper.class));
@@ -2725,6 +2729,7 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
         this.sessionCodec = $.requireNotNull(codec);
     }
 
+    @Lazy
     public SessionCodec sessionCodec() {
         if (null == sessionCodec) {
             if (null == app.injector()) {

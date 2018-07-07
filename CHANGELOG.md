@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 **1.8.8**
+* Act start failed when set session.mapper=act.session.HeaderTokenSessionMapper #701
 * `NullPointerException` encountered when app started with SQL db plugin without model classes #707
 * Allow use app name and version as server header #710
 * API doc - provide a mechanism allow plugin sample data generator #709

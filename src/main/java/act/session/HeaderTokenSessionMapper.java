@@ -21,16 +21,16 @@ package act.session;
  */
 
 import act.conf.AppConfig;
+import act.util.Stateless;
 import org.osgl.http.H;
 import org.osgl.util.S;
 
 import javax.inject.Inject;
-import javax.inject.Singleton;
 
 /**
  * Implement {@link SessionMapper} using HTTP header
  */
-@Singleton
+@Stateless
 public class HeaderTokenSessionMapper implements SessionMapper {
 
     public static final String DEF_HEADER_PREFIX = "X-Act-";

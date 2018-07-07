@@ -42,22 +42,19 @@ class ConfigKeyHelper {
 
     private static Logger logger = L.get(ConfigKeyHelper.class);
     private $.F0<Act.Mode> mode;
-    private $.F0<ClassLoader> classLoaderProvider;
+    private ClassLoader cl;
+    private boolean useAppClassLoader;
 
     public ConfigKeyHelper($.F0<Act.Mode> mode, final ClassLoader cl) {
         this.mode = mode;
-        this.classLoaderProvider = new $.F0<ClassLoader>() {
-            @Override
-            public ClassLoader apply() throws NotAppliedException, $.Break {
-                return cl;
-            }
-        };
+        this.cl = $.requireNotNull(cl);
     }
     public ConfigKeyHelper($.F0<Act.Mode> mode) {
         this.mode = mode;
     }
-    ConfigKeyHelper classLoaderProvider($.F0<ClassLoader> provider) {
-        this.classLoaderProvider = provider;
+
+    ConfigKeyHelper onApp() {
+        this.useAppClassLoader = true;
         return this;
     }
     <T> T getConfiguration(final ConfigKey confKey, Map<String, ?> configuration) {
@@ -245,7 +242,7 @@ class ConfigKeyHelper {
     }
 
     private ClassLoader myClassLoader() {
-        return classLoaderProvider.apply();
+        return cl;
     }
 
     <T> T getImpl(Map<String, ?> configuration, String key, String suffix, $.F0<?> defVal) {
@@ -253,7 +250,7 @@ class ConfigKeyHelper {
         if (null == v) return null;
         if (v instanceof Class) {
             try {
-                return $.newInstance((Class<T>) v, myClassLoader());
+                return instanceOf((Class<T>) v);
             } catch (Exception e) {
                 throw new ConfigurationException(e, "Error getting implementation configuration: %s", key);
             }
@@ -261,10 +258,18 @@ class ConfigKeyHelper {
         if (!(v instanceof String)) return (T) v;
         String clsName = (String) v;
         try {
-            return $.newInstance(clsName, myClassLoader());
+            return instanceOf(clsName);
         } catch (Exception e) {
             throw new ConfigurationException(e, "Error getting implementation configuration: %s", key);
         }
+    }
+
+    private <T> T instanceOf(Class<T> type) {
+        return useAppClassLoader ? Act.getInstance(type) : $.newInstance(type, myClassLoader());
+    }
+
+    private <T> T instanceOf(String typeName) {
+        return (T) (useAppClassLoader ? Act.getInstance(typeName) : $.newInstance(typeName, myClassLoader()));
     }
 
     private URI getUri(Map<String, ?> configuration, String key, String suffix, $.F0<?> defVal) {
