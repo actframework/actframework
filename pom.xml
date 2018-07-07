@@ -65,7 +65,7 @@
     <osgl-tool.version>1.18.0-SNAPSHOT</osgl-tool.version>
     <osgl-cache.version>1.5.0</osgl-cache.version>
     <osgl-genie.version>1.8.0</osgl-genie.version>
-    <osgl-http.version>1.8.0</osgl-http.version>
+    <osgl-http.version>1.8.1-SNAPSHOT</osgl-http.version>
     <osgl-mvc.version>1.8.1-SNAPSHOT</osgl-mvc.version>
     <osgl-storage.version>1.7.0</osgl-storage.version>
     <osgl-tool-ext.version>1.2.0</osgl-tool-ext.version>
