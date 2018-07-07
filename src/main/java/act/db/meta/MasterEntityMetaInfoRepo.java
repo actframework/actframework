@@ -26,6 +26,8 @@ import act.asm.Type;
 import act.db.DB;
 import act.job.JobManager;
 import act.util.ClassInfoRepository;
+import org.osgl.util.C;
+import org.osgl.util.E;
 
 import java.lang.annotation.Annotation;
 import java.util.HashMap;
@@ -41,6 +43,8 @@ import javax.persistence.MappedSuperclass;
 @Singleton
 public class MasterEntityMetaInfoRepo extends EntityMetaInfoRepo {
 
+    private static EntityMetaInfoRepo EMPTY;
+
     // map entity meta info repo to db id
     private Map<String, EntityMetaInfoRepo> regions = new HashMap<>();
 
@@ -52,6 +56,71 @@ public class MasterEntityMetaInfoRepo extends EntityMetaInfoRepo {
     @Inject
     public MasterEntityMetaInfoRepo(final App app) {
         super(app);
+        EMPTY = new EntityMetaInfoRepo(app){
+            @Override
+            public void registerEntityOrMappedSuperClass(String className) {
+                E.unsupport();
+            }
+
+            @Override
+            public void registerEntityName(String className, String entityName) {
+                E.unsupport();
+            }
+
+            @Override
+            public void markEntityListenersFound(String className) {
+                E.unsupport();
+            }
+
+            @Override
+            public void registerCreatedField(String className, String fieldName) {
+                E.unsupport();
+            }
+
+            @Override
+            public void registerLastModifiedField(String className, String fieldName) {
+                E.unsupport();
+            }
+
+            @Override
+            public void registerIdField(String className, String fieldName) {
+                E.unsupport();
+            }
+
+            @Override
+            public void registerColumnName(String className, String fieldName, String columnName) {
+                E.unsupport();
+            }
+
+            @Override
+            public boolean isRegistered(String className) {
+                return false;
+            }
+
+            @Override
+            public Set<Class> entityClasses() {
+                return C.Set();
+            }
+
+            @Override
+            public EntityClassMetaInfo classMetaInfo(Class<?> entityClass) {
+                return null;
+            }
+
+            @Override
+            public EntityClassMetaInfo classMetaInfo(String className) {
+                return null;
+            }
+
+            @Override
+            protected void releaseResources() {
+            }
+
+            @Override
+            void register(Class<?> entityClass, EntityClassMetaInfo info) {
+                E.unsupport();
+            }
+        };
         registerEntityAnnotation(Entity.class);
         registerMappedSuperClassAnnotation(MappedSuperclass.class);
         registerEntityListenerAnnotation(EntityListeners.class);
@@ -135,6 +204,6 @@ public class MasterEntityMetaInfoRepo extends EntityMetaInfoRepo {
             }
             repo = regions.get(dbId);
         }
-        return repo;
+        return null != repo ? repo : EMPTY;
     }
 }

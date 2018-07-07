@@ -33,7 +33,7 @@ public enum SampleDataCategory {
     LAST_NAME("surname", "family name", "lname", "lastname"),
     FULL_NAME("fullname"),
     DOB("Birthday", "生日", "DateOfBirth", "*date", "date*"),
-    EMAIL,
+    EMAIL("mail"),
     HOST,
     STREET,
     SUBURB("city"),
