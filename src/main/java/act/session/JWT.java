@@ -41,6 +41,8 @@ import javax.inject.Singleton;
 @Singleton
 public class JWT extends SingletonBase {
 
+    public static final String ID = "jti";
+
     public enum Header {
         ALGO("alg");
         private String key;
@@ -56,7 +58,7 @@ public class JWT extends SingletonBase {
         NOT_BEFORE("nbf"),
         ISSUED_AT("iat"),
         ISSUER("iss"),
-        JWT_ID("jti"),;
+        JWT_ID(ID),;
         private String key;
 
         Payload(String key) {

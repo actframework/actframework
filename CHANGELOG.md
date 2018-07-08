@@ -1,6 +1,8 @@
 # ActFramework Change Log
 
 **1.8.8**
+* session id not serialized in JWT token #711
+* Act session token still validate even when user has logout #702
 * Act start failed when set session.mapper=act.session.HeaderTokenSessionMapper #701
 * `NullPointerException` encountered when app started with SQL db plugin without model classes #707
 * Allow use app name and version as server header #710

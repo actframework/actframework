@@ -206,7 +206,7 @@ public class App extends DestroyableBase {
         this.appHome = RuntimeDirs.home(this);
         this.config = new AppConfig<>().app(this);
         INST = this;
-        this.sessionManager = new SessionManager(this.config);
+        this.sessionManager = new SessionManager(this.config, config().cacheService("logout-session"));
         this.dependencyInjector = new GenieInjector(this);
         this.singletonRegistry = new SingletonRegistry(this);
         this.singletonRegistry.register(SessionManager.class, this.sessionManager);
@@ -1340,7 +1340,7 @@ public class App extends DestroyableBase {
     }
 
     private void initSessionManager() {
-        sessionManager = new SessionManager(config);
+        sessionManager = getInstance(SessionManager.class);
         singletonRegistry.register(SessionManager.class, sessionManager);
     }
 

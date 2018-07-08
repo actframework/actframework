@@ -1072,7 +1072,8 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
      * the session will be cleared
      */
     public void logout() {
-        session().clear();
+        SessionManager sessionManager = app().sessionManager();
+        sessionManager.logout(session);
     }
 
     /**

@@ -20,6 +20,11 @@ package act;
  * #L%
  */
 
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.argThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
 import act.app.ActionContext;
 import act.app.App;
 import act.app.SingletonRegistry;
@@ -37,6 +42,7 @@ import org.mockito.internal.matchers.StartsWith;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.osgl.$;
+import org.osgl.cache.CacheService;
 import org.osgl.http.H;
 import org.osgl.util.FastStr;
 import org.osgl.util.IO;
@@ -46,11 +52,6 @@ import osgl.ut.TestBase;
 import java.io.File;
 import java.io.InputStream;
 import java.lang.reflect.Field;
-
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.argThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 @Ignore
 public class ActTestBase extends TestBase {
@@ -87,6 +88,7 @@ public class ActTestBase extends TestBase {
     protected EventBus mockEventBus;
     protected H.Request mockReq;
     protected ActResponse mockResp;
+    protected CacheService mockCacheService;
 
     protected void setup() throws Exception {
         initActMetricPlugin();
@@ -109,13 +111,14 @@ public class ActTestBase extends TestBase {
         when(mockApp.config()).thenReturn(mockAppConfig);
         when(mockApp.router()).thenReturn(mockRouter);
         when(mockApp.router(Matchers.same(""))).thenReturn(mockRouter);
+        mockCacheService = mock(CacheService.class);
         when(mockApp.getInstance(any(Class.class))).thenAnswer(new Answer<Object>() {
             @Override
             public Object answer(InvocationOnMock invocation) throws Throwable {
                 Object[] args = invocation.getArguments();
                 Class<?> cls = (Class) args[0];
                 if (SessionManager.class == cls) {
-                    return new SessionManager(mockAppConfig);
+                    return new SessionManager(mockAppConfig, mockCacheService);
                 }
                 return $.newInstance((Class)args[0]);
             }

@@ -23,28 +23,54 @@ package act.session;
 import act.app.ActionContext;
 import act.conf.AppConfig;
 import act.util.DestroyableBase;
+import org.osgl.cache.CacheService;
 import org.osgl.http.H;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 import javax.inject.Singleton;
 
 @Singleton
 public class SessionManager extends DestroyableBase {
 
     private SessionCodec codec;
-
     private SessionMapper mapper;
+    private int sessionTimeout;
+
+    private CacheService logoutSessionCache;
 
     @Inject
-    public SessionManager(AppConfig config) {
+    public SessionManager(AppConfig config, @Named("act-logout-session") CacheService cacheService) {
         codec = config.sessionCodec();
         mapper = config.sessionMapper();
+        sessionTimeout = config.sessionTtl();
+        logoutSessionCache = cacheService;
+    }
+
+    public void logout(H.Session session) {
+        if (sessionTimeout > 0) {
+            logoutSessionCache.put(session.id(), "", sessionTimeout);
+        }
+        session.clear();
     }
 
     public H.Session resolveSession(H.Request request, ActionContext context) {
         String encodedSession = mapper.readSession(request);
         context.encodedSessionToken = encodedSession;
-        return null == encodedSession ? new H.Session() : codec.decodeSession(encodedSession, request);
+        if (null == encodedSession) {
+            return new H.Session();
+        }
+        H.Session session = codec.decodeSession(encodedSession, request);
+        if (sessionTimeout <= 0) {
+            // session never timeout
+            return session;
+        }
+        // check if session has been logged out
+        String id = session.id();
+        if (null != logoutSessionCache.get(id)) {
+            session = new H.Session();
+        }
+        return session;
     }
 
     public H.Flash resolveFlash(H.Request request) {

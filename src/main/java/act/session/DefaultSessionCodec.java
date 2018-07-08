@@ -54,7 +54,7 @@ public class DefaultSessionCodec extends DestroyableBase implements SessionCodec
     public DefaultSessionCodec(AppConfig conf, RotateSecretCrypto crypto) {
         ttlInMillis = conf.sessionTtl() * 1000;
         sessionWillExpire = ttlInMillis > 0;
-        pingPath = conf .pingPath();
+        pingPath = conf.pingPath();
         encryptSession = conf.encryptSession();
         this.crypto = $.requireNotNull(crypto);
     }

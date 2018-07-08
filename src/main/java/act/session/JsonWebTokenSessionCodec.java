@@ -22,6 +22,7 @@ package act.session;
 
 import static act.session.JWT.Payload.EXPIRES_AT;
 import static act.session.JWT.Payload.ISSUER;
+import static act.session.JWT.Payload.JWT_ID;
 import static org.osgl.http.H.Session.KEY_EXPIRATION;
 
 import act.conf.AppConfig;
@@ -110,7 +111,7 @@ public class JsonWebTokenSessionCodec implements SessionCodec {
                 long l = Long.parseLong(v);
                 token.payload(EXPIRES_AT, l / 1000);
             } else if (H.Session.KEY_ID.equals(k)) {
-                // ignore this
+                token.payload(JWT_ID, v);
             } else {
                 token.payload(k, v);
             }
@@ -126,9 +127,9 @@ public class JsonWebTokenSessionCodec implements SessionCodec {
         for (Map.Entry<String, Object> entry : token.payloads().entrySet()) {
             String key = entry.getKey();
             Object val = entry.getValue();
-            if (isSession && "jti".equals(key)) {
+            if (isSession && JWT.ID.equals(key)) {
                 state.put(H.Session.KEY_ID, val);
-            } else if ( ISSUER.key().equals(key)) {
+            } else if (ISSUER.key().equals(key)) {
                 // ignore
             } else if (EXPIRES_AT.key().equals(key)) {
                 Number number = (Number) val;
