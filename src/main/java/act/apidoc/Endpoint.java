@@ -547,7 +547,11 @@ public class Endpoint implements Comparable<Endpoint> {
         if (null != fastJsonPropertyPreFilter) {
             String path = S.join(nameChain).by(".").get();
             if (!fastJsonPropertyPreFilter.matches(path)) {
-                return null;
+                if (spec.isArray() || Iterable.class.isAssignableFrom(spec.rawType())) {
+                    return Act.getInstance(spec.rawType());
+                } else {
+                    return null;
+                }
             }
         }
         SampleData.Category anno = spec.getAnnotation(SampleData.Category.class);

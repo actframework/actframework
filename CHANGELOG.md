@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 **1.8.8**
+* API doc `generateSampleData` - `fastJsonPropertyPreFilter` treatment for collection type #716
 * session id not serialized in JWT token #711
 * Act session token still validate even when user has logout #702
 * Act start failed when set session.mapper=act.session.HeaderTokenSessionMapper #701
