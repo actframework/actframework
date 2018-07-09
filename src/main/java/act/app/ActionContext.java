@@ -203,7 +203,10 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
     }
 
     public boolean skipEvents() {
-        return handler().skipEvents(this);
+        if (null == handler) {
+            return true;
+        }
+        return handler.skipEvents(this);
     }
 
     public void markAsConsumed() {
@@ -428,8 +431,7 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
     }
 
     public ActionContext handler(RequestHandler handler) {
-        E.NPE(handler);
-        this.handler = handler;
+        this.handler = $.requireNotNull(handler);
         return this;
     }
 

@@ -20,12 +20,15 @@ package act.apidoc.sampledata;
  * #L%
  */
 
+import act.apidoc.SampleData;
+import act.apidoc.SampleDataCategory;
 import act.apidoc.SampleDataProvider;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
 @Singleton
+@SampleData.Category(SampleDataCategory.FULL_NAME)
 public class FullNameProvider extends SampleDataProvider<String> {
 
     @Inject

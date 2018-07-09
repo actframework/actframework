@@ -152,8 +152,9 @@ public class NetworkHandler extends DestroyableBase {
                 }
                 ctx.saveLocal();
                 EventBus eventBus = app.eventBus();
+                final boolean skipEvents = ctx.skipEvents();
                 try {
-                    if (!ctx.skipEvents()) {
+                    if (!skipEvents) {
                         eventBus.emit(new PreHandle(ctx));
                     }
                     requestHandler.handle(ctx);
@@ -185,7 +186,7 @@ public class NetworkHandler extends DestroyableBase {
                 } catch (Exception e) {
                     handleException(e, ctx, "Error handling network request");
                 } finally {
-                    if (!ctx.skipEvents()) {
+                    if (!skipEvents) {
                         eventBus.emit(new PostHandle(ctx));
                     }
                     if (ctx.isReadyForDestroy()) {

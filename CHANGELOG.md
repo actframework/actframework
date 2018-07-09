@@ -1,6 +1,8 @@
 # ActFramework Change Log
 
 **1.8.8**
+* Add API doc to act aaa authentication list #720
+* `PostHandle` event not raised in rare case #719
 * forward shall not raise `PreHandle` event #717
 * API doc `generateSampleData` - `fastJsonPropertyPreFilter` treatment for collection type #716
 * session id not serialized in JWT token #711

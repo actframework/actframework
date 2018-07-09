@@ -40,6 +40,7 @@ import org.joda.time.*;
 import org.osgl.$;
 import org.osgl.http.H;
 import org.osgl.inject.BeanSpec;
+import org.osgl.inject.Injector;
 import org.osgl.logging.Logger;
 import org.osgl.mvc.result.Result;
 import org.osgl.storage.ISObject;
@@ -648,6 +649,7 @@ public class Endpoint implements Comparable<Endpoint> {
 
                 obj = Act.getInstance(classType);
                 List<Field> fields = $.fieldsOf(classType);
+                Injector injector = Act.injector();
                 for (Field field : fields) {
                     if (Modifier.isStatic(field.getModifiers())) {
                         continue;
@@ -655,13 +657,23 @@ public class Endpoint implements Comparable<Endpoint> {
                     if (ParamValueLoaderService.shouldWaive(field)) {
                         continue;
                     }
-                    Class<?> fieldType = field.getType();
+                    Class<?> fieldClass = field.getType();
                     Object val = null;
                     try {
                         field.setAccessible(true);
-                        val = generateSampleData(BeanSpec.of(field, Act.injector()), C.newSet(typeChain), C.newList(nameChain));
+                        String fieldName = field.getName();
+                        if ("name".equalsIgnoreCase(fieldName)) {
+                            fieldName = field.getDeclaringClass().getSimpleName();
+                        }
+                        Annotation[] annotations = field.getDeclaredAnnotations();
+                        Type fieldType = field.getGenericType();
+                        if (fieldType instanceof TypeVariable) {
+                            fieldType = field.getType();
+                        }
+                        BeanSpec fieldSpec = BeanSpec.of(fieldType, annotations, fieldName, injector, field.getModifiers());
+                        val = generateSampleData(fieldSpec, C.newSet(typeChain), C.newList(nameChain));
                         Class<?> valType = null == val ? null : val.getClass();
-                        if (null != valType && fieldType.isAssignableFrom(valType)) {
+                        if (null != valType && fieldClass.isAssignableFrom(valType)) {
                             field.set(obj, val);
                         }
                     } catch (Exception e) {

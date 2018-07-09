@@ -22,10 +22,26 @@ package act.apidoc.sampledata;
 
 import act.apidoc.SampleData;
 import act.apidoc.SampleDataCategory;
+import act.apidoc.SampleDataProvider;
 
+import javax.inject.Inject;
 import javax.inject.Singleton;
 
 @Singleton
-@SampleData.Category(SampleDataCategory.LAST_NAME)
-public class LastNameProvider extends StringListStringProvider {
+@SampleData.Category(SampleDataCategory.USERNAME)
+public class usernameProvider extends SampleDataProvider<String> {
+
+    @Inject
+    private FirstNameProvider firstNameProvider;
+
+    @Inject
+    private LastNameProvider lastNameProvider;
+
+    @Override
+    public String get() {
+        String lastName = lastNameProvider.get();
+        String firstName = firstNameProvider.get();
+        return (firstName + lastName.charAt(0)).toLowerCase();
+    }
+
 }

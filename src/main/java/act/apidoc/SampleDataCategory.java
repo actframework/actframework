@@ -32,6 +32,7 @@ public enum SampleDataCategory {
     FIRST_NAME("given name", "forename", "firstname", "fname"),
     LAST_NAME("surname", "family name", "lname", "lastname"),
     FULL_NAME("fullname"),
+    USERNAME("userName", "login", "loginName"),
     DOB("Birthday", "生日", "DateOfBirth", "*date", "date*"),
     EMAIL("mail"),
     HOST,
@@ -44,8 +45,8 @@ public enum SampleDataCategory {
     COMPANY_NAME("clientName", "client", "company", "organizationName", "organisationName", "organization", "organisation"),
     PERMISSION,
     PERMISSIONS,
-    ROLE,
-    ROLES,
+    ROLE("roleName"),
+    ROLES("roleNames"),
     PRIVILEGE,
     ;
 
