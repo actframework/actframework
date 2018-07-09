@@ -36,7 +36,6 @@ import act.event.ActEvent;
 import act.event.SystemEvent;
 import act.handler.RequestHandler;
 import act.handler.builtin.controller.impl.ReflectedHandlerInvoker;
-import act.handler.event.PreHandle;
 import act.i18n.LocaleResolver;
 import act.route.Router;
 import act.route.UrlPath;
@@ -385,9 +384,6 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
         state = State.CREATED;
         req.forward(url);
         final RequestHandler requestHandler = router.getInvoker(H.Method.GET, url, this);
-        if (!skipEvents()) {
-            app().eventBus().emit(new PreHandle(this));
-        }
         requestHandler.handle(this);
     }
 
