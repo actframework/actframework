@@ -34,6 +34,7 @@ import act.job.JobContext;
 import act.mail.MailerContext;
 import act.route.Router;
 import act.util.ActContext;
+import act.util.ClassInfoRepository;
 import act.util.ProgressGauge;
 import act.util.SimpleProgressGauge;
 import act.view.ViewManager;
@@ -150,6 +151,13 @@ public final class ActProviders {
         public CliSession get() {
             CliContext context = CliContext.current();
             return null == context ? null : context.session();
+        }
+    };
+
+    public static final Provider<ClassInfoRepository> CLASS_INFO_REPO = new Provider<ClassInfoRepository>() {
+        @Override
+        public ClassInfoRepository get() {
+            return Act.app().classLoader().classInfoRepository();
         }
     };
 

@@ -1,6 +1,8 @@
 # ActFramework Change Log
 
 **1.8.8**
+* Make `ClassInfoRepository` injectable #723
+* Provide a mechanism to allow developer easily define global FastJSON serializer and deserializer #722
 * Add API doc to act aaa authentication list #720
 * `PostHandle` event not raised in rare case #719
 * forward shall not raise `PreHandle` event #717
@@ -41,7 +43,7 @@
 * It shall ignore Exception raised during app shutdown process #667
 * It shall clear OSGL Config's internal cache on app restart #666
 * update osgl library dependencies
-    - osgl-tool to 1.17.0
+    - osgl-tool to 1.18.0
     - osgl-cache to 1.5.0
     - osgl-genie to 1.8.0
     - osgl-http to 1.8.0
