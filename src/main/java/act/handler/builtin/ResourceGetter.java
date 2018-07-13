@@ -26,6 +26,7 @@ import static org.osgl.http.H.Header.Names.CACHE_CONTROL;
 import act.Act;
 import act.ActResponse;
 import act.app.ActionContext;
+import act.conf.AppConfig;
 import act.controller.ParamNames;
 import act.handler.RequestHandler;
 import act.handler.builtin.controller.FastRequestHandler;
@@ -72,6 +73,7 @@ public class ResourceGetter extends FastRequestHandler {
     private Map<String, ByteBuffer> cachedBuffers = new HashMap<>();
     private Map<String, H.Format> cachedContentType = new HashMap<>();
     private Map<String, Boolean> cachedFailures = new HashMap<>();
+    private Set<String> largeResource = new HashSet<>();
 
     public ResourceGetter(String base) {
         E.illegalArgumentIf(S.blank(base), "empty resource string encountered");
@@ -136,7 +138,8 @@ public class ResourceGetter extends FastRequestHandler {
 
     protected void handle(String path, ActionContext context) {
         H.Request req = context.req();
-        if (Act.isProd()) {
+        final boolean isProd = Act.isProd();
+        if (isProd) {
             ActResponse resp = context.prepareRespForResultEvaluation();
             if (preloaded) {
                 // this is a reloaded file resource
@@ -145,6 +148,9 @@ public class ResourceGetter extends FastRequestHandler {
                 } else {
                     resp.contentType(preloadedContentType);
                     if (req.etagMatches(etag)) {
+                        // still need to generates the headers
+                        // see https://stackoverflow.com/questions/1587667/should-http-304-not-modified-responses-contain-cache-control-headers
+                        resp.header(CACHE_CONTROL, "max-age=86400").etag(this.etag);
                         AlwaysNotModified.INSTANCE.handle(context);
                     } else {
                         H.Format contentType = cachedContentType.get(path);
@@ -153,7 +159,7 @@ public class ResourceGetter extends FastRequestHandler {
                         }
                         resp
                                 .contentType(contentType)
-                                .header(CACHE_CONTROL, "public, max-age=7200")
+                                .header(CACHE_CONTROL, "max-age=86400")
                                 .etag(this.etag)
                                 .writeContent(buffer.duplicate());
                     }
@@ -166,12 +172,15 @@ public class ResourceGetter extends FastRequestHandler {
                 return;
             }
 
-            if (null != req.etag() && req.etagMatches(etags.get(path))) {
+            final String reqEtag = req.etag();
+            if (null != reqEtag && req.etagMatches(etags.get(path))) {
                 H.Format contentType = cachedContentType.get(path);
                 if (null == contentType) {
                     contentType = req.contentType();
                 }
-                resp.contentType(contentType);
+                // still need to generates the headers
+                // see https://stackoverflow.com/questions/1587667/should-http-304-not-modified-responses-contain-cache-control-headers
+                resp.contentType(contentType).header(CACHE_CONTROL, "max-age=86400").etag(reqEtag);
                 AlwaysNotModified.INSTANCE.handle(context);
                 return;
             }
@@ -214,32 +223,76 @@ public class ResourceGetter extends FastRequestHandler {
             if (preventFolderAccess(target, loadPath, context)) {
                 return;
             }
-            H.Format contentType = FileGetter.contentType(target.getPath());
             ActResponse resp = context.prepareRespForResultEvaluation();
+            H.Format contentType;
+            if (isProd) {
+                contentType = cachedContentType.get(path);
+                if (null == contentType) {
+                    contentType = FileGetter.contentType(target.getPath());
+                    cachedContentType.put(path, contentType);
+                }
+            } else {
+                contentType = FileGetter.contentType(target.getPath());
+            }
             resp.contentType(contentType);
-            if (Act.isProd()) {
-                resp.header(CACHE_CONTROL, "public, max-age=7200");
+            if (isProd) {
+                resp.header(CACHE_CONTROL, "max-age=86400");
+                String etag = etags.get(path);
+                if (null != etag) {
+                    resp.etag(etag);
+                }
             }
             context.applyCorsSpec().applyContentSecurityPolicy().applyContentType();
-            try {
-                int n = IO.copy(target.openStream(), resp.outputStream());
+            final AppConfig config = context.config();
+            boolean isFile = "file".equals(target.getProtocol());
+            if (isFile) {
+                File file = new File(target.getPath());
+                long len = file.length();
                 if (Act.isProd()) {
-                    etags.put(path, String.valueOf(n));
-                    if (n < context.config().resourcePreloadSizeLimit()) {
+                    etags.put(path, String.valueOf(len));
+                }
+                if (Act.isProd()) {
+                    boolean smallResource = len < config.resourcePreloadSizeLimit();
+                    if (smallResource) {
                         $.Var<String> etagBag = $.var();
                         buffer = doPreload(target, etagBag);
                         if (null == buffer) {
                             cachedFailures.put(path, true);
-                        } else {
-                            cachedBuffers.put(path, buffer);
-                            cachedContentType.put(path, contentType);
+                            return;
                         }
+                        cachedBuffers.put(path, buffer);
+                        resp.writeContent(buffer.duplicate());
+                        return;
                     }
                 }
-            } catch (NullPointerException e) {
-                // this is caused by accessing folder inside jar URL
-                folders.add(target);
-                AlwaysForbidden.INSTANCE.handle(context);
+                resp.send(file);
+            } else if (largeResource.contains(path)) {
+                resp.send(target);
+            } else {
+                try {
+                    int n = IO.copy(target.openStream(), resp.outputStream());
+                    boolean smallResource = n < config.resourcePreloadSizeLimit();
+                    if (!smallResource) {
+                        largeResource.add(path);
+                    }
+                    if (Act.isProd()) {
+                        etags.put(path, String.valueOf(n));
+                        if (smallResource) {
+                            $.Var<String> etagBag = $.var();
+                            buffer = doPreload(target, etagBag);
+                            if (null == buffer) {
+                                cachedFailures.put(path, true);
+                            } else {
+                                cachedBuffers.put(path, buffer);
+                                cachedContentType.put(path, contentType);
+                            }
+                        }
+                    }
+                } catch (NullPointerException e) {
+                    // this is caused by accessing folder inside jar URL
+                    folders.add(target);
+                    AlwaysForbidden.INSTANCE.handle(context);
+                }
             }
         } catch (IOException e) {
             logger.warn(e, "Error servicing static resource request");

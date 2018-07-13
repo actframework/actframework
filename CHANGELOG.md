@@ -1,8 +1,13 @@
 # ActFramework Change Log
 
 **1.8.8**
+* Ajax redirect callback not get called when there are parsing error for JSON request #727
+* Add TypeConverter from String to Joda datetime #726
+* Large static resource output failure #725
+* `job already registered` error when multiple job annotation put on the same method #724
 * Make `ClassInfoRepository` injectable #723
 * Provide a mechanism to allow developer easily define global FastJSON serializer and deserializer #722
+* Provide built-in endpoint to fetch Enum i18n strings #721
 * Add API doc to act aaa authentication list #720
 * `PostHandle` event not raised in rare case #719
 * forward shall not raise `PreHandle` event #717

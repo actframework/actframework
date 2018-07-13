@@ -21,7 +21,6 @@ package act.util;
  */
 
 import act.Act;
-import act.Destroyable;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.TypeReference;
 import org.osgl.$;
@@ -40,6 +39,9 @@ import javax.enterprise.context.ApplicationScoped;
  */
 @ApplicationScoped
 public class ClassInfoRepository extends DestroyableBase {
+
+    public ClassInfoRepository() {
+    }
 
     protected ConcurrentMap<String, ClassNode> classes = new ConcurrentHashMap<String, ClassNode>();
 
@@ -79,7 +81,6 @@ public class ClassInfoRepository extends DestroyableBase {
 
     @Override
     protected void releaseResources() {
-        Destroyable.Util.destroyAll(classes.values(), ApplicationScoped.class);
         classes.clear();
     }
 

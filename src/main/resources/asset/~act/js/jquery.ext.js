@@ -16,14 +16,10 @@ jQuery.createWebSocket = function(path) {
     return new WebSocket(((window.location.protocol === "https:") ? "wss://" : "ws://") + window.location.host + path);
 }
 
-var callbackWithAjaxRedirect = function(realCallback) {
-    return function() {
-        var jqXHR = arguments[2];
-        if (jqXHR.status === 278) {
-            window.location = jqXHR.getResponseHeader("Location");
-        }
-        if (realCallback) realCallback.apply(this, arguments);
-    }
+var checkAjaxRedirect = function(data, testStatus, jqXHR) {
+   if (data.status === 278) {
+       window.location = data.getResponseHeader("Location");
+   }
 }
 
 jQuery.each(["get", "post", "put", "delete", "patch" ], function (i, method) {
@@ -48,8 +44,8 @@ jQuery.each(["get", "post", "put", "delete", "patch" ], function (i, method) {
             type: submitMethod,
             dataType: type,
             data: data,
-            success: callbackWithAjaxRedirect(callback)
-        });
+            success: callback
+        }).always(checkAjaxRedirect);
     };
 });
 
@@ -80,7 +76,7 @@ jQuery.each(["getJSON", "postJSON", "putJSON", "deleteJSON", "patchJSON"], funct
             type: submitMethod.replace("JSON", ""),
             dataType: "json",
             data: data,
-            success: callbackWithAjaxRedirect(callback)
-        });
+            success: callback
+        }).always(checkAjaxRedirect);
     };
 });

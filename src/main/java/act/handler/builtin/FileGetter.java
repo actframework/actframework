@@ -28,12 +28,9 @@ import act.handler.builtin.controller.FastRequestHandler;
 import org.osgl.$;
 import org.osgl.http.H;
 import org.osgl.util.FastStr;
-import org.osgl.util.IO;
 import org.osgl.util.S;
 
-import java.io.BufferedInputStream;
 import java.io.File;
-import java.io.InputStream;
 
 public class FileGetter extends FastRequestHandler {
 
@@ -99,8 +96,7 @@ public class FileGetter extends FastRequestHandler {
         fmt = contentType(file.getPath());
         resp.contentType(fmt);
         context.applyCorsSpec().applyContentSecurityPolicy().applyContentType();
-        InputStream is = new BufferedInputStream(IO.is(file));
-        IO.copy(is, resp.outputStream());
+        resp.send(file);
     }
 
     // for unit test

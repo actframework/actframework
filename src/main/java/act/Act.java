@@ -53,10 +53,7 @@ import act.plugin.Plugin;
 import act.plugin.PluginScanner;
 import act.route.RouteSource;
 import act.sys.Env;
-import act.util.AppCodeScannerPluginManager;
-import act.util.Banner;
-import act.util.ClassInfoRepository;
-import act.util.SysProps;
+import act.util.*;
 import act.view.ViewManager;
 import act.xio.Network;
 import act.xio.NetworkHandler;
@@ -64,6 +61,7 @@ import act.xio.undertow.UndertowNetwork;
 import com.sun.imageio.plugins.gif.GIFImageWriter;
 import com.sun.imageio.plugins.gif.GIFImageWriterSpi;
 import org.joda.time.*;
+import org.joda.time.format.DateTimeFormat;
 import org.osgl.$;
 import org.osgl.cache.CacheService;
 import org.osgl.exception.NotAppliedException;
@@ -89,10 +87,8 @@ import java.net.Inet6Address;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
 import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 import javax.imageio.IIOImage;
@@ -807,6 +803,31 @@ public final class Act {
             @Override
             public Long convert(ReadableInstant o) {
                 return o.getMillis();
+            }
+        }).register(new $.TypeConverter<String, DateTime>() {
+            @Override
+            public DateTime convert(String s) {
+                if (S.isIntOrLong(s)) {
+                    Long l = Long.valueOf(s);
+                    return $.convert(l).to(DateTime.class);
+                }
+                ActContext ctx = ActContext.Base.currentContext();
+                Locale locale = ctx.locale(true);
+                AppConfig config = Act.appConfig();
+                String pattern = config.localizedDateTimePattern(locale);
+                return (DateTimeFormat.forPattern(pattern)).parseDateTime(s);
+            }
+            @Override
+            public DateTime convert(String s, Object hint) {
+                if (null == hint) {
+                    return convert(s);
+                }
+                if (S.isIntOrLong(s)) {
+                    Long l = Long.valueOf(s);
+                    return $.convert(l).to(DateTime.class);
+                }
+                String pattern = S.string(hint);
+                return (DateTimeFormat.forPattern(pattern)).parseDateTime(s);
             }
         }).register(new $.TypeConverter<Long, DateTime>() {
             @Override

@@ -10,6 +10,9 @@ act.db.DbBind
 act.handler.builtin.controller.RequestHandlerProxy
 act.i18n.TimeZoneResolver
 act.i18n.LocaleResolver
+act.i18n.EnumService
+act.i18n.GlobalEnumService
+act.i18n.EnumLookupCache
 act.inject.DependencyInjectorBase
 act.inject.genie.GenieInjector
 act.Info

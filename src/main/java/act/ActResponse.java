@@ -27,8 +27,12 @@ import org.osgl.http.H;
 import org.osgl.mvc.MvcConfig;
 import org.osgl.mvc.result.Ok;
 import org.osgl.mvc.result.Redirect;
+import org.osgl.storage.impl.SObject;
 import org.osgl.util.E;
+import org.osgl.util.IO;
 
+import java.io.File;
+import java.net.URL;
 import java.util.Locale;
 
 public abstract class ActResponse<T extends ActResponse> extends H.Response<T> {
@@ -59,6 +63,20 @@ public abstract class ActResponse<T extends ActResponse> extends H.Response<T> {
     public T characterEncoding(String encoding) {
         charset = encoding;
         charsetSet = true;
+        return me();
+    }
+
+    public T send(URL url) {
+        String protocol = url.getProtocol();
+        if ("file".equals(protocol)) {
+            return send(new File(url.getPath()));
+        }
+        writeBinary(SObject.of(IO.inputStream(url)));
+        return me();
+    }
+
+    public T send(File file) {
+        writeBinary(SObject.of(file));
         return me();
     }
 

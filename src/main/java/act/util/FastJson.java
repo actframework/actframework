@@ -107,7 +107,8 @@ public enum FastJson {
             if (ObjectSerializer.class.isAssignableFrom(type)) {
                 ObjectSerializer serializer = (ObjectSerializer) app.getInstance(type);
                 handleForSerializer(serializer, targetTypes);
-            } else if (ObjectDeserializer.class.isAssignableFrom(type)) {
+            }
+            if (ObjectDeserializer.class.isAssignableFrom(type)) {
                 ObjectDeserializer deserializer = (ObjectDeserializer) app.getInstance(type);
                 handleForDeserializer(deserializer, targetTypes);
             }

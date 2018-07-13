@@ -201,7 +201,17 @@ public class I18n {
                 values.put("message", val);
                 Map<String, $.Function<Object, Object>> getters = enumPropertyGetters(enumClass);
                 for (Map.Entry<String, $.Function<Object, Object>> entry : getters.entrySet()) {
-                    values.put(entry.getKey(), entry.getValue().apply(enumInstance));
+                    String key = entry.getKey();
+                    if (key.startsWith("get")) {
+                        String newKey = key.substring(3);
+                        if (S.notEmpty(newKey)) {
+                            char c = newKey.charAt(0);
+                            if (Character.isUpperCase(c)) {
+                                key = S.lowerFirst(newKey);
+                            }
+                        }
+                    }
+                    values.put(key, entry.getValue().apply(enumInstance));
                 }
             } else {
                 map.put(name, val);

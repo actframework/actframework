@@ -30,7 +30,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-public class ClassNode extends DestroyableBase {
+public class ClassNode {
 
     private transient ClassInfoRepository infoBase;
     private String name;
@@ -90,6 +90,10 @@ public class ClassNode extends DestroyableBase {
 
     public boolean publicNotAbstract() {
         return isPublic() && !isAbstract();
+    }
+
+    public void setInfoBase(ClassInfoRepository repo) {
+        this.infoBase = $.requireNotNull(repo);
     }
 
     public ClassNode parent() {
@@ -395,16 +399,6 @@ public class ClassNode extends DestroyableBase {
 
     public boolean isMyAncestor(ClassNode node) {
         return node.isMyDescendant(this);
-    }
-
-    @Override
-    protected void releaseResources() {
-        descendants.clear();
-        children.clear();
-        interfaces.clear();
-        annotated.clear();
-        annotations.clear();
-        infoBase = null;
     }
 
     ClassNodeDTO toDTO() {
