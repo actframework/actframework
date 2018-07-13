@@ -356,13 +356,19 @@ public class JobManager extends AppServiceBase<JobManager> {
     }
 
     Job jobById(String id) {
+        return jobById(id, true);
+    }
+
+    Job jobById(String id, boolean warn) {
         Job job = jobs.get(id);
         if (null == job) {
             ScheduledFuture future = scheduled.get(id);
             if (null != future) {
                 return new Job(id, Act.jobManager());
             }
-            Act.LOGGER.warn("cannot find job by id: %s", id);
+            if (warn) {
+                Act.LOGGER.warn("cannot find job by id: %s", id);
+            }
         }
         return job;
     }
