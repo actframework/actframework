@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 **1.8.8**
+* Register TypeConverter automatically #728
 * Ajax redirect callback not get called when there are parsing error for JSON request #727
 * Add TypeConverter from String to Joda datetime #726
 * Large static resource output failure #725

@@ -19,6 +19,7 @@ act.Info
 act.meta.ClassMetaInfoManager
 act.util.AdaptiveRecordCodec
 act.util.FastJson
+act.util.TypeConverterRegister
 act.validation.ValidationPlugin
 act.Zen
 act.apidoc.Endpoint.Service
