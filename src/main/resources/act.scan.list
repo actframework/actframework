@@ -18,6 +18,7 @@ act.inject.genie.GenieInjector
 act.Info
 act.meta.ClassMetaInfoManager
 act.util.AdaptiveRecordCodec
+act.util.AdaptiveBeanCodec
 act.util.FastJson
 act.util.TypeConverterRegister
 act.validation.ValidationPlugin

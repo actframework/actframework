@@ -22,7 +22,6 @@ package act.util;
 
 import act.Act;
 import act.app.event.SysEventId;
-import act.db.AdaptiveRecord;
 import com.alibaba.fastjson.JSONException;
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.parser.*;
@@ -38,7 +37,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-public class AdaptiveRecordCodec extends SerializeFilterable implements ObjectDeserializer, ObjectSerializer{
+public class AdaptiveBeanCodec extends SerializeFilterable implements ObjectDeserializer, ObjectSerializer{
 
     @Override
     public <T> T deserialze(DefaultJSONParser parser, Type type, Object fieldName) {
@@ -48,20 +47,20 @@ public class AdaptiveRecordCodec extends SerializeFilterable implements ObjectDe
             return null;
         }
 
-        AdaptiveRecord ar = Act.app().getInstance((Class<? extends AdaptiveRecord>) type);
+        AdaptiveBean ar = Act.app().getInstance((Class<AdaptiveBean>) type);
 
         ParseContext context = parser.getContext();
 
         try {
             parser.setContext(context, ar, fieldName);
-            return (T) parseActiveRecord(parser, ar, fieldName);
+            return (T) parseActiveBean(parser, ar, fieldName);
         } finally {
             parser.setContext(context);
         }
     }
 
     @SuppressWarnings("rawtypes")
-    public static AdaptiveRecord parseActiveRecord(DefaultJSONParser parser, AdaptiveRecord ar, Object fieldName) {
+    public static AdaptiveBean parseActiveBean(DefaultJSONParser parser, AdaptiveBean ar, Object fieldName) {
         JSONLexer lexer = parser.lexer;
 
         if (lexer.token() != JSONToken.LBRACE) {
@@ -176,7 +175,7 @@ public class AdaptiveRecordCodec extends SerializeFilterable implements ObjectDe
             return;
         }
 
-        AdaptiveRecord<?, ?> ar = (AdaptiveRecord) object;
+        AdaptiveBean ar = (AdaptiveBean) object;
 
         if (serializer.containsReference(object)) {
             serializer.writeReference(object);
@@ -327,9 +326,9 @@ public class AdaptiveRecordCodec extends SerializeFilterable implements ObjectDe
     }
 
     @SubClassFinder(callOn = SysEventId.DEPENDENCY_INJECTOR_PROVISIONED)
-    public static void foundActiveRecordClass(Class<? extends AdaptiveRecord> clazz) {
+    public static void foundAdaptiveBeanClass(Class<? extends AdaptiveBean> clazz) {
 
-        AdaptiveRecordCodec codec = new AdaptiveRecordCodec();
+        AdaptiveBeanCodec codec = new AdaptiveBeanCodec();
 
         SerializeConfig config = SerializeConfig.getGlobalInstance();
         config.put(clazz, codec);
@@ -337,6 +336,5 @@ public class AdaptiveRecordCodec extends SerializeFilterable implements ObjectDe
         ParserConfig parserConfig = ParserConfig.getGlobalInstance();
         parserConfig.putDeserializer(clazz, codec);
     }
-
 
 }
