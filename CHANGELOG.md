@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 **1.8.8**
+* `@Configuration` field shall be stateless for a Controller #734
 * AdaptiveRecord enhancement #733
 * Password enhancement - ignore the case when password is empty #730
 * Register TypeConverter automatically #728

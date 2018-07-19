@@ -24,6 +24,7 @@ import act.Act;
 import act.app.App;
 import act.app.AppServiceBase;
 import org.osgl.$;
+import org.osgl.inject.annotation.Configuration;
 
 import java.lang.reflect.Field;
 import java.util.List;
@@ -61,7 +62,7 @@ public class ReflectedInvokerHelper {
 
 
     private static boolean isGlobalOrStateless(Field field) {
-        if (null != field.getAnnotation(Stateless.class) || null != field.getAnnotation(Global.class)) {
+        if (null != field.getAnnotation(Stateless.class) || null != field.getAnnotation(Global.class) || null != field.getAnnotation(Configuration.class)) {
             return true;
         }
         Class<?> fieldType = field.getType();
