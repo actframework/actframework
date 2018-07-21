@@ -1,6 +1,8 @@
 # ActFramework Change Log
 
 **1.8.8**
+* improvement for checking singleton object
+* `SampleDataCategory` - make aliases() method be public
 * `@Configuration` field shall be stateless for a Controller #734
 * AdaptiveRecord enhancement #733
 * Password enhancement - ignore the case when password is empty #730

@@ -58,7 +58,7 @@ public enum SampleDataCategory {
         this.aliases = C.setOf(aliases);
     }
 
-    private Set<String> aliases() {
+    public Set<String> aliases() {
         return aliases;
     }
 
@@ -68,7 +68,7 @@ public enum SampleDataCategory {
     static {
         for (SampleDataCategory c : SampleDataCategory.values()) {
             lookup.put(Keyword.of(c.name()), c);
-            for (String s : c.aliases()) {
+            for (String s : c.aliases) {
                 if (s.startsWith("*")) {
                     suffixLookup.put(s.substring(1).toLowerCase(), c);
                 } else if (s.endsWith("*")) {

@@ -170,6 +170,12 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
                 return app.getInstance(aClass);
             }
         });
+        OsglConfig.setSingletonChecker(new $.Predicate() {
+            @Override
+            public boolean test(Object o) {
+                return app.isSingleton(o);
+            }
+        });
 
         app().cache().setDefaultTTL(cacheTtl());
         Map<String, Object> cacheSettings = subSet("cache");

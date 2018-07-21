@@ -780,6 +780,14 @@ public class App extends DestroyableBase {
         return null != singletonRegistry.get(cls) || hasSingletonAnnotation(cls);
     }
 
+    public boolean isSingleton(Object o) {
+        if (null == o) {
+            return true;
+        }
+        Class type = o instanceof Class ? (Class) o : o.getClass();
+        return isSingleton(type);
+    }
+
     private void registerMetricProvider() {
         GenieInjector gi = this.injector();
         MetricProvider mp = new MetricProvider();
