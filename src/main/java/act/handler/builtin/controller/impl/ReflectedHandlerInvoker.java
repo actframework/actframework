@@ -157,6 +157,11 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
     private $.Func2<Result, ActionContext, Result> pluginAfterHandler;
     private Map<String, Object> attributes = new HashMap<>();
     private boolean enableCircularReferenceDetect;
+    // it shall do full JSON string check when Accept is JSON and return type is String
+    // however if the first full check is good, then the following check shall rely on quick check
+    private boolean returnString;
+    private boolean fullJsonStringChecked;
+    private boolean fullJsonStringCheckFailure;
 
     private ReflectedHandlerInvoker(M handlerMetaInfo, App app) {
         this.app = app;
@@ -175,6 +180,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         } catch (NoSuchMethodException e) {
             throw E.unexpected(e);
         }
+        this.returnString = method.getReturnType() == String.class;
         this.pluginBeforeHandler = ControllerPlugin.Manager.INST.beforeHandler(controllerClass, method);
         this.pluginAfterHandler = ControllerPlugin.Manager.INST.afterHandler(controllerClass, method);
         this.disabled = this.disabled || !Env.matches(method);
@@ -837,6 +843,9 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
                 Trace.LOGGER_HANDLER.trace(invocationInfo);
             }
             result = null == methodAccess ? $.invokeStatic(method, params) : methodAccess.invoke(controller, handlerIndex, params);
+            if (returnString && context.acceptJson()) {
+                result = ensureValidJson(S.string(result));
+            }
         } catch (Result r) {
             result = r;
         } catch (Exception e) {
@@ -860,6 +869,27 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
             result = RenderTemplate.INSTANCE;
         }
         return Controller.Util.inferResult(handlerMetaInfo, result, context, hasTemplate);
+    }
+
+    private String ensureValidJson(String result) {
+        if (S.blank(result)) {
+            return "{}";
+        }
+        boolean looksOkay = (result.startsWith("{") && result.endsWith("}")) || (result.startsWith("[") && result.endsWith("]"));
+        if (!looksOkay) {
+            fullJsonStringCheckFailure = true;
+            return "{\"result\":\"" + result + "\"}";
+        }
+        if (fullJsonStringCheckFailure || !fullJsonStringChecked) {
+            fullJsonStringChecked = true;
+            try {
+                JSON.parse(result);
+            } catch (Exception e) {
+                fullJsonStringCheckFailure = true;
+                return "{\"result\":\"" + result + "\"}";
+            }
+        }
+        return result;
     }
 
     public boolean checkTemplate(ActionContext context) {

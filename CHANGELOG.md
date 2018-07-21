@@ -1,6 +1,8 @@
 # ActFramework Change Log
 
 **1.8.8**
+* Improve JSON output of String type result #739
+* Support returning JSON response in nonblock mode #738
 * improvement for checking singleton object
 * `SampleDataCategory` - make aliases() method be public
 * `@Configuration` field shall be stateless for a Controller #734

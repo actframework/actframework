@@ -1546,7 +1546,7 @@ public @interface Controller {
                 if (isArray) {
                     return RenderJSON.of(status, $.toString2(v));
                 }
-                return RenderJSON.of(status, C.Map("result", v));
+                return RenderJSON.of(status, v instanceof String ? v : C.Map("result", v));
             } else if (requireXML) {
                 return RenderXML.of(status, S.concat("<result>", S.string(v), "</result>"));
             } else if (v instanceof byte[]) {

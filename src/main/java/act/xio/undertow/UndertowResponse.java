@@ -50,7 +50,6 @@ import java.net.URL;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 import java.util.Locale;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 public class UndertowResponse extends ActResponse<UndertowResponse> {
 
@@ -63,8 +62,6 @@ public class UndertowResponse extends ActResponse<UndertowResponse> {
 
     private boolean endAsync;
     private Sender sender;
-    private AtomicBoolean sending = new AtomicBoolean(false);
-    private AtomicBoolean closeExchange = new AtomicBoolean(false);
 
     public UndertowResponse(HttpServerExchange exchange, AppConfig config) {
         super(config);
@@ -74,7 +71,7 @@ public class UndertowResponse extends ActResponse<UndertowResponse> {
 
     @Override
     protected Output createOutput() {
-        return new OutputStreamOutput(createOutputStream());
+        return isIoThread() ? new NonBlockOutput(sender()) : new OutputStreamOutput(createOutputStream());
     }
 
     @Override
@@ -274,6 +271,10 @@ public class UndertowResponse extends ActResponse<UndertowResponse> {
 
     private boolean blocking() {
         return hse.isBlocking();
+    }
+
+    private boolean isIoThread() {
+        return hse.isInIoThread();
     }
 
 }
