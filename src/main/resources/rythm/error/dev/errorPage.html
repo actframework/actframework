@@ -86,7 +86,8 @@ List<String> stackTrace;
       padding: 4px 15px;
     }
     .template-line, .source-line {
-      padding: 2px 0px;
+      padding: 0px 0px;
+      padding-bottom: 2px;
     }
     .tabs .tab {
       display: inline-block;
@@ -98,6 +99,11 @@ List<String> stackTrace;
     .tabs .tab.active {
       background: #efefef;
       color: #333;
+    }
+    .error-column {
+      background-color: white;
+      color: red;
+      padding: 2px;
     }
   </style>
   @render(moreStyles)
@@ -173,11 +179,18 @@ List<String> stackTrace;
   <div id="source" class="detail source-info @if(activeSource){active}">
     @for(String line: sourceInfo.lines()) {
     @{
-    String cls = line_index == sourceInfo.lineNumber() ? "error nohighlight" : ""
+    boolean isErrorLine = line_index == sourceInfo.lineNumber();
+    String cls = isErrorLine ? "error nohighlight" : ""
     }
     <div class="source-line line @cls" data-line="@line_index">
       <span class="line-number">@line_index</span>
-      <span class="line-code">@line.sp2nbsp()</span>
+      <span class="line-code">
+        @ifNot(isErrorLine || sourceInfo.column() < 0) {
+          @line.sp2nbsp()
+        } else {
+          @line.errorLine(sourceInfo.column())
+        }
+      </span>
     </div>
     }
   </div>

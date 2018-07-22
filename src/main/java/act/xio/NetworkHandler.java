@@ -102,7 +102,8 @@ public class NetworkHandler extends DestroyableBase {
             return;
         }
         Exception refreshError = null;
-        if (Act.isDev()) {
+        final boolean isDev = Act.isDev();
+        if (isDev) {
             try {
                 boolean updated = app.checkUpdates(false);
                 if (updated && !app.hasBlockIssue()) {

@@ -22,7 +22,7 @@ package act.apidoc.sampledata;
 
 import org.osgl.util.S;
 
-public class NamedListProvider extends StringListProvider<String> {
+public abstract class NamedListProvider extends StringListProvider<String> {
 
     private String listName;
 

@@ -375,8 +375,16 @@ public class AppClassLoader
         Jars.F.JarEntryVisitor classNameIndexBuilder = Jars.F.classNameIndexBuilder(bytecodeIdx, ignoredClassNames);
         Jars.F.JarEntryVisitor confIndexBuilder = Jars.F.appConfigFileIndexBuilder(jarConf);
         List<File> jars = FullStackAppBootstrapClassLoader.jars(AppClassLoader.class.getClassLoader());
+        Set<String> blackList = app().jarFileBlackList();
         for (File jar : jars) {
-            Jars.scan(jar, classNameIndexBuilder, confIndexBuilder);
+            String filename = jar.getName();
+            String name = S.cut(filename).beforeFirst("-");
+            if ("".equals(name)) {
+                name = S.cut(filename).beforeLast(".");
+            }
+            if (!blackList.contains(name)) {
+                Jars.scan(jar, classNameIndexBuilder, confIndexBuilder);
+            }
         }
         libClsCache.putAll(bytecodeIdx);
         AppConfig config = app().config();

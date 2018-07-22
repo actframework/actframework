@@ -20,6 +20,8 @@ package act.app;
  * #L%
  */
 
+import static org.eclipse.jdt.internal.compiler.impl.CompilerOptions.*;
+
 import act.Act;
 import act.conf.AppConfig;
 import act.metric.Metric;
@@ -35,6 +37,7 @@ import org.eclipse.jdt.internal.compiler.env.ICompilationUnit;
 import org.eclipse.jdt.internal.compiler.env.INameEnvironment;
 import org.eclipse.jdt.internal.compiler.env.NameEnvironmentAnswer;
 import org.eclipse.jdt.internal.compiler.impl.CompilerOptions;
+import org.eclipse.jdt.internal.compiler.problem.DefaultProblem;
 import org.eclipse.jdt.internal.compiler.problem.DefaultProblemFactory;
 import org.osgl.$;
 import org.osgl.util.E;
@@ -44,8 +47,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
-
-import static org.eclipse.jdt.internal.compiler.impl.CompilerOptions.*;
 
 /**
  * Compile App srccode code in memory. Only used when Act is running
@@ -250,7 +251,11 @@ class AppCompiler extends DestroyableBase {
                     }
                     Source src = classLoader.source(className);
                     if (null != src) {
-                        throw new CompilationException(src.file(), message, problem.getSourceLineNumber(), problem.getSourceStart(), problem.getSourceEnd());
+                        int column = 0;
+                        if (problem instanceof DefaultProblem) {
+                            column = ((DefaultProblem) problem).getSourceColumnNumber();
+                        }
+                        throw new CompilationException(src.file(), message, problem.getSourceLineNumber(), column, problem.getSourceStart(), problem.getSourceEnd());
                     } else {
                         throw new CompilationException(problem.getMessage());
                     }

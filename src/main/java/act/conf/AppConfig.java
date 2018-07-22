@@ -75,6 +75,7 @@ import java.util.*;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.regex.Pattern;
 import javax.inject.Provider;
 
 public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> implements AppHolder<AppConfig<T>> {
@@ -2258,8 +2259,40 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
             if (scanList.contains(s)) {
                 return true;
             }
-            for (String scan : scanList) {
-                if (s.startsWith(scan + "$") || s.matches(scan)) {
+            if (s.startsWith("java.") || s.startsWith("javax.")) {
+                return false;
+            }
+            if (s.contains("$")) {
+                for (String pkg: scanList) {
+                    if (s.startsWith(pkg + "$")) {
+                        return true;
+                    }
+                }
+            }
+            boolean shouldCheckPattern = false;
+            Set<String> prefixList = app().scanPrefixList();
+            for (String prefix : prefixList) {
+                if (s.startsWith(prefix)) {
+                    shouldCheckPattern = true;
+                    break;
+                }
+            }
+            if (!shouldCheckPattern) {
+                return false;
+            }
+            shouldCheckPattern = false;
+            Set<String> suffixList = app().scanSuffixList();
+            for (String suffix : suffixList) {
+                if (s.endsWith(suffix)) {
+                    shouldCheckPattern = true;
+                    break;
+                }
+            }
+            if (!shouldCheckPattern) {
+                return false;
+            }
+            for (Pattern pattern : app().scanPattern()) {
+                if (pattern.matcher(s).matches()) {
                     return true;
                 }
             }

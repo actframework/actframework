@@ -28,10 +28,17 @@ public class SourceInfoImpl implements SourceInfo {
 
     private Source source;
     private int line;
+    private int column;
+
     public SourceInfoImpl(Source source, int line) {
+        this(source, line, -1);
+    }
+
+    public SourceInfoImpl(Source source, int line, int column) {
         E.NPE(source);
         this.source = source;
         this.line = line;
+        this.column = column;
     }
 
     @Override
@@ -47,6 +54,11 @@ public class SourceInfoImpl implements SourceInfo {
     @Override
     public Integer lineNumber() {
         return line;
+    }
+
+    @Override
+    public Integer column() {
+        return column;
     }
 
     @Override

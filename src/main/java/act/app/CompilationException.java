@@ -32,6 +32,7 @@ public class CompilationException extends ActAppException implements SourceInfo 
     private String problem;
     private File source;
     private Integer line;
+    private Integer column;
     private Integer start;
     private Integer end;
 
@@ -40,10 +41,11 @@ public class CompilationException extends ActAppException implements SourceInfo 
         this.problem = problem;
     }
 
-    public CompilationException(File source, String problem, int line, int start, int end) {
+    public CompilationException(File source, String problem, int line, int column, int start, int end) {
         super(problem);
         this.problem = problem;
         this.line = line;
+        this.column = column;
         this.source = source;
         this.start = start;
         this.end = end;
@@ -80,6 +82,11 @@ public class CompilationException extends ActAppException implements SourceInfo 
     @Override
     public Integer lineNumber() {
         return line;
+    }
+
+    @Override
+    public Integer column() {
+        return column;
     }
 
     @Override

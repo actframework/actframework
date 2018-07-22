@@ -111,6 +111,7 @@ import java.lang.annotation.Annotation;
 import java.net.URL;
 import java.util.*;
 import java.util.concurrent.ConcurrentMap;
+import java.util.regex.Pattern;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Singleton;
 
@@ -176,9 +177,14 @@ public class App extends DestroyableBase {
     private CompilationException compilationException;
     private AsmException asmException;
     private SysEventId currentState;
+    private boolean hasStarted;
     private Set<SysEventId> eventEmitted;
     private Thread mainThread;
+    private Set<String> jarFileBlackList;
     private Set<String> scanList;
+    private Set<Pattern> scanPatterns;
+    private Set<String> scanPrefixList;
+    private Set<String> scanSuffixList;
     private List<File> baseDirs;
     private volatile File tmpDir;
     private boolean restarting;
@@ -534,6 +540,14 @@ public class App extends DestroyableBase {
         return currentState == POST_START || currentState == ACT_START;
     }
 
+    /**
+     * Check if the app has been started before. This could be useful to
+     * fix some state issue that caused by hotreload in dev mode
+     */
+    public boolean wasStarted() {
+        return hasStarted;
+    }
+
     public boolean isMainThread() {
         return Thread.currentThread() == mainThread;
     }
@@ -603,7 +617,8 @@ public class App extends DestroyableBase {
         blockIssueCause = null;
 
         Act.viewManager().clearAppDefinedVars();
-        initScanlist();
+        initScanList();
+        initJarFileBlackList();
         initServiceResourceManager();
         reload();
 
@@ -738,6 +753,7 @@ public class App extends DestroyableBase {
                         daemonKeeper();
                         logger.info("App[%s] loaded in %sms", name(), $.ms() - ms);
                         emit(POST_START);
+                        hasStarted = true;
                     }
                 };
                 if (!dbServiceManager().hasDbService() || eventEmitted(DB_SVC_LOADED)) {
@@ -1125,8 +1141,24 @@ public class App extends DestroyableBase {
         }
     }
 
+    public Set<String> jarFileBlackList() {
+        return jarFileBlackList;
+    }
+
     public Set<String> scanList() {
-        return new HashSet<>(scanList);
+        return scanList;
+    }
+
+    public Set<String> scanPrefixList() {
+        return scanPrefixList;
+    }
+
+    public Set<String> scanSuffixList() {
+        return scanSuffixList;
+    }
+
+    public Set<Pattern> scanPattern() {
+        return scanPatterns;
     }
 
     private Set<SysEventId> eventEmitted() {
@@ -1389,10 +1421,31 @@ public class App extends DestroyableBase {
         sampleDataProviderManager = new SampleDataProviderManager(this);
     }
 
-    private void initScanlist() {
+    private void initScanList() {
         ClassLoader classLoader = getClass().getClassLoader();
         if (classLoader instanceof BootstrapClassLoader) {
-            scanList = ((BootstrapClassLoader) classLoader).scanList();
+            scanList = new HashSet<>();
+            scanPatterns = new HashSet<>();
+            scanPrefixList = new HashSet<>();
+            scanSuffixList = new HashSet<>();
+            for (String scanPackage: ((BootstrapClassLoader) classLoader).scanList()) {
+                if (scanPackage.contains("\\.") || scanPackage.contains("*")) {
+                    scanPatterns.add(Pattern.compile(scanPackage));
+                    String prefix = S.cut(scanPackage).beforeFirst("\\");
+                    scanPrefixList.add(prefix);
+                    String suffix = S.cut(scanPackage).afterLast("*");
+                    scanSuffixList.add(suffix);
+                } else {
+                    scanList.add(scanPackage);
+                }
+            }
+        }
+    }
+
+    private void initJarFileBlackList() {
+        ClassLoader classLoader = getClass().getClassLoader();
+        if (classLoader instanceof BootstrapClassLoader) {
+            jarFileBlackList = ((BootstrapClassLoader) classLoader).jarBlackList();
         }
     }
 

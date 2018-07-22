@@ -51,6 +51,7 @@ import java.util.Set;
 public abstract class BootstrapClassLoader extends ClassLoader implements PluginClassProvider, ActClassLoader {
 
     public static final String FILE_SCAN_LIST = "act.scan.list";
+    public static final String JAR_FILE_BLACK_LIST = "act.jar.black.list";
 
     protected static final Logger logger = L.get(BootstrapClassLoader.class);
 
@@ -158,13 +159,21 @@ public abstract class BootstrapClassLoader extends ClassLoader implements Plugin
     );
 
     public Set<String> scanList() {
-        Set<String> scanList = new HashSet<String>();
+        return loadListFrom(FILE_SCAN_LIST);
+    }
+
+    public Set<String> jarBlackList() {
+        return loadListFrom(JAR_FILE_BLACK_LIST);
+    }
+
+    private Set<String> loadListFrom(String fileName) {
+        Set<String> list = new HashSet<String>();
         try {
-            final Enumeration<URL> systemResources = this.getResources(FILE_SCAN_LIST);
+            final Enumeration<URL> systemResources = this.getResources(fileName);
             while (systemResources.hasMoreElements()) {
                 InputStream is = systemResources.nextElement().openStream();
                 String s = IO.readContentAsString(is);
-                scanList.addAll(
+                list.addAll(
                         C.listOf(s.split("[\r\n]+"))
                                 .filter(S.F.startsWith("#").negate())
                                 .filter(S.F.IS_BLANK.negate()));
@@ -172,7 +181,7 @@ public abstract class BootstrapClassLoader extends ClassLoader implements Plugin
         } catch (IOException e) {
             throw E.ioException(e);
         }
-        return scanList;
+        return list;
     }
 
 }

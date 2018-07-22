@@ -34,8 +34,10 @@ import org.rythmengine.Rythm;
 import org.rythmengine.RythmEngine;
 import org.rythmengine.extension.IFormatter;
 import org.rythmengine.extension.ISourceCodeEnhancer;
+import org.rythmengine.extension.Transformer;
 import org.rythmengine.resource.ClasspathResourceLoader;
 import org.rythmengine.template.ITemplate;
+import org.rythmengine.utils.RawData;
 
 import java.io.File;
 import java.util.HashMap;
@@ -176,6 +178,7 @@ public class RythmView extends View {
                 engine.resourceManager().prependResourceLoader(new ClasspathResourceLoader(engine, home));
             }
         }
+        engine.registerTransformer("rythm", "", RythmView.class);
 
         Tags tags = app.getInstance(Tags.class);
         tags.register(engine);
@@ -209,4 +212,21 @@ public class RythmView extends View {
         }
         return f;
     }
+
+    @Transformer
+    public static RawData errorLine(String data, int errorColumn) {
+        String line = S.string(data);
+        if (errorColumn > -1 && errorColumn < line.length()) {
+            String a = line.substring(0, errorColumn);
+            char c = line.charAt(errorColumn);
+            String b = line.substring(errorColumn + 1);
+            line = S.concat(a, "<span_class='error-column'>", c, "</span>", b);
+            line = S.replace(" ").with("&nbsp;").in(line);
+            line = S.replace("span_class").with("span class").in(line);
+        } else {
+            line = S.replace(" ").with("&nbsp;").in(line);
+        }
+        return new RawData(line);
+    }
+
 }

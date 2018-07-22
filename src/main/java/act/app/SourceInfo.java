@@ -32,12 +32,15 @@ public interface SourceInfo {
 
     Integer lineNumber();
 
+    Integer column();
+
     boolean isSourceAvailable();
 
     abstract class Base implements SourceInfo {
         protected String fileName;
         protected List<String> lines;
         protected int lineNumber;
+        protected int column = -1;
 
         @Override
         public String fileName() {
@@ -52,6 +55,11 @@ public interface SourceInfo {
         @Override
         public Integer lineNumber() {
             return lineNumber;
+        }
+
+        @Override
+        public Integer column() {
+            return column;
         }
 
         @Override

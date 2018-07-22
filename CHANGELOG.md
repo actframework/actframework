@@ -1,6 +1,10 @@
 # ActFramework Change Log
 
 **1.8.8**
+* Improve SYSTEM_SCAN_LIST matching performance #743
+* Add `App.wasStarted()` method #742
+* `JobAnnotationProcessor` issue: non static method in abstract class shall not be treated as static #741
+* Compiler error shall print out source code and the line that break compiling in dev mode #735
 * Improve JSON output of String type result #739
 * Support returning JSON response in nonblock mode #738
 * improvement for checking singleton object

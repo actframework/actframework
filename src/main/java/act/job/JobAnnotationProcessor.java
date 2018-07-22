@@ -149,6 +149,9 @@ public class JobAnnotationProcessor extends AppHolderBase<JobAnnotationProcessor
     }
 
     private boolean isAbstract(JobMethodMetaInfo method) {
+        if (method.isStatic()) {
+            return false;
+        }
         JobClassMetaInfo classMetaInfo = method.classInfo();
         return (classMetaInfo.isAbstract());
     }

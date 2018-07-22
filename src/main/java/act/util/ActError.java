@@ -78,6 +78,9 @@ public interface ActError {
         }
 
         public static SourceInfo loadSourceInfo(Throwable cause, Class<? extends ActError> errorClass) {
+            if (cause instanceof SourceInfo) {
+                return (SourceInfo) cause;
+            }
             return _loadSourceInfo(cause.getStackTrace(), errorClass);
         }
 
