@@ -26,33 +26,22 @@ import act.Act;
 import act.app.SourceInfo;
 import act.util.ActError;
 import org.osgl.mvc.result.Unauthorized;
+import org.osgl.util.C;
 
 import java.util.List;
 
 public class ActUnauthorized extends Unauthorized implements ActError {
 
-    private SourceInfo sourceInfo;
-
     public ActUnauthorized() {
         super();
-        if (Act.isDev()) {
-            doFillInStackTrace();
-            sourceInfo = loadSourceInfo(ActUnauthorized.class);
-        }
     }
 
     public ActUnauthorized(String realm) {
         super(realm);
-        if (Act.isDev()) {
-            sourceInfo = loadSourceInfo(ActUnauthorized.class);
-        }
     }
 
     public ActUnauthorized(String realm, boolean digest) {
         super(realm, digest);
-        if (Act.isDev()) {
-            sourceInfo = loadSourceInfo(ActUnauthorized.class);
-        }
     }
 
     @Override
@@ -61,23 +50,19 @@ public class ActUnauthorized extends Unauthorized implements ActError {
     }
 
     public SourceInfo sourceInfo() {
-        return sourceInfo;
+        if (Act.isDev()) {
+            return loadSourceInfo(ActUnauthorized.class);
+        }
+        return null;
     }
 
     @Override
     public StackTraceElement[] getStackTrace() {
-        StackTraceElement[] raw = super.getStackTrace();
-        if (raw.length < 3) {
-            return raw;
-        }
-        int len = raw.length - 3;
-        StackTraceElement[] effective = new StackTraceElement[len];
-        System.arraycopy(raw, 3, effective, 0, len);
-        return effective;
+        return null;
     }
 
     public List<String> stackTrace() {
-        return Util.stackTraceOf(this);
+        return C.list();
     }
 
     @Override

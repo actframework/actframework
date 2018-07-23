@@ -1,6 +1,8 @@
 # ActFramework Change Log
 
 **1.8.8**
+* `ActUnauthorized` - source info shall be populated upon each call #745
+* Error page: error highlight line not matched the line triggered the runtime error #744
 * Improve SYSTEM_SCAN_LIST matching performance #743
 * Add `App.wasStarted()` method #742
 * `JobAnnotationProcessor` issue: non static method in abstract class shall not be treated as static #741

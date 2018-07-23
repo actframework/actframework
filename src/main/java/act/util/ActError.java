@@ -85,6 +85,10 @@ public interface ActError {
         }
 
         private static SourceInfo _loadSourceInfo(StackTraceElement[] sa, Class<? extends ActError> errorClass) {
+            SourceInfo info = loadSourceInfo(sa, errorClass);
+            if (null != info) {
+                return info;
+            }
             int len = sa.length;
             StackTraceElement[] caller = sa;
             if (len > 0) {
