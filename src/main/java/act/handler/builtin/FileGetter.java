@@ -104,7 +104,7 @@ public class FileGetter extends FastRequestHandler {
         return base;
     }
 
-    static H.Format contentType(String path) {
+    public static H.Format contentType(String path) {
         H.Format retVal = null;
         if (path.contains(".")) {
             FastStr s = FastStr.unsafeOf(path).afterLast('.');

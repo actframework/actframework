@@ -1,24 +1,24 @@
 package act.route;
 
-        /*-
-         * #%L
-         * ACT Framework
-         * %%
-         * Copyright (C) 2014 - 2017 ActFramework
-         * %%
-         * Licensed under the Apache License, Version 2.0 (the "License");
-         * you may not use this file except in compliance with the License.
-         * You may obtain a copy of the License at
-         *
-         *      http://www.apache.org/licenses/LICENSE-2.0
-         *
-         * Unless required by applicable law or agreed to in writing, software
-         * distributed under the License is distributed on an "AS IS" BASIS,
-         * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-         * See the License for the specific language governing permissions and
-         * limitations under the License.
-         * #L%
-         */
+/*-
+ * #%L
+ * ACT Framework
+ * %%
+ * Copyright (C) 2014 - 2017 ActFramework
+ * %%
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ * #L%
+ */
 
 import act.Act;
 import act.Destroyable;
@@ -65,9 +65,12 @@ public class Router extends AppHolderBase<Router> {
         /**
          * Visit a route mapping in the router
          *
-         * @param method  the HTTP method
-         * @param path    the URL path
-         * @param handler the handler
+         * @param method
+         *         the HTTP method
+         * @param path
+         *         the URL path
+         * @param handler
+         *         the handler
          */
         void visit(H.Method method, String path, RequestHandler handler);
     }
@@ -168,7 +171,8 @@ public class Router extends AppHolderBase<Router> {
      * Accept a {@link Visitor} to traverse route mapping in this
      * router
      *
-     * @param visitor the visitor
+     * @param visitor
+     *         the visitor
      */
     public void accept(Visitor visitor) {
         visit(_GET, H.Method.GET, visitor);
@@ -572,8 +576,10 @@ public class Router extends AppHolderBase<Router> {
     /**
      * Return full URL of reverse rout of specified action
      *
-     * @param action     the action path
-     * @param renderArgs the render arguments
+     * @param action
+     *         the action path
+     * @param renderArgs
+     *         the render arguments
      * @return the full URL as described above
      */
     public String fullUrl(String action, Map<String, Object> renderArgs) {
@@ -973,7 +979,7 @@ public class Router extends AppHolderBase<Router> {
                     nodes.add(staticNode);
                     continue;
                 }
-                for (Node dynamicNode: parentConflictNode.dynamicChilds) {
+                for (Node dynamicNode : parentConflictNode.dynamicChilds) {
                     if (metaInfoConflict(dynamicNode.name)) {
                         nodes.add(dynamicNode);
                     }

@@ -1625,6 +1625,12 @@ public @interface Controller {
          * @return a Result inferred from the file specified
          */
         public static Result inferResult(File file, ActionContext actionContext) {
+            if (null == file || !file.exists()) {
+                return notFound();
+            }
+            if (!file.canRead()) {
+                return forbidden();
+            }
             if (actionContext.acceptJson()) {
                 return RenderJSON.of(actionContext.successStatus(), IO.readContentAsString(file));
             } else {

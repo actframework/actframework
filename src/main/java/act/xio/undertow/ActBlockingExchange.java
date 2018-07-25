@@ -25,9 +25,9 @@ import act.app.ActionContext;
 import io.undertow.io.*;
 import io.undertow.server.BlockingHttpExchange;
 import io.undertow.server.HttpServerExchange;
-import io.undertow.servlet.core.BlockingWriterSenderImpl;
 import io.undertow.util.AttachmentKey;
 import org.osgl.http.H;
+import org.osgl.util.WriterOutputStream;
 
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -65,7 +65,7 @@ public class ActBlockingExchange implements BlockingHttpExchange {
     public Sender getSender() {
         H.Response response = ctx().resp();
         if (response.writerCreated()) {
-            return new BlockingWriterSenderImpl(exchange, response.printWriter(), response.characterEncoding());
+            return new BlockingSenderImpl(exchange, new WriterOutputStream(response.writer()));
         } else {
             return new BlockingSenderImpl(exchange, response.outputStream());
         }

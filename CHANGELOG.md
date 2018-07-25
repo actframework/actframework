@@ -1,6 +1,8 @@
 # ActFramework Change Log
 
 **1.8.8**
+* Remove `undertow-websockets-jsr` dependency #749
+* It shall send back 404 if return File does not exist #748
 * `ActUnauthorized` - source info shall be populated upon each call #745
 * Error page: error highlight line not matched the line triggered the runtime error #744
 * Improve SYSTEM_SCAN_LIST matching performance #743
