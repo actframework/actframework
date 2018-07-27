@@ -1557,15 +1557,8 @@ public @interface Controller {
                 return new RenderBinary((byte[]) v);
             } else {
                 H.Format fmt = actionContext.accept();
-                if (H.Format.UNKNOWN == fmt) {
-                    // use JSON by default
-                    if (isArray) {
-                        return RenderJSON.of(status, $.toString2(v));
-                    }
-                    return RenderJSON.of(status, C.Map("result", v));
-                }
                 String s = $$.toString(v, isDateTime, isArray);
-                if (HTML == fmt || H.Format.UNKNOWN == fmt) {
+                if (HTML == fmt) {
                     return RenderHtml.of(status, s);
                 }
                 if (fmt.isText()) {
@@ -1688,8 +1681,9 @@ public @interface Controller {
                 return inferToTemplate(v, context);
             }
 
-            boolean requireJSON = context.acceptJson();
-            boolean requireXML = !requireJSON && context.acceptXML();
+            H.Format accept = context.accept();
+            boolean requireJSON = (accept == H.Format.JSON) || (accept == H.Format.UNKNOWN);
+            boolean requireXML = !requireJSON && accept == H.Format.XML;
 
             if (null == v) {
                 // the following code breaks before handler without returning result

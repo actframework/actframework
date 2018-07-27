@@ -45,17 +45,21 @@ public class ReflectedInvokerHelper {
             List<Field> fields = $.fieldsOf(invokerClass);
             if (fields.isEmpty()) {
                 singleton = app.getInstance(invokerClass);
-            }
-            boolean stateful = false;
-            for (Field field : fields) {
-                if (!isGlobalOrStateless(field)) {
-                    stateful = true;
-                    break;
+            } else {
+                boolean stateful = false;
+                for (Field field : fields) {
+                    if (!isGlobalOrStateless(field)) {
+                        stateful = true;
+                        break;
+                    }
+                }
+                if (!stateful) {
+                    singleton = app.getInstance(invokerClass);
                 }
             }
-            if (!stateful) {
-                singleton = app.getInstance(invokerClass);
-            }
+        }
+        if (null != singleton) {
+            app.registerSingleton(singleton);
         }
         return singleton;
     }

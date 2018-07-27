@@ -1,6 +1,8 @@
 # ActFramework Change Log
 
 **1.8.8**
+* JSON string return issue when Accept is not specified #752
+* It generates 10 controller instances when app starts up #751
 * Remove `undertow-websockets-jsr` dependency #749
 * It shall send back 404 if return File does not exist #748
 * `ActUnauthorized` - source info shall be populated upon each call #745
