@@ -1,6 +1,9 @@
 # ActFramework Change Log
 
 **1.8.8**
+* Enhance `ResourceLoader` #757
+* Missing Chinese message for some validation violations #755
+* `@LoadResource` cannot inject resource content into Map or Properties #753
 * JSON string return issue when Accept is not specified #752
 * It generates 10 controller instances when app starts up #751
 * Remove `undertow-websockets-jsr` dependency #749

@@ -24,7 +24,6 @@ import act.Act;
 import act.app.App;
 import act.app.data.StringValueResolverManager;
 import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.TypeReference;
 import org.osgl.$;
 import org.osgl.exception.UnexpectedException;
 import org.osgl.inject.BeanSpec;
@@ -38,19 +37,21 @@ import org.osgl.storage.impl.SObject;
 import org.osgl.util.E;
 import org.osgl.util.IO;
 import org.osgl.util.S;
+import org.osgl.util.TypeReference;
+import org.yaml.snakeyaml.Yaml;
 
 import java.io.File;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.lang.reflect.Array;
 import java.lang.reflect.Type;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.ByteBuffer;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 public class ResourceLoader<T> extends ValueLoader.Base<T> {
 
@@ -140,22 +141,107 @@ public class ResourceLoader<T> extends ValueLoader.Base<T> {
             }
             return null;
         }
-        boolean isJson = resourcePath.endsWith(".json");
         Class<?> rawType = spec.rawType();
         if (URL.class == rawType) {
             return url;
+        }
+        if (rawType.isArray()) {
+            if (byte[].class == rawType) {
+                return readContent(url);
+            }
+            Class<?> componentType = rawType.getComponentType();
+            if (componentType.isArray()) {
+                Class<?> subComponentType = componentType.getComponentType();
+                boolean isString = String.class == subComponentType;
+                boolean isPrimitive = !isString && $.isPrimitiveType(subComponentType);
+                boolean isWrapper = !isPrimitive && !isString && $.isWrapperType(subComponentType);
+                if (isString || isPrimitive || isWrapper) {
+                    List<String> lines = IO.readLines(url);
+                    int len = lines.size();
+                    Object a2 = Array.newInstance(componentType, len);
+                    for (int i = 0; i < len; ++i) {
+                        String line = lines.get(i);
+                        List<String> elements = S.fastSplit(line, ",");
+                        int len2 = elements.size();
+                        Object a = Array.newInstance(subComponentType, len2);
+                        Array.set(a2, i, a);
+                        for (int j = 0; j < len2; ++j) {
+                            Object e = $.convert(elements.get(j)).to(subComponentType);
+                            if (isPrimitive) {
+                                if (int.class == subComponentType) {
+                                    Array.setInt(a, j, (Integer) e);
+                                } else if (double.class == subComponentType) {
+                                    Array.setDouble(a, j, (Double) e);
+                                } else if (long.class == subComponentType) {
+                                    Array.setLong(a, j, (Long) e);
+                                } else if (float.class == subComponentType) {
+                                    Array.setFloat(a, j, (Float) e);
+                                } else if (boolean.class == subComponentType) {
+                                    Array.setBoolean(a, j, (Boolean) e);
+                                } else if (short.class == subComponentType) {
+                                    Array.setShort(a, j, (Short) e);
+                                } else if (byte.class == subComponentType) {
+                                    Array.setByte(a, j, (Byte) e);
+                                } else if (char.class == subComponentType) {
+                                    Array.setChar(a, j, (Character) e);
+                                } else {
+                                    throw E.unsupport("Sub component type not supported: " + subComponentType.getName());
+                                }
+                            } else {
+                                Array.set(a, j, e);
+                            }
+                        }
+                    }
+                    return a2;
+                } else {
+                    throw E.unsupport("Sub component type not supported: " + subComponentType.getName());
+                }
+            } else {
+                List<String> lines = IO.readLines(url);
+                if (String.class == componentType) {
+                    return lines.toArray(new String[lines.size()]);
+                }
+                Object array = Array.newInstance(componentType, lines.size());
+                return $.map(lines).to(array);
+            }
+        }
+        boolean isJson = resourcePath.endsWith(".json");
+        if (isJson) {
+            String content = IO.readContentAsString(url);
+            content = content.trim();
+            Object o = content.startsWith("[") ? JSON.parseArray(content) : JSON.parseObject(content);
+            return $.map(o).to(rawType);
+        }
+        boolean isYaml = !isJson && (resourcePath.endsWith(".yml") || resourcePath.endsWith(".yaml"));
+        if (isYaml) {
+            Object o = new Yaml().load(IO.readContentAsString(url));
+            return $.map(o).to(rawType);
         } else if (String.class == rawType) {
             return IO.readContentAsString(url);
-        } else if (byte[].class == rawType) {
-            return readContent(url);
         } else if (List.class.equals(rawType)) {
             List<Type> typeParams = spec.typeParams();
+            List<String> lines = IO.readLines(url);
             if (!typeParams.isEmpty()) {
                 if (String.class == typeParams.get(0)) {
-                    return IO.readLines(url);
-                } else if (isJson) {
-                    return JSON.parseObject(IO.readContentAsString(url), spec.type());
+                    return lines;
                 }
+                Type typeParam = typeParams.get(0);
+                if (typeParam instanceof Class) {
+                    List list = new ArrayList(lines.size());
+                    for (String line : lines) {
+                        list.add($.convert(line).to((Class) typeParam));
+                    }
+                    return list;
+                }
+                throw E.unsupport("List element type not supported: " + typeParam);
+            }
+        } else if (Map.class.isAssignableFrom(rawType)) {
+            if (resourcePath.endsWith(".properties")) {
+                Properties properties = IO.loadProperties(url);
+                if (Properties.class == rawType || Properties.class.isAssignableFrom(rawType)) {
+                    return properties;
+                }
+                return $.map(properties).to(rawType);
             }
         } else if (Collection.class.isAssignableFrom(rawType)) {
             List<Type> typeParams = spec.typeParams();
@@ -198,9 +284,7 @@ public class ResourceLoader<T> extends ValueLoader.Base<T> {
         } else if (Reader.class == rawType) {
             return new InputStreamReader(IO.is(url));
         }
-        if (isJson) {
-            return JSON.parseObject(IO.readContentAsString(url), spec.type());
-        }
+        String content = IO.readContentAsString(url);
         try {
             return Act.app().resolverManager().resolve(IO.readContentAsString(url), rawType);
         } catch (RuntimeException e) {

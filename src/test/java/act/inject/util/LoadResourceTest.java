@@ -48,6 +48,12 @@ public class LoadResourceTest extends TestBase {
         @LoadResource("public/foo/foo.list")
         private byte[] ba;
 
+        @LoadResource("public/foo/matrix.txt")
+        private int[][] intMatrix;
+
+        @LoadResource("public/foo/str_matrix.txt")
+        private String[][] strMatrix;
+
     }
 
     Genie genie = Genie.createWithoutPlugins();
@@ -83,5 +89,14 @@ public class LoadResourceTest extends TestBase {
         eq("line1\nline2", new String(testBed.ba));
     }
 
+    @Test
+    public void testIntMatrix() {
+        eq(4, testBed.intMatrix[1][1]);
+    }
+
+    @Test
+    public void testStrMatrix() {
+        eq("yesterday", testBed.strMatrix[1][1]);
+    }
 
 }
