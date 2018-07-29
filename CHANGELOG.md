@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 **1.8.8**
+* @CacheFor have problems #736
 * Error starting app when `cacheFor.dev` set to `true` #760
 * @DateFormatPattern has no effect on `Date` field #759
 * `ResourceLoader` - load files in directory into `Map` structure #758

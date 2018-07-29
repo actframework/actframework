@@ -213,6 +213,9 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
             if (null == result) {
                 result = context.nullValueResult();
             }
+            if (supportCache) {
+                context.resp().addHeaderIfNotAdded(H.Header.Names.CACHE_CONTROL, "public, max-age=" + cacheSupport.ttl);
+            }
             onResult(result, context);
             if (supportCache) {
                 this.cache.put(cacheKey, context.resp(), cacheSupport.ttl);

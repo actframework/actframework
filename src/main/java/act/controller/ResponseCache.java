@@ -20,13 +20,14 @@ package act.controller;
  * #L%
  */
 
+import static org.osgl.http.H.Format.*;
+
 import act.ActResponse;
 import org.osgl.$;
 import org.osgl.exception.UnexpectedIOException;
 import org.osgl.http.H;
 import org.osgl.storage.ISObject;
 import org.osgl.util.Charsets;
-import org.osgl.util.IO;
 import org.osgl.util.Output;
 
 import java.io.OutputStream;
@@ -38,8 +39,6 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
-import static org.osgl.http.H.Format.*;
-
 public class ResponseCache extends ActResponse implements Serializable {
 
     private Map<String, H.Cookie> cookies = new HashMap<>();
@@ -50,6 +49,7 @@ public class ResponseCache extends ActResponse implements Serializable {
     private ByteBuffer buffer;
     private OutputStreamCache osCache;
     private WriterCache writerCache;
+    private OutputCache outputCache;
 
     private transient ActResponse realResponse;
 
@@ -88,6 +88,8 @@ public class ResponseCache extends ActResponse implements Serializable {
             osCache.apply(response);
         } else if (null != writerCache) {
             writerCache.apply(response);
+        } else if (null != outputCache) {
+            outputCache.apply(response);
         }
     }
 
@@ -111,6 +113,12 @@ public class ResponseCache extends ActResponse implements Serializable {
     public OutputStream outputStream() throws IllegalStateException, UnexpectedIOException {
         osCache = new OutputStreamCache(realResponse.outputStream());
         return osCache;
+    }
+
+    @Override
+    public Output output() {
+        outputCache = new OutputCache(realResponse.output());
+        return outputCache;
     }
 
     @Override
