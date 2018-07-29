@@ -129,7 +129,7 @@ public enum AppConfigKey implements ConfigKey {
      *
      * Default value: `false`
      */
-    CACHE_FOR_ON_DEV("cacheFor.dev"),
+    CACHE_FOR_ON_DEV("cacheFor.dev.enabled"),
 
     /**
      * `captcha.width`

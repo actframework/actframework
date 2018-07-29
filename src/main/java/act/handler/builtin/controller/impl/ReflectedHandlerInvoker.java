@@ -844,7 +844,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
             }
             result = null == methodAccess ? $.invokeStatic(method, params) : methodAccess.invoke(controller, handlerIndex, params);
             if (returnString && context.acceptJson()) {
-                result = ensureValidJson(S.string(result));
+                result = null == result ? null : ensureValidJson(S.string(result));
             }
         } catch (Result r) {
             result = r;

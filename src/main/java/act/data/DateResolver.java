@@ -21,6 +21,10 @@ package act.data;
  */
 
 import act.conf.AppConfig;
+import act.data.annotation.DateFormatPattern;
+import act.data.annotation.Pattern;
+import org.osgl.util.AnnotationAware;
+import org.osgl.util.StringValueResolver;
 
 import java.util.Date;
 import javax.inject.Inject;
@@ -36,6 +40,24 @@ public class DateResolver extends DateResolverBase<Date> {
 
     public DateResolver(String pattern) {
         super(pattern);
+    }
+
+    @Override
+    public StringValueResolver<Date> amended(AnnotationAware beanSpec) {
+        DateFormatPattern dfp = beanSpec.getAnnotation(DateFormatPattern.class);
+        if (null != dfp) {
+            return new DateResolver(dfp.value());
+        }
+        String format;
+        DateFormatPattern pattern = beanSpec.getAnnotation(DateFormatPattern.class);
+        if (null == pattern) {
+            Pattern patternLegacy = beanSpec.getAnnotation(Pattern.class);
+            format = null == patternLegacy ? null : patternLegacy.value();
+        } else {
+            format = pattern.value();
+        }
+        return null == format ? this : new DateResolver(format);
+
     }
 
     @Override

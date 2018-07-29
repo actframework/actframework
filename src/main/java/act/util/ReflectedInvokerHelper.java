@@ -23,11 +23,16 @@ package act.util;
 import act.Act;
 import act.app.App;
 import act.app.AppServiceBase;
+import act.inject.util.LoadResource;
 import org.osgl.$;
 import org.osgl.inject.annotation.Configuration;
+import org.osgl.util.C;
 
+import java.lang.annotation.Annotation;
+import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Field;
 import java.util.List;
+import javax.inject.Singleton;
 
 public class ReflectedInvokerHelper {
 
@@ -41,21 +46,8 @@ public class ReflectedInvokerHelper {
     public static Object tryGetSingleton(Class<?> invokerClass, App app) {
         Object singleton = app.singleton(invokerClass);
         if (null == singleton) {
-            // check if there are fields
-            List<Field> fields = $.fieldsOf(invokerClass);
-            if (fields.isEmpty()) {
+            if (_isGlobalOrStateless(invokerClass)) {
                 singleton = app.getInstance(invokerClass);
-            } else {
-                boolean stateful = false;
-                for (Field field : fields) {
-                    if (!isGlobalOrStateless(field)) {
-                        stateful = true;
-                        break;
-                    }
-                }
-                if (!stateful) {
-                    singleton = app.getInstance(invokerClass);
-                }
             }
         }
         if (null != singleton) {
@@ -64,13 +56,43 @@ public class ReflectedInvokerHelper {
         return singleton;
     }
 
+    public static boolean isGlobalOrStateless(Class type) {
+        if (Act.app().isSingleton(type) || AppServiceBase.class.isAssignableFrom(type) || _isGllobalOrStateless2(type)) {
+            return true;
+        }
+        return _isGllobalOrStateless2(type);
+    }
+
+    private static boolean _isGlobalOrStateless(Class type) {
+        List<Field> fields = $.fieldsOf(type);
+        if (fields.isEmpty()) {
+            return true;
+        }
+        for (Field field : fields) {
+            if (!isGlobalOrStateless(field)) {
+                return false;
+            }
+        }
+        return true;
+    }
 
     private static boolean isGlobalOrStateless(Field field) {
-        if (null != field.getAnnotation(Stateless.class) || null != field.getAnnotation(Global.class) || null != field.getAnnotation(Configuration.class)) {
+        if (_isGllobalOrStateless2(field)) {
             return true;
         }
         Class<?> fieldType = field.getType();
-        return Act.app().isSingleton(fieldType) || AppServiceBase.class.isAssignableFrom(fieldType);
+        return isGlobalOrStateless(fieldType);
+    }
+
+    private final static List<Class<? extends Annotation>> statelessMarkers = C.list(Singleton.class, Stateless.class, Global.class, Configuration.class, LoadResource.class);
+
+    private static boolean _isGllobalOrStateless2(AnnotatedElement element) {
+        for (Class<? extends Annotation> type : statelessMarkers) {
+            if (null != element.getAnnotation(type)) {
+                return true;
+            }
+        }
+        return false;
     }
 
 }
