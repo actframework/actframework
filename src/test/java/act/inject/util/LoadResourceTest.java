@@ -24,10 +24,12 @@ import org.junit.Before;
 import org.junit.Test;
 import org.osgl.inject.Genie;
 import org.osgl.util.C;
+import org.osgl.util.Keyword;
 import osgl.ut.TestBase;
 
 import java.nio.ByteBuffer;
 import java.util.List;
+import java.util.Map;
 
 public class LoadResourceTest extends TestBase {
 
@@ -53,6 +55,12 @@ public class LoadResourceTest extends TestBase {
 
         @LoadResource("public/foo/str_matrix.txt")
         private String[][] strMatrix;
+
+        @LoadResource("tags")
+        private Map<String, String> tagsByString;
+
+        @LoadResource("tags")
+        private Map<Keyword, String> tagsByKeyword;
 
     }
 
@@ -99,4 +107,15 @@ public class LoadResourceTest extends TestBase {
         eq("yesterday", testBed.strMatrix[1][1]);
     }
 
+    @Test
+    public void testTagsByString() {
+        eq("foo_tag", testBed.tagsByString.get("foo"));
+        eq("bar_tag", testBed.tagsByString.get("bar"));
+    }
+
+    @Test
+    public void testTagsByKeyword() {
+        eq("foo_tag", testBed.tagsByKeyword.get(Keyword.of("foo")));
+        eq("bar_tag", testBed.tagsByKeyword.get(Keyword.of("bar")));
+    }
 }

@@ -545,7 +545,8 @@ public final class Act {
      * @return the instance of the class
      */
     public static <T> T getInstance(Class<? extends T> clz) {
-        return app().getInstance(clz);
+        App app = app();
+        return null == app ? $.newInstance(clz) : app.getInstance(clz);
     }
 
     /**

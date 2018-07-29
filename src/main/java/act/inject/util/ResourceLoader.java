@@ -23,6 +23,7 @@ package act.inject.util;
 import act.Act;
 import act.app.App;
 import act.app.data.StringValueResolverManager;
+import act.util.Jars;
 import com.alibaba.fastjson.JSON;
 import org.osgl.$;
 import org.osgl.exception.UnexpectedException;
@@ -34,10 +35,7 @@ import org.osgl.logging.LogManager;
 import org.osgl.logging.Logger;
 import org.osgl.storage.ISObject;
 import org.osgl.storage.impl.SObject;
-import org.osgl.util.E;
-import org.osgl.util.IO;
-import org.osgl.util.S;
-import org.osgl.util.TypeReference;
+import org.osgl.util.*;
 import org.yaml.snakeyaml.Yaml;
 
 import java.io.File;
@@ -46,12 +44,15 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.lang.reflect.Array;
 import java.lang.reflect.Type;
+import java.net.MalformedURLException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.nio.ByteBuffer;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 
 public class ResourceLoader<T> extends ValueLoader.Base<T> {
 
@@ -141,6 +142,82 @@ public class ResourceLoader<T> extends ValueLoader.Base<T> {
             }
             return null;
         }
+        return _load(url, spec);
+    }
+
+    private static Object _load(URL url, BeanSpec spec) {
+        $.Var<JarEntry> entryBag = $.var();
+        $.Var<JarFile> jarFileBag = $.var();
+        $.Var<File> fileBag = $.var();
+        if (isDir(url, entryBag, jarFileBag, fileBag)) {
+            E.unsupportedIfNot(Map.class.isAssignableFrom(spec.rawType()), "Does not support loading directory into " + spec);
+            JarEntry entry = entryBag.get();
+            Map map = $.cast(Act.getInstance(spec.rawType()));
+            List<Type> mapTypes = spec.typeParams();
+            Type valType = mapTypes.size() > 1 ? mapTypes.get(1) : String.class;
+            BeanSpec subSpec = BeanSpec.of(valType, spec.injector());
+            boolean isKeyword = false;
+            if (mapTypes.size() > 0) {
+                Type keyType = mapTypes.get(0);
+                if (keyType instanceof Class) {
+                    isKeyword = Keyword.class == keyType;
+                    E.unsupportedIfNot(isKeyword || String.class == keyType, "Map spec not supported: " + spec);
+                } else {
+                    throw E.unsupport("Map spec not supported: " + spec);
+                }
+            }
+            if (null != entry) {
+                String dirName = entry.getName();
+                int dirNameLen = dirName.length();
+                JarFile file = jarFileBag.get();
+                String parentSpec = file.toString();
+                Enumeration<JarEntry> entries = file.entries();
+                while (entries.hasMoreElements()) {
+                    JarEntry entry0 = entries.nextElement();
+                    String entryName = entry0.getName();
+                    if (dirName.equals(entryName)) {
+                        continue;
+                    }
+                    if (!entryName.startsWith(dirName)) {
+                        continue;
+                    }
+                    if (entry0.isDirectory()) {
+                        // we don't support loading recursively
+                        continue;
+                    }
+                    String fileName = entryName.substring(dirNameLen);
+                    if (fileName.contains("/")) {
+                        // we don't support sub dir resources
+                        continue;
+                    }
+                    String subUrlSpec = S.concat(parentSpec, "/", fileName);
+                    try {
+                        URL subUrl = new URL(subUrlSpec);
+                        String s = S.cut(fileName).beforeLast(".");
+                        map.put(isKeyword ? Keyword.of(s) : s, _load(subUrl, subSpec));
+                    } catch (MalformedURLException e) {
+                        throw E.unexpected(e);
+                    }
+                }
+            } else {
+                File dir = fileBag.get();
+                File[] files = dir.listFiles();
+                for (File file : files) {
+                    if (file.isDirectory()) {
+                        // we don't support loading recursively
+                        continue;
+                    }
+                    String key = S.cut(file.getName()).beforeLast(".");
+                    try {
+                        URL fileUrl = file.toURI().toURL();
+                        map.put(isKeyword ? Keyword.of(key) : key, _load(fileUrl, subSpec));
+                    } catch (MalformedURLException e) {
+                        throw E.unexpected(e);
+                    }
+                }
+            }
+            return map;
+        }
         Class<?> rawType = spec.rawType();
         if (URL.class == rawType) {
             return url;
@@ -205,6 +282,7 @@ public class ResourceLoader<T> extends ValueLoader.Base<T> {
                 return $.map(lines).to(array);
             }
         }
+        String resourcePath = url.getPath();
         boolean isJson = resourcePath.endsWith(".json");
         if (isJson) {
             String content = IO.readContentAsString(url);
@@ -289,6 +367,21 @@ public class ResourceLoader<T> extends ValueLoader.Base<T> {
             return Act.app().resolverManager().resolve(IO.readContentAsString(url), rawType);
         } catch (RuntimeException e) {
             throw new UnexpectedException("return type not supported: " + spec);
+        }
+    }
+
+    private static boolean isDir(URL url, $.Var<JarEntry> entryBag, $.Var<JarFile> jarFileBag, $.Var<File> fileBag) {
+        String protocol = url.getProtocol();
+        if ("file".equals(protocol)) {
+            File file = new File(url.getFile());
+            fileBag.set(file);
+            return file.isDirectory();
+        } else if ("jar".equals(protocol)) {
+            JarEntry entry = Jars.jarEntry(url, jarFileBag);
+            entryBag.set(entry);
+            return entry.isDirectory();
+        } else {
+            throw E.unsupport("URL protocol not supported: " + url);
         }
     }
 

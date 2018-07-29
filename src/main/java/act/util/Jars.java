@@ -87,22 +87,14 @@ public enum Jars {
         if (file.isDirectory()) {
             scanDir(file, visitors);
         } else {
-            try {
-                scanFile(file, visitors);
-            } catch (IOException e) {
-                logger.warn(e, "Error scanning jar file: %s", file.getName());
-            }
+            scanFile(file, visitors);
         }
     }
 
     private static void scanList(List<File> jars, F.JarEntryVisitor visitor) {
         for (int i = 0, j = jars.size(); i < j; ++i) {
             File jar = jars.get(i);
-            try {
-                scanFile(jar, visitor);
-            } catch (IOException e) {
-                logger.warn(e, "Error scanning jar file: %s", jar.getName());
-            }
+            scanFile(jar, visitor);
         }
     }
 
@@ -116,15 +108,11 @@ public enum Jars {
         int n = jars.length;
         for (int i = 0; i < n; ++i) {
             File file = jars[i];
-            try {
-                scanFile(file, visitors);
-            } catch (IOException e) {
-                logger.warn(e, "Error scanning jar file: %s", file.getName());
-            }
+            scanFile(file, visitors);
         }
     }
 
-    private static void scanFile(File file, F.JarEntryVisitor... visitors) throws IOException {
+    private static void scanFile(File file, F.JarEntryVisitor... visitors) {
         try {
             JarFile jar = new JarFile(file);
             try {
@@ -146,6 +134,27 @@ public enum Jars {
             }
         } catch (IOException e) {
             logger.error(e, "error scan file: %s", file.getAbsolutePath());
+        }
+    }
+
+    public static JarEntry jarEntry(URL url, $.Var<JarFile> jarFileBag) {
+        E.illegalArgumentIfNot("jar".equals(url.getProtocol()), "jar URL expected");
+        String path = url.getPath();
+        E.unexpectedIfNot(path.startsWith("file:"), "Expected `file:` prefix in the path, found: " + path);
+        E.unexpectedIfNot(path.contains("!"), "`!` not found in the path: " + path);
+
+        S.Pair pair = S.binarySplit(path, '!');
+        String jarFilePath = pair.left();
+        String entryPath = pair.right();
+        try {
+            JarFile jarFile = new JarFile(jarFilePath);
+            jarFileBag.set(jarFile);
+            if (entryPath.startsWith("/")) {
+                entryPath = entryPath.substring(1);
+            }
+            return jarFile.getJarEntry(entryPath);
+        } catch (IOException e) {
+            throw E.ioException(e);
         }
     }
 

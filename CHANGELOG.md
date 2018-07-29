@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 **1.8.8**
+* `ResourceLoader` - load files in directory into `Map` structure #758
 * Enhance `ResourceLoader` #757
 * Missing Chinese message for some validation violations #755
 * `@LoadResource` cannot inject resource content into Map or Properties #753
