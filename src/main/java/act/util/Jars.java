@@ -144,7 +144,7 @@ public enum Jars {
         E.unexpectedIfNot(path.contains("!"), "`!` not found in the path: " + path);
 
         S.Pair pair = S.binarySplit(path, '!');
-        String jarFilePath = pair.left();
+        String jarFilePath = pair.left().substring(5);
         String entryPath = pair.right();
         try {
             JarFile jarFile = new JarFile(jarFilePath);
