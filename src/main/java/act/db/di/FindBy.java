@@ -24,7 +24,7 @@ import act.Act;
 import act.app.ActionContext;
 import act.app.App;
 import act.db.Dao;
-import act.inject.param.JsonDTO;
+import act.inject.param.JsonDto;
 import act.inject.param.ParamValueLoaderService;
 import act.util.ActContext;
 import act.view.ActBadRequest;
@@ -146,7 +146,7 @@ public class FindBy extends ValueLoader.Base {
 
         if (ctx instanceof ActionContext) {
             ActionContext actionContext = (ActionContext) ctx;
-            JsonDTO dto = actionContext.attribute(JsonDTO.CTX_ATTR_KEY);
+            JsonDto dto = actionContext.attribute(JsonDto.CTX_ATTR_KEY);
             if (null != dto) {
                 value = S.string(dto.get(bindName));
             }

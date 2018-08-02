@@ -62,7 +62,7 @@ class JsonParamValueLoader implements ParamValueLoader {
         if (isPathVariable) {
             return fallBack.load(bean, context, noDefaultValue);
         }
-        JsonDTO dto = context.attribute(JsonDTO.CTX_ATTR_KEY);
+        JsonDto dto = context.attribute(JsonDto.CTX_ATTR_KEY);
         if (null == dto) {
             return this.fallBack.load(bean, context, noDefaultValue);
         } else {

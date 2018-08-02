@@ -31,7 +31,7 @@ import org.osgl.util.C;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Field;
-import java.util.List;
+import java.util.*;
 import javax.inject.Singleton;
 
 public class ReflectedInvokerHelper {
@@ -46,7 +46,7 @@ public class ReflectedInvokerHelper {
     public static Object tryGetSingleton(Class<?> invokerClass, App app) {
         Object singleton = app.singleton(invokerClass);
         if (null == singleton) {
-            if (_isGlobalOrStateless(invokerClass)) {
+            if (_isGlobalOrStateless(invokerClass, new HashSet<Class>())) {
                 singleton = app.getInstance(invokerClass);
             }
         }
@@ -57,36 +57,48 @@ public class ReflectedInvokerHelper {
     }
 
     public static boolean isGlobalOrStateless(Class type) {
-        if (Act.app().isSingleton(type) || AppServiceBase.class.isAssignableFrom(type) || _isGllobalOrStateless2(type)) {
-            return true;
-        }
-        return _isGllobalOrStateless2(type);
+        return isGlobalOrStateless(type, new HashSet<Class>());
     }
 
-    private static boolean _isGlobalOrStateless(Class type) {
+    public static boolean isGlobalOrStateless(Field field) {
+        return isGlobalOrStateless(field, new HashSet<Class>());
+    }
+
+    private static boolean isGlobalOrStateless(Class type, Set<Class> circularReferenceDetector) {
+        if (Act.app().isSingleton(type) || AppServiceBase.class.isAssignableFrom(type) || _hasGlobalOrStatelessAnnotations(type)) {
+            return true;
+        }
+        if (circularReferenceDetector.contains(type)) {
+            return false;
+        }
+        circularReferenceDetector.add(type);
+        return _isGlobalOrStateless(type, circularReferenceDetector);
+    }
+
+    private static boolean _isGlobalOrStateless(Class type, Set<Class> circularReferenceDetector) {
         List<Field> fields = $.fieldsOf(type);
         if (fields.isEmpty()) {
             return true;
         }
         for (Field field : fields) {
-            if (!isGlobalOrStateless(field)) {
+            if (!isGlobalOrStateless(field, circularReferenceDetector)) {
                 return false;
             }
         }
         return true;
     }
 
-    private static boolean isGlobalOrStateless(Field field) {
-        if (_isGllobalOrStateless2(field)) {
+    private static boolean isGlobalOrStateless(Field field, Set<Class> circularReferenceDetector) {
+        if (_hasGlobalOrStatelessAnnotations(field)) {
             return true;
         }
         Class<?> fieldType = field.getType();
-        return isGlobalOrStateless(fieldType);
+        return isGlobalOrStateless(fieldType, circularReferenceDetector);
     }
 
     private final static List<Class<? extends Annotation>> statelessMarkers = C.list(Singleton.class, Stateless.class, Global.class, Configuration.class, LoadResource.class);
 
-    private static boolean _isGllobalOrStateless2(AnnotatedElement element) {
+    private static boolean _hasGlobalOrStatelessAnnotations(AnnotatedElement element) {
         for (Class<? extends Annotation> type : statelessMarkers) {
             if (null != element.getAnnotation(type)) {
                 return true;

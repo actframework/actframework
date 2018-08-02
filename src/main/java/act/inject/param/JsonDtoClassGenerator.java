@@ -21,15 +21,16 @@ package act.inject.param;
  */
 
 import act.asm.*;
-import act.inject.param.JsonDTOClassManager.DynamicClassLoader;
+import act.inject.param.JsonDtoClassManager.DynamicClassLoader;
 import org.osgl.$;
 import org.osgl.inject.BeanSpec;
 import org.osgl.util.FastStr;
 import org.osgl.util.S;
 
 import java.util.List;
+import java.util.Map;
 
-class JsonDTOClassGenerator implements Opcodes {
+class JsonDtoClassGenerator implements Opcodes {
 
 
     private static final String JSON_DTO_CLASS = "act/inject/param/JsonDTO";
@@ -39,15 +40,17 @@ class JsonDTOClassGenerator implements Opcodes {
     private DynamicClassLoader dynamicClassLoader;
     private ClassWriter cw;
     private MethodVisitor mv;
+    private Map<String, Class> typeParamLookup;
 
-    JsonDTOClassGenerator(String name, List<BeanSpec> list, DynamicClassLoader classLoader) {
+    JsonDtoClassGenerator(String name, List<BeanSpec> list, DynamicClassLoader classLoader, Map<String, Class> typeParamLookup) {
         this.className = name;
         this.beanSpecs = list;
         this.dynamicClassLoader = classLoader;
         this.cw = new ClassWriter(ClassWriter.COMPUTE_FRAMES);
+        this.typeParamLookup = typeParamLookup;
     }
 
-    Class<? extends JsonDTO> generate() {
+    Class<? extends JsonDto> generate() {
         return $.cast(dynamicClassLoader.defineClass(className, generateByteCode()));
     }
 
@@ -99,11 +102,11 @@ class JsonDTOClassGenerator implements Opcodes {
         return S.fmt("(%s)V", classDesc(spec.rawType()));
     }
 
-    private static String setterSignature(BeanSpec spec) {
+    private String setterSignature(BeanSpec spec) {
         return S.fmt("(%s)V", typeDesc(spec));
     }
 
-    private static String typeDesc(BeanSpec spec) {
+    private String typeDesc(BeanSpec spec) {
         String root = classDesc(spec.rawType());
         List<java.lang.reflect.Type> typeParams = spec.typeParams();
         if (typeParams.isEmpty()) {
@@ -111,7 +114,7 @@ class JsonDTOClassGenerator implements Opcodes {
         }
         S.Buffer sb = S.newBuffer("<");
         for (java.lang.reflect.Type type : typeParams) {
-            BeanSpec specx = BeanSpec.of(type, null, spec.injector());
+            BeanSpec specx = BeanSpec.of(type, null, spec.injector(), typeParamLookup);
             sb.append(typeDesc(specx));
         }
         sb.append(">");

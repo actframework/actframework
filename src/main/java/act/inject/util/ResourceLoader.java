@@ -64,7 +64,7 @@ public class ResourceLoader<T> extends ValueLoader.Base<T> {
     protected void initialized() {
         String path = (String) options.get("value");
         E.unexpectedIf(S.blank(path), "resource path not specified");
-        boolean trimLeadingSlash = !(Boolean) options.get("skipTrimLeadingSlash");
+        boolean trimLeadingSlash = !$.bool(options.get("skipTrimLeadingSlash"));
         while (trimLeadingSlash && path.startsWith("/")) {
             path = path.substring(1);
         }
@@ -320,6 +320,34 @@ public class ResourceLoader<T> extends ValueLoader.Base<T> {
                     return properties;
                 }
                 return $.map(properties).to(rawType);
+            } else {
+                // try my best
+                List<String> lines = IO.readLines(url);
+                if (lines.isEmpty()) {
+                    return C.Map();
+                }
+                ListIterator<String> itr = lines.listIterator();
+                String firstLine = itr.next();
+                while (itr.hasNext()) {
+                    if (!firstLine.startsWith("#")) {
+                        break;
+                    }
+                    firstLine = itr.next();
+                }
+                char sep;
+                if (firstLine.contains("=")) {
+                    sep = '=';
+                } else if (firstLine.contains(":")) {
+                    sep = ':';
+                } else {
+                    throw new UnexpectedException("Unable to load resource into Map: " + resourcePath);
+                }
+                Map<String, String> map = new HashMap<>();
+                for (String line : lines) {
+                    S.Pair pair = S.binarySplit(line, sep);
+                    map.put(pair.left(), pair.right());
+                }
+                return map;
             }
         } else if (Collection.class.isAssignableFrom(rawType)) {
             List<Type> typeParams = spec.typeParams();
@@ -364,7 +392,7 @@ public class ResourceLoader<T> extends ValueLoader.Base<T> {
         }
         String content = IO.readContentAsString(url);
         try {
-            return Act.app().resolverManager().resolve(IO.readContentAsString(url), rawType);
+            return Act.app().resolverManager().resolve(content, rawType);
         } catch (RuntimeException e) {
             throw new UnexpectedException("return type not supported: " + spec);
         }

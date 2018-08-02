@@ -1,7 +1,9 @@
 # ActFramework Change Log
 
 **1.8.8**
-* @CacheFor have problems #736
+* Improve Singleton detection for controller instance creation #767
+* JsonDto class generation - support request handler reuse #766
+* API Doc - Support request handler reuse #765
 * Error starting app when `cacheFor.dev` set to `true` #760
 * @DateFormatPattern has no effect on `Date` field #759
 * `ResourceLoader` - load files in directory into `Map` structure #758

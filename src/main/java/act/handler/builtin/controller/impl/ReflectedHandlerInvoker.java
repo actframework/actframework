@@ -47,8 +47,8 @@ import act.handler.builtin.controller.*;
 import act.handler.event.ReflectedHandlerInvokerInit;
 import act.handler.event.ReflectedHandlerInvokerInvoke;
 import act.inject.DependencyInjector;
-import act.inject.param.JsonDTO;
-import act.inject.param.JsonDTOClassManager;
+import act.inject.param.JsonDto;
+import act.inject.param.JsonDtoClassManager;
 import act.inject.param.ParamValueLoaderManager;
 import act.inject.param.ParamValueLoaderService;
 import act.job.JobManager;
@@ -114,7 +114,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
     };
     protected Method method; //
     private ParamValueLoaderService paramLoaderService;
-    private JsonDTOClassManager jsonDTOClassManager;
+    private JsonDtoClassManager jsonDTOClassManager;
     private int paramCount;
     private int fieldsAndParamsCount;
     private String singleJsonFieldName;
@@ -172,7 +172,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         this.disabled = !Env.matches(controllerClass);
         this.traceHandler = app.config().traceHandler();
         this.paramLoaderService = app.service(ParamValueLoaderManager.class).get(ActionContext.class);
-        this.jsonDTOClassManager = app.service(JsonDTOClassManager.class);
+        this.jsonDTOClassManager = app.service(JsonDtoClassManager.class);
 
         Class[] paramTypes = paramTypes(cl);
         try {
@@ -566,21 +566,21 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         }
     }
 
-    private void cacheJsonDTO(ActContext<?> context, JsonDTO dto) {
-        context.attribute(JsonDTO.CTX_ATTR_KEY, dto);
+    private void cacheJsonDTO(ActContext<?> context, JsonDto dto) {
+        context.attribute(JsonDto.CTX_ATTR_KEY, dto);
     }
 
     private void ensureJsonDTOGenerated(ActionContext context) {
         if (0 == fieldsAndParamsCount || !context.jsonEncoded()) {
             return;
         }
-        Class<? extends JsonDTO> dtoClass = jsonDTOClassManager.get(controllerClass, method);
+        Class<? extends JsonDto> dtoClass = jsonDTOClassManager.get(controllerClass, method);
         if (null == dtoClass) {
             // there are neither fields nor params
             return;
         }
         try {
-            JsonDTO dto = JSON.parseObject(patchedJsonBody(context), dtoClass);
+            JsonDto dto = JSON.parseObject(patchedJsonBody(context), dtoClass);
             cacheJsonDTO(context, dto);
         } catch (JSONException e) {
             if (e.getCause() != null) {

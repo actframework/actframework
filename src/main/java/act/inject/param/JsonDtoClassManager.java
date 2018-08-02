@@ -21,26 +21,23 @@ package act.inject.param;
  */
 
 import act.Act;
-import act.app.App;
-import act.app.AppClassLoader;
-import act.app.AppServiceBase;
+import act.app.*;
 import act.db.DbBind;
 import act.inject.DependencyInjector;
+import act.util.ReflectedInvokerHelper;
 import org.osgl.$;
 import org.osgl.exception.UnexpectedException;
 import org.osgl.inject.BeanSpec;
-import org.osgl.util.E;
-import org.osgl.util.Generics;
-import org.osgl.util.S;
+import org.osgl.util.*;
 
-import javax.inject.Inject;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.*;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import javax.inject.Inject;
 
-public class JsonDTOClassManager extends AppServiceBase<JsonDTOClassManager> {
+public class JsonDtoClassManager extends AppServiceBase<JsonDtoClassManager> {
 
     static class DynamicClassLoader extends ClassLoader {
         private DynamicClassLoader(AppClassLoader parent) {
@@ -53,13 +50,14 @@ public class JsonDTOClassManager extends AppServiceBase<JsonDTOClassManager> {
         }
     }
 
-    private ConcurrentMap<String, Class<? extends JsonDTO>> dtoClasses = new ConcurrentHashMap<String, Class<? extends JsonDTO>>();
+    private ConcurrentMap<String, Class<? extends JsonDto>> dtoClasses = new ConcurrentHashMap<String, Class<? extends JsonDto>>();
 
     private DependencyInjector<?> injector;
     private DynamicClassLoader dynamicClassLoader;
+    private Map<$.T2<Class, Method>, List<BeanSpec>> beanSpecCache = new HashMap<>();
 
 
-    public JsonDTOClassManager(App app) {
+    public JsonDtoClassManager(App app) {
         super(app);
         this.injector = app.injector();
         this.dynamicClassLoader = new DynamicClassLoader(app.classLoader());
@@ -70,16 +68,17 @@ public class JsonDTOClassManager extends AppServiceBase<JsonDTOClassManager> {
 
     }
 
-    public Class<? extends JsonDTO> get(Class<?> host, Method method) {
+    public Class<? extends JsonDto> get(Class<?> host, Method method) {
         List<BeanSpec> beanSpecs = beanSpecs(host, method);
         String key = key(beanSpecs);
         if (S.blank(key)) {
             return null;
         }
-        Class<? extends JsonDTO> cls = dtoClasses.get(key);
+        Class<? extends JsonDto> cls = dtoClasses.get(key);
         if (null == cls) {
             try {
-                Class<? extends JsonDTO> newClass = generate(key, beanSpecs);
+                Map<String, Class> typeParamLookup = Generics.buildTypeParamImplLookup(host);
+                Class<? extends JsonDto> newClass = generate(key, beanSpecs, typeParamLookup);
                 cls = dtoClasses.putIfAbsent(key, newClass);
                 if (null == cls) {
                     cls = newClass;
@@ -97,8 +96,8 @@ public class JsonDTOClassManager extends AppServiceBase<JsonDTOClassManager> {
         return cls;
     }
 
-    private Class<? extends JsonDTO> generate(String name, List<BeanSpec> beanSpecs) {
-        return new JsonDTOClassGenerator(name, beanSpecs, dynamicClassLoader).generate();
+    private Class<? extends JsonDto> generate(String name, List<BeanSpec> beanSpecs, Map<String, Class> typeParamLookup) {
+        return new JsonDtoClassGenerator(name, beanSpecs, dynamicClassLoader, typeParamLookup).generate();
     }
 
     public static final $.Predicate<Class<?>> CLASS_FILTER = new $.Predicate<Class<?>>() {
@@ -120,6 +119,9 @@ public class JsonDTOClassManager extends AppServiceBase<JsonDTOClassManager> {
             if (Modifier.isStatic(field.getModifiers())) {
                 return false;
             }
+            if (ReflectedInvokerHelper.isGlobalOrStateless(field)) {
+                return false;
+            }
             if (field.isAnnotationPresent(NoBind.class)) {
                 return false;
             }
@@ -129,12 +131,17 @@ public class JsonDTOClassManager extends AppServiceBase<JsonDTOClassManager> {
     };
 
     public List<BeanSpec> beanSpecs(Class<?> host, Method method) {
-        List<BeanSpec> list = new ArrayList<BeanSpec>();
-        if (!Modifier.isStatic(method.getModifiers())) {
-            extractBeanSpec(list, $.fieldsOf(host, CLASS_FILTER, FIELD_FILTER), host);
+        $.T2<Class, Method> key = $.cast($.T2(host, method));
+        List<BeanSpec> list = beanSpecCache.get(key);
+        if (null == list) {
+            list = new ArrayList<>();
+            beanSpecCache.put(key, list);
+            if (!Modifier.isStatic(method.getModifiers())) {
+                extractBeanSpec(list, $.fieldsOf(host, CLASS_FILTER, FIELD_FILTER), host);
+            }
+            extractBeanSpec(list, method, host);
+            Collections.sort(list, CMP);
         }
-        extractBeanSpec(list, method, host);
-        Collections.sort(list, CMP);
         return list;
     }
 

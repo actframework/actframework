@@ -62,7 +62,7 @@ import act.inject.DependencyInjector;
 import act.inject.genie.GenieFactoryFinder;
 import act.inject.genie.GenieInjector;
 import act.inject.genie.GenieModuleScanner;
-import act.inject.param.JsonDTOClassManager;
+import act.inject.param.JsonDtoClassManager;
 import act.inject.param.ParamValueLoaderManager;
 import act.inject.param.ParamValueLoaderService;
 import act.inject.param.ProvidedValueLoader;
@@ -181,6 +181,7 @@ public class App extends DestroyableBase {
     private Set<SysEventId> eventEmitted;
     private Thread mainThread;
     private Set<String> jarFileBlackList;
+    private Set<String> jarFileBlackList2;
     private Set<String> scanList;
     private Set<Pattern> scanPatterns;
     private Set<String> scanPrefixList;
@@ -1145,6 +1146,10 @@ public class App extends DestroyableBase {
         return jarFileBlackList;
     }
 
+    public Set<String> jarFileBlackList2() {
+        return jarFileBlackList2;
+    }
+
     public Set<String> scanList() {
         return scanList;
     }
@@ -1446,6 +1451,13 @@ public class App extends DestroyableBase {
         ClassLoader classLoader = getClass().getClassLoader();
         if (classLoader instanceof BootstrapClassLoader) {
             jarFileBlackList = ((BootstrapClassLoader) classLoader).jarBlackList();
+            jarFileBlackList2 = new HashSet<>();
+            for (String s : jarFileBlackList) {
+                if (s.contains("-")) {
+                    jarFileBlackList2.add(s);
+                }
+            }
+            jarFileBlackList.removeAll(jarFileBlackList2);
         }
     }
 
@@ -1549,7 +1561,7 @@ public class App extends DestroyableBase {
     }
 
     private void initJsonDTOClassManager() {
-        new JsonDTOClassManager(this);
+        new JsonDtoClassManager(this);
     }
 
     private void preloadClasses() {

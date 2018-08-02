@@ -27,7 +27,7 @@ import java.util.Map;
  * The base class of system generated data transfer object to support converting JSON string into
  * handler method parameters (or plus controller class fields)
  */
-public abstract class JsonDTO {
+public abstract class JsonDto {
 
     public static final String CTX_ATTR_KEY = "__json_dto__";
 

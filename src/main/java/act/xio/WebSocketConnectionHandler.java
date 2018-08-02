@@ -60,7 +60,7 @@ public abstract class WebSocketConnectionHandler extends RequestHandlerBase {
     private int methodIndex;
     protected boolean isStatic;
     private ParamValueLoaderService paramLoaderService;
-    private JsonDTOClassManager jsonDTOClassManager;
+    private JsonDtoClassManager jsonDTOClassManager;
     private int paramCount;
     private int fieldsAndParamsCount;
     private String singleJsonFieldName;
@@ -90,7 +90,7 @@ public abstract class WebSocketConnectionHandler extends RequestHandlerBase {
         this.controller = handler.classInfo();
 
         this.paramLoaderService = app.service(ParamValueLoaderManager.class).get(WebSocketContext.class);
-        this.jsonDTOClassManager = app.service(JsonDTOClassManager.class);
+        this.jsonDTOClassManager = app.service(JsonDtoClassManager.class);
 
         this.handlerClass = $.classForName(controller.className(), cl);
         this.disabled = !Env.matches(handlerClass);
@@ -216,14 +216,14 @@ public abstract class WebSocketConnectionHandler extends RequestHandlerBase {
         if (0 == fieldsAndParamsCount || !context.isJson()) {
             return;
         }
-        Class<? extends JsonDTO> dtoClass = jsonDTOClassManager.get(handlerClass, method);
+        Class<? extends JsonDto> dtoClass = jsonDTOClassManager.get(handlerClass, method);
         if (null == dtoClass) {
             // there are neither fields nor params
             return;
         }
         try {
-            JsonDTO dto = JSON.parseObject(patchedJsonBody(context), dtoClass);
-            context.attribute(JsonDTO.CTX_ATTR_KEY, dto);
+            JsonDto dto = JSON.parseObject(patchedJsonBody(context), dtoClass);
+            context.attribute(JsonDto.CTX_ATTR_KEY, dto);
         } catch (JSONException e) {
             if (e.getCause() != null) {
                 logger.warn(e.getCause(), "error parsing JSON data");

@@ -376,13 +376,24 @@ public class AppClassLoader
         Jars.F.JarEntryVisitor confIndexBuilder = Jars.F.appConfigFileIndexBuilder(jarConf);
         List<File> jars = FullStackAppBootstrapClassLoader.jars(AppClassLoader.class.getClassLoader());
         Set<String> blackList = app().jarFileBlackList();
+        Set<String> blackList2 = app().jarFileBlackList2();
         for (File jar : jars) {
             String filename = jar.getName();
             String name = S.cut(filename).beforeFirst("-");
             if ("".equals(name)) {
                 name = S.cut(filename).beforeLast(".");
             }
-            if (!blackList.contains(name)) {
+            if (blackList.contains(name)) {
+                continue;
+            }
+            boolean shouldScan = true;
+            for (String prefix : blackList2) {
+                if (filename.startsWith(prefix)) {
+                    shouldScan = false;
+                    break;
+                }
+            }
+            if (shouldScan) {
                 Jars.scan(jar, classNameIndexBuilder, confIndexBuilder);
             }
         }

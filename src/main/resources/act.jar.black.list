@@ -1,8 +1,12 @@
 activation
 asm
-byte
+byte-buddy
+commons
+core
 debugger
+ecj
 fastjson
+genie
 guava
 hamcrest
 idea_rt
@@ -25,4 +29,5 @@ org.apache.bval.bundle
 osgl
 patchca
 reflectasm
+rythm
 slf4j
