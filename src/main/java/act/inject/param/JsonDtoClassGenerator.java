@@ -33,7 +33,7 @@ import java.util.Map;
 class JsonDtoClassGenerator implements Opcodes {
 
 
-    private static final String JSON_DTO_CLASS = "act/inject/param/JsonDTO";
+    private static final String JSON_DTO_CLASS = "act/inject/param/JsonDto";
 
     private String className;
     private List<BeanSpec> beanSpecs;
@@ -65,7 +65,7 @@ class JsonDtoClassGenerator implements Opcodes {
         mv = cw.visitMethod(ACC_PUBLIC, "<init>", "()V", null, null);
         mv.visitCode();
         mv.visitVarInsn(ALOAD, 0);
-        mv.visitMethodInsn(INVOKESPECIAL, "act/inject/param/JsonDTO", "<init>", "()V", false);
+        mv.visitMethodInsn(INVOKESPECIAL, "act/inject/param/JsonDto", "<init>", "()V", false);
         mv.visitInsn(RETURN);
         mv.visitMaxs(1, 1);
         mv.visitEnd();

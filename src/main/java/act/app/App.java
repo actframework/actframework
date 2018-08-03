@@ -718,7 +718,7 @@ public class App extends DestroyableBase {
 
         if (null == blockIssue && null == blockIssueCause) {
             try {
-                initJsonDTOClassManager();
+                initJsonDtoClassManager();
                 initParamValueLoaderManager();
                 initMailerConfigManager();
 
@@ -1560,7 +1560,7 @@ public class App extends DestroyableBase {
         classLoader = Act.mode().classLoader(this);
     }
 
-    private void initJsonDTOClassManager() {
+    private void initJsonDtoClassManager() {
         new JsonDtoClassManager(this);
     }
 

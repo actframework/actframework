@@ -162,7 +162,7 @@ public abstract class WebSocketConnectionHandler extends RequestHandlerBase {
         if (disabled) {
             return;
         }
-        ensureJsonDTOGenerated(context);
+        ensureJsonDtoGenerated(context);
         Object[] params = params(context);
         Object retVal;
         if (this.isStatic) {
@@ -212,7 +212,7 @@ public abstract class WebSocketConnectionHandler extends RequestHandlerBase {
         return ca;
     }
 
-    private void ensureJsonDTOGenerated(WebSocketContext context) {
+    private void ensureJsonDtoGenerated(WebSocketContext context) {
         if (0 == fieldsAndParamsCount || !context.isJson()) {
             return;
         }

@@ -466,7 +466,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         preventDoubleSubmission(context);
         processForceResponse(context);
         if (forceDataBinding || context.state().isHandling()) {
-            ensureJsonDTOGenerated(context);
+            ensureJsonDtoGenerated(context);
         }
         final Object controller = controllerInstance(context);
 
@@ -566,11 +566,11 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         }
     }
 
-    private void cacheJsonDTO(ActContext<?> context, JsonDto dto) {
+    private void cacheJsonDto(ActContext<?> context, JsonDto dto) {
         context.attribute(JsonDto.CTX_ATTR_KEY, dto);
     }
 
-    private void ensureJsonDTOGenerated(ActionContext context) {
+    private void ensureJsonDtoGenerated(ActionContext context) {
         if (0 == fieldsAndParamsCount || !context.jsonEncoded()) {
             return;
         }
@@ -581,7 +581,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         }
         try {
             JsonDto dto = JSON.parseObject(patchedJsonBody(context), dtoClass);
-            cacheJsonDTO(context, dto);
+            cacheJsonDto(context, dto);
         } catch (JSONException e) {
             if (e.getCause() != null) {
                 warn(e.getCause(), "error parsing JSON data");
