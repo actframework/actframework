@@ -21,12 +21,8 @@ package act.db.meta;
  */
 
 import act.app.AppByteCodeScannerBase;
-import act.asm.AnnotationVisitor;
-import act.asm.ClassVisitor;
-import act.asm.FieldVisitor;
-import act.asm.Type;
-import act.db.CreatedAt;
-import act.db.LastModifiedAt;
+import act.asm.*;
+import act.db.*;
 import act.util.ByteCodeVisitor;
 import org.osgl.logging.LogManager;
 import org.osgl.logging.Logger;
@@ -46,6 +42,8 @@ public class EntityInfoByteCodeScanner extends AppByteCodeScannerBase {
 
     private static final String DESC_CREATED_AT = Type.getDescriptor(CreatedAt.class);
     private static final String DESC_LAST_MODIFIED_AT = Type.getDescriptor(LastModifiedAt.class);
+    private static final String DESC_CREATED_BY = Type.getDescriptor(CreatedBy.class);
+    private static final String DESC_LAST_MODIFIED_BY = Type.getDescriptor(LastModifiedBy.class);
     private static final String DESC_ID = Type.getDescriptor(Id.class);
     private static final String DESC_COLUMN = Type.getDescriptor(Column.class);
 
@@ -77,7 +75,9 @@ public class EntityInfoByteCodeScanner extends AppByteCodeScannerBase {
         boolean isEntityListener;
         String className;
         boolean foundCreatedAt;
+        boolean foundCreatedBy;
         boolean foundLastModifiedAt;
+        boolean foundLastModifiedBy;
         boolean foundId;
         MasterEntityMetaInfoRepo metaInfoRepo;
 
@@ -142,14 +142,14 @@ public class EntityInfoByteCodeScanner extends AppByteCodeScannerBase {
                         if (foundCreatedAt) {
                             LOGGER.warn("multiple @CreatedAt field found in class: " + className);
                         } else {
-                            repo.registerCreatedField(className, fieldName);
+                            repo.registerCreatedAtField(className, fieldName);
                         }
                         foundCreatedAt = true;
                     } else if (S.eq(DESC_LAST_MODIFIED_AT, desc)) {
                         if (foundLastModifiedAt) {
                             LOGGER.warn("multiple @LastModifiedAt field found in class: " + className);
                         } else {
-                            repo.registerLastModifiedField(className, fieldName);
+                            repo.registerLastModifiedAtField(className, fieldName);
                         }
                         foundLastModifiedAt = true;
                     } else if (S.eq(DESC_ID, desc)) {
@@ -159,6 +159,20 @@ public class EntityInfoByteCodeScanner extends AppByteCodeScannerBase {
                             repo.registerIdField(className, fieldName);
                         }
                         foundId = true;
+                    } else if (S.eq(DESC_CREATED_BY, desc)) {
+                        if (foundCreatedBy) {
+                            LOGGER.warn("multiple @CreatedBy field found in class: " + className);
+                        } else {
+                            repo.registerCreatedByField(className, fieldName);
+                        }
+                        foundCreatedBy = true;
+                    } else if (S.eq(DESC_LAST_MODIFIED_BY, desc)) {
+                        if (foundLastModifiedBy) {
+                            LOGGER.warn("multiple @LastModifiedBy field found in class: " + className);
+                        } else {
+                            repo.registerLastModifiedByField(className, fieldName);
+                        }
+                        foundLastModifiedBy = true;
                     } else if (null != columnName && S.eq(DESC_COLUMN, desc)) {
                         return new AnnotationVisitor(ASM5, av) {
                             @Override

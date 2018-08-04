@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 **1.8.8**
+* Support gradle/Java project structure #771
 * Add `PrincipalProvider` mechanism #770
 * Add annotation to mark creator/modifier of an entity #769
 * `AppClassLoader` - return enhanced bytecode for `getResource` call #768

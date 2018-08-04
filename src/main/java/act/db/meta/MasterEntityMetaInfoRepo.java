@@ -73,12 +73,12 @@ public class MasterEntityMetaInfoRepo extends EntityMetaInfoRepo {
             }
 
             @Override
-            public void registerCreatedField(String className, String fieldName) {
+            public void registerCreatedAtField(String className, String fieldName) {
                 E.unsupport();
             }
 
             @Override
-            public void registerLastModifiedField(String className, String fieldName) {
+            public void registerLastModifiedAtField(String className, String fieldName) {
                 E.unsupport();
             }
 

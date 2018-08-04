@@ -20,20 +20,16 @@ package act.db.meta;
  * #L%
  */
 
+import static act.db.meta.EntityFieldMetaInfo.Trait.*;
+
 import act.app.App;
 import act.app.AppServiceBase;
-import act.db.CreatedAt;
-import act.db.DB;
-import act.db.LastModifiedAt;
+import act.db.*;
 import act.util.Stateless;
 import org.osgl.inject.NamedProvider;
 
+import java.util.*;
 import javax.inject.Inject;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-
-import static act.db.meta.EntityFieldMetaInfo.Trait.*;
 
 /**
  * Stores meta information about entity classes. At the moment there
@@ -83,14 +79,24 @@ public class EntityMetaInfoRepo extends AppServiceBase<EntityMetaInfoRepo> {
         info.foundEntityListenersAnnotation();
     }
 
-    public void registerCreatedField(String className, String fieldName) {
+    public void registerCreatedAtField(String className, String fieldName) {
         EntityClassMetaInfo info = getOrCreate(className);
-        info.getOrCreateFieldInfo(fieldName).trait(CREATED);
+        info.getOrCreateFieldInfo(fieldName).trait(CREATED_AT);
     }
 
-    public void registerLastModifiedField(String className, String fieldName) {
+    public void registerLastModifiedAtField(String className, String fieldName) {
         EntityClassMetaInfo info = getOrCreate(className);
-        info.getOrCreateFieldInfo(fieldName).trait(LAST_MODIFIED);
+        info.getOrCreateFieldInfo(fieldName).trait(LAST_MODIFIED_AT);
+    }
+
+    public void registerCreatedByField(String className, String fieldName) {
+        EntityClassMetaInfo info = getOrCreate(className);
+        info.getOrCreateFieldInfo(fieldName).trait(CREATED_BY);
+    }
+
+    public void registerLastModifiedByField(String className, String fieldName) {
+        EntityClassMetaInfo info = getOrCreate(className);
+        info.getOrCreateFieldInfo(fieldName).trait(LAST_MODIFIED_BY);
     }
 
     public void registerIdField(String className, String fieldName) {

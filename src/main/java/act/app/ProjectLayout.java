@@ -128,6 +128,53 @@ public interface ProjectLayout {
 
         },
 
+        GRADLE_JAVA() {
+            @Override
+            public File source(File appBase) {
+                return file(appBase, "src/main/java");
+            }
+
+            @Override
+            public File testSource(File appBase) {
+                return file(appBase, "src/test/java");
+            }
+
+            @Override
+            public File resource(File appBase) {
+                String resources = Act.isDev() ? "src/main/resources" : "classes";
+                return file(appBase, resources);
+            }
+
+            @Override
+            public File testResource(File appBase) {
+                String resources = Act.isDev() ? "src/test/resources" : "test-classes";
+                return file(appBase, resources);
+            }
+
+            @Override
+            public File lib(File appBase) {
+                String lib = Act.isDev() ? "src/main/lib" : "lib";
+                return file(appBase, lib);
+            }
+
+            @Override
+            public File testLib(File appBase) {
+                String lib = Act.isDev() ? "src/test/lib" : "test-lib";
+                return file(appBase, lib);
+            }
+
+            @Override
+            public String classes() {
+                return RuntimeDirs.CLASSES;
+            }
+
+            @Override
+            public File target(File appBase) {
+                return file(appBase, "out/production");
+            }
+
+        },
+
         GRADLE_GROOVY() {
             @Override
             public File source(File appBase) {

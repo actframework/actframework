@@ -26,9 +26,7 @@ import org.osgl.$;
 import org.osgl.util.E;
 import org.osgl.util.S;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * Keep track meta information about an entity class
@@ -41,6 +39,8 @@ public class EntityClassMetaInfo {
     private EntityFieldMetaInfo idField;
     private EntityFieldMetaInfo createdAtField;
     private EntityFieldMetaInfo lastModifiedAtField;
+    private EntityFieldMetaInfo createdByField;
+    private EntityFieldMetaInfo lastModifiedByField;
     private Map<String, EntityFieldMetaInfo> fields = new HashMap<>();
 
     public String className() {
@@ -72,8 +72,16 @@ public class EntityClassMetaInfo {
         return createdAtField;
     }
 
+    public EntityFieldMetaInfo createdByField() {
+        return createdByField;
+    }
+
     public EntityFieldMetaInfo lastModifiedAtField() {
         return lastModifiedAtField;
+    }
+
+    public EntityFieldMetaInfo lastModifiedByField() {
+        return lastModifiedByField;
     }
 
     public EntityFieldMetaInfo idField() {
@@ -135,9 +143,19 @@ public class EntityClassMetaInfo {
         this.createdAtField = $.requireNotNull(fieldInfo);
     }
 
+    void createdByField(EntityFieldMetaInfo fieldInfo) {
+        E.illegalStateIf(null != createdByField, "createdBy field already set");
+        this.createdByField = $.requireNotNull(fieldInfo);
+    }
+
     void lastModifiedAtField(EntityFieldMetaInfo fieldInfo) {
         E.illegalArgumentIf(null != lastModifiedAtField, "lastModifiedAt field already set");
         this.lastModifiedAtField = $.requireNotNull(fieldInfo);
+    }
+
+    void lastModifiedByField(EntityFieldMetaInfo fieldInfo) {
+        E.illegalArgumentIf(null != lastModifiedByField, "lastModifiedBy field already set");
+        this.lastModifiedByField = $.requireNotNull(fieldInfo);
     }
 
     void idField(EntityFieldMetaInfo fieldInfo) {
@@ -148,14 +166,20 @@ public class EntityClassMetaInfo {
     private void mergeFrom(ClassNode parent, EntityMetaInfoRepo repo) {
         EntityClassMetaInfo parentInfo = repo.classMetaInfo(parent.name());
         if (null != parentInfo) {
-            if (null != idField) {
+            if (null == idField) {
                 idField = parentInfo.idField;
             }
-            if (null != createdAtField) {
+            if (null == createdAtField) {
                 createdAtField = parentInfo.createdAtField;
             }
-            if (null != lastModifiedAtField) {
+            if (null == lastModifiedAtField) {
                 lastModifiedAtField = parentInfo.lastModifiedAtField;
+            }
+            if (null == createdByField) {
+                createdByField = parentInfo.createdByField;
+            }
+            if (null == lastModifiedByField) {
+                lastModifiedByField = parentInfo.lastModifiedByField;
             }
             for (Map.Entry<String, EntityFieldMetaInfo> entry : parentInfo.fields.entrySet()) {
                 if (!fields.containsKey(entry.getKey())) {

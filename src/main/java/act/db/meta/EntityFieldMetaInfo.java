@@ -31,7 +31,11 @@ import java.util.Objects;
 public class EntityFieldMetaInfo {
 
     enum Trait {
-        CREATED, LAST_MODIFIED, ID
+        ID,
+        CREATED_AT,
+        CREATED_BY,
+        LAST_MODIFIED_AT,
+        LAST_MODIFIED_BY
     }
 
     private Trait trait;
@@ -50,23 +54,35 @@ public class EntityFieldMetaInfo {
 
     public void trait(Trait trait) {
         this.trait = $.requireNotNull(trait);
-        if (Trait.CREATED == trait) {
+        if (Trait.CREATED_AT == trait) {
             classInfo.createdAtField(this);
-        } else if (Trait.LAST_MODIFIED == trait) {
+        } else if (Trait.LAST_MODIFIED_AT == trait) {
             classInfo.lastModifiedAtField(this);
         } else if (Trait.ID == trait) {
             classInfo.idField(this);
+        } else if (Trait.CREATED_BY == trait) {
+            classInfo.createdByField(this);
+        } else if (Trait.LAST_MODIFIED_BY == trait) {
+            classInfo.lastModifiedByField(this);
         } else {
             throw E.unexpected("oops");
         }
     }
 
     public boolean isCreatedAt() {
-        return Trait.CREATED == trait;
+        return Trait.CREATED_AT == trait;
     }
 
     public boolean isLastModifiedAt() {
-        return Trait.LAST_MODIFIED == trait;
+        return Trait.LAST_MODIFIED_AT == trait;
+    }
+
+    public boolean isCreatedBy() {
+        return Trait.CREATED_BY == trait;
+    }
+
+    public boolean isLastModifiedBy() {
+        return Trait.LAST_MODIFIED_BY == trait;
     }
 
     public String className() {
