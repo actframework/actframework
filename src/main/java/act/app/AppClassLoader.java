@@ -57,10 +57,9 @@ import org.osgl.util.E;
 import org.osgl.util.IO;
 import org.osgl.util.S;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.InputStream;
+import java.io.*;
 import java.lang.annotation.Annotation;
+import java.net.*;
 import java.util.*;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -81,6 +80,7 @@ public class AppClassLoader
     private final static Logger logger = L.get(AppClassLoader.class);
     private App app;
     private Map<String, byte[]> libClsCache = new HashMap<>();
+    private Map<String, byte[]> enhancedResourceCache = new HashMap<>();
     private ClassInfoRepository classInfoRepository;
     private boolean destroyed;
     protected ControllerClassMetaInfoManager controllerInfo;
@@ -402,17 +402,6 @@ public class AppClassLoader
         config.loadJarProperties(jarConf);
     }
 
-    void loadClasses() {
-        for (String key : libClsCache.keySet()) {
-            try {
-                Class<?> c = loadClass(key, true);
-                cache(c);
-            } catch (Exception e) {
-                logger.warn(e, "error loading class");
-            }
-        }
-    }
-
     protected void preloadClasses() {
         File base = RuntimeDirs.classes(app);
         List<File> files = Files.filter(base, _F.SAFE_CLASS);
@@ -480,6 +469,9 @@ public class AppClassLoader
                 if (resolve) {
                     super.resolveClass(c);
                 }
+                if (baNew.length != bytecode.length) {
+                    enhancedResourceCache.put(name.replace('.', '/') + ".class", baNew);
+                }
                 return c;
             } catch (VerifyError e) {
                 File f = File.createTempFile(name, ".class");
@@ -493,6 +485,96 @@ public class AppClassLoader
         } catch (Exception e) {
             throw E.unexpected("Error processing class " + name);
         }
+    }
+
+    /**
+     * This returns the normal {@link ClassLoader#getResourceAsStream(String)}
+     * result.
+     *
+     * @param name the resource name
+     * @return the input stream pointing to the resource
+     * @see #getResourceAsStream(String)
+     */
+    public InputStream getOriginalResourceAsStream(String name) {
+        return super.getResourceAsStream(name);
+    }
+
+    /**
+     * The implementation check if the name is an enhanced class and
+     * returns an input stream pointing to the enhanced bytecode.
+     *
+     * Otherwise it delegate the call to normal
+     * {@link ClassLoader#getResourceAsStream(String)} call.
+     *
+     * To make sure it returns real inputstream from the class file,
+     * use {@link #getOriginalResourceAsStream(String)} method instead.
+     *
+     * @param name the resource name
+     * @return a URL pointing to the resource.
+     */
+    @Override
+    public InputStream getResourceAsStream(String name) {
+        byte[] ba = enhancedResourceCache.get(name);
+        if (null != ba) {
+            return new ByteArrayInputStream(ba);
+        }
+        return super.getResourceAsStream(name);
+    }
+
+    /**
+     * This returns the normal {@link ClassLoader#getResource(String)} result
+     *
+     * @param name the resource name
+     * @return the URL pointing to the resource
+     * @see #getResource(String)
+     */
+    public URL getOriginalResource(String name) {
+        return super.getResource(name);
+    }
+
+    /**
+     * The implementation check if the name is an enhanced class and
+     * returns a URL pointing to the enhanced bytecode.
+     *
+     * In which case the URL returned is using a special protocol `act-class`
+     * instead of `jar` or `file`, the only meaningful operation on the
+     * returned URL is {@link URL#openConnection()} which has special
+     * implementation of {@link URLConnection#getInputStream()} to return
+     * a {@link ByteArrayInputStream} pointing to the enhanced bytecode
+     * of the class.
+     *
+     * To make sure it returns real URL to the class file,
+     * use {@link #getOriginalResource(String)} method instead.
+     *
+     * @param name the resource name
+     * @return a URL pointing to the resource.
+     */
+    @Override
+    public URL getResource(String name) {
+        final byte[] ba = enhancedResourceCache.get(name);
+        if (null != ba) {
+            try {
+                return new URL("act-class", "", -1, name, new URLStreamHandler() {
+                    @Override
+                    protected URLConnection openConnection(URL u) {
+                        return new URLConnection(null) {
+                            @Override
+                            public void connect() {
+                            }
+
+                            @Override
+                            public InputStream getInputStream() {
+                                return new ByteArrayInputStream(ba);
+                            }
+
+                        };
+                    }
+                });
+            } catch (MalformedURLException e) {
+                throw E.unexpected(e);
+            }
+        }
+        return super.getResource(name);
     }
 
     protected byte[] enhance(String className, byte[] bytecode) {

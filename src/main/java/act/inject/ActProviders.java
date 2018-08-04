@@ -32,6 +32,7 @@ import act.db.Dao;
 import act.event.EventBus;
 import act.job.JobContext;
 import act.mail.MailerContext;
+import act.plugin.PrincipalProvider;
 import act.route.Router;
 import act.util.ActContext;
 import act.util.ClassInfoRepository;
@@ -314,6 +315,13 @@ public final class ActProviders {
         public SecureTicketCodec get() {
             AppConfig config = Act.appConfig();
             return config.secureTicketCodec();
+        }
+    };
+
+    public static final Provider<PrincipalProvider> PRINCIPAL_PROVIDER = new Provider<PrincipalProvider>() {
+        @Override
+        public PrincipalProvider get() {
+            return Act.app().principalProvider();
         }
     };
 

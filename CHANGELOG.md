@@ -1,6 +1,9 @@
 # ActFramework Change Log
 
 **1.8.8**
+* Add `PrincipalProvider` mechanism #770
+* Add annotation to mark creator/modifier of an entity #769
+* `AppClassLoader` - return enhanced bytecode for `getResource` call #768
 * Improve Singleton detection for controller instance creation #767
 * JsonDto class generation - support request handler reuse #766
 * API Doc - Support request handler reuse #765

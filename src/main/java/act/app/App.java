@@ -76,6 +76,7 @@ import act.metric.Metric;
 import act.metric.MetricContextScanner;
 import act.metric.MetricMetaInfoRepo;
 import act.metric.MetricProvider;
+import act.plugin.PrincipalProvider;
 import act.route.RouteSource;
 import act.route.RouteTableRouterBuilder;
 import act.route.Router;
@@ -205,6 +206,7 @@ public class App extends DestroyableBase {
     };
     private final Version version;
     private List<HotReloadListener> hotReloadListeners = new ArrayList<>();
+    private PrincipalProvider principalProvider = PrincipalProvider.DefaultPrincipalProvider.INSTANCE;
 
     private App() {
         this.version = Version.get();
@@ -964,6 +966,14 @@ public class App extends DestroyableBase {
 
     public UploadFileStorageService uploadFileStorageService() {
         return uploadFileStorageService;
+    }
+
+    public PrincipalProvider principalProvider() {
+        return principalProvider;
+    }
+
+    public void registerPrincipalProvider(PrincipalProvider principalProvider) {
+        this.principalProvider = $.requireNotNull(principalProvider);
     }
 
     public String sign(String message) {

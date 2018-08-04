@@ -790,9 +790,7 @@ public final class Act {
                 }
             }
         }
-        if (mode.isDev()) {
-            Version.suppressVariableFoundWarning = true;
-        }
+        Version.suppressVariableFoundWarning = mode.isDev();
         s = System.getProperty("app.nodeGroup");
         if (null != s) {
             nodeGroup = s;
