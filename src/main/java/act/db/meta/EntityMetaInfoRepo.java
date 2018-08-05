@@ -60,6 +60,8 @@ public class EntityMetaInfoRepo extends AppServiceBase<EntityMetaInfoRepo> {
 
     Map<String, EntityClassMetaInfo> lookup = new HashMap<>();
     Map<Class, EntityClassMetaInfo> lookup2 = new HashMap<>();
+    // for JPA converter discovery
+    private Set<Class> converters = new HashSet<>();
 
     EntityMetaInfoRepo(final App app) {
         super(app);
@@ -109,12 +111,20 @@ public class EntityMetaInfoRepo extends AppServiceBase<EntityMetaInfoRepo> {
         info.getOrCreateFieldInfo(fieldName).columnName(columnName);
     }
 
+    public void registerConverter(Class converterClass) {
+        converters.add(converterClass);
+    }
+
     public boolean isRegistered(String className) {
         return lookup.containsKey(className);
     }
 
     public Set<Class> entityClasses() {
         return lookup2.keySet();
+    }
+
+    public Set<Class> converterClasses() {
+        return converters;
     }
 
     public EntityClassMetaInfo classMetaInfo(Class<?> entityClass) {

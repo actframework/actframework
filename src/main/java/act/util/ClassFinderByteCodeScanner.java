@@ -71,7 +71,7 @@ public class ClassFinderByteCodeScanner extends AppByteCodeScannerBase {
             }
             final String methodName = name;
             final boolean isStatic = AsmTypes.isStatic(access);
-            final boolean paramIsInstance = null == signature;
+            final boolean paramIsInstance = null == signature && !"(Ljava/lang/Class;)V".equals(methodDesc);
             return new MethodVisitor(ASM5, mv) {
                 @Override
                 public AnnotationVisitor visitAnnotation(final String desc, boolean visible) {
