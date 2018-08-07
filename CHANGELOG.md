@@ -1,6 +1,9 @@
 # ActFramework Change Log
 
 **1.8.8**
+* Support simplified mail template path #774
+* `PasswordSpec` - allow `null` value for password validation #773
+* `@InvokeAfter` does not work #772
 * Support gradle/Java project structure #771
 * Add `PrincipalProvider` mechanism #770
 * Add annotation to mark creator/modifier of an entity #769

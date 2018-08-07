@@ -367,7 +367,7 @@ public class JobManager extends AppServiceBase<JobManager> {
                 return new Job(id, Act.jobManager());
             }
             if (warn) {
-                Act.LOGGER.warn("cannot find job by id: %s", id);
+                LOGGER.warn("cannot find job by id: %s", id);
             }
         }
         return job;

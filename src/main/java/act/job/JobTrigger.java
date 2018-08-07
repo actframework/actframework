@@ -383,16 +383,12 @@ public abstract class JobTrigger {
         @Override
         void schedule(JobManager manager, Job job) {
             traceSchedule(job);
-            if (null == targetId) {
+            Job associateTarget = manager.jobById(targetId, false);
+            if (null == associateTarget) {
                 LOGGER.warn("Failed to register job because target job not found: %s. Will try again after app started", targetId);
                 scheduleDelayedRegister(manager, job);
             } else {
-                Job associateTarget = manager.jobById(targetId);
-                if (null == associateTarget) {
-                    LOGGER.warn("Cannot find associated job: %s", targetId);
-                } else {
-                    associate(job, associateTarget);
-                }
+                associate(job, associateTarget);
             }
         }
 
@@ -401,7 +397,7 @@ public abstract class JobTrigger {
             before(START).register(new Job(id, manager, new $.F0<Void>() {
                 @Override
                 public Void apply() throws NotAppliedException, $.Break {
-                    Job associateTo = manager.jobById(id);
+                    Job associateTo = manager.jobById(targetId);
                     if (null == associateTo) {
                         LOGGER.warn("Cannot find associated job: %s", id);
                     } else {

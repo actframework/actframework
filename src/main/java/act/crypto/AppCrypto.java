@@ -67,6 +67,9 @@ public class AppCrypto {
      * @return the password hash
      */
     public char[] passwordHash(char[] password) {
+        if (null == password) {
+            return null;
+        }
         return BCrypt.hashpw(password, BCrypt.gensalt());
     }
 
@@ -76,10 +79,16 @@ public class AppCrypto {
      * @return the password hash
      */
     public String passwordHash(String password) {
+        if (null == password) {
+            return null;
+        }
         return BCrypt.hashpw(password, BCrypt.gensalt());
     }
 
     public boolean verifyPassword(String password, String hash) {
+        if (null == password) {
+            return false;
+        }
         try {
             return BCrypt.checkpw(password, hash);
         } catch (Exception e) {
@@ -88,6 +97,9 @@ public class AppCrypto {
     }
 
     public boolean verifyPassword(char[] password, String hash) {
+        if (null == password) {
+            return false;
+        }
         try {
             return BCrypt.checkpw(password, hash);
         } catch (Exception e) {
@@ -96,6 +108,9 @@ public class AppCrypto {
     }
 
     public boolean verifyPassword(char[] password, char[] hash) {
+        if (null == password) {
+            return false;
+        }
         try {
             return BCrypt.checkpw(password, new String(hash));
         } catch (Exception e) {

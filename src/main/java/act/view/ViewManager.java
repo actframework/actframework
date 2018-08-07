@@ -20,21 +20,20 @@ package act.view;
  * #L%
  */
 
+import static act.Destroyable.Util.tryDestroyAll;
+
 import act.Act;
 import act.app.App;
 import act.conf.AppConfig;
+import act.mail.MailerContext;
 import act.util.ActContext;
 import act.util.DestroyableBase;
 import org.osgl.$;
 import org.osgl.exception.UnexpectedException;
-import org.osgl.util.C;
-import org.osgl.util.E;
-import org.osgl.util.S;
+import org.osgl.util.*;
 
-import javax.enterprise.context.ApplicationScoped;
 import java.util.*;
-
-import static act.Destroyable.Util.tryDestroyAll;
+import javax.enterprise.context.ApplicationScoped;
 
 /**
  * Manage different view solutions
@@ -47,6 +46,7 @@ public class ViewManager extends DestroyableBase {
     private Map<String, VarDef> appDefined = new HashMap<>();
     private Map<String, Template> templateCache = new HashMap<>();
     private boolean multiViews = false;
+    private Keyword.Style mailTemplateNamingStyle = Keyword.Style.CAMEL_CASE;
 
     void register(View view) {
         E.NPE(view);
@@ -125,6 +125,41 @@ public class ViewManager extends DestroyableBase {
             TemplatePathResolver resolver = config.templatePathResolver();
 
             String path = resolver.resolve(context);
+            if (context instanceof MailerContext) {
+                String fileName = path.contains("/") ? S.cut(path).afterLast("/") : path;
+                String mailTemplatePath = S.concat("mail/", fileName);
+                template = getTemplate(context, config, mailTemplatePath);
+                if (null == template) {
+                    // try template file name variations - without prefix `send`
+                    fileName = fileName.substring(4);
+                    S.Pair pair = S.binarySplit(fileName, '.');
+                    fileName = pair.left();
+                    String suffix = "." + pair.right();
+                    Keyword keyword = Keyword.of(fileName);
+                    String variation = mailTemplateNamingStyle.toString(keyword);
+                    mailTemplatePath = S.concat("mail/", variation, suffix);
+                    template = getTemplate(context, config, mailTemplatePath);
+                    if (null == template) {
+                        for (Keyword.Style style : Keyword.Style.values()) {
+                            if (mailTemplateNamingStyle == style) {
+                                continue;
+                            }
+                            mailTemplateNamingStyle = style;
+                            variation = mailTemplateNamingStyle.toString(keyword);
+                            mailTemplatePath = S.concat("mail/", variation, suffix);
+                            template = getTemplate(context, config, mailTemplatePath);
+                            if (null != template) {
+                                break;
+                            }
+                        }
+                    }
+                }
+                if (null != template) {
+                    context.templatePath(mailTemplatePath);
+                    return template;
+                }
+            }
+
             template = getTemplate(context, config, path);
             if (null == template) {
                 String amendedPath = resolver.resolveWithContextMethodPath(context);
@@ -275,7 +310,8 @@ public class ViewManager extends DestroyableBase {
      * ** dot "."
      * ** dollar: "$"
      *
-     * @param string the string to be tested
+     * @param string
+     *         the string to be tested
      * @return `true` if the string literal is template content or `false` otherwise
      */
     public static boolean isTemplatePath(String string) {

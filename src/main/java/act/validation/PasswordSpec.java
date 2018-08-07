@@ -143,6 +143,9 @@ public class PasswordSpec implements Password.Validator {
 
     @Override
     public boolean isValid(char[] password) {
+        if (null == password) {
+            return true;
+        }
         int len = password.length;
         if (len < minLength() || len > maxLength()) {
             return false;
