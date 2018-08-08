@@ -23,10 +23,7 @@ package act.app;
 import static act.controller.Controller.Util.*;
 import static org.osgl.http.H.Header.Names.*;
 
-import act.ActResponse;
-import act.Destroyable;
-import act.RequestImplBase;
-import act.Trace;
+import act.*;
 import act.conf.AppConfig;
 import act.controller.ResponseCache;
 import act.controller.captcha.CaptchaViolation;
@@ -41,10 +38,7 @@ import act.route.Router;
 import act.route.UrlPath;
 import act.security.CORS;
 import act.session.SessionManager;
-import act.util.ActContext;
-import act.util.MissingAuthenticationHandler;
-import act.util.PropertySpec;
-import act.util.RedirectToLoginUrl;
+import act.util.*;
 import act.view.RenderAny;
 import act.xio.undertow.UndertowRequest;
 import org.osgl.$;
@@ -54,10 +48,7 @@ import org.osgl.logging.LogManager;
 import org.osgl.logging.Logger;
 import org.osgl.mvc.result.Result;
 import org.osgl.storage.ISObject;
-import org.osgl.util.C;
-import org.osgl.util.E;
-import org.osgl.util.S;
-import org.osgl.util.Token;
+import org.osgl.util.*;
 import org.osgl.web.util.UserAgent;
 
 import java.lang.annotation.Annotation;
@@ -1100,11 +1091,15 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
     }
 
     public void proceedWithHandler(RequestHandler handler) {
+        /**
+         * TODO: fix Dalian-Dong issue
         if (requireBodyParsing) {
             ((RequestImplBase) req()).receiveFullBytesAndProceed(this, handler);
         } else {
             handler.handle(this);
         }
+         */
+        handler.handle(this);
     }
 
     @Override
