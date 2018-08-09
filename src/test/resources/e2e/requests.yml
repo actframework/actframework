@@ -1,0 +1,8 @@
+# Define common requests
+RequestSpec(global):
+  headers:
+    Authorization: last|
+
+RequestSpec(ajax):
+  accept: json
+  ajax: true

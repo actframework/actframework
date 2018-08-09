@@ -1,0 +1,11 @@
+Scenario(b):
+  depends:
+    - a
+    - c
+  interactions:
+    - description: test b
+      request:
+        method: GET
+        url: /foo/b
+      response:
+        status: 200

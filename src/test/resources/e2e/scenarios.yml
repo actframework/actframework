@@ -1,0 +1,82 @@
+Scenario(sign_up):
+  fixtures:
+    - init-data.yml
+  interactions:
+    - description: Sign up a user
+      request:
+        modifiers:
+          - json
+          - ip: 127.0.0.2
+        method: POST
+        url: /sign_up
+        params:
+          email: test@123.com
+          password: abc
+          value: 1
+      response:
+        status: 201
+
+Scenario(sign_in):
+  depends:
+    - sign_up
+  interactions:
+    - description: login user `test@123.com`
+      request:
+        method: POST
+        url: /sign_up
+        headers:
+          Cache-Control: abc
+        params:
+          email: test@123.com
+          password: abc
+        response:
+          status: 201
+
+Scenario(create-task):
+  description: the main scenario
+  fixtures:
+    - init-data.yml
+  depends:
+    - sign_in
+  interactions:
+    - description: Create the first course with name "History"
+      request:
+        modifiers:
+          - json
+          - ip: 127.0.0.2
+        method: POST
+        url: /courses
+        headers:
+          Last-Modified:
+            - eq: 123456
+        params:
+          course.name: History
+          course.value: 100
+      response:
+        headers:
+          Content-Type: application/json
+          Last-Modified:
+            - exists: true
+        json:
+          size: 5
+          toString: "[1, 2, 3, 4, 5]"
+          3: 4
+      postAction:
+        remember:
+
+    - description: Create the second course with name "Math"\n * name param without `cours.` prefix
+      request:
+        method: POST
+        url: /courses
+        params:
+          name: Math
+      response:
+        json:
+          course.name: "Math"
+    - description: Create a course without name
+      request:
+        method: POST
+        url: /courses
+      response:
+        status: 400
+        text: Hello World
