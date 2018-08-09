@@ -23,6 +23,7 @@ package act.mail;
 import act.Act;
 import act.app.ActionContext;
 import act.app.App;
+import act.e2e.E2E;
 import act.event.ActEvent;
 import act.event.SystemEvent;
 import act.util.ActContext;
@@ -35,9 +36,7 @@ import org.osgl.logging.LogManager;
 import org.osgl.logging.Logger;
 import org.osgl.storage.ISObject;
 import org.osgl.storage.impl.SObject;
-import org.osgl.util.C;
-import org.osgl.util.E;
-import org.osgl.util.S;
+import org.osgl.util.*;
 
 import java.io.File;
 import java.util.*;
@@ -197,10 +196,23 @@ public class MailerContext extends ActContext.Base<MailerContext> {
     }
 
     public MailerContext subject(String subject, Object ... args) {
+        String emailId = E2E.generateEmailId();
+        if (null != emailId) {
+            emailId = "[e2e-" + emailId + "]";
+        }
+        if (S.blank(subject)) {
+            if (null != emailId) {
+                this.subject = emailId;
+            }
+            return this;
+        }
         if (app().config().i18nEnabled()) {
             this.subject = i18n(subject, args);
         } else {
             this.subject = S.fmt(subject, args);
+        }
+        if (null != emailId) {
+            this.subject = emailId + this.subject;
         }
         return this;
     }

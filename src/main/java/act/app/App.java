@@ -72,10 +72,7 @@ import act.mail.MailerConfigManager;
 import act.mail.bytecode.MailerByteCodeScanner;
 import act.meta.ClassMetaInfoBase;
 import act.meta.ClassMetaInfoManager;
-import act.metric.Metric;
-import act.metric.MetricContextScanner;
-import act.metric.MetricMetaInfoRepo;
-import act.metric.MetricProvider;
+import act.metric.*;
 import act.plugin.PrincipalProvider;
 import act.route.RouteSource;
 import act.route.RouteTableRouterBuilder;
@@ -208,6 +205,7 @@ public class App extends DestroyableBase {
     private List<HotReloadListener> hotReloadListeners = new ArrayList<>();
     private PrincipalProvider principalProvider = PrincipalProvider.DefaultPrincipalProvider.INSTANCE;
 
+    // for unit test purpose
     private App() {
         this.version = Version.get();
         this.appBase = new File(".");
@@ -215,6 +213,11 @@ public class App extends DestroyableBase {
         this.appHome = RuntimeDirs.home(this);
         this.config = new AppConfig<>().app(this);
         INST = this;
+        $.setFieldValue("metricPlugin", Act.class, new SimpleMetricPlugin());
+        this.eventEmitted = new HashSet<>();
+        this.eventBus = new EventBus(this);
+        this.jobManager = new JobManager(this);
+        this.classLoader = new AppClassLoader(this);
         this.sessionManager = new SessionManager(this.config, config().cacheService("logout-session"));
         this.dependencyInjector = new GenieInjector(this);
         this.singletonRegistry = new SingletonRegistry(this);

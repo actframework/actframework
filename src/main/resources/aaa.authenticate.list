@@ -1,8 +1,10 @@
-# By default waive authentication check on `act.Zen.` and `act.i18n.`
+-act.e2e.
 -act.i18n.LocaleResolver
 -act.i18n.TimeZoneResolver
 -act.i18n.EnumService
 -act.Zen.
+
+# The following endpoints are only public on dev mode
 [dev]-act.apidoc.
 [dev]-act.Info
 [dev]-act.i18n.

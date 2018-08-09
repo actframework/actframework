@@ -166,9 +166,7 @@ public @interface Mailer {
                 if (S.notBlank(ctx.bcc)) {
                     context.bcc(ctx.bcc);
                 }
-                if (S.notBlank(ctx.subject)) {
-                    context.subject(ctx.subject, ctx.subjectArgs);
-                }
+                context.subject(ctx.subject, ctx.subjectArgs);
                 if (!ctx.attachments.isEmpty()) {
                     context.attach(ctx.attachments);
                 }

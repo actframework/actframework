@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 **1.8.8**
+* Merge act-e2e into act core framework #779
 * Upload always failed after the first time #776
 * Support simplified mail template path #774
 * `PasswordSpec` - allow `null` value for password validation #773
