@@ -29,6 +29,7 @@ public class CacheSupportMetaInfo {
     public boolean enabled;
     public int ttl;
     public boolean supportPost;
+    public boolean usePrivate;
 
     private CacheSupportMetaInfo() {}
 
@@ -40,11 +41,12 @@ public class CacheSupportMetaInfo {
         return new CacheSupportMetaInfo();
     }
 
-    public static CacheSupportMetaInfo enabled($.Function<ActionContext, String> keyGenerator, int ttl, boolean supportPost) {
+    public static CacheSupportMetaInfo enabled($.Function<ActionContext, String> keyGenerator, int ttl, boolean supportPost, boolean usePrivate) {
         CacheSupportMetaInfo meta = new CacheSupportMetaInfo();
         meta.enabled = true;
         meta.ttl = ttl;
         meta.supportPost = supportPost;
+        meta.usePrivate = usePrivate;
         meta.keyGenerator = $.requireNotNull(keyGenerator);
         return meta;
     }

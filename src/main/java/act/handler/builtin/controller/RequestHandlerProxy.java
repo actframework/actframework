@@ -30,8 +30,7 @@ import act.app.ActionContext;
 import act.app.App;
 import act.app.AppInterceptorManager;
 import act.app.event.SysEventId;
-import act.controller.CacheSupportMetaInfo;
-import act.controller.ResponseCache;
+import act.controller.*;
 import act.controller.meta.*;
 import act.handler.RequestHandlerBase;
 import act.security.CORS;
@@ -48,8 +47,7 @@ import org.osgl.exception.UnexpectedException;
 import org.osgl.http.H;
 import org.osgl.logging.L;
 import org.osgl.logging.Logger;
-import org.osgl.mvc.result.ErrorResult;
-import org.osgl.mvc.result.Result;
+import org.osgl.mvc.result.*;
 import org.osgl.util.E;
 import org.osgl.util.S;
 
@@ -190,7 +188,12 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
                 cacheKey = cacheSupport.cacheKey(context);
                 ResponseCache cached = this.cache.get(cacheKey);
                 if (null != cached) {
-                    cached.applyTo(context.prepareRespForResultEvaluation());
+                    String etag = cached.etag();
+                    if (null != etag && context.req().etagMatches(etag)) {
+                        NotModified.of(etag).apply(context.req(), context.resp());
+                    } else {
+                        cached.applyTo(context.prepareRespForResultEvaluation());
+                    }
                     return;
                 }
                 context.enableCache();
@@ -214,7 +217,8 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
                 result = context.nullValueResult();
             }
             if (supportCache) {
-                context.resp().addHeaderIfNotAdded(H.Header.Names.CACHE_CONTROL, "public, max-age=" + cacheSupport.ttl);
+                String s = cacheSupport.usePrivate ? "private, max-age=" : "public, max-age=";
+                context.resp().addHeaderIfNotAdded(H.Header.Names.CACHE_CONTROL, s + cacheSupport.ttl);
             }
             onResult(result, context);
             if (supportCache) {
@@ -292,6 +296,7 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
         context.dissolve();
         boolean isRenderAny = false;
         try {
+            context.applyResultHashToEtag();
             if (result instanceof RenderAny) {
                 RenderAny any = (RenderAny) result;
                 isRenderAny = true;

@@ -21,6 +21,7 @@ package act.controller;
  */
 
 import static org.osgl.http.H.Format.*;
+import static org.osgl.http.H.Header.Names.ETAG;
 
 import act.ActResponse;
 import org.osgl.$;
@@ -30,14 +31,9 @@ import org.osgl.storage.ISObject;
 import org.osgl.util.Charsets;
 import org.osgl.util.Output;
 
-import java.io.OutputStream;
-import java.io.PrintWriter;
-import java.io.Serializable;
-import java.io.Writer;
+import java.io.*;
 import java.nio.ByteBuffer;
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 
 public class ResponseCache extends ActResponse implements Serializable {
 
@@ -45,6 +41,7 @@ public class ResponseCache extends ActResponse implements Serializable {
     private Map<String, String> headers = new HashMap<>();
     private Long len;
     private H.Status status;
+    private String etag;
 
     private ByteBuffer buffer;
     private OutputStreamCache osCache;
@@ -57,6 +54,10 @@ public class ResponseCache extends ActResponse implements Serializable {
 
     public ResponseCache(ActResponse realResponse) {
         this.realResponse = $.requireNotNull(realResponse);
+    }
+
+    public String etag() {
+        return this.etag;
     }
 
     public void applyTo(ActResponse response) {
@@ -175,6 +176,7 @@ public class ResponseCache extends ActResponse implements Serializable {
 
     @Override
     public H.Response etag(String etag) {
+        this.etag = etag;
         realResponse.etag(etag);
         // set through header call
         return this;
@@ -205,6 +207,9 @@ public class ResponseCache extends ActResponse implements Serializable {
         realResponse.addHeaderIfNotAdded(name, value);
         if (!headers.containsKey(name)) {
             headers.put(name, value);
+            if (ETAG.equalsIgnoreCase(name)) {
+                this.etag = value;
+            }
         }
         return this;
     }
@@ -333,6 +338,10 @@ public class ResponseCache extends ActResponse implements Serializable {
     @Override
     public H.Response header(String name, String value) {
         realResponse.header(name, value);
+        headers.put(name, value);
+        if (ETAG.equalsIgnoreCase(name)) {
+            this.etag = value;
+        }
         return this;
     }
 
@@ -346,6 +355,9 @@ public class ResponseCache extends ActResponse implements Serializable {
     public H.Response addHeader(String name, String value) {
         realResponse.addHeader(name, value);
         headers.put(name, value);
+        if (ETAG.equalsIgnoreCase(name)) {
+            this.etag = value;
+        }
         return this;
     }
 

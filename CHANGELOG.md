@@ -2,7 +2,9 @@
 
 **1.8.8**
 * `java.util.NoSuchElementException: null` issue when force respond `csv` type #781
+* Allow it specify `private` in `@CacheFor`for `Cache-Control` directive #780
 * Merge act-e2e into act core framework #779
+* Generate etag for `@CacheFor` request handlers #778
 * Upload always failed after the first time #776
 * Support simplified mail template path #774
 * `PasswordSpec` - allow `null` value for password validation #773

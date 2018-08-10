@@ -516,13 +516,13 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
     }
 
     @Override
-    public Result handle(Result result, ActionContext actionContext) throws Exception {
+    public Result handle(Result result, ActionContext actionContext) {
         actionContext.setResult(result);
         return handle(actionContext);
     }
 
     @Override
-    public Result handle(Exception e, ActionContext actionContext) throws Exception {
+    public Result handle(Exception e, ActionContext actionContext) {
         actionContext.attribute(ActionContext.ATTR_EXCEPTION, e);
         return handle(actionContext);
     }
@@ -723,7 +723,8 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         cacheSupport = null == cacheFor ? CacheSupportMetaInfo.disabled() :  CacheSupportMetaInfo.enabled(
                 new CacheKeyBuilder(cacheFor, S.concat(controllerClass.getName(), ".", method.getName())),
                 cacheFor.value(),
-                cacheFor.supportPost()
+                cacheFor.supportPost(),
+                cacheFor.usePrivate()
         );
     }
 
@@ -846,6 +847,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
             if (returnString && context.acceptJson()) {
                 result = null == result ? null : ensureValidJson(S.string(result));
             }
+            context.calcResultHashForEtag(result);
         } catch (Result r) {
             result = r;
         } catch (Exception e) {

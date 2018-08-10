@@ -110,6 +110,7 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
     private boolean allowIgnoreParamNamespace;
     private boolean consumed;
     private boolean readyForDestroy;
+    private int resultHash = Integer.MIN_VALUE;
 
     // see https://github.com/actframework/actframework/issues/492
     public String encodedSessionToken;
@@ -307,6 +308,19 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
         }
         H.Method method = req().method();
         return method == H.Method.POST || method == H.Method.PUT || method == H.Method.PATCH;
+    }
+
+    public ActionContext calcResultHashForEtag(Object o) {
+        if (cacheEnabled && null != o && !(o instanceof Result)) {
+            resultHash = $.hc(o);
+        }
+        return this;
+    }
+
+    public void applyResultHashToEtag() {
+        if (resultHash > Integer.MIN_VALUE) {
+            resp().addHeaderIfNotAdded(ETAG, S.string(resultHash));
+        }
     }
 
     public MissingAuthenticationHandler missingAuthenticationHandler() {

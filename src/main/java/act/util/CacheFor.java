@@ -58,4 +58,10 @@ public @interface CacheFor {
      * @return `true` if enable cache on POST request
      */
     boolean supportPost() default false;
+
+    /**
+     * Specify it shall use `private` for `Cache-Control`
+     * @return
+     */
+    boolean usePrivate() default false;
 }
