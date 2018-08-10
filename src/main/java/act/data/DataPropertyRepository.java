@@ -31,9 +31,7 @@ import org.osgl.logging.Logger;
 import org.osgl.util.C;
 import org.rythmengine.utils.S;
 
-import java.lang.reflect.Method;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
+import java.lang.reflect.*;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.*;
@@ -101,6 +99,10 @@ public class DataPropertyRepository extends AppServiceBase<DataPropertyRepositor
         for (Method m: ma) {
             buildPropertyPath(context, m, retLst);
         }
+        Field[] fa = c.getFields();
+        for (Field f: fa) {
+            buildPropertyPath(context, f, retLst);
+        }
         return retLst;
     }
 
@@ -122,6 +124,15 @@ public class DataPropertyRepository extends AppServiceBase<DataPropertyRepositor
             return;
         }
         Class c = m.getReturnType();
+        buildPropertyPath(c, m.getGenericReturnType(), context, propName, repo);
+    }
+
+
+    private void buildPropertyPath(String context, Field field, List<String> repo) {
+        buildPropertyPath(field.getType(), field.getGenericType(), context, field.getName(), repo);
+    }
+
+    private void buildPropertyPath(Class<?> c, Type genericType, String context, String propName, List<String> repo) {
         if (Class.class.equals(c)) {
             return;
         }
@@ -130,16 +141,22 @@ public class DataPropertyRepository extends AppServiceBase<DataPropertyRepositor
             List<String> retTypeProperties = propertyListOf(componentType);
             context = context + propName + ".";
             for (String s: retTypeProperties) {
-                repo.add(context + s);
+                String s0 = context + s;
+                if (!repo.contains(s0)) {
+                    repo.add(s0);
+                }
             }
             return;
         }
         if ($.isSimpleType(c)) {
-            repo.add(context + propName);
+            String s0 = context + propName;
+            if (!repo.contains(s0)) {
+                repo.add(s0);
+            }
             return;
         }
         if (Iterable.class.isAssignableFrom(c)) {
-            Type t = m.getGenericReturnType();
+            Type t = genericType;
             if (t instanceof ParameterizedType) {
                 ParameterizedType pt = (ParameterizedType) t;
                 Type[] ta = pt.getActualTypeArguments();
@@ -148,20 +165,29 @@ public class DataPropertyRepository extends AppServiceBase<DataPropertyRepositor
                     List<String> retTypeProperties = propertyListOf(c0);
                     context = context + propName + ".";
                     for (String s: retTypeProperties) {
-                        repo.add(context + s);
+                        String s0 = context + s;
+                        if (!repo.contains(s0)) {
+                            repo.add(s0);
+                        }
                     }
                 }
             }
             return;
         }
         if (terminators.contains(c) || extendedTerminators.contains(c.getName())) {
-            repo.add(context + propName);
+            String s0 = context + propName;
+            if (!repo.contains(s0)) {
+                repo.add(s0);
+            }
             return;
         }
         List<String> retTypeProperties = propertyListOf(c);
         context = context + propName + ".";
         for (String s : retTypeProperties) {
-            repo.add(context + s);
+            String s0 = context + s;
+            if (!repo.contains(s0)) {
+                repo.add(s0);
+            }
         }
     }
 

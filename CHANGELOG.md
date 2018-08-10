@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 **1.8.8**
+* `java.util.NoSuchElementException: null` issue when force respond `csv` type #781
 * Merge act-e2e into act core framework #779
 * Upload always failed after the first time #776
 * Support simplified mail template path #774

@@ -225,7 +225,8 @@ public enum CliView {
             } else {
                 iterator = C.list(result).iterator();
             }
-            Object firstElement = iterator.hasNext() ? iterator.next() : null;
+            boolean hasElement = iterator.hasNext();
+            Object firstElement = hasElement ? iterator.next() : null;
             if (null == firstElement) {
                 return;
             }
@@ -237,6 +238,9 @@ public enum CliView {
                 spec.onValue("-not_exists");
             }
             List<String> outputFields = repo.outputFields(spec, componentType, context);
+            if (outputFields.isEmpty()) {
+                return;
+            }
             IO.write(buildHeaderLine(outputFields, spec.labelMapping()), writer);
             IO.write($.OS.lineSeparator(), writer);
             IO.write(buildDataLine(firstElement, outputFields), writer);
