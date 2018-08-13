@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 **1.8.8**
+* Add `notEqual` e2e verifier #785
 * Add `attachmentName()` method to `ActionContext` #783
 * Extend View framework to support direct rendering of non-text content without template #782
 * `java.util.NoSuchElementException: null` issue when force respond `csv` type #781

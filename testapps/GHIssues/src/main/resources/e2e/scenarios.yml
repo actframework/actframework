@@ -1,0 +1,16 @@
+Scenario:
+  interactions:
+    - description: GH784
+      request:
+        get: 784
+      response:
+        json:
+          result:
+            - gt: -2147483648
+    - description: GH785
+      request:
+        get: 785
+      response:
+        json:
+          result:
+            - neq: 0
