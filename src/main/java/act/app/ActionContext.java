@@ -83,6 +83,7 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
     private Map<String, Object> controllerInstances;
     private Map<String, ISObject[]> uploads;
     private Router router;
+    private String processedUrl;
     private RequestHandler handler;
     private UserAgent ua;
     private String sessionKeyUsername;
@@ -260,6 +261,28 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
     public ActionContext router(Router router) {
         this.router = $.requireNotNull(router);
         return this;
+    }
+
+    public ActionContext processedUrl(String url) {
+        this.processedUrl = url;
+        return this;
+    }
+
+    private String processedUrl() {
+        return null == processedUrl ? req().url() : processedUrl;
+    }
+
+    public String attachmentName() {
+        String s = processedUrl;
+        if (s.contains("/")) {
+            s = S.cut(s).afterLast("/");
+        } else {
+            s = methodPath();
+            if (s.contains(".")) {
+                s = S.cut(s).afterLast(".");
+            }
+        }
+        return s + "." + accept().name();
     }
 
     public void markAsRequireCaptcha() {

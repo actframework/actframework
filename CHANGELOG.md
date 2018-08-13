@@ -1,6 +1,8 @@
 # ActFramework Change Log
 
 **1.8.8**
+* Add `attachmentName()` method to `ActionContext` #783
+* Extend View framework to support direct rendering of non-text content without template #782
 * `java.util.NoSuchElementException: null` issue when force respond `csv` type #781
 * Allow it specify `private` in `@CacheFor`for `Cache-Control` directive #780
 * Merge act-e2e into act core framework #779

@@ -65,7 +65,6 @@ public abstract class View extends AppServicePlugin {
      * Sub class must implement this method to load the template
      *
      * @param resourcePath the path to the template
-     * @param context      the view context
      * @return the template instance or {@code null} if template not found
      */
     // TODO it shall not need context to load template, revise this interface to remove it
@@ -75,7 +74,6 @@ public abstract class View extends AppServicePlugin {
      * Sub class must implement this method to load the template from string literal
      *
      * @param content the template content string literal
-     * @param context the view context
      * @return the template instance
      * @since 1.6
      */
@@ -97,6 +95,10 @@ public abstract class View extends AppServicePlugin {
             templateHome = "/" + name();
         }
         return templateHome;
+    }
+
+    public DirectRender directRenderFor(H.Format acceptType) {
+        return null;
     }
 
     /**

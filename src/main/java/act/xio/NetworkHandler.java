@@ -124,6 +124,9 @@ public class NetworkHandler extends DestroyableBase {
         String url = req.url();
         H.Method method = req.method();
         url = contentSuffixProcessor.apply(req, url);
+        if (!url.equals(req.url())) {
+            ctx.processedUrl(url);
+        }
         try {
             url = urlContextProcessor.apply(req, url);
         } catch (NotFound notFound) {

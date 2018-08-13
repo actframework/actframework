@@ -1564,7 +1564,11 @@ public @interface Controller {
                 if (fmt.isText()) {
                     return RenderText.of(status, fmt, s, status.toString());
                 }
-                throw E.unexpected("Cannot apply text result to format: %s", fmt);
+                DirectRender dr = Act.viewManager().loadDirectRender(actionContext);
+                if (null == dr) {
+                    throw E.unexpected("Cannot apply text result to format: %s", fmt);
+                }
+                return new DirectRenderResult(dr, v);
             }
         }
 

@@ -189,7 +189,7 @@ public class AppDescriptor implements Serializable {
      *      an `AppDescriptor` instance
      */
     public static AppDescriptor of(String appName, Class<?> entryClass) {
-        System.setProperty(Version.PROP_SUPPRESS_VAR_FOUND_WARNING, "true");
+        System.setProperty("osgl.version.suppress-var-found-warning", "true");
         return of(appName, entryClass, Version.of(entryClass));
     }
 

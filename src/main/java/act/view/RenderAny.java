@@ -20,23 +20,19 @@ package act.view;
  * #L%
  */
 
+import static org.osgl.http.H.Format.*;
+
 import act.ActResponse;
 import act.app.ActionContext;
 import org.osgl.http.H;
-import org.osgl.mvc.result.RenderBinary;
-import org.osgl.mvc.result.RenderJSON;
-import org.osgl.mvc.result.Result;
+import org.osgl.mvc.result.*;
 import org.osgl.storage.ISObject;
 import org.osgl.util.E;
 import org.osgl.util.S;
 
 import java.io.File;
 import java.io.InputStream;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import static org.osgl.http.H.Format.*;
+import java.util.*;
 
 /**
  * Render a template with template path and arguments provided

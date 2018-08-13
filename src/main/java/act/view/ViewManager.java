@@ -23,6 +23,7 @@ package act.view;
 import static act.Destroyable.Util.tryDestroyAll;
 
 import act.Act;
+import act.app.ActionContext;
 import act.app.App;
 import act.conf.AppConfig;
 import act.mail.MailerContext;
@@ -30,6 +31,7 @@ import act.util.ActContext;
 import act.util.DestroyableBase;
 import org.osgl.$;
 import org.osgl.exception.UnexpectedException;
+import org.osgl.http.H;
 import org.osgl.util.*;
 
 import java.util.*;
@@ -43,6 +45,9 @@ public class ViewManager extends DestroyableBase {
     private C.List<View> viewList = C.newList();
     private Map<String, ActionViewVarDef> implicitActionViewVariables = new HashMap<>();
     private Map<String, MailerViewVarDef> implicitMailerViewVariables = new HashMap<>();
+    private Map<H.Format, View> directViewQuickLookup = new HashMap<>();
+    private Set<H.Format> directViewBlackList = new HashSet<>();
+
     private Map<String, VarDef> appDefined = new HashMap<>();
     private Map<String, Template> templateCache = new HashMap<>();
     private boolean multiViews = false;
@@ -174,40 +179,6 @@ public class ViewManager extends DestroyableBase {
         return template;
     }
 
-    public Template getTemplate(String path) {
-        ActContext.Base ctx = ActContext.Base.currentContext();
-        if (null != ctx) {
-            String curPath = ctx.templatePath();
-            ctx.templateLiteral(path);
-            try {
-                return load(ctx);
-            } finally {
-                ctx.templatePath(curPath);
-            }
-        }
-        final String templatePath = S.ensureStartsWith(path, '/');
-        Template template = null;
-
-        View defView = Act.appConfig().defaultView();
-
-        if (null != defView) {
-            template = !isTemplatePath(path) ? defView.loadInlineTemplate(path) : defView.loadTemplate(templatePath);
-        }
-        if (null == template && multiViews) {
-            for (View view : viewList) {
-                if (view == defView) continue;
-                template = view.loadTemplate(templatePath);
-                if (null != template) {
-                    break;
-                }
-            }
-        }
-        if (null != template) {
-            templateCache.put(path, template);
-        }
-        return template;
-    }
-
     private Template getInlineTemplate(ActContext context, AppConfig config, String content) {
         View defView = config.defaultView();
         if (null != defView && defView.appliedTo(context)) {
@@ -244,6 +215,26 @@ public class ViewManager extends DestroyableBase {
             cache(path, template);
         }
         return template;
+    }
+
+    public DirectRender loadDirectRender(ActionContext context) {
+        H.Format accept = context.accept();
+        if (directViewBlackList.contains(accept)) {
+            return null;
+        }
+        View view = directViewQuickLookup.get(accept);
+        if (null != view) {
+            return view.directRenderFor(accept);
+        }
+        for (View view1 : viewList) {
+            DirectRender dr = view1.directRenderFor(accept);
+            if (null != dr) {
+                directViewQuickLookup.put(accept, view1);
+                return dr;
+            }
+        }
+        directViewBlackList.add(accept);
+        return null;
     }
 
 

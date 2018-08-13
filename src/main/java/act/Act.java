@@ -103,7 +103,6 @@ import javax.imageio.stream.MemoryCacheImageOutputStream;
 public final class Act {
 
     public static final Version VERSION = Version.of(Act.class);
-
     public static final Logger LOGGER = LogManager.get(Act.class);
 
     /**
@@ -791,9 +790,9 @@ public final class Act {
             }
         }
         if (mode.isDev()) {
-            System.setProperty(Version.PROP_SUPPRESS_VAR_FOUND_WARNING, "true");
+            System.setProperty("osgl.version.suppress-var-found-warning", "true");
         } else {
-            System.clearProperty(Version.PROP_SUPPRESS_VAR_FOUND_WARNING);
+            System.clearProperty("osgl.version.suppress-var-found-warning");
         }
         s = System.getProperty("app.nodeGroup");
         if (null != s) {

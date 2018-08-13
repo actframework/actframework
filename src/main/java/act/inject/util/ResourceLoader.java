@@ -319,7 +319,7 @@ public class ResourceLoader<T> extends ValueLoader.Base<T> {
                 if (Properties.class == rawType || Properties.class.isAssignableFrom(rawType)) {
                     return properties;
                 }
-                return $.map(properties).to(rawType);
+                return $.map(properties).targetGenericType(spec.type()).to(rawType);
             } else {
                 // try my best
                 List<String> lines = IO.readLines(url);
