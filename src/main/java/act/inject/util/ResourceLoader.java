@@ -288,12 +288,12 @@ public class ResourceLoader<T> extends ValueLoader.Base<T> {
             String content = IO.readContentAsString(url);
             content = content.trim();
             Object o = content.startsWith("[") ? JSON.parseArray(content) : JSON.parseObject(content);
-            return $.map(o).to(rawType);
+            return $.map(o).targetGenericType(spec.type()).to(rawType);
         }
         boolean isYaml = !isJson && (resourcePath.endsWith(".yml") || resourcePath.endsWith(".yaml"));
         if (isYaml) {
             Object o = new Yaml().load(IO.readContentAsString(url));
-            return $.map(o).to(rawType);
+            return $.map(o).targetGenericType(spec.type()).to(rawType);
         } else if (String.class == rawType) {
             return IO.readContentAsString(url);
         } else if (List.class.equals(rawType)) {

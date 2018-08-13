@@ -1350,9 +1350,7 @@ public @interface Controller {
          * @return a `RenderBinary` result as described above
          */
         public static RenderBinary download(URL url) {
-            String file = url.getPath();
-            String fileName = S.afterLast(file, "/");
-            return new RenderBinary(IO.is(url), fileName, false);
+            return new RenderBinary(IO.is(url), ActionContext.current().attachmentName(), false);
         }
 
         /**
@@ -1394,6 +1392,20 @@ public @interface Controller {
          */
         public static RenderBinary download(File file, String attachmentName) {
             return new RenderBinary(file, attachmentName, false);
+        }
+
+        /**
+         * Returns a {@link RenderBinary} result with an `InputStream`. The result will
+         * render the binary using "attachment" content disposition, with
+         * {@link ActionContext#attachmentName()} as the name of the download attachment.
+         *
+         * @param inputStream
+         *         the input stream from which byte content will be written to the
+         *         attachment.
+         * @return a `RenderBinary` result as described above
+         */
+        public static RenderBinary download(InputStream inputStream) {
+            return new RenderBinary(inputStream, ActionContext.current().attachmentName(), false);
         }
 
         /**
