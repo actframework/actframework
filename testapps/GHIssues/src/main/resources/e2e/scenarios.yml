@@ -1,23 +1,23 @@
-Scenario:
+Scenario(GH784):
   interactions:
-    - description: GH784
+    - description: test
       request:
         get: 784
       response:
         json:
           result:
-            - gt: -2147483648
-    - description: GH786 - test case A - app shall specify call super
+            - ne: 0
+Scenario(GH786):
+  interactions:
+    - description: test case A - app shall specify call super
       request:
         get: 786/a
       response:
         json:
-          result:
-            - neq: 0
-    - description: GH786 - test case B - app shall not be forced to specify call super
+          result: false
+    - description: test case B - app shall not be forced to specify call super
       request:
         get: 786/b
       response:
         json:
-          result:
-          - neq: 0
+          result: false

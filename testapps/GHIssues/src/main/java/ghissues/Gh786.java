@@ -26,22 +26,22 @@ public class Gh786 extends LogSupport {
     }
 
     @GetAction("786/a")
-    public int testA() {
+    public boolean testA() {
         Foo foo = new Foo();
         Bar bar = new Bar();
-        return foo.hashCode() - bar.hashCode();
+        return foo.hashCode() == bar.hashCode();
     }
 
     @Data
     public static class MyRecord extends AdaptiveBean {}
 
     @GetAction("786/b")
-    public int testB() {
+    public boolean testB() {
         MyRecord r1 = new MyRecord();
         r1.putValue("foo", 1);
         MyRecord r2 = new MyRecord();
         r2.putValue("foo", 2);
-        return r1.hashCode() - r2.hashCode();
+        return r1.hashCode() == r2.hashCode();
     }
 
 }
