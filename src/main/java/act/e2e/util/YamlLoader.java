@@ -129,7 +129,13 @@ public class YamlLoader extends LogSupport {
      * @return the loaded data mapped to name
      */
     public Map<String, Object> parse(String yaml, DaoLocator daoLocator) {
+        if (S.blank(yaml)) {
+            return C.Map();
+        }
         Object o = new Yaml().load(yaml);
+        if (null == o) {
+            return C.Map();
+        }
         Map<Object, Map<?, ?>> objects = $.cast(o);
         resolveConstants(objects);
         Map<String, Map<String, Object>> mapCache = C.newMap();

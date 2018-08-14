@@ -300,6 +300,8 @@ public class Scenario implements ScenarioPart {
             if (sVal.startsWith("${")) {
                 String expr = S.strip(sVal).of("${", "}");
                 value = eval(expr);
+            } else if (sVal.contains("${")) {
+                value = processStringSubstitution(sVal);
             }
             String key = entry.getKey();
             constants.remove(key);
@@ -846,14 +848,18 @@ public class Scenario implements ScenarioPart {
             a = n;
             E.illegalArgumentIf(n < -1, "Invalid string: " + s);
             String part = s.substring(z + 2, a);
-            String key = part;
-            String payload = "";
-            if (part.contains(":")) {
-                S.Binary binary = S.binarySplit(part, ':');
-                key = binary.first();
-                payload = binary.second();
+            if (part.contains("(") && part.endsWith(")")) {
+                buf.append(evalFunc(part));
+            } else {
+                String key = part;
+                String payload = "";
+                if (part.contains(":")) {
+                    S.Binary binary = S.binarySplit(part, ':');
+                    key = binary.first();
+                    payload = binary.second();
+                }
+                buf.append(getVal(key, payload));
             }
-            buf.append(getVal(key, payload));
             n = s.indexOf("${", a);
             if (n < 0) {
                 buf.append(s.substring(a + 1));

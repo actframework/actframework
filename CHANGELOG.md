@@ -1,8 +1,11 @@
 # ActFramework Change Log
 
 **1.8.8**
-* `@Data` enhancement shall call super by default for Map/AdaptiveMap types #786
+* e2e - support embed function in string for constant definition #788
+* Empty `scenario.yml` file caused `NullPointerException` #787
+* `@Data` enhancement shall call super by defau lt for Map/AdaptiveMap types #786
 * Add `notEqual` e2e verifier #785
+* `@Data` enhancement error when Model class has no fields #784
 * Add `attachmentName()` method to `ActionContext` #783
 * Extend View framework to support direct rendering of non-text content without template #782
 * `java.util.NoSuchElementException: null` issue when force respond `csv` type #781
