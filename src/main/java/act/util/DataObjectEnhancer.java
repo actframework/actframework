@@ -20,13 +20,14 @@ package act.util;
  * #L%
  */
 
+import act.Act;
 import act.asm.*;
 import act.data.annotation.Data;
 import org.osgl.$;
-import org.osgl.util.FastStr;
-import org.osgl.util.S;
+import org.osgl.util.*;
 
 import java.util.List;
+import java.util.Map;
 
 /**
  * A tool to enhance a object by generating common {@link Object}
@@ -158,7 +159,7 @@ public class DataObjectEnhancer extends AppByteCodeEnhancer<DataObjectEnhancer> 
         mv.visitTypeInsn(CHECKCAST, hostInternalName);
         mv.visitVarInsn(ASTORE, 2); // store cast object to that
         // should we check super result?
-        if (metaInfo.shouldCallSuper()) {
+        if (shouldCallSuper()) {
             mv.visitVarInsn(ALOAD, 0); // load this
             mv.visitVarInsn(ALOAD, 2); // load that
             mv.visitMethodInsn(INVOKESPECIAL, metaInfo.superType().getInternalName(), "equals", "(Ljava/lang/Object;)Z", false);
@@ -200,7 +201,7 @@ public class DataObjectEnhancer extends AppByteCodeEnhancer<DataObjectEnhancer> 
                     cnt++;
                 }
             }
-            if (metaInfo.shouldCallSuper()) {
+            if (shouldCallSuper()) {
                 mv.visitVarInsn(ALOAD, 0);
                 mv.visitMethodInsn(INVOKESPECIAL, metaInfo.superType().getInternalName(), "hashCode", "()I", false);
                 mv.visitMethodInsn(INVOKESTATIC, "java/lang/Integer", "valueOf", "(I)Ljava/lang/Integer;", false);
@@ -222,7 +223,7 @@ public class DataObjectEnhancer extends AppByteCodeEnhancer<DataObjectEnhancer> 
                 mv.visitMethodInsn(INVOKEINTERFACE, "java/util/List", "add", "(Ljava/lang/Object;)Z", true);
                 mv.visitInsn(POP);
             }
-            if (metaInfo.shouldCallSuper()) {
+            if (shouldCallSuper()) {
                 mv.visitVarInsn(ALOAD, 0);
                 mv.visitMethodInsn(INVOKESPECIAL, metaInfo.superType().getInternalName(), "hashCode", "()I", false);
                 mv.visitMethodInsn(INVOKESTATIC, "java/lang/Integer", "valueOf", "(I)Ljava/lang/Integer;", false);
@@ -232,6 +233,19 @@ public class DataObjectEnhancer extends AppByteCodeEnhancer<DataObjectEnhancer> 
             mv.visitInsn(IRETURN);
             mv.visitMaxs(0, 0);
             mv.visitEnd();
+        }
+    }
+
+    private boolean shouldCallSuper() {
+        if (metaInfo.shouldCallSuper()) {
+            return true;
+        }
+        try {
+            ClassNode myNode = Act.app().classLoader().classInfoRepository().findNode(metaInfo.type().getClassName());
+            return myNode.hasInterface(Map.class.getName()) || myNode.hasInterface(AdaptiveMap.class.getName());
+        } catch (NullPointerException e) {
+            // ignore the error in unit test
+            return false;
         }
     }
 

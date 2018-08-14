@@ -75,6 +75,14 @@ public class ClassInfoRepository extends DestroyableBase {
         return node;
     }
 
+    public ClassNode findNode(Class<?> type) {
+        return classes.get(canonicalName(type.getName()));
+    }
+
+    public ClassNode findNode(String typeName) {
+        return classes.get(canonicalName(typeName));
+    }
+
     public boolean isEmpty() {
         return classes.isEmpty();
     }
