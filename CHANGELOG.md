@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 **1.8.8**
+* e2e - support email content verification #789
 * e2e - support embed function in string for constant definition #788
 * Empty `scenario.yml` file caused `NullPointerException` #787
 * `@Data` enhancement shall call super by defau lt for Map/AdaptiveMap types #786

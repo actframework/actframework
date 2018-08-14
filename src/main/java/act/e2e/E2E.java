@@ -23,6 +23,7 @@ package act.e2e;
 import act.Act;
 import act.app.App;
 import act.app.DbServiceManager;
+import act.app.conf.AutoConfig;
 import act.db.Dao;
 import act.db.DbService;
 import act.e2e.func.Func;
@@ -48,6 +49,7 @@ import javax.inject.Inject;
 
 @Env.RequireMode(Act.Mode.DEV)
 public class E2E extends LogSupport {
+
 
     static final Logger LOGGER = LogManager.get(E2E.class);
 

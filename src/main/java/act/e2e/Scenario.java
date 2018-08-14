@@ -330,7 +330,7 @@ public class Scenario implements ScenarioPart {
             if (S.notBlank(paramStr)) {
                 vals = C.newList(S.fastSplit(paramStr, ","));
                 for (int i = 0; i < vals.size(); ++i) {
-                    String val = vals.get(i).trim();
+                    String val = S.ensure(vals.get(i).trim()).strippedOff(S.DOUBLE_QUOTES);
                     val = processStringSubstitution(val);
                     vals.set(i, val);
                 }
@@ -479,7 +479,7 @@ public class Scenario implements ScenarioPart {
 
         for (Map.Entry<String, String> entry : interaction.cache.entrySet()) {
             String ref = entry.getValue();
-            Object value = getLastVal(ref);
+            Object value = ref.contains("${") ? processStringSubstitution(ref) : getLastVal(ref);
             if (null != value) {
                 cache.put(entry.getKey(), value);
             }
@@ -807,7 +807,25 @@ public class Scenario implements ScenarioPart {
 
     private Object getVal(String key, String ref) {
         Object stuff = getVal(key);
-        return S.blank(ref) ? stuff : JSONTraverser.traverse(stuff, ref);
+        if (S.blank(ref) || null == stuff) {
+            return stuff;
+        }
+        if (stuff instanceof String) {
+            String str = $.cast(stuff);
+            if (str.contains("<") && str.contains(">")) {
+                // try get html element
+                try {
+                    Document doc = Jsoup.parse(str, S.concat("http://localhost:", port, "/"));
+                    Elements elements = doc.select(ref);
+                    if (elements.size() != 0) {
+                        return elements.get(0).text();
+                    }
+                } catch (Exception e) {
+                    // just ignore
+                }
+            }
+        }
+        return JSONTraverser.traverse(stuff, ref);
     }
 
     private Object getVal(String key) {
@@ -834,10 +852,15 @@ public class Scenario implements ScenarioPart {
         }
     }
 
-    private String processStringSubstitution(String s) {
+    String processStringSubstitution(String s) {
         int n = s.indexOf("${");
         if (n < 0) {
             return s;
+        }
+        if (n == 0 && s.endsWith(")}")) {
+            s = s.substring(2);
+            s = s.substring(0, s.length() - 1);
+            return S.string(evalFunc(s));
         }
         int a = 0;
         int z = n;

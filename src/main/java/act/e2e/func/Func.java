@@ -20,12 +20,11 @@ package act.e2e.func;
  * #L%
  */
 
+import act.Act;
+import act.e2e.inbox.Inbox;
 import act.e2e.util.NamedLogic;
 import org.osgl.$;
-import org.osgl.util.C;
-import org.osgl.util.E;
-import org.osgl.util.N;
-import org.osgl.util.S;
+import org.osgl.util.*;
 import org.osgl.util.converter.TypeConverterRegistry;
 
 import java.util.List;
@@ -38,6 +37,73 @@ public abstract class Func<T extends Func> extends NamedLogic<T> {
     }
 
     public abstract Object apply();
+
+    public static class VerifiableEmail extends Func<VerifiableEmail> {
+        @Override
+        public Object apply() {
+            String email = Act.getInstance(Inbox.class).account;
+            S.Pair pair = S.binarySplit(email, '@');
+            String username = pair.left();
+            return S.concat(username, "+", S.random(N.randInt(5) + 2), "@", pair.right());
+        }
+
+        @Override
+        protected List<String> aliases() {
+            return C.list("checkableEmail");
+        }
+    }
+
+
+    public static class AfterLast extends Func<AfterLast> {
+
+        private String retVal;
+
+        @Override
+        public void init(Object param) {
+            E.illegalArgumentIfNot(param instanceof List, "2 parameters expected for afterLast function");
+            List<String> list = (List) param;
+            E.illegalArgumentIfNot(list.size() == 2, "2 parameters expected for afterLast function");
+            String targetStr = list.get(0);
+            String search = list.get(1);
+            retVal = S.cut(targetStr).afterLast(search);
+        }
+
+        @Override
+        public Object apply() {
+            return retVal;
+        }
+
+        @Override
+        protected List<String> aliases() {
+            return C.list("after");
+        }
+    }
+
+    public static class BeforeFirst extends Func<BeforeFirst> {
+
+        private String retVal;
+
+        @Override
+        public void init(Object param) {
+            E.illegalArgumentIfNot(param instanceof List, "2 parameters expected for beforeFirst function");
+            List<String> list = (List) param;
+            E.illegalArgumentIfNot(list.size() == 2, "2 parameters expected for beforeFirst function");
+            String targetStr = list.get(0);
+            String search = list.get(1);
+            retVal = S.cut(targetStr).beforeFirst(search);
+        }
+
+        @Override
+        public Object apply() {
+            return retVal;
+        }
+
+        @Override
+        protected List<String> aliases() {
+            return C.list("before");
+        }
+    }
+
 
     /**
      * Apply subString function to given string.

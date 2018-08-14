@@ -8,6 +8,7 @@ act.controller.builtin.CliOverHttp
 act.controller.captcha.CaptchaService
 act.db.DbBind
 act.e2e.E2E
+act.e2e.inbox.Inbox
 act.e2e.ScenarioDebugHelper
 act.e2e.ScenarioDebugHelper$LoadFixtures
 act.e2e.ScenarioDebugHelper$ClearFixtures

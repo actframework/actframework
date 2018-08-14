@@ -49,6 +49,10 @@ public class RequestSpec implements InteractionPart {
     public String put;
     // shortcut for (DELETE, url) pair
     public String delete;
+
+    // specify the email for inbox verification
+    public String email;
+
     public String accept;
     public Boolean ajax;
     public List<RequestModifier> modifiers = new ArrayList<>();
@@ -85,6 +89,9 @@ public class RequestSpec implements InteractionPart {
 
     @Override
     public void validate(Interaction interaction) throws UnexpectedException {
+        if (S.notBlank(email)) {
+            return;
+        }
         if (S.notBlank(get)) {
             method = H.Method.GET;
             url = get;

@@ -23,18 +23,15 @@ package act.e2e;
 import static act.e2e.E2EStatus.PENDING;
 import static act.e2e.util.ErrorMessage.error;
 
+import act.Act;
+import act.e2e.inbox.Inbox;
 import act.e2e.macro.Macro;
 import okhttp3.Response;
 import org.osgl.exception.UnexpectedException;
 import org.osgl.http.H;
-import org.osgl.util.E;
-import org.osgl.util.IO;
-import org.osgl.util.S;
+import org.osgl.util.*;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class Interaction implements ScenarioPart {
     public List<Macro> preActions = new ArrayList<>();
@@ -42,7 +39,7 @@ public class Interaction implements ScenarioPart {
     public RequestSpec request;
     public ResponseSpec response;
     public List<Macro> postActions = new ArrayList<>();
-    public Map<String, String> cache = new HashMap<>();
+    public Map<String, String> cache = new LinkedHashMap<>();
     public String errorMessage;
     public Throwable cause;
     public E2EStatus status = PENDING;
@@ -70,6 +67,7 @@ public class Interaction implements ScenarioPart {
         status = E2EStatus.of(pass);
         return pass;
     }
+
     public String causeStackTrace() {
         return null == cause ? null: E.stackTrace(cause);
     }
@@ -82,8 +80,12 @@ public class Interaction implements ScenarioPart {
     private boolean verify() {
         Response resp = null;
         try {
-            resp = Scenario.get().sendRequest(request);
-            doVerify(resp);
+            if (S.notBlank(request.email)) {
+                doVerifyEmail(request.email);
+            } else {
+                resp = Scenario.get().sendRequest(request);
+                doVerify(resp);
+            }
             return true;
         } catch (Exception e) {
             errorMessage = e.getMessage();
@@ -101,6 +103,14 @@ public class Interaction implements ScenarioPart {
         verifyStatus(resp);
         verifyHeaders(resp);
         verifyBody(resp);
+    }
+
+    private void doVerifyEmail(String email) throws Exception {
+        email = Scenario.get().processStringSubstitution(email);
+        Inbox inbox = Act.getInstance(Inbox.class);
+        Inbox.Reader reader = inbox.getReader();
+        String content = reader.readLatest(email);
+        Scenario.get().verifyBody(content, response);
     }
 
     private boolean run(List<Macro> macros) {
