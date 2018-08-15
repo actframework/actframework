@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 **1.8.8**
+* Add `renderBinary(byte[])` and `renderBinary(byte[], String)` method to `Controller.Util` #793
 * Attach `PropertySpec` info to `ActionContext` #792
 * Resource loader - allow loading from excel file #790
 * e2e - support email content verification #789

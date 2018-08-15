@@ -1342,6 +1342,47 @@ public @interface Controller {
         }
 
         /**
+         * Returns a {@link RenderBinary} result with byte array.
+         * The result will render the binary using "inline" content disposition.
+         *
+         * @param blob
+         *      the body of byte array
+         * @return the result
+         */
+        public static RenderBinary binary(byte[] blob) {
+            return new RenderBinary(blob);
+        }
+
+        /**
+         * Alias of {@link #binary(byte[])}
+         */
+        public static RenderBinary renderBinary(byte[] blob) {
+            return binary(blob);
+        }
+
+        /**
+         * Returns a {@link RenderBinary} result with byte array and an `attachmentName`.
+         *
+         * The result will render the binary using "inline" content disposition
+         * if the `attachmentName` is empty string or "attachment" if the `attachementName`
+         * is non empty string.
+         *
+         * @param blob
+         *      the body of byte array
+         * @return the result
+         */
+        public static RenderBinary binary(byte[] blob, String attachmentName) {
+            return new RenderBinary(blob, attachmentName);
+        }
+
+        /**
+         * Alias of {@link #binary(byte[], String)}
+         */
+        public static RenderBinary renderBinary(byte[] blob, String attachmentName) {
+            return binary(blob, attachmentName);
+        }
+
+        /**
          * Returns a {@link RenderBinary} result with a URL. The result will render
          * the binary using "attachment" content disposition.
          *

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns="http://maven.apache.org/POM/4.0.0"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <artifactId>act-resourceloader-test</artifactId>
+  <version>1.8.8.8-SNAPSHOT</version>
+
+  <name>ActFramework ResourceLoader Test App</name>
+
+  <parent>
+    <groupId>org.actframework</groupId>
+    <artifactId>act-starter-parent</artifactId>
+    <version>1.8.8.7-SNAPSHOT</version>
+  </parent>
+
+  <properties>
+    <!-- remove the following line if you are on Java 7-->
+    <java.version>1.8</java.version>
+    <app.entry>resourceloader.AppEntry</app.entry>
+  </properties>
+
+  <dependencies>
+    <!-- add your dependencies here -->
+    <dependency>
+      <groupId>org.actframework</groupId>
+      <artifactId>act-excel</artifactId>
+    </dependency>
+  </dependencies>
+
+</project>
