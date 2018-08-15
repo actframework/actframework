@@ -51,7 +51,9 @@ import org.osgl.storage.ISObject;
 import org.osgl.util.*;
 import org.osgl.web.util.UserAgent;
 
+import java.io.File;
 import java.lang.annotation.Annotation;
+import java.net.URL;
 import java.util.*;
 import javax.enterprise.context.RequestScoped;
 import javax.inject.Inject;
@@ -284,6 +286,24 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
             }
         }
         return s + "." + accept().name();
+    }
+
+    public String attachmentName(URL url) {
+        String path = url.getPath();
+        String name = path.contains("/") ? S.cut(path).afterLast("/") : path;
+        if (!name.contains(".")) {
+            name = name + "." + accept().name();
+        }
+        return name;
+    }
+
+    public String attachmentName(File file) {
+        String path = file.getName();
+        String name = path.contains("/") ? S.cut(path).afterLast("/") : path;
+        if (!name.contains(".")) {
+            name = name + "." + accept().name();
+        }
+        return name;
     }
 
     public void markAsRequireCaptcha() {

@@ -1383,15 +1383,19 @@ public @interface Controller {
         }
 
         /**
-         * Returns a {@link RenderBinary} result with a URL. The result will render
-         * the binary using "attachment" content disposition.
+         * Returns a {@link RenderBinary} result with a URL.
+         *
+         * The result will render the binary using "attachment" content disposition.
+         *
+         * The name of the attachment is inferred from URL.
+         *
          *
          * @param url
          *         the URL to be rendered
          * @return a `RenderBinary` result as described above
          */
         public static RenderBinary download(URL url) {
-            return new RenderBinary(IO.is(url), ActionContext.current().attachmentName(), false);
+            return new RenderBinary(IO.inputStream(url), ActionContext.current().attachmentName(url), false);
         }
 
         /**
@@ -1405,19 +1409,21 @@ public @interface Controller {
          * @return a `RenderBinary` result as described above
          */
         public static RenderBinary download(URL url, String attachmentName) {
-            return new RenderBinary(IO.is(url), attachmentName, false);
+            return new RenderBinary(IO.inputStream(url), attachmentName, false);
         }
 
         /**
          * Returns a {@link RenderBinary} result with a file. The result will render
          * the binary using "attachment" content disposition.
          *
+         * The name of the attachment is inferred from file
+         *
          * @param file
          *         the file to be rendered
          * @return a `RenderBinary` result as described above
          */
         public static RenderBinary download(File file) {
-            return new RenderBinary(file, file.getName(), false);
+            return new RenderBinary(file, ActionContext.current().attachmentName(file), false);
         }
 
         /**
