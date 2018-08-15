@@ -89,10 +89,13 @@ public class ReflectedInvokerHelper {
     }
 
     private static boolean isGlobalOrStateless(Field field, Set<Class> circularReferenceDetector) {
+        Class<?> fieldType = field.getType();
+        if ($.isSimpleType(fieldType)) {
+            return false;
+        }
         if (_hasGlobalOrStatelessAnnotations(field)) {
             return true;
         }
-        Class<?> fieldType = field.getType();
         return isGlobalOrStateless(fieldType, circularReferenceDetector);
     }
 

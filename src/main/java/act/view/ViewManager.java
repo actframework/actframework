@@ -179,6 +179,49 @@ public class ViewManager extends DestroyableBase {
         return template;
     }
 
+    /**
+     * // created for GH352
+     * Returns a Template instance by given path
+     * @param path
+     *      the path to the template
+     * @return
+     *      A template found by path or null if not found
+     */
+    @SuppressWarnings("unused")
+    public Template getTemplate(String path) {
+        ActContext.Base ctx = ActContext.Base.currentContext();
+        if (null != ctx) {
+            String curPath = ctx.templatePath();
+            ctx.templateLiteral(path);
+            try {
+                return load(ctx);
+            } finally {
+                ctx.templatePath(curPath);
+            }
+        }
+        final String templatePath = S.ensureStartsWith(path, '/');
+        Template template = null;
+
+        View defView = Act.appConfig().defaultView();
+
+        if (null != defView) {
+            template = !isTemplatePath(path) ? defView.loadInlineTemplate(path) : defView.loadTemplate(templatePath);
+        }
+        if (null == template && multiViews) {
+            for (View view : viewList) {
+                if (view == defView) continue;
+                template = view.loadTemplate(templatePath);
+                if (null != template) {
+                    break;
+                }
+            }
+        }
+        if (null != template) {
+            templateCache.put(path, template);
+        }
+        return template;
+    }
+
     private Template getInlineTemplate(ActContext context, AppConfig config, String content) {
         View defView = config.defaultView();
         if (null != defView && defView.appliedTo(context)) {

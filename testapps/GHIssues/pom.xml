@@ -4,7 +4,6 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>org.actframework</groupId>
   <artifactId>act-ghissues</artifactId>
   <version>1.8.8.8-SNAPSHOT</version>
 
@@ -24,6 +23,10 @@
 
   <dependencies>
     <!-- add your dependencies here -->
+    <dependency>
+      <groupId>org.actframework</groupId>
+      <artifactId>act-excel</artifactId>
+    </dependency>
   </dependencies>
 
 </project>

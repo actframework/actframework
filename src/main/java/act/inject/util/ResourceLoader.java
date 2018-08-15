@@ -217,7 +217,17 @@ public class ResourceLoader<T> extends ValueLoader.Base<T> {
                 }
             }
             return map;
+        } // eof isDir
+
+        try {
+            return IO.read(url).to(spec);
+        } catch (Exception e) {
+            if (LOGGER.isDebugEnabled()) {
+                LOGGER.debug(e, "error read URL[%s] to [%s] via IO.read call", url, spec);
+            }
+            // ignore
         }
+
         Class<?> rawType = spec.rawType();
         if (URL.class == rawType) {
             return url;

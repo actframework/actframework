@@ -159,7 +159,7 @@ public class DataObjectEnhancer extends AppByteCodeEnhancer<DataObjectEnhancer> 
         mv.visitTypeInsn(CHECKCAST, hostInternalName);
         mv.visitVarInsn(ASTORE, 2); // store cast object to that
         // should we check super result?
-        if (shouldCallSuper()) {
+        if (shouldCallSuperForEquals()) {
             mv.visitVarInsn(ALOAD, 0); // load this
             mv.visitVarInsn(ALOAD, 2); // load that
             mv.visitMethodInsn(INVOKESPECIAL, metaInfo.superType().getInternalName(), "equals", "(Ljava/lang/Object;)Z", false);
@@ -201,7 +201,7 @@ public class DataObjectEnhancer extends AppByteCodeEnhancer<DataObjectEnhancer> 
                     cnt++;
                 }
             }
-            if (shouldCallSuper()) {
+            if (shouldCallSuper(fieldCount)) {
                 mv.visitVarInsn(ALOAD, 0);
                 mv.visitMethodInsn(INVOKESPECIAL, metaInfo.superType().getInternalName(), "hashCode", "()I", false);
                 mv.visitMethodInsn(INVOKESTATIC, "java/lang/Integer", "valueOf", "(I)Ljava/lang/Integer;", false);
@@ -223,7 +223,7 @@ public class DataObjectEnhancer extends AppByteCodeEnhancer<DataObjectEnhancer> 
                 mv.visitMethodInsn(INVOKEINTERFACE, "java/util/List", "add", "(Ljava/lang/Object;)Z", true);
                 mv.visitInsn(POP);
             }
-            if (shouldCallSuper()) {
+            if (shouldCallSuper(fieldCount)) {
                 mv.visitVarInsn(ALOAD, 0);
                 mv.visitMethodInsn(INVOKESPECIAL, metaInfo.superType().getInternalName(), "hashCode", "()I", false);
                 mv.visitMethodInsn(INVOKESTATIC, "java/lang/Integer", "valueOf", "(I)Ljava/lang/Integer;", false);
@@ -236,7 +236,22 @@ public class DataObjectEnhancer extends AppByteCodeEnhancer<DataObjectEnhancer> 
         }
     }
 
-    private boolean shouldCallSuper() {
+    private boolean shouldCallSuperForEquals() {
+        if (null == metaInfo.superType()) {
+            return false;
+        }
+        List<ObjectMetaInfo.FieldMetaInfo> fields = metaInfo.fields();
+        int fieldCount = fieldCount(fields);
+        return shouldCallSuper(fieldCount);
+    }
+
+    private boolean shouldCallSuper(int fieldCount) {
+        if (null == metaInfo.superType()) {
+            return false;
+        }
+        if (0 == fieldCount) {
+            return true;
+        }
         if (metaInfo.shouldCallSuper()) {
             return true;
         }
