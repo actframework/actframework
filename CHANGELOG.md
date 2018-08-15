@@ -1,6 +1,8 @@
 # ActFramework Change Log
 
 **1.8.8**
+* Attach `PropertySpec` info to `ActionContext` #792
+* Resource loader - allow loading from excel file #790
 * e2e - support email content verification #789
 * e2e - support embed function in string for constant definition #788
 * Empty `scenario.yml` file caused `NullPointerException` #787

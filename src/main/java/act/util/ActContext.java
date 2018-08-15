@@ -380,7 +380,8 @@ public interface ActContext<CTX_TYPE extends ActContext> extends ParamValueProvi
         }
 
         public String dateFormatPattern() {
-            return this.dateFormatPattern;
+            String ptn = this.dateFormatPattern;
+            return null == ptn ? config().datePattern() : ptn;
         }
 
         @Override

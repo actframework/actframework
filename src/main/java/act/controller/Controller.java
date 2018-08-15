@@ -1743,6 +1743,8 @@ public @interface Controller {
                     return RenderCSV.of(status, v, propertySpec, context);
                 } else {
                     boolean isArray = vCls.isArray();
+                    PropertySpec.MetaInfo propertySpec = PropertySpec.MetaInfo.withCurrent(meta, context);
+                    context.propertySpec(propertySpec);
                     return inferPrimitiveResult(v, context, false, requireXML, isArray, isDateTimeType);
                 }
             }

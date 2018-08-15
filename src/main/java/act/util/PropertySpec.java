@@ -138,7 +138,7 @@ public @interface PropertySpec {
     /**
      * Capture the {@code PropertySpec} annotation meta info in bytecode scanning phase
      */
-    class MetaInfo {
+    public class MetaInfo {
         // split "fn as firstName" into "fn" and "firstName"
         private static Pattern p = Pattern.compile("\\s+as\\s+", Pattern.CASE_INSENSITIVE);
 
@@ -247,12 +247,12 @@ public @interface PropertySpec {
 
         public Set<String> excludedFields(ActContext context) {
             Spec spec = spec(context);
-            return null == spec ? C.<String>set() : C.set(spec.excluded());
+            return null == spec ? C.<String>Set() : C.Set(spec.excluded());
         }
 
         public Set<String> excludeFieldsForHttp() {
             Spec spec = httpSpec();
-            return null == spec ? C.<String>set() : C.set(spec.excluded());
+            return null == spec ? C.<String>Set() : C.Set(spec.excluded());
         }
 
         public String label(String field, ActContext context) {

@@ -112,6 +112,7 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
     private boolean consumed;
     private boolean readyForDestroy;
     private int resultHash = Integer.MIN_VALUE;
+    private PropertySpec.MetaInfo propSpec;
 
     // see https://github.com/actframework/actframework/issues/492
     public String encodedSessionToken;
@@ -344,6 +345,15 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
         if (resultHash > Integer.MIN_VALUE) {
             resp().addHeaderIfNotAdded(ETAG, S.string(resultHash));
         }
+    }
+
+    public ActionContext propertySpec(PropertySpec.MetaInfo spec) {
+        this.propSpec = spec;
+        return this;
+    }
+
+    public PropertySpec.MetaInfo propertySpec() {
+        return this.propSpec;
     }
 
     public MissingAuthenticationHandler missingAuthenticationHandler() {
