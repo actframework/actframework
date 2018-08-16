@@ -65,6 +65,9 @@ public class ReflectedInvokerHelper {
     }
 
     private static boolean isGlobalOrStateless(Class type, Set<Class> circularReferenceDetector) {
+        if ($.isSimpleType(type)) {
+            return false;
+        }
         if (Act.app().isSingleton(type) || AppServiceBase.class.isAssignableFrom(type) || _hasGlobalOrStatelessAnnotations(type)) {
             return true;
         }
@@ -90,9 +93,6 @@ public class ReflectedInvokerHelper {
 
     private static boolean isGlobalOrStateless(Field field, Set<Class> circularReferenceDetector) {
         Class<?> fieldType = field.getType();
-        if ($.isSimpleType(fieldType)) {
-            return false;
-        }
         if (_hasGlobalOrStatelessAnnotations(field)) {
             return true;
         }
