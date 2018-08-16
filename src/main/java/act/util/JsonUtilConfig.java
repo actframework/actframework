@@ -87,7 +87,7 @@ public class JsonUtilConfig {
                 } else {
                     this.dateFormat = new SimpleDateFormat(dateFormatPattern, locale);
                 }
-                this.disableCircularReferenceDetect = context.isDisableCircularReferenceDetect();
+                this.disableCircularReferenceDetect = null == spec && context.isDisableCircularReferenceDetect();
                 this.filters = initFilters(v, spec, context);
                 this.features = initFeatures(format, context);
             }

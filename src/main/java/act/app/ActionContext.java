@@ -428,7 +428,7 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
      */
     public UrlPath urlPath() {
         if (null == urlPath) {
-            urlPath = UrlPath.of(req().path());
+            urlPath = UrlPath.of(null == processedUrl ? req().url() : processedUrl);
         }
         return urlPath;
     }

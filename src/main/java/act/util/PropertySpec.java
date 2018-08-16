@@ -276,6 +276,7 @@ public @interface PropertySpec {
         }
 
         public static MetaInfo withCurrent(MetaInfo builtIn, ActContext context) {
+            MetaInfo retVal = builtIn;
             String s = PropertySpec.current.get();
             if (S.notBlank(s)) {
                 PropertySpec.MetaInfo spec = new PropertySpec.MetaInfo();
@@ -284,9 +285,13 @@ public @interface PropertySpec {
                 } else {
                     spec.onHttp(s);
                 }
-                return spec;
+                retVal = spec;
             }
-            return builtIn;
+            if (context instanceof ActionContext) {
+                ActionContext actionContext = (ActionContext) context;
+                actionContext.propertySpec(retVal);
+            }
+            return retVal;
         }
 
         public static MetaInfo withCurrent(HandlerMethodMetaInfo methodMetaInfo, ActContext context) {
