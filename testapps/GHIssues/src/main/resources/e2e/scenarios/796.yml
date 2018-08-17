@@ -1,0 +1,11 @@
+Scenario(GH796):
+  interactions:
+  - description: Test
+    request:
+      get: 796
+    response:
+      json:
+        text:
+          - exists: true
+        id:
+          - exists: false

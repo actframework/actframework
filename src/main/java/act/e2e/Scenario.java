@@ -481,7 +481,7 @@ public class Scenario implements ScenarioPart {
             String ref = entry.getValue();
             Object value = ref.contains("${") ? processStringSubstitution(ref) : getLastVal(ref);
             if (null != value) {
-                cache.put(entry.getKey(), value);
+                cache(entry.getKey(), value);
             }
         }
         return true;
