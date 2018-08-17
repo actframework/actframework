@@ -603,8 +603,29 @@ public class Scenario implements ScenarioPart {
     void verifyJsonObject(JSONObject obj, Map<String, Object> jsonSpec) {
         for (Map.Entry<String, Object> entry : jsonSpec.entrySet()) {
             String key = entry.getKey();
-            Object value = $.getProperty(obj, key);
-            verifyValue(key, value, entry.getValue());
+            // ${sizeOf(date)}
+            if (key.startsWith("${")) {
+                // sizeOf(date)}
+                String s = key.substring(2);
+
+                // sizeOf(date)
+                s = s.substring(0, s.length() - 1);
+
+                // sizeOf
+                String funcName = s.substring(0, s.indexOf("("));
+
+                // date)
+                s = s.substring(s.indexOf("(") + 1);
+                // date
+                String varName = s.substring(0, s.length() - 1);
+
+                Object val = $.getProperty(obj, varName);
+                val = evalFunc(funcName + "(" + val + ")");
+                verifyValue(key, val, entry.getValue());
+            } else {
+                Object val = $.getProperty(obj, key);
+                verifyValue(key, val, entry.getValue());
+            }
         }
     }
 

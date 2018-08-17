@@ -1,0 +1,8 @@
+Scenario(GH798):
+  interactions:
+  - description: Test
+    request:
+      get: 798
+    response:
+      json:
+        ${sizeOf(date)}: 7

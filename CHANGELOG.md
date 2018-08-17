@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 **1.8.8**
+* JSON output: default format for `java.util.Date` missing time part #797
 * `@PropertySpec` annotation now cause `NullPointerException` on JSON output #796
 * Add `renderBinary(byte[])` and `renderBinary(byte[], String)` method to `Controller.Util` #793
 * Attach `PropertySpec` info to `ActionContext` #792

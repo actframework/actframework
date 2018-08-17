@@ -27,6 +27,8 @@ import org.osgl.$;
 import org.osgl.util.*;
 import org.osgl.util.converter.TypeConverterRegistry;
 
+import java.lang.reflect.Array;
+import java.util.Collection;
 import java.util.List;
 
 public abstract class Func<T extends Func> extends NamedLogic<T> {
@@ -53,6 +55,30 @@ public abstract class Func<T extends Func> extends NamedLogic<T> {
         }
     }
 
+    public static class SizeOf extends Func<SizeOf> {
+
+        int size;
+
+        @Override
+        public void init(Object param) {
+            if (param instanceof Collection) {
+                Collection collection = $.cast(param);
+                size = collection.size();
+            } else if (param instanceof CharSequence) {
+                CharSequence charSequence = $.cast(param);
+                size = charSequence.length();
+            } else if (param.getClass().isArray()) {
+                size = Array.getLength(param);
+            } else {
+                throw new UnsupportedOperationException("SizeOf cannot be applied to " + param.getClass());
+            }
+        }
+
+        @Override
+        public Object apply() {
+            return size;
+        }
+    }
 
     public static class AfterLast extends Func<AfterLast> {
 
