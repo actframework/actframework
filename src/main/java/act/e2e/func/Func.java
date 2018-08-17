@@ -46,7 +46,7 @@ public abstract class Func<T extends Func> extends NamedLogic<T> {
             String email = Act.getInstance(Inbox.class).account;
             S.Pair pair = S.binarySplit(email, '@');
             String username = pair.left();
-            return S.concat(username, "+", S.random(N.randInt(5) + 2), "@", pair.right());
+            return S.concat(username, "+", S.shortUrlSafeRandom(), "@", pair.right());
         }
 
         @Override
@@ -229,7 +229,7 @@ public abstract class Func<T extends Func> extends NamedLogic<T> {
             if (length < 1) {
                 length = 5 + N.randInt(10);
             }
-            return S.random(length);
+            return S.urlSafeRandom(length);
         }
 
         @Override
