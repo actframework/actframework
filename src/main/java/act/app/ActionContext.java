@@ -115,6 +115,7 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
     private boolean readyForDestroy;
     private int resultHash = Integer.MIN_VALUE;
     private PropertySpec.MetaInfo propSpec;
+    private boolean suppressJsonDateFormat;
 
     // see https://github.com/actframework/actframework/issues/492
     public String encodedSessionToken;
@@ -304,6 +305,15 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
             name = name + "." + accept().name();
         }
         return name;
+    }
+
+    public boolean shouldSuppressJsonDateFormat() {
+        return suppressJsonDateFormat;
+    }
+
+    public ActionContext suppressJsonDateFormat() {
+        this.suppressJsonDateFormat = true;
+        return this;
     }
 
     public void markAsRequireCaptcha() {

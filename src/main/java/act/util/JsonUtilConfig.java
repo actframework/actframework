@@ -23,6 +23,7 @@ package act.util;
 import static com.alibaba.fastjson.JSON.DEFAULT_GENERATE_FEATURE;
 
 import act.Act;
+import act.app.ActionContext;
 import act.app.App;
 import act.cli.util.MappedFastJsonNameFilter;
 import act.conf.AppConfig;
@@ -78,11 +79,15 @@ public class JsonUtilConfig {
                 Locale locale = null == context ? config.locale() : context.locale(true);
                 String dateFormatPattern = null == context ? null : context.dateFormatPattern();
                 if (S.blank(dateFormatPattern)) {
-                    if (!config.i18nEnabled() || locale.equals(config.locale())) {
-                        this.dateFormat = config.dateTimeFormat();
+                    if (context instanceof ActionContext && ((ActionContext) context).shouldSuppressJsonDateFormat()) {
+                        this.dateFormat = null;
                     } else {
-                        dateFormatPattern = config.localizedDateTimePattern(locale);
-                        this.dateFormat = new SimpleDateFormat(dateFormatPattern, locale);
+                        if (!config.i18nEnabled() || locale.equals(config.locale())) {
+                            this.dateFormat = config.dateTimeFormat();
+                        } else {
+                            dateFormatPattern = config.localizedDateTimePattern(locale);
+                            this.dateFormat = new SimpleDateFormat(dateFormatPattern, locale);
+                        }
                     }
                 } else {
                     this.dateFormat = new SimpleDateFormat(dateFormatPattern, locale);

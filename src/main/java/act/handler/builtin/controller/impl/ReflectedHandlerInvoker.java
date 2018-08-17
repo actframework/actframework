@@ -63,6 +63,7 @@ import act.view.*;
 import act.ws.WebSocketConnectionManager;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONException;
+import com.alibaba.fastjson.annotation.JSONField;
 import com.alibaba.fastjson.serializer.SerializeFilter;
 import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.esotericsoftware.reflectasm.MethodAccess;
@@ -162,6 +163,8 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
     private boolean returnString;
     private boolean fullJsonStringChecked;
     private boolean fullJsonStringCheckFailure;
+    // See https://github.com/actframework/actframework/issues/797
+    private boolean suppressJsonDateFormat;
 
     private ReflectedHandlerInvoker(M handlerMetaInfo, App app) {
         this.app = app;
@@ -201,6 +204,8 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         if (method.isAnnotationPresent(RequireCaptcha.class)) {
             this.requireCaptcha = true;
         }
+
+        this.suppressJsonDateFormat = shouldSuppressJsonDateFormat();
 
         Throttled throttleControl = method.getAnnotation(Throttled.class);
         if (null != throttleControl) {
@@ -408,6 +413,10 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         Result result = pluginBeforeHandler.apply(context);
         if (null != result) {
             return result;
+        }
+
+        if (suppressJsonDateFormat) {
+            context.suppressJsonDateFormat();
         }
 
         if (requireCaptcha) {
@@ -943,6 +952,20 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
 
     public boolean hasAnnotation(Class<? extends Annotation> annoType) {
         return (null != method.getAnnotation(annoType)) || null != controllerClass.getAnnotation(annoType);
+    }
+
+    private boolean shouldSuppressJsonDateFormat() {
+        Class<?> returnType = method.getReturnType();
+        List<Field> fields = $.fieldsOf(returnType);
+        for (Field field : fields) {
+            JSONField jsonField = field.getAnnotation(JSONField.class);
+            if (null != jsonField) {
+                if (S.notBlank(jsonField.format())) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     public static ControllerAction createControllerAction(ActionMethodMetaInfo meta, App app) {
