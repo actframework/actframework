@@ -42,6 +42,6 @@ public class EmailProvider extends SampleDataProvider<String> {
 
     @Override
     public String get() {
-        return S.fmt("%s.%s@%s", firstNameProvider.get(), lastNameProvider.get(), hostProvider.get()).toLowerCase();
+        return S.fmt("%s.%s@%s", firstNameProvider.getLast(), lastNameProvider.getLast(), hostProvider.get()).toLowerCase();
     }
 }

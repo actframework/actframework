@@ -20,6 +20,8 @@ package act.apidoc;
  * #L%
  */
 
+import static act.apidoc.SampleDataCategory.EMAIL;
+
 import act.Act;
 import act.app.data.StringValueResolverManager;
 import act.conf.AppConfig;
@@ -650,6 +652,7 @@ public class Endpoint implements Comparable<Endpoint> {
                 obj = Act.getInstance(classType);
                 List<Field> fields = $.fieldsOf(classType);
                 Injector injector = Act.injector();
+                Field emailField = null;
                 for (Field field : fields) {
                     if (Modifier.isStatic(field.getModifiers())) {
                         continue;
@@ -671,14 +674,22 @@ public class Endpoint implements Comparable<Endpoint> {
                             fieldType = field.getType();
                         }
                         BeanSpec fieldSpec = BeanSpec.of(fieldType, annotations, fieldName, injector, field.getModifiers(), typeParamLookup);
-                        val = generateSampleData(fieldSpec, typeParamLookup, C.newSet(typeChain), C.newList(nameChain));
-                        Class<?> valType = null == val ? null : val.getClass();
-                        if (null != valType && fieldClass.isAssignableFrom(valType)) {
-                            field.set(obj, val);
+                        if (null == emailField && isEmail(fieldSpec)) {
+                            emailField = field;
+                        } else {
+                            val = generateSampleData(fieldSpec, typeParamLookup, C.newSet(typeChain), C.newList(nameChain));
+                            Class<?> valType = null == val ? null : val.getClass();
+                            if (null != valType && fieldClass.isAssignableFrom(valType)) {
+                                field.set(obj, val);
+                            }
                         }
                     } catch (Exception e) {
                         LOGGER.warn("Error setting value[%s] to field[%s.%s]", val, classType.getSimpleName(), field.getName());
                     }
+                }
+                if (null != emailField) {
+                    String mockEmail = sampleDataProviderManager.getSampleData(SampleDataCategory.EMAIL, name, String.class);
+                    $.setFieldValue(obj, emailField, mockEmail);
                 }
                 return obj;
             } catch (Exception e) {
@@ -688,6 +699,16 @@ public class Endpoint implements Comparable<Endpoint> {
         } finally {
             //typeChain.remove(classType);
         }
+    }
+
+    private boolean isEmail(BeanSpec spec) {
+        SampleData.Category anno = spec.getAnnotation(SampleData.Category.class);
+        SampleDataCategory category = null != anno ? anno.value() : null;
+        if (null != category && category != EMAIL) {
+            return false;
+        }
+        category = SampleDataCategory.of(spec.name());
+        return category == EMAIL;
     }
 
     private static <T> StringValueResolver stringValueResolver(Class<? extends T> type) {

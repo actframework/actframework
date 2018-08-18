@@ -162,7 +162,7 @@ public class SampleDataProviderManager extends AppServiceBase<SampleDataProvider
         return provider;
     }
 
-    private static SampleDataCategory categoryOf(SampleDataCategory category, String name) {
+    static SampleDataCategory categoryOf(SampleDataCategory category, String name) {
         return null != category ? category : SampleDataCategory.of(name);
     }
 }

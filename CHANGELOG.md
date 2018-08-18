@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 **1.8.8**
+* APIDoc - make sample email matches sample firstname and lastname #801
 * e2e function: It generated invalid email #799
 * `@JSONField(format = "yyyy-MM")` setting not work #798
 * JSON output: default format for `java.util.Date` missing time part #797

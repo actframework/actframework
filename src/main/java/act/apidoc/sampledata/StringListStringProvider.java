@@ -21,8 +21,16 @@ package act.apidoc.sampledata;
  */
 
 public abstract class StringListStringProvider extends StringListProvider<String> {
+
+    private String last;
+
     @Override
     public String get() {
-        return randomStr();
+        last = randomStr();
+        return last;
+    }
+
+    public String getLast() {
+        return null == last ? get() : last;
     }
 }
