@@ -82,8 +82,7 @@ public abstract class SampleDataProviderAdaptor extends Func implements Cloneabl
             }
         }
         SampleDataProviderAdaptor adaptor = new SampleDataProviderAdaptor(provider, category){};
-        boolean forceRegister = Act.app().wasStarted();
-        adaptor.register(forceRegister);
+        adaptor.register(true);
         Act.app().registerSingleton(adaptor);
     }
 

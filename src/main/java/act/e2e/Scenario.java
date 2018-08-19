@@ -235,6 +235,7 @@ public class Scenario implements ScenarioPart {
     public String name;
     public String description;
     public List<String> fixtures = new ArrayList<>();
+    public Object generateTestData;
     public List<String> depends = new ArrayList<>();
     public List<Interaction> interactions = new ArrayList<>();
     public Map<String, Object> constants = new HashMap<>();
@@ -285,7 +286,6 @@ public class Scenario implements ScenarioPart {
     @Override
     public void validate(Scenario scenario) throws UnexpectedException {
         errorIf(S.blank(name), "Scenario name not defined");
-        errorIf(interactions.isEmpty(), "No interactions defined in Scenario[%s]", scenario.name);
         for (Interaction interaction : interactions) {
             interaction.validate(scenario);
         }
@@ -393,6 +393,33 @@ public class Scenario implements ScenarioPart {
         return verify(req, "creating fixtures");
     }
 
+    private boolean generateTestData() {
+        if (null == generateTestData) {
+            return true;
+        }
+        boolean ok;
+        if (generateTestData instanceof Map) {
+            Map<String, Integer> map = $.cast(generateTestData);
+            for (Map.Entry<String, Integer> entry : map.entrySet()) {
+                RequestSpec req = RequestSpec.generateTestData(entry.getKey(), entry.getValue());
+                ok = verify(req, "generate test data for " + entry.getKey());
+                if (!ok) {
+                    return false;
+                }
+            }
+        } else if (generateTestData instanceof List) {
+            List<String> list = $.cast(generateTestData);
+            for (String modelType: list) {
+                RequestSpec req = RequestSpec.generateTestData(modelType, 100);
+                ok = verify(req, "generate test data for " + modelType);
+                if (!ok) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
     private boolean verify(RequestSpec req, String operation) {
         boolean pass = true;
         Response resp = null;
@@ -426,9 +453,9 @@ public class Scenario implements ScenarioPart {
         errorMessage = null;
         clearSession();
         if (depends.isEmpty()) {
-            return clearFixtures() && createFixtures();
+            return clearFixtures() && createFixtures() && generateTestData();
         }
-        return true;
+        return createFixtures() && generateTestData();
     }
 
     private boolean run() {

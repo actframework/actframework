@@ -85,6 +85,7 @@ public class SampleDataProviderManager extends AppServiceBase<SampleDataProvider
     }
 
     private Map<Key, SampleDataProvider> repo = new HashMap<>();
+    private Map<Key, SampleDataProvider> repoWithBroderKey = new HashMap<>();
 
     public SampleDataProviderManager(App app) {
         super(app);
@@ -93,16 +94,17 @@ public class SampleDataProviderManager extends AppServiceBase<SampleDataProvider
     @Override
     protected void releaseResources() {
         repo.clear();
+        repoWithBroderKey.clear();
     }
 
     @OnSysEvent(SysEventId.EVENT_BUS_INITIALIZED)
     public void reset() {
-        repo.clear();
+        releaseResources();
     }
 
     @SubClassFinder
     public void foundSampleDataProvider(SampleDataProvider provider) {
-        Class targetType = provider.targetType();
+        Class<?> targetType = provider.targetType();
         if (targetType == NamedListProvider.class) {
             return;
         }
@@ -126,8 +128,8 @@ public class SampleDataProviderManager extends AppServiceBase<SampleDataProvider
     }
 
     private void registerForBroaderKey(Key key, SampleDataProvider provider) {
-        if (!repo.containsKey(key)) {
-            repo.put(key, provider);
+        if (!repoWithBroderKey.containsKey(key)) {
+            repoWithBroderKey.put(key, provider);
         }
         for (Key k2 : key.broaderKeys()) {
             registerForBroaderKey(k2, provider);
@@ -135,25 +137,40 @@ public class SampleDataProviderManager extends AppServiceBase<SampleDataProvider
     }
 
     public <T> T getSampleData(SampleDataCategory category, String fieldName, Class<T> type) {
-        return getSampleData(category, fieldName, null, type);
+        return getSampleData(category, fieldName, type, true);
+    }
+
+    public <T> T getSampleData(SampleDataCategory category, String fieldName, Class<T> type, boolean useBroaderKey) {
+        return getSampleData(category, fieldName, null, type, useBroaderKey);
     }
 
     public <T> T getSampleData(SampleDataCategory category, String fieldName, Locale locale, Class<T> type) {
-        Key key = new Key(type, categoryOf(category, fieldName), locale);
-        return getSampleData(key);
+        return getSampleData(category, fieldName, locale, type, true);
     }
 
-    private <T> T getSampleData(Key key) {
+    public <T> T getSampleData(SampleDataCategory category, String fieldName, Locale locale, Class<T> type, boolean useBroaderKey) {
+        Key key = new Key(type, categoryOf(category, fieldName), locale);
+        return getSampleData(key, useBroaderKey);
+    }
+
+    private <T> T getSampleData(Key key, boolean useBroderKey) {
         SampleDataProvider<T> provider = getProvider(key);
+        if (null == provider && useBroderKey) {
+            provider = getProviderFromBroderKeyRepo(key);
+        }
         return null == provider ? null : provider.get();
     }
 
     private <T> SampleDataProvider<T> getProvider(Key key) {
-        SampleDataProvider<T> provider = repo.get(key);
+        return repo.get(key);
+    }
+
+    private <T> SampleDataProvider<T> getProviderFromBroderKeyRepo(Key key) {
+        SampleDataProvider<T> provider = repoWithBroderKey.get(key);
         if (null == provider) {
             List<Key> keys = key.broaderKeys();
             for (Key k2 : keys) {
-                provider = getProvider(k2);
+                provider = getProviderFromBroderKeyRepo(k2);
                 if (null != provider) {
                     return provider;
                 }

@@ -198,7 +198,6 @@ public class Endpoint implements Comparable<Endpoint> {
     private String sampleJsonPost;
     private String sampleQuery;
     private Class<?> controllerClass;
-    private Locale defLocale;
     private transient SampleDataProviderManager sampleDataProviderManager;
 
     Endpoint(int port, H.Method httpMethod, String path, RequestHandler handler) {
@@ -208,7 +207,6 @@ public class Endpoint implements Comparable<Endpoint> {
         this.path = null == urlContext || path.startsWith("/~/") ? $.requireNotNull(path) : S.concat(urlContext, $.requireNotNull(path));
         this.handler = handler.toString();
         this.port = port;
-        this.defLocale = conf.locale();
         this.sampleDataProviderManager = Act.app().sampleDataProviderManager();
         explore(handler);
     }
@@ -324,7 +322,7 @@ public class Endpoint implements Comparable<Endpoint> {
         if (controllerClass != method.getDeclaringClass()) {
             typeParamLookup = Generics.buildTypeParamImplLookup(controllerClass);
         }
-        returnSample = generateSampleJson(BeanSpec.of(returnType, null, Act.injector(), typeParamLookup), typeParamLookup);
+        returnSample = void.class == returnType ? null : generateSampleJson(BeanSpec.of(returnType, null, Act.injector(), typeParamLookup), typeParamLookup);
         Description descAnno = method.getAnnotation(Description.class);
         this.description = null == descAnno ? id(controllerClass, method) : descAnno.value();
         exploreParamInfo(method, typeParamLookup);
@@ -445,7 +443,7 @@ public class Endpoint implements Comparable<Endpoint> {
 
     private String generateSampleJson(BeanSpec spec, Map<String, Class> typeParamLookup) {
         Class<?> type = spec.rawType();
-        if (Result.class.isAssignableFrom(type)) {
+        if (Result.class.isAssignableFrom(type) || void.class == type) {
             return null;
         }
         Object sample = generateSampleData(spec, typeParamLookup, new HashSet<Type>(), new ArrayList<String>());
@@ -538,7 +536,18 @@ public class Endpoint implements Comparable<Endpoint> {
     }
 
     private Object generateSampleData(BeanSpec spec, Map<String, Class> typeParamLookup, Set<Type> typeChain, List<String> nameChain) {
+        return generateSampleData(spec, typeParamLookup, typeChain, nameChain, fastJsonPropertyPreFilter);
+    }
+
+    public static Object generateSampleData(
+            BeanSpec spec, Map<String, Class> typeParamLookup,
+            Set<Type> typeChain, List<String> nameChain,
+            FastJsonPropertyPreFilter fastJsonPropertyPreFilter
+    ) {
         Type type = spec.type();
+        if (void.class == type) {
+            return null;
+        }
         if (typeChain.contains(type) && !isCollection(type)) {
             return S.concat(spec.name(), ":", type); // circular reference detected
         }
@@ -560,6 +569,11 @@ public class Endpoint implements Comparable<Endpoint> {
         SampleData.Category anno = spec.getAnnotation(SampleData.Category.class);
         SampleDataCategory category = null != anno ? anno.value() : null;
         Class<?> classType = spec.rawType();
+        SampleDataProviderManager sampleDataProviderManager = Act.app().sampleDataProviderManager();
+        Object o = sampleDataProviderManager.getSampleData(category, name, classType, false);
+        if (null != o) {
+            return o;
+        }
         try {
             if (void.class == classType || Void.class == classType || Result.class.isAssignableFrom(classType)) {
                 return null;
@@ -573,7 +587,7 @@ public class Endpoint implements Comparable<Endpoint> {
                     int len = ea.length;
                     return 0 < len ? ea[N.randInt(len)] : null;
                 } else if (Locale.class == classType) {
-                    return (defLocale);
+                    return (Act.appConfig().locale());
                 } else if (String.class == classType) {
                     String mockValue = sampleDataProviderManager.getSampleData(category, name, String.class);
                     if (spec.hasAnnotation(Sensitive.class)) {
@@ -582,8 +596,8 @@ public class Endpoint implements Comparable<Endpoint> {
                     return mockValue;
                 } else if (classType.isArray()) {
                     Object sample = Array.newInstance(classType.getComponentType(), 2);
-                    Array.set(sample, 0, generateSampleData(BeanSpec.of(classType.getComponentType(), Act.injector(), typeParamLookup), typeParamLookup, C.newSet(typeChain), C.newList(nameChain)));
-                    Array.set(sample, 1, generateSampleData(BeanSpec.of(classType.getComponentType(), Act.injector(), typeParamLookup), typeParamLookup, C.newSet(typeChain), C.newList(nameChain)));
+                    Array.set(sample, 0, generateSampleData(BeanSpec.of(classType.getComponentType(), Act.injector(), typeParamLookup), typeParamLookup, C.newSet(typeChain), C.newList(nameChain), fastJsonPropertyPreFilter));
+                    Array.set(sample, 1, generateSampleData(BeanSpec.of(classType.getComponentType(), Act.injector(), typeParamLookup), typeParamLookup, C.newSet(typeChain), C.newList(nameChain), fastJsonPropertyPreFilter));
                     return sample;
                 } else if ($.isSimpleType(classType)) {
                     if (Enum.class == classType) {
@@ -622,11 +636,11 @@ public class Endpoint implements Comparable<Endpoint> {
                         Type keyType = typeParams.get(0);
                         Type valType = typeParams.get(1);
                         map.put(
-                                generateSampleData(BeanSpec.of(keyType, null, Act.injector(), typeParamLookup), typeParamLookup, C.newSet(typeChain), C.newList(nameChain)),
-                                generateSampleData(BeanSpec.of(valType, null, Act.injector(), typeParamLookup), typeParamLookup, C.newSet(typeChain), C.newList(nameChain)));
+                                generateSampleData(BeanSpec.of(keyType, null, Act.injector(), typeParamLookup), typeParamLookup, C.newSet(typeChain), C.newList(nameChain), fastJsonPropertyPreFilter),
+                                generateSampleData(BeanSpec.of(valType, null, Act.injector(), typeParamLookup), typeParamLookup, C.newSet(typeChain), C.newList(nameChain), fastJsonPropertyPreFilter));
                         map.put(
-                                generateSampleData(BeanSpec.of(keyType, null, Act.injector(), typeParamLookup), typeParamLookup, C.newSet(typeChain), C.newList(nameChain)),
-                                generateSampleData(BeanSpec.of(valType, null, Act.injector(), typeParamLookup), typeParamLookup, C.newSet(typeChain), C.newList(nameChain)));
+                                generateSampleData(BeanSpec.of(keyType, null, Act.injector(), typeParamLookup), typeParamLookup, C.newSet(typeChain), C.newList(nameChain), fastJsonPropertyPreFilter),
+                                generateSampleData(BeanSpec.of(valType, null, Act.injector(), typeParamLookup), typeParamLookup, C.newSet(typeChain), C.newList(nameChain), fastJsonPropertyPreFilter));
                     }
                 } else if (Iterable.class.isAssignableFrom(classType)) {
                     Collection col = $.cast(Act.getInstance(classType));
@@ -638,8 +652,8 @@ public class Endpoint implements Comparable<Endpoint> {
                         col.add(S.random());
                     } else {
                         Type componentType = typeParams.get(0);
-                        col.add(generateSampleData(BeanSpec.of(componentType, null, Act.injector(), typeParamLookup), typeParamLookup, C.newSet(typeChain), C.newList(nameChain)));
-                        col.add(generateSampleData(BeanSpec.of(componentType, null, Act.injector(), typeParamLookup), typeParamLookup, C.newSet(typeChain), C.newList(nameChain)));
+                        col.add(generateSampleData(BeanSpec.of(componentType, null, Act.injector(), typeParamLookup), typeParamLookup, C.newSet(typeChain), C.newList(nameChain), fastJsonPropertyPreFilter));
+                        col.add(generateSampleData(BeanSpec.of(componentType, null, Act.injector(), typeParamLookup), typeParamLookup, C.newSet(typeChain), C.newList(nameChain), fastJsonPropertyPreFilter));
                     }
                     return col;
                 }
@@ -677,9 +691,15 @@ public class Endpoint implements Comparable<Endpoint> {
                         if (null == emailField && isEmail(fieldSpec)) {
                             emailField = field;
                         } else {
-                            val = generateSampleData(fieldSpec, typeParamLookup, C.newSet(typeChain), C.newList(nameChain));
-                            Class<?> valType = null == val ? null : val.getClass();
-                            if (null != valType && fieldClass.isAssignableFrom(valType)) {
+                            val = generateSampleData(fieldSpec, typeParamLookup, C.newSet(typeChain), C.newList(nameChain), fastJsonPropertyPreFilter);
+                            if (null == val) {
+                                continue;
+                            }
+                            Class<?> valType = val.getClass();
+                            if (!fieldClass.isAssignableFrom(valType)) {
+                                val = $.convert(val).to(fieldClass);
+                            }
+                            if (null != val) {
                                 field.set(obj, val);
                             }
                         }
@@ -701,7 +721,7 @@ public class Endpoint implements Comparable<Endpoint> {
         }
     }
 
-    private boolean isEmail(BeanSpec spec) {
+    private static boolean isEmail(BeanSpec spec) {
         SampleData.Category anno = spec.getAnnotation(SampleData.Category.class);
         SampleDataCategory category = null != anno ? anno.value() : null;
         if (null != category && category != EMAIL) {

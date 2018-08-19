@@ -20,20 +20,21 @@ package act.util;
  * #L%
  */
 
+import static act.app.event.SysEventId.CLASS_LOADER_INITIALIZED;
 import static com.alibaba.fastjson.JSON.DEFAULT_GENERATE_FEATURE;
 
 import act.Act;
 import act.app.ActionContext;
 import act.app.App;
+import act.app.event.AppClassLoaderInitialized;
 import act.cli.util.MappedFastJsonNameFilter;
 import act.conf.AppConfig;
 import act.data.DataPropertyRepository;
+import act.event.SysEventListenerBase;
 import com.alibaba.fastjson.parser.ParserConfig;
 import com.alibaba.fastjson.serializer.*;
-import org.joda.time.DateTime;
-import org.joda.time.LocalDate;
-import org.joda.time.LocalDateTime;
-import org.joda.time.LocalTime;
+import com.alibaba.fastjson.util.TypeUtils;
+import org.joda.time.*;
 import org.osgl.$;
 import org.osgl.exception.NotAppliedException;
 import org.osgl.mvc.MvcConfig;
@@ -200,7 +201,7 @@ public class JsonUtilConfig {
         config.put(KV.class, FastJsonKvCodec.INSTANCE);
         config.put(KVStore.class, FastJsonKvCodec.INSTANCE);
 
-        ParserConfig parserConfig = ParserConfig.getGlobalInstance();
+        final ParserConfig parserConfig = ParserConfig.getGlobalInstance();
         parserConfig.putDeserializer(DateTime.class, jodaDateCodec);
         parserConfig.putDeserializer(LocalDate.class, jodaDateCodec);
         parserConfig.putDeserializer(LocalTime.class, jodaDateCodec);
@@ -217,6 +218,14 @@ public class JsonUtilConfig {
                 ActContext ctx = ActContext.Base.currentContext();
                 new JsonWriter(v, null, false, ctx).apply(writer);
                 return null;
+            }
+        });
+
+        app.eventBus().bind(CLASS_LOADER_INITIALIZED, new SysEventListenerBase<AppClassLoaderInitialized>() {
+            @Override
+            public void on(AppClassLoaderInitialized event) {
+                parserConfig.setDefaultClassLoader(app.classLoader());
+                TypeUtils.clearClassMapping();
             }
         });
     }

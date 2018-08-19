@@ -43,6 +43,7 @@ public enum SampleDataCategory {
     MOBILE("mobilePhone", "cellularPhone", "mobileNo", "mobileNumber"),
     STATE("province"),
     COMPANY_NAME("clientName", "client", "company", "organizationName", "organisationName", "organization", "organisation"),
+    PASSWORD,
     PERMISSION,
     PERMISSIONS,
     ROLE("roleName"),

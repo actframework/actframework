@@ -159,4 +159,13 @@ public class RequestSpec implements InteractionPart {
         rs.json = JSON.toJSONString(C.Map("fixtures", fixtures));
         return rs;
     }
+
+    public static RequestSpec generateTestData(String modelType, int number) {
+        RequestSpec rs = new RequestSpec();
+        rs.method = H.Method.POST;
+        rs.headers.put(CONTENT_TYPE, H.Format.JSON.contentType());
+        rs.url = "/~/e2e/generateTestData";
+        rs.json = JSON.toJSONString(C.Map("modelType", modelType, "number", number));
+        return rs;
+    }
 }

@@ -21,9 +21,9 @@ package act.e2e;
  */
 
 import act.Act;
+import act.apidoc.Endpoint;
 import act.app.App;
 import act.app.DbServiceManager;
-import act.app.conf.AutoConfig;
 import act.db.Dao;
 import act.db.DbService;
 import act.e2e.func.Func;
@@ -32,16 +32,19 @@ import act.e2e.req_modifier.RequestModifier;
 import act.e2e.util.*;
 import act.e2e.verifier.Verifier;
 import act.event.EventBus;
+import act.inject.DefaultValue;
 import act.job.OnAppStart;
 import act.sys.Env;
 import act.util.LogSupport;
 import org.osgl.$;
+import org.osgl.inject.BeanSpec;
 import org.osgl.logging.LogManager;
 import org.osgl.logging.Logger;
 import org.osgl.mvc.annotation.DeleteAction;
 import org.osgl.mvc.annotation.PostAction;
 import org.osgl.util.*;
 
+import java.lang.reflect.Type;
 import java.net.URL;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -98,6 +101,25 @@ public class E2E extends LogSupport {
         for (String fixture : fixtures) {
             yamlLoader.loadFixture(fixture, dbServiceManager);
         }
+    }
+
+    /**
+     * Generate testing data for specified model types
+     * @param modelType
+     *      the model type
+     * @param number
+     *      the number of records to be generated
+     */
+    @PostAction("e2e/generateTestData")
+    public void generateSampleData(Class modelType, @DefaultValue("100") Integer number) {
+        E.illegalArgumentIf(number < 1);
+        Dao dao = dbServiceManager.dao(modelType);
+        E.illegalStateIf(null == dao);
+        List list = new ArrayList();
+        for (int i = 0; i < number; ++i) {
+            list.add(generateSampleData_(modelType));
+        }
+        dao.save(list);
     }
 
     /**
@@ -238,6 +260,11 @@ public class E2E extends LogSupport {
 
     private void printFooter() {
         println();
+    }
+
+    private Object generateSampleData_(Class<?> modelType) {
+        BeanSpec spec = BeanSpec.of(modelType, Act.injector());
+        return Endpoint.generateSampleData(spec, C.<String, Class>Map(), new HashSet<Type>(), new ArrayList<String>(), null);
     }
 
     public static String constant(String name) {
