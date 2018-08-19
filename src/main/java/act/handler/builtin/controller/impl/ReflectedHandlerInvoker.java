@@ -261,7 +261,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         paramCount = handler.paramCount();
         paramSpecs = jsonDTOClassManager.beanSpecs(controllerClass, method);
         fieldsAndParamsCount = paramSpecs.size();
-        if (fieldsAndParamsCount == 1) {
+        if (1 == fieldsAndParamsCount) {
             singleJsonFieldName = paramSpecs.get(0).name();
         }
 
@@ -430,7 +430,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         context.setReflectedHandlerInvoker(this);
         app.eventBus().emit(new ReflectedHandlerInvokerInvoke(this, context));
 
-        if (fieldsAndParamsCount == 1) {
+        if (1 == fieldsAndParamsCount(context)) {
             context.allowIgnoreParamNamespace();
         } else {
             context.disallowIgnoreParamNamespace();

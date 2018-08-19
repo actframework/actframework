@@ -26,16 +26,12 @@ import org.osgl.exception.ConfigurationException;
 import org.osgl.http.H;
 import org.osgl.logging.LogManager;
 import org.osgl.logging.Logger;
-import org.osgl.util.C;
-import org.osgl.util.E;
-import org.osgl.util.S;
+import org.osgl.util.*;
 
-import javax.mail.Authenticator;
-import javax.mail.PasswordAuthentication;
-import javax.mail.Session;
+import java.util.*;
+import javax.mail.*;
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
-import java.util.*;
 
 public class MailerConfig extends AppHolderBase {
 
@@ -97,7 +93,7 @@ public class MailerConfig extends AppHolderBase {
             }
         }
         if (!mock) {
-            this.useTls = getBooleanConfig(SMTP_TLS, properties) || S.eq("smtp.gmail.com", this.host);
+            this.useTls = getBooleanConfig(SMTP_TLS, properties) || S.eq("smtp.gmail.com", this.host) || S.eq("smtp-mail.outlook.com", this.host);
             this.useSsl = !this.useTls && getBooleanConfig(SMTP_SSL, properties);
             this.port = getPortConfig(properties);
             this.password = getProperty(SMTP_PASSWORD, properties);

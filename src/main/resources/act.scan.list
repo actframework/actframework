@@ -7,6 +7,7 @@ act.app.conf.AppConfigPlugin
 act.controller.builtin.CliOverHttp
 act.controller.captcha.CaptchaService
 act.db.DbBind
+act.db.util.Page
 act.e2e.E2E
 act.e2e.inbox.Inbox
 act.e2e.ScenarioDebugHelper

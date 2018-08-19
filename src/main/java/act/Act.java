@@ -442,7 +442,7 @@ public final class Act {
      *
      * @return the app config
      */
-    public static AppConfig appConfig() {
+    public static AppConfig<?> appConfig() {
         return App.instance().config();
     }
 

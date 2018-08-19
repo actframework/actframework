@@ -350,13 +350,19 @@ public class Scenario implements ScenarioPart {
     }
 
     public void start(ScenarioManager scenarioManager, RequestTemplateManager requestTemplateManager) {
+        start(scenarioManager, requestTemplateManager, true);
+    }
+
+    private void start(ScenarioManager scenarioManager, RequestTemplateManager requestTemplateManager, boolean reset) {
         this.scenarioManager = $.requireNotNull(scenarioManager);
         this.requestTemplateManager = $.requireNotNull(requestTemplateManager);
         this.status = PENDING;
         current.set(this);
         validate(this);
-        prepareHttp();
-        boolean pass = reset() && run();
+        if (null == http) {
+            prepareHttp();
+        }
+        boolean pass = (!reset || reset()) && run();
         this.status = E2EStatus.of(pass);
     }
 
@@ -458,6 +464,15 @@ public class Scenario implements ScenarioPart {
         return createFixtures() && generateTestData();
     }
 
+    private boolean run(ScenarioManager scenarioManager, RequestTemplateManager requestTemplateManager) {
+        if (null == this.scenarioManager) {
+            this.start(scenarioManager, requestTemplateManager, false);
+            return this.status.pass();
+        } else {
+            return run();
+        }
+    }
+
     private boolean run() {
         if (status.finished()) {
             return status.pass();
@@ -468,11 +483,17 @@ public class Scenario implements ScenarioPart {
     private boolean runDependents() {
         for (String dependent : depends) {
             Scenario scenario = scenarioManager.get(dependent);
-            if (!scenario.run()) {
-                errorMessage = "dependency failure: " + dependent;
-                return false;
+            errorIf(null == scenario, "Dependent not found: " + dependent);
+            Scenario old = current.get();
+            try {
+                if (!scenario.run(scenarioManager, requestTemplateManager)) {
+                    errorMessage = "dependency failure: " + dependent;
+                    return false;
+                }
+                inheritFrom(scenario);
+            } finally {
+                current.set(old);
             }
-            inheritFrom(scenario);
         }
         return true;
     }
@@ -582,7 +603,7 @@ public class Scenario implements ScenarioPart {
                 value = array.size();
             } else if ("toString".equals(key) || "string".equals(key) || "str".equals(key)) {
                 value = JSON.toJSONString(array);
-            } else if ("?".equals(key) || "<any>".equalsIgnoreCase(sKey)) {
+            } else if ("?".equals(key) || (sKey.toLowerCase().startsWith("<any") && sKey.toLowerCase().endsWith(">"))) {
                 for (Object arrayElement : array) {
                     try {
                         verifyValue(name, arrayElement, test);

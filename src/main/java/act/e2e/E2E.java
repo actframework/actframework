@@ -111,13 +111,29 @@ public class E2E extends LogSupport {
      *      the number of records to be generated
      */
     @PostAction("e2e/generateTestData")
-    public void generateSampleData(Class modelType, @DefaultValue("100") Integer number) {
+    public void generateSampleData(String modelType, @DefaultValue("100") Integer number) {
         E.illegalArgumentIf(number < 1);
-        Dao dao = dbServiceManager.dao(modelType);
+        Class<?> modelClass = null;
+        if (modelType.contains(".")) {
+            modelClass = Act.appClassForName(modelType);
+        } else {
+            String modelPackages = Act.appConfig().get("e2e.model-packages");
+            E.illegalArgumentIf(S.blank(modelPackages), "Unknown model type: " + modelType);
+            for (String pkg : S.fastSplit(modelPackages, ",")) {
+                String type = S.concat(pkg, ".", modelType);
+                try {
+                    modelClass = Act.appClassForName(type);
+                } catch (Exception e) {
+                    // ignore
+                }
+            }
+            E.illegalArgumentIf(null == modelClass, "Unknown model type: " + modelType);
+        }
+        Dao dao = dbServiceManager.dao(modelClass);
         E.illegalStateIf(null == dao);
         List list = new ArrayList();
         for (int i = 0; i < number; ++i) {
-            list.add(generateSampleData_(modelType));
+            list.add(generateSampleData_(modelClass));
         }
         dao.save(list);
     }
@@ -206,7 +222,8 @@ public class E2E extends LogSupport {
                     try {
                         scenario.start(scenarioManager, requestTemplateManager);
                     } catch (Exception e) {
-                        scenario.errorMessage = e.getMessage();
+                        String message = e.getMessage();
+                        scenario.errorMessage = S.blank(message) ? e.getClass().getName() : message;
                         scenario.cause = e.getCause();
                         scenario.status = E2EStatus.FAIL;
                     }

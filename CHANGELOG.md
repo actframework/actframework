@@ -1,6 +1,8 @@
 # ActFramework Change Log
 
 **1.8.8**
+* Add `Page` data structure for db list operation #804
+* E2E - `NullPointerException` with interdependent scenarios #803
 * JSON request resolving - binding String to class issue #802
 * APIDoc - make sample email matches sample firstname and lastname #801
 * e2e - random model data generation #800
