@@ -21,52 +21,54 @@ package act.controller;
  */
 
 import act.ActResponse;
+import org.osgl.util.IO;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
+import java.io.*;
 import java.nio.ByteBuffer;
 
-class OutputStreamCache extends OutputStream {
+class OutputStreamCache extends OutputStream implements CacheChannel {
     private ByteArrayOutputStream tee = new ByteArrayOutputStream();
     private OutputStream out;
     private ByteBuffer buffer;
+    private boolean closed;
 
     public OutputStreamCache(OutputStream os) {
         this.out = os;
     }
 
     @Override
-    public void write(int b) throws IOException {
-        out.write(b);
+    public void write(int b) {
         tee.write(b);
     }
 
     @Override
     public void write(byte[] b) throws IOException {
-        out.write(b);
         tee.write(b);
     }
 
     @Override
-    public void write(byte[] b, int off, int len) throws IOException {
-        out.write(b, off, len);
+    public void write(byte[] b, int off, int len) {
         tee.write(b, off, len);
     }
 
     @Override
-    public void flush() throws IOException {
-        out.flush();
+    public void flush() {
     }
 
     @Override
-    public void close() throws IOException {
+    public void close() {
         byte[] ba = tee.toByteArray();
         ByteBuffer buffer = ByteBuffer.allocateDirect(ba.length);
         buffer.put(ba);
         buffer.flip();
         this.buffer = buffer;
-        out.close();
+        IO.write(ba).ensureCloseSink().to(out);
+        closed = true;
+    }
+
+    @Override
+    public boolean isClosed() {
+        return closed;
     }
 
     void apply(ActResponse resp) {

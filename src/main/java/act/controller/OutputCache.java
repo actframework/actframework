@@ -21,6 +21,7 @@ package act.controller;
  */
 
 import act.ActResponse;
+import org.osgl.util.IO;
 import org.osgl.util.Output;
 
 import java.io.ByteArrayOutputStream;
@@ -28,11 +29,12 @@ import java.io.OutputStream;
 import java.io.Writer;
 import java.nio.ByteBuffer;
 
-public class OutputCache implements Output {
+public class OutputCache implements Output, CacheChannel {
     private ByteArrayOutputStream baos = new ByteArrayOutputStream();
     private Output tee = Output.Adaptors.of(baos);
     private Output out;
     private ByteBuffer buffer;
+    private boolean closed;
 
     public OutputCache(Output out) {
         this.out = out;
@@ -44,69 +46,64 @@ public class OutputCache implements Output {
 
     @Override
     public void close() {
-        if (null == buffer) {
-            flush();
-        }
-    }
-
-    @Override
-    public void flush() {
         byte[] ba = baos.toByteArray();
         ByteBuffer buffer = ByteBuffer.allocateDirect(ba.length);
         buffer.put(ba);
         buffer.flip();
         this.buffer = buffer;
-        // out already closed
-        //out.close();
+        out.append(ba);
+        IO.close(out);
+        closed = true;
+    }
+
+    @Override
+    public void flush() {
     }
 
     @Override
     public Output append(CharSequence csq) {
         tee.append(csq);
-        out.append(csq);
         return this;
     }
 
     @Override
     public Output append(CharSequence csq, int start, int end) {
         tee.append(csq, start, end);
-        out.append(csq, start, end);
         return this;
     }
 
     @Override
     public Output append(char c) {
         tee.append(c);
-        out.append(c);
         return this;
     }
 
     @Override
     public Output append(byte[] bytes) {
         tee.append(bytes);
-        out.append(bytes);
         return this;
     }
 
     @Override
     public Output append(byte[] bytes, int start, int end) {
         tee.append(bytes, start, end);
-        out.append(bytes, start, end);
         return this;
     }
 
     @Override
     public Output append(byte b) {
         tee.append(b);
-        out.append(b);
         return this;
     }
 
     @Override
     public Output append(ByteBuffer buffer) {
         tee.append(buffer);
-        out.append(buffer);
         return this;
+    }
+
+    public boolean isClosed() {
+        return closed;
     }
 
     @Override

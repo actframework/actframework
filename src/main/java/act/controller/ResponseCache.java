@@ -47,6 +47,7 @@ public class ResponseCache extends ActResponse implements Serializable {
     private OutputStreamCache osCache;
     private WriterCache writerCache;
     private OutputCache outputCache;
+    private boolean wroteDirectly;
 
     private transient ActResponse realResponse;
 
@@ -92,6 +93,19 @@ public class ResponseCache extends ActResponse implements Serializable {
         } else if (null != outputCache) {
             outputCache.apply(response);
         }
+    }
+
+    public boolean isValid() {
+        if (wroteDirectly) {
+            return true;
+        } else if (null != osCache) {
+            return osCache.isClosed();
+        } else if (null != writerCache) {
+            return writerCache.isClosed();
+        } else if (null != outputCache) {
+            return outputCache.isClosed();
+        }
+        return false;
     }
 
     @Override
@@ -216,23 +230,25 @@ public class ResponseCache extends ActResponse implements Serializable {
 
     @Override
     public H.Response writeBinary(ISObject binary) {
-        realResponse.writeBinary(binary);
         byte[] ba = binary.asByteArray();
         ByteBuffer buffer = ByteBuffer.allocateDirect(ba.length);
         buffer.put(ba);
         buffer.flip();
         this.buffer = buffer;
+        realResponse.writeBinary(binary);
+        this.wroteDirectly = true;
         return this;
     }
 
     @Override
     public H.Response writeContent(String s) {
-        realResponse.writeContent(s);
         byte[] ba = s.getBytes(Charsets.UTF_8);
         ByteBuffer buffer = ByteBuffer.allocateDirect(ba.length);
         buffer.put(ba);
         buffer.flip();
         this.buffer = buffer;
+        realResponse.writeContent(s);
+        this.wroteDirectly = true;
         return this;
     }
 

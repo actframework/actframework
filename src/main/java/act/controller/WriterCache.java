@@ -22,16 +22,18 @@ package act.controller;
 
 import act.ActResponse;
 import org.osgl.util.Charsets;
+import org.osgl.util.IO;
 
 import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.nio.ByteBuffer;
 
-public class WriterCache extends Writer {
+public class WriterCache extends Writer implements CacheChannel {
     private StringWriter tee = new StringWriter();
     private Writer out;
     private ByteBuffer buffer;
+    private boolean closed;
 
     public WriterCache(Writer out) {
         this.out = out;
@@ -39,23 +41,28 @@ public class WriterCache extends Writer {
 
     @Override
     public void write(char[] cbuf, int off, int len) throws IOException {
-        tee.write(cbuf, off, len);
         out.write(cbuf, off, len);
     }
 
     @Override
-    public void flush() throws IOException {
-        out.flush();
+    public void flush() {
     }
 
     @Override
-    public void close() throws IOException {
-        byte[] ba = tee.toString().getBytes(Charsets.UTF_8);
+    public void close() {
+        String content = tee.toString();
+        byte[] ba = content.getBytes(Charsets.UTF_8);
         ByteBuffer buffer = ByteBuffer.allocateDirect(ba.length);
         buffer.put(ba);
         buffer.flip();
         this.buffer = buffer;
-        out.close();
+        IO.write(content).ensureCloseSink().to(out);
+        closed = true;
+    }
+
+    @Override
+    public boolean isClosed() {
+        return closed;
     }
 
     void apply(ActResponse resp) {

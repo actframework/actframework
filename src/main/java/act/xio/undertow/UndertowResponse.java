@@ -186,7 +186,7 @@ public class UndertowResponse extends ActResponse<UndertowResponse> {
     @Override
     public void commit() {
         if (null != this.output) {
-            output.flush();
+            IO.close(output);
         } else if (null != this.outputStream) {
             IO.close(outputStream);
         } else if (null != this.writer) {

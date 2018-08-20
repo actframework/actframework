@@ -187,7 +187,7 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
             if (supportCache) {
                 cacheKey = cacheSupport.cacheKey(context);
                 ResponseCache cached = this.cache.get(cacheKey);
-                if (null != cached) {
+                if (null != cached && cached.isValid()) {
                     String etag = cached.etag();
                     if (null != etag && context.req().etagMatches(etag)) {
                         NotModified.of(etag).apply(context.req(), context.resp());
