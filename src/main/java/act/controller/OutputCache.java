@@ -34,7 +34,7 @@ public class OutputCache implements Output, CacheChannel {
     private Output tee = Output.Adaptors.of(baos);
     private Output out;
     private ByteBuffer buffer;
-    private boolean closed;
+    private boolean committed;
 
     public OutputCache(Output out) {
         this.out = out;
@@ -46,14 +46,7 @@ public class OutputCache implements Output, CacheChannel {
 
     @Override
     public void close() {
-        byte[] ba = baos.toByteArray();
-        ByteBuffer buffer = ByteBuffer.allocateDirect(ba.length);
-        buffer.put(ba);
-        buffer.flip();
-        this.buffer = buffer;
-        out.append(ba);
-        IO.close(out);
-        closed = true;
+        commit();
     }
 
     @Override
@@ -102,8 +95,22 @@ public class OutputCache implements Output, CacheChannel {
         return this;
     }
 
-    public boolean isClosed() {
-        return closed;
+    public boolean isCommitted() {
+        return committed;
+    }
+
+    @Override
+    public void commit() {
+        if (!committed) {
+            byte[] ba = baos.toByteArray();
+            ByteBuffer buffer = ByteBuffer.allocateDirect(ba.length);
+            buffer.put(ba);
+            buffer.flip();
+            this.buffer = buffer;
+            out.append(ba);
+            IO.close(out);
+            committed = true;
+        }
     }
 
     @Override

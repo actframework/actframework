@@ -975,9 +975,23 @@ public @interface Controller {
             forbiddenIf(!test, code, msg, args);
         }
 
-        public static void forward(String url) {
+        /**
+         * Implement `RequestDispatcher.forward(String)` semantic. Calling this API is equivalent to
+         *
+         * ```java
+         * ActionContext ctx = ActionContext.current();
+         * ctx.forward(url, args);
+         * ```
+         *
+         * @param url
+         *      the url template
+         * @param args
+         *      the url argument
+         * @see ActionContext#forward(String, Object...)
+         */
+        public static void forward(String url, Object... args) {
             ActionContext ctx = ActionContext.current();
-            ctx.forward(url);
+            ctx.forward(url, args);
         }
 
         public static Redirect redirect(String url, Object... args) {

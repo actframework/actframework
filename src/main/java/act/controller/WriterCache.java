@@ -24,16 +24,14 @@ import act.ActResponse;
 import org.osgl.util.Charsets;
 import org.osgl.util.IO;
 
-import java.io.IOException;
-import java.io.StringWriter;
-import java.io.Writer;
+import java.io.*;
 import java.nio.ByteBuffer;
 
 public class WriterCache extends Writer implements CacheChannel {
     private StringWriter tee = new StringWriter();
     private Writer out;
     private ByteBuffer buffer;
-    private boolean closed;
+    private boolean committed;
 
     public WriterCache(Writer out) {
         this.out = out;
@@ -50,19 +48,26 @@ public class WriterCache extends Writer implements CacheChannel {
 
     @Override
     public void close() {
-        String content = tee.toString();
-        byte[] ba = content.getBytes(Charsets.UTF_8);
-        ByteBuffer buffer = ByteBuffer.allocateDirect(ba.length);
-        buffer.put(ba);
-        buffer.flip();
-        this.buffer = buffer;
-        IO.write(content).ensureCloseSink().to(out);
-        closed = true;
+        commit();
     }
 
     @Override
-    public boolean isClosed() {
-        return closed;
+    public void commit() {
+        if (!committed) {
+            String content = tee.toString();
+            byte[] ba = content.getBytes(Charsets.UTF_8);
+            ByteBuffer buffer = ByteBuffer.allocateDirect(ba.length);
+            buffer.put(ba);
+            buffer.flip();
+            this.buffer = buffer;
+            IO.write(content).ensureCloseSink().to(out);
+            committed = true;
+        }
+    }
+
+    @Override
+    public boolean isCommitted() {
+        return committed;
     }
 
     void apply(ActResponse resp) {

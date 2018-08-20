@@ -443,17 +443,31 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
         return urlPath;
     }
 
-    public void forward(String url) {
+    /**
+     * Implement Java Servlet's `RequestDispatcher.forward(String)` semantic.
+     *
+     * This method has the following restrictions:
+     *
+     * 1. the URL must be started with single `/`. i.e. it must be absolute PATH of current service.
+     * 2. the request method must be `GET`.
+     *
+     * @param url
+     *      the url template
+     * @param args
+     *      the url argument
+     */
+    public void forward(String url, Object ... args) {
         E.illegalArgumentIfNot(url.startsWith("/"), "forward URL must starts with single '/'");
         E.illegalArgumentIf(url.startsWith("//"), "forward URL must starts with single `/`");
         E.unexpectedIfNot(H.Method.GET == req().method(), "forward only support on HTTP GET request");
         uploads.clear();
         extraParams.clear();
         bodyParams = null;
-        urlPath = UrlPath.of(url);
+        String target = S.fmt(url, args);
+        urlPath = UrlPath.of(target);
         UndertowRequest req = $.cast(req());
         state = State.CREATED;
-        req.forward(url);
+        req.forward(target);
         final RequestHandler requestHandler = router.getInvoker(H.Method.GET, url, this);
         requestHandler.handle(this);
     }

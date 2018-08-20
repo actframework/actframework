@@ -30,7 +30,7 @@ class OutputStreamCache extends OutputStream implements CacheChannel {
     private ByteArrayOutputStream tee = new ByteArrayOutputStream();
     private OutputStream out;
     private ByteBuffer buffer;
-    private boolean closed;
+    private boolean committed;
 
     public OutputStreamCache(OutputStream os) {
         this.out = os;
@@ -57,18 +57,25 @@ class OutputStreamCache extends OutputStream implements CacheChannel {
 
     @Override
     public void close() {
-        byte[] ba = tee.toByteArray();
-        ByteBuffer buffer = ByteBuffer.allocateDirect(ba.length);
-        buffer.put(ba);
-        buffer.flip();
-        this.buffer = buffer;
-        IO.write(ba).ensureCloseSink().to(out);
-        closed = true;
+        commit();
     }
 
     @Override
-    public boolean isClosed() {
-        return closed;
+    public boolean isCommitted() {
+        return committed;
+    }
+
+    @Override
+    public void commit() {
+        if (!committed) {
+            byte[] ba = tee.toByteArray();
+            ByteBuffer buffer = ByteBuffer.allocateDirect(ba.length);
+            buffer.put(ba);
+            buffer.flip();
+            this.buffer = buffer;
+            IO.write(ba).ensureCloseSink().to(out);
+            committed = true;
+        }
     }
 
     void apply(ActResponse resp) {

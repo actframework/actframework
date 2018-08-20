@@ -10,7 +10,7 @@
 * `@JSONField(format = "yyyy-MM")` setting not work #798
 * JSON output: default format for `java.util.Date` missing time part #797
 * `@PropertySpec` annotation now cause `NullPointerException` on JSON output #796
-* `@CacheFor` annotation cause incomplete response in PROD mode
+* `@CacheFor` annotation cause incomplete response in PROD mode #794
 * Add `renderBinary(byte[])` and `renderBinary(byte[], String)` method to `Controller.Util` #793
 * Attach `PropertySpec` info to `ActionContext` #792
 * Resource loader - allow loading from excel file #790

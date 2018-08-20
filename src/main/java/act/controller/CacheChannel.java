@@ -21,5 +21,6 @@ package act.controller;
  */
 
 public interface CacheChannel {
-    boolean isClosed();
+    boolean isCommitted();
+    void commit();
 }

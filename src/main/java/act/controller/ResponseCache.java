@@ -99,11 +99,11 @@ public class ResponseCache extends ActResponse implements Serializable {
         if (wroteDirectly) {
             return true;
         } else if (null != osCache) {
-            return osCache.isClosed();
+            return osCache.isCommitted();
         } else if (null != writerCache) {
-            return writerCache.isClosed();
+            return writerCache.isCommitted();
         } else if (null != outputCache) {
-            return outputCache.isClosed();
+            return outputCache.isCommitted();
         }
         return false;
     }
@@ -386,6 +386,13 @@ public class ResponseCache extends ActResponse implements Serializable {
 
     @Override
     public void commit() {
+        if (null != outputCache) {
+            outputCache.commit();
+        } else if (null != osCache) {
+            osCache.commit();
+        } else if (null != writerCache) {
+            writerCache.commit();
+        }
         realResponse.commit();
     }
 
