@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 **1.8.8**
+* e2e: Allow suppress fixture clearing #805
 * Add `Page` data structure for db list operation #804
 * E2E - `NullPointerException` with interdependent scenarios #803
 * JSON request resolving - binding String to class issue #802

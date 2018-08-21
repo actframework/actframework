@@ -242,6 +242,7 @@ public class Scenario implements ScenarioPart {
     public E2EStatus status = PENDING;
     public String errorMessage;
     public Throwable cause;
+    public boolean clearFixtures = true;
 
     $.Var<Object> lastData = $.var();
     $.Var<Headers> lastHeaders = $.var();
@@ -373,6 +374,9 @@ public class Scenario implements ScenarioPart {
     }
 
     public boolean clearFixtures() {
+        if (!clearFixtures) {
+            return true;
+        }
         return verify(RequestSpec.RS_CLEAR_FIXTURE, "clearing fixtures");
     }
 
