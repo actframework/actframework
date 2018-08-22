@@ -55,7 +55,7 @@ public final class Env {
         /**
          * The profile specification
          */
-        String value();
+        String[] value();
 
         /**
          * If `except` is `true` then the module should be load
@@ -81,7 +81,7 @@ public final class Env {
         /**
          * The profile specification
          */
-        String value();
+        String[] value();
 
         /**
          * If unless is `true` then the module should be load
@@ -104,7 +104,7 @@ public final class Env {
         /**
          * The node group specification
          */
-        String value();
+        String[] value();
 
         /**
          * If `except` is `true` then the module should be load
@@ -131,7 +131,7 @@ public final class Env {
         /**
          * The node group specification
          */
-        String value();
+        String[] value();
 
         /**
          * If unless is `true` then the module should be load
@@ -164,6 +164,9 @@ public final class Env {
     }
 
     /**
+     * This annotation is obsolete, please use {@link RequireMode}
+     * instead
+     *
      * Used to mark a dependency injector module
      * that should be load only in specified mode
      *
@@ -172,6 +175,7 @@ public final class Env {
      */
     @Target({ElementType.TYPE, ElementType.METHOD})
     @Retention(RetentionPolicy.RUNTIME)
+    @Deprecated
     public @interface Mode {
 
         /**
@@ -218,11 +222,17 @@ public final class Env {
         return profileMatches(profileTag.value(), profileTag.unless());
     }
 
-    public static boolean profileMatches(String profile) {
-        return S.eq(profile, Act.profile(), S.IGNORECASE);
+    public static boolean profileMatches(String[] profiles) {
+        final String actProfile = Act.profile();
+        for (String profile : profiles) {
+            if (S.eq(profile, actProfile)) {
+                return true;
+            }
+        }
+        return false;
     }
 
-    public static boolean profileMatches(String profile, boolean unless) {
+    public static boolean profileMatches(String[] profile, boolean unless) {
         return unless ^ profileMatches(profile);
     }
 
@@ -246,12 +256,18 @@ public final class Env {
         return groupMatches(groupTag.value(), groupTag.unless());
     }
 
-    public static boolean groupMatches(String group) {
-        return S.eq(group, Act.nodeGroup(), S.IGNORECASE);
+    public static boolean groupMatches(String[] groups) {
+        final String actGroup = Act.nodeGroup();
+        for (String group : groups) {
+            if (S.eq(group, actGroup, S.IGNORECASE)) {
+                return true;
+            }
+        }
+        return false;
     }
 
-    public static boolean groupMatches(String group, boolean unless) {
-        return unless ^ groupMatches(group);
+    public static boolean groupMatches(String[] groups, boolean unless) {
+        return unless ^ groupMatches(groups);
     }
 
     private static final C.Set<Class<? extends Annotation>> ENV_ANNOTATION_TYPES = C.set(

@@ -21,11 +21,12 @@ package act.sys.meta;
  */
 
 import act.Act;
-import act.asm.AnnotationVisitor;
-import act.asm.Opcodes;
-import act.asm.Type;
+import act.asm.*;
 import act.sys.Env;
 import org.osgl.util.S;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Scan `@Env.Mode`, `@Env.Profile`, `@Env.Group`
@@ -39,6 +40,7 @@ public class EnvAnnotationVisitor extends AnnotationVisitor implements Opcodes {
     public static final String DESC_GROUP = Type.getType(Env.Group.class).getDescriptor();
     public static final String DESC_REQUIRE_GROUP = Type.getType(Env.RequireGroup.class).getDescriptor();
 
+    private List<String> arrayValue = new ArrayList<>();
     private boolean matched = true;
     private boolean except = false;
     private String desc;
@@ -52,17 +54,28 @@ public class EnvAnnotationVisitor extends AnnotationVisitor implements Opcodes {
     public void visit(String name, Object value) {
         if ("value".equals(name)) {
             String s = S.string(value);
-            if (S.eq(desc, DESC_REQUIRE_PROFILE) || S.eq(desc, DESC_PROFILE)) {
-                matched = Env.profileMatches(s);
-            } else if (S.eq(desc, DESC_REQUIRE_MODE) || S.eq(desc, DESC_MODE)) {
-                matched = Env.groupMatches(s);
-            } else if (S.eq(desc, DESC_REQUIRE_GROUP) || S.eq(desc, DESC_GROUP)) {
+            if (S.eq(desc, DESC_REQUIRE_MODE) || S.eq(desc, DESC_MODE)) {
                 matched = Env.modeMatches(s);
             }
         } else if ("except".equals(name)) {
             except = (Boolean) value;
         }
         super.visit(name, value);
+    }
+
+    @Override
+    public AnnotationVisitor visitArray(String name) {
+        AnnotationVisitor av = super.visitArray(name);
+        if ("value".equals(name)) {
+            return new AnnotationVisitor(ASM5, av) {
+                @Override
+                public void visit(String name, Object value) {
+                    arrayValue.add(S.string(value));
+                    super.visit(name, value);
+                }
+            };
+        }
+        return av;
     }
 
     @Override
@@ -78,6 +91,14 @@ public class EnvAnnotationVisitor extends AnnotationVisitor implements Opcodes {
 
     @Override
     public void visitEnd() {
+        int arrayValueSize = arrayValue.size();
+        if (arrayValueSize > 0) {
+            if (S.eq(desc, DESC_REQUIRE_PROFILE) || S.eq(desc, DESC_PROFILE)) {
+                matched = Env.profileMatches(arrayValue.toArray(new String[arrayValueSize]));
+            } else if (S.eq(desc, DESC_REQUIRE_GROUP) || S.eq(desc, DESC_GROUP)) {
+                matched = Env.groupMatches(arrayValue.toArray(new String[arrayValueSize]));
+            }
+        }
         matched = except ^ matched;
         super.visitEnd();
     }

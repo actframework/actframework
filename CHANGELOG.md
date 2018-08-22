@@ -1,6 +1,8 @@
 # ActFramework Change Log
 
 **1.8.8**
+* Environment assert - support multiple values #807
+* e2e - allow loading fixtures from JSON file #806
 * e2e: Allow suppress fixture clearing #805
 * Add `Page` data structure for db list operation #804
 * E2E - `NullPointerException` with interdependent scenarios #803

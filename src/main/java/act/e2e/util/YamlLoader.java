@@ -27,7 +27,7 @@ import act.conf.AppConfig;
 import act.db.Dao;
 import act.e2e.E2E;
 import act.util.LogSupport;
-import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.*;
 import org.osgl.$;
 import org.osgl.Lang;
 import org.osgl.OsglConfig;
@@ -39,10 +39,7 @@ import org.osgl.util.S;
 import org.yaml.snakeyaml.Yaml;
 
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -114,11 +111,61 @@ public class YamlLoader extends LogSupport {
 
 
     public Map<String, Object> loadFixture(String fixtureName, DaoLocator daoLocator) {
+        boolean isJson = fixtureName.endsWith(".json");
+        boolean isYaml = !isJson && (fixtureName.endsWith(".yaml") || fixtureName.endsWith(".yml"));
+        E.unsupportedIfNot(isJson || isYaml, "fixture resource file type not supported: " + fixtureName);
         String content = getResourceAsString(fixtureName);
         if (null == content) {
             return C.Map();
         }
-        return parse(content, daoLocator);
+        return isJson ? parseJson(content, daoLocator) : parse(content, daoLocator);
+    }
+
+    private Map<String, Object> parseJson(String content, DaoLocator daoLocator) {
+        if (S.blank(content)) {
+            return C.Map();
+        }
+        if (content.startsWith("[")) {
+            // MongoDB exported data list variation
+            JSONArray array = JSON.parseArray(content);
+            int len = array.size();
+            Map<String, Object> retVal = new LinkedHashMap<>();
+            for (int i = 0; i < len; ++i) {
+                JSONObject obj = array.getJSONObject(i);
+                String className = obj.getString("className");
+                E.unsupportedIf(S.isBlank(className), "Unsupported JSON resource, className required");
+                String key = obj.getString("key");
+                if (null == key) {
+                    key = obj.getString("name");
+                }
+                if (null == key) {
+                    key = obj.getString("id");
+                }
+                if (null == key) {
+                    key = S.mediumRandom();
+                }
+                Class<?> modelType = loadModelType(className);
+                Dao dao = null == daoLocator ? null : daoLocator.dao(modelType);
+                Object entity = OsglConfig.INSTANCE_FACTORY.apply(modelType);
+                $.map(obj).to(entity);
+                if (null != dao) {
+                    TxScope.enter();
+                    try {
+                        dao.save(entity);
+                        TxScope.commit();
+                    } catch (Exception e) {
+                        TxScope.rollback(e);
+                    } finally {
+                        TxScope.clear();
+                    }
+                }
+                retVal.put(key, entity);
+            }
+            return retVal;
+        } else {
+            JSONObject obj = JSON.parseObject(content);
+            return resolve((Map) obj, daoLocator);
+        }
     }
 
     /**
@@ -137,6 +184,10 @@ public class YamlLoader extends LogSupport {
             return C.Map();
         }
         Map<Object, Map<?, ?>> objects = $.cast(o);
+        return resolve(objects, daoLocator);
+    }
+
+    private Map<String, Object> resolve(Map<Object, Map<?, ?>> objects, DaoLocator daoLocator) {
         resolveConstants(objects);
         Map<String, Map<String, Object>> mapCache = C.newMap();
         Map<String, Object> entityCache = new LinkedHashMap<>();

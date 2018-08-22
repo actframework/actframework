@@ -26,6 +26,10 @@ import act.exception.EnvNotMatchException;
 import act.sys.Env;
 import act.util.ByteCodeVisitor;
 import org.osgl.util.E;
+import org.rythmengine.utils.S;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Detect if a class has `Env` annotations and check if
@@ -51,12 +55,12 @@ public class EnvMatcher extends ByteCodeVisitor {
             Profile() {
                 @Override
                 boolean matches(EnvAnnotationVisitor visitor) {
-                    return Env.profileMatches(visitor.value, visitor.except);
+                    return Env.profileMatches(visitor.arrayValue.toArray(new String[visitor.arrayValue.size()]), visitor.except);
                 }
             }, Group() {
                 @Override
                 boolean matches(EnvAnnotationVisitor visitor) {
-                    return Env.groupMatches(visitor.value, visitor.except);
+                    return Env.groupMatches(visitor.arrayValue.toArray(new String[visitor.arrayValue.size()]), visitor.except);
                 }
             }, Mode() {
                 @Override
@@ -69,6 +73,7 @@ public class EnvMatcher extends ByteCodeVisitor {
         }
 
         private Type type;
+        private List<String> arrayValue = new ArrayList<>();
         private String value;
         private boolean except;
 
@@ -85,6 +90,21 @@ public class EnvMatcher extends ByteCodeVisitor {
                 this.except = Boolean.parseBoolean(value.toString());
             }
             super.visit(name, value);
+        }
+
+        @Override
+        public AnnotationVisitor visitArray(String name) {
+            AnnotationVisitor av = super.visitArray(name);
+            if ("value".equals(name)) {
+                return new AnnotationVisitor(ASM5, av) {
+                    @Override
+                    public void visit(String name, Object value) {
+                        arrayValue.add(S.string(value));
+                        super.visit(name, value);
+                    }
+                };
+            }
+            return av;
         }
 
         @Override
