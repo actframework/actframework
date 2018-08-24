@@ -16,16 +16,6 @@
     h1,h2,h3,h4,h5 {
       font-family: "Franklin Gothic Medium", "Franklin Gothic", "ITC Franklin Gothic", Arial, sans-serif;
     }
-    h1 {
-      font-weight: bold;
-      font-size: 42px;
-    }
-    h2 {
-      font-size: 36px;
-    }
-    h3 {
-      font-size: 28px;
-    }
     h4 {
       font-size: 16px;
       font-weight: 600;
@@ -33,9 +23,6 @@
       margin-top: 30px;
       border-bottom: 1px dotted #888;
       padding-bottom: 8px;
-    }
-    h5 {
-      font-size: 18px;
     }
     #act-version {
       position:fixed;
@@ -62,11 +49,16 @@
     .error-message {
       margin-left: 2em;
     }
+    .version {
+      font-weight: 600;
+    }
   </style>
   @render(head)
 </head>
 <body>
-<h1>End To End Test Result</h1>
+@args act.app.App app
+<h1>Test Report</h1>
+<div class="version">@(app.name().capFirst())-@(app.version().getVersion())</div>
 @for(Scenario scenario: scenarios) {
 <h4>
 @if(scenario.description) {

@@ -98,7 +98,7 @@ public class ScenarioDebugHelper {
     @GetAction({"e2e", "test"})
     public void run(App app) {
         List<Scenario> scenarios = test.run(app, false);
-        renderTemplate("/~test.html", scenarios);
+        renderTemplate("/~test.html", scenarios, app);
     }
 
 }
