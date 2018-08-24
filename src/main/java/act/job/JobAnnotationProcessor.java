@@ -23,6 +23,7 @@ package act.job;
 import act.app.App;
 import act.app.AppHolderBase;
 import act.app.event.SysEventId;
+import act.test.FixtureLoader;
 import act.job.bytecode.JobAnnoInfo;
 import act.job.bytecode.ReflectedJobInvoker;
 import act.job.meta.JobClassMetaInfo;
@@ -86,6 +87,8 @@ public class JobAnnotationProcessor extends AppHolderBase<JobAnnotationProcessor
             registerOnAppStop(job, async);
         } else if (OnSysEvent.class.isAssignableFrom(anno)) {
             registerOnSysEvent(job, info.sysEventId, info.async);
+        } else if (FixtureLoader.class.isAssignableFrom(anno)) {
+            // fixture loader job already registered;
         } else {
             throw E.unsupport("Unknown job annotation class: %s", anno.getName());
         }

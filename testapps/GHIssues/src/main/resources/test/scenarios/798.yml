@@ -1,0 +1,9 @@
+Scenario(GH798):
+  description: "[798] `@JSONField(format = 'yyyy-MM')` setting not work"
+  interactions:
+  - description: Test
+    request:
+      get: 798
+    response:
+      json:
+        ${sizeOf(date)}: 7

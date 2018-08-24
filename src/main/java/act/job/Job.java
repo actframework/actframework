@@ -26,21 +26,16 @@ import static org.osgl.$.F0;
 import act.Act;
 import act.app.App;
 import act.app.event.SysEventId;
-import act.event.EventBus;
 import act.event.SysEventListenerBase;
+import act.job.bytecode.ReflectedJobInvoker;
 import act.route.DuplicateRouteMappingException;
-import act.util.DestroyableBase;
-import act.util.ProgressGauge;
-import act.util.SimpleProgressGauge;
+import act.util.*;
 import act.ws.WebSocketConnectionManager;
 import org.osgl.$;
-import org.osgl.exception.ConfigurationException;
-import org.osgl.exception.NotAppliedException;
-import org.osgl.exception.UnexpectedException;
-import org.osgl.util.C;
-import org.osgl.util.E;
-import org.osgl.util.S;
+import org.osgl.exception.*;
+import org.osgl.util.*;
 
+import java.lang.reflect.Method;
 import java.util.*;
 import java.util.concurrent.Callable;
 
@@ -121,11 +116,11 @@ public class Job extends DestroyableBase implements Runnable {
     private boolean oneTime;
     private boolean executed;
     private JobManager manager;
-    private final EventBus eventBus;
     private JobTrigger trigger;
     private $.Func0<?> worker;
     Object callableResult;
     Exception callableException;
+    private Method method;
     // progress percentage
     private SimpleProgressGauge progress = new SimpleProgressGauge();
     private LockableJobList parallelJobs = new LockableJobList(this);
@@ -135,7 +130,6 @@ public class Job extends DestroyableBase implements Runnable {
     private Job(String id) {
         this.id = id;
         this.jobProgressTag = wsJobProgressTag(id);
-        this.eventBus = Act.eventBus();
     }
 
     Job(String id, JobManager manager) {
@@ -149,7 +143,6 @@ public class Job extends DestroyableBase implements Runnable {
         this.app = manager.app();
         this.jobProgressTag = wsJobProgressTag(id);
         this.manager.addJob(this);
-        this.eventBus = app.eventBus();
         this.worker = new F0() {
             @Override
             public Object apply() throws NotAppliedException, $.Break {
@@ -173,9 +166,11 @@ public class Job extends DestroyableBase implements Runnable {
         this.worker = worker;
         this.oneTime = oneTime;
         this.app = manager.app();
-        this.eventBus = app.eventBus();
         this.jobProgressTag = wsJobProgressTag(id);
         this.manager.addJob(this);
+        if (worker instanceof ReflectedJobInvoker) {
+            this.method = ((ReflectedJobInvoker) worker).method();
+        }
     }
 
     Job(String id, JobManager manager, $.Function<ProgressGauge, ?> worker) {
@@ -189,7 +184,6 @@ public class Job extends DestroyableBase implements Runnable {
         this.worker = f1.curry(progress);
         this.oneTime = oneTime;
         this.app = manager.app();
-        this.eventBus = app.eventBus();
         this.jobProgressTag = wsJobProgressTag(id);
         this.manager.addJob(this);
     }
@@ -235,6 +229,10 @@ public class Job extends DestroyableBase implements Runnable {
         printSubJobs(followingJobs.jobList, "following jobs", sb);
         printSubJobs(precedenceJobs.jobList, "precedence jobs", sb);
         return sb.toString();
+    }
+
+    public Method method() {
+        return method;
     }
 
     private static void printSubJobs(Collection<? extends Job> subJobs, String label, S.Buffer sb) {

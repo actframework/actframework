@@ -1,0 +1,10 @@
+Scenario(GH784):
+  description: "[784] `@Data` enhancement error when Model class has no fields"
+  interactions:
+  - description: test
+    request:
+      get: 784
+    response:
+      json:
+        result:
+        - ne: 0

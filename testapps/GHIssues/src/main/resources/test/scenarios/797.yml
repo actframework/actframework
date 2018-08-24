@@ -1,0 +1,10 @@
+Scenario(GH797):
+  description: "[797] JSON output: default format for `java.util.Date` missing time part"
+  interactions:
+  - description: Test
+    request:
+      get: 797
+    response:
+      json:
+        ${sizeOf(date)}:
+          - gt: 15

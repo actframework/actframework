@@ -39,7 +39,7 @@ public @interface AnnotatedClassFinder {
      *
      * @return the annotation class used to find the target classes
      */
-    Class<?> value();
+    Class<? extends Annotation> value();
 
     /**
      * Should I collect only public classes?

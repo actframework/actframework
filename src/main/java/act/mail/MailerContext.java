@@ -23,7 +23,7 @@ package act.mail;
 import act.Act;
 import act.app.ActionContext;
 import act.app.App;
-import act.e2e.E2E;
+import act.test.Test;
 import act.event.ActEvent;
 import act.event.SystemEvent;
 import act.util.ActContext;
@@ -196,9 +196,9 @@ public class MailerContext extends ActContext.Base<MailerContext> {
     }
 
     public MailerContext subject(String subject, Object ... args) {
-        String emailId = E2E.generateEmailId();
+        String emailId = Test.generateEmailId();
         if (null != emailId) {
-            emailId = "[e2e-" + emailId + "]";
+            emailId = "[test-" + emailId + "]";
         }
         if (S.blank(subject)) {
             if (null != emailId) {

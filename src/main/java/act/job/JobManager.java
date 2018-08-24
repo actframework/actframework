@@ -22,9 +22,7 @@ package act.job;
 
 import act.Act;
 import act.Destroyable;
-import act.app.App;
-import act.app.AppServiceBase;
-import act.app.AppThreadFactory;
+import act.app.*;
 import act.app.event.SysEventId;
 import act.event.OnceEventListenerBase;
 import act.event.SysEventListenerBase;
@@ -37,11 +35,10 @@ import org.osgl.$;
 import org.osgl.exception.NotAppliedException;
 import org.osgl.logging.LogManager;
 import org.osgl.logging.Logger;
-import org.osgl.util.C;
-import org.osgl.util.E;
-import org.osgl.util.S;
+import org.osgl.util.*;
 import org.rythmengine.utils.Time;
 
+import java.lang.reflect.Method;
 import java.util.EventObject;
 import java.util.Map;
 import java.util.concurrent.*;
@@ -52,6 +49,7 @@ public class JobManager extends AppServiceBase<JobManager> {
 
     private ScheduledThreadPoolExecutor executor;
     private ConcurrentMap<String, Job> jobs = new ConcurrentHashMap<String, Job>();
+    private ConcurrentMap<Method, Job> methodIndex = new ConcurrentHashMap<>();
     private ConcurrentMap<String, ScheduledFuture> scheduled = new ConcurrentHashMap<>();
 
     static String sysEventJobId(SysEventId eventId) {
@@ -324,6 +322,10 @@ public class JobManager extends AppServiceBase<JobManager> {
         on(SysEventId.STOP, runnable);
     }
 
+    public Job forMethod(Method method) {
+        return methodIndex.get(method);
+    }
+
     public SimpleProgressGauge progressGauge(String jobId) {
         return jobById(jobId).progress();
     }
@@ -355,11 +357,11 @@ public class JobManager extends AppServiceBase<JobManager> {
         scheduled.putIfAbsent(id, future);
     }
 
-    Job jobById(String id) {
+    public Job jobById(String id) {
         return jobById(id, true);
     }
 
-    Job jobById(String id, boolean warn) {
+    public Job jobById(String id, boolean warn) {
         Job job = jobs.get(id);
         if (null == job) {
             ScheduledFuture future = scheduled.get(id);
@@ -377,6 +379,10 @@ public class JobManager extends AppServiceBase<JobManager> {
         String id = job.id();
         E.illegalStateIf(jobs.containsKey(id), "job already registered: %s", id);
         jobs.put(id, job);
+        Method method = job.method();
+        if (null != method) {
+            methodIndex.put(method, job);
+        }
     }
 
     void removeJob(Job job) {
@@ -385,6 +391,10 @@ public class JobManager extends AppServiceBase<JobManager> {
         ScheduledFuture future = scheduled.remove(id);
         if (null != future) {
             future.cancel(true);
+        }
+        Method method = job.method();
+        if (null != method) {
+            methodIndex.remove(method);
         }
     }
 

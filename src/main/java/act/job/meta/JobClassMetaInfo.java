@@ -20,20 +20,18 @@ package act.job.meta;
  * #L%
  */
 
+import static act.Destroyable.Util.destroyAll;
+
 import act.asm.Type;
+import act.test.FixtureLoader;
 import act.job.*;
 import act.util.DestroyableBase;
 import org.osgl.util.C;
 import org.osgl.util.S;
 
-import javax.enterprise.context.ApplicationScoped;
 import java.lang.annotation.Annotation;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import static act.Destroyable.Util.destroyAll;
+import java.util.*;
+import javax.enterprise.context.ApplicationScoped;
 
 /**
  * Stores all class level information to support generating of
@@ -127,7 +125,7 @@ public final class JobClassMetaInfo extends DestroyableBase {
     private static final C.Set<Class<? extends Annotation>> ACTION_ANNOTATION_TYPES = C.set(
             AlongWith.class, Cron.class, Every.class,
             FixedDelay.class, InvokeAfter.class, InvokeBefore.class,
-            OnAppStart.class, OnAppStop.class, OnSysEvent.class);
+            OnAppStart.class, OnAppStop.class, OnSysEvent.class, FixtureLoader.class);
 
     public static boolean isActionAnnotation(Class<? extends Annotation> type) {
         return ACTION_ANNOTATION_TYPES.contains(type);

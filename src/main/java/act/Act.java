@@ -521,8 +521,20 @@ public final class Act {
      * @param className the class name
      * @return the class corresponding to the name specified
      */
-    public static Class<?> appClassForName(String className) {
+    public static <T> Class<T> appClassForName(String className) {
         return app().classForName(className);
+    }
+
+    public static <T> Class<T> classForName(String className) {
+        ClassLoader cl = null;
+        App app = app();
+        if (null != app) {
+            cl = app.classLoader();
+        }
+        if (null == cl) {
+            cl = Act.class.getClassLoader();
+        }
+        return $.classForName(className, cl);
     }
 
     /**

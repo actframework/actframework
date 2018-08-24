@@ -47,7 +47,7 @@ public class SeparateClassloaderTestRunner extends BlockJUnit4ClassRunner {
 
         @Override
         public Class<?> loadClass(String name) throws ClassNotFoundException {
-            if (name.startsWith("e2e.") || name.startsWith("act.e2e.")) {
+            if (name.startsWith("test.") || name.startsWith("act.test.")) {
                 return super.findClass(name);
             }
             return super.loadClass(name);

@@ -1,9 +1,0 @@
-Scenario(GH784):
-  interactions:
-  - description: test
-    request:
-      get: 784
-    response:
-      json:
-        result:
-        - ne: 0

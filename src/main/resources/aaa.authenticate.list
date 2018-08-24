@@ -1,4 +1,4 @@
--act.e2e.
+-act.test.
 -act.i18n.LocaleResolver
 -act.i18n.TimeZoneResolver
 -act.i18n.EnumService

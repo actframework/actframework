@@ -94,7 +94,7 @@
     <appender-ref ref="DB_FILE" />
   </logger>
 
-  <logger name="act.e2e" level="INFO" additivity="false">
+  <logger name="act.test" level="INFO" additivity="false">
     <appender-ref ref="E2E_STDOUT"/>
     <appender-ref ref="E2E_FILE"/>
   </logger>

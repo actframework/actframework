@@ -26,6 +26,7 @@ import act.asm.AnnotationVisitor;
 import act.asm.MethodVisitor;
 import act.asm.Opcodes;
 import act.asm.Type;
+import act.test.FixtureLoader;
 import act.job.JobAnnotationProcessor;
 import act.job.meta.JobClassMetaInfo;
 import act.job.meta.JobClassMetaInfoManager;
@@ -221,7 +222,11 @@ public class JobByteCodeScanner extends AppByteCodeScannerBase {
                 @Override
                 public void visit(String name, Object value) {
                     if ("value".equals(name)) {
-                        this.currentInfo.value = value.toString();
+                        if (this.currentInfo.annotationType == FixtureLoader.class) {
+                            method.id(S.string(value));
+                        } else {
+                            this.currentInfo.value = value.toString();
+                        }
                     } else if ("async".equals(name)) {
                         this.currentInfo.async = $.bool(value);
                     } else if ("id".equals(name)) {

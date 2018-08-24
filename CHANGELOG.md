@@ -1,6 +1,9 @@
 # ActFramework Change Log
 
 **1.8.8**
+* Rename "e2e" to "test" #810
+* Bytecode enhanement error on App start #809
+* e2e - support customised fixture loading logic #808
 * Environment assert - support multiple values #807
 * e2e - allow loading fixtures from JSON file #806
 * e2e: Allow suppress fixture clearing #805

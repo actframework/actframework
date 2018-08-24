@@ -20,24 +20,19 @@ package act.controller.bytecode;
  * #L%
  */
 
+import static act.asm.tree.AbstractInsnNode.*;
+
 import act.app.ActionContext;
 import act.asm.*;
-import act.asm.tree.AbstractInsnNode;
 import act.asm.tree.*;
-import act.controller.meta.HandlerMethodMetaInfo;
-import act.controller.meta.HandlerParamMetaInfo;
-import act.controller.meta.LocalVariableMetaInfo;
+import act.controller.meta.*;
 import act.util.AsmTypes;
 import org.osgl.logging.LogManager;
 import org.osgl.logging.Logger;
 import org.osgl.mvc.result.Result;
-import org.osgl.util.C;
-import org.osgl.util.E;
-import org.osgl.util.S;
+import org.osgl.util.*;
 
 import java.util.*;
-
-import static act.asm.tree.AbstractInsnNode.*;
 
 public class HandlerEnhancer extends MethodVisitor implements Opcodes {
 
@@ -164,15 +159,16 @@ public class HandlerEnhancer extends MethodVisitor implements Opcodes {
         }
 
         private void mergeRenderLineBreaks(AbstractInsnNode renderLine, InsnList list) {
-            AbstractInsnNode node = renderLine;
+            AbstractInsnNode node = renderLine.getPrevious();
             while (null != node) {
-                node = node.getPrevious();
                 if (node.getOpcode() == ANEWARRAY) {
                     return;
                 } else if (node instanceof LabelNode) {
                     AbstractInsnNode node0 = node.getPrevious();
                     list.remove(node);
                     node = node0;
+                } else {
+                    node = node.getPrevious();
                 }
             }
         }

@@ -1,0 +1,15 @@
+Scenario(GH786):
+  description: "[786] `@Data` enhancement shall call super by default for Map/AdaptiveMap types"
+  interactions:
+  - description: test case A - app shall specify call super
+    request:
+      get: 786/a
+    response:
+      json:
+        result: false
+  - description: test case B - app shall not be forced to specify call super
+    request:
+      get: 786/b
+    response:
+      json:
+        result: false

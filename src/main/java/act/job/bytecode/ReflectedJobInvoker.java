@@ -112,6 +112,10 @@ public class ReflectedJobInvoker<M extends JobMethodMetaInfo> extends $.F0<Objec
         return invoke(job, ctx);
     }
 
+    public Method method() {
+        return method;
+    }
+
     private Class[] paramTypes() {
         List<BeanSpec> paramTypes = methodInfo.paramTypes();
         int sz = null == paramTypes ? 0 : paramTypes.size();

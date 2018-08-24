@@ -21,15 +21,16 @@ package act.util;
  */
 
 import act.Act;
+import act.app.event.SysEventId;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.TypeReference;
 import org.osgl.$;
 import org.osgl.util.C;
+import org.osgl.util.E;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Method;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import javax.enterprise.context.ApplicationScoped;
@@ -44,6 +45,8 @@ public class ClassInfoRepository extends DestroyableBase {
     }
 
     protected ConcurrentMap<String, ClassNode> classes = new ConcurrentHashMap<String, ClassNode>();
+
+    protected ConcurrentMap<Class<? extends Annotation>, Set<Method>> methodAnnotationLookup = new ConcurrentHashMap<>();
 
     public boolean has(String className) {
         return classes.containsKey(className);
@@ -73,6 +76,33 @@ public class ClassInfoRepository extends DestroyableBase {
             }
         }
         return node;
+    }
+
+    public Set<Method> methodsWithAnnotation(Class<? extends Annotation> annoType) {
+        Set<Method> set = methodAnnotationLookup.get(annoType);
+        return null == set ? C.<Method>Set() : set;
+    }
+
+    public void registerMethodAnnotationLookup(final String annotationDesc, final String classInternalName, final String methodName, final String methodDesc) {
+        Act.app().jobManager().on(SysEventId.CLASS_LOADED, new Runnable() {
+            @Override
+            public void run() {
+                Class<? extends Annotation> annoType = AsmType.classForDesc(annotationDesc);
+                Class<?> methodHost = AsmType.classForInternalName(classInternalName);
+                Class<?>[] methodArgumentTypes = AsmType.methodArgumentTypesForDesc(methodDesc);
+                try {
+                    Method method = methodHost.getDeclaredMethod(methodName, methodArgumentTypes);
+                    Set<Method> set = methodAnnotationLookup.get(annoType);
+                    if (null == set) {
+                        set = new HashSet<>();
+                    }
+                    set.add(method);
+                    methodAnnotationLookup.put(annoType, set);
+                } catch (NoSuchMethodException e) {
+                    throw E.unexpected(e);
+                }
+            }
+        });
     }
 
     public ClassNode findNode(Class<?> type) {

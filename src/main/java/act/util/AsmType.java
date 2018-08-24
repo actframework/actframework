@@ -50,6 +50,10 @@ public class AsmType<T> {
         return type.getDescriptor();
     }
 
+    public static String classNameForDesc(String description) {
+        return Type.getType(description).getClassName();
+    }
+
     public static <T> Class<T> classForDesc(String desc) {
         Type type = Type.getType(desc);
         return classForType(type);
@@ -58,6 +62,24 @@ public class AsmType<T> {
     public static <T> Class<T> classForType(Type type) {
         String className = type.getClassName();
         return $.classForName(className, AsmType.class.getClassLoader());
+    }
+
+    public static String classNameForInternalName(String internalName) {
+        return Type.getObjectType(internalName).getClassName();
+    }
+
+    public static Class<?> classForInternalName(String internalName) {
+        return classForType(Type.getObjectType(internalName));
+    }
+
+    public static Class<?>[] methodArgumentTypesForDesc(String methodDesc) {
+        Type[] types = Type.getArgumentTypes(methodDesc);
+        int len = types.length;
+        Class<?>[] argumentTypes = new Class[len];
+        for (int i = 0; i < types.length; ++i) {
+            argumentTypes[i] = classForType(types[i]);
+        }
+        return argumentTypes;
     }
 
 }

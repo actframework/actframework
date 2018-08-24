@@ -1,0 +1,18 @@
+Scenario(GH790):
+  description: "[790] Resource loader - allow loading from excel file"
+  interactions:
+  - description: retreive all students
+    request:
+      get: 790/students
+    response:
+      json:
+        size: 100
+        <any>:
+          firstName: Vernetta
+          lastName: Bogard
+  - description: retrieve class number
+    request:
+      get: 790/info/classNumber
+    response:
+      json:
+        result: 2

@@ -1077,7 +1077,7 @@ public class App extends DestroyableBase {
      * @param className the name of the class to be loaded
      * @return the class as described above
      */
-    public Class<?> classForName(String className) {
+    public <T> Class<T> classForName(String className) {
         return $.classForName(className, classLoader());
     }
 

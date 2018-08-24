@@ -1,0 +1,27 @@
+Course(math):
+  id: 1
+  name: Maths
+Course(history):
+  id: 2
+  name: History
+User(green):
+  id: 1
+  name: Green Luo
+  birthday: 1919-01-01
+  courses:
+    - embed:math
+act.test.model.User(black):
+  id: 2
+  name: Black Smith
+  birthday: 1818-02-02
+  courses:
+    - embed:math
+    - embed:history
+User(john):
+  id: 3
+  name: John Brad
+  courses:
+    - id: 3
+      name: Physics
+    - id: 4
+      name: Science

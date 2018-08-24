@@ -1,0 +1,9 @@
+Scenario(GH809):
+  description: "[809] Bytecode enhanement error on App start"
+  interactions:
+  - description: Test
+    request:
+      get: 809
+    response:
+      html:
+        h1: GH809
