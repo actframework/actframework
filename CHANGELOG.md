@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 **1.8.8**
+* Report error when app's package starts with `act` #811
 * Rename "e2e" to "test" #810
 * Bytecode enhanement error on App start #809
 * e2e - support customised fixture loading logic #808

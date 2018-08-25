@@ -93,6 +93,7 @@ import act.ws.SecureTicketHandler;
 import act.ws.WebSocketConnectionManager;
 import org.osgl.$;
 import org.osgl.cache.CacheService;
+import org.osgl.exception.ConfigurationException;
 import org.osgl.http.HttpConfig;
 import org.osgl.logging.LogManager;
 import org.osgl.logging.Logger;
@@ -1454,6 +1455,9 @@ public class App extends DestroyableBase {
                     String suffix = S.cut(scanPackage).afterLast("*");
                     scanSuffixList.add(suffix);
                 } else {
+                    if (scanPackage.startsWith("act.") || "act".equals(scanPackage)) {
+                        throw new ConfigurationException("Scan package cannot be 'act' or starts with 'act.'");
+                    }
                     scanList.add(scanPackage);
                 }
             }
