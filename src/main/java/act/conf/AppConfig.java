@@ -2308,6 +2308,12 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
             } else {
                 final String[] sp = scanPackage.trim().split(Constants.LIST_SEPARATOR);
                 final int len = sp.length;
+                for (int i = 0; i < len; ++i) {
+                    String pkg = sp[i];
+                    if (pkg.startsWith("act.") || "act".equals(pkg)) {
+                        throw new ConfigurationException("Scan package cannot be 'act' or starts with 'act.'");
+                    }
+                }
                 if (1 == len) {
                     APP_CLASS_TESTER = S.F.startsWith(sp[0]).or(SYSTEM_SCAN_LIST);
                 } else {
