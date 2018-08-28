@@ -95,15 +95,17 @@
         <includes>
           <include>**/*.version</include>
           <include>**/*.properties</include>
-          <include>**/*.xml</include>
-          <include>**/*.csv</include>
-          <include>**/*.list</include>
-          <include>**/*.txt</include>
           <include>**/*.css</include>
+          <include>**/*.csv</include>
+          <include>**/*.html</include>
           <include>**/*.js</include>
           <include>**/*.json</include>
-          <include>**/*.html</include>
+          <include>**/*.list</include>
           <include>**/*.tag</include>
+          <include>**/*.txt</include>
+          <include>**/*.xml</include>
+          <include>**/*.yml</include>
+          <include>**/*.yaml</include>
           <include>rythm/**</include>
           <include>*.flf</include>
         </includes>

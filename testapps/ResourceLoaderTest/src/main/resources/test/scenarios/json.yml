@@ -1,0 +1,32 @@
+Scenario(JSON):
+  interactions:
+    - description: test load JSON into POJO
+      request:
+        get: /json/pojo
+      response:
+        json:
+          size: 3
+          0:
+            username: jamesbond
+            level: 32
+          1:
+            username: ethanhunt
+            level: 30
+          2:
+            username: jasonbourne
+            level: 29
+    - description: test load JSON into Map
+      request:
+        get: /json/map
+      response:
+        json:
+          size: 3
+          0:
+            username: jamesbond
+            level: 32
+          1:
+            username: ethanhunt
+            level: 30
+          2:
+            username: jasonbourne
+            level: 29

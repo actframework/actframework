@@ -1,0 +1,10 @@
+Scenario(List):
+  interactions:
+    - description: test load into int list
+      request:
+        get: /list/int
+      response:
+        json:
+          size: 5
+          0: 1
+          4: 5

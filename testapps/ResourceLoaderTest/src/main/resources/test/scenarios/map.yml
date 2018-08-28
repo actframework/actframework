@@ -1,0 +1,23 @@
+Scenario(Map):
+  interactions:
+    - description: test load into general Map
+      request:
+        get: /map/general
+      response:
+        json:
+          foo: bar
+          id: 3
+    - description: test load into integer value Map
+      request:
+        get: /map/integer
+      response:
+        json:
+          one: 1
+          two: 2
+    - description: test load into short value Map
+      request:
+        get: /map/short
+      response:
+        json:
+          one: 1
+          two: 2

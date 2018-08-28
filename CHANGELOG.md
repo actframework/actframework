@@ -1,6 +1,8 @@
 # ActFramework Change Log
 
 **1.8.8**
+* Cannot render Excel when return value is `Map` type #813
+* `java.lang.IllegalStateException`: job already registered: __act_sys__start-delay-1 #812
 * Report error when app's package starts with `act` #811
 * Rename "e2e" to "test" #810
 * Bytecode enhanement error on App start #809

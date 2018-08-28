@@ -43,6 +43,7 @@ import java.util.EventObject;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * A `JobTrigger` triggers a {@link Job} to be executed
@@ -465,6 +466,8 @@ public abstract class JobTrigger {
 
     private static class _DelayAfter extends _AssociatedTo {
 
+        private static final AtomicInteger seq = new AtomicInteger();
+
         private int delayInSeconds;
 
         _DelayAfter(String targetId, int delayInSeconds) {
@@ -479,7 +482,7 @@ public abstract class JobTrigger {
 
         @Override
         void associate(final Job theJob, final Job toJob) {
-            toJob.addPrecedenceJob(new Job(toJob.id() + "-delay-" + delayInSeconds, toJob.manager()) {
+            toJob.addPrecedenceJob(new Job(toJob.id() + "-delay-" + delayInSeconds + "-" + seq.getAndIncrement(), toJob.manager()) {
                 @Override
                 public void run() {
                     toJob.manager().delay(theJob, delayInSeconds, TimeUnit.SECONDS);

@@ -1778,8 +1778,6 @@ public @interface Controller {
                 return inferResult((File) v, context);
             } else if (v instanceof ISObject) {
                 return inferResult((ISObject) v, context);
-            } else if (v instanceof Map) {
-                return RenderJSON.of(status, v);
             } else {
                 if (requireJSON || H.Format.UNKNOWN == context.req().accept()) {
                     boolean isIterable = v instanceof Iterable;
