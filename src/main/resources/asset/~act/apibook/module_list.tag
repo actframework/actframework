@@ -2,7 +2,7 @@
     <div id="module-list-container">
         <div class="module-list-inner">
             <ul class="module-list-list" each={module in modules}>
-                <li class={selected: module.selected} ondblclick={forceSelect} onclick={ toggleSelect }>{module.name}</li>
+                <li class={selected: module.selected} ondblclick={toggleSelect} onclick={forceSelect}>{module.name}</li>
             </ul>
         </div>
     </div>
