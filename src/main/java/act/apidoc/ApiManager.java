@@ -24,9 +24,7 @@ import static act.controller.Controller.Util.renderJson;
 
 import act.Act;
 import act.apidoc.Endpoint.ParamInfo;
-import act.apidoc.javadoc.Javadoc;
-import act.apidoc.javadoc.JavadocBlockTag;
-import act.apidoc.javadoc.JavadocParser;
+import act.apidoc.javadoc.*;
 import act.app.*;
 import act.app.event.SysEventId;
 import act.app.util.NamedPort;
@@ -39,9 +37,7 @@ import act.route.Router;
 import com.github.javaparser.JavaParser;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.Node;
-import com.github.javaparser.ast.body.ClassOrInterfaceDeclaration;
-import com.github.javaparser.ast.body.MethodDeclaration;
-import com.github.javaparser.ast.body.TypeDeclaration;
+import com.github.javaparser.ast.body.*;
 import com.github.javaparser.ast.comments.Comment;
 import com.github.javaparser.ast.comments.JavadocComment;
 import com.github.javaparser.ast.expr.AnnotationExpr;
@@ -49,9 +45,7 @@ import org.osgl.$;
 import org.osgl.http.H;
 import org.osgl.logging.LogManager;
 import org.osgl.logging.Logger;
-import org.osgl.util.C;
-import org.osgl.util.IO;
-import org.osgl.util.S;
+import org.osgl.util.*;
 
 import java.util.*;
 
@@ -67,6 +61,8 @@ public class ApiManager extends AppServiceBase<ApiManager> {
      */
     SortedSet<Endpoint> endpoints = new TreeSet<>();
 
+    SortedMap<String, List<Endpoint>> moduleLookup = new TreeMap<>();
+
 
     public ApiManager(final App app) {
         super(app);
@@ -79,7 +75,8 @@ public class ApiManager extends AppServiceBase<ApiManager> {
                 load(app);
             }
         });
-        app.router().addMapping(H.Method.GET, "/~/apibook/endpoint", new GetEndpointsHandler(this));
+        app.router().addMapping(H.Method.GET, "/~/apibook/endpoints", new GetEndpointsHandler(this));
+        app.router().addMapping(H.Method.GET, "/~/apibook/modules", new GetModulesHandler(this));
         ResourceGetter apidocHandler = new ResourceGetter("asset/~act/apibook/index.html");
         app.router().addMapping(H.Method.GET, "/~/apibook", apidocHandler);
         app.router().addMapping(H.Method.GET, "/~/apidoc", apidocHandler);
@@ -88,6 +85,7 @@ public class ApiManager extends AppServiceBase<ApiManager> {
     @Override
     protected void releaseResources() {
         endpoints.clear();
+        moduleLookup.clear();
     }
 
     public void load(App app) {
@@ -103,7 +101,20 @@ public class ApiManager extends AppServiceBase<ApiManager> {
         if (Act.isDev()) {
             exploreDescriptions(controllerClasses);
         }
+        buildModuleLookup();
         LOGGER.info("API book compiled");
+    }
+
+    private void buildModuleLookup() {
+        for (Endpoint endpoint : endpoints) {
+            String module = endpoint.getModule();
+            List<Endpoint> list = moduleLookup.get(module);
+            if (null == list) {
+                list = new ArrayList<>();
+                moduleLookup.put(module, list);
+            }
+            list.add(endpoint);
+        }
     }
 
     private void load(Router router, NamedPort port, AppConfig config, final Set<Class> controllerClasses) {
@@ -223,7 +234,9 @@ public class ApiManager extends AppServiceBase<ApiManager> {
 
         @Override
         public void handle(ActionContext context) {
-            renderJson(api.endpoints).apply(context.req(), context.prepareRespForResultEvaluation());
+            String module = context.paramVal("module");
+            Collection<Endpoint> endpoints = S.notBlank(module) ? api.moduleLookup.get(module) : api.endpoints;
+            renderJson(endpoints).apply(context.req(), context.prepareRespForResultEvaluation());
         }
 
         @Override
@@ -234,6 +247,29 @@ public class ApiManager extends AppServiceBase<ApiManager> {
         @Override
         public String toString() {
             return "API doc handler";
+        }
+    }
+
+    private class GetModulesHandler extends RequestHandlerBase {
+
+        private ApiManager api;
+
+        public GetModulesHandler(ApiManager api) {
+            this.api = api;
+        }
+
+        @Override
+        public void handle(ActionContext context) {
+            renderJson(api.moduleLookup.keySet()).apply(context.req(), context.prepareRespForResultEvaluation());
+        }
+
+        @Override
+        public void prepareAuthentication(ActionContext context) {
+
+        }
+        @Override
+        public String toString() {
+            return "API doc module index";
         }
     }
 

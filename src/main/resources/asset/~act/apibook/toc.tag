@@ -3,27 +3,27 @@
         <div class="toc-inner">
             <ul class="toc-list">
                 <li class="toc">GET</li>
-                <virtual each="{GET}">
-                    <li>
-                        <a href="#{xid}" title="{description}">{path}</a>
+                <virtual each="{endpoint in GET}">
+                    <li show={show(endpoint)}>
+                        <a href="#{endpoint.xid}" title="{endpoint.description}">{endpoint.path}</a>
                     </li>
                 </virtual>
                 <li class="toc">POST</li>
-                <virtual each="{POST}">
-                    <li>
-                        <a href="#{xid}" title="{description}">{path}</a>
+                <virtual each="{endpoint in POST}">
+                    <li show={show(endpoint)}>
+                        <a href="#{endpoint.xid}" title="{endpoint.description}">{endpoint.path}</a>
                     </li>
                 </virtual>
                 <li class="toc">PUT</li>
-                <virtual each="{PUT}">
-                    <li>
-                        <a href="#{xid}" title="{description}">{path}</a>
+                <virtual each="{endpoint in PUT}">
+                    <li show={show(endpoint)}>
+                        <a href="#{endpoint.xid}" title="{endpoint.description}">{endpoint.path}</a>
                     </li>
                 </virtual>
                 <li class="toc">DELETE</li>
-                <virtual each="{DELETE}">
-                    <li>
-                        <a href="#{xid}" title="{description}">{path}</a>
+                <virtual each="{endpoint in DELETE}">
+                    <li show={show(endpoint)}>
+                        <a href="#{endpoint.xid}" title="{endpoint.description}">{endpoint.path}</a>
                     </li>
                 </virtual>
             </ul>
@@ -86,6 +86,7 @@
         self.POST = []
         self.PUT = []
         self.DELETE = []
+        self.selectedModules = []
         self.buildTree = function(endpoints) {
             for (var i = 0, j = endpoints.length; i < j; ++i) {
                 var endpoint = endpoints[i]
@@ -105,5 +106,13 @@
             self.buildTree(endpoints)
             self.update()
         })
+        riot.store.on('module-selected', function(modules) {
+            self.selectedModules = modules;
+            self.update()
+        })
+        show(endpoint) {
+            var show = self.selectedModules.indexOf(endpoint.module) > -1
+            return show
+        }
     </script>
 </toc>

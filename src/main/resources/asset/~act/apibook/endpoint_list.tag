@@ -1,15 +1,15 @@
 <endpoint-list>
-    <div class="endpoint" each={ endpoints }>
-        <a class="id" id="{ xid }">&nbsp;</a>
-        <pre class="code">[{ httpMethod }] { path }</pre>
-        <div class="desc"><raw html={ richDesc }></raw></div>
+    <div class="endpoint" each={ endpoint in endpoints } show={ show(endpoint) }>
+        <a class="id" id="{ endpoint.xid }">&nbsp;</a>
+        <pre class="code">[{ endpoint.httpMethod }] { endpoint.path }</pre>
+        <div class="desc"><raw html={ endpoint.richDesc }></raw></div>
         <div class="param-list">
             <h4>Parameters</h4>
             <div class="param-list-body">
-                <div if={ params.length== 0 }>
+                <div if={ endpoint.params.length== 0 }>
                     N/A
                 </div>
-                <table if={ params.length> 0 }>
+                <table if={ endpoint.params.length> 0 }>
                     <thead>
                     <tr>
                         <th>name</th>
@@ -20,32 +20,32 @@
                     </tr>
                     </thead>
                     <tbody>
-                    <tr each={ params }>
-                        <td>{ name }</td>
-                        <td>{ type }</td>
-                        <td>{ required }</td>
+                    <tr each={ endpoint.params }>
+                        <td>{ endpoint.name }</td>
+                        <td>{ endpoint.type }</td>
+                        <td>{ endpoint.required }</td>
                         <td>
-                            <span if={ defaultValue }>{ defaultValue }</span>
-                            <span if={ !defaultValue }>N/A</span>
+                            <span if={ endpoint.defaultValue }>{ endpoint.defaultValue }</span>
+                            <span if={ !endpoint.defaultValue }>N/A</span>
                         </td>
-                        <td>{ description }</td>
+                        <td>{ endpoint.description }</td>
                     </tr>
                     </tbody>
                 </table>
             </div>
         </div>
         <!-- eof param list -->
-        <div class="query-sample" if="{ sampleQuery }">
+        <div class="query-sample" if="{ endpoint.sampleQuery }">
             <h4>Query example</h4>
-            <pre class="code">{ sampleQuery }</pre>
+            <pre class="code">{ endpoint.sampleQuery }</pre>
         </div>
-        <div class="post-sample" if="{ sampleJsonPost }">
+        <div class="post-sample" if="{ endpoint.sampleJsonPost }">
             <h4>Json body example</h4>
-            <pre class="code">{ sampleJsonPost }</pre>
+            <pre class="code">{ endpoint.sampleJsonPost }</pre>
         </div>
-        <div class="return-sample" if="{ returnSample }">
+        <div class="return-sample" if="{ endpoint.returnSample }">
             <h4>Return value sample</h4>
-            <pre class="code">{ returnSample }</pre>
+            <pre class="code">{ endpoint.returnSample }</pre>
         </div>
     </div>
     <div id='bottom-padding'>&nbsp;</div>
@@ -182,8 +182,9 @@
         self.on('mount', function () {
             self.fetchEndpoints()
         })
+        self.selectedModules = []
         fetchEndpoints() {
-            $.getJSON('/~/apibook/endpoint', function(endpoints) {
+            $.getJSON('/~/apibook/endpoints', function(endpoints) {
                 for(var i = 0, j = endpoints.length; i < j; ++i) {
                     var endpoint = endpoints[i];
                     endpoint.richDesc = riot.md.render(endpoint.description);
@@ -192,6 +193,13 @@
                 self.update()
                 riot.store.trigger('endpoints-fetched', endpoints);
             })
+        }
+        riot.store.on('module-selected', function(modules) {
+            self.selectedModules = modules;
+            self.update()
+        })
+        show(endpoint) {
+            return self.selectedModules.indexOf(endpoint.module) > -1;
         }
     </script>
 </endpoint-list>

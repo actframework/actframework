@@ -3,6 +3,7 @@
         <h1>API Book - { sysInfo.appName }</h1>
     </div>
     <div class="content">
+        <module-list></module-list>
         <endpoint-list></endpoint-list>
         <toc></toc>
     </div>
@@ -25,7 +26,8 @@
             padding-left: 10px;
         }
         endpoint-list {
-            width: 75%;
+            width: 60%;
+            left: 15%;
             overflow-x: hidden;
             position: absolute;
         }

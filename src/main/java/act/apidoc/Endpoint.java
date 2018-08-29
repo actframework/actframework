@@ -183,6 +183,8 @@ public class Endpoint implements Comparable<Endpoint> {
      */
     private String description;
 
+    private String module;
+
     private Class<?> returnType;
 
     private String returnSample;
@@ -263,6 +265,14 @@ public class Endpoint implements Comparable<Endpoint> {
         this.description = description;
     }
 
+    public String getModule() {
+        return module;
+    }
+
+    public void setModule(String module) {
+        this.module = module;
+    }
+
     public List<ParamInfo> getParams() {
         return params;
     }
@@ -316,6 +326,8 @@ public class Endpoint implements Comparable<Endpoint> {
             }
             // just ignore cli value here
         }
+        Module classModule = controllerClass.getAnnotation(Module.class);
+        String classModuleText = null == classModule ? inferModule(controllerClass) : classModule.value();
         this.id = id(controllerClass, method);
         Type returnType = method.getGenericReturnType();
         Map<String, Class> typeParamLookup = C.Map();
@@ -325,11 +337,17 @@ public class Endpoint implements Comparable<Endpoint> {
         returnSample = void.class == returnType ? null : generateSampleJson(BeanSpec.of(returnType, null, Act.injector(), typeParamLookup), typeParamLookup);
         Description descAnno = method.getAnnotation(Description.class);
         this.description = null == descAnno ? id(controllerClass, method) : descAnno.value();
+        Module methodModule = method.getAnnotation(Module.class);
+        this.module = null == methodModule ? classModuleText : methodModule.value();
         exploreParamInfo(method, typeParamLookup);
         if (!Modifier.isStatic(method.getModifiers())) {
             exploreParamInfo(controllerClass, typeParamLookup);
         }
         this.controllerClass = controllerClass;
+    }
+
+    private String inferModule(Class<?> controllerClass) {
+        return controllerClass.getSimpleName();
     }
 
     private String id(Class<?> controllerClass, Method method) {
