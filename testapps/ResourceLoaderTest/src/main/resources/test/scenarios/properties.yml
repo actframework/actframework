@@ -1,0 +1,9 @@
+Scenario(Properties):
+  interactions:
+    - description: test load into Properties
+      request:
+        get: /properties/foo
+      response:
+        json:
+          foo: bar
+          id: 3
