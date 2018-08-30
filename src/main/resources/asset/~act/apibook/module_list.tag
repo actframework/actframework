@@ -2,7 +2,7 @@
     <div id="module-list-container">
         <div class="module-list-inner">
             <ul class="module-list-list" each={module in modules}>
-                <li class={selected: module.selected} ondblclick={toggleSelect} onclick={forceSelect}>{module.name}</li>
+                <li class={selected: module.selected} onclick={forceSelect}>{module.name}</li>
             </ul>
         </div>
     </div>
@@ -82,6 +82,10 @@
             })
         }
         forceSelect(e) {
+            if (e.ctrlKey) {
+                self.toggleSelect(e)
+                return
+            }
             var selected = []
             var module = e.item.module;
             for (var i = 0, j = self.modules.length; i < j; ++i) {

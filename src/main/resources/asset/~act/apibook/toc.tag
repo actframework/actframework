@@ -2,25 +2,25 @@
     <div id="toc-container">
         <div class="toc-inner">
             <ul class="toc-list">
-                <li class="toc">GET</li>
+                <li class="toc" show={showList(GET)}>GET</li>
                 <virtual each="{endpoint in GET}">
                     <li show={show(endpoint)}>
                         <a href="#{endpoint.xid}" title="{endpoint.description}">{endpoint.path}</a>
                     </li>
                 </virtual>
-                <li class="toc">POST</li>
+                <li class="toc" show={showList(POST)}>POST</li>
                 <virtual each="{endpoint in POST}">
                     <li show={show(endpoint)}>
                         <a href="#{endpoint.xid}" title="{endpoint.description}">{endpoint.path}</a>
                     </li>
                 </virtual>
-                <li class="toc">PUT</li>
+                <li class="toc" show={showList(PUT)}>PUT</li>
                 <virtual each="{endpoint in PUT}">
                     <li show={show(endpoint)}>
                         <a href="#{endpoint.xid}" title="{endpoint.description}">{endpoint.path}</a>
                     </li>
                 </virtual>
-                <li class="toc">DELETE</li>
+                <li class="toc" show={showList(DELETE)}>DELETE</li>
                 <virtual each="{endpoint in DELETE}">
                     <li show={show(endpoint)}>
                         <a href="#{endpoint.xid}" title="{endpoint.description}">{endpoint.path}</a>
@@ -101,6 +101,17 @@
                     return 0
                 })
             }
+        }
+        showList(endpoints) {
+            if (endpoints.length == 0) {
+                return false
+            }
+            for (var i = 0, j = endpoints.length; i < j; ++i) {
+                if (self.show(endpoints[i])) {
+                    return true
+                }
+            }
+            return false
         }
         riot.store.on('endpoints-fetched', function(endpoints) {
             self.buildTree(endpoints)
