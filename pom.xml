@@ -106,6 +106,7 @@
           <include>**/*.xml</include>
           <include>**/*.yml</include>
           <include>**/*.yaml</include>
+          <include>**/*.tag</include>
           <include>rythm/**</include>
           <include>*.flf</include>
         </includes>
@@ -117,6 +118,14 @@
           <include>**/*.gif</include>
           <include>**/*.png</include>
           <include>**/*.jpg</include>
+          <include>**/*.jpeg</include>
+          <include>**/*.doc</include>
+          <include>**/*.docx</include>
+          <include>**/*.xls</include>
+          <include>**/*.xlsx</include>
+          <include>**/*.ppt</include>
+          <include>**/*.pptx</include>
+          <include>**/*.pdf</include>
         </includes>
       </resource>
     </resources>

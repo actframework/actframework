@@ -17,7 +17,7 @@ jQuery.createWebSocket = function(path) {
 }
 
 var checkAjaxRedirect = function(data, testStatus, jqXHR) {
-   if (data.status === 278) {
+   if (data && data.status === 278) {
        window.location = data.getResponseHeader("Location");
    }
 }

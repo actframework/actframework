@@ -1159,7 +1159,7 @@ public @interface Controller {
          *         the message format arguments
          * @return the result
          */
-        public static RenderHtml renderHtml(String msg, Object args) {
+        public static RenderHtml renderHtml(String msg, Object ... args) {
             return html(msg, args);
         }
 

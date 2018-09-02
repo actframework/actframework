@@ -1,6 +1,9 @@
 # ActFramework Change Log
 
 **1.8.8**
+* mavn pom: It shall add `.tag` file into resource filtering list #817
+* `Controller.renderHtml()` method signature error #816
+* `jquery.ext.js` - undefined error checking ajax redirect when there is no content in body #815
 * API doc - support module #814
 * Cannot render Excel when return value is `Map` type #813
 * `java.lang.IllegalStateException`: job already registered: __act_sys__start-delay-1 #812

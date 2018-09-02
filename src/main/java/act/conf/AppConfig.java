@@ -1631,7 +1631,7 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
 
     public int httpExternalPort() {
         if (-1 == httpExternalPort) {
-            httpExternalPort = get(HTTP_EXTERNAL_PORT, httpExternal() ? 80 : httpPort());
+            httpExternalPort = getInteger(HTTP_EXTERNAL_PORT, httpExternal() ? 80 : httpPort());
         }
         return httpExternalPort;
     }
