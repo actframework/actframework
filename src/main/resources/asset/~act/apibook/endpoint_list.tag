@@ -21,14 +21,14 @@
                     </thead>
                     <tbody>
                     <tr each={ endpoint.params }>
-                        <td>{ endpoint.name }</td>
-                        <td>{ endpoint.type }</td>
-                        <td>{ endpoint.required }</td>
+                        <td>{ name }</td>
+                        <td>{ type }</td>
+                        <td>{ required }</td>
                         <td>
-                            <span if={ endpoint.defaultValue }>{ endpoint.defaultValue }</span>
-                            <span if={ !endpoint.defaultValue }>N/A</span>
+                            <span if={ defaultValue }>{ defaultValue }</span>
+                            <span if={ !defaultValue }>N/A</span>
                         </td>
-                        <td>{ endpoint.description }</td>
+                        <td>{ description }</td>
                     </tr>
                     </tbody>
                 </table>
