@@ -1,0 +1,15 @@
+Scenario(GH821):
+  description: "[821] When returning String is not a valid JSON, it shall be encapsulated with `result`"
+  interactions:
+  - description: Get invalid JSON
+    request:
+      get: /821/invalid_json
+    response:
+      json:
+        result: abc
+  - description: Get valid JSON
+    request:
+      get: /821/valid_json
+    response:
+      json:
+        foo: 123

@@ -28,23 +28,19 @@ import act.conf.AppConfigKey;
 import act.controller.meta.HandlerMethodMetaInfo;
 import act.data.Versioned;
 import act.route.Router;
-import act.util.$$;
-import act.util.FastJsonIterable;
+import act.util.*;
 import act.util.JsonUtilConfig.JsonWriter;
-import act.util.PropertySpec;
 import act.view.*;
 import org.osgl.$;
 import org.osgl.http.H;
 import org.osgl.mvc.result.*;
 import org.osgl.storage.ISObject;
 import org.osgl.util.*;
+import org.osgl.util.Output;
 
 import java.io.File;
 import java.io.InputStream;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import java.lang.annotation.*;
 import java.net.URL;
 import java.util.Map;
 import javax.inject.Inject;
@@ -1619,7 +1615,19 @@ public @interface Controller {
                 if (isArray) {
                     return RenderJSON.of(status, $.toString2(v));
                 }
-                return RenderJSON.of(status, v instanceof String ? v : C.Map("result", v));
+                if (v instanceof String) {
+                    String s = (String) v;
+                    if (S.blank(s)) {
+                        return RenderJSON.of(status, "{}");
+                    } else {
+                        s = s.trim();
+                        char c = s.charAt(0);
+                        if ('{' == c || '[' == c) {
+                            return RenderJSON.of(status, s);
+                        }
+                    }
+                }
+                return RenderJSON.of(status, C.Map("result", v));
             } else if (requireXML) {
                 return RenderXML.of(status, S.concat("<result>", S.string(v), "</result>"));
             } else if (v instanceof byte[]) {

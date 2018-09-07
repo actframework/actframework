@@ -1,0 +1,15 @@
+Scenario(GH820):
+  description: "[820] Using generic typed injection in Controller cause `UnexpectedException`"
+  interactions:
+  - description: Access String Service
+    request:
+      get: /820/string
+    response:
+      json:
+        result: abc
+  - description: Access Int Service
+    request:
+      get: /820/int
+    response:
+      json:
+        result: 123

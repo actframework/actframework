@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 **1.8.8**
+* When returning String is not a valid JSON, it shall be encapsulated with `result` #821
 * Extended request handler method's param not enhanced with `@Named` annotation #819
 * mavn pom: It shall add `.tag` file into resource filtering list #817
 * `Controller.renderHtml()` method signature error #816
