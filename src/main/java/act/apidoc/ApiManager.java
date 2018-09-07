@@ -22,7 +22,7 @@ package act.apidoc;
 
 import static act.controller.Controller.Util.renderJson;
 
-import act.*;
+import act.Act;
 import act.apidoc.Endpoint.ParamInfo;
 import act.apidoc.javadoc.*;
 import act.app.*;
@@ -47,10 +47,8 @@ import org.osgl.logging.LogManager;
 import org.osgl.logging.Logger;
 import org.osgl.util.*;
 
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.nio.ByteBuffer;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Keep track endpoints defined in the system
@@ -66,139 +64,11 @@ public class ApiManager extends AppServiceBase<ApiManager> {
 
     SortedMap<String, List<Endpoint>> moduleLookup = new TreeMap<>();
 
-    private static final H.Request MOCK_REQ = new RequestImplBase(Act.appConfig()) {
-        @Override
-        protected String methodName() {
-            return "GET";
-        }
+    private static final AtomicBoolean IN_PROGRESS = new AtomicBoolean(false);
 
-        @Override
-        public void receiveFullBytesAndProceed(ActionContext context, RequestHandler handler) {
-
-        }
-
-        @Override
-        protected Class _impl() {
-            return null;
-        }
-
-        @Override
-        public String header(String name) {
-            return null;
-        }
-
-        @Override
-        public Iterable<String> headers(String name) {
-            return null;
-        }
-
-        @Override
-        public String path() {
-            return null;
-        }
-
-        @Override
-        public String query() {
-            return null;
-        }
-
-        @Override
-        protected String _ip() {
-            return null;
-        }
-
-        @Override
-        protected void _initCookieMap() {
-
-        }
-
-        @Override
-        protected InputStream createInputStream() {
-            return null;
-        }
-
-        @Override
-        public String paramVal(String name) {
-            return null;
-        }
-
-        @Override
-        public String[] paramVals(String name) {
-            return new String[0];
-        }
-
-        @Override
-        public Iterable<String> paramNames() {
-            return null;
-        }
-    };
-
-    private static final ActResponse MOCK_RESP = new ActResponse() {
-        @Override
-        protected void _setStatusCode(int sc) {
-
-        }
-
-        @Override
-        protected Class _impl() {
-            return null;
-        }
-
-        @Override
-        protected OutputStream createOutputStream() {
-            return null;
-        }
-
-        @Override
-        protected Output createOutput() {
-            return null;
-        }
-
-        @Override
-        public H.Response contentLength(long len) {
-            return null;
-        }
-
-        @Override
-        protected void _setLocale(Locale loc) {
-
-        }
-
-        @Override
-        public Locale locale() {
-            return null;
-        }
-
-        @Override
-        public void addCookie(H.Cookie cookie) {
-
-        }
-
-        @Override
-        public boolean containsHeader(String name) {
-            return false;
-        }
-
-        @Override
-        public H.Response header(String name, String value) {
-            return null;
-        }
-
-        @Override
-        public H.Response addHeader(String name, String value) {
-            return null;
-        }
-
-        @Override
-        public H.Response writeContent(ByteBuffer buffer) {
-            return null;
-        }
-
-        @Override
-        public void commit() {
-
-        }
-    };
+    public static boolean inProgress() {
+        return IN_PROGRESS.get();
+    }
 
     public ApiManager(final App app) {
         super(app);
@@ -208,12 +78,11 @@ public class ApiManager extends AppServiceBase<ApiManager> {
         app.jobManager().alongWith(SysEventId.POST_START, "compile-api-book", new Runnable() {
             @Override
             public void run() {
-                ActionContext ctx = ActionContext.create(Act.app(), MOCK_REQ, MOCK_RESP);
-                ctx.saveLocal();
+                IN_PROGRESS.set(true);
                 try {
                     load(app);
                 } finally {
-                    ActionContext.clearCurrent();
+                    IN_PROGRESS.set(false);
                 }
             }
         });

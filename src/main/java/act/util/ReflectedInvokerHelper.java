@@ -21,6 +21,7 @@ package act.util;
  */
 
 import act.Act;
+import act.apidoc.ApiManager;
 import act.app.*;
 import act.inject.util.LoadResource;
 import org.osgl.$;
@@ -68,13 +69,14 @@ public class ReflectedInvokerHelper {
     private static Map<Method, Annotation[][]> requestHandlerMethodParamAnnotationCache;
 
     public static Annotation[][] requestHandlerMethodParamAnnotations(Method method) {
-        if (null == ActionContext.current()) {
+        if (!ApiManager.inProgress() && null == ActionContext.current()) {
             return method.getParameterAnnotations();
         }
         Annotation[][] paramAnnotations = requestHandlerMethodParamAnnotationCache.get(method);
         if (null == paramAnnotations) {
             if (!hasActionAnnotation(method)) {
-                paramAnnotations = requestHandlerMethodParamAnnotations(overwrittenMethodOf(method));
+                Method overwrittenMethod = overwrittenMethodOf(method);
+                paramAnnotations = overwrittenMethod == method ? method.getParameterAnnotations() : requestHandlerMethodParamAnnotations(overwrittenMethod);
             } else {
                 paramAnnotations = method.getParameterAnnotations();
             }
@@ -89,6 +91,9 @@ public class ReflectedInvokerHelper {
         try {
             return base.getMethod(method.getName(), method.getParameterTypes());
         } catch (NoSuchMethodException e) {
+            if (ApiManager.inProgress()) {
+                return method;
+            }
             throw E.unexpected("Unable to find the overwritten method of " + method);
         }
     }
