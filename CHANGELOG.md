@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 **1.8.8**
+* Extended request handler method's param not enhanced with `@Named` annotation #819
 * mavn pom: It shall add `.tag` file into resource filtering list #817
 * `Controller.renderHtml()` method signature error #816
 * `jquery.ext.js` - undefined error checking ajax redirect when there is no content in body #815

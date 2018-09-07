@@ -1,0 +1,12 @@
+Scenario(GH819):
+  description: "[819] Extended request handler method's param not enhanced with `@Named` annotation"
+  interactions:
+  - description: Test
+    request:
+      post: 819
+      json:
+        foo:
+          name: foo
+    response:
+      json:
+        name: "[extended]foo"

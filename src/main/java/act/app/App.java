@@ -610,6 +610,7 @@ public class App extends DestroyableBase {
 
         managedCollectionService = new ManagedCollectionService(this);
         I18n.classInit(this);
+        ReflectedInvokerHelper.classInit(this);
         ParamValueLoaderService.classInit(this);
         JodaTransformers.classInit(this);
         FastJsonPropertyPreFilter.classInit(this);

@@ -326,7 +326,7 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
             return DUMB;
         }
         ParamValueLoader[] loaders = new ParamValueLoader[sz];
-        Annotation[][] annotations = method.getParameterAnnotations();
+        Annotation[][] annotations = ReflectedInvokerHelper.requestHandlerMethodParamAnnotations(method);
         for (int i = 0; i < sz; ++i) {
             String name = paramName(i);
             Type type = types[i];

@@ -21,20 +21,24 @@ package act.util;
  */
 
 import act.Act;
-import act.app.App;
-import act.app.AppServiceBase;
+import act.app.*;
 import act.inject.util.LoadResource;
 import org.osgl.$;
 import org.osgl.inject.annotation.Configuration;
+import org.osgl.mvc.annotation.*;
 import org.osgl.util.C;
+import org.osgl.util.E;
 
 import java.lang.annotation.Annotation;
-import java.lang.reflect.AnnotatedElement;
-import java.lang.reflect.Field;
+import java.lang.reflect.*;
 import java.util.*;
 import javax.inject.Singleton;
 
 public class ReflectedInvokerHelper {
+
+    public static void classInit(App app) {
+        requestHandlerMethodParamAnnotationCache = new IdentityHashMap<>();
+    }
 
     /**
      * If the `invokerClass` specified is singleton, or without field or all fields are
@@ -54,6 +58,49 @@ public class ReflectedInvokerHelper {
             app.registerSingleton(singleton);
         }
         return singleton;
+    }
+
+    private static Set<Class<? extends Annotation>> ACTION_ANNO_TYPES = C.set(
+            Action.class, GetAction.class, PostAction.class, PutAction.class,
+            DeleteAction.class, PatchAction.class, WsAction.class
+    );
+
+    private static Map<Method, Annotation[][]> requestHandlerMethodParamAnnotationCache;
+
+    public static Annotation[][] requestHandlerMethodParamAnnotations(Method method) {
+        if (null == ActionContext.current()) {
+            return method.getParameterAnnotations();
+        }
+        Annotation[][] paramAnnotations = requestHandlerMethodParamAnnotationCache.get(method);
+        if (null == paramAnnotations) {
+            if (!hasActionAnnotation(method)) {
+                paramAnnotations = requestHandlerMethodParamAnnotations(overwrittenMethodOf(method));
+            } else {
+                paramAnnotations = method.getParameterAnnotations();
+            }
+            requestHandlerMethodParamAnnotationCache.put(method, paramAnnotations);
+        }
+        return paramAnnotations;
+    }
+
+    public static Method overwrittenMethodOf(Method method) {
+        Class host = method.getDeclaringClass();
+        Class base = host.getSuperclass();
+        try {
+            return base.getMethod(method.getName(), method.getParameterTypes());
+        } catch (NoSuchMethodException e) {
+            throw E.unexpected("Unable to find the overwritten method of " + method);
+        }
+    }
+
+    private static boolean hasActionAnnotation(Method method) {
+        Annotation[] aa = method.getDeclaredAnnotations();
+        for (Annotation a: aa) {
+            if (ACTION_ANNO_TYPES.contains(a.annotationType())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public static boolean isGlobalOrStateless(Class type) {

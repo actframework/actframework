@@ -203,7 +203,8 @@ public class JsonDtoClassManager extends AppServiceBase<JsonDtoClassManager> {
         if (0 == sz) {
             return;
         }
-        Annotation[][] annotations = method.getParameterAnnotations();
+        List<BeanSpec> newSpecs = new ArrayList<>();
+        Annotation[][] annotations = ReflectedInvokerHelper.requestHandlerMethodParamAnnotations(method);
         for (int i = 0; i < sz; ++i) {
             Type type = paramTypes[i];
             if (type instanceof TypeVariable && !Modifier.isStatic(method.getModifiers())) {
@@ -224,11 +225,12 @@ public class JsonDtoClassManager extends AppServiceBase<JsonDtoClassManager> {
             }
             String dbBindName = dbBindName(spec);
             if (null != dbBindName) {
-                beanSpecs.add(BeanSpec.of(String.class, new Annotation[0], dbBindName, injector));
+                newSpecs.add(BeanSpec.of(String.class, new Annotation[0], dbBindName, injector));
             } else {
-                beanSpecs.add(spec);
+                newSpecs.add(spec);
             }
         }
+        beanSpecs.addAll(newSpecs);
     }
 
     private static String dbBindName(BeanSpec spec) {
