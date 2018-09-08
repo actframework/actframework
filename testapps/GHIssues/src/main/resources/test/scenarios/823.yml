@@ -1,0 +1,59 @@
+Scenario(GH823):
+  description: "[823] Apply new scope for implicit transaction"
+  interactions:
+  - description: Create an new User
+    request:
+      post: /823/users
+      params:
+        user.name: Jack Smith
+    response:
+      json:
+        name:
+          - exists: false
+        id:
+          - gte: 0
+  - description: verify new user
+    request:
+      get: /823/users/${last:id}
+    response:
+      json:
+        name: Jack Smith
+  - description: Create an new User with explicit transaction
+    request:
+      post: /823/users2
+      params:
+        user.name: Mary Potland
+    response:
+      json:
+        name:
+        - exists: false
+        id:
+        - gte: 0
+  - description: verify new user created with explicit transaction
+    request:
+      get: /823/users/${last:id}
+    response:
+      json:
+        name: Mary Potland
+  - description: Update last fetched user
+    request:
+      put: /823/users/${last:id}
+      params:
+        name: Jen Smith
+    response:
+      json:
+        name: Jen Smith
+  - description: Update last operated user with explicit transaction
+    request:
+      put: /823/users2/${last:id}
+      params:
+        name: Julia Smith
+    response:
+      json:
+        name: Julia Smith
+  - description: Verify last update
+    request:
+      get: /823/users/${last:id}
+    response:
+      json:
+        name: Julia Smith

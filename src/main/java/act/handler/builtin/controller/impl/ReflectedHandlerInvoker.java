@@ -845,41 +845,46 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
     }
 
     private Result invoke(M handlerMetaInfo, ActionContext context, Object controller, Object[] params) {
-        Object result;
+        Object retVal;
         String invocationInfo = null;
         try {
             if (traceHandler) {
                 invocationInfo = S.fmt("%s(%s)", handlerMetaInfo.fullName(), $.toString2(params));
                 Trace.LOGGER_HANDLER.trace(invocationInfo);
             }
-            result = null == methodAccess ? $.invokeStatic(method, params) : methodAccess.invoke(controller, handlerIndex, params);
+            retVal = null == methodAccess ? $.invokeStatic(method, params) : methodAccess.invoke(controller, handlerIndex, params);
             if (returnString && context.acceptJson()) {
-                result = null == result ? null : ensureValidJson(S.string(result));
+                retVal = null == retVal ? null : ensureValidJson(S.string(retVal));
             }
-            context.calcResultHashForEtag(result);
+            context.calcResultHashForEtag(retVal);
         } catch (Result r) {
-            result = r;
+            retVal = r;
         } catch (Exception e) {
             if (traceHandler) {
                 Trace.LOGGER_HANDLER.trace(e, "error invoking %s", invocationInfo);
             }
             throw e;
         }
+        return transform(retVal, this, context);
+    }
+
+    public static Result transform(Object retVal, ReflectedHandlerInvoker invoker, ActionContext context) {
         if (context.resp().isClosed()) {
             return null;
         }
-        if (null == result && handler.hasReturn() && !handler.returnTypeInfo().isResult()) {
+        HandlerMethodMetaInfo handlerMetaInfo = invoker.handler;
+        if (null == retVal && handlerMetaInfo.hasReturn() && !handlerMetaInfo.returnTypeInfo().isResult()) {
             // ActFramework respond 404 Not Found when
             // handler invoker return `null`
             // and there are return type of the action method signature
             // and the return type is **NOT** Result
             return ActNotFound.create();
         }
-        boolean hasTemplate = checkTemplate(context);
-        if (hasTemplate && result instanceof RenderAny) {
-            result = RenderTemplate.INSTANCE;
+        boolean hasTemplate = invoker.checkTemplate(context);
+        if (hasTemplate && retVal instanceof RenderAny) {
+            retVal = RenderTemplate.INSTANCE;
         }
-        return Controller.Util.inferResult(handlerMetaInfo, result, context, hasTemplate);
+        return Controller.Util.inferResult(handlerMetaInfo, retVal, context, hasTemplate);
     }
 
     private String ensureValidJson(String result) {
@@ -903,7 +908,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         return result;
     }
 
-    public boolean checkTemplate(ActionContext context) {
+    private boolean checkTemplate(ActionContext context) {
         if (!context.state().isHandling()) {
             //we don't check template on interceptors
             return false;
