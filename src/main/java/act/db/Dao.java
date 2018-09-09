@@ -235,9 +235,29 @@ public interface Dao<ID_TYPE, MODEL_TYPE, QUERY_TYPE extends Dao.Query<MODEL_TYP
 
     /**
      * Alias of {@link #q()}
-     * @return an new {@link Query} instance on this Dao
      */
     QUERY_TYPE createQuery();
+
+    /**
+     * Returns a {@link Query} bound to the `MODEL_TYPE` with {@link CriteriaComponent criteria}
+     * specified.
+     *
+     * If there are multiple criteria specified, then they are treated as {@link CriteriaGroupLogic#AND}
+     * relationship
+     *
+     * @param criterion
+     *      the first criterion
+     * @param criteria
+     *      the rest criteria
+     * @return
+     *      a query instance as described above
+     */
+    QUERY_TYPE q(CriteriaComponent criterion, CriteriaComponent... criteria);
+
+    /**
+     * Alias of {@link #q(CriteriaComponent, CriteriaComponent...)} )}
+     */
+    QUERY_TYPE createQuery(CriteriaComponent criterion, CriteriaComponent... criteria);
 
     /**
      * Return a {@link act.db.Dao.Query} bound to the {@code MODEL_TYPE} by
@@ -256,6 +276,11 @@ public interface Dao<ID_TYPE, MODEL_TYPE, QUERY_TYPE extends Dao.Query<MODEL_TYP
     QUERY_TYPE q(String expression, Object... values);
 
     /**
+     * Alias of {@link #q(String, Object...)}
+     */
+    QUERY_TYPE createQuery(String expression, Object... values);
+
+    /**
      * Return a {@link act.db.Dao.Query} bound to the {@code MODEL_TYPE} by
      * criteria expression and parameter values.
      *
@@ -272,14 +297,30 @@ public interface Dao<ID_TYPE, MODEL_TYPE, QUERY_TYPE extends Dao.Query<MODEL_TYP
     QUERY_TYPE or(String expression, Object... values);
 
     /**
-     * Alias of {@link #q(String, Object...)}
-     */
-    QUERY_TYPE createQuery(String expression, Object... values);
-
-    /**
      * Alias of {@link #or(String, Object...)}
      */
     QUERY_TYPE createOrQuery(String expression, Object... values);
+
+    /**
+     * Returns a {@link Query} bound to the `MODEL_TYPE` with {@link CriteriaComponent criteria}
+     * specified.
+     *
+     * If there are multiple criteria specified, then they are treated as {@link CriteriaGroupLogic#OR}
+     * relationship.
+     *
+     * @param criterion
+     *      the first criterion
+     * @param criteria
+     *      the rest criteria
+     * @return
+     *      a query instance as described above
+     */
+    QUERY_TYPE or(CriteriaComponent criterion, CriteriaComponent... criteria);
+
+    /**
+     * Alias of {@link #or(CriteriaComponent, CriteriaComponent...)}
+     */
+    QUERY_TYPE createOrQuery(CriteriaComponent criterion, CriteriaComponent... criteria);
 
     interface Query<MODEL_TYPE, QUERY_TYPE extends Query<MODEL_TYPE, QUERY_TYPE>> {
         QUERY_TYPE offset(int pos);
