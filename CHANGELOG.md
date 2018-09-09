@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 **1.8.8**
+* Enhance DB query API #824
 * Apply new scope for implicit transaction #823
 * When returning String is not a valid JSON, it shall be encapsulated with `result` #821
 * Extended request handler method's param not enhanced with `@Named` annotation #819

@@ -115,13 +115,13 @@ public abstract class DaoBase<ID_TYPE, MODEL_TYPE, QUERY_TYPE extends Dao.Query<
     }
 
     @Override
-    public Iterable<MODEL_TYPE> findBy(String fields, Object... values) throws IllegalArgumentException {
-        return q(fields, values).fetch();
+    public Iterable<MODEL_TYPE> findBy(String expression, Object... values) throws IllegalArgumentException {
+        return q(expression, values).fetch();
     }
 
     @Override
-    public MODEL_TYPE findOneBy(String fields, Object... values) throws IllegalArgumentException {
-        return q(fields, values).first();
+    public MODEL_TYPE findOneBy(String expression, Object... values) throws IllegalArgumentException {
+        return q(expression, values).first();
     }
 
     @Override

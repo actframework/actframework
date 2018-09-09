@@ -1,0 +1,118 @@
+- name: between
+  aliases:
+  - ">-<"
+  cardinality: 2
+  negate: notBetween
+
+- name: eq
+  aliases:
+    - equal
+    - equals
+    - equalTo
+    - equalsTo
+    - "="
+    - "=="
+  cardinality: 1
+  negate: ne
+
+- name: exists
+  aliases:
+    - exist
+  cardinality: 0
+  negate: notExists
+
+- name: neq
+  aliases:
+    - ne
+    - notEqual
+    - notEquals
+    - "!="
+    - "<>"
+  cardinality: 1
+  negate: eq
+
+- name: gt
+  aliases:
+    - great
+    - greater
+    - greatThan
+    - greaterThan
+    - ">"
+  cardinality: 1
+  negate: lte
+  
+- name: gte
+  aliases:
+    - ge
+    - greatOrEqual
+    - greatOrEquals
+    - greaterOrEqual
+    - greaterOrEquals
+    - greaterOrEqualsTo
+    - greaterThanOrEqualTo
+    - ">="
+    - "=>"
+  cardinality: 1
+  negate: lt
+
+- name: lt
+  aliases:
+    - lessThan
+    - less
+    - "<"
+  cardinality: 1
+  negate: gte
+
+- name: lte
+  aliases:
+    - lessThanOrEqualTo
+    - le
+    - lessOrEqual
+    - lessOrEquals
+    - "<="
+    - "=<"
+  cardinality: 1
+  negate: gt
+
+- name: like
+  aliases:
+    - similar
+    - "~~"
+    - "~="
+    - "=~"
+  cardinality: 1
+  negate: notLike
+
+- name: in
+  cardinality: 1
+  requireCollection: true
+  negate: nin
+
+- name: notBetween
+  aliases:
+    - "-x-"
+    - "-X-"
+    - "-><-"
+  cardinality: 2
+  negate: between
+
+- name: notLike
+  aliases:
+    - different
+    - unlike
+    - "!~"
+  cardinality: 1
+  negate: like
+
+- name: nin
+  aliases:
+    - notIn
+  cardinality: 1
+  requireCollection: true
+  negate: in
+
+- name: notExists
+  aliases:
+    - notExist
+  cardinality: 0
+  negate: exists

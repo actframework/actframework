@@ -27,15 +27,39 @@ import java.util.List;
 
 @Data
 public class Page<MODEL> implements SimpleBean {
-    public List<MODEL> list;
+    /**
+     * The page number.
+     */
+    public int no;
+
+    /**
+     * The page size.
+     */
+    public int size;
+
+    /**
+     * The retrieved data for the page.
+     */
+    public Iterable<MODEL> list;
+
+    /**
+     * The total number of data can be retrieved.
+     */
     public long total;
 
-    public Page(List<MODEL> list, long total) {
+    /**
+     * The order specification.
+     * Each element in the list shall be a field name, optionally prefixed
+     * with `-` symbol, meaning sort by the field in descending order.
+     */
+    public List<String> orderBy;
+
+    public Page(Iterable<MODEL> list, long total) {
         this.list = list;
         this.total = total;
     }
 
-    public static <T> Page<T> of(List<T> models, long total) {
+    public static <T> Page<T> of(Iterable<T> models, long total) {
         return new Page<>(models, total);
     }
 }

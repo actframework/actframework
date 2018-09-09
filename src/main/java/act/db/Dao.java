@@ -23,6 +23,7 @@ package act.db;
 import act.Destroyable;
 import act.app.AppContextAware;
 import act.app.security.SecurityContextAware;
+import act.db.util.Page;
 
 import java.util.Collection;
 import java.util.List;
@@ -72,36 +73,29 @@ public interface Dao<ID_TYPE, MODEL_TYPE, QUERY_TYPE extends Dao.Query<MODEL_TYP
     MODEL_TYPE findLastModified();
 
     /**
-     * Find a collection of entities by fields and values.
-     * <p>The fields is specified in a {@code String} separated by any
-     * combination of the following separators</p>
-     * <ul>
-     *     <li>comma: {@code ,}</li>
-     *     <li>[space characters]</li>
-     *     <li>semi colon: {@code ;}</li>
-     *     <li>colon: {@code :}</li>
-     * </ul>
-     * <p>The values are specified in an object array. The number of values
-     * must match the number of fields specified. Otherwise {@link IllegalArgumentException}
-     * will be thrown out</p>
-     * <p>If entities found then they are returned in an {@link Iterable}. Otherwise
-     * an empty {@link Iterable} will be returned</p>
-     * @param fields the fields specification in {@code String}
-     * @param values the value array corresponding to the fields specification
+     * Find a collection of entities by criteria expression and parameter values.
+     *
+     * @param expression
+     *      the criteria specification
+     * @param values
+     *      the value array corresponding to the fields specification
      * @return A collection of entities in {@link Iterable}
-     * @throws IllegalArgumentException if fields number and value number doesn't match
+     * @throws IllegalArgumentException if value number doesn't match the expression requirement
+     * @see act.db.util.CriteriaUtil#parse(String, Object...)
      */
-    Iterable<MODEL_TYPE> findBy(String fields, Object... values) throws IllegalArgumentException;
+    Iterable<MODEL_TYPE> findBy(String expression, Object... values) throws IllegalArgumentException;
 
     /**
      * Find one entity with fields and values specified.
-     * @param fields the fields specification in {@code String}
+     *
+     * @param expression the fields specification in {@code String}
      * @param values the value array corresponding to the fields specification
-     * @return the entity matches or {@code null} if not found
-     * @throws IllegalArgumentException
+     * @return the firtst entity matches or {@code null} if not found
+     * @throws IllegalArgumentException if value number doesn't match the expression requirement
      * @see #findBy(String, Object...)
+     * @see act.db.util.CriteriaUtil#parse(String, Object...)
      */
-    MODEL_TYPE findOneBy(String fields, Object... values) throws IllegalArgumentException;
+    MODEL_TYPE findOneBy(String expression, Object... values) throws IllegalArgumentException;
 
     /**
      * Find all entities from a give list of IDs. If there are certain ID in the list does not have
@@ -246,27 +240,55 @@ public interface Dao<ID_TYPE, MODEL_TYPE, QUERY_TYPE extends Dao.Query<MODEL_TYP
     QUERY_TYPE createQuery();
 
     /**
-     * Return a {@link act.db.Dao.Query} bound to the {@code MODEL_TYPE} by fields and value arguments
-     * @param fields the fields specification in {@code String}
-     * @param values the value array corresponding to the fields specification
+     * Return a {@link act.db.Dao.Query} bound to the {@code MODEL_TYPE} by
+     * criteria expression and parameter values.
+     *
+     * If there are multiple criteria in the expression, they are connected
+     * by {@link CriteriaGroupLogic#AND and} relationship
+     *
+     * @param expression
+     *      the criteria expression.
+     * @param values
+     *      the parameter values corresponding to the expression
      * @return the query instance as described above
+     * @see act.db.util.CriteriaUtil#parse(String, Object...)
      */
-    QUERY_TYPE q(String fields, Object... values);
+    QUERY_TYPE q(String expression, Object... values);
+
+    /**
+     * Return a {@link act.db.Dao.Query} bound to the {@code MODEL_TYPE} by
+     * criteria expression and parameter values.
+     *
+     * If there are multiple criteria in the expression, they are connected
+     * by {@link CriteriaGroupLogic#OR or} relationship
+     *
+     * @param expression
+     *      the criteria expression.
+     * @param values
+     *      the parameter values corresponding to the expression
+     * @return the query instance as described above
+     * @see act.db.util.CriteriaUtil#parse(String, Object...)
+     */
+    QUERY_TYPE or(String expression, Object... values);
 
     /**
      * Alias of {@link #q(String, Object...)}
-     * @param fields the fields specification in {@code String}
-     * @param values the value array corresponding to the fields specification
-     * @return the query instance as described in {@link #q(String, Object...)}
      */
-    QUERY_TYPE createQuery(String fields, Object... values);
+    QUERY_TYPE createQuery(String expression, Object... values);
+
+    /**
+     * Alias of {@link #or(String, Object...)}
+     */
+    QUERY_TYPE createOrQuery(String expression, Object... values);
 
     interface Query<MODEL_TYPE, QUERY_TYPE extends Query<MODEL_TYPE, QUERY_TYPE>> {
         QUERY_TYPE offset(int pos);
         QUERY_TYPE limit(int limit);
         QUERY_TYPE orderBy(String ... fieldList);
+        QUERY_TYPE where(CriteriaComponent criteriaComponent);
         MODEL_TYPE first();
         Iterable<MODEL_TYPE> fetch();
+        Page<MODEL_TYPE> fetchPage(Page<MODEL_TYPE> page);
         long count();
     }
 }
