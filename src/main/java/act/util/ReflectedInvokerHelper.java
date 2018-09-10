@@ -63,7 +63,8 @@ public class ReflectedInvokerHelper {
 
     private static Set<Class<? extends Annotation>> ACTION_ANNO_TYPES = C.set(
             Action.class, GetAction.class, PostAction.class, PutAction.class,
-            DeleteAction.class, PatchAction.class, WsAction.class
+            DeleteAction.class, PatchAction.class, WsAction.class,
+            Catch.class, Before.class, After.class, Finally.class
     );
 
     private static Map<Method, Annotation[][]> requestHandlerMethodParamAnnotationCache;

@@ -4,7 +4,7 @@
 * Apply new scope for implicit transaction #823
 * When returning String is not a valid JSON, it shall be encapsulated with `result` #821
 * Extended request handler method's param not enhanced with `@Named` annotation #819
-* mavn pom: It shall add `.tag` file into resource filtering list #817
+* maven pom: It shall add `.tag` file into resource filtering list #817
 * `Controller.renderHtml()` method signature error #816
 * `jquery.ext.js` - undefined error checking ajax redirect when there is no content in body #815
 * API doc - support module #814
