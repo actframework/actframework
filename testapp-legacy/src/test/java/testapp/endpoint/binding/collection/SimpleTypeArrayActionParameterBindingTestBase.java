@@ -1,17 +1,15 @@
 package testapp.endpoint.binding.collection;
 
+import com.alibaba.fastjson.JSON;
 import org.junit.Test;
 import org.osgl.util.C;
 import org.osgl.util.Generics;
-import testapp.endpoint.binding.ActionParameterBindingTestBase;
 import testapp.endpoint.EndPointTestContext.RequestMethod;
 import testapp.endpoint.ParamEncoding;
+import testapp.endpoint.binding.ActionParameterBindingTestBase;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
 
 public abstract class SimpleTypeArrayActionParameterBindingTestBase<T> extends ActionParameterBindingTestBase {
 
@@ -42,11 +40,11 @@ public abstract class SimpleTypeArrayActionParameterBindingTestBase<T> extends A
     protected abstract List<T> nonEmptyList();
 
     protected String expectedRespForNonEmptyList() {
-        return nonEmptyList().toString();
+        return JSON.toJSONString(nonEmptyList());
     }
 
     protected String expectedRespForNonEmptySet() {
-        return new TreeSet<T>(nonEmptyList()).toString();
+        return JSON.toJSONString(new TreeSet(nonEmptyList()));
     }
 
     protected final String e() {

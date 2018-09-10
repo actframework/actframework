@@ -428,7 +428,9 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         }
 
         context.setReflectedHandlerInvoker(this);
-        app.eventBus().emit(new ReflectedHandlerInvokerInvoke(this, context));
+        if (!context.skipEvents()) {
+            app.eventBus().emit(new ReflectedHandlerInvokerInvoke(this, context));
+        }
 
         if (1 == fieldsAndParamsCount(context)) {
             context.allowIgnoreParamNamespace();

@@ -36,6 +36,12 @@ class ParamTree {
     void build(ActContext context) {
         Set<String> paramKeys = context.paramKeys();
         for (String key : paramKeys) {
+            if ("_body".equals(key)) {
+                continue;
+            }
+            if ("_method".equals(key)) {
+                continue;
+            }
             String[] vals = context.paramVals(key);
             buildNode(key, vals);
         }
@@ -67,6 +73,14 @@ class ParamTree {
 
     ParamTreeNode node(ParamKey key) {
         return allNodes.get(key);
+    }
+
+    ParamTreeNode asRootNode() {
+        ParamTreeNode root = ParamTreeNode.map(ParamKey.ROOT_KEY);
+        for (Map.Entry<ParamKey, ParamTreeNode> entry : allNodes.entrySet()) {
+            root.addChild(entry.getKey().name(), entry.getValue());
+        }
+        return root;
     }
 
     private void ensureParent(ParamKey childKey, ParamTreeNode child) {

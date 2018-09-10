@@ -1,5 +1,7 @@
 package testapp.endpoint;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.JSONObject;
 import org.junit.Test;
 import org.osgl.$;
 import org.osgl.mvc.result.NotModified;
@@ -19,7 +21,8 @@ public class ETagTest extends EndpointTester {
 
     public String retrieveETag($.Var<String> version) throws IOException {
         url("/etag");
-        version.set(resp().body().string());
+        JSONObject obj = JSON.parseObject(resp().body().string());
+        version.set(obj.getString("version"));
         return resp().header("Etag");
     }
 

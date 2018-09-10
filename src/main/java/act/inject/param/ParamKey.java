@@ -31,6 +31,8 @@ import java.util.Arrays;
  */
 class ParamKey {
 
+    static final ParamKey ROOT_KEY = new ParamKey(new String[0]);
+
     private String[] seq;
     private int hc;
     private int size;

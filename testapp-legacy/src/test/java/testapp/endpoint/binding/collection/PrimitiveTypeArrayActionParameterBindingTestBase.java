@@ -1,6 +1,5 @@
 package testapp.endpoint.binding.collection;
 
-import org.junit.Ignore;
 import org.junit.Test;
 import org.osgl.util.C;
 import testapp.endpoint.EndPointTestContext;

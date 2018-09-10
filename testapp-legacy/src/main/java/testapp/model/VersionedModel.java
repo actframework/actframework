@@ -8,19 +8,23 @@ import org.osgl.util.S;
  */
 public class VersionedModel implements Versioned {
 
-    private String id;
+    private String version;
 
     public VersionedModel() {
         this(S.random());
     }
 
     public VersionedModel(String id) {
-        this.id = S.blank(id) ? S.random() : id;
+        this.version = S.blank(id) ? S.random() : id;
+    }
+
+    public String getVersion() {
+        return version;
     }
 
     @Override
     public String _version() {
-        return id;
+        return version;
     }
 
     public static VersionedModel getNew() {

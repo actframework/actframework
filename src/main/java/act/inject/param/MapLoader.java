@@ -20,6 +20,7 @@ package act.inject.param;
  * #L%
  */
 
+import act.app.ActionContext;
 import act.app.App;
 import act.app.data.StringValueResolverManager;
 import act.inject.DependencyInjector;
@@ -28,9 +29,7 @@ import act.util.LogSupport;
 import org.osgl.$;
 import org.osgl.inject.BeanSpec;
 import org.osgl.mvc.result.BadRequest;
-import org.osgl.util.E;
-import org.osgl.util.S;
-import org.osgl.util.StringValueResolver;
+import org.osgl.util.*;
 
 import java.lang.reflect.Type;
 import java.util.*;
@@ -47,6 +46,7 @@ class MapLoader extends LogSupport implements ParamValueLoader {
     private final Map<ParamKey, ParamValueLoader> childLoaders = new HashMap<ParamKey, ParamValueLoader>();
     private final ParamValueLoaderService manager;
     private final BeanSpec targetSpec;
+    private final boolean valTypeIsObject;
 
     MapLoader(
             ParamKey key,
@@ -61,20 +61,25 @@ class MapLoader extends LogSupport implements ParamValueLoader {
         this.mapClass = mapClass;
         this.keyClass = BeanSpec.rawTypeOf(keyType);
         this.valType = valType;
+        this.valTypeIsObject = Object.class == valType;
         this.injector = injector;
         this.manager = manager;
         this.targetSpec = targetSpec;
         StringValueResolverManager resolverManager = App.instance().resolverManager();
         BeanSpec valSpec = BeanSpec.of(valType, injector);
         Class<?> valClass = valSpec.rawType();
-        if (Collection.class.isAssignableFrom(valClass)) {
-            Class<? extends Collection> colClass = $.cast(valClass);
-            this.valueResolver = resolverManager.collectionResolver(colClass, (Class<?>)valSpec.typeParams().get(0), ',');
+        if (!this.valTypeIsObject) {
+            if (Collection.class.isAssignableFrom(valClass)) {
+                Class<? extends Collection> colClass = $.cast(valClass);
+                this.valueResolver = resolverManager.collectionResolver(colClass, (Class<?>)valSpec.typeParams().get(0), ',');
+            } else {
+                this.valueResolver = resolverManager.resolver(valClass, BeanSpec.of(valType, injector));
+            }
+            if (null == valueResolver) {
+                warn("Map value type not resolvable: " + valClass.getName());
+            }
         } else {
-            this.valueResolver = resolverManager.resolver(valClass, BeanSpec.of(valType, injector));
-        }
-        if (null == valueResolver) {
-            warn("Map value type not resolvable: " + valClass.getName());
+            valueResolver = null;
         }
         this.keyResolver = resolverManager.resolver(this.keyClass, BeanSpec.of(this.keyClass, injector));
         if (null == keyResolver) {
@@ -86,8 +91,13 @@ class MapLoader extends LogSupport implements ParamValueLoader {
     public Object load(Object bean, ActContext<?> context, boolean noDefaultValue) {
         ParamTree tree = ParamValueLoaderService.ensureParamTree(context);
         ParamTreeNode node = tree.node(key);
+        ActionContext actionContext = context instanceof ActionContext ? (ActionContext) context : null;
         if (null == node) {
-            return noDefaultValue ? null : injector.get(mapClass);
+            if (null != actionContext && actionContext.isAllowIgnoreParamNamespace()) {
+                    node = tree.asRootNode();
+            } else {
+                return noDefaultValue ? null : injector.get(mapClass);
+            }
         }
         Map map = null == bean ? injector.get(mapClass) : (Map) bean;
         if (node.isList()) {
@@ -100,11 +110,14 @@ class MapLoader extends LogSupport implements ParamValueLoader {
                 if (!elementNode.isLeaf()) {
                     throw new BadRequest("cannot parse param: expect leaf node, found: \n%s", node.debug());
                 }
-                if (null == valueResolver) {
+                if (valTypeIsObject) {
+                    map.put(i, elementNode.value());
+                } else  if (null == valueResolver) {
                     throw E.unexpected("Component type not resolvable: %s", valType);
-                }
-                if (null != elementNode.value()) {
-                    map.put(i, valueResolver.resolve(elementNode.value()));
+                } else {
+                    if (null != elementNode.value()) {
+                        map.put(i, valueResolver.resolve(elementNode.value()));
+                    }
                 }
             }
         } else if (node.isMap()) {
@@ -117,21 +130,24 @@ class MapLoader extends LogSupport implements ParamValueLoader {
                     key = keyResolver.resolve(s);
                 }
                 if (child.isLeaf()) {
-                    if (null == valueResolver) {
-                        throw E.unexpected("Component type not resolvable: %s", valType);
-                    }
                     String sval = child.value();
                     if (null == sval) {
                         continue;
                     }
-                    if (valClass != String.class) {
+                    if (valTypeIsObject || String.class == valClass) {
+                        if (null != actionContext && actionContext.isPathVar(s)) {
+                            continue;
+                        }
+                        map.put(key, sval);
+                    } else {
+                        if (null == valueResolver) {
+                            throw E.unexpected("Component type not resolvable: %s", valType);
+                        }
                         Object value = valueResolver.resolve(sval);
                         if (!valClass.isInstance(value)) {
                             throw new BadRequest("Cannot load parameter, expected type: %s, found: %s", valClass, value.getClass());
                         }
                         map.put(key, value);
-                    } else {
-                        map.put(key, sval);
                     }
                 } else {
                     ParamValueLoader childLoader = childLoader(child.key());
