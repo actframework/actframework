@@ -1794,14 +1794,14 @@ public @interface Controller {
                     }
                     // no need to check string case as it is already checked above
                     if (v instanceof $.Visitor) {
-                        return RenderJSON.of(($.Visitor) v);
+                        return RenderJSON.of(status, ($.Visitor) v);
                     } else if (v instanceof $.Func0) {
-                        return RenderJSON.of(($.Func0) v);
+                        return RenderJSON.of(status, ($.Func0) v);
                     }
                     PropertySpec.MetaInfo propertySpec = PropertySpec.MetaInfo.withCurrent(meta, context);
                     boolean possibleLargeResponse = context.isLargeResponse();
                     JsonWriter jsonWriter = new JsonWriter(v, propertySpec, false, context);
-                    return possibleLargeResponse ? RenderJSON.of(jsonWriter) : RenderJSON.of(jsonWriter.asContentProducer());
+                    return possibleLargeResponse ? RenderJSON.of(status, jsonWriter) : RenderJSON.of(status, jsonWriter.asContentProducer());
                 } else if (context.acceptXML()) {
                     PropertySpec.MetaInfo propertySpec = PropertySpec.MetaInfo.withCurrent(meta, context);
                     return new FilteredRenderXML(status, v, propertySpec, context);
