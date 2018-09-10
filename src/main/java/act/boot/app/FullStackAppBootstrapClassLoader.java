@@ -20,12 +20,11 @@ package act.boot.app;
  * #L%
  */
 
+import static act.util.ClassInfoRepository.canonicalName;
+
 import act.Constants;
 import act.boot.BootstrapClassLoader;
-import act.util.ActClassLoader;
-import act.util.ClassInfoRepository;
-import act.util.ClassNode;
-import act.util.Jars;
+import act.util.*;
 import org.osgl.$;
 import org.osgl.util.*;
 
@@ -33,12 +32,7 @@ import java.io.File;
 import java.lang.reflect.Modifier;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import static act.util.ClassInfoRepository.canonicalName;
+import java.util.*;
 
 /**
  * This class loader is responsible for loading Act classes
@@ -221,7 +215,7 @@ public class FullStackAppBootstrapClassLoader extends BootstrapClassLoader imple
     private void saveToFile(String name, String content) {
         File file = new File(name);
         String fileContent = S.concat("#", S.string(jarsChecksum), lineSeparator, content);
-        IO.writeContent(fileContent, file);
+        IO.write(fileContent, file);
     }
 
     private void restoreClassInfoRegistry() {

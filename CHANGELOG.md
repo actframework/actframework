@@ -1,6 +1,9 @@
 # ActFramework Change Log
 
 **1.8.8**
+* `ActionContext.allowIgnoreParamNamespace()` overlooked by `MapLoader` #827
+* Use `JSON.toJSONString()` to replace `Object.toString()` whenever it is used to render response body #826
+* Force response status not working when response type is JSON #825
 * Apply new scope for implicit transaction #823
 * When returning String is not a valid JSON, it shall be encapsulated with `result` #821
 * Extended request handler method's param not enhanced with `@Named` annotation #819

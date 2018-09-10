@@ -9,9 +9,9 @@ package act.inject.param;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -31,7 +31,7 @@ class ParamTreeNode implements TreeNode {
 
     private String leafVal;
     private Map<String, ParamTreeNode> map;
-    private List<ParamTreeNode>  list;
+    private List<ParamTreeNode> list;
 
     private ParamTreeNode(ParamKey path) {
         this.key = path;
@@ -119,13 +119,14 @@ class ParamTreeNode implements TreeNode {
 
     static ParamTreeNode map(ParamKey key) {
         ParamTreeNode node = new ParamTreeNode(key);
-        node.map = new HashMap<String, ParamTreeNode>();
+        node.map = new HashMap<>();
         return node;
     }
 
     static ParamTreeNode list(ParamKey key) {
         ParamTreeNode node = new ParamTreeNode(key);
-        node.list = new ArrayList<ParamTreeNode>();
+        node.list = new ArrayList<>();
         return node;
     }
+
 }

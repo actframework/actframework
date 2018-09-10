@@ -34,4 +34,5 @@ public class ByteArrayActionParameterBindingTest extends PrimitiveTypeArrayActio
     private byte b(int i) {
         return (byte) i;
     }
+
 }

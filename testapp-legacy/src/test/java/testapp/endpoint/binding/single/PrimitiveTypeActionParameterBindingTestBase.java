@@ -1,10 +1,8 @@
 package testapp.endpoint.binding.single;
 
-import org.junit.Ignore;
 import org.junit.Test;
 import org.osgl.mvc.result.BadRequest;
 import testapp.endpoint.EndPointTestContext;
-import testapp.endpoint.binding.collection.*;
 
 public abstract class PrimitiveTypeActionParameterBindingTestBase<T> extends SimpleTypeActionParameterBindingTestBase<T> {
     protected String primitiveUrlPath;

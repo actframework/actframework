@@ -20,8 +20,6 @@ package act.controller;
  * #L%
  */
 
-import static org.osgl.http.H.Format.HTML;
-
 import act.Act;
 import act.app.ActionContext;
 import act.conf.AppConfigKey;
@@ -31,6 +29,7 @@ import act.route.Router;
 import act.util.*;
 import act.util.JsonUtilConfig.JsonWriter;
 import act.view.*;
+import com.alibaba.fastjson.JSON;
 import org.osgl.$;
 import org.osgl.http.H;
 import org.osgl.mvc.result.*;
@@ -1609,11 +1608,17 @@ public @interface Controller {
             return r;
         }
 
-        public static Result inferPrimitiveResult(Object v, ActionContext actionContext, boolean requireJSON, boolean requireXML, boolean isArray, boolean isDateTime) {
+        public static Result inferPrimitiveResult(
+                Object v, ActionContext actionContext, boolean requireJSON,
+                boolean requireXML, boolean isArray, boolean shouldUseToString) {
             H.Status status = actionContext.successStatus();
             if (requireJSON) {
                 if (isArray) {
-                    return RenderJSON.of(status, $.toString2(v));
+                    if (byte[].class == v.getClass()) {
+                        // otherwise it get encoded with base64
+                        return RenderJSON.of(JSON.toJSON(v).toString());
+                    }
+                    return RenderJSON.of(status, v);
                 }
                 if (v instanceof String) {
                     String s = (String) v;
@@ -1638,12 +1643,9 @@ public @interface Controller {
                 return new RenderBinary((byte[]) v);
             } else {
                 H.Format fmt = actionContext.accept();
-                String s = $$.toString(v, isDateTime, isArray);
-                if (HTML == fmt) {
-                    return RenderHtml.of(status, s);
-                }
+                String s = v instanceof String ? (String) v : $$.toString(v, shouldUseToString);
                 if (fmt.isText()) {
-                    return RenderText.of(status, fmt, s, status.toString());
+                    return RenderText.of(status, fmt, s);
                 }
                 DirectRender dr = Act.viewManager().loadDirectRender(actionContext);
                 if (null == dr) {
@@ -1776,10 +1778,10 @@ public @interface Controller {
                 return null;
             }
             Class vCls = v.getClass();
-            boolean isDateTimeType = $$.isDateTimeType(vCls);
-            if ($.isSimpleType(vCls) || isDateTimeType) {
+            boolean shouldUseToString = $$.shouldUseToString(vCls);
+            if ($.isSimpleType(vCls) || shouldUseToString) {
                 boolean isArray = vCls.isArray();
-                return inferPrimitiveResult(v, context, requireJSON, requireXML, isArray, isDateTimeType);
+                return inferPrimitiveResult(v, context, requireJSON, requireXML, isArray, shouldUseToString);
             } else if (v instanceof InputStream) {
                 return inferResult((InputStream) v, context);
             } else if (v instanceof File) {
@@ -1810,8 +1812,7 @@ public @interface Controller {
                     return RenderCSV.of(status, v, propertySpec, context);
                 } else {
                     boolean isArray = vCls.isArray();
-                    PropertySpec.MetaInfo propertySpec = PropertySpec.MetaInfo.withCurrent(meta, context);
-                    return inferPrimitiveResult(v, context, false, requireXML, isArray, isDateTimeType);
+                    return inferPrimitiveResult(v, context, false, requireXML, isArray, shouldUseToString);
                 }
             }
         }
