@@ -642,7 +642,7 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
 
     @Override
     public Set<String> paramKeys() {
-        Set<String> set = new HashSet<String>();
+        Set<String> set = new LinkedHashSet<>();
         set.addAll(C.<String>list(request.paramNames()));
         set.addAll(extraParams.keySet());
         set.addAll(bodyParams().keySet());
@@ -704,7 +704,7 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
 
     private Map<String, String[]> bodyParams() {
         if (null == bodyParams) {
-            Map<String, String[]> map = new HashMap<>();
+            Map<String, String[]> map = new LinkedHashMap<>();
             H.Method method = request.method();
             if (H.Method.POST == method || H.Method.PUT == method || H.Method.PATCH == method) {
                 RequestBodyParser parser = RequestBodyParser.get(request);
@@ -1290,8 +1290,8 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
         if (null != requestParamCache) {
             return requestParamCache;
         }
-        requestParamCache = new HashSet<>();
-        Map<String, String[]> map = new HashMap<>();
+        requestParamCache = new LinkedHashSet<>();
+        Map<String, String[]> map = new LinkedHashMap<>();
         // url queries
         Iterator<String> paramNames = request.paramNames().iterator();
         while (paramNames.hasNext()) {

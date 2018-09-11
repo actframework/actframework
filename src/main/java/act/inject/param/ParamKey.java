@@ -32,10 +32,12 @@ import java.util.Arrays;
 class ParamKey {
 
     static final ParamKey ROOT_KEY = new ParamKey(new String[0]);
+    static final String INDEX_PLACEHOLDER = "\0";
 
     private String[] seq;
     private int hc;
     private int size;
+    private boolean hasIndexPlaceholder;
     private ParamKey(String[] seq) {
         this.seq = seq;
         this.size = seq.length;
@@ -77,6 +79,10 @@ class ParamKey {
         return size == 1;
     }
 
+    boolean hasIndexPlaceholder() {
+        return hasIndexPlaceholder;
+    }
+
     String name() {
         return seq[size - 1];
     }
@@ -113,7 +119,19 @@ class ParamKey {
         return new ParamKey(seq);
     }
 
+    static ParamKey of(String[] seq, $.Var<Boolean> hasIndexPlaceholder) {
+        ParamKey key = of(seq);
+        if (hasIndexPlaceholder.get()) {
+            key.hasIndexPlaceholder = true;
+        }
+        return key;
+    }
+
     static ParamKey of(String one) {
         return new ParamKey(one);
+    }
+
+    static boolean isPlaceholder(String x) {
+        return INDEX_PLACEHOLDER == x;
     }
 }

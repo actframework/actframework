@@ -1,0 +1,18 @@
+Scenario(GH828):
+  description: "[823] List param loader - support loading data without index"
+  interactions:
+    - description: load into array
+      request:
+        post: /828/array
+        params:
+          "[data][][id]": 1
+          "[data][][bars][][name]": b1
+      response:
+        json:
+          size: 1
+          0:
+            id: 1
+            bars:
+              size: 1
+              0:
+                name: b1

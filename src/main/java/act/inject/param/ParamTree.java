@@ -20,7 +20,10 @@ package act.inject.param;
  * #L%
  */
 
+import static act.inject.param.ParamKey.isPlaceholder;
+
 import act.util.ActContext;
+import org.osgl.$;
 import org.osgl.logging.LogManager;
 import org.osgl.logging.Logger;
 import org.osgl.util.S;
@@ -33,6 +36,8 @@ class ParamTree {
 
     private Map<ParamKey, ParamTreeNode> allNodes = new HashMap<>();
 
+    private Map<String, Integer> indexPlaceholderResolver;
+
     private ParamTreeNode rootNode;
 
     void build(ActContext context) {
@@ -44,11 +49,15 @@ class ParamTree {
     }
 
     private void buildNode(String rawKey, String[] vals) {
-        ParamKey key = ParamKey.of(parseRawParamKey(rawKey));
+        $.Var<Boolean> hasIndexPlaceholder = $.var();
+        ParamKey key = ParamKey.of(parseRawParamKey(rawKey, hasIndexPlaceholder), hasIndexPlaceholder);
         ParamTreeNode node;
         int len = vals.length;
         if (len == 0) {
             return;
+        }
+        if (key.hasIndexPlaceholder()) {
+
         }
         if (len > 1) {
             node = ParamTreeNode.list(key);
@@ -81,6 +90,22 @@ class ParamTree {
             }
         }
         return node;
+    }
+
+
+
+    private ParamKey resolveIndexPlaceholder(ParamKey key) {
+        if (null == indexPlaceholderResolver) {
+            indexPlaceholderResolver = new HashMap<>();
+        }
+        String[] seq = key.seq();
+        int len = seq.length;
+        for (int i = 0; i < len; ++i) {
+            String current = seq[i];
+            if (isPlaceholder(current)) {
+
+            }
+        }
     }
 
     private ParamTreeNode asRootNode() {
@@ -116,7 +141,7 @@ class ParamTree {
      * `foo.bar[0].id`. However things like `foo[0.05]` must be interpreted into
      * `foo, 0.05`  instead of `foo, 0, 05`
      */
-    private static String[] parseRawParamKey(String rawKey) {
+    private static String[] parseRawParamKey(String rawKey, $.Var<Boolean> hasIndexPlaceholder) {
         List<String> list = new ArrayList<>();
         int len = rawKey.length();
         boolean inSquare = false;
@@ -128,34 +153,35 @@ class ParamTree {
                     if (inSquare) {
                         token.append(c);
                     } else {
-                        addTokenToList(list, token);
+                        addTokenToList(list, token, hasIndexPlaceholder);
                     }
                     continue;
                 case ']':
                     inSquare = false;
-                    addTokenToList(list, token);
+                    addTokenToList(list, token, hasIndexPlaceholder);
                     continue;
                 case '[':
                     inSquare = true;
-                    addTokenToList(list, token);
+                    addTokenToList(list, token, hasIndexPlaceholder);
                     continue;
                 default:
                     token.append(c);
 
             }
         }
-        addTokenToList(list, token);
+        addTokenToList(list, token, hasIndexPlaceholder);
         return list.toArray(new String[list.size()]);
     }
 
-    private static void addTokenToList(List<String> list, S.Buffer token) {
+    private static void addTokenToList(List<String> list, S.Buffer token, $.Var<Boolean> hasIndexPlaceholder) {
         String s = token.toString();
-        if (S.notEmpty(s)) {
-            list.add(s);
-        } else {
-            LOGGER.warn("empty index encountered");
+        int len = s.length();
+        if (S.isBlank(s)) {
+            s = ParamKey.INDEX_PLACEHOLDER;
+            hasIndexPlaceholder.set(true);
         }
-        token.delete(0, s.length() + 1);
+        list.add(s);
+        token.delete(0, len + 1);
     }
 
 }
