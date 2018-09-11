@@ -90,14 +90,9 @@ class MapLoader extends LogSupport implements ParamValueLoader {
     @Override
     public Object load(Object bean, ActContext<?> context, boolean noDefaultValue) {
         ParamTree tree = ParamValueLoaderService.ensureParamTree(context);
-        ParamTreeNode node = tree.node(key);
-        ActionContext actionContext = context instanceof ActionContext ? (ActionContext) context : null;
+        ParamTreeNode node = tree.node(key, context);
         if (null == node) {
-            if (null != actionContext && actionContext.isAllowIgnoreParamNamespace()) {
-                    node = tree.asRootNode();
-            } else {
-                return noDefaultValue ? null : injector.get(mapClass);
-            }
+            return noDefaultValue ? null : injector.get(mapClass);
         }
         Map map = null == bean ? injector.get(mapClass) : (Map) bean;
         if (node.isList()) {
@@ -123,6 +118,7 @@ class MapLoader extends LogSupport implements ParamValueLoader {
         } else if (node.isMap()) {
             Set<String> childrenKeys = node.mapKeys();
             Class valClass = BeanSpec.rawTypeOf(valType);
+            ActionContext actionContext = context instanceof ActionContext ? (ActionContext) context : null;
             for (String s : childrenKeys) {
                 ParamTreeNode child = node.child(s);
                 Object key = s;

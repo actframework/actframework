@@ -38,9 +38,19 @@ class AdaptiveRecordLoader extends PojoLoader {
         Set<String> loadedFields = fieldLoaders.keySet();
         String prefix = S.concat(bindName(), ".");
         Set<String> paramKeys = context.paramKeys();
+        boolean allowIgnoreNamespace = context.isAllowIgnoreParamNamespace();
         for (String paramKey : paramKeys) {
             if (paramKey.startsWith(prefix)) {
                 String field = S.afterFirst(paramKey, prefix);
+                if (S.notBlank(field) && !loadedFields.contains(field)) {
+                    if (field.contains(".")) {
+                        warn("AdaptiveRecordLoader does not support nested structure");
+                        continue;
+                    }
+                    ar.putValue(field, context.paramVal(paramKey));
+                }
+            } else if (allowIgnoreNamespace) {
+                String field = paramKey;
                 if (S.notBlank(field) && !loadedFields.contains(field)) {
                     if (field.contains(".")) {
                         warn("AdaptiveRecordLoader does not support nested structure");

@@ -97,4 +97,9 @@ class FieldLoader {
             throw new InjectException(e);
         }
     }
+
+    @Override
+    public String toString() {
+        return "FieldLoader[" + field.getName() + "]";
+    }
 }

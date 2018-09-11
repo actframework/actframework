@@ -33,15 +33,11 @@ class ParamTree {
 
     private Map<ParamKey, ParamTreeNode> allNodes = new HashMap<>();
 
+    private ParamTreeNode rootNode;
+
     void build(ActContext context) {
         Set<String> paramKeys = context.paramKeys();
         for (String key : paramKeys) {
-            if ("_body".equals(key)) {
-                continue;
-            }
-            if ("_method".equals(key)) {
-                continue;
-            }
             String[] vals = context.paramVals(key);
             buildNode(key, vals);
         }
@@ -71,11 +67,23 @@ class ParamTree {
         ensureParent(key, node);
     }
 
-    ParamTreeNode node(ParamKey key) {
-        return allNodes.get(key);
+    ParamTreeNode node(ParamKey key, ActContext<?> context) {
+        ParamTreeNode node = allNodes.get(key);
+        if (null == node && context.isAllowIgnoreParamNamespace()) {
+            key = key.withoutNamespace();
+            if (null == key) {
+                if (null == rootNode) {
+                    rootNode = asRootNode();
+                }
+                node = rootNode;
+            } else {
+                node = allNodes.get(key);
+            }
+        }
+        return node;
     }
 
-    ParamTreeNode asRootNode() {
+    private ParamTreeNode asRootNode() {
         ParamTreeNode root = ParamTreeNode.map(ParamKey.ROOT_KEY);
         for (Map.Entry<ParamKey, ParamTreeNode> entry : allNodes.entrySet()) {
             root.addChild(entry.getKey().name(), entry.getValue());
