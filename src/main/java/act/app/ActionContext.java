@@ -646,6 +646,8 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
         set.addAll(C.<String>list(request.paramNames()));
         set.addAll(extraParams.keySet());
         set.addAll(bodyParams().keySet());
+        set.remove("_method");
+        set.remove("_body");
         return set;
     }
 

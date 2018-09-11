@@ -244,6 +244,8 @@ public interface ActContext<CTX_TYPE extends ActContext> extends ParamValueProvi
 
     boolean isDisableCircularReferenceDetect();
 
+    boolean isAllowIgnoreParamNamespace();
+
 
     interface Listener {
         void onDestroy(ActContext context);
@@ -677,6 +679,11 @@ public interface ActContext<CTX_TYPE extends ActContext> extends ParamValueProvi
         @Override
         public ConstraintViolation violation(String property) {
             return this.violations.get(property);
+        }
+
+        @Override
+        public boolean isAllowIgnoreParamNamespace() {
+            return false;
         }
 
         public void setJobId(String jobId) {

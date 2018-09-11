@@ -83,7 +83,7 @@ class CollectionLoader implements ParamValueLoader {
     @Override
     public Object load(Object bean, ActContext<?> context, boolean noDefaultValue) {
         ParamTree tree = ParamValueLoaderService.ensureParamTree(context);
-        ParamTreeNode node = tree.node(key);
+        ParamTreeNode node = tree.node(key, context);
         if (null == node) {
             return injector.get(collectionClass);
         }
