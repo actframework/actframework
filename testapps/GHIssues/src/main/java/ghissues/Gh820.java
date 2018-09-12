@@ -1,29 +1,18 @@
 package ghissues;
 
 import act.controller.annotation.UrlContext;
-import act.util.LogSupport;
-import ghissues.gh820.Gh820Service;
+import ghissues.gh820.BaseController;
+import ghissues.gh820.IntegerService;
 import org.osgl.mvc.annotation.GetAction;
 
-import javax.inject.Inject;
+import java.util.List;
 
 @UrlContext("820")
-public class Gh820 extends LogSupport {
+public class Gh820 extends BaseController<Integer, IntegerService> {
 
-    @Inject
-    private Gh820Service<String> stringService;
-
-    @Inject
-    private Gh820Service<Integer> intService;
-
-    @GetAction("string")
-    public String getString() {
-        return stringService.get();
-    }
-
-    @GetAction("int")
-    public int getInt() {
-        return intService.get();
+    @GetAction
+    public List<Integer> get() {
+        return service().produceList();
     }
 
 }
