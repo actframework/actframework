@@ -547,16 +547,27 @@ public class Scenario implements ScenarioPart {
         return cookieStore;
     }
 
-    void verifyDownload(Response response, String checksum) {
-        Object o = cached(checksum);
+    void verifyDownloadChecksum(Response response, String checksumExpected) {
+        Object o = cached(checksumExpected);
         if (null == o) {
             o = cached("checksum-last");
         }
         if (null == o) {
-            o = checksum;
+            o = checksumExpected;
         }
         String downloadChecksum = IO.checksum(response.body().byteStream());
         errorIfNot($.eq(downloadChecksum, o), "Download checksum not match");
+    }
+
+    void verifyDownloadFilename(Response response, String filenameExpected) {
+        String header = response.header("Content-Disposition");
+        // header should be something like: attachment; filename="postcodes.xls"
+        errorIf(S.isBlank(header), "No Content-Disposition header found");
+        int pos = header.indexOf('"');
+        errorIf(pos < 0, "Content-Disposition header does not have filename specified: " + header);
+        String filename = header.substring(pos + 1);
+        filename = filename.substring(0, filename.length() - 1); // strip off last `"`
+        errorIfNot(S.eq(filenameExpected, filename), "Download filename[%s] not match expected value[%s]", filename, filenameExpected);
     }
 
     void verifyBody(String bodyString, ResponseSpec spec) {
