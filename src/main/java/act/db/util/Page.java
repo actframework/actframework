@@ -21,9 +21,8 @@ package act.db.util;
  */
 
 import act.data.annotation.Data;
+import act.inject.param.NoBind;
 import act.util.SimpleBean;
-
-import java.util.List;
 
 @Data
 public class Page<MODEL> implements SimpleBean {
@@ -40,19 +39,14 @@ public class Page<MODEL> implements SimpleBean {
     /**
      * The retrieved data for the page.
      */
+    @NoBind
     public Iterable<MODEL> list;
 
     /**
      * The total number of data can be retrieved.
      */
+    @NoBind
     public long total;
-
-    /**
-     * The order specification.
-     * Each element in the list shall be a field name, optionally prefixed
-     * with `-` symbol, meaning sort by the field in descending order.
-     */
-    public List<String> orderBy;
 
     public Page(Iterable<MODEL> list, long total) {
         this.list = list;

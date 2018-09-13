@@ -35,7 +35,7 @@ import javax.enterprise.context.ApplicationScoped;
 // We can't do this atm, otherwise app developer cannot use EbeanDao, or MorphiaDao directly
 //@InheritedStateless
 @NoBind
-public abstract class DaoBase<ID_TYPE, MODEL_TYPE, QUERY_TYPE extends Dao.Query<MODEL_TYPE, QUERY_TYPE>>
+public abstract class DaoBase<ID_TYPE, MODEL_TYPE, QUERY_TYPE extends Query<MODEL_TYPE, QUERY_TYPE>>
         implements Dao<ID_TYPE, MODEL_TYPE, QUERY_TYPE> {
 
     private ActContext appCtx;

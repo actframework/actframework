@@ -23,7 +23,6 @@ package act.db;
 import act.Destroyable;
 import act.app.AppContextAware;
 import act.app.security.SecurityContextAware;
-import act.db.util.Page;
 
 import java.util.Collection;
 import java.util.List;
@@ -33,7 +32,7 @@ import java.util.List;
  * @param <ID_TYPE> the generic key type
  * @param <MODEL_TYPE> the generic model type
  */
-public interface Dao<ID_TYPE, MODEL_TYPE, QUERY_TYPE extends Dao.Query<MODEL_TYPE, QUERY_TYPE>>
+public interface Dao<ID_TYPE, MODEL_TYPE, QUERY_TYPE extends Query<MODEL_TYPE, QUERY_TYPE>>
         extends AppContextAware, SecurityContextAware, Destroyable {
 
     /**
@@ -228,7 +227,7 @@ public interface Dao<ID_TYPE, MODEL_TYPE, QUERY_TYPE extends Dao.Query<MODEL_TYP
     void drop();
 
     /**
-     * Return a {@link act.db.Dao.Query} bound to the {@code MODEL_TYPE}
+     * Return a {@link Query} bound to the {@code MODEL_TYPE}
      * @return an new {@link Query} instance on this Dao
      */
     QUERY_TYPE q();
@@ -260,7 +259,7 @@ public interface Dao<ID_TYPE, MODEL_TYPE, QUERY_TYPE extends Dao.Query<MODEL_TYP
     QUERY_TYPE createQuery(CriteriaComponent criterion, CriteriaComponent... criteria);
 
     /**
-     * Return a {@link act.db.Dao.Query} bound to the {@code MODEL_TYPE} by
+     * Return a {@link Query} bound to the {@code MODEL_TYPE} by
      * criteria expression and parameter values.
      *
      * If there are multiple criteria in the expression, they are connected
@@ -281,7 +280,7 @@ public interface Dao<ID_TYPE, MODEL_TYPE, QUERY_TYPE extends Dao.Query<MODEL_TYP
     QUERY_TYPE createQuery(String expression, Object... values);
 
     /**
-     * Return a {@link act.db.Dao.Query} bound to the {@code MODEL_TYPE} by
+     * Return a {@link Query} bound to the {@code MODEL_TYPE} by
      * criteria expression and parameter values.
      *
      * If there are multiple criteria in the expression, they are connected
@@ -322,14 +321,4 @@ public interface Dao<ID_TYPE, MODEL_TYPE, QUERY_TYPE extends Dao.Query<MODEL_TYP
      */
     QUERY_TYPE createOrQuery(CriteriaComponent criterion, CriteriaComponent... criteria);
 
-    interface Query<MODEL_TYPE, QUERY_TYPE extends Query<MODEL_TYPE, QUERY_TYPE>> {
-        QUERY_TYPE offset(int pos);
-        QUERY_TYPE limit(int limit);
-        QUERY_TYPE orderBy(String ... fieldList);
-        QUERY_TYPE where(CriteriaComponent criteriaComponent);
-        MODEL_TYPE first();
-        Iterable<MODEL_TYPE> fetch();
-        Page<MODEL_TYPE> fetchPage(Page<MODEL_TYPE> page);
-        long count();
-    }
 }
