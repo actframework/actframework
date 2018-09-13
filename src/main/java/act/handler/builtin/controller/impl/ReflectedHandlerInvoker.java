@@ -22,8 +22,7 @@ package act.handler.builtin.controller.impl;
 
 import act.Act;
 import act.Trace;
-import act.annotations.LargeResponse;
-import act.annotations.SmallResponse;
+import act.annotations.*;
 import act.app.ActionContext;
 import act.app.App;
 import act.app.AppClassLoader;
@@ -165,6 +164,8 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
     private boolean fullJsonStringCheckFailure;
     // See https://github.com/actframework/actframework/issues/797
     private boolean suppressJsonDateFormat;
+    // see https://github.com/actframework/actframework/issues/829
+    private String downloadFilename;
 
     private ReflectedHandlerInvoker(M handlerMetaInfo, App app) {
         this.app = app;
@@ -299,6 +300,11 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
             forceResponseContentType = contentType.value().format();
         }
 
+        DownloadFilename downloadFilename = method.getAnnotation(DownloadFilename.class);
+        if (null != downloadFilename) {
+            this.downloadFilename = downloadFilename.value();
+        }
+
         // method annotation takes priority of class annotation
         if (null != method.getAnnotation(JsonView.class)) {
             forceResponseContentType = H.MediaType.JSON.format();
@@ -425,6 +431,10 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
 
         if (enableCircularReferenceDetect) {
             context.enableCircularReferenceDetect();
+        }
+
+        if (null != downloadFilename) {
+            context.downloadFileName(downloadFilename);
         }
 
         context.setReflectedHandlerInvoker(this);

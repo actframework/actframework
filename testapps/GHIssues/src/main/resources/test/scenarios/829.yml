@@ -1,0 +1,17 @@
+Scenario(GH829):
+  description: "[829] Allow app developer to specify download file name"
+  interactions:
+    - description: test static filename setting by `@DownloadFilename` annotation
+      request:
+        accept: text/csv
+        get: 829
+      response:
+        downloadFilename: foo.csv
+    - description: test dynamic filename setting by `ActionContext.downloadFilename(String)` API
+      request:
+        accept: text/csv
+        get: 829
+        params:
+          nonce: 1
+      response:
+        downloadFilename: foo-1.csv

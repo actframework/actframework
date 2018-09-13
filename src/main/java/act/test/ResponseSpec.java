@@ -23,6 +23,7 @@ package act.test;
 import com.alibaba.fastjson.JSON;
 import org.osgl.exception.UnexpectedException;
 import org.osgl.http.H;
+import org.osgl.util.S;
 
 import java.util.LinkedHashMap;
 
@@ -34,6 +35,7 @@ public class ResponseSpec implements InteractionPart {
     public LinkedHashMap<String, Object> json = new LinkedHashMap<>();
     public LinkedHashMap<String, Object> headers = new LinkedHashMap<>();
     public String checksum;
+    public String downloadFilename;
 
     @Override
     public void validate(Interaction interaction) throws UnexpectedException {
@@ -61,7 +63,10 @@ public class ResponseSpec implements InteractionPart {
         if (!headers.isEmpty()) {
             return;
         }
-        if (null != checksum) {
+        if (S.notBlank(checksum)) {
+            return;
+        }
+        if (S.notBlank(downloadFilename)) {
             return;
         }
         throw new UnexpectedException("Empty response spec found in interaction[%s]", interaction);

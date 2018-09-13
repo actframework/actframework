@@ -168,7 +168,12 @@ public class Interaction implements ScenarioPart {
 
     private void verifyBody(Response rs) throws Exception {
         if (null != response && S.notBlank(response.checksum)) {
-            Scenario.get().verifyDownload(rs, response.checksum);
+            Scenario.get().verifyDownloadChecksum(rs, response.checksum);
+            if (S.notBlank(response.downloadFilename)) {
+                Scenario.get().verifyDownloadFilename(rs, response.downloadFilename);
+            }
+        } else if (null != response && S.notBlank(response.downloadFilename)) {
+            Scenario.get().verifyDownloadFilename(rs, response.downloadFilename);
         } else {
             String bodyString = S.string(rs.body().string()).trim();
             Scenario.get().verifyBody(bodyString, response);

@@ -9,9 +9,9 @@ package act.app;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -116,6 +116,7 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
     private int resultHash = Integer.MIN_VALUE;
     private PropertySpec.MetaInfo propSpec;
     private boolean suppressJsonDateFormat;
+    private String attachmentName;
 
     // see https://github.com/actframework/actframework/issues/492
     public String encodedSessionToken;
@@ -123,33 +124,43 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
     // -- replace attributres with fields -- perf tune
     // -- ATTR_CSRF_PREFETCHED
     private String csrfPrefetched;
+
     public void setCsrfPrefetched(String csrf) {
         csrfPrefetched = csrf;
     }
+
     public String csrfPrefetched() {
         return csrfPrefetched;
     }
+
     public void clearCsrfPrefetched() {
         csrfPrefetched = null;
     }
+
     // -- ATTR_WAS_UNAUTHENTICATED
     private boolean wasUnauthenticated;
+
     public boolean wasUnauthenticated() {
         return wasUnauthenticated;
     }
+
     public void setWasUnauthenticated() {
         wasUnauthenticated = true;
     }
+
     public void clearWasUnauthenticated() {
         wasUnauthenticated = false;
     }
+
     // -- ATTR_HANDLER
     // replaced with field handler
     // -- ATTR_RESULT
     private Result result;
+
     public Result result() {
         return result;
     }
+
     public void setResult(Result result) {
         this.result = result;
     }
@@ -240,6 +251,7 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
 
     /**
      * Returns HTTP session's id
+     *
      * @return HTTP session id
      */
     public String sessionId() {
@@ -277,19 +289,45 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
     }
 
     public String attachmentName() {
-        String s = processedUrl;
-        if (s.contains("/")) {
-            s = S.cut(s).afterLast("/");
-        } else {
-            s = methodPath();
-            if (s.contains(".")) {
-                s = S.cut(s).afterLast(".");
+        if (null == attachmentName) {
+            String s = processedUrl();
+            if (s.contains("/")) {
+                s = S.cut(s).afterLast("/");
+            } else {
+                s = methodPath();
+                if (s.contains(".")) {
+                    s = S.cut(s).afterLast(".");
+                }
             }
+            attachmentName = s;
         }
-        return s + "." + accept().name();
+        return attachmentName + "." + accept().name();
+    }
+
+    /**
+     * Set download attachment name. This is used when response has
+     * `Content-Disposition` header and the type is `attachment`.
+     *
+     * Note developer shall **NOT** add suffix to the filename, instead
+     * the framework will automatically append suffix based on the
+     * response content-type. E.g. if the response content type is
+     * `text/csv`, it will append `.csv` to the name, while when the
+     * content type is `application/vnd.ms-excel`, framework will append
+     * `.xls` to the filename.
+     *
+     * @param filename
+     *         the filename without suffix
+     * @return this action context
+     */
+    public ActionContext downloadFileName(String filename) {
+        this.attachmentName = filename;
+        return this;
     }
 
     public String attachmentName(URL url) {
+        if (null != attachmentName) {
+            return attachmentName;
+        }
         String path = url.getPath();
         String name = path.contains("/") ? S.cut(path).afterLast("/") : path;
         if (!name.contains(".")) {
@@ -299,6 +337,9 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
     }
 
     public String attachmentName(File file) {
+        if (null != attachmentName) {
+            return attachmentName;
+        }
         String path = file.getName();
         String name = path.contains("/") ? S.cut(path).afterLast("/") : path;
         if (!name.contains(".")) {
@@ -452,11 +493,11 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
      * 2. the request method must be `GET`.
      *
      * @param url
-     *      the url template
+     *         the url template
      * @param args
-     *      the url argument
+     *         the url argument
      */
-    public void forward(String url, Object ... args) {
+    public void forward(String url, Object... args) {
         E.illegalArgumentIfNot(url.startsWith("/"), "forward URL must starts with single '/'");
         E.illegalArgumentIf(url.startsWith("//"), "forward URL must starts with single `/`");
         E.unexpectedIfNot(H.Method.GET == req().method(), "forward only support on HTTP GET request");
@@ -570,7 +611,9 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
         return router().portId();
     }
 
-    public int port() {return router().port(); }
+    public int port() {
+        return router().port();
+    }
 
     public UserAgent userAgent() {
         if (null == ua) {
@@ -774,7 +817,8 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
 
     public Result nullValueResultIgnoreRenderArgs() {
         if (null != forceResponseStatus) {
-            return new Result(forceResponseStatus){};
+            return new Result(forceResponseStatus) {
+            };
         } else {
             if (req().method() == H.Method.POST) {
                 H.Format accept = accept();
@@ -820,9 +864,8 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
      * * otherwise use `text/html`
      *
      * @param result
-     *      the result used to check if it is error result
-     * @return
-     *      this `ActionContext`.
+     *         the result used to check if it is error result
+     * @return this `ActionContext`.
      */
     public ActionContext applyContentType(Result result) {
         if (!result.status().isError()) {
@@ -927,7 +970,8 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
      * Called by bytecode enhancer to set the name list of the render arguments that is update
      * by the enhancer
      *
-     * @param names the render argument names separated by ","
+     * @param names
+     *         the render argument names separated by ","
      * @return this AppContext
      */
     public ActionContext __appRenderArgNames(String names) {
@@ -952,7 +996,8 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
      * current session id when fetching the cached object
      *
      * @param key
-     * @param <T> the object type
+     * @param <T>
+     *         the object type
      * @return the cached object
      */
     public <T> T cached(String key) {
@@ -968,8 +1013,10 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
      * Add an object into cache by key. The key will be used in conjunction with session id if
      * there is a session instance
      *
-     * @param key the key to index the object within the cache
-     * @param obj the object to be cached
+     * @param key
+     *         the key to index the object within the cache
+     * @param obj
+     *         the object to be cached
      */
     public void cache(String key, Object obj) {
         H.Session sess = session();
@@ -983,9 +1030,12 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
     /**
      * Add an object into cache by key with expiration time specified
      *
-     * @param key        the key to index the object within the cache
-     * @param obj        the object to be cached
-     * @param expiration the seconds after which the object will be evicted from the cache
+     * @param key
+     *         the key to index the object within the cache
+     * @param obj
+     *         the object to be cached
+     * @param expiration
+     *         the seconds after which the object will be evicted from the cache
      */
     public void cache(String key, Object obj, int expiration) {
         H.Session session = this.session;
@@ -999,8 +1049,10 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
     /**
      * Add an object into cache by key and expired after one hour
      *
-     * @param key the key to index the object within the cache
-     * @param obj the object to be cached
+     * @param key
+     *         the key to index the object within the cache
+     * @param obj
+     *         the object to be cached
      */
     public void cacheForOneHour(String key, Object obj) {
         cache(key, obj, 60 * 60);
@@ -1009,8 +1061,10 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
     /**
      * Add an object into cache by key and expired after half hour
      *
-     * @param key the key to index the object within the cache
-     * @param obj the object to be cached
+     * @param key
+     *         the key to index the object within the cache
+     * @param obj
+     *         the object to be cached
      */
     public void cacheForHalfHour(String key, Object obj) {
         cache(key, obj, 30 * 60);
@@ -1019,8 +1073,10 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
     /**
      * Add an object into cache by key and expired after 10 minutes
      *
-     * @param key the key to index the object within the cache
-     * @param obj the object to be cached
+     * @param key
+     *         the key to index the object within the cache
+     * @param obj
+     *         the object to be cached
      */
     public void cacheForTenMinutes(String key, Object obj) {
         cache(key, obj, 10 * 60);
@@ -1029,8 +1085,10 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
     /**
      * Add an object into cache by key and expired after one minute
      *
-     * @param key the key to index the object within the cache+
-     * @param obj the object to be cached
+     * @param key
+     *         the key to index the object within the cache+
+     * @param obj
+     *         the object to be cached
      */
     public void cacheForOneMinute(String key, Object obj) {
         cache(key, obj, 60);
@@ -1039,7 +1097,8 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
     /**
      * Evict cached object
      *
-     * @param key the key indexed the cached object to be evicted
+     * @param key
+     *         the key indexed the cached object to be evicted
      */
     public void evictCache(String key) {
         H.Session sess = session();
@@ -1107,7 +1166,9 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
 
     /**
      * Update the context session to mark a user logged in
-     * @param username the username
+     *
+     * @param username
+     *         the username
      */
     public void login(String username) {
         session().put(config().sessionKeyUsername(), username);
@@ -1115,8 +1176,9 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
 
     /**
      * Login the user and redirect back to original URL
+     *
      * @param username
-     *      the username
+     *         the username
      */
     public void loginAndRedirectBack(String username) {
         login(username);
@@ -1128,9 +1190,9 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
      * original URL found then redirect to `defaultLandingUrl`.
      *
      * @param username
-     *      The username
+     *         The username
      * @param defaultLandingUrl
-     *      the URL to be redirected if original URL not found
+     *         the URL to be redirected if original URL not found
      */
     public void loginAndRedirectBack(String username, String defaultLandingUrl) {
         login(username);
@@ -1139,10 +1201,11 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
 
     /**
      * Login the user and redirect to specified URL
+     *
      * @param username
-     *      the username
+     *         the username
      * @param url
-     *      the URL to be redirected to
+     *         the URL to be redirected to
      */
     public void loginAndRedirect(String username, String url) {
         login(username);
@@ -1186,11 +1249,11 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
     public void proceedWithHandler(RequestHandler handler) {
         /**
          * TODO: fix Dalian-Dong issue
-        if (requireBodyParsing) {
-            ((RequestImplBase) req()).receiveFullBytesAndProceed(this, handler);
-        } else {
-            handler.handle(this);
-        }
+         if (requireBodyParsing) {
+         ((RequestImplBase) req()).receiveFullBytesAndProceed(this, handler);
+         } else {
+         handler.handle(this);
+         }
          */
         handler.handle(this);
     }
@@ -1408,7 +1471,7 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
         return sessionManager;
     }
 
-//    private void dissolveSession() {
+    //    private void dissolveSession() {
 //        Cookie c = Act.sessionManager().dissolveSession(this);
 //        if (null != c) {
 //            config().sessionMapper().serializeSession(c, this);
@@ -1448,9 +1511,11 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
         INTERCEPTING,
         HANDLING,
         DESTROYED;
+
         public boolean isHandling() {
             return this == HANDLING;
         }
+
         public boolean isIntercepting() {
             return this == INTERCEPTING;
         }

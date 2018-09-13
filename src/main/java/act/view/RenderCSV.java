@@ -22,7 +22,6 @@ package act.view;
 
 import act.app.ActionContext;
 import act.cli.view.CliView;
-import act.route.UrlPath;
 import act.util.ActContext;
 import act.util.PropertySpec;
 import org.osgl.$;
@@ -118,9 +117,7 @@ public class RenderCSV extends RenderContent {
     private static void setDownloadHeader(ActContext context) {
         if (context instanceof ActionContext) {
             ActionContext ctx = (ActionContext) context;
-            UrlPath path = ctx.urlPath();
-            String fileName = S.concat(S.underscore(path.lastPart()), ".csv");
-            ctx.resp().contentDisposition(fileName, false);
+            ctx.resp().contentDisposition(ctx.attachmentName(), false);
         }
     }
 }

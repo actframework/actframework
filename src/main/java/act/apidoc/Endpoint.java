@@ -331,7 +331,7 @@ public class Endpoint implements Comparable<Endpoint> {
         this.id = id(controllerClass, method);
         Type returnType = method.getGenericReturnType();
         Map<String, Class> typeParamLookup = C.Map();
-        if (controllerClass != method.getDeclaringClass()) {
+        if (controllerClass.getGenericSuperclass() instanceof ParameterizedType) {
             typeParamLookup = Generics.buildTypeParamImplLookup(controllerClass);
         }
         returnSample = void.class == returnType ? null : generateSampleJson(BeanSpec.of(returnType, null, Act.injector(), typeParamLookup), typeParamLookup);

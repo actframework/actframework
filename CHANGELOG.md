@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 **1.8.8**
+* Allow app developer to specify download file name #829
 * `ActionContext.allowIgnoreParamNamespace()` overlooked by `MapLoader` #827
 * Use `JSON.toJSONString()` to replace `Object.toString()` whenever it is used to render response body #826
 * Force response status not working when response type is JSON #825
@@ -8,6 +9,7 @@
 * Apply new scope for implicit transaction #823
 * Promote `db.sql.tx` package to `db.tx` #822
 * When returning String is not a valid JSON, it shall be encapsulated with `result` #821
+* Using generic typed injection in Controller cause `UnexpectedException` when start up #820
 * Extended request handler method's param not enhanced with `@Named` annotation #819
 * maven pom: It shall add `.tag` file into resource filtering list #817
 * `Controller.renderHtml()` method signature error #816
