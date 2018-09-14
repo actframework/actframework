@@ -38,10 +38,6 @@ public abstract class LogSupportedDestroyableBase extends LogSupport implements 
 
     public LogSupportedDestroyableBase() {}
 
-    protected LogSupportedDestroyableBase(boolean noLogger) {
-        super(noLogger);
-    }
-
     @Override
     public final void destroy() {
         if (isDestroyed()) {
