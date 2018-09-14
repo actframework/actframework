@@ -24,23 +24,20 @@ import act.Act;
 import act.Destroyable;
 import act.app.App;
 import act.controller.meta.ActionMethodMetaInfo;
-import act.util.DestroyableBase;
+import act.util.LogSupportedDestroyableBase;
 import act.ws.WebSocketConnectionManager;
 import org.osgl.logging.LogManager;
 import org.osgl.logging.Logger;
 import org.osgl.util.E;
 
-import javax.enterprise.context.ApplicationScoped;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
+import javax.enterprise.context.ApplicationScoped;
 
 /**
  * The base implementation of {@link Network}
  */
-public abstract class NetworkBase extends DestroyableBase implements Network {
+public abstract class NetworkBase extends LogSupportedDestroyableBase implements Network {
 
     protected final static Logger logger = LogManager.get(Network.class);
 

@@ -29,24 +29,15 @@ import act.controller.ActionMethodParamAnnotationHandler;
 import act.db.AdaptiveRecord;
 import act.db.DbBind;
 import act.db.di.FindBy;
-import act.inject.DefaultValue;
-import act.inject.DependencyInjector;
-import act.inject.SessionVariable;
-import act.inject.genie.DependentScope;
-import act.inject.genie.GenieInjector;
-import act.inject.genie.RequestScope;
-import act.inject.genie.SessionScope;
+import act.inject.*;
+import act.inject.genie.*;
 import act.util.*;
-import org.osgl.$;
-import org.osgl.Lang;
-import org.osgl.OsglConfig;
+import org.osgl.*;
 import org.osgl.exception.UnexpectedException;
 import org.osgl.inject.BeanSpec;
 import org.osgl.inject.InjectException;
 import org.osgl.inject.util.AnnotationUtil;
 import org.osgl.inject.util.ArrayLoader;
-import org.osgl.logging.LogManager;
-import org.osgl.logging.Logger;
 import org.osgl.mvc.annotation.Bind;
 import org.osgl.mvc.annotation.Param;
 import org.osgl.mvc.result.Result;
@@ -58,14 +49,9 @@ import java.lang.reflect.*;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.context.Dependent;
-import javax.enterprise.context.RequestScoped;
-import javax.enterprise.context.SessionScoped;
+import javax.enterprise.context.*;
 import javax.enterprise.inject.New;
-import javax.inject.Named;
-import javax.inject.Provider;
-import javax.inject.Singleton;
+import javax.inject.*;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 import javax.validation.*;
@@ -74,9 +60,7 @@ import javax.validation.executable.ExecutableValidator;
 /**
  * Manage {@link ParamValueLoader} grouped by Method
  */
-public abstract class ParamValueLoaderService extends DestroyableBase {
-
-    protected Logger logger = LogManager.get(getClass());
+public abstract class ParamValueLoaderService extends LogSupportedDestroyableBase {
 
     private static final ParamValueLoader[] DUMB = new ParamValueLoader[0];
     private static final ThreadLocal<ParamTree> PARAM_TREE = new ThreadLocal<ParamTree>();
@@ -170,7 +154,7 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
             }
             boolean hasValidationConstraint = boolBag.get();
             if (hasValidationConstraint && null == host) {
-                logger.error("Cannot validate static method: %s", method);
+                error("Cannot validate static method: %s", method);
                 hasValidationConstraint = false;
             }
             methodValidationConstraintLookup.put(method, hasValidationConstraint);

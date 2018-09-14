@@ -20,22 +20,17 @@ package act;
  * #L%
  */
 
-import act.app.App;
-import act.asm.ClassWriter;
-import act.util.AppByteCodeEnhancer;
-import act.util.AsmByteCodeEnhancer;
-import act.util.ByteCodeVisitor;
-import act.util.DestroyableBase;
-import org.osgl.$;
-
-import javax.enterprise.context.ApplicationScoped;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
 import static act.Destroyable.Util.tryDestroyAll;
 
-public class BytecodeEnhancerManager extends DestroyableBase {
+import act.app.App;
+import act.asm.ClassWriter;
+import act.util.*;
+import org.osgl.$;
+
+import java.util.*;
+import javax.enterprise.context.ApplicationScoped;
+
+public class BytecodeEnhancerManager extends LogSupportedDestroyableBase {
     private List<AppByteCodeEnhancer> appEnhancers = new ArrayList<>();
     private List<AsmByteCodeEnhancer> generalEnhancers = new ArrayList<>();
 

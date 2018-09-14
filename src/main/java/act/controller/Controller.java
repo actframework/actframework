@@ -37,6 +37,7 @@ import org.osgl.storage.ISObject;
 import org.osgl.util.*;
 import org.osgl.util.Output;
 
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.InputStream;
 import java.lang.annotation.*;
@@ -1389,6 +1390,64 @@ public @interface Controller {
          */
         public static RenderBinary renderBinary(byte[] blob, String attachmentName) {
             return binary(blob, attachmentName);
+        }
+
+        /**
+         * Returns a {@link RenderBufferedImage} result with image specified.
+         *
+         * The contentType will be set as default "image/png".
+         *
+         * @param image
+         *      the buffered image instance.
+         * @return the result
+         */
+        public static RenderBufferedImage renderImage(BufferedImage image) {
+            return image(image);
+        }
+
+        /**
+         * alias of {@link #renderImage(BufferedImage)}.
+         */
+        public static RenderBufferedImage image(BufferedImage image) {
+            return new RenderBufferedImage(image);
+        }
+
+        /**
+         * Returns a {@link RenderBufferedImage} result wth image and content type specified.
+         * @param image
+         *      the image
+         * @param contentType
+         *      the content type
+         * @return the result
+         */
+        public static RenderBufferedImage renderImage(BufferedImage image, String contentType) {
+            return new RenderBufferedImage(image, contentType);
+        }
+
+        /**
+         * alias of {@link #renderImage(BufferedImage, String)}
+         */
+        public static RenderBufferedImage image(BufferedImage image, String contentType) {
+            return renderImage(image, contentType);
+        }
+
+        /**
+         * Returns a {@link RenderBufferedImage} result wth image and format specified.
+         * @param image
+         *      the image
+         * @param format
+         *      the format
+         * @return the result
+         */
+        public static RenderBufferedImage renderImage(BufferedImage image, H.Format format) {
+            return new RenderBufferedImage(image, format.contentType());
+        }
+
+        /**
+         * alias of {@link #renderImage(BufferedImage, H.Format)}
+         */
+        public static RenderBufferedImage image(BufferedImage image, H.Format format) {
+            return renderImage(image, format);
         }
 
         /**

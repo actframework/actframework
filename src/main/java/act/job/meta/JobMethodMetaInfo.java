@@ -27,8 +27,7 @@ import act.asm.Type;
 import act.event.meta.SimpleEventListenerMetaInfo;
 import act.sys.meta.InvokeType;
 import act.sys.meta.ReturnTypeInfo;
-import act.util.ClassNode;
-import act.util.DestroyableBase;
+import act.util.*;
 import org.osgl.$;
 import org.osgl.inject.BeanSpec;
 import org.osgl.util.E;
@@ -38,7 +37,7 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
-public class JobMethodMetaInfo extends DestroyableBase {
+public class JobMethodMetaInfo extends LogSupportedDestroyableBase {
     private String id;
     private String name;
     private InvokeType invokeType;

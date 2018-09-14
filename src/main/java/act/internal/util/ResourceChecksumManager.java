@@ -22,19 +22,19 @@ package act.internal.util;
 
 import act.Act;
 import act.crypto.AppCrypto;
-import act.util.DestroyableBase;
+import act.util.LogSupportedDestroyableBase;
 import org.osgl.$;
 import org.osgl.util.E;
 import org.osgl.util.S;
 
-import javax.inject.Inject;
-import javax.inject.Singleton;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 
 @Singleton
-public class ResourceChecksumManager extends DestroyableBase {
+public class ResourceChecksumManager extends LogSupportedDestroyableBase {
 
     @Inject
     private AppCrypto crypto;

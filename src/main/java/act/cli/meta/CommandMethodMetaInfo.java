@@ -28,18 +28,14 @@ import act.cli.view.CliView;
 import act.handler.CliHandler;
 import act.sys.meta.InvokeType;
 import act.sys.meta.ReturnTypeInfo;
-import act.util.DestroyableBase;
+import act.util.LogSupportedDestroyableBase;
 import act.util.PropertySpec;
 import org.osgl.$;
-import org.osgl.util.C;
-import org.osgl.util.E;
-import org.osgl.util.S;
+import org.osgl.util.*;
 
+import java.util.*;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
 
 /**
  * Stores the command method meta info including
@@ -51,7 +47,7 @@ import java.util.Set;
  * </ul>
  */
 @ApplicationScoped
-public class CommandMethodMetaInfo extends DestroyableBase {
+public class CommandMethodMetaInfo extends LogSupportedDestroyableBase {
 
     private String methodName;
     private String commandName;

@@ -20,6 +20,8 @@ package act.controller.meta;
  * #L%
  */
 
+import static act.Destroyable.Util.destroyAll;
+
 import act.Act;
 import act.app.App;
 import act.app.AppClassLoader;
@@ -28,19 +30,15 @@ import act.controller.annotation.UrlContext;
 import act.handler.builtin.controller.ControllerAction;
 import act.handler.builtin.controller.Handler;
 import act.plugin.ControllerPlugin;
-import act.util.ClassInfoRepository;
-import act.util.ClassNode;
-import act.util.DestroyableBase;
+import act.util.*;
 import org.osgl.http.H;
 import org.osgl.mvc.annotation.*;
 import org.osgl.util.C;
 import org.osgl.util.S;
 
-import javax.enterprise.context.ApplicationScoped;
 import java.lang.annotation.Annotation;
 import java.util.*;
-
-import static act.Destroyable.Util.destroyAll;
+import javax.enterprise.context.ApplicationScoped;
 
 /**
  * Stores all class level information to support generating of
@@ -48,7 +46,7 @@ import static act.Destroyable.Util.destroyAll;
  * and {@link Handler interceptors}
  */
 @ApplicationScoped
-public final class ControllerClassMetaInfo extends DestroyableBase {
+public final class ControllerClassMetaInfo extends LogSupportedDestroyableBase {
 
     private Type type;
     private Type superType;

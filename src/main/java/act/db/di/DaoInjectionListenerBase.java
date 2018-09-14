@@ -23,8 +23,7 @@ package act.db.di;
 import act.app.DbServiceManager;
 import act.db.DB;
 import act.inject.DependencyInjectionListener;
-import act.util.AnnotationUtil;
-import act.util.DestroyableBase;
+import act.util.*;
 import org.osgl.$;
 import org.osgl.logging.LogManager;
 import org.osgl.logging.Logger;
@@ -34,7 +33,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public abstract class DaoInjectionListenerBase extends DestroyableBase implements DependencyInjectionListener {
+public abstract class DaoInjectionListenerBase extends LogSupportedDestroyableBase implements DependencyInjectionListener {
 
     protected Logger logger = LogManager.get(DaoInjectionListenerBase.class);
 

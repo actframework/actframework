@@ -26,7 +26,7 @@ import act.app.AppByteCodeScanner;
 import act.app.AppSourceCodeScanner;
 import act.plugin.Plugin;
 
-public abstract class AppCodeScannerPluginBase extends DestroyableBase implements Plugin {
+public abstract class AppCodeScannerPluginBase extends LogSupportedDestroyableBase implements Plugin {
 
     @Override
     public void register() {

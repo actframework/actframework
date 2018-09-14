@@ -21,15 +21,12 @@ package act.plugin;
  */
 
 import act.Destroyable;
-import act.util.DestroyableBase;
+import act.util.LogSupportedDestroyableBase;
 import org.osgl.util.C;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
-public class GenericPluginManager extends DestroyableBase {
+public class GenericPluginManager extends LogSupportedDestroyableBase {
     private Map<Class<?>, List<?>> registry = new HashMap<>();
 
     @Override

@@ -40,7 +40,7 @@ import javax.inject.Inject;
 import javax.inject.Singleton;
 
 @Singleton
-public class FastJsonJodaDateCodec extends DestroyableBase implements ObjectSerializer, ObjectDeserializer {
+public class FastJsonJodaDateCodec extends LogSupportedDestroyableBase implements ObjectSerializer, ObjectDeserializer {
 
     private JodaDateTimeCodec dateTimeCodec;
     private JodaLocalDateCodec localDateCodec;

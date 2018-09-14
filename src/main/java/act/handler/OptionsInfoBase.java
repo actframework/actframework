@@ -25,7 +25,7 @@ import act.handler.builtin.AlwaysNotFound;
 import act.handler.builtin.UnknownHttpMethodHandler;
 import act.route.Router;
 import act.security.CORS;
-import act.util.DestroyableBase;
+import act.util.LogSupportedDestroyableBase;
 import org.osgl.http.H;
 import org.osgl.util.S;
 
@@ -37,7 +37,7 @@ import java.util.concurrent.ConcurrentMap;
 /**
  * Process HTTP OPTIONS request
  */
-public class OptionsInfoBase extends DestroyableBase {
+public class OptionsInfoBase extends LogSupportedDestroyableBase {
 
     private Router router;
     private ConcurrentMap<String, RequestHandler> handlers = new ConcurrentHashMap<String, RequestHandler>();

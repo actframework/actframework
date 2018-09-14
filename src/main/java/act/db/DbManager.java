@@ -20,13 +20,13 @@ package act.db;
  * #L%
  */
 
-import act.util.DestroyableBase;
+import act.util.LogSupportedDestroyableBase;
 import org.osgl.$;
 
 import java.util.HashMap;
 import java.util.Map;
 
-public class DbManager extends DestroyableBase {
+public class DbManager extends LogSupportedDestroyableBase {
     private Map<String, DbPlugin> plugins = new HashMap<>();
     private Map<Class, TimestampGenerator> timestampGeneratorMap = new HashMap<>();
 

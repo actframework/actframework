@@ -20,22 +20,20 @@ package act.mail.meta;
  * #L%
  */
 
+import static act.Destroyable.Util.destroyAll;
+
 import act.asm.Type;
-import act.util.DestroyableBase;
+import act.util.LogSupportedDestroyableBase;
 import org.osgl.util.S;
 
+import java.util.*;
 import javax.enterprise.context.ApplicationScoped;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
-import static act.Destroyable.Util.destroyAll;
 
 /**
  * Stores all class level information to support generating of mailer method
  */
 @ApplicationScoped
-public final class MailerClassMetaInfo extends DestroyableBase {
+public final class MailerClassMetaInfo extends LogSupportedDestroyableBase {
 
     private Type type;
     private String configId;

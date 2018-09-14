@@ -20,16 +20,16 @@ package act.controller.meta;
  * #L%
  */
 
-import act.util.DestroyableBase;
+import static act.Destroyable.Util.destroyAll;
+
+import act.util.LogSupportedDestroyableBase;
 import org.osgl.$;
 import org.osgl.util.C;
 import org.osgl.util.S;
 
-import javax.enterprise.context.ApplicationScoped;
 import java.lang.annotation.Annotation;
 import java.util.List;
-
-import static act.Destroyable.Util.destroyAll;
+import javax.enterprise.context.ApplicationScoped;
 
 /**
  * Aggregate interception meta info. This structure is used in
@@ -37,7 +37,7 @@ import static act.Destroyable.Util.destroyAll;
  * {@link ActionMethodMetaInfo}
  */
 @ApplicationScoped
-public class GroupInterceptorMetaInfo extends DestroyableBase {
+public class GroupInterceptorMetaInfo extends LogSupportedDestroyableBase {
 
     private C.List<InterceptorMethodMetaInfo> beforeList = C.newList();
     private C.List<InterceptorMethodMetaInfo> afterList = C.newList();

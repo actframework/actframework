@@ -125,7 +125,7 @@ public interface SimpleBean {
     }
 
     @ApplicationScoped
-    class MetaInfoManager extends DestroyableBase {
+    class MetaInfoManager extends LogSupportedDestroyableBase {
         private static final String INTF_SIMPLE_BEAN = SimpleBean.class.getName();
         private ClassInfoRepository classInfoRepository;
         private Map<String, MetaInfo> registry = new HashMap<>();

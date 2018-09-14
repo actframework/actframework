@@ -39,7 +39,7 @@ import javax.enterprise.context.ApplicationScoped;
  * The repository to keep class information
  */
 @ApplicationScoped
-public class ClassInfoRepository extends DestroyableBase {
+public class ClassInfoRepository extends LogSupportedDestroyableBase {
 
     public ClassInfoRepository() {
     }

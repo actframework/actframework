@@ -21,13 +21,13 @@ package act.event;
  */
 
 import act.app.event.SysEventListener;
-import act.util.DestroyableBase;
+import act.util.LogSupportedDestroyableBase;
 import org.osgl.util.S;
 
 import java.util.EventObject;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public abstract class ActEventListenerBase<EVENT_TYPE extends EventObject> extends DestroyableBase implements ActEventListener<EVENT_TYPE> {
+public abstract class ActEventListenerBase<EVENT_TYPE extends EventObject> extends LogSupportedDestroyableBase implements ActEventListener<EVENT_TYPE> {
 
     private static final AtomicInteger ID_ = new AtomicInteger();
 

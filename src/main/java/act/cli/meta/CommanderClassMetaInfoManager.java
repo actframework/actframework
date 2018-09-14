@@ -20,20 +20,18 @@ package act.cli.meta;
  * #L%
  */
 
+import static act.Destroyable.Util.destroyAll;
+
 import act.asm.Type;
-import act.util.DestroyableBase;
+import act.util.LogSupportedDestroyableBase;
 import org.osgl.logging.LogManager;
 import org.osgl.logging.Logger;
 
+import java.util.*;
 import javax.enterprise.context.ApplicationScoped;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import static act.Destroyable.Util.destroyAll;
 
 @ApplicationScoped
-public class CommanderClassMetaInfoManager extends DestroyableBase {
+public class CommanderClassMetaInfoManager extends LogSupportedDestroyableBase {
 
     private static final Logger logger = LogManager.get(CommanderClassMetaInfoManager.class);
 

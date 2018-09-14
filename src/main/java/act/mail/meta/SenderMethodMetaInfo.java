@@ -27,8 +27,7 @@ import act.controller.meta.HandlerParamMetaInfo;
 import act.controller.meta.LocalVariableMetaInfo;
 import act.sys.meta.InvokeType;
 import act.sys.meta.ReturnTypeInfo;
-import act.util.AsmTypes;
-import act.util.DestroyableBase;
+import act.util.*;
 import org.osgl.$;
 import org.osgl.util.C;
 import org.osgl.util.E;
@@ -37,7 +36,7 @@ import org.osgl.util.S;
 import java.util.HashMap;
 import java.util.Map;
 
-public class SenderMethodMetaInfo extends DestroyableBase {
+public class SenderMethodMetaInfo extends LogSupportedDestroyableBase {
     private String name;
     private String configId;
     private InvokeType invokeType;

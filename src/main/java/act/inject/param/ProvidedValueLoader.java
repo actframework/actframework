@@ -25,16 +25,14 @@ import act.app.App;
 import act.app.AppServiceBase;
 import act.inject.DependencyInjector;
 import act.inject.genie.GenieInjector;
-import act.util.ActContext;
-import act.util.DestroyableBase;
-import act.util.SingletonBase;
+import act.util.*;
 import org.osgl.inject.BeanSpec;
 
 import java.util.concurrent.ConcurrentMap;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Singleton;
 
-public class ProvidedValueLoader extends DestroyableBase implements ParamValueLoader {
+public class ProvidedValueLoader extends LogSupportedDestroyableBase implements ParamValueLoader {
     private DependencyInjector<?> injector;
     private BeanSpec beanSpec;
     private Object singleton;
