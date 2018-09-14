@@ -21,9 +21,7 @@ package act.cli;
  */
 
 import act.Destroyable;
-import act.app.ActionContext;
-import act.app.App;
-import act.app.CliServer;
+import act.app.*;
 import act.cli.builtin.IterateCursor;
 import act.cli.event.CliSessionStart;
 import act.cli.event.CliSessionTerminate;
@@ -33,20 +31,21 @@ import act.util.Banner;
 import act.util.DestroyableBase;
 import jline.console.ConsoleReader;
 import org.osgl.$;
+import org.osgl.logging.LogManager;
+import org.osgl.logging.Logger;
 import org.osgl.util.IO;
 import org.osgl.util.S;
 
-import javax.enterprise.context.ApplicationScoped;
-import java.io.IOException;
-import java.io.InterruptedIOException;
-import java.io.OutputStream;
-import java.io.PrintWriter;
+import java.io.*;
 import java.net.Socket;
 import java.net.SocketException;
 import java.util.HashMap;
 import java.util.Map;
+import javax.enterprise.context.ApplicationScoped;
 
 public class CliSession extends DestroyableBase implements Runnable {
+
+    private static final Logger LOGGER = LogManager.get(CliSession.class);
 
     private String id;
     private CliServer server;
@@ -195,11 +194,11 @@ public class CliSession extends DestroyableBase implements Runnable {
                 }
             }
         } catch (InterruptedIOException e) {
-            logger.info("session thread interrupted");
+            LOGGER.info("session thread interrupted");
         } catch (SocketException e) {
-            logger.error(e.getMessage());
+            LOGGER.error(e.getMessage());
         } catch (Exception e) {
-            logger.error(e, "Error processing cli session");
+            LOGGER.error(e, "Error processing cli session");
         } finally {
             if (null != server) {
                 server.remove(this);

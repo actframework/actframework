@@ -94,7 +94,7 @@ import javax.enterprise.context.ApplicationScoped;
  * https://github.com/EsotericSoftware/reflectasm
  */
 @ApplicationScoped
-public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends DestroyableBase
+public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends LogSupportedDestroyableBase
         implements ActionHandlerInvoker, AfterInterceptorInvoker, ExceptionInterceptorInvoker {
 
     private static final Object[] DUMP_PARAMS = new Object[0];
@@ -516,7 +516,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
                     try {
                         invoke(handler, context, controller, params);
                     } catch (Exception e) {
-                        logger.warn(e, "Error executing async handler: " + handler);
+                        warn(e, "Error executing async handler: " + handler);
                     }
                 }
             });

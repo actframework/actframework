@@ -35,6 +35,8 @@ import com.alibaba.fastjson.serializer.SerializeFilter;
 import com.alibaba.fastjson.serializer.SerializerFeature;
 import org.osgl.$;
 import org.osgl.http.H;
+import org.osgl.logging.LogManager;
+import org.osgl.logging.Logger;
 import org.osgl.mvc.util.ParamValueProvider;
 import org.osgl.util.C;
 import org.osgl.util.E;
@@ -253,6 +255,9 @@ public interface ActContext<CTX_TYPE extends ActContext> extends ParamValueProvi
 
     abstract class Base<CTX extends Base> extends DestroyableBase
             implements ActContext<CTX> {
+
+        private static final Logger LOGGER = LogManager.get(ActContext.class);
+
         private App app;
         private String templatePath;
         private String templateContent;
@@ -280,11 +285,6 @@ public interface ActContext<CTX_TYPE extends ActContext> extends ParamValueProvi
         private boolean disableCircularReferenceDetect = true;
 
         public Base(App app) {
-            this(app, false);
-        }
-
-        protected Base(App app, boolean noLogger) {
-            super(noLogger);
             E.NPE(app);
             this.app = app;
             renderArgs = new HashMap<>();
@@ -300,7 +300,7 @@ public interface ActContext<CTX_TYPE extends ActContext> extends ParamValueProvi
                 try {
                     l.onDestroy(this);
                 } catch (Exception e) {
-                    warn(e, "error calling listener onDestroy method");
+                    LOGGER.warn(e, "error calling listener onDestroy method");
                 }
             }
             Destroyable.Util.destroyAll(destroyableList, RequestScoped.class);

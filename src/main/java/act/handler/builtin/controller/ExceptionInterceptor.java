@@ -85,7 +85,7 @@ public abstract class ExceptionInterceptor
             return -1;
         }
         if (thisPriority <0 && thatPririty < 0) {
-            warn("Found more than one high priority Exception handlers");
+            LOGGER.warn("Found more than one high priority Exception handlers");
         }
         boolean iAmEmpty = exClasses.isEmpty(), uAreEmpty = o.exClasses.isEmpty();
         if (iAmEmpty) {

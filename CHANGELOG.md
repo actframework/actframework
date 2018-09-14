@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 **1.8.8**
+* Optimise `LogSupport` for `DestroyableBase` #833
 * Allow app developer to specify download file name #829
 * `ActionContext.allowIgnoreParamNamespace()` overlooked by `MapLoader` #827
 * Use `JSON.toJSONString()` to replace `Object.toString()` whenever it is used to render response body #826

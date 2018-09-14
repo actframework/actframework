@@ -167,7 +167,7 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
 
     @Inject
     private ActionContext(App app, H.Request request, ActResponse<?> response) {
-        super(app, true);
+        super(app);
         E.NPE(app, request, response);
         request.context(this);
         response.context(this);

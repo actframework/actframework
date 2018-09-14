@@ -20,24 +20,22 @@ package act.controller.meta;
  * #L%
  */
 
+import static act.Destroyable.Util.destroyAll;
+
 import act.Act;
 import act.app.App;
 import act.app.AppClassLoader;
 import act.app.event.SysEventId;
 import act.asm.Type;
-import act.util.ClassInfoRepository;
-import act.util.ClassNode;
-import act.util.DestroyableBase;
+import act.util.*;
 
-import javax.enterprise.context.ApplicationScoped;
-import javax.inject.Inject;
 import java.util.HashMap;
 import java.util.Map;
-
-import static act.Destroyable.Util.destroyAll;
+import javax.enterprise.context.ApplicationScoped;
+import javax.inject.Inject;
 
 @ApplicationScoped
-public class ControllerClassMetaInfoManager extends DestroyableBase {
+public class ControllerClassMetaInfoManager extends LogSupportedDestroyableBase {
 
     private Map<String, ControllerClassMetaInfo> controllers = new HashMap<>();
 

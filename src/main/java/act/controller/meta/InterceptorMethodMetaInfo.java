@@ -58,14 +58,14 @@ public class InterceptorMethodMetaInfo extends HandlerMethodMetaInfo<Interceptor
 
     public InterceptorMethodMetaInfo addOnly(String... only) {
         if (!blackList.isEmpty()) {
-            logger.warn("Both [only] and [except] list are used for interceptor method[%s]. You should use only one", name());
+            warn("Both [only] and [except] list are used for interceptor method[%s]. You should use only one", name());
         }
         return addTo(whiteList, only);
     }
 
     public InterceptorMethodMetaInfo addExcept(String... except) {
         if (!whiteList.isEmpty()) {
-            logger.warn("Both [only] and [except] list are used for interceptor method[%s]. You should use only one", name());
+            warn("Both [only] and [except] list are used for interceptor method[%s]. You should use only one", name());
             // when white list is used, black list is ignored
             return this;
         }

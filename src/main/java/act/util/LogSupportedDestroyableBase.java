@@ -26,12 +26,9 @@ import act.handler.builtin.controller.RequestHandlerProxy;
 import java.lang.annotation.Annotation;
 import java.util.ArrayList;
 import java.util.List;
-import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.context.NormalScope;
-import javax.enterprise.context.RequestScoped;
-import javax.enterprise.context.SessionScoped;
+import javax.enterprise.context.*;
 
-public abstract class DestroyableBase implements Destroyable {
+public abstract class LogSupportedDestroyableBase extends LogSupport implements Destroyable {
 
     private volatile boolean destroyed;
 
@@ -39,7 +36,11 @@ public abstract class DestroyableBase implements Destroyable {
 
     private volatile Class<? extends Annotation> scope;
 
-    public DestroyableBase() {}
+    public LogSupportedDestroyableBase() {}
+
+    protected LogSupportedDestroyableBase(boolean noLogger) {
+        super(noLogger);
+    }
 
     @Override
     public final void destroy() {
@@ -48,7 +49,7 @@ public abstract class DestroyableBase implements Destroyable {
         }
         destroyed = true;
         if (!subResources.isEmpty()) {
-            Destroyable.Util.destroyAll(subResources, scope());
+            Util.destroyAll(subResources, scope());
         }
         releaseResources();
     }

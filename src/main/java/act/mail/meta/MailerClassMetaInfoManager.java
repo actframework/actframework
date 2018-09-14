@@ -20,17 +20,17 @@ package act.mail.meta;
  * #L%
  */
 
-import act.asm.Type;
-import act.util.DestroyableBase;
-
-import javax.enterprise.context.ApplicationScoped;
-import java.util.HashMap;
-import java.util.Map;
-
 import static act.Destroyable.Util.destroyAll;
 
+import act.asm.Type;
+import act.util.LogSupportedDestroyableBase;
+
+import java.util.HashMap;
+import java.util.Map;
+import javax.enterprise.context.ApplicationScoped;
+
 @ApplicationScoped
-public class MailerClassMetaInfoManager extends DestroyableBase {
+public class MailerClassMetaInfoManager extends LogSupportedDestroyableBase {
 
     private Map<String, MailerClassMetaInfo> mailers = new HashMap<>();
 
@@ -47,7 +47,7 @@ public class MailerClassMetaInfoManager extends DestroyableBase {
     public void registerMailerMetaInfo(MailerClassMetaInfo metaInfo) {
         String className = Type.getObjectType(metaInfo.className()).getClassName();
         mailers.put(className, metaInfo);
-        logger.trace("Mailer meta info registered for: %s", className);
+        trace("Mailer meta info registered for: %s", className);
     }
 
     public MailerClassMetaInfo mailerMetaInfo(String className) {

@@ -23,12 +23,16 @@ package act.handler.builtin.controller;
 import act.security.CORS;
 import act.util.DestroyableBase;
 import org.osgl.$;
+import org.osgl.logging.LogManager;
+import org.osgl.logging.Logger;
 
 /**
  * The base class of @Before, @After, @Exception, @Finally interceptor and
  * request dispatcher
  */
 public abstract class Handler<T extends Handler> extends DestroyableBase implements Comparable<T> {
+
+    protected static final Logger LOGGER = LogManager.get(Handler.class);
 
     private int priority;
 

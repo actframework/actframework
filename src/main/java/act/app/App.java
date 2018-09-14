@@ -96,7 +96,7 @@ import javax.inject.Singleton;
 /**
  * {@code App} represents an application that is deployed in a Act container
  */
-public class App extends DestroyableBase {
+public class App extends LogSupportedDestroyableBase {
 
     public interface HotReloadListener {
         void preHotReload();

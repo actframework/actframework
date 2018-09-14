@@ -20,21 +20,19 @@ package act.conf;
  * #L%
  */
 
-import act.util.DestroyableBase;
+import act.util.LogSupportedDestroyableBase;
 import org.osgl.$;
 import org.osgl.exception.ConfigurationException;
 import org.osgl.exception.UnexpectedNewInstanceException;
 import org.osgl.util.Keyword;
 import org.osgl.util.S;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Base class for XxConfig
  */
-public abstract class Config<E extends ConfigKey> extends DestroyableBase {
+public abstract class Config<E extends ConfigKey> extends LogSupportedDestroyableBase {
 
     static final String PREFIX = "act.";
     static final int PREFIX_LEN = PREFIX.length();
