@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 **1.8.8**
+* `CacheFor` key shall include `Accept` type #836
 * Add render image support #834
 * Optimise `LogSupport` for `DestroyableBase` #833
 * Allow app developer to specify download file name #829

@@ -1248,6 +1248,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
                     map.put(key, paramVal(key, context));
                 }
             }
+            map.put("__accept__", context.accept().name());
             return map;
         }
 
