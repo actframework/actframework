@@ -202,11 +202,11 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
             method.setAccessible(true);
         }
 
-        if (handlerMetaInfo.hasReturn()) {
+        if (handlerMetaInfo.hasReturn() && null == method.getAnnotation(NoReturnValueAdvice.class)) {
             ReturnValueAdvisor advisor = getAnnotation(ReturnValueAdvisor.class);
             if (null != advisor) {
                 returnValueAdvice = app.getInstance(advisor.value());
-            } else if (!hasAnnotation(NoReturnValueAdvice.class)) {
+            } else if (null == controllerClass.getAnnotation(NoReturnValueAdvice.class)) {
                 returnValueAdvice = app.config().globalReturnValueAdvice();
             }
         }

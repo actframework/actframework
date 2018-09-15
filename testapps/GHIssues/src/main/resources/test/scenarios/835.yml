@@ -1,4 +1,4 @@
-Scenario(GH829):
+Scenario(GH835):
   description: "[835] Provide a mechanism to allow developer advice on return value of request handler method"
   interactions:
     - description: test specified advice
@@ -15,3 +15,9 @@ Scenario(GH829):
         json:
           code: 1
           data: 5
+    - description: test NoReturnValueAdvice on method to ignore @ReturnVakenenglueAdvisor on class
+      request:
+        get: 835a
+      response:
+        json:
+          result: 5
