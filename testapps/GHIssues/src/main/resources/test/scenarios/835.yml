@@ -1,0 +1,17 @@
+Scenario(GH829):
+  description: "[835] Provide a mechanism to allow developer advice on return value of request handler method"
+  interactions:
+    - description: test specified advice
+      request:
+        get: 835/withSpecificAdvice
+      response:
+        json:
+          code: 0
+          data: Hello Genko!
+    - description: test global advice
+      request:
+        get: 835/withGlobalAdvice
+      response:
+        json:
+          code: 1
+          data: 5

@@ -2,10 +2,9 @@ package ghissues;
 
 import act.data.annotation.Data;
 import act.util.AdaptiveBean;
-import act.util.LogSupport;
 import org.osgl.mvc.annotation.GetAction;
 
-public class Gh786 extends LogSupport {
+public class Gh786 extends BaseController {
 
     @Data
     public static class FooBase {

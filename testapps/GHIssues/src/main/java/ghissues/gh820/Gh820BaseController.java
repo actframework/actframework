@@ -1,10 +1,10 @@
 package ghissues.gh820;
 
-import act.util.LogSupport;
+import ghissues.BaseController;
 
 import javax.inject.Inject;
 
-public class BaseController<T, SERVICE extends BaseService<T>> extends LogSupport {
+public class Gh820BaseController<T, SERVICE extends BaseService<T>> extends BaseController {
     @Inject
     private SERVICE service;
 

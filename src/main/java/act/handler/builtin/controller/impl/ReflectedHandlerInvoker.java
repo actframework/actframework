@@ -39,9 +39,7 @@ import act.controller.meta.*;
 import act.data.annotation.DateFormatPattern;
 import act.data.annotation.Pattern;
 import act.db.RequireDataBind;
-import act.handler.NonBlock;
-import act.handler.PreventDoubleSubmission;
-import act.handler.SkipBuiltInEvents;
+import act.handler.*;
 import act.handler.builtin.controller.*;
 import act.handler.event.ReflectedHandlerInvokerInit;
 import act.handler.event.ReflectedHandlerInvokerInvoke;
@@ -166,6 +164,8 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
     private boolean suppressJsonDateFormat;
     // see https://github.com/actframework/actframework/issues/829
     private String downloadFilename;
+    // see https://github.com/actframework/actframework/issues/835
+    private ReturnValueAdvice returnValueAdvice;
 
     private ReflectedHandlerInvoker(M handlerMetaInfo, App app) {
         this.app = app;
@@ -200,6 +200,15 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
             handlerIndex = methodAccess.getIndex(handlerMetaInfo.name(), paramTypes);
         } else {
             method.setAccessible(true);
+        }
+
+        if (handlerMetaInfo.hasReturn()) {
+            ReturnValueAdvisor advisor = getAnnotation(ReturnValueAdvisor.class);
+            if (null != advisor) {
+                returnValueAdvice = app.getInstance(advisor.value());
+            } else if (!hasAnnotation(NoReturnValueAdvice.class)) {
+                returnValueAdvice = app.config().globalReturnValueAdvice();
+            }
         }
 
         if (method.isAnnotationPresent(RequireCaptcha.class)) {
@@ -743,6 +752,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
         CacheFor cacheFor = method.getAnnotation(CacheFor.class);
         cacheSupport = null == cacheFor ? CacheSupportMetaInfo.disabled() :  CacheSupportMetaInfo.enabled(
                 new CacheKeyBuilder(cacheFor, S.concat(controllerClass.getName(), ".", method.getName())),
+                cacheFor.id(),
                 cacheFor.value(),
                 cacheFor.supportPost(),
                 cacheFor.usePrivate(),
@@ -878,15 +888,16 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
             }
             throw e;
         }
-        return transform(retVal, this, context);
+        return transform(retVal, this, context, returnValueAdvice);
     }
 
-    public static Result transform(Object retVal, ReflectedHandlerInvoker invoker, ActionContext context) {
+    public static Result transform(Object retVal, ReflectedHandlerInvoker invoker, ActionContext context, ReturnValueAdvice returnValueAdvice) {
         if (context.resp().isClosed()) {
             return null;
         }
         HandlerMethodMetaInfo handlerMetaInfo = invoker.handler;
-        if (null == retVal && handlerMetaInfo.hasReturn() && !handlerMetaInfo.returnTypeInfo().isResult()) {
+        final boolean hasReturn = handlerMetaInfo.hasReturn() && !handlerMetaInfo.returnTypeInfo().isResult();
+        if (null == retVal && hasReturn) {
             // ActFramework respond 404 Not Found when
             // handler invoker return `null`
             // and there are return type of the action method signature
@@ -894,6 +905,9 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
             return ActNotFound.create();
         }
         boolean hasTemplate = invoker.checkTemplate(context);
+        if (!hasTemplate && hasReturn && null != returnValueAdvice) {
+            retVal = returnValueAdvice.applyTo(retVal, context);
+        }
         if (hasTemplate && retVal instanceof RenderAny) {
             retVal = RenderTemplate.INSTANCE;
         }

@@ -32,6 +32,7 @@ import act.data.RequestBodyParser;
 import act.event.ActEvent;
 import act.event.SystemEvent;
 import act.handler.RequestHandler;
+import act.handler.builtin.controller.RequestHandlerProxy;
 import act.handler.builtin.controller.impl.ReflectedHandlerInvoker;
 import act.i18n.LocaleResolver;
 import act.route.Router;
@@ -458,6 +459,14 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
 
     public boolean isByPassImplicitTemplateVariable() {
         return this.byPassImplicitTemplateVariable;
+    }
+
+    public ActionContext resetCache() {
+        RequestHandler handler = handler();
+        if (handler instanceof RequestHandlerProxy) {
+            ((RequestHandlerProxy) handler).resetCache();
+        }
+        return this;
     }
 
     public ActionContext urlContext(String context) {

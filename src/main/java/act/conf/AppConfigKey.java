@@ -465,6 +465,14 @@ public enum AppConfigKey implements ConfigKey {
     FORMAT_TIME("fmt.time"),
 
     /**
+     * `globalReturnValueAdvice` specifies the global {@link act.handler.ReturnValueAdvice}
+     * type.
+     *
+     * Default value: null
+     */
+    GLOBAL_RETURN_VALUE_ADVICE("globalReturnValueAdvice"),
+
+    /**
      * `act.handler.csrf_check_failure.impl` specifies the implementation
      * for {@link act.util.MissingAuthenticationHandler}
      *

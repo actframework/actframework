@@ -4,7 +4,6 @@ import act.controller.annotation.UrlContext;
 import act.db.DbBind;
 import act.db.jpa.JPADao;
 import act.db.sql.tx.Transactional;
-import act.util.LogSupport;
 import act.util.PropertySpec;
 import ghissues.gh823.Gh823User;
 import org.osgl.$;
@@ -13,7 +12,7 @@ import org.osgl.mvc.annotation.*;
 import javax.inject.Inject;
 
 @UrlContext("823")
-public class Gh823 extends LogSupport {
+public class Gh823 extends BaseController {
 
     @Inject
     private JPADao<Integer, Gh823User> userDao;

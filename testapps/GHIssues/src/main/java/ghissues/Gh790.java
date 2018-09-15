@@ -11,7 +11,7 @@ import java.util.Map;
 
 @UrlContext("790")
 @JsonView
-public class Gh790 extends LogSupport {
+public class Gh790 extends BaseController {
 
     @Data
     public static class Student implements SimpleBean {

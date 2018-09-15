@@ -1,7 +1,6 @@
 package ghissues;
 
 import act.controller.annotation.UrlContext;
-import act.util.LogSupport;
 import cn.hutool.http.HttpUtil;
 import org.osgl.mvc.annotation.PostAction;
 
@@ -9,7 +8,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @UrlContext("830")
-public class Gh830 extends LogSupport {
+public class Gh830 extends BaseController {
 
     @PostAction("svc/{url}")
     public String server(String url,String dataJson) {

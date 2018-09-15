@@ -35,9 +35,7 @@ import act.controller.meta.*;
 import act.handler.RequestHandlerBase;
 import act.security.CORS;
 import act.security.CSRF;
-import act.util.AnnotatedClassFinder;
-import act.util.Global;
-import act.util.MissingAuthenticationHandler;
+import act.util.*;
 import act.view.ActErrorResult;
 import act.view.RenderAny;
 import act.xio.WebSocketConnectionHandler;
@@ -59,6 +57,8 @@ import javax.inject.Inject;
 
 @ApplicationScoped
 public final class RequestHandlerProxy extends RequestHandlerBase {
+
+    public static final String CACHE_NAME = "__action_proxy__";
 
     private static Logger logger = L.get(RequestHandlerProxy.class);
 
@@ -83,6 +83,7 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
     private String actionMethodName;
     private String actionPath;
     private Method actionMethod;
+    private Set<String> cacheKeys = new HashSet<>();
 
     private volatile ControllerAction actionHandler = null;
     private List<BeforeInterceptor> beforeInterceptors = new ArrayList<>();
@@ -97,6 +98,8 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
     private CacheSupportMetaInfo cacheSupport;
     private MissingAuthenticationHandler missingAuthenticationHandler;
     private MissingAuthenticationHandler csrfFailureHandler;
+
+    private CacheFor.Manager cacheForManager;
 
     private WebSocketConnectionHandler webSocketConnectionHandler;
 
@@ -116,12 +119,12 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
         E.illegalArgumentIf(S.isEmpty(this.actionMethodName), ERR, actionMethodName);
         this.actionPath = actionMethodName;
         if (app.classLoader() != null) {
-            cache = app.config().cacheService("action_proxy");
+            cache = app.config().cacheService(CACHE_NAME);
         } else {
             app.jobManager().on(SysEventId.CLASS_LOADER_INITIALIZED, new Runnable() {
                 @Override
                 public void run() {
-                    cache = app.config().cacheService("action_proxy");
+                    cache = app.config().cacheService(CACHE_NAME);
                 }
             });
         }
@@ -139,6 +142,7 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
             actionHandler.destroy();
             actionHandler = null;
         }
+        cacheForManager = null;
     }
 
     public static void releaseGlobalResources() {
@@ -225,6 +229,7 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
             onResult(result, context);
             if (supportCache) {
                 this.cache.put(cacheKey, context.resp(), cacheSupport.ttl);
+                cacheKeys.add(cacheKey);
             }
         } catch (Exception e) {
             H.Request req = context.req();
@@ -276,6 +281,14 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
     @Override
     public boolean skipEvents(ActionContext context) {
         return skipEvents;
+    }
+
+    public void resetCache() {
+        if (supportCache) {
+            for (String cacheKey : cacheKeys) {
+                cache.evict(cacheKey);
+            }
+        }
     }
 
     protected final void registerBeforeInterceptor(BeforeInterceptor interceptor) {
@@ -409,6 +422,12 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
         App app = this.app;
         if (supportCache) {
             cache = app.cache();
+            cacheForManager = app.getInstance(CacheFor.Manager.class);
+            cacheForManager.register(actionPath, this);
+            String cacheForId = cacheSupport.id;
+            if (S.notBlank(cacheForId)) {
+                cacheForManager.register(cacheForId, this);
+            }
         }
 
         GroupInterceptorMetaInfo interceptorMetaInfo = new GroupInterceptorMetaInfo(actionInfo.interceptors());
