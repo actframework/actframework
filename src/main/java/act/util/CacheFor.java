@@ -64,4 +64,10 @@ public @interface CacheFor {
      * @return
      */
     boolean usePrivate() default false;
+
+    /**
+     * Suppress `Cache-Control` header setting.
+     * @return
+     */
+    boolean noCacheControl() default false;
 }

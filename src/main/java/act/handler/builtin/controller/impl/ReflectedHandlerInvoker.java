@@ -745,7 +745,8 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
                 new CacheKeyBuilder(cacheFor, S.concat(controllerClass.getName(), ".", method.getName())),
                 cacheFor.value(),
                 cacheFor.supportPost(),
-                cacheFor.usePrivate()
+                cacheFor.usePrivate(),
+                cacheFor.noCacheControl()
         );
     }
 

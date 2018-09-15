@@ -218,7 +218,9 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
             }
             if (supportCache) {
                 String s = cacheSupport.usePrivate ? "private, max-age=" : "public, max-age=";
-                context.resp().addHeaderIfNotAdded(H.Header.Names.CACHE_CONTROL, s + cacheSupport.ttl);
+                if (!cacheSupport.noCacheControl) {
+                    context.resp().addHeaderIfNotAdded(H.Header.Names.CACHE_CONTROL, s + cacheSupport.ttl);
+                }
             }
             onResult(result, context);
             if (supportCache) {

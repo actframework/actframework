@@ -39,6 +39,7 @@ public class ResponseCache extends ActResponse implements Serializable {
 
     private Map<String, H.Cookie> cookies = new HashMap<>();
     private Map<String, String> headers = new HashMap<>();
+
     private Long len;
     private H.Status status;
     private String etag;
@@ -171,28 +172,6 @@ public class ResponseCache extends ActResponse implements Serializable {
         if (null == contentType) {
             contentType = type;
         }
-        return this;
-    }
-
-    @Override
-    public H.Response contentDisposition(String filename, boolean inline) {
-        realResponse.contentDisposition(filename, inline);
-        // set through header call
-        return this;
-    }
-
-    @Override
-    public H.Response prepareDownload(String filename) {
-        realResponse.prepareDownload(filename);
-        // set through header call
-        return this;
-    }
-
-    @Override
-    public H.Response etag(String etag) {
-        this.etag = etag;
-        realResponse.etag(etag);
-        // set through header call
         return this;
     }
 
