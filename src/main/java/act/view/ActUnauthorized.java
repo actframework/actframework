@@ -36,6 +36,14 @@ public class ActUnauthorized extends Unauthorized implements ActError {
         super();
     }
 
+    public ActUnauthorized(int errorCode) {
+        super(errorCode);
+    }
+
+    public ActUnauthorized(int errorCode, String message) {
+        super(errorCode, message);
+    }
+
     public ActUnauthorized(String realm) {
         super(realm);
     }
@@ -72,6 +80,14 @@ public class ActUnauthorized extends Unauthorized implements ActError {
 
     public static Unauthorized create() {
         return Act.isDev() ? new ActUnauthorized() : Unauthorized.get();
+    }
+
+    public static Unauthorized create(int errorCode) {
+        return Act.isDev() ? new ActUnauthorized(errorCode) : Unauthorized.of(errorCode);
+    }
+
+    public static Unauthorized create(int errorCode, String message) {
+        return Act.isDev() ? new ActUnauthorized(errorCode, message) : Unauthorized.of(errorCode, message);
     }
 
     public static Unauthorized create(String realm) {

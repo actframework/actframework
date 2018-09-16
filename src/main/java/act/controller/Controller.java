@@ -723,6 +723,30 @@ public @interface Controller {
         }
 
         /**
+         * Returns a {@link Unauthorized} instance with error code specified.
+         *
+         * @param errorCode
+         *      the application error code.
+         * @return a 401 Unauthorized result
+         */
+        public static Unauthorized unauthorized(int errorCode) {
+            return ActUnauthorized.create(errorCode);
+        }
+
+        /**
+         * Returns a {@link Unauthorized} instance with error code specified.
+         *
+         * @param errorCode
+         *      the application error code.
+         * @param message
+         *      the application error message.
+         * @return a 401 Unauthorized result
+         */
+        public static Unauthorized unauthorized(int errorCode, String message) {
+            return ActUnauthorized.create(errorCode, message);
+        }
+
+        /**
          * Returns a {@link Unauthorized} instance with `realm` specified.
          *
          * @param realm
