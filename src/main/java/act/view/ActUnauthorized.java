@@ -25,6 +25,7 @@ import static act.util.ActError.Util.loadSourceInfo;
 import act.Act;
 import act.app.SourceInfo;
 import act.util.ActError;
+import com.alibaba.fastjson.annotation.JSONField;
 import org.osgl.mvc.result.Unauthorized;
 import org.osgl.util.C;
 
@@ -53,6 +54,7 @@ public class ActUnauthorized extends Unauthorized implements ActError {
     }
 
     @Override
+    @JSONField(serialize = false, deserialize = false)
     public Throwable getCauseOrThis() {
         return this;
     }

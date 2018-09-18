@@ -891,9 +891,17 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
         return transform(retVal, this, context, returnValueAdvice);
     }
 
-    public static Result transform(Object retVal, ReflectedHandlerInvoker invoker, ActionContext context, ReturnValueAdvice returnValueAdvice) {
+    private static Result transform(Object retVal, ReflectedHandlerInvoker invoker, ActionContext context, ReturnValueAdvice returnValueAdvice) {
         if (context.resp().isClosed()) {
             return null;
+        }
+        if (retVal instanceof Result) {
+            Result result = (Result) retVal;
+            if (result.status().isError()) {
+                throw result;
+            }
+            invoker.checkTemplate(context);
+            return result;
         }
         HandlerMethodMetaInfo handlerMetaInfo = invoker.handler;
         final boolean hasReturn = handlerMetaInfo.hasReturn() && !handlerMetaInfo.returnTypeInfo().isResult();
