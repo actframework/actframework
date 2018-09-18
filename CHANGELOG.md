@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 **1.8.8**
+* It takes over 20s to bootstrap app in dev mode with large file in resources dir #846
 * `CacheFor` - make it allow skip `Cache-Control` header #837
 * `ResponseCache` - content disposition shall be cached #838
 * `CacheFor` key shall include `Accept` type #836
