@@ -79,9 +79,9 @@ class AppBuilder {
 
     private void copyFiles() {
         copyLibs();
-        copyResources();
-        copyConf();
-        copyRoutes();
+        // copyResources();
+        // copyConf();
+        // copyRoutes();
     }
 
     void copyResources() {

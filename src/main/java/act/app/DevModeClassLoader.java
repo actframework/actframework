@@ -363,27 +363,27 @@ public class DevModeClassLoader extends AppClassLoader {
     private class ResourceChangeListener implements FsEventListener  {
         @Override
         public void on(FsEvent... events) {
-            int len = events.length;
-            for (int i = 0; i < len; ++i) {
-                FsEvent e = events[i];
-                List<String> paths = e.paths();
-                File[] files = new File[paths.size()];
-                int idx = 0;
-                for (String path : paths) {
-                    files[idx++] = new File(path);
-                }
-                switch (e.kind()) {
-                    case CREATE:
-                    case MODIFY:
-                        app().builder().copyResources(files);
-                        break;
-                    case DELETE:
-                        app().builder().removeResources(files);
-                        break;
-                    default:
-                        assert false;
-                }
-            }
+//            int len = events.length;
+//            for (int i = 0; i < len; ++i) {
+//                FsEvent e = events[i];
+//                List<String> paths = e.paths();
+//                File[] files = new File[paths.size()];
+//                int idx = 0;
+//                for (String path : paths) {
+//                    files[idx++] = new File(path);
+//                }
+//                switch (e.kind()) {
+//                    case CREATE:
+//                    case MODIFY:
+//                        app().builder().copyResources(files);
+//                        break;
+//                    case DELETE:
+//                        app().builder().removeResources(files);
+//                        break;
+//                    default:
+//                        assert false;
+//                }
+//            }
         }
     }
 
