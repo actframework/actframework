@@ -31,7 +31,7 @@
   <parent>
     <groupId>org.osgl</groupId>
     <artifactId>parent</artifactId>
-    <version>1.0.0-BETA-3</version>
+    <version>1.0.0-BETA-4</version>
   </parent>
 
   <organization>
