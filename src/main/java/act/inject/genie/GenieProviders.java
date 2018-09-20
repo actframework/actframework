@@ -105,6 +105,9 @@ class GenieProviders {
                         // default value set through `@DefaultValue` annotation
                         this.defaultValue = defaultValue.value();
                     }
+                    if ("".equals(this.defaultValue)) {
+                        this.defaultValue = null;
+                    }
                 }
 
                 @Override

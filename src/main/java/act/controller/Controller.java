@@ -1895,6 +1895,7 @@ public @interface Controller {
                     return RenderCSV.of(status, v, propertySpec, context);
                 } else {
                     boolean isArray = vCls.isArray();
+                    PropertySpec.MetaInfo.withCurrent(meta, context);
                     return inferPrimitiveResult(v, context, false, requireXML, isArray, shouldUseToString);
                 }
             }
