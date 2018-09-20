@@ -642,6 +642,8 @@ public class App extends LogSupportedDestroyableBase {
             initResolverManager();
             initBinderManager();
             initUploadFileStorageService();
+            initClassLoader();
+            emit(SysEventId.CLASS_LOADER_INITIALIZED);
             initRouters();
             emit(ROUTER_INITIALIZED);
             loadRoutes();
@@ -667,8 +669,6 @@ public class App extends LogSupportedDestroyableBase {
             loadBuiltInScanners();
             emit(PRE_LOAD_CLASSES);
 
-            initClassLoader();
-            emit(SysEventId.CLASS_LOADER_INITIALIZED);
             initCache();
             preloadClasses();
             try {
