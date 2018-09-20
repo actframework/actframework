@@ -740,10 +740,12 @@ public @interface Controller {
          *      the application error code.
          * @param message
          *      the application error message.
+         * @param args
+         *      the message template arguments
          * @return a 401 Unauthorized result
          */
-        public static Unauthorized unauthorized(int errorCode, String message) {
-            return ActUnauthorized.create(errorCode, message);
+        public static Unauthorized unauthorized(int errorCode, String message, Object ... args) {
+            return ActUnauthorized.create(errorCode, S.fmt(message, args));
         }
 
         /**
@@ -779,6 +781,38 @@ public @interface Controller {
         public static void unauthorizedIf(boolean test) {
             if (test) {
                 throw ActUnauthorized.create();
+            }
+        }
+
+        /**
+         * Throws out an {@link Unauthorized} instance if `test ` is `true`.
+         *
+         * @param test
+         *      the test
+         * @param code
+         *      the app specified error code
+         */
+        public static void unauthorizedIf(boolean test, int code) {
+            if (test) {
+                throw ActUnauthorized.create(code);
+            }
+        }
+
+        /**
+         * Throws out an {@link Unauthorized} instance if `test ` is `true`.
+         *
+         * @param test
+         *      the test
+         * @param code
+         *      the app specified error code
+         * @param message
+         *      the app specified error message (template)
+         * @param args
+         *      the error message template arguments
+         */
+        public static void unauthorizedIf(boolean test, int code, String message, Object ... args) {
+            if (test) {
+                throw ActUnauthorized.create(code, S.fmt(message, args));
             }
         }
 

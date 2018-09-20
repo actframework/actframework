@@ -2,6 +2,7 @@
 
 **1.8.8**
 * `@PropertySpec` not applied to excel download #848
+* Add code and message support for unauthorizedIf function #847
 * It takes over 20s to bootstrap app in dev mode with large file in resources dir #846
 * FastJson exception when serialize ACT error message #841
 * `CacheFor` - make it allow skip `Cache-Control` header #837
