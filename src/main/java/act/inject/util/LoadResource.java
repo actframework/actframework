@@ -31,7 +31,9 @@ import java.lang.annotation.Target;
 
 /**
  * The annotation specify a field or parameter should be a resource
- * that is loaded from path specified
+ * that is loaded from path specified.
+ *
+ * @see act.util.HeaderMapping
  */
 @LoadValue(ResourceLoader.class)
 @Retention(RetentionPolicy.RUNTIME)

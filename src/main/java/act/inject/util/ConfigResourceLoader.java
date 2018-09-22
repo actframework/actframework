@@ -53,16 +53,21 @@ public class ConfigResourceLoader extends ResourceLoader {
         if (path.startsWith("config/")) {
             path = path.substring(7);
         }
-        resource = ResourceLoader._load(profileConfig(path), spec, ignoreResourceNotFound);
+        resource = ResourceLoader._load(profileConfig(path), spec, hint, ignoreResourceNotFound);
         if (null == resource) {
-            resource = ResourceLoader._load(commonConfig(path), spec, ignoreResourceNotFound);
+            resource = ResourceLoader._load(commonConfig(path), spec, hint, ignoreResourceNotFound);
         }
         if (null == resource) {
-            resource = ResourceLoader._load(confConfig(path), spec, ignoreResourceNotFound);
+            resource = ResourceLoader._load(confConfig(path), spec, hint, ignoreResourceNotFound);
         }
         if (null == resource) {
-            resource = ResourceLoader._load(path, spec, ignoreResourceNotFound);
+            resource = ResourceLoader._load(path, spec, hint, ignoreResourceNotFound);
         }
+    }
+
+    private void init(Map options, BeanSpec spec, Object hint) {
+        super.init(options, spec);
+        this.hint = hint;
     }
 
     private String profileConfig(String path) {
@@ -90,11 +95,19 @@ public class ConfigResourceLoader extends ResourceLoader {
      * @return loaded resource or `null` if exception encountered.
      */
     public static <T> T load(String path, Class<T> type) {
-        return load(path, type, false);
+        return load(path, type, null, false);
+    }
+
+    public static <T> T load(String path, Class<T> type, Object hint) {
+        return load(path, type, hint, false);
     }
 
     public static <T> T load(String path, Class<T> type, boolean ignoreResourceNotFound) {
-        return __load(path, BeanSpec.of(type, injector), ignoreResourceNotFound);
+        return load(path, type, null, ignoreResourceNotFound);
+    }
+
+    public static <T> T load(String path, Class<T> type, Object hint, boolean ignoreResourceNotFound) {
+        return __load(path, BeanSpec.of(type, injector), hint, ignoreResourceNotFound);
     }
 
     /**
@@ -108,12 +121,20 @@ public class ConfigResourceLoader extends ResourceLoader {
      * @return loaded resource or `null` if exception encountered.
      */
     public static <T> T load(String path, TypeReference<T> typeReference) {
-        return load(path, typeReference, false);
+        return load(path, typeReference, null, false);
     }
 
     public static <T> T load(String path, TypeReference<T> typeReference, boolean ignoreResourceNotFound) {
+        return load(path, typeReference, null, ignoreResourceNotFound);
+    }
+
+    public static <T> T load(String path, TypeReference<T> typeReference, Object hint) {
+        return load(path, typeReference, hint, false);
+    }
+
+    public static <T> T load(String path, TypeReference<T> typeReference, Object hint, boolean ignoreResourceNotFound) {
         BeanSpec spec = BeanSpec.of(typeReference.getType(), injector);
-        return __load(path, spec, ignoreResourceNotFound);
+        return __load(path, spec, hint, ignoreResourceNotFound);
     }
 
     /**
@@ -127,17 +148,25 @@ public class ConfigResourceLoader extends ResourceLoader {
      * @return loaded resource or `null` if exception encountered.
      */
     public static <T> T load(String path, BeanSpec spec) {
-        return load(path, spec);
+        return load(path, spec, null, false);
     }
 
     public static <T> T load(String path, BeanSpec spec, boolean ignoreResourceNotFound) {
-        return __load(path, spec, ignoreResourceNotFound);
+        return load(path, spec, null, ignoreResourceNotFound);
     }
 
-    private static <T> T __load(String path, BeanSpec spec, boolean ignoreResourceNotFound) {
+    public static <T> T load(String path, BeanSpec spec, Object hint) {
+        return load(path, spec, hint, false);
+    }
+
+    public static <T> T load(String path, BeanSpec spec, Object hint, boolean ignoreResourceNotFound) {
+        return __load(path, spec, hint, ignoreResourceNotFound);
+    }
+
+    private static <T> T __load(String path, BeanSpec spec, Object hint, boolean ignoreResourceNotFound) {
         Map<String, Object> option = C.Map("value", path);
         ConfigResourceLoader loader = new ConfigResourceLoader(ignoreResourceNotFound);
-        loader.init(option, spec);
+        loader.init(option, spec, hint);
         return $.cast(loader.resource);
     }
 

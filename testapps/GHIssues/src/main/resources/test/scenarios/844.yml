@@ -1,0 +1,12 @@
+Scenario(GH844):
+  description: "[844] Create an annotation to help specify head mapping for `@LoadResource` mechanism"
+  interactions:
+    - description: test
+      request:
+        get: 844
+      response:
+        json:
+          size: 1
+          0:
+            code: AU
+            name: Australia
