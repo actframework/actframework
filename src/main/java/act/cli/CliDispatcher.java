@@ -58,7 +58,12 @@ public class CliDispatcher extends AppServiceBase<CliDispatcher> {
 
     public CliDispatcher(App app) {
         super(app);
-        registerBuiltInHandlers();
+        app.jobManager().now(new Runnable() {
+            @Override
+            public void run() {
+                registerBuiltInHandlers();
+            }
+        });
     }
 
     public CliDispatcher registerCommandHandler(String command, CommandMethodMetaInfo methodMetaInfo, CommanderClassMetaInfo classMetaInfo) {

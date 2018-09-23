@@ -132,7 +132,7 @@ public abstract class NamedLogic<T extends NamedLogic> extends LogSupport implem
             registry.put(type, lookup);
         }
         NamedLogic existing = lookup.put(keyword, this);
-        E.unexpectedIf(!force && null != existing, "Keyword already used: " + keyword.hyphenated());
+        E.unexpectedIf(!force && null != existing && this != existing, "Keyword already used: " + keyword.hyphenated());
     }
 
     private static <T extends NamedLogic> T get(Class<? extends NamedLogic> logicType, String name) {

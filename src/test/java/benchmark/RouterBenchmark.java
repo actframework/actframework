@@ -1,4 +1,4 @@
-package act.route;
+package benchmark;
 
 /*-
  * #%L
@@ -33,6 +33,7 @@ import act.handler.RequestHandlerResolver;
 import act.handler.builtin.AlwaysBadRequest;
 import act.handler.builtin.AlwaysNotFound;
 import act.plugin.GenericPluginManager;
+import act.route.*;
 import com.carrotsearch.junitbenchmarks.BenchmarkOptions;
 import org.junit.BeforeClass;
 import org.junit.Test;
