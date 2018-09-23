@@ -20,13 +20,13 @@ package act.app;
  * #L%
  */
 
+import static act.app.RuntimeDirs.*;
+
 import act.Act;
 import org.osgl.util.E;
 import org.osgl.util.IO;
 
 import java.io.File;
-
-import static act.app.RuntimeDirs.*;
 
 /**
  * Build Application when Act running in DEV mode.
@@ -64,8 +64,8 @@ class AppBuilder {
     }
 
     public void build() {
-        prepareTargetDir();
-        copyFiles();
+        //prepareTargetDir();
+        //copyFiles();
     }
 
     private void prepareTargetDir() {
@@ -79,9 +79,9 @@ class AppBuilder {
 
     private void copyFiles() {
         copyLibs();
-        copyResources();
-        copyConf();
-        copyRoutes();
+        // copyResources();
+        // copyConf();
+        // copyRoutes();
     }
 
     void copyResources() {

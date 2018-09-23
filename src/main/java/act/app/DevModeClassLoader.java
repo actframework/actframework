@@ -20,24 +20,22 @@ package act.app;
  * #L%
  */
 
+import static act.app.App.F.*;
+
 import act.Act;
 import act.controller.meta.ControllerClassMetaInfo;
 import act.metric.Timer;
-import act.util.Files;
-import act.util.FsChangeDetector;
-import act.util.FsEvent;
-import act.util.FsEventListener;
+import act.util.*;
 import org.osgl.$;
 import org.osgl.exception.NotAppliedException;
 import org.osgl.logging.L;
 import org.osgl.logging.Logger;
-import org.osgl.util.C;
-import org.osgl.util.S;
+import org.osgl.util.*;
 
 import java.io.File;
+import java.io.InputStream;
+import java.net.URL;
 import java.util.*;
-
-import static act.app.App.F.*;
 
 /**
  * Dev mode application class loader, which is able to
@@ -83,6 +81,31 @@ public class DevModeClassLoader extends AppClassLoader {
 
     public ControllerClassMetaInfo controllerClassMetaInfo(String controllerClassName) {
         return super.controllerClassMetaInfo(controllerClassName);
+    }
+
+    @Override
+    public URL getResource(String name) {
+        // TODO: handle modules case
+        File file = new File(RuntimeDirs.resource(app()), name);
+        return file.exists() ? $.convert(file).to(URL.class) : super.getResource(name);
+    }
+
+    @Override
+    public InputStream getResourceAsStream(String name) {
+        URL url = getResource(name);
+        return null != url ? IO.inputStream(url) : super.getResourceAsStream(name);
+    }
+
+    @Override
+    public InputStream getOriginalResourceAsStream(String name) {
+        URL url = getOriginalResource(name);
+        return null != url ? IO.inputStream(url) : super.getOriginalResourceAsStream(name);
+    }
+
+    @Override
+    public URL getOriginalResource(String name) {
+        File file = new File(RuntimeDirs.resource(app()), name);
+        return file.exists() ? $.convert(file).to(URL.class) : super.getOriginalResource(name);
     }
 
     @Override
@@ -340,27 +363,27 @@ public class DevModeClassLoader extends AppClassLoader {
     private class ResourceChangeListener implements FsEventListener  {
         @Override
         public void on(FsEvent... events) {
-            int len = events.length;
-            for (int i = 0; i < len; ++i) {
-                FsEvent e = events[i];
-                List<String> paths = e.paths();
-                File[] files = new File[paths.size()];
-                int idx = 0;
-                for (String path : paths) {
-                    files[idx++] = new File(path);
-                }
-                switch (e.kind()) {
-                    case CREATE:
-                    case MODIFY:
-                        app().builder().copyResources(files);
-                        break;
-                    case DELETE:
-                        app().builder().removeResources(files);
-                        break;
-                    default:
-                        assert false;
-                }
-            }
+//            int len = events.length;
+//            for (int i = 0; i < len; ++i) {
+//                FsEvent e = events[i];
+//                List<String> paths = e.paths();
+//                File[] files = new File[paths.size()];
+//                int idx = 0;
+//                for (String path : paths) {
+//                    files[idx++] = new File(path);
+//                }
+//                switch (e.kind()) {
+//                    case CREATE:
+//                    case MODIFY:
+//                        app().builder().copyResources(files);
+//                        break;
+//                    case DELETE:
+//                        app().builder().removeResources(files);
+//                        break;
+//                    default:
+//                        assert false;
+//                }
+//            }
         }
     }
 

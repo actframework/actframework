@@ -23,6 +23,7 @@ package act.inject.util;
 import act.Act;
 import act.app.App;
 import act.app.data.StringValueResolverManager;
+import act.util.HeaderMapping;
 import act.util.Jars;
 import com.alibaba.fastjson.JSON;
 import org.osgl.$;
@@ -60,6 +61,8 @@ public class ResourceLoader<T> extends ValueLoader.Base<T> {
 
     protected Object resource;
 
+    protected Object hint;
+
     @Override
     protected void initialized() {
         String path = (String) options.get("value");
@@ -69,7 +72,11 @@ public class ResourceLoader<T> extends ValueLoader.Base<T> {
             path = path.substring(1);
         }
         E.unexpectedIf(S.blank(path), "resource path not specified");
-        resource = load(path, spec);
+        HeaderMapping anno = spec.getAnnotation(HeaderMapping.class);
+        if (null != anno) {
+            this.hint = HeaderMapping.Parser.parse(anno.value());
+        }
+        resource = load(path, spec, hint);
     }
 
     @Override
@@ -130,11 +137,15 @@ public class ResourceLoader<T> extends ValueLoader.Base<T> {
         return load(resourcePath, spec, false);
     }
 
-    public static <T> T load(String resourcePath, BeanSpec spec, boolean ignoreResourceNotFound) {
-        return $.cast(_load(resourcePath, spec, ignoreResourceNotFound));
+    public static <T> T load(String resourcePath, BeanSpec spec, Object hint) {
+        return $.cast(_load(resourcePath, spec, hint, false));
     }
 
-    protected static Object _load(String resourcePath, BeanSpec spec, boolean ignoreResourceNotFound) {
+    public static <T> T load(String resourcePath, BeanSpec spec, boolean ignoreResourceNotFound) {
+        return $.cast(_load(resourcePath, spec, null, ignoreResourceNotFound));
+    }
+
+    protected static Object _load(String resourcePath, BeanSpec spec, Object hint, boolean ignoreResourceNotFound) {
         URL url = loadResource(resourcePath);
         if (null == url) {
             if (!ignoreResourceNotFound) {
@@ -142,10 +153,10 @@ public class ResourceLoader<T> extends ValueLoader.Base<T> {
             }
             return null;
         }
-        return _load(url, spec);
+        return _load(url, spec, hint);
     }
 
-    private static Object _load(URL url, BeanSpec spec) {
+    private static Object _load(URL url, BeanSpec spec, Object hint) {
         $.Var<JarEntry> entryBag = $.var();
         $.Var<JarFile> jarFileBag = $.var();
         $.Var<File> fileBag = $.var();
@@ -194,7 +205,7 @@ public class ResourceLoader<T> extends ValueLoader.Base<T> {
                     try {
                         URL subUrl = new URL(subUrlSpec);
                         String s = S.cut(fileName).beforeLast(".");
-                        map.put(isKeyword ? Keyword.of(s) : s, _load(subUrl, subSpec));
+                        map.put(isKeyword ? Keyword.of(s) : s, _load(subUrl, subSpec, hint));
                     } catch (MalformedURLException e) {
                         throw E.unexpected(e);
                     }
@@ -210,7 +221,7 @@ public class ResourceLoader<T> extends ValueLoader.Base<T> {
                     String key = S.cut(file.getName()).beforeLast(".");
                     try {
                         URL fileUrl = file.toURI().toURL();
-                        map.put(isKeyword ? Keyword.of(key) : key, _load(fileUrl, subSpec));
+                        map.put(isKeyword ? Keyword.of(key) : key, _load(fileUrl, subSpec, hint));
                     } catch (MalformedURLException e) {
                         throw E.unexpected(e);
                     }
@@ -220,7 +231,7 @@ public class ResourceLoader<T> extends ValueLoader.Base<T> {
         } // eof isDir
 
         try {
-            return IO.read(url).to(spec);
+            return null == hint ? IO.read(url).to(spec) : IO.read(url).hint(hint).to(spec);
         } catch (Exception e) {
             if (LOGGER.isDebugEnabled()) {
                 LOGGER.debug(e, "error read URL[%s] to [%s] via IO.read call", url, spec);

@@ -1,6 +1,11 @@
 # ActFramework Change Log
 
 **1.8.8**
+* Allow it to run specific test scenario #851
+* `@PropertySpec` not applied to excel download #848
+* Add code and message support for unauthorizedIf function #847
+* It takes over 20s to bootstrap app in dev mode with large file in resources dir #846
+* Create an annotation to help specify head mapping for `@LoadResource` mechanism #844
 * FastJson exception when serialize ACT error message #841
 * `CacheFor` - make it allow skip `Cache-Control` header #837
 * `ResponseCache` - content disposition shall be cached #838

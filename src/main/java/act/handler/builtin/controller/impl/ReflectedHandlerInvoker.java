@@ -970,7 +970,9 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
             return false;
         } else {
             Template t = Act.viewManager().load(context);
-            return t != null;
+            boolean hasTemplate = null != t;
+            context.setHasTemplate(hasTemplate);
+            return hasTemplate;
         }
     }
 

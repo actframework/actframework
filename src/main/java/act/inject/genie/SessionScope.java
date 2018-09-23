@@ -37,7 +37,7 @@ public class SessionScope extends ScopeCacheSupport.Base implements ScopeCache.S
     private final int TTL;
 
     public SessionScope() {
-        TTL = (int) App.instance().config().sessionTtl();
+        TTL = App.instance().config().sessionTtl();
     }
 
     @Override
