@@ -32,6 +32,7 @@ import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
 import org.osgl.http.H;
 import org.osgl.mvc.annotation.GetAction;
+import org.osgl.util.Keyword;
 
 import java.util.List;
 import javax.inject.Inject;
@@ -95,9 +96,9 @@ public class ScenarioDebugHelper {
     @Inject
     private Test test;
 
-    @GetAction({"e2e", "test"})
-    public void run(App app) {
-        List<Scenario> scenarios = test.run(app, false);
+    @GetAction({"e2e/{testId}", "test/{testId}", "tests/{testId}"})
+    public void run(App app, Keyword testId) {
+        List<Scenario> scenarios = test.run(app, testId, false);
         renderTemplate("/~test.html", scenarios, app);
     }
 

@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 **1.8.8**
+* Allow it to run specific test scenario #851
 * `@PropertySpec` not applied to excel download #848
 * Add code and message support for unauthorizedIf function #847
 * It takes over 20s to bootstrap app in dev mode with large file in resources dir #846

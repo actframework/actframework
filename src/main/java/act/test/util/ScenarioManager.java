@@ -65,6 +65,10 @@ public class ScenarioManager extends YamlLoader {
         return store.get(Keyword.of(name));
     }
 
+    public Scenario get(Keyword testId) {
+        return store.get(testId);
+    }
+
     public Map<String, Scenario> load() {
         loadDefault();
         searchScenarioFolder();

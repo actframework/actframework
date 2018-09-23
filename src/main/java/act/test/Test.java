@@ -204,11 +204,11 @@ public class Test extends LogSupport {
     public void run(App app) {
         boolean run = $.bool(app.config().get("test.run")) || $.bool(app.config().get("e2e.run")) || "test".equalsIgnoreCase(Act.profile()) || "e2e".equalsIgnoreCase(Act.profile());
         if (run) {
-            run(app, true);
+            run(app, null, true);
         }
     }
 
-    public List<Scenario> run(App app, boolean shutdownApp) {
+    public List<Scenario> run(App app, Keyword testId, boolean shutdownApp) {
         E.illegalStateIf(inProgress());
         info("Start running test scenarios\n");
         int exitCode = 0;
@@ -222,13 +222,19 @@ public class Test extends LogSupport {
             requestTemplateManager.load();
             final ScenarioManager scenarioManager = new ScenarioManager();
             Map<String, Scenario> scenarios = scenarioManager.load();
+            List<Scenario> list;
             if (scenarios.isEmpty()) {
                 LOGGER.warn("No scenario defined.");
+                list = C.list();
             } else {
-                C.List<Scenario> list = C.list(scenarios.values()).sorted(new ScenarioComparator(scenarioManager));
-                for (Scenario scenario : list) {
+                list = new ArrayList<>();
+                for (Scenario scenario : C.list(scenarios.values()).sorted(new ScenarioComparator(scenarioManager))) {
+                    if (null != testId && $.ne(testId, Keyword.of(scenario.name))) {
+                        continue;
+                    }
                     try {
                         scenario.start(scenarioManager, requestTemplateManager);
+                        addToList(scenario, list, scenarioManager);
                     } catch (Exception e) {
                         String message = e.getMessage();
                         scenario.errorMessage = S.blank(message) ? e.getClass().getName() : message;
@@ -237,10 +243,9 @@ public class Test extends LogSupport {
                     }
                 }
             }
-            List<Scenario> list = new ArrayList<>();
-            for (Scenario scenario : scenarios.values()) {
-                addToList(scenario, list, scenarioManager);
-            }
+//            for (Scenario scenario : scenarios.values()) {
+//                addToList(scenario, list, scenarioManager);
+//            }
             if (shutdownApp) {
                 for (Scenario scenario : list) {
                     if (!scenario.status.pass()) {
