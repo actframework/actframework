@@ -1,6 +1,8 @@
 # ActFramework Change Log
 
 **1.8.8**
+* Automate testing failure #855
+* `@PropertySpec` not effect when `ReturnValueAdvice` applied #852
 * Allow it to run specific test scenario #851
 * `@PropertySpec` not applied to excel download #848
 * Add code and message support for unauthorizedIf function #847

@@ -24,6 +24,7 @@ import act.Act;
 import act.apidoc.Endpoint;
 import act.app.App;
 import act.app.DbServiceManager;
+import act.app.event.SysEventId;
 import act.db.Dao;
 import act.db.DbService;
 import act.test.func.Func;
@@ -200,11 +201,21 @@ public class Test extends LogSupport {
     }
 
     // wait 1 seconds to allow app setup the network
-    @OnAppStart(delayInSeconds = 1)
-    public void run(App app) {
+    @OnSysEvent(SysEventId.ACT_START)
+    public void run(final App app) {
         boolean run = $.bool(app.config().get("test.run")) || $.bool(app.config().get("e2e.run")) || "test".equalsIgnoreCase(Act.profile()) || "e2e".equalsIgnoreCase(Act.profile());
         if (run) {
-            run(app, null, true);
+            app.jobManager().post(SysEventId.POST_START, new Runnable() {
+                @Override
+                public void run() {
+                    app.jobManager().post(SysEventId.DB_SVC_LOADED, new Runnable() {
+                        @Override
+                        public void run() {
+                            Test.this.run(app, null, true);
+                        }
+                    }, true);
+                }
+            }, true);
         }
     }
 

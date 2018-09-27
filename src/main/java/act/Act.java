@@ -323,7 +323,6 @@ public final class Act {
             shutdownNetworkLayer();
             throw new UnexpectedException("App not found. Please make sure your app start directory is correct");
         }
-        emit(SysEventId.ACT_START);
         writePidFile();
         int port = httpPort();
         String urlContext = appConfig().urlContext();
@@ -332,6 +331,7 @@ public final class Act {
         } else {
             LOGGER.info("app is ready at: http://%s:%s%s", getLocalIpAddr(), port, urlContext);
         }
+        emit(SysEventId.ACT_START);
     }
 
     public static void shutdown(final App app) {

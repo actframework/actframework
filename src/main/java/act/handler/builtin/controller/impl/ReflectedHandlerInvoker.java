@@ -23,16 +23,10 @@ package act.handler.builtin.controller.impl;
 import act.Act;
 import act.Trace;
 import act.annotations.*;
-import act.app.ActionContext;
-import act.app.App;
-import act.app.AppClassLoader;
+import act.app.*;
 import act.conf.AppConfig;
-import act.controller.CacheSupportMetaInfo;
-import act.controller.Controller;
-import act.controller.ExpressController;
-import act.controller.annotation.HandleCsrfFailure;
-import act.controller.annotation.HandleMissingAuthentication;
-import act.controller.annotation.Throttled;
+import act.controller.*;
+import act.controller.annotation.*;
 import act.controller.builtin.ThrottleFilter;
 import act.controller.captcha.RequireCaptcha;
 import act.controller.meta.*;
@@ -44,44 +38,32 @@ import act.handler.builtin.controller.*;
 import act.handler.event.ReflectedHandlerInvokerInit;
 import act.handler.event.ReflectedHandlerInvokerInvoke;
 import act.inject.DependencyInjector;
-import act.inject.param.JsonDto;
-import act.inject.param.JsonDtoClassManager;
-import act.inject.param.ParamValueLoaderManager;
-import act.inject.param.ParamValueLoaderService;
+import act.inject.param.*;
 import act.job.JobManager;
 import act.job.TrackableWorker;
 import act.plugin.ControllerPlugin;
-import act.security.CORS;
-import act.security.CSP;
-import act.security.CSRF;
+import act.security.*;
 import act.sys.Env;
 import act.util.*;
+import act.util.Output;
 import act.view.*;
 import act.ws.WebSocketConnectionManager;
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONException;
+import com.alibaba.fastjson.*;
 import com.alibaba.fastjson.annotation.JSONField;
 import com.alibaba.fastjson.serializer.SerializeFilter;
 import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.esotericsoftware.reflectasm.MethodAccess;
 import org.osgl.$;
+import org.osgl.Lang;
 import org.osgl.exception.NotAppliedException;
 import org.osgl.http.H;
 import org.osgl.inject.BeanSpec;
-import org.osgl.mvc.annotation.ResponseContentType;
-import org.osgl.mvc.annotation.ResponseStatus;
-import org.osgl.mvc.annotation.SessionFree;
-import org.osgl.mvc.result.BadRequest;
-import org.osgl.mvc.result.Conflict;
-import org.osgl.mvc.result.RenderJSON;
-import org.osgl.mvc.result.Result;
-import org.osgl.util.C;
-import org.osgl.util.E;
-import org.osgl.util.S;
+import org.osgl.mvc.annotation.*;
+import org.osgl.mvc.result.*;
+import org.osgl.util.*;
 
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
+import java.lang.reflect.*;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -166,6 +148,11 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
     private String downloadFilename;
     // see https://github.com/actframework/actframework/issues/835
     private ReturnValueAdvice returnValueAdvice;
+    // see https://github.com/actframework/actframework/issues/852
+    private boolean returnIterable;
+    private boolean returnSimpleType;
+    private boolean returnIterableComponentIsSimpleType;
+    private boolean shallTransformReturnVal;
 
     private ReflectedHandlerInvoker(M handlerMetaInfo, App app) {
         this.app = app;
@@ -185,6 +172,35 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
             throw E.unexpected(e);
         }
         this.returnString = method.getReturnType() == String.class;
+        if (handlerMetaInfo.hasReturn()) {
+            this.returnSimpleType = this.returnString || $.isSimpleType(method.getReturnType());
+            this.returnIterable = !this.returnSimpleType && (handlerMetaInfo.isReturnArray() || Iterable.class.isAssignableFrom(method.getReturnType()));
+            if (this.returnIterable) {
+                if (handlerMetaInfo.isReturnArray()) {
+                    this.returnIterableComponentIsSimpleType = $.isSimpleType(method.getReturnType().getComponentType());
+                } else {
+                    Type type = method.getGenericReturnType();
+                    if (type instanceof ParameterizedType) {
+                        ParameterizedType ptype = $.cast(type);
+                        Type[] typeParams = ptype.getActualTypeArguments();
+                        if (typeParams.length > 1) {
+                            this.returnIterableComponentIsSimpleType = false;
+                        } else if (typeParams.length == 1) {
+                            Type p0 = typeParams[0];
+                            if (p0 instanceof Class) {
+                                this.returnIterableComponentIsSimpleType = $.isSimpleType((Class) p0);
+                            } else {
+                                this.returnIterableComponentIsSimpleType = false;
+                            }
+                        }
+                    } else {
+                        warn("Cannot determine component type of handler method return type: " + method);
+                        this.returnIterableComponentIsSimpleType = false;
+                    }
+                }
+            }
+            this.shallTransformReturnVal = handlerMetaInfo.hasReturn() && (returnIterable && !returnIterableComponentIsSimpleType) || (!returnSimpleType);
+        }
         this.pluginBeforeHandler = ControllerPlugin.Manager.INST.beforeHandler(controllerClass, method);
         this.pluginAfterHandler = ControllerPlugin.Manager.INST.afterHandler(controllerClass, method);
         this.disabled = this.disabled || !Env.matches(method);
@@ -888,10 +904,10 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
             }
             throw e;
         }
-        return transform(retVal, this, context, returnValueAdvice);
+        return transform(retVal, this, context, returnValueAdvice, shallTransformReturnVal, returnIterable);
     }
 
-    private static Result transform(Object retVal, ReflectedHandlerInvoker invoker, ActionContext context, ReturnValueAdvice returnValueAdvice) {
+    private static Result transform(Object retVal, ReflectedHandlerInvoker invoker, ActionContext context, ReturnValueAdvice returnValueAdvice, boolean transformRetVal, boolean returnIterable) {
         if (context.resp().isClosed()) {
             return null;
         }
@@ -914,10 +930,15 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
         }
         boolean hasTemplate = invoker.checkTemplate(context);
         if (!hasTemplate && hasReturn && null != returnValueAdvice) {
+            if (transformRetVal) {
+                PropertySpec.MetaInfo propertySpec = handlerMetaInfo.propertySpec();
+                if (null != propertySpec) {
+                    Lang._MappingStage stage = propertySpec.applyTo(Lang.map(retVal), context);
+                    Object newRetVal = returnIterable ? new JSONArray() : new JSONObject();
+                    retVal = stage.to(newRetVal);
+                }
+            }
             retVal = returnValueAdvice.applyTo(retVal, context);
-        }
-        if (hasTemplate && retVal instanceof RenderAny) {
-            retVal = RenderTemplate.INSTANCE;
         }
         return Controller.Util.inferResult(handlerMetaInfo, retVal, context, hasTemplate);
     }

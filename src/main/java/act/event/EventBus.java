@@ -1328,20 +1328,30 @@ public class EventBus extends AppServiceBase<EventBus> {
             jobManager = app().jobManager();
         }
         Set<ActEventListener> toBeRemoved = C.newSet();
-        for (final ActEventListener l : listeners) {
-            if (!async) {
-                boolean result = callOn(event, l);
-                if (result && once) {
-                    toBeRemoved.add(l);
-                }
-            } else {
-                jobManager.now(new Runnable() {
-                    @Override
-                    public void run() {
-                        callOn(event, l);
+        try {
+            for (final ActEventListener l : listeners) {
+                if (!async) {
+                    boolean result = callOn(event, l);
+                    if (result && once) {
+                        toBeRemoved.add(l);
                     }
-                });
+                } else {
+                    jobManager.now(new Runnable() {
+                        @Override
+                        public void run() {
+                            callOn(event, l);
+                        }
+                    });
+                }
             }
+        } catch (ConcurrentModificationException e) {
+            String eventName;
+            if (event instanceof SysEvent) {
+                eventName = event.toString();
+            } else {
+                eventName = event.getClass().getName();
+            }
+            throw E.unexpected("Concurrent modification issue encountered on handling event: " + eventName);
         }
         if (once && !toBeRemoved.isEmpty()) {
             listeners.removeAll(toBeRemoved);
@@ -1365,7 +1375,7 @@ public class EventBus extends AppServiceBase<EventBus> {
             try {
                 l.on(lookUpSysEvent(sysEventId));
             } catch (Exception e) {
-                LOGGER.warn(e, "error calling event handler");
+                LOGGER.warn(e, "error calling event handler on " + sysEventId);
             }
             return true;
         }
