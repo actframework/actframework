@@ -74,6 +74,11 @@ public abstract class ParamValueLoaderService extends LogSupportedDestroyableBas
         public String bindName() {
             return null;
         }
+
+        @Override
+        public boolean supportJsonDecorator() {
+            return false;
+        }
     };
     private static class ThrowableLoader implements ParamValueLoader {
         private Class<? extends Throwable> throwableType;
@@ -91,6 +96,11 @@ public abstract class ParamValueLoaderService extends LogSupportedDestroyableBas
         @Override
         public String bindName() {
             return null;
+        }
+
+        @Override
+        public boolean supportJsonDecorator() {
+            return false;
         }
     }
     // contains field names that should be waived when looking for value loader
@@ -237,6 +247,11 @@ public abstract class ParamValueLoaderService extends LogSupportedDestroyableBas
             @Override
             public String bindName() {
                 return null;
+            }
+
+            @Override
+            public boolean supportJsonDecorator() {
+                return true;
             }
         };
         return decorate(loader, BeanSpec.of(beanClass, injector), false, true);
@@ -397,6 +412,11 @@ public abstract class ParamValueLoaderService extends LogSupportedDestroyableBas
             @Override
             public String bindName() {
                 return null;
+            }
+
+            @Override
+            public boolean supportJsonDecorator() {
+                return false;
             }
         };
     }
@@ -560,6 +580,11 @@ public abstract class ParamValueLoaderService extends LogSupportedDestroyableBas
             public String bindName() {
                 return key.toString();
             }
+
+            @Override
+            public boolean supportJsonDecorator() {
+                return true;
+            }
         };
     }
 
@@ -660,7 +685,7 @@ public abstract class ParamValueLoaderService extends LogSupportedDestroyableBas
             boolean useJsonDecorator,
             boolean useValidationDecorator
     ) {
-        final ParamValueLoader jsonDecorated = useJsonDecorator ? new JsonParamValueLoader(loader, spec, injector) : loader;
+        final ParamValueLoader jsonDecorated = useJsonDecorator && loader.supportJsonDecorator() ? new JsonParamValueLoader(loader, spec, injector) : loader;
         ParamValueLoader validationDecorated = jsonDecorated;
         if (useValidationDecorator) {
             validationDecorated = new ParamValueLoader() {
@@ -683,6 +708,11 @@ public abstract class ParamValueLoaderService extends LogSupportedDestroyableBas
                 @Override
                 public String bindName() {
                     return jsonDecorated.bindName();
+                }
+
+                @Override
+                public boolean supportJsonDecorator() {
+                    return false;
                 }
             };
 
@@ -747,8 +777,7 @@ public abstract class ParamValueLoaderService extends LogSupportedDestroyableBas
 
     static boolean sessionScoped(BeanSpec spec) {
         return spec.hasAnnotation(SessionScoped.class)
-                || spec.hasAnnotation(org.osgl.inject.annotation.SessionScoped.class)
-                || spec.hasAnnotation(SessionVariable.class);
+                || spec.hasAnnotation(org.osgl.inject.annotation.SessionScoped.class);
     }
 
     public static void waiveFields(String... fieldNames) {

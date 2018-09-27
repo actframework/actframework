@@ -45,4 +45,9 @@ class BoundedValueLoader implements ParamValueLoader {
     public String bindName() {
         return bindModel;
     }
+
+    @Override
+    public boolean supportJsonDecorator() {
+        return false;
+    }
 }

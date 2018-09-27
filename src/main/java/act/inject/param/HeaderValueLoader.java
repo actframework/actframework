@@ -107,6 +107,11 @@ class HeaderValueLoader implements ParamValueLoader {
         return key;
     }
 
+    @Override
+    public boolean supportJsonDecorator() {
+        return false;
+    }
+
     private String key(String name, BeanSpec spec) {
         if (S.notBlank(name)) {
             return name;

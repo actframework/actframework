@@ -52,4 +52,8 @@ abstract class CliParamValueLoader implements ParamValueLoader {
         return ctx.commandLine();
     }
 
+    @Override
+    public boolean supportJsonDecorator() {
+        return false;
+    }
 }

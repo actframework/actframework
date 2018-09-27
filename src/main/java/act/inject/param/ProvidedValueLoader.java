@@ -67,6 +67,11 @@ public class ProvidedValueLoader extends LogSupportedDestroyableBase implements 
     }
 
     @Override
+    public boolean supportJsonDecorator() {
+        return false;
+    }
+
+    @Override
     protected void releaseResources() {
         Destroyable.Util.tryDestroy(singleton);
         singleton = null;

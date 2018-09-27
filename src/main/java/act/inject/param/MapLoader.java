@@ -183,6 +183,11 @@ class MapLoader extends LogSupport implements ParamValueLoader {
         return key.toString();
     }
 
+    @Override
+    public boolean supportJsonDecorator() {
+        return true;
+    }
+
     private ParamValueLoader childLoader(ParamKey key) {
         ParamValueLoader loader = childLoaders.get(key);
         if (null == loader) {

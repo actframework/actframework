@@ -41,6 +41,9 @@ class ScopedParamValueLoader implements ParamValueLoader {
         Object cached = scopeCache.get(key);
         boolean isSession = SessionScope.INSTANCE == scopeCache;
         if (isSession) {
+            if (null != cached) {
+                return cached;
+            }
             Object requestScoped = RequestScope.INSTANCE.get(key);
             if (null != requestScoped) {
                 return requestScoped;
@@ -57,5 +60,10 @@ class ScopedParamValueLoader implements ParamValueLoader {
     @Override
     public String bindName() {
         return realLoader.bindName();
+    }
+
+    @Override
+    public boolean supportJsonDecorator() {
+        return realLoader.supportJsonDecorator();
     }
 }

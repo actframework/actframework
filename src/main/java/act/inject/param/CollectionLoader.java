@@ -136,6 +136,11 @@ class CollectionLoader implements ParamValueLoader {
         return collection;
     }
 
+    @Override
+    public boolean supportJsonDecorator() {
+        return true;
+    }
+
     private ParamValueLoader childLoader(ParamKey key) {
         ParamValueLoader loader = childLoaders.get(key);
         if (null == loader) {

@@ -82,6 +82,11 @@ class PojoLoader extends LogSupport implements ParamValueLoader {
         return key.toString();
     }
 
+    @Override
+    public boolean supportJsonDecorator() {
+        return true;
+    }
+
     private Map<String, FieldLoader> fieldLoaders(ParamKey key, BeanSpec spec) {
         Class<?> current = spec.rawType();
         Map<String, FieldLoader> fieldLoaders = new HashMap<>();

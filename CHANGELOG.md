@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 **1.8.8**
+* `@SessionVariable` annotation not working as expected #856
 * Automate testing failure #855
 * `@PropertySpec` not effect when `ReturnValueAdvice` applied #852
 * Allow it to run specific test scenario #851

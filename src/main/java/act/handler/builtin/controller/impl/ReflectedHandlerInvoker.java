@@ -38,6 +38,7 @@ import act.handler.builtin.controller.*;
 import act.handler.event.ReflectedHandlerInvokerInit;
 import act.handler.event.ReflectedHandlerInvokerInvoke;
 import act.inject.DependencyInjector;
+import act.inject.SessionVariable;
 import act.inject.param.*;
 import act.job.JobManager;
 import act.job.TrackableWorker;
@@ -97,6 +98,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
     private JsonDtoClassManager jsonDTOClassManager;
     private int paramCount;
     private int fieldsAndParamsCount;
+    private int sessionVariablesCount;
     private String singleJsonFieldName;
     private boolean sessionFree;
     private boolean express;
@@ -286,9 +288,17 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
 
         paramCount = handler.paramCount();
         paramSpecs = jsonDTOClassManager.beanSpecs(controllerClass, method);
+        List<BeanSpec> paramSpecWithoutSessionVariables = new ArrayList<>();
         fieldsAndParamsCount = paramSpecs.size();
-        if (1 == fieldsAndParamsCount) {
-            singleJsonFieldName = paramSpecs.get(0).name();
+        for (BeanSpec spec : paramSpecs) {
+            if (spec.hasAnnotation(SessionVariable.class)) {
+                sessionVariablesCount++;
+            } else {
+                paramSpecWithoutSessionVariables.add(spec);
+            }
+        }
+        if (1 == (fieldsAndParamsCount - sessionVariablesCount)) {
+            singleJsonFieldName = paramSpecWithoutSessionVariables.get(0).name();
         }
 
         CORS.Spec corsSpec = CORS.spec(method).chain(CORS.spec(controllerClass));
@@ -642,7 +652,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
         if (fieldsAndParamsCount < 2) {
             return fieldsAndParamsCount;
         }
-        return fieldsAndParamsCount - context.pathVarCount();
+        return fieldsAndParamsCount - context.pathVarCount() - sessionVariablesCount;
     }
 
     private String singleJsonFieldName(ActionContext context) {

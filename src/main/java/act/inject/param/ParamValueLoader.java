@@ -38,6 +38,11 @@ public interface ParamValueLoader {
         public String bindName() {
             return null;
         }
+
+        @Override
+        public boolean supportJsonDecorator() {
+            return false;
+        }
     };
 
     /**
@@ -60,5 +65,7 @@ public interface ParamValueLoader {
      * @return the bind name
      */
     String bindName();
+
+    boolean supportJsonDecorator();
 
 }

@@ -41,4 +41,8 @@ public class PartialPathLoader implements ParamValueLoader {
         return bindName;
     }
 
+    @Override
+    public boolean supportJsonDecorator() {
+        return false;
+    }
 }

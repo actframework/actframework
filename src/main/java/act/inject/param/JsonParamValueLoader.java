@@ -28,10 +28,10 @@ import act.util.ActContext;
 import org.osgl.$;
 import org.osgl.inject.BeanSpec;
 
-import javax.inject.Provider;
 import java.lang.reflect.Array;
 import java.util.Collection;
 import java.util.Map;
+import javax.inject.Provider;
 
 class JsonParamValueLoader implements ParamValueLoader {
 
@@ -74,6 +74,11 @@ class JsonParamValueLoader implements ParamValueLoader {
     @Override
     public String bindName() {
         return spec.name();
+    }
+
+    @Override
+    public boolean supportJsonDecorator() {
+        return false;
     }
 
     private static Provider findDefValProvider(BeanSpec beanSpec, DependencyInjector<?> injector) {

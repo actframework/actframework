@@ -72,6 +72,11 @@ public class StringValueResolverValueLoader extends StringValueResolverValueLoad
         return null == obj && !noDefaultValue ? defVal : obj;
     }
 
+    @Override
+    public boolean supportJsonDecorator() {
+        return true;
+    }
+
     private Object load(ActContext context, HttpRequestParamEncode encode) {
         String bindName = encode.concat(paramKey);
         String value = context.paramVal(bindName);
