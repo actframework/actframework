@@ -32,7 +32,7 @@ import java.util.concurrent.ConcurrentMap;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Singleton;
 
-public class ProvidedValueLoader extends LogSupportedDestroyableBase implements ParamValueLoader {
+public class ProvidedValueLoader extends ParamValueLoader.NonCacheable {
     private DependencyInjector<?> injector;
     private BeanSpec beanSpec;
     private Object singleton;

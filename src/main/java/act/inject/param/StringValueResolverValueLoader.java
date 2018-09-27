@@ -27,7 +27,7 @@ import org.osgl.mvc.annotation.Param;
 import org.osgl.util.E;
 import org.osgl.util.StringValueResolver;
 
-public class StringValueResolverValueLoader extends StringValueResolverValueLoaderBase implements ParamValueLoader {
+public class StringValueResolverValueLoader extends StringValueResolverValueLoaderBase {
 
     private static final ThreadLocal<HttpRequestParamEncode> encodeShare = new ThreadLocal<HttpRequestParamEncode>();
 
@@ -70,11 +70,6 @@ public class StringValueResolverValueLoader extends StringValueResolverValueLoad
             }
         }
         return null == obj && !noDefaultValue ? defVal : obj;
-    }
-
-    @Override
-    public boolean supportJsonDecorator() {
-        return true;
     }
 
     private Object load(ActContext context, HttpRequestParamEncode encode) {

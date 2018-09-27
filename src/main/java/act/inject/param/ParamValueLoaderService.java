@@ -64,23 +64,13 @@ public abstract class ParamValueLoaderService extends LogSupportedDestroyableBas
 
     private static final ParamValueLoader[] DUMB = new ParamValueLoader[0];
     private static final ThreadLocal<ParamTree> PARAM_TREE = new ThreadLocal<ParamTree>();
-    private static final ParamValueLoader RESULT_LOADER = new ParamValueLoader() {
+    private static final ParamValueLoader RESULT_LOADER = new ParamValueLoader.NonCacheable() {
         @Override
         public Object load(Object bean, ActContext<?> context, boolean noDefaultValue) {
             return ((ActionContext)context).result();
         }
-
-        @Override
-        public String bindName() {
-            return null;
-        }
-
-        @Override
-        public boolean supportJsonDecorator() {
-            return false;
-        }
     };
-    private static class ThrowableLoader implements ParamValueLoader {
+    private static class ThrowableLoader extends ParamValueLoader.NonCacheable {
         private Class<? extends Throwable> throwableType;
 
         public ThrowableLoader(Class<? extends Throwable> throwableType) {
@@ -93,16 +83,8 @@ public abstract class ParamValueLoaderService extends LogSupportedDestroyableBas
             return throwableType.isInstance(o) ? o : null;
         }
 
-        @Override
-        public String bindName() {
-            return null;
-        }
-
-        @Override
-        public boolean supportJsonDecorator() {
-            return false;
-        }
     }
+
     // contains field names that should be waived when looking for value loader
     private static final Set<String> fieldBlackList = new HashSet<>();
 
@@ -215,7 +197,7 @@ public abstract class ParamValueLoaderService extends LogSupportedDestroyableBas
         final Map<Field, ParamValueLoader> loaders = fieldLoaders(beanClass);
         final boolean hasField = !loaders.isEmpty();
         final $.Var<Boolean> hasValidateConstraint = $.var();
-        ParamValueLoader loader = new ParamValueLoader() {
+        ParamValueLoader loader = new ParamValueLoader.NonCacheable() {
             @Override
             public Object load(Object bean, ActContext<?> context, boolean noDefaultValue) {
                 if (null == bean) {
@@ -231,8 +213,6 @@ public abstract class ParamValueLoaderService extends LogSupportedDestroyableBas
                         Object fieldValue = loader.load(null, context, noDefaultValue);
                         if (null != fieldValue) {
                             field.set(bean, fieldValue);
-                        } else {
-                            fieldValue = field.get(bean);
                         }
                         if (hasValidationConstraint(BeanSpec.of(field, injector))) {
                             hasValidateConstraint.set(true);
@@ -242,16 +222,6 @@ public abstract class ParamValueLoaderService extends LogSupportedDestroyableBas
                     throw new InjectException(e);
                 }
                 return bean;
-            }
-
-            @Override
-            public String bindName() {
-                return null;
-            }
-
-            @Override
-            public boolean supportJsonDecorator() {
-                return true;
             }
         };
         return decorate(loader, BeanSpec.of(beanClass, injector), false, true);
@@ -395,7 +365,7 @@ public abstract class ParamValueLoaderService extends LogSupportedDestroyableBas
         if (null == ctx) {
             return ParamValueLoader.NIL;
         }
-        return new ParamValueLoader() {
+        return new ParamValueLoader.NonCacheable() {
             @Override
             public Object load(Object bean, ActContext<?> ctx, boolean noDefaultValue) {
                 Method handlerMethod = ctx.handlerMethod();
@@ -407,16 +377,6 @@ public abstract class ParamValueLoaderService extends LogSupportedDestroyableBas
                     anno = curMethod.getAnnotation(annoType);
                 }
                 return anno;
-            }
-
-            @Override
-            public String bindName() {
-                return null;
-            }
-
-            @Override
-            public boolean supportJsonDecorator() {
-                return false;
             }
         };
     }
@@ -562,7 +522,7 @@ public abstract class ParamValueLoaderService extends LogSupportedDestroyableBas
             final BeanSpec targetSpec
     ) {
         final CollectionLoader collectionLoader = new CollectionLoader(key, ArrayList.class, elementType, targetSpec, injector, this);
-        return new ParamValueLoader() {
+        return new ParamValueLoader.JsonBodySupported() {
             @Override
             public Object load(Object bean, ActContext<?> context, boolean noDefaultValue) {
                 List list = new ArrayList();
@@ -579,11 +539,6 @@ public abstract class ParamValueLoaderService extends LogSupportedDestroyableBas
             @Override
             public String bindName() {
                 return key.toString();
-            }
-
-            @Override
-            public boolean supportJsonDecorator() {
-                return true;
             }
         };
     }
@@ -713,6 +668,11 @@ public abstract class ParamValueLoaderService extends LogSupportedDestroyableBas
                 @Override
                 public boolean supportJsonDecorator() {
                     return false;
+                }
+
+                @Override
+                public boolean supportScopeCaching() {
+                    return jsonDecorated.supportScopeCaching();
                 }
             };
 

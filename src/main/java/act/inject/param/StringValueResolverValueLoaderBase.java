@@ -25,7 +25,7 @@ import org.osgl.mvc.annotation.Param;
 import org.osgl.util.E;
 import org.osgl.util.StringValueResolver;
 
-abstract class StringValueResolverValueLoaderBase implements ParamValueLoader {
+abstract class StringValueResolverValueLoaderBase extends ParamValueLoader.JsonBodySupported {
 
     protected final StringValueResolver<?> stringValueResolver;
     protected final ParamKey paramKey;

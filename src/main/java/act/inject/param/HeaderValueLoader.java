@@ -35,7 +35,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-class HeaderValueLoader implements ParamValueLoader {
+class HeaderValueLoader extends ParamValueLoader.NonCacheable {
 
     private final String key;
     private final boolean multiValues;
@@ -105,11 +105,6 @@ class HeaderValueLoader implements ParamValueLoader {
     @Override
     public String bindName() {
         return key;
-    }
-
-    @Override
-    public boolean supportJsonDecorator() {
-        return false;
     }
 
     private String key(String name, BeanSpec spec) {

@@ -26,7 +26,7 @@ import org.osgl.mvc.util.Binder;
 /**
  * Use {@link org.osgl.mvc.util.Binder} to load param value
  */
-class BoundedValueLoader implements ParamValueLoader {
+class BoundedValueLoader extends ParamValueLoader.Cacheable {
 
     private Binder binder;
     private String bindModel;
@@ -46,8 +46,4 @@ class BoundedValueLoader implements ParamValueLoader {
         return bindModel;
     }
 
-    @Override
-    public boolean supportJsonDecorator() {
-        return false;
-    }
 }

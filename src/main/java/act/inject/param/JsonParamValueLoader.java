@@ -77,6 +77,11 @@ class JsonParamValueLoader implements ParamValueLoader {
     }
 
     @Override
+    public boolean supportScopeCaching() {
+        return fallBack.supportScopeCaching();
+    }
+
+    @Override
     public boolean supportJsonDecorator() {
         return false;
     }

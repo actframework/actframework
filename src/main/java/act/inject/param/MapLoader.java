@@ -25,7 +25,6 @@ import act.app.App;
 import act.app.data.StringValueResolverManager;
 import act.inject.DependencyInjector;
 import act.util.ActContext;
-import act.util.LogSupport;
 import org.osgl.$;
 import org.osgl.inject.BeanSpec;
 import org.osgl.mvc.result.BadRequest;
@@ -34,7 +33,7 @@ import org.osgl.util.*;
 import java.lang.reflect.Type;
 import java.util.*;
 
-class MapLoader extends LogSupport implements ParamValueLoader {
+class MapLoader extends ParamValueLoader.JsonBodySupported {
 
     private final ParamKey key;
     private final Class<? extends Map> mapClass;

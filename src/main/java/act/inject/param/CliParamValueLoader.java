@@ -25,7 +25,7 @@ import act.cli.util.CommandLineParser;
 
 import java.util.List;
 
-abstract class CliParamValueLoader implements ParamValueLoader {
+abstract class CliParamValueLoader extends ParamValueLoader.Cacheable {
 
     final String optionValue(String lead1, String lead2, CliContext ctx) {
         return parser(ctx).getString(lead1, lead2);
@@ -52,8 +52,4 @@ abstract class CliParamValueLoader implements ParamValueLoader {
         return ctx.commandLine();
     }
 
-    @Override
-    public boolean supportJsonDecorator() {
-        return false;
-    }
 }

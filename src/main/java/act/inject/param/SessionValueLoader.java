@@ -29,7 +29,7 @@ import org.osgl.util.E;
 import org.osgl.util.S;
 import org.osgl.util.StringValueResolver;
 
-class SessionValueLoader implements ParamValueLoader {
+class SessionValueLoader extends ParamValueLoader.NonCacheable {
 
     private final String key;
     private final Class targetType;
@@ -66,11 +66,6 @@ class SessionValueLoader implements ParamValueLoader {
     @Override
     public String bindName() {
         return key;
-    }
-
-    @Override
-    public boolean supportJsonDecorator() {
-        return false;
     }
 
     private String key(String name, BeanSpec spec) {
