@@ -1,0 +1,11 @@
+Scenario(GH857):
+  description: "[857] Provide a way to allow app to specify order of elements in the injected collection"
+  interactions:
+    - description: test
+      request:
+        get: 857
+      response:
+        json:
+          0: bar
+          1: zoo
+          2: foo

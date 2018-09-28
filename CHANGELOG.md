@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 **1.8.8**
+* Provide a way to allow app to specify order of elements in the injected collection #857
 * `@SessionVariable` annotation not working as expected #856
 * Automate testing failure #855
 * `@PropertySpec` not effect when `ReturnValueAdvice` applied #852
