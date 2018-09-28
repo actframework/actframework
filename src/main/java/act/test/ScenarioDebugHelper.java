@@ -20,16 +20,13 @@ package act.test;
  * #L%
  */
 
-import static act.controller.Controller.Util.renderTemplate;
-
 import act.Act;
 import act.app.ActionContext;
 import act.app.App;
 import act.handler.RequestHandlerBase;
 import act.sys.Env;
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
+import act.util.PropertySpec;
+import com.alibaba.fastjson.*;
 import org.osgl.http.H;
 import org.osgl.mvc.annotation.GetAction;
 import org.osgl.util.Keyword;
@@ -97,9 +94,12 @@ public class ScenarioDebugHelper {
     private Test test;
 
     @GetAction({"e2e/{testId}", "test/{testId}", "tests/{testId}"})
-    public void run(App app, Keyword testId) {
-        List<Scenario> scenarios = test.run(app, testId, false);
-        renderTemplate("/~test.html", scenarios, app);
+    @PropertySpec("name, status, description")
+    public List<Scenario> run(App app, Keyword testId, ActionContext context) {
+        if (context.accept() == H.Format.HTML) {
+            context.templatePath("/~test.html");
+        }
+        return test.run(app, testId, false);
     }
 
 }

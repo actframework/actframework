@@ -9,9 +9,9 @@ package act.handler.builtin.controller.impl;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -174,7 +174,8 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
             throw E.unexpected(e);
         }
         this.returnString = method.getReturnType() == String.class;
-        if (handlerMetaInfo.hasReturn()) {
+        final boolean isBuiltIn = controllerClass.getName().startsWith("act.");
+        if (handlerMetaInfo.hasReturn() && !isBuiltIn) {
             this.returnSimpleType = this.returnString || $.isSimpleType(method.getReturnType());
             this.returnIterable = !this.returnSimpleType && (handlerMetaInfo.isReturnArray() || Iterable.class.isAssignableFrom(method.getReturnType()));
             if (this.returnIterable) {
@@ -220,7 +221,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
             method.setAccessible(true);
         }
 
-        if (handlerMetaInfo.hasReturn() && null == method.getAnnotation(NoReturnValueAdvice.class)) {
+        if (!isBuiltIn && handlerMetaInfo.hasReturn() && null == method.getAnnotation(NoReturnValueAdvice.class)) {
             ReturnValueAdvisor advisor = getAnnotation(ReturnValueAdvisor.class);
             if (null != advisor) {
                 returnValueAdvice = app.getInstance(advisor.value());
@@ -659,7 +660,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
         if (null != singleJsonFieldName) {
             return singleJsonFieldName;
         }
-        for (BeanSpec spec: paramSpecs) {
+        for (BeanSpec spec : paramSpecs) {
             String name = spec.name();
             if (context.isPathVar(name)) {
                 continue;
@@ -776,7 +777,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
             return;
         }
         CacheFor cacheFor = method.getAnnotation(CacheFor.class);
-        cacheSupport = null == cacheFor ? CacheSupportMetaInfo.disabled() :  CacheSupportMetaInfo.enabled(
+        cacheSupport = null == cacheFor ? CacheSupportMetaInfo.disabled() : CacheSupportMetaInfo.enabled(
                 new CacheKeyBuilder(cacheFor, S.concat(controllerClass.getName(), ".", method.getName())),
                 cacheFor.id(),
                 cacheFor.value(),
@@ -1315,7 +1316,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
             } else if (1 == allValues.length) {
                 return allValues[0];
             } else {
-                return  $.toString2(allValues);
+                return $.toString2(allValues);
             }
         }
     }
