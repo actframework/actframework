@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 **1.8.8**
+* Rythm Template error report - source tab issue #859
 * Render automated test report for JSON request #858
 * Provide a way to allow app to specify order of elements in the injected collection #857
 * `@SessionVariable` annotation not working as expected #856

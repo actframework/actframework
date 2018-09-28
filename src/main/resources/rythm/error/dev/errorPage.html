@@ -187,9 +187,9 @@ List<String> stackTrace;
       <span class="line-number">@line_index</span>
       <span class="line-code">
         @ifNot(isErrorLine || sourceInfo.column() < 0) {
-          @line.sp2nbsp()
+          @line.escapeHtml().sp2nbsp()
         } else {
-          @line.errorLine(sourceInfo.column())
+          @line.escapeHtml().errorLine(sourceInfo.column())
         }
       </span>
     </div>
