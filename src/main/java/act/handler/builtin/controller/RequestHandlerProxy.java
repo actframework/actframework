@@ -232,20 +232,20 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
                 cacheKeys.add(cacheKey);
             }
         } catch (Exception e) {
-            H.Request req = context.req();
-            logger.error(e, S.concat("Error handling request: [", req.method().name(), "] ", req.url()));
             try {
                 result = handleException(e, context);
             } catch (Exception e0) {
                 logger.error(e0, "Error invoking exception handler");
             }
             if (null == result) {
+                H.Request req = context.req();
+                logger.error(e, "error handling request: " + req);
                 result = ActErrorResult.of(e);
             }
             try {
                 onResult(result, context);
             } catch (Exception e2) {
-                logger.error(e2, "error rendering exception handle  result");
+                logger.error(e2, "error rendering exception handle result");
                 onResult(ActErrorResult.of(e2), context);
             }
         } finally {
