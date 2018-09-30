@@ -97,7 +97,7 @@ public class DevModeClassLoader extends AppClassLoader {
                 return super.getResource(name);
             }
         }
-        return null;
+        return url;
     }
 
     @Override

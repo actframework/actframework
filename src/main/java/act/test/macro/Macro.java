@@ -75,12 +75,12 @@ public abstract class Macro<T extends Macro> extends NamedLogic<T> {
                 s = s.substring(1);
             }
             resourcePath = s;
-            E.unexpectedIf(null == tryRead(), "ReadContent init param must be a valid resource path: ", s);
+            E.unexpectedIf(null == tryRead(), "ReadContent init param[%s] must be a valid resource path.", s);
         }
 
         @Override
         public void run(Scenario scenario) {
-            scenario.cache(S.underscore(resourcePath), tryRead());
+            scenario.cache(resourcePath, tryRead());
         }
 
         private String tryRead() {

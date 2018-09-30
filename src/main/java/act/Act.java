@@ -571,7 +571,14 @@ public final class Act {
      * @return the `URL` if found, or `null` if resource not found
      */
     public static URL getResource(String name) {
-        return app().getResource(name);
+        App app = app();
+        if (null == app) {
+            if (name.startsWith("/")) {
+                name = name.substring(1);
+            }
+            return Act.class.getClassLoader().getResource(name);
+        }
+        return app.getResource(name);
     }
 
     /**
