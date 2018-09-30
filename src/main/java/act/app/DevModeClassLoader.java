@@ -85,9 +85,19 @@ public class DevModeClassLoader extends AppClassLoader {
 
     @Override
     public URL getResource(String name) {
-        // TODO: handle modules case
+        // TODO: handle multiple modules case
         File file = new File(RuntimeDirs.resource(app()), name);
-        return file.exists() ? $.convert(file).to(URL.class) : super.getResource(name);
+        if (file.exists()) {
+            return $.convert(file).to(URL.class);
+        }
+        URL url = super.getResource(name);
+        if (null == url) {
+            if (name.startsWith("/")) {
+                name = name.substring(1);
+                return super.getResource(name);
+            }
+        }
+        return null;
     }
 
     @Override

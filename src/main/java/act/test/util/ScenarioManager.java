@@ -99,7 +99,7 @@ public class ScenarioManager extends YamlLoader {
         if (null != app) {
             searchWhenInAppContext(app);
         } else {
-            URL url = ScenarioManager.class.getResource("/test/scenarios");
+            URL url = Act.getResource("/test/scenarios");
             if (null != url) {
                 File file = new File(url.getFile());
                 if (file.exists()) {

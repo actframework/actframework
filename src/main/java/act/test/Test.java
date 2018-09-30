@@ -200,7 +200,10 @@ public class Test extends LogSupport {
         }
     }
 
-    // wait 1 seconds to allow app setup the network
+    // ensure automated test start after three events:
+    // 1. ACT_START
+    // 2. POST_START
+    // 3. DB_SVC_LOADED
     @OnSysEvent(SysEventId.ACT_START)
     public void run(final App app) {
         boolean run = $.bool(app.config().get("test.run")) || $.bool(app.config().get("e2e.run")) || "test".equalsIgnoreCase(Act.profile()) || "e2e".equalsIgnoreCase(Act.profile());

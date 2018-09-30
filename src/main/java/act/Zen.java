@@ -58,7 +58,7 @@ public final class Zen {
     }
 
     private static List<String> loadWords() {
-        URL url = Zen.class.getResource("/act_zen.txt");
+        URL url = Act.getResource("act_zen.txt");
         List<String> words = C.newList(defaultWords());
         if (null != url) {
             try {
