@@ -1176,11 +1176,11 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
     /**
      * Update the context session to mark a user logged in
      *
-     * @param username
-     *         the username
+     * @param userIdentifier
+     *         the user identifier, could be either userId or username
      */
-    public void login(String username) {
-        session().put(config().sessionKeyUsername(), username);
+    public void login(Object userIdentifier) {
+        session().put(config().sessionKeyUsername(), userIdentifier);
     }
 
     /**
