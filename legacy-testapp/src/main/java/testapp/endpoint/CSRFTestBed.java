@@ -1,12 +1,12 @@
 package testapp.endpoint;
 
-import act.controller.Controller;
+import act.controller.annotation.UrlContext;
 import act.security.CSRF;
 import org.osgl.mvc.annotation.GetAction;
 import org.osgl.mvc.annotation.PostAction;
 
 @CSRF.Enable
-@Controller("/csrf")
+@UrlContext("/csrf")
 public class CSRFTestBed {
 
     @GetAction

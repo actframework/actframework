@@ -1,6 +1,6 @@
 package testapp.endpoint;
 
-import act.controller.Controller;
+import act.controller.annotation.UrlContext;
 import org.osgl.mvc.annotation.Action;
 import testapp.model.RGB;
 
@@ -10,7 +10,7 @@ import java.util.TreeMap;
 /**
  * Used to verify the parameter binding for Map data
  */
-@Controller("/smpr")
+@UrlContext("/smpr")
 @SuppressWarnings("unused")
 public class SimpleMapParameterResolver {
 

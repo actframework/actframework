@@ -1,15 +1,11 @@
 package testapp.endpoint;
 
-import act.controller.Controller;
+import act.controller.annotation.UrlContext;
 import org.osgl.http.H;
 import org.osgl.inject.annotation.SessionScoped;
-import org.osgl.mvc.annotation.Action;
-import org.osgl.mvc.annotation.Before;
-import org.osgl.mvc.annotation.SessionFree;
+import org.osgl.mvc.annotation.*;
 import org.osgl.util.C;
-import testapp.model.Bar;
-import testapp.model.Contact;
-import testapp.model.Foo;
+import testapp.model.*;
 
 import java.util.List;
 import java.util.Map;
@@ -17,7 +13,7 @@ import java.util.Map;
 /**
  * Test binding to a POJO object
  */
-@Controller("/pojo")
+@UrlContext("/pojo")
 @SuppressWarnings("unused")
 public class PojoBinding {
 

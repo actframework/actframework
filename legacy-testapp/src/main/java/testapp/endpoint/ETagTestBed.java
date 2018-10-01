@@ -1,10 +1,11 @@
 package testapp.endpoint;
 
 import act.controller.Controller;
+import act.controller.annotation.UrlContext;
 import org.osgl.mvc.annotation.GetAction;
 import testapp.model.VersionedModel;
 
-@Controller("/etag")
+@UrlContext("/etag")
 public class ETagTestBed extends Controller.Util {
 
     @GetAction("{id}")

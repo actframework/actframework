@@ -1,12 +1,12 @@
 package testapp.endpoint;
 
-import act.controller.Controller;
+import static act.controller.Controller.Util.renderText;
+
+import act.controller.annotation.UrlContext;
 import act.util.Virtual;
 import org.osgl.mvc.annotation.GetAction;
 
-import static act.controller.Controller.Util.renderText;
-
-@Controller("/vc")
+@UrlContext("/vc")
 public class VirtualControllerTestBed {
 
     @GetAction("1")
@@ -20,10 +20,10 @@ public class VirtualControllerTestBed {
         renderText("2" + getClass().getSimpleName());
     }
 
-    @Controller("foo")
+    @UrlContext("foo")
     public static class Foo extends VirtualControllerTestBed {}
 
-    @Controller("bar")
+    @UrlContext("bar")
     public static class Bar extends VirtualControllerTestBed {}
 
 }

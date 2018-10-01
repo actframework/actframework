@@ -1,9 +1,9 @@
 package testapp.endpoint;
 
-import act.controller.Controller;
+import act.controller.annotation.UrlContext;
 import org.osgl.mvc.annotation.GetAction;
 
-@Controller("/cht")
+@UrlContext("/cht")
 public class ContextHierarchiTestBed {
 
     public static class IntermediateController extends ContextHierarchiTestBed {

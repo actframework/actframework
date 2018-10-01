@@ -1,11 +1,11 @@
 package testapp.endpoint;
 
-import act.controller.Controller;
+import act.controller.annotation.UrlContext;
 import act.handler.PreventDoubleSubmission;
 import org.osgl.mvc.annotation.PostAction;
 
 // Test double submission protection
-@Controller("/dsp")
+@UrlContext("/dsp")
 public class DspTestBed {
 
     @PreventDoubleSubmission

@@ -1,21 +1,19 @@
 package testapp.endpoint;
 
 import act.controller.Controller;
+import act.controller.annotation.UrlContext;
 import act.util.JsonView;
 import org.osgl.mvc.annotation.Action;
 import testapp.model.RGB;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
 
 /**
  * Used to test simple array|list|set type parameter resolving
  */
-@Controller("/sapr")
+@UrlContext("/sapr")
 @SuppressWarnings("unused")
 public class SimpleArrayParameterResolver extends Controller.Util {
     @Action("bool_pa")

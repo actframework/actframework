@@ -2,17 +2,19 @@ package testapp.endpoint;
 
 import act.cli.Command;
 import act.controller.Controller;
+import act.controller.annotation.UrlContext;
 import act.data.annotation.ReadContent;
 import org.osgl.mvc.annotation.PostAction;
 import org.osgl.storage.impl.SObject;
 import org.osgl.util.C;
 import org.osgl.util.IO;
 
-import javax.inject.Named;
 import java.io.File;
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
+import javax.inject.Named;
 
-@Controller("/misc")
+@UrlContext("/misc")
 @SuppressWarnings("unused")
 public class MiscsTestBed extends Controller.Util {
 

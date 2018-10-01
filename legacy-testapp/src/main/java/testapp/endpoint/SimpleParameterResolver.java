@@ -1,17 +1,18 @@
 package testapp.endpoint;
 
 import act.controller.Controller;
+import act.controller.annotation.UrlContext;
 import org.osgl.mvc.annotation.Action;
 import testapp.model.RGB;
 
-import javax.validation.constraints.NotNull;
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import javax.validation.constraints.NotNull;
 
 /**
  * Used to test simple type parameter resolving
  */
-@Controller("/spr")
+@UrlContext("/spr")
 public class SimpleParameterResolver extends Controller.Util {
 
     @Action("bool_p")

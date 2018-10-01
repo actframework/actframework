@@ -1,10 +1,10 @@
 package testapp.endpoint;
 
-import act.controller.Controller;
+import act.controller.annotation.UrlContext;
 import act.security.CSP;
 import org.osgl.mvc.annotation.GetAction;
 
-@Controller("/csp")
+@UrlContext("/csp")
 @CSP("default-src 'self'; img-src https://*; child-src 'none';")
 public class CSPTestBed {
 

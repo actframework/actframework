@@ -1,6 +1,6 @@
 package testapp.endpoint;
 
-import act.controller.Controller;
+import act.controller.annotation.UrlContext;
 import act.data.annotation.DateFormatPattern;
 import com.alibaba.fastjson.JSON;
 import org.joda.time.DateTime;
@@ -9,7 +9,7 @@ import org.osgl.mvc.annotation.GetAction;
 import java.util.Arrays;
 import java.util.Map;
 
-@Controller("/bwa")
+@UrlContext("/bwa")
 @SuppressWarnings("unused")
 public class BindingWithAnnotationTestBed {
 

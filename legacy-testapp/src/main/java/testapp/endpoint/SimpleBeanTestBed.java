@@ -2,6 +2,7 @@ package testapp.endpoint;
 
 import act.app.App;
 import act.controller.Controller;
+import act.controller.annotation.UrlContext;
 import org.osgl.$;
 import org.osgl.exception.UnexpectedException;
 import org.osgl.exception.UnexpectedNoSuchMethodException;
@@ -9,7 +10,7 @@ import org.osgl.inject.InjectException;
 import org.osgl.mvc.annotation.GetAction;
 import testapp.sbean.*;
 
-@Controller("/sbean")
+@UrlContext("/sbean")
 public class SimpleBeanTestBed extends Controller.Util {
 
     @GetAction("def_const/sbean_no_def_const")

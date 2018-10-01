@@ -1,13 +1,13 @@
 package testapp.endpoint;
 
-import act.controller.Controller;
+import act.controller.annotation.UrlContext;
 import act.security.CORS;
 import org.osgl.mvc.annotation.GetAction;
 import org.osgl.mvc.annotation.PutAction;
 
 @CORS.AllowHeaders(CORSTestBed.ALLOW_HEADERS)
 @CORS.AllowOrigin(CORSTestBed.ALLOW_ORIGIN)
-@Controller("/cors")
+@UrlContext("/cors")
 @SuppressWarnings("unused")
 public class CORSTestBed {
 

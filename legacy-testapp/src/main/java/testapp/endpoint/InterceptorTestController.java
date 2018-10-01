@@ -2,15 +2,13 @@ package testapp.endpoint;
 
 import act.app.ActionContext;
 import act.controller.Controller;
+import act.controller.annotation.UrlContext;
 import org.osgl.exception.UnexpectedException;
-import org.osgl.mvc.annotation.After;
-import org.osgl.mvc.annotation.Before;
-import org.osgl.mvc.annotation.Catch;
-import org.osgl.mvc.annotation.GetAction;
+import org.osgl.mvc.annotation.*;
 import org.osgl.mvc.result.BadRequest;
 import org.osgl.mvc.result.Result;
 
-@Controller("/aop")
+@UrlContext("/aop")
 @SuppressWarnings("unused")
 public class InterceptorTestController extends Controller.Util {
 
