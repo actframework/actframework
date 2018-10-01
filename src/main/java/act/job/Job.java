@@ -27,6 +27,7 @@ import act.Act;
 import act.app.App;
 import act.app.event.SysEventId;
 import act.event.SysEventListenerBase;
+import act.inject.util.Sorter;
 import act.job.bytecode.ReflectedJobInvoker;
 import act.route.DuplicateRouteMappingException;
 import act.util.*;
@@ -71,6 +72,7 @@ public class Job extends DestroyableBase implements Runnable {
                 return parent;
             }
             jobList.add(thatJob);
+            Collections.sort(jobList, Sorter.COMPARATOR);
             return parent;
         }
 

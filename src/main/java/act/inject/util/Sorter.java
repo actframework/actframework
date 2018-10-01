@@ -21,6 +21,7 @@ package act.inject.util;
  */
 
 import act.annotations.Order;
+import act.util.Ordered;
 import org.osgl.inject.PostConstructProcessor;
 
 import java.lang.annotation.Annotation;
@@ -28,7 +29,7 @@ import java.util.*;
 
 public class Sorter implements PostConstructProcessor<Object> {
 
-    private static final Comparator comp = new Comparator() {
+    public static final Comparator COMPARATOR = new Comparator() {
         @Override
         public int compare(Object o1, Object o2) {
             if (o1 == null) {
@@ -37,19 +38,35 @@ public class Sorter implements PostConstructProcessor<Object> {
             if (o2 == null) {
                 return 1;
             }
-            Class<?> c1 = o1.getClass();
-            Class<?> c2 = o2.getClass();
-            Order order1 = c1.getAnnotation(Order.class);
-            Order order2 = c2.getAnnotation(Order.class);
-            int p1 = null == order1 ? Order.HIGHEST_PRECEDENCE : order1.value();
-            int p2 = null == order2 ? Order.HIGHEST_PRECEDENCE : order2.value();
+            if (o1 == o2 || o1.equals(o2)) {
+                return 0;
+            }
+            int p1 = orderOf(o1);
+            int p2 = orderOf(o2);
             int delta = Integer.compare(p1, p2);
             if (0 != delta) {
                 return delta;
             }
+            Class<?> c1 = o1.getClass();
+            Class<?> c2 = o2.getClass();
+            if (c1 == c2) {
+                if (Comparable.class.isAssignableFrom(c1)) {
+                    return ((Comparable) o1).compareTo(o2);
+                }
+                return o1.toString().compareTo(o2.toString());
+            }
             return c1.toString().compareTo(c2.toString());
         }
     };
+
+    private static int orderOf(Object o) {
+        if (o instanceof Ordered) {
+            return ((Ordered) o).order();
+        }
+        Class<?> c = o.getClass();
+        Order order = c.getAnnotation(Order.class);
+        return null == order ? Order.HIGHEST_PRECEDENCE : order.value();
+    }
 
 
     @Override
@@ -60,7 +77,7 @@ public class Sorter implements PostConstructProcessor<Object> {
     }
 
     private void sort(List<?> list) {
-        Collections.sort(list, comp);
+        Collections.sort(list, COMPARATOR);
     }
 
 }
