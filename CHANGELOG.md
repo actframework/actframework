@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 **1.8.8**
+* Support using `SessionVariable` annotation and `DbBind` together #862
 * Make `EventBus` and `Job` list favor `Order` annotation #861
 * test resource not refreshed after hot-reload #860
 * Rythm Template error report - source tab issue #859

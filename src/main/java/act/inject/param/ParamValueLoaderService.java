@@ -793,10 +793,12 @@ public abstract class ParamValueLoaderService extends LogSupportedDestroyableBas
         return !hasDbBind(aa);
     }
 
+    private static final String DB_BIND_CNAME = DbBind.class.getName();
     // DbBind is special: it's class loader is AppClassLoader
     public static boolean hasDbBind(Annotation[] annotations) {
+        final String name = DB_BIND_CNAME;
         for (Annotation a : annotations) {
-            if (a.annotationType().getName().equals(DbBind.class.getName())) {
+            if (a.annotationType().getName().equals(name)) {
                 return true;
             }
         }
