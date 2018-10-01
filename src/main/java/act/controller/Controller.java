@@ -174,6 +174,22 @@ public @interface Controller {
         }
 
         /**
+         * Check if the input is `null` then throw out `NotFound` result, otherwise return
+         * the input back.
+         *
+         * @param o
+         *      the input object to be evaluated.
+         * @param <T>
+         *      the type parameter.
+         * @return
+         *      the input `o` if it is not `null`.
+         */
+        public static <T> T requireNotNull(T o) {
+            notFoundIfNull(o);
+            return o;
+        }
+
+        /**
          * Throws out an {@link NotFound} result if the object specified is
          * {@code null}
          *
