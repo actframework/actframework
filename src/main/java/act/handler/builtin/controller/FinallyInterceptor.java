@@ -30,7 +30,7 @@ public abstract class FinallyInterceptor
         extends Handler<FinallyInterceptor>
         implements Plugin {
 
-    protected FinallyInterceptor(int priority) {
+    protected FinallyInterceptor(Integer priority) {
         super(priority);
     }
 

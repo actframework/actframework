@@ -28,7 +28,7 @@ import org.osgl.mvc.result.Result;
  */
 public abstract class ActionHandler<T extends ActionHandler> extends Handler<T> {
 
-    protected ActionHandler(int priority) {
+    protected ActionHandler(Integer priority) {
         super(priority);
     }
 

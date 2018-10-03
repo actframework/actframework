@@ -27,7 +27,7 @@ import act.plugin.Plugin;
  */
 public abstract class BeforeInterceptor extends ActionHandler<BeforeInterceptor> implements Plugin {
 
-    public BeforeInterceptor(int priority) {
+    public BeforeInterceptor(Integer priority) {
         super(priority);
     }
 

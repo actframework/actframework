@@ -122,8 +122,8 @@ public abstract class HandlerMethodMetaInfo<T extends HandlerMethodMetaInfo> ext
     }
 
     @Override
-    public int priority() {
-        return -1;
+    public Integer priority() {
+        return null;
     }
 
     public T appContextViaField(String fieldName) {

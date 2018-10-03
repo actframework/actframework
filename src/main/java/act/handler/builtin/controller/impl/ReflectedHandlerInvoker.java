@@ -175,8 +175,13 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
             throw E.unexpected(e);
         }
         this.returnString = method.getReturnType() == String.class;
-        Order order = method.getAnnotation(Order.class);
-        this.order = null == order ? Order.HIGHEST_PRECEDENCE : order.value();
+        Integer priority = handler.priority();
+        if (null != priority) {
+            this.order = priority;
+        } else {
+            Order order = method.getAnnotation(Order.class);
+            this.order = null == order ? Order.HIGHEST_PRECEDENCE : order.value();
+        }
         final boolean isBuiltIn = controllerClass.getName().startsWith("act.");
         if (handlerMetaInfo.hasReturn() && !isBuiltIn) {
             this.returnSimpleType = this.returnString || $.isSimpleType(method.getReturnType());
@@ -419,7 +424,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
     }
 
     @Override
-    public int priority() {
+    public Integer priority() {
         return handler.priority();
     }
 

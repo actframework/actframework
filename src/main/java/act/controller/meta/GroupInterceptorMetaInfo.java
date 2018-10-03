@@ -22,6 +22,7 @@ package act.controller.meta;
 
 import static act.Destroyable.Util.destroyAll;
 
+import act.inject.util.Sorter;
 import act.util.LogSupportedDestroyableBase;
 import org.osgl.$;
 import org.osgl.util.C;
@@ -138,10 +139,10 @@ public class GroupInterceptorMetaInfo extends LogSupportedDestroyableBase {
         classInterceptors.afterList.each(_F.mergeInto(this.afterList, actionName));
         classInterceptors.catchList.each(_F.mergeInto(this.catchList, actionName));
         classInterceptors.finallyList.each(_F.mergeInto(this.finallyList, actionName));
-        beforeList = beforeList.sorted();
-        afterList = afterList.sorted();
-        catchList = catchList.sorted();
-        finallyList = finallyList.sorted();
+        Sorter.sort(beforeList);
+        Sorter.sort(afterList);
+        Sorter.sort(catchList);
+        Sorter.sort(finallyList);
     }
 
     @Override

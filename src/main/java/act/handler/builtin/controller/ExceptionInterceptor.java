@@ -41,7 +41,7 @@ public abstract class ExceptionInterceptor
     }
 
     @SuppressWarnings("unchecked")
-    public ExceptionInterceptor(int priority) {
+    public ExceptionInterceptor(Integer priority) {
         this(priority, new Class[]{});
     }
 
@@ -49,12 +49,12 @@ public abstract class ExceptionInterceptor
         this(0, exClasses);
     }
 
-    public ExceptionInterceptor(int priority, Class<? extends Exception>... exClasses) {
+    public ExceptionInterceptor(Integer priority, Class<? extends Exception>... exClasses) {
         super(priority);
         this.exClasses = C.listOf(exClasses).sorted(EXCEPTION_WEIGHT_COMPARATOR);
     }
 
-    public ExceptionInterceptor(int priority, List<Class<? extends Exception>> exClasses) {
+    public ExceptionInterceptor(Integer priority, List<Class<? extends Exception>> exClasses) {
         super(priority);
         E.illegalArgumentIf(exClasses.isEmpty());
         this.exClasses = C.list(exClasses).sorted(EXCEPTION_WEIGHT_COMPARATOR);
@@ -76,25 +76,13 @@ public abstract class ExceptionInterceptor
     @Override
     public int compareTo(ExceptionInterceptor o) {
         if (o == this) return 0;
-        int thisPriority = priority();
-        int thatPririty = o.priority();
-        if (thisPriority > 0 && thatPririty < 0) {
-            return 1;
-        }
-        if (thisPriority < 0 && thatPririty > 0) {
-            return -1;
-        }
-        if (thisPriority <0 && thatPririty < 0) {
-            warn("Found more than one high priority Exception handlers");
-        }
         boolean iAmEmpty = exClasses.isEmpty(), uAreEmpty = o.exClasses.isEmpty();
         if (iAmEmpty) {
             return uAreEmpty ? 0 : 1;
         } else if (uAreEmpty) {
             return -1;
         }
-        int n = EXCEPTION_WEIGHT_COMPARATOR.compare(o.exClasses.get(0), exClasses.get(0));
-        return 0 == n ? super.compareTo(o) : n;
+        return EXCEPTION_WEIGHT_COMPARATOR.compare(o.exClasses.get(0), exClasses.get(0));
     }
 
     @Override

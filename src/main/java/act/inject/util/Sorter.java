@@ -87,7 +87,7 @@ public class Sorter implements PostConstructProcessor<Object> {
         }
     }
 
-    private void sort(List<?> list) {
+    public static void sort(List<?> list) {
         Collections.sort(list, COMPARATOR);
     }
 

@@ -21,5 +21,5 @@ package act.util;
  */
 
 public interface Prioritised {
-    int priority();
+    Integer priority();
 }
