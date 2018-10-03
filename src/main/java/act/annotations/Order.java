@@ -34,7 +34,7 @@ import java.lang.annotation.*;
  * @see Sorted
  */
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.TYPE)
+@Target({ElementType.TYPE, ElementType.METHOD})
 public @interface Order {
 
     int HIGHEST_PRECEDENCE = Integer.MIN_VALUE;

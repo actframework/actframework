@@ -59,6 +59,17 @@ public class Sorter implements PostConstructProcessor<Object> {
         }
     };
 
+    public static final Comparator REVERSE_COMPARATOR = new Comparator() {
+        @Override
+        public int compare(Object o1, Object o2) {
+            return COMPARATOR.compare(o2, o1);
+        }
+    };
+
+    public static final Comparator comparator(boolean reverseOrder) {
+        return reverseOrder ? REVERSE_COMPARATOR : COMPARATOR;
+    }
+
     private static int orderOf(Object o) {
         if (o instanceof Ordered) {
             return ((Ordered) o).order();

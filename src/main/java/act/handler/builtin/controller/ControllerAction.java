@@ -25,6 +25,7 @@ import act.controller.CacheSupportMetaInfo;
 import act.security.CORS;
 import act.security.CSRF;
 import act.util.MissingAuthenticationHandler;
+import org.osgl.$;
 import org.osgl.mvc.result.Result;
 
 /**
@@ -46,6 +47,27 @@ public class ControllerAction extends ActionHandler<ControllerAction> {
     @Override
     public Result handle(ActionContext actionContext) throws Exception {
         return handlerInvoker.handle(actionContext);
+    }
+
+    @Override
+    public int hashCode() {
+        return $.hc(handlerInvoker, getClass());
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == this) {
+            return true;
+        }
+        if (obj instanceof ControllerAction) {
+            return $.eq(((ControllerAction) obj).handlerInvoker, handlerInvoker);
+        }
+        return false;
+    }
+
+    @Override
+    public String toString() {
+        return handlerInvoker.toString();
     }
 
     @Override
@@ -101,5 +123,10 @@ public class ControllerAction extends ActionHandler<ControllerAction> {
     protected void releaseResources() {
         handlerInvoker.destroy();
         handlerInvoker = null;
+    }
+
+    @Override
+    public int order() {
+        return handlerInvoker.order();
     }
 }

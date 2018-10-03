@@ -22,13 +22,13 @@ package act.handler.builtin.controller;
 
 import act.security.CORS;
 import act.util.LogSupportedDestroyableBase;
-import org.osgl.$;
+import act.util.Ordered;
 
 /**
  * The base class of @Before, @After, @Exception, @Finally interceptor and
  * request dispatcher
  */
-public abstract class Handler<T extends Handler> extends LogSupportedDestroyableBase implements Comparable<T> {
+public abstract class Handler<T extends Handler> extends LogSupportedDestroyableBase implements Comparable<T>, Ordered {
 
     private int priority;
 
@@ -43,19 +43,6 @@ public abstract class Handler<T extends Handler> extends LogSupportedDestroyable
     @Override
     public int compareTo(T o) {
         return priority - o.priority();
-    }
-
-    @Override
-    public int hashCode() {
-        return $.hc(priority, getClass());
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (obj == this) {
-            return true;
-        }
-        return obj.getClass().equals(getClass());
     }
 
     public void accept(Visitor visitor) {}

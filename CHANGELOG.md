@@ -1,6 +1,8 @@
 # ActFramework Change Log
 
 **1.8.8**
+* Multiple instances issue with request handlers/interceptors happens across class hierarchies #865
+* Support `@Order` in intercepting #864
 * Support using `SessionVariable` annotation and `DbBind` together #862
 * Make `EventBus` and `Job` list favor `Order` annotation #861
 * test resource not refreshed after hot-reload #860

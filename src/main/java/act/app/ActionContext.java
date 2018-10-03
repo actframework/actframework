@@ -83,7 +83,7 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
     private Map<String, String[]> allParams;
     private String actionPath; // e.g. com.mycorp.myapp.controller.AbcController.foo
     private State state;
-    private Map<String, Object> controllerInstances;
+    private Map<Class, Object> controllerInstances;
     private Map<String, ISObject[]> uploads;
     private Router router;
     private String processedUrl;
@@ -118,6 +118,7 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
     private PropertySpec.MetaInfo propSpec;
     private boolean suppressJsonDateFormat;
     private String attachmentName;
+    private Class<?> handlerClass;
 
     // see https://github.com/actframework/actframework/issues/492
     public String encodedSessionToken;
@@ -987,16 +988,37 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
         return super.__appRenderArgNames(names);
     }
 
-    public ActionContext __controllerInstance(String className, Object instance) {
+    public ActionContext __controllerInstance(Class<?> controllerClass, Object instance) {
         if (null == controllerInstances) {
             controllerInstances = new HashMap<>();
         }
-        controllerInstances.put(className, instance);
+        controllerInstances.put(controllerClass, instance);
         return this;
     }
 
-    public Object __controllerInstance(String className) {
-        return null == controllerInstances ? null : controllerInstances.get(className);
+    public Object __controllerInstance(Class<?> controllerClass) {
+        if (null == controllerInstances) {
+            return null;
+        }
+        Object inst = controllerInstances.get(controllerClass);
+        if (null != inst) {
+            return inst;
+        }
+        for (Object o : controllerInstances.values()) {
+            if (controllerClass.isInstance(o)) {
+                return o;
+            }
+        }
+        return null;
+    }
+
+    public ActionContext handlerClass(Class<?> clazz) {
+        this.handlerClass = clazz;
+        return this;
+    }
+
+    public Class<?> handlerClass() {
+        return handlerClass;
     }
 
 

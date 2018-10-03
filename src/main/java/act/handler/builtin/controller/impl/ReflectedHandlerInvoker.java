@@ -155,6 +155,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
     private boolean returnSimpleType;
     private boolean returnIterableComponentIsSimpleType;
     private boolean shallTransformReturnVal;
+    private int order;
 
     private ReflectedHandlerInvoker(M handlerMetaInfo, App app) {
         this.app = app;
@@ -174,6 +175,8 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
             throw E.unexpected(e);
         }
         this.returnString = method.getReturnType() == String.class;
+        Order order = method.getAnnotation(Order.class);
+        this.order = null == order ? Order.HIGHEST_PRECEDENCE : order.value();
         final boolean isBuiltIn = controllerClass.getName().startsWith("act.");
         if (handlerMetaInfo.hasReturn() && !isBuiltIn) {
             this.returnSimpleType = this.returnString || $.isSimpleType(method.getReturnType());
@@ -376,6 +379,27 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
     }
 
     @Override
+    public int hashCode() {
+        return $.hc(method);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == this) {
+            return true;
+        }
+        if (obj instanceof ReflectedHandlerInvoker) {
+            return $.eq(((ReflectedHandlerInvoker) obj).method, method);
+        }
+        return false;
+    }
+
+    @Override
+    public String toString() {
+        return method.toString();
+    }
+
+    @Override
     protected void releaseResources() {
         app = null;
         cl = null;
@@ -387,6 +411,11 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
         handler = null;
         cacheSupport = null;
         super.releaseResources();
+    }
+
+    @Override
+    public int order() {
+        return this.order;
     }
 
     @Override
@@ -762,11 +791,14 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
         if (null != singleton) {
             return singleton;
         }
-        String controllerName = controllerClass.getName();
-        Object inst = context.__controllerInstance(controllerName);
+        Class host = controllerClass;
+        if (host.isAssignableFrom(context.handlerClass())) {
+            host = context.handlerClass();
+        }
+        Object inst = context.__controllerInstance(host);
         if (null == inst) {
-            inst = paramLoaderService.loadHostBean(controllerClass, context);
-            context.__controllerInstance(controllerName, inst);
+            inst = paramLoaderService.loadHostBean(host, context);
+            context.__controllerInstance(host, inst);
         }
         return inst;
     }
@@ -1076,6 +1108,32 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
         }
 
         @Override
+        public int order() {
+            return invoker.order();
+        }
+
+        @Override
+        public int hashCode() {
+            return $.hc(invoker, getClass());
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == this) {
+                return true;
+            }
+            if (obj instanceof _Before) {
+                return $.eq(((_Before) obj).invoker, invoker);
+            }
+            return false;
+        }
+
+        @Override
+        public String toString() {
+            return invoker.toString();
+        }
+
+        @Override
         public boolean sessionFree() {
             return invoker.sessionFree();
         }
@@ -1118,6 +1176,32 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
         @Override
         public Result handle(Result result, ActionContext actionContext) throws Exception {
             return invoker.handle(result, actionContext);
+        }
+
+        @Override
+        public int hashCode() {
+            return $.hc(invoker, getClass());
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == this) {
+                return true;
+            }
+            if (obj instanceof _After) {
+                return $.eq(((_After) obj).invoker, invoker);
+            }
+            return false;
+        }
+
+        @Override
+        public String toString() {
+            return invoker.toString();
+        }
+
+        @Override
+        public int order() {
+            return invoker.order();
         }
 
         @Override
@@ -1178,6 +1262,32 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
         }
 
         @Override
+        public int hashCode() {
+            return $.hc(invoker, getClass());
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == this) {
+                return true;
+            }
+            if (obj instanceof _Exception) {
+                return $.eq(((_Exception) obj).invoker, invoker);
+            }
+            return false;
+        }
+
+        @Override
+        public String toString() {
+            return invoker.toString();
+        }
+
+        @Override
+        public int order() {
+            return invoker.order();
+        }
+
+        @Override
         protected Result internalHandle(Exception e, ActionContext actionContext) throws Exception {
             return invoker.handle(e, actionContext);
         }
@@ -1230,6 +1340,32 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends Lo
         @Override
         public void handle(ActionContext actionContext) throws Exception {
             invoker.handle(actionContext);
+        }
+
+        @Override
+        public int hashCode() {
+            return $.hc(invoker, getClass());
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == this) {
+                return true;
+            }
+            if (obj instanceof _Finally) {
+                return $.eq(((_Finally) obj).invoker, invoker);
+            }
+            return false;
+        }
+
+        @Override
+        public String toString() {
+            return invoker.toString();
+        }
+
+        @Override
+        public int order() {
+            return invoker.order();
         }
 
         @Override
