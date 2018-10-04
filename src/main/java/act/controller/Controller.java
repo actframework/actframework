@@ -1912,7 +1912,7 @@ public @interface Controller {
             }
             Class vCls = v.getClass();
             boolean shouldUseToString = $$.shouldUseToString(vCls);
-            if (!requireJSON && !requireXML && !shouldUseToString) {
+            if (accept == H.Format.HTML && !shouldUseToString) {
                 requireJSON = true;
             }
             if ($.isSimpleType(vCls) || shouldUseToString) {

@@ -233,13 +233,19 @@ public abstract class ParamValueLoaderService extends LogSupportedDestroyableBas
             return true;
         }
         String fieldName = field.getName();
-        return noBind(field.getDeclaringClass())
+        Class<?> entityType = field.getDeclaringClass();
+        return noBind(entityType)
                 || field.isAnnotationPresent(NoBind.class)
                 || field.isAnnotationPresent(Stateless.class)
                 || field.isAnnotationPresent(Global.class)
                 || fieldBlackList.contains(fieldName)
-                || Object.class.equals(field.getDeclaringClass())
+                || Object.class.equals(entityType)
+                || Class.class.equals(entityType)
                 || OsglConfig.globalMappingFilter_shouldIgnore(fieldName);
+    }
+
+    public static boolean isInBlackList(String fieldName) {
+        return fieldBlackList.contains(fieldName);
     }
 
     private static ConcurrentMap<Class, Boolean> noBindCache;
@@ -248,7 +254,7 @@ public abstract class ParamValueLoaderService extends LogSupportedDestroyableBas
         noBindCache = app.createConcurrentMap();
     }
 
-    private static boolean noBind(Class c) {
+    public static boolean noBind(Class c) {
         Boolean b = noBindCache.get(c);
         if (null != b) {
             return b;
