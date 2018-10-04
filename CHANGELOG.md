@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 **1.8.8**
+* `PropertySpec` specification not working when return value is a list #866
 * Multiple instances issue with request handlers/interceptors happens across class hierarchies #865
 * Support `@Order` in intercepting #864
 * Support using `SessionVariable` annotation and `DbBind` together #862

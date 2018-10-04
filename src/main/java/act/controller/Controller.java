@@ -1912,6 +1912,9 @@ public @interface Controller {
             }
             Class vCls = v.getClass();
             boolean shouldUseToString = $$.shouldUseToString(vCls);
+            if (!requireJSON && !requireXML && !shouldUseToString) {
+                requireJSON = true;
+            }
             if ($.isSimpleType(vCls) || shouldUseToString) {
                 boolean isArray = vCls.isArray();
                 return inferPrimitiveResult(v, context, requireJSON, requireXML, isArray, shouldUseToString);
