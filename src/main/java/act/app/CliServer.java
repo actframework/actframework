@@ -161,7 +161,7 @@ public class CliServer extends AppServiceBase<CliServer> implements Runnable {
                     }
                 }
             });
-            app().jobManager().on(SysEventId.ACT_START, new Runnable() {
+            app().jobManager().on(SysEventId.ACT_START, "CliServer:print-cli-start-message", new Runnable() {
                 @Override
                 public void run() {
                     Act.LOGGER.info("CLI server started on port: %s", port);

@@ -239,7 +239,7 @@ public interface SimpleBean {
             @Override
             public void visitEnd() {
                 if (isPublicClass) {
-                    Act.app().jobManager().on(SysEventId.APP_CODE_SCANNED, new Runnable() {
+                    Act.app().jobManager().on(SysEventId.APP_CODE_SCANNED, "SimpleBeanByteCodeVisitor:registerToMetaInfoManager:" + className, new Runnable() {
                         @Override
                         public void run() {
                             SimpleBean.MetaInfoManager metaInfoManager = Act.app().classLoader().simpleBeanInfoManager();

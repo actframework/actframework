@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 **1.8.8**
+* Add jobId to all built-in jobs #868
 * API Doc: generate sample data for interface #867
 * `PropertySpec` specification not working when return value is a list #866
 * Multiple instances issue with request handlers/interceptors happens across class hierarchies #865

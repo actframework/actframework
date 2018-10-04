@@ -101,7 +101,7 @@ public class NetworkHandler extends LogSupportedDestroyableBase {
             try {
                 boolean updated = app.checkUpdates(false);
                 if (updated && !app.hasBlockIssue()) {
-                    app.jobManager().on(SysEventId.POST_START, new Runnable() {
+                    app.jobManager().on(SysEventId.POST_START, "NetworkHandler:resumeRequestHandlingAfterHotReload", new Runnable() {
                         @Override
                         public void run() {
                             handle(ctx, dispatcher);

@@ -122,7 +122,7 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
         if (app.classLoader() != null) {
             cache = app.config().cacheService(CACHE_NAME);
         } else {
-            app.jobManager().on(SysEventId.CLASS_LOADER_INITIALIZED, new Runnable() {
+            app.jobManager().on(SysEventId.CLASS_LOADER_INITIALIZED, "RequestHandlerProxy[" + actionMethodName + "]:setCache", new Runnable() {
                 @Override
                 public void run() {
                     cache = app.config().cacheService(CACHE_NAME);

@@ -746,7 +746,7 @@ public class App extends LogSupportedDestroyableBase {
                 if (!dbServiceManager().hasDbService() || eventEmitted(DB_SVC_LOADED)) {
                     runnable.run();
                 } else {
-                    jobManager().on(DB_SVC_LOADED, runnable, true);
+                    jobManager().on(DB_SVC_LOADED, "App:postDbSvcLoadLogic", runnable, true);
                 }
             } catch (BlockIssueSignal e) {
                 // ignore
@@ -1235,7 +1235,7 @@ public class App extends LogSupportedDestroyableBase {
             Destroyable.Util.tryDestroyAll(daemonRegistry.values(), ApplicationScoped.class);
         }
         daemonRegistry = new HashMap<>();
-        jobManager.on(SysEventId.START, new Runnable() {
+        jobManager.on(SysEventId.START, "App:schedule-daemon-keeper", new Runnable() {
             @Override
             public void run() {
                 jobManager.fixedDelay("daemon-keeper", new Runnable() {

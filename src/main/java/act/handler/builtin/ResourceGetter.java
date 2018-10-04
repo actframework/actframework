@@ -27,6 +27,7 @@ import act.Act;
 import act.ActResponse;
 import act.app.ActionContext;
 import act.app.App;
+import act.app.event.SysEventId;
 import act.conf.AppConfig;
 import act.controller.ParamNames;
 import act.handler.RequestHandler;
@@ -83,7 +84,7 @@ public class ResourceGetter extends FastRequestHandler {
         if (null == delegate) {
             this.isFolder = isFolder(this.baseUrl, path);
             if (!this.isFolder && "file".equals(baseUrl.getProtocol())) {
-                Act.jobManager().beforeAppStart(new Runnable() {
+                Act.jobManager().on(SysEventId.START, "ResourceGetter[" + base + "]:preloadCache", new Runnable() {
                     @Override
                     public void run() {
                         preloadCache();

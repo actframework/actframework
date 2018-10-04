@@ -138,7 +138,7 @@ public class DbServiceManager extends AppServiceBase<DbServiceManager> implement
     }
 
     private void configureSequenceGenerator(final App app) {
-        app.jobManager().on(SysEventId.DEPENDENCY_INJECTOR_PROVISIONED, new Runnable() {
+        app.jobManager().on(SysEventId.DEPENDENCY_INJECTOR_PROVISIONED, "DbServiceManager:registerSequenceNumberGenerator", new Runnable() {
             @Override
             public void run() {
                 _SequenceNumberGenerator seqGen = app.config().sequenceNumberGenerator();

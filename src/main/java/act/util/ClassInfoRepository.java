@@ -84,7 +84,7 @@ public class ClassInfoRepository extends LogSupportedDestroyableBase {
     }
 
     public void registerMethodAnnotationLookup(final String annotationDesc, final String classInternalName, final String methodName, final String methodDesc) {
-        Act.app().jobManager().on(SysEventId.CLASS_LOADED, new Runnable() {
+        Act.app().jobManager().on(SysEventId.CLASS_LOADED, "ClassInfoRepository:registerMethodAnnotationLookup", new Runnable() {
             @Override
             public void run() {
                 Class<? extends Annotation> annoType = AsmType.classForDesc(annotationDesc);

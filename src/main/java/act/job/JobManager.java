@@ -310,8 +310,15 @@ public class JobManager extends AppServiceBase<JobManager> {
         }
     }
 
+    public void beforeAppStart(String jobId, final Runnable runnable) {
+        on(SysEventId.START, jobId, runnable);
+    }
+
     public void beforeAppStart(final Runnable runnable) {
         on(SysEventId.START, runnable);
+    }
+    public void afterAppStart(String jobId, final Runnable runnable) {
+        post(SysEventId.START, jobId, runnable);
     }
 
     public void afterAppStart(final Runnable runnable) {

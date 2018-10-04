@@ -41,7 +41,7 @@ public class ControllerClassMetaInfoManager extends LogSupportedDestroyableBase 
 
     @Inject
     public ControllerClassMetaInfoManager(App app) {
-        app.jobManager().on(SysEventId.APP_CODE_SCANNED, new Runnable() {
+        app.jobManager().on(SysEventId.APP_CODE_SCANNED, "ControllerClassMetaInfoManager:buildControllerHierarchies", new Runnable() {
             @Override
             public void run() {
                 buildControllerHierarchies();

@@ -126,7 +126,7 @@ public class MasterEntityMetaInfoRepo extends EntityMetaInfoRepo {
         registerEntityListenerAnnotation(EntityListeners.class);
         final MasterEntityMetaInfoRepo me = this;
         JobManager jobManager = app.jobManager();
-        jobManager.on(SysEventId.CLASS_LOADED, new Runnable() {
+        jobManager.on(SysEventId.CLASS_LOADED, "MasterEntityMetaInfoRepo:findAndRegisterEntityClasses", new Runnable() {
             @Override
             public void run() {
                 final ClassInfoRepository classRepo = app.classLoader().classInfoRepository();
@@ -146,7 +146,7 @@ public class MasterEntityMetaInfoRepo extends EntityMetaInfoRepo {
                 }
             }
         });
-        jobManager.on(SysEventId.DEPENDENCY_INJECTOR_PROVISIONED, new Runnable() {
+        jobManager.on(SysEventId.DEPENDENCY_INJECTOR_PROVISIONED, "MasterEntityMetaInfoRepo:registerEntityMetaInfoRepo.Provider", new Runnable() {
             @Override
             public void run() {
                 app.injector().registerNamedProvider(EntityMetaInfoRepo.class, app.getInstance(EntityMetaInfoRepo.Provider.class));

@@ -47,7 +47,7 @@ public class GenieModuleScanner extends AppByteCodeScannerBase {
     @Override
     public void scanFinished(final String className) {
         if (shouldRegister) {
-            app().jobManager().on(SysEventId.DEPENDENCY_INJECTOR_LOADED, new Runnable() {
+            app().jobManager().on(SysEventId.DEPENDENCY_INJECTOR_LOADED, "GenieModuleScanner:addModuleClass:" + className, new Runnable() {
                 @Override
                 public void run() {
                     GenieInjector.addModuleClass($.classForName(className, app().classLoader()));
