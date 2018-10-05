@@ -113,8 +113,7 @@ public class ActErrorPageRender extends ErrorPageRenderer {
     }
 
     private boolean isAcceptGoodForErrorPage(H.Format fmt) {
-        return (null == fmt ||
-                HTML == fmt
+        return (HTML == fmt
                 || CSV == fmt
                 || H.Format.JSON == fmt
                 || XML == fmt);
