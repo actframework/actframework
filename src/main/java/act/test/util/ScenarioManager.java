@@ -190,8 +190,12 @@ public class ScenarioManager extends YamlLoader {
             String key = entry.getKey();
             Scenario scenario = entry.getValue();
             scenario.name = key;
-            if (hasDefaultUrlContext && S.isBlank(scenario.urlContext)) {
-                scenario.urlContext = this.urlContext;
+            if (hasDefaultUrlContext) {
+                if (S.isBlank(scenario.urlContext)) {
+                    scenario.urlContext = this.urlContext;
+                } else if (!scenario.urlContext.startsWith("/")) {
+                    scenario.urlContext = S.pathConcat(this.urlContext, '/', scenario.urlContext);
+                }
             }
             this.store.put(Keyword.of(key), scenario);
         }
