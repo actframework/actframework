@@ -26,6 +26,8 @@ import act.Constants;
 import act.boot.BootstrapClassLoader;
 import act.util.*;
 import org.osgl.$;
+import org.osgl.logging.LogManager;
+import org.osgl.logging.Logger;
 import org.osgl.util.*;
 
 import java.io.File;
@@ -38,6 +40,8 @@ import java.util.*;
  * This class loader is responsible for loading Act classes
  */
 public class FullStackAppBootstrapClassLoader extends BootstrapClassLoader implements ActClassLoader {
+
+    private static final Logger LOGGER = LogManager.get(FullStackAppBootstrapClassLoader.class);
 
     private static final String KEY_CLASSPATH = "java.class.path";
 
@@ -58,8 +62,18 @@ public class FullStackAppBootstrapClassLoader extends BootstrapClassLoader imple
      */
     private static final String KEY_APP_JAR_IGNORE = "act.jar.app.ignore";
 
-    private static final String DEF_JAR_IGNORE = "act-asm,antlr,ecj-,cglib,commons-,hibernate-,jline-,kryo-,logback-," +
-            "mongo-java-,mvel,newrelic,okio-,okhttp,pat-,proxytoys,rythm-engine,snakeyaml,undertow,xnio";
+    private static final String DEF_JAR_IGNORE = "act-asm,activation-,antlr," +
+            "asm-,byte-buddy,byte-buddy-agent," +
+            "cdi-api,cglib,commons-,core-,curvesapi," +
+            "debugger-agent,ecj-,guava-,hibernate-," +
+            "idea_rt,image4j-," +
+            "jansi-,javase-,javaparser,javax.,jboss-,jcl-,jcommander-," +
+            "jfiglet,jline-,jsoup-,jxls-,joda-,kryo-,logback-," +
+            "mail-,mongo-,mvel,newrelic," +
+            "okio-,okhttp,org.apache.," +
+            "pat-,patchca,poi-,proxytoys," +
+            "reflectasm-,rythm-engine," +
+            "slf4j-,snakeyaml,stax-,undertow-,xmlbeans-,xnio";
 
     private final Class<?> PLUGIN_CLASS;
 
@@ -83,6 +97,9 @@ public class FullStackAppBootstrapClassLoader extends BootstrapClassLoader imple
             restoreClassInfoRegistry();
             restorePluginClasses();
             if (classInfoRepository.isEmpty()) {
+                if (LOGGER.isTraceEnabled()) {
+                    LOGGER.trace("classInfoRegistry not recovered, start searching through libBC (with total %s classes)", libBCSize());
+                }
                 for (String className : C.list(libBC.keySet())) {
                     try {
                         Class<?> c = loadClass(className, true);

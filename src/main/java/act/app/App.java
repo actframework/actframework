@@ -22,6 +22,7 @@ package act.app;
 
 import static act.app.event.SysEventId.*;
 import static org.osgl.http.H.Method.GET;
+import static org.osgl.util.S.F.endsWith;
 
 import act.Act;
 import act.Destroyable;
@@ -106,9 +107,9 @@ public class App extends LogSupportedDestroyableBase {
 
     public enum F {
         ;
-        public static $.Predicate<String> JAVA_SOURCE = S.F.endsWith(".java");
-        public static $.Predicate<String> JAR_FILE = S.F.endsWith(".jar");
-        public static $.Predicate<String> CONF_FILE = S.F.endsWith(".conf").or(S.F.endsWith(".properties").or(S.F.endsWith(".yaml").or(S.F.endsWith(".yml").or(S.F.endsWith(".xml")))));
+        public static $.Predicate<String> JAVA_SOURCE = endsWith(".java");
+        public static $.Predicate<String> JAR_FILE = endsWith(".jar");
+        public static $.Predicate<String> CONF_FILE = endsWith(".conf").or(endsWith(".properties").or(endsWith(".yaml").or(endsWith(".yml").or(endsWith(".xml")))));
         public static $.Predicate<String> ROUTES_FILE = $.F.eq(RouteTableRouterBuilder.ROUTES_FILE);
     }
 
@@ -490,7 +491,7 @@ public class App extends LogSupportedDestroyableBase {
     }
 
     public synchronized void setBlockIssue(Throwable e) {
-        logger.fatal(e, "Block issue encountered");
+        fatal(e, "Block issue encountered");
         if (null != blockIssue || null != blockIssueCause) {
             // do not overwrite previous block issue
             return;
@@ -554,7 +555,7 @@ public class App extends LogSupportedDestroyableBase {
         if (null == daemonRegistry) {
             return;
         }
-        logger.info("App shutting down ....");
+        info("App shutting down ....");
         for (HotReloadListener listener : hotReloadListeners) {
             listener.preHotReload();
         }
@@ -597,7 +598,7 @@ public class App extends LogSupportedDestroyableBase {
     public synchronized void refresh() {
         currentState = null;
         final long ms = $.ms();
-        logger.info("App starting ....");
+        info("App starting ....");
         profile = null;
         blockIssue = null;
         blockIssueCause = null;
@@ -738,7 +739,7 @@ public class App extends LogSupportedDestroyableBase {
                         emit(STATELESS_PROVISIONED);
                         emit(START);
                         daemonKeeper();
-                        logger.info("App[%s] loaded in %sms", name(), $.ms() - ms);
+                        info("App[%s] loaded in %sms", name(), $.ms() - ms);
                         emit(POST_START);
                         hasStarted = true;
                     }
@@ -1125,8 +1126,8 @@ public class App extends LogSupportedDestroyableBase {
     }
 
     public void emit(SysEventId sysEvent) {
-        if (logger.isTraceEnabled()) {
-            logger.trace(S.concat("emitting event: ", sysEvent.name()));
+        if (isTraceEnabled()) {
+            trace(S.concat("emitting event: ", sysEvent.name()));
         }
         currentState = sysEvent;
         eventEmitted().add(sysEvent);
@@ -1297,7 +1298,7 @@ public class App extends LogSupportedDestroyableBase {
                 try {
                     daemon.start();
                 } catch (Exception e) {
-                    logger.error(e, "Error starting daemon [%s]", daemon.id());
+                    error(e, "Error starting daemon [%s]", daemon.id());
                 }
             }
         });
@@ -1510,13 +1511,13 @@ public class App extends LogSupportedDestroyableBase {
         if (null == di) {
             new GenieInjector(this);
         } else {
-            logger.warn("Third party injector[%s] loaded. Please consider using Act air injection instead", di.getClass());
+            warn("Third party injector[%s] loaded. Please consider using Act air injection instead", di.getClass());
         }
     }
 
     private void loadRoutes() {
         loadBuiltInRoutes();
-        logger.debug("loading app routing table: %s ...", appBase.getPath());
+        debug("loading app routing table: %s ...", appBase.getPath());
         Map<String, List<File>> routes;
         if (Act.isProd()) {
             routes = RuntimeDirs.routes(this);
@@ -1629,7 +1630,15 @@ public class App extends LogSupportedDestroyableBase {
     }
 
     private void scanAppCodes() {
+        long ms = 0;
+        if (isDebugEnabled()) {
+            ms = $.ms();
+            debug("scanning process starts ...");
+        }
         classLoader().scan();
+        if (isDebugEnabled()) {
+            debug("Scanning process takes " + ($.ms() - ms) + "ms");
+        }
     }
 
     static App create(File appBase, Version version, ProjectLayout layout) {

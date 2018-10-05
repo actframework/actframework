@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 **1.8.8**
+* Test - Allow app to define url context for scenario #869
 * Add jobId to all built-in jobs #868
 * API Doc: generate sample data for interface #867
 * `PropertySpec` specification not working when return value is a list #866

@@ -896,8 +896,8 @@ public final class Act {
     private static void loadPlugins() {
         LOGGER.debug("scanning plugins ...");
         long ts = $.ms();
-        new PluginScanner().scan();
-        LOGGER.debug("plugin scanning finished in %sms", $.ms() - ts);
+        int count = new PluginScanner().scan();
+        LOGGER.debug("%s plugin scanning finished in %sms", count, $.ms() - ts);
     }
 
     private static void unloadPlugins() {

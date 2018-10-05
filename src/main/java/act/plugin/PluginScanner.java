@@ -40,7 +40,7 @@ public class PluginScanner {
     public PluginScanner() {
     }
 
-    public void scan() {
+    public int scan() {
         Plugin.InfoRepo.clear();
         List<Class<?>> pluginClasses = Act.pluginClasses();
         int sz = pluginClasses.size();
@@ -54,6 +54,7 @@ public class PluginScanner {
                 logger.warn(e, "failed to register plugin: %s", c);
             }
         }
+        return sz;
     }
 
     public void unload() {

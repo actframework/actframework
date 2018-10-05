@@ -250,8 +250,12 @@ public class AppClassLoader
      * due to the context is not established can be captured eventually</li>
      * </ol>
      */
-    protected void scanByteCode(Iterable<String> classes, $.Function<String, byte[]> bytecodeProvider) {
-        logger.debug("start to scan bytecode ...");
+    protected void scanByteCode(Collection<String> classes, $.Function<String, byte[]> bytecodeProvider) {
+        long ms = 0;
+        if (logger.isDebugEnabled()) {
+            ms = $.ms();
+            logger.debug("Bytecode scanning starts on %s classes ...", classes.size());
+        }
         final AppCodeScannerManager scannerManager = app().scannerManager();
         Map<String, List<AppByteCodeScanner>> dependencies = new HashMap<>();
         for (String className : classes) {
@@ -360,6 +364,10 @@ public class AppClassLoader
                 }
             }
             timer.stop();
+        }
+
+        if (logger.isDebugEnabled()) {
+            logger.debug("Bytecode scanning takes: " + ($.ms() - ms) + "ms");
         }
     }
 

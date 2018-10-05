@@ -200,8 +200,16 @@ public class DevModeClassLoader extends AppClassLoader {
     }
 
     private void compileSources() {
-        logger.debug("start to compile sources ...");
-        compiler.compile(sources.values());
+        long l = 0;
+        if (logger.isDebugEnabled()) {
+            logger.debug("Source compiling starts ...");
+            l = $.ms();
+        }
+        Collection<Source> toBeCompiled = sources.values();
+        compiler.compile(toBeCompiled);
+        if (logger.isDebugEnabled()) {
+            logger.debug("Source compiling takes %sms to compile %s sources", $.ms() - l, toBeCompiled.size());
+        }
     }
 
     private void scanSources() {
@@ -219,7 +227,7 @@ public class DevModeClassLoader extends AppClassLoader {
             } else {
                 for (String className : sources.keySet()) {
                     classesNeedByteCodeScan.add(className);
-                    logger.debug("scanning %s ...", className);
+                    logger.trace("scanning %s ...", className);
                     List<AppSourceCodeScanner> l = new ArrayList<>();
                     for (AppSourceCodeScanner scanner : scanners) {
                         if (scanner.start(className)) {
@@ -261,7 +269,11 @@ public class DevModeClassLoader extends AppClassLoader {
                 embeddedClassNames.removeAll(embeddedClassNameCopy);
             }
         } finally {
+            long ns = timer.ns();
             timer.stop();
+            if (logger.isDebugEnabled()) {
+                logger.debug("it takes %sms to scan %s sources and their bytecodes", ns / (1000 * 1000), sources.size());
+            }
         }
     }
 
@@ -360,7 +372,7 @@ public class DevModeClassLoader extends AppClassLoader {
         }
     };
 
-    private final FsEventListener confChangeListener = new ResourceChangeListener() {
+    private final FsEventListener confChangeListener = new DevModeClassLoader.ResourceChangeListener() {
         @Override
         public void on(FsEvent... events) {
             super.on(events);

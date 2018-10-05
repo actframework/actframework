@@ -24,6 +24,7 @@ import act.Act;
 import act.app.App;
 import act.app.DaoLocator;
 import act.app.RuntimeDirs;
+import act.conf.AppConfig;
 import act.test.Scenario;
 import org.osgl.$;
 import org.osgl.util.C;
@@ -46,6 +47,8 @@ public class ScenarioManager extends YamlLoader {
     private static DaoLocator NULL_DAO = new NullDaoLocator();
 
     private Map<Keyword, Scenario> store = new LinkedHashMap<>();
+
+    private String urlContext;
 
     public ScenarioManager() {
         super("act.test");
@@ -84,6 +87,8 @@ public class ScenarioManager extends YamlLoader {
         if (null == app) {
             return;
         }
+        AppConfig<?> config = app.config();
+        urlContext = config.get("test.urlContext");
     }
 
     private void loadDefault() {
@@ -180,10 +185,14 @@ public class ScenarioManager extends YamlLoader {
     private void parseOne(String content) {
         Map<String, Object> map = parse(content, NULL_DAO);
         Map<String, Scenario> loaded = $.cast(map);
+        boolean hasDefaultUrlContext = S.notBlank(urlContext);
         for (Map.Entry<String, Scenario> entry : loaded.entrySet()) {
             String key = entry.getKey();
             Scenario scenario = entry.getValue();
             scenario.name = key;
+            if (hasDefaultUrlContext && S.isBlank(scenario.urlContext)) {
+                scenario.urlContext = this.urlContext;
+            }
             this.store.put(Keyword.of(key), scenario);
         }
     }

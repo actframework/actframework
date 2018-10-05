@@ -110,7 +110,11 @@ public class Scenario implements ScenarioPart {
                     builder.addHeader(headerName, headerVal);
                 }
             }
-            String url = S.concat("http://localhost:", port, S.ensure(processStringSubstitution(requestSpec.url)).startWith("/"));
+            String reqUrl = requestSpec.url;
+            if (S.notBlank(urlContext) && !reqUrl.startsWith("/")) {
+                reqUrl = S.pathConcat(urlContext, '/', reqUrl);
+            }
+            String url = S.concat("http://localhost:", port, S.ensure(processStringSubstitution(reqUrl)).startWith("/"));
             boolean hasParams = !requestSpec.params.isEmpty();
             if (hasParams) {
                 processParamSubstitution(requestSpec.params);
@@ -243,6 +247,7 @@ public class Scenario implements ScenarioPart {
     public String errorMessage;
     public Throwable cause;
     public boolean clearFixtures = true;
+    public String urlContext;
 
     $.Var<Object> lastData = $.var();
     $.Var<Headers> lastHeaders = $.var();
