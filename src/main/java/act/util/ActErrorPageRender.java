@@ -108,7 +108,7 @@ public class ActErrorPageRender extends ErrorPageRenderer {
     private void fixRequestAcceptFormat(ActionContext context) {
         H.Request req = context.req();
         if (null != req && !isAcceptGoodForErrorPage(req.accept())) {
-            req.accept(H.Format.HTML);
+            req.accept(H.Format.JSON);
         }
     }
 

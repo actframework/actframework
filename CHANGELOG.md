@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 **1.8.8**
+* Act not return application/json as default when exception #870
 * Test - Allow app to define url context for scenario #869
 * Add jobId to all built-in jobs #868
 * API Doc: generate sample data for interface #867
