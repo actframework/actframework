@@ -248,13 +248,13 @@ public class Test extends LogSupport {
                     }
                     try {
                         scenario.start(scenarioManager, requestTemplateManager);
-                        addToList(scenario, list, scenarioManager);
                     } catch (Exception e) {
                         String message = e.getMessage();
                         scenario.errorMessage = S.blank(message) ? e.getClass().getName() : message;
                         scenario.cause = e.getCause();
                         scenario.status = TestStatus.FAIL;
                     }
+                    addToList(scenario, list, scenarioManager);
                 }
             }
 //            for (Scenario scenario : scenarios.values()) {

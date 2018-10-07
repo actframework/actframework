@@ -323,6 +323,7 @@ public class Scenario implements ScenarioPart {
         }
         String key = S.underscore(expr);
         Object o = constants.get(key);
+        o = null == o ? cache.get(key) : o;
         return null == o ? Test.constant(key) : o;
     }
 
@@ -924,6 +925,17 @@ public class Scenario implements ScenarioPart {
         Object o = cache.get(key);
         if (null != o) {
             return o;
+        }
+        if (key.contains(".")) {
+            String firstLevel = S.cut(key).beforeFirst(".");
+            Object firstLevelVal = cache.get(firstLevel);
+            if (null != firstLevelVal) {
+                try {
+                    return $.getProperty(firstLevelVal, S.cut(key).afterFirst("."));
+                } catch (Exception e) {
+                    // ignore
+                }
+            }
         }
         key = S.underscore(key);
         o = constants.get(key);
