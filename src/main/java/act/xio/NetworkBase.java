@@ -65,7 +65,6 @@ public abstract class NetworkBase extends LogSupportedDestroyableBase implements
 
     @Override
     public void start() {
-        bootUp();
         for (int port : registry.keySet()) {
             NetworkHandler client = registry.get(port);
             if (!trySetUpClient(client, port, securePorts.contains(port))) {
@@ -107,7 +106,7 @@ public abstract class NetworkBase extends LogSupportedDestroyableBase implements
 
     protected abstract void setUpClient(NetworkHandler client, int port, boolean secure) throws IOException;
 
-    protected abstract void bootUp();
+    public abstract void bootUp();
 
     protected abstract void close();
 

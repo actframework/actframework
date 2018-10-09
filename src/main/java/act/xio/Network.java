@@ -29,6 +29,8 @@ import act.controller.meta.ActionMethodMetaInfo;
 public interface Network extends Destroyable {
     void register(int port, boolean secure, NetworkHandler client);
 
+    void bootUp();
+
     void start();
 
     void shutdown();

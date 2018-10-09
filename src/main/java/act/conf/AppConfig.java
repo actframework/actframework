@@ -142,6 +142,7 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
     }
 
     public void preloadConfigurations() {
+        long ms = $.ms();
         // ensure JWT get evaluated first to set
         // default value for dependency settings
         jwtEnabled();
@@ -202,6 +203,7 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
                 app().cache(key).setDefaultTTL(ttl);
             }
         }
+        logger.trace("Preload Config takes: %sms", $.ms() - ms);
     }
 
 

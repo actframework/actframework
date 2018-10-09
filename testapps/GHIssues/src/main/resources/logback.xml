@@ -101,7 +101,7 @@
     <appender-ref ref="E2E_STDOUT"/>
     <appender-ref ref="E2E_FILE"/>
   </logger>
-
+App
   <logger name="act.metric" level="TRACE">
     <appender-ref ref="METRIC_FILE" />
   </logger>

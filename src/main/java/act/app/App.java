@@ -183,6 +183,7 @@ public class App extends LogSupportedDestroyableBase {
         }
     };
     private final Version version;
+    private boolean reloading;
     private List<HotReloadListener> hotReloadListeners = new ArrayList<>();
     private PrincipalProvider principalProvider = PrincipalProvider.DefaultPrincipalProvider.INSTANCE;
 
@@ -391,6 +392,10 @@ public class App extends LogSupportedDestroyableBase {
         return cliDispatcher;
     }
 
+    public CliServer cliServer() {
+        return cliServer;
+    }
+
     public CaptchaManager captchaManager() {
         return captchaManager;
     }
@@ -535,6 +540,10 @@ public class App extends LogSupportedDestroyableBase {
         return hasStarted;
     }
 
+    public boolean hotReloading() {
+        return hasStarted;
+    }
+
     public boolean isMainThread() {
         return Thread.currentThread() == mainThread;
     }
@@ -546,6 +555,7 @@ public class App extends LogSupportedDestroyableBase {
     public void shutdown(int exitCode) {
         Act.shutdown(this, exitCode);
     }
+
 
     @Override
     protected void releaseResources() {
@@ -705,54 +715,77 @@ public class App extends LogSupportedDestroyableBase {
 
         if (null == blockIssue && null == blockIssueCause) {
             try {
-                initJsonDtoClassManager();
-                initParamValueLoaderManager();
-                initMailerConfigManager();
-
-                // setting context class loader here might lead to memory leaks
-                // and cause weird problems as class loader been set to thread
-                // could be switched to handling other app in ACT or still hold
-                // old app class loader instance after the app been refreshed
-                // - Thread.currentThread().setContextClassLoader(classLoader());
-
-                initHttpConfig();
-                initViewManager();
-
-                // let's any emit the dependency injector loaded event
-                // in case some other service depend on this event.
-                // If any DI plugin e.g. guice has emitted this event
-                // already, it doesn't matter we emit the event again
-                // because once app event is consumed the event listeners
-                // are cleared
-                emit(DEPENDENCY_INJECTOR_PROVISIONED);
-                emit(SINGLETON_PROVISIONED);
-                registerMetricProvider();
-                config().preloadConfigurations();
-                initSessionManager();
-                Runnable runnable = new Runnable() {
+                final Runnable runnable1 = new Runnable() {
                     @Override
                     public void run() {
+                        initJsonDtoClassManager();
+                        initParamValueLoaderManager();
+                        initMailerConfigManager();
+
+                        // setting context class loader here might lead to memory leaks
+                        // and cause weird problems as class loader been set to thread
+                        // could be switched to handling other app in ACT or still hold
+                        // old app class loader instance after the app been refreshed
+                        // - Thread.currentThread().setContextClassLoader(classLoader());
+
+                        initHttpConfig();
+                        initViewManager();
+
+                        // let's any emit the dependency injector loaded event
+                        // in case some other service depend on this event.
+                        // If any DI plugin e.g. guice has emitted this event
+                        // already, it doesn't matter we emit the event again
+                        // because once app event is consumed the event listeners
+                        // are cleared
+                        emit(DEPENDENCY_INJECTOR_PROVISIONED);
+                        emit(SINGLETON_PROVISIONED);
+                        registerMetricProvider();
+                        config().preloadConfigurations();
+                        initSessionManager();
+                    }
+                };
+                if (!isDevColdStart()) {
+                    runnable1.run();
+                }
+                Runnable runnable2 = new Runnable() {
+                    @Override
+                    public void run() {
+                        if (isDevColdStart()) {
+                            runnable1.run();
+                        }
                         if (null != blockIssueCause) {
                             setBlockIssue(blockIssueCause);
                         }
                         emit(PRE_START);
                         emit(STATELESS_PROVISIONED);
                         emit(START);
-                        daemonKeeper();
-                        info("App[%s] loaded in %sms", name(), $.ms() - ms);
-                        emit(POST_START);
+                        if (isProd() || !wasStarted()) {
+                            debug("App[%s] loaded in %sms", name(), $.ms() - ms);
+                        } else {
+                            info("App[%s] loaded in %sms", name(), $.ms() - ms);
+                        }
                         hasStarted = true;
+                        daemonKeeper();
+                        emit(POST_START);
                     }
                 };
                 if (!dbServiceManager().hasDbService() || eventEmitted(DB_SVC_LOADED)) {
-                    runnable.run();
+                    if (Act.isDev()) {
+                        jobManager.now(runnable2);
+                    } else {
+                        runnable2.run();
+                    }
                 } else {
-                    jobManager().on(DB_SVC_LOADED, "App:postDbSvcLoadLogic", runnable, true);
+                    jobManager().on(DB_SVC_LOADED, "App:postDbSvcLoadLogic", runnable2, true);
                 }
             } catch (BlockIssueSignal e) {
                 // ignore
             }
         }
+    }
+
+    private boolean isDevColdStart() {
+        return Act.isDev() && !wasStarted();
     }
 
     /**

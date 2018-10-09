@@ -23,6 +23,7 @@ package act.controller.captcha;
 import static org.osgl.http.H.Format.JPG;
 import static org.osgl.http.H.Header.Names.CACHE_CONTROL;
 
+import act.app.event.SysEventId;
 import act.controller.Controller;
 import act.controller.annotation.UrlContext;
 import act.controller.captcha.render.CaptchaImageRender;
@@ -48,12 +49,12 @@ public class CaptchaService extends Controller.Util {
     @Inject
     private CaptchaManager pluginManager;
 
-    @SubClassFinder
+    @SubClassFinder(callOn = SysEventId.POST_START)
     public void foundSessionGenerator(CaptchaSessionGenerator generator) {
         pluginManager.registerGenerator(generator);
     }
 
-    @SubClassFinder
+    @SubClassFinder(callOn = SysEventId.POST_START)
     public void foundImageRender(CaptchaImageRender render) {
         pluginManager.registerImageGenerator(render);
     }

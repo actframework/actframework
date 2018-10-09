@@ -67,7 +67,7 @@ public class UndertowNetwork extends NetworkBase {
     private List<AcceptingChannel<? extends StreamConnection>> channels;
 
     @Override
-    protected void bootUp() {
+    public void bootUp() {
         try {
             xnio = Xnio.getInstance(UndertowNetwork.class.getClassLoader());
             // abcdefgdgd1234566789(dddd)
