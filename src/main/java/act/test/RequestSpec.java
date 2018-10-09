@@ -40,6 +40,7 @@ public class RequestSpec implements InteractionPart {
 
     public String parent;
     public H.Method method;
+    public int port;
     public String url;
     // shortcut for (GET, url) pair
     public String get;

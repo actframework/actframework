@@ -157,7 +157,7 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
                 return mv;
             }
             String className = classInfo.className();
-            boolean isRoutedMethod = router.isActionMethod(className, name);
+            boolean isRoutedMethod = app().isRoutedActionMethod(className, name);
             return new ActionMethodVisitor(isRoutedMethod, mv, access, name, desc, signature, exceptions);
         }
 
@@ -900,10 +900,20 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
 
         private List<Router> routers() {
             final List<Router> routers = new ArrayList<>();
+            final App app = app();
             if (null == ports || ports.length == 0) {
-                routers.add(app().router());
+                if (app().hasMoreRouters()) {
+                    String className = classInfo.className();
+                    for (String methodName : methodNames) {
+                        Router routerX = app.getRouterFor(className, methodName);
+                        if (!routers.contains(routerX)) {
+                            routers.add(routerX);
+                        }
+                    }
+                } else {
+                    routers.add(app.router());
+                }
             } else {
-                App app = app();
                 for (String portName : ports) {
                     Router r = app.router(portName);
                     if (null == r) {

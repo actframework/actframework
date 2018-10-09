@@ -114,7 +114,13 @@ public class Scenario implements ScenarioPart {
             if (S.notBlank(urlContext) && !reqUrl.startsWith("/")) {
                 reqUrl = S.pathConcat(urlContext, '/', reqUrl);
             }
-            String url = S.concat("http://localhost:", port, S.ensure(processStringSubstitution(reqUrl)).startWith("/"));
+            String url;
+            if (!reqUrl.startsWith("http")) {
+                int portx = 0 != requestSpec.port ? requestSpec.port : port;
+                url = S.concat("http://localhost:", portx, S.ensure(processStringSubstitution(reqUrl)).startWith("/"));
+            } else {
+                url = processStringSubstitution(reqUrl);
+            }
             boolean hasParams = !requestSpec.params.isEmpty();
             if (hasParams) {
                 processParamSubstitution(requestSpec.params);

@@ -1206,6 +1206,35 @@ public class App extends LogSupportedDestroyableBase {
         return currentState;
     }
 
+    public boolean isRoutedActionMethod(String className, String methodName) {
+        if (router.isActionMethod(className, methodName)) {
+            return true;
+        }
+        if (!moreRouters.isEmpty()) {
+            for (Router routerX : moreRouters.values()) {
+                if (routerX.isActionMethod(className, methodName)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    public boolean hasMoreRouters() {
+        return !moreRouters.isEmpty();
+    }
+
+    public Router getRouterFor(String className, String methodName) {
+        if (!moreRouters.isEmpty()) {
+            for (Router routerX : moreRouters.values()) {
+                if (routerX.isActionMethod(className, methodName)) {
+                    return routerX;
+                }
+            }
+        }
+        return router;
+    }
+
     private void loadConfig() {
         JsonUtilConfig.configure(this);
         File resource = RuntimeDirs.resource(this);

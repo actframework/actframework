@@ -20,10 +20,13 @@ package act.controller.bytecode;
  * #L%
  */
 
+import static act.route.RouteSource.ACTION_ANNOTATION;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.*;
+import static org.osgl.http.H.Method.*;
+
 import act.ActTestBase;
-import act.app.AppByteCodeScanner;
-import act.app.AppCodeScannerManager;
-import act.app.TestingAppClassLoader;
+import act.app.*;
 import act.asm.Type;
 import act.controller.meta.*;
 import act.event.EventBus;
@@ -33,15 +36,11 @@ import act.job.bytecode.JobByteCodeScanner;
 import act.route.RouteSource;
 import act.util.ClassInfoRepository;
 import act.util.Files;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.*;
 import org.mockito.internal.verification.Times;
 import org.osgl.$;
 import org.osgl.http.H;
-import org.osgl.util.C;
-import org.osgl.util.E;
-import org.osgl.util.S;
+import org.osgl.util.*;
 import playground.EmailBinder;
 import testapp.controller.*;
 import testapp.model.ModelController;
@@ -49,11 +48,6 @@ import testapp.model.ModelControllerWithAnnotation;
 
 import java.io.File;
 import java.util.List;
-
-import static act.route.RouteSource.ACTION_ANNOTATION;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.*;
-import static org.osgl.http.H.Method.*;
 
 public class ControllerByteCodeScannerTest extends ActTestBase {
 
@@ -117,6 +111,7 @@ public class ControllerByteCodeScannerTest extends ActTestBase {
     @Test
     public void testRoutedActionScan() {
         when(mockRouter.isActionMethod("testapp.controller.WithAppContext", "foo")).thenReturn(true);
+        when(mockApp.isRoutedActionMethod("testapp.controller.WithAppContext", "foo")).thenReturn(true);
         scan(WithAppContext.class);
         ActionMethodMetaInfo action = action("WithAppContext", "foo");
         assertNotNull(action);

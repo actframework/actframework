@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 **1.8.8**
+* Route configured for namedport not effective #874
 * `EntityClassMetaInfo.mergeFromMappedSuperClasses` logic error #873
 * Optimize app code start in dev mode #872
 * Test: evaluation complex expression refer to cached object issue #871
