@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 **1.8.8**
+* `EntityClassMetaInfo.mergeFromMappedSuperClasses` logic error #873
 * Optimize app code start in dev mode #872
 * Test: evaluation complex expression refer to cached object issue #871
 * Act not return application/json as default when exception #870
