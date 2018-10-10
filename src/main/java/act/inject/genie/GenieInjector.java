@@ -242,12 +242,12 @@ public class GenieInjector extends DependencyInjectorBase<GenieInjector> {
         return genie;
     }
 
-    @SubClassFinder(callOn = SysEventId.DEPENDENCY_INJECTOR_LOADED)
+    @SubClassFinder(callOn = SysEventId.DEPENDENCY_INJECTOR_PRELOAD)
     public static void foundModule(Class<? extends Module> moduleClass) {
         addModuleClass(moduleClass);
     }
 
-    @SubClassFinder(callOn = SysEventId.DEPENDENCY_INJECTOR_LOADED)
+    @SubClassFinder(callOn = SysEventId.DEPENDENCY_INJECTOR_PRELOAD)
     public static void foundConfigurator(Class<? extends AppConfigurator> configurator) {
         addModuleClass(configurator);
     }
@@ -318,7 +318,7 @@ public class GenieInjector extends DependencyInjectorBase<GenieInjector> {
         }
     }
 
-    @AnnotatedClassFinder(value = ModuleTag.class, callOn = SysEventId.DEPENDENCY_INJECTOR_LOADED, noAbstract = false)
+    @AnnotatedClassFinder(value = ModuleTag.class, callOn = SysEventId.DEPENDENCY_INJECTOR_PRELOAD, noAbstract = false)
     public static void foundTaggedModule(Class<?> taggedModuleClass) {
         addModuleClass(taggedModuleClass);
     }
