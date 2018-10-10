@@ -12,7 +12,7 @@
   <parent>
     <groupId>org.actframework</groupId>
     <artifactId>act-starter-parent</artifactId>
-    <version>1.8.8.7-dld2-SNAPSHOT</version>
+    <version>1.8.8.7-SNAPSHOT</version>
   </parent>
 
   <properties>
