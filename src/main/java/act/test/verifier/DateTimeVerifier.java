@@ -90,7 +90,7 @@ public abstract class DateTimeVerifier extends Verifier<DateTimeVerifier> {
         return tryWithFormat(s, config.dateFormat());
     }
 
-    private Long tryWithDefaultDateTimeFormats(String s) {
+    public static Long tryWithDefaultDateTimeFormats(String s) {
         return tryWithFormat(s, "yyyy-MM-dd hh:mm:ss", "yyyy-MM-dd HH:mm:ss",
                 "yyyy-MM-dd",
                 "yyyyMMdd HH:mm:ss",
@@ -100,7 +100,7 @@ public abstract class DateTimeVerifier extends Verifier<DateTimeVerifier> {
                 "dd MMM yyyy");
     }
 
-    private Long tryWithFormat(String s, String pattern, String... otherPatterns) {
+    private static Long tryWithFormat(String s, String pattern, String... otherPatterns) {
         Long l = tryWithFormat(s, new SimpleDateFormat(pattern));
         if (null != l) {
             return l;
@@ -114,7 +114,7 @@ public abstract class DateTimeVerifier extends Verifier<DateTimeVerifier> {
         return null;
     }
 
-    private Long tryWithFormat(String s, DateFormat format) {
+    private static Long tryWithFormat(String s, DateFormat format) {
         try {
             Date date = format.parse(s);
             return date.getTime();
