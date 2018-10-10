@@ -1,6 +1,8 @@
 # ActFramework Change Log
 
 **1.8.8**
+* Test: add $now() and $today() function #876
+* Intermittent ACT start failure in `GenieModuleScanner` #875
 * Route configured for namedport not effective #874
 * `EntityClassMetaInfo.mergeFromMappedSuperClasses` logic error #873
 * Optimize app code start in dev mode #872

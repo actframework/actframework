@@ -1040,7 +1040,7 @@ public enum AppConfigKey implements ConfigKey {
     SESSION_PERSISTENT_ENABLED("session.persistent.enabled"),
 
     /**
-     * `session.encrypted.enabled` specify whether the system should
+     * `session.encrypt.enabled` specify whether the system should
      * encrypt the key/value pairs in the session cookie. Enable session
      * encryption will greatly improve the security but with the cost
      * of additional CPU usage and a little bit longer time on request

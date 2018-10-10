@@ -23,6 +23,8 @@ package act.test.func;
 import act.Act;
 import act.test.inbox.Inbox;
 import act.test.util.NamedLogic;
+import org.joda.time.DateTime;
+import org.joda.time.LocalDate;
 import org.osgl.$;
 import org.osgl.util.*;
 import org.osgl.util.converter.TypeConverterRegistry;
@@ -77,6 +79,20 @@ public abstract class Func<T extends Func> extends NamedLogic<T> {
         @Override
         public Object apply() {
             return size;
+        }
+    }
+
+    public static class Today extends Func<Today> {
+        @Override
+        public Object apply() {
+            return LocalDate.now();
+        }
+    }
+
+    public static class Now extends Func<Now> {
+        @Override
+        public Object apply() {
+            return DateTime.now();
         }
     }
 

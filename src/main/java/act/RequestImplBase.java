@@ -68,7 +68,7 @@ public abstract class RequestImplBase<T extends H.Request> extends H.Request<T> 
                 // check the method overload
                 String s = header(H.Header.Names.X_HTTP_METHOD_OVERRIDE);
                 if (S.blank(s)) {
-                    s = paramVal("_method"); // Spring use this
+                    s = paramVal("_method"); // Spring convention
                 }
                 if (S.notBlank(s)) {
                     method = H.Method.valueOfIgnoreCase(s);

@@ -81,6 +81,11 @@ public enum SysEventId {
         public SysEvent of(App app) {
             return new AppRouterLoaded(app);
         }
+    }, DEPENDENCY_INJECTOR_PRELOAD {
+        @Override
+        public SysEvent of(App app) {
+            return new AppDependencyInjectorPreLoad(app);
+        }
     }, DEPENDENCY_INJECTOR_LOADED {
         @Override
         public SysEvent of(App app) {

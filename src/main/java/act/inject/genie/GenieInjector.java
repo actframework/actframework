@@ -62,12 +62,18 @@ public class GenieInjector extends DependencyInjectorBase<GenieInjector> {
     private volatile Genie genie;
     private Set<Object> modules;
     private Set<Class<? extends Annotation>> injectTags = new HashSet<Class<? extends Annotation>>();
+    private boolean locked;
 
     public GenieInjector(App app) {
-        super(app);
+        super(app, true);
         modules = new LinkedHashSet<>();
         modules.add(SCOPE_MODULE);
         modules.addAll(factories());
+        this.locked = true;
+    }
+
+    public synchronized void unlock() {
+        locked = false;
     }
 
     @Override
@@ -183,6 +189,7 @@ public class GenieInjector extends DependencyInjectorBase<GenieInjector> {
     public Genie genie() {
         if (null == genie) {
             synchronized (this) {
+                E.illegalStateIf(locked, "Injector locked");
                 if (null == genie) {
                     InjectListener listener = new GenieListener(this);
                     genie = Genie.create(listener, modules.toArray(new Object[modules.size()]));

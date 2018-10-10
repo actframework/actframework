@@ -139,7 +139,7 @@ public class App extends LogSupportedDestroyableBase {
     private SingletonRegistry singletonRegistry;
     private BinderManager binderManager;
     private AppInterceptorManager interceptorManager;
-    private DependencyInjector<?> dependencyInjector;
+    private GenieInjector dependencyInjector;
     private HttpClientService httpClientService;
     private UploadFileStorageService uploadFileStorageService;
     private AppServiceRegistry appServiceRegistry;
@@ -708,6 +708,8 @@ public class App extends LogSupportedDestroyableBase {
 
         try {
             loadDependencyInjector();
+            emit(DEPENDENCY_INJECTOR_PRELOAD);
+            dependencyInjector.unlock();
             emit(DEPENDENCY_INJECTOR_LOADED);
         } catch (BlockIssueSignal e) {
             return;
@@ -762,7 +764,7 @@ public class App extends LogSupportedDestroyableBase {
                         if (isProd() || !wasStarted()) {
                             debug("App[%s] loaded in %sms", name(), $.ms() - ms);
                         } else {
-                            info("App[%s] loaded in %sms", name(), $.ms() - ms);
+                            info("App[%s] reloaded in %sms\n\n", name(), $.ms() - ms);
                         }
                         hasStarted = true;
                         daemonKeeper();
@@ -971,11 +973,11 @@ public class App extends LogSupportedDestroyableBase {
         return metricMetaInfoRepo;
     }
 
+    @Deprecated
     public <DI extends DependencyInjector> App injector(DI dependencyInjector) {
         E.NPE(dependencyInjector);
         E.illegalStateIf(null != this.dependencyInjector, "Dependency injection factory already set");
-        this.dependencyInjector = dependencyInjector;
-        return this;
+        throw E.unsupport();
     }
 
     public <DI extends DependencyInjector> DI injector() {
@@ -1569,12 +1571,7 @@ public class App extends LogSupportedDestroyableBase {
     }
 
     private void loadDependencyInjector() {
-        DependencyInjector di = injector();
-        if (null == di) {
-            new GenieInjector(this);
-        } else {
-            warn("Third party injector[%s] loaded. Please consider using Act air injection instead", di.getClass());
-        }
+        dependencyInjector = new GenieInjector(this);
     }
 
     private void loadRoutes() {
