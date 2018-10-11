@@ -654,7 +654,7 @@ public class App extends LogSupportedDestroyableBase {
             initBinderManager();
             initUploadFileStorageService();
             initClassLoader();
-            emit(SysEventId.CLASS_LOADER_INITIALIZED);
+            emit(CLASS_LOADER_INITIALIZED);
             initRouters();
             emit(ROUTER_INITIALIZED);
             loadRoutes();
@@ -708,7 +708,7 @@ public class App extends LogSupportedDestroyableBase {
 
         try {
             loadDependencyInjector();
-            emit(DEPENDENCY_INJECTOR_PRELOAD);
+            emit(DEPENDENCY_INJECTOR_INITIALIZED);
             dependencyInjector.unlock();
             emit(DEPENDENCY_INJECTOR_LOADED);
         } catch (BlockIssueSignal e) {
@@ -771,14 +771,14 @@ public class App extends LogSupportedDestroyableBase {
                         emit(POST_START);
                     }
                 };
-                if (!dbServiceManager().hasDbService() || eventEmitted(DB_SVC_LOADED)) {
+                if (!dbServiceManager().hasDbService() || eventEmitted(DB_SVC_PROVISIONED)) {
                     if (Act.isDev()) {
-                        jobManager.now(runnable2);
+                        jobManager.now("App:postDbSvcLogic", runnable2);
                     } else {
                         runnable2.run();
                     }
                 } else {
-                    jobManager().on(DB_SVC_LOADED, "App:postDbSvcLoadLogic", runnable2, true);
+                    jobManager().on(DB_SVC_PROVISIONED, "App:postDbSvcLogic", runnable2, true);
                 }
             } catch (BlockIssueSignal e) {
                 // ignore

@@ -73,6 +73,12 @@ public class DbServiceManager extends AppServiceBase<DbServiceManager> implement
         final Runnable daoInitializer = new Runnable() {
             @Override
             public void run() {
+                app.emit(SysEventId.DB_SVC_LOADED);
+                initDao();
+                app.emit(SysEventId.DB_SVC_PROVISIONED);
+            }
+
+            private void initDao() {
                 ClassNode node = app.classLoader().classInfoRepository().node(Dao.class.getName());
                 node.visitPublicNotAbstractTreeNodes(new $.Visitor<ClassNode>() {
                     private boolean isGeneral(Class c) {
@@ -114,7 +120,6 @@ public class DbServiceManager extends AppServiceBase<DbServiceManager> implement
                 @Override
                 public void on(EventObject event) throws Exception {
                     daoInitializer.run();
-                    app.emit(SysEventId.DB_SVC_LOADED);
                 }
             });
         } else {
@@ -125,7 +130,6 @@ public class DbServiceManager extends AppServiceBase<DbServiceManager> implement
                         asyncInitializers.remove(event.source());
                         if (asyncInitializers.isEmpty()) {
                             daoInitializer.run();
-                            app.emit(SysEventId.DB_SVC_LOADED);
                         }
                     }
                 }

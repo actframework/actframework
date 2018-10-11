@@ -23,10 +23,10 @@ package act.app.event;
 import act.app.App;
 
 /**
- * Emitted immediately when {@link App}'s dependency injector is loaded
+ * Emitted after Application's {@link act.db.DbService db services} have been loaded
  */
-public class AppDependencyInjectorPreLoad extends SysEvent {
-    public AppDependencyInjectorPreLoad(App source) {
-        super(SysEventId.DEPENDENCY_INJECTOR_PRELOAD, source);
+public class AppDbSvcProvisioned extends SysEvent {
+    public AppDbSvcProvisioned(App source) {
+        super(SysEventId.DB_SVC_PROVISIONED, source);
     }
 }
