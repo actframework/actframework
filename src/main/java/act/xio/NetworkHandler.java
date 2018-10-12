@@ -125,17 +125,20 @@ public class NetworkHandler extends LogSupportedDestroyableBase {
             url = urlContextProcessor.apply(req, url);
         } catch (NotFound notFound) {
             ctx.handler(AlwaysNotFound.INSTANCE);
-            ctx.saveLocal();
             AlwaysNotFound.INSTANCE.apply(ctx);
             return;
         }
+
+        // have to save context current here
+        // otherwise it might cause
+        // https://github.com/actframework/actframework/issues
+        ctx.saveLocal();
         Timer timer = metric.startTimer(MetricInfo.ROUTING);
         final RequestHandler requestHandler = router().getInvoker(method, url, ctx);
         ctx.handler(requestHandler);
         timer.stop();
         boolean resourceGetter = requestHandler instanceof ResourceGetter || requestHandler instanceof FileGetter;
         if (null != refreshError && !resourceGetter) {
-            ctx.saveLocal();
             handleException(refreshError, ctx, "Error refreshing app");
             ActionContext.clearCurrent();
             return;
@@ -148,9 +151,9 @@ public class NetworkHandler extends LogSupportedDestroyableBase {
                     String key = S.concat(MetricInfo.HTTP_HANDLER, ":", requestHandler.toString());
                     timer = metric.startTimer(key);
                 }
-                ctx.saveLocal();
                 EventBus eventBus = app.eventBus();
                 final boolean skipEvents = ctx.skipEvents();
+                ctx.saveLocal();
                 try {
                     if (!skipEvents) {
                         eventBus.emit(new PreHandle(ctx));

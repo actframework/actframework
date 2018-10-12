@@ -48,6 +48,9 @@ public class HandlerEnhancer extends MethodVisitor implements Opcodes {
 
     public HandlerEnhancer(final MethodVisitor mv, HandlerMethodMetaInfo meta, final int access, final String name, final String desc, final String signature, final String[] exceptions) {
         super(ASM5, new MethodNode(access, name, desc, signature, exceptions));
+        if (logger.isTraceEnabled()) {
+            logger.trace("enhance handler: " + meta.fullName());
+        }
         this.info = meta;
         this.next = mv;
     }

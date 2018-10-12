@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 **1.8.8**
+* It randomly found request handler parameters are not enhanced with `@Named` annotation #879
 * Test: add $now() and $today() function #876
 * Intermittent ACT start failure in `GenieModuleScanner` #875
 * Route configured for namedport not effective #874
