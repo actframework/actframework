@@ -1,0 +1,27 @@
+Scenario(GH878):
+  description: "[878] @PropertySpec could not effect entity in collection"
+  interactions:
+    - description: test list
+      request:
+        get: 878/list
+      response:
+        json:
+          data:
+            size: 2
+            0:
+              bar:
+                id:
+                  - exists: false
+                name:
+                  - exists: true
+    - description: test nested structure
+      request:
+        get: 878
+      response:
+        json:
+          data:
+            bar:
+              name:
+                - exists: true
+              id:
+                - exists: false
