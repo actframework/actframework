@@ -6,7 +6,6 @@ core
 debugger
 ecj
 fastjson
-genie
 guava
 hamcrest
 idea_rt
@@ -27,6 +26,7 @@ mockito
 objenesis
 org.apache.bval.bundle
 osgl
+-osgl-mvc
 patchca
 reflectasm
 rythm

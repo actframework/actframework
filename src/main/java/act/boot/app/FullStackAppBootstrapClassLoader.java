@@ -146,7 +146,13 @@ public class FullStackAppBootstrapClassLoader extends BootstrapClassLoader imple
     }
 
     private $.Predicate<File> jarFilter() {
-        Set<String> set = jarBlackList();
+        final Set<String> blackList = jarBlackList();
+        final Set<String> whiteList = new HashSet<>();
+        for (String s : blackList) {
+            if (s.startsWith("-")) {
+                whiteList.add(s.substring(1));
+            }
+        }
         String ignores = System.getProperty(KEY_SYS_JAR_IGNORE);
         if (null == ignores) {
             ignores = DEF_JAR_IGNORE;
@@ -155,15 +161,25 @@ public class FullStackAppBootstrapClassLoader extends BootstrapClassLoader imple
         if (null != appIgnores) {
             ignores += ("," + appIgnores);
         }
-        set.addAll(S.fastSplit(ignores, ","));
-        final Set<String> blackList = set;
+        blackList.addAll(S.fastSplit(ignores, ","));
         return new $.Predicate<File>() {
             @Override
             public boolean test(File file) {
                 String name = file.getName();
                 for (String prefix : blackList) {
-                    if (S.notBlank(prefix) && name.startsWith(prefix)) {
-                        return false;
+                    if (S.blank(prefix)) {
+                        continue;
+                    }
+                    if (name.startsWith(prefix)) {
+                        boolean whiteListed = false;
+                        for (String s : whiteList) {
+                            if (name.startsWith(s)) {
+                                whiteListed = true;
+                            }
+                        }
+                        if (!whiteListed) {
+                            return false;
+                        }
                     }
                 }
                 return true;
@@ -313,7 +329,7 @@ public class FullStackAppBootstrapClassLoader extends BootstrapClassLoader imple
             return c;
         }
 
-        if (name.startsWith("java") || name.startsWith("org.osgl") || name.startsWith("org.slf4j")) {
+        if (name.startsWith("java") || name.startsWith("org.slf4j")) {
             return super.loadClass(name, resolve);
         }
 
