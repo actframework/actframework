@@ -108,13 +108,12 @@ public class ActErrorPageRender extends ErrorPageRenderer {
     private void fixRequestAcceptFormat(ActionContext context) {
         H.Request req = context.req();
         if (null != req && !isAcceptGoodForErrorPage(req.accept())) {
-            req.accept(H.Format.HTML);
+            req.accept(H.Format.JSON);
         }
     }
 
     private boolean isAcceptGoodForErrorPage(H.Format fmt) {
-        return (null == fmt ||
-                HTML == fmt
+        return (HTML == fmt
                 || CSV == fmt
                 || H.Format.JSON == fmt
                 || XML == fmt);

@@ -21,13 +21,9 @@ package act.view;
  */
 
 import act.Act;
-import act.app.ActionContext;
-import act.app.App;
-import act.app.AppByteCodeScannerBase;
-import act.asm.AnnotationVisitor;
-import act.asm.AsmException;
-import act.asm.MethodVisitor;
-import act.asm.Type;
+import act.app.*;
+import act.app.event.SysEventId;
+import act.asm.*;
 import act.inject.genie.GenieInjector;
 import act.inject.param.ParamValueLoader;
 import act.inject.param.ProvidedValueLoader;
@@ -43,9 +39,7 @@ import org.osgl.util.S;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Plugin developer could extend this interface to inject
@@ -108,7 +102,7 @@ public abstract class ImplicitVariableProvider implements Plugin {
         private Set<Meta> providers = new HashSet<>();
 
         public TemplateVariableScanner(final App app) {
-            app.jobManager().beforeAppStart(new Runnable() {
+            app.jobManager().on(SysEventId.START, "TemplateVariableScanner:registerByteCodeScanner", new Runnable() {
                 @Override
                 public void run() {
                     register(app);

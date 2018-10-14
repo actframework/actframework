@@ -31,12 +31,11 @@ import java.util.Set;
  * Stores all method level information needed to generate
  * {@link Handler interceptors}
  */
-public class InterceptorMethodMetaInfo extends HandlerMethodMetaInfo<InterceptorMethodMetaInfo>
-        implements Comparable<InterceptorMethodMetaInfo> {
+public class InterceptorMethodMetaInfo extends HandlerMethodMetaInfo<InterceptorMethodMetaInfo> {
 
     private Set<String> whiteList = C.newSet();
     private Set<String> blackList = C.newSet();
-    private int priority;
+    private Integer priority;
 
     protected InterceptorMethodMetaInfo(InterceptorMethodMetaInfo copy, ControllerClassMetaInfo clsInfo) {
         super(copy, clsInfo);
@@ -58,14 +57,14 @@ public class InterceptorMethodMetaInfo extends HandlerMethodMetaInfo<Interceptor
 
     public InterceptorMethodMetaInfo addOnly(String... only) {
         if (!blackList.isEmpty()) {
-            logger.warn("Both [only] and [except] list are used for interceptor method[%s]. You should use only one", name());
+            warn("Both [only] and [except] list are used for interceptor method[%s]. You should use only one", name());
         }
         return addTo(whiteList, only);
     }
 
     public InterceptorMethodMetaInfo addExcept(String... except) {
         if (!whiteList.isEmpty()) {
-            logger.warn("Both [only] and [except] list are used for interceptor method[%s]. You should use only one", name());
+            warn("Both [only] and [except] list are used for interceptor method[%s]. You should use only one", name());
             // when white list is used, black list is ignored
             return this;
         }
@@ -77,7 +76,7 @@ public class InterceptorMethodMetaInfo extends HandlerMethodMetaInfo<Interceptor
         return this;
     }
 
-    public int priority() {
+    public Integer priority() {
         return priority;
     }
 
@@ -120,7 +119,7 @@ public class InterceptorMethodMetaInfo extends HandlerMethodMetaInfo<Interceptor
     @Override
     protected S.Buffer toStrBuffer(S.Buffer sb) {
         S.Buffer prependix = S.newBuffer();
-        if (0 != priority) {
+        if (null != priority) {
             prependix.append("p[")
                     .append(priority).append("] ");
         }
@@ -132,11 +131,6 @@ public class InterceptorMethodMetaInfo extends HandlerMethodMetaInfo<Interceptor
         }
 
         return super.toStrBuffer(sb).prepend(prependix);
-    }
-
-    @Override
-    public int compareTo(InterceptorMethodMetaInfo o) {
-        return o.priority - priority;
     }
 
     public final InterceptorMethodMetaInfo extended(ControllerClassMetaInfo clsInfo) {

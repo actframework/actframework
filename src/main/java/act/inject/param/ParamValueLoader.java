@@ -21,21 +21,16 @@ package act.inject.param;
  */
 
 import act.cli.CliContext;
-import act.util.ActContext;
+import act.util.*;
 
 /**
  * Responsible for providing the value to a method parameter
  */
 public interface ParamValueLoader {
 
-    ParamValueLoader NIL = new ParamValueLoader() {
+    ParamValueLoader NIL = new ParamValueLoader.NonCacheable() {
         @Override
         public Object load(Object bean, ActContext<?> context, boolean noDefaultValue) {
-            return null;
-        }
-
-        @Override
-        public String bindName() {
             return null;
         }
     };
@@ -60,5 +55,46 @@ public interface ParamValueLoader {
      * @return the bind name
      */
     String bindName();
+
+    /**
+     * Is this param value type possibly be retrieved from JSON body?
+     */
+    boolean supportJsonDecorator();
+
+    /**
+     * Is this param value type eligible to scope caching? e.g. Session scope or Request scope
+     */
+    boolean supportScopeCaching();
+
+    abstract class NonCacheable extends LogSupportedDestroyableBase implements ParamValueLoader {
+        @Override
+        public String bindName() {
+            return null;
+        }
+
+        @Override
+        public boolean supportJsonDecorator() {
+            return false;
+        }
+
+        @Override
+        public boolean supportScopeCaching() {
+            return false;
+        }
+    }
+
+    abstract class Cacheable extends NonCacheable {
+        @Override
+        public boolean supportScopeCaching() {
+            return true;
+        }
+    }
+
+    abstract class JsonBodySupported extends Cacheable {
+        @Override
+        public boolean supportJsonDecorator() {
+            return true;
+        }
+    }
 
 }

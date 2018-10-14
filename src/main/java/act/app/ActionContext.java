@@ -32,6 +32,7 @@ import act.data.RequestBodyParser;
 import act.event.ActEvent;
 import act.event.SystemEvent;
 import act.handler.RequestHandler;
+import act.handler.builtin.controller.RequestHandlerProxy;
 import act.handler.builtin.controller.impl.ReflectedHandlerInvoker;
 import act.i18n.LocaleResolver;
 import act.route.Router;
@@ -82,7 +83,7 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
     private Map<String, String[]> allParams;
     private String actionPath; // e.g. com.mycorp.myapp.controller.AbcController.foo
     private State state;
-    private Map<String, Object> controllerInstances;
+    private Map<Class, Object> controllerInstances;
     private Map<String, ISObject[]> uploads;
     private Router router;
     private String processedUrl;
@@ -117,6 +118,7 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
     private PropertySpec.MetaInfo propSpec;
     private boolean suppressJsonDateFormat;
     private String attachmentName;
+    private Class<?> handlerClass;
 
     // see https://github.com/actframework/actframework/issues/492
     public String encodedSessionToken;
@@ -167,7 +169,7 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
 
     @Inject
     private ActionContext(App app, H.Request request, ActResponse<?> response) {
-        super(app, true);
+        super(app);
         E.NPE(app, request, response);
         request.context(this);
         response.context(this);
@@ -460,6 +462,14 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
         return this.byPassImplicitTemplateVariable;
     }
 
+    public ActionContext resetCache() {
+        RequestHandler handler = handler();
+        if (handler instanceof RequestHandlerProxy) {
+            ((RequestHandlerProxy) handler).resetCache();
+        }
+        return this;
+    }
+
     public ActionContext urlContext(String context) {
         this.urlContext = context;
         return this;
@@ -749,7 +759,7 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
         if (null == bodyParams) {
             Map<String, String[]> map = new HashMap<>();
             H.Method method = request.method();
-            if (H.Method.POST == method || H.Method.PUT == method || H.Method.PATCH == method) {
+            if (H.Method.POST == method || H.Method.PUT == method || H.Method.PATCH == method || H.Method.DELETE == method) {
                 RequestBodyParser parser = RequestBodyParser.get(request);
                 map = parser.parse(this);
             }
@@ -978,16 +988,37 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
         return super.__appRenderArgNames(names);
     }
 
-    public ActionContext __controllerInstance(String className, Object instance) {
+    public ActionContext __controllerInstance(Class<?> controllerClass, Object instance) {
         if (null == controllerInstances) {
             controllerInstances = new HashMap<>();
         }
-        controllerInstances.put(className, instance);
+        controllerInstances.put(controllerClass, instance);
         return this;
     }
 
-    public Object __controllerInstance(String className) {
-        return null == controllerInstances ? null : controllerInstances.get(className);
+    public Object __controllerInstance(Class<?> controllerClass) {
+        if (null == controllerInstances) {
+            return null;
+        }
+        Object inst = controllerInstances.get(controllerClass);
+        if (null != inst) {
+            return inst;
+        }
+        for (Object o : controllerInstances.values()) {
+            if (controllerClass.isInstance(o)) {
+                return o;
+            }
+        }
+        return null;
+    }
+
+    public ActionContext handlerClass(Class<?> clazz) {
+        this.handlerClass = clazz;
+        return this;
+    }
+
+    public Class<?> handlerClass() {
+        return handlerClass;
     }
 
 
@@ -1167,11 +1198,11 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
     /**
      * Update the context session to mark a user logged in
      *
-     * @param username
-     *         the username
+     * @param userIdentifier
+     *         the user identifier, could be either userId or username
      */
-    public void login(String username) {
-        session().put(config().sessionKeyUsername(), username);
+    public void login(Object userIdentifier) {
+        session().put(config().sessionKeyUsername(), userIdentifier);
     }
 
     /**

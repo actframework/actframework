@@ -22,10 +22,10 @@ package act.app;
 
 import act.Act;
 import act.Destroyable;
-import act.util.DestroyableBase;
+import act.util.LogSupportedDestroyableBase;
 import org.osgl.$;
 
-public abstract class AppHolderBase<T extends AppHolderBase> extends DestroyableBase implements AppHolder<T>, Destroyable {
+public abstract class AppHolderBase<T extends AppHolderBase> extends LogSupportedDestroyableBase implements AppHolder<T>, Destroyable {
 
     private App app;
 

@@ -28,6 +28,7 @@ import act.app.event.SysEventId;
 import act.app.event.SysEventListener;
 import act.inject.DependencyInjectionBinder;
 import act.inject.DependencyInjector;
+import act.inject.util.Sorter;
 import act.job.JobManager;
 import org.osgl.$;
 import org.osgl.logging.LogManager;
@@ -1115,7 +1116,7 @@ public class EventBus extends AppServiceBase<EventBus> {
             return this;
         }
         List<SysEventListener> list = listeners[sysEventId.ordinal()];
-        if (!list.contains(l)) list.add(l);
+        addIntoListWithOrder(list, l);
         return this;
     }
 
@@ -1129,8 +1130,7 @@ public class EventBus extends AppServiceBase<EventBus> {
                 list = newList;
             }
         }
-        if (!list.contains(listener)) {
-            list.add(listener);
+        if (addIntoListWithOrder(list, listener)) {
             if (ttl > 0) {
                 app().jobManager().delay(new Runnable() {
                     @Override
@@ -1184,9 +1184,7 @@ public class EventBus extends AppServiceBase<EventBus> {
                 list = newList;
             }
         }
-        if (!list.contains(eventListener)) {
-            list.add(eventListener);
-        }
+        addIntoListWithOrder(list, eventListener);
         return this;
     }
 
@@ -1328,20 +1326,30 @@ public class EventBus extends AppServiceBase<EventBus> {
             jobManager = app().jobManager();
         }
         Set<ActEventListener> toBeRemoved = C.newSet();
-        for (final ActEventListener l : listeners) {
-            if (!async) {
-                boolean result = callOn(event, l);
-                if (result && once) {
-                    toBeRemoved.add(l);
-                }
-            } else {
-                jobManager.now(new Runnable() {
-                    @Override
-                    public void run() {
-                        callOn(event, l);
+        try {
+            for (final ActEventListener l : listeners) {
+                if (!async) {
+                    boolean result = callOn(event, l);
+                    if (result && once) {
+                        toBeRemoved.add(l);
                     }
-                });
+                } else {
+                    jobManager.now(new Runnable() {
+                        @Override
+                        public void run() {
+                            callOn(event, l);
+                        }
+                    });
+                }
             }
+        } catch (ConcurrentModificationException e) {
+            String eventName;
+            if (event instanceof SysEvent) {
+                eventName = event.toString();
+            } else {
+                eventName = event.getClass().getName();
+            }
+            throw E.unexpected("Concurrent modification issue encountered on handling event: " + eventName);
         }
         if (once && !toBeRemoved.isEmpty()) {
             listeners.removeAll(toBeRemoved);
@@ -1365,7 +1373,7 @@ public class EventBus extends AppServiceBase<EventBus> {
             try {
                 l.on(lookUpSysEvent(sysEventId));
             } catch (Exception e) {
-                LOGGER.warn(e, "error calling event handler");
+                LOGGER.warn(e, "error calling event handler on " + sysEventId);
             }
             return true;
         }
@@ -1518,5 +1526,14 @@ public class EventBus extends AppServiceBase<EventBus> {
 
     private static boolean _isAsync(Object eventId) {
         return eventId instanceof Class && isAsync((Class) eventId);
+    }
+
+    private boolean addIntoListWithOrder(List list, Object element) {
+        if (!list.contains(element)) {
+            list.add(element);
+            Collections.sort(list, Sorter.COMPARATOR);
+            return true;
+        }
+        return false;
     }
 }

@@ -26,16 +26,14 @@ import act.Act;
 import act.conf.AppConfig;
 import act.metric.Metric;
 import act.metric.Timer;
-import act.util.DestroyableBase;
+import act.util.LogSupportedDestroyableBase;
 import org.eclipse.jdt.core.compiler.IProblem;
 import org.eclipse.jdt.internal.compiler.*;
 import org.eclipse.jdt.internal.compiler.Compiler;
 import org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration;
 import org.eclipse.jdt.internal.compiler.classfmt.ClassFileReader;
 import org.eclipse.jdt.internal.compiler.classfmt.ClassFormatException;
-import org.eclipse.jdt.internal.compiler.env.ICompilationUnit;
-import org.eclipse.jdt.internal.compiler.env.INameEnvironment;
-import org.eclipse.jdt.internal.compiler.env.NameEnvironmentAnswer;
+import org.eclipse.jdt.internal.compiler.env.*;
 import org.eclipse.jdt.internal.compiler.impl.CompilerOptions;
 import org.eclipse.jdt.internal.compiler.problem.DefaultProblem;
 import org.eclipse.jdt.internal.compiler.problem.DefaultProblemFactory;
@@ -43,16 +41,13 @@ import org.osgl.$;
 import org.osgl.util.E;
 import org.osgl.util.S;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Compile App srccode code in memory. Only used when Act is running
  * in DEV mode
  */
-class AppCompiler extends DestroyableBase {
+class AppCompiler extends LogSupportedDestroyableBase {
 
     Map<String, Boolean> packagesCache = new HashMap<>();
     private DevModeClassLoader classLoader;

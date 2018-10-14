@@ -65,7 +65,7 @@ public class SimpleEventListenerByteCodeScanner extends AppByteCodeScannerBase {
             JobManager jobManager = app().jobManager();
             for (final SimpleEventListenerMetaInfo metaInfo : metaInfoList) {
                 SysEventId hookOn = metaInfo.beforeAppStart() ? SysEventId.DEPENDENCY_INJECTOR_PROVISIONED : SysEventId.PRE_START;
-                jobManager.on(hookOn, new Runnable() {
+                jobManager.on(hookOn, "SimpleEventListenerByteCodeScanner:bindEventListener:" + metaInfo.jobId(), new Runnable() {
                     @Override
                     public void run() {
                         for (final Object event : metaInfo.events()) {

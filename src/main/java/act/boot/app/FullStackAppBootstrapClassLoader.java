@@ -26,6 +26,8 @@ import act.Constants;
 import act.boot.BootstrapClassLoader;
 import act.util.*;
 import org.osgl.$;
+import org.osgl.logging.LogManager;
+import org.osgl.logging.Logger;
 import org.osgl.util.*;
 
 import java.io.File;
@@ -39,6 +41,8 @@ import java.util.*;
  */
 public class FullStackAppBootstrapClassLoader extends BootstrapClassLoader implements ActClassLoader {
 
+    private static final Logger LOGGER = LogManager.get(FullStackAppBootstrapClassLoader.class);
+
     private static final String KEY_CLASSPATH = "java.class.path";
 
     /**
@@ -49,17 +53,27 @@ public class FullStackAppBootstrapClassLoader extends BootstrapClassLoader imple
      * The default value is defined in {@link #DEF_JAR_IGNORE}
      * ``
      */
-    private static final String KEY_SYS_JAR_IGNORE = "act.jar.sys.ignore";
+    public static final String KEY_SYS_JAR_IGNORE = "act.jar.sys.ignore";
 
     /**
      * the {@link System#getProperty(String) system property} key to get
      * the ignored jar file name prefix; multiple prefixes can be specified
      * with comma `,`
      */
-    private static final String KEY_APP_JAR_IGNORE = "act.jar.app.ignore";
+    public static final String KEY_APP_JAR_IGNORE = "act.jar.app.ignore";
 
-    private static final String DEF_JAR_IGNORE = "act-asm,antlr,ecj-,cglib,commons-,hibernate-,jline-,kryo-,logback-," +
-            "mongo-java-,mvel,newrelic,okio-,okhttp,pat-,proxytoys,rythm-engine,snakeyaml,undertow,xnio";
+    public static final String DEF_JAR_IGNORE = "act-asm,activation-,antlr," +
+            "asm-,byte-buddy,byte-buddy-agent," +
+            "cdi-api,cglib,commons-,core-,curvesapi," +
+            "debugger-agent,ecj-,guava-,hibernate-," +
+            "idea_rt,image4j-," +
+            "jansi-,javase-,javaparser,javax.,jboss-,jcl-,jcommander-," +
+            "jfiglet,jline-,jsoup-,jxls-,joda-,kryo-,logback-," +
+            "mail-,mongo-,mvel,newrelic," +
+            "okio-,okhttp,org.apache.," +
+            "pat-,patchca,poi-,proxytoys," +
+            "reflectasm-,rythm-engine," +
+            "slf4j-,snakeyaml,stax-,undertow-,xmlbeans-,xnio";
 
     private final Class<?> PLUGIN_CLASS;
 
@@ -69,7 +83,7 @@ public class FullStackAppBootstrapClassLoader extends BootstrapClassLoader imple
     private List<Class<?>> actClasses = new ArrayList<>();
     private List<Class<?>> pluginClasses = new ArrayList<>();
     private String lineSeparator = OS.get().lineSeparator();
-    private static final $.Predicate<File> jarFilter = jarFilter();
+    private final $.Predicate<File> jarFilter = jarFilter();
 
     public FullStackAppBootstrapClassLoader(ClassLoader parent) {
         super(parent);
@@ -83,6 +97,9 @@ public class FullStackAppBootstrapClassLoader extends BootstrapClassLoader imple
             restoreClassInfoRegistry();
             restorePluginClasses();
             if (classInfoRepository.isEmpty()) {
+                if (LOGGER.isTraceEnabled()) {
+                    LOGGER.trace("classInfoRegistry not recovered, start searching through libBC (with total %s classes)", libBCSize());
+                }
                 for (String className : C.list(libBC.keySet())) {
                     try {
                         Class<?> c = loadClass(className, true);
@@ -128,7 +145,14 @@ public class FullStackAppBootstrapClassLoader extends BootstrapClassLoader imple
         return jarsChecksum;
     }
 
-    private static $.Predicate<File> jarFilter() {
+    private $.Predicate<File> jarFilter() {
+        final Set<String> blackList = jarBlackList();
+        final Set<String> whiteList = new HashSet<>();
+        for (String s : blackList) {
+            if (s.startsWith("-")) {
+                whiteList.add(s.substring(1));
+            }
+        }
         String ignores = System.getProperty(KEY_SYS_JAR_IGNORE);
         if (null == ignores) {
             ignores = DEF_JAR_IGNORE;
@@ -137,14 +161,25 @@ public class FullStackAppBootstrapClassLoader extends BootstrapClassLoader imple
         if (null != appIgnores) {
             ignores += ("," + appIgnores);
         }
-        final String[] sa = ignores.split(",");
+        blackList.addAll(S.fastSplit(ignores, ","));
         return new $.Predicate<File>() {
             @Override
             public boolean test(File file) {
                 String name = file.getName();
-                for (String prefix : sa) {
-                    if (S.notBlank(prefix) && name.startsWith(prefix)) {
-                        return false;
+                for (String prefix : blackList) {
+                    if (S.blank(prefix)) {
+                        continue;
+                    }
+                    if (name.startsWith(prefix)) {
+                        boolean whiteListed = false;
+                        for (String s : whiteList) {
+                            if (name.startsWith(s)) {
+                                whiteListed = true;
+                            }
+                        }
+                        if (!whiteListed) {
+                            return false;
+                        }
                     }
                 }
                 return true;
@@ -152,14 +187,14 @@ public class FullStackAppBootstrapClassLoader extends BootstrapClassLoader imple
         };
     }
 
-    private static List<File> filterJars(List<File> jars) {
+    private List<File> filterJars(List<File> jars) {
         if (null == jarFilter) {
             return null;
         }
         return C.list(jars).filter(jarFilter);
     }
 
-    public static List<File> jars(ClassLoader cl) {
+    public List<File> jars(ClassLoader cl) {
         List<File> jars = null;
         C.List<String> path = C.listOf(System.getProperty(KEY_CLASSPATH).split(File.pathSeparator));
         if (path.size() < 10) {
@@ -294,7 +329,7 @@ public class FullStackAppBootstrapClassLoader extends BootstrapClassLoader imple
             return c;
         }
 
-        if (name.startsWith("java") || name.startsWith("org.osgl") || name.startsWith("org.slf4j")) {
+        if (name.startsWith("java") || name.startsWith("org.slf4j")) {
             return super.loadClass(name, resolve);
         }
 

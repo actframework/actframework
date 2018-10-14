@@ -5,6 +5,9 @@
 
   <!-- Send debug messages to System.out -->
   <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+    <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+      <level>INFO</level>
+    </filter>
     <!-- By default, encoders are assigned the type ch.qos.logback.classic.encoder.PatternLayoutEncoder -->
     <withJansi>true</withJansi>
     <encoder>
@@ -81,7 +84,7 @@
     </triggeringPolicy>
   </appender>
 
-  <logger name="act" level="INFO" additivity="false">
+  <logger name="act" level="TRACE" additivity="false">
     <appender-ref ref="FILE" />
     <appender-ref ref="STDOUT" />
   </logger>
@@ -98,7 +101,7 @@
     <appender-ref ref="E2E_STDOUT"/>
     <appender-ref ref="E2E_FILE"/>
   </logger>
-
+App
   <logger name="act.metric" level="TRACE">
     <appender-ref ref="METRIC_FILE" />
   </logger>

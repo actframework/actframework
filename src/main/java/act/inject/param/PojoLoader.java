@@ -24,7 +24,6 @@ import static act.inject.param.ParamValueLoaderService.shouldWaive;
 
 import act.inject.genie.GenieInjector;
 import act.util.ActContext;
-import act.util.LogSupport;
 import org.osgl.$;
 import org.osgl.inject.BeanSpec;
 import org.osgl.inject.InjectException;
@@ -33,7 +32,7 @@ import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.Map;
 
-class PojoLoader extends LogSupport implements ParamValueLoader {
+class PojoLoader extends ParamValueLoader.JsonBodySupported {
 
     final ParamKey key;
     final BeanSpec spec;

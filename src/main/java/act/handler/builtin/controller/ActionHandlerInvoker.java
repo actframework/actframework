@@ -25,13 +25,12 @@ import act.app.ActionContext;
 import act.controller.CacheSupportMetaInfo;
 import act.security.CORS;
 import act.security.CSRF;
-import act.util.MissingAuthenticationHandler;
-import act.util.Prioritised;
+import act.util.*;
 import org.osgl.mvc.result.Result;
 
 import java.lang.reflect.Method;
 
-public interface ActionHandlerInvoker extends Prioritised, Destroyable {
+public interface ActionHandlerInvoker extends Prioritised, Destroyable, Ordered {
     Result handle(ActionContext actionContext) throws Exception;
 
     void accept(Visitor visitor);

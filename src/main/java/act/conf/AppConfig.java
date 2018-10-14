@@ -36,6 +36,7 @@ import act.data.DateTimeStyle;
 import act.data.DateTimeType;
 import act.db.util.SequenceNumberGenerator;
 import act.db.util._SequenceNumberGenerator;
+import act.handler.ReturnValueAdvice;
 import act.handler.UnknownHttpMethodProcessor;
 import act.handler.event.ResultEvent;
 import act.i18n.I18n;
@@ -141,6 +142,7 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
     }
 
     public void preloadConfigurations() {
+        long ms = $.ms();
         // ensure JWT get evaluated first to set
         // default value for dependency settings
         jwtEnabled();
@@ -201,6 +203,7 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
                 app().cache(key).setDefaultTTL(ttl);
             }
         }
+        logger.trace("Preload Config takes: %sms", $.ms() - ms);
     }
 
 
@@ -1094,6 +1097,32 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
         if (!hasConfiguration(X_FORWARD_PROTOCOL)) {
             xForwardedProtocol = conf.xForwardedProtocol;
         }
+    }
+
+    private ReturnValueAdvice globalReturnValueAdvice;
+    private Boolean globalReturnValueAdviceSet;
+
+    protected T globalReturnValueAdvice(ReturnValueAdvice advice) {
+        this.globalReturnValueAdvice = $.requireNotNull(advice);
+        return me();
+    }
+
+    public ReturnValueAdvice globalReturnValueAdvice() {
+        if (null != globalReturnValueAdvice) {
+            return globalReturnValueAdvice;
+        }
+        if (null == globalReturnValueAdviceSet) {
+            globalReturnValueAdviceSet = true;
+            String s = get(GLOBAL_RETURN_VALUE_ADVICE, null);
+            if (null != s) {
+                try {
+                    globalReturnValueAdvice = app.getInstance(s);
+                } catch (Exception e) {
+                    throw new ConfigurationException("Error loading global returnValueAdvice: " + s);
+                }
+            }
+        }
+        return globalReturnValueAdvice;
     }
 
 

@@ -39,6 +39,7 @@ public class AppDescriptor implements Serializable {
     private String appName;
     private String packageName;
     private Version version;
+    private long start = $.ms();
 
     /**
      * Construct an `AppVersion` with name and version
@@ -96,6 +97,10 @@ public class AppDescriptor implements Serializable {
      */
     public boolean isValid() {
         return !version.isUnknown();
+    }
+
+    public long getStart() {
+        return this.start;
     }
 
     /**

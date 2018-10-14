@@ -27,27 +27,21 @@ import act.app.event.SysEventId;
 import act.app.util.NamedPort;
 import act.event.EventBus;
 import act.handler.RequestHandler;
-import act.handler.builtin.AlwaysNotFound;
-import act.handler.builtin.FileGetter;
-import act.handler.builtin.ResourceGetter;
+import act.handler.builtin.*;
 import act.handler.builtin.controller.FastRequestHandler;
 import act.handler.builtin.controller.RequestHandlerProxy;
 import act.handler.event.PostHandle;
 import act.handler.event.PreHandle;
-import act.metric.Metric;
-import act.metric.MetricInfo;
-import act.metric.Timer;
+import act.metric.*;
 import act.route.Router;
-import act.util.DestroyableBase;
+import act.util.LogSupportedDestroyableBase;
 import act.view.ActErrorResult;
 import org.osgl.$;
 import org.osgl.exception.NotAppliedException;
 import org.osgl.http.H;
 import org.osgl.logging.LogManager;
 import org.osgl.logging.Logger;
-import org.osgl.mvc.result.ErrorResult;
-import org.osgl.mvc.result.NotFound;
-import org.osgl.mvc.result.Result;
+import org.osgl.mvc.result.*;
 import org.osgl.util.E;
 import org.osgl.util.S;
 
@@ -55,7 +49,7 @@ import org.osgl.util.S;
  * A `NetworkHandler` can be registered to an {@link Network} and get invoked when
  * there are network event (e.g. an HTTP request) incoming
  */
-public class NetworkHandler extends DestroyableBase {
+public class NetworkHandler extends LogSupportedDestroyableBase {
 
     private static Logger logger = LogManager.get(NetworkHandler.class);
 
@@ -107,7 +101,7 @@ public class NetworkHandler extends DestroyableBase {
             try {
                 boolean updated = app.checkUpdates(false);
                 if (updated && !app.hasBlockIssue()) {
-                    app.jobManager().on(SysEventId.POST_START, new Runnable() {
+                    app.jobManager().on(SysEventId.POST_START, "NetworkHandler:resumeRequestHandlingAfterHotReload", new Runnable() {
                         @Override
                         public void run() {
                             handle(ctx, dispatcher);
@@ -131,17 +125,20 @@ public class NetworkHandler extends DestroyableBase {
             url = urlContextProcessor.apply(req, url);
         } catch (NotFound notFound) {
             ctx.handler(AlwaysNotFound.INSTANCE);
-            ctx.saveLocal();
             AlwaysNotFound.INSTANCE.apply(ctx);
             return;
         }
+
+        // have to save context current here
+        // otherwise it might cause
+        // https://github.com/actframework/actframework/issues
+        ctx.saveLocal();
         Timer timer = metric.startTimer(MetricInfo.ROUTING);
         final RequestHandler requestHandler = router().getInvoker(method, url, ctx);
         ctx.handler(requestHandler);
         timer.stop();
         boolean resourceGetter = requestHandler instanceof ResourceGetter || requestHandler instanceof FileGetter;
         if (null != refreshError && !resourceGetter) {
-            ctx.saveLocal();
             handleException(refreshError, ctx, "Error refreshing app");
             ActionContext.clearCurrent();
             return;
@@ -154,9 +151,9 @@ public class NetworkHandler extends DestroyableBase {
                     String key = S.concat(MetricInfo.HTTP_HANDLER, ":", requestHandler.toString());
                     timer = metric.startTimer(key);
                 }
-                ctx.saveLocal();
                 EventBus eventBus = app.eventBus();
                 final boolean skipEvents = ctx.skipEvents();
+                ctx.saveLocal();
                 try {
                     if (!skipEvents) {
                         eventBus.emit(new PreHandle(ctx));

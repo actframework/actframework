@@ -29,24 +29,15 @@ import act.controller.ActionMethodParamAnnotationHandler;
 import act.db.AdaptiveRecord;
 import act.db.DbBind;
 import act.db.di.FindBy;
-import act.inject.DefaultValue;
-import act.inject.DependencyInjector;
-import act.inject.SessionVariable;
-import act.inject.genie.DependentScope;
-import act.inject.genie.GenieInjector;
-import act.inject.genie.RequestScope;
-import act.inject.genie.SessionScope;
+import act.inject.*;
+import act.inject.genie.*;
 import act.util.*;
-import org.osgl.$;
-import org.osgl.Lang;
-import org.osgl.OsglConfig;
+import org.osgl.*;
 import org.osgl.exception.UnexpectedException;
 import org.osgl.inject.BeanSpec;
 import org.osgl.inject.InjectException;
 import org.osgl.inject.util.AnnotationUtil;
 import org.osgl.inject.util.ArrayLoader;
-import org.osgl.logging.LogManager;
-import org.osgl.logging.Logger;
 import org.osgl.mvc.annotation.Bind;
 import org.osgl.mvc.annotation.Param;
 import org.osgl.mvc.result.Result;
@@ -58,14 +49,9 @@ import java.lang.reflect.*;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-import javax.enterprise.context.ApplicationScoped;
-import javax.enterprise.context.Dependent;
-import javax.enterprise.context.RequestScoped;
-import javax.enterprise.context.SessionScoped;
+import javax.enterprise.context.*;
 import javax.enterprise.inject.New;
-import javax.inject.Named;
-import javax.inject.Provider;
-import javax.inject.Singleton;
+import javax.inject.*;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 import javax.validation.*;
@@ -74,24 +60,17 @@ import javax.validation.executable.ExecutableValidator;
 /**
  * Manage {@link ParamValueLoader} grouped by Method
  */
-public abstract class ParamValueLoaderService extends DestroyableBase {
-
-    protected Logger logger = LogManager.get(getClass());
+public abstract class ParamValueLoaderService extends LogSupportedDestroyableBase {
 
     private static final ParamValueLoader[] DUMB = new ParamValueLoader[0];
     private static final ThreadLocal<ParamTree> PARAM_TREE = new ThreadLocal<ParamTree>();
-    private static final ParamValueLoader RESULT_LOADER = new ParamValueLoader() {
+    private static final ParamValueLoader RESULT_LOADER = new ParamValueLoader.NonCacheable() {
         @Override
         public Object load(Object bean, ActContext<?> context, boolean noDefaultValue) {
             return ((ActionContext)context).result();
         }
-
-        @Override
-        public String bindName() {
-            return null;
-        }
     };
-    private static class ThrowableLoader implements ParamValueLoader {
+    private static class ThrowableLoader extends ParamValueLoader.NonCacheable {
         private Class<? extends Throwable> throwableType;
 
         public ThrowableLoader(Class<? extends Throwable> throwableType) {
@@ -104,11 +83,8 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
             return throwableType.isInstance(o) ? o : null;
         }
 
-        @Override
-        public String bindName() {
-            return null;
-        }
     }
+
     // contains field names that should be waived when looking for value loader
     private static final Set<String> fieldBlackList = new HashSet<>();
 
@@ -170,7 +146,7 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
             }
             boolean hasValidationConstraint = boolBag.get();
             if (hasValidationConstraint && null == host) {
-                logger.error("Cannot validate static method: %s", method);
+                error("Cannot validate static method: %s", method);
                 hasValidationConstraint = false;
             }
             methodValidationConstraintLookup.put(method, hasValidationConstraint);
@@ -221,7 +197,7 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
         final Map<Field, ParamValueLoader> loaders = fieldLoaders(beanClass);
         final boolean hasField = !loaders.isEmpty();
         final $.Var<Boolean> hasValidateConstraint = $.var();
-        ParamValueLoader loader = new ParamValueLoader() {
+        ParamValueLoader loader = new ParamValueLoader.NonCacheable() {
             @Override
             public Object load(Object bean, ActContext<?> context, boolean noDefaultValue) {
                 if (null == bean) {
@@ -237,8 +213,6 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
                         Object fieldValue = loader.load(null, context, noDefaultValue);
                         if (null != fieldValue) {
                             field.set(bean, fieldValue);
-                        } else {
-                            fieldValue = field.get(bean);
                         }
                         if (hasValidationConstraint(BeanSpec.of(field, injector))) {
                             hasValidateConstraint.set(true);
@@ -248,11 +222,6 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
                     throw new InjectException(e);
                 }
                 return bean;
-            }
-
-            @Override
-            public String bindName() {
-                return null;
             }
         };
         return decorate(loader, BeanSpec.of(beanClass, injector), false, true);
@@ -264,13 +233,19 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
             return true;
         }
         String fieldName = field.getName();
-        return noBind(field.getDeclaringClass())
+        Class<?> entityType = field.getDeclaringClass();
+        return noBind(entityType)
                 || field.isAnnotationPresent(NoBind.class)
                 || field.isAnnotationPresent(Stateless.class)
                 || field.isAnnotationPresent(Global.class)
                 || fieldBlackList.contains(fieldName)
-                || Object.class.equals(field.getDeclaringClass())
+                || Object.class.equals(entityType)
+                || Class.class.equals(entityType)
                 || OsglConfig.globalMappingFilter_shouldIgnore(fieldName);
+    }
+
+    public static boolean isInBlackList(String fieldName) {
+        return fieldBlackList.contains(fieldName);
     }
 
     private static ConcurrentMap<Class, Boolean> noBindCache;
@@ -279,7 +254,7 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
         noBindCache = app.createConcurrentMap();
     }
 
-    private static boolean noBind(Class c) {
+    public static boolean noBind(Class c) {
         Boolean b = noBindCache.get(c);
         if (null != b) {
             return b;
@@ -396,7 +371,7 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
         if (null == ctx) {
             return ParamValueLoader.NIL;
         }
-        return new ParamValueLoader() {
+        return new ParamValueLoader.NonCacheable() {
             @Override
             public Object load(Object bean, ActContext<?> ctx, boolean noDefaultValue) {
                 Method handlerMethod = ctx.handlerMethod();
@@ -408,11 +383,6 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
                     anno = curMethod.getAnnotation(annoType);
                 }
                 return anno;
-            }
-
-            @Override
-            public String bindName() {
-                return null;
             }
         };
     }
@@ -558,7 +528,7 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
             final BeanSpec targetSpec
     ) {
         final CollectionLoader collectionLoader = new CollectionLoader(key, ArrayList.class, elementType, targetSpec, injector, this);
-        return new ParamValueLoader() {
+        return new ParamValueLoader.JsonBodySupported() {
             @Override
             public Object load(Object bean, ActContext<?> context, boolean noDefaultValue) {
                 List list = new ArrayList();
@@ -676,7 +646,7 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
             boolean useJsonDecorator,
             boolean useValidationDecorator
     ) {
-        final ParamValueLoader jsonDecorated = useJsonDecorator ? new JsonParamValueLoader(loader, spec, injector) : loader;
+        final ParamValueLoader jsonDecorated = useJsonDecorator && loader.supportJsonDecorator() ? new JsonParamValueLoader(loader, spec, injector) : loader;
         ParamValueLoader validationDecorated = jsonDecorated;
         if (useValidationDecorator) {
             validationDecorated = new ParamValueLoader() {
@@ -699,6 +669,16 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
                 @Override
                 public String bindName() {
                     return jsonDecorated.bindName();
+                }
+
+                @Override
+                public boolean supportJsonDecorator() {
+                    return false;
+                }
+
+                @Override
+                public boolean supportScopeCaching() {
+                    return jsonDecorated.supportScopeCaching();
                 }
             };
 
@@ -763,8 +743,7 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
 
     static boolean sessionScoped(BeanSpec spec) {
         return spec.hasAnnotation(SessionScoped.class)
-                || spec.hasAnnotation(org.osgl.inject.annotation.SessionScoped.class)
-                || spec.hasAnnotation(SessionVariable.class);
+                || spec.hasAnnotation(org.osgl.inject.annotation.SessionScoped.class);
     }
 
     public static void waiveFields(String... fieldNames) {
@@ -820,10 +799,12 @@ public abstract class ParamValueLoaderService extends DestroyableBase {
         return !hasDbBind(aa);
     }
 
+    private static final String DB_BIND_CNAME = DbBind.class.getName();
     // DbBind is special: it's class loader is AppClassLoader
     public static boolean hasDbBind(Annotation[] annotations) {
+        final String name = DB_BIND_CNAME;
         for (Annotation a : annotations) {
-            if (a.annotationType().getName().equals(DbBind.class.getName())) {
+            if (a.annotationType().getName().equals(name)) {
                 return true;
             }
         }

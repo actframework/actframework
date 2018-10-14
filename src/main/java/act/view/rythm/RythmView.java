@@ -229,4 +229,20 @@ public class RythmView extends View {
         return new RawData(line);
     }
 
+    @Transformer
+    public static RawData errorLine(RawData data, int errorColumn) {
+        String line = S.string(data);
+        if (errorColumn > -1 && errorColumn < line.length()) {
+            String a = line.substring(0, errorColumn);
+            char c = line.charAt(errorColumn);
+            String b = line.substring(errorColumn + 1);
+            line = S.concat(a, "<span_class='error-column'>", c, "</span>", b);
+            line = S.replace(" ").with("&nbsp;").in(line);
+            line = S.replace("span_class").with("span class").in(line);
+        } else {
+            line = S.replace(" ").with("&nbsp;").in(line);
+        }
+        return new RawData(line);
+    }
+
 }

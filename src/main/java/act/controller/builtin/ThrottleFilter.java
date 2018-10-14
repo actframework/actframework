@@ -49,7 +49,7 @@ public class ThrottleFilter {
 
     public ThrottleFilter() {
         final App app = Act.app();
-        app.jobManager().on(SysEventId.CLASS_LOADER_INITIALIZED, new Runnable() {
+        app.jobManager().on(SysEventId.CLASS_LOADER_INITIALIZED, "ThrottleFilter:initCache", new Runnable() {
             @Override
             public void run() {
                 cache = app.cache(CACHE_NAME);
@@ -62,7 +62,7 @@ public class ThrottleFilter {
         this.throttle = throttle;
         this.expireScale = expireScale;
         final App app = Act.app();
-        app.jobManager().on(SysEventId.CLASS_LOADER_INITIALIZED, new Runnable() {
+        app.jobManager().on(SysEventId.CLASS_LOADER_INITIALIZED, "ThrottleFilter:initCache", new Runnable() {
             @Override
             public void run() {
                 cache = app.cache(CACHE_NAME);

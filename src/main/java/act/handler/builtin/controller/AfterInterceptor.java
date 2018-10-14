@@ -31,7 +31,7 @@ public abstract class AfterInterceptor
         extends Handler<AfterInterceptor>
         implements Plugin, AfterInterceptorInvoker {
 
-    protected AfterInterceptor(int priority) {
+    protected AfterInterceptor(Integer priority) {
         super(priority);
     }
 

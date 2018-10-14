@@ -22,22 +22,16 @@ package act.app;
 
 import act.Act;
 import act.Destroyable;
-import act.app.event.SysEventId;
 import act.cli.CliSession;
 import org.osgl.exception.ConfigurationException;
 import org.osgl.logging.LogManager;
 import org.osgl.logging.Logger;
 
 import java.io.IOException;
-import java.net.InetAddress;
-import java.net.ServerSocket;
-import java.net.Socket;
+import java.net.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
@@ -161,12 +155,6 @@ public class CliServer extends AppServiceBase<CliServer> implements Runnable {
                     }
                 }
             });
-            app().jobManager().on(SysEventId.ACT_START, new Runnable() {
-                @Override
-                public void run() {
-                    Act.LOGGER.info("CLI server started on port: %s", port);
-                }
-            });
         } catch (IOException e) {
             Throwable t = e.getCause();
             if (null != t && t.getMessage().contains("Address already in use")) {
@@ -174,6 +162,10 @@ public class CliServer extends AppServiceBase<CliServer> implements Runnable {
             }
             throw new ConfigurationException(e, "Cannot start CLI server on port: %s", port);
         }
+    }
+
+    public void logStart() {
+        Act.LOGGER.info("CLI server started on port: %s", port);
     }
 
     boolean running() {

@@ -32,6 +32,7 @@ import org.osgl.util.Unsafe;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * {@code RouteTableRouterBuilder} take a list of route map definition line and
@@ -102,6 +103,8 @@ import java.util.List;
  */
 public class RouteTableRouterBuilder implements RouterBuilder {
 
+    private static AtomicInteger jobIdCounter = new AtomicInteger(0);
+
     public static final String ROUTES_FILE = "routes.conf";
 
     private List<String> lines;
@@ -128,7 +131,7 @@ public class RouteTableRouterBuilder implements RouterBuilder {
             } catch (final RuntimeException e) {
                 if (Act.isDev()) {
                     final App app = router.app();
-                    app.jobManager().on(SysEventId.PRE_START, new Runnable() {
+                    app.jobManager().on(SysEventId.PRE_START, "RouteTableRouterBuilder:setAppBlockIssue-" + jobIdCounter.getAndIncrement(), new Runnable() {
                         @Override
                         public void run() {
                             app.setBlockIssue(e);

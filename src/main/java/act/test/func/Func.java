@@ -23,9 +23,13 @@ package act.test.func;
 import act.Act;
 import act.test.inbox.Inbox;
 import act.test.util.NamedLogic;
+import act.test.verifier.DateTimeVerifier;
+import org.joda.time.DateTime;
+import org.joda.time.LocalDate;
 import org.osgl.$;
 import org.osgl.util.*;
 import org.osgl.util.converter.TypeConverterRegistry;
+import org.rythmengine.utils.Time;
 
 import java.lang.reflect.Array;
 import java.util.Collection;
@@ -77,6 +81,117 @@ public abstract class Func<T extends Func> extends NamedLogic<T> {
         @Override
         public Object apply() {
             return size;
+        }
+    }
+
+    public static class Today extends Func<Today> {
+        @Override
+        public Object apply() {
+            return LocalDate.now();
+        }
+    }
+
+    public static class Tomorrow extends Func<Tomorrow> {
+        @Override
+        public Object apply() {
+            return LocalDate.now().plusDays(1);
+        }
+    }
+
+    public static class GetTime extends Func<GetTime> {
+
+        private Integer deltaInSeconds;
+        private DateTime dateTime;
+
+        @Override
+        public void init(Object param) {
+            super.init(param);
+            if (param instanceof String) {
+                initStr((String) param);
+            } else if (param instanceof List) {
+                initList((List<String>) param);
+            }
+        }
+
+        private void initStr(String s) {
+            E.illegalArgumentIf(!tryParseDuration(s) && !tryParseDateTime(s), "Invalid GetTime argument: " + s);
+        }
+
+        private void initList(List<String> list) {
+            E.illegalArgumentIf(list.isEmpty());
+            String first = list.get(0);
+            if (list.size() < 2) {
+                initStr(first);
+                return;
+            }
+            String second = list.get(1);
+            if (!tryParseDateTime(first)) {
+                if (!tryParseDuration(first)) {
+                    throw new IllegalArgumentException("Invalid GetTime argument: " + list);
+                } else if (!tryParseDateTime(second)) {
+                    throw new IllegalArgumentException("Invalid GetTime argument: " + list);
+                }
+            } else if (!tryParseDuration(second)) {
+                throw new IllegalArgumentException("Invalid GetTime argument: " + list);
+            }
+        }
+
+        private boolean tryParseDuration(String s) {
+            boolean negative = false;
+            if (s.startsWith("-")) {
+                negative = true;
+                s = s.substring(1);
+            } else if (s.startsWith("+")) {
+                s = s.substring(1);
+            }
+            try {
+                int n = Time.parseDuration(s);
+                deltaInSeconds = negative ? -1 * n : n;
+                return true;
+            } catch (IllegalArgumentException e) {
+                return false;
+            }
+        }
+
+        private boolean tryParseDateTime(String s) {
+            Long l = DateTimeVerifier.tryWithDefaultDateTimeFormats(s);
+            if (null == l) {
+                return false;
+            }
+            dateTime = new DateTime(l);
+            return true;
+        }
+
+        @Override
+        public Object apply() {
+            DateTime now = null == dateTime ? DateTime.now() : dateTime;
+            if (null != deltaInSeconds) {
+                int delta = deltaInSeconds;
+                now = delta < 0 ? now.minusSeconds(-1 * delta) : now.plusSeconds(delta);
+            }
+            return now;
+        }
+    }
+
+
+    public static class Now extends Func<Now> {
+        @Override
+        public Object apply() {
+            return DateTime.now();
+        }
+    }
+
+    public static class NextMinute extends Func<NextMinute> {
+        @Override
+        public Object apply() {
+            return DateTime.now().plusMinutes(1);
+        }
+    }
+
+    public static class NextHour extends Func<NextHour> {
+        @Override
+        public Object apply() {
+            return DateTime.now().plusHours(1);
         }
     }
 

@@ -20,7 +20,7 @@ package act.ws;
  * #L%
  */
 
-import act.util.DestroyableBase;
+import act.util.LogSupportedDestroyableBase;
 import act.xio.WebSocketConnection;
 import org.osgl.$;
 import org.osgl.util.C;
@@ -33,7 +33,7 @@ import java.util.concurrent.ConcurrentMap;
  * Organize websocket connection by string typed keys. Multiple connections
  * can be attached to the same key
  */
-public class WebSocketConnectionRegistry extends DestroyableBase {
+public class WebSocketConnectionRegistry extends LogSupportedDestroyableBase {
     private ConcurrentMap<String, ConcurrentMap<WebSocketConnection, WebSocketConnection>> registry = new ConcurrentHashMap<>();
 
     /**

@@ -1,0 +1,32 @@
+Scenario(GH862):
+  constants:
+    newFooName: ${randStr}
+  description: "[862] Support using `SessionVariable` annotation and `DbBind` together"
+  interactions:
+  - description: Create record
+    request:
+      post: /862
+      params:
+        name: ${newFooName}
+    response:
+      json:
+        id:
+          - exists: true
+    cache:
+      newFooId: id
+  - description: select new record as session variable
+    request:
+      put: /862/current
+      params:
+        target: ${newFooId}
+    respons:
+      json:
+        id: ${newFooId}
+        name: ${newFooName}
+  - description: select current record (from session)
+    request:
+      get: /862/current
+    response:
+      json:
+        id: ${newFooId}
+        name: ${newFooName}

@@ -24,6 +24,7 @@ import act.Act;
 import act.app.App;
 import act.app.DaoLocator;
 import act.app.RuntimeDirs;
+import act.conf.AppConfig;
 import act.test.Scenario;
 import org.osgl.$;
 import org.osgl.util.C;
@@ -47,6 +48,8 @@ public class ScenarioManager extends YamlLoader {
 
     private Map<Keyword, Scenario> store = new LinkedHashMap<>();
 
+    private String urlContext;
+
     public ScenarioManager() {
         super("act.test");
         setFixtureFolder("/test");
@@ -65,6 +68,10 @@ public class ScenarioManager extends YamlLoader {
         return store.get(Keyword.of(name));
     }
 
+    public Scenario get(Keyword testId) {
+        return store.get(testId);
+    }
+
     public Map<String, Scenario> load() {
         loadDefault();
         searchScenarioFolder();
@@ -80,6 +87,8 @@ public class ScenarioManager extends YamlLoader {
         if (null == app) {
             return;
         }
+        AppConfig<?> config = app.config();
+        urlContext = config.get("test.urlContext");
     }
 
     private void loadDefault() {
@@ -95,7 +104,7 @@ public class ScenarioManager extends YamlLoader {
         if (null != app) {
             searchWhenInAppContext(app);
         } else {
-            URL url = ScenarioManager.class.getResource("/test/scenarios");
+            URL url = Act.getResource("/test/scenarios");
             if (null != url) {
                 File file = new File(url.getFile());
                 if (file.exists()) {
@@ -176,10 +185,18 @@ public class ScenarioManager extends YamlLoader {
     private void parseOne(String content) {
         Map<String, Object> map = parse(content, NULL_DAO);
         Map<String, Scenario> loaded = $.cast(map);
+        boolean hasDefaultUrlContext = S.notBlank(urlContext);
         for (Map.Entry<String, Scenario> entry : loaded.entrySet()) {
             String key = entry.getKey();
             Scenario scenario = entry.getValue();
             scenario.name = key;
+            if (hasDefaultUrlContext) {
+                if (S.isBlank(scenario.urlContext)) {
+                    scenario.urlContext = this.urlContext;
+                } else if (!scenario.urlContext.startsWith("/")) {
+                    scenario.urlContext = S.pathConcat(this.urlContext, '/', scenario.urlContext);
+                }
+            }
             this.store.put(Keyword.of(key), scenario);
         }
     }

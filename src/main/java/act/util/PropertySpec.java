@@ -25,6 +25,7 @@ import act.cli.CliContext;
 import act.cli.CliSession;
 import act.controller.meta.HandlerMethodMetaInfo;
 import org.osgl.$;
+import org.osgl.Lang;
 import org.osgl.util.C;
 import org.osgl.util.S;
 
@@ -138,11 +139,11 @@ public @interface PropertySpec {
     /**
      * Capture the {@code PropertySpec} annotation meta info in bytecode scanning phase
      */
-    public class MetaInfo {
+    class MetaInfo {
         // split "fn as firstName" into "fn" and "firstName"
         private static Pattern p = Pattern.compile("\\s+as\\s+", Pattern.CASE_INSENSITIVE);
 
-        static class Spec extends $.T3<List<String>, Set<String>, Map<String, String>> {
+        public static class Spec extends $.T3<List<String>, Set<String>, Map<String, String>> {
 
             Spec() {
                 super(C.<String>newList(), C.<String>newSet(), C.<String, String>newMap());
@@ -162,6 +163,18 @@ public @interface PropertySpec {
 
             boolean isEmpty() {
                 return _1.isEmpty() && _2.isEmpty() && _3.isEmpty();
+            }
+
+            public Lang._MappingStage applyTo(Lang._MappingStage stage) {
+                if (!outputs().isEmpty()) {
+                    stage.filter(S.join(",", outputs()));
+                } else if (!excluded().isEmpty()) {
+                    stage.filter(S.join(",", C.list(excluded()).map(S.F.prepend("-"))));
+                }
+                if (!labels().isEmpty()) {
+                    stage.withHeadMapping(labels());
+                }
+                return stage;
             }
 
         }
@@ -258,6 +271,10 @@ public @interface PropertySpec {
         public String label(String field, ActContext context) {
             String lbl = spec(context).labels().get(field);
             return null == lbl ? field : lbl;
+        }
+
+        public Lang._MappingStage applyTo(Lang._MappingStage mappingStage, ActContext context) {
+            return spec(context).applyTo(mappingStage);
         }
 
         private Spec httpSpec() {

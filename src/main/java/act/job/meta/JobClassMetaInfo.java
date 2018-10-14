@@ -23,9 +23,9 @@ package act.job.meta;
 import static act.Destroyable.Util.destroyAll;
 
 import act.asm.Type;
-import act.test.FixtureLoader;
 import act.job.*;
-import act.util.DestroyableBase;
+import act.test.FixtureLoader;
+import act.util.LogSupportedDestroyableBase;
 import org.osgl.util.C;
 import org.osgl.util.S;
 
@@ -38,7 +38,7 @@ import javax.enterprise.context.ApplicationScoped;
  * Job worker class that wrap the annotated Job action method
  */
 @ApplicationScoped
-public final class JobClassMetaInfo extends DestroyableBase {
+public final class JobClassMetaInfo extends LogSupportedDestroyableBase {
 
     private Type type;
     private Type superType;

@@ -39,7 +39,7 @@ import javax.enterprise.context.ApplicationScoped;
  * The repository to keep class information
  */
 @ApplicationScoped
-public class ClassInfoRepository extends DestroyableBase {
+public class ClassInfoRepository extends LogSupportedDestroyableBase {
 
     public ClassInfoRepository() {
     }
@@ -84,7 +84,7 @@ public class ClassInfoRepository extends DestroyableBase {
     }
 
     public void registerMethodAnnotationLookup(final String annotationDesc, final String classInternalName, final String methodName, final String methodDesc) {
-        Act.app().jobManager().on(SysEventId.CLASS_LOADED, new Runnable() {
+        Act.app().jobManager().on(SysEventId.CLASS_LOADED, "ClassInfoRepository:registerMethodAnnotationLookup", new Runnable() {
             @Override
             public void run() {
                 Class<? extends Annotation> annoType = AsmType.classForDesc(annotationDesc);

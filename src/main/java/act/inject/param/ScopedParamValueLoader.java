@@ -29,33 +29,48 @@ class ScopedParamValueLoader implements ParamValueLoader {
     private ParamValueLoader realLoader;
     private String key;
     private ScopeCacheSupport scopeCache;
+    private boolean supportCaching;
 
     ScopedParamValueLoader(ParamValueLoader loader, BeanSpec beanSpec, ScopeCacheSupport scopeCache) {
         this.realLoader = loader;
-        this.scopeCache = scopeCache;
+        if (loader.supportScopeCaching()) {
+            this.scopeCache = scopeCache;
+            this.supportCaching = true;
+        }
         this.key = scopeCache.key(beanSpec);
     }
 
     @Override
     public Object load(Object bean, ActContext<?> context, boolean noDefaultValue) {
-        Object cached = scopeCache.get(key);
-        boolean isSession = SessionScope.INSTANCE == scopeCache;
-        if (isSession) {
-            Object requestScoped = RequestScope.INSTANCE.get(key);
-            if (null != requestScoped) {
-                return requestScoped;
+        if (supportCaching) {
+            Object cached = scopeCache.get(key);
+            boolean isSession = SessionScope.INSTANCE == scopeCache;
+            if (isSession && null == cached) {
+                cached = RequestScope.INSTANCE.get(key);
             }
+            cached = realLoader.load(cached, context, noDefaultValue);
+            scopeCache.put(key, cached);
+            if (isSession) {
+                RequestScope.INSTANCE.put(key, cached);
+            }
+            return cached;
+        } else {
+            return realLoader.load(null, context, noDefaultValue);
         }
-        cached = realLoader.load(cached, context, noDefaultValue);
-        scopeCache.put(key, cached);
-        if (isSession) {
-            RequestScope.INSTANCE.put(key, cached);
-        }
-        return cached;
     }
 
     @Override
     public String bindName() {
         return realLoader.bindName();
+    }
+
+    @Override
+    public boolean supportJsonDecorator() {
+        return realLoader.supportJsonDecorator();
+    }
+
+    @Override
+    public boolean supportScopeCaching() {
+        return realLoader.supportScopeCaching();
     }
 }

@@ -26,13 +26,9 @@ import act.handler.builtin.controller.ControllerAction;
 import act.handler.builtin.controller.Handler;
 import act.sys.meta.InvokeType;
 import act.sys.meta.ReturnTypeInfo;
-import act.util.DestroyableBase;
-import act.util.Prioritised;
-import act.util.PropertySpec;
+import act.util.*;
 import org.osgl.$;
-import org.osgl.util.C;
-import org.osgl.util.E;
-import org.osgl.util.S;
+import org.osgl.util.*;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -41,7 +37,8 @@ import java.util.Map;
  * Common meta data storage for both {@link ControllerAction}
  * and {@link Handler}
  */
-public abstract class HandlerMethodMetaInfo<T extends HandlerMethodMetaInfo> extends DestroyableBase implements Prioritised {
+public abstract class HandlerMethodMetaInfo<T extends HandlerMethodMetaInfo> extends LogSupportedDestroyableBase implements Prioritised {
+
     private String name;
     private InvokeType invokeType;
     private ActContextInjection actContextInjection;
@@ -125,8 +122,8 @@ public abstract class HandlerMethodMetaInfo<T extends HandlerMethodMetaInfo> ext
     }
 
     @Override
-    public int priority() {
-        return -1;
+    public Integer priority() {
+        return null;
     }
 
     public T appContextViaField(String fieldName) {

@@ -1,0 +1,11 @@
+Scenario(GH870):
+  description: "[870] Act not return application/json as default when exception"
+  interactions:
+    - description: test
+      request:
+        get: 870
+      response:
+        status: 400
+        json:
+          code: 101
+          message: missing key

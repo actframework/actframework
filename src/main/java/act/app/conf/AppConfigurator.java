@@ -26,10 +26,7 @@ import act.security.CSRFProtector;
 import act.util.LogSupport;
 import org.osgl.$;
 import org.osgl.http.H;
-import org.osgl.util.C;
-import org.osgl.util.E;
-import org.osgl.util.S;
-import org.osgl.util.StringValueResolver;
+import org.osgl.util.*;
 
 import java.util.*;
 
@@ -127,7 +124,7 @@ public abstract class AppConfigurator<T extends AppConfigurator> extends AppConf
         CsrfSetting(AppConfigurator conf) {
             this.conf = conf;
             this.enabled = true;
-            conf.app().jobManager().on(SysEventId.CONFIG_PREMERGE, new Runnable() {
+            conf.app().jobManager().on(SysEventId.CONFIG_PREMERGE, "CsrfSetting:checkAndCommit", new Runnable() {
                 @Override
                 public void run() {
                     checkAndCommit();
@@ -191,7 +188,7 @@ public abstract class AppConfigurator<T extends AppConfigurator> extends AppConf
         CorsSetting(AppConfigurator conf) {
             this.conf = conf;
             this.enabled = true;
-            conf.app().jobManager().on(SysEventId.CONFIG_PREMERGE, new Runnable() {
+            conf.app().jobManager().on(SysEventId.CONFIG_PREMERGE, "CorsSetting:checkAndCommit", new Runnable() {
                 @Override
                 public void run() {
                     checkAndCommit();

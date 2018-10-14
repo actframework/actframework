@@ -126,7 +126,7 @@ public class EntityClassMetaInfo {
     }
 
     void mergeFromMappedSuperClasses(ClassInfoRepository classRepo, EntityMetaInfoRepo entityRepo) {
-        ClassNode node = classRepo.node(getClass().getName());
+        ClassNode node = classRepo.node(className);
         ClassNode parent = node.parent();
         if (null != parent) {
             mergeFrom(parent, entityRepo);

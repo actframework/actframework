@@ -465,6 +465,14 @@ public enum AppConfigKey implements ConfigKey {
     FORMAT_TIME("fmt.time"),
 
     /**
+     * `globalReturnValueAdvice` specifies the global {@link act.handler.ReturnValueAdvice}
+     * type.
+     *
+     * Default value: null
+     */
+    GLOBAL_RETURN_VALUE_ADVICE("globalReturnValueAdvice"),
+
+    /**
      * `act.handler.csrf_check_failure.impl` specifies the implementation
      * for {@link act.util.MissingAuthenticationHandler}
      *
@@ -1032,7 +1040,7 @@ public enum AppConfigKey implements ConfigKey {
     SESSION_PERSISTENT_ENABLED("session.persistent.enabled"),
 
     /**
-     * `session.encrypted.enabled` specify whether the system should
+     * `session.encrypt.enabled` specify whether the system should
      * encrypt the key/value pairs in the session cookie. Enable session
      * encryption will greatly improve the security but with the cost
      * of additional CPU usage and a little bit longer time on request

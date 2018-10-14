@@ -29,7 +29,7 @@ import org.osgl.util.E;
 import org.osgl.util.S;
 import org.osgl.util.StringValueResolver;
 
-class SessionValueLoader implements ParamValueLoader {
+class SessionValueLoader extends ParamValueLoader.NonCacheable {
 
     private final String key;
     private final Class targetType;

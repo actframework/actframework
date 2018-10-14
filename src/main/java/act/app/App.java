@@ -22,6 +22,8 @@ package act.app;
 
 import static act.app.event.SysEventId.*;
 import static org.osgl.http.H.Method.GET;
+import static org.osgl.util.S.F.contains;
+import static org.osgl.util.S.F.endsWith;
 
 import act.Act;
 import act.Destroyable;
@@ -96,7 +98,7 @@ import javax.inject.Singleton;
 /**
  * {@code App} represents an application that is deployed in a Act container
  */
-public class App extends DestroyableBase {
+public class App extends LogSupportedDestroyableBase {
 
     public interface HotReloadListener {
         void preHotReload();
@@ -106,9 +108,9 @@ public class App extends DestroyableBase {
 
     public enum F {
         ;
-        public static $.Predicate<String> JAVA_SOURCE = S.F.endsWith(".java");
-        public static $.Predicate<String> JAR_FILE = S.F.endsWith(".jar");
-        public static $.Predicate<String> CONF_FILE = S.F.endsWith(".conf").or(S.F.endsWith(".properties").or(S.F.endsWith(".yaml").or(S.F.endsWith(".yml").or(S.F.endsWith(".xml")))));
+        public static $.Predicate<String> JAVA_SOURCE = endsWith(".java");
+        public static $.Predicate<String> JAR_FILE = endsWith(".jar");
+        public static $.Predicate<String> CONF_FILE = endsWith(".conf").or(endsWith(".properties").or(endsWith(".yaml").or(endsWith(".yml").or(endsWith(".xml"))))).and(contains("main/resources/test").negate());
         public static $.Predicate<String> ROUTES_FILE = $.F.eq(RouteTableRouterBuilder.ROUTES_FILE);
     }
 
@@ -138,7 +140,7 @@ public class App extends DestroyableBase {
     private SingletonRegistry singletonRegistry;
     private BinderManager binderManager;
     private AppInterceptorManager interceptorManager;
-    private DependencyInjector<?> dependencyInjector;
+    private GenieInjector dependencyInjector;
     private HttpClientService httpClientService;
     private UploadFileStorageService uploadFileStorageService;
     private AppServiceRegistry appServiceRegistry;
@@ -182,6 +184,7 @@ public class App extends DestroyableBase {
         }
     };
     private final Version version;
+    private boolean reloading;
     private List<HotReloadListener> hotReloadListeners = new ArrayList<>();
     private PrincipalProvider principalProvider = PrincipalProvider.DefaultPrincipalProvider.INSTANCE;
 
@@ -390,6 +393,10 @@ public class App extends DestroyableBase {
         return cliDispatcher;
     }
 
+    public CliServer cliServer() {
+        return cliServer;
+    }
+
     public CaptchaManager captchaManager() {
         return captchaManager;
     }
@@ -490,7 +497,7 @@ public class App extends DestroyableBase {
     }
 
     public synchronized void setBlockIssue(Throwable e) {
-        logger.fatal(e, "Block issue encountered");
+        fatal(e, "Block issue encountered");
         if (null != blockIssue || null != blockIssueCause) {
             // do not overwrite previous block issue
             return;
@@ -534,6 +541,10 @@ public class App extends DestroyableBase {
         return hasStarted;
     }
 
+    public boolean hotReloading() {
+        return hasStarted;
+    }
+
     public boolean isMainThread() {
         return Thread.currentThread() == mainThread;
     }
@@ -546,6 +557,7 @@ public class App extends DestroyableBase {
         Act.shutdown(this, exitCode);
     }
 
+
     @Override
     protected void releaseResources() {
         // shall not interrupt main thread
@@ -554,7 +566,7 @@ public class App extends DestroyableBase {
         if (null == daemonRegistry) {
             return;
         }
-        logger.info("App shutting down ....");
+        info("App shutting down ....");
         for (HotReloadListener listener : hotReloadListeners) {
             listener.preHotReload();
         }
@@ -597,7 +609,7 @@ public class App extends DestroyableBase {
     public synchronized void refresh() {
         currentState = null;
         final long ms = $.ms();
-        logger.info("App starting ....");
+        info("App starting ....");
         profile = null;
         blockIssue = null;
         blockIssueCause = null;
@@ -642,6 +654,8 @@ public class App extends DestroyableBase {
             initResolverManager();
             initBinderManager();
             initUploadFileStorageService();
+            initClassLoader();
+            emit(CLASS_LOADER_INITIALIZED);
             initRouters();
             emit(ROUTER_INITIALIZED);
             loadRoutes();
@@ -667,8 +681,6 @@ public class App extends DestroyableBase {
             loadBuiltInScanners();
             emit(PRE_LOAD_CLASSES);
 
-            initClassLoader();
-            emit(SysEventId.CLASS_LOADER_INITIALIZED);
             initCache();
             preloadClasses();
             try {
@@ -697,6 +709,8 @@ public class App extends DestroyableBase {
 
         try {
             loadDependencyInjector();
+            emit(DEPENDENCY_INJECTOR_INITIALIZED);
+            dependencyInjector.unlock();
             emit(DEPENDENCY_INJECTOR_LOADED);
         } catch (BlockIssueSignal e) {
             return;
@@ -704,54 +718,83 @@ public class App extends DestroyableBase {
 
         if (null == blockIssue && null == blockIssueCause) {
             try {
-                initJsonDtoClassManager();
-                initParamValueLoaderManager();
-                initMailerConfigManager();
-
-                // setting context class loader here might lead to memory leaks
-                // and cause weird problems as class loader been set to thread
-                // could be switched to handling other app in ACT or still hold
-                // old app class loader instance after the app been refreshed
-                // - Thread.currentThread().setContextClassLoader(classLoader());
-
-                initHttpConfig();
-                initViewManager();
-
-                // let's any emit the dependency injector loaded event
-                // in case some other service depend on this event.
-                // If any DI plugin e.g. guice has emitted this event
-                // already, it doesn't matter we emit the event again
-                // because once app event is consumed the event listeners
-                // are cleared
-                emit(DEPENDENCY_INJECTOR_PROVISIONED);
-                emit(SINGLETON_PROVISIONED);
-                registerMetricProvider();
-                config().preloadConfigurations();
-                initSessionManager();
-                Runnable runnable = new Runnable() {
+                final Runnable runnable1 = new Runnable() {
                     @Override
                     public void run() {
+                        initJsonDtoClassManager();
+                        initParamValueLoaderManager();
+                        initMailerConfigManager();
+
+                        // setting context class loader here might lead to memory leaks
+                        // and cause weird problems as class loader been set to thread
+                        // could be switched to handling other app in ACT or still hold
+                        // old app class loader instance after the app been refreshed
+                        // - Thread.currentThread().setContextClassLoader(classLoader());
+
+                        initHttpConfig();
+                        initViewManager();
+
+                        // let's any emit the dependency injector loaded event
+                        // in case some other service depend on this event.
+                        // If any DI plugin e.g. guice has emitted this event
+                        // already, it doesn't matter we emit the event again
+                        // because once app event is consumed the event listeners
+                        // are cleared
+                        emit(DEPENDENCY_INJECTOR_PROVISIONED);
+                        emit(SINGLETON_PROVISIONED);
+                        registerMetricProvider();
+                        config().preloadConfigurations();
+                        initSessionManager();
+                    }
+                };
+                if (!isDevColdStart()) {
+                    runnable1.run();
+                }
+                Runnable runnable2 = new Runnable() {
+                    @Override
+                    public void run() {
+                        if (isDevColdStart()) {
+                            runnable1.run();
+                        }
                         if (null != blockIssueCause) {
                             setBlockIssue(blockIssueCause);
                         }
                         emit(PRE_START);
                         emit(STATELESS_PROVISIONED);
                         emit(START);
-                        daemonKeeper();
-                        logger.info("App[%s] loaded in %sms", name(), $.ms() - ms);
-                        emit(POST_START);
+                        if (isProd() || !wasStarted()) {
+                            debug("App[%s] loaded in %sms", name(), $.ms() - ms);
+                        } else {
+                            info("App[%s] reloaded in %sms\n\n", name(), $.ms() - ms);
+                        }
                         hasStarted = true;
+                        daemonKeeper();
+                        emit(POST_START);
+                        jobManager.post(SysEventId.DB_SVC_LOADED, new Runnable() {
+                            @Override
+                            public void run() {
+                                emit(POST_STARTED);
+                            }
+                        }, true);
                     }
                 };
-                if (!dbServiceManager().hasDbService() || eventEmitted(DB_SVC_LOADED)) {
-                    runnable.run();
+                if (!dbServiceManager().hasDbService() || eventEmitted(DB_SVC_PROVISIONED)) {
+                    if (Act.isDev()) {
+                        jobManager.now("App:postDbSvcLogic", runnable2);
+                    } else {
+                        runnable2.run();
+                    }
                 } else {
-                    jobManager().on(DB_SVC_LOADED, runnable, true);
+                    jobManager().on(DB_SVC_PROVISIONED, "App:postDbSvcLogic", runnable2, true);
                 }
             } catch (BlockIssueSignal e) {
                 // ignore
             }
         }
+    }
+
+    private boolean isDevColdStart() {
+        return Act.isDev() && !wasStarted();
     }
 
     /**
@@ -937,11 +980,11 @@ public class App extends DestroyableBase {
         return metricMetaInfoRepo;
     }
 
+    @Deprecated
     public <DI extends DependencyInjector> App injector(DI dependencyInjector) {
         E.NPE(dependencyInjector);
         E.illegalStateIf(null != this.dependencyInjector, "Dependency injection factory already set");
-        this.dependencyInjector = dependencyInjector;
-        return this;
+        throw E.unsupport();
     }
 
     public <DI extends DependencyInjector> DI injector() {
@@ -1125,8 +1168,8 @@ public class App extends DestroyableBase {
     }
 
     public void emit(SysEventId sysEvent) {
-        if (logger.isTraceEnabled()) {
-            logger.trace(S.concat("emitting event: ", sysEvent.name()));
+        if (isTraceEnabled()) {
+            trace(S.concat("emitting event: ", sysEvent.name()));
         }
         currentState = sysEvent;
         eventEmitted().add(sysEvent);
@@ -1170,6 +1213,35 @@ public class App extends DestroyableBase {
 
     public SysEventId currentState() {
         return currentState;
+    }
+
+    public boolean isRoutedActionMethod(String className, String methodName) {
+        if (router.isActionMethod(className, methodName)) {
+            return true;
+        }
+        if (!moreRouters.isEmpty()) {
+            for (Router routerX : moreRouters.values()) {
+                if (routerX.isActionMethod(className, methodName)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    public boolean hasMoreRouters() {
+        return !moreRouters.isEmpty();
+    }
+
+    public Router getRouterFor(String className, String methodName) {
+        if (!moreRouters.isEmpty()) {
+            for (Router routerX : moreRouters.values()) {
+                if (routerX.isActionMethod(className, methodName)) {
+                    return routerX;
+                }
+            }
+        }
+        return router;
     }
 
     private void loadConfig() {
@@ -1235,7 +1307,7 @@ public class App extends DestroyableBase {
             Destroyable.Util.tryDestroyAll(daemonRegistry.values(), ApplicationScoped.class);
         }
         daemonRegistry = new HashMap<>();
-        jobManager.on(SysEventId.START, new Runnable() {
+        jobManager.on(SysEventId.START, "App:schedule-daemon-keeper", new Runnable() {
             @Override
             public void run() {
                 jobManager.fixedDelay("daemon-keeper", new Runnable() {
@@ -1297,7 +1369,7 @@ public class App extends DestroyableBase {
                 try {
                     daemon.start();
                 } catch (Exception e) {
-                    logger.error(e, "Error starting daemon [%s]", daemon.id());
+                    error(e, "Error starting daemon [%s]", daemon.id());
                 }
             }
         });
@@ -1506,17 +1578,12 @@ public class App extends DestroyableBase {
     }
 
     private void loadDependencyInjector() {
-        DependencyInjector di = injector();
-        if (null == di) {
-            new GenieInjector(this);
-        } else {
-            logger.warn("Third party injector[%s] loaded. Please consider using Act air injection instead", di.getClass());
-        }
+        dependencyInjector = new GenieInjector(this);
     }
 
     private void loadRoutes() {
         loadBuiltInRoutes();
-        logger.debug("loading app routing table: %s ...", appBase.getPath());
+        debug("loading app routing table: %s ...", appBase.getPath());
         Map<String, List<File>> routes;
         if (Act.isProd()) {
             routes = RuntimeDirs.routes(this);
@@ -1629,7 +1696,15 @@ public class App extends DestroyableBase {
     }
 
     private void scanAppCodes() {
+        long ms = 0;
+        if (isDebugEnabled()) {
+            ms = $.ms();
+            debug("scanning process starts ...");
+        }
         classLoader().scan();
+        if (isDebugEnabled()) {
+            debug("Scanning process takes " + ($.ms() - ms) + "ms");
+        }
     }
 
     static App create(File appBase, Version version, ProjectLayout layout) {

@@ -20,29 +20,26 @@ package act.cli.meta;
  * #L%
  */
 
+import static act.Destroyable.Util.destroyAll;
+
 import act.app.AppClassLoader;
 import act.asm.Type;
 import act.cli.view.CliView;
 import act.sys.meta.SessionVariableAnnoInfo;
-import act.util.DestroyableBase;
+import act.util.LogSupportedDestroyableBase;
 import org.osgl.$;
 import org.osgl.util.C;
 import org.osgl.util.S;
 
+import java.util.*;
 import javax.enterprise.context.ApplicationScoped;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import static act.Destroyable.Util.destroyAll;
 
 /**
  * Stores all class level information to support generating of
  * {@link act.cli.CommandExecutor command executor}
  */
 @ApplicationScoped
-public class CommanderClassMetaInfo extends DestroyableBase {
+public class CommanderClassMetaInfo extends LogSupportedDestroyableBase {
 
     private static CommanderClassMetaInfo NULL = new CommanderClassMetaInfo() {
         @Override

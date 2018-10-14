@@ -26,23 +26,17 @@ import static org.osgl.http.H.Session.KEY_EXPIRE_INDICATOR;
 import act.conf.AppConfig;
 import act.crypto.AppCrypto;
 import act.crypto.RotateSecretCrypto;
-import act.util.DestroyableBase;
+import act.util.LogSupportedDestroyableBase;
 import org.osgl.$;
 import org.osgl.http.H;
-import org.osgl.util.C;
-import org.osgl.util.Charsets;
-import org.osgl.util.Codec;
-import org.osgl.util.S;
+import org.osgl.util.*;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import javax.inject.Inject;
 import javax.inject.Singleton;
 
 @Singleton
-public class DefaultSessionCodec extends DestroyableBase implements SessionCodec {
+public class DefaultSessionCodec extends LogSupportedDestroyableBase implements SessionCodec {
 
     private final boolean sessionWillExpire;
     private final boolean encryptSession;

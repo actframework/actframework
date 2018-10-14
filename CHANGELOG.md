@@ -1,6 +1,46 @@
 # ActFramework Change Log
 
 **1.8.8**
+* Test - partition scenarios #877
+* Add `SysEventId.POST_STARTED` #882
+* Support opt-out jars from managed classloader by specifying file name prefix in `act.jar.black.list` #881
+* No need to trigger hotreload when testing file changes #880
+* @PropertySpec could not effect entity in collection #878
+* It randomly found request handler parameters are not enhanced with `@Named` annotation #879
+* Test: add $now() and $today() function #876
+* Intermittent ACT start failure in `GenieModuleScanner` #875
+* Route configured for namedport not effective #874
+* `EntityClassMetaInfo.mergeFromMappedSuperClasses` logic error #873
+* Optimize app code start in dev mode #872
+* Test: evaluation complex expression refer to cached object issue #871
+* Act not return application/json as default when exception #870
+* Test - Allow app to define url context for scenario #869
+* Add jobId to all built-in jobs #868
+* API Doc: generate sample data for interface #867
+* `PropertySpec` specification not working when return value is a list #866
+* Multiple instances issue with request handlers/interceptors happens across class hierarchies #865
+* Support `@Order` in intercepting #864
+* Support using `SessionVariable` annotation and `DbBind` together #862
+* Make `EventBus` and `Job` list favor `Order` annotation #861
+* test resource not refreshed after hot-reload #860
+* Rythm Template error report - source tab issue #859
+* Render automated test report for JSON request #858
+* Provide a way to allow app to specify order of elements in the injected collection #857
+* `@SessionVariable` annotation not working as expected #856
+* Automate testing failure #855
+* `@PropertySpec` not effect when `ReturnValueAdvice` applied #852
+* Allow it to run specific test scenario #851
+* `@PropertySpec` not applied to excel download #848
+* Add code and message support for unauthorizedIf function #847
+* It takes over 20s to bootstrap app in dev mode with large file in resources dir #846
+* Create an annotation to help specify head mapping for `@LoadResource` mechanism #844
+* FastJson exception when serialize ACT error message #841
+* `CacheFor` - make it allow skip `Cache-Control` header #837
+* `ResponseCache` - content disposition shall be cached #838
+* `CacheFor` key shall include `Accept` type #836
+* Provide a mechanism to allow developer advice on return value of request handler method #835
+* Add render image support #834
+* Optimise `LogSupport` for `DestroyableBase` #833
 * Allow app developer to specify download file name #829
 * `ActionContext.allowIgnoreParamNamespace()` overlooked by `MapLoader` #827
 * Use `JSON.toJSONString()` to replace `Object.toString()` whenever it is used to render response body #826

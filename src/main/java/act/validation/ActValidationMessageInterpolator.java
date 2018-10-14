@@ -23,13 +23,13 @@ package act.validation;
 import act.act_messages;
 import act.conf.AppConfig;
 import act.i18n.I18n;
-import act.util.DestroyableBase;
+import act.util.LogSupportedDestroyableBase;
 import org.osgl.util.S;
 
-import javax.validation.MessageInterpolator;
 import java.util.Locale;
+import javax.validation.MessageInterpolator;
 
-public class ActValidationMessageInterpolator extends DestroyableBase implements MessageInterpolator {
+public class ActValidationMessageInterpolator extends LogSupportedDestroyableBase implements MessageInterpolator {
 
     private MessageInterpolator realInterpolator;
     private AppConfig config;

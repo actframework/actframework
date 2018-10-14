@@ -34,7 +34,7 @@ import org.osgl.util.StringValueResolver;
 import java.lang.reflect.Type;
 import java.util.*;
 
-class CollectionLoader implements ParamValueLoader {
+class CollectionLoader extends ParamValueLoader.JsonBodySupported {
 
     private final ParamKey key;
     private final Class<? extends Collection> collectionClass;

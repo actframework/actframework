@@ -20,10 +20,14 @@ package act.util;
  * #L%
  */
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import act.handler.builtin.controller.RequestHandlerProxy;
+import org.osgl.util.E;
+import org.osgl.util.S;
+
+import java.lang.annotation.*;
+import java.util.HashMap;
+import java.util.Map;
+import javax.inject.Singleton;
 
 /**
  * Mark an action handler method result can be cached
@@ -31,6 +35,13 @@ import java.lang.annotation.Target;
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
 public @interface CacheFor {
+
+    /**
+     * Application specify the ID of the CacheFor and use it
+     * to reset cache
+     */
+    String id() default "";
+
     /**
      * Specify cache expiration time in seconds
      *
@@ -64,4 +75,56 @@ public @interface CacheFor {
      * @return
      */
     boolean usePrivate() default false;
+
+    /**
+     * Suppress `Cache-Control` header setting.
+     * @return
+     */
+    boolean noCacheControl() default false;
+
+    @Singleton
+    class Manager extends LogSupportedDestroyableBase {
+
+        private Map<String, RequestHandlerProxy> proxyLookup = new HashMap<>();
+
+        @Override
+        protected void releaseResources() {
+            proxyLookup.clear();
+            proxyLookup = null;
+        }
+
+        public void register(String key, RequestHandlerProxy proxy) {
+            RequestHandlerProxy existing = proxyLookup.put(key, proxy);
+            E.illegalStateIf(null != existing, "proxy already registered with key[%s]: %s", key, proxy);
+        }
+
+        /**
+         * Reset CacheFor cache for a request handler specified by controller class and
+         * request handler method name.
+         * @param controllerClass
+         *      the host class of the handler method
+         * @param requestHandlerName
+         *      the request handler method name
+         */
+        public void resetCache(Class<?> controllerClass, String requestHandlerName) {
+            String key = S.pathConcat(controllerClass.getName(), '.', requestHandlerName);
+            resetCache(key);
+        }
+
+        /**
+         * Reset CacheFor cache for a request handler specified
+         * by {@link CacheFor#id()}.
+         *
+         * @param cacheForId
+         *      the cacheFor id
+         */
+        public void resetCache(String cacheForId) {
+            RequestHandlerProxy proxy = proxyLookup.get(cacheForId);
+            if (null == proxy) {
+                warn("Cannot find proxy by key: " + cacheForId);
+            } else {
+                proxy.resetCache();
+            }
+        }
+    }
 }

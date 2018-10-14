@@ -100,7 +100,7 @@ public class ConfigurationByteCodeScanner extends AppByteCodeScannerBase {
         }
         final DependencyInjector injector = app().injector();
         final Map<String, String> staticConfigurationFields = new HashMap<>(this.staticConfigurationFields);
-        app().jobManager().on(SysEventId.PRE_START, new Runnable() {
+        app().jobManager().on(SysEventId.PRE_START, "ConfigurationByteCodeScanner:loadIntoStaticFieldsOf:" + className, new Runnable() {
             @Override
             public void run() {
                 Class<?> theClass = app().classForName(className);

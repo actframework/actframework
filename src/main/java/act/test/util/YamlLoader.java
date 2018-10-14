@@ -272,7 +272,7 @@ public class YamlLoader extends LogSupport {
     }
 
     protected String getResourceAsString(String name) {
-        URL url = YamlLoader.class.getResource(patchResourceName(name));
+        URL url = Act.getResource(patchResourceName(name));
         return null == url ? null : IO.read(url).toString();
     }
 

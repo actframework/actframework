@@ -31,7 +31,7 @@ import javax.enterprise.context.NormalScope;
 import javax.enterprise.context.RequestScoped;
 import javax.enterprise.context.SessionScoped;
 
-public abstract class DestroyableBase extends LogSupport implements Destroyable {
+public abstract class DestroyableBase implements Destroyable {
 
     private volatile boolean destroyed;
 
@@ -40,10 +40,6 @@ public abstract class DestroyableBase extends LogSupport implements Destroyable 
     private volatile Class<? extends Annotation> scope;
 
     public DestroyableBase() {}
-
-    protected DestroyableBase(boolean noLogger) {
-        super(noLogger);
-    }
 
     @Override
     public final void destroy() {

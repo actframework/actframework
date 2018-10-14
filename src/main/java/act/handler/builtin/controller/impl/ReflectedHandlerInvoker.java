@@ -9,9 +9,9 @@ package act.handler.builtin.controller.impl;
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- * 
+ *
  *      http://www.apache.org/licenses/LICENSE-2.0
- * 
+ *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -23,67 +23,48 @@ package act.handler.builtin.controller.impl;
 import act.Act;
 import act.Trace;
 import act.annotations.*;
-import act.app.ActionContext;
-import act.app.App;
-import act.app.AppClassLoader;
+import act.app.*;
 import act.conf.AppConfig;
-import act.controller.CacheSupportMetaInfo;
-import act.controller.Controller;
-import act.controller.ExpressController;
-import act.controller.annotation.HandleCsrfFailure;
-import act.controller.annotation.HandleMissingAuthentication;
-import act.controller.annotation.Throttled;
+import act.controller.*;
+import act.controller.annotation.*;
 import act.controller.builtin.ThrottleFilter;
 import act.controller.captcha.RequireCaptcha;
 import act.controller.meta.*;
 import act.data.annotation.DateFormatPattern;
 import act.data.annotation.Pattern;
 import act.db.RequireDataBind;
-import act.handler.NonBlock;
-import act.handler.PreventDoubleSubmission;
-import act.handler.SkipBuiltInEvents;
+import act.handler.*;
 import act.handler.builtin.controller.*;
 import act.handler.event.ReflectedHandlerInvokerInit;
 import act.handler.event.ReflectedHandlerInvokerInvoke;
 import act.inject.DependencyInjector;
-import act.inject.param.JsonDto;
-import act.inject.param.JsonDtoClassManager;
-import act.inject.param.ParamValueLoaderManager;
-import act.inject.param.ParamValueLoaderService;
+import act.inject.SessionVariable;
+import act.inject.param.*;
 import act.job.JobManager;
 import act.job.TrackableWorker;
 import act.plugin.ControllerPlugin;
-import act.security.CORS;
-import act.security.CSP;
-import act.security.CSRF;
+import act.security.*;
 import act.sys.Env;
 import act.util.*;
+import act.util.Output;
 import act.view.*;
 import act.ws.WebSocketConnectionManager;
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONException;
+import com.alibaba.fastjson.*;
 import com.alibaba.fastjson.annotation.JSONField;
 import com.alibaba.fastjson.serializer.SerializeFilter;
 import com.alibaba.fastjson.serializer.SerializerFeature;
 import com.esotericsoftware.reflectasm.MethodAccess;
 import org.osgl.$;
+import org.osgl.Lang;
 import org.osgl.exception.NotAppliedException;
 import org.osgl.http.H;
 import org.osgl.inject.BeanSpec;
-import org.osgl.mvc.annotation.ResponseContentType;
-import org.osgl.mvc.annotation.ResponseStatus;
-import org.osgl.mvc.annotation.SessionFree;
-import org.osgl.mvc.result.BadRequest;
-import org.osgl.mvc.result.Conflict;
-import org.osgl.mvc.result.RenderJSON;
-import org.osgl.mvc.result.Result;
-import org.osgl.util.C;
-import org.osgl.util.E;
-import org.osgl.util.S;
+import org.osgl.mvc.annotation.*;
+import org.osgl.mvc.result.*;
+import org.osgl.util.*;
 
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
+import java.lang.reflect.*;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -94,7 +75,7 @@ import javax.enterprise.context.ApplicationScoped;
  * https://github.com/EsotericSoftware/reflectasm
  */
 @ApplicationScoped
-public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends DestroyableBase
+public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends LogSupportedDestroyableBase
         implements ActionHandlerInvoker, AfterInterceptorInvoker, ExceptionInterceptorInvoker {
 
     private static final Object[] DUMP_PARAMS = new Object[0];
@@ -117,6 +98,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
     private JsonDtoClassManager jsonDTOClassManager;
     private int paramCount;
     private int fieldsAndParamsCount;
+    private int sessionVariablesCount;
     private String singleJsonFieldName;
     private boolean sessionFree;
     private boolean express;
@@ -166,6 +148,14 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
     private boolean suppressJsonDateFormat;
     // see https://github.com/actframework/actframework/issues/829
     private String downloadFilename;
+    // see https://github.com/actframework/actframework/issues/835
+    private ReturnValueAdvice returnValueAdvice;
+    // see https://github.com/actframework/actframework/issues/852
+    private boolean returnIterable;
+    private boolean returnSimpleType;
+    private boolean returnIterableComponentIsSimpleType;
+    private boolean shallTransformReturnVal;
+    private int order;
 
     private ReflectedHandlerInvoker(M handlerMetaInfo, App app) {
         this.app = app;
@@ -185,6 +175,43 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
             throw E.unexpected(e);
         }
         this.returnString = method.getReturnType() == String.class;
+        Integer priority = handler.priority();
+        if (null != priority) {
+            this.order = priority;
+        } else {
+            Order order = method.getAnnotation(Order.class);
+            this.order = null == order ? Order.HIGHEST_PRECEDENCE : order.value();
+        }
+        final boolean isBuiltIn = controllerClass.getName().startsWith("act.");
+        if (handlerMetaInfo.hasReturn() && !isBuiltIn) {
+            this.returnSimpleType = this.returnString || $.isSimpleType(method.getReturnType());
+            this.returnIterable = !this.returnSimpleType && (handlerMetaInfo.isReturnArray() || Iterable.class.isAssignableFrom(method.getReturnType()));
+            if (this.returnIterable) {
+                if (handlerMetaInfo.isReturnArray()) {
+                    this.returnIterableComponentIsSimpleType = $.isSimpleType(method.getReturnType().getComponentType());
+                } else {
+                    Type type = method.getGenericReturnType();
+                    if (type instanceof ParameterizedType) {
+                        ParameterizedType ptype = $.cast(type);
+                        Type[] typeParams = ptype.getActualTypeArguments();
+                        if (typeParams.length > 1) {
+                            this.returnIterableComponentIsSimpleType = false;
+                        } else if (typeParams.length == 1) {
+                            Type p0 = typeParams[0];
+                            if (p0 instanceof Class) {
+                                this.returnIterableComponentIsSimpleType = $.isSimpleType((Class) p0);
+                            } else {
+                                this.returnIterableComponentIsSimpleType = false;
+                            }
+                        }
+                    } else {
+                        warn("Cannot determine component type of handler method return type: " + method);
+                        this.returnIterableComponentIsSimpleType = false;
+                    }
+                }
+            }
+            this.shallTransformReturnVal = handlerMetaInfo.hasReturn() && (returnIterable && !returnIterableComponentIsSimpleType) || (!returnSimpleType);
+        }
         this.pluginBeforeHandler = ControllerPlugin.Manager.INST.beforeHandler(controllerClass, method);
         this.pluginAfterHandler = ControllerPlugin.Manager.INST.afterHandler(controllerClass, method);
         this.disabled = this.disabled || !Env.matches(method);
@@ -200,6 +227,15 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
             handlerIndex = methodAccess.getIndex(handlerMetaInfo.name(), paramTypes);
         } else {
             method.setAccessible(true);
+        }
+
+        if (!isBuiltIn && handlerMetaInfo.hasReturn() && null == method.getAnnotation(NoReturnValueAdvice.class)) {
+            ReturnValueAdvisor advisor = getAnnotation(ReturnValueAdvisor.class);
+            if (null != advisor) {
+                returnValueAdvice = app.getInstance(advisor.value());
+            } else if (null == controllerClass.getAnnotation(NoReturnValueAdvice.class)) {
+                returnValueAdvice = app.config().globalReturnValueAdvice();
+            }
         }
 
         if (method.isAnnotationPresent(RequireCaptcha.class)) {
@@ -261,9 +297,17 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
 
         paramCount = handler.paramCount();
         paramSpecs = jsonDTOClassManager.beanSpecs(controllerClass, method);
+        List<BeanSpec> paramSpecWithoutSessionVariables = new ArrayList<>();
         fieldsAndParamsCount = paramSpecs.size();
-        if (1 == fieldsAndParamsCount) {
-            singleJsonFieldName = paramSpecs.get(0).name();
+        for (BeanSpec spec : paramSpecs) {
+            if (spec.hasAnnotation(SessionVariable.class)) {
+                sessionVariablesCount++;
+            } else {
+                paramSpecWithoutSessionVariables.add(spec);
+            }
+        }
+        if (1 == (fieldsAndParamsCount - sessionVariablesCount)) {
+            singleJsonFieldName = paramSpecWithoutSessionVariables.get(0).name();
         }
 
         CORS.Spec corsSpec = CORS.spec(method).chain(CORS.spec(controllerClass));
@@ -340,6 +384,27 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
     }
 
     @Override
+    public int hashCode() {
+        return $.hc(method);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == this) {
+            return true;
+        }
+        if (obj instanceof ReflectedHandlerInvoker) {
+            return $.eq(((ReflectedHandlerInvoker) obj).method, method);
+        }
+        return false;
+    }
+
+    @Override
+    public String toString() {
+        return method.toString();
+    }
+
+    @Override
     protected void releaseResources() {
         app = null;
         cl = null;
@@ -354,7 +419,12 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
     }
 
     @Override
-    public int priority() {
+    public int order() {
+        return this.order;
+    }
+
+    @Override
+    public Integer priority() {
         return handler.priority();
     }
 
@@ -516,7 +586,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
                     try {
                         invoke(handler, context, controller, params);
                     } catch (Exception e) {
-                        logger.warn(e, "Error executing async handler: " + handler);
+                        warn(e, "Error executing async handler: " + handler);
                     }
                 }
             });
@@ -617,14 +687,14 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         if (fieldsAndParamsCount < 2) {
             return fieldsAndParamsCount;
         }
-        return fieldsAndParamsCount - context.pathVarCount();
+        return fieldsAndParamsCount - context.pathVarCount() - sessionVariablesCount;
     }
 
     private String singleJsonFieldName(ActionContext context) {
         if (null != singleJsonFieldName) {
             return singleJsonFieldName;
         }
-        for (BeanSpec spec: paramSpecs) {
+        for (BeanSpec spec : paramSpecs) {
             String name = spec.name();
             if (context.isPathVar(name)) {
                 continue;
@@ -726,11 +796,14 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         if (null != singleton) {
             return singleton;
         }
-        String controllerName = controllerClass.getName();
-        Object inst = context.__controllerInstance(controllerName);
+        Class host = controllerClass;
+        if (host.isAssignableFrom(context.handlerClass())) {
+            host = context.handlerClass();
+        }
+        Object inst = context.__controllerInstance(host);
         if (null == inst) {
-            inst = paramLoaderService.loadHostBean(controllerClass, context);
-            context.__controllerInstance(controllerName, inst);
+            inst = paramLoaderService.loadHostBean(host, context);
+            context.__controllerInstance(host, inst);
         }
         return inst;
     }
@@ -741,11 +814,13 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
             return;
         }
         CacheFor cacheFor = method.getAnnotation(CacheFor.class);
-        cacheSupport = null == cacheFor ? CacheSupportMetaInfo.disabled() :  CacheSupportMetaInfo.enabled(
+        cacheSupport = null == cacheFor ? CacheSupportMetaInfo.disabled() : CacheSupportMetaInfo.enabled(
                 new CacheKeyBuilder(cacheFor, S.concat(controllerClass.getName(), ".", method.getName())),
+                cacheFor.id(),
                 cacheFor.value(),
                 cacheFor.supportPost(),
-                cacheFor.usePrivate()
+                cacheFor.usePrivate(),
+                cacheFor.noCacheControl()
         );
     }
 
@@ -877,15 +952,24 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
             }
             throw e;
         }
-        return transform(retVal, this, context);
+        return transform(retVal, this, context, returnValueAdvice, shallTransformReturnVal, returnIterable);
     }
 
-    public static Result transform(Object retVal, ReflectedHandlerInvoker invoker, ActionContext context) {
+    private static Result transform(Object retVal, ReflectedHandlerInvoker invoker, ActionContext context, ReturnValueAdvice returnValueAdvice, boolean transformRetVal, boolean returnIterable) {
         if (context.resp().isClosed()) {
             return null;
         }
+        if (retVal instanceof Result) {
+            Result result = (Result) retVal;
+            if (result.status().isError()) {
+                throw result;
+            }
+            invoker.checkTemplate(context);
+            return result;
+        }
         HandlerMethodMetaInfo handlerMetaInfo = invoker.handler;
-        if (null == retVal && handlerMetaInfo.hasReturn() && !handlerMetaInfo.returnTypeInfo().isResult()) {
+        final boolean hasReturn = handlerMetaInfo.hasReturn() && !handlerMetaInfo.returnTypeInfo().isResult();
+        if (null == retVal && hasReturn) {
             // ActFramework respond 404 Not Found when
             // handler invoker return `null`
             // and there are return type of the action method signature
@@ -893,8 +977,16 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
             return ActNotFound.create();
         }
         boolean hasTemplate = invoker.checkTemplate(context);
-        if (hasTemplate && retVal instanceof RenderAny) {
-            retVal = RenderTemplate.INSTANCE;
+        if (!hasTemplate && hasReturn && null != returnValueAdvice) {
+            if (transformRetVal) {
+                PropertySpec.MetaInfo propertySpec = handlerMetaInfo.propertySpec();
+                if (null != propertySpec) {
+                    Lang._MappingStage stage = propertySpec.applyTo(Lang.map(retVal), context);
+                    Object newRetVal = returnIterable ? new JSONArray() : new JSONObject();
+                    retVal = stage.to(newRetVal);
+                }
+            }
+            retVal = returnValueAdvice.applyTo(retVal, context);
         }
         return Controller.Util.inferResult(handlerMetaInfo, retVal, context, hasTemplate);
     }
@@ -947,7 +1039,9 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
             return false;
         } else {
             Template t = Act.viewManager().load(context);
-            return t != null;
+            boolean hasTemplate = null != t;
+            context.setHasTemplate(hasTemplate);
+            return hasTemplate;
         }
     }
 
@@ -1019,6 +1113,32 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         }
 
         @Override
+        public int order() {
+            return invoker.order();
+        }
+
+        @Override
+        public int hashCode() {
+            return $.hc(invoker, getClass());
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == this) {
+                return true;
+            }
+            if (obj instanceof _Before) {
+                return $.eq(((_Before) obj).invoker, invoker);
+            }
+            return false;
+        }
+
+        @Override
+        public String toString() {
+            return invoker.toString();
+        }
+
+        @Override
         public boolean sessionFree() {
             return invoker.sessionFree();
         }
@@ -1061,6 +1181,32 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         @Override
         public Result handle(Result result, ActionContext actionContext) throws Exception {
             return invoker.handle(result, actionContext);
+        }
+
+        @Override
+        public int hashCode() {
+            return $.hc(invoker, getClass());
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == this) {
+                return true;
+            }
+            if (obj instanceof _After) {
+                return $.eq(((_After) obj).invoker, invoker);
+            }
+            return false;
+        }
+
+        @Override
+        public String toString() {
+            return invoker.toString();
+        }
+
+        @Override
+        public int order() {
+            return invoker.order();
         }
 
         @Override
@@ -1121,6 +1267,32 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         }
 
         @Override
+        public int hashCode() {
+            return $.hc(invoker, getClass());
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == this) {
+                return true;
+            }
+            if (obj instanceof _Exception) {
+                return $.eq(((_Exception) obj).invoker, invoker);
+            }
+            return false;
+        }
+
+        @Override
+        public String toString() {
+            return invoker.toString();
+        }
+
+        @Override
+        public int order() {
+            return invoker.order();
+        }
+
+        @Override
         protected Result internalHandle(Exception e, ActionContext actionContext) throws Exception {
             return invoker.handle(e, actionContext);
         }
@@ -1173,6 +1345,32 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
         @Override
         public void handle(ActionContext actionContext) throws Exception {
             invoker.handle(actionContext);
+        }
+
+        @Override
+        public int hashCode() {
+            return $.hc(invoker, getClass());
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == this) {
+                return true;
+            }
+            if (obj instanceof _Finally) {
+                return $.eq(((_Finally) obj).invoker, invoker);
+            }
+            return false;
+        }
+
+        @Override
+        public String toString() {
+            return invoker.toString();
+        }
+
+        @Override
+        public int order() {
+            return invoker.order();
         }
 
         @Override
@@ -1248,6 +1446,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
                     map.put(key, paramVal(key, context));
                 }
             }
+            map.put("__accept__", context.accept().name());
             return map;
         }
 
@@ -1258,7 +1457,7 @@ public class ReflectedHandlerInvoker<M extends HandlerMethodMetaInfo> extends De
             } else if (1 == allValues.length) {
                 return allValues[0];
             } else {
-                return  $.toString2(allValues);
+                return $.toString2(allValues);
             }
         }
     }

@@ -8,7 +8,7 @@ import org.osgl.util.S;
 
 @UrlContext("796")
 @JsonView
-public class Gh796 extends LogSupport {
+public class Gh796 extends BaseController {
 
     public static class Foo {
         public String text = S.random();

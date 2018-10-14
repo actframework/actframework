@@ -49,7 +49,12 @@ public class HttpClientService extends AppServiceBase<HttpClientService> {
         super(app);
         config = app.config();
         reCaptchaSercret = config.reCaptchaSecret();
-        initHttp();
+        app.jobManager().now(new Runnable() {
+            @Override
+            public void run() {
+                initHttp();
+            }
+        });
     }
 
     @Override

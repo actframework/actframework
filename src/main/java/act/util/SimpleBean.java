@@ -125,7 +125,7 @@ public interface SimpleBean {
     }
 
     @ApplicationScoped
-    class MetaInfoManager extends DestroyableBase {
+    class MetaInfoManager extends LogSupportedDestroyableBase {
         private static final String INTF_SIMPLE_BEAN = SimpleBean.class.getName();
         private ClassInfoRepository classInfoRepository;
         private Map<String, MetaInfo> registry = new HashMap<>();
@@ -239,7 +239,7 @@ public interface SimpleBean {
             @Override
             public void visitEnd() {
                 if (isPublicClass) {
-                    Act.app().jobManager().on(SysEventId.APP_CODE_SCANNED, new Runnable() {
+                    Act.app().jobManager().on(SysEventId.APP_CODE_SCANNED, "SimpleBeanByteCodeVisitor:registerToMetaInfoManager:" + className, new Runnable() {
                         @Override
                         public void run() {
                             SimpleBean.MetaInfoManager metaInfoManager = Act.app().classLoader().simpleBeanInfoManager();

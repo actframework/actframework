@@ -45,7 +45,8 @@ public class ScenarioComparator implements Comparator<Scenario> {
         if (d2.contains(o1)) {
             return -1;
         }
-        return o1.name.compareTo(o2.name);
+        int n = o1.partition.compareTo(o2.partition);
+        return 0 != n ? n : o1.name.compareTo(o2.name);
     }
     private List<Scenario> depends(Scenario s, List<Scenario> depends) {
         for (String name : s.depends) {

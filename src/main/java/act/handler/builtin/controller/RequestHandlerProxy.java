@@ -33,11 +33,10 @@ import act.app.event.SysEventId;
 import act.controller.*;
 import act.controller.meta.*;
 import act.handler.RequestHandlerBase;
+import act.inject.util.Sorter;
 import act.security.CORS;
 import act.security.CSRF;
-import act.util.AnnotatedClassFinder;
-import act.util.Global;
-import act.util.MissingAuthenticationHandler;
+import act.util.*;
 import act.view.ActErrorResult;
 import act.view.RenderAny;
 import act.xio.WebSocketConnectionHandler;
@@ -59,6 +58,8 @@ import javax.inject.Inject;
 
 @ApplicationScoped
 public final class RequestHandlerProxy extends RequestHandlerBase {
+
+    public static final String CACHE_NAME = "__action_proxy__";
 
     private static Logger logger = L.get(RequestHandlerProxy.class);
 
@@ -83,6 +84,7 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
     private String actionMethodName;
     private String actionPath;
     private Method actionMethod;
+    private Set<String> cacheKeys = new HashSet<>();
 
     private volatile ControllerAction actionHandler = null;
     private List<BeforeInterceptor> beforeInterceptors = new ArrayList<>();
@@ -97,6 +99,8 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
     private CacheSupportMetaInfo cacheSupport;
     private MissingAuthenticationHandler missingAuthenticationHandler;
     private MissingAuthenticationHandler csrfFailureHandler;
+
+    private CacheFor.Manager cacheForManager;
 
     private WebSocketConnectionHandler webSocketConnectionHandler;
 
@@ -116,12 +120,12 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
         E.illegalArgumentIf(S.isEmpty(this.actionMethodName), ERR, actionMethodName);
         this.actionPath = actionMethodName;
         if (app.classLoader() != null) {
-            cache = app.config().cacheService("action_proxy");
+            cache = app.config().cacheService(CACHE_NAME);
         } else {
-            app.jobManager().on(SysEventId.CLASS_LOADER_INITIALIZED, new Runnable() {
+            app.jobManager().on(SysEventId.CLASS_LOADER_INITIALIZED, "RequestHandlerProxy[" + actionMethodName + "]:setCache", new Runnable() {
                 @Override
                 public void run() {
-                    cache = app.config().cacheService("action_proxy");
+                    cache = app.config().cacheService(CACHE_NAME);
                 }
             });
         }
@@ -139,6 +143,7 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
             actionHandler.destroy();
             actionHandler = null;
         }
+        cacheForManager = null;
     }
 
     public static void releaseGlobalResources() {
@@ -199,6 +204,7 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
                 context.enableCache();
             }
             saveActionPath(context);
+            setHandlerClass(context);
             context.startIntercepting();
             result = handleBefore(context);
             if (null == result) {
@@ -218,27 +224,30 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
             }
             if (supportCache) {
                 String s = cacheSupport.usePrivate ? "private, max-age=" : "public, max-age=";
-                context.resp().addHeaderIfNotAdded(H.Header.Names.CACHE_CONTROL, s + cacheSupport.ttl);
+                if (!cacheSupport.noCacheControl) {
+                    context.resp().addHeaderIfNotAdded(H.Header.Names.CACHE_CONTROL, s + cacheSupport.ttl);
+                }
             }
             onResult(result, context);
             if (supportCache) {
                 this.cache.put(cacheKey, context.resp(), cacheSupport.ttl);
+                cacheKeys.add(cacheKey);
             }
         } catch (Exception e) {
-            H.Request req = context.req();
-            logger.error(e, S.concat("Error handling request: [", req.method().name(), "] ", req.url()));
             try {
                 result = handleException(e, context);
             } catch (Exception e0) {
                 logger.error(e0, "Error invoking exception handler");
             }
             if (null == result) {
+                H.Request req = context.req();
+                logger.error(e, "error handling request: " + req);
                 result = ActErrorResult.of(e);
             }
             try {
                 onResult(result, context);
             } catch (Exception e2) {
-                logger.error(e2, "error rendering exception handle  result");
+                logger.error(e2, "error rendering exception handle result");
                 onResult(ActErrorResult.of(e2), context);
             }
         } finally {
@@ -274,6 +283,14 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
     @Override
     public boolean skipEvents(ActionContext context) {
         return skipEvents;
+    }
+
+    public void resetCache() {
+        if (supportCache) {
+            for (String cacheKey : cacheKeys) {
+                cache.evict(cacheKey);
+            }
+        }
     }
 
     protected final void registerBeforeInterceptor(BeforeInterceptor interceptor) {
@@ -332,6 +349,11 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
     // could be used by View to resolve default path to template
     private void saveActionPath(ActionContext context) {
         context.actionPath(actionPath);
+    }
+
+    // in case interceptor class is super type of action handler class
+    private void setHandlerClass(ActionContext context) {
+        context.handlerClass(actionHandler.invoker().invokeMethod().getDeclaringClass());
     }
 
     private boolean matches(Set<String> patterns) {
@@ -407,6 +429,12 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
         App app = this.app;
         if (supportCache) {
             cache = app.cache();
+            cacheForManager = app.getInstance(CacheFor.Manager.class);
+            cacheForManager.register(actionPath, this);
+            String cacheForId = cacheSupport.id;
+            if (S.notBlank(cacheForId)) {
+                cacheForManager.register(cacheForId, this);
+            }
         }
 
         GroupInterceptorMetaInfo interceptorMetaInfo = new GroupInterceptorMetaInfo(actionInfo.interceptors());
@@ -420,7 +448,7 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
                 continue;
             }
             BeforeInterceptor interceptor = mode.createBeforeInterceptor(info, app);
-            beforeInterceptors.add(interceptor);
+            insertInterceptor(beforeInterceptors, interceptor);
             sessionFree = sessionFree && interceptor.sessionFree();
             express = express && interceptor.express();
         }
@@ -429,7 +457,7 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
                 continue;
             }
             AfterInterceptor interceptor = mode.createAfterInterceptor(info, app);
-            afterInterceptors.add(interceptor);
+            insertInterceptor(afterInterceptors, interceptor);
             sessionFree = sessionFree && interceptor.sessionFree();
             express = express && interceptor.express();
         }
@@ -438,7 +466,7 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
                 continue;
             }
             ExceptionInterceptor interceptor = mode.createExceptionInterceptor(info, app);
-            exceptionInterceptors.add(interceptor);
+            insertInterceptor(exceptionInterceptors, interceptor);
             sessionFree = sessionFree && interceptor.sessionFree();
             express = express && interceptor.express();
         }
@@ -449,7 +477,7 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
                 continue;
             }
             FinallyInterceptor interceptor = mode.createFinallyInterceptor(info, app);
-            finallyInterceptors.add(interceptor);
+            insertInterceptor(finallyInterceptors, interceptor);
             sessionFree = sessionFree && interceptor.sessionFree();
             express = express && interceptor.express();
         }
@@ -579,7 +607,6 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
 
     public static void registerGlobalInterceptor(ExceptionInterceptor interceptor) {
         insertInterceptor(globalExceptionInterceptors, interceptor);
-        Collections.sort(globalExceptionInterceptors);
     }
 
     @AnnotatedClassFinder(value = Global.class, callOn = SysEventId.PRE_START)
@@ -608,28 +635,11 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
     }
 
     public static <T extends Handler> void insertInterceptor(List<T> list, T i) {
-        int sz = list.size();
-        if (0 == sz) {
-            list.add(i);
-        }
-        ListIterator<T> itr = list.listIterator();
-        while (itr.hasNext()) {
-            T t = itr.next();
-            int n = i.compareTo(t);
-            if (n < 0) {
-                itr.add(i);
-                return;
-            } else if (n == 0) {
-                if (i.equals(t)) {
-                    // already exists
-                    return;
-                } else {
-                    itr.add(i);
-                    return;
-                }
-            }
+        if (list.contains(i)) {
+            return;
         }
         list.add(i);
+        Collections.sort(list, Sorter.COMPARATOR);
     }
 
     public static class GroupInterceptorWithResult {

@@ -27,8 +27,7 @@ import act.app.ActionContext;
 import act.app.App;
 import act.conf.AppConfig;
 import act.mail.MailerContext;
-import act.util.ActContext;
-import act.util.DestroyableBase;
+import act.util.*;
 import org.osgl.$;
 import org.osgl.exception.UnexpectedException;
 import org.osgl.http.H;
@@ -40,7 +39,7 @@ import javax.enterprise.context.ApplicationScoped;
 /**
  * Manage different view solutions
  */
-public class ViewManager extends DestroyableBase {
+public class ViewManager extends LogSupportedDestroyableBase {
 
     private C.List<View> viewList = C.newList();
     private Map<String, ActionViewVarDef> implicitActionViewVariables = new HashMap<>();

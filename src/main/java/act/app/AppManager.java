@@ -20,25 +20,23 @@ package act.app;
  * #L%
  */
 
+import static act.Destroyable.Util.tryDestroyAll;
+
 import act.Act;
 import act.internal.util.AppDescriptor;
-import act.util.DestroyableBase;
+import act.util.LogSupportedDestroyableBase;
 import org.osgl.$;
 import org.osgl.util.E;
 
+import java.util.*;
 import javax.enterprise.context.ApplicationScoped;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-
-import static act.Destroyable.Util.tryDestroyAll;
 
 /**
  * Manage applications deployed on Act
  *
  * TODO: get rid of multi-tenant support
  */
-public class AppManager extends DestroyableBase {
+public class AppManager extends LogSupportedDestroyableBase {
 
     private Map<Integer, App> byPort = new HashMap<>();
 

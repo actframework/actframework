@@ -110,11 +110,11 @@ public class ConfigKeyHelperTest extends ActTestBase {
     }
 
     @Test
-    public void testVariableEvaluaation() {
+    public void testVariableEvaluation() {
         put("foo.bar", "123");
         put("xyz", "aaa");
-        put("p1", "abc${foo.bar}/xyz/${xyz}/ddd");
-        eq("abc123/xyz/aaa/ddd", helper.getConfiguration("p1", null, conf));
+        put("p", "abc${foo.bar}/xyz/${xyz}/ddd");
+        eq("abc123/xyz/aaa/ddd", helper.getConfiguration("p", null, conf));
     }
 
     @Test

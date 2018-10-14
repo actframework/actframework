@@ -38,7 +38,7 @@ public class MetricMetaInfoRepo extends AppServiceBase<MetricMetaInfoRepo> {
 
     public MetricMetaInfoRepo(final App app) {
         super(app);
-        app.jobManager().on(SysEventId.APP_CODE_SCANNED, new Runnable() {
+        app.jobManager().on(SysEventId.APP_CODE_SCANNED, "MetricMetaInfoRepo:mergeFromParents", new Runnable() {
             @Override
             public void run() {
                 mergeFromParents(app.classLoader().classInfoRepository());

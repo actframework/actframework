@@ -21,16 +21,13 @@ package act.util;
  */
 
 import act.Destroyable;
-import act.app.App;
-import act.app.AppByteCodeScanner;
-import act.app.AppCodeScannerManager;
-import act.app.AppSourceCodeScanner;
+import act.app.*;
 
-import javax.enterprise.context.ApplicationScoped;
 import java.util.HashMap;
 import java.util.Map;
+import javax.enterprise.context.ApplicationScoped;
 
-public class AppCodeScannerPluginManager extends DestroyableBase {
+public class AppCodeScannerPluginManager extends LogSupportedDestroyableBase {
 
     private Map<Class<? extends AppCodeScannerPluginBase>, AppCodeScannerPluginBase> registry = new HashMap<>();
 

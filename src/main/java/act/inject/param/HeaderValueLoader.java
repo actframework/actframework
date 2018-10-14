@@ -35,7 +35,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-class HeaderValueLoader implements ParamValueLoader {
+class HeaderValueLoader extends ParamValueLoader.NonCacheable {
 
     private final String key;
     private final boolean multiValues;

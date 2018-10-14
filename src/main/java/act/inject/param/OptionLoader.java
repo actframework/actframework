@@ -33,7 +33,7 @@ import org.osgl.util.StringValueResolver;
 /**
  * Load command line options
  */
-class OptionLoader extends CliParamValueLoader implements ParamValueLoader {
+class OptionLoader extends CliParamValueLoader {
 
     final String bindName;
     String lead1;

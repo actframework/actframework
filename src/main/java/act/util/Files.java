@@ -55,7 +55,7 @@ public enum Files {
             File file = files[i];
             if (isValidDir(file)) {
                 filter(file, filter, visitor);
-            } else if (null == filter || filter.apply(file.getName())) {
+            } else if (null == filter || filter.apply(file.getPath())) {
                 visitor.apply(file);
             }
         }

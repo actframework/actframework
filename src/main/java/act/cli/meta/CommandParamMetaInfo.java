@@ -21,14 +21,13 @@ package act.cli.meta;
  */
 
 import act.asm.Type;
-import act.util.AsmTypes;
-import act.util.DestroyableBase;
+import act.util.*;
 import org.osgl.$;
 
 /**
  * Stores Command parameter meta info
  */
-public class CommandParamMetaInfo extends DestroyableBase {
+public class CommandParamMetaInfo extends LogSupportedDestroyableBase {
     private String name;
     private Type type;
     private boolean readFileContent;

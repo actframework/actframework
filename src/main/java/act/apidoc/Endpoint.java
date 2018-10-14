@@ -32,17 +32,17 @@ import act.handler.builtin.controller.RequestHandlerProxy;
 import act.handler.builtin.controller.impl.ReflectedHandlerInvoker;
 import act.inject.DefaultValue;
 import act.inject.DependencyInjector;
+import act.inject.param.NoBind;
 import act.inject.param.ParamValueLoaderService;
-import act.util.FastJsonPropertyPreFilter;
-import act.util.PropertySpec;
+import act.util.*;
 import act.validation.NotBlank;
 import com.alibaba.fastjson.JSON;
 import org.apache.bval.constraints.NotEmpty;
 import org.joda.time.*;
 import org.osgl.$;
+import org.osgl.OsglConfig;
 import org.osgl.http.H;
-import org.osgl.inject.BeanSpec;
-import org.osgl.inject.Injector;
+import org.osgl.inject.*;
 import org.osgl.logging.Logger;
 import org.osgl.mvc.result.Result;
 import org.osgl.storage.ISObject;
@@ -681,9 +681,57 @@ public class Endpoint implements Comparable<Endpoint> {
                     return obj;
                 }
 
-                obj = Act.getInstance(classType);
-                List<Field> fields = $.fieldsOf(classType);
                 Injector injector = Act.injector();
+                try {
+                    obj = Act.getInstance(classType);
+                } catch (Exception e) {
+                    Method emailGetter = null;
+                    Map<String, Object> map = new HashMap<>();
+                    Method[] ma = classType.getMethods();
+                    for (Method m : ma) {
+                        if (!Modifier.isStatic(m.getModifiers()) && m.getName().startsWith("get") && m.getReturnType() != void.class) {
+                            if (shouldWaive(m)) {
+                                continue;
+                            }
+                            Class<?> propertyClass = m.getReturnType();
+                            Object val = null;
+                            try {
+                                String propertyName = m.getName().substring(3);
+                                if ("name".equalsIgnoreCase(propertyName)) {
+                                    propertyName = m.getDeclaringClass().getSimpleName();
+                                }
+                                Annotation[] annotations = m.getDeclaredAnnotations();
+                                Type propertyType = m.getGenericReturnType();
+                                if (propertyType instanceof TypeVariable) {
+                                    propertyType = propertyClass;
+                                }
+                                BeanSpec propertySpec = BeanSpec.of(propertyType, annotations, propertyName, injector, m.getModifiers(), typeParamLookup);
+                                if (null == emailGetter && isEmail(propertySpec)) {
+                                    emailGetter = m;
+                                } else {
+                                    val = generateSampleData(propertySpec, typeParamLookup, C.newSet(typeChain), C.newList(nameChain), fastJsonPropertyPreFilter);
+                                    if (null != val) {
+                                        Class<?> valType = val.getClass();
+                                        if (!propertyClass.isAssignableFrom(valType)) {
+                                            val = $.convert(val).to(propertyClass);
+                                        }
+                                        if (null != val) {
+                                            map.put(propertyName, val);
+                                        }
+                                    }
+                                }
+                            } catch (Exception e1) {
+
+                            }
+                        }
+                    }
+                    if (null != emailGetter) {
+                        String mockEmail = sampleDataProviderManager.getSampleData(SampleDataCategory.EMAIL, name, String.class);
+                        map.put(emailGetter.getName().substring(3), mockEmail);
+                    }
+                    return map;
+                }
+                List<Field> fields = $.fieldsOf(classType);
                 Field emailField = null;
                 for (Field field : fields) {
                     if (Modifier.isStatic(field.getModifiers())) {
@@ -703,7 +751,7 @@ public class Endpoint implements Comparable<Endpoint> {
                         Annotation[] annotations = field.getDeclaredAnnotations();
                         Type fieldType = field.getGenericType();
                         if (fieldType instanceof TypeVariable) {
-                            fieldType = field.getType();
+                            fieldType = fieldClass;
                         }
                         BeanSpec fieldSpec = BeanSpec.of(fieldType, annotations, fieldName, injector, field.getModifiers(), typeParamLookup);
                         if (null == emailField && isEmail(fieldSpec)) {
@@ -721,7 +769,7 @@ public class Endpoint implements Comparable<Endpoint> {
                                 field.set(obj, val);
                             }
                         }
-                    } catch (Exception e) {
+                    } catch (Exception e2) {
                         LOGGER.warn("Error setting value[%s] to field[%s.%s]", val, classType.getSimpleName(), field.getName());
                     }
                 }
@@ -752,5 +800,24 @@ public class Endpoint implements Comparable<Endpoint> {
     private static <T> StringValueResolver stringValueResolver(Class<? extends T> type) {
         return Act.app().resolverManager().resolver(type);
     }
+
+    // see ParamValueLoaderService.shouldWaive(Field)
+    private static boolean shouldWaive(Method getter) {
+        int modifiers = getter.getModifiers();
+        if (Modifier.isTransient(modifiers) || Modifier.isStatic(modifiers)) {
+            return true;
+        }
+        String fieldName = getter.getName().substring(3);
+        Class<?> entityType = getter.getReturnType();
+        return ParamValueLoaderService.noBind(entityType)
+                || getter.isAnnotationPresent(NoBind.class)
+                || getter.isAnnotationPresent(Stateless.class)
+                || getter.isAnnotationPresent(Global.class)
+                || ParamValueLoaderService.isInBlackList(fieldName)
+                || Object.class.equals(entityType)
+                || Class.class.equals(entityType)
+                || OsglConfig.globalMappingFilter_shouldIgnore(fieldName);
+    }
+
 
 }

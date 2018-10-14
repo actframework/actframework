@@ -20,18 +20,15 @@ package act.app;
  * #L%
  */
 
+import static act.app.ProjectLayout.Utils.file;
+import static act.route.RouteTableRouterBuilder.ROUTES_FILE;
+
 import act.Act;
 import act.app.util.NamedPort;
 import org.osgl.util.S;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import static act.app.ProjectLayout.Utils.file;
-import static act.route.RouteTableRouterBuilder.ROUTES_FILE;
+import java.util.*;
 
 /**
  * Define application dir structure at runtime
@@ -65,20 +62,20 @@ public enum RuntimeDirs {
 
     public static Map<String, List<File>> routes(App app) {
         Map<String, List<File>> map = new HashMap();
-        File classes = classes(app);
-        map.put(NamedPort.DEFAULT, routes(classes, ROUTES_FILE));
+        File base = resource(app);
+        map.put(NamedPort.DEFAULT, routes(base, ROUTES_FILE));
         for (NamedPort np : app.config().namedPorts()) {
             String npName = np.name();
             String routesConfName = S.concat("routes.", npName, ".conf");
-            map.put(npName, routes(classes, routesConfName));
+            map.put(npName, routes(base, routesConfName));
         }
         return map;
     }
 
-    private static List<File> routes(File classes, String name) {
+    private static List<File> routes(File base, String name) {
         List<File> routes = new ArrayList<>();
-        routes.add(file(classes, name));
-        File confRoot = file(classes, CONF);
+        routes.add(file(base, name));
+        File confRoot = file(base, CONF);
         routes.add(file(confRoot, name));
         File profileRooot = file(confRoot, Act.profile());
         routes.add(file(profileRooot, name));

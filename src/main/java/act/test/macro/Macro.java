@@ -20,14 +20,11 @@ package act.test.macro;
  * #L%
  */
 
-import act.app.App;
+import act.Act;
 import act.test.Scenario;
 import act.test.util.NamedLogic;
 import org.osgl.$;
-import org.osgl.util.C;
-import org.osgl.util.E;
-import org.osgl.util.IO;
-import org.osgl.util.S;
+import org.osgl.util.*;
 import org.osgl.util.converter.TypeConverterRegistry;
 
 import java.io.File;
@@ -68,22 +65,34 @@ public abstract class Macro<T extends Macro> extends NamedLogic<T> {
      * with the underscore style of the file name.
      */
     public static class ReadContent extends Macro<ReadContent> {
+
+        private String resourcePath;
+
+        @Override
+        public void init(Object param) {
+            String s = S.string(param);
+            if (s.startsWith("/")) {
+                s = s.substring(1);
+            }
+            resourcePath = s;
+            E.unexpectedIf(null == tryRead(), "ReadContent init param[%s] must be a valid resource path.", s);
+        }
+
         @Override
         public void run(Scenario scenario) {
-            String fileName = (String) initVal;
-            File file = new File(fileName);
+            scenario.cache(resourcePath, tryRead());
+        }
+
+        private String tryRead() {
+            File file = new File(resourcePath);
             String content;
             if (file.exists() && file.canRead()) {
                 content = IO.read(file).toString();
             } else {
-                URL url = App.class.getResource(fileName);
-                if (null == url) {
-                    url = App.class.getClassLoader().getResource(fileName);
-                }
-                E.unexpectedIf(null == url, "Cannot find file or resource by " + fileName);
-                content = IO.read(url).toString();
+                URL url = Act.getResource(resourcePath);
+                content = null == url ? null : IO.read(url).toString();
             }
-            scenario.cache(S.underscore(fileName), content);
+            return content;
         }
 
         @Override

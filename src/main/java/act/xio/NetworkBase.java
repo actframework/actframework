@@ -24,23 +24,20 @@ import act.Act;
 import act.Destroyable;
 import act.app.App;
 import act.controller.meta.ActionMethodMetaInfo;
-import act.util.DestroyableBase;
+import act.util.LogSupportedDestroyableBase;
 import act.ws.WebSocketConnectionManager;
 import org.osgl.logging.LogManager;
 import org.osgl.logging.Logger;
 import org.osgl.util.E;
 
-import javax.enterprise.context.ApplicationScoped;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
+import javax.enterprise.context.ApplicationScoped;
 
 /**
  * The base implementation of {@link Network}
  */
-public abstract class NetworkBase extends DestroyableBase implements Network {
+public abstract class NetworkBase extends LogSupportedDestroyableBase implements Network {
 
     protected final static Logger logger = LogManager.get(Network.class);
 
@@ -68,7 +65,6 @@ public abstract class NetworkBase extends DestroyableBase implements Network {
 
     @Override
     public void start() {
-        bootUp();
         for (int port : registry.keySet()) {
             NetworkHandler client = registry.get(port);
             if (!trySetUpClient(client, port, securePorts.contains(port))) {
@@ -110,7 +106,7 @@ public abstract class NetworkBase extends DestroyableBase implements Network {
 
     protected abstract void setUpClient(NetworkHandler client, int port, boolean secure) throws IOException;
 
-    protected abstract void bootUp();
+    public abstract void bootUp();
 
     protected abstract void close();
 

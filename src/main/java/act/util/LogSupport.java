@@ -20,6 +20,7 @@ package act.util;
  * #L%
  */
 
+import act.inject.param.NoBind;
 import org.osgl.logging.LogManager;
 import org.osgl.logging.Logger;
 import org.osgl.util.S;
@@ -35,22 +36,11 @@ public class LogSupport {
     public static final String HASH_SYMBOL_LINE = S.times('#', 80);
     public static final String TILD_LINE = S.times('~', 80);
 
+    @NoBind
     protected final transient Logger logger;
 
     public LogSupport() {
-        this(false);
-    }
-
-    /**
-     * Used by sub class that want to implement it's own logging logic.
-     *
-     * Typically for class that generates massive number of instances and
-     * want to avoid creating logger every time.
-     *
-     * @param noLogger if `false` then logger will not be generated
-     */
-    protected LogSupport(boolean noLogger) {
-        logger = noLogger ? null : LogManager.get(getClass());
+        logger = LogManager.get(getClass());
     }
 
     /**

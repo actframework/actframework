@@ -21,21 +21,21 @@ package act.event.bytecode;
  */
 
 import act.Act;
+import act.annotations.Order;
 import act.app.App;
 import act.event.EventBus;
 import act.event.SimpleEventListener;
 import act.inject.DependencyInjector;
 import act.inject.param.ParamValueLoaderService;
+import act.util.Ordered;
 import org.osgl.$;
 import org.osgl.inject.BeanSpec;
-import org.osgl.util.C;
-import org.osgl.util.E;
-import org.osgl.util.S;
+import org.osgl.util.*;
 
 import java.lang.reflect.Method;
 import java.util.List;
 
-public class ReflectedSimpleEventListener implements SimpleEventListener {
+public class ReflectedSimpleEventListener implements SimpleEventListener, Ordered {
 
     private transient volatile Object host;
 
@@ -46,6 +46,7 @@ public class ReflectedSimpleEventListener implements SimpleEventListener {
     private final int providedParamSize;
     private final boolean isStatic;
     private final boolean isAsync;
+    private final int order;
 
     ReflectedSimpleEventListener(String className, String methodName, List<BeanSpec> paramTypes, boolean isStatic, boolean isAsync) {
         this.isStatic = isStatic;
@@ -78,11 +79,18 @@ public class ReflectedSimpleEventListener implements SimpleEventListener {
         this.hostClass = Act.app().classForName(className);
         this.method = $.getMethod(hostClass, methodName, argList);
         this.isAsync = isAsync || EventBus.isAsync(hostClass) || EventBus.isAsync(method);
+        Order order = this.hostClass.getAnnotation(Order.class);
+        this.order = null == order ? Order.HIGHEST_PRECEDENCE : order.value();
     }
 
     @Override
     public boolean isAsync() {
         return isAsync;
+    }
+
+    @Override
+    public int order() {
+        return this.order;
     }
 
     @Override

@@ -1,0 +1,13 @@
+Scenario(GH860):
+  description: "[860] test resource not refreshed after hot-reload"
+  interactions:
+  - description: Test
+    preActions:
+      - read-content: 860.txt
+    request:
+      get: 860
+      params:
+        content: ${860.txt}
+    response:
+      json:
+        result: pass

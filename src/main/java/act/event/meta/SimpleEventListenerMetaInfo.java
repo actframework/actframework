@@ -26,8 +26,7 @@ import act.app.event.SysEventId;
 import act.inject.DependencyInjector;
 import org.osgl.$;
 import org.osgl.inject.BeanSpec;
-import org.osgl.util.C;
-import org.osgl.util.E;
+import org.osgl.util.*;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Method;
@@ -72,12 +71,21 @@ public class SimpleEventListenerMetaInfo {
         this.isStatic = isStatic;
         this.beforeAppStart = beforeAppStart;
         SysEventId hookOn = beforeAppStart ? SysEventId.DEPENDENCY_INJECTOR_LOADED : SysEventId.DEPENDENCY_INJECTOR_PROVISIONED;
-        app.jobManager().on(hookOn, new Runnable() {
+        app.jobManager().on(hookOn, jobId(), new Runnable() {
             @Override
             public void run() {
                 SimpleEventListenerMetaInfo.this.paramTypes = convert(paramTypes, className, methodName, $.<Method>var());
             }
         });
+    }
+
+    public String jobId() {
+        S.Buffer buf = S.buffer("SimpleEventListenerByteCodeScanner:init:" )
+                .append(className).append(".").append(methodName);
+        if (null != asyncMethodName) {
+            buf.append("|").append(asyncMethodName);
+        }
+        return buf.toString();
     }
 
     public List<?> events() {

@@ -1,0 +1,21 @@
+Scenario(GH841):
+  description: "[841] FastJson exception when serialize ACT error message"
+  interactions:
+    - description: test normal return
+      request:
+        get: 841
+      response:
+        json:
+          code: 1
+          data:
+            token: aaa
+    - description: test return unauthorized case
+      request:
+        accept: json
+        get: 841?fail=true
+      response:
+        status: 401
+        json:
+          ts:
+            - exists: true
+          message: Unauthorized

@@ -299,6 +299,7 @@ public final class Act {
     }
 
     public static void startup(AppDescriptor descriptor) {
+        long start = descriptor.getStart();
         processEnvironment(descriptor);
         Banner.print(descriptor);
         registerTypeConverters();
@@ -312,26 +313,35 @@ public final class Act {
         initAppCodeScannerPluginManager();
         loadPlugins();
         enhancerManager().registered(); // so it can order the enhancers
-        initNetworkLayer();
+        NetworkBootupThread nbt = initNetworkLayer();
         initApplicationManager();
         LOGGER.info("loading application(s) ...");
         appManager.loadSingleApp(descriptor);
-        startNetworkLayer();
+        startNetworkLayer(nbt);
         Thread.currentThread().setContextClassLoader(Act.class.getClassLoader());
         App app = app();
         if (null == app) {
             shutdownNetworkLayer();
             throw new UnexpectedException("App not found. Please make sure your app start directory is correct");
         }
-        emit(SysEventId.ACT_START);
-        writePidFile();
         int port = httpPort();
         String urlContext = appConfig().urlContext();
-        if (null == urlContext) {
-            LOGGER.info("app is ready at: http://%s:%s", getLocalIpAddr(), port);
-        } else {
-            LOGGER.info("app is ready at: http://%s:%s%s", getLocalIpAddr(), port, urlContext);
+        CliServer cliServer = app.cliServer();
+        if (null != cliServer) {
+            cliServer.logStart();
         }
+        if (null == urlContext) {
+            LOGGER.info("app is ready in %sms at: http://%s:%s\n\n", $.ms() - start, getLocalIpAddr(), port);
+        } else {
+            LOGGER.info("app is ready in %sms at: http://%s:%s%s\n\n", $.ms() - start, getLocalIpAddr(), port, urlContext);
+        }
+        writePidFile();
+        app.jobManager().post(SysEventId.POST_START, new Runnable() {
+            @Override
+            public void run() {
+                emit(SysEventId.ACT_START);
+            }
+        }, true);
     }
 
     public static void shutdown(final App app) {
@@ -571,7 +581,14 @@ public final class Act {
      * @return the `URL` if found, or `null` if resource not found
      */
     public static URL getResource(String name) {
-        return app().getResource(name);
+        App app = app();
+        if (null == app) {
+            if (name.startsWith("/")) {
+                name = name.substring(1);
+            }
+            return Act.class.getClassLoader().getResource(name);
+        }
+        return app.getResource(name);
     }
 
     /**
@@ -889,8 +906,8 @@ public final class Act {
     private static void loadPlugins() {
         LOGGER.debug("scanning plugins ...");
         long ts = $.ms();
-        new PluginScanner().scan();
-        LOGGER.debug("plugin scanning finished in %sms", $.ms() - ts);
+        int count = new PluginScanner().scan();
+        LOGGER.debug("%s plugin scanning finished in %sms", count, $.ms() - ts);
     }
 
     private static void unloadPlugins() {
@@ -981,9 +998,31 @@ public final class Act {
         }
     }
 
-    private static void initNetworkLayer() {
+    private static class NetworkBootupThread extends Thread {
+
+        Network network;
+        RuntimeException exception;
+
+        public NetworkBootupThread(Network network) {
+            this.network = network;
+        }
+
+        @Override
+        public void run() {
+            try {
+                network.bootUp();
+            } catch (RuntimeException e) {
+                exception = e;
+            }
+        }
+    }
+
+    private static NetworkBootupThread initNetworkLayer() {
         LOGGER.debug("initializing network layer ...");
         network = new UndertowNetwork();
+        NetworkBootupThread nbt = new NetworkBootupThread(network);
+        nbt.start();
+        return nbt;
     }
 
     private static void destroyNetworkLayer() {
@@ -993,11 +1032,20 @@ public final class Act {
         }
     }
 
-    private static void startNetworkLayer() {
+    private static void startNetworkLayer(NetworkBootupThread nbt) {
         if (network.isDestroyed()) {
             return;
         }
         LOGGER.debug("starting network layer ...");
+        try {
+            nbt.join();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new UnexpectedException(e);
+        }
+        if (null != nbt.exception) {
+            throw nbt.exception;
+        }
         network.start();
     }
 
@@ -1026,7 +1074,6 @@ public final class Act {
     }
 
     private static void bootstrap(AppDescriptor appDescriptor) throws Exception {
-        long ts = $.ms();
         String profile = SysProps.get(AppConfigKey.PROFILE.key());
         if (S.blank(profile)) {
             profile = "";
@@ -1045,7 +1092,7 @@ public final class Act {
         Method m = actClass.getDeclaredMethod("startup", byte[].class);
         m.setAccessible(true);
         $.invokeStatic(m, appDescriptor.toByteArray());
-        LOGGER.info("it takes %sms to start the app\n", $.ms() - ts);
+        LOGGER.debug("bootstrap application takes: %sms", $.ms() - appDescriptor.getStart());
     }
 
     public static int httpPort() {

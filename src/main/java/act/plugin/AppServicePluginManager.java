@@ -22,13 +22,13 @@ package act.plugin;
 
 import act.Destroyable;
 import act.app.App;
-import act.util.DestroyableBase;
+import act.util.LogSupportedDestroyableBase;
 
-import javax.enterprise.context.ApplicationScoped;
 import java.util.HashMap;
 import java.util.Map;
+import javax.enterprise.context.ApplicationScoped;
 
-public class AppServicePluginManager extends DestroyableBase {
+public class AppServicePluginManager extends LogSupportedDestroyableBase {
 
     private Map<Class<? extends AppServicePlugin>, AppServicePlugin> registry = new HashMap<>();
 

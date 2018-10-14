@@ -48,7 +48,7 @@ public abstract class View extends AppServicePlugin {
     @Override
     protected void applyTo(final App app) {
         Act.viewManager().register(this);
-        app.jobManager().on(SysEventId.CLASS_LOADER_INITIALIZED, new Runnable() {
+        app.jobManager().on(SysEventId.CLASS_LOADER_INITIALIZED, getClass().getSimpleName() + ":init", new Runnable() {
             @Override
             public void run() {
                 init(app);

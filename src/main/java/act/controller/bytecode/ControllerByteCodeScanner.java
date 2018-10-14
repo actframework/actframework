@@ -21,9 +21,7 @@ package act.controller.bytecode;
  */
 
 import act.Act;
-import act.app.App;
-import act.app.AppByteCodeScannerBase;
-import act.app.AppClassLoader;
+import act.app.*;
 import act.app.event.SysEventId;
 import act.asm.*;
 import act.asm.signature.SignatureReader;
@@ -34,9 +32,7 @@ import act.controller.annotation.Port;
 import act.controller.annotation.TemplateContext;
 import act.controller.meta.*;
 import act.handler.builtin.controller.RequestHandlerProxy;
-import act.route.DuplicateRouteMappingException;
-import act.route.RouteSource;
-import act.route.Router;
+import act.route.*;
 import act.sys.Env;
 import act.sys.meta.EnvAnnotationVisitor;
 import act.util.*;
@@ -45,13 +41,11 @@ import org.osgl.$;
 import org.osgl.http.H;
 import org.osgl.mvc.annotation.With;
 import org.osgl.mvc.util.Binder;
-import org.osgl.util.C;
-import org.osgl.util.E;
-import org.osgl.util.ListBuilder;
-import org.osgl.util.S;
+import org.osgl.util.*;
 
 import java.lang.annotation.Annotation;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * New controller scanner implementation
@@ -115,7 +109,6 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
 
         @Override
         public void visit(int version, int access, String name, String signature, String superName, String[] interfaces) {
-            logger.trace("Scanning %s", name);
             classInfo.className(name);
             String className = name.replace('/', '.');
             if (router.possibleController(className)) {
@@ -164,7 +157,7 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
                 return mv;
             }
             String className = classInfo.className();
-            boolean isRoutedMethod = router.isActionMethod(className, name);
+            boolean isRoutedMethod = app().isRoutedActionMethod(className, name);
             return new ActionMethodVisitor(isRoutedMethod, mv, access, name, desc, signature, exceptions);
         }
 
@@ -213,7 +206,7 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
                              * Note we need to schedule route registration after all app code scanned because we need the
                              * parent context information be set on class meta info, which is done after controller scanning
                              */
-                            app().jobManager().on(SysEventId.APP_CODE_SCANNED, new RouteRegister(envMatches, C.list(H.Method.GET), strings, WsEndpoint.PSEUDO_METHOD, routers, classInfo, false, $.var(false)));
+                            app().jobManager().on(SysEventId.APP_CODE_SCANNED, "WsEndpointAnnotationVisitor:registerRoute - " + registerRouteTaskCounter.getAndIncrement(), new RouteRegister(envMatches, C.list(H.Method.GET), strings, WsEndpoint.PSEUDO_METHOD, routers, classInfo, false, $.var(false)));
 
                             super.visitEnd();
                         }
@@ -773,6 +766,7 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
                     }
                 }
 
+
                 @Override
                 public void visitEnd() {
                     super.visitEnd();
@@ -792,7 +786,7 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
                      * Note we need to schedule route registration after all app code scanned because we need the
                      * parent context information be set on class meta info, which is done after controller scanning
                      */
-                    app().jobManager().on(SysEventId.APP_CODE_SCANNED, new RouteRegister(envMatched, httpMethods, paths, methodName, routers, classInfo, classInfo.isAbstract() && !isStatic, isVirtual));
+                    app().jobManager().on(SysEventId.APP_CODE_SCANNED, "ActionAnnotationVisitor:registerRoute-" + registerRouteTaskCounter.getAndIncrement(), new RouteRegister(envMatched, httpMethods, paths, methodName, routers, classInfo, classInfo.isAbstract() && !isStatic, isVirtual));
                 }
 
             }
@@ -906,10 +900,20 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
 
         private List<Router> routers() {
             final List<Router> routers = new ArrayList<>();
+            final App app = app();
             if (null == ports || ports.length == 0) {
-                routers.add(app().router());
+                if (app().hasMoreRouters()) {
+                    String className = classInfo.className();
+                    for (String methodName : methodNames) {
+                        Router routerX = app.getRouterFor(className, methodName);
+                        if (!routers.contains(routerX)) {
+                            routers.add(routerX);
+                        }
+                    }
+                } else {
+                    routers.add(app.router());
+                }
             } else {
-                App app = app();
                 for (String portName : ports) {
                     Router r = app.router(portName);
                     if (null == r) {
@@ -1025,4 +1029,7 @@ public class ControllerByteCodeScanner extends AppByteCodeScannerBase {
             }
         }
     }
+
+    private static AtomicInteger registerRouteTaskCounter = new AtomicInteger(0);
+
 }

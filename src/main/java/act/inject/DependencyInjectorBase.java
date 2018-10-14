@@ -42,7 +42,7 @@ public abstract class DependencyInjectorBase<DI extends DependencyInjectorBase<D
     protected Map<Class, List<DependencyInjectionListener>> listeners = new HashMap<>();
 
     public DependencyInjectorBase(App app) {
-        this(app, false);
+        this(app, true);
     }
 
     protected DependencyInjectorBase(App app, boolean noRegister) {

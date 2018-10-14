@@ -20,42 +20,30 @@ package act.handler.builtin.controller;
  * #L%
  */
 
+import act.annotations.Order;
 import act.security.CORS;
-import act.util.DestroyableBase;
-import org.osgl.$;
+import act.util.LogSupportedDestroyableBase;
+import act.util.Ordered;
 
 /**
  * The base class of @Before, @After, @Exception, @Finally interceptor and
  * request dispatcher
  */
-public abstract class Handler<T extends Handler> extends DestroyableBase implements Comparable<T> {
+public abstract class Handler<T extends Handler> extends LogSupportedDestroyableBase implements Ordered {
 
-    private int priority;
+    private Integer priority;
 
-    protected Handler(int priority) {
+    protected Handler(Integer priority) {
         this.priority = priority;
     }
 
-    public int priority() {
+    public Integer priority() {
         return priority;
     }
 
     @Override
-    public int compareTo(T o) {
-        return priority - o.priority();
-    }
-
-    @Override
-    public int hashCode() {
-        return $.hc(priority, getClass());
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (obj == this) {
-            return true;
-        }
-        return obj.getClass().equals(getClass());
+    public int order() {
+        return null == priority ? Order.HIGHEST_PRECEDENCE : priority;
     }
 
     public void accept(Visitor visitor) {}

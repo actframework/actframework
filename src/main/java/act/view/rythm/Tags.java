@@ -29,8 +29,7 @@ import act.i18n.I18n;
 import act.internal.util.ResourceChecksumManager;
 import act.job.OnAppStart;
 import act.route.Router;
-import act.util.ActContext;
-import act.util.DestroyableBase;
+import act.util.*;
 import org.osgl.$;
 import org.osgl.exception.NotAppliedException;
 import org.osgl.util.E;
@@ -50,7 +49,7 @@ import javax.validation.ConstraintViolation;
  * Defines fast tags for Act app
  */
 @Singleton
-public class Tags extends DestroyableBase {
+public class Tags extends LogSupportedDestroyableBase {
 
     @Inject
     private List<JavaTagBase> fastTags;

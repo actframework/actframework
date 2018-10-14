@@ -33,6 +33,8 @@ import act.util.*;
 import act.ws.WebSocketConnectionManager;
 import org.osgl.$;
 import org.osgl.exception.*;
+import org.osgl.logging.LogManager;
+import org.osgl.logging.Logger;
 import org.osgl.util.*;
 
 import java.lang.reflect.Method;
@@ -43,6 +45,8 @@ import java.util.concurrent.Callable;
  * A `Job` is a piece of logic that can be run/scheduled in ActFramework
  */
 public class Job extends DestroyableBase implements Runnable {
+
+    private static final Logger LOGGER = LogManager.get(Job.class);
 
     private static class LockableJobList {
         boolean iterating;
@@ -67,6 +71,9 @@ public class Job extends DestroyableBase implements Runnable {
                 return parent;
             }
             jobList.add(thatJob);
+            // Note we can't do this otherwise route registration
+            // process will be broken
+            // - Collections.sort(jobList, Sorter.COMPARATOR);
             return parent;
         }
 
@@ -308,13 +315,13 @@ public class Job extends DestroyableBase implements Runnable {
                         }
                         throw E.unexpected(e);
                     } else {
-                        logger.fatal(cause, "Fatal error executing job %s", id());
+                        LOGGER.fatal(cause, "Fatal error executing job %s", id());
                     }
                 }
                 return;
             }
             // TODO inject Job Exception Handling mechanism here
-            logger.warn(e, "error executing job %s", id());
+            LOGGER.warn(e, "error executing job %s", id());
         } finally {
             if (!isDestroyed()) {
                 executed = true;

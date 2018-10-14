@@ -20,12 +20,12 @@ package act.cli;
  * #L%
  */
 
-import act.util.DestroyableBase;
+import act.util.LogSupportedDestroyableBase;
 
 /**
  * A command executor execute a command and return the result
  */
-public abstract class CommandExecutor extends DestroyableBase {
+public abstract class CommandExecutor extends LogSupportedDestroyableBase {
     /**
      * Execute the command within the {@link CliContext context} specified
      * @param context the CLI context

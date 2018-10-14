@@ -37,6 +37,7 @@ import org.osgl.storage.ISObject;
 import org.osgl.util.*;
 import org.osgl.util.Output;
 
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.InputStream;
 import java.lang.annotation.*;
@@ -170,6 +171,22 @@ public @interface Controller {
          */
         public static Result notFound(String msg, Object... args) {
             return ActNotFound.create(msg, args);
+        }
+
+        /**
+         * Check if the input is `null` then throw out `NotFound` result, otherwise return
+         * the input back.
+         *
+         * @param o
+         *      the input object to be evaluated.
+         * @param <T>
+         *      the type parameter.
+         * @return
+         *      the input `o` if it is not `null`.
+         */
+        public static <T> T requireNotNull(T o) {
+            notFoundIfNull(o);
+            return o;
         }
 
         /**
@@ -722,6 +739,32 @@ public @interface Controller {
         }
 
         /**
+         * Returns a {@link Unauthorized} instance with error code specified.
+         *
+         * @param errorCode
+         *      the application error code.
+         * @return a 401 Unauthorized result
+         */
+        public static Unauthorized unauthorized(int errorCode) {
+            return ActUnauthorized.create(errorCode);
+        }
+
+        /**
+         * Returns a {@link Unauthorized} instance with error code specified.
+         *
+         * @param errorCode
+         *      the application error code.
+         * @param message
+         *      the application error message.
+         * @param args
+         *      the message template arguments
+         * @return a 401 Unauthorized result
+         */
+        public static Unauthorized unauthorized(int errorCode, String message, Object ... args) {
+            return ActUnauthorized.create(errorCode, S.fmt(message, args));
+        }
+
+        /**
          * Returns a {@link Unauthorized} instance with `realm` specified.
          *
          * @param realm
@@ -754,6 +797,38 @@ public @interface Controller {
         public static void unauthorizedIf(boolean test) {
             if (test) {
                 throw ActUnauthorized.create();
+            }
+        }
+
+        /**
+         * Throws out an {@link Unauthorized} instance if `test ` is `true`.
+         *
+         * @param test
+         *      the test
+         * @param code
+         *      the app specified error code
+         */
+        public static void unauthorizedIf(boolean test, int code) {
+            if (test) {
+                throw ActUnauthorized.create(code);
+            }
+        }
+
+        /**
+         * Throws out an {@link Unauthorized} instance if `test ` is `true`.
+         *
+         * @param test
+         *      the test
+         * @param code
+         *      the app specified error code
+         * @param message
+         *      the app specified error message (template)
+         * @param args
+         *      the error message template arguments
+         */
+        public static void unauthorizedIf(boolean test, int code, String message, Object ... args) {
+            if (test) {
+                throw ActUnauthorized.create(code, S.fmt(message, args));
             }
         }
 
@@ -1392,6 +1467,64 @@ public @interface Controller {
         }
 
         /**
+         * Returns a {@link RenderBufferedImage} result with image specified.
+         *
+         * The contentType will be set as default "image/png".
+         *
+         * @param image
+         *      the buffered image instance.
+         * @return the result
+         */
+        public static RenderBufferedImage renderImage(BufferedImage image) {
+            return image(image);
+        }
+
+        /**
+         * alias of {@link #renderImage(BufferedImage)}.
+         */
+        public static RenderBufferedImage image(BufferedImage image) {
+            return new RenderBufferedImage(image);
+        }
+
+        /**
+         * Returns a {@link RenderBufferedImage} result wth image and content type specified.
+         * @param image
+         *      the image
+         * @param contentType
+         *      the content type
+         * @return the result
+         */
+        public static RenderBufferedImage renderImage(BufferedImage image, String contentType) {
+            return new RenderBufferedImage(image, contentType);
+        }
+
+        /**
+         * alias of {@link #renderImage(BufferedImage, String)}
+         */
+        public static RenderBufferedImage image(BufferedImage image, String contentType) {
+            return renderImage(image, contentType);
+        }
+
+        /**
+         * Returns a {@link RenderBufferedImage} result wth image and format specified.
+         * @param image
+         *      the image
+         * @param format
+         *      the format
+         * @return the result
+         */
+        public static RenderBufferedImage renderImage(BufferedImage image, H.Format format) {
+            return new RenderBufferedImage(image, format.contentType());
+        }
+
+        /**
+         * alias of {@link #renderImage(BufferedImage, H.Format)}
+         */
+        public static RenderBufferedImage image(BufferedImage image, H.Format format) {
+            return renderImage(image, format);
+        }
+
+        /**
          * Returns a {@link RenderBinary} result with a URL.
          *
          * The result will render the binary using "attachment" content disposition.
@@ -1779,6 +1912,9 @@ public @interface Controller {
             }
             Class vCls = v.getClass();
             boolean shouldUseToString = $$.shouldUseToString(vCls);
+            if (accept == H.Format.HTML && !shouldUseToString) {
+                requireJSON = true;
+            }
             if ($.isSimpleType(vCls) || shouldUseToString) {
                 boolean isArray = vCls.isArray();
                 return inferPrimitiveResult(v, context, requireJSON, requireXML, isArray, shouldUseToString);
@@ -1812,6 +1948,7 @@ public @interface Controller {
                     return RenderCSV.of(status, v, propertySpec, context);
                 } else {
                     boolean isArray = vCls.isArray();
+                    PropertySpec.MetaInfo.withCurrent(meta, context);
                     return inferPrimitiveResult(v, context, false, requireXML, isArray, shouldUseToString);
                 }
             }

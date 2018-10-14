@@ -26,6 +26,8 @@ import static org.osgl.http.H.Header.Names.CACHE_CONTROL;
 import act.Act;
 import act.ActResponse;
 import act.app.ActionContext;
+import act.app.App;
+import act.app.event.SysEventId;
 import act.conf.AppConfig;
 import act.controller.ParamNames;
 import act.handler.RequestHandler;
@@ -33,13 +35,9 @@ import act.handler.builtin.controller.FastRequestHandler;
 import org.osgl.$;
 import org.osgl.http.H;
 import org.osgl.mvc.result.NotFound;
-import org.osgl.util.E;
-import org.osgl.util.IO;
-import org.osgl.util.S;
+import org.osgl.util.*;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.net.URL;
 import java.nio.ByteBuffer;
 import java.util.*;
@@ -56,6 +54,7 @@ public class ResourceGetter extends FastRequestHandler {
 
     private FastRequestHandler delegate;
 
+    private App app;
     private String base;
     private URL baseUrl;
     private int preloadSizeLimit;
@@ -77,14 +76,15 @@ public class ResourceGetter extends FastRequestHandler {
 
     public ResourceGetter(String base) {
         E.illegalArgumentIf(S.blank(base), "empty resource string encountered");
-        String path = S.ensureStartsWith(base, SEP);
+        String path = base.charAt(0) == SEP ? base.substring(1) : base;
         this.base = path;
-        this.baseUrl = FileGetter.class.getResource(path);
+        this.app = Act.app();
+        this.baseUrl = app.getResource(path);
         this.delegate = verifyBase(this.baseUrl, base);
         if (null == delegate) {
             this.isFolder = isFolder(this.baseUrl, path);
             if (!this.isFolder && "file".equals(baseUrl.getProtocol())) {
-                Act.jobManager().beforeAppStart(new Runnable() {
+                Act.jobManager().on(SysEventId.START, "ResourceGetter[" + base + "]:preloadCache", new Runnable() {
                     @Override
                     public void run() {
                         preloadCache();
@@ -205,7 +205,7 @@ public class ResourceGetter extends FastRequestHandler {
                         synchronized (this) {
                             if (null == indexHandler) {
                                 loadPath = S.pathConcat(base, SEP, "index.html");
-                                target = FileGetter.class.getResource(loadPath);
+                                target = app.getResource(loadPath);
                             }
                             indexHandler = null == target ? AlwaysForbidden.INSTANCE : new FixedResourceGetter(loadPath);
                         }
@@ -215,7 +215,7 @@ public class ResourceGetter extends FastRequestHandler {
                 }
             } else {
                 loadPath = S.pathConcat(base, SEP, path);
-                target = FileGetter.class.getResource(loadPath);
+                target = app.getResource(loadPath);
                 if (null == target) {
                     throw NotFound.get();
                 }
@@ -308,7 +308,7 @@ public class ResourceGetter extends FastRequestHandler {
         }
         if (isFolder(target, path)) {
             String indexPath = S.pathConcat(path, SEP, "index.html");
-            URL indexTarget = ResourceGetter.class.getResource(indexPath);
+            URL indexTarget = app.getResource(indexPath);
             if (null != indexTarget) {
                 folderHandler = exists(indexTarget, indexPath) ? new FixedResourceGetter(indexPath) : AlwaysForbidden.INSTANCE;
                 subFolderIndexHandlers.putIfAbsent(path, folderHandler);
@@ -328,7 +328,7 @@ public class ResourceGetter extends FastRequestHandler {
             if (path.endsWith("/")) {
                 return true;
             }
-            URL url = FileGetter.class.getResource(S.ensureEndsWith(path, "/"));
+            URL url = app.getResource(S.ensureEndsWith(path, "/"));
             return null != url;
         }
         return false;
@@ -340,7 +340,7 @@ public class ResourceGetter extends FastRequestHandler {
             return file.exists();
         }
         if ("jar".equals(target.getProtocol())) {
-            URL url = FileGetter.class.getResource(path);
+            URL url = app.getResource(path);
             return null != url;
         }
         return false;

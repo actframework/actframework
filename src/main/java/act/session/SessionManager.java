@@ -22,16 +22,14 @@ package act.session;
 
 import act.app.ActionContext;
 import act.conf.AppConfig;
-import act.util.DestroyableBase;
+import act.util.LogSupportedDestroyableBase;
 import org.osgl.cache.CacheService;
 import org.osgl.http.H;
 
-import javax.inject.Inject;
-import javax.inject.Named;
-import javax.inject.Singleton;
+import javax.inject.*;
 
 @Singleton
-public class SessionManager extends DestroyableBase {
+public class SessionManager extends LogSupportedDestroyableBase {
 
     private SessionCodec codec;
     private SessionMapper mapper;

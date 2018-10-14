@@ -40,6 +40,7 @@ public class RequestSpec implements InteractionPart {
 
     public String parent;
     public H.Method method;
+    public int port;
     public String url;
     // shortcut for (GET, url) pair
     public String get;
@@ -92,21 +93,24 @@ public class RequestSpec implements InteractionPart {
         if (S.notBlank(email)) {
             return;
         }
-        if (S.notBlank(get)) {
+        if (null != get) {
             method = H.Method.GET;
             url = get;
-        } else if (S.notBlank(post)) {
+        } else if (null != post) {
             method = H.Method.POST;
             url = post;
-        } else if (S.notBlank(put)) {
+        } else if (null != put) {
             method = H.Method.PUT;
             url = put;
-        } else if (S.notBlank(delete)) {
+        } else if (null != delete) {
             method = H.Method.DELETE;
             url = delete;
         }
         E.unexpectedIf(null == method, "method not specified in request spec of interaction[%s]", interaction);
         E.unexpectedIf(null == url, "url not specified in the request spec of interaction[%s]", interaction);
+        if (".".equals(url)) {
+            url = "";
+        }
     }
 
     public void markAsResolved() {

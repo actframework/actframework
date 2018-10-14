@@ -106,10 +106,10 @@ public class Router extends AppHolderBase<Router> {
             lookup = new RequestHandlerResolverBase() {
                 @Override
                 public RequestHandler resolve(String payload, App app) {
-                    if (S.eq(WsEndpoint.PSEUDO_METHOD, payload.toString())) {
+                    if (S.eq(WsEndpoint.PSEUDO_METHOD, payload)) {
                         return Act.network().createWebSocketConnectionHandler();
                     }
-                    return new RequestHandlerProxy(payload.toString(), app);
+                    return new RequestHandlerProxy(payload, app);
                 }
 
             };

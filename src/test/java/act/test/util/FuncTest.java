@@ -21,6 +21,8 @@ package act.test.util;
  */
 
 import act.test.func.Func;
+import org.joda.time.DateTime;
+import org.joda.time.LocalDate;
 import org.junit.Test;
 import org.osgl.util.C;
 import org.osgl.util.S;
@@ -174,6 +176,52 @@ public class FuncTest extends TestBase {
         long i = (Long) o;
         yes(i <= -10);
         yes(i > -14);
+    }
+
+    @Test
+    public void testToday() {
+        Func.Today func = new Func.Today();
+        Object obj = func.apply();
+        yes(obj instanceof LocalDate);
+        LocalDate funcToday = (LocalDate) obj;
+        eq(LocalDate.now(), funcToday);
+    }
+
+    @Test
+    public void testTomorrow() {
+        Func.Tomorrow func = new Func.Tomorrow();
+        Object obj = func.apply();
+        yes(obj instanceof LocalDate);
+        LocalDate funcToday = (LocalDate) obj;
+        eq(LocalDate.now().plusDays(1), funcToday);
+    }
+
+    @Test
+    public void testNow() {
+        Func.Now func = new Func.Now();
+        Object obj = func.apply();
+        yes(obj instanceof DateTime);
+        DateTime funcNow = (DateTime) obj;
+        yes((DateTime.now().getMillis() - funcNow.getMillis()) < 1000);
+    }
+
+    @Test
+    public void testNextMinute() {
+        Func.NextMinute func = new Func.NextMinute();
+        Object obj = func.apply();
+        yes(obj instanceof DateTime);
+        DateTime funcNow = (DateTime) obj;
+        yes((DateTime.now().plusMinutes(1).getMillis() - funcNow.getMillis()) < 1000);
+    }
+
+
+    @Test
+    public void testNextHour() {
+        Func.NextHour func = new Func.NextHour();
+        Object obj = func.apply();
+        yes(obj instanceof DateTime);
+        DateTime funcNow = (DateTime) obj;
+        yes((DateTime.now().plusHours(1).getMillis() - funcNow.getMillis()) < 1000);
     }
 
 }

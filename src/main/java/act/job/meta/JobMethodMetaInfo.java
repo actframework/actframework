@@ -27,8 +27,7 @@ import act.asm.Type;
 import act.event.meta.SimpleEventListenerMetaInfo;
 import act.sys.meta.InvokeType;
 import act.sys.meta.ReturnTypeInfo;
-import act.util.ClassNode;
-import act.util.DestroyableBase;
+import act.util.*;
 import org.osgl.$;
 import org.osgl.inject.BeanSpec;
 import org.osgl.util.E;
@@ -37,8 +36,12 @@ import org.osgl.util.S;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
-public class JobMethodMetaInfo extends DestroyableBase {
+public class JobMethodMetaInfo extends LogSupportedDestroyableBase {
+
+    private static final AtomicInteger jobIdCounter = new AtomicInteger(0);
+
     private String id;
     private String name;
     private InvokeType invokeType;
@@ -50,7 +53,7 @@ public class JobMethodMetaInfo extends DestroyableBase {
     public JobMethodMetaInfo(final JobClassMetaInfo clsInfo, final List<String> paramTypes) {
         this.clsInfo = clsInfo;
         final App app = Act.app();
-        app.jobManager().on(SysEventId.DEPENDENCY_INJECTOR_PROVISIONED, new Runnable() {
+        app.jobManager().on(SysEventId.DEPENDENCY_INJECTOR_PROVISIONED, "JobMethodMetaInfo:init-" + jobIdCounter.getAndIncrement(), new Runnable() {
             @Override
             public void run() {
                 $.Var<Method> var = $.var();

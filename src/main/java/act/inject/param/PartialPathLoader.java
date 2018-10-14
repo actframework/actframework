@@ -23,7 +23,7 @@ package act.inject.param;
 import act.controller.ParamNames;
 import act.util.ActContext;
 
-public class PartialPathLoader implements ParamValueLoader {
+public class PartialPathLoader extends ParamValueLoader.NonCacheable {
 
     private String bindName;
 

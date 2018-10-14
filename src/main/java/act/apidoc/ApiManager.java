@@ -89,6 +89,7 @@ public class ApiManager extends AppServiceBase<ApiManager> {
         app.router().addMapping(H.Method.GET, "/~/apibook/endpoints", new GetEndpointsHandler(this));
         app.router().addMapping(H.Method.GET, "/~/apibook/modules", new GetModulesHandler(this));
         ResourceGetter apidocHandler = new ResourceGetter("asset/~act/apibook/index.html");
+        app.router().addMapping(H.Method.GET, "/~/api", apidocHandler);
         app.router().addMapping(H.Method.GET, "/~/apibook", apidocHandler);
         app.router().addMapping(H.Method.GET, "/~/apidoc", apidocHandler);
     }

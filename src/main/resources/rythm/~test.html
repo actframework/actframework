@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 @import act.test.Scenario
 @import act.test.Interaction
-@args List<Scenario> scenarios
+@args List<Scenario> result
 <html>
 <head>
   <meta charset="utf-8">
@@ -56,10 +56,9 @@
   @render(head)
 </head>
 <body>
-@args act.app.App app
 <h1>Test Report</h1>
-<div class="version">@(app.name().capFirst())-@(app.version().getVersion())</div>
-@for(Scenario scenario: scenarios) {
+<div class="version">@(_app.name().capFirst())-@(_app.version().getVersion())</div>
+@for(Scenario scenario: result) {
 <h4>
 @if(scenario.description) {
   @scenario.description

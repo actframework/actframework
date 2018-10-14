@@ -69,6 +69,7 @@ public class AutoConfigPluginTest extends ActTestBase {
         resolverManager = new StringValueResolverManager(mockApp);
         when(mockApp.resolverManager()).thenReturn(resolverManager);
         injector = new GenieInjector(mockApp);
+        injector.unlock();
         when(mockApp.injector()).thenReturn(injector);
 
         GenericPluginManager pluginManager = mock(GenericPluginManager.class);

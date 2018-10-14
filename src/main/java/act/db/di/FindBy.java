@@ -23,12 +23,15 @@ package act.db.di;
 import act.Act;
 import act.app.ActionContext;
 import act.app.App;
+import act.cli.CliContext;
 import act.db.Dao;
+import act.inject.SessionVariable;
 import act.inject.param.JsonDto;
 import act.inject.param.ParamValueLoaderService;
 import act.util.ActContext;
 import act.view.ActBadRequest;
 import act.view.ActNotFound;
+import org.osgl.$;
 import org.osgl.inject.ValueLoader;
 import org.osgl.util.*;
 
@@ -47,6 +50,8 @@ public class FindBy extends ValueLoader.Base {
     private Class<?> rawType;
     private boolean notNull;
     private String onetimeValue;
+    private boolean isSessionVariable;
+    private String sessionVarName;
 
     @Override
     protected void initialized() {
@@ -72,6 +77,14 @@ public class FindBy extends ValueLoader.Base {
                 queryFieldName = requestParamName;
             }
         }
+        SessionVariable sessionVariable = spec.getAnnotation(SessionVariable.class);
+        if (null != sessionVariable) {
+            isSessionVariable = true;
+            sessionVarName = sessionVariable.value();
+            if (S.blank(sessionVarName)) {
+                sessionVarName = requestParamName;
+            }
+        }
     }
 
     public void setOnetimeValue(String s) {
@@ -82,7 +95,7 @@ public class FindBy extends ValueLoader.Base {
     public Object get() {
         ActContext ctx = ActContext.Base.currentContext();
         E.illegalStateIf(null == ctx);
-        String value = null == onetimeValue ? resolve(requestParamName, ctx) : onetimeValue;
+        String value = rawValue(ctx);
         onetimeValue = null;
         if (S.empty(value)) {
             if (findOne) {
@@ -122,6 +135,23 @@ public class FindBy extends ValueLoader.Base {
                 return col;
             }
         }
+    }
+
+    private String rawValue(ActContext ctx) {
+        if (null != onetimeValue) {
+            return onetimeValue;
+        }
+        if (isSessionVariable) {
+            if (ctx instanceof ActionContext) {
+                ActionContext actionContext = $.cast(ctx);
+                return actionContext.session(sessionVarName);
+            } else if (ctx instanceof CliContext) {
+                CliContext cliContext = $.cast(ctx);
+                return cliContext.session(sessionVarName);
+            }
+            throw E.unsupport();
+        }
+        return resolve(requestParamName, ctx);
     }
 
     private Object ensureNotNull(Object obj, String value, ActContext<?> ctx) {

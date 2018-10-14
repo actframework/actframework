@@ -1,0 +1,15 @@
+Scenario(GH871):
+  description: "[871] Test: evaluation complex expression refer to cached object issue"
+  interactions:
+    - description: setup
+      request:
+        get: 871/setup
+      cache:
+        bar: bar
+    - description: verify
+      request:
+        get: 871
+      response:
+        json:
+          bar:
+            id: ${bar.id}

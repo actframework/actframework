@@ -52,7 +52,7 @@ public class JobAnnotationProcessor extends AppHolderBase<JobAnnotationProcessor
             LOGGER.trace("register job[%s] on anno[%s] with arg[%s]", method, anno, info);
         }
         if (isAbstract(method)) {
-            app().jobManager().on(SysEventId.SINGLETON_PROVISIONED, new Runnable() {
+            app().jobManager().on(SysEventId.SINGLETON_PROVISIONED, "JobAnnotationProcessor:registerJobMethods:" + method, new Runnable() {
                 @Override
                 public void run() {
                     List<JobMethodMetaInfo> list = method.extendedJobMethodMetaInfoList(app());

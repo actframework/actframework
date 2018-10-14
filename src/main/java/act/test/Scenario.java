@@ -110,7 +110,17 @@ public class Scenario implements ScenarioPart {
                     builder.addHeader(headerName, headerVal);
                 }
             }
-            String url = S.concat("http://localhost:", port, S.ensure(processStringSubstitution(requestSpec.url)).startWith("/"));
+            String reqUrl = requestSpec.url;
+            if (S.notBlank(urlContext) && !reqUrl.startsWith("/")) {
+                reqUrl = S.pathConcat(urlContext, '/', reqUrl);
+            }
+            String url;
+            if (!reqUrl.startsWith("http")) {
+                int portx = 0 != requestSpec.port ? requestSpec.port : port;
+                url = S.concat("http://localhost:", portx, S.ensure(processStringSubstitution(reqUrl)).startWith("/"));
+            } else {
+                url = processStringSubstitution(reqUrl);
+            }
             boolean hasParams = !requestSpec.params.isEmpty();
             if (hasParams) {
                 processParamSubstitution(requestSpec.params);
@@ -243,6 +253,8 @@ public class Scenario implements ScenarioPart {
     public String errorMessage;
     public Throwable cause;
     public boolean clearFixtures = true;
+    public String urlContext;
+    public String partition = "DEFAULT";
 
     $.Var<Object> lastData = $.var();
     $.Var<Headers> lastHeaders = $.var();
@@ -318,6 +330,7 @@ public class Scenario implements ScenarioPart {
         }
         String key = S.underscore(expr);
         Object o = constants.get(key);
+        o = null == o ? cache.get(key) : o;
         return null == o ? Test.constant(key) : o;
     }
 
@@ -919,6 +932,17 @@ public class Scenario implements ScenarioPart {
         Object o = cache.get(key);
         if (null != o) {
             return o;
+        }
+        if (key.contains(".")) {
+            String firstLevel = S.cut(key).beforeFirst(".");
+            Object firstLevelVal = cache.get(firstLevel);
+            if (null != firstLevelVal) {
+                try {
+                    return $.getProperty(firstLevelVal, S.cut(key).afterFirst("."));
+                } catch (Exception e) {
+                    // ignore
+                }
+            }
         }
         key = S.underscore(key);
         o = constants.get(key);

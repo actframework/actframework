@@ -2,10 +2,9 @@ package ghissues;
 
 import act.controller.annotation.UrlContext;
 import act.util.JsonView;
-import act.util.LogSupport;
 import org.osgl.mvc.annotation.PostAction;
 
-public abstract class Gh819 extends LogSupport {
+public abstract class Gh819 extends BaseController {
 
     public static class Foo {
         public String name;

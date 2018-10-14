@@ -20,20 +20,17 @@ package act.job.meta;
  * #L%
  */
 
-import act.asm.Type;
-import act.util.AsmTypes;
-import act.util.DestroyableBase;
-
-import javax.enterprise.context.ApplicationScoped;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import static act.Destroyable.Util.destroyAll;
 
+import act.asm.Type;
+import act.util.AsmTypes;
+import act.util.LogSupportedDestroyableBase;
+
+import java.util.*;
+import javax.enterprise.context.ApplicationScoped;
+
 @ApplicationScoped
-public class JobClassMetaInfoManager extends DestroyableBase {
+public class JobClassMetaInfoManager extends LogSupportedDestroyableBase {
 
     private Map<String, JobClassMetaInfo> jobs = new HashMap<>();
     private Map<Type, List<JobClassMetaInfo>> subTypeInfo = new HashMap<>();
@@ -72,7 +69,7 @@ public class JobClassMetaInfoManager extends DestroyableBase {
         if (null != subTypes) {
             subTypeInfo.remove(metaInfo.type());
         }
-        logger.trace("Job meta info registered for: %s", className);
+        trace("Job meta info registered for: %s", className);
     }
 
     public JobClassMetaInfo jobMetaInfo(String className) {
