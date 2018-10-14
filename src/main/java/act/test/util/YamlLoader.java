@@ -93,7 +93,7 @@ public class YamlLoader extends LogSupport {
      * @param modelPackage
      * @param modelPackages
      */
-    protected YamlLoader(String modelPackage, String... modelPackages) {
+    public YamlLoader(String modelPackage, String... modelPackages) {
         resetModelPackages();
         loadConfig();
         addModelPackages(modelPackage, modelPackages);
