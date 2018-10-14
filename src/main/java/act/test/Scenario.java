@@ -254,6 +254,7 @@ public class Scenario implements ScenarioPart {
     public Throwable cause;
     public boolean clearFixtures = true;
     public String urlContext;
+    public String partition = "DEFAULT";
 
     $.Var<Object> lastData = $.var();
     $.Var<Headers> lastHeaders = $.var();
