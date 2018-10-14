@@ -22,6 +22,7 @@ package act.db;
 
 import act.data.annotation.ParamBindingAnnotation;
 import act.db.di.FindBy;
+import org.osgl.inject.annotation.InjectTag;
 import org.osgl.inject.annotation.LoadValue;
 
 import java.lang.annotation.ElementType;
@@ -35,6 +36,7 @@ import java.lang.annotation.Target;
  * {@link act.util.ActContext}
  */
 @LoadValue(FindBy.class)
+@InjectTag
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.PARAMETER, ElementType.FIELD})
 @ParamBindingAnnotation

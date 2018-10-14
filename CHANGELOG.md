@@ -1,6 +1,8 @@
 # ActFramework Change Log
 
 **1.8.8**
+* Add `SysEventId.POST_STARTED` #882
+* Support opt-out jars from managed classloader by specifying file name prefix in `act.jar.black.list` #881
 * No need to trigger hotreload when testing file changes #880
 * @PropertySpec could not effect entity in collection #878
 * It randomly found request handler parameters are not enhanced with `@Named` annotation #879

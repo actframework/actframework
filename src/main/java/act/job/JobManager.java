@@ -476,7 +476,7 @@ public class JobManager extends AppServiceBase<JobManager> {
             super(id, JobManager.this, callable);
         }
 
-        ContextualJob(String id, final Runnable runnable) {
+        ContextualJob(final String id, final Runnable runnable) {
             super(id, JobManager.this, new $.F0() {
                 @Override
                 public Object apply() throws NotAppliedException, $.Break {

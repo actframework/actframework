@@ -25,25 +25,17 @@ import act.asm.ClassReader;
 import act.asm.ClassWriter;
 import act.boot.app.FullStackAppBootstrapClassLoader;
 import act.boot.server.ServerBootstrapClassLoader;
-import act.util.ActClassLoader;
-import act.util.ByteCodeVisitor;
-import act.util.ClassInfoRepository;
-import act.util.ClassNode;
+import act.util.*;
 import org.osgl.$;
 import org.osgl.logging.L;
 import org.osgl.logging.Logger;
-import org.osgl.util.C;
-import org.osgl.util.E;
-import org.osgl.util.IO;
-import org.osgl.util.S;
+import org.osgl.util.*;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.security.ProtectionDomain;
-import java.util.Enumeration;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 /**
  * Base class for Act class loaders

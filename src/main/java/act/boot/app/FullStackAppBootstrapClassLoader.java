@@ -53,16 +53,16 @@ public class FullStackAppBootstrapClassLoader extends BootstrapClassLoader imple
      * The default value is defined in {@link #DEF_JAR_IGNORE}
      * ``
      */
-    private static final String KEY_SYS_JAR_IGNORE = "act.jar.sys.ignore";
+    public static final String KEY_SYS_JAR_IGNORE = "act.jar.sys.ignore";
 
     /**
      * the {@link System#getProperty(String) system property} key to get
      * the ignored jar file name prefix; multiple prefixes can be specified
      * with comma `,`
      */
-    private static final String KEY_APP_JAR_IGNORE = "act.jar.app.ignore";
+    public static final String KEY_APP_JAR_IGNORE = "act.jar.app.ignore";
 
-    private static final String DEF_JAR_IGNORE = "act-asm,activation-,antlr," +
+    public static final String DEF_JAR_IGNORE = "act-asm,activation-,antlr," +
             "asm-,byte-buddy,byte-buddy-agent," +
             "cdi-api,cglib,commons-,core-,curvesapi," +
             "debugger-agent,ecj-,guava-,hibernate-," +
@@ -83,7 +83,7 @@ public class FullStackAppBootstrapClassLoader extends BootstrapClassLoader imple
     private List<Class<?>> actClasses = new ArrayList<>();
     private List<Class<?>> pluginClasses = new ArrayList<>();
     private String lineSeparator = OS.get().lineSeparator();
-    private static final $.Predicate<File> jarFilter = jarFilter();
+    private final $.Predicate<File> jarFilter = jarFilter();
 
     public FullStackAppBootstrapClassLoader(ClassLoader parent) {
         super(parent);
@@ -145,7 +145,8 @@ public class FullStackAppBootstrapClassLoader extends BootstrapClassLoader imple
         return jarsChecksum;
     }
 
-    private static $.Predicate<File> jarFilter() {
+    private $.Predicate<File> jarFilter() {
+        Set<String> set = jarBlackList();
         String ignores = System.getProperty(KEY_SYS_JAR_IGNORE);
         if (null == ignores) {
             ignores = DEF_JAR_IGNORE;
@@ -154,12 +155,13 @@ public class FullStackAppBootstrapClassLoader extends BootstrapClassLoader imple
         if (null != appIgnores) {
             ignores += ("," + appIgnores);
         }
-        final String[] sa = ignores.split(",");
+        set.addAll(S.fastSplit(ignores, ","));
+        final Set<String> blackList = set;
         return new $.Predicate<File>() {
             @Override
             public boolean test(File file) {
                 String name = file.getName();
-                for (String prefix : sa) {
+                for (String prefix : blackList) {
                     if (S.notBlank(prefix) && name.startsWith(prefix)) {
                         return false;
                     }
@@ -169,14 +171,14 @@ public class FullStackAppBootstrapClassLoader extends BootstrapClassLoader imple
         };
     }
 
-    private static List<File> filterJars(List<File> jars) {
+    private List<File> filterJars(List<File> jars) {
         if (null == jarFilter) {
             return null;
         }
         return C.list(jars).filter(jarFilter);
     }
 
-    public static List<File> jars(ClassLoader cl) {
+    public List<File> jars(ClassLoader cl) {
         List<File> jars = null;
         C.List<String> path = C.listOf(System.getProperty(KEY_CLASSPATH).split(File.pathSeparator));
         if (path.size() < 10) {

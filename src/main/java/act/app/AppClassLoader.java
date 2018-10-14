@@ -53,9 +53,7 @@ import org.osgl.$;
 import org.osgl.exception.NotAppliedException;
 import org.osgl.logging.L;
 import org.osgl.logging.Logger;
-import org.osgl.util.E;
-import org.osgl.util.IO;
-import org.osgl.util.S;
+import org.osgl.util.*;
 
 import java.io.*;
 import java.lang.annotation.Annotation;
@@ -382,7 +380,11 @@ public class AppClassLoader
         final $.Function<String, Boolean> ignoredClassNames = app().config().appClassTester().negate();
         Jars.F.JarEntryVisitor classNameIndexBuilder = Jars.F.classNameIndexBuilder(bytecodeIdx, ignoredClassNames);
         Jars.F.JarEntryVisitor confIndexBuilder = Jars.F.appConfigFileIndexBuilder(jarConf);
-        List<File> jars = FullStackAppBootstrapClassLoader.jars(AppClassLoader.class.getClassLoader());
+        ClassLoader parent = getParent();
+        List<File> jars = C.list();
+        if (parent instanceof FullStackAppBootstrapClassLoader) {
+            jars = ((FullStackAppBootstrapClassLoader) parent).jars(AppClassLoader.class.getClassLoader());
+        }
         Set<String> blackList = app().jarFileBlackList();
         Set<String> blackList2 = app().jarFileBlackList2();
         for (File jar : jars) {

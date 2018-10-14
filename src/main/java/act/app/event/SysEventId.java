@@ -229,6 +229,15 @@ public enum SysEventId {
         }
     },
     /**
+     * Mark a point after all {@link #POST_START} jobs has finished
+     */
+    POST_STARTED() {
+        @Override
+        public SysEvent of(App app) {
+            return new AppPostStarted(app);
+        }
+    },
+    /**
      * Mark Act instance fully started.
      *
      * This main difference between this event and {@link #START} is

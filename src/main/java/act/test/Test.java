@@ -208,17 +208,12 @@ public class Test extends LogSupport {
     public void run(final App app) {
         boolean run = $.bool(app.config().get("test.run")) || $.bool(app.config().get("e2e.run")) || "test".equalsIgnoreCase(Act.profile()) || "e2e".equalsIgnoreCase(Act.profile());
         if (run) {
-            app.jobManager().post(SysEventId.POST_START, new Runnable() {
+            app.jobManager().post(SysEventId.POST_STARTED, new Runnable() {
                 @Override
                 public void run() {
-                    app.jobManager().post(SysEventId.DB_SVC_LOADED, new Runnable() {
-                        @Override
-                        public void run() {
-                            Test.this.run(app, null, true);
-                        }
-                    }, true);
+                    Test.this.run(app, null, true);
                 }
-            }, true);
+            });
         }
     }
 

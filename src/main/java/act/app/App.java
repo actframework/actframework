@@ -770,6 +770,12 @@ public class App extends LogSupportedDestroyableBase {
                         hasStarted = true;
                         daemonKeeper();
                         emit(POST_START);
+                        jobManager.post(SysEventId.DB_SVC_LOADED, new Runnable() {
+                            @Override
+                            public void run() {
+                                emit(POST_STARTED);
+                            }
+                        }, true);
                     }
                 };
                 if (!dbServiceManager().hasDbService() || eventEmitted(DB_SVC_PROVISIONED)) {
