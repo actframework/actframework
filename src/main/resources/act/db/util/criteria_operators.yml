@@ -98,7 +98,6 @@
 
 - name: notLike
   aliases:
-    - different
     - unlike
     - "!~"
   cardinality: 1
