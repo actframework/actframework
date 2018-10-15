@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 **1.8.8**
+* CSRF - the XSRF token cookie shall not be set as httpOnly #883
 * Test - partition scenarios #877
 * Add `SysEventId.POST_STARTED` #882
 * Support opt-out jars from managed classloader by specifying file name prefix in `act.jar.black.list` #881
