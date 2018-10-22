@@ -23,6 +23,7 @@ package act.db;
 import act.app.security.SecurityContext;
 import act.inject.param.NoBind;
 import act.util.ActContext;
+import act.util.LogSupport;
 import org.osgl.$;
 import org.osgl.util.C;
 import org.osgl.util.Generics;
@@ -36,6 +37,7 @@ import javax.enterprise.context.ApplicationScoped;
 //@InheritedStateless
 @NoBind
 public abstract class DaoBase<ID_TYPE, MODEL_TYPE, QUERY_TYPE extends Dao.Query<MODEL_TYPE, QUERY_TYPE>>
+        extends LogSupport
         implements Dao<ID_TYPE, MODEL_TYPE, QUERY_TYPE> {
 
     private ActContext appCtx;

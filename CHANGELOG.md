@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 **1.8.8**
+* make jquery extension library process xsrf token cookie automatically #884
 * CSRF - the XSRF token cookie shall not be set as httpOnly #883
 * Test - partition scenarios #877
 * Add `SysEventId.POST_STARTED` #882

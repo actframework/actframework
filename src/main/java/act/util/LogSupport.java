@@ -37,6 +37,7 @@ public class LogSupport {
     public static final String TILD_LINE = S.times('~', 80);
 
     @NoBind
+    @Stateless
     protected final transient Logger logger;
 
     public LogSupport() {
