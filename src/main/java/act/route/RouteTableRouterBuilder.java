@@ -25,10 +25,7 @@ import act.app.App;
 import act.app.event.SysEventId;
 import org.osgl.http.H;
 import org.osgl.http.util.Path;
-import org.osgl.util.C;
-import org.osgl.util.E;
-import org.osgl.util.S;
-import org.osgl.util.Unsafe;
+import org.osgl.util.*;
 
 import java.util.Iterator;
 import java.util.List;
@@ -156,6 +153,9 @@ public class RouteTableRouterBuilder implements RouterBuilder {
         }
         if (itr.hasNext()) {
             path = itr.next();
+            if (path.contains("%")) {
+                path = Codec.decodeUrl(path);
+            }
         } else {
             E.illegalArgumentIf(true, UNKNOWN);
         }
