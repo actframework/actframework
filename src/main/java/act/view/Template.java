@@ -52,4 +52,6 @@ public interface Template {
     String render(ActionContext context);
 
     String render(MailerContext context);
+
+    boolean supportCache();
 }

@@ -252,7 +252,7 @@ public class ViewManager extends LogSupportedDestroyableBase {
                 }
             }
         }
-        if (null != template) {
+        if (null != template && template.supportCache()) {
             context.cacheTemplate(template);
             cache(path, template);
         }
