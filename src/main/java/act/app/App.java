@@ -358,12 +358,9 @@ public class App extends LogSupportedDestroyableBase {
         return layoutDirs(ProjectLayout.F.TST_LIB.curry(layout()));
     }
 
-    public List<File> allSourceDirs(boolean requireTestProfile) {
+    public List<File> allSourceDirs() {
         List<File> dirs = new ArrayList<>();
         dirs.addAll(sourceDirs());
-        if (!requireTestProfile || "test".equals(Act.profile())) {
-            dirs.addAll(testSourceDirs());
-        }
         return dirs;
     }
 

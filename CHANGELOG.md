@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 **1.8.8**
+* Caused by: act.app.CompilationException: TestBase cannot be resolved to a type #889
 * Route table: support whitespace in URL path #887
 * `context.renderArg(key, val)` not cleared in prod mode #886
 * make jquery extension library process xsrf token cookie automatically #884
