@@ -69,6 +69,7 @@ import act.plugin.PrincipalProvider;
 import act.route.*;
 import act.session.CookieSessionMapper;
 import act.session.SessionManager;
+import act.test.Test;
 import act.util.*;
 import act.validation.Password;
 import act.view.ActErrorResult;
@@ -657,7 +658,7 @@ public class App extends LogSupportedDestroyableBase {
             emit(ROUTER_INITIALIZED);
             loadRoutes();
             emit(ROUTER_LOADED);
-            initApiManager();
+            initApiManager(this);
             initSampleDataProviderManager();
             initHttpClientService();
             initCaptchaPluginManager();
@@ -1481,7 +1482,10 @@ public class App extends LogSupportedDestroyableBase {
         }
     }
 
-    private void initApiManager() {
+    private void initApiManager(App app) {
+        if (Act.isProd() || Test.shallRunAutomatedTest(app)) {
+            return;
+        }
         apiManager = new ApiManager(this);
     }
 

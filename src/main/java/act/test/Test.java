@@ -206,7 +206,7 @@ public class Test extends LogSupport {
     // 3. DB_SVC_LOADED
     @OnSysEvent(SysEventId.ACT_START)
     public void run(final App app) {
-        boolean run = $.bool(app.config().get("test.run")) || $.bool(app.config().get("e2e.run")) || "test".equalsIgnoreCase(Act.profile()) || "e2e".equalsIgnoreCase(Act.profile());
+        boolean run = shallRunAutomatedTest(app);
         if (run) {
             app.jobManager().post(SysEventId.POST_STARTED, new Runnable() {
                 @Override
@@ -215,6 +215,10 @@ public class Test extends LogSupport {
                 }
             });
         }
+    }
+
+    public static boolean shallRunAutomatedTest(App app) {
+        return $.bool(app.config().get("test.run")) || $.bool(app.config().get("e2e.run")) || "test".equalsIgnoreCase(Act.profile()) || "e2e".equalsIgnoreCase(Act.profile());
     }
 
     public List<Scenario> run(App app, Keyword testId, boolean shutdownApp) {
