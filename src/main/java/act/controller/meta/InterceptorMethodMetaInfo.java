@@ -134,7 +134,7 @@ public class InterceptorMethodMetaInfo extends HandlerMethodMetaInfo<Interceptor
     }
 
     public final InterceptorMethodMetaInfo extended(ControllerClassMetaInfo clsInfo) {
-        if (clsInfo.isMyAncestor(this.classInfo()) && !this.isStatic()) {
+        if (clsInfo.isMyAncestor(this.classInfo()) && !this.isStatic() && !clsInfo.isAbstract()) {
             return doExtend(clsInfo);
         } else {
             return this;
