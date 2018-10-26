@@ -48,6 +48,7 @@ import org.osgl.util.*;
 import java.lang.reflect.Type;
 import java.net.URL;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.inject.Inject;
 
@@ -206,12 +207,26 @@ public class Test extends LogSupport {
     // 3. DB_SVC_LOADED
     @OnSysEvent(SysEventId.ACT_START)
     public void run(final App app) {
+        Object o = app.config().get("test.delay");
+        final $.Var<Long> delay = $.var(0l);
+        if (null != o) {
+            delay.set($.convert(o).to(Long.class));
+        }
         boolean run = shallRunAutomatedTest(app);
         if (run) {
             app.jobManager().post(SysEventId.POST_STARTED, new Runnable() {
                 @Override
                 public void run() {
-                    Test.this.run(app, null, true);
+                    if (delay.get() > 0l) {
+                        app.jobManager().delay(new Runnable() {
+                            @Override
+                            public void run() {
+                                Test.this.run(app, null, true);
+                            }
+                        }, delay.get(), TimeUnit.SECONDS);
+                    } else {
+                        Test.this.run(app, null, true);
+                    }
                 }
             });
         }

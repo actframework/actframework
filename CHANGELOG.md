@@ -1,6 +1,8 @@
 # ActFramework Change Log
 
 **1.8.8**
+* Allow app to delay automate testing #894
+* Add `removeTag`, `reTag` method to `WebSocketContext` #892
 * Stop loading API manager when running in `test` profile or `prod` mode #890
 * Caused by: act.app.CompilationException: TestBase cannot be resolved to a type #889
 * Route table: support whitespace in URL path #887
