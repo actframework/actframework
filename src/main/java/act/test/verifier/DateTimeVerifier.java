@@ -23,15 +23,13 @@ package act.test.verifier;
 import act.Act;
 import act.app.App;
 import act.conf.AppConfig;
-import org.joda.time.LocalDate;
-import org.joda.time.ReadableDateTime;
-import org.joda.time.ReadableInstant;
+import org.joda.time.*;
+import org.joda.time.format.*;
 import org.osgl.$;
 import org.osgl.util.E;
 import org.osgl.util.S;
 
 import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 
 public abstract class DateTimeVerifier extends Verifier<DateTimeVerifier> {
@@ -55,7 +53,9 @@ public abstract class DateTimeVerifier extends Verifier<DateTimeVerifier> {
     protected abstract boolean verify(long expected, long found);
 
     private Long convert(Object value) {
-        if (value instanceof Date) {
+        if (value instanceof Long) {
+            return (Long) value;
+        } else if (value instanceof Date) {
             return ((Date) value).getTime();
         } else if (value instanceof ReadableDateTime) {
             return ((ReadableDateTime) value).getMillis();
@@ -69,6 +69,9 @@ public abstract class DateTimeVerifier extends Verifier<DateTimeVerifier> {
     }
 
     private long convert(String param) {
+        if (S.isInt(param)) {
+            return Long.parseLong(param);
+        }
         App app = Act.app();
         if (null != app) {
             AppConfig config = app.config();
@@ -91,7 +94,7 @@ public abstract class DateTimeVerifier extends Verifier<DateTimeVerifier> {
     }
 
     public static Long tryWithDefaultDateTimeFormats(String s) {
-        return tryWithFormat(s, "yyyy-MM-dd hh:mm:ss", "yyyy-MM-dd HH:mm:ss",
+        return tryWithFormat(s, "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'","yyyy-MM-dd hh:mm:ss", "yyyy-MM-dd HH:mm:ss",
                 "yyyy-MM-dd",
                 "yyyyMMdd HH:mm:ss",
                 "yyyyMMdd",
@@ -101,12 +104,20 @@ public abstract class DateTimeVerifier extends Verifier<DateTimeVerifier> {
     }
 
     private static Long tryWithFormat(String s, String pattern, String... otherPatterns) {
-        Long l = tryWithFormat(s, new SimpleDateFormat(pattern));
+        DateTimeFormatter format = new DateTimeFormatterBuilder()
+                .appendPattern("yyyy-MM-dd'T'HH:mm:ss.SSS")
+                .appendTimeZoneOffset("Z", true, 2, 4)
+                .toFormatter();
+        Long l = tryWithFormat(s, format);
+        if (null != l) {
+            return l;
+        }
+        l = tryWithFormat(s, DateTimeFormat.forPattern(pattern));
         if (null != l) {
             return l;
         }
         for (String op : otherPatterns) {
-            l = tryWithFormat(s, new SimpleDateFormat(op));
+            l = tryWithFormat(s, DateTimeFormat.forPattern(op));
             if (null != l) {
                 return l;
             }
@@ -114,10 +125,19 @@ public abstract class DateTimeVerifier extends Verifier<DateTimeVerifier> {
         return null;
     }
 
-    private static Long tryWithFormat(String s, DateFormat format) {
+    private static Long tryWithFormat(String s, DateFormat pattern) {
         try {
-            Date date = format.parse(s);
-            return date.getTime();
+            Date dt = pattern.parse(s);
+            return dt.getTime();
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    private static Long tryWithFormat(String s, DateTimeFormatter format) {
+        try {
+            DateTime dt = format.parseDateTime(s);
+            return dt.getMillis();
         } catch (Exception e) {
             return null;
         }
