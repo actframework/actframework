@@ -152,8 +152,12 @@ public class NetworkHandler extends LogSupportedDestroyableBase {
                     timer = metric.startTimer(key);
                 }
                 EventBus eventBus = app.eventBus();
-                final boolean skipEvents = ctx.skipEvents();
+                // need to set ActionContext.current before calling ctx.skipEvents() as the later
+                //      one will call into ReflectedHandlerInvoker.init() will in turn try to
+                //      set up the parameter spec where ActionContext.current is required.
+                //      see ReflectedInvokerHelper.requestHandlerMethodParamAnnotations(method)
                 ctx.saveLocal();
+                final boolean skipEvents = ctx.skipEvents();
                 try {
                     if (!skipEvents) {
                         eventBus.emit(new PreHandle(ctx));
