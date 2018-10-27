@@ -1,6 +1,7 @@
 # ActFramework Change Log
 
 **1.8.8**
+* `JPAContext` not closed when Error response is generated #895
 * Allow app to delay automate testing #894
 * Add `removeTag`, `reTag` method to `WebSocketContext` #892
 * Stop loading API manager when running in `test` profile or `prod` mode #890

@@ -26,7 +26,7 @@ import act.apidoc.Description;
 import act.app.ActionContext;
 import act.app.App;
 import act.cli.Command;
-import act.handler.NonBlock;
+import act.controller.ExpressController;
 import act.inject.param.NoBind;
 import act.sys.Env;
 import act.util.Banner;
@@ -44,6 +44,7 @@ import javax.inject.Singleton;
 
 @Singleton
 @SuppressWarnings("unused")
+@ExpressController
 public class Info {
 
     // a unit of information data
@@ -92,20 +93,17 @@ public class Info {
     }
 
     @GetAction("info")
-    @NonBlock
     @Description("Show application info including version, scan package, base dir and profile")
     public void show(ActionContext context) {
         info.applyTo(context);
     }
 
     @GetAction("pid")
-    @NonBlock
     @Description("Get process id")
     public void pid(ActionContext context) {
         pid.applyTo(context);
     }
 
-    @NonBlock
     @JsonView
     @GetAction("version")
     @Description("Get version info in JSON format. This include both application version and actframework version.")

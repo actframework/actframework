@@ -161,7 +161,7 @@ public class NetworkHandler extends LogSupportedDestroyableBase {
                     requestHandler.handle(ctx);
                 } catch (Result r) {
                     if (isError(r)) {
-                        ctx.handler(FastRequestHandler.DUMB);
+                        ctx.handler(FastRequestHandler.dumbHandler(ctx));
                     }
                     try {
                         r = RequestHandlerProxy.GLOBAL_AFTER_INTERCEPTOR.apply(r, ctx);
@@ -170,7 +170,7 @@ public class NetworkHandler extends LogSupportedDestroyableBase {
                         r = ActErrorResult.of(e);
                     }
                     if (null == ctx.handler() || isError(r)) {
-                        ctx.handler(FastRequestHandler.DUMB);
+                        ctx.handler(FastRequestHandler.dumbHandler(ctx));
                     }
 
                     H.Format fmt = req.accept();
@@ -225,7 +225,7 @@ public class NetworkHandler extends LogSupportedDestroyableBase {
             r = ActErrorResult.of(r);
         }
         if (null == ctx.handler()) {
-            ctx.handler(FastRequestHandler.DUMB);
+            ctx.handler(FastRequestHandler.dumbHandler(ctx));
         }
         r.apply(ctx.req(), ctx.prepareRespForResultEvaluation());
     }

@@ -23,6 +23,7 @@ package act.conf;
 import act.Act;
 import act.cli.Command;
 import act.cli.Optional;
+import act.controller.ExpressController;
 import act.controller.annotation.UrlContext;
 import com.alibaba.fastjson.JSONObject;
 import org.osgl.mvc.annotation.GetAction;
@@ -35,6 +36,7 @@ import javax.inject.Singleton;
 
 @UrlContext("conf")
 @Singleton
+@ExpressController
 public class ConfAdmin {
 
     @Inject
