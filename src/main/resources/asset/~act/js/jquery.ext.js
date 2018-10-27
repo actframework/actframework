@@ -4,6 +4,52 @@ if (typeof String.prototype.contains != 'function') {
     };
 }
 
+function __processCsrfSetup(setup) {
+    try {
+        if (jQuery.csrfConf && jQuery.csrfConf.cookieName && jQuery.csrfConf.headerName && "post" === submitMethod) {
+            var token = jQuery.csrfConf.token
+            if (token) {
+                setup.beforeSend = function(xhr) {
+                    xhr.setRequestHeader(jQuery.csrfConf.headerName, token)
+                }
+            }
+        }
+    } catch (e) {
+        console.warn(e)
+    }
+}
+
+function __processCsrfForm() {
+    var csrfToken = jQuery.csrfConf.token
+    if (csrfToken) {
+        jQuery('form:not(.no-csrf)').each(function() {
+            var $form = $(this)
+            if ($form.children('input[name=' + jQuery.csrfConf.paramName + ']').length == 0) {
+                $form.append('<input type="hidden" name="' + jQuery.csrfConf.paramName + '" value="' + csrfToken + '">')
+            }
+        })
+    }
+}
+
+jQuery.getJSON('/~/conf/csrf', function(csrfConf) {
+    jQuery.csrfConf = csrfConf;
+    jQuery.csrfConf.token = jQuery.cookie(csrfConf.cookieName)
+    __processCsrfForm()
+})
+
+if (!jQuery.cookie) {
+    jQuery.cookie = function(name) {
+        var nameEQ = name + "=";
+        var ca = document.cookie.split(';');
+        for(var i=0;i < ca.length;i++) {
+            var c = ca[i];
+            while (c.charAt(0)==' ') c = c.substring(1,c.length);
+            if (c.indexOf(nameEQ) == 0) return c.substring(nameEQ.length,c.length);
+        }
+        return false;
+    }
+}
+
 jQuery.createWebSocket = function(path) {
     if (!path.startsWith('/')) {
         var pathname = window.location.pathname
@@ -39,13 +85,16 @@ jQuery.each(["get", "post", "put", "delete", "patch" ], function (i, method) {
             submitMethod = "post";
         }
 
-        return jQuery.ajax({
+        var setup = {
             url: url,
             type: submitMethod,
             dataType: type,
             data: data,
             success: callback
-        }).always(checkAjaxRedirect);
+        }
+
+        __processCsrfSetup(setup)
+        return jQuery.ajax(setup).always(checkAjaxRedirect);
     };
 });
 
@@ -71,12 +120,14 @@ jQuery.each(["getJSON", "postJSON", "putJSON", "deleteJSON", "patchJSON"], funct
                 url = url +"&now="+ new Date().getTime();
             }
         }
-        return jQuery.ajax({
+        var setup = {
             url: url,
             type: submitMethod.replace("JSON", ""),
             dataType: "json",
             data: data,
             success: callback
-        }).always(checkAjaxRedirect);
+        }
+        __processCsrfSetup(setup)
+        return jQuery.ajax(setup).always(checkAjaxRedirect);
     };
 });

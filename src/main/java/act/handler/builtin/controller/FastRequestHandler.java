@@ -53,9 +53,34 @@ public abstract class FastRequestHandler extends RequestHandlerBase {
 
         @Override
         public String toString() {
+            return "dumb handler (skip event)";
+        }
+    };
+
+    public static final RequestHandler DUMB_NO_SKIP_EVENTS = new FastRequestHandler() {
+        @Override
+        public void handle(ActionContext context) {
+        }
+
+        @Override
+        public boolean express(ActionContext context) {
+            return true;
+        }
+
+        @Override
+        public boolean skipEvents(ActionContext context) {
+            return false;
+        }
+
+        @Override
+        public String toString() {
             return "dumb handler";
         }
     };
+
+    public static RequestHandler dumbHandler(ActionContext ctx) {
+        return ctx.skipEvents() ? DUMB : DUMB_NO_SKIP_EVENTS;
+    }
 
     @Override
     public boolean requireResolveContext() {

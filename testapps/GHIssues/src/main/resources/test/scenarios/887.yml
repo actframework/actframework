@@ -1,0 +1,8 @@
+Scenario(GH887):
+  description: "[887] Route table: support whitespace in URL path"
+  interactions:
+  - description: test
+    request:
+      get: "gh 887"
+    response:
+      text: 887

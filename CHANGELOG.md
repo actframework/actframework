@@ -1,6 +1,16 @@
 # ActFramework Change Log
 
 **1.8.8**
+* `JPAContext` not closed when Error response is generated #895
+* Allow app to delay automate testing #894
+* Add `removeTag`, `reTag` method to `WebSocketContext` #892
+* Stop loading API manager when running in `test` profile or `prod` mode #890
+* Caused by: act.app.CompilationException: TestBase cannot be resolved to a type #889
+* Failed to instantiate abstract class when building interceptor list in a rare scenario #888
+* Route table: support whitespace in URL path #887
+* `context.renderArg(key, val)` not cleared in prod mode #886
+* make jquery extension library process xsrf token cookie automatically #884
+* CSRF - the XSRF token cookie shall not be set as httpOnly #883
 * Test - partition scenarios #877
 * Add `SysEventId.POST_STARTED` #882
 * Support opt-out jars from managed classloader by specifying file name prefix in `act.jar.black.list` #881

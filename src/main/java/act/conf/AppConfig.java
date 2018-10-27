@@ -678,7 +678,7 @@ public class AppConfig<T extends AppConfig> extends Config<AppConfigKey> impleme
 
     public String csrfCookieName() {
         if (null == csrfCookieName) {
-            csrfCookieName = get(CSRF_COOKIE_NAME, cookieName("xsrf-token"));
+            csrfCookieName = get(CSRF_COOKIE_NAME, "XSRF-TOKEN");
         }
         return csrfCookieName;
     }

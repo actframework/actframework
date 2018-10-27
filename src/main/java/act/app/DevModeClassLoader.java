@@ -166,7 +166,7 @@ public class DevModeClassLoader extends AppClassLoader {
     }
 
     private void preloadSources() {
-        List<File> sourceRoots = app().allSourceDirs(true);
+        List<File> sourceRoots = app().allSourceDirs();
         for (final File sourceRoot : sourceRoots) {
             Files.filter(sourceRoot, JAVA_SOURCE, new $.Visitor<File>() {
                 @Override

@@ -277,11 +277,13 @@ public final class RequestHandlerProxy extends RequestHandlerBase {
 
     @Override
     public boolean express(ActionContext context) {
+        ensureAgentsReady();
         return express;
     }
 
     @Override
     public boolean skipEvents(ActionContext context) {
+        ensureAgentsReady();
         return skipEvents;
     }
 

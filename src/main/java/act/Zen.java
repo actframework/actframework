@@ -22,7 +22,7 @@ package act;
 
 import act.apidoc.Description;
 import act.app.ActionContext;
-import act.handler.NonBlock;
+import act.controller.ExpressController;
 import org.osgl.$;
 import org.osgl.mvc.annotation.GetAction;
 import org.osgl.util.C;
@@ -35,6 +35,7 @@ import java.util.List;
 import javax.inject.Singleton;
 
 @Singleton
+@ExpressController
 public final class Zen {
 
     private static final List<String> WORDS = loadWords();
@@ -50,7 +51,6 @@ public final class Zen {
         return $.random(WORDS);
     }
 
-    @NonBlock
     @GetAction("zen")
     @Description("Get my zen words (禅语)")
     public void zen(ActionContext context) {

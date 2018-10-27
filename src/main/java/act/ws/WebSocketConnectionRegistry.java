@@ -155,12 +155,38 @@ public class WebSocketConnectionRegistry extends LogSupportedDestroyableBase {
         signOff(key, connections);
     }
 
+    /**
+     * Detach a connection from a key.
+     * @param key the key
+     * @param connection the connection
+     */
     public void signOff(String key, WebSocketConnection connection) {
-        ConcurrentMap<WebSocketConnection, WebSocketConnection> connections = ensureConnectionList(key);
+        ConcurrentMap<WebSocketConnection, WebSocketConnection> connections = registry.get(key);
         if (null == connections) {
             return;
         }
         connections.remove(connection);
+    }
+
+    /**
+     * Remove a connection from this registry.
+     *
+     * This method is an alias of {@link #signOff(WebSocketConnection)}.
+     *
+     * @param connection the connection.
+     */
+    public void deRegister(WebSocketConnection connection) {
+        signOff(connection);
+    }
+
+    /**
+     * Remove a connection from all keys.
+     * @param connection the connection
+     */
+    public void signOff(WebSocketConnection connection) {
+        for (ConcurrentMap<WebSocketConnection, WebSocketConnection> connections : registry.values()) {
+            connections.remove(connection);
+        }
     }
 
     /**

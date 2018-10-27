@@ -21,8 +21,6 @@ package act.db;
  */
 
 import act.Destroyable;
-import act.app.AppContextAware;
-import act.app.security.SecurityContextAware;
 
 import java.util.Collection;
 import java.util.List;
@@ -33,7 +31,7 @@ import java.util.List;
  * @param <MODEL_TYPE> the generic model type
  */
 public interface Dao<ID_TYPE, MODEL_TYPE, QUERY_TYPE extends Query<MODEL_TYPE, QUERY_TYPE>>
-        extends AppContextAware, SecurityContextAware, Destroyable {
+        extends Destroyable {
 
     /**
      * Returns the identifier type

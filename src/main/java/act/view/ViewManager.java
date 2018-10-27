@@ -216,7 +216,7 @@ public class ViewManager extends LogSupportedDestroyableBase {
             }
         }
         if (null != template) {
-            templateCache.put(path, template);
+            cache(path, template);
         }
         return template;
     }
@@ -252,7 +252,7 @@ public class ViewManager extends LogSupportedDestroyableBase {
                 }
             }
         }
-        if (null != template) {
+        if (null != template && template.supportCache()) {
             context.cacheTemplate(template);
             cache(path, template);
         }
@@ -327,7 +327,7 @@ public class ViewManager extends LogSupportedDestroyableBase {
     }
 
     private void cache(String key, Template template) {
-        if (Act.isProd()) {
+        if (template.supportCache() && Act.isProd()) {
             templateCache.put(key, template);
         }
     }

@@ -23,12 +23,20 @@ package act.conf;
 import act.Act;
 import act.cli.Command;
 import act.cli.Optional;
+import act.controller.ExpressController;
+import act.controller.annotation.UrlContext;
+import com.alibaba.fastjson.JSONObject;
+import org.osgl.mvc.annotation.GetAction;
 import org.osgl.util.C;
 import org.osgl.util.S;
 
-import javax.inject.Inject;
 import java.util.List;
+import javax.inject.Inject;
+import javax.inject.Singleton;
 
+@UrlContext("conf")
+@Singleton
+@ExpressController
 public class ConfAdmin {
 
     @Inject
@@ -52,6 +60,15 @@ public class ConfAdmin {
             list.add(new ConfigItem(key.toString(), config));
         }
         return list;
+    }
+
+    @GetAction({"csrf", "xsrf"})
+    public JSONObject csrfConf() {
+        JSONObject retVal = new JSONObject();
+        retVal.put("cookieName", appConfig.csrfCookieName());
+        retVal.put("headerName", appConfig.csrfHeaderName());
+        retVal.put("paramName", appConfig.csrfParamName());
+        return retVal;
     }
 
 }

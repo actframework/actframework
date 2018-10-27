@@ -207,6 +207,7 @@ public class CSRF {
                 cookie.secure(context.config().sessionSecure());
                 cookie.domain(cookieDomain);
                 cookie.path("/");
+                cookie.httpOnly(false);
                 context.resp().addCookie(cookie);
                 csrfProtector.outputToken(token, cookieName, cookieDomain, context);
             }

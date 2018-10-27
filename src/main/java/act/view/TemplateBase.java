@@ -65,6 +65,11 @@ public abstract class TemplateBase implements Template {
         return render(renderArgs);
     }
 
+    @Override
+    public boolean supportCache() {
+        return true;
+    }
+
     /**
      * Sub class can implement this method to inject logic that needs to be done
      * before rendering happening

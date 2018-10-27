@@ -108,6 +108,30 @@ public class WebSocketContext extends ActContext.Base<WebSocketContext> implemen
         return this;
     }
 
+    /**
+     * Re-Tag the websocket connection hold by this context with label specified.
+     * This method will remove all previous tags on the websocket connection and then
+     * tag it with the new label.
+     * @param label the label.
+     * @return this websocket conext.
+     */
+    public WebSocketContext reTag(String label) {
+        WebSocketConnectionRegistry registry = manager.tagRegistry();
+        registry.signOff(connection);
+        registry.signIn(label, connection);
+        return this;
+    }
+
+    /**
+     * Remove the websocket connection hold by this context from label specified
+     * @param label the label previously tagged the websocket connection
+     * @return this context
+     */
+    public WebSocketContext removeTag(String label) {
+        manager.tagRegistry().deRegister(label, connection);
+        return this;
+    }
+
     public String stringMessage() {
         return stringMessage;
     }

@@ -20,9 +20,8 @@ package act.db;
  * #L%
  */
 
-import act.app.security.SecurityContext;
 import act.inject.param.NoBind;
-import act.util.ActContext;
+import act.util.LogSupport;
 import org.osgl.$;
 import org.osgl.util.C;
 import org.osgl.util.Generics;
@@ -34,19 +33,15 @@ import javax.enterprise.context.ApplicationScoped;
 
 // We can't do this atm, otherwise app developer cannot use EbeanDao, or MorphiaDao directly
 //@InheritedStateless
-@NoBind
-public abstract class DaoBase<ID_TYPE, MODEL_TYPE, QUERY_TYPE extends Query<MODEL_TYPE, QUERY_TYPE>>
-        implements Dao<ID_TYPE, MODEL_TYPE, QUERY_TYPE> {
+public abstract class DaoBase<ID_TYPE, MODEL_TYPE, QUERY_TYPE extends Query<MODEL_TYPE, QUERY_TYPE>> extends LogSupport implements Dao<ID_TYPE, MODEL_TYPE, QUERY_TYPE> {
 
-    private ActContext appCtx;
-    private SecurityContext secCtx;
-    private boolean destroyed;
-    protected Type modelType;
-    protected Class<MODEL_TYPE> modelClass;
-    protected Type idType;
-    protected Class<ID_TYPE> idClass;
-    protected Type queryType;
-    protected Class<QUERY_TYPE> queryClass;
+    @NoBind private boolean destroyed;
+    @NoBind protected Type modelType;
+    @NoBind protected Class<MODEL_TYPE> modelClass;
+    @NoBind protected Type idType;
+    @NoBind protected Class<ID_TYPE> idClass;
+    @NoBind protected Type queryType;
+    @NoBind protected Class<QUERY_TYPE> queryClass;
 
     public DaoBase() {
         exploreTypes();
@@ -54,24 +49,17 @@ public abstract class DaoBase<ID_TYPE, MODEL_TYPE, QUERY_TYPE extends Query<MODE
 
     public DaoBase(Class<ID_TYPE> idType, Class<MODEL_TYPE> modelType) {
         this.idType = $.requireNotNull(idType);
-        this.idClass = Generics.classOf(idType);
+        this.idClass = idType;
         this.modelType = $.requireNotNull(modelType);
         this.modelClass = Generics.classOf(modelType);
     }
 
 
     @Override
-    public void setAppContext(ActContext context) {
-        appCtx = context;
-    }
-
-    @Override
     public void destroy() {
         if (destroyed) return;
         destroyed = true;
         releaseResources();
-        appCtx = null;
-        secCtx = null;
     }
 
     @Override
@@ -94,24 +82,11 @@ public abstract class DaoBase<ID_TYPE, MODEL_TYPE, QUERY_TYPE extends Query<MODE
         return destroyed;
     }
 
-    @Override
-    public void setSecurityContext(SecurityContext context) {
-        secCtx = context;
-    }
-
     protected void releaseResources() {}
 
     @Override
     public Class<? extends Annotation> scope() {
         return ApplicationScoped.class;
-    }
-
-    protected final ActContext appContext() {
-        return appCtx;
-    }
-
-    protected final SecurityContext securityContext() {
-        return secCtx;
     }
 
     @Override

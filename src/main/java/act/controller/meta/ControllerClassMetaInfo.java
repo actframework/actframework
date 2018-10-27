@@ -310,6 +310,7 @@ public final class ControllerClassMetaInfo extends LogSupportedDestroyableBase {
     }
 
     public ControllerClassMetaInfo merge(ControllerClassMetaInfoManager infoBase, App app) {
+        mergeFromSuperType(infoBase, app);
         mergeFromWithList(infoBase, app);
         mergeIntoActionList(infoBase, app);
         buildActionLookup();
@@ -391,6 +392,9 @@ public final class ControllerClassMetaInfo extends LogSupportedDestroyableBase {
 
     private void getAllWithList(final Set<String> withList, final ControllerClassMetaInfoManager infoBase) {
         withList.addAll(this.withList);
+    }
+
+    private ControllerClassMetaInfo superControllerClass(final ControllerClassMetaInfoManager infoBase) {
         if (null != superType) {
             final String superClass = superType.getClassName();
             App app = App.instance();
@@ -407,11 +411,25 @@ public final class ControllerClassMetaInfo extends LogSupportedDestroyableBase {
                 }
                 curSuperClass = node.name();
                 info = infoBase.controllerMetaInfo(curSuperClass);
-            }
-            if (null != info) {
-                withList.add(superClass);
+                if (null != info) {
+                    if (info.isAbstract()) {
+                        info = null;
+                    } else {
+                        return info;
+                    }
+                }
             }
         }
+        return null;
+    }
+
+    private void mergeFromSuperType(final ControllerClassMetaInfoManager infoBase, final App app) {
+        ControllerClassMetaInfo superType = superControllerClass(infoBase);
+        if (null == superType) {
+            return;
+        }
+        superType.merge(infoBase, app);
+        interceptors.mergeFrom(superType.interceptors, this);
     }
 
     private void mergeFromWithList(final ControllerClassMetaInfoManager infoBase, final App app) {
@@ -435,11 +453,7 @@ public final class ControllerClassMetaInfo extends LogSupportedDestroyableBase {
             }
             if (null != withClassInfo) {
                 withClassInfo.merge(infoBase, app);
-                if (isMyAncestor(withClassInfo)) {
-                    interceptors.mergeFrom(withClassInfo.interceptors, me);
-                } else {
-                    interceptors.mergeFrom(withClassInfo.interceptors);
-                }
+                interceptors.mergeFrom(withClassInfo.interceptors);
             }
         }
     }
