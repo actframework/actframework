@@ -30,13 +30,24 @@ import java.util.List;
 public class ScenarioComparator implements Comparator<Scenario> {
 
     private ScenarioManager scenarioManager;
+    private boolean finished;
 
-    public ScenarioComparator(ScenarioManager manager) {
+    public ScenarioComparator(ScenarioManager manager, boolean finished) {
         scenarioManager = $.requireNotNull(manager);
+        this.finished = finished;
     }
 
     @Override
     public int compare(Scenario o1, Scenario o2) {
+        if (finished) {
+            boolean p1 = o1.status.pass();
+            boolean p2 = o2.status.pass();
+            if (!p1 && p2) {
+                return -1;
+            } else if (p1 && !p2) {
+                return 1;
+            }
+        }
         List<Scenario> d1 = depends(o1, new ArrayList<Scenario>());
         List<Scenario> d2 = depends(o2, new ArrayList<Scenario>());
         if (d1.contains(o2)) {

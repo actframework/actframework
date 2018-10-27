@@ -256,7 +256,7 @@ public class Test extends LogSupport {
                 list = C.list();
             } else {
                 list = new ArrayList<>();
-                for (Scenario scenario : C.list(scenarios.values()).sorted(new ScenarioComparator(scenarioManager))) {
+                for (Scenario scenario : C.list(scenarios.values()).sorted(new ScenarioComparator(scenarioManager, false))) {
                     if (null != testId && $.ne(testId, Keyword.of(scenario.name))) {
                         continue;
                     }
@@ -271,9 +271,6 @@ public class Test extends LogSupport {
                     addToList(scenario, list, scenarioManager);
                 }
             }
-//            for (Scenario scenario : scenarios.values()) {
-//                addToList(scenario, list, scenarioManager);
-//            }
             if (shutdownApp) {
                 for (Scenario scenario : list) {
                     if (!scenario.status.pass()) {
@@ -282,6 +279,7 @@ public class Test extends LogSupport {
                     output(scenario);
                 }
             }
+            Collections.sort(list, new ScenarioComparator(scenarioManager, true));
             return list;
         } catch (Exception e) {
             exitCode = -1;
