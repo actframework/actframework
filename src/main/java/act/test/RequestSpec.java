@@ -107,8 +107,7 @@ public class RequestSpec implements InteractionPart {
             url = delete;
         }
         E.unexpectedIf(null == method, "method not specified in request spec of interaction[%s]", interaction);
-        E.unexpectedIf(null == url, "url not specified in the request spec of interaction[%s]", interaction);
-        if (".".equals(url)) {
+        if (null == url || ".".equals(url)) {
             url = "";
         }
     }
