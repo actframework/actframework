@@ -1,0 +1,17 @@
+Scenario(GH905):
+  description: "[905] Basic support for xml content-type"
+  interactions:
+  - description: Test
+    request:
+      post: /905
+      accept: text/xml
+      params:
+        id: 5
+        name: x
+    response:
+      headers:
+        Content-Type:
+          - contains: text/xml
+      xml:
+        id: 5
+        name: x

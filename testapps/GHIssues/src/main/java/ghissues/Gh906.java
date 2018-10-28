@@ -1,6 +1,7 @@
 package ghissues;
 
 import act.controller.annotation.UrlContext;
+import act.util.PropertySpec;
 import act.util.SimpleBean;
 import org.osgl.http.H;
 import org.osgl.mvc.annotation.GetAction;
@@ -11,9 +12,11 @@ public class Gh906 {
 
     public static class Foo implements SimpleBean {
         public int id;
+        public String name;
 
-        public Foo(int id) {
+        public Foo(int id, String name) {
             this.id = id;
+            this.name = name;
         }
 
         @Override
@@ -24,9 +27,10 @@ public class Gh906 {
 
     public abstract static class Super extends BaseController {
         @GetAction
-        @ResponseContentType(H.MediaType.TXT)
-        public Foo getFoo(int n) {
-            return new Foo(n);
+        @ResponseContentType(H.MediaType.XML)
+        @PropertySpec("id")
+        public Foo getFoo(int id, String name) {
+            return new Foo(id, name);
         }
     }
 

@@ -609,6 +609,24 @@ public class Scenario implements ScenarioPart {
             } else {
                 error("Unknown JSON string: \n%s", bodyString);
             }
+        } else if (null != spec.xml && !spec.xml.isEmpty()) {
+            org.w3c.dom.Document doc = XML.read(bodyString);
+            JSONObject obj = $.convert(doc).to(JSONObject.class);
+            if (obj.containsKey("root")) {
+                Object o = obj.get("root");
+                lastData.set(o);
+                if (o instanceof JSONObject) {
+                    obj = (JSONObject) o;
+                    verifyJsonObject(obj, spec.xml);
+                } else if (o instanceof List) {
+                    verifyList("body xml array", (List)o, spec.xml);
+                } else {
+                    throw new UnexpectedException("Unknown root type: " + o.getClass());
+                }
+            } else {
+                lastData.set(obj);
+                verifyJsonObject(obj, spec.xml);
+            }
         } else if (null != spec.html && !spec.html.isEmpty()) {
             lastData.set(bodyString);
             Document doc = Jsoup.parse(bodyString, S.concat("http://localhost:", port, "/"));

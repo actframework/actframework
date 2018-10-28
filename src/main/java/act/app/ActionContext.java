@@ -636,6 +636,10 @@ public class ActionContext extends ActContext.Base<ActionContext> implements Des
         return req().contentType() == H.Format.JSON;
     }
 
+    public boolean xmlEncoded() {
+        return req().contentType() == H.Format.XML;
+    }
+
     public boolean acceptJson() {
         return accept() == H.Format.JSON;
     }

@@ -33,6 +33,7 @@ public class ResponseSpec implements InteractionPart {
     public Object text;
     public LinkedHashMap<String, Object> html = new LinkedHashMap<>();
     public LinkedHashMap<String, Object> json = new LinkedHashMap<>();
+    public LinkedHashMap<String, Object> xml = new LinkedHashMap<>();
     public LinkedHashMap<String, Object> headers = new LinkedHashMap<>();
     public String checksum;
     public String downloadFilename;

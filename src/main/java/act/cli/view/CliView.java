@@ -28,12 +28,12 @@ import act.cli.util.CliCursor;
 import act.cli.util.TableCursor;
 import act.data.DataPropertyRepository;
 import act.db.AdaptiveRecord;
-import act.util.ActContext;
-import act.util.JsonUtilConfig;
-import act.util.PropertySpec;
+import act.util.*;
+import com.alibaba.fastjson.JSONObject;
 import org.osgl.$;
 import org.osgl.util.*;
 import org.rythmengine.utils.Escape;
+import org.w3c.dom.Document;
 
 import java.io.Writer;
 import java.util.*;
@@ -156,7 +156,13 @@ public enum CliView {
     XML() {
         @Override
         public void render(Writer writer, Object result, PropertySpec.MetaInfo spec, ActContext context) {
-            throw E.unsupport();
+            JSONObject json;
+            if (null != spec) {
+                json = spec.applyTo($.map(result), context).to(JSONObject.class);
+            } else {
+                json = $.map(result).to(JSONObject.class);
+            }
+            IO.write($.convert(json).to(Document.class)).to(writer);
         }
     },
 
